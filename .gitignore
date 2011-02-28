@@ -1,0 +1,4 @@
+.sconsign.dblite
+*.pyc
+*.o
+variables.cache
