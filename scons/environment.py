@@ -117,6 +117,15 @@ class Environment(SConsEnvironment):
 		return [devel_shared_library, shared_library, static_library]
 
 	def Sample(self, sample, source, **kw):
+
+		if 'LIBPATH' in kw:
+			kw['LIBPATH'] += self['LIBPATH']
+
+		if not 'LIBS' in kw:
+			kw['LIBS'] = []
+
+		kw['LIBS'].append('gdi32')
+
 		return self.Program(sample, source, **kw)
 
 	def Documentation(self, **kw):

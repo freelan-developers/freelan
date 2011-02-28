@@ -13,7 +13,7 @@ module = 'cryptopen'
 source = Glob('*.cpp')
 cpppath = [include_path]
 libpath = [lib_path]
-libs = [module + '_static']
+libs = [module + '_static', 'crypto']
 
 # Import the customized environment
 sys.path.append(os.path.abspath('../../scons'))
