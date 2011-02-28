@@ -1,3 +1,9 @@
+/**
+ * \file hmac.cpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief A HMAC sample file.
+ */
+
 #include <cryptopen/hash/hmac_context.hpp>
 
 #include <iostream>
@@ -49,12 +55,17 @@ int main()
 	std::cout << std::endl;
 
 	hmac("MD5", key, data, EVP_md5());
-	hmac("SHA", key, data, EVP_sha());
+	hmac("MD4", key, data, EVP_md4());
+	hmac("MD2", key, data, EVP_md2());
 	hmac("SHA1", key, data, EVP_sha1());
+	hmac("SHA", key, data, EVP_sha());
+	hmac("SHA224", key, data, EVP_sha224());
 	hmac("SHA256", key, data, EVP_sha256());
-	hmac("DSS", key, data, EVP_dss());
-	hmac("DSS1", key, data, EVP_dss1());
+	hmac("SHA384", key, data, EVP_sha384());
+	hmac("SHA512", key, data, EVP_sha512());
+#if OPENSSL_VERSION_NUMBER >= 0x01000000
 	hmac("MDC2", key, data, EVP_mdc2());
+#endif
 	hmac("RIPEMD160", key, data, EVP_ripemd160());
 
 	return EXIT_SUCCESS;
