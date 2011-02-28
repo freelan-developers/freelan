@@ -37,12 +37,12 @@
  */
 
 /**
- * \file exception.cpp
+ * \file cryptographic_exception.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Error exception class.
+ * \brief Cryptographic exception class.
  */
 
-#include "error/exception.hpp"
+#include "error/cryptographic_exception.hpp"
 
 namespace cryptopen
 {

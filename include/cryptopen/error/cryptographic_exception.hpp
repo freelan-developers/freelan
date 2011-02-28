@@ -37,19 +37,29 @@
  */
 
 /**
- * \file exception.hpp
+ * \file cryptographic_exception.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Error exception class.
+ * \brief Cryptographic exception class.
  */
 
-#ifndef CRYPTOPEN_ERROR_EXCEPTION_HPP
-#define CRYPTOPEN_ERROR_EXCEPTION_HPP
+#ifndef CRYPTOPEN_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP
+#define CRYPTOPEN_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP
+
+#include <stdexcept>
 
 namespace cryptopen
 {
 	namespace error
 	{
+		/**
+		 * \brief A cryptographic exception class.
+		 *
+		 * Instances of cryptographic_exception are thrown whenever a cryptographic function fails.
+		 */
+		class cryptographic_exception
+		{
+		};
 	}
 }
 
-#endif /* CRYPTOPEN_ERROR_EXCEPTION_HPP */
+#endif /* CRYPTOPEN_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP */
