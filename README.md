@@ -15,6 +15,7 @@ From now on, here is what is currently implemented:
  - HMAC
 
 And here is what is planned:
+
  - Hash methods
  - Error handling
  - Threads
@@ -25,9 +26,11 @@ And here is what is planned:
  - PEM
  - X509
  - Public Key Cryptography
+
    - DSA
 	 - RSA
 	 - Diffie-Hellman
+
  - Symmetric Ciphers
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
