@@ -1,0 +1,9 @@
+##
+# Samples
+#
+
+samples = [
+	'hmac'
+]
+
+SConscript(dirs = samples, name = 'SConstruct')
