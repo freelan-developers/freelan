@@ -89,7 +89,7 @@ namespace cryptopen
 				 * \brief Initialize the hmac_context.
 				 * \param key The key to use. If key is NULL, the previously used key is taken.
 				 * \param key_len The key length. If key is NULL, key_len is not used.
-				 * \param md The message digest (hash) algorithm to use. If md is NULL, the previously used message digest algorithm is taken.
+				 * \param md The message digest (hash) method to use. If md is NULL, the previously used message digest method is taken.
 				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
 				 * \return true on success.
 				 *
@@ -128,15 +128,15 @@ namespace cryptopen
 				HMAC_CTX& raw();
 
 				/**
-				 * \brief Get the associated message digest algorithm.
-				 * \return The associated message digest algorithm. Might be NULL if no call to initialize() was done.
+				 * \brief Get the associated message digest method.
+				 * \return The associated message digest method. Might be NULL if no call to initialize() was done.
 				 */
-				const EVP_MD* message_digest_algorithm() const;
+				const EVP_MD* message_digest_method() const;
 
 				/**
 				 * \brief Get the resulting message digest size.
 				 * \return The resulting message digest size.
-				 * \warning If no call initialize() was done to set a valid message digest algorithm, the behavior is undefined.
+				 * \warning If no call initialize() was done to set a valid message digest method, the behavior is undefined.
 				 */
 				size_t message_digest_size() const;
 
@@ -183,7 +183,7 @@ namespace cryptopen
 			return m_ctx;
 		}
 
-		inline const EVP_MD* hmac_context::message_digest_algorithm() const
+		inline const EVP_MD* hmac_context::message_digest_method() const
 		{
 			return m_md;
 		}
