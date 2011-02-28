@@ -25,9 +25,11 @@ env = environment.Environment(ENV = os.environ.copy())
 
 # Build the libraries
 libraries = env.Libraries(module, major, minor, source, CPPPATH = cpppath, LIBS = libs)
-install = env.Install()
 documentation = env.Documentation()
 indentation = env.Indentation(source + include)
+
+include_install = env.Install(os.path.join(env['install_path'], 'include', module), include)
+install = [include_install]
 
 # Aliases
 env.Alias('build', libraries)
