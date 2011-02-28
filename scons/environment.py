@@ -124,7 +124,8 @@ class Environment(SConsEnvironment):
 		if not 'LIBS' in kw:
 			kw['LIBS'] = []
 
-		kw['LIBS'].append('gdi32')
+		if sys.platform == 'win32':
+			kw['LIBS'].append('gdi32')
 
 		return self.Program(sample, source, **kw)
 
