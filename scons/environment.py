@@ -72,9 +72,6 @@ class Environment(SConsEnvironment):
 
 			self['LIBPATH'].append(os.path.join(self['boost_path'], 'lib'))
 			self['LIBPATH'].append(os.path.join(self['openssl_path'], 'lib'))
-
-			# Add winsock library for MS Windows
-			self['LIBS'].append('gdi32')
 		else:
 			if sys.platform.startswith('freebsd'):
 				self['CXXFLAGS'].remove('-pedantic')
@@ -91,6 +88,11 @@ class Environment(SConsEnvironment):
 		if sys.platform == 'win32':
 			static_source = shared_source
 			shlinkflags += ['-Wl,--output-def,%s' % os.path.join(self._libdir, module + '.def')]
+
+			if not 'LIBS' in kw:
+				kw['LIBS'] = []
+
+			kw['LIBS'].append('gdi32')
 		else:
 			static_source = self.StaticObject(source, **kw)
 			if sys.platform == 'darwin':

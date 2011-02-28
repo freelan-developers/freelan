@@ -10,10 +10,10 @@ minor = '0'
 import sys, os
 
 include_path = os.path.join('include', module)
-submodules = ['hash']
+submodules = ['', 'hash']
 source = Glob('src/*.cpp')
-include = Glob(os.path.join(include_path, '*.hpp'))
-for submodule in submodules: include += Glob(os.path.join(include_path, submodule, '*.hpp'))
+include = dict()
+for submodule in submodules: include[submodule] = Glob(os.path.join(include_path, submodule, '*.hpp'))
 cpppath = [include_path]
 libs = ['crypto']
 
@@ -26,10 +26,15 @@ env = environment.Environment(ENV = os.environ.copy())
 # Build the libraries
 libraries = env.Libraries(module, major, minor, source, CPPPATH = cpppath, LIBS = libs)
 documentation = env.Documentation()
-indentation = env.Indentation(source + include)
+indentation = env.Indentation(source + include.values())
 
-include_install = env.Install(os.path.join(env['install_path'], 'include', module), include)
-install = [include_install]
+include_install = []
+
+for (k, v) in include.items():
+	include_install += [env.Install(os.path.join(env['install_path'], 'include', module, k), v)]
+libraries_install = env.Install(os.path.join(env['install_path'], 'lib'), libraries)
+
+install = [include_install, libraries_install]
 
 # Aliases
 env.Alias('build', libraries)
