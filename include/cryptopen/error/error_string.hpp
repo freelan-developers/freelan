@@ -46,7 +46,7 @@
 #define CRYPTOPEN_ERROR_STRING_HPP
 
 #include "error.hpp"
-#include "initializer.hpp"
+#include "../initializer.hpp"
 
 #include <string>
 
