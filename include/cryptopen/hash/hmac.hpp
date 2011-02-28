@@ -47,6 +47,8 @@
 
 #include <openssl/hmac.h>
 
+#include <vector>
+
 namespace cryptopen
 {
 	namespace hash
@@ -66,11 +68,34 @@ namespace cryptopen
 		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
 
 		/**
+		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
+		 * \param key The key to use.
+		 * \param key_len The key length.
+		 * \param data The buffer.
+		 * \param len The buffer length.
+		 * \param md The digest method.
+		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
+		 * \return The hmac.
+		 */
+		template <typename T>
+		std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+
+		/**
 		 * \brief Get the size of a HMAC generated with the specified hash method.
 		 * \param md The digest method.
 		 * \return The size of a HMAC generated with md.
 		 */
 		size_t hmac_message_digest_size(const EVP_MD* md);
+
+		template <typename T>
+		inline std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+		{
+			std::vector<T> result(hmac_message_digest_size(md));
+
+			hmac(&result[0], result.size(), key, key_len, data, len, md, impl);
+
+			return result;
+		}
 
 		inline size_t hmac_message_digest_size(const EVP_MD* md)
 		{
