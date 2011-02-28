@@ -45,6 +45,8 @@
 #ifndef CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 #define CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 
+#include "error/cryptographic_exception.hpp"
+
 #include <openssl/opensslv.h>
 #include <openssl/hmac.h>
 
@@ -91,19 +93,17 @@ namespace cryptopen
 				 * \param key_len The key length. If key is NULL, key_len is not used.
 				 * \param md The message digest (hash) method to use. If md is NULL, the previously used message digest method is taken.
 				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
-				 * \return true on success.
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 				 */
-				bool initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl = NULL);
+				void initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl = NULL);
 
 				/**
 				 * \brief Update the hmac_context with some data.
 				 * \param data The data buffer.
 				 * \param len The data length.
-				 * \return true on success.
 				 */
-				bool update(const void* data, size_t len);
+				void update(const void* data, size_t len);
 
 				/**
 				 * \brief Finalize the hmac_context and get the resulting buffer.
@@ -157,14 +157,12 @@ namespace cryptopen
 			HMAC_CTX_cleanup(&m_ctx);
 		}
 
-		inline bool hmac_context::update(const void* data, size_t len)
+		inline void hmac_context::update(const void* data, size_t len)
 		{
 #if OPENSSL_VERSION_NUMBER < 0x01000000
 			HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
-
-			return true;
 #else
-			return HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
+			error::throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)));
 #endif
 		}
 
