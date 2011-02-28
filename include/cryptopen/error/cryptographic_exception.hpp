@@ -91,6 +91,12 @@ namespace cryptopen
 				 */
 				cryptographic_exception(error_type err);
 
+				/**
+				 * \brief Get the associated error code.
+				 * \return The associated error code.
+				 */
+				error_type err() const;
+
 			private:
 
 				error_type m_err;
@@ -111,6 +117,10 @@ namespace cryptopen
 		inline cryptographic_exception cryptographic_exception::from_error()
 		{
 			return cryptographic_exception(get_error());
+		}
+		inline error_type cryptographic_exception::err() const
+		{
+			return m_err;
 		}
 	}
 }
