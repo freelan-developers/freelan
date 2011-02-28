@@ -10,7 +10,7 @@ minor = '0'
 import sys, os
 
 include_path = os.path.join('include', module)
-submodules = ['', 'hash']
+submodules = ['', 'hash', 'error']
 source = Glob('src/*.cpp')
 include = dict()
 for submodule in submodules: include[submodule] = Glob(os.path.join(include_path, submodule, '*.hpp'))
