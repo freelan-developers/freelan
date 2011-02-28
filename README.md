@@ -1,7 +1,7 @@
 libcryptopen
 ============
 
-libcryptoopen stands a simple, yet complete, C++ wrapper around the OpenSSL cryptographic library.
+libcryptopen stands a simple, yet complete, C++ wrapper around the OpenSSL cryptographic library.
 
 It provides exception safe classes and functions to deal with symmetric ciphers, public key cryptography, certificates, authentication codes, hash functions and data encoding.
 
