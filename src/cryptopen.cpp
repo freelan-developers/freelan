@@ -37,10 +37,12 @@
  */
 
 /**
- * \file cryptopen.hpp
+ * \file cryptopen.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The global cryptopen include file.
+ * \brief The global cryptopen include file implemenation.
  */
+
+#include "cryptopen.hpp"
 
 namespace cryptopen
 {
