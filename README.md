@@ -15,10 +15,10 @@ From now on, here is what is currently implemented:
 
  - HMAC
  - Error handling
+ - Exceptions
 
 And here is what is planned:
 
- - Exceptions
  - Hash methods
  - Threads
  - Random
