@@ -47,7 +47,7 @@
 
 #include <boost/noncopyable.hpp>
 
-namespace systools
+namespace cryptopen
 {
 	/**
 	 * \brief An initializer template.
