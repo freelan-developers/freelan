@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 #define CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 
+#include <openssl/opensslv.h>
 #include <openssl/hmac.h>
 
 #include <vector>
@@ -158,7 +159,13 @@ namespace cryptopen
 
 		inline bool hmac_context::update(const void* data, size_t len)
 		{
+#if OPENSSL_VERSION_NUMBER < 0x01000000
+			HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
+
+			return true;
+#else
 			return HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
+#endif
 		}
 
 		template <typename T>

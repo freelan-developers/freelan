@@ -50,7 +50,11 @@ namespace cryptopen
 	{
 		bool hmac_context::initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl)
 		{
+#if OPENSSL_VERSION_NUMBER < 0x01000000
+			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl);
+#else
 			if (HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl))
+#endif
 			{
 				if (md)
 				{
@@ -67,7 +71,11 @@ namespace cryptopen
 		{
 			unsigned int ilen = static_cast<unsigned int>(len);
 
+#if OPENSSL_VERSION_NUMBER < 0x01000000
+			HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen);
+#else
 			if (HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen))
+#endif
 			{
 				return ilen;
 			}
