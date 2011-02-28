@@ -45,10 +45,170 @@
 #ifndef CRYPTOPEN_ERROR_ERROR_HPP
 #define CRYPTOPEN_ERROR_ERROR_HPP
 
+#include <openssl/err.h>
+
+#include <string>
+
 namespace cryptopen
 {
 	namespace error
 	{
+		/**
+		 * \brief The error type.
+		 */
+		typedef unsigned long error_type;
+
+		/**
+		 * \brief The error info structure.
+		 */
+		struct error_info
+		{
+			/**
+			 * \brief The file.
+			 */
+			const char* file;
+
+			/**
+			 * \brief The line.
+			 */
+			int line;
+		};
+
+		/**
+		 * \brief The error data structure.
+		 */
+		struct error_data
+		{
+			/**
+			 * \brief Check if the data is a text string.
+			 * \return true if the data is a text string.
+			 */
+			bool is_text_string() const;
+
+			/**
+			 * \brief Check if the data was allocated using OPENSSL_malloc().
+			 * \return true if the data was allocated using OPENSSL_malloc().
+			 */
+			bool is_text_malloced() const;
+
+			/**
+			 * \brief The data.
+			 */
+			const char* data;
+
+			/**
+			 * \brief The flags.
+			 */
+			int flags;
+		};
+
+		/**
+		 * \brief Get the earliest crypto error that occured in this thread and removes it from the error queue.
+		 * \return The last error.
+		 */
+		error_type get_error();
+
+		/**
+		 * \brief Get the earliest crypto error that occured in this thread and leaves it in the error queue.
+		 * \return The last error.
+		 */
+		error_type peek_error();
+
+		/**
+		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
+		 * \return The last error.
+		 */
+		error_type peek_last_error();
+
+		/**
+		 * \brief Get the earliest crypto error that occured in this thread and removes it from the error queue.
+		 * \param info The error information.
+		 * \return The last error.
+		 */
+		error_type get_error_line(error_info& info);
+
+		/**
+		 * \brief Get the earliest crypto error that occured in this thread and leaves it in the error queue.
+		 * \param info The error information.
+		 * \return The last error.
+		 */
+		error_type peek_error_line(error_info& info);
+
+		/**
+		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
+		 * \param info The error information.
+		 * \return The last error.
+		 */
+		error_type peek_last_error_line(error_info& info);
+
+		/**
+		 * \brief Get the earliest crypto error that occured in this thread and removes it from the error queue.
+		 * \param info The error information.
+		 * \param data The error data.
+		 * \return The last error.
+		 */
+		error_type get_error_line_data(error_info& info, error_data& data);
+
+		/**
+		 * \brief Get the earliest crypto error that occured in this thread and leaves it in the error queue.
+		 * \param info The error information.
+		 * \param data The error data.
+		 * \return The last error.
+		 */
+		error_type peek_error_line(error_info& info, error_data& data);
+
+		/**
+		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
+		 * \param info The error information.
+		 * \param data The error data.
+		 * \return The last error.
+		 */
+		error_type peek_last_error_line(error_info& info, error_data& data);
+
+		inline bool error_data::is_text_string() const
+		{
+			return (flags & ERR_TXT_STRING);
+		}
+		inline bool error_data::is_text_malloced() const
+		{
+			return (flags & ERR_TXT_MALLOCED);
+		}
+		inline error_type get_error()
+		{
+			return ERR_get_error();
+		}
+		inline error_type peek_error()
+		{
+			return ERR_peek_error();
+		}
+		inline error_type peek_last_error()
+		{
+			return ERR_peek_last_error();
+		}
+		inline error_type get_error_line(error_info& info)
+		{
+			return ERR_get_error_line(&info.file, &info.line);
+		}
+		inline error_type peek_error_line(error_info& info)
+		{
+			return ERR_peek_error_line(&info.file, &info.line);
+		}
+		inline error_type peek_last_error_line(error_info& info)
+		{
+			return ERR_peek_last_error_line(&info.file, &info.line);
+		}
+		inline error_type get_error_line_data(error_info& info, error_data& data)
+		{
+			return ERR_get_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+		}
+		inline error_type peek_error_line_data(error_info& info, error_data& data)
+		{
+			return ERR_peek_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+		}
+		inline error_type peek_last_error_line_data(error_info& info, error_data& data)
+		{
+			return ERR_peek_last_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+		}
 	}
 }
 
