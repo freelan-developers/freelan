@@ -37,12 +37,12 @@
  */
 
 /**
- * \file error_string.cpp
+ * \file error_strings.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Error string helper functions.
+ * \brief Error strings helper functions.
  */
 
-#include "error/error_string.hpp"
+#include "error/error_strings.hpp"
 
 namespace cryptopen
 {

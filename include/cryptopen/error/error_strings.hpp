@@ -37,13 +37,13 @@
  */
 
 /**
- * \file error_string.hpp
+ * \file error_strings.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Error string helper functions.
+ * \brief Error strings helper functions.
  */
 
-#ifndef CRYPTOPEN_ERROR_STRING_HPP
-#define CRYPTOPEN_ERROR_STRING_HPP
+#ifndef CRYPTOPEN_ERROR_STRINGS_HPP
+#define CRYPTOPEN_ERROR_STRINGS_HPP
 
 #include "error.hpp"
 #include "../initializer.hpp"
@@ -131,4 +131,4 @@ namespace cryptopen
 	}
 }
 
-#endif /* CRYPTOPEN_ERROR_STRING_HPP */
+#endif /* CRYPTOPEN_ERROR_STRINGS_HPP */

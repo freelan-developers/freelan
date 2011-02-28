@@ -44,7 +44,7 @@
 
 #include "error/cryptographic_exception.hpp"
 
-#include "error/error_string.hpp"
+#include "error/error_strings.hpp"
 
 namespace cryptopen
 {
