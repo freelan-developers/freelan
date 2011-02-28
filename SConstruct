@@ -10,8 +10,10 @@ minor = '0'
 import sys, os
 
 include_path = os.path.join('include', module)
+submodules = ['hash']
 source = Glob('src/*.cpp')
-include = Glob(include_path + '/*.hpp')
+include = Glob(os.path.join(include_path, '*.hpp'))
+for submodule in submodules: include += Glob(os.path.join(include_path, submodule, '*.hpp'))
 cpppath = [include_path]
 libs = ['crypto']
 
