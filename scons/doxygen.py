@@ -148,7 +148,7 @@ def DoxyEmitter(source, target, env):
    # possible output formats and their default values and output locations
    output_formats = {
       "HTML": ("YES", "html"),
-      "LATEX": ("YES", "latex"),
+      "LATEX": ("NO", "latex"),
       "RTF": ("NO", "rtf"),
       "MAN": ("NO", "man"),
       "XML": ("NO", "xml"),
