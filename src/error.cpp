@@ -39,7 +39,7 @@
 /**
  * \file error.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The error helper functions.
+ * \brief Error helper functions.
  */
 
 #include "error/error.hpp"

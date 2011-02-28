@@ -39,15 +39,13 @@
 /**
  * \file error.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The error helper functions.
+ * \brief Error helper functions.
  */
 
 #ifndef CRYPTOPEN_ERROR_ERROR_HPP
 #define CRYPTOPEN_ERROR_ERROR_HPP
 
 #include <openssl/err.h>
-
-#include <string>
 
 namespace cryptopen
 {
