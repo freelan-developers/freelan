@@ -50,9 +50,9 @@ namespace cryptopen
 {
 	namespace error
 	{
-		cryptographic_exception::cryptographic_exception(error_type err) :
-			std::runtime_error(get_error_string(err)),
-			m_err(err)
+		cryptographic_exception::cryptographic_exception(error_type _err) :
+			std::runtime_error(get_error_string(_err)),
+			m_err(_err)
 		{
 		}
 	}
