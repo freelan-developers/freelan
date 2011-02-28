@@ -42,6 +42,9 @@ class Environment(SConsEnvironment):
 		if not 'LIBS' in self:
 			self['LIBS'] = []
 
+		if not 'SHLINKFLAGS' in self:
+			self['SHLINKFLAGS'] = []
+
 		# Build with debug symbols or not
 		if ARGUMENTS.get('mode', 'release') == 'debug':
 			self['CXXFLAGS'].append('-g')
@@ -83,18 +86,20 @@ class Environment(SConsEnvironment):
 
 		shared_source = self.SharedObject(source, **kw)
 
+		shlinkflags = self['SHLINKFLAGS']
+
 		if sys.platform == 'win32':
 			static_source = shared_source
-			shlinkflags = ['-Wl,--output-def,%s' % os.path.join(self._libdir, module + '.def')]
+			shlinkflags += ['-Wl,--output-def,%s' % os.path.join(self._libdir, module + '.def')]
 		else:
 			static_source = self.StaticObject(source, **kw)
 			if sys.platform == 'darwin':
-				shlinkflags = ['-arch', 'i386', '-arch', 'x86_64', '-single_module', '-undefined', 'dynamic_lookup']
+				shlinkflags += ['-arch', 'i386', '-arch', 'x86_64', '-single_module', '-undefined', 'dynamic_lookup']
 			else:
-				shlinkflags = ['-Wl,-soname,lib%s.so.%s' % (module, major)]
+				shlinkflags += ['-Wl,-soname,lib%s.so.%s' % (module, major)]
 
-		devel_shared_library = self.SharedLibrary(os.path.join(self._libdir, module), shared_source, **kw)
-		static_library = self.StaticLibrary(module + '_static', static_source, **kw)
+		devel_shared_library = self.SharedLibrary(os.path.join(self._libdir, module), shared_source, SHLINKFLAGS = shlinkflags, **kw)
+		static_library = self.StaticLibrary(os.path.join(self._libdir, module + '_static'), static_source, **kw)
 
 		if sys.platform == 'win32':
 			shared_library = devel_shared_library
