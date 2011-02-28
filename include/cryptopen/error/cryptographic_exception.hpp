@@ -59,10 +59,16 @@ namespace cryptopen
 		void throw_error();
 
 		/**
-		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition fails.
+		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition succeeds.
 		 * \param condition The condition.
 		 */
 		void throw_error_if(bool condition);
+
+		/**
+		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition fails.
+		 * \param condition The condition.
+		 */
+		void throw_error_if_not(bool condition);
 
 		/**
 		 * \brief A cryptographic exception class.
@@ -95,6 +101,10 @@ namespace cryptopen
 			throw cryptographic_exception::from_error();
 		}
 		inline void throw_error_if(bool condition)
+		{
+			if (condition) throw_error();
+		}
+		inline void throw_error_if_not(bool condition)
 		{
 			if (!condition) throw_error();
 		}
