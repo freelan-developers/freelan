@@ -9,6 +9,7 @@ class Environment(SConsEnvironment):
 
 	def __init__(
 			self,
+			path=None,
 			os_platform=None,
 			parse_flags=None,
 			**kw):
@@ -26,12 +27,17 @@ class Environment(SConsEnvironment):
 		toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
 		# Variables
-		variables = Environment._create_variables()
+		if path:
+			variable_file = os.path.join(path, Environment._VARIABLE_FILE)
+		else:
+			variable_file = Environment._VARIABLE_FILE
+
+		variables = Environment._create_variables(variable_file)
 
 		# Parent constructor
 		SConsEnvironment.__init__(self, os_platform, tools, toolpath, variables, parse_flags, **kw)
 
-		variables.Save(Environment._VARIABLE_FILE, self)
+		variables.Save(variable_file, self)
 
 		if not 'CXXFLAGS' in self:
 			self['CXXFLAGS'] = []
@@ -110,6 +116,9 @@ class Environment(SConsEnvironment):
 
 		return [devel_shared_library, shared_library, static_library]
 
+	def Sample(self, sample, source, **kw):
+		return self.Program(sample, source, **kw)
+
 	def Documentation(self, **kw):
 		doxygen = self.Doxygen('doxyfile', **kw)
 		AlwaysBuild(doxygen)
@@ -121,8 +130,8 @@ class Environment(SConsEnvironment):
 		return astyle
 
 	@staticmethod
-	def _create_variables():
-		variables = Variables([Environment._VARIABLE_FILE], ARGUMENTS)
+	def _create_variables(variable_file):
+		variables = Variables([variable_file], ARGUMENTS)
 		
 		if sys.platform == 'win32':
 			variables.AddVariables(PathVariable('install_path', 'The installation path', r'C:\MinGW', PathVariable.PathIsDir))
