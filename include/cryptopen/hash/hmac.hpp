@@ -37,55 +37,47 @@
  */
 
 /**
- * \file hmac_context.cpp
+ * \file hmac.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A HMAC context class.
+ * \brief HMAC helper functions.
  */
 
-#include "hash/hmac_context.hpp"
+#ifndef CRYPTOPEN_HASH_HMAC_HPP
+#define CRYPTOPEN_HASH_HMAC_HPP
 
-#include <cassert>
+#include <openssl/hmac.h>
 
 namespace cryptopen
 {
 	namespace hash
 	{
-		bool hmac_context::initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl)
+		/**
+		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
+		 * \param out The output buffer. Must be at least hmac_message_digest_size(md) bytes long.
+		 * \param out_len The output buffer length. 
+		 * \param key The key to use.
+		 * \param key_len The key length.
+		 * \param data The buffer.
+		 * \param len The buffer length.
+		 * \param md The digest method.
+		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
+		 * \return The count of bytes written to out. Should be equal to hmac_message_digest_size(md).
+		 */
+		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+
+		/**
+		 * \brief Get the size of a HMAC generated with the specified hash method.
+		 * \param md The digest method.
+		 * \return The size of a HMAC generated with md.
+		 */
+		size_t hmac_message_digest_size(const EVP_MD* md);
+
+		inline size_t hmac_message_digest_size(const EVP_MD* md)
 		{
-#if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl);
-#else
-			if (HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl))
-#endif
-			{
-				if (md)
-				{
-					m_md = md;
-				}
-
-				return true;
-			}
-
-			return false;
-		}
-
-		size_t hmac_context::finalize(void* md, size_t len)
-		{
-			assert(md);
-
-			unsigned int ilen = static_cast<unsigned int>(len);
-
-#if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen);
-#else
-			if (HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen))
-#endif
-			{
-				return ilen;
-			}
-
-			return 0;
+			return EVP_MD_size(md);
 		}
 	}
 }
+
+#endif /* CRYPTOPEN_HASH_HMAC_HPP */
 

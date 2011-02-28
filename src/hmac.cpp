@@ -37,11 +37,12 @@
  */
 
 /**
- * \file hmac_context.cpp
+ * \file hmac.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A HMAC context class.
+ * \brief HMAC helper functions.
  */
 
+#include "hash/hmac.hpp"
 #include "hash/hmac_context.hpp"
 
 #include <cassert>
@@ -50,41 +51,17 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		bool hmac_context::initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl)
+		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
 		{
-#if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl);
-#else
-			if (HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl))
-#endif
-			{
-				if (md)
-				{
-					m_md = md;
-				}
-
-				return true;
-			}
-
-			return false;
-		}
-
-		size_t hmac_context::finalize(void* md, size_t len)
-		{
+			assert(out);
+			assert(key);
+			assert(data);
 			assert(md);
 
-			unsigned int ilen = static_cast<unsigned int>(len);
-
-#if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen);
-#else
-			if (HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen))
-#endif
-			{
-				return ilen;
-			}
-
-			return 0;
+			hmac_context ctx;
+			ctx.initialize(key, key_len, md, impl);
+			ctx.update(data, len);
+			return ctx.finalize(out, out_len);
 		}
 	}
 }
