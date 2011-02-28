@@ -44,9 +44,16 @@
 
 #include "error/cryptographic_exception.hpp"
 
+#include "error/error_string.hpp"
+
 namespace cryptopen
 {
 	namespace error
 	{
+		cryptographic_exception::cryptographic_exception(error_type err) :
+			std::runtime_error(get_error_string(err)),
+			m_err(err)
+		{
+		}
 	}
 }

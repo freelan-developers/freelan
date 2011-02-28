@@ -45,6 +45,8 @@
 #ifndef CRYPTOPEN_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP
 #define CRYPTOPEN_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP
 
+#include "error.hpp"
+
 #include <stdexcept>
 
 namespace cryptopen
@@ -52,13 +54,54 @@ namespace cryptopen
 	namespace error
 	{
 		/**
+		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue.
+		 */
+		void throw_error();
+
+		/**
+		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition fails.
+		 * \param condition The condition.
+		 */
+		void throw_error_if(bool condition);
+
+		/**
 		 * \brief A cryptographic exception class.
 		 *
 		 * Instances of cryptographic_exception are thrown whenever a cryptographic function fails.
 		 */
-		class cryptographic_exception
+		class cryptographic_exception : public std::runtime_error
 		{
+			public:
+
+				/**
+				 * \brief Create a cryptographic_exception from the first available cryptographic error in the error queue.
+				 * \return A cryptographic_exception.
+				 */
+				static cryptographic_exception from_error();
+
+				/**
+				 * \brief Create a new cryptographic_exception from the specified error code.
+				 * \param err The error code.
+				 */
+				cryptographic_exception(error_type err);
+
+			private:
+
+				error_type m_err;
 		};
+		
+		inline void throw_error()
+		{
+			throw cryptographic_exception::from_error();
+		}
+		inline void throw_error_if(bool condition)
+		{
+			if (!condition) throw_error();
+		}
+		inline cryptographic_exception cryptographic_exception::from_error()
+		{
+			return cryptographic_exception(get_error());
+		}
 	}
 }
 
