@@ -163,6 +163,27 @@ namespace cryptopen
 		 */
 		error_type peek_last_error_line(error_info& info, error_data& data);
 
+		/**
+		 * \brief Get the library component of the specified error code.
+		 * \param err The error code.
+		 * \return The library component.
+		 */
+		int get_library_error(error_type err);
+
+		/**
+		 * \brief Get the function component of the specified error code.
+		 * \param err The error code.
+		 * \return The function component.
+		 */
+		int get_function_error(error_type err);
+
+		/**
+		 * \brief Get the reasib component of the specified error code.
+		 * \param err The error code.
+		 * \return The reason component.
+		 */
+		int get_reason_error(error_type err);
+
 		inline bool error_data::is_text_string() const
 		{
 			return (flags & ERR_TXT_STRING);
@@ -206,6 +227,18 @@ namespace cryptopen
 		inline error_type peek_last_error_line_data(error_info& info, error_data& data)
 		{
 			return ERR_peek_last_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+		}
+		inline int get_library_error(error_type err)
+		{
+			return ERR_GET_LIB(err);
+		}
+		inline int get_function_error(error_type err)
+		{
+			return ERR_GET_FUNC(err);
+		}
+		inline int get_reason_error(error_type err)
+		{
+			return ERR_GET_REASON(err);
 		}
 	}
 }
