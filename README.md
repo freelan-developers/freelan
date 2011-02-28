@@ -12,6 +12,7 @@ In the end: everything.
 
 
 From now on, here is what is currently implemented:
+
  - HMAC
 
 And here is what is planned:
@@ -28,8 +29,8 @@ And here is what is planned:
  - Public Key Cryptography
 
    - DSA
-	 - RSA
-	 - Diffie-Hellman
+   - RSA
+   - Diffie-Hellman
 
  - Symmetric Ciphers
 
