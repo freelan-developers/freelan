@@ -1,21 +1,21 @@
 /*
- * libsystools - open-source and multi-platform toolset C++ library.
- * Copyright 2007-2010 <julien.kauffmann@freelan.org>
+ * libcryptopen - C++ portable OpenSSL cryptographic wrapper library.
+ * Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
  *
- * This file is part of libsystools.
+ * This file is part of libcryptopen.
  *
- * libsystools is free software; you can redistribute it and/or modify it
+ * libcryptopen is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libsystools is distributed in the hope that it will be useful, but
+ * libcryptopen is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/>.
  *
  * In addition, as a special exception, the copyright holders give
@@ -31,44 +31,36 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libsystools in a commercial software, please
+ * If you intend to use libcryptopen in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
 
 /**
- * \file hmac.cpp
+ * \file hmac_context.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A HMAC helper class.
+ * \brief A HMAC context class.
  */
 
-#include "hmac.hpp"
+#include "hash/hmac_context.hpp"
 
-namespace systools
+namespace cryptopen
 {
-	size_t HMAC::hmac(const void* key, size_t keylen, const void* buf, size_t buflen, void* outbuf, size_t outbuflen) const
+	namespace hash
 	{
-		HMAC_CTX ctx;
-		HMAC_CTX_init(&ctx);
+		bool hmac_context::finalize(void* md, size_t& len)
+		{
+			unsigned int ilen = static_cast<unsigned int>(len);
 
-		unsigned int len = static_cast<unsigned int>(outbuflen);
+			if (HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen))
+			{
+				len = ilen;
 
-		HMAC_Init_ex(&ctx, key, static_cast<int>(keylen), d_hash_method, NULL);
-		HMAC_Update(&ctx, static_cast<const unsigned char*>(buf), static_cast<int>(buflen));
-		HMAC_Final(&ctx, static_cast<unsigned char*>(outbuf), &len);
+				return true;
+			}
 
-		HMAC_CTX_cleanup(&ctx);
-
-		return len;
-	}
-
-	SmartBuffer HMAC::hmac(const SecureBuffer& key, const SmartBuffer& buf) const
-	{
-		SmartBuffer result(size());
-
-		result.resize(hmac(key.constData(), key.size(), buf.constData(), buf.size(), result.data(), result.heapSize()));
-
-		return result;
+			return false;
+		}
 	}
 }
 

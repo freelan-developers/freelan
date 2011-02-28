@@ -42,6 +42,11 @@
  * \brief The global cryptopen include file.
  */
 
+#ifndef CRYPTOPEN_CRYPTOPEN_HPP
+#define CRYPTOPEN_CRYPTOPEN_HPP
+
 namespace cryptopen
 {
 }
+
+#endif /* CRYPTOPEN_CRYPTOPEN_HPP */
