@@ -46,6 +46,7 @@
 #define CRYPTOPEN_ERROR_STRING_HPP
 
 #include "error.hpp"
+#include "initializer.hpp"
 
 #include <string>
 
@@ -53,6 +54,13 @@ namespace cryptopen
 {
 	namespace error
 	{
+		/**
+		 * \brief A error string initializer.
+		 *
+		 * Only one instance of this class should be created. When an instance exists, the library can provide more informative error strings.
+		 */
+		typedef initializer<ERR_load_crypto_strings, ERR_free_strings> error_strings_initializer;
+
 		/**
 		 * \brief Get the error string associated with a specified error.
 		 * \param err The error.
@@ -84,6 +92,22 @@ namespace cryptopen
 		 */
 		std::string get_reason_error_string(error_type err);
 
+		/**
+		 * \brief Print the errors to a BIO.
+		 * \param bp The BIO.
+		 *
+		 * The error queue will be empty after this call.
+		 */
+		void print_errors(BIO* bp);
+
+		/**
+		 * \brief Print the errors to a file.
+		 * \param fp The file.
+		 *
+		 * The error queue will be empty after this call.
+		 */
+		void print_errors(FILE* fp);
+
 		inline std::string get_library_error_string(error_type err)
 		{
 			return ERR_lib_error_string(err);
@@ -95,6 +119,14 @@ namespace cryptopen
 		inline std::string get_reason_error_string(error_type err)
 		{
 			return ERR_reason_error_string(err);
+		}
+		inline void print_errors(BIO* bp)
+		{
+			ERR_print_errors(bp);
+		}
+		inline void print_errors(FILE* fp)
+		{
+			ERR_print_errors_fp(fp);
 		}
 	}
 }
