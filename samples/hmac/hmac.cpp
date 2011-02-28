@@ -5,6 +5,7 @@
  */
 
 #include <cryptopen/hash/hmac_context.hpp>
+#include <cryptopen/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -32,17 +33,25 @@ std::string to_hex(const void* buf, size_t buf_len)
 
 void hmac(const std::string& name, const std::string& key, const std::string& data, const EVP_MD* md)
 {
-	cryptopen::hash::hmac_context ctx;
+	try
+	{
+		cryptopen::hash::hmac_context ctx;
 
-	ctx.initialize(key.c_str(), key.size(), md);
-	ctx.update(data.c_str(), data.size());
-	std::vector<unsigned char> hmac = ctx.finalize<unsigned char>();
-
-	std::cout << name << ": " << to_hex(hmac.begin(), hmac.end()) << std::endl;
+		ctx.initialize(key.c_str(), key.size(), md);
+		ctx.update(data.c_str(), data.size());
+		std::vector<unsigned char> hmac = ctx.finalize<unsigned char>();
+		std::cout << name << ": " << to_hex(hmac.begin(), hmac.end()) << std::endl;
+	}
+	catch (cryptopen::error::cryptographic_exception& ex)
+	{
+		std::cerr << name << ": " << ex.what() << std::endl;
+	}
 }
 
 int main()
 {
+	cryptopen::error::error_strings_initializer error_strings_initializer;
+
 	std::cout << "HMAC sample" << std::endl;
 	std::cout << "===========" << std::endl;
 	std::cout << std::endl;
