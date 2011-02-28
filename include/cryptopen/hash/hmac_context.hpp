@@ -105,10 +105,10 @@ namespace cryptopen
 				/**
 				 * \brief Finalize the hmac_context and get the resulting buffer.
 				 * \param md The resulting buffer. Cannot be NULL.
-				 * \param len The length of md. Will be updated to indicate the used size after the call.
-				 * \return true on success.
+				 * \param len The length of md.
+				 * \return The number of bytes written or 0 on failure.
 				 */
-				bool finalize(void* md, size_t& len);
+				size_t finalize(void* md, size_t len);
 
 			private:
 

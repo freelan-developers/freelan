@@ -48,18 +48,16 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		bool hmac_context::finalize(void* md, size_t& len)
+		size_t hmac_context::finalize(void* md, size_t len)
 		{
 			unsigned int ilen = static_cast<unsigned int>(len);
 
 			if (HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen))
 			{
-				len = ilen;
-
-				return true;
+				return ilen;
 			}
 
-			return false;
+			return 0;
 		}
 	}
 }
