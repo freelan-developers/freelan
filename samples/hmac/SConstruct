@@ -2,14 +2,14 @@
 # libcryptopen build file.
 #
 sample = 'hmac'
-module = 'cryptopen'
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
 import sys, os
 
-include_path = os.path.join('..', '..', 'include', module)
+include_path = os.path.join('..', '..', 'include')
 lib_path = os.path.join('..', '..', 'lib')
+module = 'cryptopen'
 source = Glob('*.cpp')
 cpppath = [include_path]
 libpath = [lib_path]
