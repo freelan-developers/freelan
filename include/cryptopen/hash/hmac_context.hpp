@@ -47,6 +47,8 @@
 
 #include <openssl/hmac.h>
 
+#include <vector>
+
 namespace cryptopen
 {
 	namespace hash
@@ -73,7 +75,7 @@ namespace cryptopen
 				 *
 				 * The caller is no longer responsible for calling HMAC_CTX_cleanup() on the specified context.
 				 */
-				hmac_context(const HMAC_CTX& ctx) : m_ctx(ctx) {}
+				hmac_context(const HMAC_CTX& ctx) : m_ctx(ctx), m_md(NULL) {}
 
 				/**
 				 * \brief Destroy a hmac_context.
@@ -110,12 +112,41 @@ namespace cryptopen
 				 */
 				size_t finalize(void* md, size_t len);
 
+				/**
+				 * \brief Finalize the hmac_context and get the resulting buffer.
+				 * \return The resulting buffer.
+				 */
+				template <typename T>
+					std::vector<T> finalize();
+
+				/**
+				 * \brief Get the underlying context.
+				 * \return The underlying context.
+				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
+				 */
+				HMAC_CTX& raw();
+
+				/**
+				 * \brief Get the associated message digest algorithm.
+				 * \return The associated message digest algorithm. Might be NULL if no call to initialize() was done.
+				 */
+				const EVP_MD* message_digest_algorithm() const;
+
+				/**
+				 * \brief Get the resulting message digest size.
+				 * \return The resulting message digest size.
+				 * \warning If no call initialize() was done to set a valid message digest algorithm, the behavior is undefined.
+				 */
+				size_t message_digest_size() const;
+
 			private:
 
-				HMAC_CTX m_ctx;
+					HMAC_CTX m_ctx;
+					const EVP_MD* m_md;
 		};
 
-		inline hmac_context::hmac_context()
+		inline hmac_context::hmac_context() :
+			m_md(NULL)
 		{
 			HMAC_CTX_init(&m_ctx);
 		}
@@ -125,14 +156,34 @@ namespace cryptopen
 			HMAC_CTX_cleanup(&m_ctx);
 		}
 
-		inline bool hmac_context::initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl)
-		{
-			return HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl);
-		}
-		
 		inline bool hmac_context::update(const void* data, size_t len)
 		{
 			return HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
+		}
+
+		template <typename T>
+			inline std::vector<T> hmac_context::finalize()
+			{
+				std::vector<T> result(message_digest_size());
+
+				finalize(&result[0], result.size());
+
+				return result;
+			}
+
+		HMAC_CTX& hmac_context::raw()
+		{
+			return m_ctx;
+		}
+
+		const EVP_MD* hmac_context::message_digest_algorithm() const
+		{
+			return m_md;
+		}
+		
+		size_t hmac_context::message_digest_size() const
+		{
+			return EVP_MD_size(m_md);
 		}
 	}
 }

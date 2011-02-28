@@ -48,6 +48,21 @@ namespace cryptopen
 {
 	namespace hash
 	{
+		bool hmac_context::initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl)
+		{
+			if (HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl))
+			{
+				if (md)
+				{
+					m_md = md;
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+		
 		size_t hmac_context::finalize(void* md, size_t len)
 		{
 			unsigned int ilen = static_cast<unsigned int>(len);
