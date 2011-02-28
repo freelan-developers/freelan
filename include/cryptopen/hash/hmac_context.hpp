@@ -45,7 +45,7 @@
 #ifndef CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 #define CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 
-#include "error/cryptographic_exception.hpp"
+#include "../error/cryptographic_exception.hpp"
 
 #include <openssl/opensslv.h>
 #include <openssl/hmac.h>
