@@ -5,6 +5,34 @@ libcryptopen stands a simple, yet complete, C++ wrapper around the OpenSSL crypt
 
 It provides exception safe classes and functions to deal with symmetric ciphers, public key cryptography, certificates, authentication codes, hash functions and data encoding.
 
+Which parts of the OpenSSL crypto library does it provide ?
+-----------------------------------------------------------
+
+In the end: everything.
+
+
+From now on, here is what is currently implemented:
+ - HMAC
+
+And here is what is planned:
+ - Hash methods
+ - Error handling
+ - Threads
+ - Random
+ - ASN1
+ - BIO
+ - EVP
+ - PEM
+ - X509
+ - Public Key Cryptography
+   - DSA
+	 - RSA
+	 - Diffie-Hellman
+ - Symmetric Ciphers
+
+Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
+
+
 Licensing
 ---------
 
