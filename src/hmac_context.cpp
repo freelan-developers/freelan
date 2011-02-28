@@ -62,7 +62,7 @@ namespace cryptopen
 
 			return false;
 		}
-		
+
 		size_t hmac_context::finalize(void* md, size_t len)
 		{
 			unsigned int ilen = static_cast<unsigned int>(len);

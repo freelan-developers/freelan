@@ -117,7 +117,7 @@ namespace cryptopen
 				 * \return The resulting buffer.
 				 */
 				template <typename T>
-					std::vector<T> finalize();
+				std::vector<T> finalize();
 
 				/**
 				 * \brief Get the underlying context.
@@ -141,8 +141,8 @@ namespace cryptopen
 
 			private:
 
-					HMAC_CTX m_ctx;
-					const EVP_MD* m_md;
+				HMAC_CTX m_ctx;
+				const EVP_MD* m_md;
 		};
 
 		inline hmac_context::hmac_context() :
@@ -162,26 +162,26 @@ namespace cryptopen
 		}
 
 		template <typename T>
-			inline std::vector<T> hmac_context::finalize()
-			{
-				std::vector<T> result(message_digest_size());
+		inline std::vector<T> hmac_context::finalize()
+		{
+			std::vector<T> result(message_digest_size());
 
-				finalize(&result[0], result.size());
+			finalize(&result[0], result.size());
 
-				return result;
-			}
+			return result;
+		}
 
-		HMAC_CTX& hmac_context::raw()
+		inline HMAC_CTX& hmac_context::raw()
 		{
 			return m_ctx;
 		}
 
-		const EVP_MD* hmac_context::message_digest_algorithm() const
+		inline const EVP_MD* hmac_context::message_digest_algorithm() const
 		{
 			return m_md;
 		}
-		
-		size_t hmac_context::message_digest_size() const
+
+		inline size_t hmac_context::message_digest_size() const
 		{
 			return EVP_MD_size(m_md);
 		}
