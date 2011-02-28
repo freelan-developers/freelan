@@ -14,11 +14,12 @@ In the end: everything.
 From now on, here is what is currently implemented:
 
  - HMAC
+ - Error handling
 
 And here is what is planned:
 
+ - Exceptions
  - Hash methods
- - Error handling
  - Threads
  - Random
  - ASN1
