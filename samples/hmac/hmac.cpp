@@ -41,14 +41,21 @@ int main()
 	std::cout << "===========" << std::endl;
 	std::cout << std::endl;
 
-	const std::string key = "my secret key";
-	const std::string data = "some data";
+	const std::string key = "this is a very long and secret key";
+	const std::string data = "some data from which we will compute the HMAC";
 
 	std::cout << "Key: " << key << std::endl;
 	std::cout << "Data: " << data << std::endl;
 	std::cout << std::endl;
 
-	hmac("SHA-256", key, data, EVP_sha256());
+	hmac("MD5", key, data, EVP_md5());
+	hmac("SHA", key, data, EVP_sha());
+	hmac("SHA1", key, data, EVP_sha1());
+	hmac("SHA256", key, data, EVP_sha256());
+	hmac("DSS", key, data, EVP_dss());
+	hmac("DSS1", key, data, EVP_dss1());
+	hmac("MDC2", key, data, EVP_mdc2());
+	hmac("RIPEMD160", key, data, EVP_ripemd160());
 
 	return EXIT_SUCCESS;
 }
