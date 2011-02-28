@@ -55,14 +55,14 @@ namespace cryptopen
 	 * This initializer template provides a RAII method of initializing modules.
 	 */
 	template <void initialize(), void cleanup()>
-	class Initializer : public boost::noncopyable
+	class initializer : public boost::noncopyable
 	{
 		public:
 
 			/**
 			 * \brief Create the initializer and call initialize.
 			 */
-			Initializer()
+			initializer()
 			{
 				initialize();
 			}
@@ -70,7 +70,7 @@ namespace cryptopen
 			/**
 			 * \brief Destroy the initializer and call cleanup.
 			 */
-			~Initializer()
+			~initializer()
 			{
 				cleanup();
 			}
