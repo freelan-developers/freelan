@@ -73,14 +73,6 @@ namespace cryptopen
 				hmac_context();
 
 				/**
-				 * \brief Create a new hmac_context by taking ownership of a specified HMAC_CTX.
-				 * \param ctx The HMAC_CTX. ctx must have been initialized with HMAC_CTX_init().
-				 *
-				 * The caller is no longer responsible for calling HMAC_CTX_cleanup() on the specified context.
-				 */
-				hmac_context(const HMAC_CTX& ctx) : m_ctx(ctx), m_md(NULL) {}
-
-				/**
 				 * \brief Destroy a hmac_context.
 				 *
 				 * Calls HMAC_CTX_cleanup() on the internal HMAC_CTX.
