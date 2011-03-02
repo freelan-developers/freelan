@@ -50,6 +50,8 @@
 #include <openssl/opensslv.h>
 #include <openssl/hmac.h>
 
+#include <boost/noncopyable.hpp>
+
 #include <vector>
 
 namespace cryptopen
@@ -62,8 +64,10 @@ namespace cryptopen
 		 * The hmac_context class ease the computation of a HMAC.
 		 *
 		 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
+		 *
+		 * A hmac_context is non-copyable by design.
 		 */
-		class hmac_context
+		class hmac_context : public boost::noncopyable
 		{
 			public:
 
@@ -102,6 +106,8 @@ namespace cryptopen
 				 * \param md The resulting buffer. Cannot be NULL.
 				 * \param len The length of md.
 				 * \return The number of bytes written or 0 on failure.
+				 *
+				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
 				size_t finalize(void* md, size_t len);
 
