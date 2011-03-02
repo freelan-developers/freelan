@@ -52,6 +52,7 @@
 #include <boost/noncopyable.hpp>
 
 #include <vector>
+#include <string>
 
 namespace cryptopen
 {
@@ -69,6 +70,22 @@ namespace cryptopen
 		class message_digest_context : public boost::noncopyable
 		{
 			public:
+
+				/**
+				 * \brief Get a message digest by its name.
+				 * \param name The message digest name.
+				 * \return The message digest or NULL if no matching message digest is found.
+				 * \see message_digest_name
+				 */
+				static const EVP_MD* get_message_digest_by_name(const std::string& name);
+
+				/**
+				 * \brief Get a message digest by its NID.
+				 * \param nid The message digest NID.
+				 * \return The message digest or NULL if no matching message digest is found.
+				 * \see message_digest_type
+				 */
+				static const EVP_MD* get_message_digest_by_type(int nid);
 
 				/**
 				 * \brief Create a new message_digest_context.
@@ -163,10 +180,26 @@ namespace cryptopen
 				 */
 				int message_digest_public_key_type() const;
 
+				/**
+				 * \brief Get the message digest name.
+				 * \warning The use of this method is discouraged as it may disappear in future versions of OpenSSL.
+				 */
+				std::string message_digest_name() const;
+
 			private:
 
 				EVP_MD_CTX m_ctx;
 		};
+
+		inline const EVP_MD* message_digest_context::get_message_digest_by_name(const std::string& name)
+		{
+			return EVP_get_digestbyname(name.c_str());
+		}
+
+		inline const EVP_MD* message_digest_context::get_message_digest_by_type(int nid)
+		{
+			return EVP_get_digestbynid(nid);
+		}
 
 		inline message_digest_context::message_digest_context()
 		{
@@ -226,6 +259,11 @@ namespace cryptopen
 		inline int message_digest_context::message_digest_public_key_type() const
 		{
 			return EVP_MD_pkey_type(message_digest_method());
+		}
+		
+		inline std::string message_digest_context::message_digest_name() const
+		{
+			return std::string(OBJ_nid2sn(message_digest_type()));
 		}
 	}
 }
