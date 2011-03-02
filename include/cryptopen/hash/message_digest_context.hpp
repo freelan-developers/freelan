@@ -143,14 +143,32 @@ namespace cryptopen
 				 */
 				size_t message_digest_size() const;
 
+				/**
+				 * \brief Get the resulting message digest block size.
+				 * \return The resulting message digest block size.
+				 * \warning If no call initialize() was done to set a valid message digest method, the behavior is undefined.
+				 */
+				size_t message_digest_block_size() const;
+
+				/**
+				 * \brief Get the NID of the OBJECT IDENTIFIER representing the current message digest.
+				 * \return The NID.
+				 * \warning If no call initialize() was done to set a valid message digest method, the behavior is undefined.
+				 */
+				int message_digest_type() const;
+
+				/**
+				 * \brief Get the NID of the public key signing algorithm associated with the message digest.
+				 * \warning The use of this method is discouraged as it may disappear in future versions of OpenSSL.
+				 */
+				int message_digest_public_key_type() const;
+
 			private:
 
 				EVP_MD_CTX m_ctx;
-				const EVP_MD* m_md;
 		};
 
-		inline message_digest_context::message_digest_context() :
-			m_md(NULL)
+		inline message_digest_context::message_digest_context()
 		{
 			EVP_MD_CTX_init(&m_ctx);
 		}
@@ -187,12 +205,27 @@ namespace cryptopen
 
 		inline const EVP_MD* message_digest_context::message_digest_method() const
 		{
-			return m_md;
+			return EVP_MD_CTX_md(&m_ctx);
 		}
 
 		inline size_t message_digest_context::message_digest_size() const
 		{
-			return EVP_MD_size(m_md);
+			return EVP_MD_CTX_size(&m_ctx);
+		}
+		
+		inline size_t message_digest_context::message_digest_block_size() const
+		{
+			return EVP_MD_CTX_block_size(&m_ctx);
+		}
+
+		inline int message_digest_context::message_digest_type() const
+		{
+			return EVP_MD_CTX_type(&m_ctx);
+		}
+		
+		inline int message_digest_context::message_digest_public_key_type() const
+		{
+			return EVP_MD_pkey_type(message_digest_method());
 		}
 	}
 }

@@ -55,8 +55,6 @@ namespace cryptopen
 			assert(md);
 
 			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, md, impl));
-
-			m_md = md;
 		}
 
 		size_t message_digest_context::finalize(void* md, size_t len)
