@@ -16,10 +16,10 @@ From now on, here is what is currently implemented:
  - HMAC
  - Error handling
  - Exceptions
+ - Hash methods
 
 And here is what is planned:
 
- - Hash methods
  - PBKDF2
  - Threads
  - Random
