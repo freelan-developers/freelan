@@ -46,6 +46,7 @@
 #define CRYPTOPEN_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "../initializer.hpp"
 
 #include <openssl/evp.h>
 
@@ -58,6 +59,13 @@ namespace cryptopen
 {
 	namespace hash
 	{
+		/**
+		 * \brief The initializer.
+		 *
+		 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions (like message_digest_context::get_message_digest_by_name()).
+		 */
+		typedef initializer<OpenSSL_add_all_digests, EVP_cleanup> initializer;
+
 		/**
 		 * \brief A message digest context class.
 		 *
@@ -76,6 +84,8 @@ namespace cryptopen
 				 * \param name The message digest name.
 				 * \return The message digest or NULL if no matching message digest is found.
 				 * \see message_digest_name
+				 * \warning An initializer must exist for this function to succeed.
+				 * \see cryptopen::hash::initializer
 				 */
 				static const EVP_MD* get_message_digest_by_name(const std::string& name);
 
@@ -130,7 +140,7 @@ namespace cryptopen
 				 * \return The resulting buffer.
 				 */
 				template <typename T>
-				std::vector<T> finalize();
+					std::vector<T> finalize();
 
 				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
@@ -217,14 +227,14 @@ namespace cryptopen
 		}
 
 		template <typename T>
-		inline std::vector<T> message_digest_context::finalize()
-		{
-			std::vector<T> result(message_digest_size());
+			inline std::vector<T> message_digest_context::finalize()
+			{
+				std::vector<T> result(message_digest_size());
 
-			finalize(&result[0], result.size());
+				finalize(&result[0], result.size());
 
-			return result;
-		}
+				return result;
+			}
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)
 		{
@@ -245,7 +255,7 @@ namespace cryptopen
 		{
 			return EVP_MD_CTX_size(&m_ctx);
 		}
-		
+
 		inline size_t message_digest_context::message_digest_block_size() const
 		{
 			return EVP_MD_CTX_block_size(&m_ctx);
@@ -255,12 +265,12 @@ namespace cryptopen
 		{
 			return EVP_MD_CTX_type(&m_ctx);
 		}
-		
+
 		inline int message_digest_context::message_digest_public_key_type() const
 		{
 			return EVP_MD_pkey_type(message_digest_method());
 		}
-		
+
 		inline std::string message_digest_context::message_digest_name() const
 		{
 			return std::string(OBJ_nid2sn(message_digest_type()));
