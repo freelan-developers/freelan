@@ -64,7 +64,7 @@ namespace cryptopen
 		 *
 		 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 		 *
-		 * message_digest_context is noncopyable by design, however you may clone an existing message_digest_context using clone(). This is useful when you have to compute the hash of several values that differ only in their last bytes.
+		 * message_digest_context is noncopyable by design, however you may copy an existing message_digest_context using copy(). This is useful when you have to compute the hash of several values that differ only in their last bytes.
 		 */
 		class message_digest_context : public boost::noncopyable
 		{
@@ -116,6 +116,14 @@ namespace cryptopen
 				std::vector<T> finalize();
 
 				/**
+				 * \brief Copy an existing message_digest_context, including its current state.
+				 * \param ctx A message_digest_context to copy.
+				 *
+				 * This is useful if large amounts of data are to be hashed which only differ in the last few bytes.
+				 */
+				void copy(const message_digest_context& ctx);
+
+				/**
 				 * \brief Get the underlying context.
 				 * \return The underlying context.
 				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
@@ -165,6 +173,11 @@ namespace cryptopen
 			finalize(&result[0], result.size());
 
 			return result;
+		}
+
+		inline void message_digest_context::copy(const message_digest_context& ctx)
+		{
+			error::throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx));
 		}
 
 		inline EVP_MD_CTX& message_digest_context::raw()
