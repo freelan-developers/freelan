@@ -64,7 +64,7 @@ namespace cryptopen
 		 *
 		 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions (like message_digest_context::get_message_digest_by_name()).
 		 */
-		typedef initializer<OpenSSL_add_all_digests, EVP_cleanup> initializer;
+		typedef initializer<OpenSSL_add_all_digests, EVP_cleanup> message_digest_initializer;
 
 		/**
 		 * \brief A message digest context class.
@@ -85,7 +85,7 @@ namespace cryptopen
 				 * \return The message digest or NULL if no matching message digest is found.
 				 * \see message_digest_name
 				 * \warning An initializer must exist for this function to succeed.
-				 * \see cryptopen::hash::initializer
+				 * \see cryptopen::hash::message_digest_initializer
 				 */
 				static const EVP_MD* get_message_digest_by_name(const std::string& name);
 
