@@ -62,21 +62,21 @@ int main()
 	std::cout << "Data: " << data << std::endl;
 	std::cout << std::endl;
 
-	hmac(data, EVP_md5());
-	hmac(data, EVP_md4());
-	hmac(data, EVP_sha1());
-	hmac(data, EVP_sha());
-	hmac(data, EVP_sha224());
-	hmac(data, EVP_sha256());
-	hmac(data, EVP_sha384());
-	hmac(data, EVP_sha512());
+	message_digest(data, EVP_md5());
+	message_digest(data, EVP_md4());
+	message_digest(data, EVP_sha1());
+	message_digest(data, EVP_sha());
+	message_digest(data, EVP_sha224());
+	message_digest(data, EVP_sha256());
+	message_digest(data, EVP_sha384());
+	message_digest(data, EVP_sha512());
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
-	hmac(data, EVP_mdc2());
-	hmac(data, EVP_whirlpool());
+	message_digest(data, EVP_mdc2());
+	message_digest(data, EVP_whirlpool());
 #else
-	hmac(data, EVP_md2());
+	message_digest(data, EVP_md2());
 #endif
-	hmac(data, EVP_ripemd160());
+	message_digest(data, EVP_ripemd160());
 
 	return EXIT_SUCCESS;
 }
