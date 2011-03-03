@@ -87,7 +87,7 @@ namespace cryptopen
 		 *
 		 * The list of the available message digest algorithms depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 		 *
-		 * Some versions of OpenSSL only provide SHA1 as a hash method. In this case, PBKDF2() silently falls back to SHA1. To prevent this behavior, set NO_PBKDF2_FALLBACK.
+		 * Some versions of OpenSSL only provide SHA1 as a hash method. In this case, PBKDF2() silently falls back to SHA1. To prevent this behavior, set NO_PBKDF2_FALLBACK when compiling libcryptopen.
 		 */
 		template <typename T>
 		std::vector<T> pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const EVP_MD* md, unsigned int iter = 1000);
