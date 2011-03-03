@@ -50,18 +50,13 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		void hmac_context::initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl)
+		void hmac_context::initialize(const void* key, size_t key_len, const message_digest_algorithm* _algorithm, ENGINE* impl)
 		{
 #if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl);
+			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl);
 #else
-			error::throw_error_if_not(HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), md, impl));
+			error::throw_error_if_not(HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl));
 #endif
-
-			if (md)
-			{
-				m_md = md;
-			}
 		}
 
 		size_t hmac_context::finalize(void* md, size_t len)

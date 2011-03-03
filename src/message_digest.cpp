@@ -51,14 +51,13 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		size_t message_digest(void* out, size_t out_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+		size_t message_digest(void* out, size_t out_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
 			assert(out);
 			assert(data);
-			assert(md);
 
 			message_digest_context ctx;
-			ctx.initialize(md, impl);
+			ctx.initialize(algorithm, impl);
 			ctx.update(data, len);
 			return ctx.finalize(out, out_len);
 		}

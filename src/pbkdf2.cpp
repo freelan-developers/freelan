@@ -66,7 +66,7 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		size_t pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, void* outbuf, size_t outbuflen, const EVP_MD* md, unsigned int iter)
+		size_t pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, void* outbuf, size_t outbuflen, const message_digest_algorithm& algorithm, unsigned int iter)
 		{
 			PKCS5_PBKDF2_HMAC(
 					static_cast<const char*>(password),
@@ -74,7 +74,7 @@ namespace cryptopen
 					static_cast<const unsigned char*>(salt),
 					static_cast<int>(saltlen),
 					static_cast<int>(iter),
-					md,
+					algorithm.raw(),
 					static_cast<int>(outbuflen),
 					static_cast<unsigned char*>(outbuf)
 					);

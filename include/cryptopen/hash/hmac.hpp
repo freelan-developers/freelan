@@ -45,6 +45,8 @@
 #ifndef CRYPTOPEN_HASH_HMAC_HPP
 #define CRYPTOPEN_HASH_HMAC_HPP
 
+#include "message_digest_algorithm.hpp"
+
 #include <openssl/hmac.h>
 
 #include <vector>
@@ -55,17 +57,17 @@ namespace cryptopen
 	{
 		/**
 		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
-		 * \param out The output buffer. Must be at least hmac_message_digest_size(md) bytes long.
+		 * \param out The output buffer. Must be at least as big as the message digest algorithm result size.
 		 * \param out_len The output buffer length. 
 		 * \param key The key to use.
 		 * \param key_len The key length.
 		 * \param data The buffer.
 		 * \param len The buffer length.
-		 * \param md The digest method.
+		 * \param algorithm The message digest algorithm to use.
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
-		 * \return The count of bytes written to out. Should be equal to hmac_message_digest_size(md).
+		 * \return The count of bytes written to out. Should be equal to algorithm.result_size().
 		 */
-		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		/**
 		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
@@ -73,33 +75,21 @@ namespace cryptopen
 		 * \param key_len The key length.
 		 * \param data The buffer.
 		 * \param len The buffer length.
-		 * \param md The digest method.
+		 * \param algorithm The message digest algorithm to use.
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The hmac.
 		 */
 		template <typename T>
-		std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
-
-		/**
-		 * \brief Get the size of a HMAC generated with the specified hash method.
-		 * \param md The digest method.
-		 * \return The size of a HMAC generated with md.
-		 */
-		size_t hmac_message_digest_size(const EVP_MD* md);
+		std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		template <typename T>
-		inline std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+		inline std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
-			std::vector<T> result(hmac_message_digest_size(md));
+			std::vector<T> result(algorithm.result_size());
 
-			hmac(&result[0], result.size(), key, key_len, data, len, md, impl);
+			hmac(&result[0], result.size(), key, key_len, data, len, algorithm, impl);
 
 			return result;
-		}
-
-		inline size_t hmac_message_digest_size(const EVP_MD* md)
-		{
-			return EVP_MD_size(md);
 		}
 	}
 }

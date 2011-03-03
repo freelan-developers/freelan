@@ -51,15 +51,14 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
 			assert(out);
 			assert(key);
 			assert(data);
-			assert(md);
 
 			hmac_context ctx;
-			ctx.initialize(key, key_len, md, impl);
+			ctx.initialize(key, key_len, &algorithm, impl);
 			ctx.update(data, len);
 			return ctx.finalize(out, out_len);
 		}

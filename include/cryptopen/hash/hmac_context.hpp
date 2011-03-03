@@ -46,6 +46,7 @@
 #define CRYPTOPEN_HASH_HMAC_CONTEXT_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "message_digest_algorithm.hpp"
 
 #include <openssl/opensslv.h>
 #include <openssl/hmac.h>
@@ -87,12 +88,12 @@ namespace cryptopen
 				 * \brief Initialize the hmac_context.
 				 * \param key The key to use. If key is NULL, the previously used key is taken.
 				 * \param key_len The key length. If key is NULL, key_len is not used.
-				 * \param md The message digest (hash) method to use. If md is NULL, the previously used message digest method is taken.
+				 * \param algorithm The message digest algorithm to use. If algorithm is NULL, then the previously specified algorithm is reused.
 				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 				 */
-				void initialize(const void* key, size_t key_len, const EVP_MD* md, ENGINE* impl = NULL);
+				void initialize(const void* key, size_t key_len, const message_digest_algorithm* algorithm, ENGINE* impl = NULL);
 
 				/**
 				 * \brief Update the hmac_context with some data.
@@ -116,7 +117,16 @@ namespace cryptopen
 				 * \return The resulting buffer.
 				 */
 				template <typename T>
-				std::vector<T> finalize();
+					std::vector<T> finalize();
+
+				/**
+				 * \brief Copy an existing hmac_context, including its current state.
+				 * \param ctx A hmac_context to copy.
+				 * \warning This function uses a const-cast on the ctx parameter to remove its constness. While the object shouldn't be modified, this is a limitation of the OpenSSL API and sadly can't be avoided.
+				 *
+				 * This is useful if large amounts of data are to be hashed which only differ in the last few bytes.
+				 */
+				void copy(const hmac_context& ctx);
 
 				/**
 				 * \brief Get the underlying context.
@@ -126,26 +136,17 @@ namespace cryptopen
 				HMAC_CTX& raw();
 
 				/**
-				 * \brief Get the associated message digest method.
-				 * \return The associated message digest method. Might be NULL if no call to initialize() was done.
+				 * \brief Get the associated message digest algorithm.
+				 * \return The associated message digest algorithm. If no call to initialize() was done to specify a message digest algorithm, the behavior is undefined.
 				 */
-				const EVP_MD* message_digest_method() const;
-
-				/**
-				 * \brief Get the resulting message digest size.
-				 * \return The resulting message digest size.
-				 * \warning If no call initialize() was done to set a valid message digest method, the behavior is undefined.
-				 */
-				size_t message_digest_size() const;
+				message_digest_algorithm algorithm() const;
 
 			private:
 
 				HMAC_CTX m_ctx;
-				const EVP_MD* m_md;
 		};
 
-		inline hmac_context::hmac_context() :
-			m_md(NULL)
+		inline hmac_context::hmac_context()
 		{
 			HMAC_CTX_init(&m_ctx);
 		}
@@ -167,11 +168,18 @@ namespace cryptopen
 		template <typename T>
 		inline std::vector<T> hmac_context::finalize()
 		{
-			std::vector<T> result(message_digest_size());
+			std::vector<T> result(algorithm().result_size());
 
 			finalize(&result[0], result.size());
 
 			return result;
+		}
+
+		inline void hmac_context::copy(const hmac_context& ctx)
+		{
+			//WARNING: Here we assume that the underlying library used the wrong non-const prototype for the src parameter of HMAC_CTX_copy().
+			// This is likely (and I can't see why this couldn't be const), however it remains risky to use this ugly trick.
+			error::throw_error_if_not(HMAC_CTX_copy(&m_ctx, const_cast<HMAC_CTX*>(&ctx.m_ctx)));
 		}
 
 		inline HMAC_CTX& hmac_context::raw()
@@ -179,14 +187,10 @@ namespace cryptopen
 			return m_ctx;
 		}
 
-		inline const EVP_MD* hmac_context::message_digest_method() const
+		inline message_digest_algorithm hmac_context::algorithm() const
 		{
-			return m_md;
-		}
-
-		inline size_t hmac_context::message_digest_size() const
-		{
-			return EVP_MD_size(m_md);
+			//WARNING: Here we directly use the undocumented HMAC_CTX.md field. This is unlikely to change, but if it ever does, we'll have to find a better way of doing things nicely.
+			return message_digest_algorithm(m_ctx.md);
 		}
 	}
 }

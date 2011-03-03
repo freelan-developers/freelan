@@ -46,13 +46,13 @@
 #define CRYPTOPEN_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "message_digest_algorithm.hpp"
 
 #include <openssl/evp.h>
 
 #include <boost/noncopyable.hpp>
 
 #include <vector>
-#include <string>
 
 namespace cryptopen
 {
@@ -85,12 +85,12 @@ namespace cryptopen
 
 				/**
 				 * \brief Initialize the message_digest_context.
-				 * \param md The message digest (hash) method to use. md cannot be NULL.
+				 * \param algorithm The message digest algorithm to use.
 				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 				 */
-				void initialize(const EVP_MD* md, ENGINE* impl = NULL);
+				void initialize(const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 				/**
 				 * \brief Update the message_digest_context with some data.
@@ -132,10 +132,10 @@ namespace cryptopen
 				EVP_MD_CTX& raw();
 
 				/**
-				 * \brief Get the associated message digest method.
-				 * \return The associated message digest method. Might be NULL if no call to initialize() was done.
+				 * \brief Get the associated message digest algorithm.
+				 * \return The associated message digest algorithm. If no call to initialize was done, the behavior is undefined.
 				 */
-				const EVP_MD* message_digest() const;
+				message_digest_algorithm algorithm() const;
 
 			private:
 
@@ -160,7 +160,7 @@ namespace cryptopen
 		template <typename T>
 			inline std::vector<T> message_digest_context::finalize()
 			{
-				std::vector<T> result(message_digest_size());
+				std::vector<T> result(algorithm().result_size());
 
 				finalize(&result[0], result.size());
 
@@ -177,9 +177,9 @@ namespace cryptopen
 			return m_ctx;
 		}
 
-		inline const EVP_MD* message_digest_context::message_digest() const
+		inline message_digest_algorithm message_digest_context::algorithm() const
 		{
-			return EVP_MD_CTX_md(&m_ctx);
+			return message_digest_algorithm(EVP_MD_CTX_md(&m_ctx));
 		}
 	}
 }

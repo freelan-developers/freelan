@@ -45,10 +45,11 @@
 #ifndef CRYPTOPEN_HASH_MESSAGE_DIGEST_HPP
 #define CRYPTOPEN_HASH_MESSAGE_DIGEST_HPP
 
+#include "message_digest_algorithm.hpp"
+
 #include <openssl/evp.h>
 
 #include <vector>
-#include <string>
 
 namespace cryptopen
 {
@@ -60,29 +61,29 @@ namespace cryptopen
 		 * \param out_len The output buffer length. 
 		 * \param data The buffer.
 		 * \param len The buffer length.
-		 * \param md The digest method.
+		 * \param algorithm The message digest algorithm to use.
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The count of bytes written to out. Should be equal to the size of the message digest algorithm.
 		 */
-		size_t message_digest(void* out, size_t out_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+		size_t message_digest(void* out, size_t out_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		/**
 		 * \brief Compute a message digest for the given buffer, using the given digest method.
 		 * \param data The buffer.
 		 * \param len The buffer length.
-		 * \param md The digest method.
+		 * \param algorithm The message digest algorithm to use.
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The message digest.
 		 */
 		template <typename T>
-			std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+			std::vector<T> message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		template <typename T>
-			inline std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+			inline std::vector<T> message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 			{
-				std::vector<T> result(message_digest_size(md));
+				std::vector<T> result(algorithm.result_size());
 
-				message_digest(&result[0], result.size(), data, len, md, impl);
+				message_digest(&result[0], result.size(), data, len, algorithm, impl);
 
 				return result;
 			}

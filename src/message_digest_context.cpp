@@ -50,11 +50,9 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		void message_digest_context::initialize(const EVP_MD* md, ENGINE* impl)
+		void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			assert(md);
-
-			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, md, impl));
+			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl));
 		}
 
 		size_t message_digest_context::finalize(void* md, size_t len)
