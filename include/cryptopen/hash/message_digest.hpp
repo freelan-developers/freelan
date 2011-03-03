@@ -48,11 +48,30 @@
 #include <openssl/evp.h>
 
 #include <vector>
+#include <string>
 
 namespace cryptopen
 {
 	namespace hash
 	{
+		/**
+		 * \brief Get a message digest by its name.
+		 * \param name The message digest name.
+		 * \return The message digest or NULL if no matching message digest is found.
+		 * \see message_digest_name
+		 * \warning An initializer must exist for this function to succeed.
+		 * \see cryptopen::hash::message_digest_initializer
+		 */
+		const EVP_MD* get_message_digest_by_name(const std::string& name);
+
+		/**
+		 * \brief Get a message digest by its NID.
+		 * \param nid The message digest NID.
+		 * \return The message digest or NULL if no matching message digest is found.
+		 * \see message_digest_type
+		 */
+		const EVP_MD* get_message_digest_by_type(int nid);
+
 		/**
 		 * \brief Compute a message digest for the given buffer, using the given digest method.
 		 * \param out The output buffer. Must be at least message_digest_size(md) bytes long.
@@ -74,7 +93,7 @@ namespace cryptopen
 		 * \return The message digest.
 		 */
 		template <typename T>
-		std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+			std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
 
 		/**
 		 * \brief Get the size of a HMAC generated with the specified hash method.
@@ -83,15 +102,25 @@ namespace cryptopen
 		 */
 		size_t message_digest_size(const EVP_MD* md);
 
-		template <typename T>
-		inline std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+		inline const EVP_MD* get_message_digest_by_name(const std::string& name)
 		{
-			std::vector<T> result(message_digest_size(md));
-
-			message_digest(&result[0], result.size(), data, len, md, impl);
-
-			return result;
+			return EVP_get_digestbyname(name.c_str());
 		}
+
+		inline const EVP_MD* get_message_digest_by_type(int nid)
+		{
+			return EVP_get_digestbynid(nid);
+		}
+
+		template <typename T>
+			inline std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+			{
+				std::vector<T> result(message_digest_size(md));
+
+				message_digest(&result[0], result.size(), data, len, md, impl);
+
+				return result;
+			}
 
 		inline size_t message_digest_size(const EVP_MD* md)
 		{

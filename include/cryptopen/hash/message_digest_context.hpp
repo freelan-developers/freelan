@@ -80,24 +80,6 @@ namespace cryptopen
 			public:
 
 				/**
-				 * \brief Get a message digest by its name.
-				 * \param name The message digest name.
-				 * \return The message digest or NULL if no matching message digest is found.
-				 * \see message_digest_name
-				 * \warning An initializer must exist for this function to succeed.
-				 * \see cryptopen::hash::message_digest_initializer
-				 */
-				static const EVP_MD* get_message_digest_by_name(const std::string& name);
-
-				/**
-				 * \brief Get a message digest by its NID.
-				 * \param nid The message digest NID.
-				 * \return The message digest or NULL if no matching message digest is found.
-				 * \see message_digest_type
-				 */
-				static const EVP_MD* get_message_digest_by_type(int nid);
-
-				/**
 				 * \brief Create a new message_digest_context.
 				 */
 				message_digest_context();
@@ -161,7 +143,7 @@ namespace cryptopen
 				 * \brief Get the associated message digest method.
 				 * \return The associated message digest method. Might be NULL if no call to initialize() was done.
 				 */
-				const EVP_MD* message_digest_method() const;
+				const EVP_MD* message_digest() const;
 
 				/**
 				 * \brief Get the resulting message digest size.
@@ -201,16 +183,6 @@ namespace cryptopen
 				EVP_MD_CTX m_ctx;
 		};
 
-		inline const EVP_MD* message_digest_context::get_message_digest_by_name(const std::string& name)
-		{
-			return EVP_get_digestbyname(name.c_str());
-		}
-
-		inline const EVP_MD* message_digest_context::get_message_digest_by_type(int nid)
-		{
-			return EVP_get_digestbynid(nid);
-		}
-
 		inline message_digest_context::message_digest_context()
 		{
 			EVP_MD_CTX_init(&m_ctx);
@@ -246,7 +218,7 @@ namespace cryptopen
 			return m_ctx;
 		}
 
-		inline const EVP_MD* message_digest_context::message_digest_method() const
+		inline const EVP_MD* message_digest_context::message_digest() const
 		{
 			return EVP_MD_CTX_md(&m_ctx);
 		}
@@ -268,7 +240,7 @@ namespace cryptopen
 
 		inline int message_digest_context::message_digest_public_key_type() const
 		{
-			return EVP_MD_pkey_type(message_digest_method());
+			return EVP_MD_pkey_type(message_digest());
 		}
 
 		inline std::string message_digest_context::message_digest_name() const
