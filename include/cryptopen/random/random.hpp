@@ -84,6 +84,24 @@ namespace cryptopen
 		 */
 		bool get_pseudo_random_bytes(void* buf, size_t buf_len);
 
+		/**
+		 * \brief Mix some bytes into the PRNG state.
+		 * \param buf The buffer that contains the bytes.
+		 * \param buf_len The size of buf.
+		 * \param entropy An estimate (lower bound) of how much randomness is contained in buf, measured in bytes. See RFC 1750 for details.
+		 */
+		void add(const void* buf, size_t buf_len, double entropy);
+
+		/**
+		 * \brief Mix some bytes into the PRNG state.
+		 * \param buf The buffer that contains the bytes.
+		 * \param buf_len The size of buf.
+		 * \see add
+		 *
+		 * A call to seed(buf, buf_len) is equivalent to a call of add(buf, buf_len, buf_len).
+		 */
+		void seed(const void* buf, size_t buf_len);
+
 		inline void set_randomization_engine(ENGINE* engine)
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
@@ -101,6 +119,16 @@ namespace cryptopen
 			error::throw_error_if(result < 0);
 
 			return (result == 1);
+		}
+
+		inline void add(const void* buf, size_t buf_len, double entropy)
+		{
+			RAND_add(buf, static_cast<int>(buf_len), entropy);
+		}
+
+		inline void seed(const void* buf, size_t buf_len)
+		{
+			RAND_seed(buf, static_cast<int>(buf_len));
 		}
 	}
 }
