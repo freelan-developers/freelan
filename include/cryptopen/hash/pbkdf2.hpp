@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_HASH_PBKDF2_HPP
 #define CRYPTOPEN_HASH_PBKDF2_HPP
 
+#include "../error/cryptographic_exception.hpp"
 #include "message_digest.hpp"
 #include "message_digest_algorithm.hpp"
 
