@@ -71,7 +71,7 @@ namespace cryptopen
 		 * \param len The buffer length.
 		 * \param md The digest method.
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
-		 * \return The hmac.
+		 * \return The message digest.
 		 */
 		template <typename T>
 		std::vector<T> hmac(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
