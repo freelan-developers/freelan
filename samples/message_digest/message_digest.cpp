@@ -31,20 +31,22 @@ std::string to_hex(const void* buf, size_t buf_len)
 	return to_hex(static_cast<const unsigned char*>(buf), static_cast<const unsigned char*>(buf) + buf_len);
 }
 
-void message_digest(const std::string& data, const EVP_MD* md)
+void message_digest(const std::string& name, const std::string& data)
 {
 	try
 	{
+		cryptopen::hash::message_digest_algorithm algorithm(name);
+
 		cryptopen::hash::message_digest_context ctx;
 
-		ctx.initialize(md);
+		ctx.initialize(algorithm);
 		ctx.update(data.c_str(), data.size());
 		std::vector<unsigned char> message_digest = ctx.finalize<unsigned char>();
-		std::cout << ctx.message_digest_name() << ": " << to_hex(message_digest.begin(), message_digest.end()) << std::endl;
+		std::cout << name << ": " << to_hex(message_digest.begin(), message_digest.end()) << std::endl;
 	}
 	catch (cryptopen::error::cryptographic_exception& ex)
 	{
-		std::cerr << "Error: " << ex.what() << std::endl;
+		std::cerr << name << ": " << ex.what() << std::endl;
 	}
 }
 
@@ -62,21 +64,21 @@ int main()
 	std::cout << "Data: " << data << std::endl;
 	std::cout << std::endl;
 
-	message_digest(data, EVP_md5());
-	message_digest(data, EVP_md4());
-	message_digest(data, EVP_sha1());
-	message_digest(data, EVP_sha());
-	message_digest(data, EVP_sha224());
-	message_digest(data, EVP_sha256());
-	message_digest(data, EVP_sha384());
-	message_digest(data, EVP_sha512());
+	message_digest("MD5", data);
+	message_digest("MD4", data);
+	message_digest("SHA1", data);
+	message_digest("SHA", data);
+	message_digest("SHA224", data);
+	message_digest("SHA256", data);
+	message_digest("SHA384", data);
+	message_digest("SHA512", data);
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
-	message_digest(data, EVP_mdc2());
-	message_digest(data, EVP_whirlpool());
+	message_digest("MDC2", data);
+	message_digest("whirlpool", data);
 #else
-	message_digest(data, EVP_md2());
+	message_digest("MD2", data);
 #endif
-	message_digest(data, EVP_ripemd160());
+	message_digest("RIPEMD160", data);
 
 	return EXIT_SUCCESS;
 }
