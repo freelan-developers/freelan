@@ -45,10 +45,26 @@
 #ifndef CRYPTOPEN_RANDOM_RANDOM_HPP
 #define CRYPTOPEN_RANDOM_RANDOM_HPP
 
+#include "../error/cryptographic_exception.hpp"
+
+#include <openssl/rand.h>
+
 namespace cryptopen
 {
 	namespace random
 	{
+		/**
+		 * \brief Set the randomization engine.
+		 * \param engine The randomization engine.
+		 *
+		 * On error, a cryptographic_exception is thrown.
+		 */
+		void set_randomization_engine(ENGINE* engine);
+
+		inline void set_randomization_engine(ENGINE* engine)
+		{
+			error::throw_error_if_not(RAND_set_rand_engine(engine));
+		}
 	}
 }
 
