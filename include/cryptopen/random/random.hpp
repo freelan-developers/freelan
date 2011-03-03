@@ -61,9 +61,46 @@ namespace cryptopen
 		 */
 		void set_randomization_engine(ENGINE* engine);
 
+		/**
+		 * \brief Get truly random bytes.
+		 * \param buf The buffer to fill with the random bytes. Its content will be mixed in the enthropy pool unless disabled at OpenSSL compile time.
+		 * \param buf_len The number of random bytes to request. buf must be big enough to hold the data.
+		 * \see get_pseudo_random_bytes
+		 *
+		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 */
+		void get_random_bytes(void* buf, size_t buf_len);
+
+		/**
+		 * \brief Get pseudo random bytes.
+		 * \param buf The buffer to fill with the random bytes. Its content will be mixed in the enthropy pool unless disabled at OpenSSL compile time.
+		 * \param buf_len The number of random bytes to request. buf must be big enough to hold the data.
+		 * \return true if the generated numbers are cryptographically strong, false otherwise.
+		 * \see get_random_bytes
+		 *
+		 * Do not use the resulting bytes for critical cryptographic purposes (like key generation). If require truly random bytes, see get_random_bytes().
+		 *
+		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 */
+		bool get_pseudo_random_bytes(void* buf, size_t buf_len);
+
 		inline void set_randomization_engine(ENGINE* engine)
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
+		}
+		
+		inline void get_random_bytes(void* buf, size_t buf_len)
+		{
+			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
+		}
+		
+		inline bool get_pseudo_random_bytes(void* buf, size_t buf_len)
+		{
+			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
+
+			error::throw_error_if(result < 0);
+
+			return (result == 1);
 		}
 	}
 }
