@@ -17,10 +17,10 @@ From now on, here is what is currently implemented:
  - Error handling
  - Exceptions
  - Hash methods
+ - PBKDF2
 
 And here is what is planned:
 
- - PBKDF2
  - Threads
  - ASN1
  - Random
