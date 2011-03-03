@@ -37,57 +37,37 @@
  */
 
 /**
- * \file message_digest.hpp
+ * \file message_digest_algorithm.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Message digest helper functions.
+ * \brief A message digest algorithm wrapper class.
  */
 
-#ifndef CRYPTOPEN_HASH_MESSAGE_DIGEST_HPP
-#define CRYPTOPEN_HASH_MESSAGE_DIGEST_HPP
+#include "hash/message_digest_algorithm.hpp"
 
-#include <openssl/evp.h>
-
-#include <vector>
-#include <string>
+#include <stdexcept>
+#include <cassert>
 
 namespace cryptopen
 {
 	namespace hash
 	{
-		/**
-		 * \brief Compute a message digest for the given buffer, using the given digest method.
-		 * \param out The output buffer. Must be at least message_digest_size(md) bytes long.
-		 * \param out_len The output buffer length. 
-		 * \param data The buffer.
-		 * \param len The buffer length.
-		 * \param md The digest method.
-		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
-		 * \return The count of bytes written to out. Should be equal to the size of the message digest algorithm.
-		 */
-		size_t message_digest(void* out, size_t out_len, const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
-
-		/**
-		 * \brief Compute a message digest for the given buffer, using the given digest method.
-		 * \param data The buffer.
-		 * \param len The buffer length.
-		 * \param md The digest method.
-		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
-		 * \return The message digest.
-		 */
-		template <typename T>
-			std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
-
-		template <typename T>
-			inline std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl)
+		message_digest_algorithm::message_digest_algorithm(const std::string& name) :
+			m_md(EVP_get_digestbyname(name.c_str()))
+		{
+			if (!m_md)
 			{
-				std::vector<T> result(message_digest_size(md));
-
-				message_digest(&result[0], result.size(), data, len, md, impl);
-
-				return result;
+				throw std::invalid_argument("name")
 			}
+		}
+		
+		message_digest_algorithm::message_digest_algorithm(int type) :
+			m_md(EVP_get_digestbynid(type))
+		{
+			if (!m_md)
+			{
+				throw std::invalid_argument("type")
+			}
+		}
 	}
 }
-
-#endif /* CRYPTOPEN_HASH_MESSAGE_DIGEST_HPP */
 
