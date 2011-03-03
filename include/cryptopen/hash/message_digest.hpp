@@ -74,7 +74,7 @@ namespace cryptopen
 		 * \return The message digest.
 		 */
 		template <typename T>
-		std::vector<T> hmac(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
+		std::vector<T> message_digest(const void* data, size_t len, const EVP_MD* md, ENGINE* impl = NULL);
 
 		/**
 		 * \brief Get the size of a HMAC generated with the specified hash method.
