@@ -45,6 +45,8 @@
 #ifndef CRYPTOPEN_HASH_PBKDF2_HPP
 #define CRYPTOPEN_HASH_PBKDF2_HPP
 
+#include "message_digest.hpp"
+
 #include <openssl/evp.h>
 
 #include <vector>
@@ -71,6 +73,34 @@ namespace cryptopen
 		 * Some versions of OpenSSL only provide SHA1 as a hash method. In this case, PBKDF2() silently falls back to SHA1. To prevent this behavior, set NO_PBKDF2_FALLBACK.
 		 */
 		size_t pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, void* outbuf, size_t outbuflen, const EVP_MD* md, unsigned int iter = 1000);
+
+		/**
+		 * \brief Generate a buffer from a password and a salt, using PBKDF2.
+		 * \param password The password to generate a digest from.
+		 * \param passwordlen The password size.
+		 * \param salt The salt.
+		 * \param saltlen The salt len.
+		 * \param md The message digest algorithm to use.
+		 * \param iter The iteration count. Default is 1000. The more iterations you use, the securer (and the slower) the function becomes.
+		 * \return The generated buffer.
+		 * \warning This function is slow by design.
+		 *
+		 * The list of the available message digest algorithms depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
+		 *
+		 * Some versions of OpenSSL only provide SHA1 as a hash method. In this case, PBKDF2() silently falls back to SHA1. To prevent this behavior, set NO_PBKDF2_FALLBACK.
+		 */
+		template <typename T>
+		std::vector<T> pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const EVP_MD* md, unsigned int iter = 1000);
+
+		template <typename T>
+		inline std::vector<T> pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const EVP_MD* md, unsigned int iter)
+		{
+			std::vector<T> result(message_digest_size(md));
+
+			pbkdf2(password, passwordlen, salt, saltlen, &result[0], result.size(), md, iter);
+
+			return result;
+		}
 	}
 }
 
