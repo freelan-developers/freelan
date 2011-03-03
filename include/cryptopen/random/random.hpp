@@ -46,6 +46,7 @@
 #define CRYPTOPEN_RANDOM_RANDOM_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "../os.hpp"
 
 #include <openssl/rand.h>
 
@@ -102,6 +103,30 @@ namespace cryptopen
 		 */
 		void seed(const void* buf, size_t buf_len);
 
+		/**
+		 * \brief Check if the PRNG was seeded enough to provide strong cryptographic material.
+		 * \return true if the PRNG was seeded enough, false otherwise.
+		 */
+		bool status();
+
+#ifdef WINDOWS
+
+		/**
+		 * \brief Mix some bytes into the PRNG from Windows events.
+		 * \param imsg The imsg param.
+		 * \param wparam The WPARAM.
+		 * \param lparam The LPARAM.
+		 * \return true if the PRNG was seeded enough, false otherwise.
+		 */
+		bool windows_event(UINT imsg, WPARAM wparam, LPARAM lparam);
+
+		/**
+		 * \brief Mix some bytes from the current screen state into the PRNG.
+		 */
+		void windows_screen();
+
+#endif
+
 		inline void set_randomization_engine(ENGINE* engine)
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
@@ -130,6 +155,26 @@ namespace cryptopen
 		{
 			RAND_seed(buf, static_cast<int>(buf_len));
 		}
+	
+		inline bool status()
+		{
+			return (RAND_status() == 1);
+		}
+		
+#ifndef WINDOWS
+
+		inline bool windows_event(UINT imsg, WPARAM wparam, LPARAM lparam)
+		{
+			return (RAND_event(imsg, wparam, lparam) == 1);
+		}
+
+		inline void windows_screen()
+		{
+			RAND_screen();
+		}
+
+#endif
+
 	}
 }
 
