@@ -50,6 +50,8 @@
 
 #include <openssl/rand.h>
 
+#include <vector>
+
 namespace cryptopen
 {
 	namespace random
@@ -73,6 +75,17 @@ namespace cryptopen
 		void get_random_bytes(void* buf, size_t buf_len);
 
 		/**
+		 * \brief Get truly random bytes.
+		 * \param cnt The count of random bytes to get.
+		 * \return The random bytes.
+		 * \see get_pseudo_random_bytes
+		 *
+		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 */
+		template <typename T>
+		std::vector<T> get_random_bytes(size_t cnt);
+
+		/**
 		 * \brief Get pseudo random bytes.
 		 * \param buf The buffer to fill with the random bytes. Its content will be mixed in the enthropy pool unless disabled at OpenSSL compile time.
 		 * \param buf_len The number of random bytes to request. buf must be big enough to hold the data.
@@ -84,6 +97,19 @@ namespace cryptopen
 		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
 		 */
 		bool get_pseudo_random_bytes(void* buf, size_t buf_len);
+
+		/**
+		 * \brief Get pseudo random bytes.
+		 * \param cnt The count of random bytes to get.
+		 * \return true if the generated numbers are cryptographically strong, false otherwise.
+		 * \see get_random_bytes
+		 *
+		 * Do not use the resulting bytes for critical cryptographic purposes (like key generation). If require truly random bytes, see get_random_bytes().
+		 *
+		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 */
+		template <typename T>
+		std::vector<T> get_pseudo_random_bytes(size_t cnt);
 
 		/**
 		 * \brief Mix some bytes into the PRNG state.
@@ -190,6 +216,16 @@ namespace cryptopen
 			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
 		}
 		
+		template <typename T>
+		inline std::vector<T> get_random_bytes(size_t cnt)
+		{
+			std::vector<T> result(cnt);
+
+			get_random_bytes(&result[0], result.size());
+
+			return result;
+		}
+
 		inline bool get_pseudo_random_bytes(void* buf, size_t buf_len)
 		{
 			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
@@ -197,6 +233,16 @@ namespace cryptopen
 			error::throw_error_if(result < 0);
 
 			return (result == 1);
+		}
+
+		template <typename T>
+		inline std::vector<T> get_pseudo_random_bytes(size_t cnt)
+		{
+			std::vector<T> result(cnt);
+
+			get_pseudo_random_bytes(&result[0], result.size());
+
+			return result;
 		}
 
 		inline void add(const void* buf, size_t buf_len, double entropy)
