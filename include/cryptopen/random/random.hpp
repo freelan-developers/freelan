@@ -175,6 +175,11 @@ namespace cryptopen
 		 */
 		size_t egd_query(const std::string& path, void* buf, size_t cnt);
 
+		/**
+		 * \brief Clean up the PRNG.
+		 */
+		void cleanup();
+
 		inline void set_randomization_engine(ENGINE* engine)
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
@@ -275,6 +280,11 @@ namespace cryptopen
 			error::throw_error_if_not(result >= 0);
 
 			return result;
+		}
+		
+		inline void cleanup()
+		{
+			RAND_cleanup();
 		}
 	}
 }
