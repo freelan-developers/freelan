@@ -1,10 +1,10 @@
 /**
- * \file rand.cpp
+ * \file random.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
  * \brief A random sample file.
  */
 
-#include <cryptopen/hash/pbkdf2.hpp>
+#include <cryptopen/random/random.hpp>
 #include <cryptopen/error/error_strings.hpp>
 
 #include <iostream>

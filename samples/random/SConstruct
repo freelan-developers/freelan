@@ -1,7 +1,7 @@
 ##
 # libcryptopen build file.
 #
-sample = 'rand'
+sample = 'random'
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
