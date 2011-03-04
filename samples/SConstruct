@@ -5,7 +5,8 @@
 samples = [
 	'hmac',
 	'message_digest',
-	'pbkdf2'
+	'pbkdf2',
+	'rand'
 ]
 
 SConscript(dirs = samples, name = 'SConstruct')
