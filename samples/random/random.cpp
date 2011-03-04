@@ -39,6 +39,9 @@ int main()
 	std::cout << "=============" << std::endl;
 	std::cout << std::endl;
 
+	std::vector<unsigned char> bytes = cryptopen::random::get_random_bytes<unsigned char>(16);
+
+	std::cout << "Random bytes: " << to_hex(bytes.begin(), bytes.end()) << std::endl;
 
 	return EXIT_SUCCESS;
 }
