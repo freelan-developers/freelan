@@ -64,19 +64,21 @@ int main()
 	std::cout << "Iterations: " << iterations << std::endl;
 	std::cout << std::endl;
 
+#if OPENSSL_VERSION_NUMBER >= 0x01000000
 	pbkdf2("MD5", password, salt, iterations);
 	pbkdf2("MD4", password, salt, iterations);
+#endif
 	pbkdf2("SHA1", password, salt, iterations);
+#if OPENSSL_VERSION_NUMBER >= 0x01000000
 	pbkdf2("SHA", password, salt, iterations);
 	pbkdf2("SHA224", password, salt, iterations);
 	pbkdf2("SHA256", password, salt, iterations);
 	pbkdf2("SHA384", password, salt, iterations);
 	pbkdf2("SHA512", password, salt, iterations);
-#if OPENSSL_VERSION_NUMBER >= 0x01000000
 	pbkdf2("MDC2", password, salt, iterations);
 	pbkdf2("whirlpool", password, salt, iterations);
-#endif
 	pbkdf2("RIPEMD160", password, salt, iterations);
+#endif
 
 	return EXIT_SUCCESS;
 }

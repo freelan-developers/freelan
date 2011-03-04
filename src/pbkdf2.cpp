@@ -46,18 +46,21 @@
 
 #include <openssl/opensslv.h>
 
+#include <stdexcept>
+
 #if OPENSSL_VERSION_NUMBER < 0x10000000 
-#ifdef NO_PBKDF2_FALLBACK
-#error This version of OpenSSL doesn''t provide PKCS5_PBKDF2_HMAC() and NO_PBKDF2_FALLBACK is set.
-#else
 namespace
 {
-	int PKCS5_PBKDF2_HMAC(const char* pass, int passlen, const unsigned char* salt, int saltlen, int iter, const EVP_MD*, int outlen, unsigned char* out)
+	int PKCS5_PBKDF2_HMAC(const char* pass, int passlen, const unsigned char* salt, int saltlen, int iter, const EVP_MD* md, int outlen, unsigned char* out)
 	{
-		return PKCS5_PBKDF2_HMAC_SHA1(pass, passlen, salt, saltlen, iter, outlen, out);
+		if (md == EVP_sha1())
+		{
+			return PKCS5_PBKDF2_HMAC_SHA1(pass, passlen, salt, saltlen, iter, outlen, out);
+		}
+
+		throw std::invalid_argument("md");
 	}
 }
-#endif
 #endif
 
 #include <cassert>
@@ -68,7 +71,7 @@ namespace cryptopen
 	{
 		size_t pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, void* outbuf, size_t outbuflen, const message_digest_algorithm& algorithm, unsigned int iter)
 		{
-			PKCS5_PBKDF2_HMAC(
+			int result = PKCS5_PBKDF2_HMAC(
 					static_cast<const char*>(password),
 					static_cast<int>(passwordlen),
 					static_cast<const unsigned char*>(salt),
@@ -79,7 +82,7 @@ namespace cryptopen
 					static_cast<unsigned char*>(outbuf)
 					);
 
-			return outbuflen;
+			return result;
 		}
 	}
 }
