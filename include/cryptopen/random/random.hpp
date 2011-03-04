@@ -127,6 +127,30 @@ namespace cryptopen
 
 #endif
 
+		/**
+		 * \brief Get a seed filename.
+		 * \param buf The buffer to put the seed filename into.
+		 * \param buf_len The size of buf.
+		 * \return buf.
+		 * \warning If buf is not long enough to hold the filename, a cryptographic_exception is thrown.
+		 */
+		const char* get_seed_filename(char* buf, size_t buf_len);
+
+		/**
+		 * \brief Load a seed file.
+		 * \param file The file to load the seed from.
+		 * \param cnt The number of bytes to read. If cnt is -1 (the default), the complete file is read.
+		 * \return The number of bytes read.
+		 */
+		size_t load_seed_file(const std::string& file, ssize_t cnt = -1);
+
+		/**
+		 * \brief Write a seed file from the current PRNG state.
+		 * \param file The file to write the seed to.
+		 * \return The number of bytes written.
+		 */
+		size_t write_seed_file(const std::string& file);
+
 		inline void set_randomization_engine(ENGINE* engine)
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
@@ -175,6 +199,32 @@ namespace cryptopen
 
 #endif
 
+		inline const char* get_seed_filename(char* buf, size_t buf_len)
+		{
+			const char* result = RAND_file_name(buf, buf_len);
+
+			error::throw_error_if_not(result);
+
+			return result;
+		}
+
+		inline size_t load_seed_file(const std::string& file, ssize_t cnt)
+		{
+			int result = RAND_load_file(file.c_str(), static_cast<long>(cnt));
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		inline size_t write_seed_file(const std::string& file)
+		{
+			int result = RAND_write_file(file.c_str());
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
 	}
 }
 
