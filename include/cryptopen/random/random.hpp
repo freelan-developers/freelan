@@ -151,6 +151,30 @@ namespace cryptopen
 		 */
 		size_t write_seed_file(const std::string& file);
 
+		/**
+		 * \brief Query the entropy gathering daemon for 255 bytes.
+		 * \param path The EGD socket path.
+		 * \return The count of bytes read and added to the PRNG.
+		 */
+		size_t egd_query(const std::string& path);
+
+		/**
+		 * \brief Query the entropy gathering daemon for the specified ammount of bytes.
+		 * \param path The EGD socket path.
+		 * \param cnt The count of bytes to query.
+		 * \return The count of bytes read and added to the PRNG.
+		 */
+		size_t egd_query(const std::string& path, size_t cnt);
+
+		/**
+		 * \brief Query the entropy gathering daemon for the specified ammount of bytes without adding the to the PRNG.
+		 * \param path The EGD socket path.
+		 * \param buf The buffer to put the random bytes into. If buf is NULL, the bytes are added to the PRNG state.
+		 * \param cnt The count of bytes to query. buf must be long enough to hold cnt bytes.
+		 * \return The count of bytes read.
+		 */
+		size_t egd_query(const std::string& path, void* buf, size_t cnt);
+
 		inline void set_randomization_engine(ENGINE* engine)
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
@@ -220,6 +244,33 @@ namespace cryptopen
 		inline size_t write_seed_file(const std::string& file)
 		{
 			int result = RAND_write_file(file.c_str());
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		inline size_t egd_query(const std::string& path)
+		{
+			int result = RAND_egd(path.c_str());
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		inline size_t egd_query(const std::string& path, size_t cnt)
+		{
+			int result = RAND_egd_bytes(path.c_str(), static_cast<int>(cnt));
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		inline size_t egd_query(const std::string& path, void* buf, size_t cnt)
+		{
+			int result = RAND_query_egd_bytes(path.c_str(), static_cast<unsigned char*>(buf), static_cast<int>(cnt));
 
 			error::throw_error_if_not(result >= 0);
 
