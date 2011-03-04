@@ -75,8 +75,6 @@ int main()
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
 	pbkdf2("MDC2", password, salt, iterations);
 	pbkdf2("whirlpool", password, salt, iterations);
-#else
-	pbkdf2("MD2", password, salt, iterations);
 #endif
 	pbkdf2("RIPEMD160", password, salt, iterations);
 

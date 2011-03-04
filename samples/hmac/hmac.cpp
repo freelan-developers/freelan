@@ -77,8 +77,6 @@ int main()
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
 	hmac("MDC2", key, data);
 	hmac("whirlpool", key, data);
-#else
-	hmac("MD2", key, data);
 #endif
 	hmac("RIPEMD160", key, data);
 

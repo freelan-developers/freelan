@@ -75,8 +75,6 @@ int main()
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
 	message_digest("MDC2", data);
 	message_digest("whirlpool", data);
-#else
-	message_digest("MD2", data);
 #endif
 	message_digest("RIPEMD160", data);
 
