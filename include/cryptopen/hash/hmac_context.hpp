@@ -120,15 +120,6 @@ namespace cryptopen
 					std::vector<T> finalize();
 
 				/**
-				 * \brief Copy an existing hmac_context, including its current state.
-				 * \param ctx A hmac_context to copy.
-				 * \warning This function uses a const-cast on the ctx parameter to remove its constness. While the object shouldn't be modified, this is a limitation of the OpenSSL API and sadly can't be avoided.
-				 *
-				 * This is useful if large amounts of data are to be hashed which only differ in the last few bytes.
-				 */
-				void copy(const hmac_context& ctx);
-
-				/**
 				 * \brief Get the underlying context.
 				 * \return The underlying context.
 				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
@@ -173,13 +164,6 @@ namespace cryptopen
 			finalize(&result[0], result.size());
 
 			return result;
-		}
-
-		inline void hmac_context::copy(const hmac_context& ctx)
-		{
-			//WARNING: Here we assume that the underlying library used the wrong non-const prototype for the src parameter of HMAC_CTX_copy().
-			// This is likely (and I can't see why this couldn't be const), however it remains risky to use this ugly trick.
-			error::throw_error_if_not(HMAC_CTX_copy(&m_ctx, const_cast<HMAC_CTX*>(&ctx.m_ctx)));
 		}
 
 		inline HMAC_CTX& hmac_context::raw()

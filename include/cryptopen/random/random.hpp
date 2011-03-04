@@ -161,7 +161,7 @@ namespace cryptopen
 			return (RAND_status() == 1);
 		}
 		
-#ifndef WINDOWS
+#ifdef WINDOWS
 
 		inline bool windows_event(UINT imsg, WPARAM wparam, LPARAM lparam)
 		{
