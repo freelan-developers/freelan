@@ -18,12 +18,12 @@ From now on, here is what is currently implemented:
  - Exceptions
  - Hash methods
  - PBKDF2
+ - Random
 
 And here is what is planned:
 
  - Threads
  - ASN1
- - Random
  - BIO
  - EVP
  - PEM
