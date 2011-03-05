@@ -58,7 +58,7 @@ namespace cryptopen
 		/**
 		 * \brief The initializer.
 		 *
-		 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions (like message_digest_context::get_message_digest_by_name()).
+		 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions.
 		 */
 		typedef initializer<OpenSSL_add_all_digests, EVP_cleanup> message_digest_initializer;
 
