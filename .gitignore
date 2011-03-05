@@ -5,3 +5,4 @@
 *.exe
 variables.cache
 doc/html
+lib/*
