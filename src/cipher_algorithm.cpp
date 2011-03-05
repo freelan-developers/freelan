@@ -49,7 +49,7 @@
 
 namespace cryptopen
 {
-	namespace hash
+	namespace cipher
 	{
 		cipher_algorithm::cipher_algorithm(int _type) :
 			m_cipher(EVP_get_cipherbynid(_type))

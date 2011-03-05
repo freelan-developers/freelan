@@ -53,7 +53,7 @@
 
 namespace cryptopen
 {
-	namespace hash
+	namespace cipher
 	{
 		namespace
 		{
