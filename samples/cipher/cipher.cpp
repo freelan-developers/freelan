@@ -31,23 +31,46 @@ std::string to_hex(const void* buf, size_t buf_len)
 	return to_hex(static_cast<const unsigned char*>(buf), static_cast<const unsigned char*>(buf) + buf_len);
 }
 
-void message_digest(const std::string& name, const std::string& data)
+void cipher(const std::string& name)
 {
 	try
 	{
-		cryptopen::hash::message_digest_algorithm algorithm(name);
+		cryptopen::cipher::cipher_algorithm algorithm(name);
 
-		cryptopen::hash::message_digest_context ctx;
+		cryptopen::cipher::cipher_context ctx;
 
-		ctx.initialize(algorithm);
-		ctx.update(data.c_str(), data.size());
-		std::vector<unsigned char> message_digest = ctx.finalize<unsigned char>();
-		std::cout << name << ": " << to_hex(message_digest.begin(), message_digest.end()) << std::endl;
+		std::vector<unsigned char> data(algorithm.block_size());
+		std::vector<unsigned char> key(algorithm.key_length());
+		std::vector<unsigned char> iv(algorithm.iv_length());
+
+		std::cout << "Cipher: " << name << " (block size: " << algorithm.block_size() << ")" << std::endl;
+		std::cout << "Data: " << to_hex(data.begin(), data.end()) << std::endl;
+		std::cout << "Key: " << to_hex(key.begin(), key.end()) << std::endl;
+		std::cout << "IV: " << to_hex(iv.begin(), iv.end()) << std::endl;
+
+		std::vector<unsigned char> result(data.size() + algorithm.block_size());
+		unsigned char* out = &result[0];
+		size_t out_len = result.size();
+
+		ctx.initialize(algorithm, cryptopen::cipher::cipher_context::encrypt, &key[0], &iv[0]);
+		ctx.set_padding(false);
+		ctx.update(out, out_len, &data[0], data.size());
+		
+		out += out_len; out_len = result.size() - (out - &result[0]);
+
+		ctx.finalize(out, out_len);
+
+		out += out_len;
+		result.resize(out - &result[0]);
+
+		std::cout << "Result: " << to_hex(result.begin(), result.end()) << std::endl;
 	}
 	catch (cryptopen::error::cryptographic_exception& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}
+	
+	std::cout << std::endl;
 }
 
 int main()
@@ -59,14 +82,11 @@ int main()
 	std::cout << "=============" << std::endl;
 	std::cout << std::endl;
 
-	const std::string data = "some data from which we will compute the message digest";
-
-	std::cout << "Data: " << data << std::endl;
-	std::cout << std::endl;
-
-#if OPENSSL_VERSION_NUMBER >= 0x01000000
-	message_digest("MDC2", data);
-#endif
+	cipher("DES");
+	cipher("AES128");
+	cipher("AES192");
+	cipher("AES256");
+	cipher("blowfish");
 
 	return EXIT_SUCCESS;
 }
