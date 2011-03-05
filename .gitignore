@@ -4,4 +4,4 @@
 *.os
 *.exe
 variables.cache
-doc
+doc/html
