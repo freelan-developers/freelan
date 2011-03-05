@@ -68,6 +68,9 @@ namespace cryptopen
 			public:
 
 				using cipher_context::cipher_direction;
+				using cipher_context::unchanged;
+				using cipher_context::decrypt;
+				using cipher_context::encrypt;
 				using cipher_context::initialize;
 				using cipher_context::set_padding;
 				using cipher_context::set_key_length;
