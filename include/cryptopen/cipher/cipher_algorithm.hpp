@@ -78,6 +78,16 @@ namespace cryptopen
 			public:
 
 				/**
+				 * \brief The maximum key length.
+				 */
+				static const size_t max_key_length;
+
+				/**
+				 * \brief The maximum iv length.
+				 */
+				static const size_t max_iv_length;
+
+				/**
 				 * \brief Create a new cipher_algorithm from a const EVP_CIPHER pointer.
 				 * \param cipher The raw const EVP_CIPHER pointer. If cipher is NULL, the behavior is undefined.
 				 */
