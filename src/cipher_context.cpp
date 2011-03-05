@@ -56,7 +56,7 @@ namespace cryptopen
 
 			error::throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)));
 		}
-		
+
 		void cipher_context::update(void* out, size_t& out_len, const void* in, size_t in_len)
 		{
 			assert(out);
@@ -69,7 +69,7 @@ namespace cryptopen
 
 			out_len = iout_len;
 		}
-		
+
 		void cipher_context::finalize(void* out, size_t& out_len)
 		{
 			assert(out);
