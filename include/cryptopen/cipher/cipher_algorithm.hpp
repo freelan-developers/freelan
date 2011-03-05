@@ -98,14 +98,14 @@ namespace cryptopen
 				 * \param type The type of the cipher_algorithm to create.
 				 * \warning If no such type is found, a std::invalid_argument is thrown.
 				 */
-				cipher_algorithm(int type);
+				explicit cipher_algorithm(int type);
 
 				/**
 				 * \brief Create a new cipher_algorithm from its name.
 				 * \param name The name of the cipher_algorithm to create.
 				 * \warning If no such name is found, a std::invalid_argument is thrown.
 				 */
-				cipher_algorithm(const std::string& name);
+				explicit cipher_algorithm(const std::string& name);
 
 				/**
 				 * \brief Get the raw const EVP_CIPHER pointer.

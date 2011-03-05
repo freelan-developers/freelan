@@ -80,14 +80,14 @@ namespace cryptopen
 				 * \param type The type of the message_digest_algorithm to create.
 				 * \warning If no such type is found, a std::invalid_argument is thrown.
 				 */
-				message_digest_algorithm(int type);
+				explicit message_digest_algorithm(int type);
 
 				/**
 				 * \brief Create a new message_digest_algorithm from its name.
 				 * \param name The name of the message_digest_algorithm to create.
 				 * \warning If no such name is found, a std::invalid_argument is thrown.
 				 */
-				message_digest_algorithm(const std::string& name);
+				explicit message_digest_algorithm(const std::string& name);
 
 				/**
 				 * \brief Get the raw const EVP_MD pointer.
