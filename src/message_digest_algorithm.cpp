@@ -51,21 +51,21 @@ namespace cryptopen
 {
 	namespace hash
 	{
-		message_digest_algorithm::message_digest_algorithm(const std::string& _name) :
-			m_md(EVP_get_digestbyname(_name.c_str()))
-		{
-			if (!m_md)
-			{
-				throw std::invalid_argument("name");
-			}
-		}
-		
 		message_digest_algorithm::message_digest_algorithm(int _type) :
 			m_md(EVP_get_digestbynid(_type))
 		{
 			if (!m_md)
 			{
 				throw std::invalid_argument("type");
+			}
+		}
+
+		message_digest_algorithm::message_digest_algorithm(const std::string& _name) :
+			m_md(EVP_get_digestbyname(_name.c_str()))
+		{
+			if (!m_md)
+			{
+				throw std::invalid_argument("name");
 			}
 		}
 	}
