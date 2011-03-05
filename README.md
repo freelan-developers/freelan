@@ -19,6 +19,7 @@ From now on, here is what is currently implemented:
  - Hash methods
  - PBKDF2
  - Random
+ - Symmetric Ciphers
 
 And here is what is planned:
 
@@ -34,10 +35,7 @@ And here is what is planned:
    - RSA
    - Diffie-Hellman
 
- - Symmetric Ciphers
-
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
-
 
 Licensing
 ---------
