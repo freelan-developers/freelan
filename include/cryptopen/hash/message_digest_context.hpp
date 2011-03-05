@@ -39,7 +39,7 @@
 /**
  * \file message_digest_context.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A HMAC context class.
+ * \brief A message digest context class.
  */
 
 #ifndef CRYPTOPEN_HASH_MESSAGE_DIGEST_CONTEXT_HPP
