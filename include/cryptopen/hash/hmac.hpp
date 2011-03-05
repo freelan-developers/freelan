@@ -58,7 +58,7 @@ namespace cryptopen
 		/**
 		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
 		 * \param out The output buffer. Must be at least as big as the message digest algorithm result size.
-		 * \param out_len The output buffer length. 
+		 * \param out_len The output buffer length.
 		 * \param key The key to use.
 		 * \param key_len The key length.
 		 * \param data The buffer.

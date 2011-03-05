@@ -54,7 +54,7 @@ namespace cryptopen
 
 			return std::string(ERR_error_string(err, buf));
 		}
-		
+
 		std::string get_error_string_n(error_type err, size_t len)
 		{
 			char buf[120];

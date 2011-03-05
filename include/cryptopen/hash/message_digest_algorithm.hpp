@@ -123,12 +123,12 @@ namespace cryptopen
 
 				const EVP_MD* m_md;
 		};
-		
+
 		inline message_digest_algorithm::message_digest_algorithm(const EVP_MD* md) :
 			m_md(md)
 		{
 		}
-		
+
 		inline const EVP_MD* message_digest_algorithm::raw() const
 		{
 			return m_md;
@@ -143,7 +143,7 @@ namespace cryptopen
 		{
 			return std::string(OBJ_nid2sn(type()));
 		}
-		
+
 		inline size_t message_digest_algorithm::result_size() const
 		{
 			return EVP_MD_size(m_md);

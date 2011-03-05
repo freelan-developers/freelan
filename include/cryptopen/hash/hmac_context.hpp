@@ -117,7 +117,7 @@ namespace cryptopen
 				 * \return The resulting buffer.
 				 */
 				template <typename T>
-					std::vector<T> finalize();
+				std::vector<T> finalize();
 
 				/**
 				 * \brief Get the underlying context.

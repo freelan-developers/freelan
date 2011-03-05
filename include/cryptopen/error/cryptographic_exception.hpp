@@ -101,7 +101,7 @@ namespace cryptopen
 
 				error_type m_err;
 		};
-		
+
 		inline void throw_error()
 		{
 			throw cryptographic_exception::from_error();

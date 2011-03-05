@@ -114,7 +114,7 @@ namespace cryptopen
 				 * \return The resulting buffer.
 				 */
 				template <typename T>
-					std::vector<T> finalize();
+				std::vector<T> finalize();
 
 				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
@@ -158,14 +158,14 @@ namespace cryptopen
 		}
 
 		template <typename T>
-			inline std::vector<T> message_digest_context::finalize()
-			{
-				std::vector<T> result(algorithm().result_size());
+		inline std::vector<T> message_digest_context::finalize()
+		{
+			std::vector<T> result(algorithm().result_size());
 
-				finalize(&result[0], result.size());
+			finalize(&result[0], result.size());
 
-				return result;
-			}
+			return result;
+		}
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)
 		{

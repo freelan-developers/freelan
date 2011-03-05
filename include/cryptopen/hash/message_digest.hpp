@@ -58,7 +58,7 @@ namespace cryptopen
 		/**
 		 * \brief Compute a message digest for the given buffer, using the given digest method.
 		 * \param out The output buffer. Must be at least message_digest_size(md) bytes long.
-		 * \param out_len The output buffer length. 
+		 * \param out_len The output buffer length.
 		 * \param data The buffer.
 		 * \param len The buffer length.
 		 * \param algorithm The message digest algorithm to use.
@@ -76,17 +76,17 @@ namespace cryptopen
 		 * \return The message digest.
 		 */
 		template <typename T>
-			std::vector<T> message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+		std::vector<T> message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		template <typename T>
-			inline std::vector<T> message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
-			{
-				std::vector<T> result(algorithm.result_size());
+		inline std::vector<T> message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
+		{
+			std::vector<T> result(algorithm.result_size());
 
-				message_digest(&result[0], result.size(), data, len, algorithm, impl);
+			message_digest(&result[0], result.size(), data, len, algorithm, impl);
 
-				return result;
-			}
+			return result;
+		}
 	}
 }
 
