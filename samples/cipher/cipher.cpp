@@ -4,7 +4,7 @@
  * \brief A cipher sample file.
  */
 
-#include <cryptopen/cipher/cipher_context.hpp>
+#include <cryptopen/cipher/cipher_stream.hpp>
 #include <cryptopen/error/error_strings.hpp>
 
 #include <iostream>
@@ -37,33 +37,23 @@ void cipher(const std::string& name)
 	{
 		cryptopen::cipher::cipher_algorithm algorithm(name);
 
-		cryptopen::cipher::cipher_context ctx;
-
 		std::vector<unsigned char> data(algorithm.block_size());
 		std::vector<unsigned char> key(algorithm.key_length());
 		std::vector<unsigned char> iv(algorithm.iv_length());
-		std::vector<unsigned char> result(data.size() + algorithm.block_size());
 
 		std::cout << "Cipher: " << name << " (block size: " << algorithm.block_size() << ")" << std::endl;
 		std::cout << "Data: " << to_hex(data.begin(), data.end()) << std::endl;
 		std::cout << "Key: " << to_hex(key.begin(), key.end()) << std::endl;
 		std::cout << "IV: " << to_hex(iv.begin(), iv.end()) << std::endl;
 
-		unsigned char* out = &result[0];
-		size_t out_len = result.size();
+		cryptopen::cipher::cipher_stream stream(data.size() + algorithm.block_size());
 
-		ctx.initialize(algorithm, cryptopen::cipher::cipher_context::encrypt, &key[0], &iv[0]);
-		ctx.set_padding(false);
-		ctx.update(out, out_len, &data[0], data.size());
-		
-		out += out_len; out_len = result.size() - (out - &result[0]);
+		stream.initialize(algorithm, cryptopen::cipher::cipher_stream::encrypt, &key[0], &iv[0]);
+		stream.set_padding(false);
+		stream.append(&data[0], data.size());
+		stream.finalize();
 
-		ctx.finalize(out, out_len);
-
-		out += out_len;
-		result.resize(out - &result[0]);
-
-		std::cout << "Result: " << to_hex(result.begin(), result.end()) << std::endl;
+		std::cout << "Result: " << to_hex(stream.result().begin(), stream.result().end()) << std::endl;
 	}
 	catch (cryptopen::error::cryptographic_exception& ex)
 	{
