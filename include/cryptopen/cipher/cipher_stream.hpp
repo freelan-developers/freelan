@@ -59,6 +59,8 @@ namespace cryptopen
 		 *
 		 * The cipher_stream class ease the computation of a cipher, using a stream oriented interface.
 		 *
+		 * To work with cipher_stream, call the initialize() method like you would do on a cipher_context, call append() or operator<<() as long as you have data to cipher then call finalize(). The resulting ciphered buffer can be get by calling result().
+		 *
 		 * The list of the available cipher methods depends on the version of OpenSSL and can be found on the man page of EVP_EncryptInit().
 		 *
 		 * cipher_stream is noncopyable by design.
@@ -82,7 +84,7 @@ namespace cryptopen
 				/**
 				 * \brief Create a new cipher stream.
 				 * \param alloc The minimum number of bytes to pre-allocate. A good value here is the count of bytes to cipher + cipher algorithm block size.
-				 * \see initalize
+				 * \see initalize()
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_EncryptInit().
 				 */
@@ -112,22 +114,22 @@ namespace cryptopen
 
 				/**
 				 * \brief Finalize the stream input.
-				 * \see result
+				 * \see result()
 				 */
 				void finalize();
 
 				/**
 				 * \brief Reallocate the internal buffer.
 				 * \param alloc The minimum number of bytes to pre-allocate. A good value here is the count of bytes to cipher + cipher algorithm block size.
-				 * \warning Avoid reallocations while a encrypt/decrypt sequence is pending. At any time, if the streams needs more output space, it will automatically reallocate the underlying buffer.
+				 * \warning Avoid reallocations while a encrypt/decrypt sequence is pending. At any time, if the streams needs more output space, it will automatically reallocate() the underlying buffer.
 				 */
 				void reallocate(size_t alloc);
 
 				/**
 				 * \brief Get the result buffer.
 				 * \return The result buffer.
-				 * \warning Be sure to call finalize before calling this method.
-				 * \see finalize
+				 * \warning Be sure to call finalize() before calling this method.
+				 * \see finalize()
 				 */
 				const std::vector<unsigned char>& result() const;
 
