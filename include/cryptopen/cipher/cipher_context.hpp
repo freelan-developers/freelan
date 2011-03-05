@@ -52,8 +52,6 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <vector>
-
 namespace cryptopen
 {
 	namespace cipher

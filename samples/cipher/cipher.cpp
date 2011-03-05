@@ -42,13 +42,13 @@ void cipher(const std::string& name)
 		std::vector<unsigned char> data(algorithm.block_size());
 		std::vector<unsigned char> key(algorithm.key_length());
 		std::vector<unsigned char> iv(algorithm.iv_length());
+		std::vector<unsigned char> result(data.size() + algorithm.block_size());
 
 		std::cout << "Cipher: " << name << " (block size: " << algorithm.block_size() << ")" << std::endl;
 		std::cout << "Data: " << to_hex(data.begin(), data.end()) << std::endl;
 		std::cout << "Key: " << to_hex(key.begin(), key.end()) << std::endl;
 		std::cout << "IV: " << to_hex(iv.begin(), iv.end()) << std::endl;
 
-		std::vector<unsigned char> result(data.size() + algorithm.block_size());
 		unsigned char* out = &result[0];
 		size_t out_len = result.size();
 
