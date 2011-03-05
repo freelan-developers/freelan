@@ -56,7 +56,7 @@ namespace cryptopen
 
 			if (out_len < algorithm().block_size() + buf_len)
 			{
-				m_buffer.resize(algorithm().block_size() + buf_len + m_offset - m_buffer.size());
+				m_buffer.resize(m_buffer.size() + algorithm().block_size() + buf_len - out_len);
 				out_len = algorithm().block_size() + buf_len;
 			}
 
@@ -73,7 +73,7 @@ namespace cryptopen
 
 			if (out_len < algorithm().block_size())
 			{
-				m_buffer.resize(algorithm().block_size() + m_offset - m_buffer.size());
+				m_buffer.resize(m_buffer.size() + algorithm().block_size() - out_len);
 				out_len = algorithm().block_size();
 			}
 
