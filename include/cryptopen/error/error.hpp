@@ -153,7 +153,7 @@ namespace cryptopen
 		 * \param data The error data.
 		 * \return The last error.
 		 */
-		error_type peek_error_line(error_info& info, error_data& data);
+		error_type peek_error_line_data(error_info& info, error_data& data);
 
 		/**
 		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
@@ -161,7 +161,7 @@ namespace cryptopen
 		 * \param data The error data.
 		 * \return The last error.
 		 */
-		error_type peek_last_error_line(error_info& info, error_data& data);
+		error_type peek_last_error_line_data(error_info& info, error_data& data);
 
 		/**
 		 * \brief Get the library component of the specified error code.
