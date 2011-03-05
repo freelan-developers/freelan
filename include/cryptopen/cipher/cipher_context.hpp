@@ -100,10 +100,54 @@ namespace cryptopen
 				 * \param key The key to use. Must match algorithm.key_length(). Cannot be NULL.
 				 * \param iv The iv to use (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
 				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
+				 * \see set_padding
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_EncryptInit().
+				 *
+				 * Once the cipher_context is initialized, you may enable or disable PKCS padding by calling set_padding(). By default, PKCS padding is enabled.
 				 */
 				void initialize(const cipher_algorithm& algorithm, cipher_direction direction, const void* key, const void* iv, ENGINE* impl = NULL);
+
+				/**
+				 * \brief Set PKCS padding state.
+				 * \param enabled If enabled is true, PKCS padding will be enabled.
+				 * \see cipher_algorithm::block_size
+				 *
+				 * If PKCS padding is disabled, the input data size must be an exact multiple of the specified algorithm block size. See cipher_algorithm::block_size().
+				 */
+				void set_padding(bool enabled);
+
+				/**
+				 * \brief Get the key length.
+				 * \return The key length.
+				 * \see set_key_length
+				 *
+				 * For fixed key length ciphers, returns the same value as algorithm().key_length().
+				 * For variable key length ciphers, returns the current used key length value. See set_key_length().
+				 */
+				size_t key_length() const;
+
+				/**
+				 * \brief Set the current key length for variable key length ciphers.
+				 * \param len The new key length.
+				 * \warning Attempting to set the key length of a fixed key length cipher is an error.
+				 */
+				void set_key_length(size_t len);
+
+				/**
+				 * \brief Get cipher specific parameters.
+				 * \param type The type.
+				 * \param value The value to get.
+				 */
+				template <typename T>
+				void ctrl_get(int type, T& value);
+
+				/**
+				 * \brief Set cipher specific parameters.
+				 * \param type The type.
+				 * \param value The value to set.
+				 */
+				void ctrl_set(int type, int value);
 
 				/**
 				 * \brief Update the cipher_context with some data.
@@ -150,6 +194,33 @@ namespace cryptopen
 		inline cipher_context::~cipher_context()
 		{
 			EVP_CIPHER_CTX_cleanup(&m_ctx);
+		}
+
+		inline void cipher_context::set_padding(bool enabled)
+		{
+			// The call always returns 1 so testing its return value is useless.
+			EVP_CIPHER_CTX_set_padding(&m_ctx, static_cast<int>(enabled));
+		}
+
+		inline size_t cipher_context::key_length() const
+		{
+			return EVP_CIPHER_CTX_key_length(&m_ctx);
+		}
+
+		inline void cipher_context::set_key_length(size_t len)
+		{
+			error::throw_error_if_not(EVP_CIPHER_CTX_set_key_length(&m_ctx, static_cast<int>(len)));
+		}
+
+		template <typename T>
+		inline void cipher_context::ctrl_get(int type, T& value)
+		{
+			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value));
+		}
+
+		inline void cipher_context::ctrl_set(int type, int value)
+		{
+			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL));
 		}
 
 		inline EVP_CIPHER_CTX& cipher_context::raw()
