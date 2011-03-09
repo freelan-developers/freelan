@@ -46,6 +46,8 @@
 
 #include <cassert>
 
+#include <boost/shared_ptr.hpp>
+
 namespace cryptopen
 {
 	namespace pkey

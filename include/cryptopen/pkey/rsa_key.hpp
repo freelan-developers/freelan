@@ -50,10 +50,37 @@
 #include <openssl/rsa.h>
 #include <openssl/engine.h>
 
+#include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
+
 namespace cryptopen
 {
 	namespace pkey
 	{
+		/**
+		 * \brief A RSA key.
+		 *
+		 * The rsa_key class represents a RSA key (with or without a private compound). A rsa_key instance is noncopyable.
+		 */
+		class rsa_key : public boost::noncopyable
+		{
+			public:
+
+				/**
+				 * \brief Create a new RSA key.
+				 */
+				rsa_key();
+
+			private:
+
+				// Here a boost::unique_ptr would be much better, but this requires C++1x
+				boost::shared_ptr<RSA> m_rsa;
+		};
+		
+		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
+		{
+			error::throw_error_if_not(m_rsa);
+		}
 	}
 }
 
