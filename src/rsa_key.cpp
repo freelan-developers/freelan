@@ -46,12 +46,19 @@
 
 #include <cassert>
 
-#include <boost/shared_ptr.hpp>
-
 namespace cryptopen
 {
 	namespace pkey
 	{
+		rsa_key::rsa_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
+		{
+			// Exponent must be odd
+			assert(exponent | 1);
+
+			m_rsa.reset(RSA_generate_key(num, exponent, callback, callback_arg), RSA_free);
+
+			error::throw_error_if_not(m_rsa);
+		}
 	}
 }
 
