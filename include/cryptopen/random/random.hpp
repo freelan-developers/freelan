@@ -168,7 +168,7 @@ namespace cryptopen
 		 * \param cnt The number of bytes to read. If cnt is -1 (the default), the complete file is read.
 		 * \return The number of bytes read.
 		 */
-		size_t load_seed_file(const std::string& file, ssize_t cnt = -1);
+		size_t load_seed_file(const std::string& file, ptrdiff_t cnt = -1);
 
 		/**
 		 * \brief Write a seed file from the current PRNG state.
@@ -283,7 +283,7 @@ namespace cryptopen
 			return result;
 		}
 
-		inline size_t load_seed_file(const std::string& file, ssize_t cnt)
+		inline size_t load_seed_file(const std::string& file, ptrdiff_t cnt)
 		{
 			int result = RAND_load_file(file.c_str(), static_cast<long>(cnt));
 
