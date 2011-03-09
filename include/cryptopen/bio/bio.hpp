@@ -69,6 +69,12 @@ namespace cryptopen
 			public:
 
 				/**
+				 * \brief Create a new bio.
+				 * \param type The type of the BIO. See the man page of bio(3) to get the list of all BIOs.
+				 */
+				bio(BIO_METHOD* type);
+
+				/**
 				 * \brief Get the raw BIO pointer.
 				 * \return The raw BIO pointer.
 				 * \warning The instance has ownership of the return pointer. Calling BIO_free() on the returned value will result in undefined behavior.
@@ -102,6 +108,10 @@ namespace cryptopen
 		 */
 		bool operator!=(const bio& lhs, const bio& rhs);
 
+		inline bio::bio(BIO_METHOD* type) : m_bio(BIO_new(type), BIO_free)
+		{
+			error::throw_error_if_not(m_bio);
+		}
 		inline BIO* bio::raw()
 		{
 			return m_bio.get();
