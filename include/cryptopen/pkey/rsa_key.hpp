@@ -74,6 +74,11 @@ namespace cryptopen
 				typedef void (*generate_callback_type)(int, int, void*);
 
 				/**
+				 * \brief A PEM passphrase callback type.
+				 */
+				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
 				 * \brief Generate a new RSA key.
 				 * \param num The size (in bits) of the modulus. As specified in OpenSSL documentation, key sizes with num < 1024 should be considered insecure.
 				 * \param exponent The exponent. Must be an odd number: typically 3, 17 or 65537.
@@ -168,7 +173,7 @@ namespace cryptopen
 		 * \return true if the two rsa_key instance do not share the same underlying RSA* pointer.
 		 */
 		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
-		
+
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
 			error::throw_error_if_not(m_rsa);
