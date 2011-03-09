@@ -90,6 +90,20 @@ namespace cryptopen
 				rsa_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
+				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
+				 * \param ctx A BN_CTX to use or NULL (the default) if one is to be created.
+				 * \warning The PRNG must be seeded prior to calling enable_blinding().
+				 * \see disable_blinding
+				 */
+				void enable_blinding(BN_CTX* ctx = NULL);
+
+				/**
+				 * \brief Disable blinding on the rsa_key after a previous call to enable_blinding().
+				 * \see enable_blinding
+				 */
+				void disable_blinding();
+
+				/**
 				 * \brief Get the raw RSA pointer.
 				 * \return The raw RSA pointer.
 				 * \warning The instance has ownership of the return pointer. Calling RSA_free() on the returned value will result in undefined behavior.
@@ -112,6 +126,14 @@ namespace cryptopen
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
 			error::throw_error_if_not(m_rsa);
+		}
+		inline void rsa_key::enable_blinding(BN_CTX* ctx)
+		{
+			error::throw_error_if_not(RSA_blinding_on(m_rsa.get(), ctx));
+		}
+		inline void rsa_key::disable_blinding()
+		{
+			RSA_blinding_off(m_rsa.get());
 		}
 		inline RSA* rsa_key::raw()
 		{
