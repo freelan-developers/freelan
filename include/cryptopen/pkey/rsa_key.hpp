@@ -62,7 +62,7 @@ namespace cryptopen
 		 * The rsa_key class represents a RSA key (with or without a private compound).
 		 * rsa_key is a low level structure that offers no mean to know whether the represented RSA key is a public or private key: it is up to the user to ensure that private key related functions will only get called on rsa_key instances that have private key information.
 		 *
-		 * A rsa_key instance has the same semantic as a RSA* pointer, thus two copies of the same instance share the same underlying RSA* pointer.
+		 * A rsa_key instance has the same semantic as a RSA* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
 		class rsa_key
 		{
@@ -164,7 +164,7 @@ namespace cryptopen
 		 * \brief Compare two rsa_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two rsa_key instance share the same underlying RSA* pointer.
+		 * \return true if the two rsa_key instance share the same underlying pointer.
 		 */
 		bool operator==(const rsa_key& lhs, const rsa_key& rhs);
 
@@ -172,7 +172,7 @@ namespace cryptopen
 		 * \brief Compare two rsa_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two rsa_key instance do not share the same underlying RSA* pointer.
+		 * \return true if the two rsa_key instance do not share the same underlying pointer.
 		 */
 		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
 
