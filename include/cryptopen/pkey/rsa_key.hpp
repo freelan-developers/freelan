@@ -67,9 +67,25 @@ namespace cryptopen
 			public:
 
 				/**
-				 * \brief Create a new RSA key.
+				 * \brief A generate callback type.
+				 */
+				typedef void (*generate_callback_type)(int, int, void*);
+
+				/**
+				 * \brief Create a new empty RSA key.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
 				 */
 				rsa_key();
+
+				/**
+				 * \brief Generate a new RSA key.
+				 * \param num The size (in bits) of the modulus. As specified in OpenSSL documentation, key sizes with num < 1024 should be considered insecure.
+				 * \param exponent The exponent. Must be an odd number: typically 3, 17 or 65537.
+				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of RSA_generate_key(3). callback might be NULL (the default).
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				rsa_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
 
 			private:
 
@@ -78,6 +94,11 @@ namespace cryptopen
 		};
 		
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
+		{
+			error::throw_error_if_not(m_rsa);
+		}
+		
+		inline rsa_key::rsa_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg) : m_rsa(RSA_generate_key(num, exponent, callback, callback_arg), RSA_free)
 		{
 			error::throw_error_if_not(m_rsa);
 		}
