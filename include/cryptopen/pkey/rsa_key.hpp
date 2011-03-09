@@ -60,7 +60,9 @@ namespace cryptopen
 		/**
 		 * \brief A RSA key.
 		 *
-		 * The rsa_key class represents a RSA key (with or without a private compound). A rsa_key instance is noncopyable.
+		 * The rsa_key class represents a RSA key (with or without a private compound).
+		 *
+		 * A rsa_key instance is noncopyable but it is clonable. See clone().
 		 */
 		class rsa_key : public boost::noncopyable
 		{
@@ -87,15 +89,37 @@ namespace cryptopen
 				 */
 				rsa_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
 
+				/**
+				 * \brief Get the raw RSA pointer.
+				 * \return The raw RSA pointer.
+				 * \warning The instance has ownership of the return pointer. Calling RSA_free() on the returned value will result in undefined behavior.
+				 */
+				RSA* raw();
+
+				/**
+				 * \brief Get the raw RSA pointer.
+				 * \return The raw RSA pointer.
+				 * \warning The instance has ownership of the return pointer. Calling RSA_free() on the returned value will result in undefined behavior.
+				 */
+				const RSA* raw() const;
+
 			private:
 
-				// Here a boost::unique_ptr would be much better, but this requires C++1x
+				// Here a boost::unique_ptr would have much less overhead, but this requires C++1x
 				boost::shared_ptr<RSA> m_rsa;
 		};
 		
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
 			error::throw_error_if_not(m_rsa);
+		}
+		inline RSA* rsa_key::raw()
+		{
+			return m_rsa.get();
+		}
+		inline const RSA* rsa_key::raw() const
+		{
+			return m_rsa.get();
 		}
 	}
 }
