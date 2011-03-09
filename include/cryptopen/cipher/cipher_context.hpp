@@ -42,8 +42,8 @@
  * \brief A cipher context class.
  */
 
-#ifndef CRYPTOPEN_HASH_CIPHER_CONTEXT_HPP
-#define CRYPTOPEN_HASH_CIPHER_CONTEXT_HPP
+#ifndef CRYPTOPEN_CIPHER_CIPHER_CONTEXT_HPP
+#define CRYPTOPEN_CIPHER_CIPHER_CONTEXT_HPP
 
 #include "../error/cryptographic_exception.hpp"
 #include "cipher_algorithm.hpp"
@@ -233,5 +233,5 @@ namespace cryptopen
 	}
 }
 
-#endif /* CRYPTOPEN_HASH_CIPHER_CONTEXT_HPP */
+#endif /* CRYPTOPEN_CIPHER_CIPHER_CONTEXT_HPP */
 

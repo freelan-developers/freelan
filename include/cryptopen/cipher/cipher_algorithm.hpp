@@ -42,8 +42,8 @@
  * \brief A cipher algorithm wrapper class.
  */
 
-#ifndef CRYPTOPEN_HASH_CIPHER_ALGORITHM_HPP
-#define CRYPTOPEN_HASH_CIPHER_ALGORITHM_HPP
+#ifndef CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP
+#define CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP
 
 #include "../initializer.hpp"
 
@@ -207,5 +207,5 @@ namespace cryptopen
 	}
 }
 
-#endif /* CRYPTOPEN_HASH_CIPHER_ALGORITHM_HPP */
+#endif /* CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP */
 
