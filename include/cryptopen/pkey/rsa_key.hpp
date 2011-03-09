@@ -50,7 +50,6 @@
 #include <openssl/rsa.h>
 #include <openssl/engine.h>
 
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace cryptopen
@@ -61,10 +60,11 @@ namespace cryptopen
 		 * \brief A RSA key.
 		 *
 		 * The rsa_key class represents a RSA key (with or without a private compound).
+		 * rsa_key is a low level structure that offers no mean to know whether the represented RSA key is a public or private key: it is up to the user to ensure that private key related functions will only get called on rsa_key instances that have private key information.
 		 *
-		 * A rsa_key instance is noncopyable but it is clonable. See clone().
+		 * A rsa_key instance has the same semantic as a RSA* pointer, thus two copies of the same instance share the same underlying RSA* pointer.
 		 */
-		class rsa_key : public boost::noncopyable
+		class rsa_key
 		{
 			public:
 
@@ -74,20 +74,20 @@ namespace cryptopen
 				typedef void (*generate_callback_type)(int, int, void*);
 
 				/**
-				 * \brief Create a new empty RSA key.
-				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
-				 */
-				rsa_key();
-
-				/**
 				 * \brief Generate a new RSA key.
 				 * \param num The size (in bits) of the modulus. As specified in OpenSSL documentation, key sizes with num < 1024 should be considered insecure.
 				 * \param exponent The exponent. Must be an odd number: typically 3, 17 or 65537.
 				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of RSA_generate_key(3). callback might be NULL (the default).
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				rsa_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
+				static rsa_key generate(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Create a new empty RSA key.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				rsa_key();
 
 				/**
 				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
@@ -119,9 +119,27 @@ namespace cryptopen
 
 			private:
 
+				explicit rsa_key(boost::shared_ptr<RSA> rsa);
+
 				// Here a boost::unique_ptr would have much less overhead, but this requires C++1x
 				boost::shared_ptr<RSA> m_rsa;
 		};
+
+		/**
+		 * \brief Compare two rsa_key instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two rsa_key instance share the same underlying RSA* pointer.
+		 */
+		bool operator==(const rsa_key& lhs, const rsa_key& rhs);
+
+		/**
+		 * \brief Compare two rsa_key instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two rsa_key instance do not share the same underlying RSA* pointer.
+		 */
+		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
 		
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
@@ -142,6 +160,18 @@ namespace cryptopen
 		inline const RSA* rsa_key::raw() const
 		{
 			return m_rsa.get();
+		}
+		inline rsa_key::rsa_key(boost::shared_ptr<RSA> rsa) : m_rsa(rsa)
+		{
+			error::throw_error_if_not(m_rsa);
+		}
+		inline bool operator==(const rsa_key& lhs, const rsa_key& rhs)
+		{
+			return lhs.raw() == rhs.raw();
+		}
+		inline bool operator!=(const rsa_key& lhs, const rsa_key& rhs)
+		{
+			return lhs.raw() != rhs.raw();
 		}
 	}
 }

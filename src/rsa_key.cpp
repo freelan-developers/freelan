@@ -50,14 +50,14 @@ namespace cryptopen
 {
 	namespace pkey
 	{
-		rsa_key::rsa_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
+		rsa_key rsa_key::generate(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
 		{
 			// Exponent must be odd
 			assert(exponent | 1);
 
-			m_rsa.reset(RSA_generate_key(num, exponent, callback, callback_arg), RSA_free);
+			boost::shared_ptr<RSA> rsa(RSA_generate_key(num, exponent, callback, callback_arg), RSA_free);
 
-			error::throw_error_if_not(m_rsa);
+			return rsa_key(rsa);
 		}
 	}
 }
