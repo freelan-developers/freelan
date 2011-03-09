@@ -79,8 +79,33 @@ namespace cryptopen
 				 * \param exponent The exponent. Must be an odd number: typically 3, 17 or 65537.
 				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of RSA_generate_key(3). callback might be NULL (the default).
 				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The rsa_key.
 				 */
 				static rsa_key generate(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a RSA key from a public key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The rsa_key.
+				 */
+				static rsa_key from_public_key(const void* buf, size_t buf_len);
+
+				/**
+				 * \brief Load a RSA key from a certificate public key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The rsa_key.
+				 */
+				static rsa_key from_certificate_public_key(const void* buf, size_t buf_len);
+
+				/**
+				 * \brief Load a RSA key from a private key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The rsa_key.
+				 */
+				static rsa_key from_private_key(const void* buf, size_t buf_len);
 
 				/**
 				 * \brief Create a new empty RSA key.

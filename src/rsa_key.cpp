@@ -61,6 +61,39 @@ namespace cryptopen
 
 			return rsa_key(rsa);
 		}
+		
+		rsa_key rsa_key::from_public_key(const void* buf, size_t buf_len)
+		{
+			const unsigned char* _buf = static_cast<const unsigned char*>(buf);
+
+			RSA* rsa = NULL;
+
+			error::throw_error_if_not(d2i_RSAPublicKey(&rsa, &_buf, static_cast<long>(buf_len)));
+
+			return rsa_key(rsa);
+		}
+
+		rsa_key rsa_key::from_certificate_public_key(const void* buf, size_t buf_len)
+		{
+			const unsigned char* _buf = static_cast<const unsigned char*>(buf);
+
+			RSA* rsa = NULL;
+
+			error::throw_error_if_not(d2i_RSA_PUBKEY(&rsa, &_buf, static_cast<long>(buf_len)));
+
+			return rsa_key(rsa);
+		}
+
+		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len)
+		{
+			const unsigned char* _buf = static_cast<const unsigned char*>(buf);
+
+			RSA* rsa = NULL;
+
+			error::throw_error_if_not(d2i_RSAPrivateKey(&rsa, &_buf, static_cast<long>(buf_len)));
+
+			return rsa_key(rsa);
+		}
 	}
 }
 
