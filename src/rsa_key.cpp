@@ -55,7 +55,9 @@ namespace cryptopen
 			// Exponent must be odd
 			assert(exponent | 1);
 
-			boost::shared_ptr<RSA> rsa(RSA_generate_key(num, exponent, callback, callback_arg), RSA_free);
+			RSA* rsa = RSA_generate_key(num, exponent, callback, callback_arg);
+
+			error::throw_error_if_not(rsa);
 
 			return rsa_key(rsa);
 		}

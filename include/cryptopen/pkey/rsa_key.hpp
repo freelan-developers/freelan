@@ -125,8 +125,6 @@ namespace cryptopen
 
 			private:
 
-				explicit rsa_key(boost::shared_ptr<RSA> rsa);
-
 				boost::shared_ptr<RSA> m_rsa;
 		};
 
@@ -172,10 +170,6 @@ namespace cryptopen
 		inline const RSA* rsa_key::raw() const
 		{
 			return m_rsa.get();
-		}
-		inline rsa_key::rsa_key(boost::shared_ptr<RSA> rsa) : m_rsa(rsa)
-		{
-			error::throw_error_if_not(m_rsa);
 		}
 		inline bool operator==(const rsa_key& lhs, const rsa_key& rhs)
 		{
