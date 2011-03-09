@@ -90,6 +90,12 @@ namespace cryptopen
 				rsa_key();
 
 				/**
+				 * \brief Create a RSA key by taking ownership of an existing RSA* pointer.
+				 * \param rsa The RSA* pointer. Cannot be NULL.
+				 */
+				explicit rsa_key(RSA*);
+
+				/**
 				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
 				 * \param ctx A BN_CTX to use or NULL (the default) if one is to be created.
 				 * \warning The PRNG must be seeded prior to calling enable_blinding().
@@ -121,7 +127,6 @@ namespace cryptopen
 
 				explicit rsa_key(boost::shared_ptr<RSA> rsa);
 
-				// Here a boost::unique_ptr would have much less overhead, but this requires C++1x
 				boost::shared_ptr<RSA> m_rsa;
 		};
 
@@ -144,6 +149,13 @@ namespace cryptopen
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
 			error::throw_error_if_not(m_rsa);
+		}
+		inline rsa_key::rsa_key(RSA* rsa) : m_rsa(rsa, RSA_free)
+		{
+			if (!m_rsa)
+			{
+				throw std::invalid_argument("rsa");
+			}
 		}
 		inline void rsa_key::enable_blinding(BN_CTX* ctx)
 		{
