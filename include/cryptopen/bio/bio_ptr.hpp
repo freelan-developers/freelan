@@ -202,6 +202,65 @@ namespace cryptopen
 				 */
 				ptrdiff_t puts(const char* buf);
 
+				/**
+				 * \brief Reset the BIO to its initial state.
+				 * \return 1 for success, 0 or -1 for failure. If the BIO is a file bio, then 0 means success and -1 means failure.
+				 *
+				 * Please don't blame me for the inconsistent return values: take a look at BIO_ctrl(3) for the reason.
+				 */
+				int breset();
+
+				/**
+				 * \brief Set the file position pointer.
+				 * \param offset The offset value.
+				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() return 0 for success and -1 for failure.
+				 *
+				 * Please don't blame me for the inconsistent return values: take a look at BIO_ctrl(3) for the reason.
+				 */
+				ptrdiff_t seek(ptrdiff_t offset);
+
+				/**
+				 * \brief Get the current file position.
+				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() return 0 for success and -1 for failure.
+				 */
+				ptrdiff_t tell();
+
+				/**
+				 * \brief Write out any internally buffered data.
+				 * \return 1 for success and 0 or -1 for failure.
+				 */
+				int flush();
+
+				/**
+				 * \brief Determine if the BIO has reached EOF.
+				 * \return true if the BIO has reached EOF.
+				 */
+				bool eof();
+
+				/**
+				 * \brief Set the BIO close flag.
+				 * \param close The close flag. Can be either BIO_CLOSE or BIO_NOCLOSE.
+				 */
+				void set_close(long close);
+
+				/**
+				 * \brief Get the BIO close flag.
+				 * \return The BIO close flag.
+				 */
+				long get_close();
+
+				/**
+				 * \brief Return the number of pending read characters.
+				 * \return The number of pending read characters.
+				 */
+				size_t pending_read();
+
+				/**
+				 * \brief Return the number of pending write characters.
+				 * \return The number of pending write characters.
+				 */
+				size_t pending_write();
+
 			private:
 
 				bool boolean_test() const;
@@ -301,6 +360,42 @@ namespace cryptopen
 		inline ptrdiff_t bio_ptr::puts(const char* buf)
 		{
 			return BIO_puts(m_bio, buf);
+		}
+		inline int bio_ptr::breset()
+		{
+			return BIO_reset(m_bio);
+		}
+		inline ptrdiff_t bio_ptr::seek(ptrdiff_t offset)
+		{
+			return BIO_seek(m_bio, static_cast<int>(offset));
+		}
+		inline ptrdiff_t bio_ptr::tell()
+		{
+			return BIO_tell(m_bio);
+		}
+		inline int bio_ptr::flush()
+		{
+			return BIO_flush(m_bio);
+		}
+		inline bool bio_ptr::eof()
+		{
+			return BIO_eof(m_bio) != 0;
+		}
+		inline void bio_ptr::set_close(long _close)
+		{
+			BIO_set_close(m_bio, _close);
+		}
+		inline long bio_ptr::get_close()
+		{
+			return BIO_get_close(m_bio);
+		}
+		inline size_t bio_ptr::pending_read()
+		{
+			return BIO_ctrl_pending(m_bio);
+		}
+		inline size_t bio_ptr::pending_write()
+		{
+			return BIO_ctrl_wpending(m_bio);
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
