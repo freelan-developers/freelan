@@ -61,7 +61,7 @@ namespace cryptopen
 
 			return rsa_key(rsa);
 		}
-		
+
 		rsa_key rsa_key::from_public_key(const void* buf, size_t buf_len)
 		{
 			const unsigned char* _buf = static_cast<const unsigned char*>(buf);

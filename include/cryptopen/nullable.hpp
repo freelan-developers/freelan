@@ -79,7 +79,10 @@ namespace cryptopen
 			/**
 			 * \brief Protected assignation operator.
 			 */
-			nullable_base& operator=(const nullable_base&) { return *this; }
+			nullable_base& operator=(const nullable_base&)
+			{
+				return *this;
+			}
 
 			/**
 			 * \brief Default destructor.
@@ -158,7 +161,7 @@ namespace cryptopen
 	{
 		lhs.this_type_does_not_support_comparisons();
 
-		return false;	
+		return false;
 	}
 }
 
