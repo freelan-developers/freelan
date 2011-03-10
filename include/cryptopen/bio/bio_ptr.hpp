@@ -46,6 +46,8 @@
 #define CRYPTOPEN_BIO_BIO_PTR_HPP
 
 #include "nullable.hpp"
+#include "cipher/cipher_algorithm.hpp"
+#include "cipher/cipher_context.hpp"
 
 #include <openssl/bio.h>
 
@@ -308,6 +310,31 @@ namespace cryptopen
 				 */
 				bool set_buffer_read_data(const void* buf, size_t buf_len);
 
+				// BIO_f_cipher() specific methods
+
+				/**
+				 * \brief Set the cipher associated to the BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param key The key buffer.
+				 * \param iv The IV buffer.
+				 * \param direction The cipher direction. Only possible values are cipher::cipher_context::decrypt and cipher::cipher_context::encrypt.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_cipher()".
+				 */
+				void set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction);
+
+				/**
+				 * \brief Determine whether the decryption operation was successful.
+				 * \return true for success.
+				 */
+				bool get_cipher_status();
+
+				/**
+				 * \brief Get the associated cipher context.
+				 * \return The associated cipher context.
+				 */
+				EVP_CIPHER_CTX* get_cipher_ctx();
+
 			private:
 
 				bool boolean_test() const;
@@ -463,6 +490,22 @@ namespace cryptopen
 		inline bool bio_ptr::set_buffer_read_data(const void* buf, size_t buf_len)
 		{
 			return BIO_set_buffer_read_data(m_bio, const_cast<void*>(buf), buf_len) > 0;
+		}
+		inline void bio_ptr::set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction)
+		{
+			BIO_set_cipher(m_bio, algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction));
+		}
+		inline bool bio_ptr::get_cipher_status()
+		{
+			return BIO_get_cipher_status(m_bio) != 0;
+		}
+		inline EVP_CIPHER_CTX* bio_ptr::get_cipher_ctx()
+		{
+			EVP_CIPHER_CTX* ctx = NULL;
+
+			BIO_get_cipher_ctx(m_bio, &ctx);
+
+			return ctx;
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
