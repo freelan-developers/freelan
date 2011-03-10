@@ -62,7 +62,9 @@ namespace cryptopen
 		 *
 		 * A bio *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a bio_ptr always points to a valid BIO structure.
 		 *
-		 * If you require a wrapper for OpenSSL BIO with ownership semantic, see bio.
+		 * If you require a wrapper for OpenSSL BIO with ownership semantic, see bio_chain.
+		 *
+		 * \warning Always check for the bio_ptr not to be NULL before calling any of its method. Calling any method (except raw() or reset()) on a null bio_ptr has undefined behavior.
 		 */
 		class bio_ptr : public nullable<bio_ptr>
 		{
@@ -83,7 +85,6 @@ namespace cryptopen
 				/**
 				 * \brief Get the raw BIO pointer.
 				 * \return The raw BIO pointer.
-				 * \warning The instance has ownership of the return pointer. Calling BIO_free() on the returned value will result in undefined behavior.
 				 */
 				BIO* raw();
 
@@ -122,6 +123,36 @@ namespace cryptopen
 				 * The list of possible types is available on the man page for BIO_find_type(3).
 				 */
 				int type();
+
+				/**
+				 * \brief Determine if the last operation on the BIO should be retried.
+				 * \return true if the last operation should be retried.
+				 */
+				bool should_retry();
+
+				/**
+				 * \brief Determine if the BIO should be read.
+				 * \return true if the BIO should be read.
+				 */
+				bool should_read();
+
+				/**
+				 * \brief Determine if the BIO should be written.
+				 * \return true if the BIO should be written.
+				 */
+				bool should_write();
+
+				/**
+				 * \brief Determine if the cause of the last failure was due to a special IO event.
+				 * \return true if the cause of the last failure was due to a special IO event.
+				 */
+				bool should_io_special();
+
+				/**
+				 * \brief Get the retry type.
+				 * \return The retry type, as specified on the man page of BIO_should_retry(3).
+				 */
+				int retry_type();
 
 			private:
 
@@ -178,6 +209,26 @@ namespace cryptopen
 		inline int bio_ptr::type()
 		{
 			return BIO_method_type(m_bio);
+		}
+		inline bool bio_ptr::should_retry()
+		{
+			return BIO_should_retry(m_bio) != 0;
+		}
+		inline bool bio_ptr::should_read()
+		{
+			return BIO_should_read(m_bio) != 0;
+		}
+		inline bool bio_ptr::should_write()
+		{
+			return BIO_should_write(m_bio) != 0;
+		}
+		inline bool bio_ptr::should_io_special()
+		{
+			return BIO_should_io_special(m_bio) != 0;
+		}
+		inline int bio_ptr::retry_type()
+		{
+			return BIO_retry_type(m_bio);
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
