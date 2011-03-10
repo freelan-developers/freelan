@@ -88,6 +88,14 @@ namespace cryptopen
 				 */
 				const BIO* raw() const;
 
+				/**
+				 * \brief Get the type of the bio.
+				 * \return The type.
+				 *
+				 * The list of possible types is available on the man page for BIO_find_type(3).
+				 */
+				int type() const;
+
 			private:
 				boost::shared_ptr<BIO> m_bio;
 		};
@@ -108,7 +116,7 @@ namespace cryptopen
 		 */
 		bool operator!=(const bio& lhs, const bio& rhs);
 
-		inline bio::bio(BIO_METHOD* type) : m_bio(BIO_new(type), BIO_free)
+		inline bio::bio(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free)
 		{
 			error::throw_error_if_not(m_bio);
 		}
@@ -119,6 +127,10 @@ namespace cryptopen
 		inline const BIO* bio::raw() const
 		{
 			return m_bio.get();
+		}
+		inline int bio::type() const
+		{
+			return BIO_method_type(m_bio.get());
 		}
 		inline bool operator==(const bio& lhs, const bio& rhs)
 		{
