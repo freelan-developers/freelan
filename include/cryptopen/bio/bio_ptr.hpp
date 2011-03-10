@@ -261,6 +261,53 @@ namespace cryptopen
 				 */
 				size_t pending_write();
 
+				// BIO_f_buffer() specific methods
+
+				/**
+				 * \brief Get the number of lines currently buffered.
+				 * \return The number of lines currently buffered.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
+				 */
+				unsigned int get_buffer_num_lines();
+
+				/**
+				 * \brief Set the read buffer size.
+				 * \param size The size to set.
+				 * \return true if the set succeeded.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
+				 */
+				bool set_read_buffer_size(size_t size);
+
+				/**
+				 * \brief Set the write buffer size.
+				 * \param size The size to set.
+				 * \return true if the set succeeded.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
+				 */
+				bool set_write_buffer_size(size_t size);
+
+				/**
+				 * \brief Set both read and write buffer sizes.
+				 * \param size The size to set.
+				 * \return true if the set succeeded.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
+				 */
+				bool set_buffer_size(size_t size);
+
+				/**
+				 * \brief Set the buffer read data.
+				 * \param buf The data.
+				 * \param buf_len The length of buf.
+				 * \return true if the set succeeded.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
+				 */
+				bool set_buffer_read_data(const void* buf, size_t buf_len);
+
 			private:
 
 				bool boolean_test() const;
@@ -396,6 +443,26 @@ namespace cryptopen
 		inline size_t bio_ptr::pending_write()
 		{
 			return BIO_ctrl_wpending(m_bio);
+		}
+		inline unsigned int bio_ptr::get_buffer_num_lines()
+		{
+			return BIO_get_buffer_num_lines(m_bio);
+		}
+		inline bool bio_ptr::set_read_buffer_size(size_t size)
+		{
+			return BIO_set_read_buffer_size(m_bio, size) > 0;
+		}
+		inline bool bio_ptr::set_write_buffer_size(size_t size)
+		{
+			return BIO_set_write_buffer_size(m_bio, size) > 0;
+		}
+		inline bool bio_ptr::set_buffer_size(size_t size)
+		{
+			return BIO_set_buffer_size(m_bio, size) > 0;
+		}
+		inline bool bio_ptr::set_buffer_read_data(const void* buf, size_t buf_len)
+		{
+			return BIO_set_buffer_read_data(m_bio, const_cast<void*>(buf), buf_len) > 0;
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
