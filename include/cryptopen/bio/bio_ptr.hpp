@@ -88,6 +88,21 @@ namespace cryptopen
 				BIO* raw();
 
 				/**
+				 * \brief Push a bio_ptr at the bottom of the BIO chain.
+				 * \param bio The bio to append to the BIO chain.
+				 * \returns The current bio_ptr.
+				 */
+				bio_ptr push(bio_ptr& bio);
+
+				/**
+				 * \brief Remove the bio_ptr from its BIO chain.
+				 * \return The next bio_ptr in the chain, or a null one if there is no next bio_ptr.
+				 * 
+				 * Once it is removed from its chain, the bio_ptr can be either deleted or added to another chain.
+				 */
+				bio_ptr pop();
+
+				/**
 				 * \brief Find a BIO in the BIO chain by its type.
 				 * \param type The type of the bio_ptr.
 				 * \return The first bio_ptr to match or an empty one if none is found that match the specified type.
@@ -143,6 +158,14 @@ namespace cryptopen
 		inline BIO* bio_ptr::raw()
 		{
 			return m_bio;
+		}
+		inline bio_ptr bio_ptr::push(bio_ptr& bio)
+		{
+			return bio_ptr(BIO_push(m_bio, bio.raw()));
+		}
+		inline bio_ptr bio_ptr::pop()
+		{
+			return bio_ptr(BIO_pop(m_bio));
 		}
 		inline bio_ptr bio_ptr::find_by_type(int _type)
 		{
