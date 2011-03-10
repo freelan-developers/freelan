@@ -49,7 +49,7 @@
 
 #include <openssl/bio.h>
 
-#include <boost/shared_ptr.hpp>
+#include <stdexcept>
 
 namespace cryptopen
 {
@@ -58,11 +58,13 @@ namespace cryptopen
 		/**
 		 * \brief An OpenSSL BIO.
 		 *
-		 * The bio class represents a BIO.
+		 * The bio class is a wrapper for OpenSSL BIO* pointers.
 		 *
 		 * A bio instance has the same semantic as a BIO* pointer, thus two copies of the same instance share the same underlying pointer.
 		 *
-		 * Each bio owns its underlying pointer. Avoid calling BIO_free_all() on a bio.
+		 * A bio owns *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a bio always points to a valid BIO structure.
+		 *
+		 * If you require a wrapper for OpenSSL BIO with ownership semantic, see bio.
 		 */
 		class bio
 		{
@@ -70,9 +72,9 @@ namespace cryptopen
 
 				/**
 				 * \brief Create a new bio.
-				 * \param type The type of the BIO. See the man page of bio(3) to get the list of all BIOs.
+				 * \param bio The bio to point to. Cannot be NULL.
 				 */
-				bio(BIO_METHOD* type);
+				bio(BIO* bio);
 
 				/**
 				 * \brief Get the raw BIO pointer.
@@ -97,7 +99,8 @@ namespace cryptopen
 				int type() const;
 
 			private:
-				boost::shared_ptr<BIO> m_bio;
+
+				BIO* m_bio;
 		};
 
 		/**
@@ -116,21 +119,21 @@ namespace cryptopen
 		 */
 		bool operator!=(const bio& lhs, const bio& rhs);
 
-		inline bio::bio(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free)
+		inline bio::bio(BIO* _bio) : m_bio(_bio)
 		{
-			error::throw_error_if_not(m_bio);
+			throw std::invalid_argument("bio");
 		}
 		inline BIO* bio::raw()
 		{
-			return m_bio.get();
+			return m_bio;
 		}
 		inline const BIO* bio::raw() const
 		{
-			return m_bio.get();
+			return m_bio;
 		}
 		inline int bio::type() const
 		{
-			return BIO_method_type(m_bio.get());
+			return BIO_method_type(m_bio);
 		}
 		inline bool operator==(const bio& lhs, const bio& rhs)
 		{
