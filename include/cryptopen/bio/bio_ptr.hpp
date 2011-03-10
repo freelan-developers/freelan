@@ -49,6 +49,8 @@
 
 #include <openssl/bio.h>
 
+#include <cstddef>
+
 namespace cryptopen
 {
 	namespace bio
@@ -169,6 +171,37 @@ namespace cryptopen
 				 */
 				int get_retry_reason();
 
+				/**
+				 * \brief Read some data from the BIO.
+				 * \param buf The buffer to read the data to.
+				 * \param buf_len The length of buf.
+				 * \return The amount of data successfully read. If the return value is 0 or -1, no data could be read. If it is -2, then the operation is not available for the specific BIO type.
+				 */
+				ptrdiff_t read(void* buf, size_t buf_len);
+
+				/**
+				 * \brief Read a line of data from the BIO.
+				 * \param buf The buffer to read the data to.
+				 * \param buf_len The length of buf.
+				 * \return The amount of data successfully read. If the return value is 0 or -1, no data could be read. If it is -2, then the operation is not available for the specific BIO type.
+				 */
+				ptrdiff_t gets(char* buf, size_t buf_len);
+
+				/**
+				 * \brief Write some data to the BIO.
+				 * \param buf The buffer to write the data from.
+				 * \param buf_len The length of buf.
+				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
+				 */
+				ptrdiff_t write(const void* buf, size_t buf_len);
+
+				/**
+				 * \brief Write a line of data to the BIO.
+				 * \param buf The buffer to write the data from.
+				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
+				 */
+				ptrdiff_t puts(const char* buf);
+
 			private:
 
 				bool boolean_test() const;
@@ -252,6 +285,22 @@ namespace cryptopen
 		inline int bio_ptr::get_retry_reason()
 		{
 			return BIO_get_retry_reason(m_bio);
+		}
+		inline ptrdiff_t bio_ptr::read(void* buf, size_t buf_len)
+		{
+			return BIO_read(m_bio, buf, static_cast<int>(buf_len));
+		}
+		inline ptrdiff_t bio_ptr::gets(char* buf, size_t buf_len)
+		{
+			return BIO_gets(m_bio, buf, static_cast<int>(buf_len));
+		}
+		inline ptrdiff_t bio_ptr::write(const void* buf, size_t buf_len)
+		{
+			return BIO_write(m_bio, buf, static_cast<int>(buf_len));
+		}
+		inline ptrdiff_t bio_ptr::puts(const char* buf)
+		{
+			return BIO_puts(m_bio, buf);
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
