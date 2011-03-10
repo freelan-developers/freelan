@@ -45,9 +45,9 @@
 #ifndef CRYPTOPEN_BIO_BIO_PTR_HPP
 #define CRYPTOPEN_BIO_BIO_PTR_HPP
 
-#include <openssl/bio.h>
+#include "nullable.hpp"
 
-#include <stdexcept>
+#include <openssl/bio.h>
 
 namespace cryptopen
 {
@@ -64,15 +64,15 @@ namespace cryptopen
 		 *
 		 * If you require a wrapper for OpenSSL BIO with ownership semantic, see bio.
 		 */
-		class bio_ptr
+		class bio_ptr : public nullable<bio_ptr>
 		{
 			public:
 
 				/**
 				 * \brief Create a new bio_ptr.
-				 * \param bio The bio to point to. Cannot be NULL.
+				 * \param bio The bio to point to.
 				 */
-				bio_ptr(BIO* bio);
+				explicit bio_ptr(BIO* bio = NULL);
 
 				/**
 				 * \brief Get the raw BIO pointer.
@@ -82,11 +82,17 @@ namespace cryptopen
 				BIO* raw();
 
 				/**
-				 * \brief Get the raw BIO pointer.
-				 * \return The raw BIO pointer.
-				 * \warning The instance has ownership of the return pointer. Calling BIO_free() on the returned value will result in undefined behavior.
+				 * \brief Find a BIO in the BIO chain by its type.
+				 * \param type The type of the bio_ptr.
+				 * \return The first bio_ptr to match or an empty one if none is found that match the specified type.
 				 */
-				const BIO* raw() const;
+				bio_ptr find_by_type(int type);
+
+				/**
+				 * \brief Get the next bio_ptr in the chain.
+				 * \return The next bio_ptr in the chain.
+				 */
+				bio_ptr next();
 
 				/**
 				 * \brief Get the type of the bio.
@@ -94,11 +100,15 @@ namespace cryptopen
 				 *
 				 * The list of possible types is available on the man page for BIO_find_type(3).
 				 */
-				int type() const;
+				int type();
 
 			private:
 
+				bool boolean_test() const;
+
 				BIO* m_bio;
+				
+				friend bool operator==(const bio_ptr& lhs, const bio_ptr& rhs);
 		};
 
 		/**
@@ -119,27 +129,34 @@ namespace cryptopen
 
 		inline bio_ptr::bio_ptr(BIO* _bio) : m_bio(_bio)
 		{
-			throw std::invalid_argument("bio");
 		}
 		inline BIO* bio_ptr::raw()
 		{
 			return m_bio;
 		}
-		inline const BIO* bio_ptr::raw() const
+		inline bio_ptr bio_ptr::find_by_type(int _type)
 		{
-			return m_bio;
+			return bio_ptr(BIO_find_type(m_bio, _type));
 		}
-		inline int bio_ptr::type() const
+		inline bio_ptr bio_ptr::next()
+		{
+			return bio_ptr(BIO_next(m_bio));
+		}
+		inline int bio_ptr::type()
 		{
 			return BIO_method_type(m_bio);
 		}
+		inline bool bio_ptr::boolean_test() const
+		{
+			return (m_bio != NULL);
+		}
 		inline bool operator==(const bio_ptr& lhs, const bio_ptr& rhs)
 		{
-			return lhs.raw() == rhs.raw();
+			return lhs.m_bio == rhs.m_bio;
 		}
 		inline bool operator!=(const bio_ptr& lhs, const bio_ptr& rhs)
 		{
-			return lhs.raw() != rhs.raw();
+			return !(lhs == rhs);
 		}
 	}
 }
