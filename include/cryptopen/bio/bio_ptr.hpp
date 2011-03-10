@@ -66,7 +66,7 @@ namespace cryptopen
 		 *
 		 * If you require a wrapper for OpenSSL BIO with ownership semantic, see bio_chain.
 		 *
-		 * \warning Always check for the bio_ptr not to be NULL before calling any of its method. Calling any method (except raw() or reset()) on a null bio_ptr has undefined behavior.
+		 * \warning Always check for the bio_ptr not to be NULL before calling any of its method. Calling any method (except raw() or reset_ptr()) on a null bio_ptr has undefined behavior.
 		 */
 		class bio_ptr : public nullable<bio_ptr>
 		{
@@ -82,7 +82,7 @@ namespace cryptopen
 				 * \brief Reset the underlying pointer.
 				 * \param bio The bio to point to.
 				 */
-				void reset(BIO* bio = NULL);
+				void reset_ptr(BIO* bio = NULL);
 
 				/**
 				 * \brief Get the raw BIO pointer.
@@ -208,7 +208,7 @@ namespace cryptopen
 				 *
 				 * Please don't blame me for the inconsistent return values: take a look at BIO_ctrl(3) for the reason.
 				 */
-				int breset();
+				int reset();
 
 				/**
 				 * \brief Set the file position pointer.
@@ -289,7 +289,7 @@ namespace cryptopen
 		inline bio_ptr::bio_ptr(BIO* _bio) : m_bio(_bio)
 		{
 		}
-		inline void bio_ptr::reset(BIO* _bio)
+		inline void bio_ptr::reset_ptr(BIO* _bio)
 		{
 			m_bio = _bio;
 		}
@@ -361,7 +361,7 @@ namespace cryptopen
 		{
 			return BIO_puts(m_bio, buf);
 		}
-		inline int bio_ptr::breset()
+		inline int bio_ptr::reset()
 		{
 			return BIO_reset(m_bio);
 		}
