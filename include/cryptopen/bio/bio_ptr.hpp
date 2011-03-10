@@ -154,6 +154,21 @@ namespace cryptopen
 				 */
 				int retry_type();
 
+				/**
+				 * \brief Determine the precise reason for the special condition and returns the BIO that caused it.
+				 * \param reason If not NULL, *reason will be set to the reason code.
+				 * \return The BIO that caused the special condition.
+				 * \see get_retry_reason
+				 */
+				bio_ptr get_retry_bio(int* reason = NULL);
+
+				/**
+				 * \brief Get the reason for a special condition.
+				 * \return The reason code.
+				 * \see get_retry_bio
+				 */
+				int get_retry_reason();
+
 			private:
 
 				bool boolean_test() const;
@@ -229,6 +244,14 @@ namespace cryptopen
 		inline int bio_ptr::retry_type()
 		{
 			return BIO_retry_type(m_bio);
+		}
+		inline bio_ptr bio_ptr::get_retry_bio(int* reason)
+		{
+			return bio_ptr(BIO_get_retry_BIO(m_bio, reason));
+		}
+		inline int bio_ptr::get_retry_reason()
+		{
+			return BIO_get_retry_reason(m_bio);
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
