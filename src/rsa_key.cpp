@@ -60,7 +60,7 @@ namespace cryptopen
 			}
 		}
 
-		rsa_key rsa_key::generate(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
+		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
 		{
 			// Exponent must be odd
 			assert(exponent | 1);
