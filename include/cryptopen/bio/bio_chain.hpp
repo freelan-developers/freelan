@@ -37,19 +37,29 @@
  */
 
 /**
- * \file bio.cpp
+ * \file bio_chain.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A bio class.
+ * \brief A bio chain class.
  */
 
-#include "bio/bio.hpp"
+#ifndef CRYPTOPEN_BIO_BIO_CHAIN_HPP
+#define CRYPTOPEN_BIO_BIO_CHAIN_HPP
 
-#include <cassert>
+#include "../error/cryptographic_exception.hpp"
+
+#include <stdexcept>
 
 namespace cryptopen
 {
 	namespace bio
 	{
+		/**
+		 */
+		class bio_chain
+		{
+		};
 	}
 }
+
+#endif /* CRYPTOPEN_BIO_BIO_CHAIN_HPP */
 
