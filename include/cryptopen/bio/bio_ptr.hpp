@@ -405,6 +405,42 @@ namespace cryptopen
 				 */
 				FILE* get_file_pointer(); 
 
+				// BIO_s_mem specific methods
+
+				/**
+				 * \brief Set the behavior of the memory BIO when it is empty.
+				 * \param v If zero, an empty memory BIO will return EOF. If v is non zero, it will return v when it is empty and will set the retry flag. v should be either zero or a negative value to avoid ambiguities with normal positive return values.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_mem()".
+				 */
+				void set_mem_eof_return(int v);
+
+				/**
+				 * \brief Get the BIO memory data pointer.
+				 * \param buf A pointer that must receive the memory data address.
+				 * \return The length of the data.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_mem()".
+				 */
+				size_t get_mem_data(char*& buf);
+
+				/**
+				 * \brief Set the internal memory buffer.
+				 * \param mb The memory buffer.
+				 * \param close The close flags. Should be either BIO_CLOSE or BIO_NOCLOSE.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_mem()".
+				 */
+				void set_mem_buf(BUF_MEM* mb, long close);
+
+				/**
+				 * \brief Get the internal memory buffer.
+				 * \return The memory buffer.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_mem()".
+				 */
+				BUF_MEM* get_mem_buf();
+
 			private:
 
 				bool boolean_test() const;
@@ -616,6 +652,26 @@ namespace cryptopen
 			BIO_get_fp(m_bio, &fp);
 
 			return fp;
+		}
+		inline void bio_ptr::set_mem_eof_return(int v)
+		{
+			BIO_set_mem_eof_return(m_bio, v);
+		}
+		inline size_t bio_ptr::get_mem_data(char*& buf)
+		{
+			return BIO_get_mem_data(m_bio, &buf);
+		}
+		inline void bio_ptr::set_mem_buf(BUF_MEM* mb, long close)
+		{
+			BIO_set_mem_buf(m_bio, mb, close);
+		}
+		inline BUF_MEM* bio_ptr::get_mem_buf()
+		{
+			BUF_MEM* mb = NULL;
+
+			BIO_get_mem_ptr(m_bio, &mb);
+
+			return mb;
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
