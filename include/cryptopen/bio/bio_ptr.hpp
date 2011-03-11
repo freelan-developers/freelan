@@ -105,6 +105,13 @@ namespace cryptopen
 				 * \param bio The bio to append to the BIO chain.
 				 * \returns The current bio_ptr.
 				 */
+				bio_ptr push(BIO* bio);
+
+				/**
+				 * \brief Push a bio_ptr at the bottom of the BIO chain.
+				 * \param bio The bio to append to the BIO chain.
+				 * \returns The current bio_ptr.
+				 */
 				bio_ptr push(bio_ptr& bio);
 
 				/**
@@ -487,6 +494,10 @@ namespace cryptopen
 		inline bool bio_ptr::set_method(BIO_METHOD* _type)
 		{
 			return BIO_set(m_bio, _type) != 0;
+		}
+		inline bio_ptr bio_ptr::push(BIO* bio)
+		{
+			return bio_ptr(BIO_push(m_bio, bio));
 		}
 		inline bio_ptr bio_ptr::push(bio_ptr& bio)
 		{
