@@ -372,7 +372,7 @@ namespace cryptopen
 				/**
 				 * \brief Set the file descriptor.
 				 * \param fd The file descriptor.
-				 * \param close The close flag.
+				 * \param close The close flags.
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_fd()".
 				 */
@@ -385,6 +385,25 @@ namespace cryptopen
 				 * This method only makes sense for BIOs of type "BIO_s_fd()".
 				 */
 				int get_file_descriptor();
+
+				// BIO_s_file specific methods
+
+				/**
+				 * \brief Set the file pointer.
+				 * \param fp The file pointer.
+				 * \param close The close flags.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_file()".
+				 */
+				void set_file_pointer(FILE* fp, long close);
+
+				/**
+				 * \brief Get the file pointer.
+				 * \return The file pointer.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_file()".
+				 */
+				FILE* get_file_pointer(); 
 
 			private:
 
@@ -585,6 +604,18 @@ namespace cryptopen
 		inline int bio_ptr::get_file_descriptor()
 		{
 			return BIO_get_fd(m_bio, NULL);
+		}
+		inline void bio_ptr::set_file_pointer(FILE* fp, long close)
+		{
+			BIO_set_fp(m_bio, fp, close);
+		}
+		inline FILE* bio_ptr::get_file_pointer()
+		{
+			FILE* fp = NULL;
+
+			BIO_get_fp(m_bio, &fp);
+
+			return fp;
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
