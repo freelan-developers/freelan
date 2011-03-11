@@ -93,7 +93,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a private RSA key from a BIO.
 				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -102,7 +102,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a public RSA key from a BIO.
 				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -111,7 +111,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a certificate public RSA key from a BIO.
 				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -120,7 +120,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a private RSA key from a file.
 				 * \param file The file.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -129,7 +129,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a public RSA key from a file.
 				 * \param file The file.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -138,7 +138,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a certificate public RSA key from a file.
 				 * \param file The file.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -148,7 +148,7 @@ namespace cryptopen
 				 * \brief Load a RSA key from a private key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -158,7 +158,7 @@ namespace cryptopen
 				 * \brief Load a RSA key from a public key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -168,7 +168,7 @@ namespace cryptopen
 				 * \brief Load a RSA key from a certificate public key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -186,6 +186,36 @@ namespace cryptopen
 				 * \param rsa The RSA* pointer. Cannot be NULL.
 				 */
 				explicit rsa_key(RSA*);
+
+				/**
+				 * \brief Write the private RSA key to a BIO.
+				 * \param bio The BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param passphrase The passphrase to use.
+				 * \param passphrase_len The length of passphrase.
+				 */
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+
+				/**
+				 * \brief Write the private RSA key to a BIO.
+				 * \param bio The BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+
+				/**
+				 * \brief Write the public RSA key to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_public_key(bio::bio_ptr bio);
+
+				/**
+				 * \brief Write the certificate public RSA key to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_certificate_public_key(bio::bio_ptr bio);
 
 				/**
 				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
@@ -272,6 +302,22 @@ namespace cryptopen
 			{
 				throw std::invalid_argument("rsa");
 			}
+		}
+		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		{
+			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), m_rsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+		}
+		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), m_rsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+		}
+		inline void rsa_key::write_public_key(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_RSAPublicKey(bio.raw(), m_rsa.get()));
+		}
+		inline void rsa_key::write_certificate_public_key(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), m_rsa.get()));
 		}
 		inline void rsa_key::enable_blinding(BN_CTX* ctx)
 		{
