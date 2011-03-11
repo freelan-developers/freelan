@@ -80,7 +80,7 @@ namespace cryptopen
 				 * \brief Create a new bio_ptr.
 				 * \param bio The bio to point to.
 				 */
-				explicit bio_ptr(BIO* bio = NULL);
+				bio_ptr(BIO* bio = NULL);
 
 				/**
 				 * \brief Reset the underlying pointer.
@@ -106,14 +106,7 @@ namespace cryptopen
 				 * \param bio The bio to append to the BIO chain.
 				 * \returns The current bio_ptr.
 				 */
-				bio_ptr push(BIO* bio);
-
-				/**
-				 * \brief Push a bio_ptr at the bottom of the BIO chain.
-				 * \param bio The bio to append to the BIO chain.
-				 * \returns The current bio_ptr.
-				 */
-				bio_ptr push(bio_ptr& bio);
+				bio_ptr push(bio_ptr bio);
 
 				/**
 				 * \brief Remove the bio_ptr from its BIO chain.
@@ -503,11 +496,7 @@ namespace cryptopen
 		{
 			return BIO_set(m_bio, _type) != 0;
 		}
-		inline bio_ptr bio_ptr::push(BIO* bio)
-		{
-			return bio_ptr(BIO_push(m_bio, bio));
-		}
-		inline bio_ptr bio_ptr::push(bio_ptr& bio)
+		inline bio_ptr bio_ptr::push(bio_ptr bio)
 		{
 			return bio_ptr(BIO_push(m_bio, bio.raw()));
 		}

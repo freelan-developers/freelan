@@ -97,33 +97,6 @@ namespace cryptopen
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
-				static rsa_key from_private_key(BIO* bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
-
-				/**
-				 * \brief Load a public RSA key from a BIO.
-				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
-				 * \param callback_arg An argument that will be passed to callback, if needed.
-				 * \return The rsa_key.
-				 */
-				static rsa_key from_public_key(BIO* bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
-
-				/**
-				 * \brief Load a certificate public RSA key from a BIO.
-				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
-				 * \param callback_arg An argument that will be passed to callback, if needed.
-				 * \return The rsa_key.
-				 */
-				static rsa_key from_certificate_public_key(BIO* bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
-
-				/**
-				 * \brief Load a private RSA key from a BIO.
-				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever the read data needs a passphrase.
-				 * \param callback_arg An argument that will be passed to callback, if needed.
-				 * \return The rsa_key.
-				 */
 				static rsa_key from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
@@ -238,29 +211,17 @@ namespace cryptopen
 		 */
 		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
 
-		inline rsa_key rsa_key::from_private_key(BIO* bio, pem_passphrase_callback_type callback, void* callback_arg)
-		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSAPrivateKey(bio, NULL, callback, callback_arg), RSA_free));
-		}
-		inline rsa_key rsa_key::from_public_key(BIO* bio, pem_passphrase_callback_type callback, void* callback_arg)
-		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSAPublicKey(bio, NULL, callback, callback_arg), RSA_free));
-		}
-		inline rsa_key rsa_key::from_certificate_public_key(BIO* bio, pem_passphrase_callback_type callback, void* callback_arg)
-		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSA_PUBKEY(bio, NULL, callback, callback_arg), RSA_free));
-		}
 		inline rsa_key rsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return from_private_key(bio.raw(), callback, callback_arg);
+			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSAPrivateKey(bio.raw(), NULL, callback, callback_arg), RSA_free));
 		}
 		inline rsa_key rsa_key::from_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return from_public_key(bio.raw(), callback, callback_arg);
+			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSAPublicKey(bio.raw(), NULL, callback, callback_arg), RSA_free));
 		}
 		inline rsa_key rsa_key::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return from_certificate_public_key(bio.raw(), callback, callback_arg);
+			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSA_PUBKEY(bio.raw(), NULL, callback, callback_arg), RSA_free));
 		}
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
