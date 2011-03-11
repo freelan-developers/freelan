@@ -48,6 +48,7 @@
 #include "nullable.hpp"
 #include "cipher/cipher_algorithm.hpp"
 #include "cipher/cipher_context.hpp"
+#include "hash/message_digest_algorithm.hpp"
 
 #include <openssl/bio.h>
 
@@ -333,7 +334,28 @@ namespace cryptopen
 				 * \brief Get the associated cipher context.
 				 * \return The associated cipher context.
 				 */
-				EVP_CIPHER_CTX* get_cipher_ctx();
+				EVP_CIPHER_CTX* get_cipher_context();
+
+				// BIO_f_md() specific methods
+
+				/**
+				 * \brief Set the message digest algorithm.
+				 * \param algorithm The message digest algorithm to use.
+				 * \return true on success.
+				 */
+				bool set_message_digest(hash::message_digest_algorithm algorithm);
+
+				/**
+				 * \brief Get the message digest algorithm.
+				 * \return The used algorithm.
+				 */
+				hash::message_digest_algorithm get_message_digest();
+
+				/**
+				 * \brief Get the message digest context.
+				 * \return The associated message digest context.
+				 */
+				EVP_MD_CTX* get_message_digest_context();
 
 			private:
 
@@ -499,11 +521,31 @@ namespace cryptopen
 		{
 			return BIO_get_cipher_status(m_bio) != 0;
 		}
-		inline EVP_CIPHER_CTX* bio_ptr::get_cipher_ctx()
+		inline EVP_CIPHER_CTX* bio_ptr::get_cipher_context()
 		{
 			EVP_CIPHER_CTX* ctx = NULL;
 
 			BIO_get_cipher_ctx(m_bio, &ctx);
+
+			return ctx;
+		}
+		inline bool bio_ptr::set_message_digest(hash::message_digest_algorithm algorithm)
+		{
+			return BIO_set_md(m_bio, algorithm.raw()) != 0;
+		}
+		inline hash::message_digest_algorithm bio_ptr::get_message_digest()
+		{
+			const EVP_MD* md;
+
+			BIO_get_md(m_bio, &md);
+
+			return hash::message_digest_algorithm(md);
+		}
+		inline EVP_MD_CTX* bio_ptr::get_message_digest_context()
+		{
+			EVP_MD_CTX* ctx;
+
+			BIO_get_md_ctx(m_bio, &ctx);
 
 			return ctx;
 		}
