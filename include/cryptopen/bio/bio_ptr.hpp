@@ -215,7 +215,7 @@ namespace cryptopen
 				/**
 				 * \brief Set the file position pointer.
 				 * \param offset The offset value.
-				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() return 0 for success and -1 for failure.
+				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() returns 0 for success and -1 for failure.
 				 *
 				 * Please don't blame me for the inconsistent return values: take a look at BIO_ctrl(3) for the reason.
 				 */
@@ -223,7 +223,7 @@ namespace cryptopen
 
 				/**
 				 * \brief Get the current file position.
-				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() return 0 for success and -1 for failure.
+				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() returns 0 for success and -1 for failure.
 				 */
 				ptrdiff_t tell();
 
