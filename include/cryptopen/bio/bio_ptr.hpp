@@ -60,11 +60,11 @@ namespace cryptopen
 		/**
 		 * \brief An OpenSSL BIO pointer.
 		 *
-		 * The bio class is a wrapper for an OpenSSL BIO* pointer.
+		 * The bio_ptr class is a wrapper for an OpenSSL BIO* pointer.
 		 *
-		 * A bio instance has the same semantic as a BIO* pointer, thus two copies of the same instance share the same underlying pointer.
+		 * A bio_ptr instance has the same semantic as a BIO* pointer, thus two copies of the same instance share the same underlying pointer.
 		 *
-		 * A bio *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a bio_ptr always points to a valid BIO structure.
+		 * A bio_ptr *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a bio_ptr always points to a valid BIO structure.
 		 *
 		 * If you require a wrapper for OpenSSL BIO with ownership semantic, see bio_chain.
 		 *
