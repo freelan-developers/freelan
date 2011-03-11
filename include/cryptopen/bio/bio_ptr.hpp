@@ -94,6 +94,13 @@ namespace cryptopen
 				BIO* raw();
 
 				/**
+				 * \brief Set the method of the BIO.
+				 * \param type The type.
+				 * \return true on success.
+				 */
+				bool set_method(BIO_METHOD* type);
+
+				/**
 				 * \brief Push a bio_ptr at the bottom of the BIO chain.
 				 * \param bio The bio to append to the BIO chain.
 				 * \returns The current bio_ptr.
@@ -476,6 +483,10 @@ namespace cryptopen
 		inline BIO* bio_ptr::raw()
 		{
 			return m_bio;
+		}
+		inline bool bio_ptr::set_method(BIO_METHOD* _type)
+		{
+			return BIO_set(m_bio, _type) != 0;
 		}
 		inline bio_ptr bio_ptr::push(bio_ptr& bio)
 		{

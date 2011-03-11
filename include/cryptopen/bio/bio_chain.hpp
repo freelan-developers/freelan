@@ -45,7 +45,10 @@
 #ifndef CRYPTOPEN_BIO_BIO_CHAIN_HPP
 #define CRYPTOPEN_BIO_BIO_CHAIN_HPP
 
+#include "bio_ptr.hpp"
 #include "../error/cryptographic_exception.hpp"
+
+#include <boost/shared_ptr.hpp>
 
 #include <stdexcept>
 
@@ -54,10 +57,44 @@ namespace cryptopen
 	namespace bio
 	{
 		/**
+		 * \brief A BIO chain wrapper class.
+		 *
+		 * bio_chain is a wrapper around OpenSSL BIOs which has ownership over its underlying pointer.
+		 *
+		 * It acts as a container for BIO pointers and relies on bio_ptr. The underlying BIO pointer is deleted with BIO_free_all().
+		 *
+		 * A bio_chain holds a shared pointer to its underlying BIO, thus any copy of the bio_chain instance shares the same pointer.
 		 */
 		class bio_chain
 		{
+			public:
+
+				/**
+				 * \brief Create a new bio_chain from a BIO_METHOD.
+				 * \param type The type.
+				 */
+				bio_chain(BIO_METHOD* type);
+
+				/**
+				 * \brief Get the first BIO in the chain.
+				 * \return The first BIO in the chain.
+				 * \warning If the bio_chain instance is destroyed, the returned bio_ptr is invalidated.
+				 */
+				bio_ptr bio() const;
+
+			private:
+
+				boost::shared_ptr<BIO> m_bio;
 		};
+		
+		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
+		{
+			error::throw_error_if_not(m_bio);
+		}
+		bio_ptr bio_chain::bio() const
+		{
+			return bio_ptr(m_bio.get());
+		}
 	}
 }
 
