@@ -1,0 +1,31 @@
+##
+# libcryptopen build file.
+#
+sample = 'rsa_key'
+
+### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
+
+import sys, os
+
+include_path = os.path.join('..', '..', 'include')
+lib_path = os.path.join('..', '..', 'lib')
+module = 'cryptopen'
+source = Glob('*.cpp')
+cpppath = [include_path]
+libpath = [lib_path]
+libs = [module + '_static', 'crypto']
+
+# Import the customized environment
+sys.path.append(os.path.abspath('../../scons'))
+import environment
+
+env = environment.Environment(path = '../..', ENV = os.environ.copy())
+
+# Build the sample
+sample = env.Sample(sample, source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
+
+# Aliases
+env.Alias('build', sample)
+
+# Default
+Default('build')

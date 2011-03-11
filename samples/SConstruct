@@ -8,7 +8,8 @@ samples = [
 	'pbkdf2',
 	'random',
 	'cipher',
-	'bio'
+	'bio',
+	'rsa_key'
 ]
 
 SConscript(dirs = samples, name = 'SConstruct')
