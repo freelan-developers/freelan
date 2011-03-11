@@ -327,12 +327,16 @@ namespace cryptopen
 				/**
 				 * \brief Determine whether the decryption operation was successful.
 				 * \return true for success.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_cipher()".
 				 */
 				bool get_cipher_status();
 
 				/**
 				 * \brief Get the associated cipher context.
 				 * \return The associated cipher context.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_cipher()".
 				 */
 				EVP_CIPHER_CTX* get_cipher_context();
 
@@ -342,18 +346,24 @@ namespace cryptopen
 				 * \brief Set the message digest algorithm.
 				 * \param algorithm The message digest algorithm to use.
 				 * \return true on success.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_md()".
 				 */
 				bool set_message_digest(hash::message_digest_algorithm algorithm);
 
 				/**
 				 * \brief Get the message digest algorithm.
 				 * \return The used algorithm.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_md()".
 				 */
 				hash::message_digest_algorithm get_message_digest();
 
 				/**
 				 * \brief Get the message digest context.
 				 * \return The associated message digest context.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_f_md()".
 				 */
 				EVP_MD_CTX* get_message_digest_context();
 
