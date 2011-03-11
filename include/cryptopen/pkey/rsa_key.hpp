@@ -218,6 +218,36 @@ namespace cryptopen
 				void write_certificate_public_key(bio::bio_ptr bio);
 
 				/**
+				 * \brief Write the private RSA key to a file.
+				 * \param file The file.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param passphrase The passphrase to use.
+				 * \param passphrase_len The length of passphrase.
+				 */
+				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+
+				/**
+				 * \brief Write the private RSA key to a file.
+				 * \param file The file.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+
+				/**
+				 * \brief Write the public RSA key to a file.
+				 * \param file The file.
+				 */
+				void write_public_key(FILE* file);
+
+				/**
+				 * \brief Write the certificate public RSA key to a file.
+				 * \param file The file.
+				 */
+				void write_certificate_public_key(FILE* file);
+
+				/**
 				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
 				 * \param ctx A BN_CTX to use or NULL (the default) if one is to be created.
 				 * \warning The PRNG must be seeded prior to calling enable_blinding().
@@ -318,6 +348,22 @@ namespace cryptopen
 		inline void rsa_key::write_certificate_public_key(bio::bio_ptr bio)
 		{
 			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), m_rsa.get()));
+		}
+		inline void rsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		{
+			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, m_rsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+		}
+		inline void rsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, m_rsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+		}
+		inline void rsa_key::write_public_key(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_RSAPublicKey(file, m_rsa.get()));
+		}
+		inline void rsa_key::write_certificate_public_key(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_RSA_PUBKEY(file, m_rsa.get()));
 		}
 		inline void rsa_key::enable_blinding(BN_CTX* ctx)
 		{
