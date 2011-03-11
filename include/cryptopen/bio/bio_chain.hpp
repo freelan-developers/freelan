@@ -80,7 +80,7 @@ namespace cryptopen
 				 * \return The first BIO in the chain.
 				 * \warning If the bio_chain instance is destroyed, the returned bio_ptr is invalidated.
 				 */
-				bio_ptr bio() const;
+				bio_ptr first() const;
 
 			private:
 
@@ -91,7 +91,7 @@ namespace cryptopen
 		{
 			error::throw_error_if_not(m_bio);
 		}
-		bio_ptr bio_chain::bio() const
+		bio_ptr bio_chain::first() const
 		{
 			return bio_ptr(m_bio.get());
 		}
