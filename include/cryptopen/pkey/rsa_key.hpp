@@ -118,6 +118,33 @@ namespace cryptopen
 				static rsa_key from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
+				 * \brief Load a private RSA key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The rsa_key.
+				 */
+				static rsa_key from_private_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a public RSA key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The rsa_key.
+				 */
+				static rsa_key from_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a certificate public RSA key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever the read data needs a passphrase.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The rsa_key.
+				 */
+				static rsa_key from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
 				 * \brief Load a RSA key from a private key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
@@ -222,6 +249,18 @@ namespace cryptopen
 		inline rsa_key rsa_key::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSA_PUBKEY(bio.raw(), NULL, callback, callback_arg), RSA_free));
+		}
+		inline rsa_key rsa_key::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return rsa_key(boost::shared_ptr<RSA>(PEM_read_RSAPrivateKey(file, NULL, callback, callback_arg), RSA_free));
+		}
+		inline rsa_key rsa_key::from_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return rsa_key(boost::shared_ptr<RSA>(PEM_read_RSAPublicKey(file, NULL, callback, callback_arg), RSA_free));
+		}
+		inline rsa_key rsa_key::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return rsa_key(boost::shared_ptr<RSA>(PEM_read_RSA_PUBKEY(file, NULL, callback, callback_arg), RSA_free));
 		}
 		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
 		{
