@@ -53,6 +53,7 @@
 #include <openssl/bio.h>
 
 #include <cstddef>
+#include <string>
 
 namespace cryptopen
 {
@@ -218,6 +219,13 @@ namespace cryptopen
 				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
 				 */
 				ptrdiff_t puts(const char* buf);
+
+				/**
+				 * \brief Write a line of data to the BIO.
+				 * \param str The string.
+				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
+				 */
+				ptrdiff_t puts(const std::string& str);
 
 				/**
 				 * \brief Reset the BIO to its initial state.
@@ -562,6 +570,10 @@ namespace cryptopen
 		inline ptrdiff_t bio_ptr::puts(const char* buf)
 		{
 			return BIO_puts(m_bio, buf);
+		}
+		inline ptrdiff_t bio_ptr::puts(const std::string& str)
+		{
+			return puts(str.c_str());
 		}
 		inline int bio_ptr::reset()
 		{
