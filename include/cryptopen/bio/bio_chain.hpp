@@ -73,7 +73,13 @@ namespace cryptopen
 				 * \brief Create a new bio_chain from a BIO_METHOD.
 				 * \param type The type.
 				 */
-				bio_chain(BIO_METHOD* type);
+				explicit bio_chain(BIO_METHOD* type);
+
+				/**
+				 * \brief Create a new bio_chain by taking ownership of an existing BIO pointer.
+				 * \param bio The BIO pointer. Cannot be NULL.
+				 */
+				explicit bio_chain(BIO* bio);
 
 				/**
 				 * \brief Get the first BIO in the chain.
@@ -90,6 +96,13 @@ namespace cryptopen
 		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
 		{
 			error::throw_error_if_not(m_bio);
+		}
+		inline bio_chain::bio_chain(BIO* bio) : m_bio(bio, BIO_free_all)
+		{
+			if (!m_bio)
+			{
+				throw std::invalid_argument("bio");
+			}
 		}
 		inline bio_ptr bio_chain::first() const
 		{
