@@ -367,6 +367,25 @@ namespace cryptopen
 				 */
 				EVP_MD_CTX* get_message_digest_context();
 
+				// BIO_s_fd() specific methods
+				
+				/**
+				 * \brief Set the file descriptor.
+				 * \param fd The file descriptor.
+				 * \param close The close flag.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_fd()".
+				 */
+				void set_file_descriptor(int fd, long close);
+
+				/**
+				 * \brief Get the file descriptor.
+				 * \return The file descriptor or -1 if the BIO has not been initialized.
+				 *
+				 * This method only makes sense for BIOs of type "BIO_s_fd()".
+				 */
+				int get_file_descriptor();
+
 			private:
 
 				bool boolean_test() const;
@@ -558,6 +577,14 @@ namespace cryptopen
 			BIO_get_md_ctx(m_bio, &ctx);
 
 			return ctx;
+		}
+		inline void bio_ptr::set_file_descriptor(int fd, long close)
+		{
+			BIO_set_fd(m_bio, fd, close);
+		}
+		inline int bio_ptr::get_file_descriptor()
+		{
+			return BIO_get_fd(m_bio, NULL);
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
