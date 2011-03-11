@@ -44,12 +44,22 @@
 
 #include "pkey/rsa_key.hpp"
 
+#include "bio/bio_chain.hpp"
+
 #include <cassert>
 
 namespace cryptopen
 {
 	namespace pkey
 	{
+		namespace
+		{
+			bio::bio_chain get_bio_chain_from_buffer(const void* buf, size_t buf_len)
+			{
+				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
+			}
+		}
+
 		rsa_key rsa_key::generate(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
 		{
 			// Exponent must be odd
@@ -62,37 +72,25 @@ namespace cryptopen
 			return rsa_key(rsa);
 		}
 
-		rsa_key rsa_key::from_public_key(const void* buf, size_t buf_len)
+		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			const unsigned char* _buf = static_cast<const unsigned char*>(buf);
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
 
-			RSA* rsa = NULL;
-
-			error::throw_error_if_not(d2i_RSAPublicKey(&rsa, &_buf, static_cast<long>(buf_len)));
-
-			return rsa_key(rsa);
+			return from_private_key(bio_chain.first(), callback, callback_arg);
 		}
 
-		rsa_key rsa_key::from_certificate_public_key(const void* buf, size_t buf_len)
+		rsa_key rsa_key::from_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			const unsigned char* _buf = static_cast<const unsigned char*>(buf);
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
 
-			RSA* rsa = NULL;
-
-			error::throw_error_if_not(d2i_RSA_PUBKEY(&rsa, &_buf, static_cast<long>(buf_len)));
-
-			return rsa_key(rsa);
+			return from_public_key(bio_chain.first(), callback, callback_arg);
 		}
 
-		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len)
+		rsa_key rsa_key::from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			const unsigned char* _buf = static_cast<const unsigned char*>(buf);
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
 
-			RSA* rsa = NULL;
-
-			error::throw_error_if_not(d2i_RSAPrivateKey(&rsa, &_buf, static_cast<long>(buf_len)));
-
-			return rsa_key(rsa);
+			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
 	}
 }
