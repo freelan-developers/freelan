@@ -91,7 +91,7 @@ namespace cryptopen
 		{
 			error::throw_error_if_not(m_bio);
 		}
-		bio_ptr bio_chain::first() const
+		inline bio_ptr bio_chain::first() const
 		{
 			return bio_ptr(m_bio.get());
 		}
