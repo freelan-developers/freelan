@@ -20,12 +20,12 @@ From now on, here is what is currently implemented:
  - PBKDF2
  - Random
  - Symmetric Ciphers
+ - BIO
 
 And here is what is planned:
 
  - Threads
  - ASN1
- - BIO
  - EVP
  - PEM
  - X509
