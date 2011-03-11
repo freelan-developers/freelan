@@ -9,9 +9,6 @@
 
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <iomanip>
-#include <vector>
 
 int main()
 {
@@ -20,6 +17,18 @@ int main()
 	std::cout << "BIO sample" << std::endl;
 	std::cout << "==========" << std::endl;
 	std::cout << std::endl;
+
+	std::cout << "Type some text that should be converted to base64: " << std::flush;
+	std::string str;
+	std::getline(std::cin, str);
+
+	cryptopen::bio::bio_chain bio_chain(BIO_f_base64());
+	bio_chain.first().push(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
+
+	std::cout << "Result: " << std::flush;
+
+	bio_chain.first().puts(str);
+	bio_chain.first().flush();
 
 	return EXIT_SUCCESS;
 }
