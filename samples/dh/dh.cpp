@@ -1,10 +1,10 @@
 /**
- * \file dsa_key.cpp
+ * \file dh.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A DSA sample file.
+ * \brief A DH sample file.
  */
 
-#include <cryptopen/pkey/dsa_key.hpp>
+#include <cryptopen/pkey/dh.hpp>
 #include <cryptopen/hash/message_digest_context.hpp>
 #include <cryptopen/error/error_strings.hpp>
 
@@ -57,24 +57,13 @@ int main()
 	cryptopen::error::error_strings_initializer error_strings_initializer;
 	cryptopen::cipher::cipher_initializer cipher_initializer;
 
-	std::cout << "DSA sample" << std::endl;
-	std::cout << "==========" << std::endl;
+	std::cout << "DH sample" << std::endl;
+	std::cout << "=========" << std::endl;
 	std::cout << std::endl;
 
-	const std::string private_key_filename = "private_key.pem";
 	const std::string parameters_filename = "parameters.pem";
-	const std::string certificate_public_key_filename = "certificate_public_key.pem";
 
-	boost::shared_ptr<FILE> private_key_file(fopen(private_key_filename.c_str(), "w"), fclose);
 	boost::shared_ptr<FILE> parameters_file(fopen(parameters_filename.c_str(), "w"), fclose);
-	boost::shared_ptr<FILE> certificate_public_key_file(fopen(certificate_public_key_filename.c_str(), "w"), fclose);
-
-	if (!private_key_file)
-	{
-		std::cerr << "Unable to open \"" << private_key_filename << "\" for writing." << std::endl;
-
-		return EXIT_FAILURE;
-	}
 
 	if (!parameters_file)
 	{
@@ -83,18 +72,11 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	if (!certificate_public_key_file)
-	{
-		std::cerr << "Unable to open \"" << certificate_public_key_filename << "\" for writing." << std::endl;
-
-		return EXIT_FAILURE;
-	}
-
 	try
 	{
-		std::cout << "Generating DSA key. This can take some time..." << std::endl;
+		std::cout << "Generating DH parameters. This can take some time..." << std::endl;
 
-		cryptopen::pkey::dsa_key dsa_key = cryptopen::pkey::dsa_key::generate_private_key(1024, NULL, 0, NULL, NULL);
+		cryptopen::pkey::dh dh = cryptopen::pkey::dh::generate_parameters(1024, NULL, 0, NULL, NULL);
 
 		std::cout << "Done." << std::endl;
 

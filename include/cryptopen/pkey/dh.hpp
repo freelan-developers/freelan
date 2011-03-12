@@ -184,10 +184,11 @@ namespace cryptopen
 
 				/**
 				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
-				 * 
+				 * \return *this
+				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				void generate_key();
+				dh& generate_key();
 
 				/**
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
@@ -296,9 +297,11 @@ namespace cryptopen
 		{
 			return DH_check(m_dh.get(), &codes);
 		}
-		inline void dh::generate_key()
+		inline dh& dh::generate_key()
 		{
 			error::throw_error_if_not(DH_generate_key(m_dh.get()));
+
+			return *this;
 		}
 		template <typename T>
 		inline std::vector<T> dh::compute_key(BIGNUM* pub_key)
