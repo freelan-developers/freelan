@@ -25,17 +25,16 @@ From now on, here is what is currently implemented:
 
    - RSA
    - DSA
+   - Diffie-Hellman
 
 And here is what is planned:
 
+ - BIGNUM
  - Threads
  - ASN1
  - EVP
  - PEM
  - X509
- - Public Key Cryptography
-
-   - Diffie-Hellman
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
 
