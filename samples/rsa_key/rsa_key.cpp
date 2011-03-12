@@ -7,6 +7,8 @@
 #include <cryptopen/pkey/rsa_key.hpp>
 #include <cryptopen/error/error_strings.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 #include <iostream>
 #include <string>
 #include <cstdio>
@@ -58,12 +60,31 @@ int main()
 	std::cout << "==========" << std::endl;
 	std::cout << std::endl;
 
-	const std::string filename = "rsa_key.pem";
-	FILE* pfile = fopen(filename.c_str(), "w");
+	const std::string private_key_filename = "private_key.pem";
+	const std::string public_key_filename = "public_key.pem";
+	const std::string certificate_public_key_filename = "certificate_public_key.pem";
 
-	if (!pfile)
+	boost::shared_ptr<FILE> private_key_file(fopen(private_key_filename.c_str(), "w"), fclose);
+	boost::shared_ptr<FILE> public_key_file(fopen(public_key_filename.c_str(), "w"), fclose);
+	boost::shared_ptr<FILE> certificate_public_key_file(fopen(certificate_public_key_filename.c_str(), "w"), fclose);
+
+	if (!private_key_file)
 	{
-		std::cerr << "Unable to open \"" << filename << "\" for writing." << std::endl;
+		std::cerr << "Unable to open \"" << private_key_filename << "\" for writing." << std::endl;
+
+		return EXIT_FAILURE;
+	}
+
+	if (!public_key_file)
+	{
+		std::cerr << "Unable to open \"" << public_key_filename << "\" for writing." << std::endl;
+
+		return EXIT_FAILURE;
+	}
+
+	if (!certificate_public_key_file)
+	{
+		std::cerr << "Unable to open \"" << certificate_public_key_filename << "\" for writing." << std::endl;
 
 		return EXIT_FAILURE;
 	}
@@ -76,9 +97,17 @@ int main()
 
 		std::cout << "Done." << std::endl;
 
-		rsa_key.write_private_key(pfile, cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
+		rsa_key.write_private_key(private_key_file.get(), cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
 
-		std::cout << "RSA key written succesfully to \"" << filename << "\"." << std::endl;
+		std::cout << "Private RSA key written succesfully to \"" << private_key_filename << "\"." << std::endl;
+
+		rsa_key.write_public_key(public_key_file.get());
+
+		std::cout << "Public RSA key written succesfully to \"" << public_key_filename << "\"." << std::endl;
+
+		rsa_key.write_certificate_public_key(certificate_public_key_file.get());
+
+		std::cout << "Certificate public RSA key written succesfully to \"" << certificate_public_key_filename << "\"." << std::endl;
 	}
 	catch (std::exception& ex)
 	{
@@ -87,24 +116,26 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	fclose(pfile);
+	certificate_public_key_file.reset();
+	public_key_file.reset();
+	private_key_file.reset(fopen(private_key_filename.c_str(), "r"), fclose);
 
-	pfile = fopen(filename.c_str(), "r");
-
-	if (!pfile)
+	if (!private_key_file)
 	{
-		std::cerr << "Unable to open \"" << filename << "\" for reading." << std::endl;
+		std::cerr << "Unable to open \"" << private_key_filename << "\" for reading." << std::endl;
 
 		return EXIT_FAILURE;
 	}
 
 	try
 	{
-		std::cout << "Trying to read back the private RSA key from \"" << filename << "\"..." << std::endl;
+		std::cout << "Trying to read back the private RSA key from \"" << private_key_filename << "\"..." << std::endl;
 
-		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(pfile, pem_passphrase_callback);
+		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
 
-		std::cout << "RSA key read succesfully from \"" << filename << "\"." << std::endl;
+		std::cout << "RSA key read succesfully from \"" << private_key_filename << "\"." << std::endl;
+
+		rsa_key.print(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
 	}
 	catch (std::exception& ex)
 	{
