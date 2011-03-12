@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "dh.hpp"
 
 #include <openssl/dsa.h>
 #include <openssl/pem.h>
@@ -365,6 +366,12 @@ namespace cryptopen
 				 */
 				void verify(const void* sign, size_t sign_len, const void* buf, size_t buf_len, int type);
 
+				/**
+				 * \brief Duplicate DSA parameters and keys as DH parameters and keys.
+				 * \return A new DH structure.
+				 */
+				dh to_dh() const;
+
 			private:
 
 				explicit dsa_key(boost::shared_ptr<DSA> dsa);
@@ -502,6 +509,14 @@ namespace cryptopen
 
 			return result;
 		}
+		inline dh dsa_key::to_dh() const
+		{
+			return dh(DSA_dup_DH(m_dsa.get()));
+		}
+		inline dsa_key::dsa_key(boost::shared_ptr<DSA> dsa) : m_dsa(dsa)
+		{
+			error::throw_error_if_not(m_dsa);
+		}
 		inline bool operator==(const dsa_key& lhs, const dsa_key& rhs)
 		{
 			return lhs.raw() == rhs.raw();
@@ -509,10 +524,6 @@ namespace cryptopen
 		inline bool operator!=(const dsa_key& lhs, const dsa_key& rhs)
 		{
 			return lhs.raw() != rhs.raw();
-		}
-		inline dsa_key::dsa_key(boost::shared_ptr<DSA> dsa) : m_dsa(dsa)
-		{
-			error::throw_error_if_not(m_dsa);
 		}
 	}
 }
