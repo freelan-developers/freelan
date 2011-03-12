@@ -61,6 +61,11 @@ int main()
 	std::cout << "=========" << std::endl;
 	std::cout << std::endl;
 
+	const int bits = 1024;
+	const int generator = 2;
+
+	std::cout << "Using DH keys of " << bits << " bits." << std::endl;
+
 	const std::string parameters_filename = "parameters.pem";
 
 	boost::shared_ptr<FILE> parameters_file(fopen(parameters_filename.c_str(), "w"), fclose);
@@ -76,74 +81,78 @@ int main()
 	{
 		std::cout << "Generating DH parameters. This can take some time..." << std::endl;
 
-		cryptopen::pkey::dh dh = cryptopen::pkey::dh::generate_parameters(1024, NULL, 0, NULL, NULL);
+		cryptopen::pkey::dh dh = cryptopen::pkey::dh::generate_parameters(bits, generator);
+
+		int codes = 0;
+
+		dh.check(codes);
+
+		if (codes != 0)
+		{
+			std::cerr << "Generation failed." << std::endl;
+
+			if (codes & DH_CHECK_P_NOT_SAFE_PRIME)
+			{
+				std::cerr << "p is not a safe prime." << std::endl;
+			}
+			if (codes & DH_NOT_SUITABLE_GENERATOR)
+			{
+				std::cerr << "g is not a suitable generator." << std::endl;
+			}
+
+			if (codes & DH_UNABLE_TO_CHECK_GENERATOR)
+			{
+				std::cerr << "g is not a correct generator. Must be either 2 or 5." << std::endl;
+			}
+
+			return EXIT_FAILURE;
+		}
+
+		dh.write_parameters(parameters_file.get());
+
+		std::cout << "DH parameters written succesfully to \"" << parameters_filename << "\"." << std::endl;
+		std::cout << "Done." << std::endl;
+
+		std::cout << "Generating DH key..." << std::endl;
+
+		dh.generate_key();
 
 		std::cout << "Done." << std::endl;
 
-		dsa_key.write_private_key(private_key_file.get(), cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
+		parameters_file.reset(fopen(parameters_filename.c_str(), "r"), fclose);
 
-		std::cout << "Private DSA key written succesfully to \"" << private_key_filename << "\"." << std::endl;
+		if (!parameters_file)
+		{
+			std::cerr << "Unable to open \"" << parameters_filename << "\" for reading." << std::endl;
 
-		dsa_key.write_parameters(parameters_file.get());
+			return EXIT_FAILURE;
+		}
 
-		std::cout << "DSA parameters written succesfully to \"" << parameters_filename << "\"." << std::endl;
+		std::cout << "Trying to read back the DH parameters from \"" << parameters_filename << "\"..." << std::endl;
 
-		dsa_key.write_certificate_public_key(certificate_public_key_file.get());
-
-		std::cout << "Certificate public DSA key written succesfully to \"" << certificate_public_key_filename << "\"." << std::endl;
-	}
-	catch (std::exception& ex)
-	{
-		std::cerr << "Exception: " << ex.what() << std::endl;
-
-		return EXIT_FAILURE;
-	}
-
-	certificate_public_key_file.reset();
-	parameters_file.reset();
-	private_key_file.reset(fopen(private_key_filename.c_str(), "r"), fclose);
-
-	if (!private_key_file)
-	{
-		std::cerr << "Unable to open \"" << private_key_filename << "\" for reading." << std::endl;
-
-		return EXIT_FAILURE;
-	}
-
-	try
-	{
-		std::cout << "Trying to read back the private DSA key from \"" << private_key_filename << "\"..." << std::endl;
-
-		cryptopen::pkey::dsa_key dsa_key = cryptopen::pkey::dsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
+		cryptopen::pkey::dh dh2 = cryptopen::pkey::dh::from_parameters(parameters_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 
-		dsa_key.print(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
+		std::cout << "Generating DH key..." << std::endl;
 
-		const std::string str = "Hello World !";
-		const std::string hash = "SHA256";
-
-		std::cout << "Generating " << hash << " message digest for \"" << str << "\"..." << std::endl;
-
-		cryptopen::hash::message_digest_algorithm algorithm(hash);
-		cryptopen::hash::message_digest_context context;
-		context.initialize(algorithm);
-		context.update(str.c_str(), str.size());
-		std::vector<unsigned char> str_hash = context.finalize<unsigned char>();
+		dh2.generate_key();
 
 		std::cout << "Done." << std::endl;
 
-		std::cout << "Generating DSA signature..." << std::endl;
+		std::cout << "Computing key A..." << std::endl;
 
-		std::vector<unsigned char> str_sign = dsa_key.sign<unsigned char>(&str_hash[0], str_hash.size(), algorithm.type());
-
+		std::vector<unsigned char> key_a = dh.compute_key<unsigned char>(dh2.public_key());
+		
 		std::cout << "Done." << std::endl;
 
-		std::cout << "Verifying DSA signature..." << std::endl;
+		std::cout << "Computing key B..." << std::endl;
 
-		dsa_key.verify(&str_sign[0], str_sign.size(), &str_hash[0], str_hash.size(), algorithm.type());
-
+		std::vector<unsigned char> key_b = dh2.compute_key<unsigned char>(dh.public_key());
+		
 		std::cout << "Done." << std::endl;
+
+		std::cout << "Comparing key A and key B: " << ((key_a == key_b) ? "IDENTICAL" : "DIFFERENT") << std::endl;
 	}
 	catch (std::exception& ex)
 	{
