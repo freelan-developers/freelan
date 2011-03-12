@@ -281,6 +281,14 @@ namespace cryptopen
 				 */
 				size_t size() const;
 
+				/**
+				 * \brief Check the rsa_key for validity.
+				 * \warning The instance must contain both public and private key data.
+				 *
+				 * If the rsa_key is not valid, an exception is thrown.
+				 */
+				void check();
+
 			private:
 
 				explicit rsa_key(boost::shared_ptr<RSA> rsa);
@@ -390,6 +398,10 @@ namespace cryptopen
 		inline size_t rsa_key::size() const
 		{
 			return RSA_size(m_rsa.get());
+		}
+		inline void rsa_key::check()
+		{
+			error::throw_error_if_not(RSA_check_key(m_rsa.get()) > 0);
 		}
 		inline rsa_key::rsa_key(boost::shared_ptr<RSA> rsa) : m_rsa(rsa)
 		{
