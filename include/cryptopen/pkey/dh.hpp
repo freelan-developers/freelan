@@ -178,9 +178,10 @@ namespace cryptopen
 				/**
 				 * \brief Validates the Diffie-Hellman parameters.
 				 * \param codes An integer whose content is updated according to the success or failure of the check operation. For more information, take a look a the DH_generate_parameters(3) man page.
-				 * \return true if the DH structure was validated, false otherwise.
+				 * 
+				 * On failure, a cryptographic_exception is thrown.
 				 */
-				bool check(int& codes);
+				void check(int& codes);
 
 				/**
 				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
@@ -293,9 +294,9 @@ namespace cryptopen
 		{
 			return DH_size(m_dh.get());
 		}
-		inline bool dh::check(int& codes)
+		inline void dh::check(int& codes)
 		{
-			return DH_check(m_dh.get(), &codes);
+			error::throw_error_if_not(DH_check(m_dh.get(), &codes));
 		}
 		inline dh& dh::generate_key()
 		{
