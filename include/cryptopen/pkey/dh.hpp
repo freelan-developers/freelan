@@ -189,6 +189,16 @@ namespace cryptopen
 				size_t compute_key(void* out, size_t out_len, BIGNUM* pub_key);
 
 				/**
+				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
+				 * \param pub_key The other party's public key.
+				 * \return The shared secret.
+				 * 
+				 * On failure, a cryptographic_exception is thrown.
+				 */
+				template <typename T>
+				std::vector<T> compute_key(BIGNUM* pub_key);
+
+				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
 				 * \param bio The BIO to use.
 				 */
@@ -269,6 +279,15 @@ namespace cryptopen
 		inline void dh::generate_key()
 		{
 			error::throw_error_if_not(DH_generate_key(m_dh.get()));
+		}
+		template <typename T>
+		inline std::vector<T> dh::compute_key(BIGNUM* pub_key)
+		{
+			std::vector<T> result(size());
+
+			result.resize(compute_key(&result[0], result.size(), pub_key));
+
+			return result;
 		}
 		inline void dh::print_parameters(bio::bio_ptr bio)
 		{
