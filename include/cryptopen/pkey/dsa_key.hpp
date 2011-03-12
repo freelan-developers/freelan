@@ -203,7 +203,7 @@ namespace cryptopen
 				 * \brief Create a DSA key by taking ownership of an existing DSA* pointer.
 				 * \param dsa The DSA* pointer. Cannot be NULL.
 				 */
-				explicit dsa_key(DSA*);
+				explicit dsa_key(DSA* dsa);
 
 				/**
 				 * \brief Write the private DSA key to a BIO.
@@ -376,7 +376,7 @@ namespace cryptopen
 		 * \brief Compare two dsa_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two dsa_key instance share the same underlying pointer.
+		 * \return true if the two dsa_key instances share the same underlying pointer.
 		 */
 		bool operator==(const dsa_key& lhs, const dsa_key& rhs);
 
@@ -384,7 +384,7 @@ namespace cryptopen
 		 * \brief Compare two dsa_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two dsa_key instance do not share the same underlying pointer.
+		 * \return true if the two dsa_key instances do not share the same underlying pointer.
 		 */
 		bool operator!=(const dsa_key& lhs, const dsa_key& rhs);
 		

@@ -418,7 +418,7 @@ namespace cryptopen
 		 * \brief Compare two rsa_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two rsa_key instance share the same underlying pointer.
+		 * \return true if the two rsa_key instances share the same underlying pointer.
 		 */
 		bool operator==(const rsa_key& lhs, const rsa_key& rhs);
 
@@ -426,7 +426,7 @@ namespace cryptopen
 		 * \brief Compare two rsa_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two rsa_key instance do not share the same underlying pointer.
+		 * \return true if the two rsa_key instances do not share the same underlying pointer.
 		 */
 		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
 
