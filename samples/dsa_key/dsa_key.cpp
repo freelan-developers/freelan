@@ -62,7 +62,7 @@ int main()
 	std::cout << std::endl;
 
 	const std::string private_key_filename = "private_key.pem";
-	const std::string parameters_filename = "public_key.pem";
+	const std::string parameters_filename = "parameters.pem";
 	const std::string certificate_public_key_filename = "certificate_public_key.pem";
 
 	boost::shared_ptr<FILE> private_key_file(fopen(private_key_filename.c_str(), "w"), fclose);
