@@ -9,7 +9,8 @@ samples = [
 	'random',
 	'cipher',
 	'bio',
-	'rsa_key'
+	'rsa_key',
+	'dsa_key'
 ]
 
 SConscript(dirs = samples, name = 'SConstruct')
