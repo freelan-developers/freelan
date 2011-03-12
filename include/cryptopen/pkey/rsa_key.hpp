@@ -93,7 +93,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a private RSA key from a BIO.
 				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -102,7 +102,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a public RSA key from a BIO.
 				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -111,7 +111,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a certificate public RSA key from a BIO.
 				 * \param bio The BIO.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -120,7 +120,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a private RSA key from a file.
 				 * \param file The file.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -129,7 +129,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a public RSA key from a file.
 				 * \param file The file.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -138,7 +138,7 @@ namespace cryptopen
 				/**
 				 * \brief Load a certificate public RSA key from a file.
 				 * \param file The file.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -148,7 +148,7 @@ namespace cryptopen
 				 * \brief Load a RSA key from a private key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -158,7 +158,7 @@ namespace cryptopen
 				 * \brief Load a RSA key from a public key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -168,7 +168,7 @@ namespace cryptopen
 				 * \brief Load a RSA key from a certificate public key buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
@@ -200,7 +200,7 @@ namespace cryptopen
 				 * \brief Write the private RSA key to a BIO.
 				 * \param bio The BIO.
 				 * \param algorithm The cipher algorithm to use.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
 				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
@@ -230,7 +230,7 @@ namespace cryptopen
 				 * \brief Write the private RSA key to a file.
 				 * \param file The file.
 				 * \param algorithm The cipher algorithm to use.
-				 * \param callback A callback that will get called whenever a passphrase is needed.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
 				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
