@@ -46,6 +46,7 @@
 #define CRYPTOPEN_PKEY_DSA_KEY_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "../bio/bio_ptr.hpp"
 
 #include <openssl/dsa.h>
 #include <openssl/engine.h>
@@ -137,6 +138,32 @@ namespace cryptopen
 				size_t size() const;
 
 				/**
+				 * \brief Print the DSA key in a human-readable hexadecimal form to a specified BIO.
+				 * \param bio The BIO to use.
+				 * \param offset The number of offset spaces to output.
+				 */
+				void print(bio::bio_ptr bio, int offset = 0);
+
+				/**
+				 * \brief Print the DSA key in a human-readable hexadecimal form to a specified FILE.
+				 * \param file The file.
+				 * \param offset The number of offset spaces to output.
+				 */
+				void print(FILE* file, int offset = 0);
+
+				/**
+				 * \brief Print the DSA parameters in a human-readable hexadecimal form to a specified BIO.
+				 * \param bio The BIO to use.
+				 */
+				void print_parameters(bio::bio_ptr bio);
+
+				/**
+				 * \brief Print the DSA parameters in a human-readable hexadecimal form to a specified FILE.
+				 * \param file The file.
+				 */
+				void print_parameters(FILE* file);
+
+				/**
 				 * \brief Sign a message digest.
 				 * \param out The buffer to write the signature to. Must be size() bytes long.
 				 * \param out_len The length of out.
@@ -224,6 +251,22 @@ namespace cryptopen
 		inline size_t dsa_key::size() const
 		{
 			return DSA_size(m_dsa.get());
+		}
+		inline void dsa_key::print(bio::bio_ptr bio, int offset)
+		{
+			error::throw_error_if_not(DSA_print(bio.raw(), m_dsa.get(), offset));
+		}
+		inline void dsa_key::print(FILE* file, int offset)
+		{
+			error::throw_error_if_not(DSA_print_fp(file, m_dsa.get(), offset));
+		}
+		inline void dsa_key::print_parameters(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(DSAparams_print(bio.raw(), m_dsa.get()));
+		}
+		inline void dsa_key::print_parameters(FILE* file)
+		{
+			error::throw_error_if_not(DSAparams_print_fp(file, m_dsa.get()));
 		}
 		template <typename T>
 		inline std::vector<T> dsa_key::sign(const void* buf, size_t buf_len, int type)
