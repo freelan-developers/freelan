@@ -21,6 +21,9 @@ From now on, here is what is currently implemented:
  - Random
  - Symmetric Ciphers
  - BIO
+ - Public Key Cryptography
+
+   - RSA
 
 And here is what is planned:
 
@@ -32,7 +35,6 @@ And here is what is planned:
  - Public Key Cryptography
 
    - DSA
-   - RSA
    - Diffie-Hellman
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
