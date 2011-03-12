@@ -54,6 +54,20 @@ namespace cryptopen
 		{
 			return dsa_key(boost::shared_ptr<DSA>(DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), seed_len, counter_ret, h_ret, callback, callback_arg), DSA_free));
 		}
+
+		size_t dsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type)
+		{
+			unsigned int _out_len = out_len;
+
+			error::throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, m_dsa.get()));
+
+			return _out_len;
+		}
+
+		void dsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
+		{
+			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, m_dsa.get()));
+		}
 	}
 }
 
