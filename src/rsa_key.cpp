@@ -96,6 +96,70 @@ namespace cryptopen
 			write_public_key(bio_chain.first());
 			return from_public_key(bio_chain.first());
 		}
+
+		size_t rsa_key::private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		{
+			assert(out_len >= size());
+
+			if (out_len < size())
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			int result = RSA_private_encrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		size_t rsa_key::public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		{
+			assert(out_len >= size() - 11);
+
+			if (out_len < size() - 11)
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			int result = RSA_public_decrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		size_t rsa_key::public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		{
+			assert(out_len >= size());
+
+			if (out_len < size())
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			int result = RSA_public_encrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+
+		size_t rsa_key::private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		{
+			assert(out_len >= size() - 41);
+
+			if (out_len < size() - 41)
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			int result = RSA_private_decrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
 	}
 }
 

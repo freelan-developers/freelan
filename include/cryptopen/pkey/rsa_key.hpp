@@ -309,6 +309,62 @@ namespace cryptopen
 				 */
 				rsa_key to_public_key();
 
+				/**
+				 * \brief Encrypt data bytes using the private key information.
+				 * \param out The buffer to write the result to. Must be at least size() bytes long.
+				 * \param out_len The length of out.
+				 * \param buf The data to encrypt. Must be smaller than size() - 11.
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_private_encrypt(3).
+				 * \return The count of bytes written to out. Should be size().
+				 * \see public_decrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				size_t private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+
+				/**
+				 * \brief Decrypt data bytes using the public key information.
+				 * \param out The buffer to write the result to. Must be at least size() - 11 bytes long.
+				 * \param out_len The length of out.
+				 * \param buf The data to decrypt.
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_private_encrypt(3).
+				 * \return The count of bytes written to out. Should be size().
+				 * \see private_encrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				size_t public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+
+				/**
+				 * \brief Encrypt data bytes using the public key information.
+				 * \param out The buffer to write the result to. Must be at least size() bytes long.
+				 * \param out_len The length of out.
+				 * \param buf The data to encrypt. Depending on the padding mode, buf must be either smaller than size() - 11, size() - 41 or size(). For additional information, take a look at RSA_public_encrypt(3).
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_public_encrypt(3).
+				 * \return The count of bytes written to out. Should be size().
+				 * \see public_decrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				size_t public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+
+				/**
+				 * \brief Decrypt data bytes using the public key information.
+				 * \param out The buffer to write the result to. Whose size depends on the padding mode. If out is at least size() bytes long, no size problem will occur.
+				 * \param out_len The length of out.
+				 * \param buf The data to decrypt.
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_public_encrypt(3).
+				 * \return The count of bytes written to out. Should be size().
+				 * \see private_encrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				size_t private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+
 			private:
 
 				explicit rsa_key(boost::shared_ptr<RSA> rsa);
