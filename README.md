@@ -24,6 +24,7 @@ From now on, here is what is currently implemented:
  - Public Key Cryptography
 
    - RSA
+   - DSA
 
 And here is what is planned:
 
@@ -34,7 +35,6 @@ And here is what is planned:
  - X509
  - Public Key Cryptography
 
-   - DSA
    - Diffie-Hellman
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
