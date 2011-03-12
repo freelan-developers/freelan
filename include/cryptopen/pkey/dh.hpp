@@ -171,6 +171,24 @@ namespace cryptopen
 				bool check(int& codes);
 
 				/**
+				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
+				 * 
+				 * On failure, a cryptographic_exception is thrown.
+				 */
+				void generate_key();
+
+				/**
+				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
+				 * \param out The buffer to which the shared secret is written. Must be at least size() bytes long.
+				 * \param out_len The length of out.
+				 * \param pub_key The other party's public key.
+				 * \return The number of bytes written to out.
+				 * 
+				 * On failure, a cryptographic_exception is thrown.
+				 */
+				size_t compute_key(void* out, size_t out_len, BIGNUM* pub_key);
+
+				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
 				 * \param bio The BIO to use.
 				 */
@@ -247,6 +265,10 @@ namespace cryptopen
 		inline bool dh::check(int& codes)
 		{
 			return DH_check(m_dh.get(), &codes);
+		}
+		inline void dh::generate_key()
+		{
+			error::throw_error_if_not(DH_generate_key(m_dh.get()));
 		}
 		inline void dh::print_parameters(bio::bio_ptr bio)
 		{

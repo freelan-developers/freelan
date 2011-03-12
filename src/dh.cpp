@@ -71,6 +71,22 @@ namespace cryptopen
 
 			return from_parameters(bio_chain.first(), callback, callback_arg);
 		}
+
+		size_t dh::compute_key(void* out, size_t out_len, BIGNUM* pub_key)
+		{
+			assert(out_len >= size());
+
+			if (out_len < size())
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			int result = DH_compute_key(static_cast<unsigned char*>(out), pub_key, m_dh.get());
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
 	}
 }
 
