@@ -92,11 +92,11 @@ int main()
 
 	try
 	{
-		std::cout << "Generating RSA key. This can take some time..." << std::flush;
+		std::cout << "Generating RSA key. This can take some time..." << std::endl;
 
 		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::generate_private_key(1024, 17);
 
-		std::cout << " done." << std::endl;
+		std::cout << "Done." << std::endl;
 
 		rsa_key.write_private_key(private_key_file.get(), cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
 
@@ -130,18 +130,18 @@ int main()
 
 	try
 	{
-		std::cout << "Trying to read back the private RSA key from \"" << private_key_filename << "\"..." << std::flush;
+		std::cout << "Trying to read back the private RSA key from \"" << private_key_filename << "\"..." << std::endl;
 
 		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
 
-		std::cout << " done." << std::endl;
+		std::cout << "Done." << std::endl;
 
 		rsa_key.print(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
 
 		const std::string str = "Hello World !";
 		const std::string hash = "SHA256";
 
-		std::cout << "Generating " << hash << " message digest for \"" << str << "\"..." << std::flush;
+		std::cout << "Generating " << hash << " message digest for \"" << str << "\"..." << std::endl;
 
 		cryptopen::hash::message_digest_algorithm algorithm(hash);
 		cryptopen::hash::message_digest_context context;
@@ -149,7 +149,19 @@ int main()
 		context.update(str.c_str(), str.size());
 		std::vector<unsigned char> str_hash = context.finalize<unsigned char>();
 
-		std::cout << " done." << std::endl;
+		std::cout << "Done." << std::endl;
+
+		std::cout << "Generating RSA signature..." << std::endl;
+
+		std::vector<unsigned char> str_sign = rsa_key.sign<unsigned char>(&str_hash[0], str_hash.size(), algorithm.type());
+
+		std::cout << "Done." << std::endl;
+
+		std::cout << "Verifying RSA signature..." << std::endl;
+
+		rsa_key.verify(&str_sign[0], str_sign.size(), &str_hash[0], str_hash.size(), algorithm.type());
+
+		std::cout << "Done." << std::endl;
 	}
 	catch (std::exception& ex)
 	{
