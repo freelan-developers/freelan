@@ -1,10 +1,10 @@
 /**
- * \file rsa_key.cpp
+ * \file dsa_key.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A RSA sample file.
+ * \brief A DSA sample file.
  */
 
-#include <cryptopen/pkey/rsa_key.hpp>
+#include <cryptopen/pkey/dsa_key.hpp>
 #include <cryptopen/hash/message_digest_context.hpp>
 #include <cryptopen/error/error_strings.hpp>
 
@@ -57,16 +57,16 @@ int main()
 	cryptopen::error::error_strings_initializer error_strings_initializer;
 	cryptopen::cipher::cipher_initializer cipher_initializer;
 
-	std::cout << "RSA sample" << std::endl;
+	std::cout << "DSA sample" << std::endl;
 	std::cout << "==========" << std::endl;
 	std::cout << std::endl;
 
 	const std::string private_key_filename = "private_key.pem";
-	const std::string public_key_filename = "public_key.pem";
+	const std::string parameters_filename = "public_key.pem";
 	const std::string certificate_public_key_filename = "certificate_public_key.pem";
 
 	boost::shared_ptr<FILE> private_key_file(fopen(private_key_filename.c_str(), "w"), fclose);
-	boost::shared_ptr<FILE> public_key_file(fopen(public_key_filename.c_str(), "w"), fclose);
+	boost::shared_ptr<FILE> parameters_file(fopen(parameters_filename.c_str(), "w"), fclose);
 	boost::shared_ptr<FILE> certificate_public_key_file(fopen(certificate_public_key_filename.c_str(), "w"), fclose);
 
 	if (!private_key_file)
@@ -76,9 +76,9 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	if (!public_key_file)
+	if (!parameters_file)
 	{
-		std::cerr << "Unable to open \"" << public_key_filename << "\" for writing." << std::endl;
+		std::cerr << "Unable to open \"" << parameters_filename << "\" for writing." << std::endl;
 
 		return EXIT_FAILURE;
 	}
@@ -92,23 +92,23 @@ int main()
 
 	try
 	{
-		std::cout << "Generating RSA key. This can take some time..." << std::endl;
+		std::cout << "Generating DSA key. This can take some time..." << std::endl;
 
-		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::generate_private_key(1024, 17);
+		cryptopen::pkey::dsa_key dsa_key = cryptopen::pkey::dsa_key::generate_private_key(1024, NULL, 0, NULL, NULL);
 
 		std::cout << "Done." << std::endl;
 
-		rsa_key.write_private_key(private_key_file.get(), cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
+		dsa_key.write_private_key(private_key_file.get(), cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
 
-		std::cout << "Private RSA key written succesfully to \"" << private_key_filename << "\"." << std::endl;
+		std::cout << "Private DSA key written succesfully to \"" << private_key_filename << "\"." << std::endl;
 
-		rsa_key.write_public_key(public_key_file.get());
+		dsa_key.write_parameters(parameters_file.get());
 
-		std::cout << "Public RSA key written succesfully to \"" << public_key_filename << "\"." << std::endl;
+		std::cout << "DSA parameters written succesfully to \"" << parameters_filename << "\"." << std::endl;
 
-		rsa_key.write_certificate_public_key(certificate_public_key_file.get());
+		dsa_key.write_certificate_public_key(certificate_public_key_file.get());
 
-		std::cout << "Certificate public RSA key written succesfully to \"" << certificate_public_key_filename << "\"." << std::endl;
+		std::cout << "Certificate public DSA key written succesfully to \"" << certificate_public_key_filename << "\"." << std::endl;
 	}
 	catch (std::exception& ex)
 	{
@@ -118,7 +118,7 @@ int main()
 	}
 
 	certificate_public_key_file.reset();
-	public_key_file.reset();
+	parameters_file.reset();
 	private_key_file.reset(fopen(private_key_filename.c_str(), "r"), fclose);
 
 	if (!private_key_file)
@@ -130,13 +130,13 @@ int main()
 
 	try
 	{
-		std::cout << "Trying to read back the private RSA key from \"" << private_key_filename << "\"..." << std::endl;
+		std::cout << "Trying to read back the private DSA key from \"" << private_key_filename << "\"..." << std::endl;
 
-		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
+		cryptopen::pkey::dsa_key dsa_key = cryptopen::pkey::dsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 
-		rsa_key.print(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
+		dsa_key.print(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
 
 		const std::string str = "Hello World !";
 		const std::string hash = "SHA256";
@@ -151,15 +151,15 @@ int main()
 
 		std::cout << "Done." << std::endl;
 
-		std::cout << "Generating RSA signature..." << std::endl;
+		std::cout << "Generating DSA signature..." << std::endl;
 
-		std::vector<unsigned char> str_sign = rsa_key.sign<unsigned char>(&str_hash[0], str_hash.size(), algorithm.type());
+		std::vector<unsigned char> str_sign = dsa_key.sign<unsigned char>(&str_hash[0], str_hash.size(), algorithm.type());
 
 		std::cout << "Done." << std::endl;
 
-		std::cout << "Verifying RSA signature..." << std::endl;
+		std::cout << "Verifying DSA signature..." << std::endl;
 
-		rsa_key.verify(&str_sign[0], str_sign.size(), &str_hash[0], str_hash.size(), algorithm.type());
+		dsa_key.verify(&str_sign[0], str_sign.size(), &str_hash[0], str_hash.size(), algorithm.type());
 
 		std::cout << "Done." << std::endl;
 	}
