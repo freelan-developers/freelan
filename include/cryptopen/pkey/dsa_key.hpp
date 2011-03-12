@@ -87,6 +87,12 @@ namespace cryptopen
 				 */
 				const DSA* raw() const;
 
+				/**
+				 * \brief Return the size of a DSA signature in bytes.
+				 * \return The DSA signature size, in bytes.
+				 */
+				size_t size() const;
+
 			private:
 
 				boost::shared_ptr<DSA> m_dsa;
@@ -118,6 +124,10 @@ namespace cryptopen
 		inline const DSA* dsa_key::raw() const
 		{
 			return m_dsa.get();
+		}
+		inline size_t dsa_key::size() const
+		{
+			return DSA_size(m_dsa.get());
 		}
 		inline bool operator==(const dsa_key& lhs, const dsa_key& rhs)
 		{
