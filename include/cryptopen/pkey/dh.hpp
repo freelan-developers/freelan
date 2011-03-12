@@ -158,6 +158,18 @@ namespace cryptopen
 				const DH* raw() const;
 
 				/**
+				 * \brief Get the private key component.
+				 * \return the private key component.
+				 */
+				BIGNUM* private_key() const;
+
+				/**
+				 * \brief Get the public key component.
+				 * \return the public key component.
+				 */
+				BIGNUM* public_key() const;
+
+				/**
 				 * \brief Return the size of a DH signature in bytes.
 				 * \return The DH signature size, in bytes.
 				 */
@@ -267,6 +279,14 @@ namespace cryptopen
 		inline const DH* dh::raw() const
 		{
 			return m_dh.get();
+		}
+		inline BIGNUM* dh::private_key() const
+		{
+			return raw()->priv_key;
+		}
+		inline BIGNUM* dh::public_key() const
+		{
+			return raw()->pub_key;
 		}
 		inline size_t dh::size() const
 		{
