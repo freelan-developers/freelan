@@ -74,7 +74,7 @@ namespace cryptopen
 				typedef void (*generate_callback_type)(int, int, void*);
 
 				/**
-				 * \brief Generate a new DSA private key.
+				 * \brief Create a new DSA key with the specified parameters.
 				 * \param bits The length, in bits, of the prime to be generated. Maximum value is 1024.
 				 * \param seed The seed to use. Can be NULL.
 				 * \param seed_len The length of seed. Can't exceed 20.
@@ -84,12 +84,35 @@ namespace cryptopen
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
+				static dsa_key generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Generate a new DSA private key.
+				 * \param bits The length, in bits, of the prime to be generated. Maximum value is 1024.
+				 * \param seed The seed to use. Can be NULL.
+				 * \param seed_len The length of seed. Can't exceed 20.
+				 * \param counter_ret The iteration counter. Can be NULL.
+				 * \param h_ret The counter for finding a generator. Can be NULL.
+				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of DSA_generate_parameters(3). callback might be NULL (the default).
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 *
+				 * generate_private_key() is equivalent to a call to generate_parameters() followed by a call to generate().
+				 */
 				static dsa_key generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Create a new DSA key.
 				 */
 				dsa_key();
+
+				/**
+				 * \brief Generate the DSA key, reading its parameters.
+				 * \return The current instance.
+				 *
+				 * On error, a cryptographic_exception is thrown.
+				 */
+				dsa_key& generate();
 
 				/**
 				 * \brief Get the raw DSA pointer.
@@ -134,9 +157,19 @@ namespace cryptopen
 		 */
 		bool operator!=(const dsa_key& lhs, const dsa_key& rhs);
 		
+		inline dsa_key dsa_key::generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
+		{
+			return generate_parameters(bits, seed, seed_len, counter_ret, h_ret, callback, callback_arg).generate();
+		}
 		inline dsa_key::dsa_key() : m_dsa(DSA_new(), DSA_free)
 		{
 			error::throw_error_if_not(m_dsa);
+		}
+		inline dsa_key& dsa_key::generate()
+		{
+			error::throw_error_if_not(DSA_generate_key(m_dsa.get()));
+
+			return *this;
 		}
 		inline DSA* dsa_key::raw()
 		{
