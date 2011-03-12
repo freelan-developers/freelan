@@ -69,6 +69,24 @@ namespace cryptopen
 			public:
 
 				/**
+				 * \brief A generate callback type.
+				 */
+				typedef void (*generate_callback_type)(int, int, void*);
+
+				/**
+				 * \brief Generate a new DSA private key.
+				 * \param bits The length, in bits, of the prime to be generated. Maximum value is 1024.
+				 * \param seed The seed to use. Can be NULL.
+				 * \param seed_len The length of seed. Can't exceed 20.
+				 * \param counter_ret The iteration counter. Can be NULL.
+				 * \param h_ret The counter for finding a generator. Can be NULL.
+				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of DSA_generate_parameters(3). callback might be NULL (the default).
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
 				 * \brief Create a new DSA key.
 				 */
 				dsa_key();
@@ -94,6 +112,8 @@ namespace cryptopen
 				size_t size() const;
 
 			private:
+
+				explicit dsa_key(boost::shared_ptr<DSA> dsa);
 
 				boost::shared_ptr<DSA> m_dsa;
 		};
@@ -137,6 +157,10 @@ namespace cryptopen
 		inline bool operator!=(const dsa_key& lhs, const dsa_key& rhs)
 		{
 			return lhs.raw() != rhs.raw();
+		}
+		inline dsa_key::dsa_key(boost::shared_ptr<DSA> dsa) : m_dsa(dsa)
+		{
+			error::throw_error_if_not(m_dsa);
 		}
 	}
 }
