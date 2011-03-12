@@ -275,6 +275,12 @@ namespace cryptopen
 				 */
 				const RSA* raw() const;
 
+				/**
+				 * \brief Return the RSA modulus size in bytes.
+				 * \return The RSA modulus size, in bytes.
+				 */
+				size_t size() const;
+
 			private:
 
 				explicit rsa_key(boost::shared_ptr<RSA> rsa);
@@ -380,6 +386,10 @@ namespace cryptopen
 		inline const RSA* rsa_key::raw() const
 		{
 			return m_rsa.get();
+		}
+		inline size_t rsa_key::size() const
+		{
+			return RSA_size(m_rsa.get());
 		}
 		inline rsa_key::rsa_key(boost::shared_ptr<RSA> rsa) : m_rsa(rsa)
 		{
