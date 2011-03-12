@@ -160,6 +160,20 @@ namespace cryptopen
 
 			return result;
 		}
+
+		size_t rsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type)
+		{
+			unsigned int _out_len = out_len;
+
+			error::throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, m_rsa.get()));
+
+			return _out_len;
+		}
+
+		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
+		{
+			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, m_rsa.get()));
+		}
 	}
 }
 
