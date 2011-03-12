@@ -116,6 +116,7 @@ namespace cryptopen
 		
 		inline dsa_key::dsa_key() : m_dsa(DSA_new(), DSA_free)
 		{
+			error::throw_error_if_not(m_dsa);
 		}
 		inline DSA* dsa_key::raw()
 		{
