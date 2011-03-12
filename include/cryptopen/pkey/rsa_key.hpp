@@ -289,6 +289,20 @@ namespace cryptopen
 				 */
 				void check();
 
+				/**
+				 * \brief Print the RSA key in a human-readable hexadecimal form to a specified BIO.
+				 * \param bio The BIO to use.
+				 * \param offset The number of offset spaces to output.
+				 */
+				void print(bio::bio_ptr bio, int offset = 0);
+
+				/**
+				 * \brief Print the RSA key in a human-readable hexadecimal form to a specified FILE.
+				 * \param file The file.
+				 * \param offset The number of offset spaces to output.
+				 */
+				void print(FILE* file, int offset = 0);
+
 			private:
 
 				explicit rsa_key(boost::shared_ptr<RSA> rsa);
@@ -402,6 +416,14 @@ namespace cryptopen
 		inline void rsa_key::check()
 		{
 			error::throw_error_if_not(RSA_check_key(m_rsa.get()) > 0);
+		}
+		inline void rsa_key::print(bio::bio_ptr bio, int offset)
+		{
+			error::throw_error_if_not(RSA_print(bio.raw(), m_rsa.get(), offset));
+		}
+		inline void rsa_key::print(FILE* file, int offset)
+		{
+			error::throw_error_if_not(RSA_print_fp(file, m_rsa.get(), offset));
 		}
 		inline rsa_key::rsa_key(boost::shared_ptr<RSA> rsa) : m_rsa(rsa)
 		{
