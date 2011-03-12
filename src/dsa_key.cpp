@@ -44,15 +44,54 @@
 
 #include "pkey/dsa_key.hpp"
 
+#include "bio/bio_chain.hpp"
+
 #include <cassert>
 
 namespace cryptopen
 {
 	namespace pkey
 	{
+		namespace
+		{
+			bio::bio_chain get_bio_chain_from_buffer(const void* buf, size_t buf_len)
+			{
+				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
+			}
+		}
+
 		dsa_key dsa_key::generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
 		{
 			return dsa_key(boost::shared_ptr<DSA>(DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), seed_len, counter_ret, h_ret, callback, callback_arg), DSA_free));
+		}
+
+		dsa_key dsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
+
+			return from_private_key(bio_chain.first(), callback, callback_arg);
+		}
+
+		dsa_key dsa_key::from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
+
+			return from_parameters(bio_chain.first(), callback, callback_arg);
+		}
+
+		dsa_key dsa_key::from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
+
+			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
+		}
+
+		dsa_key dsa_key::to_public_key()
+		{
+			bio::bio_chain bio_chain(BIO_s_mem());
+
+			write_certificate_public_key(bio_chain.first());
+			return from_certificate_public_key(bio_chain.first());
 		}
 
 		size_t dsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type)

@@ -49,6 +49,7 @@
 #include "../bio/bio_ptr.hpp"
 
 #include <openssl/dsa.h>
+#include <openssl/pem.h>
 #include <openssl/engine.h>
 
 #include <boost/shared_ptr.hpp>
@@ -75,6 +76,11 @@ namespace cryptopen
 				 * \brief A generate callback type.
 				 */
 				typedef void (*generate_callback_type)(int, int, void*);
+
+				/**
+				 * \brief A PEM passphrase callback type.
+				 */
+				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
 
 				/**
 				 * \brief Create a new DSA key with the specified parameters.
@@ -105,9 +111,159 @@ namespace cryptopen
 				static dsa_key generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
+				 * \brief Load a private DSA key from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load DSA parameters from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a certificate public DSA key from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a private DSA key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_private_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load DSA parameters from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_parameters(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a certificate public DSA key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a DSA key from a private key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load DSA parameters from a public key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a DSA key from a certificate public key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The dsa_key.
+				 */
+				static dsa_key from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
 				 * \brief Create a new DSA key.
 				 */
 				dsa_key();
+
+				/**
+				 * \brief Create a DSA key by taking ownership of an existing DSA* pointer.
+				 * \param dsa The DSA* pointer. Cannot be NULL.
+				 */
+				explicit dsa_key(DSA*);
+
+				/**
+				 * \brief Write the private DSA key to a BIO.
+				 * \param bio The BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param passphrase The passphrase to use.
+				 * \param passphrase_len The length of passphrase.
+				 */
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+
+				/**
+				 * \brief Write the private DSA key to a BIO.
+				 * \param bio The BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+
+				/**
+				 * \brief Write the DSA parameters to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_parameters(bio::bio_ptr bio);
+
+				/**
+				 * \brief Write the certificate public DSA key to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_certificate_public_key(bio::bio_ptr bio);
+
+				/**
+				 * \brief Write the private DSA key to a file.
+				 * \param file The file.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param passphrase The passphrase to use.
+				 * \param passphrase_len The length of passphrase.
+				 */
+				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+
+				/**
+				 * \brief Write the private DSA key to a file.
+				 * \param file The file.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+
+				/**
+				 * \brief Write the DSA parameters to a file.
+				 * \param file The file.
+				 */
+				void write_parameters(FILE* file);
+
+				/**
+				 * \brief Write the certificate public DSA key to a file.
+				 * \param file The file.
+				 */
+				void write_certificate_public_key(FILE* file);
 
 				/**
 				 * \brief Generate the DSA key, reading its parameters.
@@ -162,6 +318,12 @@ namespace cryptopen
 				 * \param file The file.
 				 */
 				void print_parameters(FILE* file);
+
+				/**
+				 * \brief Extract a public DSA key from a private DSA key.
+				 * \return A public DSA key.
+				 */
+				dsa_key to_public_key();
 
 				/**
 				 * \brief Sign a message digest.
@@ -230,9 +392,72 @@ namespace cryptopen
 		{
 			return generate_parameters(bits, seed, seed_len, counter_ret, h_ret, callback, callback_arg).generate();
 		}
+		inline dsa_key dsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return dsa_key(boost::shared_ptr<DSA>(PEM_read_bio_DSAPrivateKey(bio.raw(), NULL, callback, callback_arg), DSA_free));
+		}
+		inline dsa_key dsa_key::from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return dsa_key(boost::shared_ptr<DSA>(PEM_read_bio_DSAparams(bio.raw(), NULL, callback, callback_arg), DSA_free));
+		}
+		inline dsa_key dsa_key::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return dsa_key(boost::shared_ptr<DSA>(PEM_read_bio_DSA_PUBKEY(bio.raw(), NULL, callback, callback_arg), DSA_free));
+		}
+		inline dsa_key dsa_key::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return dsa_key(boost::shared_ptr<DSA>(PEM_read_DSAPrivateKey(file, NULL, callback, callback_arg), DSA_free));
+		}
+		inline dsa_key dsa_key::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return dsa_key(boost::shared_ptr<DSA>(PEM_read_DSAparams(file, NULL, callback, callback_arg), DSA_free));
+		}
+		inline dsa_key dsa_key::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return dsa_key(boost::shared_ptr<DSA>(PEM_read_DSA_PUBKEY(file, NULL, callback, callback_arg), DSA_free));
+		}
 		inline dsa_key::dsa_key() : m_dsa(DSA_new(), DSA_free)
 		{
 			error::throw_error_if_not(m_dsa);
+		}
+		inline dsa_key::dsa_key(DSA* dsa) : m_dsa(dsa, DSA_free)
+		{
+			if (!m_dsa)
+			{
+				throw std::invalid_argument("dsa");
+			}
+		}
+		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		{
+			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), m_dsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+		}
+		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), m_dsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+		}
+		inline void dsa_key::write_parameters(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_DSAparams(bio.raw(), m_dsa.get()));
+		}
+		inline void dsa_key::write_certificate_public_key(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_DSA_PUBKEY(bio.raw(), m_dsa.get()));
+		}
+		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		{
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, m_dsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+		}
+		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, m_dsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+		}
+		inline void dsa_key::write_parameters(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_DSAparams(file, m_dsa.get()));
+		}
+		inline void dsa_key::write_certificate_public_key(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_DSA_PUBKEY(file, m_dsa.get()));
 		}
 		inline dsa_key& dsa_key::generate()
 		{
