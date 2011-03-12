@@ -303,6 +303,12 @@ namespace cryptopen
 				 */
 				void print(FILE* file, int offset = 0);
 
+				/**
+				 * \brief Extract a public RSA key from a private RSA key.
+				 * \return A public RSA key.
+				 */
+				rsa_key to_public_key();
+
 			private:
 
 				explicit rsa_key(boost::shared_ptr<RSA> rsa);

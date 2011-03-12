@@ -88,6 +88,14 @@ namespace cryptopen
 
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
+
+		rsa_key rsa_key::to_public_key()
+		{
+			bio::bio_chain bio_chain(BIO_s_mem());
+
+			write_public_key(bio_chain.first());
+			return from_public_key(bio_chain.first());
+		}
 	}
 }
 
