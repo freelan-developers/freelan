@@ -164,6 +164,13 @@ namespace cryptopen
 				size_t size() const;
 
 				/**
+				 * \brief Validates the Diffie-Hellman parameters.
+				 * \param codes An integer whose content is updated according to the success or failure of the check operation. For more information, take a look a the DH_generate_parameters(3) man page.
+				 * \return true if the DH structure was validated, false otherwise.
+				 */
+				bool check(int& codes);
+
+				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
 				 * \param bio The BIO to use.
 				 */
@@ -236,6 +243,10 @@ namespace cryptopen
 		inline size_t dh::size() const
 		{
 			return DH_size(m_dh.get());
+		}
+		inline bool dh::check(int& codes)
+		{
+			return DH_check(m_dh.get(), &codes);
 		}
 		inline void dh::print_parameters(bio::bio_ptr bio)
 		{
