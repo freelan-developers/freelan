@@ -140,6 +140,9 @@ int main()
 
 		std::cout << "Done." << std::endl;
 
+		std::cout << "Public key A: " << dh.public_key().to_dec() << std::endl;
+		std::cout << "Public key B: " << dh2.public_key().to_dec() << std::endl;
+
 		std::cout << "Computing key A..." << std::endl;
 
 		std::vector<unsigned char> key_a = dh.compute_key<unsigned char>(dh2.public_key());
