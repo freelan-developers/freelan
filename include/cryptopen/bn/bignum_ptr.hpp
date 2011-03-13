@@ -123,7 +123,7 @@ namespace cryptopen
 				 *
 				 * On error a cryptographic_exception is thrown.
 				 *
-				 * \warning If the underlying pointer is NULL, a new BIGNUM is created but needs to be explicitely deleted by the user.
+				 * \warning If the underlying pointer is NULL, a new BIGNUM is created that needs to be explicitely deleted by the user.
 				 */
 				void from_bin(const void* buf, size_t buf_len);
 
@@ -134,10 +134,28 @@ namespace cryptopen
 				std::string to_hex() const;
 
 				/**
+				 * \brief Load a BIGNUM from its hexadecimal representation.
+				 * \param str The hexadecimal string representation.
+				 * \return The number of hexadecimal digits.
+				 * 
+				 * \warning If the underlying pointer is NULL, a new BIGNUM is created that needs to be explicitely deleted by the user.
+				 */
+				unsigned int from_hex(const std::string& str);
+
+				/**
 				 * \brief Get the decimal representation of the BIGNUM.
 				 * \return The decimal representation of the BIGNUM.
 				 */
 				std::string to_dec() const;
+
+				/**
+				 * \brief Load a BIGNUM from its decimal representation.
+				 * \param str The decimal string representation.
+				 * \return The number of decimal digits.
+				 * 
+				 * \warning If the underlying pointer is NULL, a new BIGNUM is created that needs to be explicitely deleted by the user.
+				 */
+				unsigned int from_dec(const std::string& str);
 
 			private:
 

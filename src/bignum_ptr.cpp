@@ -93,11 +93,29 @@ namespace cryptopen
 			return std::string(result.get());
 		}
 		
+		unsigned int bignum_ptr::from_hex(const std::string& str)
+		{
+			int result = BN_hex2bn(&m_bignum, str.c_str());
+
+			error::throw_error_if_not(result);
+
+			return result;
+		}
+
 		std::string bignum_ptr::to_dec() const
 		{
 			boost::shared_ptr<char> result(BN_bn2dec(m_bignum), _OPENSSL_free);
 
 			return std::string(result.get());
+		}
+		
+		unsigned int bignum_ptr::from_dec(const std::string& str)
+		{
+			int result = BN_dec2bn(&m_bignum, str.c_str());
+
+			error::throw_error_if_not(result);
+
+			return result;
 		}
 	}
 }
