@@ -50,6 +50,7 @@
 #include <openssl/bn.h>
 
 #include <vector>
+#include <string>
 
 namespace cryptopen
 {
@@ -114,6 +115,18 @@ namespace cryptopen
 				 */
 				template <typename T>
 				std::vector<T> to_bin() const;
+
+				/**
+				 * \brief Get the hexadecimal representation of the BIGNUM.
+				 * \return The hexadecimal representation of the BIGNUM.
+				 */
+				std::string to_hex() const;
+
+				/**
+				 * \brief Get the decimal representation of the BIGNUM.
+				 * \return The decimal representation of the BIGNUM.
+				 */
+				std::string to_dec() const;
 
 			private:
 

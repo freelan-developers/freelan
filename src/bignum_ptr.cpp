@@ -44,6 +44,10 @@
 
 #include "bn/bignum_ptr.hpp"
 
+#include <openssl/crypto.h>
+
+#include <boost/shared_ptr.hpp>
+
 #include <cassert>
 #include <stdexcept>
 
@@ -51,6 +55,14 @@ namespace cryptopen
 {
 	namespace bn
 	{
+		namespace
+		{
+			void _OPENSSL_free(void* buf)
+			{
+				OPENSSL_free(buf);
+			}
+		}
+
 		size_t bignum_ptr::to_bin(void* out, size_t out_len) const
 		{
 			assert(out_len >= size());
@@ -61,6 +73,20 @@ namespace cryptopen
 			}
 
 			return BN_bn2bin(m_bignum, static_cast<unsigned char*>(out));
+		}
+		
+		std::string bignum_ptr::to_hex() const
+		{
+			boost::shared_ptr<char> result(BN_bn2hex(m_bignum), _OPENSSL_free);
+
+			return std::string(result.get());
+		}
+		
+		std::string bignum_ptr::to_dec() const
+		{
+			boost::shared_ptr<char> result(BN_bn2dec(m_bignum), _OPENSSL_free);
+
+			return std::string(result.get());
 		}
 	}
 }
