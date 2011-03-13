@@ -49,6 +49,8 @@
 
 #include <openssl/bn.h>
 
+#include <vector>
+
 namespace cryptopen
 {
 	namespace bn
@@ -106,6 +108,13 @@ namespace cryptopen
 				 */
 				size_t to_bin(void* out, size_t out_len) const;
 
+				/**
+				 * \brief Get the binary representation of the BIGNUM.
+				 * \return The binary representation.
+				 */
+				template <typename T>
+				std::vector<T> to_bin() const;
+
 			private:
 
 				bool boolean_test() const;
@@ -147,6 +156,15 @@ namespace cryptopen
 		inline size_t bignum_ptr::size() const
 		{
 			return BN_num_bytes(m_bignum);
+		}
+		template <typename T>
+		inline std::vector<T> bignum_ptr::to_bin() const
+		{
+			std::vector<T> result(size());
+
+			result.resize(to_bin(&result[0], result.size()));
+
+			return result;
 		}
 		inline bool bignum_ptr::boolean_test() const
 		{
