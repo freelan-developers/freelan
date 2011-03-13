@@ -21,6 +21,7 @@ From now on, here is what is currently implemented:
  - Random
  - Symmetric Ciphers
  - BIO
+ - BIGNUM
  - Public Key Cryptography
 
    - RSA
@@ -29,7 +30,6 @@ From now on, here is what is currently implemented:
 
 And here is what is planned:
 
- - BIGNUM
  - Threads
  - ASN1
  - EVP
