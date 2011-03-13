@@ -44,6 +44,8 @@
 
 #include "bn/bignum_ptr.hpp"
 
+#include "error/cryptographic_exception.hpp"
+
 #include <openssl/crypto.h>
 
 #include <boost/shared_ptr.hpp>
@@ -75,6 +77,15 @@ namespace cryptopen
 			return BN_bn2bin(m_bignum, static_cast<unsigned char*>(out));
 		}
 		
+		void bignum_ptr::from_bin(const void* buf, size_t buf_len)
+		{
+			BIGNUM* result = BN_bin2bn(static_cast<const unsigned char*>(buf), buf_len, m_bignum);
+
+			error::throw_error_if_not(result);
+
+			m_bignum = result;
+		}
+
 		std::string bignum_ptr::to_hex() const
 		{
 			boost::shared_ptr<char> result(BN_bn2hex(m_bignum), _OPENSSL_free);

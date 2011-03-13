@@ -117,6 +117,17 @@ namespace cryptopen
 				std::vector<T> to_bin() const;
 
 				/**
+				 * \brief Load a BIGNUM from its binary representation.
+				 * \param buf The buffer that holds the binary representation of the BIGNUM.
+				 * \param buf_len The length of buf.
+				 *
+				 * On error a cryptographic_exception is thrown.
+				 *
+				 * \warning If the underlying pointer is NULL, a new BIGNUM is created but needs to be explicitely deleted by the user.
+				 */
+				void from_bin(const void* buf, size_t buf_len);
+
+				/**
 				 * \brief Get the hexadecimal representation of the BIGNUM.
 				 * \return The hexadecimal representation of the BIGNUM.
 				 */
