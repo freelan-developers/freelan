@@ -98,6 +98,14 @@ namespace cryptopen
 				 */
 				size_t size() const;
 
+				/**
+				 * \brief Get the binary representation of the BIGNUM.
+				 * \param out The out buffer. Must be at least size() bytes long.
+				 * \param out_len The length of out.
+				 * \return The number of bytes written to out.
+				 */
+				size_t to_bin(void* out, size_t out_len) const;
+
 			private:
 
 				bool boolean_test() const;

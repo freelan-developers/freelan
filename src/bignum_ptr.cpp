@@ -45,11 +45,23 @@
 #include "bn/bignum_ptr.hpp"
 
 #include <cassert>
+#include <stdexcept>
 
 namespace cryptopen
 {
 	namespace bn
 	{
+		size_t bignum_ptr::to_bin(void* out, size_t out_len) const
+		{
+			assert(out_len >= size());
+
+			if (out_len < size())
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			return BN_bn2bin(m_bignum, static_cast<unsigned char*>(out));
+		}
 	}
 }
 
