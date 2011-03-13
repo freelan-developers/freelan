@@ -136,6 +136,10 @@ namespace cryptopen
 		{
 			return m_bignum;
 		}
+		inline size_t bignum_ptr::size() const
+		{
+			return BN_num_bytes(m_bignum);
+		}
 		inline bool bignum_ptr::boolean_test() const
 		{
 			return (m_bignum != NULL);
