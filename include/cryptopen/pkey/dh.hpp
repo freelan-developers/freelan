@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "../bn/bignum_ptr.hpp"
 
 #include <openssl/dh.h>
 #include <openssl/pem.h>
@@ -161,13 +162,13 @@ namespace cryptopen
 				 * \brief Get the private key component.
 				 * \return the private key component.
 				 */
-				BIGNUM* private_key() const;
+				bn::bignum_ptr private_key() const;
 
 				/**
 				 * \brief Get the public key component.
 				 * \return the public key component.
 				 */
-				BIGNUM* public_key() const;
+				bn::bignum_ptr public_key() const;
 
 				/**
 				 * \brief Return the size of a DH signature in bytes.
@@ -200,7 +201,7 @@ namespace cryptopen
 				 * 
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				size_t compute_key(void* out, size_t out_len, BIGNUM* pub_key);
+				size_t compute_key(void* out, size_t out_len, bn::bignum_ptr pub_key);
 
 				/**
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
@@ -210,7 +211,7 @@ namespace cryptopen
 				 * On failure, a cryptographic_exception is thrown.
 				 */
 				template <typename T>
-				std::vector<T> compute_key(BIGNUM* pub_key);
+				std::vector<T> compute_key(bn::bignum_ptr pub_key);
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
@@ -282,11 +283,11 @@ namespace cryptopen
 		{
 			return m_dh.get();
 		}
-		inline BIGNUM* dh::private_key() const
+		inline bn::bignum_ptr dh::private_key() const
 		{
 			return raw()->priv_key;
 		}
-		inline BIGNUM* dh::public_key() const
+		inline bn::bignum_ptr dh::public_key() const
 		{
 			return raw()->pub_key;
 		}
@@ -305,11 +306,11 @@ namespace cryptopen
 			return *this;
 		}
 		template <typename T>
-		inline std::vector<T> dh::compute_key(BIGNUM* pub_key)
+		inline std::vector<T> dh::compute_key(bn::bignum_ptr pub_key)
 		{
 			std::vector<T> result(size());
 
-			result.resize(compute_key(&result[0], result.size(), pub_key));
+			result.resize(compute_key(&result[0], result.size(), pub_key.raw()));
 
 			return result;
 		}
