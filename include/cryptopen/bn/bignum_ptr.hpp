@@ -86,13 +86,23 @@ namespace cryptopen
 				 */
 				BIGNUM* raw();
 
+				/**
+				 * \brief Get the raw BIGNUM pointer.
+				 * \return The raw BIGNUM pointer.
+				 */
+				const BIGNUM* raw() const;
+
+				/**
+				 * \brief Get the number of bytes needed to represent the BIGNUM.
+				 * \return The number of bytes needed to represent the BIGNUM.
+				 */
+				size_t size() const;
+
 			private:
 
 				bool boolean_test() const;
 
 				BIGNUM* m_bignum;
-				
-				friend bool operator==(const bignum_ptr& lhs, const bignum_ptr& rhs);
 		};
 
 		/**
@@ -122,17 +132,21 @@ namespace cryptopen
 		{
 			return m_bignum;
 		}
+		inline const BIGNUM* bignum_ptr::raw() const
+		{
+			return m_bignum;
+		}
 		inline bool bignum_ptr::boolean_test() const
 		{
 			return (m_bignum != NULL);
 		}
 		inline bool operator==(const bignum_ptr& lhs, const bignum_ptr& rhs)
 		{
-			return lhs.m_bignum == rhs.m_bignum;
+			return lhs.raw() == rhs.raw();
 		}
 		inline bool operator!=(const bignum_ptr& lhs, const bignum_ptr& rhs)
 		{
-			return !(lhs == rhs);
+			return lhs.raw() != rhs.raw();
 		}
 	}
 }
