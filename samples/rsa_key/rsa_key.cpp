@@ -136,7 +136,7 @@ int main()
 
 		std::cout << "Done." << std::endl;
 
-		rsa_key.print(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
+		rsa_key.print(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
 
 		const std::string str = "Hello World !";
 		const std::string hash = "SHA256";

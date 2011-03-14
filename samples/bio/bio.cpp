@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 
+#include <cstdio>
+
 int main()
 {
 	cryptopen::error::error_strings_initializer error_strings_initializer;
@@ -23,7 +25,7 @@ int main()
 	std::getline(std::cin, str);
 
 	cryptopen::bio::bio_chain bio_chain(BIO_f_base64());
-	bio_chain.first().push(BIO_new_fd(fileno(stdout), BIO_NOCLOSE));
+	bio_chain.first().push(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
 
 	std::cout << "Result: " << std::flush;
 
