@@ -73,6 +73,33 @@ namespace cryptoplus
 
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
+
+		rsa_key pkey::get_rsa_key()
+		{
+			RSA* rsa = EVP_PKEY_get1_RSA(m_evp_pkey.get());
+
+			error::throw_error_if_not(rsa);
+
+			return rsa_key(rsa);
+		}
+
+		dsa_key pkey::get_dsa_key()
+		{
+			DSA* dsa = EVP_PKEY_get1_DSA(m_evp_pkey.get());
+
+			error::throw_error_if_not(dsa);
+
+			return dsa_key(dsa);
+		}
+
+		dh_key pkey::get_dh_key()
+		{
+			DH* dh = EVP_PKEY_get1_DH(m_evp_pkey.get());
+
+			error::throw_error_if_not(dh);
+
+			return dh_key(dh);
+		}
 	}
 }
 

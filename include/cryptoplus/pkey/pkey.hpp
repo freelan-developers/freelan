@@ -148,6 +148,63 @@ namespace cryptoplus
 				explicit pkey(EVP_PKEY* evp_pkey);
 
 				/**
+				 * \brief Set the associated RSA key.
+				 * \param rsa The RSA key.
+				 */
+				void set_rsa_key(rsa_key rsa);
+
+				/**
+				 * \brief Get the associated RSA key.
+				 * \return The RSA key.
+				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 */
+				rsa_key get_rsa_key();
+
+				/**
+				 * \brief Take ownership of a RSA key.
+				 * \param rsa The RSA key.
+				 */
+				void assign_rsa_key(RSA* rsa);
+
+				/**
+				 * \brief Set the associated DSA key.
+				 * \param dsa The DSA key.
+				 */
+				void set_dsa_key(dsa_key dsa);
+
+				/**
+				 * \brief Get the associated DSA key.
+				 * \return The DSA key.
+				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 */
+				dsa_key get_dsa_key();
+
+				/**
+				 * \brief Take ownership of a DSA key.
+				 * \param dsa The DSA key.
+				 */
+				void assign_dsa_key(DSA* dsa);
+
+				/**
+				 * \brief Set the associated DH key.
+				 * \param dh The DH key.
+				 */
+				void set_dh_key(dh_key dh);
+
+				/**
+				 * \brief Get the associated DH key.
+				 * \return The DH key.
+				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 */
+				dh_key get_dh_key();
+
+				/**
+				 * \brief Take ownership of a DH key.
+				 * \param dh The DH key.
+				 */
+				void assign_dh_key(DH* dh);
+
+				/**
 				 * \brief Write the private EVP_PKEY key to a BIO.
 				 * \param bio The BIO.
 				 * \param algorithm The cipher algorithm to use.
@@ -330,6 +387,30 @@ namespace cryptoplus
 			{
 				throw std::invalid_argument("evp_pkey");
 			}
+		}
+		inline void pkey::set_rsa_key(rsa_key rsa)
+		{
+			error::throw_error_if_not(EVP_PKEY_set1_RSA(m_evp_pkey.get(), rsa.raw()));
+		}
+		inline void pkey::assign_rsa_key(RSA* rsa)
+		{
+			error::throw_error_if_not(EVP_PKEY_assign_RSA(m_evp_pkey.get(), rsa));
+		}
+		inline void pkey::set_dsa_key(dsa_key dsa)
+		{
+			error::throw_error_if_not(EVP_PKEY_set1_DSA(m_evp_pkey.get(), dsa.raw()));
+		}
+		inline void pkey::assign_dsa_key(DSA* dsa)
+		{
+			error::throw_error_if_not(EVP_PKEY_assign_DSA(m_evp_pkey.get(), dsa));
+		}
+		inline void pkey::set_dh_key(dh_key dh)
+		{
+			error::throw_error_if_not(EVP_PKEY_set1_DH(m_evp_pkey.get(), dh.raw()));
+		}
+		inline void pkey::assign_dh_key(DH* dh)
+		{
+			error::throw_error_if_not(EVP_PKEY_assign_DH(m_evp_pkey.get(), dh));
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
