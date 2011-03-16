@@ -344,6 +344,24 @@ namespace cryptoplus
 				 */
 				int type() const;
 
+				/**
+				 * \brief Check if the pkey holds a RSA key.
+				 * \return true or false.
+				 */
+				bool is_rsa() const;
+
+				/**
+				 * \brief Check if the pkey holds a DSA key.
+				 * \return true or false.
+				 */
+				bool is_dsa() const;
+
+				/**
+				 * \brief Check if the pkey holds a DH key.
+				 * \return true or false.
+				 */
+				bool is_dh() const;
+
 			private:
 
 				explicit pkey(boost::shared_ptr<EVP_PKEY> evp_pkey);
@@ -485,6 +503,18 @@ namespace cryptoplus
 		inline int pkey::type() const
 		{
 			return EVP_PKEY_type(m_evp_pkey->type);
+		}
+		inline bool pkey::is_rsa() const
+		{
+			return (type() == EVP_PKEY_RSA);
+		}
+		inline bool pkey::is_dsa() const
+		{
+			return (type() == EVP_PKEY_DSA);
+		}
+		inline bool pkey::is_dh() const
+		{
+			return (type() == EVP_PKEY_DH);
 		}
 		inline pkey::pkey(boost::shared_ptr<EVP_PKEY> evp_pkey) : m_evp_pkey(evp_pkey)
 		{
