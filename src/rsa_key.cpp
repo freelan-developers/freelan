@@ -172,7 +172,11 @@ namespace cryptopen
 
 		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
 		{
+#if OPENSSL_VERSION_NUMBER >= 0x01000000
 			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, m_rsa.get()));
+#else
+			error::throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), buf_len, static_cast<unsigned char*>(const_cast<void*>(_sign)), sign_len, m_rsa.get()));
+#endif
 		}
 	}
 }

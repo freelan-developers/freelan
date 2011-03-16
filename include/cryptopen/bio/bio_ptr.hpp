@@ -586,7 +586,7 @@ namespace cryptopen
 		}
 		inline void bio_ptr::set_close(long _close)
 		{
-			BIO_set_close(m_bio, _close);
+			(void)BIO_set_close(m_bio, _close);
 		}
 		inline long bio_ptr::get_close()
 		{
