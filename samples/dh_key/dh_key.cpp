@@ -1,10 +1,10 @@
 /**
- * \file dh.cpp
+ * \file dh_key.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A DH sample file.
+ * \brief A DH key sample file.
  */
 
-#include <cryptoplus/pkey/dh.hpp>
+#include <cryptoplus/pkey/dh_key.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -81,11 +81,11 @@ int main()
 	{
 		std::cout << "Generating DH parameters. This can take some time..." << std::endl;
 
-		cryptoplus::pkey::dh dh = cryptoplus::pkey::dh::generate_parameters(bits, generator);
+		cryptoplus::pkey::dh_key dh_key = cryptoplus::pkey::dh_key::generate_parameters(bits, generator);
 
 		int codes = 0;
 
-		dh.check(codes);
+		dh_key.check(codes);
 
 		if (codes != 0)
 		{
@@ -108,14 +108,14 @@ int main()
 			return EXIT_FAILURE;
 		}
 
-		dh.write_parameters(parameters_file.get());
+		dh_key.write_parameters(parameters_file.get());
 
 		std::cout << "DH parameters written succesfully to \"" << parameters_filename << "\"." << std::endl;
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Generating DH key..." << std::endl;
 
-		dh.generate_key();
+		dh_key.generate_key();
 
 		std::cout << "Done." << std::endl;
 
@@ -130,28 +130,28 @@ int main()
 
 		std::cout << "Trying to read back the DH parameters from \"" << parameters_filename << "\"..." << std::endl;
 
-		cryptoplus::pkey::dh dh2 = cryptoplus::pkey::dh::from_parameters(parameters_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::dh_key dh_key2 = cryptoplus::pkey::dh_key::from_parameters(parameters_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Generating DH key..." << std::endl;
 
-		dh2.generate_key();
+		dh_key2.generate_key();
 
 		std::cout << "Done." << std::endl;
 
-		std::cout << "Public key A: " << dh.public_key().to_dec() << std::endl;
-		std::cout << "Public key B: " << dh2.public_key().to_dec() << std::endl;
+		std::cout << "Public key A: " << dh_key.public_key().to_dec() << std::endl;
+		std::cout << "Public key B: " << dh_key2.public_key().to_dec() << std::endl;
 
 		std::cout << "Computing key A..." << std::endl;
 
-		std::vector<unsigned char> key_a = dh.compute_key<unsigned char>(dh2.public_key());
+		std::vector<unsigned char> key_a = dh_key.compute_key<unsigned char>(dh_key2.public_key());
 		
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Computing key B..." << std::endl;
 
-		std::vector<unsigned char> key_b = dh2.compute_key<unsigned char>(dh.public_key());
+		std::vector<unsigned char> key_b = dh_key2.compute_key<unsigned char>(dh_key.public_key());
 		
 		std::cout << "Done." << std::endl;
 

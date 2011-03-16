@@ -1,7 +1,7 @@
 ##
 # libcryptoplus build file.
 #
-sample = 'dh'
+sample = 'dh_key'
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 

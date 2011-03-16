@@ -11,7 +11,7 @@ samples = [
 	'bio',
 	'rsa_key',
 	'dsa_key',
-	'dh'
+	'dh_key'
 ]
 
 SConscript(dirs = samples, name = 'SConstruct')
