@@ -4,8 +4,8 @@
  * \brief A HMAC sample file.
  */
 
-#include <cryptopen/hash/hmac_context.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/hash/hmac_context.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -35,16 +35,16 @@ void hmac(const std::string& name, const std::string& key, const std::string& da
 {
 	try
 	{
-		cryptopen::hash::message_digest_algorithm algorithm(name);
+		cryptoplus::hash::message_digest_algorithm algorithm(name);
 
-		cryptopen::hash::hmac_context ctx;
+		cryptoplus::hash::hmac_context ctx;
 
 		ctx.initialize(key.c_str(), key.size(), &algorithm);
 		ctx.update(data.c_str(), data.size());
 		std::vector<unsigned char> hmac = ctx.finalize<unsigned char>();
 		std::cout << name << ": " << to_hex(hmac.begin(), hmac.end()) << std::endl;
 	}
-	catch (cryptopen::error::cryptographic_exception& ex)
+	catch (cryptoplus::error::cryptographic_exception& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}
@@ -52,8 +52,8 @@ void hmac(const std::string& name, const std::string& key, const std::string& da
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
-	cryptopen::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::hash::message_digest_initializer message_digest_initializer;
 
 	std::cout << "HMAC sample" << std::endl;
 	std::cout << "===========" << std::endl;

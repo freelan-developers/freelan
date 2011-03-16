@@ -4,9 +4,9 @@
  * \brief A DH sample file.
  */
 
-#include <cryptopen/pkey/dh.hpp>
-#include <cryptopen/hash/message_digest_context.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/pkey/dh.hpp>
+#include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -54,8 +54,8 @@ namespace
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
-	cryptopen::cipher::cipher_initializer cipher_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::cipher::cipher_initializer cipher_initializer;
 
 	std::cout << "DH sample" << std::endl;
 	std::cout << "=========" << std::endl;
@@ -81,7 +81,7 @@ int main()
 	{
 		std::cout << "Generating DH parameters. This can take some time..." << std::endl;
 
-		cryptopen::pkey::dh dh = cryptopen::pkey::dh::generate_parameters(bits, generator);
+		cryptoplus::pkey::dh dh = cryptopen::pkey::dh::generate_parameters(bits, generator);
 
 		int codes = 0;
 
@@ -130,7 +130,7 @@ int main()
 
 		std::cout << "Trying to read back the DH parameters from \"" << parameters_filename << "\"..." << std::endl;
 
-		cryptopen::pkey::dh dh2 = cryptopen::pkey::dh::from_parameters(parameters_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::dh dh2 = cryptopen::pkey::dh::from_parameters(parameters_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 

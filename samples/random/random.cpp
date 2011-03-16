@@ -4,8 +4,8 @@
  * \brief A random sample file.
  */
 
-#include <cryptopen/random/random.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/random/random.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -33,13 +33,13 @@ std::string to_hex(const void* buf, size_t buf_len)
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "Random sample" << std::endl;
 	std::cout << "=============" << std::endl;
 	std::cout << std::endl;
 
-	std::vector<unsigned char> bytes = cryptopen::random::get_random_bytes<unsigned char>(16);
+	std::vector<unsigned char> bytes = cryptoplus::random::get_random_bytes<unsigned char>(16);
 
 	std::cout << "Random bytes: " << to_hex(bytes.begin(), bytes.end()) << std::endl;
 

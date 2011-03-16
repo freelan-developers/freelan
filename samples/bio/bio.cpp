@@ -4,8 +4,8 @@
  * \brief A bio sample file.
  */
 
-#include <cryptopen/bio/bio_chain.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/bio/bio_chain.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -14,7 +14,7 @@
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "BIO sample" << std::endl;
 	std::cout << "==========" << std::endl;
@@ -24,7 +24,7 @@ int main()
 	std::string str;
 	std::getline(std::cin, str);
 
-	cryptopen::bio::bio_chain bio_chain(BIO_f_base64());
+	cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
 	bio_chain.first().push(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
 
 	std::cout << "Result: " << std::flush;

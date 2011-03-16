@@ -4,8 +4,8 @@
  * \brief A cipher sample file.
  */
 
-#include <cryptopen/cipher/cipher_stream.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/cipher/cipher_stream.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -35,7 +35,7 @@ void cipher(const std::string& name)
 {
 	try
 	{
-		cryptopen::cipher::cipher_algorithm algorithm(name);
+		cryptoplus::cipher::cipher_algorithm algorithm(name);
 
 		std::vector<unsigned char> data(algorithm.block_size());
 		std::vector<unsigned char> key(algorithm.key_length());
@@ -46,16 +46,16 @@ void cipher(const std::string& name)
 		std::cout << "Key: " << to_hex(key.begin(), key.end()) << std::endl;
 		std::cout << "IV: " << to_hex(iv.begin(), iv.end()) << std::endl;
 
-		cryptopen::cipher::cipher_stream stream(data.size() + algorithm.block_size());
+		cryptoplus::cipher::cipher_stream stream(data.size() + algorithm.block_size());
 
-		stream.initialize(algorithm, cryptopen::cipher::cipher_stream::encrypt, &key[0], &iv[0]);
+		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, &key[0], &iv[0]);
 		stream.set_padding(false);
 		stream.append(&data[0], data.size());
 		stream.finalize();
 
 		std::cout << "Result: " << to_hex(stream.result().begin(), stream.result().end()) << std::endl;
 	}
-	catch (cryptopen::error::cryptographic_exception& ex)
+	catch (cryptoplus::error::cryptographic_exception& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}
@@ -65,8 +65,8 @@ void cipher(const std::string& name)
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
-	cryptopen::cipher::cipher_initializer cipher_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::cipher::cipher_initializer cipher_initializer;
 
 	std::cout << "Cipher sample" << std::endl;
 	std::cout << "=============" << std::endl;

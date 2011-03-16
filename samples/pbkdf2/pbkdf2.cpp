@@ -4,8 +4,8 @@
  * \brief A PBKDF2 sample file.
  */
 
-#include <cryptopen/hash/pbkdf2.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/hash/pbkdf2.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -35,12 +35,12 @@ void pbkdf2(const std::string& name, const std::string& password, const std::str
 {
 	try
 	{
-		cryptopen::hash::message_digest_algorithm algorithm(name);
+		cryptoplus::hash::message_digest_algorithm algorithm(name);
 
-		std::vector<unsigned char> key = cryptopen::hash::pbkdf2<unsigned char>(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
+		std::vector<unsigned char> key = cryptoplus::hash::pbkdf2<unsigned char>(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
 		std::cout << name << ": " << to_hex(key.begin(), key.end()) << std::endl;
 	}
-	catch (cryptopen::error::cryptographic_exception& ex)
+	catch (cryptoplus::error::cryptographic_exception& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}
@@ -48,8 +48,8 @@ void pbkdf2(const std::string& name, const std::string& password, const std::str
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
-	cryptopen::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::hash::message_digest_initializer message_digest_initializer;
 
 	std::cout << "PBKDF2 sample" << std::endl;
 	std::cout << "=============" << std::endl;

@@ -1,5 +1,5 @@
 ##
-# libcryptopen build file.
+# libcryptoplus build file.
 #
 sample = 'bio'
 
@@ -9,7 +9,7 @@ import sys, os
 
 include_path = os.path.join('..', '..', 'include')
 lib_path = os.path.join('..', '..', 'lib')
-module = 'cryptopen'
+module = 'cryptoplus'
 source = Glob('*.cpp')
 cpppath = [include_path]
 libpath = [lib_path]

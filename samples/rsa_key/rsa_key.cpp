@@ -4,9 +4,9 @@
  * \brief A RSA sample file.
  */
 
-#include <cryptopen/pkey/rsa_key.hpp>
-#include <cryptopen/hash/message_digest_context.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/pkey/rsa_key.hpp>
+#include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -54,8 +54,8 @@ namespace
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
-	cryptopen::cipher::cipher_initializer cipher_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::cipher::cipher_initializer cipher_initializer;
 
 	std::cout << "RSA sample" << std::endl;
 	std::cout << "==========" << std::endl;
@@ -94,11 +94,11 @@ int main()
 	{
 		std::cout << "Generating RSA key. This can take some time..." << std::endl;
 
-		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::generate_private_key(1024, 17);
+		cryptoplus::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::generate_private_key(1024, 17);
 
 		std::cout << "Done." << std::endl;
 
-		rsa_key.write_private_key(private_key_file.get(), cryptopen::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
+		rsa_key.write_private_key(private_key_file.get(), cryptoplus::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
 
 		std::cout << "Private RSA key written succesfully to \"" << private_key_filename << "\"." << std::endl;
 
@@ -132,7 +132,7 @@ int main()
 	{
 		std::cout << "Trying to read back the private RSA key from \"" << private_key_filename << "\"..." << std::endl;
 
-		cryptopen::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 
@@ -143,8 +143,8 @@ int main()
 
 		std::cout << "Generating " << hash << " message digest for \"" << str << "\"..." << std::endl;
 
-		cryptopen::hash::message_digest_algorithm algorithm(hash);
-		cryptopen::hash::message_digest_context context;
+		cryptoplus::hash::message_digest_algorithm algorithm(hash);
+		cryptoplus::hash::message_digest_context context;
 		context.initialize(algorithm);
 		context.update(str.c_str(), str.size());
 		std::vector<unsigned char> str_hash = context.finalize<unsigned char>();

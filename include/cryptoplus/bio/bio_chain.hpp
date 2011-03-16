@@ -1,15 +1,15 @@
 /*
- * libcryptopen - C++ portable OpenSSL cryptographic wrapper library.
+ * libcryptoplus - C++ portable OpenSSL cryptographic wrapper library.
  * Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
  *
- * This file is part of libcryptopen.
+ * This file is part of libcryptoplus.
  *
- * libcryptopen is free software; you can redistribute it and/or modify it
+ * libcryptoplus is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libcryptopen is distributed in the hope that it will be useful, but
+ * libcryptoplus is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -31,7 +31,7 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libcryptopen in a commercial software, please
+ * If you intend to use libcryptoplus in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
@@ -52,7 +52,7 @@
 
 #include <stdexcept>
 
-namespace cryptopen
+namespace cryptoplus
 {
 	namespace bio
 	{

@@ -4,8 +4,8 @@
  * \brief A message digest sample file.
  */
 
-#include <cryptopen/hash/message_digest_context.hpp>
-#include <cryptopen/error/error_strings.hpp>
+#include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
 #include <string>
@@ -35,16 +35,16 @@ void message_digest(const std::string& name, const std::string& data)
 {
 	try
 	{
-		cryptopen::hash::message_digest_algorithm algorithm(name);
+		cryptoplus::hash::message_digest_algorithm algorithm(name);
 
-		cryptopen::hash::message_digest_context ctx;
+		cryptoplus::hash::message_digest_context ctx;
 
 		ctx.initialize(algorithm);
 		ctx.update(data.c_str(), data.size());
 		std::vector<unsigned char> message_digest = ctx.finalize<unsigned char>();
 		std::cout << name << ": " << to_hex(message_digest.begin(), message_digest.end()) << std::endl;
 	}
-	catch (cryptopen::error::cryptographic_exception& ex)
+	catch (cryptoplus::error::cryptographic_exception& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}
@@ -52,8 +52,8 @@ void message_digest(const std::string& name, const std::string& data)
 
 int main()
 {
-	cryptopen::error::error_strings_initializer error_strings_initializer;
-	cryptopen::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::hash::message_digest_initializer message_digest_initializer;
 
 	std::cout << "Message digest sample" << std::endl;
 	std::cout << "=====================" << std::endl;
