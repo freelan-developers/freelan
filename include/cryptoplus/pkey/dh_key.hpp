@@ -37,13 +37,13 @@
  */
 
 /**
- * \file dh.hpp
+ * \file dh_key.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A Diffie-Hellman class.
+ * \brief A Diffie-Hellman key class.
  */
 
-#ifndef CRYPTOPEN_PKEY_DH_HPP
-#define CRYPTOPEN_PKEY_DH_HPP
+#ifndef CRYPTOPEN_PKEY_DH_KEY_HPP
+#define CRYPTOPEN_PKEY_DH_KEY_HPP
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
@@ -64,12 +64,12 @@ namespace cryptoplus
 		/**
 		 * \brief A Diffie-Hellman helper class.
 		 *
-		 * The dh class represents a DH structure (with or without a private compound).
-		 * dh is a low level structure that offers no mean to know what components are set up in the underlying DH structure. It is up to the caller to perform only allowed operations on the dh instance.
+		 * The dh_key class represents a DH structure (with or without a private compound).
+		 * dh_key is a low level structure that offers no mean to know what components are set up in the underlying DH structure. It is up to the caller to perform only allowed operations on the dh_key instance.
 		 *
-		 * A dh instance has the same semantic as a DH* pointer, thus two copies of the same instance share the same underlying pointer.
+		 * A dh_key instance has the same semantic as a DH* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class dh
+		class dh_key
 		{
 			public:
 
@@ -89,9 +89,9 @@ namespace cryptoplus
 				 * \param generator A small number greater than 1. Typically 2 or 5.
 				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of DH_generate_parameters(3). callback might be NULL (the default).
 				 * \param callback_arg An argument that will be passed to callback, if needed.
-				 * \return The dh.
+				 * \return The dh_key.
 				 */
-				static dh generate_parameters(int prime_len, int generator, generate_callback_type callback = NULL, void* callback_arg = NULL);
+				static dh_key generate_parameters(int prime_len, int generator, generate_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load DH parameters from a BIO.
@@ -100,7 +100,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dh from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dh_key from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load DH parameters from a file.
@@ -109,7 +109,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dh from_parameters(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dh_key from_parameters(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load DH parameters from a public key buffer.
@@ -119,18 +119,18 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dh from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dh_key from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Create a new DH.
 				 */
-				dh();
+				dh_key();
 
 				/**
 				 * \brief Create a DH by taking ownership of an existing DH* pointer.
 				 * \param dh The DH* pointer. Cannot be NULL.
 				 */
-				explicit dh(DH* dh);
+				explicit dh_key(DH* dh);
 
 				/**
 				 * \brief Write the DH parameters to a BIO.
@@ -190,7 +190,7 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				dh& generate_key();
+				dh_key& generate_key();
 
 				/**
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
@@ -227,86 +227,86 @@ namespace cryptoplus
 
 			private:
 
-				explicit dh(boost::shared_ptr<DH> dh);
+				explicit dh_key(boost::shared_ptr<DH> dh);
 
 				boost::shared_ptr<DH> m_dh;
 		};
 
 		/**
-		 * \brief Compare two dh instances.
+		 * \brief Compare two dh_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two dh instances share the same underlying pointer.
+		 * \return true if the two dh_key instances share the same underlying pointer.
 		 */
-		bool operator==(const dh& lhs, const dh& rhs);
+		bool operator==(const dh_key& lhs, const dh_key& rhs);
 
 		/**
-		 * \brief Compare two dh instances.
+		 * \brief Compare two dh_key instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two dh instances do not share the same underlying pointer.
+		 * \return true if the two dh_key instances do not share the same underlying pointer.
 		 */
-		bool operator!=(const dh& lhs, const dh& rhs);
+		bool operator!=(const dh_key& lhs, const dh_key& rhs);
 		
-		inline dh dh::from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		inline dh_key dh_key::from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dh(boost::shared_ptr<DH>(PEM_read_bio_DHparams(bio.raw(), NULL, callback, callback_arg), DH_free));
+			return dh_key(boost::shared_ptr<DH>(PEM_read_bio_DHparams(bio.raw(), NULL, callback, callback_arg), DH_free));
 		}
-		inline dh dh::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline dh_key dh_key::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dh(boost::shared_ptr<DH>(PEM_read_DHparams(file, NULL, callback, callback_arg), DH_free));
+			return dh_key(boost::shared_ptr<DH>(PEM_read_DHparams(file, NULL, callback, callback_arg), DH_free));
 		}
-		inline dh::dh() : m_dh(DH_new(), DH_free)
+		inline dh_key::dh_key() : m_dh(DH_new(), DH_free)
 		{
 			error::throw_error_if_not(m_dh);
 		}
-		inline dh::dh(DH* _dh) : m_dh(_dh, DH_free)
+		inline dh_key::dh_key(DH* _dh) : m_dh(_dh, DH_free)
 		{
 			if (!m_dh)
 			{
 				throw std::invalid_argument("dh");
 			}
 		}
-		inline void dh::write_parameters(bio::bio_ptr bio)
+		inline void dh_key::write_parameters(bio::bio_ptr bio)
 		{
 			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), m_dh.get()));
 		}
-		inline void dh::write_parameters(FILE* file)
+		inline void dh_key::write_parameters(FILE* file)
 		{
 			error::throw_error_if_not(PEM_write_DHparams(file, m_dh.get()));
 		}
-		inline DH* dh::raw()
+		inline DH* dh_key::raw()
 		{
 			return m_dh.get();
 		}
-		inline const DH* dh::raw() const
+		inline const DH* dh_key::raw() const
 		{
 			return m_dh.get();
 		}
-		inline bn::bignum_ptr dh::private_key() const
+		inline bn::bignum_ptr dh_key::private_key() const
 		{
 			return raw()->priv_key;
 		}
-		inline bn::bignum_ptr dh::public_key() const
+		inline bn::bignum_ptr dh_key::public_key() const
 		{
 			return raw()->pub_key;
 		}
-		inline size_t dh::size() const
+		inline size_t dh_key::size() const
 		{
 			return DH_size(m_dh.get());
 		}
-		inline void dh::check(int& codes)
+		inline void dh_key::check(int& codes)
 		{
 			error::throw_error_if_not(DH_check(m_dh.get(), &codes));
 		}
-		inline dh& dh::generate_key()
+		inline dh_key& dh_key::generate_key()
 		{
 			error::throw_error_if_not(DH_generate_key(m_dh.get()));
 
 			return *this;
 		}
 		template <typename T>
-		inline std::vector<T> dh::compute_key(bn::bignum_ptr pub_key)
+		inline std::vector<T> dh_key::compute_key(bn::bignum_ptr pub_key)
 		{
 			std::vector<T> result(size());
 
@@ -314,28 +314,28 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline void dh::print_parameters(bio::bio_ptr bio)
+		inline void dh_key::print_parameters(bio::bio_ptr bio)
 		{
 			error::throw_error_if_not(DHparams_print(bio.raw(), m_dh.get()));
 		}
-		inline void dh::print_parameters(FILE* file)
+		inline void dh_key::print_parameters(FILE* file)
 		{
 			error::throw_error_if_not(DHparams_print_fp(file, m_dh.get()));
 		}
-		inline bool operator==(const dh& lhs, const dh& rhs)
+		inline bool operator==(const dh_key& lhs, const dh_key& rhs)
 		{
 			return lhs.raw() == rhs.raw();
 		}
-		inline bool operator!=(const dh& lhs, const dh& rhs)
+		inline bool operator!=(const dh_key& lhs, const dh_key& rhs)
 		{
 			return lhs.raw() != rhs.raw();
 		}
-		inline dh::dh(boost::shared_ptr<DH> dsa) : m_dh(dsa)
+		inline dh_key::dh_key(boost::shared_ptr<DH> dsa) : m_dh(dsa)
 		{
 			error::throw_error_if_not(m_dh);
 		}
 	}
 }
 
-#endif /* CRYPTOPEN_PKEY_DH_HPP */
+#endif /* CRYPTOPEN_PKEY_DH_KEY_HPP */
 

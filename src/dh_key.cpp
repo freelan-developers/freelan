@@ -37,12 +37,12 @@
  */
 
 /**
- * \file dh.cpp
+ * \file dh_key.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A Diffie-Hellman class.
+ * \brief A Diffie-Hellman key class.
  */
 
-#include "pkey/dh.hpp"
+#include "pkey/dh_key.hpp"
 
 #include "bio/bio_chain.hpp"
 
@@ -60,19 +60,19 @@ namespace cryptoplus
 			}
 		}
 
-		dh dh::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
+		dh_key dh_key::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
 		{
-			return dh(boost::shared_ptr<DH>(DH_generate_parameters(prime_len, generator, callback, callback_arg), DH_free));
+			return dh_key(boost::shared_ptr<DH>(DH_generate_parameters(prime_len, generator, callback, callback_arg), DH_free));
 		}
 
-		dh dh::from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+		dh_key dh_key::from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
 
 			return from_parameters(bio_chain.first(), callback, callback_arg);
 		}
 
-		size_t dh::compute_key(void* out, size_t out_len, bn::bignum_ptr pub_key)
+		size_t dh_key::compute_key(void* out, size_t out_len, bn::bignum_ptr pub_key)
 		{
 			assert(out_len >= size());
 

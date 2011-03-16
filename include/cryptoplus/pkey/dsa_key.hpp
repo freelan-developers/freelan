@@ -47,7 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
-#include "dh.hpp"
+#include "dh_key.hpp"
 
 #include <openssl/dsa.h>
 #include <openssl/pem.h>
@@ -370,7 +370,7 @@ namespace cryptoplus
 				 * \brief Duplicate DSA parameters and keys as DH parameters and keys.
 				 * \return A new DH structure.
 				 */
-				dh to_dh() const;
+				dh_key to_dh_key() const;
 
 			private:
 
@@ -509,9 +509,9 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline dh dsa_key::to_dh() const
+		inline dh_key dsa_key::to_dh_key() const
 		{
-			return dh(DSA_dup_DH(m_dsa.get()));
+			return dh_key(DSA_dup_DH(m_dsa.get()));
 		}
 		inline dsa_key::dsa_key(boost::shared_ptr<DSA> dsa) : m_dsa(dsa)
 		{
