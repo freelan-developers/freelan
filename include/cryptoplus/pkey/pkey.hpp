@@ -148,6 +148,54 @@ namespace cryptoplus
 				explicit pkey(EVP_PKEY* evp_pkey);
 
 				/**
+				 * \brief Write the private EVP_PKEY key to a BIO.
+				 * \param bio The BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param passphrase The passphrase to use.
+				 * \param passphrase_len The length of passphrase.
+				 */
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+
+				/**
+				 * \brief Write the private EVP_PKEY key to a BIO.
+				 * \param bio The BIO.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+
+				/**
+				 * \brief Write the certificate public EVP_PKEY key to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_certificate_public_key(bio::bio_ptr bio);
+
+				/**
+				 * \brief Write the private EVP_PKEY key to a file.
+				 * \param file The file.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param passphrase The passphrase to use.
+				 * \param passphrase_len The length of passphrase.
+				 */
+				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+
+				/**
+				 * \brief Write the private EVP_PKEY key to a file.
+				 * \param file The file.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 */
+				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+
+				/**
+				 * \brief Write the certificate public EVP_PKEY key to a file.
+				 * \param file The file.
+				 */
+				void write_certificate_public_key(FILE* file);
+
+				/**
 				 * \brief Get the raw EVP_PKEY pointer.
 				 * \return The raw EVP_PKEY pointer.
 				 * \warning The instance has ownership of the return pointer. Calling EVP_PKEY_free() on the returned value will result in undefined behavior.
@@ -210,6 +258,30 @@ namespace cryptoplus
 			{
 				throw std::invalid_argument("evp_pkey");
 			}
+		}
+		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		{
+			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), m_evp_pkey.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+		}
+		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), m_evp_pkey.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+		}
+		inline void pkey::write_certificate_public_key(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_PUBKEY(bio.raw(), m_evp_pkey.get()));
+		}
+		inline void pkey::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		{
+			error::throw_error_if_not(PEM_write_PrivateKey(file, m_evp_pkey.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+		}
+		inline void pkey::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			error::throw_error_if_not(PEM_write_PrivateKey(file, m_evp_pkey.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+		}
+		inline void pkey::write_certificate_public_key(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_PUBKEY(file, m_evp_pkey.get()));
 		}
 		inline EVP_PKEY* pkey::raw()
 		{
