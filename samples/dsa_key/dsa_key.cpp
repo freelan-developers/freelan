@@ -94,7 +94,7 @@ int main()
 	{
 		std::cout << "Generating DSA key. This can take some time..." << std::endl;
 
-		cryptoplus::pkey::dsa_key dsa_key = cryptopen::pkey::dsa_key::generate_private_key(1024, NULL, 0, NULL, NULL);
+		cryptoplus::pkey::dsa_key dsa_key = cryptoplus::pkey::dsa_key::generate_private_key(1024, NULL, 0, NULL, NULL);
 
 		std::cout << "Done." << std::endl;
 
@@ -132,7 +132,7 @@ int main()
 	{
 		std::cout << "Trying to read back the private DSA key from \"" << private_key_filename << "\"..." << std::endl;
 
-		cryptoplus::pkey::dsa_key dsa_key = cryptopen::pkey::dsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::dsa_key dsa_key = cryptoplus::pkey::dsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 

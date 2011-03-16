@@ -94,7 +94,7 @@ int main()
 	{
 		std::cout << "Generating RSA key. This can take some time..." << std::endl;
 
-		cryptoplus::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::generate_private_key(1024, 17);
+		cryptoplus::pkey::rsa_key rsa_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
 
 		std::cout << "Done." << std::endl;
 
@@ -132,7 +132,7 @@ int main()
 	{
 		std::cout << "Trying to read back the private RSA key from \"" << private_key_filename << "\"..." << std::endl;
 
-		cryptoplus::pkey::rsa_key rsa_key = cryptopen::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::rsa_key rsa_key = cryptoplus::pkey::rsa_key::from_private_key(private_key_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 

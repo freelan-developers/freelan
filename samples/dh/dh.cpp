@@ -81,7 +81,7 @@ int main()
 	{
 		std::cout << "Generating DH parameters. This can take some time..." << std::endl;
 
-		cryptoplus::pkey::dh dh = cryptopen::pkey::dh::generate_parameters(bits, generator);
+		cryptoplus::pkey::dh dh = cryptoplus::pkey::dh::generate_parameters(bits, generator);
 
 		int codes = 0;
 
@@ -130,7 +130,7 @@ int main()
 
 		std::cout << "Trying to read back the DH parameters from \"" << parameters_filename << "\"..." << std::endl;
 
-		cryptoplus::pkey::dh dh2 = cryptopen::pkey::dh::from_parameters(parameters_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::dh dh2 = cryptoplus::pkey::dh::from_parameters(parameters_file.get(), pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 
