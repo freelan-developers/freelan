@@ -57,7 +57,7 @@ namespace cryptoplus
 	namespace pkey
 	{
 		/**
-		 * \brief A PKEY.
+		 * \brief A EVP_PKEY.
 		 *
 		 * The pkey class represents an EVP_PKEY structure.
 		 * pkey is a low level structure. It allows you to check the type of the contained key but no further check is done when it comes to convert the pkey to one of the native types (aka. rsa_key, dsa_key, dh_key).
@@ -77,6 +77,62 @@ namespace cryptoplus
 				 * \brief A PEM passphrase callback type.
 				 */
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Load a private EVP_PKEY key from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The pkey.
+				 */
+				static pkey from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a certificate public EVP_PKEY key from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The pkey.
+				 */
+				static pkey from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a private EVP_PKEY key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The pkey.
+				 */
+				static pkey from_private_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a certificate public EVP_PKEY key from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The pkey.
+				 */
+				static pkey from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a EVP_PKEY key from a private key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The pkey.
+				 */
+				static pkey from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a EVP_PKEY key from a certificate public key buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The pkey.
+				 */
+				static pkey from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Create a new empty EVP_PKEY.
@@ -128,6 +184,22 @@ namespace cryptoplus
 		 */
 		bool operator!=(const pkey& lhs, const pkey& rhs);
 
+		inline pkey pkey::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_bio_PrivateKey(bio.raw(), NULL, callback, callback_arg), EVP_PKEY_free));
+		}
+		inline pkey pkey::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_bio_PUBKEY(bio.raw(), NULL, callback, callback_arg), EVP_PKEY_free));
+		}
+		inline pkey pkey::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_PrivateKey(file, NULL, callback, callback_arg), EVP_PKEY_free));
+		}
+		inline pkey pkey::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_PUBKEY(file, NULL, callback, callback_arg), EVP_PKEY_free));
+		}
 		inline pkey::pkey() : m_evp_pkey(EVP_PKEY_new(), EVP_PKEY_free)
 		{
 			error::throw_error_if_not(m_evp_pkey);

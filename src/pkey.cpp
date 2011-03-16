@@ -44,12 +44,35 @@
 
 #include "pkey/pkey.hpp"
 
+#include "bio/bio_chain.hpp"
+
 #include <cassert>
 
 namespace cryptoplus
 {
 	namespace pkey
 	{
+		namespace
+		{
+			bio::bio_chain get_bio_chain_from_buffer(const void* buf, size_t buf_len)
+			{
+				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
+			}
+		}
+
+		pkey pkey::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
+
+			return from_private_key(bio_chain.first(), callback, callback_arg);
+		}
+
+		pkey pkey::from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
+
+			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
+		}
 	}
 }
 
