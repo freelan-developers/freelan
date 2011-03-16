@@ -338,6 +338,12 @@ namespace cryptoplus
 				 */
 				const EVP_PKEY* raw() const;
 
+				/**
+				 * \brief Get the private key type.
+				 * \return The nid of the private key type.
+				 */
+				int type() const;
+
 			private:
 
 				explicit pkey(boost::shared_ptr<EVP_PKEY> evp_pkey);
@@ -475,6 +481,10 @@ namespace cryptoplus
 		inline const EVP_PKEY* pkey::raw() const
 		{
 			return m_evp_pkey.get();
+		}
+		inline int pkey::type() const
+		{
+			return EVP_PKEY_type(m_evp_pkey->type);
 		}
 		inline pkey::pkey(boost::shared_ptr<EVP_PKEY> evp_pkey) : m_evp_pkey(evp_pkey)
 		{
