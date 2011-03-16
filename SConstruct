@@ -1,7 +1,7 @@
 ##
-# libcryptopen build file.
+# libcryptoplus build file.
 #
-module = 'cryptopen'
+module = 'cryptoplus'
 major = '1'
 minor = '0'
 
