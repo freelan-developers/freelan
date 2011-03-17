@@ -27,14 +27,14 @@ From now on, here is what is currently implemented:
    - RSA
    - DSA
    - Diffie-Hellman
+   - EVP PKEY
 
 And here is what is planned:
 
  - Threads
  - ASN1
  - EVP
- - PEM
- - X509
+ - X509 (PEM)
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
 
