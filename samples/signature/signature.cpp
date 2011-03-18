@@ -1,10 +1,11 @@
 /**
- * \file message_digest.cpp
+ * \file signature.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A message digest sample file.
+ * \brief A message digest signature sample file.
  */
 
 #include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/pkey/pkey.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
 #include <iostream>
@@ -31,52 +32,49 @@ std::string to_hex(const void* buf, size_t buf_len)
 	return to_hex(static_cast<const unsigned char*>(buf), static_cast<const unsigned char*>(buf) + buf_len);
 }
 
-void message_digest(const std::string& name, const std::string& data)
-{
-	try
-	{
-		cryptoplus::hash::message_digest_algorithm algorithm(name);
-
-		cryptoplus::hash::message_digest_context ctx;
-
-		ctx.initialize(algorithm);
-		ctx.update(data.c_str(), data.size());
-		std::vector<unsigned char> message_digest = ctx.finalize<unsigned char>();
-		std::cout << name << ": " << to_hex(message_digest.begin(), message_digest.end()) << std::endl;
-	}
-	catch (cryptoplus::error::cryptographic_exception& ex)
-	{
-		std::cerr << name << ": " << ex.what() << std::endl;
-	}
-}
-
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
 	cryptoplus::hash::message_digest_initializer message_digest_initializer;
 
-	std::cout << "Message digest sample" << std::endl;
-	std::cout << "=====================" << std::endl;
+	std::cout << "Message digest signature sample" << std::endl;
+	std::cout << "===============================" << std::endl;
 	std::cout << std::endl;
 
 	const std::string data = "some data from which we will compute the message digest";
 
-	std::cout << "Data: " << data << std::endl;
-	std::cout << std::endl;
+	try
+	{
+		std::cout << "Generating RSA key. This can take some time..." << std::endl;
 
-	message_digest("MD5", data);
-	message_digest("MD4", data);
-	message_digest("SHA1", data);
-	message_digest("SHA", data);
-	message_digest("SHA224", data);
-	message_digest("SHA256", data);
-	message_digest("SHA384", data);
-	message_digest("SHA512", data);
-#if OPENSSL_VERSION_NUMBER >= 0x01000000
-	message_digest("MDC2", data);
-	message_digest("whirlpool", data);
-#endif
-	message_digest("RIPEMD160", data);
+		cryptoplus::pkey::rsa_key rsa_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
+		cryptoplus::pkey::pkey pkey;
+
+		pkey.set_rsa_key(rsa_key);
+
+		std::cout << "Data: " << data << std::endl;
+		std::cout << std::endl;
+
+		cryptoplus::hash::message_digest_algorithm algorithm("SHA256");
+		cryptoplus::hash::message_digest_context ctx;
+
+		ctx.sign_initialize(algorithm);
+		ctx.sign_update(data.c_str(), data.size());
+		std::vector<unsigned char> signature = ctx.sign_finalize<unsigned char>(pkey);
+
+		std::cout << "Signature: " << to_hex(signature.begin(), signature.end()) << std::endl;
+
+		cryptoplus::hash::message_digest_context ctx2;
+		ctx2.verify_initialize(algorithm);
+		ctx2.verify_update(data.c_str(), data.size());
+		bool verification = ctx2.verify_finalize(&signature[0], signature.size(), pkey);
+
+		std::cout << "Verification: " << (verification ? "OK" : "FAILED") << std::endl;
+	}
+	catch (cryptoplus::error::cryptographic_exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 }
