@@ -76,7 +76,7 @@ namespace cryptoplus
 
 			return BN_bn2bin(m_bignum, static_cast<unsigned char*>(out));
 		}
-		
+
 		void bignum_ptr::from_bin(const void* buf, size_t buf_len)
 		{
 			BIGNUM* result = BN_bin2bn(static_cast<const unsigned char*>(buf), buf_len, m_bignum);
@@ -92,7 +92,7 @@ namespace cryptoplus
 
 			return std::string(result.get());
 		}
-		
+
 		unsigned int bignum_ptr::from_hex(const std::string& str)
 		{
 			int result = BN_hex2bn(&m_bignum, str.c_str());
@@ -108,7 +108,7 @@ namespace cryptoplus
 
 			return std::string(result.get());
 		}
-		
+
 		unsigned int bignum_ptr::from_dec(const std::string& str)
 		{
 			int result = BN_dec2bn(&m_bignum, str.c_str());
