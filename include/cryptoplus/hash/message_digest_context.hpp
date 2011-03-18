@@ -107,6 +107,15 @@ namespace cryptoplus
 				void sign_initialize(const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 				/**
+				 * \brief Initialize the message_digest_context for signature verification.
+				 * \param algorithm The message digest algorithm to use.
+				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
+				 *
+				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
+				 */
+				void verify_initialize(const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+
+				/**
 				 * \brief Update the message_digest_context with some data.
 				 * \param data The data buffer.
 				 * \param len The data length.
@@ -121,6 +130,13 @@ namespace cryptoplus
 				void sign_update(const void* data, size_t len);
 
 				/**
+				 * \brief Update the message_digest_context with some data.
+				 * \param data The data buffer.
+				 * \param len The data length.
+				 */
+				void verify_update(const void* data, size_t len);
+
+				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
 				 * \param md The resulting buffer. Cannot be NULL.
 				 * \param md_len The length of md.
@@ -133,15 +149,17 @@ namespace cryptoplus
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
 				 * \return The resulting buffer.
+				 *
+				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
 				template <typename T>
 				std::vector<T> finalize();
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting signature.
-				 * \param sig The resulting buffer. Cannot be NULL. Must be at least pkey->size() bytes long.
+				 * \param sig The resulting signature. Cannot be NULL. Must be at least pkey->size() bytes long.
 				 * \param sig_len The length of sig.
-				 * \param pkey The pkey to use to generate the signature.
+				 * \param pkey The private pkey to use to generate the signature.
 				 * \return The number of bytes written.
 				 *
 				 * After a call to sign_finalize() no more call to sign_update() can be made unless sign_initialize() is called again first.
@@ -151,10 +169,23 @@ namespace cryptoplus
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting signature.
 				 * \param pkey The pkey to use to generate the signature.
-				 * \return The resulting buffer.
+				 * \return The resulting signature.
+				 *
+				 * After a call to sign_finalize() no more call to sign_update() can be made unless sign_initialize() is called again first.
 				 */
 				template <typename T>
 				std::vector<T> sign_finalize(pkey::pkey& pkey);
+
+				/**
+				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
+				 * \param sig The signature to compare to. Cannot be NULL.
+				 * \param sig_len The length of sig.
+				 * \param pkey The private pkey to use to verify the signature.
+				 * \return true if the signature matches, false otherwise.
+				 *
+				 * After a call to verify_finalize() no more call to verify_update() can be made unless verify_initialize() is called again first.
+				 */
+				bool sign_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey);
 
 				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
@@ -202,6 +233,11 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_SignInit_ex(&m_ctx, _algorithm.raw(), impl));
 		}
 
+		inline void message_digest_context::verify_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
+		{
+			error::throw_error_if_not(EVP_VerifyInit_ex(&m_ctx, _algorithm.raw(), impl));
+		}
+
 		inline void message_digest_context::update(const void* data, size_t len)
 		{
 			error::throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len));
@@ -210,6 +246,11 @@ namespace cryptoplus
 		inline void message_digest_context::sign_update(const void* data, size_t len)
 		{
 			error::throw_error_if_not(EVP_SignUpdate(&m_ctx, data, len));
+		}
+
+		inline void message_digest_context::verify_update(const void* data, size_t len)
+		{
+			error::throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len));
 		}
 
 		template <typename T>

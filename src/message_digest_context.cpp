@@ -73,6 +73,15 @@ namespace cryptoplus
 
 			return ilen;
 		}
+		
+		bool message_digest_context::sign_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey)
+		{
+			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), sig_len, pkey.raw());
+
+			error::throw_error_if_not(result < 0);
+
+			return (result == 1);
+		}
 	}
 }
 
