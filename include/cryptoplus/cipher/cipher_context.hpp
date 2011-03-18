@@ -52,8 +52,15 @@
 
 #include <boost/noncopyable.hpp>
 
+#include <vector>
+
 namespace cryptoplus
 {
+	namespace pkey
+	{
+		class pkey;
+	}
+
 	namespace cipher
 	{
 		/**
@@ -107,6 +114,26 @@ namespace cryptoplus
 				void initialize(const cipher_algorithm& algorithm, cipher_direction direction, const void* key, const void* iv, ENGINE* impl = NULL);
 
 				/**
+				 * \brief Initialize the cipher_context for envelope sealing.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
+				 * \param pkeys_begin A pointer to the first pkey to use.
+				 * \param pkeys_end A pointer past the last pkey to use.
+				 * \return The public encrypted shared secret keys array.
+				 */
+				template <typename T>
+				std::vector<std::vector<unsigned char> > seal_initialize(const cipher_algorithm& algorithm, void* iv, T pkeys_begin, T pkeys_end);
+
+				/**
+				 * \brief Initialize the cipher_context for envelope sealing.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
+				 * \param pkey The pkey to use.
+				 * \return The public encrypted shared secret key.
+				 */
+				std::vector<unsigned char> seal_initialize(const cipher_algorithm& algorithm, void* iv, pkey::pkey pkey);
+
+				/**
 				 * \brief Set PKCS padding state.
 				 * \param enabled If enabled is true, PKCS padding will be enabled.
 				 * \see cipher_algorithm::block_size
@@ -157,6 +184,15 @@ namespace cryptoplus
 				void update(void* out, size_t& out_len, const void* in, size_t in_len);
 
 				/**
+				 * \brief Update the cipher_context with some data.
+				 * \param out The output buffer. Should be at least in_len + algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \param in The input buffer.
+				 * \param in_len The length of the in buffer.
+				 */
+				void seal_update(void* out, size_t& out_len, const void* in, size_t in_len);
+
+				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
 				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
 				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
@@ -165,6 +201,16 @@ namespace cryptoplus
 				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
 				void finalize(void* out, size_t& out_len);
+
+				/**
+				 * \brief Finalize the cipher_context and get the resulting buffer.
+				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \return The number of bytes written or 0 on failure.
+				 *
+				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
+				 */
+				void seal_finalize(void* out, size_t& out_len);
 
 				/**
 				 * \brief Get the underlying context.
@@ -192,6 +238,53 @@ namespace cryptoplus
 		inline cipher_context::~cipher_context()
 		{
 			EVP_CIPHER_CTX_cleanup(&m_ctx);
+		}
+
+		template <typename T>
+		inline std::vector<std::vector<unsigned char> > cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, T pkeys_begin, T pkeys_end)
+		{
+			size_t pkeys_count = std::distance(pkeys_begin, pkeys_end);
+
+			std::vector<std::vector<unsigned char> > result;
+			std::vector<unsigned char*> ek;
+			std::vector<int> ekl(pkeys_count);
+			std::vector<EVP_PKEY*> pubk;
+
+			ek.reserve(pkeys_count);
+			pubk.reserve(pkeys_count);
+			result.reserve(pkeys_count);
+
+			try
+			{
+				for (T pkey = pkeys_begin; pkey != pkeys_end; ++pkey)
+				{
+					ek.push_back(new unsigned char[pkey->size()]);
+					pubk.push_back(pkey->raw());
+				}
+
+				error::throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], pkeys_count));
+
+				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
+				{
+					result.push_back(std::vector<unsigned char>(*p, *p + ekl[std::distance(ek.begin(), p)]));
+				}
+			}
+			catch (...)
+			{
+				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
+				{
+					delete[] *p;
+				}
+
+				throw;
+			}
+
+			for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
+			{
+				delete[] *p;
+			}
+
+			return result;
 		}
 
 		inline void cipher_context::set_padding(bool enabled)

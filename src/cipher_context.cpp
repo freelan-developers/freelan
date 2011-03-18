@@ -44,12 +44,50 @@
 
 #include "cipher/cipher_context.hpp"
 
+#include "pkey/pkey.hpp"
+
 #include <cassert>
 
 namespace cryptoplus
 {
 	namespace cipher
 	{
+		namespace
+		{
+			typedef int (*update_function)(EVP_CIPHER_CTX*, unsigned char*, int*, const unsigned char*, int);
+			typedef int (*finalize_function)(EVP_CIPHER_CTX*, unsigned char*, int*);
+
+			int _EVP_SealUpdate(EVP_CIPHER_CTX* ctx, unsigned char* out, int* outl, const unsigned char* in, int inl)
+			{
+				return EVP_SealUpdate(ctx, out, outl, in, inl);
+			}
+
+			void generic_update(cipher_context& ctx, update_function update_func, void* out, size_t& out_len, const void* in, size_t in_len)
+			{
+				assert(out);
+				assert(in);
+				assert(out_len >= in_len + ctx.algorithm().block_size());
+
+				int iout_len = static_cast<int>(out_len);
+
+				error::throw_error_if_not(update_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len, static_cast<const unsigned char*>(in), static_cast<int>(in_len)));
+
+				out_len = iout_len;
+			}
+
+			void generic_finalize(cipher_context& ctx, finalize_function finalize_func, void* out, size_t& out_len)
+			{
+				assert(out);
+				assert(out_len >= ctx.algorithm().block_size());
+
+				int iout_len = static_cast<int>(out_len);
+
+				error::throw_error_if_not(finalize_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len));
+
+				out_len = iout_len;
+			}
+		}
+
 		void cipher_context::initialize(const cipher_algorithm& _algorithm, cipher_context::cipher_direction direction, const void* key, const void* iv, ENGINE* impl)
 		{
 			assert(key);
@@ -57,29 +95,29 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)));
 		}
 
+		std::vector<unsigned char> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, pkey::pkey pkey)
+		{
+			return seal_initialize(_algorithm, iv, &pkey, &pkey + sizeof(&pkey))[0];
+		}
+
 		void cipher_context::update(void* out, size_t& out_len, const void* in, size_t in_len)
 		{
-			assert(out);
-			assert(in);
-			assert(out_len >= in_len + algorithm().block_size());
+			generic_update(*this, EVP_CipherUpdate, out, out_len, in, in_len);
+		}
 
-			int iout_len = static_cast<int>(out_len);
-
-			error::throw_error_if_not(EVP_CipherUpdate(&m_ctx, static_cast<unsigned char*>(out), &iout_len, static_cast<const unsigned char*>(in), static_cast<int>(in_len)));
-
-			out_len = iout_len;
+		void cipher_context::seal_update(void* out, size_t& out_len, const void* in, size_t in_len)
+		{
+			generic_update(*this, _EVP_SealUpdate, out, out_len, in, in_len);
 		}
 
 		void cipher_context::finalize(void* out, size_t& out_len)
 		{
-			assert(out);
-			assert(out_len >= algorithm().block_size());
+			generic_finalize(*this, EVP_CipherFinal, out, out_len);
+		}
 
-			int iout_len = static_cast<int>(out_len);
-
-			error::throw_error_if_not(EVP_CipherFinal(&m_ctx, static_cast<unsigned char*>(out), &iout_len));
-
-			out_len = iout_len;
+		void cipher_context::seal_finalize(void* out, size_t& out_len)
+		{
+			generic_finalize(*this, EVP_SealFinal, out, out_len);
 		}
 	}
 }
