@@ -117,8 +117,8 @@ namespace cryptoplus
 				 * \brief Initialize the cipher_context for envelope sealing.
 				 * \param algorithm The cipher algorithm to use.
 				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
-				 * \param pkeys_begin A pointer to the first pkey to use.
-				 * \param pkeys_end A pointer past the last pkey to use.
+				 * \param pkeys_begin A pointer to the first public pkey to use.
+				 * \param pkeys_end A pointer past the last public pkey to use.
 				 * \return The public encrypted shared secret keys array.
 				 */
 				template <typename T>
@@ -128,10 +128,20 @@ namespace cryptoplus
 				 * \brief Initialize the cipher_context for envelope sealing.
 				 * \param algorithm The cipher algorithm to use.
 				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
-				 * \param pkey The pkey to use.
+				 * \param pkey The public pkey to use.
 				 * \return The public encrypted shared secret key.
 				 */
 				std::vector<unsigned char> seal_initialize(const cipher_algorithm& algorithm, void* iv, pkey::pkey pkey);
+
+				/**
+				 * \brief Initialize the cipher_context for envelope opening.
+				 * \param algorithm The cipher algorithm to use.
+				 * \param key The encrypted shared secret key.
+				 * \param key_len The length of key.
+				 * \param iv The iv to use (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
+				 * \param pkey The private pkey to use.
+				 */
+				void open_initialize(const cipher_algorithm& algorithm, const void* key, size_t key_len, const void* iv, pkey::pkey pkey);
 
 				/**
 				 * \brief Set PKCS padding state.
@@ -193,6 +203,15 @@ namespace cryptoplus
 				void seal_update(void* out, size_t& out_len, const void* in, size_t in_len);
 
 				/**
+				 * \brief Update the cipher_context with some data.
+				 * \param out The output buffer. Should be at least in_len + algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \param in The input buffer.
+				 * \param in_len The length of the in buffer.
+				 */
+				void open_update(void* out, size_t& out_len, const void* in, size_t in_len);
+
+				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
 				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
 				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
@@ -211,6 +230,16 @@ namespace cryptoplus
 				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
 				void seal_finalize(void* out, size_t& out_len);
+
+				/**
+				 * \brief Finalize the cipher_context and get the resulting buffer.
+				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \return The number of bytes written or 0 on failure.
+				 *
+				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
+				 */
+				void open_finalize(void* out, size_t& out_len);
 
 				/**
 				 * \brief Get the underlying context.
