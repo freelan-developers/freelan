@@ -50,11 +50,6 @@ namespace cryptoplus
 {
 	namespace hash
 	{
-		void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
-		{
-			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl));
-		}
-
 		size_t message_digest_context::finalize(void* md, size_t len)
 		{
 			assert(md);

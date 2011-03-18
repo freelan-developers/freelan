@@ -152,6 +152,11 @@ namespace cryptoplus
 			EVP_MD_CTX_cleanup(&m_ctx);
 		}
 
+		inline void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
+		{
+			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl));
+		}
+
 		inline void message_digest_context::update(const void* data, size_t len)
 		{
 			error::throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len));
