@@ -339,6 +339,12 @@ namespace cryptoplus
 				const EVP_PKEY* raw() const;
 
 				/**
+				 * \brief Get the maximum size of a signature.
+				 * \return The maximum size of a signature.
+				 */
+				size_t size() const;
+
+				/**
 				 * \brief Get the private key type.
 				 * \return The nid of the private key type.
 				 */
@@ -499,6 +505,10 @@ namespace cryptoplus
 		inline const EVP_PKEY* pkey::raw() const
 		{
 			return m_evp_pkey.get();
+		}
+		inline size_t pkey::size() const
+		{
+			return EVP_PKEY_size(m_evp_pkey.get());
 		}
 		inline int pkey::type() const
 		{
