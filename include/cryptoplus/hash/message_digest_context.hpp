@@ -56,6 +56,11 @@
 
 namespace cryptoplus
 {
+	namespace pkey
+	{
+		class pkey;
+	}
+
 	namespace hash
 	{
 		/**
@@ -93,6 +98,15 @@ namespace cryptoplus
 				void initialize(const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 				/**
+				 * \brief Initialize the message_digest_context for signing.
+				 * \param algorithm The message digest algorithm to use.
+				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
+				 *
+				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
+				 */
+				void sign_initialize(const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+
+				/**
 				 * \brief Update the message_digest_context with some data.
 				 * \param data The data buffer.
 				 * \param len The data length.
@@ -100,14 +114,21 @@ namespace cryptoplus
 				void update(const void* data, size_t len);
 
 				/**
+				 * \brief Update the message_digest_context with some data.
+				 * \param data The data buffer.
+				 * \param len The data length.
+				 */
+				void sign_update(const void* data, size_t len);
+
+				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
 				 * \param md The resulting buffer. Cannot be NULL.
-				 * \param len The length of md.
+				 * \param md_len The length of md.
 				 * \return The number of bytes written or 0 on failure.
 				 *
 				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
-				size_t finalize(void* md, size_t len);
+				size_t finalize(void* md, size_t md_len);
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
@@ -115,6 +136,25 @@ namespace cryptoplus
 				 */
 				template <typename T>
 				std::vector<T> finalize();
+
+				/**
+				 * \brief Finalize the message_digest_context and get the resulting signature.
+				 * \param sig The resulting buffer. Cannot be NULL. Must be at least pkey->size() bytes long.
+				 * \param sig_len The length of sig.
+				 * \param pkey The pkey to use to generate the signature.
+				 * \return The number of bytes written.
+				 *
+				 * After a call to sign_finalize() no more call to sign_update() can be made unless sign_initialize() is called again first.
+				 */
+				size_t sign_finalize(void* sig, size_t sig_len, pkey::pkey& pkey);
+
+				/**
+				 * \brief Finalize the message_digest_context and get the resulting signature.
+				 * \param pkey The pkey to use to generate the signature.
+				 * \return The resulting buffer.
+				 */
+				template <typename T>
+				std::vector<T> sign_finalize(pkey::pkey& pkey);
 
 				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
@@ -157,9 +197,19 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl));
 		}
 
+		inline void message_digest_context::sign_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
+		{
+			error::throw_error_if_not(EVP_SignInit_ex(&m_ctx, _algorithm.raw(), impl));
+		}
+
 		inline void message_digest_context::update(const void* data, size_t len)
 		{
 			error::throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len));
+		}
+
+		inline void message_digest_context::sign_update(const void* data, size_t len)
+		{
+			error::throw_error_if_not(EVP_SignUpdate(&m_ctx, data, len));
 		}
 
 		template <typename T>
@@ -168,6 +218,16 @@ namespace cryptoplus
 			std::vector<T> result(algorithm().result_size());
 
 			finalize(&result[0], result.size());
+
+			return result;
+		}
+
+		template <typename T>
+		inline std::vector<T> message_digest_context::sign_finalize(pkey::pkey& pkey)
+		{
+			std::vector<T> result(algorithm().result_size());
+
+			sign_finalize(&result[0], result.size(), pkey);
 
 			return result;
 		}

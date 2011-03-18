@@ -44,19 +44,32 @@
 
 #include "hash/message_digest_context.hpp"
 
+#include "pkey/pkey.hpp"
+
 #include <cassert>
 
 namespace cryptoplus
 {
 	namespace hash
 	{
-		size_t message_digest_context::finalize(void* md, size_t len)
+		size_t message_digest_context::finalize(void* md, size_t md_len)
 		{
 			assert(md);
 
-			unsigned int ilen = static_cast<unsigned int>(len);
+			unsigned int ilen = static_cast<unsigned int>(md_len);
 
 			error::throw_error_if_not(EVP_DigestFinal_ex(&m_ctx, static_cast<unsigned char*>(md), &ilen));
+
+			return ilen;
+		}
+		
+		size_t message_digest_context::sign_finalize(void* sig, size_t sig_len, pkey::pkey& pkey)
+		{
+			assert(sig);
+
+			unsigned int ilen = static_cast<unsigned int>(sig_len);
+
+			error::throw_error_if_not(EVP_SignFinal(&m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()));
 
 			return ilen;
 		}
