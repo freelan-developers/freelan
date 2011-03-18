@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "message_digest_algorithm.hpp"
+#include "../pkey/pkey.hpp"
 
 #include <openssl/evp.h>
 
@@ -56,11 +57,6 @@
 
 namespace cryptoplus
 {
-	namespace pkey
-	{
-		class pkey;
-	}
-
 	namespace hash
 	{
 		/**
@@ -266,7 +262,7 @@ namespace cryptoplus
 		template <typename T>
 		inline std::vector<T> message_digest_context::sign_finalize(pkey::pkey& pkey)
 		{
-			std::vector<T> result(algorithm().result_size());
+			std::vector<T> result(pkey.size());
 
 			sign_finalize(&result[0], result.size(), pkey);
 

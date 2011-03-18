@@ -78,7 +78,7 @@ namespace cryptoplus
 		{
 			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), sig_len, pkey.raw());
 
-			error::throw_error_if_not(result < 0);
+			error::throw_error_if(result < 0);
 
 			return (result == 1);
 		}
