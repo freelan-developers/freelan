@@ -185,7 +185,7 @@ namespace cryptoplus
 				 *
 				 * After a call to verify_finalize() no more call to verify_update() can be made unless verify_initialize() is called again first.
 				 */
-				bool sign_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey);
+				bool verify_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey);
 
 				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
