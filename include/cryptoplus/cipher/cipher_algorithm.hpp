@@ -45,8 +45,6 @@
 #ifndef CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP
 #define CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP
 
-#include "../initializer.hpp"
-
 #include <openssl/evp.h>
 
 #include <string>
@@ -55,21 +53,6 @@ namespace cryptoplus
 {
 	namespace cipher
 	{
-		namespace
-		{
-			inline void _OpenSSL_add_all_algorithms()
-			{
-				OpenSSL_add_all_algorithms();
-			}
-		}
-
-		/**
-		 * \brief The initializer.
-		 *
-		 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions.
-		 */
-		typedef initializer<_OpenSSL_add_all_algorithms, EVP_cleanup> cipher_initializer;
-
 		/**
 		 * \brief A cipher algorithm.
 		 */

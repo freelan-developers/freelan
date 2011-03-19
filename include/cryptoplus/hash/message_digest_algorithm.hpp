@@ -45,8 +45,6 @@
 #ifndef CRYPTOPEN_HASH_MESSAGE_DIGEST_ALGORITHM_HPP
 #define CRYPTOPEN_HASH_MESSAGE_DIGEST_ALGORITHM_HPP
 
-#include "../initializer.hpp"
-
 #include <openssl/evp.h>
 
 #include <string>
@@ -55,13 +53,6 @@ namespace cryptoplus
 {
 	namespace hash
 	{
-		/**
-		 * \brief The initializer.
-		 *
-		 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions.
-		 */
-		typedef initializer<OpenSSL_add_all_digests, EVP_cleanup> message_digest_initializer;
-
 		/**
 		 * \brief A message digest algorithm.
 		 */
