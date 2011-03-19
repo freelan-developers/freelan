@@ -116,6 +116,14 @@ namespace cryptoplus
 		 */
 		bool operator!=(const name& lhs, const name& rhs);
 
+		/**
+		 * \brief Compare two names, by value.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The result of the comparison, which is 0 if the two arguments are identical.
+		 */
+		int compare(const name& lhs, const name& rhs);
+
 		inline name::name() : m_x509_name(X509_NAME_new(), X509_NAME_free)
 		{
 			error::throw_error_if_not(m_x509_name);
@@ -146,6 +154,10 @@ namespace cryptoplus
 		inline bool operator!=(const name& lhs, const name& rhs)
 		{
 			return lhs.raw() != rhs.raw();
+		}
+		inline int compare(const name& lhs, const name& rhs)
+		{
+			return X509_NAME_cmp(lhs.raw(), rhs.raw());
 		}
 	}
 }
