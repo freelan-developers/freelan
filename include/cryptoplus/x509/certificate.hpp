@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "../pkey/pkey.hpp"
 
 #include <openssl/x509.h>
 #include <openssl/pem.h>
@@ -184,6 +185,12 @@ namespace cryptoplus
 				 */
 				X509* raw();
 
+				/**
+				 * \brief Get the public key.
+				 * \return The public key.
+				 */
+				pkey::pkey public_key();
+
 			private:
 
 				explicit certificate(boost::shared_ptr<X509> x509);
@@ -257,6 +264,10 @@ namespace cryptoplus
 		inline X509* certificate::raw()
 		{
 			return m_x509.get();
+		}
+		inline pkey::pkey certificate::public_key()
+		{
+			return pkey::pkey(X509_get_pubkey(m_x509.get()));
 		}
 		inline certificate::certificate(boost::shared_ptr<X509> x509) : m_x509(x509)
 		{
