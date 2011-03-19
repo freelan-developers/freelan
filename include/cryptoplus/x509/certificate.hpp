@@ -212,6 +212,20 @@ namespace cryptoplus
 				 */
 				name issuer();
 
+				/**
+				 * \brief Verify the certificate against a specified public key.
+				 * \param pkey The public pkey.
+				 * \return true if the verification succeeds.
+				 */
+				bool verify_public_key(pkey::pkey pkey);
+
+				/**
+				 * \brief Verify the certificate against a specified private key.
+				 * \param pkey The private pkey.
+				 * \return true if the verification succeeds.
+				 */
+				bool verify_private_key(pkey::pkey pkey);
+
 			private:
 
 				explicit certificate(boost::shared_ptr<X509> x509);
@@ -301,6 +315,14 @@ namespace cryptoplus
 		inline name certificate::issuer()
 		{
 			return name(boost::shared_ptr<X509_NAME>(X509_get_issuer_name(m_x509.get()), name::null_deleter));
+		}
+		inline bool certificate::verify_public_key(pkey::pkey pkey)
+		{
+			return X509_verify(m_x509.get(), pkey.raw()) == 1;
+		}
+		inline bool certificate::verify_private_key(pkey::pkey pkey)
+		{
+			return X509_check_private_key(m_x509.get(), pkey.raw()) == 1;
 		}
 		inline certificate::certificate(boost::shared_ptr<X509> x509) : m_x509(x509)
 		{
