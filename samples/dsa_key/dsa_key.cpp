@@ -5,6 +5,7 @@
  */
 
 #include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/bio/bio_chain.hpp>
 #include <cryptoplus/pkey/dsa_key.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -55,8 +56,9 @@ namespace
 
 int main()
 {
-	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::crypto_initializer crypto_initializer;
 	cryptoplus::algorithms_initializer algorithms_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "DSA sample" << std::endl;
 	std::cout << "==========" << std::endl;
@@ -137,10 +139,11 @@ int main()
 
 		std::cout << "Done." << std::endl;
 
-		dsa_key.print(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
+		cryptoplus::bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
+		dsa_key.print(bio_chain.first());
 
 		const std::string str = "Hello World !";
-		const std::string hash = "SHA256";
+		const std::string hash = "SHA1";
 
 		std::cout << "Generating " << hash << " message digest for \"" << str << "\"..." << std::endl;
 

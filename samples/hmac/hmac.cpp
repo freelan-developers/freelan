@@ -53,8 +53,9 @@ void hmac(const std::string& name, const std::string& key, const std::string& da
 
 int main()
 {
-	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::crypto_initializer crypto_initializer;
 	cryptoplus::algorithms_initializer algorithms_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "HMAC sample" << std::endl;
 	std::cout << "===========" << std::endl;

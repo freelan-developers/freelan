@@ -35,8 +35,9 @@ std::string to_hex(const void* buf, size_t buf_len)
 
 int main()
 {
-	cryptoplus::error::error_strings_initializer error_strings_initializer;
+	cryptoplus::crypto_initializer crypto_initializer;
 	cryptoplus::algorithms_initializer algorithms_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "Message digest signature sample" << std::endl;
 	std::cout << "===============================" << std::endl;
