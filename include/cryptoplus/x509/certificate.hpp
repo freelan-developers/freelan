@@ -114,6 +114,26 @@ namespace cryptoplus
 				static certificate from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
+				 * \brief Load a X509 certificate from a buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The certificate.
+				 */
+				static certificate from_certificate(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a X509 trusted certificate from a buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The certificate.
+				 */
+				static certificate from_trusted_certificate(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
 				 * \brief Create a new empty X509 certificate.
 				 *
 				 * If allocation fails, a cryptographic_exception is thrown.
