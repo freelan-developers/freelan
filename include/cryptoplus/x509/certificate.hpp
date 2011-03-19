@@ -67,6 +67,19 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief Create a new empty X509 certificate.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				certificate();
+
+				/**
+				 * \brief Create a X509 certificate by taking ownership of an existing X509* pointer.
+				 * \param x509 The X509* pointer. Cannot be NULL.
+				 */
+				explicit certificate(X509* x509);
+
+				/**
 				 * \brief Get the raw X509 pointer.
 				 * \return The raw X509 pointer.
 				 * \warning The instance has ownership of the return pointer. Calling X509_free() on the returned value will result in undefined behavior.
@@ -81,6 +94,8 @@ namespace cryptoplus
 				X509* raw();
 
 			private:
+
+				explicit certificate(boost::shared_ptr<X509> x509);
 
 				boost::shared_ptr<X509> m_x509;
 		};
@@ -101,6 +116,17 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
+		inline certificate::certificate() : m_x509(X509_new(), X509_free)
+		{
+			error::throw_error_if_not(m_x509);
+		}
+		inline certificate::certificate(X509* x509) : m_x509(x509, X509_free)
+		{
+			if (!m_x509)
+			{
+				throw std::invalid_argument("certificate");
+			}
+		}
 		inline const X509* certificate::raw() const
 		{
 			return m_x509.get();
@@ -108,6 +134,10 @@ namespace cryptoplus
 		inline X509* certificate::raw()
 		{
 			return m_x509.get();
+		}
+		inline certificate::certificate(boost::shared_ptr<X509> x509) : m_x509(x509)
+		{
+			error::throw_error_if_not(m_x509);
 		}
 		inline bool operator==(const certificate& lhs, const certificate& rhs)
 		{
