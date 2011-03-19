@@ -187,7 +187,7 @@ namespace cryptoplus
 				 * \brief Create a RSA key by taking ownership of an existing RSA* pointer.
 				 * \param rsa The RSA* pointer. Cannot be NULL.
 				 */
-				explicit rsa_key(RSA*);
+				explicit rsa_key(RSA* rsa);
 
 				/**
 				 * \brief Write the private RSA key to a BIO.
