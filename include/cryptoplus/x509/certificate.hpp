@@ -46,8 +46,10 @@
 #define CRYPTOPEN_X509_CERTIFICATE_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "../bio/bio_ptr.hpp"
 
 #include <openssl/x509.h>
+#include <openssl/pem.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -65,6 +67,51 @@ namespace cryptoplus
 		class certificate
 		{
 			public:
+
+				/**
+				 * \brief A PEM passphrase callback type.
+				 */
+				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Load a X509 certificate from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The certificate.
+				 *
+				 * This function will also load a trusted certificate but without its 'trust' information.
+				 */
+				static certificate from_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a X509 trusted certificate from a BIO.
+				 * \param bio The BIO.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The certificate.
+				 */
+				static certificate from_trusted_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a X509 certificate from a file.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The certificate.
+				 *
+				 * This function will also load a trusted certificate but without its 'trust' information.
+				 */
+				static certificate from_certificate(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a X509 trusted certificate from a BIO.
+				 * \param file The file.
+				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
+				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \return The certificate.
+				 */
+				static certificate from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Create a new empty X509 certificate.
@@ -116,6 +163,22 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
+		inline certificate certificate::from_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return certificate(boost::shared_ptr<X509>(PEM_read_bio_X509(bio.raw(), NULL, callback, callback_arg), X509_free));
+		}
+		inline certificate certificate::from_trusted_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return certificate(boost::shared_ptr<X509>(PEM_read_bio_X509_AUX(bio.raw(), NULL, callback, callback_arg), X509_free));
+		}
+		inline certificate certificate::from_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return certificate(boost::shared_ptr<X509>(PEM_read_X509(file, NULL, callback, callback_arg), X509_free));
+		}
+		inline certificate certificate::from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		{
+			return certificate(boost::shared_ptr<X509>(PEM_read_X509_AUX(file, NULL, callback, callback_arg), X509_free));
+		}
 		inline certificate::certificate() : m_x509(X509_new(), X509_free)
 		{
 			error::throw_error_if_not(m_x509);
