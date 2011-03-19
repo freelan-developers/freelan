@@ -125,9 +125,13 @@ namespace cryptoplus
 
 			private:
 
+				static void null_deleter(X509_NAME*);
+
 				explicit name(boost::shared_ptr<X509_NAME> x509_name);
 
 				boost::shared_ptr<X509_NAME> m_x509_name;
+
+				friend class certificate;
 		};
 
 		/**
@@ -196,6 +200,9 @@ namespace cryptoplus
 		inline void name::print(bio::bio_ptr bio, int obase)
 		{
 			error::throw_error_if_not(X509_NAME_print(bio.raw(), m_x509_name.get(), obase));
+		}
+		inline void name::null_deleter(X509_NAME*)
+		{
 		}
 		inline name::name(boost::shared_ptr<X509_NAME> x509_name) : m_x509_name(x509_name)
 		{

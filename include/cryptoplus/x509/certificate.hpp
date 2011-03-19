@@ -48,6 +48,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
+#include "name.hpp"
 
 #include <openssl/x509.h>
 #include <openssl/pem.h>
@@ -191,6 +192,18 @@ namespace cryptoplus
 				 */
 				pkey::pkey public_key();
 
+				/**
+				 * \brief Get the subject name.
+				 * \return The subject name.
+				 */
+				name subject();
+
+				/**
+				 * \brief Get the issuer name.
+				 * \return The issuer name.
+				 */
+				name issuer();
+
 			private:
 
 				explicit certificate(boost::shared_ptr<X509> x509);
@@ -268,6 +281,14 @@ namespace cryptoplus
 		inline pkey::pkey certificate::public_key()
 		{
 			return pkey::pkey(X509_get_pubkey(m_x509.get()));
+		}
+		inline name certificate::subject()
+		{
+			return name(boost::shared_ptr<X509_NAME>(X509_get_subject_name(m_x509.get()), name::null_deleter));
+		}
+		inline name certificate::issuer()
+		{
+			return name(boost::shared_ptr<X509_NAME>(X509_get_issuer_name(m_x509.get()), name::null_deleter));
 		}
 		inline certificate::certificate(boost::shared_ptr<X509> x509) : m_x509(x509)
 		{
