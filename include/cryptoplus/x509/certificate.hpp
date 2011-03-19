@@ -147,6 +147,30 @@ namespace cryptoplus
 				explicit certificate(X509* x509);
 
 				/**
+				 * \brief Write the certificate to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_certificate(bio::bio_ptr bio);
+
+				/**
+				 * \brief Write the trusted certificate to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_trusted_certificate(bio::bio_ptr bio);
+
+				/**
+				 * \brief Write the certificate to a file.
+				 * \param file The file.
+				 */
+				void write_certificate(FILE* file);
+
+				/**
+				 * \brief Write the trusted certificate to a file.
+				 * \param file The file.
+				 */
+				void write_trusted_certificate(FILE* file);
+
+				/**
 				 * \brief Get the raw X509 pointer.
 				 * \return The raw X509 pointer.
 				 * \warning The instance has ownership of the return pointer. Calling X509_free() on the returned value will result in undefined behavior.
@@ -209,6 +233,22 @@ namespace cryptoplus
 			{
 				throw std::invalid_argument("certificate");
 			}
+		}
+		inline void certificate::write_certificate(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_X509(bio.raw(), m_x509.get()));
+		}
+		inline void certificate::write_trusted_certificate(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), m_x509.get()));
+		}
+		inline void certificate::write_certificate(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_X509(file, m_x509.get()));
+		}
+		inline void certificate::write_trusted_certificate(FILE* file)
+		{
+			error::throw_error_if_not(PEM_write_X509_AUX(file, m_x509.get()));
 		}
 		inline const X509* certificate::raw() const
 		{
