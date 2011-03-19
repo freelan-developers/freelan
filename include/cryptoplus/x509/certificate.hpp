@@ -195,12 +195,14 @@ namespace cryptoplus
 				/**
 				 * \brief Get the subject name.
 				 * \return The subject name.
+				 * \warning The returned name depends on the certificate instance and will be invalidated as soon as the underlying pointer is changed (or freed).
 				 */
 				name subject();
 
 				/**
 				 * \brief Get the issuer name.
 				 * \return The issuer name.
+				 * \warning The returned name depends on the certificate instance and will be invalidated as soon as the underlying pointer is changed (or freed).
 				 */
 				name issuer();
 
