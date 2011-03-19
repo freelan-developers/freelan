@@ -46,6 +46,7 @@
 #define CRYPTOPEN_X509_NAME_HPP
 
 #include "../error/cryptographic_exception.hpp"
+#include "../bio/bio_ptr.hpp"
 
 #include <openssl/x509.h>
 
@@ -108,6 +109,13 @@ namespace cryptoplus
 				 * \return A string.
 				 */
 				std::string oneline(size_t max_size) const;
+
+				/**
+				 * \brief Print a X509 name to a BIO.
+				 * \param bio The BIO.
+				 * \param obase An undocumented parameter. Defaulted to 0.
+				 */
+				void print(bio::bio_ptr bio, int obase = 0);
 
 			private:
 
@@ -174,6 +182,10 @@ namespace cryptoplus
 			result.resize(std::strlen(c));
 
 			return result;
+		}
+		inline void name::print(bio::bio_ptr bio, int obase)
+		{
+			error::throw_error_if_not(X509_NAME_print(bio.raw(), m_x509_name.get(), obase));
 		}
 		inline name::name(boost::shared_ptr<X509_NAME> x509_name) : m_x509_name(x509_name)
 		{
