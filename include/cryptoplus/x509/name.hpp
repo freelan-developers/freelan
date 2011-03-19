@@ -93,6 +93,12 @@ namespace cryptoplus
 				 */
 				X509_NAME* raw();
 
+				/**
+				 * \brief Get the hash of the name.
+				 * \return The hash.
+				 */
+				unsigned int hash();
+
 			private:
 
 				explicit name(boost::shared_ptr<X509_NAME> x509_name);
@@ -142,6 +148,10 @@ namespace cryptoplus
 		inline X509_NAME* name::raw()
 		{
 			return m_x509_name.get();
+		}
+		inline unsigned int name::hash()
+		{
+			return X509_NAME_hash(m_x509_name.get());
 		}
 		inline name::name(boost::shared_ptr<X509_NAME> x509_name) : m_x509_name(x509_name)
 		{
