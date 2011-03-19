@@ -57,14 +57,25 @@ namespace cryptoplus
 		{
 			OpenSSL_add_all_algorithms();
 		}
+
+		inline void _null_function()
+		{
+		}
 	}
 
 	/**
-	 * \brief The initializer.
+	 * \brief The algorithms initializer.
 	 *
 	 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions.
 	 */
 	typedef initializer<_OpenSSL_add_all_algorithms, EVP_cleanup> algorithms_initializer;
+
+	/**
+	 * \brief The crypto initializer.
+	 *
+	 * Only one instance of this class should be created. When an instance exists, it will prevent memory leaks related to the libcrypto's internals.
+	 */
+	typedef initializer<_null_function, CRYPTO_cleanup_all_ex_data> crypto_initializer;
 }
 
 #endif /* CRYPTOPEN_CRYPTOPEN_HPP */
