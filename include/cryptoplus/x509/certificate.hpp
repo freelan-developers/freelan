@@ -187,6 +187,12 @@ namespace cryptoplus
 				X509* raw();
 
 				/**
+				 * \brief Clone the certificate instance.
+				 * \return The clone.
+				 */
+				certificate clone() const;
+
+				/**
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
@@ -279,6 +285,10 @@ namespace cryptoplus
 		inline X509* certificate::raw()
 		{
 			return m_x509.get();
+		}
+		inline certificate certificate::clone() const
+		{
+			return certificate(X509_dup(m_x509.get()));
 		}
 		inline pkey::pkey certificate::public_key()
 		{
