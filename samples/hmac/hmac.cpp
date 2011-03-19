@@ -4,6 +4,7 @@
  * \brief A HMAC sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/hash/hmac_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -53,7 +54,7 @@ void hmac(const std::string& name, const std::string& key, const std::string& da
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-	cryptoplus::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 
 	std::cout << "HMAC sample" << std::endl;
 	std::cout << "===========" << std::endl;

@@ -4,6 +4,7 @@
  * \brief A PBKDF2 sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/hash/pbkdf2.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -49,7 +50,7 @@ void pbkdf2(const std::string& name, const std::string& password, const std::str
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-	cryptoplus::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 
 	std::cout << "PBKDF2 sample" << std::endl;
 	std::cout << "=============" << std::endl;

@@ -4,6 +4,7 @@
  * \brief A RSA sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/pkey/rsa_key.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -55,7 +56,7 @@ namespace
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-	cryptoplus::cipher::cipher_initializer cipher_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 
 	std::cout << "RSA sample" << std::endl;
 	std::cout << "==========" << std::endl;

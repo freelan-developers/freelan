@@ -4,6 +4,7 @@
  * \brief A message digest signature sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/pkey/pkey.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -35,7 +36,7 @@ std::string to_hex(const void* buf, size_t buf_len)
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-	cryptoplus::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 
 	std::cout << "Message digest signature sample" << std::endl;
 	std::cout << "===============================" << std::endl;

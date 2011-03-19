@@ -4,6 +4,7 @@
  * \brief A cipher sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/cipher/cipher_stream.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -66,7 +67,7 @@ void cipher(const std::string& name)
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-	cryptoplus::cipher::cipher_initializer cipher_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 
 	std::cout << "Cipher sample" << std::endl;
 	std::cout << "=============" << std::endl;

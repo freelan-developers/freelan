@@ -4,6 +4,7 @@
  * \brief A message digest sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -53,7 +54,7 @@ void message_digest(const std::string& name, const std::string& data)
 int main()
 {
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-	cryptoplus::hash::message_digest_initializer message_digest_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 
 	std::cout << "Message digest sample" << std::endl;
 	std::cout << "=====================" << std::endl;
