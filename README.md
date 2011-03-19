@@ -31,10 +31,9 @@ From now on, here is what is currently implemented:
 
 And here is what is planned:
 
- - Threads
  - ASN1
  - EVP
- - X509 (PEM)
+ - X509
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
 
