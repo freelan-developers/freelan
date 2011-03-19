@@ -98,6 +98,12 @@ namespace cryptoplus
 				X509_NAME* raw();
 
 				/**
+				 * \brief Clone the name instance.
+				 * \return The clone.
+				 */
+				name clone() const;
+
+				/**
 				 * \brief Get the hash of the name.
 				 * \return The hash.
 				 */
@@ -166,6 +172,10 @@ namespace cryptoplus
 		inline X509_NAME* name::raw()
 		{
 			return m_x509_name.get();
+		}
+		inline name name::clone() const
+		{
+			return name(X509_NAME_dup(m_x509_name.get()));
 		}
 		inline unsigned int name::hash()
 		{
