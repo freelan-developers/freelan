@@ -51,6 +51,9 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <cstring>
+#include <string>
+
 namespace cryptoplus
 {
 	namespace x509
@@ -98,6 +101,13 @@ namespace cryptoplus
 				 * \return The hash.
 				 */
 				unsigned int hash();
+
+				/**
+				 * \brief Get a one-line human readable representation of the X509 name.
+				 * \param max_size The maximum size of the result. Default is 256.
+				 * \return A string.
+				 */
+				std::string oneline(size_t max_size) const;
 
 			private:
 
@@ -152,6 +162,18 @@ namespace cryptoplus
 		inline unsigned int name::hash()
 		{
 			return X509_NAME_hash(m_x509_name.get());
+		}
+		inline std::string name::oneline(size_t max_size) const
+		{
+			std::string result('\0', max_size + 1);
+
+			char* c = X509_NAME_oneline(m_x509_name.get(), &result[0], result.size() - 1);
+
+			error::throw_error_if_not(c);
+
+			result.resize(std::strlen(c));
+
+			return result;
 		}
 		inline name::name(boost::shared_ptr<X509_NAME> x509_name) : m_x509_name(x509_name)
 		{
