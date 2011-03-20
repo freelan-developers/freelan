@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "../asn1/object_ptr.hpp"
 
 #include <openssl/x509.h>
 
@@ -88,7 +89,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \return The name_entry.
 				 */
-				name_entry from_object(ASN1_OBJECT* object, int type, const void* data, size_t data_len);
+				name_entry from_object(asn1::object_ptr object, int type, const void* data, size_t data_len);
 
 				/**
 				 * \brief Create a new empty X509 name entry.
@@ -121,7 +122,7 @@ namespace cryptoplus
 				 * \brief Get the ASN1 object associated to this name_entry.
 				 * \return The object.
 				 */
-				ASN1_OBJECT* object();
+				asn1::object_ptr object();
 
 				/**
 				 * \brief Clone the name_entry instance.
@@ -160,9 +161,9 @@ namespace cryptoplus
 		{
 			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
 		}
-		inline name_entry name_entry::from_object(ASN1_OBJECT* _object, int _type, const void* _data, size_t data_len)
+		inline name_entry name_entry::from_object(asn1::object_ptr _object, int _type, const void* _data, size_t data_len)
 		{
-			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_OBJ(NULL, _object, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
+			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
 		}
 		inline name_entry::name_entry() : m_x509_name_entry(X509_NAME_ENTRY_new(), X509_NAME_ENTRY_free)
 		{
@@ -183,7 +184,7 @@ namespace cryptoplus
 		{
 			return m_x509_name_entry.get();
 		}
-		inline ASN1_OBJECT* name_entry::object()
+		inline asn1::object_ptr name_entry::object()
 		{
 			return X509_NAME_ENTRY_get_object(m_x509_name_entry.get());
 		}
