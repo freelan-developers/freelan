@@ -71,6 +71,26 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief Create a X509 name entry from a nid.
+				 * \param nid The nid.
+				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
+				 * \param data The data to fill in the name entry.
+				 * \param data_len The length of data.
+				 * \return The name_entry.
+				 */
+				name_entry from_nid(int nid, int type, const void* data, size_t data_len);
+
+				/**
+				 * \brief Create a X509 name entry from an ASN1 object.
+				 * \param object The object.
+				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
+				 * \param data The data to fill in the name entry.
+				 * \param data_len The length of data.
+				 * \return The name_entry.
+				 */
+				name_entry from_object(ASN1_OBJECT* object, int type, const void* data, size_t data_len);
+
+				/**
 				 * \brief Create a new empty X509 name entry.
 				 *
 				 * If allocation fails, a cryptographic_exception is thrown.
@@ -130,6 +150,14 @@ namespace cryptoplus
 		 */
 		bool operator!=(const name_entry& lhs, const name_entry& rhs);
 
+		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
+		{
+			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
+		}
+		inline name_entry name_entry::from_object(ASN1_OBJECT* _object, int _type, const void* _data, size_t data_len)
+		{
+			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_OBJ(NULL, _object, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
+		}
 		inline name_entry::name_entry() : m_x509_name_entry(X509_NAME_ENTRY_new(), X509_NAME_ENTRY_free)
 		{
 			error::throw_error_if_not(m_x509_name_entry);
