@@ -39,7 +39,7 @@
 /**
  * \file bignum_ptr.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A bio pointer class.
+ * \brief A BIGNUM pointer class.
  */
 
 #include "bn/bignum_ptr.hpp"
