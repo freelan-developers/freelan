@@ -125,6 +125,26 @@ namespace cryptoplus
 				asn1::object_ptr object();
 
 				/**
+				 * \brief Set the ASN1 object associated to this name_entry.
+				 * \param object The object.
+				 */
+				void set_object(asn1::object_ptr object);
+
+				/**
+				 * \brief Get the data associated to this name_entry.
+				 * \return The data, as an ASN1 string.
+				 */
+				ASN1_STRING* data();
+
+				/**
+				 * \brief Set the data associated to this name_entry.
+				 * \param type The type of the data to set. Usually MBSTRING_ASC or MBSTRING_UTF8.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 */
+				void set_data(int type, const void* data, size_t data_len);
+
+				/**
 				 * \brief Get the nid associated to this name_entry.
 				 * \return The nid.
 				 */
@@ -205,6 +225,18 @@ namespace cryptoplus
 		inline asn1::object_ptr name_entry::object()
 		{
 			return X509_NAME_ENTRY_get_object(m_x509_name_entry.get());
+		}
+		inline void name_entry::set_object(asn1::object_ptr _object)
+		{
+			error::throw_error_if_not(X509_NAME_ENTRY_set_object(m_x509_name_entry.get(), _object.raw()));
+		}
+		inline ASN1_STRING* name_entry::data()
+		{
+			return X509_NAME_ENTRY_get_data(m_x509_name_entry.get());
+		}
+		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
+		{
+			error::throw_error_if_not(X509_NAME_ENTRY_set_data(m_x509_name_entry.get(), type, static_cast<const unsigned char*>(_data), data_len));
 		}
 		inline int name_entry::nid()
 		{
