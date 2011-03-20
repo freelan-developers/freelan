@@ -48,6 +48,11 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 
+// Windows defines a X509_NAME structure as well...
+#ifdef X509_NAME
+#undef X509_NAME
+#endif
+
 #include <openssl/x509.h>
 
 #include <boost/shared_ptr.hpp>
