@@ -166,7 +166,7 @@ namespace cryptoplus
 		{
 			if (!m_x509_name)
 			{
-				throw std::invalid_argument("name");
+				throw std::invalid_argument("x509_name");
 			}
 		}
 		inline const X509_NAME* name::raw() const
