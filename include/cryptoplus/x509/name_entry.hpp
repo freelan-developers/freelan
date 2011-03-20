@@ -131,6 +131,18 @@ namespace cryptoplus
 				int nid();
 
 				/**
+				 * \brief Get the name associated to this name_entry.
+				 * \return The name.
+				 */
+				std::string name();
+
+				/**
+				 * \brief Get the long name associated to this name_entry.
+				 * \return The long name.
+				 */
+				std::string long_name();
+
+				/**
 				 * \brief Clone the name_entry instance.
 				 * \return The clone.
 				 */
@@ -197,6 +209,14 @@ namespace cryptoplus
 		inline int name_entry::nid()
 		{
 			return object().to_nid();
+		}
+		inline std::string name_entry::name()
+		{
+			return OBJ_nid2sn(nid());
+		}
+		inline std::string name_entry::long_name()
+		{
+			return OBJ_nid2ln(nid());
 		}
 		inline name_entry name_entry::clone() const
 		{
