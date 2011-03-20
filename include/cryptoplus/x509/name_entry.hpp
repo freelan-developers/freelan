@@ -72,16 +72,6 @@ namespace cryptoplus
 			public:
 
 				/**
-				 * \brief Create a X509 name entry from a nid.
-				 * \param nid The nid.
-				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
-				 * \param data The data to fill in the name entry.
-				 * \param data_len The length of data.
-				 * \return The name_entry.
-				 */
-				name_entry from_nid(int nid, int type, const void* data, size_t data_len);
-
-				/**
 				 * \brief Create a X509 name entry from an ASN1 object.
 				 * \param object The object.
 				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
@@ -90,6 +80,16 @@ namespace cryptoplus
 				 * \return The name_entry.
 				 */
 				name_entry from_object(asn1::object_ptr object, int type, const void* data, size_t data_len);
+
+				/**
+				 * \brief Create a X509 name entry from a nid.
+				 * \param nid The nid.
+				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
+				 * \param data The data to fill in the name entry.
+				 * \param data_len The length of data.
+				 * \return The name_entry.
+				 */
+				name_entry from_nid(int nid, int type, const void* data, size_t data_len);
 
 				/**
 				 * \brief Create a new empty X509 name entry.
@@ -123,6 +123,12 @@ namespace cryptoplus
 				 * \return The object.
 				 */
 				asn1::object_ptr object();
+
+				/**
+				 * \brief Get the nid associated to this name_entry.
+				 * \return The nid.
+				 */
+				int nid();
 
 				/**
 				 * \brief Clone the name_entry instance.
@@ -187,6 +193,10 @@ namespace cryptoplus
 		inline asn1::object_ptr name_entry::object()
 		{
 			return X509_NAME_ENTRY_get_object(m_x509_name_entry.get());
+		}
+		inline int name_entry::nid()
+		{
+			return object().to_nid();
 		}
 		inline name_entry name_entry::clone() const
 		{
