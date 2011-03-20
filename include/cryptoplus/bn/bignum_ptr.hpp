@@ -165,7 +165,7 @@ namespace cryptoplus
 		};
 
 		/**
-		 * \brief Compare two bio instances.
+		 * \brief Compare two BIGNUM pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
 		 * \return true if the two bignum_ptr instance share the same underlying pointer.
@@ -173,7 +173,7 @@ namespace cryptoplus
 		bool operator==(const bignum_ptr& lhs, const bignum_ptr& rhs);
 
 		/**
-		 * \brief Compare two bio instances.
+		 * \brief Compare two BIGNUM pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
 		 * \return true if the two bignum_ptr instance do not share the same underlying pointer.

@@ -116,7 +116,7 @@ namespace cryptoplus
 		};
 
 		/**
-		 * \brief Compare two bio instances.
+		 * \brief Compare two ASN1 object pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
 		 * \return true if the two object_ptr instance share the same underlying pointer.
@@ -124,12 +124,20 @@ namespace cryptoplus
 		bool operator==(const object_ptr& lhs, const object_ptr& rhs);
 
 		/**
-		 * \brief Compare two bio instances.
+		 * \brief Compare two ASN1 object pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
 		 * \return true if the two object_ptr instance do not share the same underlying pointer.
 		 */
 		bool operator!=(const object_ptr& lhs, const object_ptr& rhs);
+
+		/**
+		 * \brief Compare two ASN1 object pointers.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return 0 if the two ASN1 objects are identical.
+		 */
+		int compare(const object_ptr& lhs, const object_ptr& rhs);
 
 		inline object_ptr object_ptr::from_nid(int nid)
 		{
@@ -165,6 +173,10 @@ namespace cryptoplus
 		inline bool operator!=(const object_ptr& lhs, const object_ptr& rhs)
 		{
 			return lhs.raw() != rhs.raw();
+		}
+		inline int compare(const object_ptr& lhs, const object_ptr& rhs)
+		{
+			return OBJ_cmp(lhs.raw(), rhs.raw());
 		}
 	}
 }
