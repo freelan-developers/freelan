@@ -118,6 +118,12 @@ namespace cryptoplus
 				X509_NAME_ENTRY* raw();
 
 				/**
+				 * \brief Get the ASN1 object associated to this name_entry.
+				 * \return The object.
+				 */
+				ASN1_OBJECT* object();
+
+				/**
 				 * \brief Clone the name_entry instance.
 				 * \return The clone.
 				 */
@@ -176,6 +182,10 @@ namespace cryptoplus
 		inline X509_NAME_ENTRY* name_entry::raw()
 		{
 			return m_x509_name_entry.get();
+		}
+		inline ASN1_OBJECT* name_entry::object()
+		{
+			return X509_NAME_ENTRY_get_object(m_x509_name_entry.get());
 		}
 		inline name_entry name_entry::clone() const
 		{
