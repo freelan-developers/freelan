@@ -72,6 +72,13 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief Create an ASN1 object pointer from a nid.
+				 * \param nid The nid.
+				 * \return The ASN1 object pointer.
+				 */
+				static object_ptr from_nid(int nid);
+
+				/**
 				 * \brief Create a new object_ptr.
 				 * \param object The ASN1_OBJECT to point to.
 				 */
@@ -94,6 +101,12 @@ namespace cryptoplus
 				 * \return The raw ASN1_OBJECT pointer.
 				 */
 				const ASN1_OBJECT* raw() const;
+
+				/**
+				 * \brief Get the nid associated to the specified object.
+				 * \return The nid.
+				 */
+				int to_nid() const;
 
 			private:
 
@@ -118,6 +131,10 @@ namespace cryptoplus
 		 */
 		bool operator!=(const object_ptr& lhs, const object_ptr& rhs);
 
+		inline object_ptr object_ptr::from_nid(int nid)
+		{
+			return OBJ_nid2obj(nid);
+		}
 		inline object_ptr::object_ptr(ASN1_OBJECT* _object) : m_object(_object)
 		{
 		}
@@ -132,6 +149,10 @@ namespace cryptoplus
 		inline const ASN1_OBJECT* object_ptr::raw() const
 		{
 			return m_object;
+		}
+		inline int object_ptr::to_nid() const
+		{
+			return OBJ_obj2nid(m_object);
 		}
 		inline bool object_ptr::boolean_test() const
 		{
