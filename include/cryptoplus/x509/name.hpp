@@ -224,8 +224,9 @@ namespace cryptoplus
 
 				/**
 				 * \brief Get the entry at the specified position.
-				 * \param index The index. Must be a valid index position or the behavior is undefined.
+				 * \param index The index. Must be a valid index position or the behavior is undefined. See count().
 				 * \return The name entry.
+				 * \see count().
 				 */
 				name_entry operator[](int index);
 
