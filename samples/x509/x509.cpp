@@ -4,6 +4,7 @@
  * \brief A x509 sample file.
  */
 
+#include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/bio/bio_chain.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -16,6 +17,7 @@
 
 int main()
 {
+	cryptoplus::crypto_initializer crypto_initializer;
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "X509 sample" << std::endl;
