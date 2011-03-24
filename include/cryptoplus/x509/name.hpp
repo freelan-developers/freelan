@@ -133,6 +133,10 @@ namespace cryptoplus
 
 						friend bool operator==(const name::iterator& lhs, const name::iterator& rhs);
 						friend bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+						friend bool operator<(const name::iterator& lhs, const name::iterator& rhs);
+						friend bool operator<=(const name::iterator& lhs, const name::iterator& rhs);
+						friend bool operator>(const name::iterator& lhs, const name::iterator& rhs);
+						friend bool operator>=(const name::iterator& lhs, const name::iterator& rhs);
 						friend name::iterator operator+(const name::iterator& lhs, int rhs);
 						friend name::iterator operator+(int lhs, const name::iterator& rhs);
 						friend name::iterator operator-(const name::iterator& lhs, int rhs);
@@ -225,6 +229,38 @@ namespace cryptoplus
 		 * \return true if the two name::iterator instances do not point to the same element.
 		 */
 		bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Compare two name::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is smaller than rhs.
+		 */
+		bool operator<(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Compare two name::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is smaller than or equal to rhs.
+		 */
+		bool operator<=(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Compare two name::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is greater than rhs.
+		 */
+		bool operator>(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Compare two name::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is greater than or equal to rhs.
+		 */
+		bool operator>=(const name::iterator& lhs, const name::iterator& rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -387,6 +423,22 @@ namespace cryptoplus
 		inline bool operator!=(const name::iterator& lhs, const name::iterator& rhs)
 		{
 			return (lhs.m_name != rhs.m_name) || (lhs.m_index != rhs.m_index);
+		}
+		inline bool operator<(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return (lhs.m_name == rhs.m_name) && (lhs.m_index < rhs.m_index);
+		}
+		inline bool operator<=(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return (lhs.m_name == rhs.m_name) && (lhs.m_index <= rhs.m_index);
+		}
+		inline bool operator>(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return (lhs.m_name == rhs.m_name) && (lhs.m_index > rhs.m_index);
+		}
+		inline bool operator>=(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return (lhs.m_name == rhs.m_name) && (lhs.m_index >= rhs.m_index);
 		}
 		inline name::iterator operator+(const name::iterator& lhs, int rhs)
 		{
