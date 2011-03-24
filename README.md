@@ -34,6 +34,7 @@ And here is what is planned:
  - ASN1
  - EVP
  - X509
+ - DER
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
 
