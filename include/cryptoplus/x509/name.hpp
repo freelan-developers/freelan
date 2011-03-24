@@ -337,6 +337,14 @@ namespace cryptoplus
 				 */
 				void push_back(const reference entry);
 
+				/**
+				 * \brief Insert a copy of the specified name_entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param entry The name entry.
+				 * \return An iterator to the entry that was added.
+				 */
+				iterator insert(iterator position, const reference entry);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -628,6 +636,12 @@ namespace cryptoplus
 		inline void name::push_back(const reference entry)
 		{
 			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), -1, 0));
+		}
+		inline name::iterator name::insert(iterator position, const reference entry)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), position.m_index, 0));
+
+			return position;
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
