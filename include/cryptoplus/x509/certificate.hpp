@@ -212,11 +212,23 @@ namespace cryptoplus
 				name subject();
 
 				/**
+				 * \brief Set the subject name.
+				 * \param aname The subject name that will be copied.
+				 */
+				void set_subject(name aname);
+
+				/**
 				 * \brief Get the issuer name.
 				 * \return The issuer name.
 				 * \warning The returned name depends on the certificate instance and will be invalidated as soon as the underlying pointer is changed (or freed).
 				 */
 				name issuer();
+
+				/**
+				 * \brief Set the issuer name.
+				 * \param aname The issuer name that will be copied.
+				 */
+				void set_issuer(name aname);
 
 				/**
 				 * \brief Verify the certificate against a specified public key.
@@ -322,9 +334,17 @@ namespace cryptoplus
 		{
 			return name(boost::shared_ptr<X509_NAME>(X509_get_subject_name(m_x509.get()), name::null_deleter));
 		}
+		inline void certificate::set_subject(name aname)
+		{
+			error::throw_error_if_not(X509_set_subject_name(m_x509.get(), aname.raw()));
+		}
 		inline name certificate::issuer()
 		{
 			return name(boost::shared_ptr<X509_NAME>(X509_get_issuer_name(m_x509.get()), name::null_deleter));
+		}
+		inline void certificate::set_issuer(name aname)
+		{
+			error::throw_error_if_not(X509_set_issuer_name(m_x509.get(), aname.raw()));
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
