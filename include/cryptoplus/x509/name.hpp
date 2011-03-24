@@ -100,6 +100,30 @@ namespace cryptoplus
 						 */
 						value_type operator->();
 
+						/**
+						 * \brief Increment the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator++();
+
+						/**
+						 * \brief Increment the iterator.
+						 * \return The old value.
+						 */
+						iterator operator++(int);
+
+						/**
+						 * \brief Decrement the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator--();
+
+						/**
+						 * \brief Decrement the iterator.
+						 * \return The old value.
+						 */
+						iterator operator--(int);
+
 					private:
 
 						name* m_name;
@@ -225,6 +249,34 @@ namespace cryptoplus
 		inline name::iterator::value_type name::iterator::operator->()
 		{
 			return operator*();
+		}
+		inline name::iterator& name::iterator::operator++()
+		{
+			++m_index;
+
+			return *this;
+		}
+		inline name::iterator name::iterator::operator++(int)
+		{
+			iterator old = *this;
+
+			++m_index;
+
+			return old;
+		}
+		inline name::iterator& name::iterator::operator--()
+		{
+			--m_index;
+
+			return *this;
+		}
+		inline name::iterator name::iterator::operator--(int)
+		{
+			iterator old = *this;
+
+			--m_index;
+
+			return old;
 		}
 		inline name::name() : m_x509_name(X509_NAME_new(), X509_NAME_free)
 		{
