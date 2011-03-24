@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "name_entry.hpp"
 
 // Windows defines a X509_NAME structure as well...
 #ifdef X509_NAME
@@ -76,6 +77,39 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief An iterator class.
+				 */
+				class iterator : public std::iterator<std::random_access_iterator_tag, name_entry>
+				{
+					public:
+
+						/**
+						 * \brief Create an empty iterator.
+						 */
+						iterator();
+
+						/**
+						 * \brief Dereference operator.
+						 * \return The reference.
+						 */
+						value_type operator*();
+
+						/**
+						 * \brief Dereference operator.
+						 * \return The reference.
+						 */
+						value_type operator->();
+
+					private:
+
+						name* m_name;
+						int m_index;
+
+						friend bool operator==(const name::iterator& lhs, const name::iterator& rhs);
+						friend bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+				};
+
+				/**
 				 * \brief Create a new empty X509 name.
 				 *
 				 * If allocation fails, a cryptographic_exception is thrown.
@@ -91,14 +125,14 @@ namespace cryptoplus
 				/**
 				 * \brief Get the raw X509_NAME pointer.
 				 * \return The raw X509_NAME pointer.
-				 * \warning The instance has ownership of the return pointer. Calling X509_NAME_free() on the returned value will result in undefined behavior.
+				 * \warning The instance has ownership of the returned pointer. Calling X509_NAME_free() on the returned value will result in undefined behavior.
 				 */
 				const X509_NAME* raw() const;
 
 				/**
 				 * \brief Get the raw X509_NAME pointer.
 				 * \return The raw X509_NAME pointer.
-				 * \warning The instance has ownership of the return pointer. Calling X509_NAME_free() on the returned value will result in undefined behavior.
+				 * \warning The instance has ownership of the returned pointer. Calling X509_NAME_free() on the returned value will result in undefined behavior.
 				 */
 				X509_NAME* raw();
 
@@ -140,6 +174,22 @@ namespace cryptoplus
 		};
 
 		/**
+		 * \brief Compare two name::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two name::iterator instances point to the same element.
+		 */
+		bool operator==(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Compare two name::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two name::iterator instances do not point to the same element.
+		 */
+		bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
 		 * \brief Compare two name instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
@@ -163,6 +213,19 @@ namespace cryptoplus
 		 */
 		int compare(const name& lhs, const name& rhs);
 
+		inline name::iterator::iterator() : m_name(NULL), m_index(0)
+		{
+		}
+		inline name::iterator::value_type name::iterator::operator*()
+		{
+			boost::shared_ptr<X509_NAME_ENTRY> name_entry_ptr(X509_NAME_get_entry(m_name->m_x509_name.get(), m_index), name_entry::null_deleter);
+
+			return name_entry(name_entry_ptr);
+		}
+		inline name::iterator::value_type name::iterator::operator->()
+		{
+			return operator*();
+		}
 		inline name::name() : m_x509_name(X509_NAME_new(), X509_NAME_free)
 		{
 			error::throw_error_if_not(m_x509_name);
@@ -212,6 +275,14 @@ namespace cryptoplus
 		inline name::name(boost::shared_ptr<X509_NAME> x509_name) : m_x509_name(x509_name)
 		{
 			error::throw_error_if_not(m_x509_name);
+		}
+		inline bool operator==(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return (lhs.m_name == rhs.m_name) && (lhs.m_index == rhs.m_index);
+		}
+		inline bool operator!=(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return (lhs.m_name != rhs.m_name) || (lhs.m_index != rhs.m_index);
 		}
 		inline bool operator==(const name& lhs, const name& rhs)
 		{
