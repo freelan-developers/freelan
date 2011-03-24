@@ -345,6 +345,14 @@ namespace cryptoplus
 				 */
 				iterator insert(iterator position, const reference entry);
 
+				/**
+				 * \brief Insert a copy of the specified name_entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param entry The name entry.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the call is equivalent to insert(position, entry) without a return value.
+				 */
+				void insert(iterator position, const reference entry, int set);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -642,6 +650,10 @@ namespace cryptoplus
 			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), position.m_index, 0));
 
 			return position;
+		}
+		inline void name::insert(iterator position, const reference entry, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), position.m_index, set));
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
