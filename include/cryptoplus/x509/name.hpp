@@ -296,6 +296,36 @@ namespace cryptoplus
 				 */
 				iterator erase(iterator start, iterator stop);
 
+				/**
+				 * \brief Find an entry by its NID.
+				 * \param nid The nid.
+				 * \return An iterator to the first entry that matches, or end() if none is found.
+				 */
+				iterator find(int nid);
+
+				/**
+				 * \brief Find an entry by its NID.
+				 * \param nid The nid.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an entry that matches, or end() if none is found.
+				 */
+				iterator find(int nid, iterator lastpos);
+
+				/**
+				 * \brief Find an entry by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \return An iterator to the first entry that matches, or end() if none is found.
+				 */
+				iterator find(asn1::object_ptr object);
+
+				/**
+				 * \brief Find an entry by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an entry that matches, or end() if none is found.
+				 */
+				iterator find(asn1::object_ptr object, iterator lastpos);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -555,6 +585,30 @@ namespace cryptoplus
 				start = erase(start);
 
 			return start;
+		}
+		inline name::iterator name::find(int nid)
+		{
+			int index = X509_NAME_get_index_by_NID(m_x509_name.get(), nid, -1);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline name::iterator name::find(int nid, iterator lastpos)
+		{
+			int index = X509_NAME_get_index_by_NID(m_x509_name.get(), nid, lastpos.m_index);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline name::iterator name::find(asn1::object_ptr object)
+		{
+			int index = X509_NAME_get_index_by_OBJ(m_x509_name.get(), object.raw(), -1);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline name::iterator name::find(asn1::object_ptr object, iterator lastpos)
+		{
+			int index = X509_NAME_get_index_by_OBJ(m_x509_name.get(), object.raw(), lastpos.m_index);
+
+			return (index < 0) ? end() : iterator(this, index);
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
