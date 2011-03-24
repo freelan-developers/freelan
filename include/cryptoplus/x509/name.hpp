@@ -77,9 +77,29 @@ namespace cryptoplus
 			public:
 
 				/**
+				* \brief The type.
+				*/
+				typedef name_entry value_type;
+
+				/**
+				* \brief he difference type.
+				*/
+				typedef int difference_type;
+
+				/**
+				* \brief The reference type.
+				*/
+				typedef value_type& reference;
+
+				/**
+				* \brief The pointer type.
+				*/
+				typedef value_type* pointer;
+
+				/**
 				 * \brief An iterator class.
 				 */
-				class iterator : public std::iterator<std::random_access_iterator_tag, name_entry>
+				class iterator : public std::iterator<std::random_access_iterator_tag, value_type>
 				{
 					public:
 
@@ -235,7 +255,7 @@ namespace cryptoplus
 				 * \return The name entry.
 				 * \see count().
 				 */
-				name_entry operator[](int index);
+				value_type operator[](int index);
 
 				/**
 				 * \brief Get the begin iterator.
@@ -481,11 +501,11 @@ namespace cryptoplus
 		{
 			return X509_NAME_entry_count(m_x509_name.get());
 		}
-		inline name_entry name::operator[](int index)
+		inline name::value_type name::operator[](int index)
 		{
 			boost::shared_ptr<X509_NAME_ENTRY> name_entry_ptr(X509_NAME_get_entry(m_x509_name.get(), index), name_entry::null_deleter);
 
-			return name_entry(name_entry_ptr);
+			return value_type(name_entry_ptr);
 		}
 		inline name::iterator name::begin()
 		{
