@@ -288,6 +288,14 @@ namespace cryptoplus
 				 */
 				iterator erase(iterator it);
 
+				/**
+				 * \brief Erase the given entries.
+				 * \param start The start iterator.
+				 * \param stop The stop iterator.
+				 * \return stop.
+				 */
+				iterator erase(iterator start, iterator stop);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -540,6 +548,13 @@ namespace cryptoplus
 			X509_NAME_ENTRY_free(entry);
 
 			return it;
+		}
+		inline name::iterator name::erase(iterator start, iterator stop)
+		{
+			while (start != stop)
+				start = erase(start);
+
+			return start;
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
