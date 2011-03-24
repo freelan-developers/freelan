@@ -384,6 +384,39 @@ namespace cryptoplus
 				void insert(iterator position, value_type entry, int set);
 
 				/**
+				 * \brief Insert a new entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param field The field.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void insert(iterator position, const std::string& field, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
+				 * \brief Insert a new entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param object The ASN1 object.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void insert(iterator position, asn1::object_ptr object, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
+				 * \brief Insert a new entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param nid The NID.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void insert(iterator position, int nid, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
 				 * \brief Insert a copy of the specified name entries in the entry table.
 				 * \param position The position to insert the first entry at.
 				 * \param first An iterator to the first entry to insert.
@@ -704,6 +737,18 @@ namespace cryptoplus
 		inline void name::insert(iterator position, value_type entry, int set)
 		{
 			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), position.m_index, set));
+		}
+		inline void name::insert(iterator position, const std::string& field, int type, const void* data, size_t data_len, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(m_x509_name.get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set));
+		}
+		inline void name::insert(iterator position, asn1::object_ptr object, int type, const void* data, size_t data_len, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(m_x509_name.get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
+		}
+		inline void name::insert(iterator position, int nid, int type, const void* data, size_t data_len, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(m_x509_name.get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, iterator first, iterator last)
 		{
