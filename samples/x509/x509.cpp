@@ -36,14 +36,10 @@ int main()
 		certificate.subject().push_back("C", MBSTRING_ASC, c, sizeof(c) - 1);
 		certificate.subject().push_back("O", MBSTRING_ASC, o, sizeof(o) - 1);
 
-		std::cout << "Copying data to the issuer field..." << std::endl;
-
+		// We copy the data from subject() to issuer().
 		certificate.issuer().insert(certificate.issuer().begin(), certificate.subject().begin(), certificate.subject().end());
 
 		cryptoplus::bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
-
-		std::cout << "Subject: " << certificate.subject().oneline() << std::endl;
-		std::cout << "Issuer: " << certificate.issuer().oneline() << std::endl;
 
 		certificate.print(bio_chain.first());
 	}
