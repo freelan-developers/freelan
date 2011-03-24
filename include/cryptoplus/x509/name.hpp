@@ -290,11 +290,11 @@ namespace cryptoplus
 
 				/**
 				 * \brief Erase the given entries.
-				 * \param start The start iterator.
-				 * \param stop The stop iterator.
-				 * \return stop.
+				 * \param first The first iterator.
+				 * \param last The last iterator.
+				 * \return last.
 				 */
-				iterator erase(iterator start, iterator stop);
+				iterator erase(iterator first, iterator last);
 
 				/**
 				 * \brief Find an entry by its NID.
@@ -606,12 +606,12 @@ namespace cryptoplus
 
 			return it;
 		}
-		inline name::iterator name::erase(iterator start, iterator stop)
+		inline name::iterator name::erase(iterator first, iterator last)
 		{
-			while (start != stop)
-				start = erase(start);
+			while (first != last)
+				first = erase(first);
 
-			return start;
+			return first;
 		}
 		inline name::iterator name::find(int nid)
 		{
