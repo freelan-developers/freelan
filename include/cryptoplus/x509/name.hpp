@@ -331,6 +331,12 @@ namespace cryptoplus
 				 */
 				void clear();
 
+				/**
+				 * \brief Push a copy of the specified name_entry at the end of the entry table.
+				 * \param entry The name entry.
+				 */
+				void push_back(const reference entry);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -618,6 +624,10 @@ namespace cryptoplus
 		inline void name::clear()
 		{
 			erase(begin(), end());
+		}
+		inline void name::push_back(const reference entry)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), -1, 0));
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
