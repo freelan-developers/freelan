@@ -626,7 +626,7 @@ namespace cryptoplus
 		}
 		inline std::string name::oneline(size_t max_size) const
 		{
-			std::string result('\0', max_size + 1);
+			std::string result(' ', max_size + 1);
 
 			char* c = X509_NAME_oneline(m_x509_name.get(), &result[0], result.size() - 1);
 
