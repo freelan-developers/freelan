@@ -27,9 +27,22 @@ int main()
 		cryptoplus::x509::certificate certificate;
 
 		const char cn[] = "My common name";
+		const char c[] = "FR";
+		const char o[] = "My organization";
+
 		certificate.subject().push_back("CN", MBSTRING_ASC, cn, sizeof(cn) - 1);
+		certificate.subject().push_back("C", MBSTRING_ASC, c, sizeof(c) - 1);
+		certificate.subject().push_back("O", MBSTRING_ASC, o, sizeof(o) - 1);
+
+		std::cout << "Copying data to the issuer field..." << std::endl;
+
+		certificate.issuer().insert(certificate.issuer().begin(), certificate.subject().begin(), certificate.subject().end());
 
 		cryptoplus::bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
+
+		std::cout << "Subject: " << certificate.subject().oneline() << std::endl;
+		std::cout << "Issuer: " << certificate.issuer().oneline() << std::endl;
+
 		certificate.print(bio_chain.first());
 	}
 	catch (std::exception& ex)
