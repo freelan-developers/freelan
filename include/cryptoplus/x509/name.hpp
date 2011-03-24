@@ -338,6 +338,36 @@ namespace cryptoplus
 				void push_back(value_type entry);
 
 				/**
+				 * \brief Push a new entry at the end of the entry table.
+				 * \param field The field.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void push_back(const std::string& field, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
+				 * \brief Push a new entry at the end of the entry table.
+				 * \param object The ASN1 object.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void push_back(asn1::object_ptr object, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
+				 * \brief Push a new entry at the end of the entry table.
+				 * \param nid The NID.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void push_back(int nid, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
 				 * \brief Insert a copy of the specified name_entry in the entry table.
 				 * \param position The position to insert the entry at.
 				 * \param entry The name entry.
@@ -652,6 +682,18 @@ namespace cryptoplus
 		inline void name::push_back(value_type entry)
 		{
 			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), -1, 0));
+		}
+		inline void name::push_back(const std::string& field, int type, const void* data, size_t data_len, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(m_x509_name.get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set));
+		}
+		inline void name::push_back(asn1::object_ptr object, int type, const void* data, size_t data_len, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(m_x509_name.get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
+		}
+		inline void name::push_back(int nid, int type, const void* data, size_t data_len, int set)
+		{
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(m_x509_name.get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
 		}
 		inline name::iterator name::insert(iterator position, value_type entry)
 		{
