@@ -378,13 +378,13 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_set_version(m_x509.get(), _version));
 		}
-		inline void certificate::set_serial_number(ASN1_INTEGER* _serial_number)
-		{
-			error::throw_error_if_not(X509_set_serialNumber(m_x509.get(), _serial_number));
-		}
 		inline ASN1_INTEGER* certificate::serial_number()
 		{
 			return X509_get_serialNumber(m_x509.get());
+		}
+		inline void certificate::set_serial_number(ASN1_INTEGER* _serial_number)
+		{
+			error::throw_error_if_not(X509_set_serialNumber(m_x509.get(), _serial_number));
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
