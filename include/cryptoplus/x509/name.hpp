@@ -326,6 +326,11 @@ namespace cryptoplus
 				 */
 				iterator find(asn1::object_ptr object, iterator lastpos);
 
+				/**
+				 * \brief Clear all entries.
+				 */
+				void clear();
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -609,6 +614,10 @@ namespace cryptoplus
 			int index = X509_NAME_get_index_by_OBJ(m_x509_name.get(), object.raw(), lastpos.m_index);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline void name::clear()
+		{
+			erase(begin(), end());
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
