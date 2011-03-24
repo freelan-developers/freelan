@@ -234,7 +234,7 @@ namespace cryptoplus
 				 * \param max_size The maximum size of the result. Default is 256.
 				 * \return A string.
 				 */
-				std::string oneline(size_t max_size) const;
+				std::string oneline(size_t max_size = 256) const;
 
 				/**
 				 * \brief Print a X509 name to a BIO.
