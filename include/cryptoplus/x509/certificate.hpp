@@ -231,6 +231,18 @@ namespace cryptoplus
 				void set_issuer(name aname);
 
 				/**
+				 * \brief Get the certificate version.
+				 * \return The version.
+				 */
+				long version();
+
+				/**
+				 * \brief Set the certificate version.
+				 * \param version The version.
+				 */
+				void set_version(long version);
+
+				/**
 				 * \brief Verify the certificate against a specified public key.
 				 * \param pkey The public pkey.
 				 * \return true if the verification succeeds.
@@ -345,6 +357,14 @@ namespace cryptoplus
 		inline void certificate::set_issuer(name aname)
 		{
 			error::throw_error_if_not(X509_set_issuer_name(m_x509.get(), aname.raw()));
+		}
+		inline long certificate::version()
+		{
+			return X509_get_version(m_x509.get());
+		}
+		inline void certificate::set_version(long _version)
+		{
+			error::throw_error_if_not(X509_set_version(m_x509.get(), _version));
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
