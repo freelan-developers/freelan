@@ -193,6 +193,12 @@ namespace cryptoplus
 				certificate clone() const;
 
 				/**
+				 * \brief Print a X509 to a BIO.
+				 * \param bio The BIO.
+				 */
+				void print(bio::bio_ptr bio);
+
+				/**
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
@@ -303,6 +309,10 @@ namespace cryptoplus
 		inline certificate certificate::clone() const
 		{
 			return certificate(X509_dup(m_x509.get()));
+		}
+		inline void certificate::print(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(X509_print(bio.raw(), m_x509.get()));
 		}
 		inline pkey::pkey certificate::public_key()
 		{
