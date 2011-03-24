@@ -124,6 +124,20 @@ namespace cryptoplus
 						 */
 						iterator operator--(int);
 
+						/**
+						 * \brief Increment the iterator.
+						 * \param cnt The number to add to the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator+=(int cnt);
+
+						/**
+						 * \brief Decrement the iterator.
+						 * \param cnt The number to substract from the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator-=(int cnt);
+
 					private:
 
 						iterator(name*, int);
@@ -356,6 +370,18 @@ namespace cryptoplus
 			--m_index;
 
 			return old;
+		}
+		inline name::iterator& name::iterator::operator+=(int cnt)
+		{
+			m_index += cnt;
+
+			return *this;
+		}
+		inline name::iterator& name::iterator::operator-=(int cnt)
+		{
+			m_index -= cnt;
+
+			return *this;
 		}
 		inline name::iterator::iterator(name* _name, int index) : m_name(_name), m_index(index)
 		{
