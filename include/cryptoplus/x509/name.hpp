@@ -126,11 +126,17 @@ namespace cryptoplus
 
 					private:
 
+						iterator(name*, int);
+
 						name* m_name;
 						int m_index;
 
 						friend bool operator==(const name::iterator& lhs, const name::iterator& rhs);
 						friend bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+						friend name::iterator operator+(const name::iterator& lhs, int rhs);
+						friend name::iterator operator+(int lhs, const name::iterator& rhs);
+						friend name::iterator operator-(const name::iterator& lhs, int rhs);
+						friend name::iterator operator-(int lhs, const name::iterator& rhs);
 				};
 
 				/**
@@ -186,6 +192,13 @@ namespace cryptoplus
 				 */
 				void print(bio::bio_ptr bio, int obase = 0);
 
+				/**
+				 * \brief Get the entry at the specified position.
+				 * \param index The index. Must be a valid index position or the behavior is undefined.
+				 * \return The name entry.
+				 */
+				name_entry operator[](int index);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -212,6 +225,38 @@ namespace cryptoplus
 		 * \return true if the two name::iterator instances do not point to the same element.
 		 */
 		bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Add an integer value to an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		name::iterator operator+(const name::iterator& lhs, int rhs);
+
+		/**
+		 * \brief Add an integer value to an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		name::iterator operator+(int lhs, const name::iterator& rhs);
+
+		/**
+		 * \brief Substract an integer value from an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		name::iterator operator-(const name::iterator& lhs, int rhs);
+
+		/**
+		 * \brief Substract an integer value from an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		name::iterator operator-(int lhs, const name::iterator& rhs);
 
 		/**
 		 * \brief Compare two name instances.
@@ -242,9 +287,7 @@ namespace cryptoplus
 		}
 		inline name::iterator::value_type name::iterator::operator*()
 		{
-			boost::shared_ptr<X509_NAME_ENTRY> name_entry_ptr(X509_NAME_get_entry(m_name->m_x509_name.get(), m_index), name_entry::null_deleter);
-
-			return name_entry(name_entry_ptr);
+			return (*m_name)[m_index];
 		}
 		inline name::iterator::value_type name::iterator::operator->()
 		{
@@ -277,6 +320,9 @@ namespace cryptoplus
 			--m_index;
 
 			return old;
+		}
+		inline name::iterator::iterator(name* _name, int index) : m_name(_name), m_index(index)
+		{
 		}
 		inline name::name() : m_x509_name(X509_NAME_new(), X509_NAME_free)
 		{
@@ -321,6 +367,12 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_NAME_print(bio.raw(), m_x509_name.get(), obase));
 		}
+		inline name_entry name::operator[](int index)
+		{
+			boost::shared_ptr<X509_NAME_ENTRY> name_entry_ptr(X509_NAME_get_entry(m_x509_name.get(), index), name_entry::null_deleter);
+
+			return name_entry(name_entry_ptr);
+		}
 		inline void name::null_deleter(X509_NAME*)
 		{
 		}
@@ -335,6 +387,22 @@ namespace cryptoplus
 		inline bool operator!=(const name::iterator& lhs, const name::iterator& rhs)
 		{
 			return (lhs.m_name != rhs.m_name) || (lhs.m_index != rhs.m_index);
+		}
+		inline name::iterator operator+(const name::iterator& lhs, int rhs)
+		{
+			return name::iterator(lhs.m_name, lhs.m_index + rhs);
+		}
+		inline name::iterator operator+(int lhs, const name::iterator& rhs)
+		{
+			return name::iterator(rhs.m_name, rhs.m_index + lhs);
+		}
+		inline name::iterator operator-(const name::iterator& lhs, int rhs)
+		{
+			return name::iterator(lhs.m_name, lhs.m_index - rhs);
+		}
+		inline name::iterator operator-(int lhs, const name::iterator& rhs)
+		{
+			return name::iterator(rhs.m_name, rhs.m_index - lhs);
 		}
 		inline bool operator==(const name& lhs, const name& rhs)
 		{
