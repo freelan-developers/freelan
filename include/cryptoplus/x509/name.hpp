@@ -101,6 +101,13 @@ namespace cryptoplus
 						value_type operator->();
 
 						/**
+						 * \brief Dereference operator.
+						 * \param index The index to add or substract.
+						 * \return An iterator.
+						 */
+						value_type operator[](int index);
+
+						/**
 						 * \brief Increment the iterator.
 						 * \return A reference to this.
 						 */
@@ -379,6 +386,10 @@ namespace cryptoplus
 		inline name::iterator::value_type name::iterator::operator->()
 		{
 			return operator*();
+		}
+		inline name::iterator::value_type name::iterator::operator[](int index)
+		{
+			return *iterator(m_name, m_index + index);
 		}
 		inline name::iterator& name::iterator::operator++()
 		{
