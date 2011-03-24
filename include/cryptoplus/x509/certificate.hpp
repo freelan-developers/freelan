@@ -243,6 +243,18 @@ namespace cryptoplus
 				void set_version(long version);
 
 				/**
+				 * \brief Get the certificate serial number.
+				 * \return The serial number.
+				 */
+				ASN1_INTEGER* serial_number();
+
+				/**
+				 * \brief Set the certificate serial number.
+				 * \param serial_number The serial number.
+				 */
+				void set_serial_number(ASN1_INTEGER* serial_number);
+
+				/**
 				 * \brief Verify the certificate against a specified public key.
 				 * \param pkey The public pkey.
 				 * \return true if the verification succeeds.
@@ -361,6 +373,14 @@ namespace cryptoplus
 		inline long certificate::version()
 		{
 			return X509_get_version(m_x509.get());
+		}
+		inline void certificate::set_serial_number(ASN1_INTEGER* _serial_number)
+		{
+			error::throw_error_if_not(X509_set_serialNumber(m_x509.get(), _serial_number));
+		}
+		inline ASN1_INTEGER* certificate::serial_number()
+		{
+			return X509_get_serialNumber(m_x509.get());
 		}
 		inline void certificate::set_version(long _version)
 		{
