@@ -281,6 +281,13 @@ namespace cryptoplus
 				 */
 				reverse_iterator rend();
 
+				/**
+				 * \brief Erase the given entry.
+				 * \param it An iterator to the entry to erase.
+				 * \return The next iterator.
+				 */
+				iterator erase(iterator it);
+
 			private:
 
 				static void null_deleter(X509_NAME*);
@@ -522,6 +529,17 @@ namespace cryptoplus
 		inline name::reverse_iterator name::rend()
 		{
 			return reverse_iterator(begin());
+		}
+		inline name::iterator name::erase(iterator it)
+		{
+			X509_NAME_ENTRY* entry = X509_NAME_delete_entry(it.m_name->m_x509_name.get(), it.m_index);
+
+			assert(entry);
+			error::throw_error_if_not(entry);
+
+			X509_NAME_ENTRY_free(entry);
+
+			return it;
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
