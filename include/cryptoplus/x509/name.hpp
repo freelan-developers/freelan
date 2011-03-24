@@ -145,6 +145,7 @@ namespace cryptoplus
 						name* m_name;
 						int m_index;
 
+						friend class name;
 						friend bool operator==(const name::iterator& lhs, const name::iterator& rhs);
 						friend bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
 						friend bool operator<(const name::iterator& lhs, const name::iterator& rhs);
@@ -156,6 +157,11 @@ namespace cryptoplus
 						friend name::iterator operator-(const name::iterator& lhs, int rhs);
 						friend name::iterator operator-(int lhs, const name::iterator& rhs);
 				};
+
+				/**
+				* \brief Reverse iterator type.
+				*/
+				typedef std::reverse_iterator<iterator> reverse_iterator;
 
 				/**
 				 * \brief Create a new empty X509 name.
@@ -211,11 +217,41 @@ namespace cryptoplus
 				void print(bio::bio_ptr bio, int obase = 0);
 
 				/**
+				 * \brief Get the count of entries.
+				 * \return The count of entries.
+				 */
+				int count();
+
+				/**
 				 * \brief Get the entry at the specified position.
 				 * \param index The index. Must be a valid index position or the behavior is undefined.
 				 * \return The name entry.
 				 */
 				name_entry operator[](int index);
+
+				/**
+				 * \brief Get the begin iterator.
+				 * \return The begin iterator.
+				 */
+				iterator begin();
+
+				/**
+				 * \brief Get the end iterator.
+				 * \return The end iterator.
+				 */
+				iterator end();
+
+				/**
+				 * \brief Get the reverse begin iterator.
+				 * \return The reverse begin iterator.
+				 */
+				reverse_iterator rbegin();
+
+				/**
+				 * \brief Get the reverse end iterator.
+				 * \return The reverse end iterator.
+				 */
+				reverse_iterator rend();
 
 			private:
 
@@ -429,11 +465,31 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_NAME_print(bio.raw(), m_x509_name.get(), obase));
 		}
+		inline int name::count()
+		{
+			return X509_NAME_entry_count(m_x509_name.get());
+		}
 		inline name_entry name::operator[](int index)
 		{
 			boost::shared_ptr<X509_NAME_ENTRY> name_entry_ptr(X509_NAME_get_entry(m_x509_name.get(), index), name_entry::null_deleter);
 
 			return name_entry(name_entry_ptr);
+		}
+		inline name::iterator name::begin()
+		{
+			return iterator(this, 0);
+		}
+		inline name::iterator name::end()
+		{
+			return iterator(this, count());
+		}
+		inline name::reverse_iterator name::rbegin()
+		{
+			return reverse_iterator(end());
+		}
+		inline name::reverse_iterator name::rend()
+		{
+			return reverse_iterator(begin());
 		}
 		inline void name::null_deleter(X509_NAME*)
 		{
