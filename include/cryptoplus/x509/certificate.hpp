@@ -255,6 +255,30 @@ namespace cryptoplus
 				void set_serial_number(ASN1_INTEGER* serial_number);
 
 				/**
+				 * \brief Get the certificate not before date.
+				 * \return The not before date.
+				 */
+				ASN1_UTCTIME* not_before();
+
+				/**
+				 * \brief Set the certificate not before date.
+				 * \param not_before The not before date.
+				 */
+				void set_not_before(ASN1_UTCTIME* not_before);
+
+				/**
+				 * \brief Get the certificate not after date.
+				 * \return The not after date.
+				 */
+				ASN1_UTCTIME* not_after();
+
+				/**
+				 * \brief Set the certificate not after date.
+				 * \param not_after The not after date.
+				 */
+				void set_not_after(ASN1_UTCTIME* not_after);
+
+				/**
 				 * \brief Verify the certificate against a specified public key.
 				 * \param pkey The public pkey.
 				 * \return true if the verification succeeds.
@@ -385,6 +409,22 @@ namespace cryptoplus
 		inline void certificate::set_serial_number(ASN1_INTEGER* _serial_number)
 		{
 			error::throw_error_if_not(X509_set_serialNumber(m_x509.get(), _serial_number));
+		}
+		inline ASN1_UTCTIME* certificate::not_before()
+		{
+			return X509_get_notBefore(m_x509.get());
+		}
+		inline void certificate::set_not_before(ASN1_UTCTIME* _not_before)
+		{
+			error::throw_error_if_not(X509_set_notBefore(m_x509.get(), _not_before));
+		}
+		inline ASN1_UTCTIME* certificate::not_after()
+		{
+			return X509_get_notAfter(m_x509.get());
+		}
+		inline void certificate::set_not_after(ASN1_UTCTIME* _not_after)
+		{
+			error::throw_error_if_not(X509_set_notAfter(m_x509.get(), _not_after));
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
