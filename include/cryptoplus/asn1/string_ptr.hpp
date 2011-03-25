@@ -117,6 +117,18 @@ namespace cryptoplus
 				void set_data(const void* data, size_t data_len);
 
 				/**
+				 * \brief Set the internal data.
+				 * \param data The data, as a null terminated ASCII C-string.
+				 */
+				void set_data(const char* data);
+
+				/**
+				 * \brief Set the internal data.
+				 * \param data The data, as an ASCII string.
+				 */
+				void set_data(const std::string& data);
+
+				/**
 				 * \brief Get the type of the string.
 				 * \return The type.
 				 */
@@ -191,6 +203,14 @@ namespace cryptoplus
 		inline void string_ptr::set_data(const void* _data, size_t data_len)
 		{
 			error::throw_error_if_not(ASN1_STRING_set(m_string, _data, data_len));
+		}
+		inline void string_ptr::set_data(const char* _data)
+		{
+			error::throw_error_if_not(ASN1_STRING_set(m_string, _data, -1));
+		}
+		inline void string_ptr::set_data(const std::string& _data)
+		{
+			set_data(_data.c_str());
 		}
 		inline int string_ptr::type()
 		{
