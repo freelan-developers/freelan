@@ -48,6 +48,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../asn1/object_ptr.hpp"
+#include "../asn1/string_ptr.hpp"
 
 #include <openssl/x509.h>
 
@@ -134,7 +135,7 @@ namespace cryptoplus
 				 * \brief Get the data associated to this name_entry.
 				 * \return The data, as an ASN1 string.
 				 */
-				ASN1_STRING* data();
+				asn1::string_ptr data();
 
 				/**
 				 * \brief Set the data associated to this name_entry.
@@ -230,9 +231,9 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_NAME_ENTRY_set_object(m_x509_name_entry.get(), _object.raw()));
 		}
-		inline ASN1_STRING* name_entry::data()
+		inline asn1::string_ptr name_entry::data()
 		{
-			return X509_NAME_ENTRY_get_data(m_x509_name_entry.get());
+			return asn1::string_ptr(X509_NAME_ENTRY_get_data(m_x509_name_entry.get()));
 		}
 		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
 		{
