@@ -103,6 +103,18 @@ namespace cryptoplus
 				void set_time(time_t time);
 
 				/**
+				 * \brief Set the time from a string.
+				 * \param str The time string. It must respect one of these formats: YYMMDDhhmmssZ, YYMMDDhhmmss+hh'mm', YYMMDDhhmmss-hh'mm'.
+				 *
+				 * Z indicates that local time is GMT.
+				 * + indicates that local time is later than GMT.
+				 * - indicates that local time is earlier than GMT.
+				 * hh' is the absolute value of the offset from GMT in hours.
+				 * mm' is the absolute value of the offset from GMT in minutes.
+				 */
+				void set_time(const std::string& str);
+
+				/**
 				 * \brief Check if the structure is valid.
 				 * \return true if the structure is valid, false otherwise.
 				 */
@@ -149,6 +161,10 @@ namespace cryptoplus
 		inline void utctime_ptr::set_time(time_t time)
 		{
 			error::throw_error_if_not(ASN1_UTCTIME_set(m_utctime, time));
+		}
+		inline void utctime_ptr::set_time(const std::string& str)
+		{
+			error::throw_error_if_not(ASN1_UTCTIME_set_string(m_utctime, str.c_str()));
 		}
 		inline bool utctime_ptr::check()
 		{
