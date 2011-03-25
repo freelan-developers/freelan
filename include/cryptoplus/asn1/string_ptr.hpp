@@ -95,6 +95,18 @@ namespace cryptoplus
 				 */
 				const ASN1_STRING* raw() const;
 
+				/**
+				 * \brief Get the size of the string.
+				 * \return The size of the string.
+				 */
+				size_t size();
+
+				/**
+				 * \brief Get the string data.
+				 * \return The string data.
+				 */
+				const unsigned char* data();
+
 			private:
 
 				bool boolean_test() const;
@@ -140,6 +152,14 @@ namespace cryptoplus
 		inline const ASN1_STRING* string_ptr::raw() const
 		{
 			return m_string;
+		}
+		inline size_t string_ptr::size()
+		{
+			return ASN1_STRING_length(m_string);
+		}
+		inline const unsigned char* string_ptr::data()
+		{
+			return ASN1_STRING_data(m_string);
 		}
 		inline bool string_ptr::boolean_test() const
 		{
