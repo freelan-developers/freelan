@@ -48,6 +48,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../nullable.hpp"
 
+#include <openssl/crypto.h>
 #include <openssl/asn1.h>
 
 #include <vector>
@@ -121,6 +122,18 @@ namespace cryptoplus
 				 */
 				int type();
 
+				/**
+				 * \brief Build a string from data() and size().
+				 * \return A string built from data() and that will be size() bytes long.
+				 */
+				std::string str();
+
+				/**
+				 * \brief Get the content as an UTF-8 string.
+				 * \return The UTF-8 content.
+				 */
+				std::vector<unsigned char> to_utf8();
+
 			private:
 
 				bool boolean_test() const;
@@ -182,6 +195,10 @@ namespace cryptoplus
 		inline int string_ptr::type()
 		{
 			return ASN1_STRING_type(m_string);
+		}
+		inline std::string string_ptr::str()
+		{
+			return std::string(reinterpret_cast<const char*>(data()), size());
 		}
 		inline bool string_ptr::boolean_test() const
 		{

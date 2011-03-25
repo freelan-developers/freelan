@@ -44,7 +44,7 @@
 
 #include "asn1/string_ptr.hpp"
 
-#include "error/cryptographic_exception.hpp"
+#include <boost/shared_ptr.hpp>
 
 #include <cassert>
 
@@ -52,6 +52,26 @@ namespace cryptoplus
 {
 	namespace asn1
 	{
+		namespace
+		{
+			void _OPENSSL_free(unsigned char* c)
+			{
+				OPENSSL_free(c);
+			}
+		}
+
+		std::vector<unsigned char> string_ptr::to_utf8()
+		{
+			unsigned char* out = NULL;
+
+			int _size = ASN1_STRING_to_UTF8(&out, m_string);
+
+			error::throw_error_if(_size < 0);
+
+			boost::shared_ptr<unsigned char> pout(out, _OPENSSL_free);
+
+			return std::vector<unsigned char>(out, out + _size);
+		}
 	}
 }
 
