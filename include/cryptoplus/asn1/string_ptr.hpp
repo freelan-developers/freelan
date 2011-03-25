@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_ASN1_STRING_PTR_HPP
 #define CRYPTOPEN_ASN1_STRING_PTR_HPP
 
+#include "../error/cryptographic_exception.hpp"
 #include "../nullable.hpp"
 
 #include <openssl/asn1.h>
@@ -107,6 +108,19 @@ namespace cryptoplus
 				 */
 				const unsigned char* data();
 
+				/**
+				 * \brief Set the internal data.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 */
+				void set_data(const void* data, size_t data_len);
+
+				/**
+				 * \brief Get the type of the string.
+				 * \return The type.
+				 */
+				int type();
+
 			private:
 
 				bool boolean_test() const;
@@ -160,6 +174,14 @@ namespace cryptoplus
 		inline const unsigned char* string_ptr::data()
 		{
 			return ASN1_STRING_data(m_string);
+		}
+		inline void string_ptr::set_data(const void* _data, size_t data_len)
+		{
+			error::throw_error_if_not(ASN1_STRING_set(m_string, _data, data_len));
+		}
+		inline int string_ptr::type()
+		{
+			return ASN1_STRING_type(m_string);
 		}
 		inline bool string_ptr::boolean_test() const
 		{
