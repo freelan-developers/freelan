@@ -47,6 +47,7 @@
 
 #include "../error/cryptographic_exception.hpp"
 #include "../nullable.hpp"
+#include "../bio/bio_ptr.hpp"
 
 #include <openssl/crypto.h>
 #include <openssl/asn1.h>
@@ -120,6 +121,12 @@ namespace cryptoplus
 				 */
 				bool check();
 
+				/**
+				 * \brief Print a ASN1_UTCTIME to a BIO.
+				 * \param bio The BIO.
+				 */
+				void print(bio::bio_ptr bio);
+
 			private:
 
 				bool boolean_test() const;
@@ -169,6 +176,10 @@ namespace cryptoplus
 		inline bool utctime_ptr::check()
 		{
 			return (ASN1_UTCTIME_check(m_utctime) != 0);
+		}
+		inline void utctime_ptr::print(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), m_utctime));
 		}
 		inline bool utctime_ptr::boolean_test() const
 		{
