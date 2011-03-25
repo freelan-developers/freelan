@@ -96,6 +96,12 @@ namespace cryptoplus
 				 */
 				const ASN1_UTCTIME* raw() const;
 
+				/**
+				 * \brief Set the time.
+				 * \param time The time to set.
+				 */
+				void set_time(time_t time);
+
 			private:
 
 				bool boolean_test() const;
@@ -133,6 +139,10 @@ namespace cryptoplus
 		inline const ASN1_UTCTIME* utctime_ptr::raw() const
 		{
 			return m_utctime;
+		}
+		inline void utctime_ptr::set_time(time_t time)
+		{
+			error::throw_error_if_not(ASN1_UTCTIME_set(m_utctime, time));
 		}
 		inline bool utctime_ptr::boolean_test() const
 		{
