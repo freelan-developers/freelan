@@ -102,6 +102,12 @@ namespace cryptoplus
 				 */
 				void set_time(time_t time);
 
+				/**
+				 * \brief Check if the structure is valid.
+				 * \return true if the structure is valid, false otherwise.
+				 */
+				bool check();
+
 			private:
 
 				bool boolean_test() const;
@@ -143,6 +149,10 @@ namespace cryptoplus
 		inline void utctime_ptr::set_time(time_t time)
 		{
 			error::throw_error_if_not(ASN1_UTCTIME_set(m_utctime, time));
+		}
+		inline bool utctime_ptr::check()
+		{
+			return (ASN1_UTCTIME_check(m_utctime) != 0);
 		}
 		inline bool utctime_ptr::boolean_test() const
 		{
