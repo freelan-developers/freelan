@@ -52,6 +52,8 @@
 #include <openssl/crypto.h>
 #include <openssl/asn1.h>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <vector>
 
 namespace cryptoplus
@@ -114,6 +116,18 @@ namespace cryptoplus
 				 * mm' is the absolute value of the offset from GMT in minutes.
 				 */
 				void set_time(const std::string& str);
+
+				/**
+				 * \brief Set the time from a ptime structure.
+				 * \param time The time.
+				 */
+				void set_time(const boost::posix_time::ptime& time);
+
+				/**
+				 * \brief Get a ptime from the ASN1_UTCTIME.
+				 * \return A ptime if check() returns true, boost::posix_time::not_a_date_time otherwise.
+				 */
+				boost::posix_time::ptime to_ptime();
 
 				/**
 				 * \brief Check if the structure is valid.

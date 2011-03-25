@@ -52,6 +52,22 @@ namespace cryptoplus
 {
 	namespace asn1
 	{
+		namespace
+		{
+			boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
+		}
+
+		void utctime_ptr::set_time(const boost::posix_time::ptime& time)
+		{
+			set_time(static_cast<time_t>((time - epoch).total_seconds()));
+		}
+		
+		boost::posix_time::ptime utctime_ptr::to_ptime()
+		{
+			//TODO: Implement this
+			
+			return boost::posix_time::ptime();
+		}
 	}
 }
 
