@@ -94,6 +94,7 @@ namespace cryptoplus
 
 			static void null_deleter(pointer);
 
+			explicit pointer_wrapper(pointer ptr);
 			explicit pointer_wrapper(boost::shared_ptr<value_type> ptr);
 
 			bool boolean_test() const;
@@ -118,6 +119,10 @@ namespace cryptoplus
 	}
 	template <typename T>
 	inline void pointer_wrapper<T>::null_deleter(pointer)
+	{
+	}
+	template <typename T>
+	inline pointer_wrapper<T>::pointer_wrapper(typename pointer_wrapper<T>::pointer _ptr) : m_pointer(_ptr, null_deleter)
 	{
 	}
 	template <typename T>

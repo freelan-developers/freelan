@@ -75,8 +75,11 @@ namespace cryptoplus
 
 				/**
 				 * \brief Take ownership of a specified X509_NAME_ENTRY pointer.
-				 * \param pointer The pointer.
+				 * \param ptr The pointer.
+				 * \return A name_entry.
 				 */
+				static name_entry take_ownership(pointer ptr);
+
 				/**
 				 * \brief Create a X509 name entry from an ASN1 object.
 				 * \param object The object.
@@ -85,7 +88,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \return The name_entry.
 				 */
-				name_entry from_object(asn1::object_ptr object, int type, const void* data, size_t data_len);
+				static name_entry from_object(asn1::object_ptr object, int type, const void* data, size_t data_len);
 
 				/**
 				 * \brief Create a X509 name entry from a nid.
@@ -95,7 +98,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \return The name_entry.
 				 */
-				name_entry from_nid(int nid, int type, const void* data, size_t data_len);
+				static name_entry from_nid(int nid, int type, const void* data, size_t data_len);
 
 				/**
 				 * \brief Create a new empty X509 name entry.
@@ -106,9 +109,10 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a X509 name entry by *NOT* taking ownership of an existing X509_NAME_ENTRY* pointer.
-				 * \param x509_name_entry The X509_NAME_ENTRY* pointer. Cannot be NULL.
+				 * \param ptr The X509_NAME_ENTRY* pointer. Cannot be NULL.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				name_entry(X509_NAME_ENTRY* x509_name_entry);
+				name_entry(pointer ptr);
 
 				/**
 				 * \brief Get the ASN1 object associated to this name_entry.
@@ -162,7 +166,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit name_entry(boost::shared_ptr<X509_NAME_ENTRY> x509_name_entry);
+				explicit name_entry(boost::shared_ptr<X509_NAME_ENTRY> _ptr);
 
 				friend class name;
 		};
@@ -183,36 +187,40 @@ namespace cryptoplus
 		 */
 		bool operator!=(const name_entry& lhs, const name_entry& rhs);
 
+		inline name_entry name_entry::take_ownership(pointer _ptr)
+		{
+			return name_entry(boost::shared_ptr<value_type>(_ptr, X509_NAME_ENTRY_free));
+		}
 		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
 		{
-			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
+			return take_ownership(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
 		}
 		inline name_entry name_entry::from_object(asn1::object_ptr _object, int _type, const void* _data, size_t data_len)
 		{
-			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
+			return take_ownership(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
 		}
 		inline name_entry::name_entry() : pointer_wrapper(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_new(), X509_NAME_ENTRY_free))
 		{
-			error::throw_error_if_not(m_pointer);
+			error::throw_error_if_not(ptr());
 		}
-		inline name_entry::name_entry(X509_NAME_ENTRY* x509_name_entry) : pointer_wrapper(boost::shared_ptr<X509_NAME_ENTRY>(x509_name_entry, null_deleter))
+		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper(_ptr)
 		{
 		}
 		inline asn1::object_ptr name_entry::object()
 		{
-			return X509_NAME_ENTRY_get_object(m_pointer.get());
+			return X509_NAME_ENTRY_get_object(ptr().get());
 		}
 		inline void name_entry::set_object(asn1::object_ptr _object)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_object(m_pointer.get(), _object.raw()));
+			error::throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()));
 		}
 		inline asn1::string_ptr name_entry::data()
 		{
-			return asn1::string_ptr(X509_NAME_ENTRY_get_data(m_pointer.get()));
+			return asn1::string_ptr(X509_NAME_ENTRY_get_data(ptr().get()));
 		}
 		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_data(m_pointer.get(), type, static_cast<const unsigned char*>(_data), data_len));
+			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), data_len));
 		}
 		inline int name_entry::nid()
 		{
@@ -228,11 +236,11 @@ namespace cryptoplus
 		}
 		inline name_entry name_entry::clone() const
 		{
-			return take_ownership(X509_NAME_ENTRY_dup(m_pointer.get()));
+			return take_ownership(X509_NAME_ENTRY_dup(ptr().get()));
 		}
-		inline name_entry::name_entry(boost::shared_ptr<X509_NAME_ENTRY> x509_name_entry) : m_pointer(x509_name_entry)
+		inline name_entry::name_entry(boost::shared_ptr<value_type> _ptr) : pointer_wrapper(_ptr)
 		{
-			error::throw_error_if_not(m_pointer);
+			error::throw_error_if_not(ptr());
 		}
 		inline bool operator==(const name_entry& lhs, const name_entry& rhs)
 		{
