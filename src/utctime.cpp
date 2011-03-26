@@ -37,12 +37,12 @@
  */
 
 /**
- * \file utctime_ptr.cpp
+ * \file utctime.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief An ASN1_UTCTIME pointer class.
  */
 
-#include "asn1/utctime_ptr.hpp"
+#include "asn1/utctime.hpp"
 
 #include <boost/shared_ptr.hpp>
 
@@ -57,12 +57,18 @@ namespace cryptoplus
 			boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
 		}
 
-		void utctime_ptr::set_time(const boost::posix_time::ptime& time)
+		// We don't need this, because ASN1_UTCTIME is a ASN1_STRING.
+#if 0
+		template <>
+		utctime::deleter_type pointer_wrapper<utctime::value_type>::deleter = ASN1_UTCTIME_free;
+#endif
+
+		void utctime::set_time(const boost::posix_time::ptime& time)
 		{
 			set_time(static_cast<time_t>((time - epoch).total_seconds()));
 		}
 		
-		boost::posix_time::ptime utctime_ptr::to_ptime()
+		boost::posix_time::ptime utctime::to_ptime()
 		{
 			//TODO: Implement this
 			

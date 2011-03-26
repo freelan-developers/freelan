@@ -37,16 +37,16 @@
  */
 
 /**
- * \file utctime_ptr.hpp
+ * \file utctime.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief An ASN1_UTCTIME pointer class.
  */
 
-#ifndef CRYPTOPEN_ASN1_UTCTIME_PTR_HPP
-#define CRYPTOPEN_ASN1_UTCTIME_PTR_HPP
+#ifndef CRYPTOPEN_ASN1_UTCTIME_HPP
+#define CRYPTOPEN_ASN1_UTCTIME_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
-#include "../nullable.hpp"
 #include "../bio/bio_ptr.hpp"
 
 #include <openssl/crypto.h>
@@ -63,41 +63,42 @@ namespace cryptoplus
 		/**
 		 * \brief An OpenSSL ASN1_UTCTIME pointer.
 		 *
-		 * The utctime_ptr class is a wrapper for an OpenSSL ASN1_UTCTIME* pointer.
+		 * The utctime class is a wrapper for an OpenSSL ASN1_UTCTIME* pointer.
 		 *
-		 * A utctime_ptr instance has the same semantic as a ASN1_UTCTIME* pointer, thus two copies of the same instance share the same underlying pointer.
+		 * A utctime instance has the same semantic as a ASN1_UTCTIME* pointer, thus two copies of the same instance share the same underlying pointer.
 		 *
-		 * A utctime_ptr *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a utctime_ptr always points to a valid ASN1_UTCTIME structure.
-		 *
-		 * \warning Always check for the utctime_ptr not to be NULL before calling any of its method. Calling any method (except raw() or reset_ptr()) on a null utctime_ptr has undefined behavior.
+		 * \warning Always check for the utctime not to be NULL before calling any of its method. Calling any method (except raw()) on a null utctime has undefined behavior.
 		 */
-		class utctime_ptr : public nullable<utctime_ptr>
+		class utctime : public pointer_wrapper<ASN1_UTCTIME>
 		{
 			public:
 
 				/**
-				 * \brief Create a new utctime_ptr.
-				 * \param utctime The ASN1_UTCTIME to point to.
+				 * \brief Create a new utctime.
+				 * \return The utctime.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
 				 */
-				utctime_ptr(ASN1_UTCTIME* utctime = NULL);
+				static utctime create();
 
 				/**
-				 * \brief Reset the underlying pointer.
-				 * \param utctime The ASN1_UTCTIME to point to.
+				 * \brief Take ownership of a specified ASN1_UTCTIME pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An utctime.
 				 */
-				void reset_ptr(ASN1_UTCTIME* utctime = NULL);
+				static utctime take_ownership(pointer ptr);
 
 				/**
-				 * \brief Get the raw ASN1_utctime pointer.
-				 * \return The raw ASN1_UTCTIME pointer.
+				 * \brief Create a new empty utctime.
 				 */
-				ASN1_UTCTIME* raw();
+				utctime();
 
 				/**
-				 * \brief Get the raw ASN1_utctime pointer.
-				 * \return The raw ASN1_UTCTIME pointer.
+				 * \brief Create an utctime by *NOT* taking ownership of an existing ASN1_UTCTIME* pointer.
+				 * \param ptr The ASN1_UTCTIME* pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				const ASN1_UTCTIME* raw() const;
+				utctime(pointer ptr);
 
 				/**
 				 * \brief Set the time.
@@ -143,72 +144,74 @@ namespace cryptoplus
 
 			private:
 
-				bool boolean_test() const;
-
-				ASN1_UTCTIME* m_utctime;
+				explicit utctime(pointer _ptr, deleter_type _del);
 		};
 
 		/**
 		 * \brief Compare two ASN1 utctime pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two utctime_ptr instance share the same underlying pointer.
+		 * \return true if the two utctime instance share the same underlying pointer.
 		 */
-		bool operator==(const utctime_ptr& lhs, const utctime_ptr& rhs);
+		bool operator==(const utctime& lhs, const utctime& rhs);
 
 		/**
 		 * \brief Compare two ASN1 utctime pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two utctime_ptr instance do not share the same underlying pointer.
+		 * \return true if the two utctime instance do not share the same underlying pointer.
 		 */
-		bool operator!=(const utctime_ptr& lhs, const utctime_ptr& rhs);
+		bool operator!=(const utctime& lhs, const utctime& rhs);
 
-		inline utctime_ptr::utctime_ptr(ASN1_UTCTIME* _utctime) : m_utctime(_utctime)
+		inline utctime utctime::create()
+		{
+			pointer _ptr = ASN1_UTCTIME_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
+		inline utctime utctime::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return utctime(_ptr, deleter);
+		}
+		inline utctime::utctime()
 		{
 		}
-		inline void utctime_ptr::reset_ptr(ASN1_UTCTIME* _utctime)
+		inline utctime::utctime(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
-			m_utctime = _utctime;
 		}
-		inline ASN1_UTCTIME* utctime_ptr::raw()
+		inline void utctime::set_time(time_t time)
 		{
-			return m_utctime;
+			error::throw_error_if_not(ASN1_UTCTIME_set(ptr().get(), time));
 		}
-		inline const ASN1_UTCTIME* utctime_ptr::raw() const
+		inline void utctime::set_time(const std::string& str)
 		{
-			return m_utctime;
+			error::throw_error_if_not(ASN1_UTCTIME_set_string(ptr().get(), str.c_str()));
 		}
-		inline void utctime_ptr::set_time(time_t time)
+		inline bool utctime::check()
 		{
-			error::throw_error_if_not(ASN1_UTCTIME_set(m_utctime, time));
+			return (ASN1_UTCTIME_check(ptr().get()) != 0);
 		}
-		inline void utctime_ptr::set_time(const std::string& str)
+		inline void utctime::print(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(ASN1_UTCTIME_set_string(m_utctime, str.c_str()));
+			error::throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), ptr().get()));
 		}
-		inline bool utctime_ptr::check()
+		inline utctime::utctime(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
 		{
-			return (ASN1_UTCTIME_check(m_utctime) != 0);
 		}
-		inline void utctime_ptr::print(bio::bio_ptr bio)
-		{
-			error::throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), m_utctime));
-		}
-		inline bool utctime_ptr::boolean_test() const
-		{
-			return (m_utctime != NULL);
-		}
-		inline bool operator==(const utctime_ptr& lhs, const utctime_ptr& rhs)
+		inline bool operator==(const utctime& lhs, const utctime& rhs)
 		{
 			return lhs.raw() == rhs.raw();
 		}
-		inline bool operator!=(const utctime_ptr& lhs, const utctime_ptr& rhs)
+		inline bool operator!=(const utctime& lhs, const utctime& rhs)
 		{
 			return lhs.raw() != rhs.raw();
 		}
 	}
 }
 
-#endif /* CRYPTOPEN_ASN1_UTCTIME_PTR_HPP */
+#endif /* CRYPTOPEN_ASN1_UTCTIME_HPP */
 
