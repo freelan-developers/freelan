@@ -77,6 +77,14 @@ namespace cryptoplus
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
 
 				/**
+				 * \brief Create a new certificate.
+				 * \return The certificate.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static certificate create();
+
+				/**
 				 * \brief Take ownership of a specified X509 pointer.
 				 * \param ptr The pointer. Cannot be NULL.
 				 * \return A certificate.
@@ -145,8 +153,6 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a new empty X509 certificate.
-				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
 				 */
 				certificate();
 
@@ -308,6 +314,14 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
+		inline certificate certificate::create()
+		{
+			pointer _ptr = X509_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
 		inline certificate certificate::take_ownership(pointer _ptr)
 		{
 			error::throw_error_if_not(_ptr);
@@ -330,9 +344,8 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_X509_AUX(file, NULL, callback, callback_arg));
 		}
-		inline certificate::certificate() : pointer_wrapper(X509_new(), deleter)
+		inline certificate::certificate()
 		{
-			error::throw_error_if_not(ptr());
 		}
 		inline certificate::certificate(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{

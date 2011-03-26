@@ -182,6 +182,14 @@ namespace cryptoplus
 				typedef std::reverse_iterator<iterator> reverse_iterator;
 
 				/**
+				 * \brief Create a new name.
+				 * \return The name.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static name create();
+
+				/**
 				 * \brief Take ownership of a specified X509_NAME pointer.
 				 * \param ptr The pointer. Cannot be NULL.
 				 * \return A name_entry.
@@ -189,9 +197,7 @@ namespace cryptoplus
 				static name take_ownership(pointer ptr);
 
 				/**
-				 * \brief Create a new empty X509 name.
-				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * \brief Create a new empty name.
 				 */
 				name();
 
@@ -576,15 +582,22 @@ namespace cryptoplus
 		inline name::iterator::iterator(name* _name, int index) : m_name(_name), m_index(index)
 		{
 		}
+		inline name name::create()
+		{
+			pointer _ptr = X509_NAME_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
 		inline name name::take_ownership(pointer _ptr)
 		{
 			error::throw_error_if_not(_ptr);
 
 			return name(_ptr, deleter);
 		}
-		inline name::name() : pointer_wrapper(X509_NAME_new(), deleter)
+		inline name::name()
 		{
-			error::throw_error_if_not(ptr());
 		}
 		inline name::name(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
