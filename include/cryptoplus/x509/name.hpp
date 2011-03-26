@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_X509_NAME_HPP
 #define CRYPTOPEN_X509_NAME_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "name_entry.hpp"
@@ -55,8 +56,6 @@
 #endif
 
 #include <openssl/x509.h>
-
-#include <boost/shared_ptr.hpp>
 
 #include <cstring>
 #include <string>
@@ -72,34 +71,24 @@ namespace cryptoplus
 		 *
 		 * A name instance has the same semantic as a X509_NAME* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class name
+		class name : public pointer_wrapper<X509_NAME>
 		{
 			public:
 
 				/**
-				* \brief The type.
-				*/
-				typedef name_entry value_type;
+				 * \brief The wrapped value type.
+				 */
+				typedef name_entry wrapped_value_type;
 
 				/**
-				* \brief he difference type.
-				*/
-				typedef int difference_type;
-
-				/**
-				* \brief The reference type.
-				*/
-				typedef value_type& reference;
-
-				/**
-				* \brief The pointer type.
-				*/
-				typedef value_type* pointer;
+				 * \brief The wrapper pointer type.
+				 */
+				typedef wrapped_value_type* wrapped_pointer;
 
 				/**
 				 * \brief An iterator class.
 				 */
-				class iterator : public std::iterator<std::random_access_iterator_tag, value_type>
+				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
 				{
 					public:
 
@@ -110,22 +99,22 @@ namespace cryptoplus
 
 						/**
 						 * \brief Dereference operator.
-						 * \return The reference.
+						 * \return The value.
 						 */
-						value_type operator*();
+						wrapped_value_type operator*();
 
 						/**
 						 * \brief Dereference operator.
-						 * \return The reference.
+						 * \return The value.
 						 */
-						value_type operator->();
+						wrapped_value_type operator->();
 
 						/**
 						 * \brief Dereference operator.
 						 * \param index The index to add or substract.
 						 * \return An iterator.
 						 */
-						value_type operator[](int index);
+						wrapped_value_type operator[](int index);
 
 						/**
 						 * \brief Increment the iterator.
@@ -191,6 +180,13 @@ namespace cryptoplus
 				typedef std::reverse_iterator<iterator> reverse_iterator;
 
 				/**
+				 * \brief Take ownership of a specified X509_NAME pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return A name_entry.
+				 */
+				static name take_ownership(pointer ptr);
+
+				/**
 				 * \brief Create a new empty X509 name.
 				 *
 				 * If allocation fails, a cryptographic_exception is thrown.
@@ -198,24 +194,11 @@ namespace cryptoplus
 				name();
 
 				/**
-				 * \brief Create a X509 name by taking ownership of an existing X509_NAME* pointer.
-				 * \param x509_name The X509_name* pointer. Cannot be NULL.
+				 * \brief Create a X509 name by *NOT* taking ownership of an existing X509_NAME* pointer.
+				 * \param ptr The X509_name* pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				explicit name(X509_NAME* x509_name);
-
-				/**
-				 * \brief Get the raw X509_NAME pointer.
-				 * \return The raw X509_NAME pointer.
-				 * \warning The instance has ownership of the returned pointer. Calling X509_NAME_free() on the returned value will result in undefined behavior.
-				 */
-				const X509_NAME* raw() const;
-
-				/**
-				 * \brief Get the raw X509_NAME pointer.
-				 * \return The raw X509_NAME pointer.
-				 * \warning The instance has ownership of the returned pointer. Calling X509_NAME_free() on the returned value will result in undefined behavior.
-				 */
-				X509_NAME* raw();
+				name(pointer ptr);
 
 				/**
 				 * \brief Clone the name instance.
@@ -255,7 +238,7 @@ namespace cryptoplus
 				 * \return The name entry.
 				 * \see count().
 				 */
-				value_type operator[](int index);
+				wrapped_value_type operator[](int index);
 
 				/**
 				 * \brief Get the begin iterator.
@@ -335,7 +318,7 @@ namespace cryptoplus
 				 * \brief Push a copy of the specified name_entry at the end of the entry table.
 				 * \param entry The name entry.
 				 */
-				void push_back(value_type entry);
+				void push_back(wrapped_value_type entry);
 
 				/**
 				 * \brief Push a new entry at the end of the entry table.
@@ -373,7 +356,7 @@ namespace cryptoplus
 				 * \param entry The name entry.
 				 * \return An iterator to the entry that was added.
 				 */
-				iterator insert(iterator position, value_type entry);
+				iterator insert(iterator position, wrapped_value_type entry);
 
 				/**
 				 * \brief Insert a copy of the specified name_entry in the entry table.
@@ -381,7 +364,7 @@ namespace cryptoplus
 				 * \param entry The name entry.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the call is equivalent to insert(position, entry) without a return value.
 				 */
-				void insert(iterator position, value_type entry, int set);
+				void insert(iterator position, wrapped_value_type entry, int set);
 
 				/**
 				 * \brief Insert a new entry in the entry table.
@@ -426,11 +409,7 @@ namespace cryptoplus
 
 			private:
 
-				static void null_deleter(X509_NAME*);
-
-				explicit name(boost::shared_ptr<X509_NAME> x509_name);
-
-				boost::shared_ptr<X509_NAME> m_x509_name;
+				explicit name(pointer _ptr, deleter_type _del);
 
 				friend class certificate;
 		};
@@ -597,38 +576,32 @@ namespace cryptoplus
 		inline name::iterator::iterator(name* _name, int index) : m_name(_name), m_index(index)
 		{
 		}
-		inline name::name() : m_x509_name(X509_NAME_new(), X509_NAME_free)
+		inline name name::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(m_x509_name);
+			error::throw_error_if_not(_ptr);
+
+			return name(_ptr, deleter);
 		}
-		inline name::name(X509_NAME* x509_name) : m_x509_name(x509_name, X509_NAME_free)
+		inline name::name() : pointer_wrapper(X509_NAME_new(), deleter)
 		{
-			if (!m_x509_name)
-			{
-				throw std::invalid_argument("x509_name");
-			}
+			error::throw_error_if_not(ptr());
 		}
-		inline const X509_NAME* name::raw() const
+		inline name::name(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
-			return m_x509_name.get();
-		}
-		inline X509_NAME* name::raw()
-		{
-			return m_x509_name.get();
 		}
 		inline name name::clone() const
 		{
-			return name(X509_NAME_dup(m_x509_name.get()));
+			return name(X509_NAME_dup(ptr().get()));
 		}
 		inline unsigned int name::hash()
 		{
-			return X509_NAME_hash(m_x509_name.get());
+			return X509_NAME_hash(ptr().get());
 		}
 		inline std::string name::oneline(size_t max_size) const
 		{
 			std::string result(' ', max_size + 1);
 
-			char* c = X509_NAME_oneline(m_x509_name.get(), &result[0], result.size() - 1);
+			char* c = X509_NAME_oneline(ptr().get(), &result[0], result.size() - 1);
 
 			error::throw_error_if_not(c);
 
@@ -638,17 +611,15 @@ namespace cryptoplus
 		}
 		inline void name::print(bio::bio_ptr bio, int obase)
 		{
-			error::throw_error_if_not(X509_NAME_print(bio.raw(), m_x509_name.get(), obase));
+			error::throw_error_if_not(X509_NAME_print(bio.raw(), ptr().get(), obase));
 		}
 		inline int name::count()
 		{
-			return X509_NAME_entry_count(m_x509_name.get());
+			return X509_NAME_entry_count(ptr().get());
 		}
-		inline name::value_type name::operator[](int index)
+		inline name::wrapped_value_type name::operator[](int index)
 		{
-			boost::shared_ptr<X509_NAME_ENTRY> name_entry_ptr(X509_NAME_get_entry(m_x509_name.get(), index), name_entry::null_deleter);
-
-			return value_type(name_entry_ptr);
+			return wrapped_value_type(X509_NAME_get_entry(ptr().get(), index));
 		}
 		inline name::iterator name::begin()
 		{
@@ -668,7 +639,7 @@ namespace cryptoplus
 		}
 		inline name::iterator name::erase(iterator it)
 		{
-			X509_NAME_ENTRY* entry = X509_NAME_delete_entry(it.m_name->m_x509_name.get(), it.m_index);
+			X509_NAME_ENTRY* entry = X509_NAME_delete_entry(it.m_name->ptr().get(), it.m_index);
 
 			assert(entry);
 			error::throw_error_if_not(entry);
@@ -686,25 +657,25 @@ namespace cryptoplus
 		}
 		inline name::iterator name::find(int nid)
 		{
-			int index = X509_NAME_get_index_by_NID(m_x509_name.get(), nid, -1);
+			int index = X509_NAME_get_index_by_NID(ptr().get(), nid, -1);
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
 		inline name::iterator name::find(int nid, iterator lastpos)
 		{
-			int index = X509_NAME_get_index_by_NID(m_x509_name.get(), nid, lastpos.m_index);
+			int index = X509_NAME_get_index_by_NID(ptr().get(), nid, lastpos.m_index);
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
 		inline name::iterator name::find(asn1::object_ptr object)
 		{
-			int index = X509_NAME_get_index_by_OBJ(m_x509_name.get(), object.raw(), -1);
+			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), -1);
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
 		inline name::iterator name::find(asn1::object_ptr object, iterator lastpos)
 		{
-			int index = X509_NAME_get_index_by_OBJ(m_x509_name.get(), object.raw(), lastpos.m_index);
+			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), lastpos.m_index);
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
@@ -712,53 +683,53 @@ namespace cryptoplus
 		{
 			erase(begin(), end());
 		}
-		inline void name::push_back(value_type entry)
+		inline void name::push_back(wrapped_value_type entry)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), -1, 0));
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), -1, 0));
 		}
 		inline void name::push_back(const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_txt(m_x509_name.get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set));
 		}
 		inline void name::push_back(asn1::object_ptr object, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(m_x509_name.get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
 		}
 		inline void name::push_back(int nid, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_NID(m_x509_name.get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
 		}
-		inline name::iterator name::insert(iterator position, value_type entry)
+		inline name::iterator name::insert(iterator position, wrapped_value_type entry)
 		{
 			assert(position.m_name == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), position.m_index, 0));
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, 0));
 
 			return position;
 		}
-		inline void name::insert(iterator position, value_type entry, int set)
+		inline void name::insert(iterator position, wrapped_value_type entry, int set)
 		{
 			assert(position.m_name == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry(m_x509_name.get(), entry.raw(), position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, set));
 		}
 		inline void name::insert(iterator position, const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_name == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_txt(m_x509_name.get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, asn1::object_ptr object, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_name == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(m_x509_name.get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, int nid, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_name == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_NID(m_x509_name.get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, iterator first, iterator last)
 		{
@@ -770,12 +741,8 @@ namespace cryptoplus
 				position = insert(position, *first) + 1;
 			}
 		}
-		inline void name::null_deleter(X509_NAME*)
+		inline name::name(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
 		{
-		}
-		inline name::name(boost::shared_ptr<X509_NAME> x509_name) : m_x509_name(x509_name)
-		{
-			error::throw_error_if_not(m_x509_name);
 		}
 		inline bool operator==(const name::iterator& lhs, const name::iterator& rhs)
 		{

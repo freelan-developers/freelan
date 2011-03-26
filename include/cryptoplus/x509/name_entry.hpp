@@ -75,7 +75,7 @@ namespace cryptoplus
 
 				/**
 				 * \brief Take ownership of a specified X509_NAME_ENTRY pointer.
-				 * \param ptr The pointer.
+				 * \param ptr The pointer. Cannot be NULL.
 				 * \return A name_entry.
 				 */
 				static name_entry take_ownership(pointer ptr);
@@ -109,7 +109,7 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a X509 name entry by *NOT* taking ownership of an existing X509_NAME_ENTRY* pointer.
-				 * \param ptr The X509_NAME_ENTRY* pointer. Cannot be NULL.
+				 * \param ptr The X509_NAME_ENTRY* pointer.
 				 * \warning The caller is still responsible for freeing the memory.
 				 */
 				name_entry(pointer ptr);
@@ -167,8 +167,6 @@ namespace cryptoplus
 			private:
 
 				explicit name_entry(pointer _ptr, deleter_type _del);
-
-				friend class name;
 		};
 
 		/**
@@ -189,6 +187,8 @@ namespace cryptoplus
 
 		inline name_entry name_entry::take_ownership(pointer _ptr)
 		{
+			error::throw_error_if_not(_ptr);
+
 			return name_entry(_ptr, deleter);
 		}
 		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
@@ -240,7 +240,6 @@ namespace cryptoplus
 		}
 		inline name_entry::name_entry(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
 		{
-			error::throw_error_if_not(ptr());
 		}
 		inline bool operator==(const name_entry& lhs, const name_entry& rhs)
 		{
