@@ -49,6 +49,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
+#include "../asn1/utctime.hpp"
 #include "name.hpp"
 
 #include <openssl/x509.h>
@@ -259,25 +260,25 @@ namespace cryptoplus
 				 * \brief Get the certificate not before date.
 				 * \return The not before date.
 				 */
-				ASN1_UTCTIME* not_before();
+				asn1::utctime not_before();
 
 				/**
 				 * \brief Set the certificate not before date.
 				 * \param not_before The not before date.
 				 */
-				void set_not_before(ASN1_UTCTIME* not_before);
+				void set_not_before(asn1::utctime not_before);
 
 				/**
 				 * \brief Get the certificate not after date.
 				 * \return The not after date.
 				 */
-				ASN1_UTCTIME* not_after();
+				asn1::utctime not_after();
 
 				/**
 				 * \brief Set the certificate not after date.
 				 * \param not_after The not after date.
 				 */
-				void set_not_after(ASN1_UTCTIME* not_after);
+				void set_not_after(asn1::utctime not_after);
 
 				/**
 				 * \brief Verify the certificate against a specified public key.
@@ -410,21 +411,21 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number));
 		}
-		inline ASN1_UTCTIME* certificate::not_before()
+		inline asn1::utctime certificate::not_before()
 		{
 			return X509_get_notBefore(ptr().get());
 		}
-		inline void certificate::set_not_before(ASN1_UTCTIME* _not_before)
+		inline void certificate::set_not_before(asn1::utctime _not_before)
 		{
-			error::throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before));
+			error::throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before.raw()));
 		}
-		inline ASN1_UTCTIME* certificate::not_after()
+		inline asn1::utctime certificate::not_after()
 		{
 			return X509_get_notAfter(ptr().get());
 		}
-		inline void certificate::set_not_after(ASN1_UTCTIME* _not_after)
+		inline void certificate::set_not_after(asn1::utctime _not_after)
 		{
-			error::throw_error_if_not(X509_set_notAfter(ptr().get(), _not_after));
+			error::throw_error_if_not(X509_set_notAfter(ptr().get(), _not_after.raw()));
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
