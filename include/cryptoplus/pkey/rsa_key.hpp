@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_PKEY_RSA_KEY_HPP
 #define CRYPTOPEN_PKEY_RSA_KEY_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 
@@ -68,7 +69,7 @@ namespace cryptoplus
 		 *
 		 * A rsa_key instance has the same semantic as a RSA* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class rsa_key
+		class rsa_key : public pointer_wrapper<RSA>
 		{
 			public:
 
@@ -81,6 +82,21 @@ namespace cryptoplus
 				 * \brief A PEM passphrase callback type.
 				 */
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Create a new rsa_key.
+				 * \return The rsa_key.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static rsa_key create();
+
+				/**
+				 * \brief Take ownership of a specified RSA pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An rsa_key.
+				 */
+				static rsa_key take_ownership(pointer ptr);
 
 				/**
 				 * \brief Generate a new RSA private key.
@@ -177,17 +193,16 @@ namespace cryptoplus
 				static rsa_key from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
-				 * \brief Create a new empty RSA key.
-				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * \brief Create a new empty rsa_key.
 				 */
 				rsa_key();
 
 				/**
-				 * \brief Create a RSA key by taking ownership of an existing RSA* pointer.
-				 * \param rsa The RSA* pointer. Cannot be NULL.
+				 * \brief Create an rsa_key by *NOT* taking ownership of an existing RSA pointer.
+				 * \param ptr The RSA pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				explicit rsa_key(RSA* rsa);
+				rsa_key(pointer ptr);
 
 				/**
 				 * \brief Write the private RSA key to a BIO.
@@ -262,20 +277,6 @@ namespace cryptoplus
 				 * \see enable_blinding
 				 */
 				void disable_blinding();
-
-				/**
-				 * \brief Get the raw RSA pointer.
-				 * \return The raw RSA pointer.
-				 * \warning The instance has ownership of the return pointer. Calling RSA_free() on the returned value will result in undefined behavior.
-				 */
-				RSA* raw();
-
-				/**
-				 * \brief Get the raw RSA pointer.
-				 * \return The raw RSA pointer.
-				 * \warning The instance has ownership of the return pointer. Calling RSA_free() on the returned value will result in undefined behavior.
-				 */
-				const RSA* raw() const;
 
 				/**
 				 * \brief Return the RSA modulus size in bytes.
@@ -409,9 +410,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit rsa_key(boost::shared_ptr<RSA> rsa);
-
-				boost::shared_ptr<RSA> m_rsa;
+				explicit rsa_key(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -430,104 +429,105 @@ namespace cryptoplus
 		 */
 		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
 
+		inline rsa_key rsa_key::create()
+		{
+			pointer _ptr = RSA_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
+		inline rsa_key rsa_key::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return rsa_key(_ptr, deleter);
+		}
 		inline rsa_key rsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSAPrivateKey(bio.raw(), NULL, callback, callback_arg), RSA_free));
+			return take_ownership(PEM_read_bio_RSAPrivateKey(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline rsa_key rsa_key::from_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSAPublicKey(bio.raw(), NULL, callback, callback_arg), RSA_free));
+			return take_ownership(PEM_read_bio_RSAPublicKey(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline rsa_key rsa_key::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_bio_RSA_PUBKEY(bio.raw(), NULL, callback, callback_arg), RSA_free));
+			return take_ownership(PEM_read_bio_RSA_PUBKEY(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline rsa_key rsa_key::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_RSAPrivateKey(file, NULL, callback, callback_arg), RSA_free));
+			return take_ownership(PEM_read_RSAPrivateKey(file, NULL, callback, callback_arg));
 		}
 		inline rsa_key rsa_key::from_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_RSAPublicKey(file, NULL, callback, callback_arg), RSA_free));
+			return take_ownership(PEM_read_RSAPublicKey(file, NULL, callback, callback_arg));
 		}
 		inline rsa_key rsa_key::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return rsa_key(boost::shared_ptr<RSA>(PEM_read_RSA_PUBKEY(file, NULL, callback, callback_arg), RSA_free));
+			return take_ownership(PEM_read_RSA_PUBKEY(file, NULL, callback, callback_arg));
 		}
-		inline rsa_key::rsa_key() : m_rsa(RSA_new(), RSA_free)
+		inline rsa_key::rsa_key()
 		{
-			error::throw_error_if_not(m_rsa);
 		}
-		inline rsa_key::rsa_key(RSA* rsa) : m_rsa(rsa, RSA_free)
+		inline rsa_key::rsa_key(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
-			if (!m_rsa)
-			{
-				throw std::invalid_argument("rsa");
-			}
 		}
 		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), m_rsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), m_rsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void rsa_key::write_public_key(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_RSAPublicKey(bio.raw(), m_rsa.get()));
+			error::throw_error_if_not(PEM_write_bio_RSAPublicKey(bio.raw(), ptr().get()));
 		}
 		inline void rsa_key::write_certificate_public_key(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), m_rsa.get()));
+			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), ptr().get()));
 		}
 		inline void rsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, m_rsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void rsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, m_rsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void rsa_key::write_public_key(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_RSAPublicKey(file, m_rsa.get()));
+			error::throw_error_if_not(PEM_write_RSAPublicKey(file, ptr().get()));
 		}
 		inline void rsa_key::write_certificate_public_key(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_RSA_PUBKEY(file, m_rsa.get()));
+			error::throw_error_if_not(PEM_write_RSA_PUBKEY(file, ptr().get()));
 		}
 		inline void rsa_key::enable_blinding(BN_CTX* ctx)
 		{
-			error::throw_error_if_not(RSA_blinding_on(m_rsa.get(), ctx));
+			error::throw_error_if_not(RSA_blinding_on(ptr().get(), ctx));
 		}
 		inline void rsa_key::disable_blinding()
 		{
-			RSA_blinding_off(m_rsa.get());
-		}
-		inline RSA* rsa_key::raw()
-		{
-			return m_rsa.get();
-		}
-		inline const RSA* rsa_key::raw() const
-		{
-			return m_rsa.get();
+			RSA_blinding_off(ptr().get());
 		}
 		inline size_t rsa_key::size() const
 		{
-			return RSA_size(m_rsa.get());
+			return RSA_size(ptr().get());
 		}
 		inline void rsa_key::check()
 		{
-			error::throw_error_if_not(RSA_check_key(m_rsa.get()) > 0);
+			error::throw_error_if_not(RSA_check_key(ptr().get()) > 0);
 		}
 		inline void rsa_key::print(bio::bio_ptr bio, int offset)
 		{
-			error::throw_error_if_not(RSA_print(bio.raw(), m_rsa.get(), offset));
+			error::throw_error_if_not(RSA_print(bio.raw(), ptr().get(), offset));
 		}
 		inline void rsa_key::print(FILE* file, int offset)
 		{
-			error::throw_error_if_not(RSA_print_fp(file, m_rsa.get(), offset));
+			error::throw_error_if_not(RSA_print_fp(file, ptr().get(), offset));
 		}
 		template <typename T>
 		inline std::vector<T> rsa_key::sign(const void* buf, size_t buf_len, int type)
@@ -538,9 +538,8 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline rsa_key::rsa_key(boost::shared_ptr<RSA> rsa) : m_rsa(rsa)
+		inline rsa_key::rsa_key(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
-			error::throw_error_if_not(m_rsa);
 		}
 		inline bool operator==(const rsa_key& lhs, const rsa_key& rhs)
 		{

@@ -60,12 +60,15 @@ namespace cryptoplus
 			}
 		}
 
+		template <>
+		rsa_key::deleter_type pointer_wrapper<rsa_key::value_type>::deleter = RSA_free;
+
 		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
 		{
 			// Exponent must be odd
 			assert(exponent | 1);
 
-			return rsa_key(boost::shared_ptr<RSA>(RSA_generate_key(num, exponent, callback, callback_arg), RSA_free));
+			return take_ownership(RSA_generate_key(num, exponent, callback, callback_arg));
 		}
 
 		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
@@ -106,7 +109,7 @@ namespace cryptoplus
 				throw std::invalid_argument("out_len");
 			}
 
-			int result = RSA_private_encrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+			int result = RSA_private_encrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
 			error::throw_error_if_not(result >= 0);
 
@@ -122,7 +125,7 @@ namespace cryptoplus
 				throw std::invalid_argument("out_len");
 			}
 
-			int result = RSA_public_decrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+			int result = RSA_public_decrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
 			error::throw_error_if_not(result >= 0);
 
@@ -138,7 +141,7 @@ namespace cryptoplus
 				throw std::invalid_argument("out_len");
 			}
 
-			int result = RSA_public_encrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+			int result = RSA_public_encrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
 			error::throw_error_if_not(result >= 0);
 
@@ -154,7 +157,7 @@ namespace cryptoplus
 				throw std::invalid_argument("out_len");
 			}
 
-			int result = RSA_private_decrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), m_rsa.get(), padding);
+			int result = RSA_private_decrypt(buf_len, static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
 			error::throw_error_if_not(result >= 0);
 
@@ -165,7 +168,7 @@ namespace cryptoplus
 		{
 			unsigned int _out_len = out_len;
 
-			error::throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, m_rsa.get()));
+			error::throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, ptr().get()));
 
 			return _out_len;
 		}
@@ -173,9 +176,9 @@ namespace cryptoplus
 		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
 		{
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
-			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, m_rsa.get()));
+			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, ptr().get()));
 #else
-			error::throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), buf_len, static_cast<unsigned char*>(const_cast<void*>(_sign)), sign_len, m_rsa.get()));
+			error::throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), buf_len, static_cast<unsigned char*>(const_cast<void*>(_sign)), sign_len, ptr().get()));
 #endif
 		}
 	}
