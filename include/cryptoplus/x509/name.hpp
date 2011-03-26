@@ -174,6 +174,7 @@ namespace cryptoplus
 						friend name::iterator operator+(int lhs, const name::iterator& rhs);
 						friend name::iterator operator-(const name::iterator& lhs, int rhs);
 						friend name::iterator operator-(int lhs, const name::iterator& rhs);
+						friend name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs);
 				};
 
 				/**
@@ -501,6 +502,14 @@ namespace cryptoplus
 		name::iterator operator-(int lhs, const name::iterator& rhs);
 
 		/**
+		 * \brief Substract a iterator from another iterator and gets the index distance.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The distance.
+		 */
+		name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs);
+
+		/**
 		 * \brief Compare two name instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
@@ -808,6 +817,10 @@ namespace cryptoplus
 		inline name::iterator operator-(int lhs, const name::iterator& rhs)
 		{
 			return name::iterator(rhs.m_name, rhs.m_index - lhs);
+		}
+		inline name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs)
+		{
+			return lhs.m_index - rhs.m_index;
 		}
 		inline bool operator==(const name& lhs, const name& rhs)
 		{
