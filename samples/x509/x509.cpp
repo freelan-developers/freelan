@@ -40,11 +40,16 @@ int main()
 		// We copy the data from subject() to issuer().
 		certificate.set_issuer(certificate.subject());
 
-		cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time());
+		cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::years(12));
 		cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::posix_time::hours(1));
+
+		not_before = cryptoplus::asn1::utctime::from_string("110326145020+0205");
 
 		certificate.set_not_before(not_before);
 		certificate.set_not_after(not_after);
+
+		std::cout << cryptoplus::asn1::string(not_before.raw()).str() << std::endl;
+		std::cout << boost::posix_time::to_iso_string(not_before.to_ptime()) << std::endl;
 
 		cryptoplus::bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
 
