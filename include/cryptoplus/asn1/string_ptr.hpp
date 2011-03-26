@@ -234,7 +234,11 @@ namespace cryptoplus
 		}
 		inline int compare(const string_ptr& lhs, const string_ptr& rhs)
 		{
+#if OPENSSL_VERSION_NUMBER >= 0x01000000
 			return ASN1_STRING_cmp(lhs.raw(), rhs.raw());
+#else
+			return ASN1_STRING_cmp(const_cast<ASN1_STRING*>(lhs.raw()), const_cast<ASN1_STRING*>(rhs.raw()));
+#endif
 		}
 	}
 }
