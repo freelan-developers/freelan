@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_X509_NAME_ENTRY_HPP
 #define CRYPTOPEN_X509_NAME_ENTRY_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../asn1/object_ptr.hpp"
@@ -68,10 +69,14 @@ namespace cryptoplus
 		 *
 		 * A name_entry instance has the same semantic as a X509_NAME_ENTRY* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class name_entry
+		class name_entry : public pointer_wrapper<X509_NAME_ENTRY>
 		{
 			public:
 
+				/**
+				 * \brief Take ownership of a specified X509_NAME_ENTRY pointer.
+				 * \param pointer The pointer.
+				 */
 				/**
 				 * \brief Create a X509 name entry from an ASN1 object.
 				 * \param object The object.
@@ -100,24 +105,10 @@ namespace cryptoplus
 				name_entry();
 
 				/**
-				 * \brief Create a X509 name entry by taking ownership of an existing X509_NAME_ENTRY* pointer.
+				 * \brief Create a X509 name entry by *NOT* taking ownership of an existing X509_NAME_ENTRY* pointer.
 				 * \param x509_name_entry The X509_NAME_ENTRY* pointer. Cannot be NULL.
 				 */
-				explicit name_entry(X509_NAME_ENTRY* x509_name_entry);
-
-				/**
-				 * \brief Get the raw X509_NAME_ENTRY pointer.
-				 * \return The raw X509_NAME_ENTRY pointer.
-				 * \warning The instance has ownership of the return pointer. Calling X509_NAME_ENTRY_free() on the returned value will result in undefined behavior.
-				 */
-				const X509_NAME_ENTRY* raw() const;
-
-				/**
-				 * \brief Get the raw X509_NAME_ENTRY pointer.
-				 * \return The raw X509_NAME_ENTRY pointer.
-				 * \warning The instance has ownership of the return pointer. Calling X509_NAME_ENTRY_free() on the returned value will result in undefined behavior.
-				 */
-				X509_NAME_ENTRY* raw();
+				name_entry(X509_NAME_ENTRY* x509_name_entry);
 
 				/**
 				 * \brief Get the ASN1 object associated to this name_entry.
@@ -171,11 +162,7 @@ namespace cryptoplus
 
 			private:
 
-				static void null_deleter(X509_NAME_ENTRY*);
-
 				explicit name_entry(boost::shared_ptr<X509_NAME_ENTRY> x509_name_entry);
-
-				boost::shared_ptr<X509_NAME_ENTRY> m_x509_name_entry;
 
 				friend class name;
 		};
@@ -204,40 +191,28 @@ namespace cryptoplus
 		{
 			return name_entry(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len), X509_NAME_ENTRY_free));
 		}
-		inline name_entry::name_entry() : m_x509_name_entry(X509_NAME_ENTRY_new(), X509_NAME_ENTRY_free)
+		inline name_entry::name_entry() : pointer_wrapper(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_new(), X509_NAME_ENTRY_free))
 		{
-			error::throw_error_if_not(m_x509_name_entry);
+			error::throw_error_if_not(m_pointer);
 		}
-		inline name_entry::name_entry(X509_NAME_ENTRY* x509_name_entry) : m_x509_name_entry(x509_name_entry, X509_NAME_ENTRY_free)
+		inline name_entry::name_entry(X509_NAME_ENTRY* x509_name_entry) : pointer_wrapper(boost::shared_ptr<X509_NAME_ENTRY>(x509_name_entry, null_deleter))
 		{
-			if (!m_x509_name_entry)
-			{
-				throw std::invalid_argument("x509_name_entry");
-			}
-		}
-		inline const X509_NAME_ENTRY* name_entry::raw() const
-		{
-			return m_x509_name_entry.get();
-		}
-		inline X509_NAME_ENTRY* name_entry::raw()
-		{
-			return m_x509_name_entry.get();
 		}
 		inline asn1::object_ptr name_entry::object()
 		{
-			return X509_NAME_ENTRY_get_object(m_x509_name_entry.get());
+			return X509_NAME_ENTRY_get_object(m_pointer.get());
 		}
 		inline void name_entry::set_object(asn1::object_ptr _object)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_object(m_x509_name_entry.get(), _object.raw()));
+			error::throw_error_if_not(X509_NAME_ENTRY_set_object(m_pointer.get(), _object.raw()));
 		}
 		inline asn1::string_ptr name_entry::data()
 		{
-			return asn1::string_ptr(X509_NAME_ENTRY_get_data(m_x509_name_entry.get()));
+			return asn1::string_ptr(X509_NAME_ENTRY_get_data(m_pointer.get()));
 		}
 		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_data(m_x509_name_entry.get(), type, static_cast<const unsigned char*>(_data), data_len));
+			error::throw_error_if_not(X509_NAME_ENTRY_set_data(m_pointer.get(), type, static_cast<const unsigned char*>(_data), data_len));
 		}
 		inline int name_entry::nid()
 		{
@@ -253,14 +228,11 @@ namespace cryptoplus
 		}
 		inline name_entry name_entry::clone() const
 		{
-			return name_entry(X509_NAME_ENTRY_dup(m_x509_name_entry.get()));
+			return take_ownership(X509_NAME_ENTRY_dup(m_pointer.get()));
 		}
-		inline void name_entry::null_deleter(X509_NAME_ENTRY*)
+		inline name_entry::name_entry(boost::shared_ptr<X509_NAME_ENTRY> x509_name_entry) : m_pointer(x509_name_entry)
 		{
-		}
-		inline name_entry::name_entry(boost::shared_ptr<X509_NAME_ENTRY> x509_name_entry) : m_x509_name_entry(x509_name_entry)
-		{
-			error::throw_error_if_not(m_x509_name_entry);
+			error::throw_error_if_not(m_pointer);
 		}
 		inline bool operator==(const name_entry& lhs, const name_entry& rhs)
 		{

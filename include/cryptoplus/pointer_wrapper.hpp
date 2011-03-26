@@ -79,9 +79,14 @@ namespace cryptoplus
 
 			static void null_deleter(T*);
 
+			explicit pointer_wrapper(boost::shared_ptr<T> pointer);
+
 			bool boolean_test() const;
 
-			explicit pointer_wrapper(boost::shared_ptr<T> pointer);
+			boost::shared_ptr<T>& pointer();
+			const boost::shared_ptr<T>& pointer() const;
+
+		private:
 
 			boost::shared_ptr<T> m_pointer;
 	};
@@ -101,13 +106,23 @@ namespace cryptoplus
 	{
 	}
 	template <typename T>
+	inline pointer_wrapper<T>::pointer_wrapper(boost::shared_ptr<T> _pointer) : m_pointer(_pointer)
+	{
+	}
+	template <typename T>
 	inline bool pointer_wrapper<T>::boolean_test() const
 	{
 		return static_cast<bool>(m_pointer);
 	}
 	template <typename T>
-	inline pointer_wrapper<T>::pointer_wrapper(boost::shared_ptr<T> pointer) : m_pointer(pointer)
+	inline boost::shared_ptr<T>& pointer_wrapper<T>::pointer()
 	{
+		return m_pointer;
+	}
+	template <typename T>
+	inline const boost::shared_ptr<T>& pointer_wrapper<T>::pointer() const
+	{
+		return m_pointer;
 	}
 }
 
