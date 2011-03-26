@@ -195,7 +195,7 @@ namespace cryptoplus
 		inline utctime::utctime()
 		{
 		}
-		inline utctime::utctime(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
+		inline utctime::utctime(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
 		inline void utctime::set_time(time_t time)
@@ -214,7 +214,7 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), ptr().get()));
 		}
-		inline utctime::utctime(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
+		inline utctime::utctime(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
 		inline bool operator==(const utctime& lhs, const utctime& rhs)

@@ -599,7 +599,7 @@ namespace cryptoplus
 		inline name::name()
 		{
 		}
-		inline name::name(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
+		inline name::name(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
 		inline name name::clone() const
@@ -754,7 +754,7 @@ namespace cryptoplus
 				position = insert(position, *first) + 1;
 			}
 		}
-		inline name::name(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
+		inline name::name(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
 		inline bool operator==(const name::iterator& lhs, const name::iterator& rhs)

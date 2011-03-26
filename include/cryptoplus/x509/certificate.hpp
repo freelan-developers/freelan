@@ -348,7 +348,7 @@ namespace cryptoplus
 		inline certificate::certificate()
 		{
 		}
-		inline certificate::certificate(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
+		inline certificate::certificate(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
 		inline void certificate::write_certificate(bio::bio_ptr bio)
@@ -435,7 +435,7 @@ namespace cryptoplus
 		{
 			return X509_check_private_key(ptr().get(), pkey.raw()) == 1;
 		}
-		inline certificate::certificate(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
+		inline certificate::certificate(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
 		inline bool operator==(const certificate& lhs, const certificate& rhs)

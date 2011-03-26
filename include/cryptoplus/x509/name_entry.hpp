@@ -218,7 +218,7 @@ namespace cryptoplus
 		inline name_entry::name_entry()
 		{
 		}
-		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
+		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
 		inline asn1::object name_entry::object()
@@ -253,7 +253,7 @@ namespace cryptoplus
 		{
 			return take_ownership(X509_NAME_ENTRY_dup(ptr().get()));
 		}
-		inline name_entry::name_entry(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
+		inline name_entry::name_entry(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
 		inline bool operator==(const name_entry& lhs, const name_entry& rhs)

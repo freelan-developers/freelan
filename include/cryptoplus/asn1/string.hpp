@@ -193,7 +193,7 @@ namespace cryptoplus
 		inline string::string()
 		{
 		}
-		inline string::string(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
+		inline string::string(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
 		inline size_t string::size()
@@ -224,7 +224,7 @@ namespace cryptoplus
 		{
 			return std::string(reinterpret_cast<const char*>(data()), size());
 		}
-		inline string::string(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
+		inline string::string(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
 		inline bool operator==(const string& lhs, const string& rhs)

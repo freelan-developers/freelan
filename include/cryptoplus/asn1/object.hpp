@@ -160,14 +160,14 @@ namespace cryptoplus
 		inline object::object()
 		{
 		}
-		inline object::object(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
+		inline object::object(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
 		inline int object::to_nid() const
 		{
 			return OBJ_obj2nid(ptr().get());
 		}
-		inline object::object(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
+		inline object::object(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
 		inline bool operator==(const object& lhs, const object& rhs)
