@@ -195,7 +195,7 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a X509 name by *NOT* taking ownership of an existing X509_NAME* pointer.
-				 * \param ptr The X509_name* pointer.
+				 * \param ptr The X509_NAME* pointer.
 				 * \warning The caller is still responsible for freeing the memory.
 				 */
 				name(pointer ptr);
@@ -410,8 +410,6 @@ namespace cryptoplus
 			private:
 
 				explicit name(pointer _ptr, deleter_type _del);
-
-				friend class certificate;
 		};
 
 		/**

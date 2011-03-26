@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_X509_CERTIFICATE_HPP
 #define CRYPTOPEN_X509_CERTIFICATE_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
@@ -52,8 +53,6 @@
 
 #include <openssl/x509.h>
 #include <openssl/pem.h>
-
-#include <boost/shared_ptr.hpp>
 
 namespace cryptoplus
 {
@@ -66,7 +65,7 @@ namespace cryptoplus
 		 *
 		 * A certificate instance has the same semantic as a X509* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class certificate
+		class certificate : public pointer_wrapper<X509>
 		{
 			public:
 
@@ -74,6 +73,13 @@ namespace cryptoplus
 				 * \brief A PEM passphrase callback type.
 				 */
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Take ownership of a specified X509 pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return A certificate.
+				 */
+				static certificate take_ownership(pointer ptr);
 
 				/**
 				 * \brief Load a X509 certificate from a BIO.
@@ -143,10 +149,11 @@ namespace cryptoplus
 				certificate();
 
 				/**
-				 * \brief Create a X509 certificate by taking ownership of an existing X509* pointer.
-				 * \param x509 The X509* pointer. Cannot be NULL.
+				 * \brief Create a X509 certificate by *NOT* taking ownership of an existing X509* pointer.
+				 * \param x509 The X509* pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				explicit certificate(X509* x509);
+				certificate(X509* x509);
 
 				/**
 				 * \brief Write the certificate to a BIO.
@@ -171,20 +178,6 @@ namespace cryptoplus
 				 * \param file The file.
 				 */
 				void write_trusted_certificate(FILE* file);
-
-				/**
-				 * \brief Get the raw X509 pointer.
-				 * \return The raw X509 pointer.
-				 * \warning The instance has ownership of the return pointer. Calling X509_free() on the returned value will result in undefined behavior.
-				 */
-				const X509* raw() const;
-
-				/**
-				 * \brief Get the raw X509 pointer.
-				 * \return The raw X509 pointer.
-				 * \warning The instance has ownership of the return pointer. Calling X509_free() on the returned value will result in undefined behavior.
-				 */
-				X509* raw();
 
 				/**
 				 * \brief Clone the certificate instance.
@@ -294,9 +287,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit certificate(boost::shared_ptr<X509> x509);
-
-				boost::shared_ptr<X509> m_x509;
+				explicit certificate(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -315,128 +306,121 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
+		inline certificate certificate::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return certificate(_ptr, deleter);
+		}
 		inline certificate certificate::from_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return certificate(boost::shared_ptr<X509>(PEM_read_bio_X509(bio.raw(), NULL, callback, callback_arg), X509_free));
+			return take_ownership(PEM_read_bio_X509(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline certificate certificate::from_trusted_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return certificate(boost::shared_ptr<X509>(PEM_read_bio_X509_AUX(bio.raw(), NULL, callback, callback_arg), X509_free));
+			return take_ownership(PEM_read_bio_X509_AUX(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline certificate certificate::from_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return certificate(boost::shared_ptr<X509>(PEM_read_X509(file, NULL, callback, callback_arg), X509_free));
+			return take_ownership(PEM_read_X509(file, NULL, callback, callback_arg));
 		}
 		inline certificate certificate::from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return certificate(boost::shared_ptr<X509>(PEM_read_X509_AUX(file, NULL, callback, callback_arg), X509_free));
+			return take_ownership(PEM_read_X509_AUX(file, NULL, callback, callback_arg));
 		}
-		inline certificate::certificate() : m_x509(X509_new(), X509_free)
+		inline certificate::certificate() : pointer_wrapper(X509_new(), deleter)
 		{
-			error::throw_error_if_not(m_x509);
+			error::throw_error_if_not(ptr());
 		}
-		inline certificate::certificate(X509* x509) : m_x509(x509, X509_free)
+		inline certificate::certificate(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
-			if (!m_x509)
-			{
-				throw std::invalid_argument("certificate");
-			}
 		}
 		inline void certificate::write_certificate(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_X509(bio.raw(), m_x509.get()));
+			error::throw_error_if_not(PEM_write_bio_X509(bio.raw(), ptr().get()));
 		}
 		inline void certificate::write_trusted_certificate(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), m_x509.get()));
+			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), ptr().get()));
 		}
 		inline void certificate::write_certificate(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_X509(file, m_x509.get()));
+			error::throw_error_if_not(PEM_write_X509(file, ptr().get()));
 		}
 		inline void certificate::write_trusted_certificate(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_X509_AUX(file, m_x509.get()));
-		}
-		inline const X509* certificate::raw() const
-		{
-			return m_x509.get();
-		}
-		inline X509* certificate::raw()
-		{
-			return m_x509.get();
+			error::throw_error_if_not(PEM_write_X509_AUX(file, ptr().get()));
 		}
 		inline certificate certificate::clone() const
 		{
-			return certificate(X509_dup(m_x509.get()));
+			return certificate(X509_dup(ptr().get()));
 		}
 		inline void certificate::print(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(X509_print(bio.raw(), m_x509.get()));
+			error::throw_error_if_not(X509_print(bio.raw(), ptr().get()));
 		}
 		inline pkey::pkey certificate::public_key()
 		{
-			return pkey::pkey(X509_get_pubkey(m_x509.get()));
+			return pkey::pkey(X509_get_pubkey(ptr().get()));
 		}
 		inline name certificate::subject()
 		{
-			return name(boost::shared_ptr<X509_NAME>(X509_get_subject_name(m_x509.get()), name::null_deleter));
+			return X509_get_subject_name(ptr().get());
 		}
-		inline void certificate::set_subject(name aname)
+		inline void certificate::set_subject(name _name)
 		{
-			error::throw_error_if_not(X509_set_subject_name(m_x509.get(), aname.raw()));
+			error::throw_error_if_not(X509_set_subject_name(ptr().get(), _name.raw()));
 		}
 		inline name certificate::issuer()
 		{
-			return name(boost::shared_ptr<X509_NAME>(X509_get_issuer_name(m_x509.get()), name::null_deleter));
+			return X509_get_issuer_name(ptr().get());
 		}
-		inline void certificate::set_issuer(name aname)
+		inline void certificate::set_issuer(name _name)
 		{
-			error::throw_error_if_not(X509_set_issuer_name(m_x509.get(), aname.raw()));
+			error::throw_error_if_not(X509_set_issuer_name(ptr().get(), _name.raw()));
 		}
 		inline long certificate::version()
 		{
-			return X509_get_version(m_x509.get());
+			return X509_get_version(ptr().get());
 		}
 		inline void certificate::set_version(long _version)
 		{
-			error::throw_error_if_not(X509_set_version(m_x509.get(), _version));
+			error::throw_error_if_not(X509_set_version(ptr().get(), _version));
 		}
 		inline ASN1_INTEGER* certificate::serial_number()
 		{
-			return X509_get_serialNumber(m_x509.get());
+			return X509_get_serialNumber(ptr().get());
 		}
 		inline void certificate::set_serial_number(ASN1_INTEGER* _serial_number)
 		{
-			error::throw_error_if_not(X509_set_serialNumber(m_x509.get(), _serial_number));
+			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number));
 		}
 		inline ASN1_UTCTIME* certificate::not_before()
 		{
-			return X509_get_notBefore(m_x509.get());
+			return X509_get_notBefore(ptr().get());
 		}
 		inline void certificate::set_not_before(ASN1_UTCTIME* _not_before)
 		{
-			error::throw_error_if_not(X509_set_notBefore(m_x509.get(), _not_before));
+			error::throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before));
 		}
 		inline ASN1_UTCTIME* certificate::not_after()
 		{
-			return X509_get_notAfter(m_x509.get());
+			return X509_get_notAfter(ptr().get());
 		}
 		inline void certificate::set_not_after(ASN1_UTCTIME* _not_after)
 		{
-			error::throw_error_if_not(X509_set_notAfter(m_x509.get(), _not_after));
+			error::throw_error_if_not(X509_set_notAfter(ptr().get(), _not_after));
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
-			return X509_verify(m_x509.get(), pkey.raw()) == 1;
+			return X509_verify(ptr().get(), pkey.raw()) == 1;
 		}
 		inline bool certificate::verify_private_key(pkey::pkey pkey)
 		{
-			return X509_check_private_key(m_x509.get(), pkey.raw()) == 1;
+			return X509_check_private_key(ptr().get(), pkey.raw()) == 1;
 		}
-		inline certificate::certificate(boost::shared_ptr<X509> x509) : m_x509(x509)
+		inline certificate::certificate(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
 		{
-			error::throw_error_if_not(m_x509);
 		}
 		inline bool operator==(const certificate& lhs, const certificate& rhs)
 		{
