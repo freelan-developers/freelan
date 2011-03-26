@@ -37,12 +37,12 @@
  */
 
 /**
- * \file string_ptr.cpp
+ * \file string.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief An ASN1_STRING pointer class.
  */
 
-#include "asn1/string_ptr.hpp"
+#include "asn1/string.hpp"
 
 #include <boost/shared_ptr.hpp>
 
@@ -60,11 +60,14 @@ namespace cryptoplus
 			}
 		}
 
-		std::vector<unsigned char> string_ptr::to_utf8()
+		template <>
+		string::deleter_type pointer_wrapper<string::value_type>::deleter = ASN1_STRING_free;
+
+		std::vector<unsigned char> string::to_utf8()
 		{
 			unsigned char* out = NULL;
 
-			int _size = ASN1_STRING_to_UTF8(&out, m_string);
+			int _size = ASN1_STRING_to_UTF8(&out, ptr().get());
 
 			error::throw_error_if(_size < 0);
 
