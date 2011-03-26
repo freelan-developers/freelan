@@ -236,7 +236,7 @@ namespace cryptoplus
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
 			return ASN1_STRING_cmp(lhs.raw(), rhs.raw());
 #else
-			return ASN1_STRING_cmp(const_cast<pointer>(lhs.raw()), const_cast<pointer>(rhs.raw()));
+			return ASN1_STRING_cmp(const_cast<string::pointer>(lhs.raw()), const_cast<string::pointer>(rhs.raw()));
 #endif
 		}
 	}
