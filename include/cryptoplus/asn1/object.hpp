@@ -141,11 +141,7 @@ namespace cryptoplus
 
 		inline object object::create()
 		{
-			pointer _ptr = ASN1_OBJECT_new();
-
-			error::throw_error_if_not(_ptr);
-
-			return take_ownership(_ptr);
+			return take_ownership(ASN1_OBJECT_new());
 		}
 		inline object object::take_ownership(pointer _ptr)
 		{

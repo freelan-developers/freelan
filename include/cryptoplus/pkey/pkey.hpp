@@ -390,11 +390,7 @@ namespace cryptoplus
 
 		inline pkey pkey::create()
 		{
-			pointer _ptr = EVP_PKEY_new();
-
-			error::throw_error_if_not(_ptr);
-
-			return take_ownership(_ptr);
+			return take_ownership(EVP_PKEY_new());
 		}
 		inline pkey pkey::take_ownership(pointer _ptr)
 		{

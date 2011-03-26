@@ -178,11 +178,7 @@ namespace cryptoplus
 
 		inline string string::create()
 		{
-			pointer _ptr = ASN1_STRING_new();
-
-			error::throw_error_if_not(_ptr);
-
-			return take_ownership(_ptr);
+			return take_ownership(ASN1_STRING_new());
 		}
 		inline string string::take_ownership(pointer _ptr)
 		{

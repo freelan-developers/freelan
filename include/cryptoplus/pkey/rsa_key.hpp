@@ -431,11 +431,7 @@ namespace cryptoplus
 
 		inline rsa_key rsa_key::create()
 		{
-			pointer _ptr = RSA_new();
-
-			error::throw_error_if_not(_ptr);
-
-			return take_ownership(_ptr);
+			return take_ownership(RSA_new());
 		}
 		inline rsa_key rsa_key::take_ownership(pointer _ptr)
 		{

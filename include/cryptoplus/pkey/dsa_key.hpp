@@ -396,11 +396,7 @@ namespace cryptoplus
 		
 		inline dsa_key dsa_key::create()
 		{
-			pointer _ptr = DSA_new();
-
-			error::throw_error_if_not(_ptr);
-
-			return take_ownership(_ptr);
+			return take_ownership(DSA_new());
 		}
 		inline dsa_key dsa_key::take_ownership(pointer _ptr)
 		{
