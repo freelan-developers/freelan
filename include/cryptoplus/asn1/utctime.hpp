@@ -89,6 +89,27 @@ namespace cryptoplus
 				static utctime take_ownership(pointer ptr);
 
 				/**
+				 * \brief Create an utctime from a time_t.
+				 * \param time The time_t value.
+				 * \return The utctime.
+				 */
+				static utctime from_time_t(time_t time);
+
+				/**
+				 * \brief Create an utctime from a string.
+				 * \param str The time string. It must respect one of these formats: YYMMDDhhmmssZ, YYMMDDhhmmss+hh'mm', YYMMDDhhmmss-hh'mm'.
+				 *
+				 * Z indicates that local time is GMT.
+				 * + indicates that local time is later than GMT.
+				 * - indicates that local time is earlier than GMT.
+				 * hh' is the absolute value of the offset from GMT in hours.
+				 * mm' is the absolute value of the offset from GMT in minutes.
+				 *
+				 * \return The utctime.
+				 */
+				static utctime from_string(const std::string& str);
+
+				/**
 				 * \brief Create an utctime by taking its value from a boost::posix_time::ptime.
 				 * \param time The time.
 				 * \return The utctime.
@@ -179,6 +200,22 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return utctime(_ptr, deleter);
+		}
+		inline utctime utctime::from_time_t(time_t time)
+		{
+			utctime result = create();
+			
+			result.set_time(time);
+
+			return result;
+		}
+		inline utctime utctime::from_string(const std::string& str)
+		{
+			utctime result = create();
+			
+			result.set_time(str);
+
+			return result;
 		}
 		inline utctime utctime::from_ptime(const boost::posix_time::ptime& time)
 		{
