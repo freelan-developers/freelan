@@ -67,6 +67,11 @@ namespace cryptoplus
 			typedef T value_type;
 
 			/**
+			 * \brief The deleter type.
+			 */
+			typedef void (*deleter_type)(value_type*);
+
+			/**
 			 * \brief The pointer type.
 			 */
 			typedef value_type* pointer;
@@ -92,10 +97,10 @@ namespace cryptoplus
 
 		protected:
 
+			static deleter_type deleter;
 			static void null_deleter(pointer);
 
-			explicit pointer_wrapper(pointer ptr);
-			explicit pointer_wrapper(boost::shared_ptr<value_type> ptr);
+			explicit pointer_wrapper(pointer ptr, deleter_type del);
 
 			bool boolean_test() const;
 
@@ -122,11 +127,7 @@ namespace cryptoplus
 	{
 	}
 	template <typename T>
-	inline pointer_wrapper<T>::pointer_wrapper(typename pointer_wrapper<T>::pointer _ptr) : m_pointer(_ptr, null_deleter)
-	{
-	}
-	template <typename T>
-	inline pointer_wrapper<T>::pointer_wrapper(boost::shared_ptr<pointer_wrapper<T>::value_type> _ptr) : m_pointer(_ptr)
+	inline pointer_wrapper<T>::pointer_wrapper(typename pointer_wrapper<T>::pointer _ptr, typename pointer_wrapper<T>::deleter_type _del) : m_pointer(_ptr, _del)
 	{
 	}
 	template <typename T>

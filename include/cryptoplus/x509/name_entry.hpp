@@ -166,7 +166,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit name_entry(boost::shared_ptr<X509_NAME_ENTRY> _ptr);
+				explicit name_entry(pointer _ptr, deleter_type _del);
 
 				friend class name;
 		};
@@ -189,7 +189,7 @@ namespace cryptoplus
 
 		inline name_entry name_entry::take_ownership(pointer _ptr)
 		{
-			return name_entry(boost::shared_ptr<value_type>(_ptr, X509_NAME_ENTRY_free));
+			return name_entry(_ptr, deleter);
 		}
 		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
 		{
@@ -199,11 +199,11 @@ namespace cryptoplus
 		{
 			return take_ownership(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
 		}
-		inline name_entry::name_entry() : pointer_wrapper(boost::shared_ptr<X509_NAME_ENTRY>(X509_NAME_ENTRY_new(), X509_NAME_ENTRY_free))
+		inline name_entry::name_entry() : pointer_wrapper(X509_NAME_ENTRY_new(), deleter)
 		{
 			error::throw_error_if_not(ptr());
 		}
-		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper(_ptr)
+		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
 		}
 		inline asn1::object_ptr name_entry::object()
@@ -238,7 +238,7 @@ namespace cryptoplus
 		{
 			return take_ownership(X509_NAME_ENTRY_dup(ptr().get()));
 		}
-		inline name_entry::name_entry(boost::shared_ptr<value_type> _ptr) : pointer_wrapper(_ptr)
+		inline name_entry::name_entry(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
 		{
 			error::throw_error_if_not(ptr());
 		}
