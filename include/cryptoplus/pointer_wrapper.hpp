@@ -100,7 +100,8 @@ namespace cryptoplus
 			static deleter_type deleter;
 			static void null_deleter(pointer);
 
-			explicit pointer_wrapper(pointer ptr, deleter_type del);
+			pointer_wrapper();
+			pointer_wrapper(pointer ptr, deleter_type del);
 
 			bool boolean_test() const;
 
@@ -124,6 +125,10 @@ namespace cryptoplus
 	}
 	template <typename T>
 	inline void pointer_wrapper<T>::null_deleter(pointer)
+	{
+	}
+	template <typename T>
+	inline pointer_wrapper<T>::pointer_wrapper()
 	{
 	}
 	template <typename T>

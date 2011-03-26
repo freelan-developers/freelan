@@ -48,7 +48,7 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
-#include "../asn1/object_ptr.hpp"
+#include "../asn1/object.hpp"
 #include "../asn1/string_ptr.hpp"
 
 #include <openssl/x509.h>
@@ -68,10 +68,20 @@ namespace cryptoplus
 		 * The name_entry class represents a X509 name_entry.
 		 *
 		 * A name_entry instance has the same semantic as a X509_NAME_ENTRY* pointer, thus two copies of the same instance share the same underlying pointer.
+		 *
+		 * \warning Always check for the object not to be NULL before calling any of its method. Calling any method (except raw()) on a null object has undefined behavior.
 		 */
 		class name_entry : public pointer_wrapper<X509_NAME_ENTRY>
 		{
 			public:
+
+				/**
+				 * \brief Create a new name_entry.
+				 * \return The name_entry.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static name_entry create();
 
 				/**
 				 * \brief Take ownership of a specified X509_NAME_ENTRY pointer.
@@ -88,7 +98,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \return The name_entry.
 				 */
-				static name_entry from_object(asn1::object_ptr object, int type, const void* data, size_t data_len);
+				static name_entry from_object(asn1::object object, int type, const void* data, size_t data_len);
 
 				/**
 				 * \brief Create a X509 name entry from a nid.
@@ -101,9 +111,7 @@ namespace cryptoplus
 				static name_entry from_nid(int nid, int type, const void* data, size_t data_len);
 
 				/**
-				 * \brief Create a new empty X509 name entry.
-				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * \brief Create an empty name_entry.
 				 */
 				name_entry();
 
@@ -118,13 +126,13 @@ namespace cryptoplus
 				 * \brief Get the ASN1 object associated to this name_entry.
 				 * \return The object.
 				 */
-				asn1::object_ptr object();
+				asn1::object object();
 
 				/**
 				 * \brief Set the ASN1 object associated to this name_entry.
 				 * \param object The object.
 				 */
-				void set_object(asn1::object_ptr object);
+				void set_object(asn1::object object);
 
 				/**
 				 * \brief Get the data associated to this name_entry.
@@ -166,7 +174,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit name_entry(pointer _ptr, deleter_type _del);
+				name_entry(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -185,6 +193,14 @@ namespace cryptoplus
 		 */
 		bool operator!=(const name_entry& lhs, const name_entry& rhs);
 
+		inline name_entry name_entry::create()
+		{
+			pointer _ptr = X509_NAME_ENTRY_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
 		inline name_entry name_entry::take_ownership(pointer _ptr)
 		{
 			error::throw_error_if_not(_ptr);
@@ -195,22 +211,21 @@ namespace cryptoplus
 		{
 			return take_ownership(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
 		}
-		inline name_entry name_entry::from_object(asn1::object_ptr _object, int _type, const void* _data, size_t data_len)
+		inline name_entry name_entry::from_object(asn1::object _object, int _type, const void* _data, size_t data_len)
 		{
 			return take_ownership(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
 		}
-		inline name_entry::name_entry() : pointer_wrapper(X509_NAME_ENTRY_new(), deleter)
+		inline name_entry::name_entry()
 		{
-			error::throw_error_if_not(ptr());
 		}
 		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
 		}
-		inline asn1::object_ptr name_entry::object()
+		inline asn1::object name_entry::object()
 		{
 			return X509_NAME_ENTRY_get_object(ptr().get());
 		}
-		inline void name_entry::set_object(asn1::object_ptr _object)
+		inline void name_entry::set_object(asn1::object _object)
 		{
 			error::throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()));
 		}

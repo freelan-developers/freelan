@@ -64,6 +64,8 @@ namespace cryptoplus
 		 * The certificate class represents a X509 certificate.
 		 *
 		 * A certificate instance has the same semantic as a X509* pointer, thus two copies of the same instance share the same underlying pointer.
+		 *
+		 * \warning Always check for the object not to be NULL before calling any of its method. Calling any method (except raw()) on a null object has undefined behavior.
 		 */
 		class certificate : public pointer_wrapper<X509>
 		{
@@ -287,7 +289,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit certificate(pointer _ptr, deleter_type _del);
+				certificate(pointer _ptr, deleter_type _del);
 		};
 
 		/**

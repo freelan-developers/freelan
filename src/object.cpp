@@ -37,12 +37,12 @@
  */
 
 /**
- * \file object_ptr.cpp
+ * \file object.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief An pointer class.
  */
 
-#include "asn1/object_ptr.hpp"
+#include "asn1/object.hpp"
 
 #include "error/cryptographic_exception.hpp"
 
@@ -52,6 +52,8 @@ namespace cryptoplus
 {
 	namespace asn1
 	{
+		template <>
+		object::deleter_type pointer_wrapper<object::value_type>::deleter = ASN1_OBJECT_free;
 	}
 }
 

@@ -37,15 +37,16 @@
  */
 
 /**
- * \file object_ptr.hpp
+ * \file object.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief An ASN1_OBJECT pointer class.
  */
 
-#ifndef CRYPTOPEN_ASN1_OBJECT_PTR_HPP
-#define CRYPTOPEN_ASN1_OBJECT_PTR_HPP
+#ifndef CRYPTOPEN_ASN1_OBJECT_HPP
+#define CRYPTOPEN_ASN1_OBJECT_HPP
 
-#include "../nullable.hpp"
+#include "../pointer_wrapper.hpp"
+#include "../error/cryptographic_exception.hpp"
 
 #include <openssl/objects.h>
 
@@ -59,48 +60,49 @@ namespace cryptoplus
 		/**
 		 * \brief An OpenSSL ASN1_OBJECT pointer.
 		 *
-		 * The object_ptr class is a wrapper for an OpenSSL ASN1_OBJECT* pointer.
+		 * The object class is a wrapper for an OpenSSL ASN1_OBJECT* pointer.
 		 *
-		 * A object_ptr instance has the same semantic as a ASN1_OBJECT* pointer, thus two copies of the same instance share the same underlying pointer.
+		 * A object instance has the same semantic as a ASN1_OBJECT* pointer, thus two copies of the same instance share the same underlying pointer.
 		 *
-		 * A object_ptr *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a object_ptr always points to a valid ASN1_OBJECT structure.
-		 *
-		 * \warning Always check for the object_ptr not to be NULL before calling any of its method. Calling any method (except raw() or reset_ptr()) on a null object_ptr has undefined behavior.
+		 * \warning Always check for the object not to be NULL before calling any of its method. Calling any method (except raw()) on a null object has undefined behavior.
 		 */
-		class object_ptr : public nullable<object_ptr>
+		class object : public pointer_wrapper<ASN1_OBJECT>
 		{
 			public:
+
+				/**
+				 * \brief Create a new object.
+				 * \return The object.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static object create();
+
+				/**
+				 * \brief Take ownership of a specified ASN1_OBJECT pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An object.
+				 */
+				static object take_ownership(pointer ptr);
 
 				/**
 				 * \brief Create an ASN1 object pointer from a nid.
 				 * \param nid The nid.
 				 * \return The ASN1 object pointer.
 				 */
-				static object_ptr from_nid(int nid);
+				static object from_nid(int nid);
 
 				/**
-				 * \brief Create a new object_ptr.
-				 * \param object The ASN1_OBJECT to point to.
+				 * \brief Create a new empty object.
 				 */
-				object_ptr(ASN1_OBJECT* object = NULL);
+				object();
 
 				/**
-				 * \brief Reset the underlying pointer.
-				 * \param object The ASN1_OBJECT to point to.
+				 * \brief Create an object by *NOT* taking ownership of an existing ASN1_OBJECT* pointer.
+				 * \param ptr The ASN1_OBJECT* pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				void reset_ptr(ASN1_OBJECT* object = NULL);
-
-				/**
-				 * \brief Get the raw ASN1_OBJECT pointer.
-				 * \return The raw ASN1_OBJECT pointer.
-				 */
-				ASN1_OBJECT* raw();
-
-				/**
-				 * \brief Get the raw ASN1_OBJECT pointer.
-				 * \return The raw ASN1_OBJECT pointer.
-				 */
-				const ASN1_OBJECT* raw() const;
+				object(pointer ptr);
 
 				/**
 				 * \brief Get the nid associated to the specified object.
@@ -110,26 +112,24 @@ namespace cryptoplus
 
 			private:
 
-				bool boolean_test() const;
-
-				ASN1_OBJECT* m_object;
+				explicit object(pointer _ptr, deleter_type _del);
 		};
 
 		/**
 		 * \brief Compare two ASN1 object pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two object_ptr instance share the same underlying pointer.
+		 * \return true if the two object instance share the same underlying pointer.
 		 */
-		bool operator==(const object_ptr& lhs, const object_ptr& rhs);
+		bool operator==(const object& lhs, const object& rhs);
 
 		/**
 		 * \brief Compare two ASN1 object pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two object_ptr instance do not share the same underlying pointer.
+		 * \return true if the two object instance do not share the same underlying pointer.
 		 */
-		bool operator!=(const object_ptr& lhs, const object_ptr& rhs);
+		bool operator!=(const object& lhs, const object& rhs);
 
 		/**
 		 * \brief Compare two ASN1 object pointers.
@@ -137,49 +137,53 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return 0 if the two ASN1 objects are identical.
 		 */
-		int compare(const object_ptr& lhs, const object_ptr& rhs);
+		int compare(const object& lhs, const object& rhs);
 
-		inline object_ptr object_ptr::from_nid(int nid)
+		inline object object::create()
+		{
+			pointer _ptr = ASN1_OBJECT_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
+		inline object object::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return object(_ptr, deleter);
+		}
+		inline object object::from_nid(int nid)
 		{
 			return OBJ_nid2obj(nid);
 		}
-		inline object_ptr::object_ptr(ASN1_OBJECT* _object) : m_object(_object)
+		inline object::object()
 		{
 		}
-		inline void object_ptr::reset_ptr(ASN1_OBJECT* _object)
+		inline object::object(pointer _ptr) : pointer_wrapper(_ptr, null_deleter)
 		{
-			m_object = _object;
 		}
-		inline ASN1_OBJECT* object_ptr::raw()
+		inline int object::to_nid() const
 		{
-			return m_object;
+			return OBJ_obj2nid(ptr().get());
 		}
-		inline const ASN1_OBJECT* object_ptr::raw() const
+		inline object::object(pointer _ptr, deleter_type _del) : pointer_wrapper(_ptr, _del)
 		{
-			return m_object;
 		}
-		inline int object_ptr::to_nid() const
-		{
-			return OBJ_obj2nid(m_object);
-		}
-		inline bool object_ptr::boolean_test() const
-		{
-			return (m_object != NULL);
-		}
-		inline bool operator==(const object_ptr& lhs, const object_ptr& rhs)
+		inline bool operator==(const object& lhs, const object& rhs)
 		{
 			return lhs.raw() == rhs.raw();
 		}
-		inline bool operator!=(const object_ptr& lhs, const object_ptr& rhs)
+		inline bool operator!=(const object& lhs, const object& rhs)
 		{
 			return lhs.raw() != rhs.raw();
 		}
-		inline int compare(const object_ptr& lhs, const object_ptr& rhs)
+		inline int compare(const object& lhs, const object& rhs)
 		{
 			return OBJ_cmp(lhs.raw(), rhs.raw());
 		}
 	}
 }
 
-#endif /* CRYPTOPEN_ASN1_OBJECT_PTR_HPP */
+#endif /* CRYPTOPEN_ASN1_OBJECT_HPP */
 

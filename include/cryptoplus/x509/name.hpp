@@ -70,6 +70,8 @@ namespace cryptoplus
 		 * The name class represents a X509 name.
 		 *
 		 * A name instance has the same semantic as a X509_NAME* pointer, thus two copies of the same instance share the same underlying pointer.
+		 *
+		 * \warning Always check for the object not to be NULL before calling any of its method. Calling any method (except raw()) on a null object has undefined behavior.
 		 */
 		class name : public pointer_wrapper<X509_NAME>
 		{
@@ -299,7 +301,7 @@ namespace cryptoplus
 				 * \param object The ASN1 object.
 				 * \return An iterator to the first entry that matches, or end() if none is found.
 				 */
-				iterator find(asn1::object_ptr object);
+				iterator find(asn1::object object);
 
 				/**
 				 * \brief Find an entry by its ASN1 object.
@@ -307,7 +309,7 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an entry that matches, or end() if none is found.
 				 */
-				iterator find(asn1::object_ptr object, iterator lastpos);
+				iterator find(asn1::object object, iterator lastpos);
 
 				/**
 				 * \brief Clear all entries.
@@ -338,7 +340,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
-				void push_back(asn1::object_ptr object, int type, const void* data, size_t data_len, int set = 0);
+				void push_back(asn1::object object, int type, const void* data, size_t data_len, int set = 0);
 
 				/**
 				 * \brief Push a new entry at the end of the entry table.
@@ -386,7 +388,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
-				void insert(iterator position, asn1::object_ptr object, int type, const void* data, size_t data_len, int set = 0);
+				void insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set = 0);
 
 				/**
 				 * \brief Insert a new entry in the entry table.
@@ -409,7 +411,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit name(pointer _ptr, deleter_type _del);
+				name(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -665,13 +667,13 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
-		inline name::iterator name::find(asn1::object_ptr object)
+		inline name::iterator name::find(asn1::object object)
 		{
 			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), -1);
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
-		inline name::iterator name::find(asn1::object_ptr object, iterator lastpos)
+		inline name::iterator name::find(asn1::object object, iterator lastpos)
 		{
 			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), lastpos.m_index);
 
@@ -689,7 +691,7 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set));
 		}
-		inline void name::push_back(asn1::object_ptr object, int type, const void* data, size_t data_len, int set)
+		inline void name::push_back(asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
 			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
 		}
@@ -717,7 +719,7 @@ namespace cryptoplus
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set));
 		}
-		inline void name::insert(iterator position, asn1::object_ptr object, int type, const void* data, size_t data_len, int set)
+		inline void name::insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_name == this);
 
