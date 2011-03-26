@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_PKEY_DSA_KEY_HPP
 #define CRYPTOPEN_PKEY_DSA_KEY_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "dh_key.hpp"
@@ -52,8 +53,6 @@
 #include <openssl/dsa.h>
 #include <openssl/pem.h>
 #include <openssl/engine.h>
-
-#include <boost/shared_ptr.hpp>
 
 #include <vector>
 
@@ -69,7 +68,7 @@ namespace cryptoplus
 		 *
 		 * A dsa_key instance has the same semantic as a DSA* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class dsa_key
+		class dsa_key : public pointer_wrapper<DSA>
 		{
 			public:
 
@@ -82,6 +81,21 @@ namespace cryptoplus
 				 * \brief A PEM passphrase callback type.
 				 */
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Create a new dsa_key.
+				 * \return The dsa_key.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static dsa_key create();
+
+				/**
+				 * \brief Take ownership of a specified ASN1_dsa_key pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An dsa_key.
+				 */
+				static dsa_key take_ownership(pointer ptr);
 
 				/**
 				 * \brief Create a new DSA key with the specified parameters.
@@ -196,15 +210,16 @@ namespace cryptoplus
 				static dsa_key from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
-				 * \brief Create a new DSA key.
+				 * \brief Create a new empty dsa_key.
 				 */
 				dsa_key();
 
 				/**
-				 * \brief Create a DSA key by taking ownership of an existing DSA* pointer.
-				 * \param dsa The DSA* pointer. Cannot be NULL.
+				 * \brief Create an dsa_key by *NOT* taking ownership of an existing DSA pointer.
+				 * \param ptr The DSA pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				explicit dsa_key(DSA* dsa);
+				dsa_key(pointer ptr);
 
 				/**
 				 * \brief Write the private DSA key to a BIO.
@@ -273,20 +288,6 @@ namespace cryptoplus
 				 * On error, a cryptographic_exception is thrown.
 				 */
 				dsa_key& generate();
-
-				/**
-				 * \brief Get the raw DSA pointer.
-				 * \return The raw DSA pointer.
-				 * \warning The instance has ownership of the return pointer. Calling DSA_free() on the returned value will result in undefined behavior.
-				 */
-				DSA* raw();
-
-				/**
-				 * \brief Get the raw DSA pointer.
-				 * \return The raw DSA pointer.
-				 * \warning The instance has ownership of the return pointer. Calling DSA_free() on the returned value will result in undefined behavior.
-				 */
-				const DSA* raw() const;
 
 				/**
 				 * \brief Return the size of a DSA signature in bytes.
@@ -374,9 +375,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit dsa_key(boost::shared_ptr<DSA> dsa);
-
-				boost::shared_ptr<DSA> m_dsa;
+				explicit dsa_key(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -395,110 +394,111 @@ namespace cryptoplus
 		 */
 		bool operator!=(const dsa_key& lhs, const dsa_key& rhs);
 		
+		inline dsa_key dsa_key::create()
+		{
+			pointer _ptr = DSA_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
+		inline dsa_key dsa_key::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return dsa_key(_ptr, deleter);
+		}
 		inline dsa_key dsa_key::generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
 		{
 			return generate_parameters(bits, seed, seed_len, counter_ret, h_ret, callback, callback_arg).generate();
 		}
 		inline dsa_key dsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(PEM_read_bio_DSAPrivateKey(bio.raw(), NULL, callback, callback_arg), DSA_free));
+			return take_ownership(PEM_read_bio_DSAPrivateKey(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline dsa_key dsa_key::from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(PEM_read_bio_DSAparams(bio.raw(), NULL, callback, callback_arg), DSA_free));
+			return take_ownership(PEM_read_bio_DSAparams(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline dsa_key dsa_key::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(PEM_read_bio_DSA_PUBKEY(bio.raw(), NULL, callback, callback_arg), DSA_free));
+			return take_ownership(PEM_read_bio_DSA_PUBKEY(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline dsa_key dsa_key::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(PEM_read_DSAPrivateKey(file, NULL, callback, callback_arg), DSA_free));
+			return take_ownership(PEM_read_DSAPrivateKey(file, NULL, callback, callback_arg));
 		}
 		inline dsa_key dsa_key::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(PEM_read_DSAparams(file, NULL, callback, callback_arg), DSA_free));
+			return take_ownership(PEM_read_DSAparams(file, NULL, callback, callback_arg));
 		}
 		inline dsa_key dsa_key::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(PEM_read_DSA_PUBKEY(file, NULL, callback, callback_arg), DSA_free));
+			return take_ownership(PEM_read_DSA_PUBKEY(file, NULL, callback, callback_arg));
 		}
-		inline dsa_key::dsa_key() : m_dsa(DSA_new(), DSA_free)
+		inline dsa_key::dsa_key()
 		{
-			error::throw_error_if_not(m_dsa);
 		}
-		inline dsa_key::dsa_key(DSA* dsa) : m_dsa(dsa, DSA_free)
+		inline dsa_key::dsa_key(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
-			if (!m_dsa)
-			{
-				throw std::invalid_argument("dsa");
-			}
 		}
 		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), m_dsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), m_dsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void dsa_key::write_parameters(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAparams(bio.raw(), m_dsa.get()));
+			error::throw_error_if_not(PEM_write_bio_DSAparams(bio.raw(), ptr().get()));
 		}
 		inline void dsa_key::write_certificate_public_key(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_DSA_PUBKEY(bio.raw(), m_dsa.get()));
+			error::throw_error_if_not(PEM_write_bio_DSA_PUBKEY(bio.raw(), ptr().get()));
 		}
 		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, m_dsa.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, m_dsa.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void dsa_key::write_parameters(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_DSAparams(file, m_dsa.get()));
+			error::throw_error_if_not(PEM_write_DSAparams(file, ptr().get()));
 		}
 		inline void dsa_key::write_certificate_public_key(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_DSA_PUBKEY(file, m_dsa.get()));
+			error::throw_error_if_not(PEM_write_DSA_PUBKEY(file, ptr().get()));
 		}
 		inline dsa_key& dsa_key::generate()
 		{
-			error::throw_error_if_not(DSA_generate_key(m_dsa.get()));
+			error::throw_error_if_not(DSA_generate_key(ptr().get()));
 
 			return *this;
 		}
-		inline DSA* dsa_key::raw()
-		{
-			return m_dsa.get();
-		}
-		inline const DSA* dsa_key::raw() const
-		{
-			return m_dsa.get();
-		}
 		inline size_t dsa_key::size() const
 		{
-			return DSA_size(m_dsa.get());
+			return DSA_size(ptr().get());
 		}
 		inline void dsa_key::print(bio::bio_ptr bio, int offset)
 		{
-			error::throw_error_if_not(DSA_print(bio.raw(), m_dsa.get(), offset));
+			error::throw_error_if_not(DSA_print(bio.raw(), ptr().get(), offset));
 		}
 		inline void dsa_key::print(FILE* file, int offset)
 		{
-			error::throw_error_if_not(DSA_print_fp(file, m_dsa.get(), offset));
+			error::throw_error_if_not(DSA_print_fp(file, ptr().get(), offset));
 		}
 		inline void dsa_key::print_parameters(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(DSAparams_print(bio.raw(), m_dsa.get()));
+			error::throw_error_if_not(DSAparams_print(bio.raw(), ptr().get()));
 		}
 		inline void dsa_key::print_parameters(FILE* file)
 		{
-			error::throw_error_if_not(DSAparams_print_fp(file, m_dsa.get()));
+			error::throw_error_if_not(DSAparams_print_fp(file, ptr().get()));
 		}
 		template <typename T>
 		inline std::vector<T> dsa_key::sign(const void* buf, size_t buf_len, int type)
@@ -511,11 +511,10 @@ namespace cryptoplus
 		}
 		inline dh_key dsa_key::to_dh_key() const
 		{
-			return dh_key(DSA_dup_DH(m_dsa.get()));
+			return dh_key::take_ownership(DSA_dup_DH(ptr().get()));
 		}
-		inline dsa_key::dsa_key(boost::shared_ptr<DSA> dsa) : m_dsa(dsa)
+		inline dsa_key::dsa_key(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
-			error::throw_error_if_not(m_dsa);
 		}
 		inline bool operator==(const dsa_key& lhs, const dsa_key& rhs)
 		{

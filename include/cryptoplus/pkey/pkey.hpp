@@ -51,8 +51,6 @@
 #include "dsa_key.hpp"
 #include "dh_key.hpp"
 
-#include <boost/shared_ptr.hpp>
-
 namespace cryptoplus
 {
 	namespace pkey

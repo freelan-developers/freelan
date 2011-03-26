@@ -60,9 +60,12 @@ namespace cryptoplus
 			}
 		}
 
+		template <>
+		dsa_key::deleter_type pointer_wrapper<dsa_key::value_type>::deleter = DSA_free;
+
 		dsa_key dsa_key::generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
 		{
-			return dsa_key(boost::shared_ptr<DSA>(DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), seed_len, counter_ret, h_ret, callback, callback_arg), DSA_free));
+			return take_ownership(DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), seed_len, counter_ret, h_ret, callback, callback_arg));
 		}
 
 		dsa_key dsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
@@ -91,6 +94,7 @@ namespace cryptoplus
 			bio::bio_chain bio_chain(BIO_s_mem());
 
 			write_certificate_public_key(bio_chain.first());
+
 			return from_certificate_public_key(bio_chain.first());
 		}
 
@@ -98,14 +102,14 @@ namespace cryptoplus
 		{
 			unsigned int _out_len = out_len;
 
-			error::throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, m_dsa.get()));
+			error::throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, ptr().get()));
 
 			return _out_len;
 		}
 
 		void dsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
 		{
-			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, m_dsa.get()));
+			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, ptr().get()));
 		}
 	}
 }
