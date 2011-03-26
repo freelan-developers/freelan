@@ -38,7 +38,7 @@ int main()
 		certificate.subject().push_back("O", MBSTRING_ASC, o, sizeof(o) - 1);
 
 		// We copy the data from subject() to issuer().
-		certificate.issuer().insert(certificate.issuer().begin(), certificate.subject().begin(), certificate.subject().end());
+		certificate.set_issuer(certificate.subject());
 
 		cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time());
 		cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::posix_time::hours(1));
