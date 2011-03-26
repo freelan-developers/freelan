@@ -60,6 +60,9 @@ namespace cryptoplus
 			}
 		}
 
+		template <>
+		pkey::deleter_type pointer_wrapper<pkey::value_type>::deleter = EVP_PKEY_free;
+
 		pkey pkey::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
@@ -72,33 +75,6 @@ namespace cryptoplus
 			bio::bio_chain bio_chain = get_bio_chain_from_buffer(buf, buf_len);
 
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
-		}
-
-		rsa_key pkey::get_rsa_key()
-		{
-			RSA* rsa = EVP_PKEY_get1_RSA(m_evp_pkey.get());
-
-			error::throw_error_if_not(rsa);
-
-			return rsa_key(rsa);
-		}
-
-		dsa_key pkey::get_dsa_key()
-		{
-			DSA* dsa = EVP_PKEY_get1_DSA(m_evp_pkey.get());
-
-			error::throw_error_if_not(dsa);
-
-			return dsa_key(dsa);
-		}
-
-		dh_key pkey::get_dh_key()
-		{
-			DH* dh = EVP_PKEY_get1_DH(m_evp_pkey.get());
-
-			error::throw_error_if_not(dh);
-
-			return dh_key(dh);
 		}
 	}
 }

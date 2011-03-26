@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_PKEY_PKEY_HPP
 #define CRYPTOPEN_PKEY_PKEY_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "rsa_key.hpp"
 #include "dsa_key.hpp"
@@ -64,7 +65,7 @@ namespace cryptoplus
 		 *
 		 * A pkey instance has the same semantic as a EVP_PKEY* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class pkey
+		class pkey : public pointer_wrapper<EVP_PKEY>
 		{
 			public:
 
@@ -77,6 +78,21 @@ namespace cryptoplus
 				 * \brief A PEM passphrase callback type.
 				 */
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Create a new pkey.
+				 * \return The pkey.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static pkey create();
+
+				/**
+				 * \brief Take ownership of a specified EVP_PKEY pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An pkey.
+				 */
+				static pkey take_ownership(pointer ptr);
 
 				/**
 				 * \brief Load a private EVP_PKEY key from a BIO.
@@ -135,17 +151,16 @@ namespace cryptoplus
 				static pkey from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
-				 * \brief Create a new empty EVP_PKEY.
-				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * \brief Create a new empty pkey.
 				 */
 				pkey();
 
 				/**
-				 * \brief Create a EVP_PKEY by taking ownership of an existing EVP_PKEY* pointer.
-				 * \param evp_pkey The EVP_PKEY* pointer. Cannot be NULL.
+				 * \brief Create an pkey by *NOT* taking ownership of an existing EVP_PKEY pointer.
+				 * \param ptr The EVP_PKEY pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				explicit pkey(EVP_PKEY* evp_pkey);
+				pkey(pointer ptr);
 
 				/**
 				 * \brief Set the associated RSA key.
@@ -325,20 +340,6 @@ namespace cryptoplus
 				void write_certificate_public_key(FILE* file);
 
 				/**
-				 * \brief Get the raw EVP_PKEY pointer.
-				 * \return The raw EVP_PKEY pointer.
-				 * \warning The instance has ownership of the return pointer. Calling EVP_PKEY_free() on the returned value will result in undefined behavior.
-				 */
-				EVP_PKEY* raw();
-
-				/**
-				 * \brief Get the raw EVP_PKEY pointer.
-				 * \return The raw EVP_PKEY pointer.
-				 * \warning The instance has ownership of the return pointer. Calling EVP_PKEY_free() on the returned value will result in undefined behavior.
-				 */
-				const EVP_PKEY* raw() const;
-
-				/**
 				 * \brief Get the maximum size of a signature.
 				 * \return The maximum size of a signature.
 				 */
@@ -370,9 +371,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit pkey(boost::shared_ptr<EVP_PKEY> evp_pkey);
-
-				boost::shared_ptr<EVP_PKEY> m_evp_pkey;
+				explicit pkey(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -391,128 +390,141 @@ namespace cryptoplus
 		 */
 		bool operator!=(const pkey& lhs, const pkey& rhs);
 
+		inline pkey pkey::create()
+		{
+			pointer _ptr = EVP_PKEY_new();
+
+			error::throw_error_if_not(_ptr);
+
+			return take_ownership(_ptr);
+		}
+		inline pkey pkey::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return pkey(_ptr, deleter);
+		}
 		inline pkey pkey::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_bio_PrivateKey(bio.raw(), NULL, callback, callback_arg), EVP_PKEY_free));
+			return take_ownership(PEM_read_bio_PrivateKey(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline pkey pkey::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_bio_PUBKEY(bio.raw(), NULL, callback, callback_arg), EVP_PKEY_free));
+			return take_ownership(PEM_read_bio_PUBKEY(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline pkey pkey::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_PrivateKey(file, NULL, callback, callback_arg), EVP_PKEY_free));
+			return take_ownership(PEM_read_PrivateKey(file, NULL, callback, callback_arg));
 		}
 		inline pkey pkey::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return pkey(boost::shared_ptr<EVP_PKEY>(PEM_read_PUBKEY(file, NULL, callback, callback_arg), EVP_PKEY_free));
+			return take_ownership(PEM_read_PUBKEY(file, NULL, callback, callback_arg));
 		}
-		inline pkey::pkey() : m_evp_pkey(EVP_PKEY_new(), EVP_PKEY_free)
+		inline pkey::pkey()
 		{
-			error::throw_error_if_not(m_evp_pkey);
 		}
-		inline pkey::pkey(EVP_PKEY* evp_pkey) : m_evp_pkey(evp_pkey, EVP_PKEY_free)
+		inline pkey::pkey(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
-			if (!m_evp_pkey)
-			{
-				throw std::invalid_argument("evp_pkey");
-			}
 		}
 		inline void pkey::set_rsa_key(rsa_key rsa)
 		{
-			error::throw_error_if_not(EVP_PKEY_set1_RSA(m_evp_pkey.get(), rsa.raw()));
+			error::throw_error_if_not(EVP_PKEY_set1_RSA(ptr().get(), rsa.raw()));
+		}
+		inline rsa_key pkey::get_rsa_key()
+		{
+			return rsa_key::take_ownership(EVP_PKEY_get1_RSA(ptr().get()));
 		}
 		inline void pkey::assign_rsa_key(RSA* rsa)
 		{
-			error::throw_error_if_not(EVP_PKEY_assign_RSA(m_evp_pkey.get(), rsa));
+			error::throw_error_if_not(EVP_PKEY_assign_RSA(ptr().get(), rsa));
 		}
 		inline void pkey::set_dsa_key(dsa_key dsa)
 		{
-			error::throw_error_if_not(EVP_PKEY_set1_DSA(m_evp_pkey.get(), dsa.raw()));
+			error::throw_error_if_not(EVP_PKEY_set1_DSA(ptr().get(), dsa.raw()));
+		}
+		inline dsa_key pkey::get_dsa_key()
+		{
+			return dsa_key::take_ownership(EVP_PKEY_get1_DSA(ptr().get()));
 		}
 		inline void pkey::assign_dsa_key(DSA* dsa)
 		{
-			error::throw_error_if_not(EVP_PKEY_assign_DSA(m_evp_pkey.get(), dsa));
+			error::throw_error_if_not(EVP_PKEY_assign_DSA(ptr().get(), dsa));
 		}
 		inline void pkey::set_dh_key(dh_key dh)
 		{
-			error::throw_error_if_not(EVP_PKEY_set1_DH(m_evp_pkey.get(), dh.raw()));
+			error::throw_error_if_not(EVP_PKEY_set1_DH(ptr().get(), dh.raw()));
+		}
+		inline dh_key pkey::get_dh_key()
+		{
+			return dh_key::take_ownership(EVP_PKEY_get1_DH(ptr().get()));
 		}
 		inline void pkey::assign_dh_key(DH* dh)
 		{
-			error::throw_error_if_not(EVP_PKEY_assign_DH(m_evp_pkey.get(), dh));
+			error::throw_error_if_not(EVP_PKEY_assign_DH(ptr().get(), dh));
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), m_evp_pkey.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), m_evp_pkey.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), m_evp_pkey.get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), m_evp_pkey.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), m_evp_pkey.get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), m_evp_pkey.get(), nid, NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg));
 		}
 		inline void pkey::write_certificate_public_key(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_PUBKEY(bio.raw(), m_evp_pkey.get()));
+			error::throw_error_if_not(PEM_write_bio_PUBKEY(bio.raw(), ptr().get()));
 		}
 		inline void pkey::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_PrivateKey(file, m_evp_pkey.get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_PrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void pkey::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_PrivateKey(file, m_evp_pkey.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_PrivateKey(file, ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void pkey::write_private_key_pkcs8(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(file, m_evp_pkey.get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(file, ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void pkey::write_private_key_pkcs8(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(file, m_evp_pkey.get(), algorithm.raw(), NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(file, ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg));
 		}
 		inline void pkey::write_private_key_pkcs8_nid(FILE* file, int nid, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(file, m_evp_pkey.get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
+			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(file, ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL));
 		}
 		inline void pkey::write_private_key_pkcs8_nid(FILE* file, int nid, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(file, m_evp_pkey.get(), nid, NULL, 0, callback, callback_arg));
+			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(file, ptr().get(), nid, NULL, 0, callback, callback_arg));
 		}
 		inline void pkey::write_certificate_public_key(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_PUBKEY(file, m_evp_pkey.get()));
-		}
-		inline EVP_PKEY* pkey::raw()
-		{
-			return m_evp_pkey.get();
-		}
-		inline const EVP_PKEY* pkey::raw() const
-		{
-			return m_evp_pkey.get();
+			error::throw_error_if_not(PEM_write_PUBKEY(file, ptr().get()));
 		}
 		inline size_t pkey::size() const
 		{
-			return EVP_PKEY_size(m_evp_pkey.get());
+			return EVP_PKEY_size(ptr().get());
 		}
 		inline int pkey::type() const
 		{
-			return EVP_PKEY_type(m_evp_pkey->type);
+			return EVP_PKEY_type(ptr()->type);
 		}
 		inline bool pkey::is_rsa() const
 		{
@@ -526,9 +538,8 @@ namespace cryptoplus
 		{
 			return (type() == EVP_PKEY_DH);
 		}
-		inline pkey::pkey(boost::shared_ptr<EVP_PKEY> evp_pkey) : m_evp_pkey(evp_pkey)
+		inline pkey::pkey(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
-			error::throw_error_if_not(m_evp_pkey);
 		}
 		inline bool operator==(const pkey& lhs, const pkey& rhs)
 		{
