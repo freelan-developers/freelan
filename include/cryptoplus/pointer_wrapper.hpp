@@ -62,51 +62,66 @@ namespace cryptoplus
 		public:
 
 			/**
-			 * \brief Get the raw pointer.
-			 * \return The raw pointer.
-			 * \warning The instance has ownership of the return pointer. Do not free the returned pointer.
+			 * \brief The value type.
 			 */
-			const T* raw() const;
+			typedef T value_type;
+
+			/**
+			 * \brief The pointer type.
+			 */
+			typedef value_type* pointer;
+
+			/**
+			 * \brief The const pointer type.
+			 */
+			typedef const value_type* const_pointer;
 
 			/**
 			 * \brief Get the raw pointer.
 			 * \return The raw pointer.
 			 * \warning The instance has ownership of the return pointer. Do not free the returned pointer.
 			 */
-			T* raw();
+			const_pointer raw() const;
+
+			/**
+			 * \brief Get the raw pointer.
+			 * \return The raw pointer.
+			 * \warning The instance has ownership of the return pointer. Do not free the returned pointer.
+			 */
+			pointer raw();
 
 		protected:
 
-			static void null_deleter(T*);
+			static void null_deleter(pointer);
 
-			explicit pointer_wrapper(boost::shared_ptr<T> pointer);
+			explicit pointer_wrapper(boost::shared_ptr<value_type> ptr);
 
 			bool boolean_test() const;
 
-			boost::shared_ptr<T>& pointer();
-			const boost::shared_ptr<T>& pointer() const;
+			boost::shared_ptr<value_type>& ptr();
+			const boost::shared_ptr<value_type>& ptr() const;
 
 		private:
 
-			boost::shared_ptr<T> m_pointer;
+			boost::shared_ptr<value_type> m_pointer;
 	};
 
 	template <typename T>
-	inline const T* pointer_wrapper<T>::raw() const
+	inline typename pointer_wrapper<T>::const_pointer pointer_wrapper<T>::raw() const
 	{
 		return m_pointer.get();
 	}
 	template <typename T>
-	inline T* pointer_wrapper<T>::raw()
+	inline typename pointer_wrapper<T>::pointer pointer_wrapper<T>::raw()
 	{
 		return m_pointer.get();
 	}
 	template <typename T>
-	inline void pointer_wrapper<T>::null_deleter(T*)
+	inline void pointer_wrapper<T>::null_deleter(pointer)
 	{
 	}
 	template <typename T>
-	inline pointer_wrapper<T>::pointer_wrapper(boost::shared_ptr<T> _pointer) : m_pointer(_pointer)
+	inline pointer_wrapper<T>::pointer_wrapper(boost::shared_ptr<pointer_wrapper<T>::value_type> _ptr) : m_pointer(_ptr)
 	{
 	}
 	template <typename T>
@@ -115,12 +130,12 @@ namespace cryptoplus
 		return static_cast<bool>(m_pointer);
 	}
 	template <typename T>
-	inline boost::shared_ptr<T>& pointer_wrapper<T>::pointer()
+	inline boost::shared_ptr<typename pointer_wrapper<T>::value_type>& pointer_wrapper<T>::ptr()
 	{
 		return m_pointer;
 	}
 	template <typename T>
-	inline const boost::shared_ptr<T>& pointer_wrapper<T>::pointer() const
+	inline const boost::shared_ptr<typename pointer_wrapper<T>::value_type>& pointer_wrapper<T>::ptr() const
 	{
 		return m_pointer;
 	}
