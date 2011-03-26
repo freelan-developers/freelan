@@ -27,7 +27,7 @@ int main()
 
 	try
 	{
-		cryptoplus::x509::certificate certificate;
+		cryptoplus::x509::certificate certificate = cryptoplus::x509::certificate::create();
 
 		const char cn[] = "My common name";
 		const char c[] = "FR";
