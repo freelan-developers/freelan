@@ -45,6 +45,7 @@
 #ifndef CRYPTOPEN_PKEY_DH_KEY_HPP
 #define CRYPTOPEN_PKEY_DH_KEY_HPP
 
+#include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../bn/bignum_ptr.hpp"
@@ -69,7 +70,7 @@ namespace cryptoplus
 		 *
 		 * A dh_key instance has the same semantic as a DH* pointer, thus two copies of the same instance share the same underlying pointer.
 		 */
-		class dh_key
+		class dh_key : public pointer_wrapper<DH>
 		{
 			public:
 
@@ -82,6 +83,21 @@ namespace cryptoplus
 				 * \brief A PEM passphrase callback type.
 				 */
 				typedef int (*pem_passphrase_callback_type)(char*, int, int, void*);
+
+				/**
+				 * \brief Create a new dh_key.
+				 * \return The dh_key.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
+				 */
+				static dh_key create();
+
+				/**
+				 * \brief Take ownership of a specified DH pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An dh_key.
+				 */
+				static dh_key take_ownership(pointer ptr);
 
 				/**
 				 * \brief Create a new DH with the specified parameters.
@@ -122,15 +138,16 @@ namespace cryptoplus
 				static dh_key from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
-				 * \brief Create a new DH.
+				 * \brief Create a new empty dh_key.
 				 */
 				dh_key();
 
 				/**
-				 * \brief Create a DH by taking ownership of an existing DH* pointer.
-				 * \param dh The DH* pointer. Cannot be NULL.
+				 * \brief Create an dh_key by *NOT* taking ownership of an existing DH pointer.
+				 * \param ptr The DH pointer.
+				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				explicit dh_key(DH* dh);
+				dh_key(pointer ptr);
 
 				/**
 				 * \brief Write the DH parameters to a BIO.
@@ -143,20 +160,6 @@ namespace cryptoplus
 				 * \param file The file.
 				 */
 				void write_parameters(FILE* file);
-
-				/**
-				 * \brief Get the raw DH pointer.
-				 * \return The raw DH pointer.
-				 * \warning The instance has ownership of the return pointer. Calling DH_free() on the returned value will result in undefined behavior.
-				 */
-				DH* raw();
-
-				/**
-				 * \brief Get the raw DH pointer.
-				 * \return The raw DH pointer.
-				 * \warning The instance has ownership of the return pointer. Calling DH_free() on the returned value will result in undefined behavior.
-				 */
-				const DH* raw() const;
 
 				/**
 				 * \brief Get the private key component.
@@ -227,9 +230,7 @@ namespace cryptoplus
 
 			private:
 
-				explicit dh_key(boost::shared_ptr<DH> dh);
-
-				boost::shared_ptr<DH> m_dh;
+				explicit dh_key(pointer _ptr, deleter_type _del);
 		};
 
 		/**
@@ -248,40 +249,37 @@ namespace cryptoplus
 		 */
 		bool operator!=(const dh_key& lhs, const dh_key& rhs);
 		
+		inline dh_key dh_key::create()
+		{
+			return take_ownership(DH_new());
+		}
+		inline dh_key dh_key::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return dh_key(_ptr, deleter);
+		}
 		inline dh_key dh_key::from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dh_key(boost::shared_ptr<DH>(PEM_read_bio_DHparams(bio.raw(), NULL, callback, callback_arg), DH_free));
+			return take_ownership(PEM_read_bio_DHparams(bio.raw(), NULL, callback, callback_arg));
 		}
 		inline dh_key dh_key::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return dh_key(boost::shared_ptr<DH>(PEM_read_DHparams(file, NULL, callback, callback_arg), DH_free));
+			return take_ownership(PEM_read_DHparams(file, NULL, callback, callback_arg));
 		}
-		inline dh_key::dh_key() : m_dh(DH_new(), DH_free)
+		inline dh_key::dh_key()
 		{
-			error::throw_error_if_not(m_dh);
 		}
-		inline dh_key::dh_key(DH* _dh) : m_dh(_dh, DH_free)
+		inline dh_key::dh_key(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
-			if (!m_dh)
-			{
-				throw std::invalid_argument("dh");
-			}
 		}
 		inline void dh_key::write_parameters(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), m_dh.get()));
+			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()));
 		}
 		inline void dh_key::write_parameters(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_DHparams(file, m_dh.get()));
-		}
-		inline DH* dh_key::raw()
-		{
-			return m_dh.get();
-		}
-		inline const DH* dh_key::raw() const
-		{
-			return m_dh.get();
+			error::throw_error_if_not(PEM_write_DHparams(file, ptr().get()));
 		}
 		inline bn::bignum_ptr dh_key::private_key() const
 		{
@@ -293,15 +291,15 @@ namespace cryptoplus
 		}
 		inline size_t dh_key::size() const
 		{
-			return DH_size(m_dh.get());
+			return DH_size(ptr().get());
 		}
 		inline void dh_key::check(int& codes)
 		{
-			error::throw_error_if_not(DH_check(m_dh.get(), &codes));
+			error::throw_error_if_not(DH_check(ptr().get(), &codes));
 		}
 		inline dh_key& dh_key::generate_key()
 		{
-			error::throw_error_if_not(DH_generate_key(m_dh.get()));
+			error::throw_error_if_not(DH_generate_key(ptr().get()));
 
 			return *this;
 		}
@@ -316,11 +314,11 @@ namespace cryptoplus
 		}
 		inline void dh_key::print_parameters(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(DHparams_print(bio.raw(), m_dh.get()));
+			error::throw_error_if_not(DHparams_print(bio.raw(), ptr().get()));
 		}
 		inline void dh_key::print_parameters(FILE* file)
 		{
-			error::throw_error_if_not(DHparams_print_fp(file, m_dh.get()));
+			error::throw_error_if_not(DHparams_print_fp(file, ptr().get()));
 		}
 		inline bool operator==(const dh_key& lhs, const dh_key& rhs)
 		{
@@ -330,9 +328,8 @@ namespace cryptoplus
 		{
 			return lhs.raw() != rhs.raw();
 		}
-		inline dh_key::dh_key(boost::shared_ptr<DH> dsa) : m_dh(dsa)
+		inline dh_key::dh_key(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
-			error::throw_error_if_not(m_dh);
 		}
 	}
 }

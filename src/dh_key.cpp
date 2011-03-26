@@ -60,9 +60,12 @@ namespace cryptoplus
 			}
 		}
 
+		template <>
+		dh_key::deleter_type pointer_wrapper<dh_key::value_type>::deleter = DH_free;
+
 		dh_key dh_key::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
 		{
-			return dh_key(boost::shared_ptr<DH>(DH_generate_parameters(prime_len, generator, callback, callback_arg), DH_free));
+			return take_ownership(DH_generate_parameters(prime_len, generator, callback, callback_arg));
 		}
 
 		dh_key dh_key::from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
@@ -81,7 +84,7 @@ namespace cryptoplus
 				throw std::invalid_argument("out_len");
 			}
 
-			int result = DH_compute_key(static_cast<unsigned char*>(out), pub_key.raw(), m_dh.get());
+			int result = DH_compute_key(static_cast<unsigned char*>(out), pub_key.raw(), ptr().get());
 
 			error::throw_error_if_not(result >= 0);
 
