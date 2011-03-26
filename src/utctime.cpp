@@ -43,8 +43,9 @@
  */
 
 #include "asn1/utctime.hpp"
+#include "asn1/string.hpp"
 
-#include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cassert>
 
@@ -70,9 +71,50 @@ namespace cryptoplus
 		
 		boost::posix_time::ptime utctime::to_ptime()
 		{
-			//TODO: Implement this
+			using boost::lexical_cast;
+
+			std::string str = string(ptr().get()).str();
+
+			// str format can either be:
+			// YYMMDDhhmmssZ
+			// YYMMDDhhmmss+hh'mm'
+			// YYMMDDhhmmss-hh'mm'
+
+			assert(str.size() >= 13);
+
+			int year = lexical_cast<int>(str.substr(0, 2));
+
+			if (year < 50)
+			{
+				year += 2000;
+			}
+			else
+			{
+				year += 1900;
+			}
+
+			int month = lexical_cast<int>(str.substr(2, 2));
+			int day = lexical_cast<int>(str.substr(4, 2));
+
+			boost::gregorian::date date(year, month, day);
+
+			int hour = lexical_cast<int>(str.substr(6, 2));
+			int minute = lexical_cast<int>(str.substr(8, 2));
+			int second = lexical_cast<int>(str.substr(10, 2));
+
+			boost::posix_time::time_duration time_duration(hour, minute, second);
+
+			char separator = str[12];
+
+			if ((separator == '+') || (separator == '-'))
+			{
+				//int offset_hour = lexical_cast<int>(str.substr(13, 2));
+				//int offset_minute = lexical_cast<int>(str.substr(16, 2));
+			}
+
+			//TODO: Use the separator and offset information
 			
-			return boost::posix_time::ptime();
+			return boost::posix_time::ptime(date, time_duration);
 		}
 	}
 }
