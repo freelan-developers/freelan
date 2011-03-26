@@ -89,6 +89,13 @@ namespace cryptoplus
 				static utctime take_ownership(pointer ptr);
 
 				/**
+				 * \brief Create an utctime by taking its value from a boost::posix_time::ptime.
+				 * \param time The time.
+				 * \return The utctime.
+				 */
+				static utctime from_ptime(const boost::posix_time::ptime& time);
+
+				/**
 				 * \brief Create a new empty utctime.
 				 */
 				utctime();
@@ -176,6 +183,14 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return utctime(_ptr, deleter);
+		}
+		inline utctime utctime::from_ptime(const boost::posix_time::ptime& time)
+		{
+			utctime result = create();
+			
+			result.set_time(time);
+
+			return result;
 		}
 		inline utctime::utctime()
 		{
