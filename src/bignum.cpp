@@ -43,6 +43,7 @@
  */
 
 #include "bn/bignum.hpp"
+#include "asn1/integer.hpp"
 
 #include <openssl/crypto.h>
 
@@ -84,6 +85,11 @@ namespace cryptoplus
 			return take_ownership(bn);
 		}
 
+		bignum bignum::from_integer(asn1::integer i)
+		{
+			return take_ownership(ASN1_INTEGER_to_BN(i.raw(), NULL));
+		}
+
 		size_t bignum::to_bin(void* out, size_t out_len) const
 		{
 			assert(out_len >= size());
@@ -108,6 +114,11 @@ namespace cryptoplus
 			boost::shared_ptr<char> result(BN_bn2dec(ptr().get()), _OPENSSL_free);
 
 			return std::string(result.get());
+		}
+		
+		asn1::integer bignum::to_integer() const
+		{
+			return asn1::integer::from_bignum(*this);
 		}
 	}
 }

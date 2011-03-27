@@ -55,6 +55,11 @@
 
 namespace cryptoplus
 {
+	namespace asn1
+	{
+		class integer;
+	}
+
 	namespace bn
 	{
 		/**
@@ -110,6 +115,13 @@ namespace cryptoplus
 				static bignum from_dec(const std::string& str);
 
 				/**
+				 * \brief Load BIGNUM from an ASN1_INTEGER.
+				 * \param i The integer.
+				 * \return A bignum.
+				 */
+				static bignum from_integer(asn1::integer i);
+
+				/**
 				 * \brief Create a new empty bignum.
 				 */
 				bignum();
@@ -153,6 +165,12 @@ namespace cryptoplus
 				 * \return The decimal representation of the BIGNUM.
 				 */
 				std::string to_dec() const;
+
+				/**
+				 * \brief Get a ASN1_INTEGER from this BIGNUM.
+				 * \return An ASN1_INTEGER.
+				 */
+				asn1::integer to_integer() const;
 
 			private:
 

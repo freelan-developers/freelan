@@ -48,6 +48,7 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "../bn/bignum.hpp"
 
 #include <openssl/crypto.h>
 #include <openssl/asn1.h>
@@ -96,6 +97,13 @@ namespace cryptoplus
 				static integer from_long(long l);
 
 				/**
+				 * \brief Create an integer from a BIGNUM.
+				 * \param bn The BIGNUM.
+				 * \return The integer.
+				 */
+				static integer from_bignum(bn::bignum bn);
+
+				/**
 				 * \brief Create a new empty integer.
 				 */
 				integer();
@@ -108,16 +116,28 @@ namespace cryptoplus
 				integer(pointer ptr);
 
 				/**
-				 * \brief Set the time.
+				 * \brief Set the value.
 				 * \param l The long.
 				 */
 				void set_value(long l);
+
+				/**
+				 * \brief Set the value from a BIGNUM.
+				 * \param bn The BIGNUM.
+				 */
+				void set_value(bn::bignum bn);
 
 				/**
 				 * \brief Get a long from the ASN1_INTEGER.
 				 * \return A long if the integer is not too big, 0xFFFFFFFFL otherwise.
 				 */
 				long to_long();
+
+				/**
+				 * \brief Get a BIGNUM from this integer.
+				 * \return A BIGNUM.
+				 */
+				bn::bignum to_bignum();
 
 			private:
 
@@ -158,6 +178,10 @@ namespace cryptoplus
 
 			return result;
 		}
+		inline integer integer::from_bignum(bn::bignum bn)
+		{
+			return take_ownership(BN_to_ASN1_INTEGER(bn.raw(), NULL));
+		}
 		inline integer::integer()
 		{
 		}
@@ -168,9 +192,17 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(ASN1_INTEGER_set(ptr().get(), l));
 		}
+		inline void integer::set_value(bn::bignum bn)
+		{
+			error::throw_error_if_not(BN_to_ASN1_INTEGER(bn.raw(), ptr().get()));
+		}
 		inline long integer::to_long()
 		{
 			return ASN1_INTEGER_get(ptr().get());
+		}
+		inline bn::bignum integer::to_bignum()
+		{
+			return bn::bignum::from_integer(*this);
 		}
 		inline integer::integer(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
