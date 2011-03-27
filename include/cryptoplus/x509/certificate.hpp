@@ -209,9 +209,9 @@ namespace cryptoplus
 
 				/**
 				 * \brief Set the public key.
-				 * \param key The public key.
+				 * \param pkey The public key.
 				 */
-				void set_public_key(pkey::pkey key);
+				void set_public_key(pkey::pkey pkey);
 
 				/**
 				 * \brief Get the subject name.
@@ -293,6 +293,13 @@ namespace cryptoplus
 				 * \return true if the verification succeeds.
 				 */
 				bool verify_public_key(pkey::pkey pkey);
+
+				/**
+				 * \brief Sign the certificate.
+				 * \param pkey The private key.
+				 * \param algorithm The message digest to use.
+				 */
+				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
 
 				/**
 				 * \brief Verify the certificate against a specified private key.
@@ -386,9 +393,9 @@ namespace cryptoplus
 		{
 			return pkey::pkey(X509_get_pubkey(ptr().get()));
 		}
-		inline void certificate::set_public_key(pkey::pkey key)
+		inline void certificate::set_public_key(pkey::pkey pkey)
 		{
-			error::throw_error_if_not(X509_set_pubkey(ptr().get(), key.raw()));
+			error::throw_error_if_not(X509_set_pubkey(ptr().get(), pkey.raw()));
 		}
 		inline name certificate::subject()
 		{
@@ -441,6 +448,10 @@ namespace cryptoplus
 		inline bool certificate::verify_public_key(pkey::pkey pkey)
 		{
 			return X509_verify(ptr().get(), pkey.raw()) == 1;
+		}
+		inline void certificate::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
+		{
+			error::throw_error_if_not(X509_sign(ptr().get(), pkey.raw(), algorithm.raw()));
 		}
 		inline bool certificate::verify_private_key(pkey::pkey pkey)
 		{
