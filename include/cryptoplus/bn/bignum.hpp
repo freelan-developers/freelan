@@ -219,6 +219,22 @@ namespace cryptoplus
 		 */
 		bool operator!=(const bignum& lhs, const bignum& rhs);
 
+		/**
+		 * \brief Add two BIGNUM pointers.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The result of the operation.
+		 */
+		bignum operator+(const bignum& lhs, const bignum& rhs);
+
+		/**
+		 * \brief Substract two BIGNUM pointers.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The result of the operation.
+		 */
+		bignum operator-(const bignum& lhs, const bignum& rhs);
+
 		inline bignum bignum::create()
 		{
 			return take_ownership(BN_new());
@@ -283,6 +299,22 @@ namespace cryptoplus
 		inline bool operator!=(const bignum& lhs, const bignum& rhs)
 		{
 			return lhs.raw() != rhs.raw();
+		}
+		inline bignum operator+(const bignum& lhs, const bignum& rhs)
+		{
+			bignum result = bignum::create();
+
+			BN_add(result.raw(), lhs.raw(), rhs.raw());
+
+			return result;
+		}
+		inline bignum operator-(const bignum& lhs, const bignum& rhs)
+		{
+			bignum result = bignum::create();
+
+			BN_sub(result.raw(), lhs.raw(), rhs.raw());
+
+			return result;
 		}
 	}
 }
