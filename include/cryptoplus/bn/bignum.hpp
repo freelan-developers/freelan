@@ -134,6 +134,12 @@ namespace cryptoplus
 				bignum(pointer ptr);
 
 				/**
+				 * \brief Copy another BIGNUM.
+				 * \param bn The bignum.
+				 */
+				void copy(const bignum& bn);
+
+				/**
 				 * \brief Get the number of bytes needed to represent the BIGNUM.
 				 * \return The number of bytes needed to represent the BIGNUM.
 				 */
@@ -219,6 +225,10 @@ namespace cryptoplus
 		}
 		inline bignum::bignum(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline void bignum::copy(const bignum& bn)
+		{
+			error::throw_error_if_not(BN_copy(ptr().get(), bn.raw()));
 		}
 		inline size_t bignum::size() const
 		{
