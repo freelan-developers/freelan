@@ -139,6 +139,38 @@ namespace cryptoplus
 				 */
 				bn::bignum to_bignum();
 
+				/**
+				 * \brief Write the integer to a BIO.
+				 * \param bio The bio to write to.
+				 * \return The count of bytes written.
+				 */
+				size_t write(bio::bio_ptr bio);
+
+				/**
+				 * \brief Read the integer from a BIO.
+				 * \param bio The bio to read from.
+				 *
+				 * This method uses an internal buffer of size 1024. If you need or want to use your own supplied buffer, see the other read() overloads.
+				 */
+				void read(bio::bio_ptr bio);
+
+				/**
+				 * \brief Read the integer from a BIO.
+				 * \param bio The bio to read from.
+				 *
+				 * This method uses an internal buffer. If you need or want to use your own supplied buffer, see the other read() overloads.
+				 */
+				template <size_t size>
+				void read(bio::bio_ptr bio);
+
+				/**
+				 * \brief Read the integer from a BIO.
+				 * \param bio The bio to read from.
+				 * \param buf A buffer to use for the read operation.
+				 * \param buf_len The size of buf.
+				 */
+				void read(bio::bio_ptr bio, const void* buf, size_t buf_len);
+
 			private:
 
 				explicit integer(pointer _ptr, deleter_type _del);
@@ -211,6 +243,29 @@ namespace cryptoplus
 		inline bn::bignum integer::to_bignum()
 		{
 			return bn::bignum::from_integer(*this);
+		}
+		inline size_t integer::write(bio::bio_ptr bio)
+		{
+			int result = i2a_ASN1_INTEGER(bio.raw(), ptr().get());
+
+			error::throw_error_if_not(result >= 0);
+
+			return result;
+		}
+		inline void integer::read(bio::bio_ptr bio)
+		{
+			read<1024>(bio);
+		}
+		template <size_t size>
+		inline void integer::read(bio::bio_ptr bio)
+		{
+			char buf[size];
+
+			read(bio, buf, size);
+		}
+		inline void integer::read(bio::bio_ptr bio, const void* buf, size_t buf_len)
+		{
+			error::throw_error_if_not(a2i_ASN1_INTEGER(bio.raw(), ptr().get(), static_cast<char*>(const_cast<void*>(buf)), buf_len) == 0);
 		}
 		inline integer::integer(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
