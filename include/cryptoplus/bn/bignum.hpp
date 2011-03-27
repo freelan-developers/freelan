@@ -46,7 +46,7 @@
 #define CRYPTOPEN_BN_bignum_HPP
 
 #include "../pointer_wrapper.hpp"
-#include "error/cryptographic_exception.hpp"
+#include "../error/cryptographic_exception.hpp"
 
 #include <openssl/bn.h>
 
