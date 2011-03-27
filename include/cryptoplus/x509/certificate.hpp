@@ -49,6 +49,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
+#include "../asn1/integer.hpp"
 #include "../asn1/utctime.hpp"
 #include "name.hpp"
 
@@ -248,13 +249,13 @@ namespace cryptoplus
 				 * \brief Get the certificate serial number.
 				 * \return The serial number.
 				 */
-				ASN1_INTEGER* serial_number();
+				asn1::integer serial_number();
 
 				/**
 				 * \brief Set the certificate serial number.
 				 * \param serial_number The serial number.
 				 */
-				void set_serial_number(ASN1_INTEGER* serial_number);
+				void set_serial_number(asn1::integer serial_number);
 
 				/**
 				 * \brief Get the certificate not before date.
@@ -403,13 +404,13 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_set_version(ptr().get(), _version));
 		}
-		inline ASN1_INTEGER* certificate::serial_number()
+		inline asn1::integer certificate::serial_number()
 		{
 			return X509_get_serialNumber(ptr().get());
 		}
-		inline void certificate::set_serial_number(ASN1_INTEGER* _serial_number)
+		inline void certificate::set_serial_number(asn1::integer _serial_number)
 		{
-			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number));
+			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number.raw()));
 		}
 		inline asn1::utctime certificate::not_before()
 		{
