@@ -37,14 +37,12 @@
  */
 
 /**
- * \file bignum_ptr.cpp
+ * \file bignum.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A BIGNUM pointer class.
  */
 
-#include "bn/bignum_ptr.hpp"
-
-#include "error/cryptographic_exception.hpp"
+#include "bn/bignum.hpp"
 
 #include <openssl/crypto.h>
 
@@ -65,7 +63,28 @@ namespace cryptoplus
 			}
 		}
 
-		size_t bignum_ptr::to_bin(void* out, size_t out_len) const
+		template <>
+		bignum::deleter_type pointer_wrapper<bignum::value_type>::deleter = BN_clear_free;
+
+		bignum bignum::from_hex(const std::string& str)
+		{
+			BIGNUM* bn = NULL;
+
+			error::throw_error_if_not(BN_hex2bn(&bn, str.c_str()));
+
+			return take_ownership(bn);
+		}
+
+		bignum bignum::from_dec(const std::string& str)
+		{
+			BIGNUM* bn = NULL;
+
+			error::throw_error_if_not(BN_dec2bn(&bn, str.c_str()));
+
+			return take_ownership(bn);
+		}
+
+		size_t bignum::to_bin(void* out, size_t out_len) const
 		{
 			assert(out_len >= size());
 
@@ -74,48 +93,21 @@ namespace cryptoplus
 				throw std::invalid_argument("out_len");
 			}
 
-			return BN_bn2bin(m_bignum, static_cast<unsigned char*>(out));
+			return BN_bn2bin(ptr().get(), static_cast<unsigned char*>(out));
 		}
 
-		void bignum_ptr::from_bin(const void* buf, size_t buf_len)
+		std::string bignum::to_hex() const
 		{
-			BIGNUM* result = BN_bin2bn(static_cast<const unsigned char*>(buf), buf_len, m_bignum);
-
-			error::throw_error_if_not(result);
-
-			m_bignum = result;
-		}
-
-		std::string bignum_ptr::to_hex() const
-		{
-			boost::shared_ptr<char> result(BN_bn2hex(m_bignum), _OPENSSL_free);
+			boost::shared_ptr<char> result(BN_bn2hex(ptr().get()), _OPENSSL_free);
 
 			return std::string(result.get());
 		}
 
-		unsigned int bignum_ptr::from_hex(const std::string& str)
+		std::string bignum::to_dec() const
 		{
-			int result = BN_hex2bn(&m_bignum, str.c_str());
-
-			error::throw_error_if_not(result);
-
-			return result;
-		}
-
-		std::string bignum_ptr::to_dec() const
-		{
-			boost::shared_ptr<char> result(BN_bn2dec(m_bignum), _OPENSSL_free);
+			boost::shared_ptr<char> result(BN_bn2dec(ptr().get()), _OPENSSL_free);
 
 			return std::string(result.get());
-		}
-
-		unsigned int bignum_ptr::from_dec(const std::string& str)
-		{
-			int result = BN_dec2bn(&m_bignum, str.c_str());
-
-			error::throw_error_if_not(result);
-
-			return result;
 		}
 	}
 }

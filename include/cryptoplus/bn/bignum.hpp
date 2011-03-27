@@ -37,15 +37,16 @@
  */
 
 /**
- * \file bignum_ptr.hpp
+ * \file bignum.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A BIGNUM pointer class.
  */
 
-#ifndef CRYPTOPEN_BN_BIGNUM_PTR_HPP
-#define CRYPTOPEN_BN_BIGNUM_PTR_HPP
+#ifndef CRYPTOPEN_BN_bignum_HPP
+#define CRYPTOPEN_BN_bignum_HPP
 
-#include "../nullable.hpp"
+#include "../pointer_wrapper.hpp"
+#include "error/cryptographic_exception.hpp"
 
 #include <openssl/bn.h>
 
@@ -59,41 +60,66 @@ namespace cryptoplus
 		/**
 		 * \brief An OpenSSL BIGNUM pointer.
 		 *
-		 * The bignum_ptr class is a wrapper for an OpenSSL BIGNUM* pointer.
+		 * The bignum class is a wrapper for an OpenSSL BIGNUM* pointer.
 		 *
-		 * A bignum_ptr instance has the same semantic as a BIGNUM* pointer, thus two copies of the same instance share the same underlying pointer.
+		 * A bignum instance has the same semantic as a BIGNUM* pointer, thus two copies of the same instance share the same underlying pointer.
 		 *
-		 * A bignum_ptr *DOES NOT* own its underlying pointer. It is the caller's responsibility to ensure that a bignum_ptr always points to a valid BIGNUM structure.
-		 *
-		 * \warning Always check for the bignum_ptr not to be NULL before calling any of its method. Calling any method (except raw() or reset_ptr()) on a null bignum_ptr has undefined behavior.
+		 * \warning Always check for the bignum not to be NULL before calling any of its method. Calling any method (except raw()) on a null bignum has undefined behavior.
 		 */
-		class bignum_ptr : public nullable<bignum_ptr>
+		class bignum : public pointer_wrapper<BIGNUM>
 		{
 			public:
 
 				/**
-				 * \brief Create a new bignum_ptr.
-				 * \param bignum The BIGNUM to point to.
+				 * \brief Create a new bignum.
+				 * \return The bignum.
+				 *
+				 * If allocation fails, a cryptographic_exception is thrown.
 				 */
-				bignum_ptr(BIGNUM* bignum = NULL);
+				static bignum create();
 
 				/**
-				 * \brief Reset the underlying pointer.
-				 * \param bignum The BIGNUM to point to.
+				 * \brief Take ownership of a specified BIGNUM pointer.
+				 * \param ptr The pointer. Cannot be NULL.
+				 * \return An bignum.
 				 */
-				void reset_ptr(BIGNUM* bignum = NULL);
+				static bignum take_ownership(pointer ptr);
 
 				/**
-				 * \brief Get the raw BIGNUM pointer.
-				 * \return The raw BIGNUM pointer.
+				 * \brief Create a BIGNUM from its binary representation.
+				 * \param buf The buffer that holds the binary representation of the BIGNUM.
+				 * \param buf_len The length of buf.
+				 * \return A bignum.
+				 *
+				 * On error a cryptographic_exception is thrown.
 				 */
-				BIGNUM* raw();
+				static bignum from_bin(const void* buf, size_t buf_len);
 
 				/**
-				 * \brief Get the raw BIGNUM pointer.
-				 * \return The raw BIGNUM pointer.
+				 * \brief Load a BIGNUM from its hexadecimal representation.
+				 * \param str The hexadecimal string representation.
+				 * \return A bignum.
 				 */
-				const BIGNUM* raw() const;
+				static bignum from_hex(const std::string& str);
+
+				/**
+				 * \brief Load a BIGNUM from its decimal representation.
+				 * \param str The decimal string representation.
+				 * \return A bignum.
+				 */
+				static bignum from_dec(const std::string& str);
+
+				/**
+				 * \brief Create a new empty bignum.
+				 */
+				bignum();
+
+				/**
+				 * \brief Create an bignum by *NOT* taking ownership of an existing BIGNUM pointer.
+				 * \param ptr The BIGNUM pointer.
+				 * \warning The caller is still responsible for freeing the memory.
+				 */
+				bignum(pointer ptr);
 
 				/**
 				 * \brief Get the number of bytes needed to represent the BIGNUM.
@@ -117,30 +143,10 @@ namespace cryptoplus
 				std::vector<T> to_bin() const;
 
 				/**
-				 * \brief Load a BIGNUM from its binary representation.
-				 * \param buf The buffer that holds the binary representation of the BIGNUM.
-				 * \param buf_len The length of buf.
-				 *
-				 * On error a cryptographic_exception is thrown.
-				 *
-				 * \warning If the underlying pointer is NULL, a new BIGNUM is created that needs to be explicitely deleted by the user.
-				 */
-				void from_bin(const void* buf, size_t buf_len);
-
-				/**
 				 * \brief Get the hexadecimal representation of the BIGNUM.
 				 * \return The hexadecimal representation of the BIGNUM.
 				 */
 				std::string to_hex() const;
-
-				/**
-				 * \brief Load a BIGNUM from its hexadecimal representation.
-				 * \param str The hexadecimal string representation.
-				 * \return The number of hexadecimal digits.
-				 * 
-				 * \warning If the underlying pointer is NULL, a new BIGNUM is created that needs to be explicitely deleted by the user.
-				 */
-				unsigned int from_hex(const std::string& str);
 
 				/**
 				 * \brief Get the decimal representation of the BIGNUM.
@@ -148,59 +154,54 @@ namespace cryptoplus
 				 */
 				std::string to_dec() const;
 
-				/**
-				 * \brief Load a BIGNUM from its decimal representation.
-				 * \param str The decimal string representation.
-				 * \return The number of decimal digits.
-				 * 
-				 * \warning If the underlying pointer is NULL, a new BIGNUM is created that needs to be explicitely deleted by the user.
-				 */
-				unsigned int from_dec(const std::string& str);
-
 			private:
 
-				bool boolean_test() const;
-
-				BIGNUM* m_bignum;
+				explicit bignum(pointer _ptr, deleter_type _del);
 		};
 
 		/**
 		 * \brief Compare two BIGNUM pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two bignum_ptr instance share the same underlying pointer.
+		 * \return true if the two bignum instance share the same underlying pointer.
 		 */
-		bool operator==(const bignum_ptr& lhs, const bignum_ptr& rhs);
+		bool operator==(const bignum& lhs, const bignum& rhs);
 
 		/**
 		 * \brief Compare two BIGNUM pointers.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
-		 * \return true if the two bignum_ptr instance do not share the same underlying pointer.
+		 * \return true if the two bignum instance do not share the same underlying pointer.
 		 */
-		bool operator!=(const bignum_ptr& lhs, const bignum_ptr& rhs);
+		bool operator!=(const bignum& lhs, const bignum& rhs);
 
-		inline bignum_ptr::bignum_ptr(BIGNUM* _bignum) : m_bignum(_bignum)
+		inline bignum bignum::create()
+		{
+			return take_ownership(BN_new());
+		}
+		inline bignum bignum::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return bignum(_ptr, deleter);
+		}
+		inline bignum bignum::from_bin(const void* buf, size_t buf_len)
+		{
+			return take_ownership(BN_bin2bn(static_cast<const unsigned char*>(buf), buf_len, NULL));
+		}
+
+		inline bignum::bignum()
 		{
 		}
-		inline void bignum_ptr::reset_ptr(BIGNUM* _bignum)
+		inline bignum::bignum(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
-			m_bignum = _bignum;
 		}
-		inline BIGNUM* bignum_ptr::raw()
+		inline size_t bignum::size() const
 		{
-			return m_bignum;
-		}
-		inline const BIGNUM* bignum_ptr::raw() const
-		{
-			return m_bignum;
-		}
-		inline size_t bignum_ptr::size() const
-		{
-			return BN_num_bytes(m_bignum);
+			return BN_num_bytes(ptr().get());
 		}
 		template <typename T>
-		inline std::vector<T> bignum_ptr::to_bin() const
+		inline std::vector<T> bignum::to_bin() const
 		{
 			std::vector<T> result(size());
 
@@ -208,20 +209,19 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline bool bignum_ptr::boolean_test() const
+		inline bignum::bignum(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
-			return (m_bignum != NULL);
 		}
-		inline bool operator==(const bignum_ptr& lhs, const bignum_ptr& rhs)
+		inline bool operator==(const bignum& lhs, const bignum& rhs)
 		{
 			return lhs.raw() == rhs.raw();
 		}
-		inline bool operator!=(const bignum_ptr& lhs, const bignum_ptr& rhs)
+		inline bool operator!=(const bignum& lhs, const bignum& rhs)
 		{
 			return lhs.raw() != rhs.raw();
 		}
 	}
 }
 
-#endif /* CRYPTOPEN_BN_BIGNUM_PTR_HPP */
+#endif /* CRYPTOPEN_BN_bignum_HPP */
 
