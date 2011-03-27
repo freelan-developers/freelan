@@ -160,6 +160,14 @@ namespace cryptoplus
 		 */
 		bool operator!=(const integer& lhs, const integer& rhs);
 
+		/**
+		 * \brief Compare two ASN1 integer pointers.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return 0 if the two ASN1 integer are identical.
+		 */
+		int compare(const integer& lhs, const integer& rhs);
+
 		inline integer integer::create()
 		{
 			return take_ownership(ASN1_INTEGER_new());
@@ -214,6 +222,14 @@ namespace cryptoplus
 		inline bool operator!=(const integer& lhs, const integer& rhs)
 		{
 			return lhs.raw() != rhs.raw();
+		}
+		inline int compare(const integer& lhs, const integer& rhs)
+		{
+#if OPENSSL_VERSION_NUMBER >= 0x01000000
+			return ASN1_INTEGER_cmp(lhs.raw(), rhs.raw());
+#else
+			return ASN1_INTEGER_cmp(const_cast<integer::pointer>(lhs.raw()), const_cast<integer::pointer>(rhs.raw()));
+#endif
 		}
 	}
 }
