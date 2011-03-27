@@ -208,6 +208,12 @@ namespace cryptoplus
 				pkey::pkey public_key();
 
 				/**
+				 * \brief Set the public key.
+				 * \param key The public key.
+				 */
+				void set_public_key(pkey::pkey key);
+
+				/**
 				 * \brief Get the subject name.
 				 * \return The subject name.
 				 * \warning The returned name depends on the certificate instance and will be invalidated as soon as the underlying pointer is changed (or freed).
@@ -379,6 +385,10 @@ namespace cryptoplus
 		inline pkey::pkey certificate::public_key()
 		{
 			return pkey::pkey(X509_get_pubkey(ptr().get()));
+		}
+		inline void certificate::set_public_key(pkey::pkey key)
+		{
+			error::throw_error_if_not(X509_set_pubkey(ptr().get(), key.raw()));
 		}
 		inline name certificate::subject()
 		{
