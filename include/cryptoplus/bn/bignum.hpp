@@ -122,6 +122,13 @@ namespace cryptoplus
 				static bignum from_integer(asn1::integer i);
 
 				/**
+				 * \brief Load BIGNUM from an unsigned long.
+				 * \param ul The unsigned long.
+				 * \return A bignum.
+				 */
+				static bignum from_long(unsigned long ul);
+
+				/**
 				 * \brief Create a new empty bignum.
 				 */
 				bignum();
@@ -193,10 +200,22 @@ namespace cryptoplus
 				asn1::integer to_integer() const;
 
 				/**
+				 * \brief Get the value as a long.
+				 * \return A long or 0xFFFFFFFFL if the value cannot be represented as an unsigned long.
+				 */
+				unsigned long to_long();
+
+				/**
 				 * \brief Clone the BIGNUM.
 				 * \return A new bignum.
 				 */
 				bignum clone() const;
+
+				/**
+				 * \brief Set the value of the BIGNUM.
+				 * \param ul The unsigned long value.
+				 */
+				void set_value(unsigned long ul);
 
 			private:
 
@@ -249,7 +268,14 @@ namespace cryptoplus
 		{
 			return take_ownership(BN_bin2bn(static_cast<const unsigned char*>(buf), buf_len, NULL));
 		}
+		inline bignum bignum::from_long(unsigned long ul)
+		{
+			bignum result = create();
 
+			result.set_value(ul);
+
+			return result;
+		}
 		inline bignum::bignum()
 		{
 		}
@@ -285,9 +311,17 @@ namespace cryptoplus
 
 			return result;
 		}
+		inline unsigned long bignum::to_long()
+		{
+			return BN_get_word(ptr().get());
+		}
 		inline bignum bignum::clone() const
 		{
 			return take_ownership(BN_dup(ptr().get()));
+		}
+		inline void bignum::set_value(unsigned long ul)
+		{
+			error::throw_error_if_not(BN_set_word(ptr().get(), ul));
 		}
 		inline bignum::bignum(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
