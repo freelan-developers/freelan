@@ -75,7 +75,7 @@ namespace cryptoplus
 			return from_parameters(bio_chain.first(), callback, callback_arg);
 		}
 
-		size_t dh_key::compute_key(void* out, size_t out_len, bn::bignum_ptr pub_key)
+		size_t dh_key::compute_key(void* out, size_t out_len, bn::bignum pub_key)
 		{
 			assert(out_len >= size());
 

@@ -48,7 +48,7 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
-#include "../bn/bignum_ptr.hpp"
+#include "../bn/bignum.hpp"
 
 #include <openssl/dh.h>
 #include <openssl/pem.h>
@@ -165,13 +165,13 @@ namespace cryptoplus
 				 * \brief Get the private key component.
 				 * \return the private key component.
 				 */
-				bn::bignum_ptr private_key() const;
+				bn::bignum private_key() const;
 
 				/**
 				 * \brief Get the public key component.
 				 * \return the public key component.
 				 */
-				bn::bignum_ptr public_key() const;
+				bn::bignum public_key() const;
 
 				/**
 				 * \brief Return the size of a DH signature in bytes.
@@ -204,7 +204,7 @@ namespace cryptoplus
 				 * 
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				size_t compute_key(void* out, size_t out_len, bn::bignum_ptr pub_key);
+				size_t compute_key(void* out, size_t out_len, bn::bignum pub_key);
 
 				/**
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
@@ -214,7 +214,7 @@ namespace cryptoplus
 				 * On failure, a cryptographic_exception is thrown.
 				 */
 				template <typename T>
-				std::vector<T> compute_key(bn::bignum_ptr pub_key);
+				std::vector<T> compute_key(bn::bignum pub_key);
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
@@ -281,11 +281,11 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_DHparams(file, ptr().get()));
 		}
-		inline bn::bignum_ptr dh_key::private_key() const
+		inline bn::bignum dh_key::private_key() const
 		{
 			return raw()->priv_key;
 		}
-		inline bn::bignum_ptr dh_key::public_key() const
+		inline bn::bignum dh_key::public_key() const
 		{
 			return raw()->pub_key;
 		}
@@ -304,7 +304,7 @@ namespace cryptoplus
 			return *this;
 		}
 		template <typename T>
-		inline std::vector<T> dh_key::compute_key(bn::bignum_ptr pub_key)
+		inline std::vector<T> dh_key::compute_key(bn::bignum pub_key)
 		{
 			std::vector<T> result(size());
 
