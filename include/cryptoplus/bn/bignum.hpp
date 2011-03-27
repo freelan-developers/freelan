@@ -172,6 +172,12 @@ namespace cryptoplus
 				 */
 				asn1::integer to_integer() const;
 
+				/**
+				 * \brief Clone the BIGNUM.
+				 * \return A new bignum.
+				 */
+				bignum clone() const;
+
 			private:
 
 				explicit bignum(pointer _ptr, deleter_type _del);
@@ -226,6 +232,10 @@ namespace cryptoplus
 			result.resize(to_bin(&result[0], result.size()));
 
 			return result;
+		}
+		inline bignum bignum::clone() const
+		{
+			return take_ownership(BN_dup(ptr().get()));
 		}
 		inline bignum::bignum(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
