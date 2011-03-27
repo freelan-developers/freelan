@@ -42,6 +42,8 @@ int main()
 		// We copy the data from subject() to issuer().
 		certificate.set_issuer(certificate.subject());
 
+		certificate.set_serial_number(asn1::integer::from_long(42));
+
 		asn1::utctime not_before = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::years(12));
 		asn1::utctime not_after = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::posix_time::hours(1));
 
