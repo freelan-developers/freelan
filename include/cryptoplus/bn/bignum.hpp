@@ -134,6 +134,20 @@ namespace cryptoplus
 				bignum(pointer ptr);
 
 				/**
+				 * \brief Append another bignum to the current instance.
+				 * \param bn The bignum.
+				 * \return *this.
+				 */
+				bignum& operator+=(const bignum& bn);
+
+				/**
+				 * \brief Substract another bignum from the current instance.
+				 * \param bn The bignum.
+				 * \return *this.
+				 */
+				bignum& operator-=(const bignum& bn);
+
+				/**
 				 * \brief Copy another BIGNUM.
 				 * \param bn The bignum.
 				 */
@@ -225,6 +239,18 @@ namespace cryptoplus
 		}
 		inline bignum::bignum(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline bignum& bignum::operator+=(const bignum& bn)
+		{
+			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()));
+
+			return *this;
+		}
+		inline bignum& bignum::operator-=(const bignum& bn)
+		{
+			error::throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()));
+
+			return *this;
 		}
 		inline void bignum::copy(const bignum& bn)
 		{
