@@ -1,0 +1,40 @@
+##
+# libcryptoplus tests build file.
+#
+
+### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
+
+module = 'cryptoplus'
+
+import sys, os
+
+source = Glob('src/*.cpp')
+cpppath = [os.path.join('../include', module)]
+libpath = [os.path.join('../lib')]
+libs = ['crypto', module]
+
+# Import the customized environment
+sys.path.append(os.path.abspath('../scons'))
+import environment
+
+env = environment.Environment(ENV = os.environ.copy())
+env.ParseConfig('cppunit-config --cflags --libs')
+
+# Build the test
+tests = env.Program('tests', source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
+
+# Aliases
+env.Alias('build', tests)
+env.Alias('all', ['build'])
+
+# Help documentation
+Help("""
+Type: 'scons build' to build the unit tests.
+      'scons all' to build then run the tests.
+      'scons -c' to cleanup object and libraries files.
+      \n
+      If scons is called without parameters, the default target is "build".
+""")
+
+# Default
+Default('build')
