@@ -25,16 +25,20 @@ tests = env.Program('tests', source, CPPPATH = cpppath, LIBPATH = libpath, LIBS 
 
 # Aliases
 env.Alias('build', tests)
-env.Alias('all', ['build'])
+run = env.Alias('run', [tests], tests[0].abspath)
+env.Alias('all', ['build', 'run'])
+
+env.AlwaysBuild(run);
 
 # Help documentation
 Help("""
 Type: 'scons build' to build the unit tests.
+      'scons run' to run the tests.
       'scons all' to build then run the tests.
       'scons -c' to cleanup object and libraries files.
       \n
-      If scons is called without parameters, the default target is "build".
+      If scons is called without parameters, the default target is "all".
 """)
 
 # Default
-Default('build')
+Default('all')
