@@ -46,8 +46,13 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
 
+#include <cryptoplus/cryptoplus.hpp>
+
 int main()
 {
+	cryptoplus::algorithms_initializer algorithms_initializer;
+	cryptoplus::crypto_initializer crypto_initializer;
+
 	CppUnit::Test* test = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
 
 	CppUnit::TextUi::TestRunner runner;

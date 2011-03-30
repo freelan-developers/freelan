@@ -47,9 +47,12 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <stdexcept>
+
 class HashTest : public CppUnit::TestFixture
 {
 	CPPUNIT_TEST_SUITE(HashTest);
+	CPPUNIT_TEST_EXCEPTION(testInvalidNameException, std::invalid_argument);
 	CPPUNIT_TEST(testAlgorithms);
 	CPPUNIT_TEST_SUITE_END();
 
@@ -58,6 +61,7 @@ class HashTest : public CppUnit::TestFixture
 		void setUp();
 		void tearDown();
 
+		void testInvalidNameException();
 		void testAlgorithms();
 };
 

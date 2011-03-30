@@ -44,7 +44,11 @@
 
 #include "hash.hpp"
 
+#include <cryptoplus/hash/message_digest_algorithm.hpp>
+
 CPPUNIT_TEST_SUITE_REGISTRATION(HashTest);
+
+using namespace cryptoplus::hash;
 
 void HashTest::setUp()
 {
@@ -54,7 +58,15 @@ void HashTest::tearDown()
 {
 }
 
+void HashTest::testInvalidNameException()
+{
+	message_digest_algorithm a("Dummy name");
+}
+
 void HashTest::testAlgorithms()
 {
-	CPPUNIT_FAIL("Not implemented");
+	message_digest_algorithm a1(EVP_sha256());
+	message_digest_algorithm a2("SHA256");
+
+	CPPUNIT_ASSERT(a1.raw() == a2.raw());
 }

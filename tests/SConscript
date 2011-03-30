@@ -4,16 +4,19 @@
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
-Import('env', 'module', 'libraries')
+Import('env', 'libraries')
 
 import os, subprocess
 
+cxxflags = env['CXXFLAGS'][:]
+
 try:
-	env['CXXFLAGS'].append(subprocess.Popen(['cppunit-config', '--cflags'], stdout=subprocess.PIPE).communicate()[0].split())
+	cxxflags.append('-Wno-unused-parameter')
+	cxxflags.append(subprocess.Popen(['cppunit-config', '--cflags'], stdout=subprocess.PIPE).communicate()[0].split())
 except:
 	pass
 
-cpppath = [os.path.join('../include', module)]
+cpppath = [os.path.join('../include')]
 libpath = [os.path.join('../lib')]
 
 source = Glob('src/*.cpp')
@@ -25,7 +28,7 @@ except:
 	pass
 
 # Build the test
-tests = env.Program('tests', source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
+tests = env.Program('tests', source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs, CXXFLAGS = cxxflags)
 
 # Aliases
 env.Alias('build-tests', tests)
