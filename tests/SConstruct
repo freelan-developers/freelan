@@ -12,7 +12,7 @@ source = Glob('src/*.cpp')
 cxxflags = subprocess.Popen(['cppunit-config', '--cflags'], stdout=subprocess.PIPE).communicate()[0].split()
 cpppath = [os.path.join('../include', module)]
 libpath = [os.path.join('../lib')]
-libs = ['crypto', module] + subprocess.Popen(['cppunit-config', '--libs'], stdout=subprocess.PIPE).communicate()[0].split()
+libs = ['crypto', module + '_static'] + subprocess.Popen(['cppunit-config', '--libs'], stdout=subprocess.PIPE).communicate()[0].split()
 
 # Import the customized environment
 sys.path.append(os.path.abspath('../scons'))
