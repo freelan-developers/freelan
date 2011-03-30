@@ -51,17 +51,17 @@ env.Alias('release', ['indent', 'all', 'test'])
 # Help documentation
 Help("""
 Type: 'scons build' to build the library.
-      'scons install' to install the library and its include files on the system.
-      'scons doc' to build the documentation.
-			'scons test' to build the library, the tests and then run the tests.
-      'scons all' to build the library and the documentation.
-			'scons release' to indent the code, build everything then run the tests.
-      'scons -c' to cleanup object and libraries files.
-      'scons -c install' to uninstall libraries and include files.
-      'scons -c doc' to cleanup documentation files.
-      'scons -c all' to cleanup libraries and documentation files.
-      \n
-      If scons is called without parameters, the default target is "build".
+'scons install' to install the library and its include files on the system.
+'scons doc' to build the documentation.
+'scons test' to build the library, the tests and then run the tests.
+'scons all' to build the library and the documentation.
+'scons release' to indent the code, build everything then run the tests.
+'scons -c' to cleanup object and libraries files.
+'scons -c install' to uninstall libraries and include files.
+'scons -c doc' to cleanup documentation files.
+'scons -c all' to cleanup libraries and documentation files.
+
+If scons is called without parameters, the default target is "build".
 """)
 
 # Default
