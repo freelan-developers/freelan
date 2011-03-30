@@ -93,7 +93,7 @@ class Environment(SConsEnvironment):
 
 		if sys.platform == 'win32':
 			static_source = shared_source
-			shlinkflags += ['-Wl,--output-def,%s' % os.path.join(self._libdir, module + '.def')]
+			shlinkflags += ['-Wl,--output-def,%s' % os.path.abspath(os.path.join(sys.path[0], self._libdir, module + '.def'))]
 
 			if not 'LIBS' in kw:
 				kw['LIBS'] = []
