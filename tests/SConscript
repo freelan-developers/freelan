@@ -1,0 +1,28 @@
+##
+# libcryptoplus tests build file.
+#
+
+### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
+
+Import('env', 'module', 'libraries')
+
+import os, subprocess
+
+env['CXXFLAGS'].append(subprocess.Popen(['cppunit-config', '--cflags'], stdout=subprocess.PIPE).communicate()[0].split())
+
+cpppath = [os.path.join('../include', module)]
+libpath = [os.path.join('../lib')]
+
+source = Glob('src/*.cpp')
+libs = ['crypto', libraries[2]] + subprocess.Popen(['cppunit-config', '--libs'], stdout=subprocess.PIPE).communicate()[0].split()
+
+# Build the test
+tests = env.Program('tests', source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
+
+# Aliases
+env.Alias('build-tests', tests)
+run_tests = env.Alias('run-tests', [tests], tests[0].abspath)
+
+env.AlwaysBuild(run_tests);
+
+Return('run_tests')

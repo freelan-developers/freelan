@@ -114,7 +114,7 @@ class Environment(SConsEnvironment):
 		else:
 			shared_library = self.Command(os.path.join(self._libdir, 'lib%s.so.%s.%s' % (module, major, minor)), devel_shared_library, Copy("$TARGET", "$SOURCE"))		
 
-		return [devel_shared_library, shared_library, static_library]
+		return (devel_shared_library, shared_library, static_library)
 
 	def Sample(self, sample, source, **kw):
 
