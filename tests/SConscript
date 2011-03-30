@@ -17,7 +17,7 @@ cpppath = [os.path.join('../include', module)]
 libpath = [os.path.join('../lib')]
 
 source = Glob('src/*.cpp')
-libs = ['crypto', libraries[2]]
+libs = [libraries[2], 'crypto']
 
 try:
 	libs.append(subprocess.Popen(['cppunit-config', '--libs'], stdout=subprocess.PIPE).communicate()[0].split())
