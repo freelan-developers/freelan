@@ -97,15 +97,44 @@ namespace cryptoplus
 
 		protected:
 
+			/**
+			 * \brief The default deleter.
+			 */
 			static deleter_type deleter;
+
+			/**
+			 * \brief A null deleter.
+			 */
 			static void null_deleter(pointer);
 
+			/**
+			 * \brief Create an empty instance.
+			 */
 			pointer_wrapper();
+
+			/**
+			 * \brief Create a wrapper around a given pointer, using the specified deleter.
+			 * \param ptr The pointer to wrap.
+			 * \param del The deleter to use to release ptr.
+			 */
 			pointer_wrapper(pointer ptr, deleter_type del);
 
+			/**
+			 * \brief The boolean test.
+			 * \return True if the underlying pointer is not null.
+			 */
 			bool boolean_test() const;
 
+			/**
+			 * \brief Get the underlying pointer.
+			 * \return The underlying pointer.
+			 */
 			boost::shared_ptr<value_type>& ptr();
+
+			/**
+			 * \brief Get the underlying pointer.
+			 * \return The underlying pointer.
+			 */
 			const boost::shared_ptr<value_type>& ptr() const;
 
 		private:
