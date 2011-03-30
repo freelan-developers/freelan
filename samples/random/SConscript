@@ -1,31 +1,19 @@
-##
-# libcryptoplus build file.
-#
-sample = 'random'
-
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
+
+Import('env module libraries')
 
 import sys, os
 
-include_path = os.path.join('..', '..', 'include')
-lib_path = os.path.join('..', '..', 'lib')
-module = 'cryptoplus'
+sample_name = os.path.split(os.path.abspath('.'))[1]
 source = Glob('*.cpp')
-cpppath = [include_path]
-libpath = [lib_path]
-libs = [module + '_static', 'crypto']
-
-# Import the customized environment
-sys.path.append(os.path.abspath('../../scons'))
-import environment
-
-env = environment.Environment(path = '../..', ENV = os.environ.copy())
+cpppath = [os.path.join('..', '..', 'include')]
+libpath = [os.path.join('..', '..', 'lib')]
+libs = ['crypto', libraries[2]]
 
 # Build the sample
-sample = env.Sample(sample, source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
+sample = env.Sample(sample_name, source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
 
 # Aliases
-env.Alias('build', sample)
+env.Alias('build-sample-' + sample_name, sample)
 
-# Default
-Default('build')
+Return('sample')
