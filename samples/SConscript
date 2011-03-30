@@ -2,8 +2,12 @@
 # Samples
 #
 
+Import('env module libraries')
+
 import os
 
-samples = os.walk('.').next()[1]
+samples_dirs = os.walk('.').next()[1]
 
-SConscript(dirs = samples, name = 'SConstruct')
+samples = SConscript(dirs = samples_dirs, 'env module libraries')
+
+Return('samples')
