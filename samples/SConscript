@@ -1,0 +1,9 @@
+##
+# Samples
+#
+
+import os
+
+samples = os.walk('.').next()[1]
+
+SConscript(dirs = samples, name = 'SConstruct')

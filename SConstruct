@@ -38,6 +38,7 @@ install = [include_install, libraries_install]
 
 # Call the test SConstruct file
 run_tests = SConscript('tests/SConscript', exports = 'env module libraries')
+samples = SConscript('samples/SConscript', exports = 'env module libraries')
 
 # Aliases
 env.Alias('build', libraries)
@@ -45,7 +46,8 @@ env.Alias('install', install)
 env.Alias('doc', documentation)
 env.Alias('indent', indentation)
 env.Alias('test', run_tests)
-env.Alias('all', ['build', 'doc'])
+env.Alias('samples', samples)
+env.Alias('all', ['build', 'samples', 'doc'])
 env.Alias('release', ['indent', 'all', 'test'])
 
 # Help documentation
@@ -54,7 +56,8 @@ Type: 'scons build' to build the library.
 'scons install' to install the library and its include files on the system.
 'scons doc' to build the documentation.
 'scons test' to build the library, the tests and then run the tests.
-'scons all' to build the library and the documentation.
+'scons samples' to build the library and the samples.
+'scons all' to build the library, the samples and the documentation.
 'scons release' to indent the code, build everything then run the tests.
 'scons -c' to cleanup object and libraries files.
 'scons -c install' to uninstall libraries and include files.
