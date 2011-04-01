@@ -188,6 +188,12 @@ namespace cryptoplus
 				certificate(X509* x509);
 
 				/**
+				 * \brief Write the certificate in DER format to a BIO.
+				 * \param bio The BIO.
+				 */
+				void write_der(bio::bio_ptr bio);
+
+				/**
 				 * \brief Write the certificate to a BIO.
 				 * \param bio The BIO.
 				 */
@@ -200,6 +206,12 @@ namespace cryptoplus
 				void write_trusted_certificate(bio::bio_ptr bio);
 
 				/**
+				 * \brief Write the certificate in DER format to a file.
+				 * \param file The file.
+				 */
+				void write_der(FILE* file);
+
+				/**
 				 * \brief Write the certificate to a file.
 				 * \param file The file.
 				 */
@@ -210,6 +222,13 @@ namespace cryptoplus
 				 * \param file The file.
 				 */
 				void write_trusted_certificate(FILE* file);
+
+				/**
+				 * \brief Write the certificate in DER format to a buffer.
+				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
+				 * \return The size written or to be written.
+				 */
+				size_t write_der(void* buf);
 
 				/**
 				 * \brief Clone the certificate instance.
@@ -401,6 +420,10 @@ namespace cryptoplus
 		inline certificate::certificate(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
+		inline void certificate::write_der(bio::bio_ptr bio)
+		{
+			error::throw_error_if_not(i2d_X509_bio(bio.raw(), ptr().get()));
+		}
 		inline void certificate::write_certificate(bio::bio_ptr bio)
 		{
 			error::throw_error_if_not(PEM_write_bio_X509(bio.raw(), ptr().get()));
@@ -409,6 +432,10 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), ptr().get()));
 		}
+		inline void certificate::write_der(FILE* file)
+		{
+			error::throw_error_if_not(i2d_X509_fp(file, ptr().get()));
+		}
 		inline void certificate::write_certificate(FILE* file)
 		{
 			error::throw_error_if_not(PEM_write_X509(file, ptr().get()));
@@ -416,6 +443,16 @@ namespace cryptoplus
 		inline void certificate::write_trusted_certificate(FILE* file)
 		{
 			error::throw_error_if_not(PEM_write_X509_AUX(file, ptr().get()));
+		}
+		inline size_t certificate::write_der(void* buf)
+		{
+			unsigned char* out = static_cast<unsigned char*>(buf);
+
+			int result = i2d_X509(ptr().get(), &out);
+
+			error::throw_error_if(result < 0);
+
+			return result;
 		}
 		inline certificate certificate::clone() const
 		{
