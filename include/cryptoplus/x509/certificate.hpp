@@ -231,6 +231,12 @@ namespace cryptoplus
 				size_t write_der(void* buf);
 
 				/**
+				 * \brief Write the certificate in DER format to a buffer.
+				 * \return The buffer.
+				 */
+				std::vector<unsigned char> write_der();
+
+				/**
 				 * \brief Clone the certificate instance.
 				 * \return The clone.
 				 */
@@ -452,6 +458,14 @@ namespace cryptoplus
 
 			error::throw_error_if(result < 0);
 
+			return result;
+		}
+		inline std::vector<unsigned char> certificate::write_der()
+		{
+			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+			
+			write_der(&result[0]);
+			
 			return result;
 		}
 		inline certificate certificate::clone() const
