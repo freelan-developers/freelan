@@ -94,6 +94,13 @@ namespace cryptoplus
 				static certificate take_ownership(pointer ptr);
 
 				/**
+				 * \brief Load a X509 certificate in DER format.
+				 * \param bio The BIO.
+				 * \return The certificate.
+				 */
+				static certificate from_der(bio::bio_ptr bio);
+
+				/**
 				 * \brief Load a X509 certificate from a BIO.
 				 * \param bio The BIO.
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
@@ -114,6 +121,13 @@ namespace cryptoplus
 				static certificate from_trusted_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
+				 * \brief Load a X509 certificate in DER format.
+				 * \param file The file.
+				 * \return The certificate.
+				 */
+				static certificate from_der(FILE* file);
+
+				/**
 				 * \brief Load a X509 certificate from a file.
 				 * \param file The file.
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
@@ -132,6 +146,14 @@ namespace cryptoplus
 				 * \return The certificate.
 				 */
 				static certificate from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+
+				/**
+				 * \brief Load a X509 certificate in DER format.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The certificate.
+				 */
+				static certificate from_der(const void* buf, size_t buf_len);
 
 				/**
 				 * \brief Load a X509 certificate from a buffer.
@@ -343,6 +365,10 @@ namespace cryptoplus
 
 			return certificate(_ptr, deleter);
 		}
+		inline certificate certificate::from_der(bio::bio_ptr bio)
+		{
+			return take_ownership(d2i_X509_bio(bio.raw(), NULL));
+		}
 		inline certificate certificate::from_certificate(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_bio_X509(bio.raw(), NULL, callback, callback_arg));
@@ -351,6 +377,10 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_bio_X509_AUX(bio.raw(), NULL, callback, callback_arg));
 		}
+		inline certificate certificate::from_der(FILE* file)
+		{
+			return take_ownership(d2i_X509_fp(file, NULL));
+		}
 		inline certificate certificate::from_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_X509(file, NULL, callback, callback_arg));
@@ -358,6 +388,12 @@ namespace cryptoplus
 		inline certificate certificate::from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_X509_AUX(file, NULL, callback, callback_arg));
+		}
+		inline certificate certificate::from_der(const void* buf, size_t buf_len)
+		{
+			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
+
+			return take_ownership(d2i_X509(NULL, &pbuf, buf_len));
 		}
 		inline certificate::certificate()
 		{
