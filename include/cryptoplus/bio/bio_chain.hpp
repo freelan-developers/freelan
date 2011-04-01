@@ -92,7 +92,7 @@ namespace cryptoplus
 
 				boost::shared_ptr<BIO> m_bio;
 		};
-		
+
 		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
 		{
 			error::throw_error_if_not(m_bio);

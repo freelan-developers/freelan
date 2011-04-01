@@ -68,7 +68,7 @@ namespace cryptoplus
 		{
 			set_time(static_cast<time_t>((time - epoch).total_seconds()));
 		}
-		
+
 		boost::posix_time::ptime utctime::to_ptime()
 		{
 			using boost::lexical_cast;
@@ -113,7 +113,7 @@ namespace cryptoplus
 			}
 
 			//TODO: Use the separator and offset information
-			
+
 			return boost::posix_time::ptime(date, time_duration);
 		}
 	}

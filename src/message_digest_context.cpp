@@ -62,7 +62,7 @@ namespace cryptoplus
 
 			return ilen;
 		}
-		
+
 		size_t message_digest_context::sign_finalize(void* sig, size_t sig_len, pkey::pkey& pkey)
 		{
 			assert(sig);
@@ -73,7 +73,7 @@ namespace cryptoplus
 
 			return ilen;
 		}
-		
+
 		bool message_digest_context::verify_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey)
 		{
 			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), sig_len, pkey.raw());

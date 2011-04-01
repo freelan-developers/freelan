@@ -115,7 +115,7 @@ namespace cryptoplus
 
 			return std::string(result.get());
 		}
-		
+
 		asn1::integer bignum::to_integer() const
 		{
 			return asn1::integer::from_bignum(*this);

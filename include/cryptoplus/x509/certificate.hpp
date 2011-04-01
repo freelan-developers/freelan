@@ -463,9 +463,9 @@ namespace cryptoplus
 		inline std::vector<unsigned char> certificate::write_der()
 		{
 			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
-			
+
 			write_der(&result[0]);
-			
+
 			return result;
 		}
 		inline certificate certificate::clone() const

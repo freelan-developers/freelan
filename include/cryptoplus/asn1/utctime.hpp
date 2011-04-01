@@ -204,7 +204,7 @@ namespace cryptoplus
 		inline utctime utctime::from_time_t(time_t time)
 		{
 			utctime result = create();
-			
+
 			result.set_time(time);
 
 			return result;
@@ -212,7 +212,7 @@ namespace cryptoplus
 		inline utctime utctime::from_string(const std::string& str)
 		{
 			utctime result = create();
-			
+
 			result.set_time(str);
 
 			return result;
@@ -220,7 +220,7 @@ namespace cryptoplus
 		inline utctime utctime::from_ptime(const boost::posix_time::ptime& time)
 		{
 			utctime result = create();
-			
+
 			result.set_time(time);
 
 			return result;

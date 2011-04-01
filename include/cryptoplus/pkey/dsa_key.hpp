@@ -393,7 +393,7 @@ namespace cryptoplus
 		 * \return true if the two dsa_key instances do not share the same underlying pointer.
 		 */
 		bool operator!=(const dsa_key& lhs, const dsa_key& rhs);
-		
+
 		inline dsa_key dsa_key::create()
 		{
 			return take_ownership(DSA_new());

@@ -182,7 +182,7 @@ namespace cryptoplus
 				/**
 				 * \brief Validates the Diffie-Hellman parameters.
 				 * \param codes An integer whose content is updated according to the success or failure of the check operation. For more information, take a look a the DH_generate_parameters(3) man page.
-				 * 
+				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
 				void check(int& codes);
@@ -201,7 +201,7 @@ namespace cryptoplus
 				 * \param out_len The length of out.
 				 * \param pub_key The other party's public key.
 				 * \return The number of bytes written to out.
-				 * 
+				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
 				size_t compute_key(void* out, size_t out_len, bn::bignum pub_key);
@@ -210,7 +210,7 @@ namespace cryptoplus
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
 				 * \param pub_key The other party's public key.
 				 * \return The shared secret.
-				 * 
+				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
 				template <typename T>
@@ -248,7 +248,7 @@ namespace cryptoplus
 		 * \return true if the two dh_key instances do not share the same underlying pointer.
 		 */
 		bool operator!=(const dh_key& lhs, const dh_key& rhs);
-		
+
 		inline dh_key dh_key::create()
 		{
 			return take_ownership(DH_new());

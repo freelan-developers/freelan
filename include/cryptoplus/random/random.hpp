@@ -210,12 +210,12 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(RAND_set_rand_engine(engine));
 		}
-		
+
 		inline void get_random_bytes(void* buf, size_t buf_len)
 		{
 			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
 		}
-		
+
 		template <typename T>
 		inline std::vector<T> get_random_bytes(size_t cnt)
 		{
@@ -254,12 +254,12 @@ namespace cryptoplus
 		{
 			RAND_seed(buf, static_cast<int>(buf_len));
 		}
-	
+
 		inline bool status()
 		{
 			return (RAND_status() == 1);
 		}
-		
+
 #ifdef WINDOWS
 
 		inline bool windows_event(UINT imsg, WPARAM wparam, LPARAM lparam)
@@ -327,7 +327,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		
+
 		inline void cleanup()
 		{
 			RAND_cleanup();

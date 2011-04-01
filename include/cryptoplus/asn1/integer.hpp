@@ -213,7 +213,7 @@ namespace cryptoplus
 		inline integer integer::from_long(long l)
 		{
 			integer result = create();
-			
+
 			result.set_value(l);
 
 			return result;

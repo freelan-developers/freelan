@@ -111,7 +111,7 @@ namespace cryptoplus
 				/**
 				 * \brief Remove the bio_ptr from its BIO chain.
 				 * \return The next bio_ptr in the chain, or a null one if there is no next bio_ptr.
-				 * 
+				 *
 				 * Once it is removed from its chain, the bio_ptr can be either deleted or added to another chain.
 				 */
 				bio_ptr pop();
@@ -383,7 +383,7 @@ namespace cryptoplus
 				EVP_MD_CTX* get_message_digest_context();
 
 				// BIO_s_fd() specific methods
-				
+
 				/**
 				 * \brief Set the file descriptor.
 				 * \param fd The file descriptor.
@@ -418,7 +418,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_file()".
 				 */
-				FILE* get_file_pointer(); 
+				FILE* get_file_pointer();
 
 				// BIO_s_mem specific methods
 
@@ -461,7 +461,7 @@ namespace cryptoplus
 				bool boolean_test() const;
 
 				BIO* m_bio;
-				
+
 				friend bool operator==(const bio_ptr& lhs, const bio_ptr& rhs);
 		};
 

@@ -149,7 +149,7 @@ namespace cryptoplus
 		 * \return The cipher_stream.
 		 */
 		template <typename T>
-			cipher_stream& operator<<(cipher_stream& cs, const T& value);
+		cipher_stream& operator<<(cipher_stream& cs, const T& value);
 
 		inline cipher_stream::cipher_stream(size_t alloc) :
 			m_buffer(alloc), m_offset(0)
@@ -177,10 +177,10 @@ namespace cryptoplus
 		}
 
 		template <typename T>
-			inline cipher_stream& operator<<(cipher_stream& cs, const T& value)
-			{
-				return cs.append(value);
-			}
+		inline cipher_stream& operator<<(cipher_stream& cs, const T& value)
+		{
+			return cs.append(value);
+		}
 	}
 }
 
