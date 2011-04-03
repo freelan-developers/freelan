@@ -72,7 +72,11 @@ int main()
 
 		// X509 extensions
 
-		certificate.push_back(x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
+		unsigned char ca_true[] = { 0x30, 0x03, 0x01, 0x01, 0xff }; // If you ever find out what this format is, please tell me :)
+		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_data(ca_true, sizeof(ca_true))));
+
+		// One could also do that
+		//certificate.push_back(x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
 
 		// Sign the certificate
 
