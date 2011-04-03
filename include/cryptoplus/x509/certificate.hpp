@@ -408,6 +408,56 @@ namespace cryptoplus
 				iterator erase(iterator first, iterator last);
 
 				/**
+				 * \brief Find an extension by its NID.
+				 * \param nid The nid.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				iterator find(int nid);
+
+				/**
+				 * \brief Find an extension by its NID.
+				 * \param nid The nid.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
+				iterator find(int nid, iterator lastpos);
+
+				/**
+				 * \brief Find an extension by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				iterator find(asn1::object object);
+
+				/**
+				 * \brief Find an extension by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
+				iterator find(asn1::object object, iterator lastpos);
+
+				/**
+				 * \brief Find an extension by its critical flag.
+				 * \param critical The critical flag.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				iterator find_by_critical(bool critical);
+
+				/**
+				 * \brief Find an extension by its critical flag.
+				 * \param critical The critical flag.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
+				iterator find_by_critical(bool critical, iterator lastpos);
+
+				/**
+				 * \brief Clear all extensions.
+				 */
+				void clear();
+
+				/**
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
@@ -817,6 +867,46 @@ namespace cryptoplus
 				first = erase(first);
 
 			return first;
+		}
+		inline certificate::iterator certificate::find(int nid)
+		{
+			int index = X509_get_ext_by_NID(ptr().get(), nid, -1);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::iterator certificate::find(int nid, iterator lastpos)
+		{
+			int index = X509_get_ext_by_NID(ptr().get(), nid, lastpos.m_index);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::iterator certificate::find(asn1::object object)
+		{
+			int index = X509_get_ext_by_OBJ(ptr().get(), object.raw(), -1);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::iterator certificate::find(asn1::object object, iterator lastpos)
+		{
+			int index = X509_get_ext_by_OBJ(ptr().get(), object.raw(), lastpos.m_index);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::iterator certificate::find_by_critical(bool critical)
+		{
+			int index = X509_get_ext_by_critical(ptr().get(), critical ? 1 : 0, -1);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::iterator certificate::find_by_critical(bool critical, iterator lastpos)
+		{
+			int index = X509_get_ext_by_critical(ptr().get(), critical ? 1 : 0, lastpos.m_index);
+
+			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline void certificate::clear()
+		{
+			erase(begin(), end());
 		}
 		inline pkey::pkey certificate::public_key()
 		{
