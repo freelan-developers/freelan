@@ -458,6 +458,20 @@ namespace cryptoplus
 				void clear();
 
 				/**
+				 * \brief Push a copy of the specified extension at the end of the extension table.
+				 * \param ext The extension
+				 */
+				void push_back(wrapped_value_type ext);
+
+				/**
+				 * \brief Insert a copy of the specified extension in the extension table.
+				 * \param position The position to insert the extension at.
+				 * \param ext The extension.
+				 * \return An iterator to the extension that was added.
+				 */
+				iterator insert(iterator position, wrapped_value_type ext);
+
+				/**
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
@@ -907,6 +921,18 @@ namespace cryptoplus
 		inline void certificate::clear()
 		{
 			erase(begin(), end());
+		}
+		inline void certificate::push_back(wrapped_value_type ext)
+		{
+			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), -1));
+		}
+		inline certificate::iterator certificate::insert(iterator position, wrapped_value_type ext)
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), position.m_index));
+
+			return position;
 		}
 		inline pkey::pkey certificate::public_key()
 		{
