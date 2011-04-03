@@ -6,9 +6,12 @@
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/x509/extension.hpp>
 #include <cryptoplus/bio/bio_chain.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 #include <cryptoplus/asn1/utctime.hpp>
+#include <cryptoplus/pkey/rsa_key.hpp>
+#include <cryptoplus/pkey/pkey.hpp>
 
 #include <iostream>
 #include <string>
@@ -19,6 +22,7 @@
 int main()
 {
 	cryptoplus::crypto_initializer crypto_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	std::cout << "X509 sample" << std::endl;
@@ -31,6 +35,8 @@ int main()
 
 		x509::certificate certificate = x509::certificate::create();
 
+		// Subject and issuer names
+
 		const char cn[] = "My common name";
 		const char c[] = "FR";
 		const char o[] = "My organization";
@@ -42,18 +48,29 @@ int main()
 		// We copy the data from subject() to issuer().
 		certificate.set_issuer(certificate.subject());
 
+		// Serial number
+
 		certificate.set_serial_number(asn1::integer::from_long(42));
+
+		// Validity
 
 		asn1::utctime not_before = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::years(12));
 		asn1::utctime not_after = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::posix_time::hours(1));
 
-		not_before = asn1::utctime::from_string("110326145020+0205");
-
 		certificate.set_not_before(not_before);
 		certificate.set_not_after(not_after);
 
-		std::cout << asn1::string(not_before.raw()).str() << std::endl;
-		std::cout << boost::posix_time::to_iso_string(not_before.to_ptime()) << std::endl;
+		// Public key
+
+		cryptoplus::pkey::rsa_key rsa_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
+
+		certificate.set_public_key(pkey::pkey::from_rsa_key(rsa_key));
+
+		// X509 extensions
+
+		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_string("CA:FALSE")));
+
+		// Let's print the result
 
 		bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
 
