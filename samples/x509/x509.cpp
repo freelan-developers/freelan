@@ -35,6 +35,10 @@ int main()
 
 		x509::certificate certificate = x509::certificate::create();
 
+		// Set the version
+
+		certificate.set_version(2);
+
 		// Subject and issuer names
 
 		const char cn[] = "My common name";
@@ -68,7 +72,7 @@ int main()
 
 		// X509 extensions
 
-		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_string("CA:FALSE")));
+		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_string("CA:TRUE")));
 
 		// Sign the certificate
 
