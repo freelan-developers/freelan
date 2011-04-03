@@ -47,10 +47,10 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
+#include "../asn1/object.hpp"
+#include "../asn1/string.hpp"
 
-#include <openssl/x509v3.h>
-
-#include <string>
+#include <openssl/x509.h>
 
 namespace cryptoplus
 {
@@ -85,26 +85,20 @@ namespace cryptoplus
 				static extension take_ownership(pointer ptr);
 
 				/**
-				 * \brief Create an extension from a name and its value.
-				 * \param name The name.
-				 * \param value The value.
-				 * \param conf The conf. Default is NULL.
-				 * \param ctx The context. Default is NULL.
-				 *
-				 * No information about the last two fields could be found in the OpenSSL documentation, if you know what they mean, please tell me :)
-				 */
-				static extension from_name(const std::string& name, const std::string& value, LHASH* conf = NULL, X509V3_CTX* ctx = NULL);
-
-				/**
 				 * \brief Create an extension from a nid and its value.
 				 * \param nid The nid.
+				 * \param critical The critical flag.
 				 * \param value The value.
-				 * \param conf The conf. Default is NULL.
-				 * \param ctx The context. Default is NULL.
-				 *
-				 * No information about the last two fields could be found in the OpenSSL documentation, if you know what they mean, please tell me :)
 				 */
-				static extension from_nid(int nid, const std::string& value, LHASH* conf = NULL, X509V3_CTX* ctx = NULL);
+				static extension from_nid(int nid, bool critical, asn1::string value);
+
+				/**
+				 * \brief Create an extension from an ASN1 object and its value.
+				 * \param obj The ASN1 object.
+				 * \param critical The critical flag.
+				 * \param value The value.
+				 */
+				static extension from_obj(asn1::object obj, bool critical, asn1::string value);
 
 				/**
 				 * \brief Create a new empty extension.
@@ -159,13 +153,13 @@ namespace cryptoplus
 
 			return extension(_ptr, deleter);
 		}
-		inline extension extension::from_name(const std::string& name, const std::string& value, LHASH* conf, X509V3_CTX* ctx)
+		inline extension extension::from_nid(int nid, bool critical, asn1::string value)
 		{
-			return take_ownership(X509V3_EXT_conf(conf, ctx, const_cast<char *>(name.c_str()), const_cast<char*>(value.c_str())));
+			return take_ownership(X509_EXTENSION_create_by_NID(NULL, nid, critical ? 1 : 0, value.raw()));
 		}
-		inline extension extension::from_nid(int nid, const std::string& value, LHASH* conf, X509V3_CTX* ctx)
+		inline extension extension::from_obj(asn1::object obj, bool critical, asn1::string value)
 		{
-			return take_ownership(X509V3_EXT_conf_nid(conf, ctx, nid, const_cast<char*>(value.c_str())));
+			return take_ownership(X509_EXTENSION_create_by_OBJ(NULL, obj.raw(), critical ? 1 : 0, value.raw()));
 		}
 		inline extension::extension()
 		{
