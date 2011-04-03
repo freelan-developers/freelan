@@ -87,6 +87,14 @@ namespace cryptoplus
 				static string take_ownership(pointer ptr);
 
 				/**
+				 * \brief Create an ASN1 string from some data.
+				 * \param buf The data buffer.
+				 * \param buf_len The length of buf.
+				 * \return The ASN1 string.
+				 */
+				static string from_data(const void* buf, size_t buf_len);
+
+				/**
 				 * \brief Create an ASN1 string from a C-string.
 				 * \param str The string.
 				 * \return The ASN1 string.
@@ -199,6 +207,13 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return string(_ptr, deleter);
+		}
+		inline string string::from_data(const void* buf, size_t buf_len)
+		{
+			string result = create();
+			result.set_data(buf, buf_len);
+
+			return result;
 		}
 		inline string string::from_string(const char* str)
 		{
