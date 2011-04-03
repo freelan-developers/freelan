@@ -70,6 +70,19 @@ int main()
 
 		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_string("CA:FALSE")));
 
+		// Sign the certificate
+
+		certificate.sign(pkey::pkey::from_rsa_key(rsa_key), hash::message_digest_algorithm(NID_sha1));
+
+		// Save the certificate
+
+		boost::shared_ptr<FILE> certificate_file(fopen("certificate.crt", "w"), fclose);
+
+		if (certificate_file)
+		{
+			certificate.write_certificate(certificate_file.get());
+		}
+
 		// Let's print the result
 
 		bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
