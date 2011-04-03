@@ -157,7 +157,7 @@ namespace cryptoplus
 
 						iterator(certificate*, int);
 
-						certificate* m_certificate;
+						certificate* m_owner;
 						int m_index;
 
 						friend class certificate;
@@ -393,6 +393,21 @@ namespace cryptoplus
 				reverse_iterator rend();
 
 				/**
+				 * \brief Erase the given entry.
+				 * \param it An iterator to the entry to erase.
+				 * \return The next iterator.
+				 */
+				iterator erase(iterator it);
+
+				/**
+				 * \brief Erase the given entries.
+				 * \param first The first iterator.
+				 * \param last The last iterator.
+				 * \return last.
+				 */
+				iterator erase(iterator first, iterator last);
+
+				/**
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
@@ -608,12 +623,12 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
-		inline certificate::iterator::iterator() : m_certificate(NULL), m_index(0)
+		inline certificate::iterator::iterator() : m_owner(NULL), m_index(0)
 		{
 		}
 		inline certificate::iterator::value_type certificate::iterator::operator*()
 		{
-			return (*m_certificate)[m_index];
+			return (*m_owner)[m_index];
 		}
 		inline certificate::iterator::value_type certificate::iterator::operator->()
 		{
@@ -621,7 +636,7 @@ namespace cryptoplus
 		}
 		inline certificate::iterator::value_type certificate::iterator::operator[](int index)
 		{
-			return *iterator(m_certificate, m_index + index);
+			return *iterator(m_owner, m_index + index);
 		}
 		inline certificate::iterator& certificate::iterator::operator++()
 		{
@@ -663,7 +678,7 @@ namespace cryptoplus
 
 			return *this;
 		}
-		inline certificate::iterator::iterator(certificate* _certificate, int index) : m_certificate(_certificate), m_index(index)
+		inline certificate::iterator::iterator(certificate* _certificate, int index) : m_owner(_certificate), m_index(index)
 		{
 		}
 		inline certificate certificate::create()
@@ -790,6 +805,19 @@ namespace cryptoplus
 		{
 			return reverse_iterator(begin());
 		}
+		inline certificate::iterator certificate::erase(iterator it)
+		{
+			wrapped_value_type::take_ownership(X509_delete_ext(it.m_owner->ptr().get(), it.m_index));
+
+			return it;
+		}
+		inline certificate::iterator certificate::erase(iterator first, iterator last)
+		{
+			while (first != last)
+				first = erase(first);
+
+			return first;
+		}
 		inline pkey::pkey certificate::public_key()
 		{
 			return pkey::pkey(X509_get_pubkey(ptr().get()));
@@ -863,55 +891,55 @@ namespace cryptoplus
 		}
 		inline bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{
-			assert(lhs.m_certificate == rhs.m_certificate);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index == rhs.m_index);
 		}
 		inline bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{
-			assert(lhs.m_certificate == rhs.m_certificate);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index != rhs.m_index);
 		}
 		inline bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{
-			assert(lhs.m_certificate == rhs.m_certificate);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index < rhs.m_index);
 		}
 		inline bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{
-			assert(lhs.m_certificate == rhs.m_certificate);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index <= rhs.m_index);
 		}
 		inline bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{
-			assert(lhs.m_certificate == rhs.m_certificate);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index > rhs.m_index);
 		}
 		inline bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{
-			assert(lhs.m_certificate == rhs.m_certificate);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index >= rhs.m_index);
 		}
 		inline certificate::iterator operator+(const certificate::iterator& lhs, int rhs)
 		{
-			return certificate::iterator(lhs.m_certificate, lhs.m_index + rhs);
+			return certificate::iterator(lhs.m_owner, lhs.m_index + rhs);
 		}
 		inline certificate::iterator operator+(int lhs, const certificate::iterator& rhs)
 		{
-			return certificate::iterator(rhs.m_certificate, rhs.m_index + lhs);
+			return certificate::iterator(rhs.m_owner, rhs.m_index + lhs);
 		}
 		inline certificate::iterator operator-(const certificate::iterator& lhs, int rhs)
 		{
-			return certificate::iterator(lhs.m_certificate, lhs.m_index - rhs);
+			return certificate::iterator(lhs.m_owner, lhs.m_index - rhs);
 		}
 		inline certificate::iterator operator-(int lhs, const certificate::iterator& rhs)
 		{
-			return certificate::iterator(rhs.m_certificate, rhs.m_index - lhs);
+			return certificate::iterator(rhs.m_owner, rhs.m_index - lhs);
 		}
 		inline certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs)
 		{

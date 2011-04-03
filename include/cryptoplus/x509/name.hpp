@@ -160,7 +160,7 @@ namespace cryptoplus
 
 						iterator(name*, int);
 
-						name* m_name;
+						name* m_owner;
 						int m_index;
 
 						friend class name;
@@ -533,12 +533,12 @@ namespace cryptoplus
 		 */
 		int compare(const name& lhs, const name& rhs);
 
-		inline name::iterator::iterator() : m_name(NULL), m_index(0)
+		inline name::iterator::iterator() : m_owner(NULL), m_index(0)
 		{
 		}
 		inline name::iterator::value_type name::iterator::operator*()
 		{
-			return (*m_name)[m_index];
+			return (*m_owner)[m_index];
 		}
 		inline name::iterator::value_type name::iterator::operator->()
 		{
@@ -546,7 +546,7 @@ namespace cryptoplus
 		}
 		inline name::iterator::value_type name::iterator::operator[](int index)
 		{
-			return *iterator(m_name, m_index + index);
+			return *iterator(m_owner, m_index + index);
 		}
 		inline name::iterator& name::iterator::operator++()
 		{
@@ -588,7 +588,7 @@ namespace cryptoplus
 
 			return *this;
 		}
-		inline name::iterator::iterator(name* _name, int index) : m_name(_name), m_index(index)
+		inline name::iterator::iterator(name* _name, int index) : m_owner(_name), m_index(index)
 		{
 		}
 		inline name name::create()
@@ -661,12 +661,7 @@ namespace cryptoplus
 		}
 		inline name::iterator name::erase(iterator it)
 		{
-			X509_NAME_ENTRY* entry = X509_NAME_delete_entry(it.m_name->ptr().get(), it.m_index);
-
-			assert(entry);
-			error::throw_error_if_not(entry);
-
-			X509_NAME_ENTRY_free(entry);
+			wrapped_value_type::take_ownership(X509_NAME_delete_entry(it.m_owner->ptr().get(), it.m_index));
 
 			return it;
 		}
@@ -723,7 +718,7 @@ namespace cryptoplus
 		}
 		inline name::iterator name::insert(iterator position, wrapped_value_type entry)
 		{
-			assert(position.m_name == this);
+			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, 0));
 
@@ -731,32 +726,32 @@ namespace cryptoplus
 		}
 		inline void name::insert(iterator position, wrapped_value_type entry, int set)
 		{
-			assert(position.m_name == this);
+			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, set));
 		}
 		inline void name::insert(iterator position, const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
-			assert(position.m_name == this);
+			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
-			assert(position.m_name == this);
+			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, int nid, int type, const void* data, size_t data_len, int set)
 		{
-			assert(position.m_name == this);
+			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
 		}
 		inline void name::insert(iterator position, iterator first, iterator last)
 		{
-			assert(position.m_name == this);
-			assert(first.m_name == last.m_name);
+			assert(position.m_owner == this);
+			assert(first.m_owner == last.m_owner);
 
 			for(; first != last; ++first)
 			{
@@ -768,55 +763,55 @@ namespace cryptoplus
 		}
 		inline bool operator==(const name::iterator& lhs, const name::iterator& rhs)
 		{
-			assert(lhs.m_name == rhs.m_name);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index == rhs.m_index);
 		}
 		inline bool operator!=(const name::iterator& lhs, const name::iterator& rhs)
 		{
-			assert(lhs.m_name == rhs.m_name);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index != rhs.m_index);
 		}
 		inline bool operator<(const name::iterator& lhs, const name::iterator& rhs)
 		{
-			assert(lhs.m_name == rhs.m_name);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index < rhs.m_index);
 		}
 		inline bool operator<=(const name::iterator& lhs, const name::iterator& rhs)
 		{
-			assert(lhs.m_name == rhs.m_name);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index <= rhs.m_index);
 		}
 		inline bool operator>(const name::iterator& lhs, const name::iterator& rhs)
 		{
-			assert(lhs.m_name == rhs.m_name);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index > rhs.m_index);
 		}
 		inline bool operator>=(const name::iterator& lhs, const name::iterator& rhs)
 		{
-			assert(lhs.m_name == rhs.m_name);
+			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index >= rhs.m_index);
 		}
 		inline name::iterator operator+(const name::iterator& lhs, int rhs)
 		{
-			return name::iterator(lhs.m_name, lhs.m_index + rhs);
+			return name::iterator(lhs.m_owner, lhs.m_index + rhs);
 		}
 		inline name::iterator operator+(int lhs, const name::iterator& rhs)
 		{
-			return name::iterator(rhs.m_name, rhs.m_index + lhs);
+			return name::iterator(rhs.m_owner, rhs.m_index + lhs);
 		}
 		inline name::iterator operator-(const name::iterator& lhs, int rhs)
 		{
-			return name::iterator(lhs.m_name, lhs.m_index - rhs);
+			return name::iterator(lhs.m_owner, lhs.m_index - rhs);
 		}
 		inline name::iterator operator-(int lhs, const name::iterator& rhs)
 		{
-			return name::iterator(rhs.m_name, rhs.m_index - lhs);
+			return name::iterator(rhs.m_owner, rhs.m_index - lhs);
 		}
 		inline name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs)
 		{
