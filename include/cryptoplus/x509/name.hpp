@@ -103,20 +103,20 @@ namespace cryptoplus
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						wrapped_value_type operator*();
+						reference operator*();
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						wrapped_value_type operator->();
+						pointer operator->();
 
 						/**
 						 * \brief Dereference operator.
 						 * \param index The index to add or substract.
 						 * \return An iterator.
 						 */
-						wrapped_value_type operator[](int index);
+						reference operator[](int index);
 
 						/**
 						 * \brief Increment the iterator.
@@ -162,6 +162,7 @@ namespace cryptoplus
 
 						name* m_owner;
 						int m_index;
+						value_type m_cache;
 
 						friend class name;
 						friend bool operator==(const name::iterator& lhs, const name::iterator& rhs);
@@ -536,15 +537,15 @@ namespace cryptoplus
 		inline name::iterator::iterator() : m_owner(NULL), m_index(0)
 		{
 		}
-		inline name::iterator::value_type name::iterator::operator*()
+		inline name::iterator::reference name::iterator::operator*()
 		{
-			return (*m_owner)[m_index];
+			return (m_cache = (*m_owner)[m_index]);
 		}
-		inline name::iterator::value_type name::iterator::operator->()
+		inline name::iterator::pointer name::iterator::operator->()
 		{
-			return operator*();
+			return &operator*();
 		}
-		inline name::iterator::value_type name::iterator::operator[](int index)
+		inline name::iterator::reference name::iterator::operator[](int index)
 		{
 			return *iterator(m_owner, m_index + index);
 		}
