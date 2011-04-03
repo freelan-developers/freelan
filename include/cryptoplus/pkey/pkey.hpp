@@ -93,6 +93,27 @@ namespace cryptoplus
 				static pkey take_ownership(pointer ptr);
 
 				/**
+				 * \brief Create a pkey from a RSA key.
+				 * \param key The RSA key.
+				 * \return The pkey.
+				 */
+				static pkey from_rsa_key(rsa_key key);
+
+				/**
+				 * \brief Create a pkey from a DSA key.
+				 * \param key The DSA key.
+				 * \return The pkey.
+				 */
+				static pkey from_dsa_key(dsa_key key);
+
+				/**
+				 * \brief Create a pkey from a DH key.
+				 * \param key The DH key.
+				 * \return The pkey.
+				 */
+				static pkey from_dh_key(dh_key key);
+
+				/**
 				 * \brief Load a private EVP_PKEY key from a BIO.
 				 * \param bio The BIO.
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
@@ -397,6 +418,27 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return pkey(_ptr, deleter);
+		}
+		inline pkey pkey::from_rsa_key(rsa_key key)
+		{
+			pkey result = create();
+			result.set_rsa_key(key);
+
+			return result;
+		}
+		inline pkey pkey::from_dsa_key(dsa_key key)
+		{
+			pkey result = create();
+			result.set_dsa_key(key);
+
+			return result;
+		}
+		inline pkey pkey::from_dh_key(dh_key key)
+		{
+			pkey result = create();
+			result.set_dh_key(key);
+
+			return result;
 		}
 		inline pkey pkey::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
