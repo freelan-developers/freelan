@@ -87,6 +87,20 @@ namespace cryptoplus
 				static string take_ownership(pointer ptr);
 
 				/**
+				 * \brief Create an ASN1 string from a C-string.
+				 * \param str The string.
+				 * \return The ASN1 string.
+				 */
+				static string from_string(const char* str);
+
+				/**
+				 * \brief Create an ASN1 string from a std::string.
+				 * \param str The string.
+				 * \return The ASN1 string.
+				 */
+				static string from_string(const std::string& str);
+
+				/**
 				 * \brief Create a new empty string.
 				 */
 				string();
@@ -185,6 +199,20 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return string(_ptr, deleter);
+		}
+		inline string string::from_string(const char* str)
+		{
+			string result = create();
+			result.set_data(str);
+
+			return result;
+		}
+		inline string string::from_string(const std::string& str)
+		{
+			string result = create();
+			result.set_data(str);
+
+			return result;
 		}
 		inline string::string()
 		{
