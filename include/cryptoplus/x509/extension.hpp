@@ -104,12 +104,12 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create an extension from a nid and its value, using a configuration file and a context.
-				 * \param conf The configuration file. Can be NULL.
-				 * \param ctx The context.
 				 * \param nid The nid.
 				 * \param value The value.
+				 * \param ctx The context. Can be NULL (defaut).
+				 * \param conf The configuration file. Can be NULL (default).
 				 */
-				static extension from_nconf_nid(CONF* conf, x509v3_context ctx, int nid, const char* value);
+				static extension from_nconf_nid(int nid, const char* value, x509v3_context ctx = NULL, CONF* conf = NULL);
 
 				/**
 				 * \brief Create a new empty extension.
@@ -208,7 +208,7 @@ namespace cryptoplus
 		{
 			return take_ownership(X509_EXTENSION_create_by_OBJ(NULL, obj.raw(), critical ? 1 : 0, data.raw()));
 		}
-		inline extension extension::from_nconf_nid(CONF* conf, x509v3_context ctx, int nid, const char* value)
+		inline extension extension::from_nconf_nid(int nid, const char* value, x509v3_context ctx, CONF* conf)
 		{
 			return take_ownership(X509V3_EXT_nconf_nid(conf, ctx.raw(), nid, const_cast<char*>(value)));
 		}

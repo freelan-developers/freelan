@@ -72,7 +72,7 @@ int main()
 
 		// X509 extensions
 
-		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_string("CA:TRUE")));
+		certificate.push_back(x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
 
 		// Sign the certificate
 
