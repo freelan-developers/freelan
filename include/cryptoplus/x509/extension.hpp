@@ -85,20 +85,20 @@ namespace cryptoplus
 				static extension take_ownership(pointer ptr);
 
 				/**
-				 * \brief Create an extension from a nid and its value.
+				 * \brief Create an extension from a nid and its data.
 				 * \param nid The nid.
 				 * \param critical The critical flag.
-				 * \param value The value.
+				 * \param data The data.
 				 */
-				static extension from_nid(int nid, bool critical, asn1::string value);
+				static extension from_nid(int nid, bool critical, asn1::string data);
 
 				/**
-				 * \brief Create an extension from an ASN1 object and its value.
+				 * \brief Create an extension from an ASN1 object and its data.
 				 * \param obj The ASN1 object.
 				 * \param critical The critical flag.
-				 * \param value The value.
+				 * \param data The data.
 				 */
-				static extension from_obj(asn1::object obj, bool critical, asn1::string value);
+				static extension from_obj(asn1::object obj, bool critical, asn1::string data);
 
 				/**
 				 * \brief Create a new empty extension.
@@ -117,6 +117,42 @@ namespace cryptoplus
 				 * \return The clone.
 				 */
 				extension clone() const;
+
+				/**
+				 * \brief Get the object.
+				 * \return The ASN1 object.
+				 */
+				asn1::object object();
+
+				/**
+				 * \brief Set the object.
+				 * \param obj The ASN1 object.
+				 */
+				void set_object(asn1::object obj);
+
+				/**
+				 * \brief Get the critical flag.
+				 * \return The critical flag.
+				 */
+				bool critical();
+
+				/**
+				 * \brief Set the critical flag.
+				 * \param critical The critical flag.
+				 */
+				void set_critical(bool critical);
+
+				/**
+				 * \brief Get the data.
+				 * \return The data.
+				 */
+				asn1::string data();
+
+				/**
+				 * \brief Set the data.
+				 * \param data The data.
+				 */
+				void set_data(asn1::string data);
 
 			private:
 
@@ -153,13 +189,13 @@ namespace cryptoplus
 
 			return extension(_ptr, deleter);
 		}
-		inline extension extension::from_nid(int nid, bool critical, asn1::string value)
+		inline extension extension::from_nid(int nid, bool critical, asn1::string data)
 		{
-			return take_ownership(X509_EXTENSION_create_by_NID(NULL, nid, critical ? 1 : 0, value.raw()));
+			return take_ownership(X509_EXTENSION_create_by_NID(NULL, nid, critical ? 1 : 0, data.raw()));
 		}
-		inline extension extension::from_obj(asn1::object obj, bool critical, asn1::string value)
+		inline extension extension::from_obj(asn1::object obj, bool critical, asn1::string data)
 		{
-			return take_ownership(X509_EXTENSION_create_by_OBJ(NULL, obj.raw(), critical ? 1 : 0, value.raw()));
+			return take_ownership(X509_EXTENSION_create_by_OBJ(NULL, obj.raw(), critical ? 1 : 0, data.raw()));
 		}
 		inline extension::extension()
 		{
@@ -170,6 +206,30 @@ namespace cryptoplus
 		inline extension extension::clone() const
 		{
 			return extension(X509_EXTENSION_dup(ptr().get()));
+		}
+		inline asn1::object extension::object()
+		{
+			return X509_EXTENSION_get_object(ptr().get());
+		}
+		inline void extension::set_object(asn1::object obj)
+		{
+			error::throw_error_if_not(X509_EXTENSION_set_object(ptr().get(), obj.raw()));
+		}
+		inline bool extension::critical()
+		{
+			return (X509_EXTENSION_get_critical(ptr().get()) != 0);
+		}
+		inline void extension::set_critical(bool _critical)
+		{
+			error::throw_error_if_not(X509_EXTENSION_set_critical(ptr().get(), _critical ? 1 : 0));
+		}
+		inline asn1::string extension::data()
+		{
+			return X509_EXTENSION_get_data(ptr().get());
+		}
+		inline void extension::set_data(asn1::string _data)
+		{
+			error::throw_error_if_not(X509_EXTENSION_set_data(ptr().get(), _data.raw()));
 		}
 		inline extension::extension(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
