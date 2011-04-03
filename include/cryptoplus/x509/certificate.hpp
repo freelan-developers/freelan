@@ -52,6 +52,7 @@
 #include "../asn1/integer.hpp"
 #include "../asn1/utctime.hpp"
 #include "name.hpp"
+#include "extension.hpp"
 
 #include <openssl/x509.h>
 #include <openssl/pem.h>
@@ -72,6 +73,111 @@ namespace cryptoplus
 		class certificate : public pointer_wrapper<X509>
 		{
 			public:
+
+				/**
+				 * \brief The wrapped value type.
+				 */
+				typedef extension wrapped_value_type;
+
+				/**
+				 * \brief The wrapper pointer type.
+				 */
+				typedef wrapped_value_type* wrapped_pointer;
+
+				/**
+				 * \brief An iterator class.
+				 */
+				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
+				{
+					public:
+
+						/**
+						 * \brief Create an empty iterator.
+						 */
+						iterator();
+
+						/**
+						 * \brief Dereference operator.
+						 * \return The value.
+						 */
+						wrapped_value_type operator*();
+
+						/**
+						 * \brief Dereference operator.
+						 * \return The value.
+						 */
+						wrapped_value_type operator->();
+
+						/**
+						 * \brief Dereference operator.
+						 * \param index The index to add or substract.
+						 * \return An iterator.
+						 */
+						wrapped_value_type operator[](int index);
+
+						/**
+						 * \brief Increment the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator++();
+
+						/**
+						 * \brief Increment the iterator.
+						 * \return The old value.
+						 */
+						iterator operator++(int);
+
+						/**
+						 * \brief Decrement the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator--();
+
+						/**
+						 * \brief Decrement the iterator.
+						 * \return The old value.
+						 */
+						iterator operator--(int);
+
+						/**
+						 * \brief Increment the iterator.
+						 * \param cnt The number to add to the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator+=(int cnt);
+
+						/**
+						 * \brief Decrement the iterator.
+						 * \param cnt The number to substract from the iterator.
+						 * \return A reference to this.
+						 */
+						iterator& operator-=(int cnt);
+
+					private:
+
+						iterator(certificate*, int);
+
+						certificate* m_certificate;
+						int m_index;
+
+						friend class certificate;
+						friend bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						friend bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						friend bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						friend bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						friend bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						friend bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						friend certificate::iterator operator+(const certificate::iterator& lhs, int rhs);
+						friend certificate::iterator operator+(int lhs, const certificate::iterator& rhs);
+						friend certificate::iterator operator-(const certificate::iterator& lhs, int rhs);
+						friend certificate::iterator operator-(int lhs, const certificate::iterator& rhs);
+						friend certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs);
+				};
+
+				/**
+				* \brief Reverse iterator type.
+				*/
+				typedef std::reverse_iterator<iterator> reverse_iterator;
 
 				/**
 				 * \brief A PEM passphrase callback type.
@@ -249,6 +355,44 @@ namespace cryptoplus
 				void print(bio::bio_ptr bio);
 
 				/**
+				 * \brief Get the count of entries.
+				 * \return The count of entries.
+				 */
+				int count();
+
+				/**
+				 * \brief Get the entry at the specified position.
+				 * \param index The index. Must be a valid index position or the behavior is undefined. See count().
+				 * \return The name entry.
+				 * \see count().
+				 */
+				wrapped_value_type operator[](int index);
+
+				/**
+				 * \brief Get the begin iterator.
+				 * \return The begin iterator.
+				 */
+				iterator begin();
+
+				/**
+				 * \brief Get the end iterator.
+				 * \return The end iterator.
+				 */
+				iterator end();
+
+				/**
+				 * \brief Get the reverse begin iterator.
+				 * \return The reverse begin iterator.
+				 */
+				reverse_iterator rbegin();
+
+				/**
+				 * \brief Get the reverse end iterator.
+				 * \return The reverse end iterator.
+				 */
+				reverse_iterator rend();
+
+				/**
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
@@ -361,6 +505,94 @@ namespace cryptoplus
 		};
 
 		/**
+		 * \brief Compare two certificate::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two certificate::iterator instances point to the same element.
+		 */
+		bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Compare two certificate::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two certificate::iterator instances do not point to the same element.
+		 */
+		bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Compare two certificate::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is smaller than rhs.
+		 */
+		bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Compare two certificate::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is smaller than or equal to rhs.
+		 */
+		bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Compare two certificate::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is greater than rhs.
+		 */
+		bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Compare two certificate::iterator instances.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs is greater than or equal to rhs.
+		 */
+		bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Add an integer value to an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		certificate::iterator operator+(const certificate::iterator& lhs, int rhs);
+
+		/**
+		 * \brief Add an integer value to an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		certificate::iterator operator+(int lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Substract an integer value from an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		certificate::iterator operator-(const certificate::iterator& lhs, int rhs);
+
+		/**
+		 * \brief Substract an integer value from an iterator.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The new iterator.
+		 */
+		certificate::iterator operator-(int lhs, const certificate::iterator& rhs);
+
+		/**
+		 * \brief Substract a iterator from another iterator and gets the index distance.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return The distance.
+		 */
+		certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs);
+
+		/**
 		 * \brief Compare two certificate instances.
 		 * \param lhs The left argument.
 		 * \param rhs The right argument.
@@ -376,6 +608,64 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
+		inline certificate::iterator::iterator() : m_certificate(NULL), m_index(0)
+		{
+		}
+		inline certificate::iterator::value_type certificate::iterator::operator*()
+		{
+			return (*m_certificate)[m_index];
+		}
+		inline certificate::iterator::value_type certificate::iterator::operator->()
+		{
+			return operator*();
+		}
+		inline certificate::iterator::value_type certificate::iterator::operator[](int index)
+		{
+			return *iterator(m_certificate, m_index + index);
+		}
+		inline certificate::iterator& certificate::iterator::operator++()
+		{
+			++m_index;
+
+			return *this;
+		}
+		inline certificate::iterator certificate::iterator::operator++(int)
+		{
+			iterator old = *this;
+
+			++m_index;
+
+			return old;
+		}
+		inline certificate::iterator& certificate::iterator::operator--()
+		{
+			--m_index;
+
+			return *this;
+		}
+		inline certificate::iterator certificate::iterator::operator--(int)
+		{
+			iterator old = *this;
+
+			--m_index;
+
+			return old;
+		}
+		inline certificate::iterator& certificate::iterator::operator+=(int cnt)
+		{
+			m_index += cnt;
+
+			return *this;
+		}
+		inline certificate::iterator& certificate::iterator::operator-=(int cnt)
+		{
+			m_index -= cnt;
+
+			return *this;
+		}
+		inline certificate::iterator::iterator(certificate* _certificate, int index) : m_certificate(_certificate), m_index(index)
+		{
+		}
 		inline certificate certificate::create()
 		{
 			pointer _ptr = X509_new();
@@ -476,6 +766,30 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_print(bio.raw(), ptr().get()));
 		}
+		inline int certificate::count()
+		{
+			return X509_get_ext_count(ptr().get());
+		}
+		inline certificate::wrapped_value_type certificate::operator[](int index)
+		{
+			return wrapped_value_type(X509_get_ext(ptr().get(), index));
+		}
+		inline certificate::iterator certificate::begin()
+		{
+			return iterator(this, 0);
+		}
+		inline certificate::iterator certificate::end()
+		{
+			return iterator(this, count());
+		}
+		inline certificate::reverse_iterator certificate::rbegin()
+		{
+			return reverse_iterator(end());
+		}
+		inline certificate::reverse_iterator certificate::rend()
+		{
+			return reverse_iterator(begin());
+		}
 		inline pkey::pkey certificate::public_key()
 		{
 			return pkey::pkey(X509_get_pubkey(ptr().get()));
@@ -546,6 +860,62 @@ namespace cryptoplus
 		}
 		inline certificate::certificate(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
+		}
+		inline bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			assert(lhs.m_certificate == rhs.m_certificate);
+
+			return (lhs.m_index == rhs.m_index);
+		}
+		inline bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			assert(lhs.m_certificate == rhs.m_certificate);
+
+			return (lhs.m_index != rhs.m_index);
+		}
+		inline bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			assert(lhs.m_certificate == rhs.m_certificate);
+
+			return (lhs.m_index < rhs.m_index);
+		}
+		inline bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			assert(lhs.m_certificate == rhs.m_certificate);
+
+			return (lhs.m_index <= rhs.m_index);
+		}
+		inline bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			assert(lhs.m_certificate == rhs.m_certificate);
+
+			return (lhs.m_index > rhs.m_index);
+		}
+		inline bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			assert(lhs.m_certificate == rhs.m_certificate);
+
+			return (lhs.m_index >= rhs.m_index);
+		}
+		inline certificate::iterator operator+(const certificate::iterator& lhs, int rhs)
+		{
+			return certificate::iterator(lhs.m_certificate, lhs.m_index + rhs);
+		}
+		inline certificate::iterator operator+(int lhs, const certificate::iterator& rhs)
+		{
+			return certificate::iterator(rhs.m_certificate, rhs.m_index + lhs);
+		}
+		inline certificate::iterator operator-(const certificate::iterator& lhs, int rhs)
+		{
+			return certificate::iterator(lhs.m_certificate, lhs.m_index - rhs);
+		}
+		inline certificate::iterator operator-(int lhs, const certificate::iterator& rhs)
+		{
+			return certificate::iterator(rhs.m_certificate, rhs.m_index - lhs);
+		}
+		inline certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		{
+			return lhs.m_index - rhs.m_index;
 		}
 		inline bool operator==(const certificate& lhs, const certificate& rhs)
 		{
