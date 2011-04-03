@@ -48,9 +48,8 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 
-#include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
-#include <cstring>
 #include <string>
 
 namespace cryptoplus
@@ -84,6 +83,28 @@ namespace cryptoplus
 				 * \return A extension_entry.
 				 */
 				static extension take_ownership(pointer ptr);
+
+				/**
+				 * \brief Create an extension from a name and its value.
+				 * \param name The name.
+				 * \param value The value.
+				 * \param conf The conf. Default is NULL.
+				 * \param ctx The context. Default is NULL.
+				 *
+				 * No information about the last two fields could be found in the OpenSSL documentation, if you know what they mean, please tell me :)
+				 */
+				static extension from_name(const std::string& name, const std::string& value, LHASH* conf = NULL, X509V3_CTX* ctx = NULL);
+
+				/**
+				 * \brief Create an extension from a nid and its value.
+				 * \param nid The nid.
+				 * \param value The value.
+				 * \param conf The conf. Default is NULL.
+				 * \param ctx The context. Default is NULL.
+				 *
+				 * No information about the last two fields could be found in the OpenSSL documentation, if you know what they mean, please tell me :)
+				 */
+				static extension from_nid(int nid, const std::string& value, LHASH* conf = NULL, X509V3_CTX* ctx = NULL);
 
 				/**
 				 * \brief Create a new empty extension.
@@ -137,6 +158,14 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return extension(_ptr, deleter);
+		}
+		inline extension extension::from_name(const std::string& name, const std::string& value, LHASH* conf, X509V3_CTX* ctx)
+		{
+			return take_ownership(X509V3_EXT_conf(conf, ctx, const_cast<char *>(name.c_str()), const_cast<char*>(value.c_str())));
+		}
+		inline extension extension::from_nid(int nid, const std::string& value, LHASH* conf, X509V3_CTX* ctx)
+		{
+			return take_ownership(X509V3_EXT_conf_nid(conf, ctx, nid, const_cast<char*>(value.c_str())));
 		}
 		inline extension::extension()
 		{
