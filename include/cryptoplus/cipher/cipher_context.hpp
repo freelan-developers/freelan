@@ -120,6 +120,8 @@ namespace cryptoplus
 				 * \param pkeys_begin A pointer to the first public pkey to use.
 				 * \param pkeys_end A pointer past the last public pkey to use.
 				 * \return The public encrypted shared secret keys array.
+				 * \see seal_update
+				 * \see seal_finalize
 				 */
 				template <typename T>
 				std::vector<std::vector<unsigned char> > seal_initialize(const cipher_algorithm& algorithm, void* iv, T pkeys_begin, T pkeys_end);
@@ -130,6 +132,8 @@ namespace cryptoplus
 				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
 				 * \param pkey The public pkey to use.
 				 * \return The public encrypted shared secret key.
+				 * \see seal_update
+				 * \see seal_finalize
 				 */
 				std::vector<unsigned char> seal_initialize(const cipher_algorithm& algorithm, void* iv, pkey::pkey pkey);
 
@@ -140,6 +144,8 @@ namespace cryptoplus
 				 * \param key_len The length of key.
 				 * \param iv The iv to use (if one is needed for the specified algorithm, NULL otherwise). Must match algorithm.iv_length().
 				 * \param pkey The private pkey to use.
+				 * \see open_update
+				 * \see open_finalize
 				 */
 				void open_initialize(const cipher_algorithm& algorithm, const void* key, size_t key_len, const void* iv, pkey::pkey pkey);
 
@@ -227,7 +233,7 @@ namespace cryptoplus
 				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
 				 * \return The number of bytes written or 0 on failure.
 				 *
-				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
+				 * After a call to seal_finalize() no more call to seal_update() can be made unless seal_initialize() is called again first.
 				 */
 				void seal_finalize(void* out, size_t& out_len);
 
@@ -237,7 +243,7 @@ namespace cryptoplus
 				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
 				 * \return The number of bytes written or 0 on failure.
 				 *
-				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
+				 * After a call to open_finalize() no more call to open_update() can be made unless open_initialize() is called again first.
 				 */
 				void open_finalize(void* out, size_t& out_len);
 
