@@ -88,6 +88,14 @@ namespace cryptoplus
 				typedef wrapped_value_type* wrapped_pointer;
 
 				/**
+				 * \brief Load a X509 name in DER format.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The name.
+				 */
+				static name from_der(const void* buf, size_t buf_len);
+
+				/**
 				 * \brief An iterator class.
 				 */
 				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
@@ -209,6 +217,19 @@ namespace cryptoplus
 				 * \warning The caller is still responsible for freeing the memory.
 				 */
 				name(pointer ptr);
+
+				/**
+				 * \brief Write the name in DER format to a buffer.
+				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
+				 * \return The size written or to be written.
+				 */
+				size_t write_der(void* buf);
+
+				/**
+				 * \brief Write the name in DER format to a buffer.
+				 * \return The buffer.
+				 */
+				std::vector<unsigned char> write_der();
 
 				/**
 				 * \brief Clone the name instance.
@@ -534,6 +555,12 @@ namespace cryptoplus
 		 */
 		int compare(const name& lhs, const name& rhs);
 
+		inline name name::from_der(const void* buf, size_t buf_len)
+		{
+			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
+
+			return take_ownership(d2i_X509_NAME(NULL, &pbuf, buf_len));
+		}
 		inline name::iterator::iterator() : m_owner(NULL), m_index(0)
 		{
 		}
@@ -611,6 +638,24 @@ namespace cryptoplus
 		}
 		inline name::name(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline size_t name::write_der(void* buf)
+		{
+			unsigned char* out = static_cast<unsigned char*>(buf);
+
+			int result = i2d_X509_NAME(ptr().get(), &out);
+
+			error::throw_error_if(result < 0);
+
+			return result;
+		}
+		inline std::vector<unsigned char> name::write_der()
+		{
+			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+
+			write_der(&result[0]);
+
+			return result;
 		}
 		inline name name::clone() const
 		{
