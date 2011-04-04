@@ -76,7 +76,7 @@ You may also submit patches, features, bug fixes (please use: push requests) and
 What about all the ugly `const_cast<>` ?
 ----------------------------------------
 
-This is probably what I hate the most when I need to interface my const-correct code with OpenSSL: you must either copy the data to writable buffer or `const_cast<>` it (with all the risks that comes along) before issuing the call.
+This is probably what I hate the most when I need to interface my const-correct code with OpenSSL: you must either copy the data to a writable buffer or `const_cast<>` it (with all the risks that comes along) before issuing the call.
 
 Doing a `const_cast<>` is not that bad as long as you have the guarantee that the calling function will not attempt to modify the input buffer. Everytime I had to put a `const_cast<>` somewhere, I double (even triple)-checked both OpenSSL documentation and source code to be sure that I could reasonably assume that the variable was not meant to be modified.
 
