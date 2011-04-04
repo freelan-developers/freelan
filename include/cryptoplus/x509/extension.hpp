@@ -87,6 +87,14 @@ namespace cryptoplus
 				static extension take_ownership(pointer ptr);
 
 				/**
+				 * \brief Load a X509 extension in DER format.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The name.
+				 */
+				static extension from_der(const void* buf, size_t buf_len);
+
+				/**
 				 * \brief Create an extension from a nid and its data.
 				 * \param nid The nid.
 				 * \param critical The critical flag.
@@ -122,6 +130,19 @@ namespace cryptoplus
 				 * \warning The caller is still responsible for freeing the memory.
 				 */
 				extension(pointer ptr);
+
+				/**
+				 * \brief Write the extension in DER format to a buffer.
+				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
+				 * \return The size written or to be written.
+				 */
+				size_t write_der(void* buf);
+
+				/**
+				 * \brief Write the extension in DER format to a buffer.
+				 * \return The buffer.
+				 */
+				std::vector<unsigned char> write_der();
 
 				/**
 				 * \brief Clone the extension instance.
@@ -200,6 +221,12 @@ namespace cryptoplus
 
 			return extension(_ptr, deleter);
 		}
+		inline extension extension::from_der(const void* buf, size_t buf_len)
+		{
+			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
+
+			return take_ownership(d2i_X509_EXTENSION(NULL, &pbuf, buf_len));
+		}
 		inline extension extension::from_nid(int nid, bool critical, asn1::string data)
 		{
 			return take_ownership(X509_EXTENSION_create_by_NID(NULL, nid, critical ? 1 : 0, data.raw()));
@@ -217,6 +244,24 @@ namespace cryptoplus
 		}
 		inline extension::extension(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline size_t extension::write_der(void* buf)
+		{
+			unsigned char* out = static_cast<unsigned char*>(buf);
+
+			int result = i2d_X509_EXTENSION(ptr().get(), &out);
+
+			error::throw_error_if(result < 0);
+
+			return result;
+		}
+		inline std::vector<unsigned char> extension::write_der()
+		{
+			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+
+			write_der(&result[0]);
+
+			return result;
 		}
 		inline extension extension::clone() const
 		{
