@@ -62,7 +62,7 @@ Using libcryptoplus, you will:
 
 So sure, you can always use OpenSSL directly, that is what I did the past few years as well. But how many time did I wish there was a more C++ alternative ? Now, there is. And it is free ! :)
 
-You claim that almost everything is supported, but <some functionality> is missing !
+You claim that almost everything is supported, but [some functionality] is missing !
 ------------------------------------------------------------------------------------
 
 I tried to implement everything I could but surely, some parts remain unimplemented.
