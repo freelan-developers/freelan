@@ -91,6 +91,14 @@ namespace cryptoplus
 				static name_entry take_ownership(pointer ptr);
 
 				/**
+				 * \brief Load a X509 name entry in DER format.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The name.
+				 */
+				static name_entry from_der(const void* buf, size_t buf_len);
+
+				/**
 				 * \brief Create a X509 name entry from an ASN1 object.
 				 * \param object The object.
 				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
@@ -167,6 +175,19 @@ namespace cryptoplus
 				std::string long_name();
 
 				/**
+				 * \brief Write the name entry in DER format to a buffer.
+				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
+				 * \return The size written or to be written.
+				 */
+				size_t write_der(void* buf);
+
+				/**
+				 * \brief Write the name entry in DER format to a buffer.
+				 * \return The buffer.
+				 */
+				std::vector<unsigned char> write_der();
+
+				/**
 				 * \brief Clone the name_entry instance.
 				 * \return The clone.
 				 */
@@ -206,6 +227,12 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return name_entry(_ptr, deleter);
+		}
+		inline name_entry name_entry::from_der(const void* buf, size_t buf_len)
+		{
+			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
+
+			return take_ownership(d2i_X509_NAME_ENTRY(NULL, &pbuf, buf_len));
 		}
 		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
 		{
@@ -248,6 +275,24 @@ namespace cryptoplus
 		inline std::string name_entry::long_name()
 		{
 			return OBJ_nid2ln(nid());
+		}
+		inline size_t name_entry::write_der(void* buf)
+		{
+			unsigned char* out = static_cast<unsigned char*>(buf);
+
+			int result = i2d_X509_NAME_ENTRY(ptr().get(), &out);
+
+			error::throw_error_if(result < 0);
+
+			return result;
+		}
+		inline std::vector<unsigned char> name_entry::write_der()
+		{
+			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+
+			write_der(&result[0]);
+
+			return result;
 		}
 		inline name_entry name_entry::clone() const
 		{
