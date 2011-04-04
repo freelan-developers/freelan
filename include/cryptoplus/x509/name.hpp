@@ -88,14 +88,6 @@ namespace cryptoplus
 				typedef wrapped_value_type* wrapped_pointer;
 
 				/**
-				 * \brief Load a X509 name in DER format.
-				 * \param buf The buffer.
-				 * \param buf_len The length of buf.
-				 * \return The name.
-				 */
-				static name from_der(const void* buf, size_t buf_len);
-
-				/**
 				 * \brief An iterator class.
 				 */
 				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
@@ -205,6 +197,14 @@ namespace cryptoplus
 				 * \return A name_entry.
 				 */
 				static name take_ownership(pointer ptr);
+
+				/**
+				 * \brief Load a X509 name in DER format.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The name.
+				 */
+				static name from_der(const void* buf, size_t buf_len);
 
 				/**
 				 * \brief Create a new empty name.
@@ -555,12 +555,6 @@ namespace cryptoplus
 		 */
 		int compare(const name& lhs, const name& rhs);
 
-		inline name name::from_der(const void* buf, size_t buf_len)
-		{
-			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
-
-			return take_ownership(d2i_X509_NAME(NULL, &pbuf, buf_len));
-		}
 		inline name::iterator::iterator() : m_owner(NULL), m_index(0)
 		{
 		}
@@ -632,6 +626,12 @@ namespace cryptoplus
 			error::throw_error_if_not(_ptr);
 
 			return name(_ptr, deleter);
+		}
+		inline name name::from_der(const void* buf, size_t buf_len)
+		{
+			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
+
+			return take_ownership(d2i_X509_NAME(NULL, &pbuf, buf_len));
 		}
 		inline name::name()
 		{
