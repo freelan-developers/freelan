@@ -289,10 +289,10 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a X509 certificate by *NOT* taking ownership of an existing X509* pointer.
-				 * \param x509 The X509* pointer.
+				 * \param ptr The X509* pointer.
 				 * \warning The caller is still responsible for freeing the memory.
 				 */
-				certificate(X509* x509);
+				certificate(pointer ptr);
 
 				/**
 				 * \brief Write the certificate in DER format to a BIO.
