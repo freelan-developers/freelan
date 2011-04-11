@@ -8,9 +8,7 @@ It provides exception safe classes and functions to deal with symmetric ciphers,
 Which parts of the OpenSSL crypto library does it provide ?
 -----------------------------------------------------------
 
-In the end: everything.
-
-From now on, here is what is currently implemented:
+Here is what is currently implemented:
 
  - HMAC
  - Error handling
@@ -19,6 +17,7 @@ From now on, here is what is currently implemented:
  - PBKDF2
  - Random
  - Symmetric Ciphers
+ - X509
  - EVP
  - DER
  - BIO
@@ -31,9 +30,6 @@ From now on, here is what is currently implemented:
    - Diffie-Hellman
    - EVP PKEY
 
-And here is what is left to be done:
-
- - X509
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
 
