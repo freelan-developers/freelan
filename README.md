@@ -1,7 +1,7 @@
 libcryptoplus
 =============
 
-libcryptoplus stands a lightweight, simple, yet complete, C++ wrapper around the OpenSSL cryptographic library. libcryptoplus is portable across all operating systems and architectures : as long as OpenSSL compiles and run on your system, libcryptoplus should compile and run too.
+libcryptoplus stands a lightweight, simple, yet complete, C++ wrapper around the OpenSSL cryptographic library. libcryptoplus is portable across all operating systems and architectures : as long as OpenSSL compiles and runs on your system, libcryptoplus should compile and run too.
 
 It provides exception safe classes and functions to deal with symmetric ciphers, public key cryptography, certificates, authentication codes, hash functions and data encoding.
 
