@@ -53,6 +53,7 @@
 #include "../asn1/utctime.hpp"
 #include "name.hpp"
 #include "extension.hpp"
+#include "certificate_request.hpp"
 
 #include <openssl/x509.h>
 #include <openssl/pem.h>
@@ -579,6 +580,14 @@ namespace cryptoplus
 				 */
 				bool verify_private_key(pkey::pkey pkey);
 
+				/**
+				 * \brief Generate a X509 certificate request from this certificate.
+				 * \param pkey The private key to use to sign the request.
+				 * \param The message digest algorithm to use to sign the request.
+				 * \return The certificate request.
+				 */
+				certificate_request to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
+
 			private:
 
 				certificate(pointer _ptr, deleter_type _del);
@@ -1002,6 +1011,10 @@ namespace cryptoplus
 		inline bool certificate::verify_private_key(pkey::pkey pkey)
 		{
 			return X509_check_private_key(ptr().get(), pkey.raw()) == 1;
+		}
+		inline certificate_request certificate::to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
+		{
+			return certificate_request::take_ownership(X509_to_X509_REQ(ptr().get(), pkey.raw(), algorithm.raw()));
 		}
 		inline certificate::certificate(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
