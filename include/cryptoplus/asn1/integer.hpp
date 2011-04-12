@@ -230,11 +230,11 @@ namespace cryptoplus
 		}
 		inline void integer::set_value(long l)
 		{
-			error::throw_error_if_not(ASN1_INTEGER_set(ptr().get(), l));
+			error::throw_error_if_not(ASN1_INTEGER_set(ptr().get(), l) != 0);
 		}
 		inline void integer::set_value(bn::bignum bn)
 		{
-			error::throw_error_if_not(BN_to_ASN1_INTEGER(bn.raw(), ptr().get()));
+			error::throw_error_if_not(BN_to_ASN1_INTEGER(bn.raw(), ptr().get()) != 0);
 		}
 		inline long integer::to_long()
 		{
@@ -265,7 +265,7 @@ namespace cryptoplus
 		}
 		inline void integer::read(bio::bio_ptr bio, const void* buf, size_t buf_len)
 		{
-			error::throw_error_if_not(a2i_ASN1_INTEGER(bio.raw(), ptr().get(), static_cast<char*>(const_cast<void*>(buf)), buf_len));
+			error::throw_error_if_not(a2i_ASN1_INTEGER(bio.raw(), ptr().get(), static_cast<char*>(const_cast<void*>(buf)), buf_len) != 0);
 		}
 		inline integer::integer(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

@@ -48,15 +48,16 @@
 
 namespace cryptoplus
 {
+	void x509v3_context_delete(x509::x509v3_context::pointer ptr)
+	{
+		delete ptr;
+	}
+
+	template <>
+	x509::x509v3_context::deleter_type pointer_wrapper<x509::x509v3_context::value_type>::deleter = cryptoplus::x509v3_context_delete;
+
 	namespace x509
 	{
-		void x509v3_context_delete(x509v3_context::pointer ptr)
-		{
-			delete ptr;
-		}
-
-		template <>
-		x509v3_context::deleter_type pointer_wrapper<x509v3_context::value_type>::deleter = cryptoplus::x509::x509v3_context_delete;
 	}
 }
 

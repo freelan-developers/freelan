@@ -245,11 +245,11 @@ namespace cryptoplus
 		}
 		inline void string::set_data(const void* _data, size_t data_len)
 		{
-			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, data_len));
+			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, data_len) != 0);
 		}
 		inline void string::set_data(const char* _data)
 		{
-			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, -1));
+			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, -1) != 0);
 		}
 		inline void string::set_data(const std::string& _data)
 		{

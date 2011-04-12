@@ -50,6 +50,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	pkey::dsa_key::deleter_type pointer_wrapper<pkey::dsa_key::value_type>::deleter = DSA_free;
+
 	namespace pkey
 	{
 		namespace
@@ -59,9 +62,6 @@ namespace cryptoplus
 				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
 			}
 		}
-
-		template <>
-		dsa_key::deleter_type pointer_wrapper<dsa_key::value_type>::deleter = DSA_free;
 
 		dsa_key dsa_key::generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
 		{
@@ -102,14 +102,9 @@ namespace cryptoplus
 		{
 			unsigned int _out_len = out_len;
 
-			error::throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, ptr().get()));
+			error::throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, ptr().get()) != 0);
 
 			return _out_len;
-		}
-
-		void dsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
-		{
-			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, ptr().get()));
 		}
 	}
 }

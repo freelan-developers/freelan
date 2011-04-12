@@ -208,7 +208,7 @@ namespace cryptoplus
 
 		inline void set_randomization_engine(ENGINE* engine)
 		{
-			error::throw_error_if_not(RAND_set_rand_engine(engine));
+			error::throw_error_if_not(RAND_set_rand_engine(engine) != 0);
 		}
 
 		inline void get_random_bytes(void* buf, size_t buf_len)

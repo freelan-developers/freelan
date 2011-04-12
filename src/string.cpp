@@ -50,6 +50,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	asn1::string::deleter_type pointer_wrapper<asn1::string::value_type>::deleter = ASN1_STRING_free;
+
 	namespace asn1
 	{
 		namespace
@@ -59,9 +62,6 @@ namespace cryptoplus
 				OPENSSL_free(c);
 			}
 		}
-
-		template <>
-		string::deleter_type pointer_wrapper<string::value_type>::deleter = ASN1_STRING_free;
 
 		std::vector<unsigned char> string::to_utf8()
 		{

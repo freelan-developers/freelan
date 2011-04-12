@@ -54,6 +54,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	bn::bignum::deleter_type pointer_wrapper<bn::bignum::value_type>::deleter = BN_clear_free;
+
 	namespace bn
 	{
 		namespace
@@ -64,14 +67,11 @@ namespace cryptoplus
 			}
 		}
 
-		template <>
-		bignum::deleter_type pointer_wrapper<bignum::value_type>::deleter = BN_clear_free;
-
 		bignum bignum::from_hex(const std::string& str)
 		{
 			BIGNUM* bn = NULL;
 
-			error::throw_error_if_not(BN_hex2bn(&bn, str.c_str()));
+			error::throw_error_if_not(BN_hex2bn(&bn, str.c_str()) != 0);
 
 			return take_ownership(bn);
 		}
@@ -80,7 +80,7 @@ namespace cryptoplus
 		{
 			BIGNUM* bn = NULL;
 
-			error::throw_error_if_not(BN_dec2bn(&bn, str.c_str()));
+			error::throw_error_if_not(BN_dec2bn(&bn, str.c_str()) != 0);
 
 			return take_ownership(bn);
 		}

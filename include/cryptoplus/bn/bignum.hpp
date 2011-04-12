@@ -284,19 +284,19 @@ namespace cryptoplus
 		}
 		inline bignum& bignum::operator+=(const bignum& bn)
 		{
-			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()));
+			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
 		inline bignum& bignum::operator-=(const bignum& bn)
 		{
-			error::throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()));
+			error::throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
 		inline void bignum::copy(const bignum& bn)
 		{
-			error::throw_error_if_not(BN_copy(ptr().get(), bn.raw()));
+			error::throw_error_if_not(BN_copy(ptr().get(), bn.raw()) != 0);
 		}
 		inline size_t bignum::size() const
 		{
@@ -321,7 +321,7 @@ namespace cryptoplus
 		}
 		inline void bignum::set_value(unsigned long ul)
 		{
-			error::throw_error_if_not(BN_set_word(ptr().get(), ul));
+			error::throw_error_if_not(BN_set_word(ptr().get(), ul) != 0);
 		}
 		inline bignum::bignum(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

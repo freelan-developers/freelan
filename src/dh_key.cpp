@@ -50,6 +50,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	pkey::dh_key::deleter_type pointer_wrapper<pkey::dh_key::value_type>::deleter = DH_free;
+
 	namespace pkey
 	{
 		namespace
@@ -59,9 +62,6 @@ namespace cryptoplus
 				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
 			}
 		}
-
-		template <>
-		dh_key::deleter_type pointer_wrapper<dh_key::value_type>::deleter = DH_free;
 
 		dh_key dh_key::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
 		{

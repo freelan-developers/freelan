@@ -55,7 +55,7 @@ namespace cryptoplus
 #if OPENSSL_VERSION_NUMBER < 0x01000000
 			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl);
 #else
-			error::throw_error_if_not(HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl));
+			error::throw_error_if_not(HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl) != 0);
 #endif
 		}
 
@@ -68,7 +68,7 @@ namespace cryptoplus
 #if OPENSSL_VERSION_NUMBER < 0x01000000
 			HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen);
 #else
-			error::throw_error_if_not(HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen));
+			error::throw_error_if_not(HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
 #endif
 			return ilen;
 		}

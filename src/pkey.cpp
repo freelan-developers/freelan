@@ -50,6 +50,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	pkey::pkey::deleter_type pointer_wrapper<pkey::pkey::value_type>::deleter = EVP_PKEY_free;
+
 	namespace pkey
 	{
 		namespace
@@ -59,9 +62,6 @@ namespace cryptoplus
 				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
 			}
 		}
-
-		template <>
-		pkey::deleter_type pointer_wrapper<pkey::value_type>::deleter = EVP_PKEY_free;
 
 		pkey pkey::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{

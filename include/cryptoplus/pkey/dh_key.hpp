@@ -275,11 +275,11 @@ namespace cryptoplus
 		}
 		inline void dh_key::write_parameters(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()));
+			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dh_key::write_parameters(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_DHparams(file, ptr().get()));
+			error::throw_error_if_not(PEM_write_DHparams(file, ptr().get()) != 0);
 		}
 		inline bn::bignum dh_key::private_key() const
 		{
@@ -295,11 +295,11 @@ namespace cryptoplus
 		}
 		inline void dh_key::check(int& codes)
 		{
-			error::throw_error_if_not(DH_check(ptr().get(), &codes));
+			error::throw_error_if_not(DH_check(ptr().get(), &codes) != 0);
 		}
 		inline dh_key& dh_key::generate_key()
 		{
-			error::throw_error_if_not(DH_generate_key(ptr().get()));
+			error::throw_error_if_not(DH_generate_key(ptr().get()) != 0);
 
 			return *this;
 		}
@@ -314,11 +314,11 @@ namespace cryptoplus
 		}
 		inline void dh_key::print_parameters(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(DHparams_print(bio.raw(), ptr().get()));
+			error::throw_error_if_not(DHparams_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dh_key::print_parameters(FILE* file)
 		{
-			error::throw_error_if_not(DHparams_print_fp(file, ptr().get()));
+			error::throw_error_if_not(DHparams_print_fp(file, ptr().get()) != 0);
 		}
 		inline bool operator==(const dh_key& lhs, const dh_key& rhs)
 		{

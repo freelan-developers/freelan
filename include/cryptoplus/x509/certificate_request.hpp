@@ -332,19 +332,19 @@ namespace cryptoplus
 		}
 		inline void certificate_request::write_der(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(i2d_X509_REQ_bio(bio.raw(), ptr().get()));
+			error::throw_error_if_not(i2d_X509_REQ_bio(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate_request::write_certificate_request(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(PEM_write_bio_X509_REQ(bio.raw(), ptr().get()));
+			error::throw_error_if_not(PEM_write_bio_X509_REQ(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate_request::write_der(FILE* file)
 		{
-			error::throw_error_if_not(i2d_X509_REQ_fp(file, ptr().get()));
+			error::throw_error_if_not(i2d_X509_REQ_fp(file, ptr().get()) != 0);
 		}
 		inline void certificate_request::write_certificate_request(FILE* file)
 		{
-			error::throw_error_if_not(PEM_write_X509_REQ(file, ptr().get()));
+			error::throw_error_if_not(PEM_write_X509_REQ(file, ptr().get()) != 0);
 		}
 		inline size_t certificate_request::write_der(void* buf)
 		{
@@ -370,7 +370,7 @@ namespace cryptoplus
 		}
 		inline void certificate_request::print(bio::bio_ptr bio)
 		{
-			error::throw_error_if_not(X509_REQ_print(bio.raw(), ptr().get()));
+			error::throw_error_if_not(X509_REQ_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline pkey::pkey certificate_request::public_key()
 		{
@@ -378,7 +378,7 @@ namespace cryptoplus
 		}
 		inline void certificate_request::set_public_key(pkey::pkey pkey)
 		{
-			error::throw_error_if_not(X509_REQ_set_pubkey(ptr().get(), pkey.raw()));
+			error::throw_error_if_not(X509_REQ_set_pubkey(ptr().get(), pkey.raw()) != 0);
 		}
 		inline name certificate_request::subject()
 		{
@@ -386,7 +386,7 @@ namespace cryptoplus
 		}
 		inline void certificate_request::set_subject(name _name)
 		{
-			error::throw_error_if_not(X509_REQ_set_subject_name(ptr().get(), _name.raw()));
+			error::throw_error_if_not(X509_REQ_set_subject_name(ptr().get(), _name.raw()) != 0);
 		}
 		inline long certificate_request::version()
 		{
@@ -394,7 +394,7 @@ namespace cryptoplus
 		}
 		inline void certificate_request::set_version(long _version)
 		{
-			error::throw_error_if_not(X509_REQ_set_version(ptr().get(), _version));
+			error::throw_error_if_not(X509_REQ_set_version(ptr().get(), _version) != 0);
 		}
 		inline bool certificate_request::verify_public_key(pkey::pkey pkey)
 		{
@@ -402,7 +402,7 @@ namespace cryptoplus
 		}
 		inline void certificate_request::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
 		{
-			error::throw_error_if_not(X509_REQ_sign(ptr().get(), pkey.raw(), algorithm.raw()));
+			error::throw_error_if_not(X509_REQ_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
 		}
 		inline bool certificate_request::verify_private_key(pkey::pkey pkey)
 		{

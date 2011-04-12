@@ -254,7 +254,7 @@ namespace cryptoplus
 		}
 		inline void name_entry::set_object(asn1::object _object)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()));
+			error::throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()) != 0);
 		}
 		inline asn1::string name_entry::data()
 		{
@@ -262,7 +262,7 @@ namespace cryptoplus
 		}
 		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), data_len));
+			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), data_len) != 0);
 		}
 		inline int name_entry::nid()
 		{

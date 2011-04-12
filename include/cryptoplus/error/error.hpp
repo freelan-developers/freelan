@@ -186,11 +186,11 @@ namespace cryptoplus
 
 		inline bool error_data::is_text_string() const
 		{
-			return (flags & ERR_TXT_STRING);
+			return (flags & ERR_TXT_STRING) == ERR_TXT_STRING;
 		}
 		inline bool error_data::is_text_malloced() const
 		{
-			return (flags & ERR_TXT_MALLOCED);
+			return (flags & ERR_TXT_MALLOCED) == ERR_TXT_MALLOCED;
 		}
 		inline error_type get_error()
 		{

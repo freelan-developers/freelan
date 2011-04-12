@@ -50,6 +50,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	pkey::rsa_key::deleter_type pointer_wrapper<pkey::rsa_key::value_type>::deleter = RSA_free;
+
 	namespace pkey
 	{
 		namespace
@@ -59,9 +62,6 @@ namespace cryptoplus
 				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
 			}
 		}
-
-		template <>
-		rsa_key::deleter_type pointer_wrapper<rsa_key::value_type>::deleter = RSA_free;
 
 		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
 		{
@@ -168,7 +168,7 @@ namespace cryptoplus
 		{
 			unsigned int _out_len = out_len;
 
-			error::throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, ptr().get()));
+			error::throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<unsigned char*>(out), &_out_len, ptr().get()) != 0);
 
 			return _out_len;
 		}
@@ -176,9 +176,9 @@ namespace cryptoplus
 		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
 		{
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
-			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, ptr().get()));
+			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, ptr().get()) != 0);
 #else
-			error::throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), buf_len, static_cast<unsigned char*>(const_cast<void*>(_sign)), sign_len, ptr().get()));
+			error::throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), buf_len, static_cast<unsigned char*>(const_cast<void*>(_sign)), sign_len, ptr().get()) != 0);
 #endif
 		}
 	}

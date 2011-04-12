@@ -50,10 +50,11 @@
 
 namespace cryptoplus
 {
+	template <>
+	asn1::object::deleter_type pointer_wrapper<asn1::object::value_type>::deleter = ASN1_OBJECT_free;
+
 	namespace asn1
 	{
-		template <>
-		object::deleter_type pointer_wrapper<object::value_type>::deleter = ASN1_OBJECT_free;
 	}
 }
 

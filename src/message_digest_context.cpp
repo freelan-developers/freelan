@@ -58,7 +58,7 @@ namespace cryptoplus
 
 			unsigned int ilen = static_cast<unsigned int>(md_len);
 
-			error::throw_error_if_not(EVP_DigestFinal_ex(&m_ctx, static_cast<unsigned char*>(md), &ilen));
+			error::throw_error_if_not(EVP_DigestFinal_ex(&m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
 
 			return ilen;
 		}
@@ -69,7 +69,7 @@ namespace cryptoplus
 
 			unsigned int ilen = static_cast<unsigned int>(sig_len);
 
-			error::throw_error_if_not(EVP_SignFinal(&m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()));
+			error::throw_error_if_not(EVP_SignFinal(&m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()) != 0);
 
 			return ilen;
 		}

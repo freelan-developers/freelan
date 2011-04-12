@@ -152,7 +152,7 @@ namespace cryptoplus
 #if OPENSSL_VERSION_NUMBER < 0x01000000
 			HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
 #else
-			error::throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)));
+			error::throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
 #endif
 		}
 

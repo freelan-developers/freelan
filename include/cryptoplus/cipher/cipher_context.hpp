@@ -297,7 +297,7 @@ namespace cryptoplus
 					pubk.push_back(pkey->raw());
 				}
 
-				error::throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], pkeys_count));
+				error::throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], pkeys_count) != 0);
 
 				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
 				{
@@ -335,18 +335,18 @@ namespace cryptoplus
 
 		inline void cipher_context::set_key_length(size_t len)
 		{
-			error::throw_error_if_not(EVP_CIPHER_CTX_set_key_length(&m_ctx, static_cast<int>(len)));
+			error::throw_error_if_not(EVP_CIPHER_CTX_set_key_length(&m_ctx, static_cast<int>(len)) != 0);
 		}
 
 		template <typename T>
 		inline void cipher_context::ctrl_get(int type, T& value)
 		{
-			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value));
+			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value) != 0);
 		}
 
 		inline void cipher_context::ctrl_set(int type, int value)
 		{
-			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL));
+			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL) != 0);
 		}
 
 		inline EVP_CIPHER_CTX& cipher_context::raw()

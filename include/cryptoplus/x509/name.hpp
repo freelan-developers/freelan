@@ -679,7 +679,7 @@ namespace cryptoplus
 		}
 		inline void name::print(bio::bio_ptr bio, int obase)
 		{
-			error::throw_error_if_not(X509_NAME_print(bio.raw(), ptr().get(), obase));
+			error::throw_error_if_not(X509_NAME_print(bio.raw(), ptr().get(), obase) != 0);
 		}
 		inline int name::count()
 		{
@@ -748,25 +748,25 @@ namespace cryptoplus
 		}
 		inline void name::push_back(wrapped_value_type entry)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), -1, 0));
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), -1, 0) != 0);
 		}
 		inline void name::push_back(const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set) != 0);
 		}
 		inline void name::push_back(asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set) != 0);
 		}
 		inline void name::push_back(int nid, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(), nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set) != 0);
 		}
 		inline name::iterator name::insert(iterator position, wrapped_value_type entry)
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, 0));
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, 0) != 0);
 
 			return position;
 		}
@@ -774,25 +774,25 @@ namespace cryptoplus
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, int nid, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set));
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, iterator first, iterator last)
 		{

@@ -50,6 +50,9 @@
 
 namespace cryptoplus
 {
+	template <>
+	x509::certificate::deleter_type pointer_wrapper<x509::certificate::value_type>::deleter = X509_free;
+
 	namespace x509
 	{
 		namespace
@@ -59,9 +62,6 @@ namespace cryptoplus
 				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
 			}
 		}
-
-		template <>
-		certificate::deleter_type pointer_wrapper<certificate::value_type>::deleter = X509_free;
 
 		certificate certificate::from_certificate(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{

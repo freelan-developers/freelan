@@ -69,6 +69,12 @@ namespace cryptoplus
 		 * \param condition The condition.
 		 */
 		void throw_error_if_not(bool condition);
+		
+		/**
+		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the specified pointer is NULL.
+		 * \param ptr The pointer to test.
+		 */
+		void throw_error_if_not(const void* ptr);
 
 		/**
 		 * \brief A cryptographic exception class.
@@ -113,6 +119,10 @@ namespace cryptoplus
 		inline void throw_error_if_not(bool condition)
 		{
 			if (!condition) throw_error();
+		}
+		inline void throw_error_if_not(const void* ptr)
+		{
+			if (ptr == NULL) throw_error();
 		}
 		inline cryptographic_exception cryptographic_exception::from_error()
 		{

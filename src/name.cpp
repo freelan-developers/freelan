@@ -48,10 +48,11 @@
 
 namespace cryptoplus
 {
+	template <>
+	x509::name::deleter_type pointer_wrapper<x509::name::value_type>::deleter = X509_NAME_free;
+
 	namespace x509
 	{
-		template <>
-		name::deleter_type pointer_wrapper<name::value_type>::deleter = X509_NAME_free;
 	}
 }
 
