@@ -13,5 +13,243 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\cryptoplus">
+      <UniqueIdentifier>{254f2d59-c86e-4edf-ba43-247b939bd7f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\hash">
+      <UniqueIdentifier>{9548a4e5-dddb-43de-a5b2-e041ed3a0e1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\cipher">
+      <UniqueIdentifier>{311402c4-bf56-4eff-a25b-3eb893c2c69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\asn1">
+      <UniqueIdentifier>{649f97ae-f5fb-4770-a5ce-7c39530f4ddb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\bio">
+      <UniqueIdentifier>{6240bdee-a48c-43f7-8a28-47def22516e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\bn">
+      <UniqueIdentifier>{90a2e7e9-81bb-437c-a8ad-d27db4ee526f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\error">
+      <UniqueIdentifier>{b662bab7-f79f-400d-9bdb-cf16c3e0b890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\pkey">
+      <UniqueIdentifier>{d8ab84bb-9fe8-4352-b4ba-3905c80237b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\random">
+      <UniqueIdentifier>{a712f1aa-85a3-4908-af7e-ac6f52415b74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cryptoplus\x509">
+      <UniqueIdentifier>{4e283aee-b5b1-47cf-89f0-875bf5c76a8b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\bignum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bio_chain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bio_ptr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\certificate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\certificate_request.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cipher_algorithm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cipher_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cipher_stream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cryptographic_exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cryptoplus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dh_key.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dsa_key.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\error_strings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\extension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hmac.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\hmac_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\integer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\message_digest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\message_digest_algorithm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\message_digest_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\name.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\name_entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nullable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pbkdf2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pkey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pointer_wrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\random.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rsa_key.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utctime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\x509v3_context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\cryptoplus\cryptoplus.hpp">
+      <Filter>Header Files\cryptoplus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\initializer.hpp">
+      <Filter>Header Files\cryptoplus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\nullable.hpp">
+      <Filter>Header Files\cryptoplus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\os.hpp">
+      <Filter>Header Files\cryptoplus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\pointer_wrapper.hpp">
+      <Filter>Header Files\cryptoplus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\hash\hmac.hpp">
+      <Filter>Header Files\cryptoplus\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\hash\hmac_context.hpp">
+      <Filter>Header Files\cryptoplus\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\hash\message_digest.hpp">
+      <Filter>Header Files\cryptoplus\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\hash\message_digest_algorithm.hpp">
+      <Filter>Header Files\cryptoplus\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\hash\message_digest_context.hpp">
+      <Filter>Header Files\cryptoplus\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\hash\pbkdf2.hpp">
+      <Filter>Header Files\cryptoplus\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\cipher\cipher_algorithm.hpp">
+      <Filter>Header Files\cryptoplus\cipher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\cipher\cipher_context.hpp">
+      <Filter>Header Files\cryptoplus\cipher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\cipher\cipher_stream.hpp">
+      <Filter>Header Files\cryptoplus\cipher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\asn1\integer.hpp">
+      <Filter>Header Files\cryptoplus\asn1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\asn1\object.hpp">
+      <Filter>Header Files\cryptoplus\asn1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\asn1\string.hpp">
+      <Filter>Header Files\cryptoplus\asn1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\asn1\utctime.hpp">
+      <Filter>Header Files\cryptoplus\asn1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\bio\bio_chain.hpp">
+      <Filter>Header Files\cryptoplus\bio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\bio\bio_ptr.hpp">
+      <Filter>Header Files\cryptoplus\bio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\bn\bignum.hpp">
+      <Filter>Header Files\cryptoplus\bn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\error\cryptographic_exception.hpp">
+      <Filter>Header Files\cryptoplus\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\error\error.hpp">
+      <Filter>Header Files\cryptoplus\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\error\error_strings.hpp">
+      <Filter>Header Files\cryptoplus\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\pkey\dh_key.hpp">
+      <Filter>Header Files\cryptoplus\pkey</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\pkey\dsa_key.hpp">
+      <Filter>Header Files\cryptoplus\pkey</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\pkey\pkey.hpp">
+      <Filter>Header Files\cryptoplus\pkey</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\pkey\rsa_key.hpp">
+      <Filter>Header Files\cryptoplus\pkey</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\random\random.hpp">
+      <Filter>Header Files\cryptoplus\random</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\x509\certificate.hpp">
+      <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\x509\certificate_request.hpp">
+      <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\x509\extension.hpp">
+      <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\x509\name.hpp">
+      <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\x509\name_entry.hpp">
+      <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\x509\x509v3_context.hpp">
+      <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
