@@ -37,6 +37,8 @@ class Environment(SConsEnvironment):
 		# Parent constructor
 		SConsEnvironment.__init__(self, os_platform, tools, toolpath, variables, parse_flags, **kw)
 
+		self.variables_help_text = variables.GenerateHelpText(self)
+
 		variables.Save(variable_file, self)
 
 		if not 'CXXFLAGS' in self:

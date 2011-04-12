@@ -51,8 +51,9 @@ env.Alias('all', ['build', 'samples', 'doc'])
 env.Alias('release', ['indent', 'all', 'tests'])
 
 # Help documentation
-Help("""
-Type: 'scons build' to build the library.
+Help("""Usage:
+
+'scons build' to build the library.
 'scons install' to install the library and its include files on the system.
 'scons doc' to build the documentation.
 'scons tests' to build the library, the tests and then run the tests.
@@ -65,7 +66,9 @@ Type: 'scons build' to build the library.
 'scons -c all' to cleanup libraries and documentation files.
 
 If scons is called without parameters, the default target is "build".
-""")
+
+Available options:
+%s""" % env.variables_help_text)
 
 # Default
 Default('build')
