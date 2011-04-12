@@ -17,15 +17,6 @@ class Environment(SConsEnvironment):
 		# Members
 		self._libdir = 'lib'
 
-		# Tools
-		if sys.platform == 'win32':
-			target_tool = "mingw"
-		else:
-			target_tool = "default"
-
-		tools = [target_tool, 'doxygen', 'astyle']
-		toolpath = [os.path.abspath(os.path.dirname(__file__))]
-
 		# Variables
 		if path:
 			variable_file = os.path.join(path, Environment._VARIABLE_FILE)
@@ -33,6 +24,15 @@ class Environment(SConsEnvironment):
 			variable_file = Environment._VARIABLE_FILE
 
 		variables = Environment._create_variables(variable_file)
+
+		# Tools
+		if sys.platform == 'win32':
+			toolset = 'mingw'
+		else:
+			toolset = 'default'
+
+		tools = [toolset, 'doxygen', 'astyle']
+		toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
 		# Parent constructor
 		SConsEnvironment.__init__(self, os_platform, tools, toolpath, variables, parse_flags, **kw)
@@ -52,7 +52,7 @@ class Environment(SConsEnvironment):
 			self['SHLINKFLAGS'] = []
 
 		# Build with debug symbols or not
-		if ARGUMENTS.get('mode', 'release') == 'debug':
+		if self['mode'] == 'debug':
 			self['CXXFLAGS'].append('-g')
 		else:
 			self['CXXFLAGS'].append('-DNDEBUG')
@@ -60,10 +60,10 @@ class Environment(SConsEnvironment):
 		self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-O3', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
 
 		if sys.platform != 'darwin':
-			if ARGUMENTS.get('arch', platform.machine()) == 'i386':
+			if self['arch'] == 'i386':
 				self['CXXFLAGS'].append('-m32')
 				self['LINKFLAGS'].append('-m32')
-			elif ARGUMENTS.get('arch', platform.machine()) == '64':
+			elif self['arch'] == '64':
 				self['CXXFLAGS'].append('-m64')
 				self['LINKFLAGS'].append('-m64')
 		else:
@@ -143,6 +143,9 @@ class Environment(SConsEnvironment):
 	def _create_variables(variable_file):
 		variables = Variables([variable_file], ARGUMENTS)
 		
+		variables.Add(EnumVariable('mode', 'The compilation mode', 'release', ['release', 'debug']))
+		variables.Add('arch', 'The target architecture', platform.machine())
+
 		if sys.platform == 'win32':
 			variables.AddVariables(PathVariable('install_path', 'The installation path', r'C:\MinGW', PathVariable.PathIsDir))
 			variables.AddVariables(PathVariable('mingw_path', 'The path of the MinGW installation', r'C:\MinGW', PathVariable.PathIsDir))
