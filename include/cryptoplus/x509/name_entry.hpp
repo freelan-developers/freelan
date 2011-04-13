@@ -232,15 +232,15 @@ namespace cryptoplus
 		{
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
 
-			return take_ownership(d2i_X509_NAME_ENTRY(NULL, &pbuf, buf_len));
+			return take_ownership(d2i_X509_NAME_ENTRY(NULL, &pbuf, static_cast<long>(buf_len)));
 		}
 		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
 		{
-			return take_ownership(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
+			return take_ownership(X509_NAME_ENTRY_create_by_NID(NULL, _nid, _type, static_cast<unsigned char*>(const_cast<void*>(_data)), static_cast<int>(data_len)));
 		}
 		inline name_entry name_entry::from_object(asn1::object _object, int _type, const void* _data, size_t data_len)
 		{
-			return take_ownership(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), data_len));
+			return take_ownership(X509_NAME_ENTRY_create_by_OBJ(NULL, _object.raw(), _type, static_cast<unsigned char*>(const_cast<void*>(_data)), static_cast<int>(data_len)));
 		}
 		inline name_entry::name_entry()
 		{
@@ -262,7 +262,7 @@ namespace cryptoplus
 		}
 		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), data_len) != 0);
+			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), static_cast<int>(data_len)) != 0);
 		}
 		inline int name_entry::nid()
 		{

@@ -225,7 +225,7 @@ namespace cryptoplus
 		{
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
 
-			return take_ownership(d2i_X509_EXTENSION(NULL, &pbuf, buf_len));
+			return take_ownership(d2i_X509_EXTENSION(NULL, &pbuf, static_cast<long>(buf_len)));
 		}
 		inline extension extension::from_nid(int nid, bool critical, asn1::string data)
 		{

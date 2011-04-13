@@ -797,7 +797,7 @@ namespace cryptoplus
 		{
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
 
-			return take_ownership(d2i_X509(NULL, &pbuf, buf_len));
+			return take_ownership(d2i_X509(NULL, &pbuf, static_cast<long>(buf_len)));
 		}
 		inline certificate::certificate()
 		{

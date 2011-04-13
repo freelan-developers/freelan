@@ -76,7 +76,7 @@ namespace cryptoplus
 
 		bool message_digest_context::verify_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey)
 		{
-			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), sig_len, pkey.raw());
+			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), static_cast<unsigned int>(sig_len), pkey.raw());
 
 			error::throw_error_if(result < 0);
 

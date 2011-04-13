@@ -440,7 +440,7 @@ namespace cryptoplus
 		}
 		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -456,7 +456,7 @@ namespace cryptoplus
 		}
 		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -507,7 +507,7 @@ namespace cryptoplus
 		}
 		inline void dsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
 		{
-			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), buf_len, static_cast<const unsigned char*>(_sign), sign_len, ptr().get()) != 0);
+			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), static_cast<const unsigned char*>(_sign), static_cast<int>(sign_len), ptr().get()) != 0);
 		}
 		inline dh_key dsa_key::to_dh_key() const
 		{

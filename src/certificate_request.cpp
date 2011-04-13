@@ -59,7 +59,7 @@ namespace cryptoplus
 		{
 			bio::bio_chain get_bio_chain_from_buffer(const void* buf, size_t buf_len)
 			{
-				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), buf_len));
+				return bio::bio_chain(BIO_new_mem_buf(const_cast<void*>(buf), static_cast<int>(buf_len)));
 			}
 		}
 

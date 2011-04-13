@@ -266,7 +266,7 @@ namespace cryptoplus
 		}
 		inline bignum bignum::from_bin(const void* buf, size_t buf_len)
 		{
-			return take_ownership(BN_bin2bn(static_cast<const unsigned char*>(buf), buf_len, NULL));
+			return take_ownership(BN_bin2bn(static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), NULL));
 		}
 		inline bignum bignum::from_long(unsigned long ul)
 		{

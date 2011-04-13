@@ -631,7 +631,7 @@ namespace cryptoplus
 		{
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
 
-			return take_ownership(d2i_X509_NAME(NULL, &pbuf, buf_len));
+			return take_ownership(d2i_X509_NAME(NULL, &pbuf, static_cast<long>(buf_len)));
 		}
 		inline name::name()
 		{
@@ -667,9 +667,9 @@ namespace cryptoplus
 		}
 		inline std::string name::oneline(size_t max_size) const
 		{
-			std::string result(' ', max_size + 1);
+			std::string result(max_size + 1, ' ');
 
-			char* c = X509_NAME_oneline(ptr().get(), &result[0], result.size() - 1);
+			char* c = X509_NAME_oneline(ptr().get(), &result[0], static_cast<int>(result.size() - 1));
 
 			error::throw_error_if_not(c);
 
@@ -752,15 +752,15 @@ namespace cryptoplus
 		}
 		inline void name::push_back(const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, -1, set) != 0);
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), static_cast<int>(data_len), -1, set) != 0);
 		}
 		inline void name::push_back(asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set) != 0);
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), -1, set) != 0);
 		}
 		inline void name::push_back(int nid, int type, const void* data, size_t data_len, int set)
 		{
-			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(), nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, -1, set) != 0);
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(), nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), -1, set) != 0);
 		}
 		inline name::iterator name::insert(iterator position, wrapped_value_type entry)
 		{
@@ -780,19 +780,19 @@ namespace cryptoplus
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), data_len, position.m_index, set) != 0);
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), static_cast<int>(data_len), position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set) != 0);
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, int nid, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), data_len, position.m_index, set) != 0);
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, iterator first, iterator last)
 		{

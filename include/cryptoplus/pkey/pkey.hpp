@@ -500,7 +500,7 @@ namespace cryptoplus
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -508,7 +508,7 @@ namespace cryptoplus
 		}
 		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -516,7 +516,7 @@ namespace cryptoplus
 		}
 		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -528,7 +528,7 @@ namespace cryptoplus
 		}
 		inline void pkey::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_PrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_PrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -536,7 +536,7 @@ namespace cryptoplus
 		}
 		inline void pkey::write_private_key_pkcs8(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(file, ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(file, ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
@@ -544,7 +544,7 @@ namespace cryptoplus
 		}
 		inline void pkey::write_private_key_pkcs8_nid(FILE* file, int nid, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(file, ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), passphrase_len, NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(file, ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8_nid(FILE* file, int nid, pem_passphrase_callback_type callback, void* callback_arg)
 		{

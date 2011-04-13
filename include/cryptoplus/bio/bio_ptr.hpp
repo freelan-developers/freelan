@@ -606,19 +606,19 @@ namespace cryptoplus
 		}
 		inline bool bio_ptr::set_read_buffer_size(size_t size)
 		{
-			return BIO_set_read_buffer_size(m_bio, size) > 0;
+			return BIO_set_read_buffer_size(m_bio, static_cast<long>(size)) > 0;
 		}
 		inline bool bio_ptr::set_write_buffer_size(size_t size)
 		{
-			return BIO_set_write_buffer_size(m_bio, size) > 0;
+			return BIO_set_write_buffer_size(m_bio, static_cast<long>(size)) > 0;
 		}
 		inline bool bio_ptr::set_buffer_size(size_t size)
 		{
-			return BIO_set_buffer_size(m_bio, size) > 0;
+			return BIO_set_buffer_size(m_bio, static_cast<long>(size)) > 0;
 		}
 		inline bool bio_ptr::set_buffer_read_data(const void* buf, size_t buf_len)
 		{
-			return BIO_set_buffer_read_data(m_bio, const_cast<void*>(buf), buf_len) > 0;
+			return BIO_set_buffer_read_data(m_bio, const_cast<void*>(buf), static_cast<long>(buf_len)) > 0;
 		}
 		inline void bio_ptr::set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction)
 		{

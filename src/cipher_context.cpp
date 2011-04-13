@@ -109,7 +109,7 @@ namespace cryptoplus
 		{
 			assert(key);
 
-			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), key_len, static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
+			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
 		}
 
 		void cipher_context::update(void* out, size_t& out_len, const void* in, size_t in_len)

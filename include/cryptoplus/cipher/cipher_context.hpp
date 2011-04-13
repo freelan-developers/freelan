@@ -297,7 +297,7 @@ namespace cryptoplus
 					pubk.push_back(pkey->raw());
 				}
 
-				error::throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], pkeys_count) != 0);
+				error::throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
 
 				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
 				{
