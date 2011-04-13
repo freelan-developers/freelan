@@ -3,7 +3,7 @@
 #
 module = 'cryptoplus'
 major = '1'
-minor = '0'
+minor = '1'
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
