@@ -42,8 +42,8 @@
  * \brief Error helper functions.
  */
 
-#ifndef CRYPTOPEN_ERROR_ERROR_HPP
-#define CRYPTOPEN_ERROR_ERROR_HPP
+#ifndef CRYPTOPLUS_ERROR_ERROR_HPP
+#define CRYPTOPLUS_ERROR_ERROR_HPP
 
 #include <openssl/err.h>
 
@@ -243,4 +243,4 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_ERROR_ERROR_HPP */
+#endif /* CRYPTOPLUS_ERROR_ERROR_HPP */

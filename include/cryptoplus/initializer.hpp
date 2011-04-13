@@ -42,8 +42,8 @@
  * \brief An initializer template.
  */
 
-#ifndef CRYPTOPEN_INITIALIZER_HPP
-#define CRYPTOPEN_INITIALIZER_HPP
+#ifndef CRYPTOPLUS_INITIALIZER_HPP
+#define CRYPTOPLUS_INITIALIZER_HPP
 
 #include <boost/noncopyable.hpp>
 
@@ -77,5 +77,5 @@ namespace cryptoplus
 	};
 }
 
-#endif /* CRYPTOPEN_INITIALIZER_HPP */
+#endif /* CRYPTOPLUS_INITIALIZER_HPP */
 

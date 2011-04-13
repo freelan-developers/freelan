@@ -42,8 +42,8 @@
  * \brief A bio pointer class.
  */
 
-#ifndef CRYPTOPEN_BIO_BIO_PTR_HPP
-#define CRYPTOPEN_BIO_BIO_PTR_HPP
+#ifndef CRYPTOPLUS_BIO_BIO_PTR_HPP
+#define CRYPTOPLUS_BIO_BIO_PTR_HPP
 
 #include "../nullable.hpp"
 #include "../cipher/cipher_algorithm.hpp"
@@ -711,5 +711,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_BIO_BIO_PTR_HPP */
+#endif /* CRYPTOPLUS_BIO_BIO_PTR_HPP */
 

@@ -42,8 +42,8 @@
  * \brief A bio chain class.
  */
 
-#ifndef CRYPTOPEN_BIO_BIO_CHAIN_HPP
-#define CRYPTOPEN_BIO_BIO_CHAIN_HPP
+#ifndef CRYPTOPLUS_BIO_BIO_CHAIN_HPP
+#define CRYPTOPLUS_BIO_BIO_CHAIN_HPP
 
 #include "bio_ptr.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -111,5 +111,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_BIO_BIO_CHAIN_HPP */
+#endif /* CRYPTOPLUS_BIO_BIO_CHAIN_HPP */
 

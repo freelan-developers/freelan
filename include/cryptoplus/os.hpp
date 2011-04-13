@@ -51,8 +51,8 @@
  * \author Sebastien VINCENT <sebastien.vincent@freelan.org>
  */
 
-#ifndef CRYPTOPEN_OS_HPP
-#define CRYPTOPEN_OS_HPP
+#ifndef CRYPTOPLUS_OS_HPP
+#define CRYPTOPLUS_OS_HPP
 
 /*
  * Extract the "MACINTOSH" flag from the compiler.
@@ -136,5 +136,5 @@ defined(_WIN32) || defined(_WIN64)
 #define UNIX
 #endif
 
-#endif /* CRYPTOPEN_OS_HPP */
+#endif /* CRYPTOPLUS_OS_HPP */
 

@@ -42,8 +42,8 @@
  * \brief Randomization helper functions.
  */
 
-#ifndef CRYPTOPEN_RANDOM_RANDOM_HPP
-#define CRYPTOPEN_RANDOM_RANDOM_HPP
+#ifndef CRYPTOPLUS_RANDOM_RANDOM_HPP
+#define CRYPTOPLUS_RANDOM_RANDOM_HPP
 
 #include "../error/cryptographic_exception.hpp"
 #include "../os.hpp"
@@ -335,4 +335,4 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_RANDOM_RANDOM_HPP */
+#endif /* CRYPTOPLUS_RANDOM_RANDOM_HPP */

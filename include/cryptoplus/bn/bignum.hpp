@@ -42,8 +42,8 @@
  * \brief A BIGNUM pointer class.
  */
 
-#ifndef CRYPTOPEN_BN_bignum_HPP
-#define CRYPTOPEN_BN_bignum_HPP
+#ifndef CRYPTOPLUS_BN_bignum_HPP
+#define CRYPTOPLUS_BN_bignum_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -353,5 +353,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_BN_bignum_HPP */
+#endif /* CRYPTOPLUS_BN_bignum_HPP */
 

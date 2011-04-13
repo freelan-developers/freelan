@@ -42,8 +42,8 @@
  * \brief An ASN1_INTEGER pointer class.
  */
 
-#ifndef CRYPTOPEN_ASN1_INTEGER_HPP
-#define CRYPTOPEN_ASN1_INTEGER_HPP
+#ifndef CRYPTOPLUS_ASN1_INTEGER_HPP
+#define CRYPTOPLUS_ASN1_INTEGER_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -289,5 +289,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_ASN1_INTEGER_HPP */
+#endif /* CRYPTOPLUS_ASN1_INTEGER_HPP */
 

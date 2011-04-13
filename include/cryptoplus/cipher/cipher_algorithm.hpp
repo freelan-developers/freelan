@@ -42,8 +42,8 @@
  * \brief A cipher algorithm wrapper class.
  */
 
-#ifndef CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP
-#define CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP
+#ifndef CRYPTOPLUS_CIPHER_CIPHER_ALGORITHM_HPP
+#define CRYPTOPLUS_CIPHER_CIPHER_ALGORITHM_HPP
 
 #include <openssl/evp.h>
 
@@ -190,5 +190,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_CIPHER_CIPHER_ALGORITHM_HPP */
+#endif /* CRYPTOPLUS_CIPHER_CIPHER_ALGORITHM_HPP */
 

@@ -42,8 +42,8 @@
  * \brief PBKDF2 helper functions.
  */
 
-#ifndef CRYPTOPEN_HASH_PBKDF2_HPP
-#define CRYPTOPEN_HASH_PBKDF2_HPP
+#ifndef CRYPTOPLUS_HASH_PBKDF2_HPP
+#define CRYPTOPLUS_HASH_PBKDF2_HPP
 
 #include "../error/cryptographic_exception.hpp"
 #include "message_digest.hpp"
@@ -106,5 +106,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_HASH_PBKDF2_HPP */
+#endif /* CRYPTOPLUS_HASH_PBKDF2_HPP */
 

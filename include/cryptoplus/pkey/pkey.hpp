@@ -42,8 +42,8 @@
  * \brief An EVP_PKEY class.
  */
 
-#ifndef CRYPTOPEN_PKEY_PKEY_HPP
-#define CRYPTOPEN_PKEY_PKEY_HPP
+#ifndef CRYPTOPLUS_PKEY_PKEY_HPP
+#define CRYPTOPLUS_PKEY_PKEY_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -588,5 +588,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_PKEY_PKEY_HPP */
+#endif /* CRYPTOPLUS_PKEY_PKEY_HPP */
 

@@ -42,8 +42,8 @@
  * \brief Error strings helper functions.
  */
 
-#ifndef CRYPTOPEN_ERROR_STRINGS_HPP
-#define CRYPTOPEN_ERROR_STRINGS_HPP
+#ifndef CRYPTOPLUS_ERROR_STRINGS_HPP
+#define CRYPTOPLUS_ERROR_STRINGS_HPP
 
 #include "error.hpp"
 #include "../initializer.hpp"
@@ -131,4 +131,4 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_ERROR_STRINGS_HPP */
+#endif /* CRYPTOPLUS_ERROR_STRINGS_HPP */

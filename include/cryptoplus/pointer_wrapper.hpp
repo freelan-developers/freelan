@@ -42,8 +42,8 @@
  * \brief A pointer wrapper template class.
  */
 
-#ifndef CRYPTOPEN_POINTER_WRAPPER_HPP
-#define CRYPTOPEN_POINTER_WRAPPER_HPP
+#ifndef CRYPTOPLUS_POINTER_WRAPPER_HPP
+#define CRYPTOPLUS_POINTER_WRAPPER_HPP
 
 #include "nullable.hpp"
 
@@ -181,5 +181,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_POINTER_WRAPPER_HPP */
+#endif /* CRYPTOPLUS_POINTER_WRAPPER_HPP */
 

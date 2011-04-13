@@ -42,8 +42,8 @@
  * \brief A X509 name class.
  */
 
-#ifndef CRYPTOPEN_X509_NAME_HPP
-#define CRYPTOPEN_X509_NAME_HPP
+#ifndef CRYPTOPLUS_X509_NAME_HPP
+#define CRYPTOPLUS_X509_NAME_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -878,5 +878,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_X509_NAME_HPP */
+#endif /* CRYPTOPLUS_X509_NAME_HPP */
 

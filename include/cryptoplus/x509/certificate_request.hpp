@@ -42,8 +42,8 @@
  * \brief A X509 certificate request class.
  */
 
-#ifndef CRYPTOPEN_X509_CERTIFICATE_REQUEST_HPP
-#define CRYPTOPEN_X509_CERTIFICATE_REQUEST_HPP
+#ifndef CRYPTOPLUS_X509_CERTIFICATE_REQUEST_HPP
+#define CRYPTOPLUS_X509_CERTIFICATE_REQUEST_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -422,5 +422,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_X509_CERTIFICATE_request_REQUEST_HPP */
+#endif /* CRYPTOPLUS_X509_CERTIFICATE_request_REQUEST_HPP */
 

@@ -44,8 +44,8 @@
  * See http://www.artima.com/cppsource/safebool.html for more explanations.
  */
 
-#ifndef CRYPTOPEN_NULLABLE_HPP
-#define CRYPTOPEN_NULLABLE_HPP
+#ifndef CRYPTOPLUS_NULLABLE_HPP
+#define CRYPTOPLUS_NULLABLE_HPP
 
 namespace cryptoplus
 {
@@ -165,4 +165,4 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_NULLABLE_HPP */
+#endif /* CRYPTOPLUS_NULLABLE_HPP */

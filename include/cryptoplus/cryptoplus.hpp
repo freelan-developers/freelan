@@ -42,8 +42,8 @@
  * \brief The global cryptoplus include file.
  */
 
-#ifndef CRYPTOPEN_CRYPTOPEN_HPP
-#define CRYPTOPEN_CRYPTOPEN_HPP
+#ifndef CRYPTOPLUS_CRYPTOPLUS_HPP
+#define CRYPTOPLUS_CRYPTOPLUS_HPP
 
 #include "initializer.hpp"
 
@@ -78,4 +78,4 @@ namespace cryptoplus
 	typedef initializer<_null_function, CRYPTO_cleanup_all_ex_data> crypto_initializer;
 }
 
-#endif /* CRYPTOPEN_CRYPTOPEN_HPP */
+#endif /* CRYPTOPLUS_CRYPTOPLUS_HPP */

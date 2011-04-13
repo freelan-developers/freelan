@@ -42,8 +42,8 @@
  * \brief An ASN1_OBJECT pointer class.
  */
 
-#ifndef CRYPTOPEN_ASN1_OBJECT_HPP
-#define CRYPTOPEN_ASN1_OBJECT_HPP
+#ifndef CRYPTOPLUS_ASN1_OBJECT_HPP
+#define CRYPTOPLUS_ASN1_OBJECT_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -181,5 +181,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_ASN1_OBJECT_HPP */
+#endif /* CRYPTOPLUS_ASN1_OBJECT_HPP */
 

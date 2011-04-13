@@ -42,8 +42,8 @@
  * \brief HMAC helper functions.
  */
 
-#ifndef CRYPTOPEN_HASH_HMAC_HPP
-#define CRYPTOPEN_HASH_HMAC_HPP
+#ifndef CRYPTOPLUS_HASH_HMAC_HPP
+#define CRYPTOPLUS_HASH_HMAC_HPP
 
 #include "message_digest_algorithm.hpp"
 
@@ -94,5 +94,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_HASH_HMAC_HPP */
+#endif /* CRYPTOPLUS_HASH_HMAC_HPP */
 

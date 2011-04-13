@@ -42,8 +42,8 @@
  * \brief A message digest context class.
  */
 
-#ifndef CRYPTOPEN_HASH_MESSAGE_DIGEST_CONTEXT_HPP
-#define CRYPTOPEN_HASH_MESSAGE_DIGEST_CONTEXT_HPP
+#ifndef CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP
+#define CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 
 #include "../error/cryptographic_exception.hpp"
 #include "message_digest_algorithm.hpp"
@@ -286,5 +286,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_HASH_MESSAGE_DIGEST_CONTEXT_HPP */
+#endif /* CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP */
 

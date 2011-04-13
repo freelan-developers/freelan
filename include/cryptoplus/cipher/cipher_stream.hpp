@@ -42,8 +42,8 @@
  * \brief A cipher stream class.
  */
 
-#ifndef CRYPTOPEN_CIPHER_CIPHER_STREAM_HPP
-#define CRYPTOPEN_CIPHER_CIPHER_STREAM_HPP
+#ifndef CRYPTOPLUS_CIPHER_CIPHER_STREAM_HPP
+#define CRYPTOPLUS_CIPHER_CIPHER_STREAM_HPP
 
 #include "cipher_context.hpp"
 
@@ -184,5 +184,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_CIPHER_CIPHER_STREAM_HPP */
+#endif /* CRYPTOPLUS_CIPHER_CIPHER_STREAM_HPP */
 

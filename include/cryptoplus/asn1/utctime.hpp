@@ -42,8 +42,8 @@
  * \brief An ASN1_UTCTIME pointer class.
  */
 
-#ifndef CRYPTOPEN_ASN1_UTCTIME_HPP
-#define CRYPTOPEN_ASN1_UTCTIME_HPP
+#ifndef CRYPTOPLUS_ASN1_UTCTIME_HPP
+#define CRYPTOPLUS_ASN1_UTCTIME_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -261,5 +261,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_ASN1_UTCTIME_HPP */
+#endif /* CRYPTOPLUS_ASN1_UTCTIME_HPP */
 

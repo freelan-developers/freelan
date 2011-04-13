@@ -42,8 +42,8 @@
  * \brief A DSA key class.
  */
 
-#ifndef CRYPTOPEN_PKEY_DSA_KEY_HPP
-#define CRYPTOPEN_PKEY_DSA_KEY_HPP
+#ifndef CRYPTOPLUS_PKEY_DSA_KEY_HPP
+#define CRYPTOPLUS_PKEY_DSA_KEY_HPP
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
@@ -527,5 +527,5 @@ namespace cryptoplus
 	}
 }
 
-#endif /* CRYPTOPEN_PKEY_DSA_KEY_HPP */
+#endif /* CRYPTOPLUS_PKEY_DSA_KEY_HPP */
 
