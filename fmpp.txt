@@ -1,0 +1,37 @@
+The FreeLAN Project                                         J. Kauffmann
+Draft:                                                   www.freelan.org
+Category: Informational                                    14 April 2011
+
+									  The FreeLAN Message Part Protocol
+
+Status of this Memo
+
+   This memo provides information for the Internet community.  It does
+   not specify an Internet standard of any kind.  Distribution of this
+   memo is unlimited.
+
+Abstract
+
+   The FreeLAN peer-to-peer virtual private network specification
+	 requires a fast and secure communication channel.
+   
+   The protocol must be specialized into peer-to-peer applications.
+   
+1. Introduction
+   
+   The FreeLAN peer-to-peer virtual private network specification
+	 requires a reliable and secure communication channel.
+   
+   The FMPP ("FreeLAN Message Part Protocol) is designed to be secure
+	 and efficient, and tries to minimize the overhead. It is based over 
+	 UDP [RFC768].
+
+1.1. Terminology
+
+   The keywords MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD,
+   SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL, when they appear in this
+   document, are to be interpreted as described in [RFC2119].
+
+2. Syntax
+
+   
