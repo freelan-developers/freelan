@@ -15,18 +15,23 @@ Abstract
    The FreeLAN peer-to-peer virtual private network specification
 	 requires a fast and secure communication channel.
    
-   The protocol must be specialized into peer-to-peer applications.
+   The protocol is specialized into peer-to-peer applications and
+	 supports some well-known NAT traversal techniques.
    
 1. Introduction
    
    The FreeLAN peer-to-peer virtual private network specification
-	 requires a reliable and secure communication channel.
+	 requires a fast and secure communication channel.
    
    The FMPP ("FreeLAN Message Part Protocol) is designed to be secure
 	 and efficient, and tries to minimize the overhead. It is based over 
 	 UDP [RFC768].
 
-	 It permits packet loss but forbids packet reordering or duplication.
+	 A basic support for NAT traversal is supported by the use of the "UDP
+	 hole punching" technique.
+
+	 The protocol permits packet loss but forbids packet reordering or
+	 duplication.
 
 1.1. Terminology
 
