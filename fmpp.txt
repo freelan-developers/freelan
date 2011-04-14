@@ -26,12 +26,44 @@ Abstract
 	 and efficient, and tries to minimize the overhead. It is based over 
 	 UDP [RFC768].
 
+	 It permits packet loss but forbids packet reordering or duplication.
+
 1.1. Terminology
 
    The keywords MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD,
    SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL, when they appear in this
    document, are to be interpreted as described in [RFC2119].
 
-2. Syntax
+2. Format
 
-   
+   FMPP uses different message formats. The roles of these messages are
+	 described in a further section.
+	 
+	 Multi-bytes integer values MUST be written in network byte order.
+
+2.1. HELLO message format
+
+   A HELLO message is 8 bytes long and has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |            magic bytes            |
+                 +--------+--------+-----------------+
+                 |version |   op   |     reserved    |
+                 +--------+--------+-----------------+
+	
+2.1.1. HELLO message fields
+
+   The magic bytes MUST be set to: 0x09 0x03 0x20 0x07
+
+	 The version MUST be set to the currently used version of the FreeLAN
+	 Message Part Protocol. The current version described in this document
+	 is 1.
+
+	 The op field indicates the type of the operation. It can take the
+	 following values:
+
+	    0x00: Indicates a request HELLO message
+			0x01: Indicates a response HELLO message
+
+	 The reserved field is currently unused and SHOULD be zero.
