@@ -46,29 +46,171 @@ Abstract
 	 
 	 Multi-bytes integer values MUST be written in network byte order.
 
-2.1. HELLO message format
+2.1. Generic message format
 
-   A HELLO message is 8 bytes long and has the following format:
+   All messages start with a 4 bytes header whose layout is:
 
                   0      7 8     15 16    23 24    31 
-                 +-----------------------------------+
-                 |            magic bytes            |
                  +--------+--------+-----------------+
-                 |version |   op   |     reserved    |
+                 |version |  type  |      length     |
                  +--------+--------+-----------------+
-	
-2.1.1. HELLO message fields
-
-   The magic bytes MUST be set to: 0x09 0x03 0x20 0x07
 
 	 The version MUST be set to the currently used version of the FreeLAN
 	 Message Part Protocol. The current version described in this document
 	 is 1.
 
-	 The op field indicates the type of the operation. It can take the
-	 following values:
+	 The type field indicates the type of the message. Its possible values
+	 are listed in the next sections.
 
-	    0x00: Indicates a request HELLO message
-			0x01: Indicates a response HELLO message
+	 The length field indicates the length of the message body.
 
-	 The reserved field is currently unused and SHOULD be zero.
+2.2. HELLO message format
+
+   A HELLO message is 4 bytes long and has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +--------+--------+--------+--------+
+                 |  0x09  |  0x03  |  0x20  |  0x07  |
+                 +--------+--------+--------+--------+
+	
+2.2.1. HELLO message type
+
+   The type value of a HELLO message can be either:
+
+	   0x00: For a request HELLO message
+		 0x01: For a response HELLO message
+
+2.2.2. HELLO message fields
+
+	 This message has no specific fields.
+
+2.3. PRESENTATION message format
+
+   A PRESENTATION message has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |     sig_len     |       sig       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+								 |     enc_len     |       enc       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+2.3.1. PRESENTATION message type
+
+   A PRESENTATION message has a type value of 0x02.
+
+2.3.2. PRESENTATION message fields
+
+   The sig_len field indicates the size of the sig field.
+
+	 The sig field is a DER-encoded X509 certificate used for message
+	 signature by the sender. This certificate SHOULD have the
+	 digitalSignature key usage set, as specified in [RFC2459]. In the next
+	 sections, its associated RSA key will be referred as PKS.
+
+	 The enc_len field indicates the size of the enc field.
+
+	 The end field is a DER-encoded X509 certificate used for key exchange
+	 by the sender. This certificate SHOULD have the keyEncipherment key
+	 usage set, as specified in [RFC2459]. In the next sections, its
+	 associated RSA key will be referred as PKE.
+
+	 If the same certificate is to be used for both usages, a sender MAY
+	 set enc_len to zero and leave enc empty. In this case, the certificate
+	 SHOULD have both digitalSignature and keyEncipherment key usage set,
+	 as specified in [RFC2459].
+
+	 The sig and enc certificate MUST have the same subjectName and
+	 issuerName. If they don't, the message MUST be ignored.
+
+	 A host MIGHT ignore any PRESENTATION message whose sig or enc field do
+	 not satisfy the key usage requirements.
+
+2.4. SESSION message format
+
+   A SESSION message format has the following format:
+
+                  0      7 8     15 16    23 24    31 
+								 +-----------------------------------+
+								 |          session_number           |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |     sig_len     |       sig       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+								 |     enc_len     |       enc       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+								 |      iv_len     |        iv       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+   This header is not sent in clear-text. It is first ciphered using PKE+
+	 of the target host, then the ciphertext is signed using the sender
+	 host PKS-.
+
+	 That is, a SESSION message sent over the wire has the following
+	 format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |      ct_len     |        ct       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+								 |     cts_len     |       cts       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+2.4.1. SESSION message type
+
+   A SESSION message has a type value of 0x03.
+
+2.4.2. SESSION message fields
+
+   The session_number indicates the identifier of the session. Every
+	 session SHOULD have its own and unique session_number value.
+
+   The sig_len field indicates the size of the sig field. In the current
+	 version of this protocol, this should be 32.
+
+	 The sig field is a sig_len bytes long secret key used for message
+	 signature. In the next sections, this key will be referred as KS.
+
+   The enc_len field indicates the size of the sig field. In the current
+	 version of this protocol, this should be 32.
+
+	 The enc field is a enc_len bytes long secret key used for message
+	 cipherment. In the next sections, this key will be referred as KE.
+
+	 The iv_len field indicates the size of the iv field. In the current
+	 version of this protocol, this should be 16.
+
+	 The iv field is the base initialization-vector to use for the session.
+
+	 The ct_len field indicates the length of the ct field.
+
+	 The ct field is the ciphertext, generated using the PKE+ of the target
+	 host.
+
+	 The cts_len field indicates the length of the cts field.
+
+	 The cts field is the ciphertext signature, generated using the PKS- of
+	 the sender host.
+
+	 A host who receives a SESSION message MUST first check if the cts
+	 signature matches the sending host PKS+. If the signature does not
+	 match, the message MUST be ignored.
+
+	 Once the signature has been checked, the receiving host MUST then
+	 decipher the ct field, using its own PKE-. If the decipherment fails,
+	 the message MUST be ignored.
+
+2.5. DATA message format
+
+3. Algorithms
+
+3.1. Message digest algorithm
+
+   The used message digest algorithm is SHA-256.
+
+3.2. Symmetric cipherment algorithm
+
+   The used symmetric cipherment algorithm is AES-256.
+
+3.3. Asymmetric cipherment/signature algorithm
+
+   The used asymmetric cipherment/signature algorithm is RSA-2048.
