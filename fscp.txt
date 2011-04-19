@@ -127,9 +127,17 @@ Abstract
    A host MIGHT ignore any PRESENTATION message whose sig or enc field
    do not satisfy the key usage requirements.
 
-2.4. SESSION message format
+2.4. SESSION_REQUEST message format
 
-   A SESSION message format has the following format:
+   A SESSION_REQUEST message has no body.
+
+2.4.1. SESSION_REQUEST message type
+
+   A SESSION_REQUEST message has a type value of 0x03.
+
+2.5. SESSION message format
+
+   A SESSION message has the following format:
 
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
@@ -156,11 +164,11 @@ Abstract
                  |     cts_len     |       cts       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
-2.4.1. SESSION message type
+2.5.1. SESSION message type
 
-   A SESSION message has a type value of 0x03.
+   A SESSION message has a type value of 0x04.
 
-2.4.2. SESSION message fields
+2.5.2. SESSION message fields
 
    The session_number indicates the identifier of the session. Every
    session SHOULD have its own and unique session_number value.
@@ -201,26 +209,29 @@ Abstract
    decipher the ct field, using its own PKE-. If the decipherment fails,
    the message MUST be ignored.
 
-2.5. DATA message format
+2.6. DATA message format
    
    A DATA message format has the following format:
 
                   0      7 8     15 16    23 24    31 
-                 +-----------------+-----------------+
-                 |     seq_num     |    data_len     |
-                 +-----------------+-----------------+
-                 |       data      |      hmac       |
+                 +-----------------------------------+
+                 |              seq_num              |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |    data_len     |      data       |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |                hmac               |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
 
-2.5.1. DATA message type
+2.6.1. DATA message type
 
-   A DATA message has a type value of 0x04.
+   A DATA message has a type value of 0x05.
 
-2.5.2. DATA message fields
+2.6.2. DATA message fields
 
    The seq_num field indicates the sequence number of the current
    message. Two different DATA messages belonging to the same session
-   MUST have two different sequence numbers.
+   MUST have two different sequence numbers. The rules governing the
+   sequence number are explained in a further section.
 
    The rules governing session numbers are detailled in a further
    section of this document.
@@ -232,7 +243,7 @@ Abstract
 
    The hmac field contains the SHA-256 HMAC of the whole DATA message
    header, excluding the field itself (that is, bytes from range [0,
-   data_len + 4]), using the remote host session signature key.
+   data_len + 6]), using the remote host session signature key.
 
    This field SHOULD be 32 bytes long.
 
@@ -256,7 +267,7 @@ Abstract
 
 4. Protocol
 
-4.1. HELLO
+4.1. Saying "Hello"
 
    A host CAN test the protocol support of another host using a request
    HELLO message.
@@ -271,7 +282,9 @@ Abstract
    The maximum amount of time to wait for a HELLO response is up to the
    implementor. A recommended value is 4 seconds.
 
-4.2. PRESENTATION
+   That is, the whole HELLO message functionality is OPTIONAL.
+
+4.2. Presentation
 
    If two hosts want to communicate but don't "know" each other, they
    CAN send a PRESENTATION message to the remote host to inform them
@@ -280,3 +293,52 @@ Abstract
    A host who receives a PRESENTATION message is free to ignore it if
    the presented certificates are not acceptable. Whether a certificate
    is acceptable or not is up to the host.
+
+   A host MAY ignore any PRESENTATION message whose certificate does
+   not match a previously sent certificate.
+
+   That is, the whole PRESENTATION message functionality is OPTIONAL.
+
+4.3. Sessions
+
+   When a host wants to establish a session MUST send a SESSION_REQUEST
+   message to the target host.
+
+   If no previous session exists with the requesting host, the target
+   host SHOULD generate new session parameters and reply a SESSION
+   message containing those parameters.
+
+   If a host does not receive a response SESSION message after 3
+   seconds, he SHOULD send another SESSION_REQUEST.
+
+   If a host receives more than one request SESSION_REQUEST within 3
+   seconds, he MAY only accept the first one and discard the others.
+
+   If a session with the requesting host already exists and is not too
+   old (more on that in the next sub-section), the target host MAY
+   reply with the parameters from the current session.
+
+4.3.1 Old sessions
+
+   Every session has a limited lifespan. One host may send a maximum of
+   2^32 blocks of data during a session. A block has a size of 16 bytes.
+   
+   A session is considered old when a host considers too much blocks
+   were sent during it. A good value for this "too much" is 2^24 blocks.
+
+4.4. DATA messages
+
+   Once a host has the session parameters for a target host, he can
+   start sending DATA messages to him.
+
+   The sequence number of the first DATA message of a given session MUST
+   be 0.
+
+   The next sequence numbers depends on the amount of previously sent
+   data.
+
+   If the previously sent sequence number was X, and if C bytes were
+   sent, the next sequence number MUST be at least X + ((C + 15) / 16).
+
+   If a host receives a DATA message with a sequence number lower than
+   or equal to a previously received sequence number, he MUST ignore it.
