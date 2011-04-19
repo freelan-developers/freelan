@@ -23,7 +23,7 @@ Abstract
    The FreeLAN peer-to-peer virtual private network specification
    requires a fast and secure communication channel.
    
-	 The FSCP (FreeLAN Secure Channel Protocol) is designed to be secure
+   The FSCP (FreeLAN Secure Channel Protocol) is designed to be secure
    and efficient, and tries to minimize the overhead. It is based over
    UDP [RFC768].
 
@@ -69,9 +69,9 @@ Abstract
    A HELLO message is 4 bytes long and has the following format:
 
                   0      7 8     15 16    23 24    31 
-                 +--------+--------+--------+--------+
-                 |  0x09  |  0x03  |  0x20  |  0x07  |
-                 +--------+--------+--------+--------+
+                 +-----------------------------------+
+                 |           unique_number           |
+                 +-----------------------------------+
  
 2.2.1. HELLO message type
 
@@ -82,7 +82,8 @@ Abstract
 
 2.2.2. HELLO message fields
 
-   This message has no specific fields.
+   The unique_number field is a 4 bytes value chosen by the sender of a
+   HELLO request message.
 
 2.3. PRESENTATION message format
 
@@ -252,3 +253,30 @@ Abstract
 3.3. Asymmetric cipherment/signature algorithm
 
    The used asymmetric cipherment/signature algorithm is RSA-2048.
+
+4. Protocol
+
+4.1. HELLO
+
+   A host CAN test the protocol support of another host using a request
+   HELLO message.
+
+   A host who receives a request HELLO message MAY respond with a
+   matching HELLO response message. The response message MUST have the
+   same unique_number value.
+
+   If a HELLO response is received that doesn't match with a recently
+   send HELLO request, it MUST be ignored.
+
+   The maximum amount of time to wait for a HELLO response is up to the
+   implementor. A recommended value is 4 seconds.
+
+4.2. PRESENTATION
+
+   If two hosts want to communicate but don't "know" each other, they
+   CAN send a PRESENTATION message to the remote host to inform them
+   about their idendity.
+
+   A host who receives a PRESENTATION message is free to ignore it if
+   the presented certificates are not acceptable. Whether a certificate
+   is acceptable or not is up to the host.
