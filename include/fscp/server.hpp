@@ -37,18 +37,37 @@
  */
 
 /**
- * \file fscp.hpp
+ * \file server.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The global fscp include file.
+ * \brief The server class.
  */
 
-#ifndef FSCP_FSCP_HPP
-#define FSCP_FSCP_HPP
+#ifndef FSCP_SERVER_HPP
+#define FSCP_SERVER_HPP
 
-#include "server.hpp"
+#include <boost/asio.hpp>
 
 namespace fscp
 {
+	/**
+	 * \brief A FSCP server.
+	 */
+	class server
+	{
+		public:
+
+			/**
+			 * \brief Create a new FSCP server.
+			 * \param io_service The Boost Asio io_service instance to associate with the server.
+			 * \param endpoint The listen endpoint.
+			 */
+			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& endpoint);
+
+		private:
+
+			boost::asio::ip::udp::socket m_socket;
+			boost::asio::ip::udp::endpoint m_sender_endpoint;
+	};
 }
 
-#endif /* FSCP_FSCP_HPP */
+#endif /* FSCP_SERVER_HPP */

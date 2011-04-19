@@ -59,7 +59,7 @@ class Environment(SConsEnvironment):
 		else:
 			self['CXXFLAGS'].append('-DNDEBUG')
 
-		self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-O3', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
+		self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
 
 		if sys.platform != 'darwin':
 			if self['arch'] == 'i386':
@@ -99,14 +99,14 @@ class Environment(SConsEnvironment):
 
 			if not 'LIBS' in kw:
 				kw['LIBS'] = []
-
-			kw['LIBS'].append('gdi32')
 		else:
 			static_source = self.StaticObject(source, **kw)
 			if sys.platform == 'darwin':
 				shlinkflags += ['-arch', 'i386', '-arch', 'x86_64', '-single_module', '-undefined', 'dynamic_lookup']
 			else:
 				shlinkflags += ['-Wl,-soname,lib%s.so.%s' % (module, major)]
+
+		self.__add_libs(kw)
 
 		devel_shared_library = self.SharedLibrary(os.path.join(self._libdir, module), shared_source, SHLINKFLAGS = shlinkflags, **kw)
 		static_library = self.StaticLibrary(os.path.join(self._libdir, module + '_static'), static_source, **kw)
@@ -126,8 +126,7 @@ class Environment(SConsEnvironment):
 		if not 'LIBS' in kw:
 			kw['LIBS'] = []
 
-		if sys.platform == 'win32':
-			kw['LIBS'].append('gdi32')
+		self.__add_libs(kw)
 
 		return self.Program(sample, source, **kw)
 
@@ -140,6 +139,13 @@ class Environment(SConsEnvironment):
 		astyle = self.AStyle(source);
 		AlwaysBuild(astyle)
 		return astyle
+
+	def __add_libs(self, kw):
+		if sys.platform == 'win32':
+			kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
+			kw['LIBS'].append('ws2_32')
+		else:
+			kw['LIBS'].append('boost_system')
 
 	@staticmethod
 	def _create_variables(variable_file):
