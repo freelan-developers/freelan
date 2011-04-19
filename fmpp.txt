@@ -2,7 +2,7 @@ The FreeLAN Project                                         J. Kauffmann
 Draft:                                                   www.freelan.org
 Category: Informational                                    14 April 2011
 
-                    The FreeLAN Message Part Protocol
+                    The FreeLAN Secure Channel Protocol
 
 Status of this Memo
 
@@ -23,7 +23,7 @@ Abstract
    The FreeLAN peer-to-peer virtual private network specification
    requires a fast and secure communication channel.
    
-   The FMPP ("FreeLAN Message Part Protocol) is designed to be secure
+	 The FSCP (FreeLAN Secure Channel Protocol) is designed to be secure
    and efficient, and tries to minimize the overhead. It is based over
    UDP [RFC768].
 
@@ -41,7 +41,7 @@ Abstract
 
 2. Format
 
-   FMPP uses different message formats. The roles of these messages are
+   FSCP uses different message formats. The roles of these messages are
    described in a further section.
 
    Multi-bytes integer values MUST be written in network byte order.
@@ -56,7 +56,7 @@ Abstract
                  +--------+--------+-----------------+
 
    The version MUST be set to the currently used version of the FreeLAN
-   Message Part Protocol. The current version described in this document
+   Secure Channel Protocol. The current version described in this document
    is 1.
 
    The type field indicates the type of the message. Its possible values
