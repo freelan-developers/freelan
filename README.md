@@ -1,7 +1,7 @@
-libfmpp
+libfscp
 =======
 
-libfmpp provides a portable C++ implementation of the FreeLAN Message Part Protocol.
+libfscp provides a portable C++ implementation of the FreeLAN Secure Channel Protocol.
 
 It is mainly based on [boost::asio](http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio.html) and [libcryptoplus](https://github.com/ereOn/libcryptoplus).
 
@@ -15,6 +15,6 @@ If you are interested in using this project under a different license, please [c
 Does the project have a website ?
 ---------------------------------
 
-Yes, it does. And [here](http://www.freelan.org/index.php?page=libfmpp) it is. 
+Yes, it does. And [here](http://www.freelan.org/index.php?page=libfscp) it is. 
 
-You may also find the [git repository](https://github.com/ereOn/libfmpp) on github.
+You may also find the [git repository](https://github.com/ereOn/libfscp) on github.

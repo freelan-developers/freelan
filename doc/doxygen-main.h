@@ -6,25 +6,25 @@
  */
 
 /**
- * \mainpage libfmpp Documentation
+ * \mainpage libfscp Documentation
  *
  * \section section-intro Introduction
  *
- * This is the API of libfmpp, an OpenSource multiplatform C++ implementation of the FreeLAN Message Part protocol.
+ * This is the API of libfscp, an OpenSource multiplatform C++ implementation of the FreeLAN Message Part protocol.
  * 
  * \section section-build Build instructions
  * 
- * To build and install libfmpp, see INSTALL file located in the source tree.
+ * To build and install libfscp, see INSTALL file located in the source tree.
  *  
  * \section section-links Links
  * 
  * <ul>
- * <li><a href="http://www.freelan.org">libfmpp website</a></li>
- * <li><a href="https://github.com/ereOn/libfmpp">libfmpp project page</a></li>
+ * <li><a href="http://www.freelan.org">libfscp website</a></li>
+ * <li><a href="https://github.com/ereOn/libfscp">libfscp project page</a></li>
  * </ul>
  * 
  * \section section-license License
  * 
- * libfmpp is licensed under the <a href="http://www.gnu.org/licenses/gpl-3.0.html">GPLv3.0 license</a>.
+ * libfscp is licensed under the <a href="http://www.gnu.org/licenses/gpl-3.0.html">GPLv3.0 license</a>.
  */
 

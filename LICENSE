@@ -1,5 +1,5 @@
 /*
- *  libfmpp - C++ portable FreeLAN Message Part protocol implementation.
+ *  libfscp - C++ portable FreeLAN Secure Chanel protocol implementation.
  *  Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
  *
  *  This program is free software: you can redistribute it and/or modify
