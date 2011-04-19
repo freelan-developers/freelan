@@ -65,8 +65,12 @@ namespace fscp
 
 		private:
 
+			void async_receive();
+			void handle_receive_from(const boost::system::error_code&, size_t);
+
 			boost::asio::ip::udp::socket m_socket;
 			boost::asio::ip::udp::endpoint m_sender_endpoint;
+			boost::array<unsigned char, 65536> m_recv_buffer;
 	};
 }
 
