@@ -58,7 +58,11 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	fscp::server server(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
+	boost::asio::ip::udp::endpoint alice_endpoint(boost::asio::ip::udp::v4(), 12000);
+	boost::asio::ip::udp::endpoint bob_endpoint(boost::asio::ip::udp::v4(), 12001);
+
+	fscp::server alice_server(io_service, alice_endpoint);
+	fscp::server bob_server(io_service, bob_endpoint);
 
 	io_service.run();
 

@@ -44,6 +44,8 @@
 
 #include "server.hpp"
 
+#include "message.hpp"
+
 #include <boost/bind.hpp>
 
 using namespace boost;
@@ -66,6 +68,12 @@ namespace fscp
 	{
 		if (!error && bytes_recvd > 0)
 		{
+			message msg = message::read(m_recv_buffer.data(), bytes_recvd);
+
+			if (msg.length() > 0)
+			{
+			}
+
 			async_receive();
 		}
 	}
