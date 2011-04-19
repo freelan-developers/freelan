@@ -1,7 +1,7 @@
 ##
-# libfmpp build file.
+# libfscp build file.
 #
-module = 'fmpp'
+module = 'fscp'
 major = '1'
 minor = '0'
 
