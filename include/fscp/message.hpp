@@ -134,7 +134,7 @@ namespace fscp
 	
 	inline message_type message::type() const
 	{
-		return buffer_tools::get<uint8_t>(m_data, 1);
+		return static_cast<message_type>(buffer_tools::get<uint8_t>(m_data, 1));
 	}
 	
 	inline size_t message::length() const

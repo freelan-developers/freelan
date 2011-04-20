@@ -37,44 +37,31 @@
  */
 
 /**
- * \file message.cpp
+ * \file constants.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A generic message class.
+ * \brief The constants.
  */
 
-#include "message.hpp"
+#ifndef FSCP_CONSTANTS_HPP
+#define FSCP_CONSTANTS_HPP
 
-#include <cassert>
-#include <stdexcept>
+#include <stdint.h>
 
 namespace fscp
 {
-	size_t message::write(void* buf, size_t buf_len, unsigned int _version, message_type _type, size_t _length)
+	/* Protocol */
+	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
+
+	/* Message types */
+	enum message_type
 	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		buffer_tools::set<uint8_t>(buf, 0, _version);
-		buffer_tools::set<uint8_t>(buf, 1, static_cast<uint8_t>(_type));
-		buffer_tools::set<uint16_t>(buf, 2, htons(static_cast<uint16_t>(_length)));
-
-		return HEADER_LENGTH;
-	}
-
-	message::message(const void* buf, size_t buf_len) :
-		m_data(buf)
-	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		if (buf_len < HEADER_LENGTH + length())
-		{
-			throw std::runtime_error("buf_len");
-		}
-	}
-
+		MESSAGE_TYPE_HELLO_REQUEST = 0x00,
+		MESSAGE_TYPE_HELLO_RESPONSE = 0x01,
+		MESSAGE_TYPE_PRESENTATION = 0x02,
+		MESSAGE_TYPE_SESSION_REQUEST = 0x03,
+		MESSAGE_TYPE_SESSION = 0x04,
+		MESSAGE_TYPE_DATA = 0x05
+	};
 }
+
+#endif /* FSCP_CONSTANTS_HPP */

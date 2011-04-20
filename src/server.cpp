@@ -57,14 +57,14 @@ namespace fscp
 {
 	server::server(asio::io_service& io_service, const asio::ip::udp::endpoint& listen_endpoint) :
 		m_socket(io_service, listen_endpoint),
-		m_hello_unique_number(0)
+		m_hello_current_unique_number(0)
 	{
 		async_receive();
 	}
 	
-	void server::greet(const boost::asio::ip::udp::endpoint& target)
+	void server::greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
-		m_socket.get_io_service().post(bind(&server::do_greet, this, target));
+		m_socket.get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
 	}
 
 	/* Common */
@@ -80,36 +80,20 @@ namespace fscp
 		{
 			message message(m_recv_buffer.data(), bytes_recvd);
 
-			switch(message.type())
+			switch (message.type())
 			{
 				case MESSAGE_TYPE_HELLO_REQUEST:
-					{
-						hello_message hello_message(message);
-
-						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), hello_message);
-
-						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), m_sender_endpoint);
-
-						break;
-					}
 				case MESSAGE_TYPE_HELLO_RESPONSE:
 					{
 						hello_message hello_message(message);
 
-						hello_request_map::iterator hello_request_map_iterator = m_pending_hello_requests.find(hello_message.unique_number());
+						handle_hello_message_from(hello_message, m_sender_endpoint);
 
-						if (hello_request_map_iterator != m_pending_hello_requests.end())
-						{
-							hello_request& request = hello_request_map_iterator->second;
-
-							if (request.target == m_sender_endpoint)
-							{
-								//TODO: Remove this
-								std::cout << "HELLO response received from " << m_sender_endpoint << std::endl;
-
-								m_pending_hello_requests.erase(hello_request_map_iterator);
-							}
-						}
+						break;
+					}
+				default:
+					{
+						break;
 					}
 			}
 
@@ -117,19 +101,49 @@ namespace fscp
 		}
 	}
 	
-	/* HELLO */
+	/* Hello messages */
 
-	void server::do_greet(const boost::asio::ip::udp::endpoint& target)
+	void server::do_greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
-		hello_request& request = m_pending_hello_requests[m_hello_unique_number];
-		request.unique_number = m_hello_unique_number;
-		request.target = target;
-		request.date = posix_time::microsec_clock::universal_time();
+		hello_request _hello_request(m_hello_current_unique_number, target, callback);
+		_hello_request.start_timeout(get_io_service(), timeout);
+		m_hello_request_list.push_back(_hello_request);
 
-		size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), m_hello_unique_number);
+		size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request.unique_number());
 
 		m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 
-		m_hello_unique_number++;
+		m_hello_current_unique_number++;
+	}
+	
+	void server::handle_hello_message_from(const hello_message& _hello_message, const boost::asio::ip::udp::endpoint& sender)
+	{
+		switch (_hello_message.type())
+		{
+			case MESSAGE_TYPE_HELLO_REQUEST:
+				{
+						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message);
+
+						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender);
+
+						break;
+				}
+			case MESSAGE_TYPE_HELLO_RESPONSE:
+				{
+					hello_request_list::iterator _hello_request = find_hello_request(m_hello_request_list, _hello_message.unique_number(), sender);
+
+					if (_hello_request != m_hello_request_list.end())
+					{
+						_hello_request->trigger();
+						m_hello_request_list.erase(_hello_request);
+					}
+
+					break;
+				}
+			default:
+				{
+					break;
+				}
+		}
 	}
 }

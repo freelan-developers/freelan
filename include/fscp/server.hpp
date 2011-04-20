@@ -45,13 +45,16 @@
 #ifndef FSCP_SERVER_HPP
 #define FSCP_SERVER_HPP
 
-#include <stdint.h>
+#include "hello_request.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <stdint.h>
 
 namespace fscp
 {
+	class hello_message;
+
 	/**
 	 * \brief A FSCP server.
 	 */
@@ -67,10 +70,18 @@ namespace fscp
 			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint);
 
 			/**
+			 * \brief Get the associated io_service.
+			 * \return The associated io_service.
+			 */
+			boost::asio::io_service& get_io_service();
+
+			/**
 			 * \brief Greet a host.
 			 * \param target The target host.
+			 * \param callback The callback to call on response.
+			 * \param timeout The maximum time to wait for the response.
 			 */
-			void greet(const boost::asio::ip::udp::endpoint& target);
+			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
 		private:
 
@@ -84,20 +95,17 @@ namespace fscp
 
 		private:
 
-			void do_greet(const boost::asio::ip::udp::endpoint&);
+			void do_greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout);
+			void handle_hello_message_from(const hello_message&, const boost::asio::ip::udp::endpoint&);
 
-			struct hello_request
-			{
-				uint32_t unique_number;
-				boost::asio::ip::udp::endpoint target;
-				boost::posix_time::ptime date; 
-			};
-
-			uint32_t m_hello_unique_number;
-
-			typedef	std::map<uint32_t, hello_request> hello_request_map;
-			hello_request_map m_pending_hello_requests;
+			hello_request_list m_hello_request_list;
+			uint32_t m_hello_current_unique_number;
 	};
+	
+	inline boost::asio::io_service& server::get_io_service()
+	{
+		return m_socket.get_io_service();
+	}
 }
 
 #endif /* FSCP_SERVER_HPP */

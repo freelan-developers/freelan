@@ -37,30 +37,34 @@
  */
 
 /**
- * \file constants.hpp
+ * \file hello_request.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The constants.
+ * \brief A basic hello request class.
  */
 
-#ifndef FSCP_CONSTANTS_HPP
-#define FSCP_CONSTANTS_HPP
+#include "hello_request.hpp"
 
-#include <stdint.h>
+#include <boost/bind.hpp>
 
 namespace fscp
 {
-	/* Protocol */
-	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
+	namespace
+	{
+		bool hello_request_match(const hello_request& _hello_request, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
+		{
+			return (_hello_request.unique_number() == unique_number) && (_hello_request.target() == target);
+		}
+	}
 
-	/* Message types */
-	typedef uint8_t message_type;
+	void hello_request::start_timeout(boost::asio::io_service& io_service, boost::posix_time::time_duration timeout)
+	{
+		m_timeout_timer.reset(new boost::asio::deadline_timer(io_service, timeout));
 
-	const message_type MESSAGE_TYPE_HELLO_REQUEST = 0x00;
-	const message_type MESSAGE_TYPE_HELLO_RESPONSE = 0x01;
-	const message_type MESSAGE_TYPE_PRESENTATION = 0x02;
-	const message_type MESSAGE_TYPE_SESSION_REQUEST = 0x03;
-	const message_type MESSAGE_TYPE_SESSION = 0x04;
-	const message_type MESSAGE_TYPE_DATA = 0x05;
+		m_timeout_timer->async_wait(boost::bind(&hello_request::trigger_timeout, this));
+	}
+	
+	hello_request_list::iterator find_hello_request(hello_request_list& _hello_request_list, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
+	{
+		return std::find_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request_match, _1, unique_number, target));
+	}
 }
-
-#endif /* FSCP_CONSTANTS_HPP */

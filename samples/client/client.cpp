@@ -7,6 +7,8 @@
 #include <fscp/fscp.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/bind.hpp>
 
 #include <cstdlib>
 #include <csignal>
@@ -51,6 +53,17 @@ static bool register_signal_handlers()
 	return true;
 }
 
+static void on_hello_response(fscp::server& /*server*/, boost::asio::ip::udp::endpoint sender, boost::posix_time::time_duration time_duration)
+{
+	if (time_duration.is_special())
+	{
+		std::cout << "Received no HELLO response from " << sender << std::endl;
+	} else
+	{
+		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
+	}
+}
+
 int main()
 {
 	if (!register_signal_handlers())
@@ -65,10 +78,7 @@ int main()
 	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-	alice_server.greet(bob_endpoint);
-	alice_server.greet(bob_endpoint);
-	alice_server.greet(bob_endpoint);
-	alice_server.greet(bob_endpoint);
+	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2));
 
 	_io_service.run();
 
