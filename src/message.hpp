@@ -120,6 +120,12 @@ namespace fscp
 			const uint8_t* data() const;
 
 			/**
+			 * \brief Get the total size of the message.
+			 * \return The total size of the message.
+			 */
+			size_t size() const;
+
+			/**
 			 * \brief Get the payload data.
 			 * \return The payload data.
 			 */
@@ -176,6 +182,11 @@ namespace fscp
 	inline const uint8_t* message::data() const
 	{
 		return static_cast<const uint8_t*>(m_data);
+	}
+
+	inline size_t message::size() const
+	{
+		return HEADER_LENGTH + length();
 	}
 
 	inline uint8_t* message::payload()

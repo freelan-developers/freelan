@@ -76,6 +76,7 @@ namespace fscp
 			boost::asio::ip::udp::socket m_socket;
 			boost::asio::ip::udp::endpoint m_sender_endpoint;
 			boost::array<uint8_t, 65536> m_recv_buffer;
+			boost::array<uint8_t, 65536> m_send_buffer;
 	};
 }
 
