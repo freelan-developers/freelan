@@ -58,7 +58,7 @@ namespace fscp
 
 		buffer_tools::set<uint8_t>(buf, 0, _version);
 		buffer_tools::set<uint8_t>(buf, 1, _type);
-		buffer_tools::set<uint16_t>(buf, 2, _length);
+		buffer_tools::set<uint16_t>(buf, 2, htons(static_cast<uint16_t>(_length)));
 
 		return HEADER_LENGTH;
 	}

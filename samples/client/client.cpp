@@ -12,7 +12,7 @@
 #include <csignal>
 #include <iostream>
 
-static boost::asio::io_service io_service;
+static boost::asio::io_service _io_service;
 
 static void signal_handler(int code)
 {
@@ -21,7 +21,7 @@ static void signal_handler(int code)
 		case SIGTERM:
 		case SIGINT:
 		case SIGABRT:
-			io_service.stop();
+			_io_service.stop();
 			break;
 		default:
 			break;
@@ -58,13 +58,19 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	boost::asio::ip::udp::endpoint alice_endpoint(boost::asio::ip::udp::v4(), 12000);
-	boost::asio::ip::udp::endpoint bob_endpoint(boost::asio::ip::udp::v4(), 12001);
+	fscp::server alice_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
+	fscp::server bob_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
 
-	fscp::server alice_server(io_service, alice_endpoint);
-	fscp::server bob_server(io_service, bob_endpoint);
+	boost::asio::ip::udp::resolver resolver(_io_service);
+	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
+	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-	io_service.run();
+	alice_server.greet(bob_endpoint);
+	alice_server.greet(bob_endpoint);
+	alice_server.greet(bob_endpoint);
+	alice_server.greet(bob_endpoint);
+
+	_io_service.run();
 
 	return EXIT_SUCCESS;
 }

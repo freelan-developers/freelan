@@ -48,11 +48,10 @@
 #include <stdint.h>
 
 #include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace fscp
 {
-	class message;
-
 	/**
 	 * \brief A FSCP server.
 	 */
@@ -61,16 +60,17 @@ namespace fscp
 		public:
 
 			/**
-			 * \brief The endpoint type.
-			 */
-			typedef boost::asio::ip::udp::endpoint endpoint;
-
-			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
 			 */
-			server(boost::asio::io_service& io_service, const endpoint& listen_endpoint);
+			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint);
+
+			/**
+			 * \brief Greet a host.
+			 * \param target The target host.
+			 */
+			void greet(const boost::asio::ip::udp::endpoint& target);
 
 		private:
 
@@ -80,7 +80,23 @@ namespace fscp
 			boost::asio::ip::udp::socket m_socket;
 			boost::array<uint8_t, 65536> m_recv_buffer;
 			boost::array<uint8_t, 65536> m_send_buffer;
-			endpoint m_sender_endpoint;
+			boost::asio::ip::udp::endpoint m_sender_endpoint;
+
+		private:
+
+			void do_greet(const boost::asio::ip::udp::endpoint&);
+
+			struct hello_request
+			{
+				uint32_t unique_number;
+				boost::asio::ip::udp::endpoint target;
+				boost::posix_time::ptime date; 
+			};
+
+			uint32_t m_hello_unique_number;
+
+			typedef	std::map<uint32_t, hello_request> hello_request_map;
+			hello_request_map m_pending_hello_requests;
 	};
 }
 
