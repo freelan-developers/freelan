@@ -44,8 +44,23 @@
 
 #include "message.hpp"
 
-#include "constants.hpp"
+#include <cassert>
+#include <stdexcept>
 
 namespace fscp
 {
+	message::message(void* buf, size_t buf_len) :
+		m_data(buf)
+	{
+		if (buf_len < HEADER_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (buf_len < HEADER_LENGTH + length())
+		{
+			throw std::runtime_error("buf_len");
+		}
+	}
+
 }

@@ -48,6 +48,8 @@
 
 #include <boost/bind.hpp>
 
+#include <iostream>
+
 using namespace boost;
 using asio::ip::udp;
 
@@ -68,13 +70,16 @@ namespace fscp
 	{
 		if (!error && bytes_recvd > 0)
 		{
-			message msg = message::read(m_recv_buffer.data(), bytes_recvd);
+			message msg(m_recv_buffer.data(), bytes_recvd);
 
-			if (msg.length() > 0)
-			{
-			}
+			handle_message(msg, m_sender_endpoint);
 
 			async_receive();
 		}
+	}
+	
+	void server::handle_message(const message& msg, const boost::asio::ip::udp::endpoint& sender)
+	{
+		std::cout << "Received message " << msg.type() << " from " << sender << std::endl;
 	}
 }

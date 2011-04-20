@@ -45,18 +45,22 @@
 #ifndef FSCP_CONSTANTS_HPP
 #define FSCP_CONSTANTS_HPP
 
+#include <stdint.h>
+
 namespace fscp
 {
 	/* Protocol */
 	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
 
 	/* Message types */
-	const unsigned char MESSAGE_TYPE_HELLO_REQUEST = 0x00;
-	const unsigned char MESSAGE_TYPE_HELLO_RESPONSE = 0x01;
-	const unsigned char MESSAGE_TYPE_PRESENTATION = 0x02;
-	const unsigned char MESSAGE_TYPE_SESSION_REQUEST = 0x03;
-	const unsigned char MESSAGE_TYPE_SESSION = 0x04;
-	const unsigned char MESSAGE_TYPE_DATA = 0x05;
+	typedef uint8_t message_type;
+
+	const message_type MESSAGE_TYPE_HELLO_REQUEST = 0x00;
+	const message_type MESSAGE_TYPE_HELLO_RESPONSE = 0x01;
+	const message_type MESSAGE_TYPE_PRESENTATION = 0x02;
+	const message_type MESSAGE_TYPE_SESSION_REQUEST = 0x03;
+	const message_type MESSAGE_TYPE_SESSION = 0x04;
+	const message_type MESSAGE_TYPE_DATA = 0x05;
 }
 
 #endif /* FSCP_CONSTANTS_HPP */

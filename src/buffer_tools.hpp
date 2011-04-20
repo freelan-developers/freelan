@@ -37,46 +37,81 @@
  */
 
 /**
- * \file server.hpp
+ * \file buffer_tools.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The server class.
+ * \brief Buffer manipulation tools.
  */
 
-#ifndef FSCP_SERVER_HPP
-#define FSCP_SERVER_HPP
+#ifndef FSCP_BUFFER_TOOLS_HPP
+#define FSCP_BUFFER_TOOLS_HPP
 
+#include <cstring>
 #include <stdint.h>
-
-#include <boost/asio.hpp>
 
 namespace fscp
 {
-	class message;
-
-	/**
-	 * \brief A FSCP server.
-	 */
-	class server
+	namespace buffer_tools
 	{
-		public:
+		/**
+		 * \brief Get a value from a buffer.
+		 * \param buf The buffer.
+		 * \param offset The offset of the value to read.
+		 */
+		template <typename Type>
+		Type get(const void* buf, size_t offset);
 
-			/**
-			 * \brief Create a new FSCP server.
-			 * \param io_service The Boost Asio io_service instance to associate with the server.
-			 * \param endpoint The listen endpoint.
-			 */
-			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& endpoint);
+		/**
+		 * \brief Set a value in a buffer.
+		 * \param buf The buffer.
+		 * \param offset The offset of the value to write.
+		 * \param value The value to write.
+		 */
+		template <typename Type>
+		void set(void* buf, size_t offset, Type value);
 
-		private:
+		/**
+		 * \brief Get a value from a buffer.
+		 * \param buf The buffer.
+		 * \param offset The offset of the value to read.
+		 */
+		uint8_t get(const void* buf, size_t offset);
 
-			void async_receive();
-			void handle_receive_from(const boost::system::error_code&, size_t);
-			void handle_message(const message&, const boost::asio::ip::udp::endpoint&);
+		/**
+		 * \brief Set a value in a buffer.
+		 * \param buf The buffer.
+		 * \param offset The offset of the value to write.
+		 * \param value The value to write.
+		 */
+		void set(void* buf, size_t offset, uint8_t value);
 
-			boost::asio::ip::udp::socket m_socket;
-			boost::asio::ip::udp::endpoint m_sender_endpoint;
-			boost::array<uint8_t, 65536> m_recv_buffer;
-	};
+		template <typename Type, Type (*ConversionFunc)(Type)>
+		inline Type get_converted(const void* buf, size_t offset)
+		{
+			return ConversionFunc(get(buf, offset));
+		}
+
+		template <typename Type>
+		inline Type get(const void* buf, size_t offset)
+		{
+			return *reinterpret_cast<const Type*>(static_cast<const uint8_t*>(buf) + offset);
+		}
+
+		template <typename Type>
+		inline void set(void* buf, size_t offset, Type value)
+		{
+			*reinterpret_cast<Type*>(static_cast<uint8_t*>(buf) + offset) = value;
+		}
+
+		inline uint8_t get(const void* buf, size_t offset)
+		{
+			return static_cast<const uint8_t*>(buf)[offset];
+		}
+		
+		inline void set(void* buf, size_t offset, uint8_t value)
+		{
+			static_cast<uint8_t*>(buf)[offset] = value;
+		}
+	}
 }
 
-#endif /* FSCP_SERVER_HPP */
+#endif /* FSCP_BUFFER_TOOLS_HPP */

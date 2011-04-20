@@ -45,9 +45,12 @@
 #ifndef FSCP_MESSAGE_HPP
 #define FSCP_MESSAGE_HPP
 
+#include "buffer_tools.hpp"
+#include "constants.hpp"
+
+#include <boost/asio.hpp>
+
 #include <stdint.h>
-#include <cassert>
-#include <stdexcept>
 #include <cstring>
 
 namespace fscp
@@ -60,142 +63,129 @@ namespace fscp
 		public:
 
 			/**
-			 * \brief Read a message from a buffer.
+			 * \brief Create a message and map it on a buffer.
 			 * \param buf The buffer.
-			 * \param buf_len The length of buf. Must be at least sizeof(message) bytes long.
-			 * \return A message.
+			 * \param buf_len The buffer length.
+			 *
+			 * If the mapping fails, a std::runtime_error is thrown.
 			 */
-			static message read(const void* buf, size_t buf_len);
-
-			/**
-			 * \brief Create a default empty message.
-			 */
-			message();
-
-			/**
-			 * \brief Create a new message.
-			 * \param version The message version.
-			 * \param type The message type.
-			 * \param length The message length.
-			 */
-			message(uint8_t version, uint8_t type, uint16_t length);
+			message(void* buf, size_t buf_len);
 
 			/**
 			 * \brief Get the version.
 			 * \return The version.
 			 */
-			uint8_t version() const;
+			unsigned int version() const;
 
 			/**
 			 * \brief Set the version.
 			 * \param version The version.
 			 */
-			void set_version(uint8_t version);
+			void set_version(unsigned int version);
 
 			/**
 			 * \brief Get the type.
 			 * \return The type.
 			 */
-			uint8_t type() const;
+			message_type type() const;
 
 			/**
 			 * \brief Set the type.
 			 * \param type The type.
 			 */
-			void set_type(uint8_t type);
+			void set_type(message_type type);
 
 			/**
 			 * \brief Get the length.
 			 * \return The length.
 			 */
-			uint16_t length() const;
+			size_t length() const;
 
 			/**
 			 * \brief Set the length.
 			 * \param length The length.
 			 */
-			void set_length(uint16_t length);
+			void set_length(size_t length);
 
 			/**
-			 * \brief Write the message to a buffer.
-			 * \param buf The buffer to write the message to.
-			 * \param buf_len The length of buf. Must be at least sizeof(message) bytes long.
+			 * \brief Get the raw data.
+			 * \return The message data buffer.
 			 */
-			void write(void* buf, size_t buf_len);
+			uint8_t* data();
+
+			/**
+			 * \brief Get the raw data.
+			 * \return The message data buffer.
+			 */
+			const uint8_t* data() const;
+
+			/**
+			 * \brief Get the payload data.
+			 * \return The payload data.
+			 */
+			uint8_t* payload();
+
+			/**
+			 * \brief Get the payload data.
+			 * \return The payload data.
+			 */
+			const uint8_t* payload() const;
 
 		private:
 
-			uint8_t m_version;
-			uint8_t m_type;
-			uint16_t m_length;
-	} __attribute__((__packed__));
+			static const size_t HEADER_LENGTH = 4;
 
-	inline message message::read(const void* buf, size_t buf_len)
+			void* m_data;
+	};
+
+	inline unsigned int message::version() const
 	{
-		message msg;
-
-		assert(buf_len >= sizeof(msg));
-
-		if (buf_len < sizeof(msg))
-		{
-			throw std::invalid_argument("buf_len");
-		}
-
-		std::memcpy(&msg, buf, sizeof(msg));
-
-		return msg;
-	}
-
-	inline message::message() :
-		m_version(0), m_type(0), m_length(0)
-	{
-	}
-
-	inline message::message(uint8_t _version, uint8_t _type, uint16_t _length) :
-		m_version(_version), m_type(_type), m_length(_length)
-	{
-	}
-
-	inline uint8_t message::version() const
-	{
-		return m_version;
+		return buffer_tools::get<uint8_t>(m_data, 0);
 	}
 	
-	inline void message::set_version(uint8_t _version)
+	inline void message::set_version(unsigned int _version)
 	{
-		m_version = _version;
+		buffer_tools::set<uint8_t>(m_data, 0, _version);
 	}
 
-	inline uint8_t message::type() const
+	inline message_type message::type() const
 	{
-		return m_type;
+		return buffer_tools::get<uint8_t>(m_data, 1);
 	}
 	
-	inline void message::set_type(uint8_t _type)
+	inline void message::set_type(message_type _type)
 	{
-		m_type = _type;
+		buffer_tools::set<uint8_t>(m_data, 1, _type);
 	}
 
-	inline uint16_t message::length() const
+	inline size_t message::length() const
 	{
-		return m_length;
-	}
-	
-	inline void message::set_length(uint16_t _length)
-	{
-		m_length = _length;
+		return ntohs(buffer_tools::get<uint16_t>(m_data, 2));
 	}
 	
-	inline void message::write(void* buf, size_t buf_len)
+	inline void message::set_length(size_t _length)
 	{
-		assert(buf_len >= sizeof(*this));
+		buffer_tools::set<uint16_t>(m_data, 2, htons(static_cast<uint16_t>(_length)));
+	}
 
-		if (buf_len < sizeof(*this))
-		{
-			throw std::invalid_argument("buf_len");
-		}
+	inline uint8_t* message::data()
+	{
+		return static_cast<uint8_t*>(m_data);
+	}
 
-		std::memcpy(buf, this, sizeof(*this));
+	inline const uint8_t* message::data() const
+	{
+		return static_cast<const uint8_t*>(m_data);
+	}
+
+	inline uint8_t* message::payload()
+	{
+		return static_cast<uint8_t*>(m_data) + HEADER_LENGTH;
+	}
+
+	inline const uint8_t* message::payload() const
+	{
+		return static_cast<const uint8_t*>(m_data) + HEADER_LENGTH;
 	}
 }
 

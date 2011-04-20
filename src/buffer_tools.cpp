@@ -37,46 +37,16 @@
  */
 
 /**
- * \file server.hpp
+ * \file buffer_tools.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The server class.
+ * \brief Buffer manipulation tools.
  */
 
-#ifndef FSCP_SERVER_HPP
-#define FSCP_SERVER_HPP
-
-#include <stdint.h>
-
-#include <boost/asio.hpp>
+#include "buffer_tools.hpp"
 
 namespace fscp
 {
-	class message;
-
-	/**
-	 * \brief A FSCP server.
-	 */
-	class server
+	namespace buffer_tools
 	{
-		public:
-
-			/**
-			 * \brief Create a new FSCP server.
-			 * \param io_service The Boost Asio io_service instance to associate with the server.
-			 * \param endpoint The listen endpoint.
-			 */
-			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& endpoint);
-
-		private:
-
-			void async_receive();
-			void handle_receive_from(const boost::system::error_code&, size_t);
-			void handle_message(const message&, const boost::asio::ip::udp::endpoint&);
-
-			boost::asio::ip::udp::socket m_socket;
-			boost::asio::ip::udp::endpoint m_sender_endpoint;
-			boost::array<uint8_t, 65536> m_recv_buffer;
-	};
+	}
 }
-
-#endif /* FSCP_SERVER_HPP */
