@@ -61,22 +61,26 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief The endpoint type.
+			 */
+			typedef boost::asio::ip::udp::endpoint endpoint;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
-			 * \param endpoint The listen endpoint.
+			 * \param listen_endpoint The listen endpoint.
 			 */
-			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& endpoint);
+			server(boost::asio::io_service& io_service, const endpoint& listen_endpoint);
 
 		private:
 
 			void async_receive();
 			void handle_receive_from(const boost::system::error_code&, size_t);
-			void handle_message(const message&, const boost::asio::ip::udp::endpoint&);
 
 			boost::asio::ip::udp::socket m_socket;
-			boost::asio::ip::udp::endpoint m_sender_endpoint;
 			boost::array<uint8_t, 65536> m_recv_buffer;
 			boost::array<uint8_t, 65536> m_send_buffer;
+			endpoint m_sender_endpoint;
 	};
 }
 

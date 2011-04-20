@@ -49,7 +49,21 @@
 
 namespace fscp
 {
-	message::message(void* buf, size_t buf_len) :
+	size_t message::write(void* buf, size_t buf_len, unsigned int _version, message_type _type, size_t _length)
+	{
+		if (buf_len < HEADER_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		buffer_tools::set<uint8_t>(buf, 0, _version);
+		buffer_tools::set<uint8_t>(buf, 1, _type);
+		buffer_tools::set<uint16_t>(buf, 2, _length);
+
+		return HEADER_LENGTH;
+	}
+
+	message::message(const void* buf, size_t buf_len) :
 		m_data(buf)
 	{
 		if (buf_len < HEADER_LENGTH)

@@ -63,13 +63,24 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief Write a message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param version The protocol version.
+			 * \param type The message type.
+			 * \param length The length of the payload.
+			 * \return The count of bytes written.
+			 */
+			static size_t write(void* buf, size_t buf_len, unsigned int version, message_type type, size_t length);
+
+			/**
 			 * \brief Create a message and map it on a buffer.
 			 * \param buf The buffer.
 			 * \param buf_len The buffer length.
 			 *
 			 * If the mapping fails, a std::runtime_error is thrown.
 			 */
-			message(void* buf, size_t buf_len);
+			message(const void* buf, size_t buf_len);
 
 			/**
 			 * \brief Get the version.
@@ -78,40 +89,16 @@ namespace fscp
 			unsigned int version() const;
 
 			/**
-			 * \brief Set the version.
-			 * \param version The version.
-			 */
-			void set_version(unsigned int version);
-
-			/**
 			 * \brief Get the type.
 			 * \return The type.
 			 */
 			message_type type() const;
 
 			/**
-			 * \brief Set the type.
-			 * \param type The type.
-			 */
-			void set_type(message_type type);
-
-			/**
 			 * \brief Get the length.
 			 * \return The length.
 			 */
 			size_t length() const;
-
-			/**
-			 * \brief Set the length.
-			 * \param length The length.
-			 */
-			void set_length(size_t length);
-
-			/**
-			 * \brief Get the raw data.
-			 * \return The message data buffer.
-			 */
-			uint8_t* data();
 
 			/**
 			 * \brief Get the raw data.
@@ -129,19 +116,15 @@ namespace fscp
 			 * \brief Get the payload data.
 			 * \return The payload data.
 			 */
-			uint8_t* payload();
-
-			/**
-			 * \brief Get the payload data.
-			 * \return The payload data.
-			 */
 			const uint8_t* payload() const;
 
-		private:
+		protected:
 
 			static const size_t HEADER_LENGTH = 4;
 
-			void* m_data;
+		private:
+
+			const void* m_data;
 	};
 
 	inline unsigned int message::version() const
@@ -149,36 +132,16 @@ namespace fscp
 		return buffer_tools::get<uint8_t>(m_data, 0);
 	}
 	
-	inline void message::set_version(unsigned int _version)
-	{
-		buffer_tools::set<uint8_t>(m_data, 0, _version);
-	}
-
 	inline message_type message::type() const
 	{
 		return buffer_tools::get<uint8_t>(m_data, 1);
 	}
 	
-	inline void message::set_type(message_type _type)
-	{
-		buffer_tools::set<uint8_t>(m_data, 1, _type);
-	}
-
 	inline size_t message::length() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(m_data, 2));
 	}
 	
-	inline void message::set_length(size_t _length)
-	{
-		buffer_tools::set<uint16_t>(m_data, 2, htons(static_cast<uint16_t>(_length)));
-	}
-
-	inline uint8_t* message::data()
-	{
-		return static_cast<uint8_t*>(m_data);
-	}
-
 	inline const uint8_t* message::data() const
 	{
 		return static_cast<const uint8_t*>(m_data);
@@ -187,11 +150,6 @@ namespace fscp
 	inline size_t message::size() const
 	{
 		return HEADER_LENGTH + length();
-	}
-
-	inline uint8_t* message::payload()
-	{
-		return static_cast<uint8_t*>(m_data) + HEADER_LENGTH;
 	}
 
 	inline const uint8_t* message::payload() const

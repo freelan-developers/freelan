@@ -45,18 +45,18 @@
 #include "server.hpp"
 
 #include "message.hpp"
+#include "hello_message.hpp"
 
 #include <boost/bind.hpp>
 
 #include <iostream>
 
 using namespace boost;
-using asio::ip::udp;
 
 namespace fscp
 {
-	server::server(asio::io_service& io_service, const asio::ip::udp::endpoint& endpoint) :
-		m_socket(io_service, endpoint)
+	server::server(asio::io_service& io_service, const endpoint& listen_endpoint) :
+		m_socket(io_service, listen_endpoint)
 	{
 		async_receive();
 	}
@@ -70,16 +70,12 @@ namespace fscp
 	{
 		if (!error && bytes_recvd > 0)
 		{
-			message msg(m_recv_buffer.data(), bytes_recvd);
+			message message(m_recv_buffer.data(), bytes_recvd);
 
-			handle_message(msg, m_sender_endpoint);
+			//TODO: Remove this
+			std::cout << "Received message " << message.type() << " from " << m_sender_endpoint << std::endl;
 
 			async_receive();
 		}
-	}
-	
-	void server::handle_message(const message& msg, const boost::asio::ip::udp::endpoint& sender)
-	{
-		std::cout << "Received message " << msg.type() << " from " << sender << std::endl;
 	}
 }

@@ -49,8 +49,45 @@
 
 namespace fscp
 {
-	hello_message::hello_message(void* buf, size_t buf_len) :
+	size_t hello_message::write_request(void* buf, size_t buf_len, uint32_t _unique_number)
+	{
+		if (buf_len < HEADER_LENGTH + BODY_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		buffer_tools::set<uint32_t>(buf, HEADER_LENGTH, htonl(_unique_number));
+
+		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_HELLO_REQUEST, BODY_LENGTH);
+
+		return HEADER_LENGTH + BODY_LENGTH;
+	}
+
+	size_t hello_message::write_response(void* buf, size_t buf_len, const hello_message& request)
+	{
+		if (buf_len < HEADER_LENGTH + BODY_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		buffer_tools::set<uint32_t>(buf, HEADER_LENGTH, htonl(request.unique_number()));
+
+		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_HELLO_RESPONSE, BODY_LENGTH);
+
+		return HEADER_LENGTH + BODY_LENGTH;
+	}
+
+	hello_message::hello_message(const void* buf, size_t buf_len) :
 		message(buf, buf_len)
+	{
+		if (length() != BODY_LENGTH)
+		{
+			throw std::runtime_error("bad message length");
+		}
+	}
+	
+	hello_message::hello_message(const message& _message) :
+		message(_message)
 	{
 		if (length() != BODY_LENGTH)
 		{

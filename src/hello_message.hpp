@@ -57,13 +57,37 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief Write a hello request message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param unique_number The unique number to write.
+			 * \return The count of bytes written.
+			 */
+			static size_t write_request(void* buf, size_t buf_len, uint32_t unique_number);
+
+			/**
+			 * \brief Write a hello response message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param request The hello request message.
+			 * \return The count of bytes written.
+			 */
+			static size_t write_response(void* buf, size_t buf_len, const hello_message& request);
+
+			/**
 			 * \brief Create a hello_message and map it on a buffer.
 			 * \param buf The buffer.
 			 * \param buf_len The buffer length.
 			 *
 			 * If the mapping fails, a std::runtime_error is thrown.
 			 */
-			hello_message(void* buf, size_t buf_len);
+			hello_message(const void* buf, size_t buf_len);
+
+			/**
+			 * \brief Create a hello_message from a message.
+			 * \param message The message.
+			 */
+			hello_message(const message& message);
 
 			/**
 			 * \brief Get the unique number.
@@ -71,13 +95,7 @@ namespace fscp
 			 */
 			uint32_t unique_number() const;
 
-			/**
-			 * \brief Set the unique number.
-			 * \param unique_number The unique number.
-			 */
-			void set_unique_number(uint32_t unique_number);
-
-		private:
+		protected:
 
 			static const size_t BODY_LENGTH = 4;
 	};
@@ -85,11 +103,6 @@ namespace fscp
 	inline uint32_t hello_message::unique_number() const
 	{
 		return ntohl(buffer_tools::get<uint32_t>(payload(), 0));
-	}
-	
-	inline void hello_message::set_unique_number(uint32_t _unique_number)
-	{
-		buffer_tools::set<uint32_t>(payload(), 0, htonl(static_cast<uint32_t>(_unique_number)));
 	}
 }
 
