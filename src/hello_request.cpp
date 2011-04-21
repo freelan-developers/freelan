@@ -54,13 +54,21 @@ namespace fscp
 		{
 			return (_hello_request.unique_number() == unique_number) && (_hello_request.target() == target);
 		}
+
+		void handle_timeout(hello_request& _hello_request, const boost::system::error_code& error)
+		{
+			if (!error)
+			{
+				_hello_request.trigger_timeout();
+			}
+		}
 	}
 
 	void hello_request::start_timeout(boost::asio::io_service& io_service, boost::posix_time::time_duration timeout)
 	{
 		m_timeout_timer.reset(new boost::asio::deadline_timer(io_service, timeout));
 
-		m_timeout_timer->async_wait(boost::bind(&hello_request::trigger_timeout, this));
+		m_timeout_timer->async_wait(boost::bind(&handle_timeout, *this, boost::asio::placeholders::error));
 	}
 	
 	hello_request_list::iterator find_hello_request(hello_request_list& _hello_request_list, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
