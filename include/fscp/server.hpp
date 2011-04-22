@@ -107,7 +107,7 @@ namespace fscp
 			 * \param callback The callback to call on response.
 			 * \param timeout The maximum time to wait for the response. Default value is 3 seconds.
 			 */
-			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(10));
+			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
 		private:
 
