@@ -48,6 +48,7 @@
 #include "hello_message.hpp"
 
 #include <boost/bind.hpp>
+#include <boost/make_shared.hpp>
 
 #include <iostream>
 
@@ -123,12 +124,13 @@ namespace fscp
 	{
 		if (m_socket.is_open())
 		{
-			hello_request _hello_request(m_hello_current_unique_number, target, callback);
-			_hello_request.start_timeout(get_io_service(), timeout);
+			boost::shared_ptr<hello_request> _hello_request(new hello_request(get_io_service(), m_hello_current_unique_number, target, callback, timeout));
+
 			erase_expired_hello_requests(m_hello_request_list);
+
 			m_hello_request_list.push_back(_hello_request);
 
-			size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request.unique_number());
+			size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request->unique_number());
 
 			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 
@@ -164,7 +166,7 @@ namespace fscp
 
 					if (_hello_request != m_hello_request_list.end())
 					{
-						_hello_request->trigger();
+						(*_hello_request)->cancel_timeout(true);
 						m_hello_request_list.erase(_hello_request);
 					}
 

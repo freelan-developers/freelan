@@ -67,16 +67,16 @@ static bool on_hello_request(const boost::asio::ip::udp::endpoint& sender, bool 
 	return default_accept;
 }
 
-static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, const boost::posix_time::time_duration& time_duration)
+static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, const boost::posix_time::time_duration& time_duration, bool success)
 {
-	if (time_duration.is_special())
+	if (!success)
 	{
-		std::cout << "Received no HELLO response from " << sender << std::endl;
+		std::cout << "Received no HELLO response from " << sender << " after " << time_duration.total_milliseconds() << " ms" << std::endl;
 	} else
 	{
 		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
 
-		server.greet(sender, boost::bind(&on_hello_response, boost::ref(server), _1, _2));
+		server.greet(sender, boost::bind(&on_hello_response, boost::ref(server), _1, _2, _3));
 	}
 }
 
@@ -102,7 +102,7 @@ int main()
 	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2));
+	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
 	bob_server.set_hello_message_callback(&on_hello_request);
 
 	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));

@@ -90,6 +90,12 @@ namespace fscp
 			boost::asio::io_service& get_io_service();
 
 			/**
+			 * \brief Get the associated socket.
+			 * \return The associated socket.
+			 */
+			boost::asio::ip::udp::socket& socket();
+
+			/**
 			 * \brief Set the default behavior when a hello message arrives.
 			 * \param value If false, hello messages will be ignored. Default is true.
 			 */
@@ -133,7 +139,12 @@ namespace fscp
 
 	inline boost::asio::io_service& server::get_io_service()
 	{
-		return m_socket.get_io_service();
+		return socket().get_io_service();
+	}
+
+	inline boost::asio::ip::udp::socket& server::socket()
+	{
+		return m_socket;
 	}
 
 	inline void server::set_accept_hello_messages_default(bool value)

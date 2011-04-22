@@ -45,6 +45,7 @@
 #ifndef FSCP_HELLO_REQUEST_HPP
 #define FSCP_HELLO_REQUEST_HPP
 
+#include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/function.hpp>
@@ -57,22 +58,24 @@ namespace fscp
 	/**
 	 * \brief A basic hello request class.
 	 */
-	class hello_request
+	class hello_request : public boost::noncopyable
 	{
 		public:
 
 			/**
 			 * \brief A request callback function.
 			 */
-			typedef boost::function<void (const boost::asio::ip::udp::endpoint&, const boost::posix_time::time_duration&)> callback_type;
+			typedef boost::function<void (const boost::asio::ip::udp::endpoint&, const boost::posix_time::time_duration&, bool)> callback_type;
 
 			/**
 			 * \brief Create a new request.
+			 * \param io_service The io_service to use.
 			 * \param unique_number The unique number.
 			 * \param target The target host.
 			 * \param callback The callback.
+			 * \param timeout The timeout value.
 			 */
-			hello_request(uint32_t unique_number, const boost::asio::ip::udp::endpoint& target, callback_type callback);
+			hello_request(boost::asio::io_service& io_service, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target, callback_type callback, boost::posix_time::time_duration timeout);
 
 			/**
 			 * \brief Destroy the request.
@@ -106,55 +109,35 @@ namespace fscp
 			boost::posix_time::time_duration age() const;
 
 			/**
-			 * \brief Trigger the callback function.
-			 *
-			 * Note: this function automatically cancels any started timeout.
-			 */
-			void trigger();
-
-			/**
-			 * \brief Trigger the callback function but signal a timeout.
-			 */
-			void trigger_timeout();
-
-			/**
-			 * \brief Set and start the timeout.
-			 * \param io_service The io_service to use.
-			 * \param timeout The timeout value.
-			 * \warning Any existing timeout for this instance will be first cancelled.
-			 */
-			void start_timeout(boost::asio::io_service& io_service, boost::posix_time::time_duration timeout);
-
-			/**
 			 * \brief Cancel the timeout.
+			 * \param status The cancel status. true for success, false otherwise. true is the default.
 			 */
-			void cancel_timeout();
+			void cancel_timeout(bool success = true);
 
 			/**
 			 * \brief Check if the request is expired.
-			 * \return true if the request is expired.
+			 * \return true if the request was triggered.
 			 */
 			bool expired() const;
 
-			/**
-			 * \brief Mark the request as expired.
-			 */
-			void expire();
-
 		private:
+
+			void handle_timeout(const boost::system::error_code&);
+			void trigger();
 
 			uint32_t m_unique_number;
 			boost::asio::ip::udp::endpoint m_target;
 			callback_type m_callback;
 			boost::posix_time::ptime m_birthdate;
-			boost::shared_ptr<boost::asio::deadline_timer> m_timeout_timer;
-			bool m_expired;
+			boost::asio::deadline_timer m_timeout_timer;
+			bool m_cancel_status;
+			bool m_triggered;
 	};
 
 	/**
 	 * \brief A hello_request list type.
 	 */
-	typedef std::list<hello_request> hello_request_list;
+	typedef std::list<boost::shared_ptr<hello_request> > hello_request_list;
 
 	/**
 	 * \brief Find a request that matches the specified attributes.
@@ -171,18 +154,9 @@ namespace fscp
 	 */
 	void erase_expired_hello_requests(hello_request_list& hello_request_list);
 
-	inline hello_request::hello_request(uint32_t _unique_number, const boost::asio::ip::udp::endpoint& _target, callback_type _callback) :
-		m_unique_number(_unique_number),
-		m_target(_target),
-		m_callback(_callback),
-		m_birthdate(boost::posix_time::microsec_clock::universal_time()),
-		m_expired(false)
-	{
-	}
-
 	inline hello_request::~hello_request()
 	{
-		cancel_timeout();
+		trigger();
 	}
 
 	inline uint32_t hello_request::unique_number() const
@@ -205,34 +179,24 @@ namespace fscp
 		return boost::posix_time::microsec_clock::universal_time() - m_birthdate;
 	}
 
-	inline void hello_request::trigger()
+	inline void hello_request::cancel_timeout(bool status)
 	{
-		cancel_timeout();
-		m_callback(m_target, age());
-	}
-
-	inline void hello_request::trigger_timeout()
-	{
-		m_callback(m_target, boost::posix_time::not_a_date_time);
-	}
-
-	inline void hello_request::cancel_timeout()
-	{
-		if (m_timeout_timer)
-		{
-			m_timeout_timer->expires_from_now(boost::posix_time::seconds(0));
-			m_timeout_timer.reset();
-		}
+		m_cancel_status = status;
+		m_timeout_timer.expires_from_now(boost::posix_time::seconds(0));
 	}
 
 	inline bool hello_request::expired() const
 	{
-		return m_expired;
+		return m_triggered;
 	}
 
-	inline void hello_request::expire()
+	inline void hello_request::trigger()
 	{
-		m_expired = true;
+		if (!m_triggered)
+		{
+			m_triggered = true;
+			m_callback(m_target, age(), m_cancel_status);
+		}
 	}
 }
 

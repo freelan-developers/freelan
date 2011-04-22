@@ -50,27 +50,31 @@ namespace fscp
 {
 	namespace
 	{
-		bool hello_request_match(const hello_request& _hello_request, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
+		bool hello_request_match(boost::shared_ptr<hello_request> _hello_request, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
 		{
-			return (_hello_request.unique_number() == unique_number) && (_hello_request.target() == target);
+			return (_hello_request->unique_number() == unique_number) && (_hello_request->target() == target);
 		}
 
-		void handle_timeout(hello_request& _hello_request, const boost::system::error_code& error)
-		{
-			_hello_request.expire();
-
-			if (!error)
-			{
-				_hello_request.trigger_timeout();
-			}
-		}
 	}
 
-	void hello_request::start_timeout(boost::asio::io_service& io_service, boost::posix_time::time_duration timeout)
+	hello_request::hello_request(boost::asio::io_service& _io_service, uint32_t _unique_number, const boost::asio::ip::udp::endpoint& _target, callback_type _callback, boost::posix_time::time_duration _timeout) :
+		m_unique_number(_unique_number),
+		m_target(_target),
+		m_callback(_callback),
+		m_birthdate(boost::posix_time::microsec_clock::universal_time()),
+		m_timeout_timer(_io_service, _timeout),
+		m_cancel_status(false),
+		m_triggered(false)
 	{
-		m_timeout_timer.reset(new boost::asio::deadline_timer(io_service, timeout));
+		m_timeout_timer.async_wait(boost::bind(&hello_request::handle_timeout, this, boost::asio::placeholders::error));
+	}
 
-		m_timeout_timer->async_wait(boost::bind(&handle_timeout, *this, boost::asio::placeholders::error));
+	void hello_request::handle_timeout(const boost::system::error_code& error)
+	{
+		if (!error)
+		{
+			trigger();
+		}
 	}
 
 	hello_request_list::iterator find_hello_request(hello_request_list& _hello_request_list, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
