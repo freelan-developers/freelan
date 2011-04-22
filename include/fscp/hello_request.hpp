@@ -64,7 +64,7 @@ namespace fscp
 			/**
 			 * \brief A request callback function.
 			 */
-			typedef boost::function<void (boost::asio::ip::udp::endpoint, boost::posix_time::time_duration)> callback_type;
+			typedef boost::function<void (const boost::asio::ip::udp::endpoint&, const boost::posix_time::time_duration&)> callback_type;
 
 			/**
 			 * \brief Create a new request.
@@ -123,13 +123,25 @@ namespace fscp
 			 */
 			void cancel_timeout();
 
+			/**
+			 * \brief Check if the request is expired.
+			 * \return true if the request is expired.
+			 */
+			bool expired() const;
+
+			/**
+			 * \brief Mark the request as expired.
+			 */
+			void expire();
+
 		private:
 
 			uint32_t m_unique_number;
 			boost::asio::ip::udp::endpoint m_target;
 			callback_type m_callback;
-			boost::posix_time::ptime m_birthdate; 
+			boost::posix_time::ptime m_birthdate;
 			boost::shared_ptr<boost::asio::deadline_timer> m_timeout_timer;
+			bool m_expired;
 	};
 
 	/**
@@ -145,12 +157,19 @@ namespace fscp
 	 * \return An iterator to the request, if one is found.
 	 */
 	hello_request_list::iterator find_hello_request(hello_request_list& hello_request_list, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target);
-	
+
+	/**
+	 * \brief Erase any expired request from the specified hello_request_list.
+	 * \param hello_request_list The hello_request_list.
+	 */
+	void erase_expired_hello_requests(hello_request_list& hello_request_list);
+
 	inline hello_request::hello_request(uint32_t _unique_number, const boost::asio::ip::udp::endpoint& _target, callback_type _callback) :
 		m_unique_number(_unique_number),
 		m_target(_target),
 		m_callback(_callback),
-		m_birthdate(boost::posix_time::microsec_clock::universal_time())
+		m_birthdate(boost::posix_time::microsec_clock::universal_time()),
+		m_expired(false)
 	{
 	}
 
@@ -158,28 +177,28 @@ namespace fscp
 	{
 		return m_unique_number;
 	}
-	
+
 	inline const boost::asio::ip::udp::endpoint& hello_request::target() const
 	{
 		return m_target;
 	}
-	
+
 	inline hello_request::callback_type hello_request::callback() const
 	{
 		return m_callback;
 	}
-	
+
 	inline boost::posix_time::time_duration hello_request::age() const
 	{
 		return boost::posix_time::microsec_clock::universal_time() - m_birthdate;
 	}
-	
+
 	inline void hello_request::trigger()
 	{
 		cancel_timeout();
 		m_callback(m_target, age());
 	}
-	
+
 	inline void hello_request::trigger_timeout()
 	{
 		m_callback(m_target, boost::posix_time::not_a_date_time);
@@ -188,6 +207,16 @@ namespace fscp
 	inline void hello_request::cancel_timeout()
 	{
 		m_timeout_timer.reset();
+	}
+
+	inline bool hello_request::expired() const
+	{
+		return m_expired;
+	}
+
+	inline void hello_request::expire()
+	{
+		m_expired = true;
 	}
 }
 

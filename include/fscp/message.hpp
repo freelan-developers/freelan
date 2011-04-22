@@ -131,17 +131,17 @@ namespace fscp
 	{
 		return buffer_tools::get<uint8_t>(m_data, 0);
 	}
-	
+
 	inline message_type message::type() const
 	{
 		return static_cast<message_type>(buffer_tools::get<uint8_t>(m_data, 1));
 	}
-	
+
 	inline size_t message::length() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(m_data, 2));
 	}
-	
+
 	inline const uint8_t* message::data() const
 	{
 		return static_cast<const uint8_t*>(m_data);

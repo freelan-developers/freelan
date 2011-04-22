@@ -48,6 +48,7 @@
 #include "hello_request.hpp"
 
 #include <boost/asio.hpp>
+#include <boost/function.hpp>
 
 #include <stdint.h>
 
@@ -63,6 +64,15 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief Hello message callback type.
+			 *
+			 * The first parameter is the endpoint that sent the hello message.
+			 * The second parameter is the default return value.
+			 *
+			 */
+			typedef boost::function<bool (const boost::asio::ip::udp::endpoint&, bool)> hello_message_callback;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
@@ -74,6 +84,18 @@ namespace fscp
 			 * \return The associated io_service.
 			 */
 			boost::asio::io_service& get_io_service();
+
+			/**
+			 * \brief Set the default behavior when a hello message arrives.
+			 * \param value If false, hello messages will be ignored. Default is true.
+			 */
+			void set_accept_hello_messages_default(bool value);
+
+			/**
+			 * \brief Set the hello message callback.
+			 * \param callback The callback.
+			 */
+			void set_hello_message_callback(hello_message_callback callback);
 
 			/**
 			 * \brief Greet a host.
@@ -100,11 +122,23 @@ namespace fscp
 
 			hello_request_list m_hello_request_list;
 			uint32_t m_hello_current_unique_number;
+			bool m_accept_hello_messages_default;
+			hello_message_callback m_hello_message_callback;
 	};
-	
+
 	inline boost::asio::io_service& server::get_io_service()
 	{
 		return m_socket.get_io_service();
+	}
+
+	inline void server::set_accept_hello_messages_default(bool value)
+	{
+		m_accept_hello_messages_default = value;
+	}
+
+	inline void server::set_hello_message_callback(hello_message_callback callback)
+	{
+		m_hello_message_callback = callback;
 	}
 }
 

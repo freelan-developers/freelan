@@ -106,7 +106,7 @@ namespace fscp
 		{
 			return static_cast<const uint8_t*>(buf)[offset];
 		}
-		
+
 		inline void set(void* buf, size_t offset, uint8_t value)
 		{
 			static_cast<uint8_t*>(buf)[offset] = value;

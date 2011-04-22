@@ -85,7 +85,7 @@ namespace fscp
 			throw std::runtime_error("bad message length");
 		}
 	}
-	
+
 	hello_message::hello_message(const message& _message) :
 		message(_message)
 	{

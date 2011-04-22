@@ -57,6 +57,8 @@ namespace fscp
 
 		void handle_timeout(hello_request& _hello_request, const boost::system::error_code& error)
 		{
+			_hello_request.expire();
+
 			if (!error)
 			{
 				_hello_request.trigger_timeout();
@@ -70,9 +72,14 @@ namespace fscp
 
 		m_timeout_timer->async_wait(boost::bind(&handle_timeout, *this, boost::asio::placeholders::error));
 	}
-	
+
 	hello_request_list::iterator find_hello_request(hello_request_list& _hello_request_list, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target)
 	{
 		return std::find_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request_match, _1, unique_number, target));
+	}
+
+	void erase_expired_hello_requests(hello_request_list& _hello_request_list)
+	{
+		_hello_request_list.erase(std::remove_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request::expired, _1)), _hello_request_list.end());
 	}
 }

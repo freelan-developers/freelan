@@ -53,7 +53,14 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static void on_hello_response(fscp::server& server, boost::asio::ip::udp::endpoint sender, boost::posix_time::time_duration time_duration)
+static bool on_hello_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+{
+	std::cout << "Received HELLO request from " << sender << std::endl;
+
+	return default_accept;
+}
+
+static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, const boost::posix_time::time_duration& time_duration)
 {
 	if (time_duration.is_special())
 	{
@@ -81,6 +88,7 @@ int main()
 	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
 	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2));
+	bob_server.set_hello_message_callback(&on_hello_request);
 
 	_io_service.run();
 
