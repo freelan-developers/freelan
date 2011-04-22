@@ -120,6 +120,9 @@ namespace fscp
 
 		protected:
 
+			/**
+			 * \brief The length of the header.
+			 */
 			static const size_t HEADER_LENGTH = 4;
 
 		private:

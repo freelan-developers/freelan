@@ -49,10 +49,14 @@
 
 namespace fscp
 {
-	/* Protocol */
+	/**
+	 * \brief The current protocol version.
+	 */
 	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
 
-	/* Message types */
+	/**
+	 * \brief The different message types.
+	 */
 	enum message_type
 	{
 		MESSAGE_TYPE_HELLO_REQUEST = 0x00,

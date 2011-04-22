@@ -97,6 +97,9 @@ namespace fscp
 
 		protected:
 
+			/**
+			 * \brief The length of the body.
+			 */
 			static const size_t BODY_LENGTH = 4;
 	};
 

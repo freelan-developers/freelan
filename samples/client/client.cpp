@@ -9,12 +9,13 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 #include <cstdlib>
 #include <csignal>
 #include <iostream>
 
-static boost::asio::io_service _io_service;
+static boost::function<void ()> stop_function = 0;
 
 static void signal_handler(int code)
 {
@@ -23,7 +24,13 @@ static void signal_handler(int code)
 		case SIGTERM:
 		case SIGINT:
 		case SIGABRT:
-			_io_service.stop();
+			if (stop_function)
+			{
+				std::cerr << "Signal caught: stopping..." << std::endl;
+
+				stop_function();
+				stop_function = 0;
+			}
 			break;
 		default:
 			break;
@@ -73,12 +80,20 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	}
 }
 
+static void _stop_function(fscp::server& s1, fscp::server& s2)
+{
+	s1.close();
+	s2.close();
+}
+
 int main()
 {
 	if (!register_signal_handlers())
 	{
 		return EXIT_FAILURE;
 	}
+
+	boost::asio::io_service _io_service;
 
 	fscp::server alice_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
 	fscp::server bob_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
@@ -89,6 +104,8 @@ int main()
 
 	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2));
 	bob_server.set_hello_message_callback(&on_hello_request);
+
+	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
 
 	_io_service.run();
 

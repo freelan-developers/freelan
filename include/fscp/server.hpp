@@ -65,12 +65,11 @@ namespace fscp
 
 			/**
 			 * \brief Hello message callback type.
-			 *
-			 * The first parameter is the endpoint that sent the hello message.
-			 * The second parameter is the default return value.
-			 *
+			 * \param sender The endpoint that sent the hello message.
+			 * \param default_accept The default return value.
+			 * \return true to reply to the hello message, false to ignore it.
 			 */
-			typedef boost::function<bool (const boost::asio::ip::udp::endpoint&, bool)> hello_message_callback;
+			typedef boost::function<bool (const boost::asio::ip::udp::endpoint& sender, bool default_accept)> hello_message_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -78,6 +77,11 @@ namespace fscp
 			 * \param listen_endpoint The listen endpoint.
 			 */
 			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint);
+
+			/**
+			 * \brief Close the server.
+			 */
+			void close();
 
 			/**
 			 * \brief Get the associated io_service.
@@ -101,12 +105,13 @@ namespace fscp
 			 * \brief Greet a host.
 			 * \param target The target host.
 			 * \param callback The callback to call on response.
-			 * \param timeout The maximum time to wait for the response.
+			 * \param timeout The maximum time to wait for the response. Default value is 3 seconds.
 			 */
-			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
+			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(10));
 
 		private:
 
+			void do_close();
 			void async_receive();
 			void handle_receive_from(const boost::system::error_code&, size_t);
 

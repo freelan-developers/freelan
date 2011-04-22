@@ -64,12 +64,23 @@ namespace fscp
 		async_receive();
 	}
 
+	void server::close()
+	{
+		get_io_service().post(bind(&server::do_close, this));
+	}
+
 	void server::greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
-		m_socket.get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
+		get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
 	}
 
 	/* Common */
+
+	void server::do_close()
+	{
+		m_hello_request_list.clear();
+		m_socket.close();
+	}
 
 	void server::async_receive()
 	{
@@ -78,28 +89,31 @@ namespace fscp
 
 	void server::handle_receive_from(const system::error_code& error, size_t bytes_recvd)
 	{
-		if (!error && bytes_recvd > 0)
+		if (m_socket.is_open())
 		{
-			message message(m_recv_buffer.data(), bytes_recvd);
-
-			switch (message.type())
+			if (!error && bytes_recvd > 0)
 			{
-				case MESSAGE_TYPE_HELLO_REQUEST:
-				case MESSAGE_TYPE_HELLO_RESPONSE:
-					{
-						hello_message hello_message(message);
+				message message(m_recv_buffer.data(), bytes_recvd);
 
-						handle_hello_message_from(hello_message, m_sender_endpoint);
+				switch (message.type())
+				{
+					case MESSAGE_TYPE_HELLO_REQUEST:
+					case MESSAGE_TYPE_HELLO_RESPONSE:
+						{
+							hello_message hello_message(message);
 
-						break;
-					}
-				default:
-					{
-						break;
-					}
+							handle_hello_message_from(hello_message, m_sender_endpoint);
+
+							break;
+						}
+					default:
+						{
+							break;
+						}
+				}
+
+				async_receive();
 			}
-
-			async_receive();
 		}
 	}
 
@@ -107,16 +121,19 @@ namespace fscp
 
 	void server::do_greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
-		hello_request _hello_request(m_hello_current_unique_number, target, callback);
-		_hello_request.start_timeout(get_io_service(), timeout);
-		erase_expired_hello_requests(m_hello_request_list);
-		m_hello_request_list.push_back(_hello_request);
+		if (m_socket.is_open())
+		{
+			hello_request _hello_request(m_hello_current_unique_number, target, callback);
+			_hello_request.start_timeout(get_io_service(), timeout);
+			erase_expired_hello_requests(m_hello_request_list);
+			m_hello_request_list.push_back(_hello_request);
 
-		size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request.unique_number());
+			size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request.unique_number());
 
-		m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 
-		m_hello_current_unique_number++;
+			m_hello_current_unique_number++;
+		}
 	}
 
 	void server::handle_hello_message_from(const hello_message& _hello_message, const boost::asio::ip::udp::endpoint& sender)

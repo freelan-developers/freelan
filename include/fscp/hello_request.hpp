@@ -75,6 +75,13 @@ namespace fscp
 			hello_request(uint32_t unique_number, const boost::asio::ip::udp::endpoint& target, callback_type callback);
 
 			/**
+			 * \brief Destroy the request.
+			 *
+			 * Any associated timeout is cancelled upon destruction.
+			 */
+			~hello_request();
+
+			/**
 			 * \brief Get the unique number.
 			 * \return The unique number.
 			 */
@@ -173,6 +180,11 @@ namespace fscp
 	{
 	}
 
+	inline hello_request::~hello_request()
+	{
+		cancel_timeout();
+	}
+
 	inline uint32_t hello_request::unique_number() const
 	{
 		return m_unique_number;
@@ -206,7 +218,11 @@ namespace fscp
 
 	inline void hello_request::cancel_timeout()
 	{
-		m_timeout_timer.reset();
+		if (m_timeout_timer)
+		{
+			m_timeout_timer->expires_from_now(boost::posix_time::seconds(0));
+			m_timeout_timer.reset();
+		}
 	}
 
 	inline bool hello_request::expired() const

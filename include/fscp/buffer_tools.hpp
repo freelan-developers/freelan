@@ -84,12 +84,6 @@ namespace fscp
 		 */
 		void set(void* buf, size_t offset, uint8_t value);
 
-		template <typename Type, Type (*ConversionFunc)(Type)>
-		inline Type get_converted(const void* buf, size_t offset)
-		{
-			return ConversionFunc(get(buf, offset));
-		}
-
 		template <typename Type>
 		inline Type get(const void* buf, size_t offset)
 		{
