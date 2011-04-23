@@ -51,6 +51,8 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <list>
+
 #include <stdint.h>
 
 namespace fscp
