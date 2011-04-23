@@ -146,6 +146,7 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('ws2_32')
 		else:
 			kw['LIBS'].append('boost_system')
+			kw['LIBS'].append('pthread')
 
 	@staticmethod
 	def _create_variables(variable_file):
