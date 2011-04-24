@@ -130,10 +130,8 @@ namespace fscp
 		{
 			throw std::runtime_error("invalid sig_len");
 		}
-		else
-		{
-			cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
-		}
+		
+		cert_type sig_cert = cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
 
 		if (length() < MIN_BODY_LENGTH + sig_len)
 		{
@@ -151,7 +149,17 @@ namespace fscp
 		}
 		else
 		{
-			cert_type::from_der(payload() + MIN_BODY_LENGTH + sig_len, enc_len);
+			cert_type enc_cert = cert_type::from_der(payload() + MIN_BODY_LENGTH + sig_len, enc_len);
+
+			if (cryptoplus::x509::compare(sig_cert.subject(), enc_cert.subject()) != 0)
+			{
+				throw std::runtime_error("certificate subject name do not match");
+			}
+
+			if (cryptoplus::x509::compare(sig_cert.issuer(), enc_cert.issuer()) != 0)
+			{
+				throw std::runtime_error("certificate issuer name do not match");
+			}
 		}
 	}
 }

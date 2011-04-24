@@ -91,7 +91,7 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     sig_len     |       sig       |
+                 |     sig_len     |       sig       c
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |     enc_len     |       enc       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -121,7 +121,7 @@ Abstract
    certificate SHOULD have both digitalSignature and keyEncipherment key
    usage set, as specified in [RFC2459].
 
-   The sig and enc certificate MUST have the same subjectName and
+   The sig and enc certificate MUST have the exact same subjectName and
    issuerName. If they don't, the message MUST be ignored.
 
    A host MIGHT ignore any PRESENTATION message whose sig or enc field
