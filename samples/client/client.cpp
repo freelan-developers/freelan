@@ -79,8 +79,13 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	{
 		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
 
-		server.greet(sender, boost::bind(&on_hello_response, boost::ref(server), _1, _2, _3));
+		server.introduce_to(sender);
 	}
+}
+
+static void on_presentation(const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/)
+{
+	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
 }
 
 static void _stop_function(fscp::server& s1, fscp::server& s2)
@@ -135,6 +140,7 @@ int main()
 
 	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
 	bob_server.set_hello_message_callback(&on_hello_request);
+	bob_server.set_presentation_message_callback(&on_presentation);
 
 	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
 
