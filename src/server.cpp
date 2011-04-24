@@ -78,6 +78,11 @@ namespace fscp
 		get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
 	}
 
+	void server::introduce_to(const boost::asio::ip::udp::endpoint& target)
+	{
+		get_io_service().post(bind(&server::do_introduce_to, this, target));
+	}
+
 	/* Common */
 
 	void server::do_close()
@@ -193,6 +198,18 @@ namespace fscp
 				{
 					break;
 				}
+		}
+	}
+
+	/* Presentation messages */
+
+	void server::do_introduce_to(const boost::asio::ip::udp::endpoint& target)
+	{
+		if (m_socket.is_open())
+		{
+			size_t size = presentation_message::write(m_send_buffer.data(), m_send_buffer.size(), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
+
+			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 		}
 	}
 

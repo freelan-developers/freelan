@@ -143,6 +143,12 @@ namespace fscp
 			 */
 			void set_presentation_message_callback(presentation_message_callback callback);
 
+			/**
+			 * \brief Introduce to a host.
+			 * \param target The target host.
+			 */
+			void introduce_to(const boost::asio::ip::udp::endpoint& target);
+
 		private:
 
 			void do_close();
@@ -167,6 +173,7 @@ namespace fscp
 
 		private:
 
+			void do_introduce_to(const boost::asio::ip::udp::endpoint& target);
 			void handle_presentation_message_from(const presentation_message&, const boost::asio::ip::udp::endpoint&);
 
 			presentation_message_callback m_presentation_message_callback;
