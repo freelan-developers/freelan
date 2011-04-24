@@ -76,9 +76,9 @@ namespace fscp
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
-			 * \param identity_store The identity store.
+			 * \param identity The identity store.
 			 */
-			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint, const identity_store& identity_store);
+			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint, const identity_store& identity);
 
 			/**
 			 * \brief Close the server.
@@ -96,6 +96,12 @@ namespace fscp
 			 * \return The associated socket.
 			 */
 			boost::asio::ip::udp::socket& socket();
+
+			/**
+			 * \brief Get the identity store.
+			 * \return The identity store.
+			 */
+			const identity_store& identity() const;
 
 			/**
 			 * \brief Set the default behavior when a hello message arrives.
@@ -148,6 +154,11 @@ namespace fscp
 	inline boost::asio::ip::udp::socket& server::socket()
 	{
 		return m_socket;
+	}
+	
+	inline const identity_store& server::identity() const
+	{
+		return m_identity_store;
 	}
 
 	inline void server::set_accept_hello_messages_default(bool value)
