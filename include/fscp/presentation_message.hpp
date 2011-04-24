@@ -37,23 +37,24 @@
  */
 
 /**
- * \file identity_store.hpp
+ * \file presentation_message.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An identity store class.
+ * \brief A presentation message class.
  */
 
-#ifndef FSCP_IDENTITY_STORE_HPP
-#define FSCP_IDENTITY_STORE_HPP
+#ifndef FSCP_PRESENTATION_MESSAGE_HPP
+#define FSCP_PRESENTATION_MESSAGE_HPP
+
+#include "message.hpp"
 
 #include <cryptoplus/x509/certificate.hpp>
-#include <cryptoplus/pkey/pkey.hpp>
 
 namespace fscp
 {
 	/**
-	 * \brief An identity store class.
+	 * \brief A presentation message class.
 	 */
-	class identity_store
+	class presentation_message : public message
 	{
 		public:
 
@@ -63,71 +64,55 @@ namespace fscp
 			typedef cryptoplus::x509::certificate cert_type;
 
 			/**
-			 * \brief The key type.
+			 * \brief Write a presentation message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param sig_cert The signature certificate. Cannot be null.
+			 * \param enc_cert The encryption certificate.
+			 * \return The count of bytes written.
 			 */
-			typedef cryptoplus::pkey::pkey key_type;
+			static size_t write(void* buf, size_t buf_len, cert_type sig_cert, cert_type enc_cert);
 
 			/**
-			 * \brief Create a new identity store.
-			 * \param sig_cert The signature certificate. Cannot be null.
-			 * \param sig_key The signature key. Cannot be null.
-			 * \param enc_cert The encryption certificate. If enc_cert is null, sig_cert is taken instead.
-			 * \param enc_key The encryption key. If enc_key is null, sig_key is taken instead.
-			 * \warning Each certificate must match his private key. Otherwise, an std::runtime_error is thrown.
+			 * \brief Create a presentation_message and map it on a buffer.
+			 * \param buf The buffer.
+			 * \param buf_len The buffer length.
+			 *
+			 * If the mapping fails, a std::runtime_error is thrown.
 			 */
-			identity_store(cert_type sig_cert, key_type sig_key, cert_type enc_cert = cert_type(), key_type enc_key = key_type());
+			presentation_message(const void* buf, size_t buf_len);
+
+			/**
+			 * \brief Create a presentation_message from a message.
+			 * \param message The message.
+			 */
+			presentation_message(const message& message);
 
 			/**
 			 * \brief Get the signature certificate.
 			 * \return The signature certificate.
+			 * \warning The returned certificate is parsed from the underlying buffer on every call so storing the result might be a good idea.
 			 */
 			cert_type signature_certificate() const;
 
 			/**
-			 * \brief Get the signature key.
-			 * \return The signature key.
-			 */
-			key_type signature_key() const;
-
-			/**
 			 * \brief Get the encryption certificate.
 			 * \return The encryption certificate.
+			 * \warning The returned certificate is parsed from the underlying buffer on every call so storing the result might be a good idea.
 			 */
 			cert_type encryption_certificate() const;
 
+		protected:
+
 			/**
-			 * \brief Get the encryption key.
-			 * \return The encryption key.
+			 * \brief The minimum body length.
 			 */
-			key_type encryption_key() const;
+			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
 
 		private:
 
-			cert_type m_sig_cert;
-			key_type m_sig_key;
-			cert_type m_enc_cert;
-			key_type m_enc_key;
+			void check_format() const;
 	};
-
-	inline identity_store::cert_type identity_store::signature_certificate() const
-	{
-		return m_sig_cert;
-	}
-
-	inline identity_store::key_type identity_store::signature_key() const
-	{
-		return m_sig_key;
-	}
-
-	inline identity_store::cert_type identity_store::encryption_certificate() const
-	{
-		return m_enc_cert;
-	}
-
-	inline identity_store::key_type identity_store::encryption_key() const
-	{
-		return m_enc_key;
-	}
 }
 
-#endif /* FSCP_IDENTITY_STORE_HPP */
+#endif /* FSCP_PRESENTATION_MESSAGE_HPP */

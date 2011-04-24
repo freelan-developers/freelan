@@ -46,6 +46,7 @@
 
 #include "message.hpp"
 #include "hello_message.hpp"
+#include "presentation_message.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
@@ -61,7 +62,8 @@ namespace fscp
 		m_identity_store(_identity),
 		m_hello_current_unique_number(0),
 		m_accept_hello_messages_default(true),
-		m_hello_message_callback(0)
+		m_hello_message_callback(0),
+		m_presentation_message_callback(0)
 	{
 		async_receive();
 	}
@@ -95,23 +97,37 @@ namespace fscp
 		{
 			if (!error && bytes_recvd > 0)
 			{
-				message message(m_recv_buffer.data(), bytes_recvd);
-
-				switch (message.type())
+				try
 				{
-					case MESSAGE_TYPE_HELLO_REQUEST:
-					case MESSAGE_TYPE_HELLO_RESPONSE:
-						{
-							hello_message hello_message(message);
+					message message(m_recv_buffer.data(), bytes_recvd);
 
-							handle_hello_message_from(hello_message, m_sender_endpoint);
+					switch (message.type())
+					{
+						case MESSAGE_TYPE_HELLO_REQUEST:
+						case MESSAGE_TYPE_HELLO_RESPONSE:
+							{
+								hello_message hello_message(message);
 
-							break;
-						}
-					default:
-						{
-							break;
-						}
+								handle_hello_message_from(hello_message, m_sender_endpoint);
+
+								break;
+							}
+						case MESSAGE_TYPE_PRESENTATION:
+							{
+								presentation_message presentation_message(message);
+
+								handle_presentation_message_from(presentation_message, m_sender_endpoint);
+
+								break;
+							}
+						default:
+							{
+								break;
+							}
+					}
+				}
+				catch (std::runtime_error&)
+				{
 				}
 
 				async_receive();
@@ -177,6 +193,14 @@ namespace fscp
 				{
 					break;
 				}
+		}
+	}
+
+	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const boost::asio::ip::udp::endpoint& sender)
+	{
+		if (m_presentation_message_callback)
+		{
+			m_presentation_message_callback(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
 		}
 	}
 }

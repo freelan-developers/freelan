@@ -56,6 +56,7 @@
 namespace fscp
 {
 	class hello_message;
+	class presentation_message;
 
 	/**
 	 * \brief A FSCP server.
@@ -65,12 +66,25 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief The certificate type.
+			 */
+			typedef cryptoplus::x509::certificate cert_type;
+
+			/**
 			 * \brief Hello message callback type.
 			 * \param sender The endpoint that sent the hello message.
 			 * \param default_accept The default return value.
 			 * \return true to reply to the hello message, false to ignore it.
 			 */
 			typedef boost::function<bool (const boost::asio::ip::udp::endpoint& sender, bool default_accept)> hello_message_callback;
+
+			/**
+			 * \brief Presentation message callback type.
+			 * \param sender The endpoint that sent the presentation message.
+			 * \param sig_cert The signature certificate.
+			 * \param enc_cert The encryption certificate.
+			 */
+			typedef boost::function<void (const boost::asio::ip::udp::endpoint& sender, cert_type sig_cert, cert_type enc_cert)> presentation_message_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -123,6 +137,12 @@ namespace fscp
 			 */
 			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
+			/**
+			 * \brief Set the presentation message callback.
+			 * \param callback The callback.
+			 */
+			void set_presentation_message_callback(presentation_message_callback callback);
+
 		private:
 
 			void do_close();
@@ -144,6 +164,12 @@ namespace fscp
 			uint32_t m_hello_current_unique_number;
 			bool m_accept_hello_messages_default;
 			hello_message_callback m_hello_message_callback;
+
+		private:
+
+			void handle_presentation_message_from(const presentation_message&, const boost::asio::ip::udp::endpoint&);
+
+			presentation_message_callback m_presentation_message_callback;
 	};
 
 	inline boost::asio::io_service& server::get_io_service()
@@ -155,7 +181,7 @@ namespace fscp
 	{
 		return m_socket;
 	}
-	
+
 	inline const identity_store& server::identity() const
 	{
 		return m_identity_store;
@@ -169,6 +195,11 @@ namespace fscp
 	inline void server::set_hello_message_callback(hello_message_callback callback)
 	{
 		m_hello_message_callback = callback;
+	}
+
+	inline void server::set_presentation_message_callback(presentation_message_callback callback)
+	{
+		m_presentation_message_callback = callback;
 	}
 }
 
