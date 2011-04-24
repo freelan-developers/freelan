@@ -44,6 +44,38 @@
 
 #include "identity_store.hpp"
 
+#include <cassert>
+#include <stdexcept>
+
 namespace fscp
 {
+	identity_store::identity_store(identity_store::cert_type sig_cert, identity_store::key_type sig_key, identity_store::cert_type enc_cert, identity_store::key_type enc_key) :
+		m_sig_cert(sig_cert),
+		m_sig_key(sig_key),
+		m_enc_cert(enc_cert),
+		m_enc_key(enc_key)
+	{
+		assert(sig_cert);
+		assert(sig_key);
+
+		if (!enc_cert)
+		{
+			enc_cert = sig_cert;
+		}
+
+		if (!enc_key)
+		{
+			enc_key = sig_key;
+		}
+
+		if (!sig_cert.verify_private_key(sig_key))
+		{
+			throw std::runtime_error("sig_key mismatch");
+		}
+
+		if (!enc_cert.verify_private_key(enc_key))
+		{
+			throw std::runtime_error("enc_key mismatch");
+		}
+	}
 }

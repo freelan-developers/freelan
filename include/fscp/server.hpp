@@ -46,6 +46,7 @@
 #define FSCP_SERVER_HPP
 
 #include "hello_request.hpp"
+#include "identity_store.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -75,8 +76,9 @@ namespace fscp
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
+			 * \param identity_store The identity store.
 			 */
-			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint);
+			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint, const identity_store& identity_store);
 
 			/**
 			 * \brief Close the server.
@@ -125,6 +127,7 @@ namespace fscp
 			boost::array<uint8_t, 65536> m_recv_buffer;
 			boost::array<uint8_t, 65536> m_send_buffer;
 			boost::asio::ip::udp::endpoint m_sender_endpoint;
+			identity_store m_identity_store;
 
 		private:
 

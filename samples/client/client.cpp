@@ -6,6 +6,9 @@
 
 #include <fscp/fscp.hpp>
 
+#include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/error/error_strings.hpp>
+
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/bind.hpp>
@@ -86,8 +89,36 @@ static void _stop_function(fscp::server& s1, fscp::server& s2)
 	s2.close();
 }
 
+static fscp::identity_store load_identity_store(const std::string& name)
+{
+	FILE* cert_file = fopen((name + ".crt").c_str(), "r");
+
+	if (cert_file)
+	{
+		boost::shared_ptr<FILE> pcert_file(cert_file, fclose);
+
+		FILE* key_file = fopen((name + ".key").c_str(), "r");
+
+		if (key_file)
+		{
+			boost::shared_ptr<FILE> pkey_file(key_file, fclose);
+
+			cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(pcert_file.get());
+			cryptoplus::pkey::pkey key = cryptoplus::pkey::pkey::from_private_key(pkey_file.get());
+
+			return fscp::identity_store(cert, key);
+		}
+	}
+
+	throw std::runtime_error("Unable to create identity store for: " + name);
+}
+
 int main()
 {
+	cryptoplus::crypto_initializer crypto_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
+
 	if (!register_signal_handlers())
 	{
 		return EXIT_FAILURE;
@@ -95,8 +126,8 @@ int main()
 
 	boost::asio::io_service _io_service;
 
-	fscp::server alice_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
-	fscp::server bob_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
+	fscp::server alice_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000), load_identity_store("alice"));
+	fscp::server bob_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001), load_identity_store("bob"));
 
 	boost::asio::ip::udp::resolver resolver(_io_service);
 	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
