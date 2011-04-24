@@ -832,8 +832,9 @@ namespace cryptoplus
 		inline size_t certificate::write_der(void* buf)
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
+			unsigned char** pout = out != NULL ? &out : NULL;
 
-			int result = i2d_X509(ptr().get(), &out);
+			int result = i2d_X509(ptr().get(), pout);
 
 			error::throw_error_if(result < 0);
 

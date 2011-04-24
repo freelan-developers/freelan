@@ -69,7 +69,7 @@ namespace cryptoplus
 		 * \param condition The condition.
 		 */
 		void throw_error_if_not(bool condition);
-		
+
 		/**
 		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the specified pointer is NULL.
 		 * \param ptr The pointer to test.
