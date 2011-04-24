@@ -140,6 +140,8 @@ namespace cryptoplus
 		private:
 
 			boost::shared_ptr<value_type> m_pointer;
+
+			friend class nullable<pointer_wrapper<T> >;
 	};
 
 	template <typename T>
