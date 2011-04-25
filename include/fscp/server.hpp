@@ -158,6 +158,22 @@ namespace fscp
 			 */
 			void introduce_to(const ep_type& target);
 
+			/**
+			 * \brief Set the presentation parameters for a given host.
+			 * \param target The target host.
+			 * \param sig_cert The signature certificate. Cannot be null.
+			 * \param enc_cert The encryption certificate. If null, the default, sig_cert is taken.
+			 * \see clear_presentation()
+			 */
+			void set_presentation(const ep_type& target, cert_type sig_cert, cert_type enc_cert = cert_type());
+
+			/**
+			 * \brief Clear the presentation parameters for a given host.
+			 * \param target The target host.
+			 * \see set_presentation()
+			 */
+			void clear_presentation(const ep_type& target);
+
 		private:
 
 			void do_close();
@@ -182,7 +198,9 @@ namespace fscp
 
 		private:
 
-			void do_introduce_to(const ep_type& target);
+			void do_introduce_to(const ep_type&);
+			void do_set_presentation(const ep_type&, cert_type, cert_type);
+			void do_clear_presentation(const ep_type&);
 			void handle_presentation_message_from(const presentation_message&, const ep_type&);
 
 			presentation_message_callback m_presentation_message_callback;

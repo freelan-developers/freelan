@@ -84,6 +84,23 @@ namespace fscp
 		get_io_service().post(bind(&server::do_introduce_to, this, target));
 	}
 
+	void server::set_presentation(const ep_type& target, cert_type sig_cert, cert_type enc_cert)
+	{
+		assert(sig_cert);
+
+		if (!enc_cert)
+		{
+			enc_cert = sig_cert;
+		}
+
+		get_io_service().post(bind(&server::do_set_presentation, this, target, sig_cert, enc_cert));
+	}
+
+	void server::clear_presentation(const ep_type& target)
+	{
+		get_io_service().post(bind(&server::do_clear_presentation, this, target));
+	}
+
 	/* Common */
 
 	void server::do_close()
@@ -222,6 +239,16 @@ namespace fscp
 		}
 	}
 
+	void server::do_set_presentation(const ep_type& target, cert_type sig_cert, cert_type enc_cert)
+	{
+		m_presentation_map[target] = presentation_store(sig_cert, enc_cert);
+	}
+
+	void server::do_clear_presentation(const ep_type& target)
+	{
+		m_presentation_map.erase(target);
+	}
+
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
 		bool accept = true;
@@ -236,7 +263,7 @@ namespace fscp
 		
 		if (accept)
 		{
-			m_presentation_map[sender] = presentation_store(_presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
+			do_set_presentation(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
 		}
 	}
 
