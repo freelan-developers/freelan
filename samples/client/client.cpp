@@ -63,9 +63,11 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static bool on_hello_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_hello_request(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, bool default_accept)
 {
 	std::cout << "Received HELLO request from " << sender << std::endl;
+
+  server.introduce_to(sender);
 
 	return default_accept;
 }
@@ -141,7 +143,8 @@ int main()
 	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
 	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
-	bob_server.set_hello_message_callback(&on_hello_request);
+	bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
+	alice_server.set_presentation_message_callback(&on_presentation);
 	bob_server.set_presentation_message_callback(&on_presentation);
 
 	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
