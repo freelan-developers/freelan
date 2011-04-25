@@ -58,7 +58,7 @@ using namespace boost;
 
 namespace fscp
 {
-	server::server(asio::io_service& io_service, const asio::ip::udp::endpoint& listen_endpoint, const identity_store& _identity) :
+	server::server(asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& _identity) :
 		m_socket(io_service, listen_endpoint),
 		m_identity_store(_identity),
 		m_hello_current_unique_number(0),
@@ -74,12 +74,12 @@ namespace fscp
 		get_io_service().post(bind(&server::do_close, this));
 	}
 
-	void server::greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
+	void server::greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
 		get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
 	}
 
-	void server::introduce_to(const boost::asio::ip::udp::endpoint& target)
+	void server::introduce_to(const ep_type& target)
 	{
 		get_io_service().post(bind(&server::do_introduce_to, this, target));
 	}
@@ -151,7 +151,7 @@ namespace fscp
 
 	/* Hello messages */
 
-	void server::do_greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
+	void server::do_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
 		if (m_socket.is_open())
 		{
@@ -169,7 +169,7 @@ namespace fscp
 		}
 	}
 
-	void server::handle_hello_message_from(const hello_message& _hello_message, const boost::asio::ip::udp::endpoint& sender)
+	void server::handle_hello_message_from(const hello_message& _hello_message, const ep_type& sender)
 	{
 		switch (_hello_message.type())
 		{
@@ -212,7 +212,7 @@ namespace fscp
 
 	/* Presentation messages */
 
-	void server::do_introduce_to(const boost::asio::ip::udp::endpoint& target)
+	void server::do_introduce_to(const ep_type& target)
 	{
 		if (m_socket.is_open())
 		{
@@ -222,7 +222,7 @@ namespace fscp
 		}
 	}
 
-	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const boost::asio::ip::udp::endpoint& sender)
+	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
 		if (m_presentation_message_callback)
 		{
@@ -232,7 +232,7 @@ namespace fscp
 
 	/* Session request messages */
 
-	void server::handle_session_request_message_from(const session_request_message& _session_request_message, const boost::asio::ip::udp::endpoint& sender)
+	void server::handle_session_request_message_from(const session_request_message& /*_session_request_message*/, const ep_type& /*sender*/)
 	{
 	}
 }

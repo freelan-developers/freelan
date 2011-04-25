@@ -47,6 +47,7 @@
 
 #include "hello_request.hpp"
 #include "identity_store.hpp"
+#include "presentation_store.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -65,6 +66,11 @@ namespace fscp
 	class server
 	{
 		public:
+			
+			/**
+			 * \brief The endpoint type.
+			 */
+			typedef boost::asio::ip::udp::endpoint ep_type;
 
 			/**
 			 * \brief The certificate type.
@@ -77,7 +83,7 @@ namespace fscp
 			 * \param default_accept The default return value.
 			 * \return true to reply to the hello message, false to ignore it.
 			 */
-			typedef boost::function<bool (const boost::asio::ip::udp::endpoint& sender, bool default_accept)> hello_message_callback;
+			typedef boost::function<bool (const ep_type& sender, bool default_accept)> hello_message_callback;
 
 			/**
 			 * \brief Presentation message callback type.
@@ -85,7 +91,7 @@ namespace fscp
 			 * \param sig_cert The signature certificate.
 			 * \param enc_cert The encryption certificate.
 			 */
-			typedef boost::function<void (const boost::asio::ip::udp::endpoint& sender, cert_type sig_cert, cert_type enc_cert)> presentation_message_callback;
+			typedef boost::function<void (const ep_type& sender, cert_type sig_cert, cert_type enc_cert)> presentation_message_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -93,7 +99,7 @@ namespace fscp
 			 * \param listen_endpoint The listen endpoint.
 			 * \param identity The identity store.
 			 */
-			server(boost::asio::io_service& io_service, const boost::asio::ip::udp::endpoint& listen_endpoint, const identity_store& identity);
+			server(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity);
 
 			/**
 			 * \brief Close the server.
@@ -136,7 +142,7 @@ namespace fscp
 			 * \param callback The callback to call on response.
 			 * \param timeout The maximum time to wait for the response. Default value is 3 seconds.
 			 */
-			void greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
+			void greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
 			/**
 			 * \brief Set the presentation message callback.
@@ -148,7 +154,7 @@ namespace fscp
 			 * \brief Introduce to a host.
 			 * \param target The target host.
 			 */
-			void introduce_to(const boost::asio::ip::udp::endpoint& target);
+			void introduce_to(const ep_type& target);
 
 		private:
 
@@ -159,13 +165,13 @@ namespace fscp
 			boost::asio::ip::udp::socket m_socket;
 			boost::array<uint8_t, 65536> m_recv_buffer;
 			boost::array<uint8_t, 65536> m_send_buffer;
-			boost::asio::ip::udp::endpoint m_sender_endpoint;
+			ep_type m_sender_endpoint;
 			identity_store m_identity_store;
 
 		private:
 
-			void do_greet(const boost::asio::ip::udp::endpoint& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout);
-			void handle_hello_message_from(const hello_message&, const boost::asio::ip::udp::endpoint&);
+			void do_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout);
+			void handle_hello_message_from(const hello_message&, const ep_type&);
 
 			hello_request_list m_hello_request_list;
 			uint32_t m_hello_current_unique_number;
@@ -174,14 +180,15 @@ namespace fscp
 
 		private:
 
-			void do_introduce_to(const boost::asio::ip::udp::endpoint& target);
-			void handle_presentation_message_from(const presentation_message&, const boost::asio::ip::udp::endpoint&);
+			void do_introduce_to(const ep_type& target);
+			void handle_presentation_message_from(const presentation_message&, const ep_type&);
 
 			presentation_message_callback m_presentation_message_callback;
+			std::map<ep_type, presentation_store> m_presentation_map;
 
 		private:
 
-			void handle_session_request_message_from(const session_request_message&, const boost::asio::ip::udp::endpoint&);
+			void handle_session_request_message_from(const session_request_message&, const ep_type&);
 	};
 
 	inline boost::asio::io_service& server::get_io_service()
