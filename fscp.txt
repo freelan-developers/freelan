@@ -27,11 +27,8 @@ Abstract
    and efficient, and tries to minimize the overhead. It is based over
    UDP [RFC768].
 
-   A basic support for NAT traversal is supported by the use of the "UDP
-   hole punching" technique.
-
-   The protocol permits packet loss but forbids packet reordering or
-   duplication.
+   The protocol supports packet loss but does not deal with packet
+   reordering or duplication.
 
 1.1. Terminology
 
