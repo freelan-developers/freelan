@@ -45,8 +45,12 @@
 #ifndef FSCP_PRESENTATION_STORE_HPP
 #define FSCP_PRESENTATION_STORE_HPP
 
+#include "session_store.hpp"
+
 #include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/pkey/pkey.hpp>
+
+#include <list>
 
 namespace fscp
 {
@@ -61,6 +65,11 @@ namespace fscp
 			 * \brief The certificate type.
 			 */
 			typedef cryptoplus::x509::certificate cert_type;
+
+			/**
+			 * \brief The session list type.
+			 */
+			typedef std::list<session_store> session_list_type;
 
 			/**
 			 * \brief Create an empty presentation_store.
@@ -87,10 +96,17 @@ namespace fscp
 			 */
 			cert_type encryption_certificate() const;
 
+			/**
+			 * \brief Get the session list.
+			 * \return The session list.
+			 */
+			const session_list_type& session_list() const;
+
 		private:
 
 			cert_type m_sig_cert;
 			cert_type m_enc_cert;
+			session_list_type m_session_list;
 	};
 
 	inline presentation_store::presentation_store()
@@ -105,6 +121,11 @@ namespace fscp
 	inline presentation_store::cert_type presentation_store::encryption_certificate() const
 	{
 		return m_enc_cert;
+	}
+
+	inline const presentation_store::session_list_type& presentation_store::session_list() const
+	{
+		return m_session_list;
 	}
 }
 
