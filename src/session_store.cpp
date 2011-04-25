@@ -44,6 +44,15 @@
 
 #include "session_store.hpp"
 
+#include <cryptoplus/random/random.hpp>
+
 namespace fscp
 {
+	session_store::session_store(session_number_type _session_number) :
+		m_session_number(_session_number)
+	{
+		cryptoplus::random::get_random_bytes(m_sig_key.data(), m_sig_key.size());
+		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
+		cryptoplus::random::get_random_bytes(m_iv.data(), m_iv.size());
+	}
 }

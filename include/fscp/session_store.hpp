@@ -84,6 +84,12 @@ namespace fscp
 			typedef boost::array<uint8_t, IV_LENGTH> iv_type;
 
 			/**
+			 * \brief Create a new random session store.
+				 * \param session_number The session number.
+			 */
+			session_store(session_number_type session_number);
+
+			/**
 			 * \brief Create a new session store.
 			 * \param session_number The session number.
 			 * \param sig_key The signature key.
