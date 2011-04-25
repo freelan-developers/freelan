@@ -57,6 +57,7 @@ namespace fscp
 {
 	class hello_message;
 	class presentation_message;
+	class session_request_message;
 
 	/**
 	 * \brief A FSCP server.
@@ -177,6 +178,10 @@ namespace fscp
 			void handle_presentation_message_from(const presentation_message&, const boost::asio::ip::udp::endpoint&);
 
 			presentation_message_callback m_presentation_message_callback;
+
+		private:
+
+			void handle_session_request_message_from(const session_request_message&, const boost::asio::ip::udp::endpoint&);
 	};
 
 	inline boost::asio::io_service& server::get_io_service()

@@ -47,6 +47,7 @@
 #include "message.hpp"
 #include "hello_message.hpp"
 #include "presentation_message.hpp"
+#include "session_request_message.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
@@ -122,6 +123,14 @@ namespace fscp
 								presentation_message presentation_message(message);
 
 								handle_presentation_message_from(presentation_message, m_sender_endpoint);
+
+								break;
+							}
+						case MESSAGE_TYPE_SESSION_REQUEST:
+							{
+								session_request_message session_request_message(message);
+
+								handle_session_request_message_from(session_request_message, m_sender_endpoint);
 
 								break;
 							}
@@ -219,5 +228,11 @@ namespace fscp
 		{
 			m_presentation_message_callback(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
 		}
+	}
+
+	/* Session request messages */
+
+	void server::handle_session_request_message_from(const session_request_message& _session_request_message, const boost::asio::ip::udp::endpoint& sender)
+	{
 	}
 }
