@@ -142,11 +142,16 @@ class Environment(SConsEnvironment):
 
 	def __add_libs(self, kw):
 		if sys.platform == 'win32':
+			kw['LIBS'].append('cryptoplus_static')
+			kw['LIBS'].append('crypto')
 			kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
 			kw['LIBS'].append('ws2_32')
+			kw['LIBS'].append('gdi32')
 		else:
 			kw['LIBS'].append('boost_system')
 			kw['LIBS'].append('pthread')
+			kw['LIBS'].append('cryptoplus')
+			kw['LIBS'].append('crypto')
 
 	@staticmethod
 	def _create_variables(variable_file):
