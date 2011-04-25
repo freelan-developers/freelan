@@ -85,10 +85,10 @@ namespace fscp
 
 			/**
 			 * \brief Create a new session store.
-			       * \param session_number The session number.
+			 * \param session_number The session number.
 			 * \param sig_key The signature key.
 			 * \param enc_key The encryption key.
-			       * \param iv The initialization vector.
+			 * \param iv The initialization vector.
 			 */
 			session_store(session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
 
