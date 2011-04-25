@@ -302,7 +302,7 @@ Abstract
    message to the target host.
 
    If no previous session exists with the requesting host, the target
-   host SHOULD generate new session parameters and reply a SESSION
+   host SHOULD generate new session parameters and reply with a SESSION
    message containing those parameters.
 
    If a host does not receive a response SESSION message after 3
