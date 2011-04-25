@@ -59,6 +59,11 @@ namespace fscp
 		public:
 
       /**
+       * \brief The session number type.
+       */
+      typedef uint32_t session_number_type;
+
+      /**
        * \brief The key length.
        */
       static const size_t KEY_LENGTH = 32;
@@ -80,11 +85,18 @@ namespace fscp
 
 			/**
 			 * \brief Create a new session store.
+       * \param session_number The session number.
 			 * \param sig_key The signature key.
 			 * \param enc_key The encryption key.
        * \param iv The initialization vector.
 			 */
-			session_store(key_type sig_key, key_type enc_key, iv_type iv);
+			session_store(session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
+
+      /**
+       * \brief Get the session number.
+       * \return The session number.
+       */
+      session_number_type session_number() const;
 
 			/**
 			 * \brief Get the signature key.
@@ -106,17 +118,24 @@ namespace fscp
 
 		private:
 
+      session_number_type m_session_number;
       key_type m_sig_key;
       key_type m_enc_key;
       iv_type m_iv;
 	};
 
-	inline session_store::session_store(key_type sig_key, key_type enc_key, iv_type iv) :
+	inline session_store::session_store(session_number_type _session_number, key_type sig_key, key_type enc_key, iv_type iv) :
+    m_session_number(_session_number),
     m_sig_key(sig_key),
     m_enc_key(enc_key),
     m_iv(iv)
 	{
 	}
+
+  inline session_store::session_number_type session_store::session_number() const
+  {
+    return m_session_number;
+  }
 
 	inline session_store::key_type session_store::signature_key() const
 	{
