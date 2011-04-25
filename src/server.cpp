@@ -84,6 +84,18 @@ namespace fscp
 		get_io_service().post(bind(&server::do_introduce_to, this, target));
 	}
 
+	presentation_store server::get_presentation(const ep_type& target) const
+	{
+		std::map<ep_type, presentation_store>::const_iterator presentation_it = m_presentation_map.find(target);
+
+		if (presentation_it != m_presentation_map.end())
+		{
+			return presentation_it->second;
+		}
+
+		throw std::runtime_error("no such host");
+	}
+
 	void server::set_presentation(const ep_type& target, cert_type sig_cert, cert_type enc_cert)
 	{
 		assert(sig_cert);

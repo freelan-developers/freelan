@@ -159,6 +159,14 @@ namespace fscp
 			void introduce_to(const ep_type& target);
 
 			/**
+			 * \brief Get the presentation parameters of a specified host.
+			 * \param target The target host.
+			 * \return The presentation parameters of the specified host.
+			 * \warning IF no presentation parameters exist for the specified host, a std::runtime_error is thrown.
+			 */
+			presentation_store get_presentation(const ep_type& target) const;
+
+			/**
 			 * \brief Set the presentation parameters for a given host.
 			 * \param target The target host.
 			 * \param sig_cert The signature certificate. Cannot be null.
