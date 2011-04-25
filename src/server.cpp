@@ -84,7 +84,7 @@ namespace fscp
 		get_io_service().post(bind(&server::do_introduce_to, this, target));
 	}
 
-	presentation_store server::get_presentation(const ep_type& target) const
+	const presentation_store& server::get_presentation(const ep_type& target) const
 	{
 		std::map<ep_type, presentation_store>::const_iterator presentation_it = m_presentation_map.find(target);
 
