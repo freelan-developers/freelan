@@ -130,7 +130,7 @@ namespace fscp
 		{
 			throw std::runtime_error("invalid sig_len");
 		}
-		
+
 		cert_type sig_cert = cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
 
 		if (length() < MIN_BODY_LENGTH + sig_len)

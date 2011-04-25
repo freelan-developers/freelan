@@ -58,17 +58,18 @@ namespace fscp
 		if (!enc_cert)
 		{
 			enc_cert = sig_cert;
-		} else
-    {
-      if (cryptoplus::x509::compare(sig_cert.subject(), enc_cert.subject()) != 0)
-      {
-        throw std::runtime_error("subject name mistmatch");
-      }
+		}
+		else
+		{
+			if (cryptoplus::x509::compare(sig_cert.subject(), enc_cert.subject()) != 0)
+			{
+				throw std::runtime_error("subject name mistmatch");
+			}
 
-      if (cryptoplus::x509::compare(sig_cert.issuer(), enc_cert.issuer()) != 0)
-      {
-        throw std::runtime_error("issuer name mistmatch");
-      }
-    }
+			if (cryptoplus::x509::compare(sig_cert.issuer(), enc_cert.issuer()) != 0)
+			{
+				throw std::runtime_error("issuer name mistmatch");
+			}
+		}
 	}
 }

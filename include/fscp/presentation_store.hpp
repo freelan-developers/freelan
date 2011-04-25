@@ -62,9 +62,9 @@ namespace fscp
 			 */
 			typedef cryptoplus::x509::certificate cert_type;
 
-      /**
-       * \brief Create an empty presentation_store.
-       */
+			/**
+			 * \brief Create an empty presentation_store.
+			 */
 			presentation_store();
 
 			/**
@@ -94,8 +94,8 @@ namespace fscp
 	};
 
 	inline presentation_store::presentation_store()
-  {
-  }
+	{
+	}
 
 	inline presentation_store::cert_type presentation_store::signature_certificate() const
 	{
