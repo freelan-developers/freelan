@@ -224,9 +224,19 @@ namespace fscp
 
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
+		bool accept = true;
+
 		if (m_presentation_message_callback)
 		{
-			m_presentation_message_callback(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
+			if (!m_presentation_message_callback(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate(), m_presentation_map.find(sender) == m_presentation_map.end()))
+			{
+				accept = false;
+			}
+		}
+		
+		if (accept)
+		{
+			m_presentation_map[sender] = presentation_store(_presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
 		}
 	}
 

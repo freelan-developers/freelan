@@ -62,6 +62,11 @@ namespace fscp
 			 */
 			typedef cryptoplus::x509::certificate cert_type;
 
+      /**
+       * \brief Create an empty presentation_store.
+       */
+			presentation_store();
+
 			/**
 			 * \brief Create a new presentation store.
 			 * \param sig_cert The signature certificate. Cannot be null.
@@ -87,6 +92,10 @@ namespace fscp
 			cert_type m_sig_cert;
 			cert_type m_enc_cert;
 	};
+
+	inline presentation_store::presentation_store()
+  {
+  }
 
 	inline presentation_store::cert_type presentation_store::signature_certificate() const
 	{

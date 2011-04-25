@@ -83,9 +83,11 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	}
 }
 
-static void on_presentation(const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/)
+static bool on_presentation(const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool success)
 {
 	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
+
+  return success;
 }
 
 static void _stop_function(fscp::server& s1, fscp::server& s2)
