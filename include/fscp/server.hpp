@@ -66,7 +66,7 @@ namespace fscp
 	class server
 	{
 		public:
-			
+
 			/**
 			 * \brief The endpoint type.
 			 */
@@ -174,6 +174,12 @@ namespace fscp
 			 */
 			void clear_presentation(const ep_type& target);
 
+			/**
+			 * \brief Request a session to a host.
+			 * \param target The target host.
+			 */
+			void request_session(const ep_type& target);
+
 		private:
 
 			void do_close();
@@ -208,6 +214,7 @@ namespace fscp
 
 		private:
 
+			void do_request_session(const ep_type&);
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
 	};
 

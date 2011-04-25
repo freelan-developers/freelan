@@ -101,6 +101,11 @@ namespace fscp
 		get_io_service().post(bind(&server::do_clear_presentation, this, target));
 	}
 
+	void server::request_session(const ep_type& target)
+	{
+		get_io_service().post(bind(&server::do_request_session, this, target));
+	}
+
 	/* Common */
 
 	void server::do_close()
@@ -260,7 +265,7 @@ namespace fscp
 				accept = false;
 			}
 		}
-		
+
 		if (accept)
 		{
 			do_set_presentation(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
@@ -268,6 +273,16 @@ namespace fscp
 	}
 
 	/* Session request messages */
+
+	void server::do_request_session(const ep_type& target)
+	{
+		if (m_socket.is_open())
+		{
+			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size());
+
+			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+		}
+	}
 
 	void server::handle_session_request_message_from(const session_request_message& /*_session_request_message*/, const ep_type& /*sender*/)
 	{
