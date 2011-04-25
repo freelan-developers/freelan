@@ -236,7 +236,9 @@ Abstract
    The data_len field indicates the size of the data field.
 
    The data field represents the data of the message, ciphered using the
-   remote host session cipher key.
+   remote host session cipher key and initialization vector. The last 4
+   bytes of the initialization vector MUST first be XORed with the
+   current sequence number (seq_num), in NETWORK BYTE ORDER.
 
    The hmac field contains the SHA-256 HMAC of the whole DATA message
    header, excluding the field itself (that is, bytes from range [0,
