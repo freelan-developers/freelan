@@ -49,31 +49,40 @@
 
 namespace fscp
 {
-	size_t session_message::write(void* buf, size_t buf_len)
+	size_t session_message::write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len)
 	{
-		if (buf_len < HEADER_LENGTH + BODY_LENGTH)
+		const size_t payload_len = MIN_BODY_LENGTH + ciphertext_len + ciphertext_signature_len;
+
+		if (buf_len < HEADER_LENGTH + payload_len)
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION, BODY_LENGTH);
+		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH, htons(static_cast<uint16_t>(ciphertext_len)));
+		memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(uint16_t), ciphertext, ciphertext_len);
+		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(uint16_t) + ciphertext_len, htons(static_cast<uint16_t>(ciphertext_signature_len)));
+		memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + 2 * sizeof(uint16_t) + ciphertext_len, ciphertext_signature, ciphertext_signature_len);
 
-		return HEADER_LENGTH + BODY_LENGTH;
+		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION, payload_len);
+
+		return HEADER_LENGTH + payload_len;
 	}
 
 	session_message::session_message(const void* buf, size_t buf_len) :
 		message(buf, buf_len)
 	{
-		if (length() != BODY_LENGTH)
+		if (length() < MIN_BODY_LENGTH)
 		{
 			throw std::runtime_error("bad message length");
 		}
+
+		//TODO: Add parsing verification and make it a function check_format() (just like presentation_message)
 	}
 
 	session_message::session_message(const message& _message) :
 		message(_message)
 	{
-		if (length() != BODY_LENGTH)
+		if (length() < MIN_BODY_LENGTH)
 		{
 			throw std::runtime_error("bad message length");
 		}

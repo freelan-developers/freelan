@@ -60,9 +60,13 @@ namespace fscp
 			 * \brief Write a session message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
+			 * \param ciphertext The ciphertext.
+			 * \param ciphertext_len The ciphertext length.
+			 * \param ciphertext_signature The ciphertext signature.
+			 * \param ciphertext_signature_len The ciphertext signature length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len);
+			static size_t write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len);
 
 			/**
 			 * \brief Create a session_message and map it on a buffer.
@@ -79,13 +83,57 @@ namespace fscp
 			 */
 			session_message(const message& message);
 
+			/**
+			 * \brief Get the ciphertext.
+			 * \return The ciphertext.
+			 */
+			const uint8_t* ciphertext() const;
+
+			/**
+			 * \brief Get the ciphertext size.
+			 * \return The ciphertext size.
+			 */
+			size_t ciphertext_size() const;
+
+			/**
+			 * \brief Get the ciphertext signature.
+			 * \return The ciphertext signature.
+			 */
+			const uint8_t* ciphertext_signature() const;
+
+			/**
+			 * \brief Get the ciphertext signature size.
+			 * \return The ciphertext signature size.
+			 */
+			size_t ciphertext_signature_size() const;
+
 		protected:
 
 			/**
-			 * \brief The length of the body.
+			 * \brief The min length of the body.
 			 */
-			static const size_t BODY_LENGTH = 0;
+			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
 	};
+
+	inline const uint8_t* session_message::ciphertext() const
+	{
+		return payload() + sizeof(uint16_t);
+	}
+
+	inline size_t session_message::ciphertext_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), 0));
+	}
+
+	inline const uint8_t* session_message::ciphertext_signature() const
+	{
+		return payload() + 2 * sizeof(uint16_t) + ciphertext_size();
+	}
+
+	inline size_t session_message::ciphertext_signature_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + ciphertext_size()));
+	}
 }
 
 #endif /* FSCP_SESSION_MESSAGE_HPP */
