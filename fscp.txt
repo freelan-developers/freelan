@@ -262,7 +262,8 @@ Abstract
 
 3.3. Asymmetric cipherment/signature algorithm
 
-   The used asymmetric cipherment/signature algorithm is RSA-2048.
+   The used asymmetric cipherment/signature algorithm is RSA-2048
+   with a PKCS#1 v2.0 OAEP padding.
 
 4. Protocol
 
