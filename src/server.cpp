@@ -296,6 +296,11 @@ namespace fscp
 		}
 	}
 
+	void server::do_renew_local_session(const ep_type& target)
+	{
+		m_session_map[target].renew_local_session();
+	}
+
 	void server::handle_session_request_message_from(const session_request_message& /*_session_request_message*/, const ep_type& /*sender*/)
 	{
 	}

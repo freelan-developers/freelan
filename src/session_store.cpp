@@ -49,10 +49,25 @@
 namespace fscp
 {
 	session_store::session_store(session_number_type _session_number) :
-		m_session_number(_session_number)
+		m_session_number(_session_number),
+		m_sequence_number(0)
 	{
 		cryptoplus::random::get_random_bytes(m_sig_key.data(), m_sig_key.size());
 		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
 		cryptoplus::random::get_random_bytes(m_iv.data(), m_iv.size());
+	}
+	
+	session_store::iv_type session_store::sequence_initialization_vector(sequence_number_type _sequence_number) const
+	{
+		iv_type result = m_iv;
+
+		_sequence_number = htonl(_sequence_number);
+
+		result[result.size() - 4] ^= (_sequence_number >> 24) & 0xFF;
+		result[result.size() - 3] ^= (_sequence_number >> 16) & 0xFF;
+		result[result.size() - 2] ^= (_sequence_number >> 8) & 0xFF;
+		result[result.size() - 1] ^= (_sequence_number >> 0) & 0xFF;
+
+		return result;
 	}
 }

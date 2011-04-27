@@ -48,6 +48,7 @@
 #include "hello_request.hpp"
 #include "identity_store.hpp"
 #include "presentation_store.hpp"
+#include "session_pair.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -222,8 +223,13 @@ namespace fscp
 
 		private:
 
+			typedef std::map<ep_type, session_pair> session_pair_map;
+
 			void do_request_session(const ep_type&);
+			void do_renew_local_session(const ep_type&);
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
+
+			session_pair_map m_session_map;
 	};
 
 	inline boost::asio::io_service& server::get_io_service()

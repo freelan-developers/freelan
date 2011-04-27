@@ -64,6 +64,11 @@ namespace fscp
 			typedef uint32_t session_number_type;
 
 			/**
+			 * \brief The sequence number type.
+			 */
+			typedef uint32_t sequence_number_type;
+
+			/**
 			 * \brief The key length.
 			 */
 			static const size_t KEY_LENGTH = 32;
@@ -122,19 +127,46 @@ namespace fscp
 			 */
 			iv_type initialization_vector() const;
 
+			/**
+			 * \brief Get the sequence number.
+			 * \return The sequence number.
+			 */
+			sequence_number_type sequence_number() const;
+
+			/**
+			 * \brief Set the sequence number.
+			 * \param sequence_number The new sequence number.
+			 */
+			void set_sequence_number(sequence_number_type sequence_number);
+
+			/**
+			 * \brief Get the sequence initialization vector.
+			 * \param sequence_number The sequence number to use to compute the IV.
+			 * \return The sequence initialization vector.
+			 */
+			iv_type sequence_initialization_vector(sequence_number_type sequence_number) const;
+
+			/**
+			 * \brief Get the sequence initialization vector, using the current sequence number.
+			 * \return The sequence initialization vector.
+			 */
+			iv_type sequence_initialization_vector() const;
+
 		private:
 
 			session_number_type m_session_number;
 			key_type m_sig_key;
 			key_type m_enc_key;
 			iv_type m_iv;
+			sequence_number_type m_sequence_number;
 	};
 
 	inline session_store::session_store(session_number_type _session_number, key_type sig_key, key_type enc_key, iv_type iv) :
 		m_session_number(_session_number),
 		m_sig_key(sig_key),
 		m_enc_key(enc_key),
-		m_iv(iv)
+		m_iv(iv),
+		m_sequence_number(0)
 	{
 	}
 
@@ -156,6 +188,21 @@ namespace fscp
 	inline session_store::iv_type session_store::initialization_vector() const
 	{
 		return m_iv;
+	}
+	
+	inline session_store::sequence_number_type session_store::sequence_number() const
+	{
+		return m_sequence_number;
+	}
+
+	inline void session_store::set_sequence_number(sequence_number_type _sequence_number)
+	{
+		m_sequence_number = _sequence_number;
+	}
+
+	inline session_store::iv_type session_store::sequence_initialization_vector() const
+	{
+		return sequence_initialization_vector(m_sequence_number);
 	}
 }
 
