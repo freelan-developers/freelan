@@ -46,6 +46,8 @@
 
 #include <cryptoplus/random/random.hpp>
 
+#include <boost/asio.hpp>
+
 namespace fscp
 {
 	session_store::session_store(session_number_type _session_number) :
