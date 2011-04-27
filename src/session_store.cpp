@@ -58,7 +58,7 @@ namespace fscp
 		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
 		cryptoplus::random::get_random_bytes(m_iv.data(), m_iv.size());
 	}
-	
+
 	session_store::iv_type session_store::sequence_initialization_vector(sequence_number_type _sequence_number) const
 	{
 		iv_type result = m_iv;
@@ -72,7 +72,7 @@ namespace fscp
 
 		return result;
 	}
-	
+
 	bool session_store::is_old() const
 	{
 		return m_sequence_number > (sequence_number_type(1) << 24);

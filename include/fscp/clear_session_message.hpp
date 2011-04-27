@@ -167,42 +167,42 @@ namespace fscp
 
 			const void* m_data;
 	};
-	
+
 	inline clear_session_message::session_number_type clear_session_message::session_number() const
 	{
 		return ntohl(buffer_tools::get<session_number_type>(data(), 0));
 	}
-	
+
 	inline const uint8_t* clear_session_message::signature_key() const
 	{
 		return data() + sizeof(session_number_type) + sizeof(uint16_t);
 	}
-	
+
 	inline size_t clear_session_message::signature_key_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type)));
 	}
-	
+
 	inline const uint8_t* clear_session_message::encryption_key() const
 	{
 		return data() + sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size() + sizeof(uint16_t);
 	}
-	
+
 	inline size_t clear_session_message::encryption_key_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size()));
 	}
-	
+
 	inline const uint8_t* clear_session_message::initialization_vector() const
 	{
 		return data() + sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size() + sizeof(uint16_t) + encryption_key_size() + sizeof(uint16_t);
 	}
-	
+
 	inline size_t clear_session_message::initialization_vector_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size() + sizeof(uint16_t) + encryption_key_size()));
 	}
-	
+
 	inline const uint8_t* clear_session_message::data() const
 	{
 		return static_cast<const uint8_t*>(m_data);

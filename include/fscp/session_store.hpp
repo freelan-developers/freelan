@@ -195,7 +195,7 @@ namespace fscp
 	{
 		return m_iv;
 	}
-	
+
 	inline session_store::sequence_number_type session_store::sequence_number() const
 	{
 		return m_sequence_number;

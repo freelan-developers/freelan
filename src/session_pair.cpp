@@ -56,7 +56,8 @@ namespace fscp
 
 				return true;
 			}
-		} else
+		}
+		else
 		{
 			m_local_session.reset(new session_store(0));
 
@@ -65,13 +66,14 @@ namespace fscp
 
 		return false;
 	}
-	
+
 	void session_pair::set_remote_session(const session_store& session)
 	{
 		if (has_remote_session())
 		{
 			*m_remote_session = session;
-		} else
+		}
+		else
 		{
 			m_remote_session.reset(new session_store(session));
 		}

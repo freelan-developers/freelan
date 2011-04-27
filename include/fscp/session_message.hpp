@@ -176,7 +176,7 @@ namespace fscp
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + ciphertext_size()));
 	}
-	
+
 	template <typename T>
 	inline std::vector<T> session_message::get_cleartext(cryptoplus::pkey::pkey key) const
 	{

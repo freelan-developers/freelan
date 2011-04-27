@@ -112,7 +112,7 @@ namespace fscp
 			boost::shared_ptr<session_store> m_local_session;
 			boost::shared_ptr<session_store> m_remote_session;
 	};
-	
+
 	inline session_pair::session_pair()
 	{
 	}
@@ -136,7 +136,7 @@ namespace fscp
 	{
 		return *m_remote_session;
 	}
-	
+
 	inline void session_pair::clear_remote_session()
 	{
 		m_remote_session.reset();
