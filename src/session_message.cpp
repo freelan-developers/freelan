@@ -68,6 +68,17 @@ namespace fscp
 		return HEADER_LENGTH + payload_len;
 	}
 
+	size_t session_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
+	{
+		std::vector<uint8_t> ciphertext(enc_key.size());
+
+		ciphertext.resize(enc_key.get_rsa_key().public_encrypt(&ciphertext[0], ciphertext.size(), cleartext, cleartext_len, RSA_PKCS1_OAEP_PADDING));
+
+		std::vector<uint8_t> ciphertext_signature = sig_key.get_rsa_key().sign<uint8_t>(&ciphertext[0], ciphertext.size(), NID_sha256);
+
+		return write(buf, buf_len, &ciphertext[0], ciphertext.size(), &ciphertext_signature[0], ciphertext_signature.size());
+	}
+
 	session_message::session_message(const void* buf, size_t buf_len) :
 		message(buf, buf_len)
 	{

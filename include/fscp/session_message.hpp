@@ -71,6 +71,18 @@ namespace fscp
 			static size_t write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len);
 
 			/**
+			 * \brief Write a session message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param cleartext The cleartext.
+			 * \param cleartext_len The cleartext length.
+			 * \param enc_key The public key to use to cipher the cleartext.
+			 * \param sig_key The private key to use to sign the ciphertext.
+			 * \return The count of bytes written.
+			 */
+			static size_t write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key);
+
+			/**
 			 * \brief Create a session_message and map it on a buffer.
 			 * \param buf The buffer.
 			 * \param buf_len The buffer length.
