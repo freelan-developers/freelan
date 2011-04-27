@@ -97,6 +97,14 @@ namespace fscp
 			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)> presentation_message_callback;
 
 			/**
+			 * \brief Session request message callback type.
+			 * \param sender The endpoint that sent the session request message.
+			 * \param default_accept The default return value.
+			 * \return true to accept the session request.
+			 */
+			typedef boost::function<bool (const ep_type& sender, bool default_accept)> session_request_message_callback;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
@@ -184,6 +192,18 @@ namespace fscp
 			void clear_presentation(const ep_type& target);
 
 			/**
+			 * \brief Set the default behavior when a session request message arrives.
+			 * \param value If false, session request messages will be ignored. Default is true.
+			 */
+			void set_accept_session_request_messages_default(bool value);
+
+			/**
+			 * \brief Set the session request message callback.
+			 * \param callback The callback.
+			 */
+			void set_session_request_message_callback(session_request_message_callback callback);
+
+			/**
 			 * \brief Request a session to a host.
 			 * \param target The target host.
 			 */
@@ -226,10 +246,11 @@ namespace fscp
 			typedef std::map<ep_type, session_pair> session_pair_map;
 
 			void do_request_session(const ep_type&);
-			void do_renew_local_session(const ep_type&);
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
 
 			session_pair_map m_session_map;
+			bool m_accept_session_request_messages_default;
+			session_request_message_callback m_session_request_message_callback;
 	};
 
 	inline boost::asio::io_service& server::get_io_service()
@@ -260,6 +281,16 @@ namespace fscp
 	inline void server::set_presentation_message_callback(presentation_message_callback callback)
 	{
 		m_presentation_message_callback = callback;
+	}
+
+	inline void server::set_accept_session_request_messages_default(bool value)
+	{
+		m_accept_session_request_messages_default = value;
+	}
+
+	inline void server::set_session_request_message_callback(session_request_message_callback callback)
+	{
+		m_session_request_message_callback = callback;
 	}
 }
 

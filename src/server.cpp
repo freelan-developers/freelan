@@ -64,7 +64,9 @@ namespace fscp
 		m_hello_current_unique_number(0),
 		m_accept_hello_messages_default(true),
 		m_hello_message_callback(0),
-		m_presentation_message_callback(0)
+		m_presentation_message_callback(0),
+		m_accept_session_request_messages_default(true),
+		m_session_request_message_callback(0)
 	{
 		async_receive();
 	}
@@ -296,12 +298,20 @@ namespace fscp
 		}
 	}
 
-	void server::do_renew_local_session(const ep_type& target)
+	void server::handle_session_request_message_from(const session_request_message& /*_session_request_message*/, const ep_type& sender)
 	{
-		m_session_map[target].renew_local_session();
-	}
+		bool can_reply = m_accept_session_request_messages_default;
 
-	void server::handle_session_request_message_from(const session_request_message& /*_session_request_message*/, const ep_type& /*sender*/)
-	{
+		if (m_session_request_message_callback)
+		{
+			can_reply = m_session_request_message_callback(sender, m_accept_session_request_messages_default);
+		}
+
+		if (can_reply)
+		{
+			session_pair& session = m_session_map[sender];
+
+			session.renew_local_session();
+		}
 	}
 }

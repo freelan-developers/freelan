@@ -46,18 +46,24 @@
 
 namespace fscp
 {
-	void session_pair::renew_local_session(bool force)
+	bool session_pair::renew_local_session(bool force)
 	{
 		if (has_local_session())
 		{
-			if (local_session().is_old() || force)
+			if (force || local_session().is_old())
 			{
 				m_local_session.reset(new session_store(local_session().session_number() + 1));
+
+				return true;
 			}
 		} else
 		{
 			m_local_session.reset(new session_store(0));
+
+			return true;
 		}
+
+		return false;
 	}
 	
 	void session_pair::set_remote_session(const session_store& session)

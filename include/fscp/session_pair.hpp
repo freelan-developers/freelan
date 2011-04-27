@@ -92,8 +92,9 @@ namespace fscp
 			/**
 			 * \brief Renew the local session, if it is old or if the renewal is forced.
 			 * \param force Set to true to force renewal. Default is false.
+			 * \return true if the session was effectively renewed. Should be true if force is set to true.
 			 */
-			void renew_local_session(bool force = false);
+			bool renew_local_session(bool force = false);
 
 			/**
 			 * \brief Set the remote session.
