@@ -196,7 +196,7 @@ Abstract
    The cts_len field indicates the length of the cts field.
 
    The cts field is the ciphertext signature, generated using the PKS-
-   of the sender host.
+   of the sender host and the digest method.
 
    A host who receives a SESSION message MUST first check if the cts
    signature matches the sending host PKS+. If the signature does not
