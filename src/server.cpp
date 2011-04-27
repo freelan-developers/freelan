@@ -48,6 +48,8 @@
 #include "hello_message.hpp"
 #include "presentation_message.hpp"
 #include "session_request_message.hpp"
+#include "session_message.hpp"
+#include "clear_session_message.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
@@ -169,6 +171,12 @@ namespace fscp
 								handle_session_request_message_from(session_request_message, m_sender_endpoint);
 
 								break;
+							}
+						case MESSAGE_TYPE_SESSION:
+							{
+								session_message session_message(message);
+
+								handle_session_message_from(session_message, m_sender_endpoint);
 							}
 						default:
 							{
@@ -313,5 +321,15 @@ namespace fscp
 
 			session.renew_local_session();
 		}
+	}
+
+	/* Session messages */
+
+	void server::handle_session_message_from(const session_message&, const ep_type&)
+	{
+	}
+
+	void server::handle_clear_session_message_from(const session_message&, const ep_type&)
+	{
 	}
 }

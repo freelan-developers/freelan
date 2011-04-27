@@ -60,6 +60,8 @@ namespace fscp
 	class hello_message;
 	class presentation_message;
 	class session_request_message;
+	class session_message;
+	class clear_session_message;
 
 	/**
 	 * \brief A FSCP server.
@@ -251,6 +253,11 @@ namespace fscp
 			session_pair_map m_session_map;
 			bool m_accept_session_request_messages_default;
 			session_request_message_callback m_session_request_message_callback;
+
+		private:
+
+			void handle_session_message_from(const session_message&, const ep_type&);
+			void handle_clear_session_message_from(const session_message&, const ep_type&);
 	};
 
 	inline boost::asio::io_service& server::get_io_service()
