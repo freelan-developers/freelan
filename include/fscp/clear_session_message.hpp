@@ -78,37 +78,33 @@ namespace fscp
 			static const size_t IV_LENGTH = 16;
 
 			/**
-			 * \brief The key type.
-			 */
-			typedef boost::array<uint8_t, KEY_LENGTH> key_type;
-
-			/**
-			 * \brief The iv type.
-			 */
-			typedef boost::array<uint8_t, IV_LENGTH> iv_type;
-
-			/**
 			 * \brief Write a session message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
 			 * \param sig_key The signature key.
+			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
 			 * \param iv The initialization vector.
+			 * \param iv_len The initialization vector length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
 
 			/**
 			 * \brief Write a session message to a buffer.
 			 * \param session_number The session number.
 			 * \param sig_key The signature key.
+			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
 			 * \param iv The initialization vector.
+			 * \param iv_len The initialization vector length.
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
+			static std::vector<T> write(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
 
 			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
@@ -180,11 +176,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_message::write(session_number_type _session_number, key_type sig_key, key_type enc_key, iv_type iv)
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len)
 	{
 		std::vector<T> result(BODY_LENGTH);
 
-		result.resize(write(&result[0], result.size(), _session_number, sig_key, enc_key, iv));
+		result.resize(write(&result[0], result.size(), _session_number, sig_key, sig_key_len, enc_key, enc_key_len, iv, iv_len));
 
 		return result;
 	}

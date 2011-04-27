@@ -49,7 +49,7 @@
 
 namespace fscp
 {
-	size_t clear_session_message::write(void* buf, size_t buf_len, session_number_type _session_number, key_type sig_key, key_type enc_key, iv_type iv)
+	size_t clear_session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len)
 	{
 		if (buf_len < BODY_LENGTH)
 		{
@@ -57,12 +57,12 @@ namespace fscp
 		}
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type), htons(static_cast<uint16_t>(sig_key.size())));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t), sig_key.data(), sig_key.size());
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + sizeof(uint16_t) + sig_key.size(), htons(static_cast<uint16_t>(enc_key.size())));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t) + sig_key.size() + sizeof(uint16_t), enc_key.data(), enc_key.size());
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + sizeof(uint16_t) + sig_key.size() + sizeof(uint16_t) + enc_key.size(), htons(static_cast<uint16_t>(iv.size())));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t) + sig_key.size() + sizeof(uint16_t) + enc_key.size() + sizeof(uint16_t), iv.data(), iv.size());
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type), htons(static_cast<uint16_t>(sig_key_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t), sig_key, sig_key_len);
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + sizeof(uint16_t) + sig_key_len, htons(static_cast<uint16_t>(enc_key_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t) + sig_key_len + sizeof(uint16_t), enc_key, enc_key_len);
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + sizeof(uint16_t) + sig_key_len + sizeof(uint16_t) + enc_key_len, htons(static_cast<uint16_t>(iv_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t) + sig_key_len + sizeof(uint16_t) + enc_key_len + sizeof(uint16_t), iv, iv_len);
 
 		return BODY_LENGTH;
 	}

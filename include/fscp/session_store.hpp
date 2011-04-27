@@ -113,19 +113,37 @@ namespace fscp
 			 * \brief Get the signature key.
 			 * \return The signature key.
 			 */
-			key_type signature_key() const;
+			const uint8_t* signature_key() const;
+
+			/**
+			 * \brief Get the signature key size.
+			 * \return The signature key size.
+			 */
+			size_t signature_key_size() const;
 
 			/**
 			 * \brief Get the encryption key.
 			 * \return The encryption key.
 			 */
-			key_type encryption_key() const;
+			const uint8_t* encryption_key() const;
+
+			/**
+			 * \brief Get the encryption key size.
+			 * \return The encryption key size.
+			 */
+			size_t encryption_key_size() const;
 
 			/**
 			 * \brief Get the initialization vector.
 			 * \return The initialization vector.
 			 */
-			iv_type initialization_vector() const;
+			const uint8_t* initialization_vector() const;
+
+			/**
+			 * \brief Get the initialization vector size.
+			 * \return The initialization vector size.
+			 */
+			size_t initialization_vector_size() const;
 
 			/**
 			 * \brief Get the sequence number.
@@ -181,19 +199,34 @@ namespace fscp
 		return m_session_number;
 	}
 
-	inline session_store::key_type session_store::signature_key() const
+	inline const uint8_t* session_store::signature_key() const
 	{
-		return m_sig_key;
+		return m_sig_key.data();
 	}
 
-	inline session_store::key_type session_store::encryption_key() const
+	inline size_t session_store::signature_key_size() const
 	{
-		return m_enc_key;
+		return m_sig_key.size();
 	}
 
-	inline session_store::iv_type session_store::initialization_vector() const
+	inline const uint8_t* session_store::encryption_key() const
 	{
-		return m_iv;
+		return m_enc_key.data();
+	}
+
+	inline size_t session_store::encryption_key_size() const
+	{
+		return m_enc_key.size();
+	}
+
+	inline const uint8_t* session_store::initialization_vector() const
+	{
+		return m_iv.data();
+	}
+
+	inline size_t session_store::initialization_vector_size() const
+	{
+		return m_iv.size();
 	}
 
 	inline session_store::sequence_number_type session_store::sequence_number() const
