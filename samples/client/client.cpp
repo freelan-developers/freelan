@@ -153,8 +153,8 @@ int main()
 
 	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
 	bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
-	alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2));
-	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2));
+	alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2, _3, _4));
+	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
 	alice_server.set_session_request_message_callback(&on_session_request);
 	bob_server.set_session_request_message_callback(&on_session_request);
 
