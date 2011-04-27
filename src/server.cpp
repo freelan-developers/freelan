@@ -320,6 +320,17 @@ namespace fscp
 			session_pair& session = m_session_map[sender];
 
 			session.renew_local_session();
+
+			std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
+			                                     session.local_session().session_number(),
+			                                     session.local_session().signature_key(),
+			                                     session.local_session().encryption_key(),
+			                                     session.local_session().initialization_vector()
+			                                 );
+
+			size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[sender].encryption_certificate().public_key(), m_identity_store.signature_certificate().public_key());
+
+			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender);
 		}
 	}
 

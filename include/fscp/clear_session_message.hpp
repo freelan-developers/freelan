@@ -100,6 +100,17 @@ namespace fscp
 			static size_t write(void* buf, size_t buf_len, session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
 
 			/**
+			 * \brief Write a session message to a buffer.
+			 * \param session_number The session number.
+			 * \param sig_key The signature key.
+			 * \param enc_key The encryption key.
+			 * \param iv The initialization vector.
+			 * \return The buffer.
+			 */
+			template <typename T>
+			static std::vector<T> write(session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
+
+			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
 			 * \param buf The buffer.
 			 * \param buf_len The buffer length.
@@ -167,6 +178,16 @@ namespace fscp
 
 			const void* m_data;
 	};
+
+	template <typename T>
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, key_type sig_key, key_type enc_key, iv_type iv)
+	{
+		std::vector<T> result(BODY_LENGTH);
+
+		result.resize(write(&result[0], result.size(), _session_number, sig_key, enc_key, iv));
+
+		return result;
+	}
 
 	inline clear_session_message::session_number_type clear_session_message::session_number() const
 	{
