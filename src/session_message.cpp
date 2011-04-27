@@ -87,16 +87,12 @@ namespace fscp
 			throw std::runtime_error("bad message length");
 		}
 
-		size_t ct_len = ntohs(buffer_tools::get<uint16_t>(payload(), 0));
-
-		if (length() < MIN_BODY_LENGTH + ct_len)
+		if (length() < MIN_BODY_LENGTH + ciphertext_size())
 		{
 			throw std::runtime_error("bad message length");
 		}
 
-		size_t cts_len = ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + ct_len));
-
-		if (length() != MIN_BODY_LENGTH + ct_len + cts_len)
+		if (length() != MIN_BODY_LENGTH + ciphertext_size() + ciphertext_signature_size())
 		{
 			throw std::runtime_error("bad message length");
 		}
