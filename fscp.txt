@@ -305,7 +305,8 @@ Abstract
 
    If no previous session exists with the requesting host, the target
    host SHOULD generate new session parameters and reply with a SESSION
-   message containing those parameters.
+   message containing those parameters. The session_number of the new
+   session MUST be greater than the previous session_number.
 
    If a host does not receive a response SESSION message after 3
    seconds, he SHOULD send another SESSION_REQUEST.
@@ -324,6 +325,9 @@ Abstract
    
    A session is considered old when a host considers too much blocks
    were sent during it. A good value for this "too much" is 2^24 blocks.
+
+   If a host receives a SESSION message with a session_number smaller
+   than the last used session_number, it MUST discard the message.
 
 4.4. DATA messages
 
