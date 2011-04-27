@@ -71,18 +71,32 @@ namespace fscp
 	session_message::session_message(const void* buf, size_t buf_len) :
 		message(buf, buf_len)
 	{
-		if (length() < MIN_BODY_LENGTH)
-		{
-			throw std::runtime_error("bad message length");
-		}
-
-		//TODO: Add parsing verification and make it a function check_format() (just like presentation_message)
+		check_format();
 	}
 
 	session_message::session_message(const message& _message) :
 		message(_message)
 	{
+		check_format();
+	}
+
+	void session_message::check_format() const
+	{
 		if (length() < MIN_BODY_LENGTH)
+		{
+			throw std::runtime_error("bad message length");
+		}
+
+		size_t ct_len = ntohs(buffer_tools::get<uint16_t>(payload(), 0));
+
+		if (length() < MIN_BODY_LENGTH + ct_len)
+		{
+			throw std::runtime_error("bad message length");
+		}
+
+		size_t cts_len = ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + ct_len));
+
+		if (length() != MIN_BODY_LENGTH + ct_len + cts_len)
 		{
 			throw std::runtime_error("bad message length");
 		}

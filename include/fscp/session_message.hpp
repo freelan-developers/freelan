@@ -113,6 +113,10 @@ namespace fscp
 			 * \brief The min length of the body.
 			 */
 			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
+
+		private:
+
+			void check_format() const;
 	};
 
 	inline const uint8_t* session_message::ciphertext() const
