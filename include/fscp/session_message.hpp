@@ -47,6 +47,8 @@
 
 #include "message.hpp"
 
+#include <cryptoplus/pkey/pkey.hpp>
+
 namespace fscp
 {
 	/**
@@ -106,6 +108,22 @@ namespace fscp
 			 * \return The ciphertext signature size.
 			 */
 			size_t ciphertext_signature_size() const;
+
+			/**
+			 * \brief Check if the signature matches with a given public key.
+			 * \param key The public key to use.
+			 * \warning If the check fails, an exception is thrown.
+			 */
+			void check_signature(cryptoplus::pkey::pkey key) const;
+
+			/**
+			 * \brief Get the clear text data, using a given private key.
+			 * \param buf The buffer that must receive the data. If buf is NULL, the function returns the expected size of buf.
+			 * \param buf_len The length of buf.
+			 * \param key The private key to use.
+			 * \return The count of bytes deciphered.
+			 */
+			size_t get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const;
 
 		protected:
 

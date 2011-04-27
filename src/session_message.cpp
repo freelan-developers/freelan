@@ -59,9 +59,9 @@ namespace fscp
 		}
 
 		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH, htons(static_cast<uint16_t>(ciphertext_len)));
-		memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(uint16_t), ciphertext, ciphertext_len);
+		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(uint16_t), ciphertext, ciphertext_len);
 		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(uint16_t) + ciphertext_len, htons(static_cast<uint16_t>(ciphertext_signature_len)));
-		memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + 2 * sizeof(uint16_t) + ciphertext_len, ciphertext_signature, ciphertext_signature_len);
+		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + 2 * sizeof(uint16_t) + ciphertext_len, ciphertext_signature, ciphertext_signature_len);
 
 		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION, payload_len);
 
@@ -95,6 +95,22 @@ namespace fscp
 		if (length() != MIN_BODY_LENGTH + ciphertext_size() + ciphertext_signature_size())
 		{
 			throw std::runtime_error("bad message length");
+		}
+	}
+	
+	void session_message::check_signature(cryptoplus::pkey::pkey key) const
+	{
+		key.get_rsa_key().verify(ciphertext_signature(), ciphertext_signature_size(), ciphertext(), ciphertext_size(), NID_sha256);
+	}
+	
+	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
+	{
+		if (buf)
+		{
+			return key.get_rsa_key().private_decrypt(buf, buf_len, ciphertext(), ciphertext_size(), RSA_PKCS1_OAEP_PADDING);
+		} else
+		{
+			return key.get_rsa_key().size();
 		}
 	}
 }
