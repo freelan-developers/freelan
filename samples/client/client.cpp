@@ -85,11 +85,20 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	}
 }
 
-static bool on_presentation(const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool success)
+static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool default_accept)
 {
 	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
 
-  return success;
+	server.request_session(sender);
+
+  return default_accept;
+}
+
+static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+{
+	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
+
+	return default_accept;
 }
 
 static void _stop_function(fscp::server& s1, fscp::server& s2)
@@ -144,8 +153,10 @@ int main()
 
 	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
 	bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
-	alice_server.set_presentation_message_callback(&on_presentation);
-	bob_server.set_presentation_message_callback(&on_presentation);
+	alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2));
+	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2));
+	alice_server.set_session_request_message_callback(&on_session_request);
+	bob_server.set_session_request_message_callback(&on_session_request);
 
 	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
 
