@@ -37,42 +37,37 @@
  */
 
 /**
- * \file session_store.cpp
+ * \file session_pair.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An session store class.
+ * \brief An session pair class.
  */
 
-#include "session_store.hpp"
-
-#include <cryptoplus/random/random.hpp>
+#include "session_pair.hpp"
 
 namespace fscp
 {
-	session_store::session_store(session_number_type _session_number) :
-		m_session_number(_session_number),
-		m_sequence_number(0)
+	void session_pair::renew_local_session(bool force)
 	{
-		cryptoplus::random::get_random_bytes(m_sig_key.data(), m_sig_key.size());
-		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
-		cryptoplus::random::get_random_bytes(m_iv.data(), m_iv.size());
+		if (has_local_session())
+		{
+			if (local_session().is_old() || force)
+			{
+				m_local_session.reset(new session_store(local_session().session_number() + 1));
+			}
+		} else
+		{
+			m_local_session.reset(new session_store(0));
+		}
 	}
 	
-	session_store::iv_type session_store::sequence_initialization_vector(sequence_number_type _sequence_number) const
+	void session_pair::set_remote_session(const session_store& session)
 	{
-		iv_type result = m_iv;
-
-		_sequence_number = htonl(_sequence_number);
-
-		result[result.size() - 4] ^= (_sequence_number >> 24) & 0xFF;
-		result[result.size() - 3] ^= (_sequence_number >> 16) & 0xFF;
-		result[result.size() - 2] ^= (_sequence_number >> 8) & 0xFF;
-		result[result.size() - 1] ^= (_sequence_number >> 0) & 0xFF;
-
-		return result;
-	}
-	
-	bool session_store::is_old() const
-	{
-		return m_sequence_number > (sequence_number_type(1) << 24);
+		if (has_remote_session())
+		{
+			*m_remote_session = session;
+		} else
+		{
+			m_remote_session.reset(new session_store(session));
+		}
 	}
 }

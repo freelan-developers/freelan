@@ -152,6 +152,12 @@ namespace fscp
 			 */
 			iv_type sequence_initialization_vector() const;
 
+			/**
+			 * \brief Check if the session is old.
+			 * \return true if the function is old.
+			 */
+			bool is_old() const;
+
 		private:
 
 			session_number_type m_session_number;
