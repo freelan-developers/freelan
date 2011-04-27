@@ -125,6 +125,14 @@ namespace fscp
 			 */
 			size_t get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const;
 
+			/**
+			 * \brief Get the clear text data, using a given private key.
+			 * \param key The private key to use.
+			 * \return The clear text data.
+			 */
+			template <typename T>
+			std::vector<T> get_cleartext(cryptoplus::pkey::pkey key) const;
+
 		protected:
 
 			/**
@@ -155,6 +163,16 @@ namespace fscp
 	inline size_t session_message::ciphertext_signature_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + ciphertext_size()));
+	}
+	
+	template <typename T>
+	inline std::vector<T> session_message::get_cleartext(cryptoplus::pkey::pkey key) const
+	{
+		std::vector<T> result(get_cleartext(NULL, 0, key));
+
+		result.resize(get_cleartext(&result[0], result.size(), key));
+
+		return result;
 	}
 }
 
