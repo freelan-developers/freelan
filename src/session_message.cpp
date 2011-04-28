@@ -44,6 +44,7 @@
 
 #include "session_message.hpp"
 
+#include <cryptoplus/hash/message_digest.hpp>
 #include <cassert>
 #include <stdexcept>
 
@@ -74,7 +75,9 @@ namespace fscp
 
 		ciphertext.resize(enc_key.get_rsa_key().public_encrypt(&ciphertext[0], ciphertext.size(), cleartext, cleartext_len, RSA_PKCS1_OAEP_PADDING));
 
-		std::vector<uint8_t> ciphertext_signature = sig_key.get_rsa_key().sign<uint8_t>(&ciphertext[0], ciphertext.size(), NID_sha256);
+		std::vector<uint8_t> message_digest = cryptoplus::hash::message_digest<uint8_t>(&ciphertext[0], ciphertext.size(), cryptoplus::hash::message_digest_algorithm(NID_sha256));
+
+		std::vector<uint8_t> ciphertext_signature = sig_key.get_rsa_key().sign<uint8_t>(&message_digest[0], message_digest.size(), NID_sha256);
 
 		return write(buf, buf_len, &ciphertext[0], ciphertext.size(), &ciphertext_signature[0], ciphertext_signature.size());
 	}
