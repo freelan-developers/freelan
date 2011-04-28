@@ -162,7 +162,7 @@ namespace fscp
 			/**
 			 * \brief The length of the body.
 			 */
-			static const size_t BODY_LENGTH = 16;
+			static const size_t BODY_LENGTH = sizeof(session_number_type) + 2 * KEY_LENGTH + IV_LENGTH + 3 * sizeof(uint16_t);
 
 			/**
 			 * \brief The data.
