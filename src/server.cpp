@@ -331,7 +331,7 @@ namespace fscp
 			                                     session.local_session().initialization_vector_size()
 			                                 );
 
-			size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[sender].encryption_certificate().public_key(), m_identity_store.signature_certificate().public_key());
+			size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[sender].encryption_certificate().public_key(), m_identity_store.signature_key());
 
 			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender);
 		}
