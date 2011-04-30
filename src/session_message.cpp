@@ -115,11 +115,22 @@ namespace fscp
 
 	void session_message::check_signature(cryptoplus::pkey::pkey key) const
 	{
-		key.get_rsa_key().verify(ciphertext_signature(), ciphertext_signature_size(), ciphertext(), ciphertext_size(), NID_sha256);
+		assert(key);
+
+		cryptoplus::hash::message_digest_context mdctx;
+		mdctx.verify_initialize(cryptoplus::hash::message_digest_algorithm(NID_sha256));
+		mdctx.verify_update(ciphertext(), ciphertext_size());
+
+		if (!mdctx.verify_finalize(ciphertext_signature(), ciphertext_signature_size(), key))
+		{
+			throw std::runtime_error("session_message signature does not match");
+		}
 	}
 
 	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
 	{
+		assert(key);
+
 		if (buf)
 		{
 			return key.get_rsa_key().private_decrypt(buf, buf_len, ciphertext(), ciphertext_size(), RSA_PKCS1_OAEP_PADDING);

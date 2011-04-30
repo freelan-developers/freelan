@@ -55,35 +55,35 @@ namespace fscp
 		m_enc_cert(enc_cert),
 		m_enc_key(enc_key)
 	{
-		assert(sig_cert);
-		assert(sig_key);
+		assert(m_sig_cert);
+		assert(m_sig_key);
 
-		if (!enc_cert)
+		if (!m_enc_cert)
 		{
-			enc_cert = sig_cert;
+			m_enc_cert = m_sig_cert;
 		}
 
-		if (!enc_key)
+		if (!m_enc_key)
 		{
-			enc_key = sig_key;
+			m_enc_key = m_sig_key;
 		}
 
-		if (!sig_cert.verify_private_key(sig_key))
+		if (!m_sig_cert.verify_private_key(m_sig_key))
 		{
 			throw std::runtime_error("sig_key mismatch");
 		}
 
-		if (!enc_cert.verify_private_key(enc_key))
+		if (!m_enc_cert.verify_private_key(m_enc_key))
 		{
 			throw std::runtime_error("enc_key mismatch");
 		}
 
-		if (cryptoplus::x509::compare(sig_cert.subject(), enc_cert.subject()) != 0)
+		if (cryptoplus::x509::compare(m_sig_cert.subject(), m_enc_cert.subject()) != 0)
 		{
 			throw std::runtime_error("subject name mistmatch");
 		}
 
-		if (cryptoplus::x509::compare(sig_cert.issuer(), enc_cert.issuer()) != 0)
+		if (cryptoplus::x509::compare(m_sig_cert.issuer(), m_enc_cert.issuer()) != 0)
 		{
 			throw std::runtime_error("issuer name mistmatch");
 		}

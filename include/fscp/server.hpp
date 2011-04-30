@@ -257,7 +257,7 @@ namespace fscp
 		private:
 
 			void handle_session_message_from(const session_message&, const ep_type&);
-			void handle_clear_session_message_from(const session_message&, const ep_type&);
+			void handle_clear_session_message_from(const clear_session_message&, const ep_type&);
 	};
 
 	inline boost::asio::io_service& server::get_io_service()

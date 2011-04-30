@@ -339,11 +339,19 @@ namespace fscp
 
 	/* Session messages */
 
-	void server::handle_session_message_from(const session_message&, const ep_type&)
+	void server::handle_session_message_from(const session_message& _session_message, const ep_type& sender)
 	{
+		_session_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
+
+		std::vector<uint8_t> cleartext = _session_message.get_cleartext<uint8_t>(m_identity_store.encryption_key());
+
+		clear_session_message clear_session_message(&cleartext[0], cleartext.size());
+
+		handle_clear_session_message_from(clear_session_message, sender);
 	}
 
-	void server::handle_clear_session_message_from(const session_message&, const ep_type&)
+	void server::handle_clear_session_message_from(const clear_session_message&, const ep_type&)
+	//void server::handle_clear_session_message_from(const clear_session_message& _clear_session_message, const ep_type& sender)
 	{
 	}
 }
