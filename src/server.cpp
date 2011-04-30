@@ -354,26 +354,31 @@ namespace fscp
 
 	void server::handle_clear_session_message_from(const clear_session_message& _clear_session_message, const ep_type& sender)
 	{
-		bool can_accept = m_accept_session_messages_default;
+		session_pair& session_pair = m_session_map[sender];
 
-		if (m_session_message_callback)
+		if (!session_pair.has_remote_session() || session_pair.remote_session().session_number() < _clear_session_message.session_number())
 		{
-			can_accept = m_session_message_callback(sender, m_accept_session_messages_default);
-		}
+			bool can_accept = m_accept_session_messages_default;
 
-		if (can_accept)
-		{
-			session_store _session_store(
-			    _clear_session_message.session_number(),
-			    _clear_session_message.signature_key(),
-			    _clear_session_message.signature_key_size(),
-			    _clear_session_message.encryption_key(),
-			    _clear_session_message.encryption_key_size(),
-			    _clear_session_message.initialization_vector(),
-			    _clear_session_message.initialization_vector_size()
-			);
+			if (m_session_message_callback)
+			{
+				can_accept = m_session_message_callback(sender, m_accept_session_messages_default);
+			}
 
-			m_session_map[sender].set_remote_session(_session_store);
+			if (can_accept)
+			{
+				session_store _session_store(
+				    _clear_session_message.session_number(),
+				    _clear_session_message.signature_key(),
+				    _clear_session_message.signature_key_size(),
+				    _clear_session_message.encryption_key(),
+				    _clear_session_message.encryption_key_size(),
+				    _clear_session_message.initialization_vector(),
+				    _clear_session_message.initialization_vector_size()
+				);
+
+				session_pair.set_remote_session(_session_store);
+			}
 		}
 	}
 }
