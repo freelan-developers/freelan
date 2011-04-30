@@ -947,7 +947,7 @@ namespace cryptoplus
 		}
 		inline pkey::pkey certificate::public_key()
 		{
-			return pkey::pkey(X509_get_pubkey(ptr().get()));
+			return pkey::pkey::take_ownership(X509_get_pubkey(ptr().get()));
 		}
 		inline void certificate::set_public_key(pkey::pkey pkey)
 		{
