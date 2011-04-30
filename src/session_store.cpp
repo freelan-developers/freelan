@@ -57,20 +57,44 @@ namespace fscp
 		cryptoplus::random::get_random_bytes(m_sig_key.data(), m_sig_key.size());
 		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
 		cryptoplus::random::get_random_bytes(m_iv.data(), m_iv.size());
+		m_current_iv = m_iv;
 	}
 
-	session_store::iv_type session_store::sequence_initialization_vector(sequence_number_type _sequence_number) const
+	session_store::session_store(session_number_type _session_number, const void* _sig_key, size_t _sig_key_len, const void* _enc_key, size_t _enc_key_len, const void* _iv, size_t _iv_len) :
+		m_session_number(_session_number),
+		m_sequence_number(0)
 	{
-		iv_type result = m_iv;
+		if (_sig_key_len != m_sig_key.size())
+		{
+			throw std::runtime_error("sig_key_len");
+		}
 
+		if (_enc_key_len != m_enc_key.size())
+		{
+			throw std::runtime_error("enc_key_len");
+		}
+
+		if (_iv_len != m_iv.size())
+		{
+			throw std::runtime_error("iv_len");
+		}
+
+		std::memcpy(m_sig_key.c_array(), _sig_key, _sig_key_len);
+		std::memcpy(m_enc_key.c_array(), _enc_key, _enc_key_len);
+		std::memcpy(m_iv.c_array(), _iv, _iv_len);
+		m_current_iv = m_iv;
+	}
+
+	const uint8_t* session_store::sequence_initialization_vector(sequence_number_type _sequence_number) const
+	{
 		_sequence_number = htonl(_sequence_number);
 
-		result[result.size() - 4] ^= (_sequence_number >> 24) & 0xFF;
-		result[result.size() - 3] ^= (_sequence_number >> 16) & 0xFF;
-		result[result.size() - 2] ^= (_sequence_number >> 8) & 0xFF;
-		result[result.size() - 1] ^= (_sequence_number >> 0) & 0xFF;
+		m_current_iv[m_current_iv.size() - 4] ^= (_sequence_number >> 24) & 0xFF;
+		m_current_iv[m_current_iv.size() - 3] ^= (_sequence_number >> 16) & 0xFF;
+		m_current_iv[m_current_iv.size() - 2] ^= (_sequence_number >> 8) & 0xFF;
+		m_current_iv[m_current_iv.size() - 1] ^= (_sequence_number >> 0) & 0xFF;
 
-		return result;
+		return m_current_iv.data();
 	}
 
 	bool session_store::is_old() const

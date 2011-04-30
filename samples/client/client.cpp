@@ -101,6 +101,13 @@ static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, boo
 	return default_accept;
 }
 
+static bool on_session(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+{
+	std::cout << "Received SESSION from " << sender << std::endl;
+
+	return default_accept;
+}
+
 static void _stop_function(fscp::server& s1, fscp::server& s2)
 {
 	s1.close();
@@ -157,6 +164,8 @@ int main()
 	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
 	alice_server.set_session_request_message_callback(&on_session_request);
 	bob_server.set_session_request_message_callback(&on_session_request);
+	alice_server.set_session_message_callback(&on_session);
+	bob_server.set_session_message_callback(&on_session);
 
 	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
 

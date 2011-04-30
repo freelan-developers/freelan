@@ -79,16 +79,6 @@ namespace fscp
 			static const size_t IV_LENGTH = 16;
 
 			/**
-			 * \brief The key type.
-			 */
-			typedef boost::array<uint8_t, KEY_LENGTH> key_type;
-
-			/**
-			 * \brief The iv type.
-			 */
-			typedef boost::array<uint8_t, IV_LENGTH> iv_type;
-
-			/**
 			 * \brief Create a new random session store.
 				 * \param session_number The session number.
 			 */
@@ -98,10 +88,13 @@ namespace fscp
 			 * \brief Create a new session store.
 			 * \param session_number The session number.
 			 * \param sig_key The signature key.
+			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
 			 * \param iv The initialization vector.
+			 * \param iv_len The initialization vector length.
 			 */
-			session_store(session_number_type session_number, key_type sig_key, key_type enc_key, iv_type iv);
+			session_store(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
 
 			/**
 			 * \brief Get the session number.
@@ -162,13 +155,13 @@ namespace fscp
 			 * \param sequence_number The sequence number to use to compute the IV.
 			 * \return The sequence initialization vector.
 			 */
-			iv_type sequence_initialization_vector(sequence_number_type sequence_number) const;
+			const uint8_t* sequence_initialization_vector(sequence_number_type sequence_number) const;
 
 			/**
 			 * \brief Get the sequence initialization vector, using the current sequence number.
 			 * \return The sequence initialization vector.
 			 */
-			iv_type sequence_initialization_vector() const;
+			const uint8_t* sequence_initialization_vector() const;
 
 			/**
 			 * \brief Check if the session is old.
@@ -178,21 +171,23 @@ namespace fscp
 
 		private:
 
+			/**
+			 * \brief The key type.
+			 */
+			typedef boost::array<uint8_t, KEY_LENGTH> key_type;
+
+			/**
+			 * \brief The iv type.
+			 */
+			typedef boost::array<uint8_t, IV_LENGTH> iv_type;
+
 			session_number_type m_session_number;
 			key_type m_sig_key;
 			key_type m_enc_key;
 			iv_type m_iv;
 			sequence_number_type m_sequence_number;
+			mutable iv_type m_current_iv;
 	};
-
-	inline session_store::session_store(session_number_type _session_number, key_type sig_key, key_type enc_key, iv_type iv) :
-		m_session_number(_session_number),
-		m_sig_key(sig_key),
-		m_enc_key(enc_key),
-		m_iv(iv),
-		m_sequence_number(0)
-	{
-	}
 
 	inline session_store::session_number_type session_store::session_number() const
 	{
@@ -239,7 +234,7 @@ namespace fscp
 		m_sequence_number = _sequence_number;
 	}
 
-	inline session_store::iv_type session_store::sequence_initialization_vector() const
+	inline const uint8_t* session_store::sequence_initialization_vector() const
 	{
 		return sequence_initialization_vector(m_sequence_number);
 	}

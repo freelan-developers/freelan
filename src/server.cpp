@@ -68,7 +68,9 @@ namespace fscp
 		m_hello_message_callback(0),
 		m_presentation_message_callback(0),
 		m_accept_session_request_messages_default(true),
-		m_session_request_message_callback(0)
+		m_session_request_message_callback(0),
+		m_accept_session_messages_default(true),
+		m_session_message_callback(0)
 	{
 		async_receive();
 	}
@@ -350,8 +352,28 @@ namespace fscp
 		handle_clear_session_message_from(clear_session_message, sender);
 	}
 
-	void server::handle_clear_session_message_from(const clear_session_message&, const ep_type&)
-	//void server::handle_clear_session_message_from(const clear_session_message& _clear_session_message, const ep_type& sender)
+	void server::handle_clear_session_message_from(const clear_session_message& _clear_session_message, const ep_type& sender)
 	{
+		bool can_accept = m_accept_session_messages_default;
+
+		if (m_session_message_callback)
+		{
+			can_accept = m_session_message_callback(sender, m_accept_session_messages_default);
+		}
+
+		if (can_accept)
+		{
+			session_store _session_store(
+			    _clear_session_message.session_number(),
+			    _clear_session_message.signature_key(),
+			    _clear_session_message.signature_key_size(),
+			    _clear_session_message.encryption_key(),
+			    _clear_session_message.encryption_key_size(),
+			    _clear_session_message.initialization_vector(),
+			    _clear_session_message.initialization_vector_size()
+			);
+
+			m_session_map[sender].set_remote_session(_session_store);
+		}
 	}
 }
