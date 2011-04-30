@@ -176,7 +176,7 @@ namespace cryptoplus
 				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
 				 * \param sig The signature to compare to. Cannot be NULL.
 				 * \param sig_len The length of sig.
-				 * \param pkey The private pkey to use to verify the signature.
+				 * \param pkey The public pkey to use to verify the signature.
 				 * \return true if the signature matches, false otherwise.
 				 *
 				 * After a call to verify_finalize() no more call to verify_update() can be made unless verify_initialize() is called again first.
