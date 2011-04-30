@@ -281,6 +281,10 @@ namespace fscp
 
 			bool m_accept_session_messages_default;
 			session_message_callback m_session_message_callback;
+
+		private:
+
+			boost::array<uint8_t, 65536> m_data_buffer;
 	};
 
 	inline boost::asio::io_service& server::get_io_service()
