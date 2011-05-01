@@ -193,11 +193,12 @@ namespace cryptoplus
 				/**
 				 * \brief Update the cipher_context with some data.
 				 * \param out The output buffer. Should be at least in_len + algorithm().block_size() bytes long. Cannot be NULL.
-				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \param out_len The length of the out buffer.
 				 * \param in The input buffer.
 				 * \param in_len The length of the in buffer.
+				 * \return The count of bytes written.
 				 */
-				void update(void* out, size_t& out_len, const void* in, size_t in_len);
+				size_t update(void* out, size_t out_len, const void* in, size_t in_len);
 
 				/**
 				 * \brief Update the cipher_context with some data.
@@ -205,8 +206,9 @@ namespace cryptoplus
 				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
 				 * \param in The input buffer.
 				 * \param in_len The length of the in buffer.
+				 * \return The count of bytes written.
 				 */
-				void seal_update(void* out, size_t& out_len, const void* in, size_t in_len);
+				size_t seal_update(void* out, size_t out_len, const void* in, size_t in_len);
 
 				/**
 				 * \brief Update the cipher_context with some data.
@@ -214,38 +216,39 @@ namespace cryptoplus
 				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
 				 * \param in The input buffer.
 				 * \param in_len The length of the in buffer.
+				 * \return The count of bytes written.
 				 */
-				void open_update(void* out, size_t& out_len, const void* in, size_t in_len);
+				size_t open_update(void* out, size_t out_len, const void* in, size_t in_len);
 
 				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
 				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
-				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
-				 * \return The number of bytes written or 0 on failure.
+				 * \param out_len The length of the out buffer.
+				 * \return The count of bytes written.
 				 *
 				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
-				void finalize(void* out, size_t& out_len);
+				size_t finalize(void* out, size_t out_len);
 
 				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
 				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
-				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
-				 * \return The number of bytes written or 0 on failure.
+				 * \param out_len The length of the out buffer.
+				 * \return The count of bytes written.
 				 *
 				 * After a call to seal_finalize() no more call to seal_update() can be made unless seal_initialize() is called again first.
 				 */
-				void seal_finalize(void* out, size_t& out_len);
+				size_t seal_finalize(void* out, size_t out_len);
 
 				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
 				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
-				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
-				 * \return The number of bytes written or 0 on failure.
+				 * \param out_len The length of the out buffer.
+				 * \return The count of bytes written.
 				 *
 				 * After a call to open_finalize() no more call to open_update() can be made unless open_initialize() is called again first.
 				 */
-				void open_finalize(void* out, size_t& out_len);
+				size_t open_finalize(void* out, size_t out_len);
 
 				/**
 				 * \brief Get the underlying context.

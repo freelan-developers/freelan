@@ -67,7 +67,7 @@ namespace cryptoplus
 				return EVP_OpenUpdate(ctx, out, outl, in, inl);
 			}
 
-			void generic_update(cipher_context& ctx, update_function update_func, void* out, size_t& out_len, const void* in, size_t in_len)
+			size_t generic_update(cipher_context& ctx, update_function update_func, void* out, size_t out_len, const void* in, size_t in_len)
 			{
 				assert(out);
 				assert(in);
@@ -77,10 +77,10 @@ namespace cryptoplus
 
 				error::throw_error_if_not(update_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len, static_cast<const unsigned char*>(in), static_cast<int>(in_len)) != 0);
 
-				out_len = iout_len;
+				return iout_len;
 			}
 
-			void generic_finalize(cipher_context& ctx, finalize_function finalize_func, void* out, size_t& out_len)
+			size_t generic_finalize(cipher_context& ctx, finalize_function finalize_func, void* out, size_t out_len)
 			{
 				assert(out);
 				assert(out_len >= ctx.algorithm().block_size());
@@ -89,7 +89,7 @@ namespace cryptoplus
 
 				error::throw_error_if_not(finalize_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len) != 0);
 
-				out_len = iout_len;
+				return iout_len;
 			}
 		}
 
@@ -112,34 +112,34 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
 		}
 
-		void cipher_context::update(void* out, size_t& out_len, const void* in, size_t in_len)
+		size_t cipher_context::update(void* out, size_t out_len, const void* in, size_t in_len)
 		{
-			generic_update(*this, EVP_CipherUpdate, out, out_len, in, in_len);
+			return generic_update(*this, EVP_CipherUpdate, out, out_len, in, in_len);
 		}
 
-		void cipher_context::seal_update(void* out, size_t& out_len, const void* in, size_t in_len)
+		size_t cipher_context::seal_update(void* out, size_t out_len, const void* in, size_t in_len)
 		{
-			generic_update(*this, _EVP_SealUpdate, out, out_len, in, in_len);
+			return generic_update(*this, _EVP_SealUpdate, out, out_len, in, in_len);
 		}
 
-		void cipher_context::open_update(void* out, size_t& out_len, const void* in, size_t in_len)
+		size_t cipher_context::open_update(void* out, size_t out_len, const void* in, size_t in_len)
 		{
-			generic_update(*this, _EVP_OpenUpdate, out, out_len, in, in_len);
+			return generic_update(*this, _EVP_OpenUpdate, out, out_len, in, in_len);
 		}
 
-		void cipher_context::finalize(void* out, size_t& out_len)
+		size_t cipher_context::finalize(void* out, size_t out_len)
 		{
-			generic_finalize(*this, EVP_CipherFinal, out, out_len);
+			return generic_finalize(*this, EVP_CipherFinal, out, out_len);
 		}
 
-		void cipher_context::seal_finalize(void* out, size_t& out_len)
+		size_t cipher_context::seal_finalize(void* out, size_t out_len)
 		{
-			generic_finalize(*this, EVP_SealFinal, out, out_len);
+			return generic_finalize(*this, EVP_SealFinal, out, out_len);
 		}
 
-		void cipher_context::open_finalize(void* out, size_t& out_len)
+		size_t cipher_context::open_finalize(void* out, size_t out_len)
 		{
-			generic_finalize(*this, EVP_OpenFinal, out, out_len);
+			return generic_finalize(*this, EVP_OpenFinal, out, out_len);
 		}
 	}
 }

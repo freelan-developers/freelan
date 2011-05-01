@@ -60,9 +60,7 @@ namespace cryptoplus
 				out_len = algorithm().block_size() + buf_len;
 			}
 
-			update(&m_buffer[0] + m_offset, out_len, buf, buf_len);
-
-			m_offset += out_len;
+			m_offset += update(&m_buffer[0] + m_offset, out_len, buf, buf_len);
 
 			return *this;
 		}
@@ -77,9 +75,8 @@ namespace cryptoplus
 				out_len = algorithm().block_size();
 			}
 
-			finalize(&m_buffer[0] + m_offset, out_len);
+			m_buffer.resize(m_offset + finalize(&m_buffer[0] + m_offset, out_len));
 
-			m_buffer.resize(m_offset + out_len);
 			m_offset = 0;
 		}
 	}
