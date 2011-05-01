@@ -64,11 +64,18 @@ namespace fscp
 			typedef uint32_t sequence_number_type;
 
 			/**
+			 * \brief Get the size of the resulting ciphered data.
+			 * \param cleartext_size The cleartext size.
+			 * \return The estimated size of the resulting ciphered data.
+			 */
+			static size_t get_ciphered_data_size(size_t cleartext_size);
+
+			/**
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param sequence_number The sequence number.
-			 * \param data The data.
+			 * \param data The cleartext data.
 			 * \param data_len The data length.
 			 * \param sig_key The signature key.
 			 * \param sig_key_len The signature key length.
@@ -78,7 +85,7 @@ namespace fscp
 			 * \param iv_len The initialization vector length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_len, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
 
 			/**
 			 * \brief Create a data_message and map it on a buffer.
@@ -139,30 +146,49 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param iv The initialization vector.
+			 * \param iv_len The initialization vector length.
 			 * \return The count of bytes deciphered.
 			 */
-			size_t get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len) const;
+			size_t get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param iv The initialization vector.
+			 * \param iv_len The initialization vector length.
 			 * \return The clear text data.
 			 */
 			template <typename T>
-			std::vector<T> get_cleartext(const void* enc_key, size_t enc_key_len) const;
+			std::vector<T> get_cleartext(const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const;
 
 		protected:
-
-			/**
-			 * \brief The min length of the body.
-			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t);
 
 			/**
 			 * \brief The HMAC size.
 			 */
 			static const size_t HMAC_SIZE = 32;
+
+			/**
+			 * \brief The block size.
+			 */
+			static const size_t BLOCK_SIZE = 16;
+
+			/**
+			 * \brief The key size.
+			 */
+			static const size_t KEY_SIZE = 2 * BLOCK_SIZE;
+
+			/**
+			 * \brief The iv size.
+			 */
+			static const size_t IV_SIZE = BLOCK_SIZE;
+
+			/**
+			 * \brief The min length of the body.
+			 */
+			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t) + HMAC_SIZE;
 
 		private:
 
@@ -195,11 +221,11 @@ namespace fscp
 	}
 
 	template <typename T>
-	inline std::vector<T> data_message::get_cleartext(const void* enc_key, size_t enc_key_len) const
+	inline std::vector<T> data_message::get_cleartext(const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const
 	{
-		std::vector<T> result(get_cleartext(NULL, 0, enc_key, enc_key_len));
+		std::vector<T> result(get_cleartext(NULL, 0, enc_key, enc_key_len, iv, iv_len));
 
-		result.resize(get_cleartext(&result[0], result.size(), enc_key, enc_key_len));
+		result.resize(get_cleartext(&result[0], result.size(), enc_key, enc_key_len, iv, iv_len));
 
 		return result;
 	}

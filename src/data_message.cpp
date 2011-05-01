@@ -44,43 +44,57 @@
 
 #include "data_message.hpp"
 
-#include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/cipher/cipher_context.hpp>
+#include <cryptoplus/cipher/cipher_stream.hpp>
+#include <cryptoplus/hash/hmac.hpp>
 #include <cassert>
 #include <stdexcept>
 
 namespace fscp
 {
-	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_len, size_t enc_key_len)
+	size_t data_message::get_ciphered_data_size(size_t cleartext_size)
 	{
-		const size_t payload_len = MIN_BODY_LENGTH + ciphertext_len + ciphertext_signature_len;
+		return ((cleartext_size + 1) / BLOCK_SIZE) * BLOCK_SIZE;
+	}
+
+	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type _sequence_number, const void* _data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len)
+	{
+		assert(sig_key);
+		assert(enc_key);
+		assert(iv);
+		assert(sig_key_len == KEY_SIZE);
+		assert(enc_key_len == KEY_SIZE);
+		assert(iv_len == IV_SIZE);
+
+		cryptoplus::cipher::cipher_stream cipher_stream(data_len + BLOCK_SIZE);
+		cipher_stream.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_stream::encrypt, enc_key, iv);
+		cipher_stream.append(_data, data_len);
+		cipher_stream.finalize();
+
+		const size_t payload_len = MIN_BODY_LENGTH + cipher_stream.result().size();
 
 		if (buf_len < HEADER_LENGTH + payload_len)
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH, htons(static_cast<uint16_t>(ciphertext_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(uint16_t), ciphertext, ciphertext_len);
-		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(uint16_t) + ciphertext_len, htons(static_cast<uint16_t>(ciphertext_signature_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + 2 * sizeof(uint16_t) + ciphertext_len, ciphertext_signature, ciphertext_signature_len);
+		buffer_tools::set<sequence_number_type>(buf, HEADER_LENGTH, htonl(_sequence_number));
+		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(sequence_number_type), htons(static_cast<uint16_t>(cipher_stream.result().size())));
+		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(sequence_number_type) + sizeof(uint16_t), &cipher_stream.result()[0], cipher_stream.result().size());
 
-		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION, payload_len);
+		cryptoplus::hash::hmac(
+		    static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(sequence_number_type) + sizeof(uint16_t) + cipher_stream.result().size(),
+		    HMAC_SIZE,
+		    sig_key,
+		    sig_key_len,
+		    static_cast<uint8_t*>(buf) + HEADER_LENGTH,
+		    sizeof(sequence_number_type) + sizeof(uint16_t) + cipher_stream.result().size(),
+		    cryptoplus::hash::message_digest_algorithm(NID_sha256)
+		);
+
+		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_DATA, payload_len);
 
 		return HEADER_LENGTH + payload_len;
-	}
-
-	size_t data_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
-	{
-		std::vector<uint8_t> ciphertext(enc_key.size());
-
-		ciphertext.resize(enc_key.get_rsa_key().public_encrypt(&ciphertext[0], ciphertext.size(), cleartext, cleartext_len, RSA_PKCS1_OAEP_PADDING));
-
-		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.sign_initialize(cryptoplus::hash::message_digest_algorithm(NID_sha256));
-		mdctx.sign_update(&ciphertext[0], ciphertext.size());
-		std::vector<uint8_t> ciphertext_signature = mdctx.sign_finalize<uint8_t>(sig_key);
-
-		return write(buf, buf_len, &ciphertext[0], ciphertext.size(), &ciphertext_signature[0], ciphertext_signature.size());
 	}
 
 	data_message::data_message(const void* buf, size_t buf_len) :
@@ -102,42 +116,50 @@ namespace fscp
 			throw std::runtime_error("bad message length");
 		}
 
-		if (length() < MIN_BODY_LENGTH + ciphertext_size())
-		{
-			throw std::runtime_error("bad message length");
-		}
-
-		if (length() != MIN_BODY_LENGTH + ciphertext_size() + ciphertext_signature_size())
+		if (length() != MIN_BODY_LENGTH + data_size())
 		{
 			throw std::runtime_error("bad message length");
 		}
 	}
 
-	void data_message::check_signature(cryptoplus::pkey::pkey key) const
+	void data_message::check_signature(const void* sig_key, size_t sig_key_len) const
 	{
-		assert(key);
+		assert(sig_key);
+		assert(sig_key_len == KEY_SIZE);
 
-		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.verify_initialize(cryptoplus::hash::message_digest_algorithm(NID_sha256));
-		mdctx.verify_update(ciphertext(), ciphertext_size());
+		std::vector<uint8_t> _hmac = cryptoplus::hash::hmac<uint8_t>(
+		                                 sig_key,
+		                                 sig_key_len,
+		                                 payload(),
+		                                 sizeof(sequence_number_type) + sizeof(uint16_t) + data_size(),
+		                                 cryptoplus::hash::message_digest_algorithm(NID_sha256)
+		                             );
 
-		if (!mdctx.verify_finalize(ciphertext_signature(), ciphertext_signature_size(), key))
+		if ((_hmac.size() != hmac_size()) || (std::memcmp(hmac(), &_hmac[0], _hmac.size()) != 0))
 		{
-			throw std::runtime_error("data_message signature does not match");
+			throw std::runtime_error("hmac mismatch");
 		}
 	}
 
-	size_t data_message::get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len) const
+	size_t data_message::get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const
 	{
 		assert(enc_key);
+		assert(iv);
+		assert(enc_key_len == KEY_SIZE);
+		assert(iv_len == IV_SIZE);
 
 		if (buf)
 		{
-			return key.get_rsa_key().private_decrypt(buf, buf_len, ciphertext(), ciphertext_size(), RSA_PKCS1_OAEP_PADDING);
+			cryptoplus::cipher::cipher_context cipher_context;
+			cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::decrypt, enc_key, iv);
+			size_t cnt = cipher_context.update(buf, buf_len, data(), data_size());
+			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
+
+			return cnt;
 		}
 		else
 		{
-			return key.get_rsa_key().size();
+			return data_size();
 		}
 	}
 }
