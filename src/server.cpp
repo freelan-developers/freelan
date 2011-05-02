@@ -50,6 +50,7 @@
 #include "session_request_message.hpp"
 #include "session_message.hpp"
 #include "clear_session_message.hpp"
+#include "data_message.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
@@ -122,6 +123,13 @@ namespace fscp
 	void server::request_session(const ep_type& target)
 	{
 		get_io_service().post(bind(&server::do_request_session, this, target));
+	}
+
+	void server::send_data(const ep_type& target, const void* buf, size_t buf_len)
+	{
+		m_data_map[target].push(buf, buf_len);
+
+		get_io_service().post(bind(&server::do_send_data, this, target));
 	}
 
 	/* Common */
@@ -378,6 +386,42 @@ namespace fscp
 				);
 
 				session_pair.set_remote_session(_session_store);
+			}
+		}
+	}
+
+	/* Data messages */
+
+	void server::do_send_data(const ep_type& target)
+	{
+		if (m_socket.is_open())
+		{
+			session_pair& session_pair = m_session_map[target];
+
+			if (session_pair.has_remote_session())
+			{
+				data_store& data_store = m_data_map[target];
+
+				for(; !data_store.empty(); data_store.pop())
+				{
+					size_t size = data_message::write(
+													m_send_buffer.data(),
+													m_send_buffer.size(),
+													session_pair.remote_session().sequence_number(),
+													&data_store.front()[0],
+													data_store.front().size(),
+													session_pair.remote_session().signature_key(),
+													session_pair.remote_session().signature_key_size(),
+													session_pair.remote_session().encryption_key(),
+													session_pair.remote_session().encryption_key_size(),
+													session_pair.remote_session().sequence_initialization_vector(),
+													session_pair.remote_session().initialization_vector_size()
+													);
+
+					session_pair.remote_session().increase_sequence_number(data_store.front().size());
+
+					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+				}
 			}
 		}
 	}

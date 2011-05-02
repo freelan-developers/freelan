@@ -45,6 +45,8 @@
 #ifndef FSCP_SESSION_STORE_HPP
 #define FSCP_SESSION_STORE_HPP
 
+#include "constants.hpp"
+
 #include <boost/array.hpp>
 
 #include <stdint.h>
@@ -151,6 +153,12 @@ namespace fscp
 			void set_sequence_number(sequence_number_type sequence_number);
 
 			/**
+			 * \brief Increase the sequence number by a certain amount of bytes.
+			 * \param cnt The count of bytes that were written with the current sequence_number.
+			 */
+			void increase_sequence_number(size_t cnt);
+
+			/**
 			 * \brief Get the sequence initialization vector.
 			 * \param sequence_number The sequence number to use to compute the IV.
 			 * \return The sequence initialization vector.
@@ -232,6 +240,18 @@ namespace fscp
 	inline void session_store::set_sequence_number(sequence_number_type _sequence_number)
 	{
 		m_sequence_number = _sequence_number;
+	}
+
+	inline void session_store::increase_sequence_number(size_t cnt)
+	{
+		size_t block_count = (cnt + CIPHER_ALGORITHM.block_size() - 1) / CIPHER_ALGORITHM.block_size();
+
+		if (m_sequence_number + block_count < m_sequence_number)
+		{
+			throw std::runtime_error("sequence_number overflow");
+		}
+
+		m_sequence_number += block_count;
 	}
 
 	inline const uint8_t* session_store::sequence_initialization_vector() const

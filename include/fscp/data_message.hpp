@@ -47,9 +47,9 @@
 
 #include "message.hpp"
 
+#include "constants.hpp"
+
 #include <cryptoplus/pkey/pkey.hpp>
-#include <cryptoplus/cipher/cipher_algorithm.hpp>
-#include <cryptoplus/hash/message_digest_algorithm.hpp>
 
 namespace fscp
 {
@@ -159,16 +159,6 @@ namespace fscp
 			std::vector<T> get_cleartext(const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const;
 
 		protected:
-
-			/**
-			 * \brief The cipher algorithm.
-			 */
-			static const cryptoplus::cipher::cipher_algorithm CIPHER_ALGORITHM;
-
-			/**
-			 * \brief The message digest algorithm.
-			 */
-			static const cryptoplus::hash::message_digest_algorithm MESSAGE_DIGEST_ALGORITHM;
 
 			/**
 			 * \brief The min length of the body.

@@ -37,48 +37,13 @@
  */
 
 /**
- * \file constants.hpp
+ * \file constants.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
  * \brief The constants.
  */
 
-#ifndef FSCP_CONSTANTS_HPP
-#define FSCP_CONSTANTS_HPP
-
-#include <cryptoplus/cipher/cipher_algorithm.hpp>
-#include <cryptoplus/hash/message_digest_algorithm.hpp>
-
-#include <stdint.h>
+#include "constants.hpp"
 
 namespace fscp
 {
-	/**
-	 * \brief The current protocol version.
-	 */
-	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
-
-	/**
-	 * \brief The different message types.
-	 */
-	enum message_type
-	{
-		MESSAGE_TYPE_HELLO_REQUEST = 0x00,
-		MESSAGE_TYPE_HELLO_RESPONSE = 0x01,
-		MESSAGE_TYPE_PRESENTATION = 0x02,
-		MESSAGE_TYPE_SESSION_REQUEST = 0x03,
-		MESSAGE_TYPE_SESSION = 0x04,
-		MESSAGE_TYPE_DATA = 0x05
-	};
-
-	/**
-	 * \brief The cipher algorithm.
-	 */
-	const cryptoplus::cipher::cipher_algorithm CIPHER_ALGORITHM(NID_aes_256_cbc);
-
-	/**
-	 * \brief The message digest algorithm.
-	 */
-	const cryptoplus::hash::message_digest_algorithm MESSAGE_DIGEST_ALGORITHM(NID_sha256);
 }
-
-#endif /* FSCP_CONSTANTS_HPP */

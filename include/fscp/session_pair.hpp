@@ -80,7 +80,21 @@ namespace fscp
 			 * \return The local session.
 			 * \warning If has_local_session() is false, the behavior is undefined.
 			 */
+			session_store& local_session();
+
+			/**
+			 * \brief Get the local session.
+			 * \return The local session.
+			 * \warning If has_local_session() is false, the behavior is undefined.
+			 */
 			const session_store& local_session() const;
+
+			/**
+			 * \brief Get the remote session.
+			 * \return The remote session.
+			 * \warning If has_remote_session() is false, the behavior is undefined.
+			 */
+			session_store& remote_session();
 
 			/**
 			 * \brief Get the remote session.
@@ -127,9 +141,19 @@ namespace fscp
 		return static_cast<bool>(m_remote_session);
 	}
 
+	inline session_store& session_pair::local_session()
+	{
+		return *m_local_session;
+	}
+
 	inline const session_store& session_pair::local_session() const
 	{
 		return *m_local_session;
+	}
+
+	inline session_store& session_pair::remote_session()
+	{
+		return *m_remote_session;
 	}
 
 	inline const session_store& session_pair::remote_session() const

@@ -152,7 +152,4 @@ namespace fscp
 			return data_size();
 		}
 	}
-	
-	const cryptoplus::cipher::cipher_algorithm data_message::CIPHER_ALGORITHM(NID_aes_256_cbc);
-	const cryptoplus::hash::message_digest_algorithm data_message::MESSAGE_DIGEST_ALGORITHM(NID_sha256);
 }

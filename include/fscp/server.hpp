@@ -49,6 +49,7 @@
 #include "identity_store.hpp"
 #include "presentation_store.hpp"
 #include "session_pair.hpp"
+#include "data_store.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -231,6 +232,14 @@ namespace fscp
 			 */
 			void set_session_message_callback(session_message_callback callback);
 
+			/**
+			 * \brief Send data to a host.
+			 * \param target The target host.
+			 * \param buf The data to send.
+			 * \param buf_len The length of buf.
+			 */
+			void send_data(const ep_type& target, const void* buf, size_t buf_len);
+
 		private:
 
 			void do_close();
@@ -255,13 +264,15 @@ namespace fscp
 
 		private:
 
+			typedef std::map<ep_type, presentation_store> presentation_store_map;
+
 			void do_introduce_to(const ep_type&);
 			void do_set_presentation(const ep_type&, cert_type, cert_type);
 			void do_clear_presentation(const ep_type&);
 			void handle_presentation_message_from(const presentation_message&, const ep_type&);
 
 			presentation_message_callback m_presentation_message_callback;
-			std::map<ep_type, presentation_store> m_presentation_map;
+			presentation_store_map m_presentation_map;
 
 		private:
 
@@ -284,7 +295,12 @@ namespace fscp
 
 		private:
 
+			typedef std::map<ep_type, data_store> data_store_map;
+
+			void do_send_data(const ep_type&);
+
 			boost::array<uint8_t, 65536> m_data_buffer;
+			data_store_map m_data_map;
 	};
 
 	inline boost::asio::io_service& server::get_io_service()

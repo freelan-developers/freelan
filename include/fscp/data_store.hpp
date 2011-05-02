@@ -37,48 +37,96 @@
  */
 
 /**
- * \file constants.hpp
+ * \file data_store.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The constants.
+ * \brief An data store class.
  */
 
-#ifndef FSCP_CONSTANTS_HPP
-#define FSCP_CONSTANTS_HPP
+#ifndef FSCP_DATA_STORE_HPP
+#define FSCP_DATA_STORE_HPP
 
-#include <cryptoplus/cipher/cipher_algorithm.hpp>
-#include <cryptoplus/hash/message_digest_algorithm.hpp>
+#include <queue>
+#include <vector>
 
-#include <stdint.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 namespace fscp
 {
 	/**
-	 * \brief The current protocol version.
+	 * \brief An data store class.
 	 */
-	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
-
-	/**
-	 * \brief The different message types.
-	 */
-	enum message_type
+	class data_store
 	{
-		MESSAGE_TYPE_HELLO_REQUEST = 0x00,
-		MESSAGE_TYPE_HELLO_RESPONSE = 0x01,
-		MESSAGE_TYPE_PRESENTATION = 0x02,
-		MESSAGE_TYPE_SESSION_REQUEST = 0x03,
-		MESSAGE_TYPE_SESSION = 0x04,
-		MESSAGE_TYPE_DATA = 0x05
+		public:
+
+			/**
+			 * \brief The data type.
+			 */
+			typedef unsigned char data_type;
+
+			/**
+			 * \brief The array data type.
+			 */
+			typedef std::vector<data_type> array_data_type;
+
+			/**
+			 * \brief The pointer data type.
+			 */
+			typedef boost::shared_ptr<array_data_type> pointer_data_type;
+
+			/**
+			 * \brief Push data to the data store.
+			 * \param buf The data.
+			 * \param buf_len The length of buf.
+			 */
+			void push(const void* buf, size_t buf_len);
+
+			/**
+			 * \brief Check if the data store is empty.
+			 * \return true if the data store is empty.
+			 */
+			bool empty() const;
+
+			/**
+			 * \brief Get the front element, if any.
+			 * \return A reference to the front element.
+			 * \warning Calling this method on an empty data_store is undefined behavior.
+			 * \see empty
+			 */
+			const array_data_type& front() const;
+
+			/**
+			 * \brief Pop the front element, if any.
+			 * \warning Calling this method on an empty data_store is undefined behavior.
+			 * \see empty
+			 */
+			void pop();
+
+		private:
+
+			std::queue<pointer_data_type> m_queue;
 	};
 
-	/**
-	 * \brief The cipher algorithm.
-	 */
-	const cryptoplus::cipher::cipher_algorithm CIPHER_ALGORITHM(NID_aes_256_cbc);
-
-	/**
-	 * \brief The message digest algorithm.
-	 */
-	const cryptoplus::hash::message_digest_algorithm MESSAGE_DIGEST_ALGORITHM(NID_sha256);
+	inline void data_store::push(const void* buf, size_t buf_len)
+	{
+		m_queue.push(boost::make_shared<array_data_type>(static_cast<const data_type*>(buf), static_cast<const data_type*>(buf) + buf_len));
+	}
+	
+	inline bool data_store::empty() const
+	{
+		return m_queue.empty();
+	}
+	
+	inline const data_store::array_data_type& data_store::front() const
+	{
+		return *m_queue.front();
+	}
+	
+	inline void data_store::pop()
+	{
+		m_queue.pop();
+	}
 }
 
-#endif /* FSCP_CONSTANTS_HPP */
+#endif /* FSCP_DATA_STORE_HPP */
