@@ -52,6 +52,8 @@
 
 #include <vector>
 
+#include <cstddef>
+
 namespace cryptoplus
 {
 	namespace random
