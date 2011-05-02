@@ -172,7 +172,7 @@ namespace fscp
 
 	inline data_message::sequence_number_type data_message::sequence_number() const
 	{
-		return buffer_tools::get<sequence_number_type>(payload(), 0);
+		return ntohl(buffer_tools::get<sequence_number_type>(payload(), 0));
 	}
 
 	inline const uint8_t* data_message::data() const
