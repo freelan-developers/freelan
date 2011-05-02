@@ -192,7 +192,7 @@ namespace fscp
 
 	inline size_t data_message::hmac_size() const
 	{
-		return MESSAGE_DIGEST_ALGORITHM.result_size();
+		return cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size();
 	}
 
 	template <typename T>

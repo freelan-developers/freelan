@@ -244,7 +244,7 @@ namespace fscp
 
 	inline void session_store::increase_sequence_number(size_t cnt)
 	{
-		size_t block_count = (cnt + CIPHER_ALGORITHM.block_size() - 1) / CIPHER_ALGORITHM.block_size();
+		size_t block_count = (cnt + cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size() - 1) / cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size();
 
 		if (m_sequence_number + block_count < m_sequence_number)
 		{

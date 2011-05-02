@@ -73,12 +73,12 @@ namespace fscp
 	/**
 	 * \brief The cipher algorithm.
 	 */
-	const cryptoplus::cipher::cipher_algorithm CIPHER_ALGORITHM(NID_aes_256_cbc);
+	const int CIPHER_ALGORITHM = NID_aes_256_cbc;
 
 	/**
 	 * \brief The message digest algorithm.
 	 */
-	const cryptoplus::hash::message_digest_algorithm MESSAGE_DIGEST_ALGORITHM(NID_sha256);
+	const int MESSAGE_DIGEST_ALGORITHM = NID_sha256;
 }
 
 #endif /* FSCP_CONSTANTS_HPP */
