@@ -45,56 +45,64 @@
 #include "data_message.hpp"
 
 #include <cryptoplus/cipher/cipher_context.hpp>
-#include <cryptoplus/cipher/cipher_stream.hpp>
 #include <cryptoplus/hash/hmac.hpp>
 #include <cassert>
 #include <stdexcept>
 
 namespace fscp
 {
-	size_t data_message::get_ciphered_data_size(size_t cleartext_size)
-	{
-		return ((cleartext_size + 1) / BLOCK_SIZE) * BLOCK_SIZE;
-	}
-
 	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type _sequence_number, const void* _data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len)
 	{
 		assert(sig_key);
 		assert(enc_key);
 		assert(iv);
-		assert(sig_key_len == KEY_SIZE);
-		assert(enc_key_len == KEY_SIZE);
-		assert(iv_len == IV_SIZE);
 
-		cryptoplus::cipher::cipher_stream cipher_stream(data_len + BLOCK_SIZE);
-		cipher_stream.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_stream::encrypt, enc_key, iv);
-		cipher_stream.append(_data, data_len);
-		cipher_stream.finalize();
+		if (sig_key_len != KEY_SIZE)
+		{
+			throw std::runtime_error("sig_key_len");
+		}
 
-		const size_t payload_len = MIN_BODY_LENGTH + cipher_stream.result().size();
+		if (enc_key_len != KEY_SIZE)
+		{
+			throw std::runtime_error("enc_key_len");
+		}
 
-		if (buf_len < HEADER_LENGTH + payload_len)
+		if (iv_len != IV_SIZE)
+		{
+			throw std::runtime_error("iv_len");
+		}
+
+		if (buf_len < HEADER_LENGTH + MIN_BODY_LENGTH + data_len + BLOCK_SIZE)
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		buffer_tools::set<sequence_number_type>(buf, HEADER_LENGTH, htonl(_sequence_number));
-		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(sequence_number_type), htons(static_cast<uint16_t>(cipher_stream.result().size())));
-		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(sequence_number_type) + sizeof(uint16_t), &cipher_stream.result()[0], cipher_stream.result().size());
+		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
+		const size_t payload_len = buf_len - HEADER_LENGTH;
+		uint8_t* const cdata = payload + sizeof(sequence_number_type) + sizeof(uint16_t);
+		const size_t cdata_len = payload_len - sizeof(sequence_number_type) - sizeof(uint16_t);
+
+		cryptoplus::cipher::cipher_context cipher_context;
+		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::encrypt, enc_key, iv);
+		size_t cnt = cipher_context.update(cdata, cdata_len, _data, data_len);
+		cnt += cipher_context.finalize(cdata + cnt, cdata_len - cnt);
+
+		buffer_tools::set<sequence_number_type>(payload, 0, htonl(_sequence_number));
+		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cnt)));
+
+		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + HMAC_SIZE;
 
 		cryptoplus::hash::hmac(
-		    static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(sequence_number_type) + sizeof(uint16_t) + cipher_stream.result().size(),
+		   	cdata + cnt,
 		    HMAC_SIZE,
 		    sig_key,
 		    sig_key_len,
-		    static_cast<uint8_t*>(buf) + HEADER_LENGTH,
-		    sizeof(sequence_number_type) + sizeof(uint16_t) + cipher_stream.result().size(),
+		    payload,
+		    length - HMAC_SIZE,
 		    cryptoplus::hash::message_digest_algorithm(NID_sha256)
 		);
 
-		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_DATA, payload_len);
-
-		return HEADER_LENGTH + payload_len;
+		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_DATA, length) + length;
 	}
 
 	data_message::data_message(const void* buf, size_t buf_len) :
@@ -125,7 +133,11 @@ namespace fscp
 	void data_message::check_signature(const void* sig_key, size_t sig_key_len) const
 	{
 		assert(sig_key);
-		assert(sig_key_len == KEY_SIZE);
+
+		if (sig_key_len != KEY_SIZE)
+		{
+			throw std::runtime_error("sig_key_len");
+		}
 
 		std::vector<uint8_t> _hmac = cryptoplus::hash::hmac<uint8_t>(
 		                                 sig_key,
@@ -145,8 +157,16 @@ namespace fscp
 	{
 		assert(enc_key);
 		assert(iv);
-		assert(enc_key_len == KEY_SIZE);
-		assert(iv_len == IV_SIZE);
+
+		if (enc_key_len != KEY_SIZE)
+		{
+			throw std::runtime_error("enc_key_len");
+		}
+
+		if (iv_len != IV_SIZE)
+		{
+			throw std::runtime_error("iv_len");
+		}
 
 		if (buf)
 		{

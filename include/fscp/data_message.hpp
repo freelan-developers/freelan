@@ -64,13 +64,6 @@ namespace fscp
 			typedef uint32_t sequence_number_type;
 
 			/**
-			 * \brief Get the size of the resulting ciphered data.
-			 * \param cleartext_size The cleartext size.
-			 * \return The estimated size of the resulting ciphered data.
-			 */
-			static size_t get_ciphered_data_size(size_t cleartext_size);
-
-			/**
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
