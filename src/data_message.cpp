@@ -57,7 +57,7 @@ namespace fscp
 		assert(enc_key);
 		assert(iv);
 
-		if (buf_len < HEADER_LENGTH + MIN_BODY_LENGTH + data_len + BLOCK_SIZE)
+		if (buf_len < HEADER_LENGTH + data_len + CIPHER_ALGORITHM.block_size() + MESSAGE_DIGEST_ALGORITHM.result_size())
 		{
 			throw std::runtime_error("buf_len");
 		}
@@ -68,23 +68,23 @@ namespace fscp
 		const size_t cdata_len = payload_len - sizeof(sequence_number_type) - sizeof(uint16_t);
 
 		cryptoplus::cipher::cipher_context cipher_context;
-		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, iv, iv_len);
+		cipher_context.initialize(CIPHER_ALGORITHM, cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, iv, iv_len);
 		size_t cnt = cipher_context.update(cdata, cdata_len, _data, data_len);
 		cnt += cipher_context.finalize(cdata + cnt, cdata_len - cnt);
 
 		buffer_tools::set<sequence_number_type>(payload, 0, htonl(_sequence_number));
 		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cnt)));
 
-		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + HMAC_SIZE;
+		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + MESSAGE_DIGEST_ALGORITHM.result_size();
 
 		cryptoplus::hash::hmac(
 		   	cdata + cnt,
-		    HMAC_SIZE,
+		    cdata_len - cnt,
 		    sig_key,
 		    sig_key_len,
 		    payload,
-		    length - HMAC_SIZE,
-		    cryptoplus::hash::message_digest_algorithm(NID_sha256)
+		    length - MESSAGE_DIGEST_ALGORITHM.result_size(),
+		    MESSAGE_DIGEST_ALGORITHM
 		);
 
 		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_DATA, length) + length;
@@ -109,7 +109,7 @@ namespace fscp
 			throw std::runtime_error("bad message length");
 		}
 
-		if (length() != MIN_BODY_LENGTH + data_size())
+		if (length() != MIN_BODY_LENGTH + data_size() + MESSAGE_DIGEST_ALGORITHM.result_size())
 		{
 			throw std::runtime_error("bad message length");
 		}
@@ -119,17 +119,12 @@ namespace fscp
 	{
 		assert(sig_key);
 
-		if (sig_key_len != KEY_SIZE)
-		{
-			throw std::runtime_error("sig_key_len");
-		}
-
 		std::vector<uint8_t> _hmac = cryptoplus::hash::hmac<uint8_t>(
 		                                 sig_key,
 		                                 sig_key_len,
 		                                 payload(),
 		                                 sizeof(sequence_number_type) + sizeof(uint16_t) + data_size(),
-		                                 cryptoplus::hash::message_digest_algorithm(NID_sha256)
+		                                 MESSAGE_DIGEST_ALGORITHM
 		                             );
 
 		if ((_hmac.size() != hmac_size()) || (std::memcmp(hmac(), &_hmac[0], _hmac.size()) != 0))
@@ -146,7 +141,7 @@ namespace fscp
 		if (buf)
 		{
 			cryptoplus::cipher::cipher_context cipher_context;
-			cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::decrypt, enc_key, enc_key_len, iv, iv_len);
+			cipher_context.initialize(CIPHER_ALGORITHM, cryptoplus::cipher::cipher_context::decrypt, enc_key, enc_key_len, iv, iv_len);
 			size_t cnt = cipher_context.update(buf, buf_len, data(), data_size());
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
 
@@ -157,4 +152,7 @@ namespace fscp
 			return data_size();
 		}
 	}
+	
+	const cryptoplus::cipher::cipher_algorithm data_message::CIPHER_ALGORITHM(NID_aes_256_cbc);
+	const cryptoplus::hash::message_digest_algorithm data_message::MESSAGE_DIGEST_ALGORITHM(NID_sha256);
 }

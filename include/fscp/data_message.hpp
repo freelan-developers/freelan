@@ -48,6 +48,8 @@
 #include "message.hpp"
 
 #include <cryptoplus/pkey/pkey.hpp>
+#include <cryptoplus/cipher/cipher_algorithm.hpp>
+#include <cryptoplus/hash/message_digest_algorithm.hpp>
 
 namespace fscp
 {
@@ -159,29 +161,19 @@ namespace fscp
 		protected:
 
 			/**
-			 * \brief The HMAC size.
+			 * \brief The cipher algorithm.
 			 */
-			static const size_t HMAC_SIZE = 32;
+			static const cryptoplus::cipher::cipher_algorithm CIPHER_ALGORITHM;
 
 			/**
-			 * \brief The block size.
+			 * \brief The message digest algorithm.
 			 */
-			static const size_t BLOCK_SIZE = 16;
-
-			/**
-			 * \brief The key size.
-			 */
-			static const size_t KEY_SIZE = 2 * BLOCK_SIZE;
-
-			/**
-			 * \brief The iv size.
-			 */
-			static const size_t IV_SIZE = BLOCK_SIZE;
+			static const cryptoplus::hash::message_digest_algorithm MESSAGE_DIGEST_ALGORITHM;
 
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t) + HMAC_SIZE;
+			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t);
 
 		private:
 
@@ -210,7 +202,7 @@ namespace fscp
 
 	inline size_t data_message::hmac_size() const
 	{
-		return HMAC_SIZE;
+		return MESSAGE_DIGEST_ALGORITHM.result_size();
 	}
 
 	template <typename T>
