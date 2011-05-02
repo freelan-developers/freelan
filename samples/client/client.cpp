@@ -101,11 +101,18 @@ static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, boo
 	return default_accept;
 }
 
-static bool on_session(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_session(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, bool default_accept)
 {
 	std::cout << "Received SESSION from " << sender << std::endl;
 
+	server.send_data(sender, "Hello you !");
+
 	return default_accept;
+}
+
+static void on_data(const boost::asio::ip::udp::endpoint& sender, const void* buf, size_t buf_len)
+{
+	std::cout << "Received DATA from " << sender << ": " << std::string(static_cast<const char*>(buf), buf_len) << std::endl;
 }
 
 static void _stop_function(fscp::server& s1, fscp::server& s2)
@@ -164,8 +171,10 @@ int main()
 	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
 	alice_server.set_session_request_message_callback(&on_session_request);
 	bob_server.set_session_request_message_callback(&on_session_request);
-	alice_server.set_session_message_callback(&on_session);
-	bob_server.set_session_message_callback(&on_session);
+	alice_server.set_session_message_callback(boost::bind(&on_session, boost::ref(alice_server), _1, _2));
+	bob_server.set_session_message_callback(boost::bind(&on_session, boost::ref(bob_server), _1, _2));
+	alice_server.set_data_message_callback(&on_data);
+	bob_server.set_data_message_callback(&on_data);
 
 	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
 
