@@ -57,21 +57,6 @@ namespace fscp
 		assert(enc_key);
 		assert(iv);
 
-		if (sig_key_len != KEY_SIZE)
-		{
-			throw std::runtime_error("sig_key_len");
-		}
-
-		if (enc_key_len != KEY_SIZE)
-		{
-			throw std::runtime_error("enc_key_len");
-		}
-
-		if (iv_len != IV_SIZE)
-		{
-			throw std::runtime_error("iv_len");
-		}
-
 		if (buf_len < HEADER_LENGTH + MIN_BODY_LENGTH + data_len + BLOCK_SIZE)
 		{
 			throw std::runtime_error("buf_len");
@@ -83,7 +68,7 @@ namespace fscp
 		const size_t cdata_len = payload_len - sizeof(sequence_number_type) - sizeof(uint16_t);
 
 		cryptoplus::cipher::cipher_context cipher_context;
-		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::encrypt, enc_key, iv);
+		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, iv, iv_len);
 		size_t cnt = cipher_context.update(cdata, cdata_len, _data, data_len);
 		cnt += cipher_context.finalize(cdata + cnt, cdata_len - cnt);
 
@@ -158,20 +143,10 @@ namespace fscp
 		assert(enc_key);
 		assert(iv);
 
-		if (enc_key_len != KEY_SIZE)
-		{
-			throw std::runtime_error("enc_key_len");
-		}
-
-		if (iv_len != IV_SIZE)
-		{
-			throw std::runtime_error("iv_len");
-		}
-
 		if (buf)
 		{
 			cryptoplus::cipher::cipher_context cipher_context;
-			cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::decrypt, enc_key, iv);
+			cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc), cryptoplus::cipher::cipher_context::decrypt, enc_key, enc_key_len, iv, iv_len);
 			size_t cnt = cipher_context.update(buf, buf_len, data(), data_size());
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
 
