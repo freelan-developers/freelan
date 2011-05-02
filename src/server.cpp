@@ -461,6 +461,11 @@ namespace fscp
 
 				session_pair.local_session().set_sequence_number(_data_message.sequence_number());
 
+				if (session_pair.local_session().is_old())
+				{
+					do_send_session(sender);
+				}
+
 				if (m_data_message_callback)
 				{
 					m_data_message_callback(sender, m_data_buffer.data(), cnt);
