@@ -158,6 +158,14 @@ namespace fscp
 
 					switch (message.type())
 					{
+						case MESSAGE_TYPE_DATA:
+							{
+								data_message data_message(message);
+
+								handle_data_message_from(data_message, m_sender_endpoint);
+
+								break;
+							}
 						case MESSAGE_TYPE_HELLO_REQUEST:
 						case MESSAGE_TYPE_HELLO_RESPONSE:
 							{
@@ -422,6 +430,35 @@ namespace fscp
 					session_pair.remote_session().increase_sequence_number(data_store.front().size());
 
 					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+				}
+			}
+		}
+	}
+	
+	void server::handle_data_message_from(const data_message& _data_message, const ep_type& sender)
+	{
+		session_pair& session_pair = m_session_map[sender];
+
+		if (session_pair.has_local_session())
+		{
+			if (_data_message.sequence_number() > session_pair.local_session().sequence_number())
+			{
+				_data_message.check_signature(session_pair.local_session().signature_key(), session_pair.local_session().signature_key_size());
+
+				size_t cnt = _data_message.get_cleartext(
+						m_data_buffer.data(),
+						m_data_buffer.size(),
+						session_pair.local_session().encryption_key(),
+						session_pair.local_session().encryption_key_size(),
+						session_pair.local_session().sequence_initialization_vector(_data_message.sequence_number()),
+						session_pair.local_session().initialization_vector_size()
+						);
+
+				session_pair.local_session().set_sequence_number(_data_message.sequence_number());
+
+				if (m_data_message_callback)
+				{
+					m_data_message_callback(sender, m_data_buffer.data(), cnt);
 				}
 			}
 		}

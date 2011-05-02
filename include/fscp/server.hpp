@@ -63,6 +63,7 @@ namespace fscp
 	class session_request_message;
 	class session_message;
 	class clear_session_message;
+	class data_message;
 
 	/**
 	 * \brief A FSCP server.
@@ -319,6 +320,7 @@ namespace fscp
 			typedef std::map<ep_type, data_store> data_store_map;
 
 			void do_send_data(const ep_type&);
+			void handle_data_message_from(const data_message&, const ep_type&);
 
 			boost::array<uint8_t, 65536> m_data_buffer;
 			data_store_map m_data_map;
