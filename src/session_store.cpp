@@ -44,9 +44,9 @@
 
 #include "session_store.hpp"
 
-#include <cryptoplus/random/random.hpp>
-
 #include <boost/asio.hpp>
+
+#include <cryptoplus/random/random.hpp>
 
 namespace fscp
 {
