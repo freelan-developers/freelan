@@ -336,7 +336,7 @@ Abstract
    start sending DATA messages to him.
 
    The sequence number of the first DATA message of a given session MUST
-   be 0.
+   be 1.
 
    The next sequence numbers depends on the amount of previously sent
    data.

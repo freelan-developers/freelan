@@ -62,7 +62,7 @@ namespace fscp
 
 	session_store::session_store(session_number_type _session_number, const void* _sig_key, size_t _sig_key_len, const void* _enc_key, size_t _enc_key_len, const void* _iv, size_t _iv_len) :
 		m_session_number(_session_number),
-		m_sequence_number(0)
+		m_sequence_number(1)
 	{
 		if (_sig_key_len != m_sig_key.size())
 		{
