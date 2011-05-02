@@ -302,6 +302,7 @@ namespace fscp
 
 			void do_request_session(const ep_type&);
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
+			void do_send_session(const ep_type&);
 
 			session_pair_map m_session_map;
 			bool m_accept_session_request_messages_default;
