@@ -93,21 +93,41 @@ namespace cryptoplus
 			}
 		}
 
-		void cipher_context::initialize(const cipher_algorithm& _algorithm, cipher_context::cipher_direction direction, const void* key, const void* iv, ENGINE* impl)
+		void cipher_context::initialize(const cipher_algorithm& _algorithm, cipher_context::cipher_direction direction, const void* key, size_t key_len, const void* iv, size_t iv_len, ENGINE* impl)
 		{
 			assert(key);
+
+			if (key_len != _algorithm.key_length())
+			{
+				throw std::runtime_error("key_len");
+			}
+
+			if (iv_len != _algorithm.iv_length())
+			{
+				throw std::runtime_error("iv_len");
+			}
 
 			error::throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
 		}
 
-		std::vector<unsigned char> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, pkey::pkey pkey)
+		std::vector<unsigned char> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, pkey::pkey pkey)
 		{
-			return seal_initialize(_algorithm, iv, &pkey, &pkey + sizeof(&pkey))[0];
+			return seal_initialize(_algorithm, iv, iv_len, &pkey, &pkey + sizeof(&pkey))[0];
 		}
 
-		void cipher_context::open_initialize(const cipher_algorithm& _algorithm, const void* key, size_t key_len, const void* iv, pkey::pkey pkey)
+		void cipher_context::open_initialize(const cipher_algorithm& _algorithm, const void* key, size_t key_len, const void* iv, size_t iv_len, pkey::pkey pkey)
 		{
 			assert(key);
+
+			if (key_len != _algorithm.key_length())
+			{
+				throw std::runtime_error("key_len");
+			}
+
+			if (iv_len != _algorithm.iv_length())
+			{
+				throw std::runtime_error("iv_len");
+			}
 
 			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
 		}
