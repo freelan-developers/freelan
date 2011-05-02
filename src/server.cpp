@@ -71,7 +71,8 @@ namespace fscp
 		m_accept_session_request_messages_default(true),
 		m_session_request_message_callback(0),
 		m_accept_session_messages_default(true),
-		m_session_message_callback(0)
+		m_session_message_callback(0),
+		m_data_message_callback(0)
 	{
 		async_receive();
 	}

@@ -116,6 +116,14 @@ namespace fscp
 			typedef boost::function<bool (const ep_type& sender, bool default_accept)> session_message_callback;
 
 			/**
+			 * \brief Data message callback type.
+			 * \param sender The endpoint that sent the data message.
+			 * \param buf The sent data.
+			 * \param buf_len The length of the sent data.
+			 */
+			typedef boost::function<void (const ep_type& sender, const void* buf, size_t buf_len)> data_message_callback;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
@@ -247,6 +255,12 @@ namespace fscp
 			 */
 			void send_data(const ep_type& target, const std::string& str);
 
+			/**
+			 * \brief Set the data message callback.
+			 * \param callback The callback.
+			 */
+			void set_data_message_callback(data_message_callback callback);
+
 		private:
 
 			void do_close();
@@ -308,6 +322,7 @@ namespace fscp
 
 			boost::array<uint8_t, 65536> m_data_buffer;
 			data_store_map m_data_map;
+			data_message_callback m_data_message_callback;
 	};
 
 	inline boost::asio::io_service& server::get_io_service()
@@ -363,6 +378,11 @@ namespace fscp
 	inline void server::send_data(const ep_type& target, const std::string& str)
 	{
 		send_data(target, str.c_str(), str.size());
+	}
+	
+	inline void server::set_data_message_callback(data_message_callback callback)
+	{
+		m_data_message_callback = callback;
 	}
 }
 
