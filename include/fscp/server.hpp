@@ -240,6 +240,13 @@ namespace fscp
 			 */
 			void send_data(const ep_type& target, const void* buf, size_t buf_len);
 
+			/**
+			 * \brief Send string data to a host.
+			 * \param target The target host.
+			 * \param str The string to send. No null terminating characeter is sent.
+			 */
+			void send_data(const ep_type& target, const std::string& str);
+
 		private:
 
 			void do_close();
@@ -351,6 +358,11 @@ namespace fscp
 	inline void server::set_session_message_callback(session_message_callback callback)
 	{
 		m_session_message_callback = callback;
+	}
+	
+	inline void server::send_data(const ep_type& target, const std::string& str)
+	{
+		send_data(target, str.c_str(), str.size());
 	}
 }
 
