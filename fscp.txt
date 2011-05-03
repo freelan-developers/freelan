@@ -230,6 +230,10 @@ Abstract
    use to cipher the cleartext data. It MUST be 16 bytes in the current
    protocol version.
 
+   The iv MUST be both unique and random for every DATA message. A
+   secure implementation SHOULD never use the same initialization vector
+   twice during the same session.
+
    The ciphertext field represents the data of the message, ciphered
    using the remote host session cipher key and initialization vector.
    That is, its length MUST be the first multiple of 16 greater or equal
