@@ -100,6 +100,38 @@ namespace cryptoplus
 			return from_public_key(bio_chain.first());
 		}
 
+		void rsa_key::padding_add_PKCS1_PSS(void* out, size_t out_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len)
+		{
+			assert(out_len >= algorithm.result_size());
+			assert(buf_len >= algorithm.result_size());
+
+			if (out_len < algorithm.result_size())
+			{
+				throw std::invalid_argument("out_len");
+			}
+
+			if (buf_len < algorithm.result_size())
+			{
+				throw std::invalid_argument("buf_len");
+			}
+
+			error::throw_error_if_not(RSA_padding_add_PKCS1_PSS(ptr().get(), static_cast<unsigned char*>(out), static_cast<const unsigned char*>(buf), algorithm.raw(), salt_len));
+		}
+
+		void rsa_key::verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t /*buf_len*/, hash::message_digest_algorithm algorithm, int salt_len)
+		{
+			assert(digest_len >= algorithm.result_size());
+
+			if (digest_len < algorithm.result_size())
+			{
+				throw std::invalid_argument("digest_len");
+			}
+
+			//TODO: Use buf_len
+
+			error::throw_error_if_not(RSA_verify_PKCS1_PSS(ptr().get(), static_cast<const unsigned char*>(digest), algorithm.raw(), static_cast<const unsigned char*>(buf), salt_len));
+		}
+
 		size_t rsa_key::private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
 		{
 			assert(out_len >= size());

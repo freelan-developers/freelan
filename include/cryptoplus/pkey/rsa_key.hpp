@@ -48,6 +48,7 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "../hash/message_digest_algorithm.hpp"
 
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
@@ -311,6 +312,30 @@ namespace cryptoplus
 				 * \return A public RSA key.
 				 */
 				rsa_key to_public_key();
+
+				/**
+				 * \brief Add a PKCS#1 V2.0 PSS padding.
+				 * \param out The destination buffer.
+				 * \param out_len The length of out.
+				 * \param buf The data to read from.
+				 * \param buf_len The length of buf.
+				 * \param algorithm The message digest algorithm to use.
+				 * \param salt_len The salt_len. Should be -1 or -2.
+				 *
+				 * The result out buffer should then be encrypted using private_encrypt().
+				 */
+				void padding_add_PKCS1_PSS(void* out, size_t out_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len);
+
+				/**
+				 * \brief Verify a PKCS#1 V2.0 PSS padding.
+				 * \param digest The message digest.
+				 * \param digest_len The length of digest.
+				 * \param buf The decrypted signature, obtained from public_decrypt().
+				 * \param buf_len The length of buf.
+				 * \param algorithm The message digest algorithm to use.
+				 * \param salt_len The salt_len. Should be -1 or -2.
+				 */
+				void verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len);
 
 				/**
 				 * \brief Encrypt data bytes using the private key information.
