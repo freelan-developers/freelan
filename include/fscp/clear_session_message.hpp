@@ -77,25 +77,25 @@ namespace fscp
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
-			 * \param sig_key The signature key.
-			 * \param sig_key_len The signature key length.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a session message to a buffer.
 			 * \param session_number The session number.
-			 * \param sig_key The signature key.
-			 * \param sig_key_len The signature key length.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
+			static std::vector<T> write(session_number_type session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
@@ -113,16 +113,16 @@ namespace fscp
 			session_number_type session_number() const;
 
 			/**
-			 * \brief Get the signature key.
-			 * \return The signature key.
+			 * \brief Get the seal key.
+			 * \return The seal key.
 			 */
-			const uint8_t* signature_key() const;
+			const uint8_t* seal_key() const;
 
 			/**
-			 * \brief Get the signature key size.
-			 * \return The signature key size.
+			 * \brief Get the seal key size.
+			 * \return The seal key size.
 			 */
-			size_t signature_key_size() const;
+			size_t seal_key_size() const;
 
 			/**
 			 * \brief Get the encryption key.
@@ -155,11 +155,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len)
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		std::vector<T> result(BODY_LENGTH);
 
-		result.resize(write(&result[0], result.size(), _session_number, sig_key, sig_key_len, enc_key, enc_key_len));
+		result.resize(write(&result[0], result.size(), _session_number, seal_key, seal_key_len, enc_key, enc_key_len));
 
 		return result;
 	}
@@ -169,24 +169,24 @@ namespace fscp
 		return ntohl(buffer_tools::get<session_number_type>(data(), 0));
 	}
 
-	inline const uint8_t* clear_session_message::signature_key() const
+	inline const uint8_t* clear_session_message::seal_key() const
 	{
 		return data() + sizeof(session_number_type) + sizeof(uint16_t);
 	}
 
-	inline size_t clear_session_message::signature_key_size() const
+	inline size_t clear_session_message::seal_key_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type)));
 	}
 
 	inline const uint8_t* clear_session_message::encryption_key() const
 	{
-		return data() + sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size() + sizeof(uint16_t);
+		return data() + sizeof(session_number_type) + sizeof(uint16_t) + seal_key_size() + sizeof(uint16_t);
 	}
 
 	inline size_t clear_session_message::encryption_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size()));
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + seal_key_size()));
 	}
 
 	inline const uint8_t* clear_session_message::data() const

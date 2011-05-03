@@ -347,12 +347,12 @@ namespace fscp
 		session.renew_local_session();
 
 		std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
-				session.local_session().session_number(),
-				session.local_session().signature_key(),
-				session.local_session().signature_key_size(),
-				session.local_session().encryption_key(),
-				session.local_session().encryption_key_size()
-				);
+		                                     session.local_session().session_number(),
+		                                     session.local_session().seal_key(),
+		                                     session.local_session().seal_key_size(),
+		                                     session.local_session().encryption_key(),
+		                                     session.local_session().encryption_key_size()
+		                                 );
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
@@ -389,8 +389,8 @@ namespace fscp
 			{
 				session_store _session_store(
 				    _clear_session_message.session_number(),
-				    _clear_session_message.signature_key(),
-				    _clear_session_message.signature_key_size(),
+				    _clear_session_message.seal_key(),
+				    _clear_session_message.seal_key_size(),
 				    _clear_session_message.encryption_key(),
 				    _clear_session_message.encryption_key_size()
 				);
@@ -415,16 +415,16 @@ namespace fscp
 				for(; !data_store.empty(); data_store.pop())
 				{
 					size_t size = data_message::write(
-													m_send_buffer.data(),
-													m_send_buffer.size(),
-													session_pair.remote_session().sequence_number(),
-													&data_store.front()[0],
-													data_store.front().size(),
-													session_pair.remote_session().signature_key(),
-													session_pair.remote_session().signature_key_size(),
-													session_pair.remote_session().encryption_key(),
-													session_pair.remote_session().encryption_key_size()
-													);
+					                  m_send_buffer.data(),
+					                  m_send_buffer.size(),
+					                  session_pair.remote_session().sequence_number(),
+					                  &data_store.front()[0],
+					                  data_store.front().size(),
+					                  session_pair.remote_session().seal_key(),
+					                  session_pair.remote_session().seal_key_size(),
+					                  session_pair.remote_session().encryption_key(),
+					                  session_pair.remote_session().encryption_key_size()
+					              );
 
 					session_pair.remote_session().increment_sequence_number();
 
@@ -433,7 +433,7 @@ namespace fscp
 			}
 		}
 	}
-	
+
 	void server::handle_data_message_from(const data_message& _data_message, const ep_type& sender)
 	{
 		session_pair& session_pair = m_session_map[sender];
@@ -442,19 +442,19 @@ namespace fscp
 		{
 			if (_data_message.sequence_number() > session_pair.local_session().sequence_number())
 			{
-				_data_message.check_signature(
-						m_data_buffer.data(),
-						m_data_buffer.size(),
-						session_pair.local_session().signature_key(),
-						session_pair.local_session().signature_key_size()
-						);
+				_data_message.check_seal(
+				    m_data_buffer.data(),
+				    m_data_buffer.size(),
+				    session_pair.local_session().seal_key(),
+				    session_pair.local_session().seal_key_size()
+				);
 
 				size_t cnt = _data_message.get_cleartext(
-						m_data_buffer.data(),
-						m_data_buffer.size(),
-						session_pair.local_session().encryption_key(),
-						session_pair.local_session().encryption_key_size()
-						);
+				                 m_data_buffer.data(),
+				                 m_data_buffer.size(),
+				                 session_pair.local_session().encryption_key(),
+				                 session_pair.local_session().encryption_key_size()
+				             );
 
 				session_pair.local_session().set_sequence_number(_data_message.sequence_number());
 

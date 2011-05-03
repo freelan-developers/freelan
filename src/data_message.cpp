@@ -52,9 +52,9 @@
 
 namespace fscp
 {
-	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type _sequence_number, const void* _cleartext, size_t cleartext_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type _sequence_number, const void* _cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
-		assert(sig_key);
+		assert(seal_key);
 		assert(enc_key);
 
 		const cryptoplus::cipher::cipher_algorithm cipher_algorithm(CIPHER_ALGORITHM);
@@ -90,10 +90,10 @@ namespace fscp
 		const size_t hmac_len = hmac_size;
 
 		cryptoplus::hash::hmac(
-		   	hmac,
+		    hmac,
 		    hmac_len,
-		    sig_key,
-		    sig_key_len,
+		    seal_key,
+		    seal_key_len,
 		    payload,
 		    length - hmac_size / 2,
 		    message_digest_algorithm
@@ -127,19 +127,19 @@ namespace fscp
 		}
 	}
 
-	void data_message::check_signature(void* tmp, size_t tmp_len, const void* sig_key, size_t sig_key_len) const
+	void data_message::check_seal(void* tmp, size_t tmp_len, const void* seal_key, size_t seal_key_len) const
 	{
-		assert(sig_key);
+		assert(seal_key);
 
 		size_t hmac_len = cryptoplus::hash::hmac(
-				tmp,
-				tmp_len,
-				sig_key,
-				sig_key_len,
-				payload(),
-				sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size() + ciphertext_size(),
-				cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM)
-				);
+		                      tmp,
+		                      tmp_len,
+		                      seal_key,
+		                      seal_key_len,
+		                      payload(),
+		                      sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size() + ciphertext_size(),
+		                      cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM)
+		                  );
 
 		hmac_len /= 2;
 

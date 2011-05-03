@@ -112,17 +112,17 @@ namespace fscp
 	{
 		m_queue.push(boost::make_shared<array_data_type>(static_cast<const data_type*>(buf), static_cast<const data_type*>(buf) + buf_len));
 	}
-	
+
 	inline bool data_store::empty() const
 	{
 		return m_queue.empty();
 	}
-	
+
 	inline const data_store::array_data_type& data_store::front() const
 	{
 		return *m_queue.front();
 	}
-	
+
 	inline void data_store::pop()
 	{
 		m_queue.pop();

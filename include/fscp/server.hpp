@@ -377,12 +377,12 @@ namespace fscp
 	{
 		m_session_message_callback = callback;
 	}
-	
+
 	inline void server::send_data(const ep_type& target, const std::string& str)
 	{
 		send_data(target, str.c_str(), str.size());
 	}
-	
+
 	inline void server::set_data_message_callback(data_message_callback callback)
 	{
 		m_data_message_callback = callback;

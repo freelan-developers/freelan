@@ -49,7 +49,7 @@
 
 namespace fscp
 {
-	size_t clear_session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len)
+	size_t clear_session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		if (buf_len < BODY_LENGTH)
 		{
@@ -57,10 +57,10 @@ namespace fscp
 		}
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type), htons(static_cast<uint16_t>(sig_key_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t), sig_key, sig_key_len);
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + sizeof(uint16_t) + sig_key_len, htons(static_cast<uint16_t>(enc_key_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t) + sig_key_len + sizeof(uint16_t), enc_key, enc_key_len);
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type), htons(static_cast<uint16_t>(seal_key_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t), seal_key, seal_key_len);
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + sizeof(uint16_t) + seal_key_len, htons(static_cast<uint16_t>(enc_key_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + sizeof(uint16_t) + seal_key_len + sizeof(uint16_t), enc_key, enc_key_len);
 
 		return BODY_LENGTH;
 	}
@@ -73,9 +73,9 @@ namespace fscp
 			throw std::runtime_error("buf_len");
 		}
 
-		if (signature_key_size() != KEY_LENGTH)
+		if (seal_key_size() != KEY_LENGTH)
 		{
-			throw std::runtime_error("sig_len");
+			throw std::runtime_error("seal_len");
 		}
 
 		if (encryption_key_size() != KEY_LENGTH)

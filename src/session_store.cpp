@@ -54,17 +54,17 @@ namespace fscp
 		m_session_number(_session_number),
 		m_sequence_number(0)
 	{
-		cryptoplus::random::get_random_bytes(m_sig_key.data(), m_sig_key.size());
+		cryptoplus::random::get_random_bytes(m_seal_key.data(), m_seal_key.size());
 		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
 	}
 
-	session_store::session_store(session_number_type _session_number, const void* _sig_key, size_t _sig_key_len, const void* _enc_key, size_t _enc_key_len) :
+	session_store::session_store(session_number_type _session_number, const void* _seal_key, size_t _seal_key_len, const void* _enc_key, size_t _enc_key_len) :
 		m_session_number(_session_number),
 		m_sequence_number(1)
 	{
-		if (_sig_key_len != m_sig_key.size())
+		if (_seal_key_len != m_seal_key.size())
 		{
-			throw std::runtime_error("sig_key_len");
+			throw std::runtime_error("seal_key_len");
 		}
 
 		if (_enc_key_len != m_enc_key.size())
@@ -72,7 +72,7 @@ namespace fscp
 			throw std::runtime_error("enc_key_len");
 		}
 
-		std::memcpy(m_sig_key.c_array(), _sig_key, _sig_key_len);
+		std::memcpy(m_seal_key.c_array(), _seal_key, _seal_key_len);
 		std::memcpy(m_enc_key.c_array(), _enc_key, _enc_key_len);
 	}
 

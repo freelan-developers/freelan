@@ -72,13 +72,13 @@ namespace fscp
 			 * \param sequence_number The sequence number.
 			 * \param cleartext The cleartext data.
 			 * \param cleartext_len The data length.
-			 * \param sig_key The signature key.
-			 * \param sig_key_len The signature key length.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a data_message and map it on a buffer.
@@ -132,26 +132,26 @@ namespace fscp
 			size_t ciphertext_size() const;
 
 			/**
-			 * \brief Get the hmac signature.
-			 * \return The hmac signature.
+			 * \brief Get the hmac seal.
+			 * \return The hmac seal.
 			 */
 			const uint8_t* hmac() const;
 
 			/**
-			 * \brief Get the hmac signature size.
-			 * \return The hmac signature size.
+			 * \brief Get the hmac seal size.
+			 * \return The hmac seal size.
 			 */
 			size_t hmac_size() const;
 
 			/**
-			 * \brief Check if the signature matches with a given signature key.
+			 * \brief Check if the seal matches with a given seal key.
 			 * \param tmp A temporary buffer to use.
 			 * \param tmp_len The temporary buffer length. Should be at least 32 bytes long.
-			 * \param sig_key The signature key.
-			 * \param sig_key_len The signature key length.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
 			 * \warning If the check fails, an exception is thrown.
 			 */
-			void check_signature(void* tmp, size_t tmp_len, const void* sig_key, size_t sig_key_len) const;
+			void check_seal(void* tmp, size_t tmp_len, const void* seal_key, size_t seal_key_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.

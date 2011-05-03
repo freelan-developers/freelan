@@ -84,12 +84,12 @@ namespace fscp
 			/**
 			 * \brief Create a new session store.
 			 * \param session_number The session number.
-			 * \param sig_key The signature key.
-			 * \param sig_key_len The signature key length.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 */
-			session_store(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
+			session_store(session_number_type session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Get the session number.
@@ -98,16 +98,16 @@ namespace fscp
 			session_number_type session_number() const;
 
 			/**
-			 * \brief Get the signature key.
-			 * \return The signature key.
+			 * \brief Get the seal key.
+			 * \return The seal key.
 			 */
-			const uint8_t* signature_key() const;
+			const uint8_t* seal_key() const;
 
 			/**
-			 * \brief Get the signature key size.
-			 * \return The signature key size.
+			 * \brief Get the seal key size.
+			 * \return The seal key size.
 			 */
-			size_t signature_key_size() const;
+			size_t seal_key_size() const;
 
 			/**
 			 * \brief Get the encryption key.
@@ -153,7 +153,7 @@ namespace fscp
 			typedef boost::array<uint8_t, KEY_LENGTH> key_type;
 
 			session_number_type m_session_number;
-			key_type m_sig_key;
+			key_type m_seal_key;
 			key_type m_enc_key;
 			sequence_number_type m_sequence_number;
 	};
@@ -163,14 +163,14 @@ namespace fscp
 		return m_session_number;
 	}
 
-	inline const uint8_t* session_store::signature_key() const
+	inline const uint8_t* session_store::seal_key() const
 	{
-		return m_sig_key.data();
+		return m_seal_key.data();
 	}
 
-	inline size_t session_store::signature_key_size() const
+	inline size_t session_store::seal_key_size() const
 	{
-		return m_sig_key.size();
+		return m_seal_key.size();
 	}
 
 	inline const uint8_t* session_store::encryption_key() const
