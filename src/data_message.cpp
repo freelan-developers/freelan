@@ -46,45 +46,57 @@
 
 #include <cryptoplus/cipher/cipher_context.hpp>
 #include <cryptoplus/hash/hmac.hpp>
+#include <cryptoplus/random/random.hpp>
 #include <cassert>
 #include <stdexcept>
 
 namespace fscp
 {
-	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type _sequence_number, const void* _data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len)
+	size_t data_message::write(void* buf, size_t buf_len, sequence_number_type _sequence_number, const void* _cleartext, size_t cleartext_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		assert(sig_key);
 		assert(enc_key);
-		assert(iv);
 
-		if (buf_len < HEADER_LENGTH + data_len + cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size() + cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size())
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm(CIPHER_ALGORITHM);
+		const cryptoplus::hash::message_digest_algorithm message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM);
+
+		const size_t hmac_size = message_digest_algorithm.result_size();
+
+		if (buf_len < HEADER_LENGTH + cipher_algorithm.iv_length() + cleartext_len + cipher_algorithm.block_size() + hmac_size)
 		{
 			throw std::runtime_error("buf_len");
 		}
 
 		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
 		const size_t payload_len = buf_len - HEADER_LENGTH;
-		uint8_t* const cdata = payload + sizeof(sequence_number_type) + sizeof(uint16_t);
-		const size_t cdata_len = payload_len - sizeof(sequence_number_type) - sizeof(uint16_t);
+		uint8_t* const iv = payload + sizeof(sequence_number_type) + sizeof(uint16_t);
+		const size_t iv_len = cipher_algorithm.iv_length();
+		uint8_t* const ciphertext = iv + iv_len;
+		const size_t ciphertext_len = payload_len - sizeof(sequence_number_type) - sizeof(uint16_t) - iv_len;
+		cryptoplus::random::get_random_bytes(iv, iv_len);
 
 		cryptoplus::cipher::cipher_context cipher_context;
 		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM), cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, iv, iv_len);
-		size_t cnt = cipher_context.update(cdata, cdata_len, _data, data_len);
-		cnt += cipher_context.finalize(cdata + cnt, cdata_len - cnt);
+		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, _cleartext, cleartext_len);
+		cnt += cipher_context.finalize(ciphertext + cnt, ciphertext_len - cnt);
 
-		buffer_tools::set<sequence_number_type>(payload, 0, htonl(_sequence_number));
-		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cnt)));
+		buffer_tools::set<sequence_number_type>(payload, 0, htons(_sequence_number));
+		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cleartext_len)));
 
-		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size();
+		// The HMAC is cut in half
+		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + hmac_size / 2;
+
+		uint8_t* hmac = ciphertext + cnt;
+		const size_t hmac_len = hmac_size;
 
 		cryptoplus::hash::hmac(
-		   	cdata + cnt,
-		    cdata_len - cnt,
+		   	hmac,
+		    hmac_len,
 		    sig_key,
 		    sig_key_len,
 		    payload,
-		    length - cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size(),
-		    cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM)
+		    length - hmac_size / 2,
+		    message_digest_algorithm
 		);
 
 		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_DATA, length) + length;
@@ -109,47 +121,50 @@ namespace fscp
 			throw std::runtime_error("bad message length");
 		}
 
-		if (length() != MIN_BODY_LENGTH + data_size() + cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size())
+		if (length() != MIN_BODY_LENGTH + initialization_vector_size() + ciphertext_size() + hmac_size())
 		{
 			throw std::runtime_error("bad message length");
 		}
 	}
 
-	void data_message::check_signature(const void* sig_key, size_t sig_key_len) const
+	void data_message::check_signature(void* tmp, size_t tmp_len, const void* sig_key, size_t sig_key_len) const
 	{
 		assert(sig_key);
 
-		std::vector<uint8_t> _hmac = cryptoplus::hash::hmac<uint8_t>(
-		                                 sig_key,
-		                                 sig_key_len,
-		                                 payload(),
-		                                 sizeof(sequence_number_type) + sizeof(uint16_t) + data_size(),
-		                                 cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM)
-		                             );
+		size_t hmac_len = cryptoplus::hash::hmac(
+				tmp,
+				tmp_len,
+				sig_key,
+				sig_key_len,
+				payload(),
+				sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size() + ciphertext_size(),
+				cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM)
+				);
 
-		if ((_hmac.size() != hmac_size()) || (std::memcmp(hmac(), &_hmac[0], _hmac.size()) != 0))
+		hmac_len /= 2;
+
+		if ((hmac_len != hmac_size()) || (std::memcmp(hmac(), tmp, hmac_len) != 0))
 		{
 			throw std::runtime_error("hmac mismatch");
 		}
 	}
 
-	size_t data_message::get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const
+	size_t data_message::get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len) const
 	{
 		assert(enc_key);
-		assert(iv);
 
 		if (buf)
 		{
 			cryptoplus::cipher::cipher_context cipher_context;
-			cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM), cryptoplus::cipher::cipher_context::decrypt, enc_key, enc_key_len, iv, iv_len);
-			size_t cnt = cipher_context.update(buf, buf_len, data(), data_size());
+			cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM), cryptoplus::cipher::cipher_context::decrypt, enc_key, enc_key_len, initialization_vector(), initialization_vector_size());
+			size_t cnt = cipher_context.update(buf, buf_len, ciphertext(), ciphertext_size());
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
 
 			return cnt;
 		}
 		else
 		{
-			return data_size();
+			return ciphertext_size();
 		}
 	}
 }

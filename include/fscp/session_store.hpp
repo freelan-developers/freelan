@@ -68,17 +68,12 @@ namespace fscp
 			/**
 			 * \brief The sequence number type.
 			 */
-			typedef uint32_t sequence_number_type;
+			typedef uint16_t sequence_number_type;
 
 			/**
 			 * \brief The key length.
 			 */
 			static const size_t KEY_LENGTH = 32;
-
-			/**
-			 * \brief The iv length.
-			 */
-			static const size_t IV_LENGTH = 16;
 
 			/**
 			 * \brief Create a new random session store.
@@ -93,10 +88,8 @@ namespace fscp
 			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
-			 * \param iv The initialization vector.
-			 * \param iv_len The initialization vector length.
 			 */
-			session_store(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
+			session_store(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Get the session number.
@@ -129,18 +122,6 @@ namespace fscp
 			size_t encryption_key_size() const;
 
 			/**
-			 * \brief Get the initialization vector.
-			 * \return The initialization vector.
-			 */
-			const uint8_t* initialization_vector() const;
-
-			/**
-			 * \brief Get the initialization vector size.
-			 * \return The initialization vector size.
-			 */
-			size_t initialization_vector_size() const;
-
-			/**
 			 * \brief Get the sequence number.
 			 * \return The sequence number.
 			 */
@@ -153,23 +134,10 @@ namespace fscp
 			void set_sequence_number(sequence_number_type sequence_number);
 
 			/**
-			 * \brief Increase the sequence number by a certain amount of bytes.
-			 * \param cnt The count of bytes that were written with the current sequence_number.
+			 * \brief Increment the sequence number by a certain amount.
+			 * \param cnt The number to add to the current sequence number. Default is 1.
 			 */
-			void increase_sequence_number(size_t cnt);
-
-			/**
-			 * \brief Get the sequence initialization vector.
-			 * \param sequence_number The sequence number to use to compute the IV.
-			 * \return The sequence initialization vector.
-			 */
-			const uint8_t* sequence_initialization_vector(sequence_number_type sequence_number) const;
-
-			/**
-			 * \brief Get the sequence initialization vector, using the current sequence number.
-			 * \return The sequence initialization vector.
-			 */
-			const uint8_t* sequence_initialization_vector() const;
+			void increment_sequence_number(size_t cnt = 1);
 
 			/**
 			 * \brief Check if the session is old.
@@ -184,17 +152,10 @@ namespace fscp
 			 */
 			typedef boost::array<uint8_t, KEY_LENGTH> key_type;
 
-			/**
-			 * \brief The iv type.
-			 */
-			typedef boost::array<uint8_t, IV_LENGTH> iv_type;
-
 			session_number_type m_session_number;
 			key_type m_sig_key;
 			key_type m_enc_key;
-			iv_type m_iv;
 			sequence_number_type m_sequence_number;
-			mutable iv_type m_current_iv;
 	};
 
 	inline session_store::session_number_type session_store::session_number() const
@@ -222,16 +183,6 @@ namespace fscp
 		return m_enc_key.size();
 	}
 
-	inline const uint8_t* session_store::initialization_vector() const
-	{
-		return m_iv.data();
-	}
-
-	inline size_t session_store::initialization_vector_size() const
-	{
-		return m_iv.size();
-	}
-
 	inline session_store::sequence_number_type session_store::sequence_number() const
 	{
 		return m_sequence_number;
@@ -242,21 +193,14 @@ namespace fscp
 		m_sequence_number = _sequence_number;
 	}
 
-	inline void session_store::increase_sequence_number(size_t cnt)
+	inline void session_store::increment_sequence_number(size_t cnt)
 	{
-		size_t block_count = (cnt + cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size() - 1) / cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size();
-
-		if (m_sequence_number + block_count < m_sequence_number)
+		if (m_sequence_number + cnt < m_sequence_number)
 		{
 			throw std::runtime_error("sequence_number overflow");
 		}
 
-		m_sequence_number += block_count;
-	}
-
-	inline const uint8_t* session_store::sequence_initialization_vector() const
-	{
-		return sequence_initialization_vector(m_sequence_number);
+		m_sequence_number += cnt;
 	}
 }
 

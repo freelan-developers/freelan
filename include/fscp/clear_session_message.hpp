@@ -73,11 +73,6 @@ namespace fscp
 			static const size_t KEY_LENGTH = 32;
 
 			/**
-			 * \brief The iv length.
-			 */
-			static const size_t IV_LENGTH = 16;
-
-			/**
 			 * \brief Write a session message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
@@ -86,11 +81,9 @@ namespace fscp
 			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
-			 * \param iv The initialization vector.
-			 * \param iv_len The initialization vector length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a session message to a buffer.
@@ -99,12 +92,10 @@ namespace fscp
 			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
-			 * \param iv The initialization vector.
-			 * \param iv_len The initialization vector length.
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
+			static std::vector<T> write(session_number_type session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
@@ -145,24 +136,12 @@ namespace fscp
 			 */
 			size_t encryption_key_size() const;
 
-			/**
-			 * \brief Get the initialization vector.
-			 * \return The initialization vector.
-			 */
-			const uint8_t* initialization_vector() const;
-
-			/**
-			 * \brief Get the initialization vector size.
-			 * \return The initialization vector size.
-			 */
-			size_t initialization_vector_size() const;
-
 		protected:
 
 			/**
 			 * \brief The length of the body.
 			 */
-			static const size_t BODY_LENGTH = sizeof(session_number_type) + 2 * KEY_LENGTH + IV_LENGTH + 3 * sizeof(uint16_t);
+			static const size_t BODY_LENGTH = sizeof(session_number_type) + 2 * KEY_LENGTH + 2 * sizeof(uint16_t);
 
 			/**
 			 * \brief The data.
@@ -176,11 +155,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len)
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		std::vector<T> result(BODY_LENGTH);
 
-		result.resize(write(&result[0], result.size(), _session_number, sig_key, sig_key_len, enc_key, enc_key_len, iv, iv_len));
+		result.resize(write(&result[0], result.size(), _session_number, sig_key, sig_key_len, enc_key, enc_key_len));
 
 		return result;
 	}
@@ -208,16 +187,6 @@ namespace fscp
 	inline size_t clear_session_message::encryption_key_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size()));
-	}
-
-	inline const uint8_t* clear_session_message::initialization_vector() const
-	{
-		return data() + sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size() + sizeof(uint16_t) + encryption_key_size() + sizeof(uint16_t);
-	}
-
-	inline size_t clear_session_message::initialization_vector_size() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + signature_key_size() + sizeof(uint16_t) + encryption_key_size()));
 	}
 
 	inline const uint8_t* clear_session_message::data() const

@@ -351,9 +351,7 @@ namespace fscp
 				session.local_session().signature_key(),
 				session.local_session().signature_key_size(),
 				session.local_session().encryption_key(),
-				session.local_session().encryption_key_size(),
-				session.local_session().initialization_vector(),
-				session.local_session().initialization_vector_size()
+				session.local_session().encryption_key_size()
 				);
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
@@ -394,9 +392,7 @@ namespace fscp
 				    _clear_session_message.signature_key(),
 				    _clear_session_message.signature_key_size(),
 				    _clear_session_message.encryption_key(),
-				    _clear_session_message.encryption_key_size(),
-				    _clear_session_message.initialization_vector(),
-				    _clear_session_message.initialization_vector_size()
+				    _clear_session_message.encryption_key_size()
 				);
 
 				session_pair.set_remote_session(_session_store);
@@ -427,12 +423,10 @@ namespace fscp
 													session_pair.remote_session().signature_key(),
 													session_pair.remote_session().signature_key_size(),
 													session_pair.remote_session().encryption_key(),
-													session_pair.remote_session().encryption_key_size(),
-													session_pair.remote_session().sequence_initialization_vector(),
-													session_pair.remote_session().initialization_vector_size()
+													session_pair.remote_session().encryption_key_size()
 													);
 
-					session_pair.remote_session().increase_sequence_number(data_store.front().size());
+					session_pair.remote_session().increment_sequence_number();
 
 					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 				}
@@ -448,15 +442,18 @@ namespace fscp
 		{
 			if (_data_message.sequence_number() > session_pair.local_session().sequence_number())
 			{
-				_data_message.check_signature(session_pair.local_session().signature_key(), session_pair.local_session().signature_key_size());
+				_data_message.check_signature(
+						m_data_buffer.data(),
+						m_data_buffer.size(),
+						session_pair.local_session().signature_key(),
+						session_pair.local_session().signature_key_size()
+						);
 
 				size_t cnt = _data_message.get_cleartext(
 						m_data_buffer.data(),
 						m_data_buffer.size(),
 						session_pair.local_session().encryption_key(),
-						session_pair.local_session().encryption_key_size(),
-						session_pair.local_session().sequence_initialization_vector(_data_message.sequence_number()),
-						session_pair.local_session().initialization_vector_size()
+						session_pair.local_session().encryption_key_size()
 						);
 
 				session_pair.local_session().set_sequence_number(_data_message.sequence_number());

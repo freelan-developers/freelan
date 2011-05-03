@@ -63,24 +63,22 @@ namespace fscp
 			/**
 			 * \brief The sequence number type.
 			 */
-			typedef uint32_t sequence_number_type;
+			typedef uint16_t sequence_number_type;
 
 			/**
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param sequence_number The sequence number.
-			 * \param data The cleartext data.
-			 * \param data_len The data length.
+			 * \param cleartext The cleartext data.
+			 * \param cleartext_len The data length.
 			 * \param sig_key The signature key.
 			 * \param sig_key_len The signature key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
-			 * \param iv The initialization vector.
-			 * \param iv_len The initialization vector length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* data, size_t data_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len);
+			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* sig_key, size_t sig_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a data_message and map it on a buffer.
@@ -104,16 +102,34 @@ namespace fscp
 			sequence_number_type sequence_number() const;
 
 			/**
-			 * \brief Get the data.
-			 * \return The data.
+			 * \brief Get the cleartext size.
+			 * \return The cleartext length.
 			 */
-			const uint8_t* data() const;
+			size_t cleartext_size() const;
 
 			/**
-			 * \brief Get the data size.
-			 * \return The data size.
+			 * \brief Get the initialization vector.
+			 * \return The initialization vector.
 			 */
-			size_t data_size() const;
+			const uint8_t* initialization_vector() const;
+
+			/**
+			 * \brief Get the initialization vector size.
+			 * \return The initialization vector size.
+			 */
+			size_t initialization_vector_size() const;
+
+			/**
+			 * \brief Get the ciphertext.
+			 * \return The ciphertext.
+			 */
+			const uint8_t* ciphertext() const;
+
+			/**
+			 * \brief Get the ciphertext size.
+			 * \return The ciphertext size.
+			 */
+			size_t ciphertext_size() const;
 
 			/**
 			 * \brief Get the hmac signature.
@@ -129,11 +145,13 @@ namespace fscp
 
 			/**
 			 * \brief Check if the signature matches with a given signature key.
+			 * \param tmp A temporary buffer to use.
+			 * \param tmp_len The temporary buffer length. Should be at least 32 bytes long.
 			 * \param sig_key The signature key.
 			 * \param sig_key_len The signature key length.
 			 * \warning If the check fails, an exception is thrown.
 			 */
-			void check_signature(const void* sig_key, size_t sig_key_len) const;
+			void check_signature(void* tmp, size_t tmp_len, const void* sig_key, size_t sig_key_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.
@@ -141,22 +159,18 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
-			 * \param iv The initialization vector.
-			 * \param iv_len The initialization vector length.
 			 * \return The count of bytes deciphered.
 			 */
-			size_t get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const;
+			size_t get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
-			 * \param iv The initialization vector.
-			 * \param iv_len The initialization vector length.
 			 * \return The clear text data.
 			 */
 			template <typename T>
-			std::vector<T> get_cleartext(const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const;
+			std::vector<T> get_cleartext(const void* enc_key, size_t enc_key_len) const;
 
 		protected:
 
@@ -175,32 +189,49 @@ namespace fscp
 		return ntohl(buffer_tools::get<sequence_number_type>(payload(), 0));
 	}
 
-	inline const uint8_t* data_message::data() const
-	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t);
-	}
-
-	inline size_t data_message::data_size() const
+	inline size_t data_message::cleartext_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type)));
 	}
 
+	inline const uint8_t* data_message::initialization_vector() const
+	{
+		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t);
+	}
+
+	inline size_t data_message::initialization_vector_size() const
+	{
+		return cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).iv_length();
+	}
+
+	inline const uint8_t* data_message::ciphertext() const
+	{
+		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size();
+	}
+
+	inline size_t data_message::ciphertext_size() const
+	{
+		const size_t block_size = cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size();
+
+		return ((cleartext_size() + block_size - 1) / block_size) * block_size;
+	}
+
 	inline const uint8_t* data_message::hmac() const
 	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + data_size();
+		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size() + ciphertext_size();
 	}
 
 	inline size_t data_message::hmac_size() const
 	{
-		return cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size();
+		return cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size() / 2;
 	}
 
 	template <typename T>
-	inline std::vector<T> data_message::get_cleartext(const void* enc_key, size_t enc_key_len, const void* iv, size_t iv_len) const
+	inline std::vector<T> data_message::get_cleartext(const void* enc_key, size_t enc_key_len) const
 	{
-		std::vector<T> result(get_cleartext(NULL, 0, enc_key, enc_key_len, iv, iv_len));
+		std::vector<T> result(get_cleartext(NULL, 0, enc_key, enc_key_len));
 
-		result.resize(get_cleartext(&result[0], result.size(), enc_key, enc_key_len, iv, iv_len));
+		result.resize(get_cleartext(&result[0], result.size(), enc_key, enc_key_len));
 
 		return result;
 	}
