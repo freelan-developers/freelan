@@ -140,7 +140,7 @@ Abstract
                  +-----------------------------------+
                  |          session_number           |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     sig_len     |       sig       |
+                 |     seal_len    |       seal      |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |     enc_len     |       enc       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -168,11 +168,11 @@ Abstract
    The session_number indicates the identifier of the session. Every
    session SHOULD have its own and unique session_number value.
 
-   The sig_len field indicates the size of the sig field. In the current
-   version of this protocol, this should be 32.
+   The seal_len field indicates the size of the seal field. In the
+   current version of this protocol, this should be 32.
 
-   The sig field is a sig_len bytes long secret key used for message
-   signature. In the next sections, this key will be referred as KS.
+   The seal field is a seal_len bytes long secret key used for message
+   sealing. In the next sections, this key will be referred as KS.
 
    The enc_len field indicates the size of the sig field. In the current
    version of this protocol, this should be 32.
@@ -187,12 +187,12 @@ Abstract
 
    The cts_len field indicates the length of the cts field.
 
-   The cts field is the ciphertext signature, generated using the PKS-
-   of the sender host and the digest method.
+   The cts field is the ciphertext seal, generated using the PKS- of the
+   sender host and the digest method.
 
    A host who receives a SESSION message MUST first check if the cts
-   signature matches the sending host PKS+. If the signature does not
-   match, the message MUST be ignored.
+   seal matches the sending host PKS+. If the seal does not match, the
+   message MUST be ignored.
 
    Once the signature has been checked, the receiving host MUST then
    decipher the ct field, using its own PKE-. If the decipherment fails,
@@ -249,7 +249,9 @@ Abstract
 
 3.1. Message digest algorithm
 
-   The used message digest algorithm is SHA-256.
+   The used message digest algorithm used for signature is SHA-1.
+
+   The used message digest algorithm for HMAC generation is SHA-256.
 
 3.2. Symmetric cipherment algorithm
 
@@ -257,11 +259,13 @@ Abstract
 
 3.3. Asymmetric cipherment/signature algorithm
 
-   The used asymmetric cipherment signature is RSA-2048 with a PKCS#1
-   v2.0 PSS padding.
+   The used asymmetric cipherment signature is RSA with a PKCS#1 v2.0
+   PSS padding.
 
-   The used asymmetric cipherment algorithm is RSA-2048 with a PKCS#1
-   v2.0 OAEP padding.
+   The used asymmetric cipherment algorithm is RSA with a PKCS#1 v2.0
+   OAEP padding.
+
+   The minimum key size is 1024. The recommended key size is 2048.
 
 4. Protocol
 
