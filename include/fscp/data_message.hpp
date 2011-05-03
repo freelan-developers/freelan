@@ -102,10 +102,10 @@ namespace fscp
 			sequence_number_type sequence_number() const;
 
 			/**
-			 * \brief Get the cleartext size.
-			 * \return The cleartext length.
+			 * \brief Get the ciphertext block count.
+			 * \return The ciphertext block count.
 			 */
-			size_t cleartext_size() const;
+			size_t ciphertext_block_count() const;
 
 			/**
 			 * \brief Get the initialization vector.
@@ -189,7 +189,7 @@ namespace fscp
 		return ntohs(buffer_tools::get<sequence_number_type>(payload(), 0));
 	}
 
-	inline size_t data_message::cleartext_size() const
+	inline size_t data_message::ciphertext_block_count() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type)));
 	}
@@ -211,9 +211,7 @@ namespace fscp
 
 	inline size_t data_message::ciphertext_size() const
 	{
-		const size_t block_size = cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size();
-
-		return ((cleartext_size() + block_size - 1) / block_size) * block_size;
+		return ciphertext_block_count() * cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size();
 	}
 
 	inline const uint8_t* data_message::hmac() const

@@ -81,7 +81,7 @@ namespace fscp
 		cnt += cipher_context.finalize(ciphertext + cnt, ciphertext_len - cnt);
 
 		buffer_tools::set<sequence_number_type>(payload, 0, htons(_sequence_number));
-		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cleartext_len)));
+		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cnt / cipher_algorithm.block_size())));
 
 		// The HMAC is cut in half
 		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + iv_len + cnt + hmac_size / 2;
