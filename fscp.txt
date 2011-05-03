@@ -204,7 +204,7 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
-                 |      seq_num    |    data_len     |
+                 |      seq_num    |  ciphertext_cnt |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |                iv                 |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -224,7 +224,8 @@ Abstract
    MUST have two different sequence numbers. The rules governing the
    sequence number are explained in a further section.
 
-   The data_len field indicates the size of the cleartext data.
+   The ciphertext_cnt field indicates the size of the ciphertext, in
+   blocks.
 
    The iv field represents a randomly generated initialization vector to
    use to cipher the cleartext data. It MUST be 16 bytes in the current
@@ -235,9 +236,8 @@ Abstract
    twice during the same session.
 
    The ciphertext field represents the data of the message, ciphered
-   using the remote host session cipher key and initialization vector.
-   That is, its length MUST be the first multiple of 16 greater or equal
-   to data_len.
+   using the remote host session cipher key and iv as an initialization
+   vector.
 
    The hmac field contains the first 16 truncated bytes of the SHA-256
    HMAC of the whole DATA message header, excluding the field itself,
@@ -259,7 +259,7 @@ Abstract
 
 3.2. Symmetric cipherment algorithm
 
-   The used symmetric cipherment algorithm is AES-256-CBC.
+   The used symmetric cipherment algorithm is AES-256-CBC, with padding.
 
 3.3. Asymmetric cipherment/signature algorithm
 
