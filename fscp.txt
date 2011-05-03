@@ -258,7 +258,7 @@ Abstract
 
 3.2. Symmetric cipherment algorithm
 
-   The used symmetric cipherment algorithm is AES-256.
+   The used symmetric cipherment algorithm is AES-256-CFB-128.
 
 3.3. Asymmetric cipherment/signature algorithm
 

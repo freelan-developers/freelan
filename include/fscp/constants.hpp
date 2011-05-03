@@ -73,7 +73,7 @@ namespace fscp
 	/**
 	 * \brief The cipher algorithm.
 	 */
-	const int CIPHER_ALGORITHM = NID_aes_256_cbc;
+	const int CIPHER_ALGORITHM = NID_aes_256_cfb128;
 
 	/**
 	 * \brief The message digest algorithm.
