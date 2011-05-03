@@ -145,9 +145,9 @@ Abstract
                  |     enc_len     |       enc       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
-   This header is not sent in clear-text. It is first ciphered using
-   PKE+ of the target host, then the ciphertext is signed using the
-   sender host PKS-.
+   This header is not sent in clear-text. It is first ciphered using the
+   public PKE of the target host, then the ciphertext is signed using
+   the sender host private PKS.
 
    That is, a SESSION message sent over the wire has the following
    format:
@@ -182,21 +182,21 @@ Abstract
 
    The ct_len field indicates the length of the ct field.
    
-   The ct field is the ciphertext, generated using the PKE+ of the
+   The ct field is the ciphertext, generated using the public PKE of the
    target host.
 
    The cts_len field indicates the length of the cts field.
 
-   The cts field is the ciphertext seal, generated using the PKS- of the
-   sender host and the digest method.
+   The cts field is the ciphertext signature, generated using the
+   private PKS of the sender host and the digest method.
 
    A host who receives a SESSION message MUST first check if the cts
-   seal matches the sending host PKS+. If the seal does not match, the
-   message MUST be ignored.
+   signature matches the sending host public PKS. If the signature does
+   not match, the message MUST be ignored.
 
    Once the signature has been checked, the receiving host MUST then
-   decipher the ct field, using its own PKE-. If the decipherment fails,
-   the message MUST be ignored.
+   decipher the ct field, using its own private PKE. If the decipherment
+   fails, the message MUST be ignored.
 
 2.6. DATA message format
    
@@ -237,7 +237,7 @@ Abstract
 
    The hmac field contains the first 16 truncated bytes of the SHA-256
    HMAC of the whole DATA message header, excluding the field itself,
-   using the remote host session signature key.
+   using the remote host session sealing key.
 
    This field MUST then be 16 bytes long.
 
