@@ -84,7 +84,7 @@ namespace fscp
 		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cleartext_len)));
 
 		// The HMAC is cut in half
-		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + hmac_size / 2;
+		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + iv_len + cnt + hmac_size / 2;
 
 		uint8_t* hmac = ciphertext + cnt;
 		const size_t hmac_len = hmac_size;
