@@ -76,6 +76,11 @@ namespace fscp
 	const int CIPHER_ALGORITHM = NID_aes_256_cbc;
 
 	/**
+	 * \brief The signature message digest algorithm.
+	 */
+	const int SIGNATURE_MESSAGE_DIGEST_ALGORITHM = NID_sha1;
+
+	/**
 	 * \brief The message digest algorithm.
 	 */
 	const int MESSAGE_DIGEST_ALGORITHM = NID_sha256;

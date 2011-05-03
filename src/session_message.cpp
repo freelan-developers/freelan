@@ -44,6 +44,8 @@
 
 #include "session_message.hpp"
 
+#include "constants.hpp"
+
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cassert>
 #include <stdexcept>
@@ -76,7 +78,7 @@ namespace fscp
 		ciphertext.resize(enc_key.get_rsa_key().public_encrypt(&ciphertext[0], ciphertext.size(), cleartext, cleartext_len, RSA_PKCS1_OAEP_PADDING));
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.sign_initialize(cryptoplus::hash::message_digest_algorithm(NID_sha256));
+		mdctx.sign_initialize(cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM));
 		mdctx.sign_update(&ciphertext[0], ciphertext.size());
 		std::vector<uint8_t> ciphertext_signature = mdctx.sign_finalize<uint8_t>(sig_key);
 
@@ -118,7 +120,7 @@ namespace fscp
 		assert(key);
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.verify_initialize(cryptoplus::hash::message_digest_algorithm(NID_sha256));
+		mdctx.verify_initialize(cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM));
 		mdctx.verify_update(ciphertext(), ciphertext_size());
 
 		if (!mdctx.verify_finalize(ciphertext_signature(), ciphertext_signature_size(), key))
