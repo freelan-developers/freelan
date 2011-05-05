@@ -68,7 +68,7 @@ namespace cryptoplus
 	}
 
 	template <>
-		file::deleter_type pointer_wrapper<file::value_type>::deleter = secure_fclose;
+	file::deleter_type pointer_wrapper<file::value_type>::deleter = secure_fclose;
 
 	namespace
 	{
@@ -78,14 +78,14 @@ namespace cryptoplus
 			LPSTR msgbuf = NULL;
 
 			FormatMessageA(
-					FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-					NULL,
-					GetLastError(),
-					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					(LPSTR)&msgbuf,
-					0,
-					NULL
-					);
+			    FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			    NULL,
+			    GetLastError(),
+			    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			    (LPSTR)&msgbuf,
+			    0,
+			    NULL
+			);
 
 			boost::shared_ptr<CHAR> _msgbuf(msgbuf, LocalFree);
 
