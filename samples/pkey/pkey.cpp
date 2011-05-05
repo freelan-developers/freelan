@@ -92,9 +92,7 @@ int main()
 
 		std::cout << "Done." << std::endl;
 
-		cryptoplus::pkey::pkey pkey;
-
-		pkey.set_dsa_key(dsa_key);
+		cryptoplus::pkey::pkey pkey = cryptoplus::pkey::pkey::from_dsa_key(dsa_key);
 
 		std::cout << "Checking that the type is correct: " << (pkey.is_dsa() ? "OK" : "FAILURE") << std::endl;
 
