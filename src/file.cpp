@@ -58,7 +58,7 @@
 
 namespace cryptoplus
 {
-	void secure_fclose(file::file::pointer ptr)
+	void secure_fclose(file::pointer ptr)
 	{
 		if (ptr)
 		{
@@ -67,81 +67,78 @@ namespace cryptoplus
 	}
 
 	template <>
-	file::file::deleter_type pointer_wrapper<file::file::value_type>::deleter = secure_fclose;
+		file::deleter_type pointer_wrapper<file::value_type>::deleter = secure_fclose;
 
-	namespace file
+	namespace
 	{
-		namespace
-		{
 #ifdef WINDOWS
-			std::string get_last_error_string()
-			{
-				LPSTR msgbuf = NULL;
+		std::string get_last_error_string()
+		{
+			LPSTR msgbuf = NULL;
 
-				FormatMessageA(
-						FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-						NULL,
-						GetLastError(),
-						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-						(LPSTR)&msgbuf,
-						0,
-						NULL
-						);
+			FormatMessageA(
+					FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+					NULL,
+					GetLastError(),
+					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					(LPSTR)&msgbuf,
+					0,
+					NULL
+					);
 
-				boost::shared_ptr<CHAR> _msgbuf(msgbuf, LocalFree);
+			boost::shared_ptr<CHAR> _msgbuf(msgbuf, LocalFree);
 
-				std::string result(msgbuf, strlen(_msgbuf.get()));
+			std::string result(msgbuf, strlen(_msgbuf.get()));
 
-				return result;
-			}
+			return result;
+		}
 #else
-			std::string get_last_error_string()
-			{
-				return std::string(strerror(errno));
-			}
-#endif
-		}
-
-		file file::open(const std::string& filename, const std::string& mode)
+		std::string get_last_error_string()
 		{
-			file::pointer ptr = fopen(filename.c_str(), mode.c_str());
-
-			if (!ptr)
-			{
-			}
-
-			return take_ownership(ptr);
+			return std::string(strerror(errno));
 		}
+#endif
+	}
+
+	file file::open(const std::string& filename, const std::string& mode)
+	{
+		file::pointer ptr = fopen(filename.c_str(), mode.c_str());
+
+		if (!ptr)
+		{
+		}
+
+		return take_ownership(ptr);
+	}
 
 #ifdef WINDOWS
-		file file::open(const std::wstring& filename, const std::wstring& mode)
-		{
+	file file::open(const std::wstring& filename, const std::wstring& mode)
+	{
 #ifdef MSV
-			file::pointer ptr = 0;
+		file::pointer ptr = 0;
 
-			int err = _wfopen_s(&fp, filename.toStdWString().c_str(), L"r");
+		int err = _wfopen_s(&fp, filename.toStdWString().c_str(), L"r");
 
-			if (err != 0)
-			{
-				ptr = 0;
-			}
-#else
-			file::pointer ptr = _wfopen(filename.c_str(), mode.c_str());
-#endif
-
-			return take_ownership(ptr);
-		}
-#endif
-
-		file file::take_ownership(pointer _ptr)
+		if (err != 0)
 		{
-			if (!_ptr)
-			{
-				throw std::runtime_error(get_last_error_string());
-			}
-
-			return file(_ptr, deleter);
+			ptr = 0;
 		}
+#else
+		file::pointer ptr = _wfopen(filename.c_str(), mode.c_str());
+#endif
+
+		return take_ownership(ptr);
+	}
+#endif
+
+	file file::take_ownership(pointer _ptr)
+	{
+		if (!_ptr)
+		{
+			throw std::runtime_error(get_last_error_string());
+		}
+
+		return file(_ptr, deleter);
 	}
 }
 

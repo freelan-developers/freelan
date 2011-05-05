@@ -53,95 +53,92 @@
 
 namespace cryptoplus
 {
-	namespace file
+	/**
+	 * \brief A file class.
+	 *
+	 * The file class represents a FILE*.
+	 * file is a low level structure.
+	 *
+	 * A file instance has the same semantic as a FILE* pointer, thus two copies of the same instance share the same underlying pointer.
+	 */
+	class file : public pointer_wrapper<FILE>
 	{
-		/**
-		 * \brief A file class.
-		 *
-		 * The file class represents a FILE*.
-		 * file is a low level structure.
-		 *
-		 * A file instance has the same semantic as a FILE* pointer, thus two copies of the same instance share the same underlying pointer.
-		 */
-		class file : public pointer_wrapper<FILE>
-		{
-			public:
+		public:
 
-				/**
-				 * \brief Open a file.
-				 * \param filename The filename.
-				 * \param mode The mode, as specified in fopen().
-				 * \return The file.
-				 */
-				static file open(const std::string& filename, const std::string& mode = "r");
+			/**
+			 * \brief Open a file.
+			 * \param filename The filename.
+			 * \param mode The mode, as specified in fopen().
+			 * \return The file.
+			 */
+			static file open(const std::string& filename, const std::string& mode = "r");
 
 #ifdef WINDOWS
-				/**
-				 * \brief Open a file, unicode aware version.
-				 * \param filename The filename.
-				 * \param mode The mode, as specified in fopen().
-				 * \return The file.
-				 */
-				static file open(const std::wstring& filename, const std::wstring& mode = L"r");
+			/**
+			 * \brief Open a file, unicode aware version.
+			 * \param filename The filename.
+			 * \param mode The mode, as specified in fopen().
+			 * \return The file.
+			 */
+			static file open(const std::wstring& filename, const std::wstring& mode = L"r");
 #endif
 
-				/**
-				 * \brief Take ownership of a specified EVP_file pointer.
-				 * \param ptr The pointer. Cannot be NULL.
-				 * \return An file.
-				 */
-				static file take_ownership(pointer ptr);
+			/**
+			 * \brief Take ownership of a specified EVP_file pointer.
+			 * \param ptr The pointer. Cannot be NULL.
+			 * \return An file.
+			 */
+			static file take_ownership(pointer ptr);
 
-				/**
-				 * \brief Create a new empty file.
-				 */
-				file();
+			/**
+			 * \brief Create a new empty file.
+			 */
+			file();
 
-				/**
-				 * \brief Create an file by *NOT* taking ownership of an existing EVP_file pointer.
-				 * \param ptr The EVP_file pointer.
-				 * \warning The caller is still responsible for freeing the memory.
-				 */
-				file(pointer ptr);
+			/**
+			 * \brief Create an file by *NOT* taking ownership of an existing EVP_file pointer.
+			 * \param ptr The EVP_file pointer.
+			 * \warning The caller is still responsible for freeing the memory.
+			 */
+			file(pointer ptr);
 
-			private:
+		private:
 
-				explicit file(pointer _ptr, deleter_type _del);
-		};
+			explicit file(pointer _ptr, deleter_type _del);
+	};
 
-		/**
-		 * \brief Compare two file instances.
-		 * \param lhs The left argument.
-		 * \param rhs The right argument.
-		 * \return true if the two file instances share the same underlying pointer.
-		 */
-		bool operator==(const file& lhs, const file& rhs);
+	/**
+	 * \brief Compare two file instances.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two file instances share the same underlying pointer.
+	 */
+	bool operator==(const file& lhs, const file& rhs);
 
-		/**
-		 * \brief Compare two file instances.
-		 * \param lhs The left argument.
-		 * \param rhs The right argument.
-		 * \return true if the two file instances do not share the same underlying pointer.
-		 */
-		bool operator!=(const file& lhs, const file& rhs);
+	/**
+	 * \brief Compare two file instances.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two file instances do not share the same underlying pointer.
+	 */
+	bool operator!=(const file& lhs, const file& rhs);
 
-		inline file::file()
-		{
-		}
-		inline file::file(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
-		{
-		}
-		inline file::file(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
-		{
-		}
-		inline bool operator==(const file& lhs, const file& rhs)
-		{
-			return lhs.raw() == rhs.raw();
-		}
-		inline bool operator!=(const file& lhs, const file& rhs)
-		{
-			return lhs.raw() != rhs.raw();
-		}
+	inline file::file()
+	{
+	}
+	inline file::file(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
+	{
+	}
+	inline file::file(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
+	{
+	}
+	inline bool operator==(const file& lhs, const file& rhs)
+	{
+		return lhs.raw() == rhs.raw();
+	}
+	inline bool operator!=(const file& lhs, const file& rhs)
+	{
+		return lhs.raw() != rhs.raw();
 	}
 }
 
