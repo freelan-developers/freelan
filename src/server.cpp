@@ -62,6 +62,7 @@ using namespace boost;
 namespace fscp
 {
 	server::server(asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& _identity) :
+		m_data(0),
 		m_socket(io_service, listen_endpoint),
 		m_identity_store(_identity),
 		m_hello_current_unique_number(0),

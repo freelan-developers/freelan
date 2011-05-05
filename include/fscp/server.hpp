@@ -143,6 +143,21 @@ namespace fscp
 			void close();
 
 			/**
+			 * \brief Set the attached data.
+			 * \param data The attached data.
+			 */
+			template <typename T>
+			void set_data(T* data);
+
+			/**
+			 * \brief Get the attached data.
+			 * \return The attached data.
+			 * \warning A static_cast is used, so the caller has to make sure that the type specified is the same than the one used during the call to set_data().
+			 */
+			template <typename T>
+			T* get_data() const;
+
+			/**
 			 * \brief Get the associated io_service.
 			 * \return The associated io_service.
 			 */
@@ -273,6 +288,7 @@ namespace fscp
 			void async_receive();
 			void handle_receive_from(const boost::system::error_code&, size_t);
 
+			void* m_data;
 			boost::asio::ip::udp::socket m_socket;
 			boost::array<uint8_t, 65536> m_recv_buffer;
 			boost::array<uint8_t, 65536> m_send_buffer;
@@ -332,6 +348,18 @@ namespace fscp
 			data_store_map m_data_map;
 			data_message_callback m_data_message_callback;
 	};
+
+	template <typename T>
+	inline void server::set_data(T* data)
+	{
+		m_data = data;
+	}
+
+	template <typename T>
+	inline T* server::get_data() const
+	{
+		return static_cast<T*>(m_data);
+	}
 
 	inline boost::asio::io_service& server::get_io_service()
 	{
