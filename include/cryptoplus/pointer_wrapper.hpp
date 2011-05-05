@@ -95,6 +95,18 @@ namespace cryptoplus
 			 */
 			pointer raw();
 
+			/**
+			 * \brief Convert the instance to the raw pointer type.
+			 * \return The same value as raw().
+			 */
+			operator pointer();
+
+			/**
+			 * \brief Convert the instance to the raw pointer type.
+			 * \return The same value as raw().
+			 */
+			operator const_pointer() const;
+
 		protected:
 
 			/**
@@ -153,6 +165,16 @@ namespace cryptoplus
 	inline typename pointer_wrapper<T>::pointer pointer_wrapper<T>::raw()
 	{
 		return m_pointer.get();
+	}
+	template <typename T>
+	pointer_wrapper<T>::operator pointer_wrapper<T>::pointer()
+	{
+		return raw();
+	}
+	template <typename T>
+	pointer_wrapper<T>::operator pointer_wrapper<T>::const_pointer() const
+	{
+		return raw();
 	}
 	template <typename T>
 	inline void pointer_wrapper<T>::null_deleter(pointer)
