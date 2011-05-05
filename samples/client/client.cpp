@@ -94,7 +94,7 @@ static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::en
   return default_accept;
 }
 
-static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_session_request(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& sender, bool default_accept)
 {
 	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
 
@@ -110,7 +110,7 @@ static bool on_session(fscp::server& server, const boost::asio::ip::udp::endpoin
 	return default_accept;
 }
 
-static void on_data(const boost::asio::ip::udp::endpoint& sender, const void* buf, size_t buf_len)
+static void on_data(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& sender, const void* buf, size_t buf_len)
 {
 	std::cout << "Received DATA from " << sender << ": " << std::string(static_cast<const char*>(buf), buf_len) << std::endl;
 }
@@ -165,14 +165,14 @@ int main()
 	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-	alice_server.greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
-	bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
-	alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2, _3, _4));
-	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
+	alice_server.greet(bob_endpoint, &on_hello_response);
+	bob_server.set_hello_message_callback(&on_hello_request);
+	alice_server.set_presentation_message_callback(&on_presentation);
+	bob_server.set_presentation_message_callback(&on_presentation);
 	alice_server.set_session_request_message_callback(&on_session_request);
 	bob_server.set_session_request_message_callback(&on_session_request);
-	alice_server.set_session_message_callback(boost::bind(&on_session, boost::ref(alice_server), _1, _2));
-	bob_server.set_session_message_callback(boost::bind(&on_session, boost::ref(bob_server), _1, _2));
+	alice_server.set_session_message_callback(&on_session);
+	bob_server.set_session_message_callback(&on_session);
 	alice_server.set_data_message_callback(&on_data);
 	bob_server.set_data_message_callback(&on_data);
 

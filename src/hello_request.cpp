@@ -44,6 +44,8 @@
 
 #include "hello_request.hpp"
 
+#include "server.hpp"
+
 #include <boost/bind.hpp>
 
 namespace fscp
@@ -54,15 +56,15 @@ namespace fscp
 		{
 			return (_hello_request->unique_number() == unique_number) && (_hello_request->target() == target);
 		}
-
 	}
 
-	hello_request::hello_request(boost::asio::io_service& _io_service, uint32_t _unique_number, const boost::asio::ip::udp::endpoint& _target, callback_type _callback, boost::posix_time::time_duration _timeout) :
+	hello_request::hello_request(server& _server, uint32_t _unique_number, const boost::asio::ip::udp::endpoint& _target, callback_type _callback, boost::posix_time::time_duration _timeout) :
+		m_server(_server),
 		m_unique_number(_unique_number),
 		m_target(_target),
 		m_callback(_callback),
 		m_birthdate(boost::posix_time::microsec_clock::universal_time()),
-		m_timeout_timer(_io_service, _timeout),
+		m_timeout_timer(m_server.get_io_service(), _timeout),
 		m_cancel_status(false),
 		m_triggered(false)
 	{

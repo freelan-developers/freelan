@@ -218,7 +218,7 @@ namespace fscp
 	{
 		if (m_socket.is_open())
 		{
-			boost::shared_ptr<hello_request> _hello_request(new hello_request(get_io_service(), m_hello_current_unique_number, target, callback, timeout));
+			boost::shared_ptr<hello_request> _hello_request(new hello_request(*this, m_hello_current_unique_number, target, callback, timeout));
 
 			erase_expired_hello_requests(m_hello_request_list);
 
@@ -242,7 +242,7 @@ namespace fscp
 
 					if (m_hello_message_callback)
 					{
-						can_reply = m_hello_message_callback(sender, m_accept_hello_messages_default);
+						can_reply = m_hello_message_callback(*this, sender, m_accept_hello_messages_default);
 					}
 
 					if (can_reply)
@@ -301,7 +301,7 @@ namespace fscp
 
 		if (m_presentation_message_callback)
 		{
-			if (!m_presentation_message_callback(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate(), m_presentation_map.find(sender) == m_presentation_map.end()))
+			if (!m_presentation_message_callback(*this, sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate(), m_presentation_map.find(sender) == m_presentation_map.end()))
 			{
 				accept = false;
 			}
@@ -331,7 +331,7 @@ namespace fscp
 
 		if (m_session_request_message_callback)
 		{
-			can_reply = m_session_request_message_callback(sender, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_callback(*this, sender, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
@@ -382,7 +382,7 @@ namespace fscp
 
 			if (m_session_message_callback)
 			{
-				can_accept = m_session_message_callback(sender, m_accept_session_messages_default);
+				can_accept = m_session_message_callback(*this, sender, m_accept_session_messages_default);
 			}
 
 			if (can_accept)
@@ -465,7 +465,7 @@ namespace fscp
 
 				if (m_data_message_callback)
 				{
-					m_data_message_callback(sender, m_data_buffer.data(), cnt);
+					m_data_message_callback(*this, sender, m_data_buffer.data(), cnt);
 				}
 			}
 		}

@@ -84,45 +84,50 @@ namespace fscp
 
 			/**
 			 * \brief Hello message callback type.
+			 * \param server The server instance that called the callback function.
 			 * \param sender The endpoint that sent the hello message.
 			 * \param default_accept The default return value.
 			 * \return true to reply to the hello message, false to ignore it.
 			 */
-			typedef boost::function<bool (const ep_type& sender, bool default_accept)> hello_message_callback;
+			typedef boost::function<bool (server& server, const ep_type& sender, bool default_accept)> hello_message_callback;
 
 			/**
 			 * \brief Presentation message callback type.
+			 * \param server The server instance that called the callback function.
 			 * \param sender The endpoint that sent the presentation message.
 			 * \param sig_cert The signature certificate.
 			 * \param enc_cert The encryption certificate.
 			 * \param default_accept The default return value.
 			 * \return true to accept the presentation message for the originating host.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)> presentation_message_callback;
+			typedef boost::function<bool (server& server, const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)> presentation_message_callback;
 
 			/**
 			 * \brief Session request message callback type.
+			 * \param server The server instance that called the callback function.
 			 * \param sender The endpoint that sent the session request message.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session request.
 			 */
-			typedef boost::function<bool (const ep_type& sender, bool default_accept)> session_request_message_callback;
+			typedef boost::function<bool (server& server, const ep_type& sender, bool default_accept)> session_request_message_callback;
 
 			/**
 			 * \brief Session message callback type.
+			 * \param server The server instance that called the callback function.
 			 * \param sender The endpoint that sent the session message.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session.
 			 */
-			typedef boost::function<bool (const ep_type& sender, bool default_accept)> session_message_callback;
+			typedef boost::function<bool (server& server, const ep_type& sender, bool default_accept)> session_message_callback;
 
 			/**
 			 * \brief Data message callback type.
+			 * \param server The server instance that called the callback function.
 			 * \param sender The endpoint that sent the data message.
 			 * \param buf The sent data.
 			 * \param buf_len The length of the sent data.
 			 */
-			typedef boost::function<void (const ep_type& sender, const void* buf, size_t buf_len)> data_message_callback;
+			typedef boost::function<void (server& server, const ep_type& sender, const void* buf, size_t buf_len)> data_message_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
