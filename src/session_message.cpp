@@ -47,6 +47,8 @@
 #include "constants.hpp"
 
 #include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/pkey/pkey.hpp>
+#include <cryptoplus/pkey/rsa_key.hpp>
 #include <cassert>
 #include <stdexcept>
 
@@ -78,9 +80,15 @@ namespace fscp
 		ciphertext.resize(enc_key.get_rsa_key().public_encrypt(&ciphertext[0], ciphertext.size(), cleartext, cleartext_len, RSA_PKCS1_OAEP_PADDING));
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.sign_initialize(cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM));
-		mdctx.sign_update(&ciphertext[0], ciphertext.size());
-		std::vector<uint8_t> ciphertext_signature = mdctx.sign_finalize<uint8_t>(sig_key);
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM));
+		mdctx.update(&ciphertext[0], ciphertext.size());
+		std::vector<uint8_t> digest = mdctx.finalize<uint8_t>();
+
+		std::vector<uint8_t> padded_buf(sig_key.get_rsa_key().size());
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(&padded_buf[0], padded_buf.size(), &digest[0], digest.size(), cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM), -1);
+
+		std::vector<uint8_t> ciphertext_signature(sig_key.get_rsa_key().size());
+		ciphertext_signature.resize(sig_key.get_rsa_key().private_encrypt(&ciphertext_signature[0], ciphertext_signature.size(), &padded_buf[0], padded_buf.size(), RSA_NO_PADDING));
 
 		return write(buf, buf_len, &ciphertext[0], ciphertext.size(), &ciphertext_signature[0], ciphertext_signature.size());
 	}
@@ -118,15 +126,18 @@ namespace fscp
 	void session_message::check_signature(cryptoplus::pkey::pkey key) const
 	{
 		assert(key);
+		assert(key.get_rsa_key());
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.verify_initialize(cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM));
-		mdctx.verify_update(ciphertext(), ciphertext_size());
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM));
+		mdctx.update(ciphertext(), ciphertext_size());
+		std::vector<uint8_t> digest = mdctx.finalize<uint8_t>();
 
-		if (!mdctx.verify_finalize(ciphertext_signature(), ciphertext_signature_size(), key))
-		{
-			throw std::runtime_error("session_message signature does not match");
-		}
+		std::vector<uint8_t> padded_buf(key.get_rsa_key().size());
+
+		padded_buf.resize(key.get_rsa_key().public_decrypt(&padded_buf[0], padded_buf.size(), ciphertext_signature(), ciphertext_signature_size(), RSA_NO_PADDING));
+
+		key.get_rsa_key().verify_PKCS1_PSS(&digest[0], digest.size(), &padded_buf[0], padded_buf.size(), cryptoplus::hash::message_digest_algorithm(SIGNATURE_MESSAGE_DIGEST_ALGORITHM), -1);
 	}
 
 	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
