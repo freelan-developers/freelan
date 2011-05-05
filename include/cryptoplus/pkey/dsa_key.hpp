@@ -48,6 +48,7 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
+#include "../file.hpp"
 #include "dh_key.hpp"
 
 #include <openssl/dsa.h>
@@ -159,7 +160,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dsa_key from_private_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dsa_key from_private_key(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load DSA parameters from a file.
@@ -168,7 +169,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dsa_key from_parameters(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dsa_key from_parameters(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a certificate public DSA key from a file.
@@ -177,7 +178,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dsa_key from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dsa_key from_certificate_public_key(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a DSA key from a private key buffer.
@@ -258,7 +259,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
 
 				/**
 				 * \brief Write the private DSA key to a file.
@@ -267,19 +268,19 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
 
 				/**
 				 * \brief Write the DSA parameters to a file.
 				 * \param file The file.
 				 */
-				void write_parameters(FILE* file);
+				void write_parameters(file file);
 
 				/**
 				 * \brief Write the certificate public DSA key to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_public_key(FILE* file);
+				void write_certificate_public_key(file file);
 
 				/**
 				 * \brief Generate the DSA key, reading its parameters.
@@ -303,11 +304,11 @@ namespace cryptoplus
 				void print(bio::bio_ptr bio, int offset = 0);
 
 				/**
-				 * \brief Print the DSA key in a human-readable hexadecimal form to a specified FILE.
+				 * \brief Print the DSA key in a human-readable hexadecimal form to a specified file.
 				 * \param file The file.
 				 * \param offset The number of offset spaces to output.
 				 */
-				void print(FILE* file, int offset = 0);
+				void print(file file, int offset = 0);
 
 				/**
 				 * \brief Print the DSA parameters in a human-readable hexadecimal form to a specified BIO.
@@ -316,10 +317,10 @@ namespace cryptoplus
 				void print_parameters(bio::bio_ptr bio);
 
 				/**
-				 * \brief Print the DSA parameters in a human-readable hexadecimal form to a specified FILE.
+				 * \brief Print the DSA parameters in a human-readable hexadecimal form to a specified file.
 				 * \param file The file.
 				 */
-				void print_parameters(FILE* file);
+				void print_parameters(file file);
 
 				/**
 				 * \brief Extract a public DSA key from a private DSA key.
@@ -420,17 +421,17 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_bio_DSA_PUBKEY(bio.raw(), NULL, callback, callback_arg));
 		}
-		inline dsa_key dsa_key::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline dsa_key dsa_key::from_private_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_DSAPrivateKey(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_DSAPrivateKey(_file.raw(), NULL, callback, callback_arg));
 		}
-		inline dsa_key dsa_key::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline dsa_key dsa_key::from_parameters(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_DSAparams(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_DSAparams(_file.raw(), NULL, callback, callback_arg));
 		}
-		inline dsa_key dsa_key::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline dsa_key dsa_key::from_certificate_public_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_DSA_PUBKEY(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_DSA_PUBKEY(_file.raw(), NULL, callback, callback_arg));
 		}
 		inline dsa_key::dsa_key()
 		{
@@ -454,21 +455,21 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_bio_DSA_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
-		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void dsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void dsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void dsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(file, ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			error::throw_error_if_not(PEM_write_DSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void dsa_key::write_parameters(FILE* file)
+		inline void dsa_key::write_parameters(file _file)
 		{
-			error::throw_error_if_not(PEM_write_DSAparams(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_DSAparams(_file.raw(), ptr().get()) != 0);
 		}
-		inline void dsa_key::write_certificate_public_key(FILE* file)
+		inline void dsa_key::write_certificate_public_key(file _file)
 		{
-			error::throw_error_if_not(PEM_write_DSA_PUBKEY(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_DSA_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}
 		inline dsa_key& dsa_key::generate()
 		{
@@ -484,17 +485,17 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(DSA_print(bio.raw(), ptr().get(), offset) != 0);
 		}
-		inline void dsa_key::print(FILE* file, int offset)
+		inline void dsa_key::print(file _file, int offset)
 		{
-			error::throw_error_if_not(DSA_print_fp(file, ptr().get(), offset) != 0);
+			error::throw_error_if_not(DSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
 		}
 		inline void dsa_key::print_parameters(bio::bio_ptr bio)
 		{
 			error::throw_error_if_not(DSAparams_print(bio.raw(), ptr().get()) != 0);
 		}
-		inline void dsa_key::print_parameters(FILE* file)
+		inline void dsa_key::print_parameters(file _file)
 		{
-			error::throw_error_if_not(DSAparams_print_fp(file, ptr().get()) != 0);
+			error::throw_error_if_not(DSAparams_print_fp(_file.raw(), ptr().get()) != 0);
 		}
 		template <typename T>
 		inline std::vector<T> dsa_key::sign(const void* buf, size_t buf_len, int type)

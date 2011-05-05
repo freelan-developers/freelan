@@ -49,6 +49,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../hash/message_digest_algorithm.hpp"
+#include "../file.hpp"
 
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
@@ -143,7 +144,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
-				static rsa_key from_private_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static rsa_key from_private_key(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a public RSA key from a file.
@@ -152,7 +153,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
-				static rsa_key from_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static rsa_key from_public_key(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a certificate public RSA key from a file.
@@ -161,7 +162,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The rsa_key.
 				 */
-				static rsa_key from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static rsa_key from_certificate_public_key(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a RSA key from a private key buffer.
@@ -242,7 +243,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
 
 				/**
 				 * \brief Write the private RSA key to a file.
@@ -251,19 +252,19 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
 
 				/**
 				 * \brief Write the public RSA key to a file.
 				 * \param file The file.
 				 */
-				void write_public_key(FILE* file);
+				void write_public_key(file file);
 
 				/**
 				 * \brief Write the certificate public RSA key to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_public_key(FILE* file);
+				void write_certificate_public_key(file file);
 
 				/**
 				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
@@ -301,11 +302,11 @@ namespace cryptoplus
 				void print(bio::bio_ptr bio, int offset = 0);
 
 				/**
-				 * \brief Print the RSA key in a human-readable hexadecimal form to a specified FILE.
+				 * \brief Print the RSA key in a human-readable hexadecimal form to a specified file.
 				 * \param file The file.
 				 * \param offset The number of offset spaces to output.
 				 */
-				void print(FILE* file, int offset = 0);
+				void print(file file, int offset = 0);
 
 				/**
 				 * \brief Extract a public RSA key from a private RSA key.
@@ -476,17 +477,17 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_bio_RSA_PUBKEY(bio.raw(), NULL, callback, callback_arg));
 		}
-		inline rsa_key rsa_key::from_private_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline rsa_key rsa_key::from_private_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_RSAPrivateKey(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_RSAPrivateKey(_file.raw(), NULL, callback, callback_arg));
 		}
-		inline rsa_key rsa_key::from_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline rsa_key rsa_key::from_public_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_RSAPublicKey(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_RSAPublicKey(_file.raw(), NULL, callback, callback_arg));
 		}
-		inline rsa_key rsa_key::from_certificate_public_key(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline rsa_key rsa_key::from_certificate_public_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_RSA_PUBKEY(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_RSA_PUBKEY(_file.raw(), NULL, callback, callback_arg));
 		}
 		inline rsa_key::rsa_key()
 		{
@@ -510,21 +511,21 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
-		inline void rsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{
-			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			error::throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void rsa_key::write_private_key(FILE* file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			error::throw_error_if_not(PEM_write_RSAPrivateKey(file, ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			error::throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void rsa_key::write_public_key(FILE* file)
+		inline void rsa_key::write_public_key(file _file)
 		{
-			error::throw_error_if_not(PEM_write_RSAPublicKey(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_RSAPublicKey(_file.raw(), ptr().get()) != 0);
 		}
-		inline void rsa_key::write_certificate_public_key(FILE* file)
+		inline void rsa_key::write_certificate_public_key(file _file)
 		{
-			error::throw_error_if_not(PEM_write_RSA_PUBKEY(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_RSA_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}
 		inline void rsa_key::enable_blinding(BN_CTX* ctx)
 		{
@@ -546,9 +547,9 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(RSA_print(bio.raw(), ptr().get(), offset) != 0);
 		}
-		inline void rsa_key::print(FILE* file, int offset)
+		inline void rsa_key::print(file _file, int offset)
 		{
-			error::throw_error_if_not(RSA_print_fp(file, ptr().get(), offset) != 0);
+			error::throw_error_if_not(RSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
 		}
 		template <typename T>
 		inline std::vector<T> rsa_key::sign(const void* buf, size_t buf_len, int type)

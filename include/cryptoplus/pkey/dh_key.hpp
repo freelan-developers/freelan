@@ -49,6 +49,7 @@
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../bn/bignum.hpp"
+#include "../file.hpp"
 
 #include <openssl/dh.h>
 #include <openssl/pem.h>
@@ -125,7 +126,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The dsa_key.
 				 */
-				static dh_key from_parameters(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static dh_key from_parameters(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load DH parameters from a public key buffer.
@@ -159,7 +160,7 @@ namespace cryptoplus
 				 * \brief Write the DH parameters to a file.
 				 * \param file The file.
 				 */
-				void write_parameters(FILE* file);
+				void write_parameters(file file);
 
 				/**
 				 * \brief Get the private key component.
@@ -223,10 +224,10 @@ namespace cryptoplus
 				void print_parameters(bio::bio_ptr bio);
 
 				/**
-				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified FILE.
+				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified file.
 				 * \param file The file.
 				 */
-				void print_parameters(FILE* file);
+				void print_parameters(file file);
 
 			private:
 
@@ -263,9 +264,9 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_bio_DHparams(bio.raw(), NULL, callback, callback_arg));
 		}
-		inline dh_key dh_key::from_parameters(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline dh_key dh_key::from_parameters(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_DHparams(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_DHparams(_file.raw(), NULL, callback, callback_arg));
 		}
 		inline dh_key::dh_key()
 		{
@@ -277,9 +278,9 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()) != 0);
 		}
-		inline void dh_key::write_parameters(FILE* file)
+		inline void dh_key::write_parameters(file _file)
 		{
-			error::throw_error_if_not(PEM_write_DHparams(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
 		}
 		inline bn::bignum dh_key::private_key() const
 		{
@@ -316,9 +317,9 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(DHparams_print(bio.raw(), ptr().get()) != 0);
 		}
-		inline void dh_key::print_parameters(FILE* file)
+		inline void dh_key::print_parameters(file _file)
 		{
-			error::throw_error_if_not(DHparams_print_fp(file, ptr().get()) != 0);
+			error::throw_error_if_not(DHparams_print_fp(_file.raw(), ptr().get()) != 0);
 		}
 		inline bool operator==(const dh_key& lhs, const dh_key& rhs)
 		{

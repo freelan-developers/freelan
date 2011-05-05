@@ -51,6 +51,7 @@
 #include "../pkey/pkey.hpp"
 #include "../asn1/integer.hpp"
 #include "../asn1/utctime.hpp"
+#include "../file.hpp"
 #include "name.hpp"
 #include "extension.hpp"
 
@@ -117,7 +118,7 @@ namespace cryptoplus
 				 * \param file The file.
 				 * \return The certificate_request.
 				 */
-				static certificate_request from_der(FILE* file);
+				static certificate_request from_der(file file);
 
 				/**
 				 * \brief Load a X509 certificate_request from a file.
@@ -128,7 +129,7 @@ namespace cryptoplus
 				 *
 				 * This function will also load a trusted certificate_request but without its 'trust' information.
 				 */
-				static certificate_request from_certificate_request(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static certificate_request from_certificate_request(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a X509 certificate_request in DER format.
@@ -176,13 +177,13 @@ namespace cryptoplus
 				 * \brief Write the certificate_request in DER format to a file.
 				 * \param file The file.
 				 */
-				void write_der(FILE* file);
+				void write_der(file file);
 
 				/**
 				 * \brief Write the certificate_request to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_request(FILE* file);
+				void write_certificate_request(file file);
 
 				/**
 				 * \brief Write the certificate_request in DER format to a buffer.
@@ -310,13 +311,13 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_bio_X509_REQ(bio.raw(), NULL, callback, callback_arg));
 		}
-		inline certificate_request certificate_request::from_der(FILE* file)
+		inline certificate_request certificate_request::from_der(file _file)
 		{
-			return take_ownership(d2i_X509_REQ_fp(file, NULL));
+			return take_ownership(d2i_X509_REQ_fp(_file.raw(), NULL));
 		}
-		inline certificate_request certificate_request::from_certificate_request(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline certificate_request certificate_request::from_certificate_request(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_X509_REQ(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_X509_REQ(_file.raw(), NULL, callback, callback_arg));
 		}
 		inline certificate_request certificate_request::from_der(const void* buf, size_t buf_len)
 		{
@@ -338,13 +339,13 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_bio_X509_REQ(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_request::write_der(FILE* file)
+		inline void certificate_request::write_der(file _file)
 		{
-			error::throw_error_if_not(i2d_X509_REQ_fp(file, ptr().get()) != 0);
+			error::throw_error_if_not(i2d_X509_REQ_fp(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_request::write_certificate_request(FILE* file)
+		inline void certificate_request::write_certificate_request(file _file)
 		{
-			error::throw_error_if_not(PEM_write_X509_REQ(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_X509_REQ(_file.raw(), ptr().get()) != 0);
 		}
 		inline size_t certificate_request::write_der(void* buf)
 		{

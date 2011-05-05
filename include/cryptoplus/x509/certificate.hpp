@@ -51,6 +51,7 @@
 #include "../pkey/pkey.hpp"
 #include "../asn1/integer.hpp"
 #include "../asn1/utctime.hpp"
+#include "../file.hpp"
 #include "name.hpp"
 #include "extension.hpp"
 #include "certificate_request.hpp"
@@ -233,7 +234,7 @@ namespace cryptoplus
 				 * \param file The file.
 				 * \return The certificate.
 				 */
-				static certificate from_der(FILE* file);
+				static certificate from_der(file file);
 
 				/**
 				 * \brief Load a X509 certificate from a file.
@@ -244,7 +245,7 @@ namespace cryptoplus
 				 *
 				 * This function will also load a trusted certificate but without its 'trust' information.
 				 */
-				static certificate from_certificate(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static certificate from_certificate(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a X509 trusted certificate from a BIO.
@@ -253,7 +254,7 @@ namespace cryptoplus
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 * \return The certificate.
 				 */
-				static certificate from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
+				static certificate from_trusted_certificate(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
 				 * \brief Load a X509 certificate in DER format.
@@ -317,19 +318,19 @@ namespace cryptoplus
 				 * \brief Write the certificate in DER format to a file.
 				 * \param file The file.
 				 */
-				void write_der(FILE* file);
+				void write_der(file file);
 
 				/**
 				 * \brief Write the certificate to a file.
 				 * \param file The file.
 				 */
-				void write_certificate(FILE* file);
+				void write_certificate(file file);
 
 				/**
 				 * \brief Write the trusted certificate to a file.
 				 * \param file The file.
 				 */
-				void write_trusted_certificate(FILE* file);
+				void write_trusted_certificate(file file);
 
 				/**
 				 * \brief Write the certificate in DER format to a buffer.
@@ -781,17 +782,17 @@ namespace cryptoplus
 		{
 			return take_ownership(PEM_read_bio_X509_AUX(bio.raw(), NULL, callback, callback_arg));
 		}
-		inline certificate certificate::from_der(FILE* file)
+		inline certificate certificate::from_der(file _file)
 		{
-			return take_ownership(d2i_X509_fp(file, NULL));
+			return take_ownership(d2i_X509_fp(_file.raw(), NULL));
 		}
-		inline certificate certificate::from_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline certificate certificate::from_certificate(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_X509(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_X509(_file.raw(), NULL, callback, callback_arg));
 		}
-		inline certificate certificate::from_trusted_certificate(FILE* file, pem_passphrase_callback_type callback, void* callback_arg)
+		inline certificate certificate::from_trusted_certificate(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
-			return take_ownership(PEM_read_X509_AUX(file, NULL, callback, callback_arg));
+			return take_ownership(PEM_read_X509_AUX(_file.raw(), NULL, callback, callback_arg));
 		}
 		inline certificate certificate::from_der(const void* buf, size_t buf_len)
 		{
@@ -817,17 +818,17 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_der(FILE* file)
+		inline void certificate::write_der(file _file)
 		{
-			error::throw_error_if_not(i2d_X509_fp(file, ptr().get()) != 0);
+			error::throw_error_if_not(i2d_X509_fp(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_certificate(FILE* file)
+		inline void certificate::write_certificate(file _file)
 		{
-			error::throw_error_if_not(PEM_write_X509(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_X509(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_trusted_certificate(FILE* file)
+		inline void certificate::write_trusted_certificate(file _file)
 		{
-			error::throw_error_if_not(PEM_write_X509_AUX(file, ptr().get()) != 0);
+			error::throw_error_if_not(PEM_write_X509_AUX(_file.raw(), ptr().get()) != 0);
 		}
 		inline size_t certificate::write_der(void* buf)
 		{
