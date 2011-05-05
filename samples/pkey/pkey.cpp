@@ -8,6 +8,7 @@
 #include <cryptoplus/pkey/pkey.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
+#include <cryptoplus/file.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -66,8 +67,8 @@ int main()
 	const std::string private_key_filename = "private_key.pem";
 	const std::string certificate_public_key_filename = "certificate_public_key.pem";
 
-	boost::shared_ptr<FILE> private_key_file(fopen(private_key_filename.c_str(), "w"), fclose);
-	boost::shared_ptr<FILE> certificate_public_key_file(fopen(certificate_public_key_filename.c_str(), "w"), fclose);
+	cryptoplus::file private_key_file = cryptoplus::file::open(private_key_filename, "w");
+	cryptoplus::file certificate_public_key_file = cryptoplus::file::open(certificate_public_key_filename, "w");
 
 	if (!private_key_file)
 	{
@@ -97,11 +98,11 @@ int main()
 
 		std::cout << "Checking that the type is correct: " << (pkey.is_dsa() ? "OK" : "FAILURE") << std::endl;
 
-		pkey.write_private_key_pkcs8(private_key_file.get(), cryptoplus::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
+		pkey.write_private_key_pkcs8(private_key_file, cryptoplus::cipher::cipher_algorithm("AES256"), pem_passphrase_callback);
 
 		std::cout << "Private key written succesfully to \"" << private_key_filename << "\"." << std::endl;
 
-		pkey.write_certificate_public_key(certificate_public_key_file.get());
+		pkey.write_certificate_public_key(certificate_public_key_file);
 
 		std::cout << "Certificate public key written succesfully to \"" << certificate_public_key_filename << "\"." << std::endl;
 	}
@@ -112,8 +113,8 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	certificate_public_key_file.reset();
-	private_key_file.reset(fopen(private_key_filename.c_str(), "r"), fclose);
+	certificate_public_key_file = cryptoplus::file();
+	private_key_file = cryptoplus::file::open(private_key_filename, "r");
 
 	if (!private_key_file)
 	{
@@ -126,7 +127,7 @@ int main()
 	{
 		std::cout << "Trying to read back the private key from \"" << private_key_filename << "\"..." << std::endl;
 
-		cryptoplus::pkey::pkey pkey = cryptoplus::pkey::pkey::from_private_key(private_key_file.get(), pem_passphrase_callback);
+		cryptoplus::pkey::pkey pkey = cryptoplus::pkey::pkey::from_private_key(private_key_file, pem_passphrase_callback);
 
 		std::cout << "Done." << std::endl;
 	}
