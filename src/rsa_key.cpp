@@ -115,7 +115,7 @@ namespace cryptoplus
 				throw std::invalid_argument("buf_len");
 			}
 
-			error::throw_error_if_not(RSA_padding_add_PKCS1_PSS(ptr().get(), static_cast<unsigned char*>(out), static_cast<const unsigned char*>(buf), algorithm.raw(), salt_len));
+			error::throw_error_if_not(RSA_padding_add_PKCS1_PSS(ptr().get(), static_cast<unsigned char*>(out), static_cast<const unsigned char*>(buf), algorithm.raw(), salt_len) != 0);
 		}
 
 		void rsa_key::verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t /*buf_len*/, hash::message_digest_algorithm algorithm, int salt_len)
@@ -129,7 +129,7 @@ namespace cryptoplus
 
 			//TODO: Use buf_len
 
-			error::throw_error_if_not(RSA_verify_PKCS1_PSS(ptr().get(), static_cast<const unsigned char*>(digest), algorithm.raw(), static_cast<const unsigned char*>(buf), salt_len));
+			error::throw_error_if_not(RSA_verify_PKCS1_PSS(ptr().get(), static_cast<const unsigned char*>(digest), algorithm.raw(), static_cast<const unsigned char*>(buf), salt_len) != 0);
 		}
 
 		size_t rsa_key::private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)

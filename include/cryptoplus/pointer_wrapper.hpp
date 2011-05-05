@@ -167,12 +167,12 @@ namespace cryptoplus
 		return m_pointer.get();
 	}
 	template <typename T>
-	pointer_wrapper<T>::operator pointer_wrapper<T>::pointer()
+	pointer_wrapper<T>::operator typename pointer_wrapper<T>::pointer()
 	{
 		return raw();
 	}
 	template <typename T>
-	pointer_wrapper<T>::operator pointer_wrapper<T>::const_pointer() const
+	pointer_wrapper<T>::operator typename pointer_wrapper<T>::const_pointer() const
 	{
 		return raw();
 	}

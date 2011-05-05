@@ -313,7 +313,7 @@ namespace cryptoplus
 		}
 		inline unsigned long bignum::to_long()
 		{
-			return BN_get_word(ptr().get());
+			return static_cast<unsigned long>(BN_get_word(ptr().get()));
 		}
 		inline bignum bignum::clone() const
 		{

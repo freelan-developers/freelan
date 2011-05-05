@@ -103,11 +103,18 @@ namespace cryptoplus
 
 	file file::open(const std::string& filename, const std::string& mode)
 	{
-		file::pointer ptr = fopen(filename.c_str(), mode.c_str());
+#ifdef MSV
+		file::pointer ptr = 0;
 
-		if (!ptr)
+		int err = fopen_s(&ptr, filename.c_str(), mode.c_str());
+
+		if (err != 0)
 		{
+			ptr = 0;
 		}
+#else
+		file::pointer ptr = fopen(filename.c_str(), mode.c_str());
+#endif
 
 		return take_ownership(ptr);
 	}
@@ -118,7 +125,7 @@ namespace cryptoplus
 #ifdef MSV
 		file::pointer ptr = 0;
 
-		int err = _wfopen_s(&fp, filename.toStdWString().c_str(), L"r");
+		int err = _wfopen_s(&ptr, filename.c_str(), L"r");
 
 		if (err != 0)
 		{
