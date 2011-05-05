@@ -42,6 +42,8 @@
  * \brief A file class.
  */
 
+#include <cstdio>
+
 #include "file.hpp"
 
 #include <cassert>

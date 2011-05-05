@@ -48,7 +48,6 @@
 #include "os.hpp"
 #include "pointer_wrapper.hpp"
 
-#include <cstdio>
 #include <string>
 #include <stdexcept>
 
