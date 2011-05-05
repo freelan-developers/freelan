@@ -52,6 +52,7 @@
     <ClCompile Include="..\src\string.cpp" />
     <ClCompile Include="..\src\utctime.cpp" />
     <ClCompile Include="..\src\x509v3_context.cpp" />
+    <ClCompile Include="..\src\file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\cryptoplus\asn1\integer.hpp" />
@@ -77,6 +78,7 @@
     <ClInclude Include="..\include\cryptoplus\initializer.hpp" />
     <ClInclude Include="..\include\cryptoplus\nullable.hpp" />
     <ClInclude Include="..\include\cryptoplus\os.hpp" />
+    <ClInclude Include="..\include\cryptoplus\file.hpp" />
     <ClInclude Include="..\include\cryptoplus\pkey\dh_key.hpp" />
     <ClInclude Include="..\include\cryptoplus\pkey\dsa_key.hpp" />
     <ClInclude Include="..\include\cryptoplus\pkey\pkey.hpp" />

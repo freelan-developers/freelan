@@ -144,6 +144,9 @@
     <ClCompile Include="..\src\x509v3_context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\cryptoplus\cryptoplus.hpp">
@@ -250,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="..\include\cryptoplus\x509\x509v3_context.hpp">
       <Filter>Header Files\cryptoplus\x509</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cryptoplus\file.hpp">
+      <Filter>Header Files\cryptoplus</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
