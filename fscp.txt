@@ -118,6 +118,11 @@ Abstract
    certificate SHOULD have both digitalSignature and keyEncipherment key
    usage set, as specified in [RFC2459].
 
+   However, it is RECOMMENDED that two different certificate/key pair be
+   used for signature and encryption. A strict implementation MAY reject
+   PRESENTATION message with identicial signature and encryption
+   certificates.
+
    The sig and enc certificate MUST have the exact same subjectName and
    issuerName. If they don't, the message MUST be ignored.
 
