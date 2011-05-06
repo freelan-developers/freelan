@@ -45,33 +45,28 @@
 #ifndef FSCP_SESSION_REQUEST_MESSAGE_HPP
 #define FSCP_SESSION_REQUEST_MESSAGE_HPP
 
-#include "message.hpp"
+#include "session_message.hpp"
 
 namespace fscp
 {
 	/**
 	 * \brief A session request message class.
 	 */
-	class session_request_message : public message
+	class session_request_message : private session_message
 	{
 		public:
 
 			/**
-			 * \brief Write a session_request request message to a buffer.
+			 * \brief Write a session request message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
+			 * \param cleartext The cleartext.
+			 * \param cleartext_len The cleartext length.
+			 * \param enc_key The public key to use to cipher the cleartext.
+			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len);
-
-			/**
-			 * \brief Create a session_request_message and map it on a buffer.
-			 * \param buf The buffer.
-			 * \param buf_len The buffer length.
-			 *
-			 * If the mapping fails, a std::runtime_error is thrown.
-			 */
-			session_request_message(const void* buf, size_t buf_len);
+			static size_t write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_request_message from a message.
@@ -79,13 +74,19 @@ namespace fscp
 			 */
 			session_request_message(const message& message);
 
-		protected:
-
-			/**
-			 * \brief The length of the body.
-			 */
-			static const size_t BODY_LENGTH = 0;
+			using session_message::ciphertext;
+			using session_message::ciphertext_size;
+			using session_message::ciphertext_signature;
+			using session_message::ciphertext_signature_size;
+			using session_message::check_signature;
+			using session_message::get_cleartext;
 	};
+
+	inline size_t session_request_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
+	{
+		return _write(buf, buf_len, cleartext, cleartext_len, enc_key, sig_key, MESSAGE_TYPE_SESSION_REQUEST);
+	}
+
 }
 
 #endif /* FSCP_SESSION_REQUEST_MESSAGE_HPP */

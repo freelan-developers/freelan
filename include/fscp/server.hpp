@@ -61,6 +61,7 @@ namespace fscp
 	class hello_message;
 	class presentation_message;
 	class session_request_message;
+	class clear_session_request_message;
 	class session_message;
 	class clear_session_message;
 	class data_message;
@@ -355,7 +356,8 @@ namespace fscp
 
 			void do_request_session(const ep_type&);
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
-			void do_send_session(const ep_type&);
+			void handle_clear_session_request_message_from(const clear_session_request_message&, const ep_type&);
+			void do_send_session(const ep_type&, session_store::session_number_type);
 
 			session_pair_map m_session_map;
 			bool m_accept_session_request_messages_default;

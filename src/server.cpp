@@ -48,6 +48,7 @@
 #include "hello_message.hpp"
 #include "presentation_message.hpp"
 #include "session_request_message.hpp"
+#include "clear_session_request_message.hpp"
 #include "session_message.hpp"
 #include "clear_session_message.hpp"
 #include "data_message.hpp"
@@ -331,13 +332,30 @@ namespace fscp
 	{
 		if (m_socket.is_open())
 		{
-			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size());
+			session_pair& session = m_session_map[target];
+
+			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() : 0;
+
+			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number);
+
+			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
 			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 		}
 	}
 
-	void server::handle_session_request_message_from(const session_request_message& /*_session_request_message*/, const ep_type& sender)
+	void server::handle_session_request_message_from(const session_request_message& _session_request_message, const ep_type& sender)
+	{
+		_session_request_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
+
+		std::vector<uint8_t> cleartext = _session_request_message.get_cleartext<uint8_t>(m_identity_store.encryption_key());
+
+		clear_session_request_message clear_session_request_message(&cleartext[0], cleartext.size());
+
+		handle_clear_session_request_message_from(clear_session_request_message, sender);
+	}
+
+	void server::handle_clear_session_request_message_from(const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
 	{
 		bool can_reply = m_accept_session_request_messages_default;
 
@@ -348,15 +366,15 @@ namespace fscp
 
 		if (can_reply)
 		{
-			do_send_session(sender);
+			do_send_session(sender, _clear_session_request_message.session_number());
 		}
 	}
 
-	void server::do_send_session(const ep_type& target)
+	void server::do_send_session(const ep_type& target, session_store::session_number_type session_number)
 	{
 		session_pair& session = m_session_map[target];
 
-		session.renew_local_session();
+		session.renew_local_session(session_number);
 
 		std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
 		                                     session.local_session().session_number(),
@@ -472,7 +490,7 @@ namespace fscp
 
 				if (session_pair.local_session().is_old())
 				{
-					do_send_session(sender);
+					do_send_session(sender, session_pair.local_session().session_number() + 1);
 				}
 
 				if (m_data_message_callback)

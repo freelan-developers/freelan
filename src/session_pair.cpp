@@ -46,13 +46,13 @@
 
 namespace fscp
 {
-	bool session_pair::renew_local_session(bool force)
+	bool session_pair::renew_local_session(session_store::session_number_type session_number)
 	{
 		if (has_local_session())
 		{
-			if (force || local_session().is_old())
+			if ((session_number > local_session().session_number()) || local_session().is_old())
 			{
-				m_local_session.reset(new session_store(local_session().session_number() + 1));
+				m_local_session.reset(new session_store(std::max(local_session().session_number() + 1, session_number)));
 
 				return true;
 			}

@@ -37,18 +37,39 @@
  */
 
 /**
- * \file session_request_message.cpp
+ * \file clear_session_request_message.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A session request message class.
+ * \brief A clear session request message class.
  */
 
-#include "session_request_message.hpp"
+#include "clear_session_request_message.hpp"
+
+#include <cryptoplus/random/random.hpp>
+
+#include <cassert>
+#include <stdexcept>
 
 namespace fscp
 {
-	session_request_message::session_request_message(const message& _message) :
-		session_message(_message)
+	size_t clear_session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number)
 	{
-		check_format();
+		if (buf_len < BODY_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
+		cryptoplus::random::get_random_bytes(static_cast<uint8_t*>(buf) + sizeof(session_number_type), SALT_LENGTH);
+
+		return BODY_LENGTH;
+	}
+
+	clear_session_request_message::clear_session_request_message(const void* buf, size_t buf_len) :
+		m_data(buf)
+	{
+		if (buf_len < BODY_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
 	}
 }

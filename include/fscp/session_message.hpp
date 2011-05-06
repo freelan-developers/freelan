@@ -62,18 +62,6 @@ namespace fscp
 			 * \brief Write a session message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param ciphertext The ciphertext.
-			 * \param ciphertext_len The ciphertext length.
-			 * \param ciphertext_signature The ciphertext signature.
-			 * \param ciphertext_signature_len The ciphertext signature length.
-			 * \return The count of bytes written.
-			 */
-			static size_t write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len);
-
-			/**
-			 * \brief Write a session message to a buffer.
-			 * \param buf The buffer to write to.
-			 * \param buf_len The length of buf.
 			 * \param cleartext The cleartext.
 			 * \param cleartext_len The cleartext length.
 			 * \param enc_key The public key to use to cipher the cleartext.
@@ -81,15 +69,6 @@ namespace fscp
 			 * \return The count of bytes written.
 			 */
 			static size_t write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key);
-
-			/**
-			 * \brief Create a session_message and map it on a buffer.
-			 * \param buf The buffer.
-			 * \param buf_len The buffer length.
-			 *
-			 * If the mapping fails, a std::runtime_error is thrown.
-			 */
-			session_message(const void* buf, size_t buf_len);
 
 			/**
 			 * \brief Create a session_message from a message.
@@ -148,14 +127,43 @@ namespace fscp
 		protected:
 
 			/**
+			 * \brief Write a session message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param ciphertext The ciphertext.
+			 * \param ciphertext_len The ciphertext length.
+			 * \param ciphertext_signature The ciphertext signature.
+			 * \param ciphertext_signature_len The ciphertext signature length.
+			 * \param type The message type.
+			 * \return The count of bytes written.
+			 */
+			static size_t _write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type);
+
+			/**
+			 * \brief Write a session message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param cleartext The cleartext.
+			 * \param cleartext_len The cleartext length.
+			 * \param enc_key The public key to use to cipher the cleartext.
+			 * \param sig_key The private key to use to sign the ciphertext.
+			 * \param type The message type.
+			 * \return The count of bytes written.
+			 */
+			static size_t _write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key, message_type type);
+
+			/**
 			 * \brief The min length of the body.
 			 */
 			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
 
-		private:
-
 			void check_format() const;
 	};
+
+	inline size_t session_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
+	{
+		return _write(buf, buf_len, cleartext, cleartext_len, enc_key, sig_key, MESSAGE_TYPE_SESSION);
+	}
 
 	inline const uint8_t* session_message::ciphertext() const
 	{
