@@ -277,6 +277,38 @@ namespace fscp
 			void send_data(const ep_type& target, const std::string& str);
 
 			/**
+			 * \brief Send data to a list of hosts.
+			 * \param begin An iterator to the first target.
+			 * \param end An iterator past the last target.
+			 * \param buf The data to send.
+			 * \param buf_len The length of buf.
+			 */
+			template <typename T>
+			void send_data_to_list(const T& begin, const T& end, const void* buf, size_t buf_len);
+
+			/**
+			 * \brief Send data to all the hosts.
+			 * \param begin An iterator to the first target.
+			 * \param end An iterator past the last target.
+			 * \param str The string to send. No null terminating characeter is sent.
+			 */
+			template <typename T>
+			void send_data_to_list(const T& begin, const T& end, const std::string& str);
+
+			/**
+			 * \brief Send data to all the hosts.
+			 * \param buf The data to send.
+			 * \param buf_len The length of buf.
+			 */
+			void send_data_to_all(const void* buf, size_t buf_len);
+
+			/**
+			 * \brief Send data to all the hosts.
+			 * \param str The string to send. No null terminating characeter is sent.
+			 */
+			void send_data_to_all(const std::string& str);
+
+			/**
 			 * \brief Set the data message callback.
 			 * \param callback The callback.
 			 */
@@ -414,6 +446,26 @@ namespace fscp
 	inline void server::send_data(const ep_type& target, const std::string& str)
 	{
 		send_data(target, str.c_str(), str.size());
+	}
+
+	template <typename T>
+	inline void server::send_data_to_list(const T& begin, const T& end, const void* buf, size_t buf_len)
+	{
+		for (T it = begin; it != end; ++it)
+		{
+			send_data(*it, buf, buf_len);
+		}
+	}
+
+	template <typename T>
+	inline void server::send_data_to_list(const T& begin, const T& end, const std::string& str)
+	{
+		send_data_to_list(begin, end, str.c_str(), str.size());
+	}
+
+	inline void server::send_data_to_all(const std::string& str)
+	{
+		send_data_to_all(str.c_str(), str.size());
 	}
 
 	inline void server::set_data_message_callback(data_message_callback callback)

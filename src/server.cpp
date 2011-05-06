@@ -134,6 +134,17 @@ namespace fscp
 		get_io_service().post(bind(&server::do_send_data, this, target));
 	}
 
+	void server::send_data_to_all(const void* buf, size_t buf_len)
+	{
+		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+		{
+			if (session_pair->second.has_remote_session())
+			{
+				send_data(session_pair->first, buf, buf_len);
+			}
+		}
+	}
+
 	/* Common */
 
 	void server::do_close()
