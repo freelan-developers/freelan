@@ -73,6 +73,7 @@ class Environment(SConsEnvironment):
 
 		if sys.platform == 'win32':
 			self['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
+			self['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
 			
 			self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['mingw_path'], 'include')))
 			self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['boost_path'], 'include', 'boost-' + self['boost_version'])))
@@ -145,6 +146,7 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('cryptoplus_static')
 			kw['LIBS'].append('crypto')
 			kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
+			kw['LIBS'].append('boost_thread-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
 			kw['LIBS'].append('ws2_32')
 			kw['LIBS'].append('gdi32')
 		else:
