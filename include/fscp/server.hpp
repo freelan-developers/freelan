@@ -211,7 +211,7 @@ namespace fscp
 			 * \brief Get the presentation parameters of a specified host.
 			 * \param target The target host.
 			 * \return The presentation parameters of the specified host.
-			 * \warning IF no presentation parameters exist for the specified host, a std::runtime_error is thrown.
+			 * \warning If no presentation parameters exist for the specified host, a std::runtime_error is thrown.
 			 */
 			const presentation_store& get_presentation(const ep_type& target) const;
 
