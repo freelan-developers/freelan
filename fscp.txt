@@ -131,11 +131,58 @@ Abstract
 
 2.4. SESSION_REQUEST message format
 
-   A SESSION_REQUEST message has no body.
+   A SESSION_REQUEST message has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |          session_number           |
+                 +-----------------------------------+
+                 |                salt               |
+                 +-----------------------------------+
+
+   This header is not sent in clear-text. It is first ciphered using the
+   public PKE of the target host, then the ciphertext is signed using
+   the sender host private PKS.
+
+   That is, a SESSION_REQUEST message sent over the wire has the
+   following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |      ct_len     |        ct       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |     cts_len     |       cts       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.4.1. SESSION_REQUEST message type
 
    A SESSION_REQUEST message has a type value of 0x03.
+
+2.4.2. SESSION_REQUEST message fields
+
+   The session_number indicates the last known identifier of the
+   session. If no previous session is known, session_number MUST be 0.
+
+   The salt field is a 32 bits value that is ignored by the receiving
+   host but which MUST be random.
+
+   The ct_len field indicates the length of the ct field.
+   
+   The ct field is the ciphertext, generated using the public PKE of the
+   target host.
+
+   The cts_len field indicates the length of the cts field.
+
+   The cts field is the ciphertext signature, generated using the
+   private PKS of the sender host and the digest method.
+
+   A host who receives a SESSION_REQUEST message MUST first check if the
+   cts signature matches the sending host public PKS. If the signature
+   does not match, the message MUST be ignored.
+
+   Once the signature has been checked, the receiving host MUST then
+   decipher the ct field, using its own private PKE. If the decipherment
+   fails, the message MUST be ignored.
 
 2.5. SESSION message format
 
