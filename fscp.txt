@@ -360,12 +360,13 @@ Abstract
 4.3. Sessions
 
    When a host wants to establish a session MUST send a SESSION_REQUEST
-   message to the target host.
+   message to the target host indicating the last know session number of
+   the target host.
 
    If no previous session exists with the requesting host, the target
    host SHOULD generate new session parameters and reply with a SESSION
    message containing those parameters. The session_number of the new
-   session MUST be greater than the previous session_number.
+   session MUST be greater or equal to the requested session_number.
 
    If a host does not receive a response SESSION message after 3
    seconds, he SHOULD send another SESSION_REQUEST.
