@@ -123,26 +123,12 @@ static void _stop_function(fscp::server& s1, fscp::server& s2)
 
 static fscp::identity_store load_identity_store(const std::string& name)
 {
-	FILE* cert_file = fopen((name + ".crt").c_str(), "r");
+	using cryptoplus::file;
 
-	if (cert_file)
-	{
-		boost::shared_ptr<FILE> pcert_file(cert_file, fclose);
+	cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open(name + ".crt", "r"));
+	cryptoplus::pkey::pkey key = cryptoplus::pkey::pkey::from_private_key(file::open(name + ".key", "r"));
 
-		FILE* key_file = fopen((name + ".key").c_str(), "r");
-
-		if (key_file)
-		{
-			boost::shared_ptr<FILE> pkey_file(key_file, fclose);
-
-			cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(pcert_file.get());
-			cryptoplus::pkey::pkey key = cryptoplus::pkey::pkey::from_private_key(pkey_file.get());
-
-			return fscp::identity_store(cert, key);
-		}
-	}
-
-	throw std::runtime_error("Unable to create identity store for: " + name);
+	return fscp::identity_store(cert, key);
 }
 
 int main()
