@@ -17,6 +17,16 @@
 #include <sstream>
 #include <csignal>
 
+//TODO: Remove this fix for MingW64 as soon as boost supports it
+#if defined(WINDOWS) && !defined(MSV)
+namespace boost
+{
+	void tss_cleanup_implemented()
+	{
+	}
+}
+#endif
+
 static void signal_handler(int code)
 {
 	switch (code)

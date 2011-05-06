@@ -74,6 +74,7 @@ class Environment(SConsEnvironment):
 		if sys.platform == 'win32':
 			self['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
 			self['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
+			self['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
 			
 			self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['mingw_path'], 'include')))
 			self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['boost_path'], 'include', 'boost-' + self['boost_version'])))
