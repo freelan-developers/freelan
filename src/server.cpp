@@ -306,6 +306,7 @@ namespace fscp
 	void server::do_clear_presentation(const ep_type& target)
 	{
 		m_presentation_map.erase(target);
+		m_session_map.erase(target);
 	}
 
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
@@ -334,7 +335,7 @@ namespace fscp
 		{
 			session_pair& session = m_session_map[target];
 
-			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() : 0;
+			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
 
 			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number);
 

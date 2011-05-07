@@ -59,7 +59,7 @@ namespace fscp
 		}
 		else
 		{
-			m_local_session.reset(new session_store(0));
+			m_local_session.reset(new session_store(session_number));
 
 			return true;
 		}
