@@ -371,6 +371,8 @@ namespace fscp
 		}
 	}
 
+	/* Session messages */
+
 	void server::do_send_session(const ep_type& target, session_store::session_number_type session_number)
 	{
 		session_pair& session = m_session_map[target];
@@ -389,8 +391,6 @@ namespace fscp
 
 		m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 	}
-
-	/* Session messages */
 
 	void server::handle_session_message_from(const session_message& _session_message, const ep_type& sender)
 	{
