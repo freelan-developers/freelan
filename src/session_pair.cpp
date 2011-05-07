@@ -55,6 +55,9 @@ namespace fscp
 				m_local_session.reset(new session_store(std::max(local_session().session_number() + 1, session_number)));
 
 				return true;
+			} else
+			{
+				local_session().set_sequence_number(0);
 			}
 		}
 		else
