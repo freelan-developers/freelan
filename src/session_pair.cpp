@@ -72,6 +72,8 @@ namespace fscp
 
 	void session_pair::set_remote_session(const session_store& session)
 	{
+		keep_alive();
+
 		if (has_remote_session())
 		{
 			*m_remote_session = session;
