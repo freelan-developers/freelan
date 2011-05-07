@@ -378,6 +378,9 @@ Abstract
    old (more on that in the next sub-section), the target host MAY
    reply with the parameters from the current session.
 
+   Whenever a session is sent, its associated sequence number MUST be
+   reset.
+
 4.3.1 Old sessions
 
    Every session has a limited lifespan. One host may send a maximum of
