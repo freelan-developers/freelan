@@ -46,12 +46,13 @@
 
 #include <cryptoplus/random/random.hpp>
 
+#include <cstring>
+
 namespace fscp
 {
 	session_store::session_store(session_number_type _session_number) :
 		m_session_number(_session_number),
-		m_sequence_number(0),
-		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
+		m_sequence_number(0)
 	{
 		cryptoplus::random::get_random_bytes(m_seal_key.data(), m_seal_key.size());
 		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
@@ -59,8 +60,7 @@ namespace fscp
 
 	session_store::session_store(session_number_type _session_number, const void* _seal_key, size_t _seal_key_len, const void* _enc_key, size_t _enc_key_len) :
 		m_session_number(_session_number),
-		m_sequence_number(1),
-		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
+		m_sequence_number(1)
 	{
 		if (_seal_key_len != m_seal_key.size())
 		{

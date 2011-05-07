@@ -531,6 +531,8 @@ namespace fscp
 					do_send_session(sender, session_pair.local_session().session_number() + 1);
 				}
 
+				session_pair.keep_alive();
+
 				if (m_data_message_callback)
 				{
 					m_data_message_callback(*this, sender, m_data_buffer.data(), cnt);

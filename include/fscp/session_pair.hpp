@@ -48,6 +48,7 @@
 #include "session_store.hpp"
 
 #include <boost/shared_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace fscp
 {
@@ -121,13 +122,27 @@ namespace fscp
 			 */
 			bool clear_remote_session();
 
+			/**
+			 * \brief Check if the session has timed out.
+			 * \param timeout The timeout value.
+			 * \return true if the session has timed out, false otherwise.
+			 */
+			bool has_timed_out(const boost::posix_time::time_duration& timeout) const;
+
+			/**
+			 * \brief Keep the session alive.
+			 */
+			void keep_alive();
+
 		private:
 
 			boost::shared_ptr<session_store> m_local_session;
 			boost::shared_ptr<session_store> m_remote_session;
+			boost::posix_time::ptime m_last_sign_of_life;
 	};
 
-	inline session_pair::session_pair()
+	inline session_pair::session_pair() :
+		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
 	{
 	}
 
@@ -168,6 +183,16 @@ namespace fscp
 		m_remote_session.reset();
 
 		return cleared;
+	}
+	
+	inline bool session_pair::has_timed_out(const boost::posix_time::time_duration& timeout) const
+	{
+		return (boost::posix_time::microsec_clock::local_time() > m_last_sign_of_life + timeout);
+	}
+	
+	inline void session_pair::keep_alive()
+	{
+		m_last_sign_of_life = boost::posix_time::microsec_clock::local_time();
 	}
 }
 
