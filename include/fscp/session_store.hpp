@@ -51,6 +51,8 @@
 
 #include <stdint.h>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 namespace fscp
 {
 	/**
@@ -145,6 +147,18 @@ namespace fscp
 			 */
 			bool is_old() const;
 
+			/**
+			 * \brief Check if the session has timed out.
+			 * \param timeout The timeout value.
+			 * \return true if the session has timed out, false otherwise.
+			 */
+			bool has_timed_out(const boost::posix_time::time_duration& timeout) const;
+
+			/**
+			 * \brief Keep the session alive.
+			 */
+			void keep_alive();
+
 		private:
 
 			/**
@@ -156,6 +170,7 @@ namespace fscp
 			key_type m_seal_key;
 			key_type m_enc_key;
 			sequence_number_type m_sequence_number;
+			boost::posix_time::ptime m_last_sign_of_life;
 	};
 
 	inline session_store::session_number_type session_store::session_number() const
@@ -201,6 +216,16 @@ namespace fscp
 		}
 
 		m_sequence_number += cnt;
+	}
+	
+	inline bool session_store::has_timed_out(const boost::posix_time::time_duration& timeout) const
+	{
+		return (boost::posix_time::microsec_clock::local_time() > m_last_sign_of_life + timeout);
+	}
+	
+	inline void session_store::keep_alive()
+	{
+		m_last_sign_of_life = boost::posix_time::microsec_clock::local_time();
 	}
 }
 
