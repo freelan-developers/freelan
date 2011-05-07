@@ -74,6 +74,8 @@ namespace fscp
 		m_session_request_message_callback(0),
 		m_accept_session_messages_default(true),
 		m_session_message_callback(0),
+		m_session_established_callback(0),
+		m_session_lost_callback(0),
 		m_data_message_callback(0)
 	{
 		async_receive();
@@ -428,6 +430,22 @@ namespace fscp
 
 				session_pair.set_remote_session(_session_store);
 			}
+		}
+	}
+
+	void server::session_established(const ep_type& host)
+	{
+		if (m_session_established_callback)
+		{
+			m_session_established_callback(*this, host);
+		}
+	}
+
+	void server::session_lost(const ep_type& host)
+	{
+		if (m_session_lost_callback)
+		{
+			m_session_lost_callback(*this, host);
 		}
 	}
 

@@ -131,6 +131,20 @@ namespace fscp
 			typedef boost::function<void (server& server, const ep_type& sender, const void* buf, size_t buf_len)> data_message_callback;
 
 			/**
+			 * \brief A session established callback.
+			 * \param server The server instance that called the callback function.
+			 * \param host The host with which a session is established.
+			 */
+			typedef boost::function<void (server& server, const ep_type& host)> session_established_callback;
+
+			/**
+			 * \brief A session lost callback.
+			 * \param server The server instance that called the callback function.
+			 * \param host The host with which a session was lost.
+			 */
+			typedef boost::function<void (server& server, const ep_type& host)> session_lost_callback;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param listen_endpoint The listen endpoint.
@@ -263,6 +277,18 @@ namespace fscp
 			void set_session_message_callback(session_message_callback callback);
 
 			/**
+			 * \brief Set the session established callback.
+			 * \param callback The callback.
+			 */
+			void set_session_established_callback(session_established_callback callback);
+
+			/**
+			 * \brief Set the session lost callback.
+			 * \param callback The callback.
+			 */
+			void set_session_lost_callback(session_lost_callback callback);
+
+			/**
 			 * \brief Send data to a host.
 			 * \param target The target host.
 			 * \param buf The data to send.
@@ -367,9 +393,13 @@ namespace fscp
 			void do_send_session(const ep_type&, session_store::session_number_type);
 			void handle_session_message_from(const session_message&, const ep_type&);
 			void handle_clear_session_message_from(const clear_session_message&, const ep_type&);
+			void session_established(const ep_type&);
+			void session_lost(const ep_type&);
 
 			bool m_accept_session_messages_default;
 			session_message_callback m_session_message_callback;
+			session_established_callback m_session_established_callback;
+			session_lost_callback m_session_lost_callback;
 
 		private:
 
@@ -443,6 +473,16 @@ namespace fscp
 	inline void server::set_session_message_callback(session_message_callback callback)
 	{
 		m_session_message_callback = callback;
+	}
+
+	inline void server::set_session_established_callback(session_established_callback callback)
+	{
+		m_session_established_callback = callback;
+	}
+
+	inline void server::set_session_lost_callback(session_lost_callback callback)
+	{
+		m_session_lost_callback = callback;
 	}
 
 	inline void server::send_data(const ep_type& target, const std::string& str)
