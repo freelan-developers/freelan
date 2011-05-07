@@ -289,6 +289,12 @@ namespace fscp
 			void set_session_lost_callback(session_lost_callback callback);
 
 			/**
+			 * \brief Close any existing session with the specified host.
+			 * \param host The host.
+			 */
+			void close_session(const ep_type& host);
+
+			/**
 			 * \brief Send data to a host.
 			 * \param target The target host.
 			 * \param buf The data to send.
@@ -395,6 +401,7 @@ namespace fscp
 			void handle_clear_session_message_from(const clear_session_message&, const ep_type&);
 			void session_established(const ep_type&);
 			void session_lost(const ep_type&);
+			void do_close_session(const ep_type&);
 
 			bool m_accept_session_messages_default;
 			session_message_callback m_session_message_callback;

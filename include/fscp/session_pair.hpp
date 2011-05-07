@@ -119,7 +119,7 @@ namespace fscp
 			/**
 			 * \brief Clear the remote session.
 			 */
-			void clear_remote_session();
+			bool clear_remote_session();
 
 		private:
 
@@ -161,9 +161,13 @@ namespace fscp
 		return *m_remote_session;
 	}
 
-	inline void session_pair::clear_remote_session()
+	inline bool session_pair::clear_remote_session()
 	{
+		bool cleared = has_remote_session();
+
 		m_remote_session.reset();
+
+		return cleared;
 	}
 }
 

@@ -130,6 +130,11 @@ namespace fscp
 		get_io_service().post(bind(&server::do_request_session, this, target));
 	}
 
+	void server::close_session(const ep_type& host)
+	{
+		get_io_service().post(bind(&server::do_close_session, this, host));
+	}
+
 	void server::send_data(const ep_type& target, const void* buf, size_t buf_len)
 	{
 		m_data_map[target].push(buf, buf_len);
@@ -308,7 +313,6 @@ namespace fscp
 	void server::do_clear_presentation(const ep_type& target)
 	{
 		m_presentation_map.erase(target);
-		m_session_map.erase(target);
 	}
 
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
@@ -420,6 +424,8 @@ namespace fscp
 
 			if (can_accept)
 			{
+				bool session_is_new = !session_pair.has_remote_session();
+
 				session_store _session_store(
 				    _clear_session_message.session_number(),
 				    _clear_session_message.seal_key(),
@@ -429,6 +435,11 @@ namespace fscp
 				);
 
 				session_pair.set_remote_session(_session_store);
+
+				if (session_is_new)
+				{
+					session_established(sender);
+				}
 			}
 		}
 	}
@@ -446,6 +457,14 @@ namespace fscp
 		if (m_session_lost_callback)
 		{
 			m_session_lost_callback(*this, host);
+		}
+	}
+
+	void server::do_close_session(const ep_type& host)
+	{
+		if (m_session_map[host].clear_remote_session())
+		{
+			session_lost(host);
 		}
 	}
 
