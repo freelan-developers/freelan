@@ -108,6 +108,16 @@ static bool on_session(fscp::server& /*server*/, const boost::asio::ip::udp::end
 	return default_accept;
 }
 
+static void on_session_established(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& host)
+{
+	std::cout << "Session established with " << host << std::endl;
+}
+
+static void on_session_lost(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& host)
+{
+	std::cout << "Session lost with " << host << std::endl;
+}
+
 static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, const void* buf, size_t buf_len)
 {
 	try
@@ -159,6 +169,8 @@ int main(int argc, char** argv)
 		server.set_presentation_message_callback(&on_presentation);
 		server.set_session_request_message_callback(&on_session_request);
 		server.set_session_message_callback(&on_session);
+		server.set_session_established_callback(&on_session_established);
+		server.set_session_lost_callback(&on_session_lost);
 		server.set_data_message_callback(&on_data);
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;

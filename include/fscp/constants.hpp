@@ -84,9 +84,14 @@ namespace fscp
 	const int MESSAGE_DIGEST_ALGORITHM = NID_sha256;
 
 	/**
+	 * \brief The session keep-alive period.
+	 */
+	const boost::posix_time::time_duration SESSION_KEEP_ALIVE_PERIOD = boost::posix_time::seconds(10);
+
+	/**
 	 * \brief The session timeout.
 	 */
-	const boost::posix_time::time_duration SESSION_TIMEOUT = boost::posix_time::seconds(3);
+	const boost::posix_time::time_duration SESSION_TIMEOUT = SESSION_KEEP_ALIVE_PERIOD * 3;
 }
 
 #endif /* FSCP_CONSTANTS_HPP */

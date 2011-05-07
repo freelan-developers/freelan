@@ -184,12 +184,12 @@ namespace fscp
 
 		return cleared;
 	}
-	
+
 	inline bool session_pair::has_timed_out(const boost::posix_time::time_duration& timeout) const
 	{
 		return (boost::posix_time::microsec_clock::local_time() > m_last_sign_of_life + timeout);
 	}
-	
+
 	inline void session_pair::keep_alive()
 	{
 		m_last_sign_of_life = boost::posix_time::microsec_clock::local_time();

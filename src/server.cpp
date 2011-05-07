@@ -76,9 +76,11 @@ namespace fscp
 		m_session_message_callback(0),
 		m_session_established_callback(0),
 		m_session_lost_callback(0),
-		m_data_message_callback(0)
+		m_data_message_callback(0),
+		m_keep_alive_timer(io_service, SESSION_KEEP_ALIVE_PERIOD)
 	{
 		async_receive();
+		m_keep_alive_timer.async_wait(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error));
 	}
 
 	void server::close()
@@ -157,6 +159,7 @@ namespace fscp
 
 	void server::do_close()
 	{
+		m_keep_alive_timer.cancel();
 		m_hello_request_list.clear();
 		m_socket.close();
 	}
@@ -476,33 +479,27 @@ namespace fscp
 		{
 			session_pair& session_pair = m_session_map[target];
 
-			if (session_pair.has_timed_out(SESSION_TIMEOUT))
+			if (session_pair.has_remote_session())
 			{
-				do_close_session(target);
-			} else
-			{
-				if (session_pair.has_remote_session())
+				data_store& data_store = m_data_map[target];
+
+				for(; !data_store.empty(); data_store.pop())
 				{
-					data_store& data_store = m_data_map[target];
+					size_t size = data_message::write(
+					                  m_send_buffer.data(),
+					                  m_send_buffer.size(),
+					                  session_pair.remote_session().sequence_number(),
+					                  &data_store.front()[0],
+					                  data_store.front().size(),
+					                  session_pair.remote_session().seal_key(),
+					                  session_pair.remote_session().seal_key_size(),
+					                  session_pair.remote_session().encryption_key(),
+					                  session_pair.remote_session().encryption_key_size()
+					              );
 
-					for(; !data_store.empty(); data_store.pop())
-					{
-						size_t size = data_message::write(
-								m_send_buffer.data(),
-								m_send_buffer.size(),
-								session_pair.remote_session().sequence_number(),
-								&data_store.front()[0],
-								data_store.front().size(),
-								session_pair.remote_session().seal_key(),
-								session_pair.remote_session().seal_key_size(),
-								session_pair.remote_session().encryption_key(),
-								session_pair.remote_session().encryption_key_size()
-								);
+					session_pair.remote_session().increment_sequence_number();
 
-						session_pair.remote_session().increment_sequence_number();
-
-						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
-					}
+					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
 				}
 			}
 		}
@@ -545,5 +542,34 @@ namespace fscp
 				}
 			}
 		}
+	}
+
+	void server::do_check_keep_alive(const boost::system::error_code& error_code)
+	{
+		if (error_code != boost::asio::error::operation_aborted)
+		{
+			for (session_pair_map::iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+			{
+				if (session_pair->second.has_timed_out(SESSION_TIMEOUT))
+				{
+					if (session_pair->second.clear_remote_session())
+					{
+						session_lost(session_pair->first);
+					}
+				}
+				else
+				{
+					do_send_keep_alive(session_pair->first);
+				}
+			}
+
+			m_keep_alive_timer.expires_from_now(SESSION_KEEP_ALIVE_PERIOD);
+			m_keep_alive_timer.async_wait(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void server::do_send_keep_alive(const ep_type& /*target*/)
+	{
+		//TODO: Implement this method
 	}
 }

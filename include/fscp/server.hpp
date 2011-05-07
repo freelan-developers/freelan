@@ -418,6 +418,13 @@ namespace fscp
 			boost::array<uint8_t, 65536> m_data_buffer;
 			data_store_map m_data_map;
 			data_message_callback m_data_message_callback;
+
+		private:
+
+			void do_check_keep_alive(const boost::system::error_code&);
+			void do_send_keep_alive(const ep_type&);
+
+			boost::asio::deadline_timer m_keep_alive_timer;
 	};
 
 	template <typename T>
