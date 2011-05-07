@@ -476,27 +476,33 @@ namespace fscp
 		{
 			session_pair& session_pair = m_session_map[target];
 
-			if (session_pair.has_remote_session())
+			if (session_pair.has_timed_out(SESSION_TIMEOUT))
 			{
-				data_store& data_store = m_data_map[target];
-
-				for(; !data_store.empty(); data_store.pop())
+				do_close_session(target);
+			} else
+			{
+				if (session_pair.has_remote_session())
 				{
-					size_t size = data_message::write(
-					                  m_send_buffer.data(),
-					                  m_send_buffer.size(),
-					                  session_pair.remote_session().sequence_number(),
-					                  &data_store.front()[0],
-					                  data_store.front().size(),
-					                  session_pair.remote_session().seal_key(),
-					                  session_pair.remote_session().seal_key_size(),
-					                  session_pair.remote_session().encryption_key(),
-					                  session_pair.remote_session().encryption_key_size()
-					              );
+					data_store& data_store = m_data_map[target];
 
-					session_pair.remote_session().increment_sequence_number();
+					for(; !data_store.empty(); data_store.pop())
+					{
+						size_t size = data_message::write(
+								m_send_buffer.data(),
+								m_send_buffer.size(),
+								session_pair.remote_session().sequence_number(),
+								&data_store.front()[0],
+								data_store.front().size(),
+								session_pair.remote_session().seal_key(),
+								session_pair.remote_session().seal_key_size(),
+								session_pair.remote_session().encryption_key(),
+								session_pair.remote_session().encryption_key_size()
+								);
 
-					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+						session_pair.remote_session().increment_sequence_number();
+
+						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+					}
 				}
 			}
 		}

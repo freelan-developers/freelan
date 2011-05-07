@@ -50,6 +50,9 @@
 
 #include <stdint.h>
 
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 namespace fscp
 {
 	/**
@@ -79,6 +82,11 @@ namespace fscp
 	 * \brief The message digest algorithm.
 	 */
 	const int MESSAGE_DIGEST_ALGORITHM = NID_sha256;
+
+	/**
+	 * \brief The session timeout.
+	 */
+	const boost::posix_time::time_duration SESSION_TIMEOUT = boost::posix_time::seconds(3);
 }
 
 #endif /* FSCP_CONSTANTS_HPP */
