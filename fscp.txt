@@ -142,8 +142,6 @@ Abstract
                  +-----------------------------------+
                  |          session_number           |
                  +-----------------------------------+
-                 |                salt               |
-                 +-----------------------------------+
 
    This header is not sent in clear-text. It is first ciphered using the
    public PKE of the target host, then the ciphertext is signed using
@@ -167,9 +165,6 @@ Abstract
 
    The session_number indicates the last known identifier of the
    session. If no previous session is known, session_number MUST be 0.
-
-   The salt field is a 32 bits value that is ignored by the receiving
-   host but which MUST be random.
 
    The ct_len field indicates the length of the ct field.
    
