@@ -88,9 +88,9 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     sig_len     |       sig       |
+                 |  sig_cert_len   |     sig_cert    |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     enc_len     |       enc       |
+                 |  enc_cert_len   |     enc_cert    |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.3.1. PRESENTATION message type
@@ -99,35 +99,40 @@ Abstract
 
 2.3.2. PRESENTATION message fields
 
-   The sig_len field indicates the size of the sig field.
+   The sig_cert_len field indicates the size of the sig_cert field.
 
-   The sig field is a DER-encoded X509 certificate used for message
+   The sig_cert field is a DER-encoded X509 certificate used for message
    signature by the sender. This certificate SHOULD have the
    digitalSignature key usage set, as specified in [RFC2459]. In the
-   next sections, its associated RSA key will be referred as PKS.
+   next sections, its associated RSA public key will be referred as PKS.
 
-   The enc_len field indicates the size of the enc field.
+   The enc_cert_len field indicates the size of the enc_cert field.
 
-   The end field is a DER-encoded X509 certificate used for key exchange
-   by the sender. This certificate SHOULD have the keyEncipherment key
-   usage set, as specified in [RFC2459]. In the next sections, its
-   associated RSA key will be referred as PKE.
+   The enc_cert field is a DER-encoded X509 certificate used for key
+   exchange by the sender. This certificate SHOULD have the
+   keyEncipherment key usage set, as specified in [RFC2459]. In the next
+   sections, its associated RSA public key will be referred as PKE.
 
    If the same certificate is to be used for both usages, a sender MAY
-   set enc_len to zero and leave enc empty. In this case, the
+   set enc_cert_len to zero and leave enc_cert empty. In this case, the
    certificate SHOULD have both digitalSignature and keyEncipherment key
    usage set, as specified in [RFC2459].
 
    However, it is RECOMMENDED that two different certificate/key pair be
    used for signature and encryption. A strict implementation MAY reject
-   PRESENTATION message with identicial signature and encryption
+   PRESENTATION messages with identicial signature and encryption
    certificates.
 
-   The sig and enc certificate MUST have the exact same subjectName and
-   issuerName. If they don't, the message MUST be ignored.
+   The sig_cert and enc_cert certificates MUST have the exact same
+   subjectName and issuerName. If they don't, the presentation message
+   MUST be ignored.
 
-   A host MIGHT ignore any PRESENTATION message whose sig or enc field
-   do not satisfy the key usage requirements.
+   A host MIGHT ignore any PRESENTATION message whose sig_cert or
+   enc_cert field does not satisfy the key usage requirements.
+
+   The minimum RSA key size is 1024 bits. The RECOMMENDED RSA key size
+   is 2048 bits or higher. A strict implementation MAY reject
+   PRESENTATION messages with a low RSA key size.
 
 2.4. SESSION_REQUEST message format
 
@@ -194,7 +199,7 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |     seal_len    |       seal      |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     enc_len     |       enc       |
+                 |     ciph_len    |       ciph      |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is not sent in clear-text. It is first ciphered using the
@@ -226,10 +231,10 @@ Abstract
    The seal field is a seal_len bytes long secret key used for message
    sealing. In the next sections, this key will be referred as KS.
 
-   The enc_len field indicates the size of the sig field. In the current
-   version of this protocol, this should be 32.
+   The ciph_len field indicates the size of the ciph field. In the
+   current version of this protocol, this should be 32.
 
-   The enc field is a enc_len bytes long secret key used for message
+   The ciph field is a ciph_len bytes long secret key used for message
    cipherment. In the next sections, this key will be referred as KE.
 
    The ct_len field indicates the length of the ct field.
@@ -283,17 +288,17 @@ Abstract
    use to cipher the cleartext data. It MUST be 16 bytes in the current
    protocol version.
 
-   The iv MUST be both unique and random for every DATA message. A
-   secure implementation SHOULD never use the same initialization vector
-   twice during the same session.
+   The iv MUST be both unique and random for each DATA message. A secure
+   implementation SHOULD never use the same initialization vector twice
+   during the same session.
 
    The ciphertext field represents the data of the message, ciphered
    using the remote host session cipher key and iv as an initialization
    vector.
 
-   The hmac field contains the first 16 truncated bytes of the SHA-256
-   HMAC of the whole DATA message header, excluding the field itself,
-   using the remote host session sealing key.
+   The hmac field contains the first 16 bytes (truncated) of the
+   HMAC-SHA256-128 of the whole DATA message header, excluding the field
+   itself, using the remote host session sealing key.
 
    This field MUST then be 16 bytes long.
 
@@ -305,23 +310,29 @@ Abstract
 
 3.1. Message digest algorithm
 
-   The used message digest algorithm used for signature is SHA-1.
-
-   The used message digest algorithm for HMAC generation is SHA-256.
+   The used message digest algorithm for HMAC generation is
+   HMAC-SHA256-128.
 
 3.2. Symmetric cipherment algorithm
 
-   The used symmetric cipherment algorithm is AES-256-CBC, with padding.
+   The used symmetric cipherment algorithm is AES256-CBC with ISO 10126
+   padding.
 
-3.3. Asymmetric cipherment/signature algorithm
+3.3. Asymmetric cipherment/signature algorithms
 
-   The used asymmetric cipherment signature is RSA with a PKCS#1 v2.0
-   PSS padding.
+   The used signature algorithm is RSA with a PKCS#1 v2.0 PSS padding.
 
-   The used asymmetric cipherment algorithm is RSA with a PKCS#1 v2.0
-   OAEP padding.
+   The underlying hash algorithm is SHA256, the MGF method is
+   MGF1-SHA256 and the salt length is equal to size of the SHA256
+   message digest, that is, 32 bytes.
 
-   The minimum key size is 1024. The recommended key size is 2048.
+   The used encryption algorithm is RSA with a PKCS#1 v2.0 RSAES-OAEP
+   padding.
+
+   The underlying hash algorithm is SHA1 and the MGF method is
+   MGF1-SHA1.
+
+   The minimum key size is 1024. The RECOMMENDED key size is 2048.
 
 4. Protocol
 
