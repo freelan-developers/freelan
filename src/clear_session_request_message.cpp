@@ -59,7 +59,6 @@ namespace fscp
 		}
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
-		cryptoplus::random::get_random_bytes(static_cast<uint8_t*>(buf) + sizeof(session_number_type), SALT_LENGTH);
 
 		return BODY_LENGTH;
 	}

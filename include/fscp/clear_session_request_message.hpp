@@ -68,11 +68,6 @@ namespace fscp
 			typedef uint32_t session_number_type;
 
 			/**
-			 * \brief The salt length.
-			 */
-			static const size_t SALT_LENGTH = sizeof(uint32_t);
-
-			/**
 			 * \brief Write a session request message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
@@ -109,7 +104,7 @@ namespace fscp
 			/**
 			 * \brief The length of the body.
 			 */
-			static const size_t BODY_LENGTH = sizeof(session_number_type) + SALT_LENGTH;
+			static const size_t BODY_LENGTH = sizeof(session_number_type);
 
 			/**
 			 * \brief The data.
