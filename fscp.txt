@@ -261,9 +261,7 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
-                 |      seq_num    |  ciphertext_cnt |
-                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-                 |                iv                 |
+                 |      seq_num    |   ct_block_cnt  |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |             ciphertext            |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -281,24 +279,18 @@ Abstract
    MUST have two different sequence numbers. The rules governing the
    sequence number are explained in a further section.
 
-   The ciphertext_cnt field indicates the size of the ciphertext, in
-   blocks.
-
-   The iv field represents a randomly generated initialization vector to
-   use to cipher the cleartext data. It MUST be 16 bytes in the current
-   protocol version.
-
-   The iv MUST be both unique and random for each DATA message. A secure
-   implementation SHOULD never use the same initialization vector twice
-   during the same session.
+   The ct_block_cnt field indicates the size of the ciphertext, in
+   blocks. In the current protocol version, a block is 16 bytes long.
 
    The ciphertext field represents the data of the message, ciphered
-   using the remote host session cipher key and iv as an initialization
-   vector.
+   using the target host session cipher key. The initialization vector
+   to use for the (de)cipherment operation is computed from the current
+   session and sequence numbers. This step is detailed in a further
+   section.
 
-   The hmac field contains the first 16 bytes (truncated) of the
-   HMAC-SHA256-128 of the whole DATA message header, excluding the field
-   itself, using the remote host session sealing key.
+   The hmac field contains the first 16 bytes of the HMAC-SHA256 (that
+   is, a HMAC-SHA256-128) of the whole DATA message header, excluding
+   the field itself, using the remote host session sealing key.
 
    This field MUST then be 16 bytes long.
 
