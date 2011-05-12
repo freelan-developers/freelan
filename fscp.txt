@@ -104,22 +104,24 @@ Abstract
    The sig_cert field is a DER-encoded X509 certificate used for message
    signature by the sender. This certificate SHOULD have the
    digitalSignature key usage set, as specified in [RFC2459]. In the
-   next sections, its associated RSA public key will be referred as PKS.
+   next sections, its associated RSA public and private keys for
+   signature will respectively be referred as PKV and PKS.
 
    The enc_cert_len field indicates the size of the enc_cert field.
 
    The enc_cert field is a DER-encoded X509 certificate used for key
    exchange by the sender. This certificate SHOULD have the
    keyEncipherment key usage set, as specified in [RFC2459]. In the next
-   sections, its associated RSA public key will be referred as PKE.
+   sections, its associated RSA public and private keys for encryption
+   will respectively be referred as PKE and PKD.
 
    If the same certificate is to be used for both usages, a sender MAY
    set enc_cert_len to zero and leave enc_cert empty. In this case, the
    certificate SHOULD have both digitalSignature and keyEncipherment key
    usage set, as specified in [RFC2459].
 
-   However, it is RECOMMENDED that two different certificate/key pair be
-   used for signature and encryption. A strict implementation MAY reject
+   However, it is RECOMMENDED that two different keys pairs be used for
+   signature and encryption. A strict implementation MAY reject
    PRESENTATION messages with identicial signature and encryption
    certificates.
 
@@ -131,8 +133,9 @@ Abstract
    enc_cert field does not satisfy the key usage requirements.
 
    The minimum RSA key size is 1024 bits. The RECOMMENDED RSA key size
-   is 2048 bits or higher. A strict implementation MAY reject
-   PRESENTATION messages with a low RSA key size.
+   is 2048 bits or higher, with an exponent of 2^16 + 1. A strict
+   implementation MAY reject PRESENTATION messages with a low RSA key
+   size.
 
 2.4. SESSION_REQUEST message format
 
@@ -145,7 +148,7 @@ Abstract
 
    This header is not sent in clear-text. It is first ciphered using the
    public PKE of the target host, then the ciphertext is signed using
-   the sender host private PKS.
+   the sender host signature private key (PKS).
 
    That is, a SESSION_REQUEST message sent over the wire has the
    following format:
@@ -154,7 +157,7 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |      ct_len     |        ct       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     cts_len     |       cts       |
+                 |    ct_sig_len   |      ct_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.4.1. SESSION_REQUEST message type
@@ -168,21 +171,21 @@ Abstract
 
    The ct_len field indicates the length of the ct field.
    
-   The ct field is the ciphertext, generated using the public PKE of the
-   target host.
+   The ct field is the ciphertext, generated using the public encryption
+   key (PKE) of the target host.
 
-   The cts_len field indicates the length of the cts field.
+   The ct_sig_len field indicates the length of the cts field.
 
-   The cts field is the ciphertext signature, generated using the
-   private PKS of the sender host and the digest method.
+   The ct_sig field is the ciphertext signature, generated using the
+   private signature key (PKS) of the sender host.
 
    A host who receives a SESSION_REQUEST message MUST first check if the
-   cts signature matches the sending host public PKS. If the signature
-   does not match, the message MUST be ignored.
+   cts signature matches the sending host public verification key (PKV).
+   If the signature does not match, the message MUST be ignored.
 
    Once the signature has been checked, the receiving host MUST then
-   decipher the ct field, using its own private PKE. If the decipherment
-   fails, the message MUST be ignored.
+   decipher the ct field, using its own private decryption key (PKD). If
+   the decipherment fails, the message MUST be ignored.
 
 2.5. SESSION message format
 
@@ -192,14 +195,14 @@ Abstract
                  +-----------------------------------+
                  |          session_number           |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     seal_len    |       seal      |
+                 |   seal_key_len  |     seal_key    |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     ciph_len    |       ciph      |
+                 |   enc_key_len   |     enc_key     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is not sent in clear-text. It is first ciphered using the
    public PKE of the target host, then the ciphertext is signed using
-   the sender host private PKS.
+   the sender host signature private key (PKS).
 
    That is, a SESSION message sent over the wire has the following
    format:
@@ -208,7 +211,7 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |      ct_len     |        ct       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     cts_len     |       cts       |
+                 |    ct_sig_len   |      ct_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.5.1. SESSION message type
@@ -220,35 +223,37 @@ Abstract
    The session_number indicates the identifier of the session. Every
    session SHOULD have its own and unique session_number value.
 
-   The seal_len field indicates the size of the seal field. In the
+   The seal_key_len field indicates the size of the seal_key field. In
+   the current version of this protocol, this should be 32.
+
+   The seal_key field is a seal_key_len bytes long sealing key used for
+   message sealing. In the next sections, this key will be referred as
+   KS.
+
+   The enc_key_len field indicates the size of the enc_key field. In the
    current version of this protocol, this should be 32.
 
-   The seal field is a seal_len bytes long secret key used for message
-   sealing. In the next sections, this key will be referred as KS.
-
-   The ciph_len field indicates the size of the ciph field. In the
-   current version of this protocol, this should be 32.
-
-   The ciph field is a ciph_len bytes long secret key used for message
-   cipherment. In the next sections, this key will be referred as KE.
+   The enc_key field is a enc_key_len bytes long encryption key used for
+   message cipherment. In the next sections, this key will be referred
+   as KE.
 
    The ct_len field indicates the length of the ct field.
    
-   The ct field is the ciphertext, generated using the public PKE of the
-   target host.
+   The ct field is the ciphertext, generated using the public encryption
+   key (PKE) of the target host.
 
-   The cts_len field indicates the length of the cts field.
+   The ct_sig_len field indicates the length of the cts field.
 
-   The cts field is the ciphertext signature, generated using the
-   private PKS of the sender host and the digest method.
+   The ct_sig field is the ciphertext signature, generated using the
+   private signature key (PKS) of the sender host.
 
-   A host who receives a SESSION message MUST first check if the cts
-   signature matches the sending host public PKS. If the signature does
-   not match, the message MUST be ignored.
+   A host who receives a SESSION message MUST first check if the
+   cts signature matches the sending host public verification key (PKV).
+   If the signature does not match, the message MUST be ignored.
 
    Once the signature has been checked, the receiving host MUST then
-   decipher the ct field, using its own private PKE. If the decipherment
-   fails, the message MUST be ignored.
+   decipher the ct field, using its own private decryption key (PKD). If
+   the decipherment fails, the message MUST be ignored.
 
 2.6. DATA message format
    
