@@ -300,29 +300,33 @@ Abstract
 
 3. Algorithms
 
-3.1. Message digest algorithm
+3.1. Sealing
 
-   The used message digest algorithm for HMAC generation is
-   HMAC-SHA256-128.
+   The used sealing algorithm is HMAC-SHA256-128.
 
 3.2. Symmetric cipherment algorithm
 
    The used symmetric cipherment algorithm is AES256-CBC with ISO 10126
    padding.
 
-3.3. Asymmetric cipherment/signature algorithms
+3.3. Asymmetric cipherment and signature algorithms
 
-   The used signature algorithm is RSA with a PKCS#1 v2.0 PSS padding.
+   The used signature algorithm is RSA with a PKCS#1 v2.1 PSS padding
+   (RSASSA_PSS).
 
    The underlying hash algorithm is SHA256, the MGF method is
    MGF1-SHA256 and the salt length is equal to size of the SHA256
    message digest, that is, 32 bytes.
 
-   The used encryption algorithm is RSA with a PKCS#1 v2.0 RSAES-OAEP
+   The used encryption algorithm is RSA with a PKCS#1 v2.1 RSAES-OAEP
    padding.
 
    The underlying hash algorithm is SHA1 and the MGF method is
    MGF1-SHA1.
+
+   The use of SHA1 here instead of SHA256 permits the encryption of
+   SESSION messages with a RSA key of 1024 bits because of the reduced
+   RSA padding size.
 
    The minimum key size is 1024. The RECOMMENDED key size is 2048.
 
