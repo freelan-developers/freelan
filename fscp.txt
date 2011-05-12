@@ -400,6 +400,12 @@ Abstract
    If a host receives a SESSION message with a session_number smaller
    than the last used session_number, it MUST discard the message.
 
+   Note that in any case, the session lifespan is way smaller than the
+   AES cipherment and sealing keys.
+
+   A well designed implementation should however limit session renewals
+   to a minimum since key exchange is a critical procedure.
+
 4.4. DATA messages
 
    Once a host has the session parameters for a target host, he can
