@@ -419,3 +419,25 @@ Abstract
 
    If a host receives a DATA message with a sequence number lower than
    or equal to a previously received sequence number, he MUST ignore it.
+
+4.4.1. DATA messages initialization vectors
+
+   Each DATA message relies on the session keys and on an initialization
+   vector. This initialization vector MUST be unpredictable.
+   
+   That is, it is computed for each DATA message using a concatenation
+   of the current session and sequence numbers. The concatenation MUST
+   have the following layout (numbers are in network byte order):
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |          session_number           |
+                 +-----------------+-----------------+
+                 | sequence_number |
+                 +-----------------+
+
+   The concatenation is then ciphered using the target host encryption
+   key (KE) and a zero initialization vector.
+
+   The resulting 16 bytes block is the initialization vector to use to
+   (de)cipher the DATA message.
