@@ -37,84 +37,38 @@
  */
 
 /**
- * \file tap_adapter_service.hpp
+ * \file basic_tap_adapter.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The tap adapter service class.
+ * \brief The basic tap adapter class.
  */
 
-#ifndef ASIOTAP_TAP_ADAPTER_SERVICE_HPP
-#define ASIOTAP_TAP_ADAPTER_SERVICE_HPP
+#ifndef ASIOTAP_BASIC_TAP_ADAPTER_HPP
+#define ASIOTAP_BASIC_TAP_ADAPTER_HPP
 
 #include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-
-#include "tap_adapter_impl.hpp"
 
 namespace asiotap
 {
-	template <typename TapAdapterImplementation = tap_adapter_impl>
-	class tap_adapter_service : public boost::asio::io_service::service
+	/**
+	 * \brief A basic tap adapter class.
+	 */
+	template <typename Service>
+	class basic_tap_adapter : public boost::asio::basic_io_object<Service>
 	{
 		public:
 
 			/**
-			 * \brief The implementation type.
-			 */
-			typedef boost::shared_ptr<TapAdapterImplementation> implementation_type;
-
-			/**
-			 * \brief The service identifier.
-			 */
-			static boost::asio::io_service::id id;
-
-			/**
 			 * \brief The constructor.
-			 * \param io_service The io_service to register to.
+			 * \param io_service The io_service to use.
 			 */
-			explicit tap_adapter_service(boost::asio::io_service &io_service);
-
-			/**
-			 * \brief Construct an implementation.
-			 * \param impl The implementation to construct.
-			 */
-			void construct(implementation_type& impl);
-
-			/**
-			 * \brief Destroy an implementation.
-			 * \param impl The implementation to destroy.
-			 */
-			void destroy(implementation_type& impl);
-
-		private:
-
-			void shutdown_service();
+			explicit basic_tap_adapter(boost::asio::io_service& io_service);
 	};
-
-	template <typename TapAdapterImplementation>
-	boost::asio::io_service::id tap_adapter_service<TapAdapterImplementation>::id;
 	
-	template <typename TapAdapterImplementation>
-	tap_adapter_service<TapAdapterImplementation>::tap_adapter_service(boost::asio::io_service &_io_service) :
-		boost::asio::io_service::service(_io_service)
-	{
-	}
-
-	template <typename TapAdapterImplementation>
-	void tap_adapter_service<TapAdapterImplementation>::construct(implementation_type& impl)
-	{
-		impl.reset(new TapAdapterImplementation());
-	}
-
-	template <typename TapAdapterImplementation>
-	void tap_adapter_service<TapAdapterImplementation>::destroy(implementation_type& impl)
-	{
-		impl.reset();
-	}
-	
-	template <typename TapAdapterImplementation>
-	void tap_adapter_service<TapAdapterImplementation>::shutdown_service()
+	template <typename Service>
+	basic_tap_adapter<Service>::basic_tap_adapter(boost::asio::io_service& io_service) :
+		boost::asio::basic_io_object<Service>(io_service)
 	{
 	}
 }
 
-#endif /* ASIOTAP_TAP_ADAPTER_SERVICE_HPP */
+#endif /* ASIOTAP_BASIC_TAP_ADAPTER_HPP */

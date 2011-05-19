@@ -37,12 +37,12 @@
  */
 
 /**
- * \file tap_adapter_service.cpp
+ * \file basic_tap_adapter.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The tap adapter service class.
+ * \brief The basic tap adapter class.
  */
 
-#include "tap_adapter_service.hpp"
+#include "basic_tap_adapter.hpp"
 
 namespace asiotap
 {
