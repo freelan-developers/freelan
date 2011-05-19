@@ -75,12 +75,12 @@ namespace fscp
 
 		if (seal_key_size() != KEY_LENGTH)
 		{
-			throw std::runtime_error("seal_len");
+			throw std::runtime_error("seal_key_len");
 		}
 
 		if (encryption_key_size() != KEY_LENGTH)
 		{
-			throw std::runtime_error("enc_len");
+			throw std::runtime_error("enc_key_len");
 		}
 	}
 }
