@@ -67,7 +67,7 @@ static bool on_hello_request(fscp::server& server, const boost::asio::ip::udp::e
 {
 	std::cout << "Received HELLO request from " << sender << std::endl;
 
-  server.introduce_to(sender);
+  server.async_introduce_to(sender);
 
 	return default_accept;
 }
@@ -81,7 +81,7 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	{
 		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
 
-		server.introduce_to(sender);
+		server.async_introduce_to(sender);
 	}
 }
 
@@ -89,7 +89,7 @@ static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::en
 {
 	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
 
-	server.request_session(sender);
+	server.async_request_session(sender);
 
   return default_accept;
 }
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
 						{
 							boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
 
-							server.greet(ep, &on_hello_response);
+							server.async_greet(ep, &on_hello_response);
 							std::cout << "Contacting " << ep << "..." << std::endl;
 						}
 						catch (std::exception& ex)
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 				}
 			} else
 			{
-				server.send_data_to_all(line, strlen(line));
+				server.async_send_data_to_all(line, strlen(line));
 			}
 		}
 

@@ -88,12 +88,12 @@ namespace fscp
 		get_io_service().post(bind(&server::do_close, this));
 	}
 
-	void server::greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
+	void server::async_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
 		get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
 	}
 
-	void server::introduce_to(const ep_type& target)
+	void server::async_introduce_to(const ep_type& target)
 	{
 		get_io_service().post(bind(&server::do_introduce_to, this, target));
 	}
@@ -127,30 +127,30 @@ namespace fscp
 		get_io_service().post(bind(&server::do_clear_presentation, this, target));
 	}
 
-	void server::request_session(const ep_type& target)
+	void server::async_request_session(const ep_type& target)
 	{
 		get_io_service().post(bind(&server::do_request_session, this, target));
 	}
 
-	void server::close_session(const ep_type& host)
+	void server::async_close_session(const ep_type& host)
 	{
 		get_io_service().post(bind(&server::do_close_session, this, host));
 	}
 
-	void server::send_data(const ep_type& target, const void* buf, size_t buf_len)
+	void server::async_send_data(const ep_type& target, const void* buf, size_t buf_len)
 	{
 		m_data_map[target].push(buf, buf_len);
 
 		get_io_service().post(bind(&server::do_send_data, this, target));
 	}
 
-	void server::send_data_to_all(const void* buf, size_t buf_len)
+	void server::async_send_data_to_all(const void* buf, size_t buf_len)
 	{
 		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
 		{
 			if (session_pair->second.has_remote_session())
 			{
-				send_data(session_pair->first, buf, buf_len);
+				async_send_data(session_pair->first, buf, buf_len);
 			}
 		}
 	}

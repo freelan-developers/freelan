@@ -67,7 +67,7 @@ static bool on_hello_request(fscp::server& server, const boost::asio::ip::udp::e
 {
 	std::cout << "Received HELLO request from " << sender << std::endl;
 
-  server.introduce_to(sender);
+  server.async_introduce_to(sender);
 
 	return default_accept;
 }
@@ -81,7 +81,7 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	{
 		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
 
-		server.introduce_to(sender);
+		server.async_introduce_to(sender);
 	}
 }
 
@@ -89,7 +89,7 @@ static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::en
 {
 	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
 
-	server.request_session(sender);
+	server.async_request_session(sender);
 
   return default_accept;
 }
@@ -105,7 +105,7 @@ static bool on_session(fscp::server& server, const boost::asio::ip::udp::endpoin
 {
 	std::cout << "Received SESSION from " << sender << std::endl;
 
-	server.send_data(sender, "Hello you !");
+	server.async_send_data(sender, "Hello you !");
 
 	return default_accept;
 }
@@ -151,7 +151,7 @@ int main()
 	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-	alice_server.greet(bob_endpoint, &on_hello_response);
+	alice_server.async_greet(bob_endpoint, &on_hello_response);
 	bob_server.set_hello_message_callback(&on_hello_request);
 	alice_server.set_presentation_message_callback(&on_presentation);
 	bob_server.set_presentation_message_callback(&on_presentation);
