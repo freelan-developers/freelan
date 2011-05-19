@@ -46,6 +46,7 @@
 #define FSCP_CLEAR_SESSION_REQUEST_MESSAGE_HPP
 
 #include "buffer_tools.hpp"
+#include "constants.hpp"
 
 #include <stdint.h>
 #include <cstring>
@@ -61,11 +62,6 @@ namespace fscp
 	class clear_session_request_message
 	{
 		public:
-
-			/**
-			 * \brief The session number type.
-			 */
-			typedef uint32_t session_number_type;
 
 			/**
 			 * \brief Write a session request message to a buffer.
@@ -127,7 +123,7 @@ namespace fscp
 		return result;
 	}
 
-	inline clear_session_request_message::session_number_type clear_session_request_message::session_number() const
+	inline session_number_type clear_session_request_message::session_number() const
 	{
 		return ntohl(buffer_tools::get<session_number_type>(data(), 0));
 	}

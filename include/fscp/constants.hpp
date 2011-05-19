@@ -56,6 +56,16 @@
 namespace fscp
 {
 	/**
+	 * \brief The session number type.
+	 */
+	typedef uint32_t session_number_type;
+
+	/**
+	 * \brief The sequence number type.
+	 */
+	typedef uint16_t sequence_number_type;
+
+	/**
 	 * \brief The current protocol version.
 	 */
 	const unsigned char CURRENT_PROTOCOL_VERSION = 1;

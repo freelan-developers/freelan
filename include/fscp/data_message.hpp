@@ -61,14 +61,10 @@ namespace fscp
 		public:
 
 			/**
-			 * \brief The sequence number type.
-			 */
-			typedef uint16_t sequence_number_type;
-
-			/**
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cleartext The cleartext data.
 			 * \param cleartext_len The data length.
@@ -78,7 +74,7 @@ namespace fscp
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a data_message and map it on a buffer.
@@ -106,18 +102,6 @@ namespace fscp
 			 * \return The ciphertext block count.
 			 */
 			size_t ciphertext_block_count() const;
-
-			/**
-			 * \brief Get the initialization vector.
-			 * \return The initialization vector.
-			 */
-			const uint8_t* initialization_vector() const;
-
-			/**
-			 * \brief Get the initialization vector size.
-			 * \return The initialization vector size.
-			 */
-			size_t initialization_vector_size() const;
 
 			/**
 			 * \brief Get the ciphertext.
@@ -157,20 +141,22 @@ namespace fscp
 			 * \brief Get the clear text data, using a given encryption key.
 			 * \param buf The buffer that must receive the data. If buf is NULL, the function returns the expected size of buf.
 			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes deciphered.
 			 */
-			size_t get_cleartext(void* buf, size_t buf_len, const void* enc_key, size_t enc_key_len) const;
+			size_t get_cleartext(void* buf, size_t buf_len, const session_number_type session_number, const void* enc_key, size_t enc_key_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.
+			 * \param session_number The session number.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The clear text data.
 			 */
 			template <typename T>
-			std::vector<T> get_cleartext(const void* enc_key, size_t enc_key_len) const;
+			std::vector<T> get_cleartext(session_number_type session_number, const void* enc_key, size_t enc_key_len) const;
 
 		protected:
 
@@ -179,12 +165,35 @@ namespace fscp
 			 */
 			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t);
 
+			/**
+			 * \brief Compute and write the initialization vector to a given buffer.
+			 * \param buf The buffer the must receive the initialization vector. If buf is NULL, the function returns the expected size of buf.
+			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
+			 * \param sequence_number The sequence number.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \return The count of bytes written.
+			 */
+			static size_t compute_initialization_vector(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const void* enc_key, size_t enc_key_len);
+
+			/**
+			 * \brief Compute and write the initialization vector to a buffer.
+			 * \param session_number The session number.
+			 * \param sequence_number The sequence number.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \return The initialization vector.
+			 */
+			template <typename T>
+			static std::vector<T> compute_initialization_vector(session_number_type session_number, sequence_number_type sequence_number, const void* enc_key, size_t enc_key_len);
+
 		private:
 
 			void check_format() const;
 	};
 
-	inline data_message::sequence_number_type data_message::sequence_number() const
+	inline sequence_number_type data_message::sequence_number() const
 	{
 		return ntohs(buffer_tools::get<sequence_number_type>(payload(), 0));
 	}
@@ -194,19 +203,9 @@ namespace fscp
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type)));
 	}
 
-	inline const uint8_t* data_message::initialization_vector() const
-	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t);
-	}
-
-	inline size_t data_message::initialization_vector_size() const
-	{
-		return cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).iv_length();
-	}
-
 	inline const uint8_t* data_message::ciphertext() const
 	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size();
+		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t);
 	}
 
 	inline size_t data_message::ciphertext_size() const
@@ -216,7 +215,7 @@ namespace fscp
 
 	inline const uint8_t* data_message::hmac() const
 	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + initialization_vector_size() + ciphertext_size();
+		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + ciphertext_size();
 	}
 
 	inline size_t data_message::hmac_size() const
@@ -225,11 +224,21 @@ namespace fscp
 	}
 
 	template <typename T>
-	inline std::vector<T> data_message::get_cleartext(const void* enc_key, size_t enc_key_len) const
+	inline std::vector<T> data_message::get_cleartext(session_number_type session_number, const void* enc_key, size_t enc_key_len) const
 	{
-		std::vector<T> result(get_cleartext(NULL, 0, enc_key, enc_key_len));
+		std::vector<T> result(get_cleartext(NULL, 0, session_number, enc_key, enc_key_len));
 
-		result.resize(get_cleartext(&result[0], result.size(), enc_key, enc_key_len));
+		result.resize(get_cleartext(&result[0], result.size(), session_number, enc_key, enc_key_len));
+
+		return result;
+	}
+
+	template <typename T>
+	inline std::vector<T> data_message::compute_initialization_vector(session_number_type session_number, sequence_number_type sequence_number, const void* enc_key, size_t enc_key_len)
+	{
+		std::vector<T> result(compute_initialization_vector(NULL, 0, session_number, sequence_number, enc_key, enc_key_len));
+
+		result.resize(compute_initialization_vector(&result[0], result.size(), session_number, sequence_number, enc_key, enc_key_len));
 
 		return result;
 	}
