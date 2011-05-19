@@ -68,6 +68,8 @@ int main()
 
 	boost::asio::io_service _io_service;
 
+	asiotap::tap_adapter tap_adapter(_io_service);
+
 	stop_function = boost::bind(&boost::asio::io_service::stop, &_io_service);
 
 	_io_service.run();

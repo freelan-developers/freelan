@@ -45,6 +45,8 @@
 #ifndef ASIOTAP_ASIOTAP_HPP
 #define ASIOTAP_ASIOTAP_HPP
 
+#include "tap_adapter.hpp"
+
 namespace asiotap
 {
 }

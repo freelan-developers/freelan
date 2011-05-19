@@ -65,8 +65,8 @@ namespace asiotap
 	};
 	
 	template <typename Service>
-	basic_tap_adapter<Service>::basic_tap_adapter(boost::asio::io_service& io_service) :
-		boost::asio::basic_io_object<Service>(io_service)
+	basic_tap_adapter<Service>::basic_tap_adapter(boost::asio::io_service& _io_service) :
+		boost::asio::basic_io_object<Service>(_io_service)
 	{
 	}
 }
