@@ -37,24 +37,19 @@
  */
 
 /**
- * \file tap_adapter_service.hpp
+ * \file tap_adapter_impl.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The tap adapter service class.
+ * \brief The tap adapter implementation class.
  */
 
-#ifndef ASIOTAP_TAP_ADAPTER_SERVICE_HPP
-#define ASIOTAP_TAP_ADAPTER_SERVICE_HPP
-
-#include <boost/asio.hpp>
-
-#include "tap_adapter_impl.hpp"
+#ifndef ASIOTAP_TAP_ADAPTER_IMPL_HPP
+#define ASIOTAP_TAP_ADAPTER_IMPL_HPP
 
 namespace asiotap
 {
-	template <typename TapAdapterImplementation = tap_adapter_impl>
-	class tap_adapter_service : public boost::asio::io_service::service
+	class tap_adapter_impl
 	{
 	};
 }
 
-#endif /* ASIOTAP_TAP_ADAPTER_SERVICE_HPP */
+#endif /* ASIOTAP_TAP_ADAPTER_IMPL_HPP */
