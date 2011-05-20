@@ -44,6 +44,8 @@
 
 #include "tap_adapter_impl.hpp"
 
+#include <boost/foreach.hpp>
+
 #include <vector>
 #include <map>
 #include <stdexcept>
@@ -241,6 +243,25 @@ namespace asiotap
 			RegCloseKey(network_connections_key);
 
 			return network_connections_map;
+		}
+
+		std::map<std::string, std::string> enumerate_tap_adapters()
+		{
+			std::map<std::string, std::string> network_connections_map = enumerate_network_connections();
+
+			std::vector<std::string> tap_adapters_list = enumerate_tap_adapters_guid();
+
+			std::map<std::string, std::string> tap_adapters_map;
+
+			BOOST_FOREACH(const std::string& guid, tap_adapters_list)
+			{
+				if (network_connections_map.find(guid) != network_connections_map.end())
+				{
+					tap_adapters_map[guid] = network_connections_map[guid];
+				}
+			}
+
+			return tap_adapters_map;
 		}
 #endif
 	}
