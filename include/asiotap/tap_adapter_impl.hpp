@@ -91,6 +91,27 @@ namespace asiotap
 			 */
 			void close();
 
+			/**
+			 * \brief Set the connected state of the device.
+			 * \param connected If true, set the device's state as connected.
+			 * \warning The device must be open (see is_open()) or the behavior is undefined.
+			 *
+			 * This function does nothing on *NIX.
+			 */
+			void set_connected_state(bool connected);
+
+			/**
+			 * \brief Get the device name, as specified during a call to open().
+			 * \return The device name. On Windows, a GUID is returned.
+			 */
+			const std::string& name() const;
+
+			/**
+			 * \brief Get the device MTU.
+			 * \return The device MTU.
+			 */
+			unsigned int mtu() const;
+
 		private:
 
 			std::string m_name;
@@ -106,6 +127,16 @@ namespace asiotap
 	inline tap_adapter_impl::~tap_adapter_impl()
 	{
 		close();
+	}
+	
+	inline const std::string& tap_adapter_impl::name() const
+	{
+		return m_name;
+	}
+	
+	inline unsigned int tap_adapter_impl::mtu() const
+	{
+		return m_mtu;
 	}
 }
 

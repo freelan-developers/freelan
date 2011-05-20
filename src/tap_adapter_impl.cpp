@@ -49,6 +49,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <cassert>
 
 #ifdef WINDOWS
 #include <winioctl.h>
@@ -422,6 +423,24 @@ namespace asiotap
 			m_handle = INVALID_HANDLE_VALUE;
 		}
 #else
+#endif
+	}
+
+	void tap_adapter_impl::set_connected_state(bool connected)
+	{
+		assert(is_open());
+
+#ifdef WINDOWS
+		ULONG status = connected ? TRUE : FALSE;
+		DWORD len;
+
+		if (!DeviceIoControl(m_handle, TAP_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
+		{
+			throw_last_system_error();
+		}
+
+#else
+		connected = connected; // Avoid unused parameters warnings
 #endif
 	}
 }
