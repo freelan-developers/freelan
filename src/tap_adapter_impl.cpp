@@ -50,6 +50,10 @@
 #include <map>
 #include <stdexcept>
 
+#ifdef WINDOWS
+#include <iphlpapi.h>
+#endif
+
 namespace asiotap
 {
 	namespace
@@ -58,6 +62,14 @@ namespace asiotap
 		const std::string ADAPTER_KEY = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}";
 		const std::string NETWORK_CONNECTIONS_KEY = "SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}";
 		const std::string COMPONENT_ID = "tap0901";
+		const std::string USERMODEDEVICEDIR = "\\\\.\\Global\\";
+		const std::string SYSDEVICEDIR = "\\Device\\";
+		const std::string USERDEVICEDIR = "\\DosDevices\\Global\\";
+		const std::string TAPSUFFIX = ".tap";
+
+		typedef std::vector<std::string> guid_array_type;
+		typedef std::map<std::string, std::string> guid_map_type;
+		typedef std::pair<std::string, std::string> guid_pair_type;
 
 		void throw_system_error_if_not(LONG error)
 		{
@@ -88,9 +100,14 @@ namespace asiotap
 			}
 		}
 
-		std::vector<std::string> enumerate_tap_adapters_guid()
+		void throw_last_system_error()
 		{
-			std::vector<std::string> tap_adapters_list;
+			throw_system_error_if_not(GetLastError());
+		}
+
+		guid_array_type enumerate_tap_adapters_guid()
+		{
+			guid_array_type tap_adapters_list;
 
 			HKEY adapter_key;
 			LONG status;
@@ -173,9 +190,9 @@ namespace asiotap
 			return tap_adapters_list;
 		}
 
-		std::map<std::string, std::string> enumerate_network_connections()
+		guid_map_type enumerate_network_connections()
 		{
-			std::map<std::string, std::string> network_connections_map;
+			guid_map_type network_connections_map;
 
 			HKEY network_connections_key;
 			LONG status;
@@ -245,13 +262,13 @@ namespace asiotap
 			return network_connections_map;
 		}
 
-		std::map<std::string, std::string> enumerate_tap_adapters()
+		guid_map_type enumerate_tap_adapters()
 		{
-			std::map<std::string, std::string> network_connections_map = enumerate_network_connections();
+			guid_map_type network_connections_map = enumerate_network_connections();
 
-			std::vector<std::string> tap_adapters_list = enumerate_tap_adapters_guid();
+			guid_array_type tap_adapters_list = enumerate_tap_adapters_guid();
 
-			std::map<std::string, std::string> tap_adapters_map;
+			guid_map_type tap_adapters_map;
 
 			BOOST_FOREACH(const std::string& guid, tap_adapters_list)
 			{
@@ -263,28 +280,140 @@ namespace asiotap
 
 			return tap_adapters_map;
 		}
+
+		guid_pair_type find_tap_adapter_by_guid(const std::string& guid)
+		{
+			guid_map_type tap_adapters_map = enumerate_tap_adapters();
+
+			guid_map_type::const_iterator it = tap_adapters_map.find(guid);
+
+			if (it == tap_adapters_map.end())
+			{
+				throw std::runtime_error("No such tap adapter: " + guid);
+			}
+
+			return *it;
+		}
 #endif
 	}
 
 	tap_adapter_impl::tap_adapter_impl() :
 #ifdef WINDOWS
-		m_handle(INVALID_HANDLE_VALUE)
+		m_handle(INVALID_HANDLE_VALUE),
+		m_interface_index(0)
 #else
 #endif
 	{
 	}
 	
-	void tap_adapter_impl::open(const std::string& name)
+	bool tap_adapter_impl::is_open() const
+	{
+#ifdef WINDOWS
+		return m_handle != INVALID_HANDLE_VALUE;
+#else
+#endif
+	}
+
+	void tap_adapter_impl::open(const std::string& _name)
 	{
 		close();
 
 #ifdef WINDOWS
 
-		if (name.empty())
+		if (_name.empty())
 		{
+			guid_map_type tap_adapters_map = enumerate_tap_adapters();
 
+			for (guid_map_type::const_iterator tap_adapter = tap_adapters_map.begin(); !is_open() && tap_adapter != tap_adapters_map.end(); ++tap_adapter)
+			{
+				try
+				{
+					open(tap_adapter->first);
+				}
+				catch (const std::exception&)
+				{
+					// This is not as ugly as it seems :)
+				}
+			}
+
+			if (!is_open())
+			{
+				throw std::runtime_error("No suitable tap adapter found.");
+			}
 		} else
 		{
+			PIP_ADAPTER_INFO piai = NULL;
+			ULONG size = 0;
+			DWORD status;
+
+			status = GetAdaptersInfo(piai, &size);
+
+			if (status != ERROR_BUFFER_OVERFLOW)
+			{
+				throw_system_error_if_not(status);
+			}
+
+			std::vector<unsigned char> piai_data(size);
+			piai = reinterpret_cast<PIP_ADAPTER_INFO>(&piai_data[0]);
+
+			status = GetAdaptersInfo(piai, &size);
+
+			throw_system_error_if_not(status);
+
+			piai_data.resize(size);
+
+			guid_pair_type adapter = find_tap_adapter_by_guid(_name);
+
+			for (PIP_ADAPTER_INFO pi = piai; pi; pi = pi->Next)
+			{
+				if (adapter.first == std::string(pi->AdapterName))
+				{
+					m_handle = CreateFileA(
+							(USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
+							GENERIC_READ | GENERIC_WRITE,
+							0,
+							0,
+							OPEN_EXISTING,
+							FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
+							0
+							);
+
+					if (m_handle == INVALID_HANDLE_VALUE)
+					{
+						throw_last_system_error();
+					}
+
+					m_name = adapter.first;
+					m_display_name = adapter.second;
+					m_interface_index = pi->Index;
+
+					// TODO: Handle ethernet address
+					// pi->Address, pi->AddressLength
+
+					// TODO: Handle MTU
+					// DWORD len;
+
+					// if (!DeviceIoControl(m_handle, TAP_IOCTL_GET_MTU, &m_mtu, sizeof(m_mtu), &m_mtu, sizeof(m_mtu), &len, NULL))
+					// {
+					// 	close();
+
+					// 	throw_last_system_error();
+					// }
+
+					//TODO: Open overlapped events
+					// memset(&d_read_overlapped, 0, sizeof(d_read_overlapped));
+					// d_read_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+					// memset(&d_write_overlapped, 0, sizeof(d_write_overlapped));
+					// d_write_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+					break;
+				}
+			}
+
+			if (!is_open())
+			{
+				throw std::runtime_error("Unable to open the specified tap adapter: " + _name);
+			}
 		}
 #else
 #endif
@@ -293,7 +422,7 @@ namespace asiotap
 	void tap_adapter_impl::close()
 	{
 #ifdef WINDOWS
-		if (m_handle != INVALID_HANDLE_VALUE)
+		if (is_open())
 		{
 			CloseHandle(m_handle);
 			m_handle = INVALID_HANDLE_VALUE;

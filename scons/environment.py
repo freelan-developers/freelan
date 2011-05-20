@@ -146,6 +146,7 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('boost_thread-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
 			kw['LIBS'].append('ws2_32')
 			kw['LIBS'].append('gdi32')
+			kw['LIBS'].append('iphlpapi')
 		else:
 			kw['LIBS'].append('boost_system')
 			kw['LIBS'].append('pthread')

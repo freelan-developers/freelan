@@ -71,8 +71,14 @@ namespace asiotap
 			~tap_adapter_impl();
 
 			/**
+			 * \brief Check if the tap adapter is open.
+			 * \return true if the tap adapter is open, false otherwise.
+			 */
+			bool is_open() const;
+
+			/**
 			 * \brief Open the tap adapter.
-			 * \param name The name of the tap adapter device.
+			 * \param name The name of the tap adapter device. On Windows, a GUID is expected.
 			 *
 			 * If the tap adapter was already opened, it will be closed first.
 			 */
@@ -87,8 +93,11 @@ namespace asiotap
 
 		private:
 
+			std::string m_name;
 #ifdef WINDOWS
 			HANDLE m_handle;
+			std::string m_display_name;
+			DWORD m_interface_index;
 #else
 #endif
 	};
