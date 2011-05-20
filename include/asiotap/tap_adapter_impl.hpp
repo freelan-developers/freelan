@@ -94,6 +94,7 @@ namespace asiotap
 		private:
 
 			std::string m_name;
+			unsigned int m_mtu;
 #ifdef WINDOWS
 			HANDLE m_handle;
 			std::string m_display_name;

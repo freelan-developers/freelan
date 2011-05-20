@@ -51,8 +51,9 @@
 #include <stdexcept>
 
 #ifdef WINDOWS
-#include "../windows/common.h"
+#include <winioctl.h>
 #include <iphlpapi.h>
+#include "../windows/common.h"
 #endif
 
 namespace asiotap
@@ -291,6 +292,7 @@ namespace asiotap
 	}
 
 	tap_adapter_impl::tap_adapter_impl() :
+		m_mtu(0),
 #ifdef WINDOWS
 		m_handle(INVALID_HANDLE_VALUE),
 		m_interface_index(0)
@@ -383,15 +385,14 @@ namespace asiotap
 					// TODO: Handle ethernet address
 					// pi->Address, pi->AddressLength
 
-					// TODO: Handle MTU
-					// DWORD len;
+					DWORD len;
 
-					// if (!DeviceIoControl(m_handle, TAP_IOCTL_GET_MTU, &m_mtu, sizeof(m_mtu), &m_mtu, sizeof(m_mtu), &len, NULL))
-					// {
-					// 	close();
+					if (!DeviceIoControl(m_handle, TAP_IOCTL_GET_MTU, &m_mtu, sizeof(m_mtu), &m_mtu, sizeof(m_mtu), &len, NULL))
+					{
+						close();
 
-					// 	throw_last_system_error();
-					// }
+						throw_last_system_error();
+					}
 
 					//TODO: Open overlapped events
 					// memset(&d_read_overlapped, 0, sizeof(d_read_overlapped));
