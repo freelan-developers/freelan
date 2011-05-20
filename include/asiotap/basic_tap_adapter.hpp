@@ -47,6 +47,8 @@
 
 #include <boost/asio.hpp>
 
+#include <string>
+
 namespace asiotap
 {
 	/**
@@ -62,12 +64,86 @@ namespace asiotap
 			 * \param io_service The io_service to use.
 			 */
 			explicit basic_tap_adapter(boost::asio::io_service& io_service);
+
+			/**
+			 * \brief Check if the tap adapter is open.
+			 * \return true if the tap adapter is open, false otherwise.
+			 */
+			bool is_open() const;
+
+			/**
+			 * \brief Open the tap adapter.
+			 * \param name The name of the tap adapter to open. On Windows a GUID is expected. If name is NULL, a device is selected/created automatically.
+			 */
+			void open(const std::string& name = "");
+
+			/**
+			 * \brief Close the tap adapter.
+			 */
+			void close();
+
+			/**
+			 * \brief Set the connected state of the device.
+			 * \param connected If true, set the device's state as connected.
+			 * \warning The device must be open (see is_open()) or the behavior is undefined.
+			 *
+			 * This function does nothing on *NIX.
+			 */
+			void set_connected_state(bool connected);
+
+			/**
+			 * \brief Get the device name, as specified during a call to open().
+			 * \return The device name. On Windows, a GUID is returned.
+			 */
+			const std::string& name() const;
+
+			/**
+			 * \brief Get the device MTU.
+			 * \return The device MTU.
+			 */
+			unsigned int mtu() const;
 	};
 	
 	template <typename Service>
-	basic_tap_adapter<Service>::basic_tap_adapter(boost::asio::io_service& _io_service) :
+	inline basic_tap_adapter<Service>::basic_tap_adapter(boost::asio::io_service& _io_service) :
 		boost::asio::basic_io_object<Service>(_io_service)
 	{
+	}
+	
+	template <typename Service>
+	inline bool basic_tap_adapter<Service>::is_open() const
+	{
+		return this->implementation->is_open();
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::open(const std::string& _name)
+	{
+		this->implementation->open(_name);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::close()
+	{
+		this->implementation->close();
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::set_connected_state(bool connected)
+	{
+		this->implementation->set_connected_state(connected);
+	}
+
+	template <typename Service>
+	inline const std::string& basic_tap_adapter<Service>::name() const
+	{
+		return this->implementation->name();
+	}
+
+	template <typename Service>
+	inline unsigned int basic_tap_adapter<Service>::mtu() const
+	{
+		return this->implementation->mtu();
 	}
 }
 
