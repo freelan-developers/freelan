@@ -51,6 +51,7 @@
 #include <stdexcept>
 
 #ifdef WINDOWS
+#include "../windows/common.h"
 #include <iphlpapi.h>
 #endif
 
@@ -59,14 +60,6 @@ namespace asiotap
 	namespace
 	{
 #ifdef WINDOWS
-		const std::string ADAPTER_KEY = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}";
-		const std::string NETWORK_CONNECTIONS_KEY = "SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}";
-		const std::string COMPONENT_ID = "tap0901";
-		const std::string USERMODEDEVICEDIR = "\\\\.\\Global\\";
-		const std::string SYSDEVICEDIR = "\\Device\\";
-		const std::string USERDEVICEDIR = "\\DosDevices\\Global\\";
-		const std::string TAPSUFFIX = ".tap";
-
 		typedef std::vector<std::string> guid_array_type;
 		typedef std::map<std::string, std::string> guid_map_type;
 		typedef std::pair<std::string, std::string> guid_pair_type;
@@ -112,7 +105,7 @@ namespace asiotap
 			HKEY adapter_key;
 			LONG status;
 
-			status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, ADAPTER_KEY.c_str(), 0, KEY_READ, &adapter_key);
+			status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, &adapter_key);
 
 			throw_system_error_if_not(status);
 
@@ -132,7 +125,7 @@ namespace asiotap
 						throw_system_error_if_not(status);
 					}
 
-					const std::string network_adapter_key_name = ADAPTER_KEY + "\\" + std::string(name, name_len);
+					const std::string network_adapter_key_name = std::string(ADAPTER_KEY) + "\\" + std::string(name, name_len);
 					HKEY network_adapter_key;
 
 					status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, network_adapter_key_name.c_str(), 0, KEY_READ, &network_adapter_key);
@@ -151,7 +144,7 @@ namespace asiotap
 
 						if (type == REG_SZ)
 						{
-							if (COMPONENT_ID == std::string(component_id, component_id_len))
+							if (std::string(TAP_COMPONENT_ID) == std::string(component_id, component_id_len))
 							{
 								char net_cfg_instance_id[256];
 								DWORD net_cfg_instance_id_len = sizeof(net_cfg_instance_id);
@@ -197,7 +190,7 @@ namespace asiotap
 			HKEY network_connections_key;
 			LONG status;
 
-			status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, NETWORK_CONNECTIONS_KEY.c_str(), 0, KEY_READ, &network_connections_key);
+			status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, NETWORK_CONNECTIONS_KEY, 0, KEY_READ, &network_connections_key);
 
 			throw_system_error_if_not(status);
 
@@ -217,7 +210,7 @@ namespace asiotap
 						throw_system_error_if_not(status);
 					}
 
-					const std::string connection_key_name = NETWORK_CONNECTIONS_KEY + "\\" + std::string(name, name_len) + "\\Connection";
+					const std::string connection_key_name = std::string(NETWORK_CONNECTIONS_KEY) + "\\" + std::string(name, name_len) + "\\Connection";
 					HKEY connection_key;
 
 					status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, connection_key_name.c_str(), 0, KEY_READ, &connection_key);

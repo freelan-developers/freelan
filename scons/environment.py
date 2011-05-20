@@ -75,6 +75,7 @@ class Environment(SConsEnvironment):
 			self['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
 			self['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
 			self['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
+			self['CXXFLAGS'].append('-DTAP_ID=\\"%s\\"' % self['tap_id'])
 			
 			self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['mingw_path'], 'include')))
 			self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['boost_path'], 'include', 'boost-' + self['boost_version'])))
@@ -164,6 +165,7 @@ class Environment(SConsEnvironment):
 			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'C:\Boost', PathVariable.PathIsDir))
 			variables.Add('boost_version', 'The boost version (in format x_y)', '1_46_1')
 			variables.Add('boost_lib_suffix', 'The suffix for boost libraries', 'mgw45-mt')
+			variables.Add('tap_id', 'The TAP adapter identifier', 'tap0901')
 		else:
 			variables.AddVariables(PathVariable('install_path', 'The installation path', r'/usr/local', PathVariable.PathIsDir))
 			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr/include', PathVariable.PathIsDir))
