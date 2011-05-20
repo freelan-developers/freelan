@@ -45,11 +45,58 @@
 #ifndef ASIOTAP_TAP_ADAPTER_IMPL_HPP
 #define ASIOTAP_TAP_ADAPTER_IMPL_HPP
 
+#include "os.hpp"
+
+#ifdef WINDOWS
+#include <windows.h>
+#else
+#endif
+
+#include <string>
+
 namespace asiotap
 {
 	class tap_adapter_impl
 	{
+		public:
+
+			/**
+			 * \brief Create a new tap_adapter_impl.
+			 */
+			tap_adapter_impl();
+
+			/**
+			 * \brief Destroy a tap_adapter_impl.
+			 */
+			~tap_adapter_impl();
+
+			/**
+			 * \brief Open the tap adapter.
+			 * \param name The name of the tap adapter device.
+			 *
+			 * If the tap adapter was already opened, it will be closed first.
+			 */
+			void open(const std::string& name);
+
+			/**
+			 * \brief Close the tap adapter.
+			 * 
+			 * If the tap adapter is already closed, nothing is done.
+			 */
+			void close();
+
+		private:
+
+#ifdef WINDOWS
+			HANDLE m_handle;
+#else
+#endif
 	};
+	
+	inline tap_adapter_impl::~tap_adapter_impl()
+	{
+		close();
+	}
 }
 
 #endif /* ASIOTAP_TAP_ADAPTER_IMPL_HPP */
