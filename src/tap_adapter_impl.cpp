@@ -115,62 +115,65 @@ namespace asiotap
 			{
 				DWORD index = 0;
 				char name[256];
-				DWORD name_len = sizeof(name);
+				DWORD name_len;
 
 				do
 				{
+					name_len = sizeof(name);
 					status = RegEnumKeyExA(adapter_key, index, name, &name_len, NULL, NULL, NULL, NULL);
 					++index;
 
 					if (status != ERROR_NO_MORE_ITEMS)
 					{
 						throw_system_error_if_not(status);
-					}
 
-					const std::string network_adapter_key_name = std::string(ADAPTER_KEY) + "\\" + std::string(name, name_len);
-					HKEY network_adapter_key;
+						const std::string network_adapter_key_name = std::string(ADAPTER_KEY) + "\\" + std::string(name, name_len);
+						HKEY network_adapter_key;
 
-					status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, network_adapter_key_name.c_str(), 0, KEY_READ, &network_adapter_key);
+						status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, network_adapter_key_name.c_str(), 0, KEY_READ, &network_adapter_key);
 
-					throw_system_error_if_not(status);
-
-					try
-					{
-						DWORD type;
-						char component_id[256];
-						DWORD component_id_len = sizeof(component_id);
-
-						status = RegQueryValueExA(network_adapter_key, "ComponentId", NULL, &type, reinterpret_cast<LPBYTE>(component_id), &component_id_len);
-
-						throw_system_error_if_not(status);
-
-						if (type == REG_SZ)
+						if (status == ERROR_SUCCESS)
 						{
-							if (std::string(TAP_COMPONENT_ID) == std::string(component_id, component_id_len))
+							try
 							{
-								char net_cfg_instance_id[256];
-								DWORD net_cfg_instance_id_len = sizeof(net_cfg_instance_id);
+								DWORD type;
+								char component_id[256];
+								DWORD component_id_len = sizeof(component_id);
 
-								status = RegQueryValueExA(network_adapter_key, "NetCfgInstanceId", NULL, &type, reinterpret_cast<LPBYTE>(net_cfg_instance_id), &net_cfg_instance_id_len);
+								status = RegQueryValueExA(network_adapter_key, "ComponentId", NULL, &type, reinterpret_cast<LPBYTE>(component_id), &component_id_len);
 
-								throw_system_error_if_not(status);
-
-								if (type == REG_SZ)
+								if (status == ERROR_SUCCESS)
 								{
-									tap_adapters_list.push_back(std::string(net_cfg_instance_id, net_cfg_instance_id_len));
+									if (type == REG_SZ)
+									{
+										if (std::string(TAP_COMPONENT_ID) == std::string(component_id, component_id_len))
+										{
+											char net_cfg_instance_id[256];
+											DWORD net_cfg_instance_id_len = sizeof(net_cfg_instance_id);
+
+											status = RegQueryValueExA(network_adapter_key, "NetCfgInstanceId", NULL, &type, reinterpret_cast<LPBYTE>(net_cfg_instance_id), &net_cfg_instance_id_len);
+
+											if (status == ERROR_SUCCESS)
+											{
+												if (type == REG_SZ)
+												{
+													tap_adapters_list.push_back(std::string(net_cfg_instance_id, net_cfg_instance_id_len));
+												}
+											}
+										}
+									}
 								}
 							}
+							catch (...)
+							{
+								RegCloseKey(network_adapter_key);
+
+								throw;
+							}
+
+							RegCloseKey(network_adapter_key);
 						}
 					}
-					catch (...)
-					{
-						RegCloseKey(network_adapter_key);
-
-						throw;
-					}
-
-					RegCloseKey(network_adapter_key);
-
 				} while (status != ERROR_NO_MORE_ITEMS);
 			}
 			catch (...)
@@ -200,49 +203,51 @@ namespace asiotap
 			{
 				DWORD index = 0;
 				char name[256];
-				DWORD name_len = sizeof(name);
+				DWORD name_len;
 
 				do
 				{
+					name_len = sizeof(name);
 					status = RegEnumKeyExA(network_connections_key, index, name, &name_len, NULL, NULL, NULL, NULL);
 					++index;
 
 					if (status != ERROR_NO_MORE_ITEMS)
 					{
 						throw_system_error_if_not(status);
-					}
 
-					const std::string connection_key_name = std::string(NETWORK_CONNECTIONS_KEY) + "\\" + std::string(name, name_len) + "\\Connection";
-					HKEY connection_key;
+						const std::string connection_key_name = std::string(NETWORK_CONNECTIONS_KEY) + "\\" + std::string(name, name_len) + "\\Connection";
+						HKEY connection_key;
 
-					status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, connection_key_name.c_str(), 0, KEY_READ, &connection_key);
+						status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, connection_key_name.c_str(), 0, KEY_READ, &connection_key);
 
-					throw_system_error_if_not(status);
-
-					try
-					{
-						DWORD type;
-						char cname[256];
-						DWORD cname_len = sizeof(cname);
-
-						status = RegQueryValueExA(connection_key, "Name", NULL, &type, reinterpret_cast<LPBYTE>(cname), &cname_len);
-
-						throw_system_error_if_not(status);
-
-						if (type == REG_SZ)
+						if (status == ERROR_SUCCESS)
 						{
-							network_connections_map[std::string(name, name_len)] = std::string(cname, cname_len);
+							try
+							{
+								DWORD type;
+								char cname[256];
+								DWORD cname_len = sizeof(cname);
+
+								status = RegQueryValueExA(connection_key, "Name", NULL, &type, reinterpret_cast<LPBYTE>(cname), &cname_len);
+
+								if (status == ERROR_SUCCESS)
+								{
+									if (type == REG_SZ)
+									{
+										network_connections_map[std::string(name, name_len)] = std::string(cname, cname_len);
+									}
+								}
+							}
+							catch (...)
+							{
+								RegCloseKey(connection_key);
+
+								throw;
+							}
+
+							RegCloseKey(connection_key);
 						}
 					}
-					catch (...)
-					{
-						RegCloseKey(connection_key);
-
-						throw;
-					}
-
-					RegCloseKey(connection_key);
-
 				} while (status != ERROR_NO_MORE_ITEMS);
 			}
 			catch (...)
