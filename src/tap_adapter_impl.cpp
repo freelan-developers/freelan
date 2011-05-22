@@ -146,7 +146,10 @@ namespace asiotap
 								{
 									if (type == REG_SZ)
 									{
-										if (std::string(TAP_COMPONENT_ID) == std::string(component_id, component_id_len))
+										const std::string tap_component_id(TAP_COMPONENT_ID);
+										const std::string component_id_str(component_id, component_id_len - 1);
+
+										if (tap_component_id == component_id_str)
 										{
 											char net_cfg_instance_id[256];
 											DWORD net_cfg_instance_id_len = sizeof(net_cfg_instance_id);
@@ -157,7 +160,8 @@ namespace asiotap
 											{
 												if (type == REG_SZ)
 												{
-													tap_adapters_list.push_back(std::string(net_cfg_instance_id, net_cfg_instance_id_len));
+													const std::string net_cfg_instance_id_str(net_cfg_instance_id, net_cfg_instance_id_len - 1);
+													tap_adapters_list.push_back(net_cfg_instance_id_str);
 												}
 											}
 										}
@@ -211,6 +215,8 @@ namespace asiotap
 					status = RegEnumKeyExA(network_connections_key, index, name, &name_len, NULL, NULL, NULL, NULL);
 					++index;
 
+					const std::string name_str(name, name_len);
+
 					if (status != ERROR_NO_MORE_ITEMS)
 					{
 						throw_system_error_if_not(status);
@@ -230,11 +236,13 @@ namespace asiotap
 
 								status = RegQueryValueExA(connection_key, "Name", NULL, &type, reinterpret_cast<LPBYTE>(cname), &cname_len);
 
+								const std::string cname_str(cname, cname_len - 1);
+
 								if (status == ERROR_SUCCESS)
 								{
 									if (type == REG_SZ)
 									{
-										network_connections_map[std::string(name, name_len)] = std::string(cname, cname_len);
+										network_connections_map[name_str] = cname_str;
 									}
 								}
 							}
@@ -331,7 +339,7 @@ namespace asiotap
 				{
 					open(tap_adapter->first);
 				}
-				catch (const std::exception&)
+				catch (const std::exception& ex)
 				{
 					// This is not as ugly as it seems :)
 				}
