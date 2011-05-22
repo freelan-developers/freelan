@@ -72,15 +72,8 @@ int main()
 
 	stop_function = boost::bind(&boost::asio::io_service::stop, &_io_service);
 
-	try
-	{
 	tap_adapter.open();
 	tap_adapter.set_connected_state(true);
-	}
-	catch (std::exception& ex)
-	{
-		std::cerr << ex.what() << std::endl;
-	}
 
 	_io_service.run();
 
