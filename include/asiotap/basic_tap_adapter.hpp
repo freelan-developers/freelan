@@ -60,6 +60,11 @@ namespace asiotap
 		public:
 
 			/**
+			 * \brief The ethernet address type.
+			 */
+			typedef typename Service::implementation_type::ethernet_address_type ethernet_address_type;
+
+			/**
 			 * \brief The constructor.
 			 * \param io_service The io_service to use.
 			 */
@@ -94,14 +99,23 @@ namespace asiotap
 			/**
 			 * \brief Get the device name, as specified during a call to open().
 			 * \return The device name. On Windows, a GUID is returned.
+			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			const std::string& name() const;
 
 			/**
 			 * \brief Get the device MTU.
 			 * \return The device MTU.
+			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			unsigned int mtu() const;
+
+			/**
+			 * \brief Get the Ethernet address.
+			 * \return The ethernet address.
+			 * \warning The device must be opened or the returned value is unspecified.
+			 */
+			const ethernet_address_type& ethernet_address() const;
 	};
 	
 	template <typename Service>
@@ -144,6 +158,12 @@ namespace asiotap
 	inline unsigned int basic_tap_adapter<Service>::mtu() const
 	{
 		return this->implementation->mtu();
+	}
+	
+	template <typename Service>
+	inline const typename basic_tap_adapter<Service>::ethernet_address_type& basic_tap_adapter<Service>::ethernet_address() const
+	{
+		return this->implementation->ethernet_address();
 	}
 }
 

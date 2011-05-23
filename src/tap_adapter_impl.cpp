@@ -50,6 +50,7 @@
 #include <map>
 #include <stdexcept>
 #include <cassert>
+#include <cstring>
 
 #ifdef WINDOWS
 #include <winioctl.h>
@@ -396,8 +397,14 @@ namespace asiotap
 					m_display_name = adapter.second;
 					m_interface_index = pi->Index;
 
-					// TODO: Handle ethernet address
-					// pi->Address, pi->AddressLength
+					if (pi->AddressLength != m_ethernet_address.size())
+					{
+						close();
+
+						throw std::runtime_error("Unexpected Ethernet address size");
+					}
+
+					std::memcpy(m_ethernet_address.c_array(), pi->Address, pi->AddressLength);
 
 					DWORD len;
 

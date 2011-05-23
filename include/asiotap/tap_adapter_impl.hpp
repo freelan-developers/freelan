@@ -52,6 +52,8 @@
 #else
 #endif
 
+#include <boost/array.hpp>
+
 #include <string>
 
 namespace asiotap
@@ -59,6 +61,16 @@ namespace asiotap
 	class tap_adapter_impl
 	{
 		public:
+
+			/**
+			 * \brief The Ethernet address size.
+			 */
+			static const size_t ethernet_address_size = 6;
+
+			/**
+			 * \brief The Ethernet address type.
+			 */
+			typedef boost::array<unsigned char, ethernet_address_size> ethernet_address_type;
 
 			/**
 			 * \brief Create a new tap_adapter_impl.
@@ -103,19 +115,29 @@ namespace asiotap
 			/**
 			 * \brief Get the device name, as specified during a call to open().
 			 * \return The device name. On Windows, a GUID is returned.
+			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			const std::string& name() const;
 
 			/**
 			 * \brief Get the device MTU.
 			 * \return The device MTU.
+			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			unsigned int mtu() const;
+
+			/**
+			 * \brief Get the Ethernet address.
+			 * \return The ethernet address.
+			 * \warning The device must be opened or the returned value is unspecified.
+			 */
+			const ethernet_address_type& ethernet_address() const;
 
 		private:
 
 			std::string m_name;
 			unsigned int m_mtu;
+			ethernet_address_type m_ethernet_address;
 #ifdef WINDOWS
 			HANDLE m_handle;
 			std::string m_display_name;
@@ -137,6 +159,11 @@ namespace asiotap
 	inline unsigned int tap_adapter_impl::mtu() const
 	{
 		return m_mtu;
+	}
+	
+	inline const tap_adapter_impl::ethernet_address_type& tap_adapter_impl::ethernet_address() const
+	{
+		return m_ethernet_address;
 	}
 }
 

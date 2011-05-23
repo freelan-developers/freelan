@@ -60,7 +60,12 @@ namespace asiotap
 			/**
 			 * \brief The implementation type.
 			 */
-			typedef boost::shared_ptr<TapAdapterImplementation> implementation_type;
+			typedef TapAdapterImplementation implementation_type;
+
+			/**
+			 * \brief The implementation pointer type.
+			 */
+			typedef boost::shared_ptr<TapAdapterImplementation> implementation_pointer;
 
 			/**
 			 * \brief The service identifier.
@@ -77,13 +82,13 @@ namespace asiotap
 			 * \brief Construct an implementation.
 			 * \param impl The implementation to construct.
 			 */
-			void construct(implementation_type& impl);
+			void construct(implementation_pointer& impl);
 
 			/**
 			 * \brief Destroy an implementation.
 			 * \param impl The implementation to destroy.
 			 */
-			void destroy(implementation_type& impl);
+			void destroy(implementation_pointer& impl);
 
 		private:
 
@@ -100,13 +105,13 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	void basic_tap_adatper_service<TapAdapterImplementation>::construct(implementation_type& impl)
+	void basic_tap_adatper_service<TapAdapterImplementation>::construct(implementation_pointer& impl)
 	{
 		impl.reset(new TapAdapterImplementation());
 	}
 
 	template <typename TapAdapterImplementation>
-	void basic_tap_adatper_service<TapAdapterImplementation>::destroy(implementation_type& impl)
+	void basic_tap_adatper_service<TapAdapterImplementation>::destroy(implementation_pointer& impl)
 	{
 		impl.reset();
 	}
