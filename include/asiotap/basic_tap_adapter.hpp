@@ -62,7 +62,7 @@ namespace asiotap
 			/**
 			 * \brief The ethernet address type.
 			 */
-			typedef typename Service::implementation_type::ethernet_address_type ethernet_address_type;
+			typedef typename Service::implementation_type::element_type::ethernet_address_type ethernet_address_type;
 
 			/**
 			 * \brief The constructor.
