@@ -55,6 +55,7 @@
 #ifdef WINDOWS
 #include <winioctl.h>
 #include <iphlpapi.h>
+#include <winbase.h>
 #include "../windows/common.h"
 #endif
 
@@ -415,10 +416,10 @@ namespace asiotap
 						throw_last_system_error();
 					}
 
-					//TODO: Open overlapped events
-					// memset(&d_read_overlapped, 0, sizeof(d_read_overlapped));
-					// d_read_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+					memset(&m_read_overlapped, 0, sizeof(m_read_overlapped));
+					m_read_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
+					//TODO: Open overlapped events
 					// memset(&d_write_overlapped, 0, sizeof(d_write_overlapped));
 					// d_write_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 					break;
@@ -439,6 +440,8 @@ namespace asiotap
 #ifdef WINDOWS
 		if (is_open())
 		{
+			CancelIo(m_handle);
+			CloseHandle(m_read_overlapped.hEvent);
 			CloseHandle(m_handle);
 			m_handle = INVALID_HANDLE_VALUE;
 		}
@@ -461,6 +464,51 @@ namespace asiotap
 
 #else
 		connected = connected; // Avoid unused parameters warnings
+#endif
+	}
+	
+	void tap_adapter_impl::begin_read(void* buf, size_t buf_len)
+	{
+		assert(m_handle != INVALID_HANDLE_VALUE);
+		assert(buf);
+
+#ifdef WINDOWS
+		bool success = (ReadFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_read_overlapped) != 0);
+
+		if (!success)
+		{
+			DWORD error = GetLastError();
+
+			if (error != ERROR_IO_PENDING)
+			{
+				throw_system_error_if_not(error);
+			}
+		}
+#else
+#endif
+	}
+	
+	size_t tap_adapter_impl::end_read(const boost::posix_time::time_duration& timeout)
+	{
+#ifdef WINDOWS
+		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
+
+		if (WaitForSingleObject(m_read_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
+		{
+			DWORD cnt = 0;
+
+			if (GetOverlappedResult(m_handle, &m_read_overlapped, &cnt, true))
+			{
+				return cnt;
+			}
+			else
+			{
+				throw_last_system_error();
+			}
+		}
+
+		return 0;
+#else
 #endif
 	}
 }

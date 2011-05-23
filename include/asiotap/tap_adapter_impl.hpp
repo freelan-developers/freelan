@@ -53,6 +53,7 @@
 #endif
 
 #include <boost/array.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
 
@@ -133,6 +134,20 @@ namespace asiotap
 			 */
 			const ethernet_address_type& ethernet_address() const;
 
+			/**
+			 * \brief Start a read.
+			 * \param buf The buffer to read the data to.
+			 * \param buf_len The length of buf.
+			 */
+			void begin_read(void* buf, size_t buf_len);
+
+			/**
+			 * \brief End a read.
+			 * \param timeout The maximum time to wait for the read to end. A special value means "wait forever".
+			 * \return The count of bytes read, or 0 if the read failed.
+			 */
+			size_t end_read(const boost::posix_time::time_duration& timeout);
+
 		private:
 
 			std::string m_name;
@@ -142,6 +157,7 @@ namespace asiotap
 			HANDLE m_handle;
 			std::string m_display_name;
 			DWORD m_interface_index;
+			OVERLAPPED m_read_overlapped;
 #else
 #endif
 	};
