@@ -511,4 +511,12 @@ namespace asiotap
 #else
 #endif
 	}
+	
+	void tap_adapter_impl::cancel()
+	{
+#ifdef WINDOWS
+		CancelIo(m_handle);
+#else
+#endif
+	}
 }

@@ -148,6 +148,12 @@ namespace asiotap
 			 */
 			size_t end_read(const boost::posix_time::time_duration& timeout);
 
+			/**
+			 * \brief Cancel all IO operations.
+			 * \warning If the cancelling fails, an exception is thrown.
+			 */
+			void cancel();
+
 		private:
 
 			std::string m_name;
