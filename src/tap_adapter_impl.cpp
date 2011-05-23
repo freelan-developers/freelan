@@ -45,6 +45,7 @@
 #include "tap_adapter_impl.hpp"
 
 #include <boost/foreach.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <vector>
 #include <map>
@@ -86,7 +87,7 @@ namespace asiotap
 
 				try
 				{
-					throw std::runtime_error(msgbuf);
+					throw boost::system::system_error(error, boost::system::system_category(), msgbuf);
 				}
 				catch (...)
 				{

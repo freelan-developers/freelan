@@ -116,6 +116,14 @@ namespace asiotap
 			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			const ethernet_address_type& ethernet_address() const;
+
+			/**
+			 * \brief Process to an asynchronous read.
+			 * \param buffer The buffer to read the data to.
+			 * \param handler The completion handler.
+			 */
+			template<typename ReadHandler>
+			void async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler);
 	};
 	
 	template <typename Service>
@@ -164,6 +172,13 @@ namespace asiotap
 	inline const typename basic_tap_adapter<Service>::ethernet_address_type& basic_tap_adapter<Service>::ethernet_address() const
 	{
 		return this->implementation->ethernet_address();
+	}
+
+	template <typename Service>
+	template<typename ReadHandler>
+	void basic_tap_adapter<Service>::async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler)
+	{
+		this->service->async_read(this->implementation, buffer, handler);
 	}
 }
 

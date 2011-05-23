@@ -47,6 +47,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "tap_adapter_impl.hpp"
 
@@ -85,7 +86,33 @@ namespace asiotap
 			 */
 			void destroy(implementation_type& impl);
 
+			/**
+			 * \brief Process to an asynchronous read on the specified implementation.
+			 * \param impl The implementation on which to perform the read.
+			 * \param buffer The buffer.
+			 * \param handler The handler.
+			 */
+			template<typename ReadHandler>
+			void async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler);
+
 		private:
+
+			template <typename ReadHandler>
+			class read_operation
+			{
+				public:
+
+					read_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::mutable_buffer& buffer, ReadHandler handler);
+					void operator()() const;
+
+				private:
+
+					boost::weak_ptr<TapAdapterImplementation> m_impl;
+					boost::asio::io_service& m_io_service;
+					boost::asio::io_service::work m_work;
+					const boost::asio::mutable_buffer& m_buffer;
+					ReadHandler m_handler;
+			};
 
 			void shutdown_service();
 	};
@@ -94,25 +121,72 @@ namespace asiotap
 	boost::asio::io_service::id basic_tap_adatper_service<TapAdapterImplementation>::id;
 	
 	template <typename TapAdapterImplementation>
-	basic_tap_adatper_service<TapAdapterImplementation>::basic_tap_adatper_service(boost::asio::io_service &_io_service) :
+	inline basic_tap_adatper_service<TapAdapterImplementation>::basic_tap_adatper_service(boost::asio::io_service &_io_service) :
 		boost::asio::io_service::service(_io_service)
 	{
 	}
 
 	template <typename TapAdapterImplementation>
-	void basic_tap_adatper_service<TapAdapterImplementation>::construct(implementation_type& impl)
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::construct(implementation_type& impl)
 	{
 		impl.reset(new TapAdapterImplementation());
 	}
 
 	template <typename TapAdapterImplementation>
-	void basic_tap_adatper_service<TapAdapterImplementation>::destroy(implementation_type& impl)
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::destroy(implementation_type& impl)
 	{
 		impl.reset();
 	}
 	
+	template<typename TapAdapterImplementation> template<typename ReadHandler>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler)
+	{
+
+	}
+
 	template <typename TapAdapterImplementation>
-	void basic_tap_adatper_service<TapAdapterImplementation>::shutdown_service()
+	template <typename ReadHandler>
+	inline basic_tap_adatper_service<TapAdapterImplementation>::read_operation<ReadHandler>::read_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::mutable_buffer& buffer, ReadHandler handler) :
+		m_impl(impl),
+		m_io_service(io_service),
+		m_work(m_io_service),
+		m_buffer(buffer),
+		m_handler(handler)
+	{
+	}
+
+	template <typename TapAdapterImplementation>
+	template <typename ReadHandler>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::read_operation<ReadHandler>::operator()() const
+	{
+		implementation_type impl = m_impl.lock();
+
+		if (impl)
+		{
+			unsigned char* data = boost::asio::buffer_cast<unsigned char*>(m_buffer);
+			size_t data_len = boost::asio::buffer_size(m_buffer);
+
+			impl->begin_read(data, data_len);
+
+			try
+			{
+				size_t cnt = impl->end_read(boost::posix_time::time_duration());
+				boost::system::error_code ec;
+
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
+			}
+			catch (boost::system::system_error& ex)
+			{
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex, 0));
+			}
+		} else
+		{
+			this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
+		}
+	}
+
+	template <typename TapAdapterImplementation>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::shutdown_service()
 	{
 	}
 }
