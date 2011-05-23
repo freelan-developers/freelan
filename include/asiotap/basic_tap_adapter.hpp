@@ -178,7 +178,7 @@ namespace asiotap
 	template<typename ReadHandler>
 	void basic_tap_adapter<Service>::async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler)
 	{
-		this->service->async_read(this->implementation, buffer, handler);
+		this->service.async_read(this->implementation, buffer, handler);
 	}
 }
 

@@ -48,6 +48,7 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/thread.hpp>
 
 #include "tap_adapter_impl.hpp"
 
@@ -73,6 +74,11 @@ namespace asiotap
 			 * \param io_service The io_service to register to.
 			 */
 			explicit basic_tap_adatper_service(boost::asio::io_service &io_service);
+
+			/**
+			 * \brief The destructor.
+			 */
+			~basic_tap_adatper_service();
 
 			/**
 			 * \brief Construct an implementation.
@@ -115,6 +121,10 @@ namespace asiotap
 			};
 
 			void shutdown_service();
+
+			boost::asio::io_service m_async_io_service;
+			boost::scoped_ptr<boost::asio::io_service::work> m_async_work;
+			boost::thread m_async_thread;
 	};
 
 	template <typename TapAdapterImplementation>
@@ -122,8 +132,18 @@ namespace asiotap
 	
 	template <typename TapAdapterImplementation>
 	inline basic_tap_adatper_service<TapAdapterImplementation>::basic_tap_adatper_service(boost::asio::io_service &_io_service) :
-		boost::asio::io_service::service(_io_service)
+		boost::asio::io_service::service(_io_service),
+		m_async_work(new boost::asio::io_service::work(m_async_io_service)),
+		m_async_thread(boost::bind(&boost::asio::io_service::run, &m_async_io_service))
 	{
+	}
+
+	template <typename TapAdapterImplementation>
+	inline basic_tap_adatper_service<TapAdapterImplementation>::~basic_tap_adatper_service()
+	{
+		m_async_work.reset();
+		m_async_io_service.stop();
+		m_async_thread.join();
 	}
 
 	template <typename TapAdapterImplementation>
@@ -141,7 +161,7 @@ namespace asiotap
 	template<typename TapAdapterImplementation> template<typename ReadHandler>
 	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler)
 	{
-
+		this->m_async_io_service.post(read_operation<ReadHandler>(impl, this->get_io_service(), buffer, handler));
 	}
 
 	template <typename TapAdapterImplementation>

@@ -59,6 +59,11 @@ static bool register_signal_handlers()
 	return true;
 }
 
+void read_done(const boost::system::error_code& ec, size_t cnt)
+{
+	std::cout << "Read: " << cnt << " bytes. Error: " << ec << std::endl;
+}
+
 int main()
 {
 	if (!register_signal_handlers())
@@ -75,6 +80,9 @@ int main()
 	tap_adapter.open();
 	tap_adapter.set_connected_state(true);
 
+	char buf[2048];
+
+	tap_adapter.async_read(boost::asio::buffer(buf, sizeof(buf)), &read_done);
 	_io_service.run();
 
 	return EXIT_SUCCESS;
