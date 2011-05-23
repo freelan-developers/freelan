@@ -339,7 +339,7 @@ namespace asiotap
 				{
 					open(tap_adapter->first);
 				}
-				catch (const std::exception& ex)
+				catch (const std::exception&)
 				{
 					// This is not as ugly as it seems :)
 				}
