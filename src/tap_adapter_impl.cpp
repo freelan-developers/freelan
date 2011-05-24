@@ -70,32 +70,37 @@ namespace asiotap
 		typedef std::map<std::string, std::string> guid_map_type;
 		typedef std::pair<std::string, std::string> guid_pair_type;
 
+		void throw_system_error(LONG error)
+		{
+			LPSTR msgbuf = NULL;
+
+			FormatMessageA(
+					FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+					NULL,
+					error,
+					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					(LPSTR)&msgbuf,
+					0,
+					NULL
+					);
+
+			try
+			{
+				throw boost::system::system_error(error, boost::system::system_category(), msgbuf);
+			}
+			catch (...)
+			{
+				LocalFree(msgbuf);
+
+				throw;
+			}
+		}
+
 		void throw_system_error_if_not(LONG error)
 		{
 			if (error != ERROR_SUCCESS)
 			{
-				LPSTR msgbuf = NULL;
-
-				FormatMessageA(
-						FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-						NULL,
-						error,
-						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-						(LPSTR)&msgbuf,
-						0,
-						NULL
-						);
-
-				try
-				{
-					throw boost::system::system_error(error, boost::system::system_category(), msgbuf);
-				}
-				catch (...)
-				{
-					LocalFree(msgbuf);
-
-					throw;
-				}
+				throw_system_error(error);
 			}
 		}
 
@@ -305,6 +310,29 @@ namespace asiotap
 			}
 
 			return *it;
+		}
+
+		void cancel_io_ex(HANDLE handle, LPOVERLAPPED poverlapped)
+		{
+			FARPROC cancel_io_ex_ptr = ::GetProcAddress(::GetModuleHandleA("KERNEL32"), "CancelIoEx");
+
+			if (!cancel_io_ex_ptr)
+			{
+				throw boost::system::system_error(boost::asio::error::operation_not_supported, boost::system::system_category());
+			}
+
+			typedef BOOL (WINAPI* cancel_io_ex_t)(HANDLE, LPOVERLAPPED);
+			cancel_io_ex_t cancel_io_ex = reinterpret_cast<cancel_io_ex_t>(cancel_io_ex_ptr);
+
+			if (!cancel_io_ex(handle, poverlapped))
+			{
+				DWORD last_error = ::GetLastError();
+
+				if (last_error != ERROR_NOT_FOUND)
+				{
+					throw_system_error(last_error);
+				}
+			}
 		}
 #endif
 	}
@@ -516,25 +544,7 @@ namespace asiotap
 	void tap_adapter_impl::cancel_read()
 	{
 #ifdef WINDOWS
-		FARPROC cancel_io_ex_ptr = ::GetProcAddress(::GetModuleHandleA("KERNEL32"), "CancelIoEx");
-
-		if (!cancel_io_ex_ptr)
-		{
-			throw boost::system::system_error(boost::asio::error::operation_not_supported, boost::system::system_category());
-		}
-
-    typedef BOOL (WINAPI* cancel_io_ex_t)(HANDLE, LPOVERLAPPED);
-    cancel_io_ex_t cancel_io_ex = reinterpret_cast<cancel_io_ex_t>(cancel_io_ex_ptr);
-
-    if (!cancel_io_ex(m_handle, &m_read_overlapped))
-		{
-			DWORD last_error = ::GetLastError();
-
-			if (last_error != ERROR_NOT_FOUND)
-			{
-				throw_system_error_if_not(last_error);
-			}
-		}
+		cancel_io_ex(m_handle, &m_read_overlapped);
 #else
 #endif
 	}
