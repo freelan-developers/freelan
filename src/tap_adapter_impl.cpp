@@ -469,6 +469,7 @@ namespace asiotap
 #ifdef WINDOWS
 		if (is_open())
 		{
+			cancel();
 			CloseHandle(m_write_overlapped.hEvent);
 			CloseHandle(m_read_overlapped.hEvent);
 			CloseHandle(m_handle);
@@ -591,7 +592,10 @@ namespace asiotap
 	void tap_adapter_impl::cancel_read()
 	{
 #ifdef WINDOWS
-		cancel_io_ex(m_handle, &m_read_overlapped);
+		if (is_open())
+		{
+			cancel_io_ex(m_handle, &m_read_overlapped);
+		}
 #else
 #endif
 	}
@@ -599,7 +603,10 @@ namespace asiotap
 	void tap_adapter_impl::cancel_write()
 	{
 #ifdef WINDOWS
-		cancel_io_ex(m_handle, &m_write_overlapped);
+		if (is_open())
+		{
+			cancel_io_ex(m_handle, &m_write_overlapped);
+		}
 #else
 #endif
 	}
