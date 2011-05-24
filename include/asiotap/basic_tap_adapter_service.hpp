@@ -101,6 +101,15 @@ namespace asiotap
 			template<typename ReadHandler>
 			void async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler);
 
+			/**
+			 * \brief Process to an asynchronous write on the specified implementation.
+			 * \param impl The implementation on which to perform the write.
+			 * \param buffer The buffer.
+			 * \param handler The handler.
+			 */
+			template<typename WriteHandler>
+			void async_write(implementation_type& impl, const boost::asio::const_buffer& buffer, WriteHandler handler);
+
 		private:
 
 			template <typename ReadHandler>
@@ -118,6 +127,23 @@ namespace asiotap
 					boost::asio::io_service::work m_work;
 					const boost::asio::mutable_buffer& m_buffer;
 					ReadHandler m_handler;
+			};
+
+			template <typename WriteHandler>
+			class write_operation
+			{
+				public:
+
+					write_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::const_buffer& buffer, WriteHandler handler);
+					void operator()() const;
+
+				private:
+
+					boost::weak_ptr<TapAdapterImplementation> m_impl;
+					boost::asio::io_service& m_io_service;
+					boost::asio::io_service::work m_work;
+					const boost::asio::const_buffer& m_buffer;
+					WriteHandler m_handler;
 			};
 
 			void shutdown_service();
@@ -165,6 +191,12 @@ namespace asiotap
 		this->m_async_io_service.post(read_operation<ReadHandler>(impl, this->get_io_service(), buffer, handler));
 	}
 
+	template<typename TapAdapterImplementation> template<typename WriteHandler>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_write(implementation_type& impl, const boost::asio::const_buffer& buffer, WriteHandler handler)
+	{
+		this->m_async_io_service.post(write_operation<WriteHandler>(impl, this->get_io_service(), buffer, handler));
+	}
+
 	template <typename TapAdapterImplementation>
 	template <typename ReadHandler>
 	inline basic_tap_adatper_service<TapAdapterImplementation>::read_operation<ReadHandler>::read_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::mutable_buffer& buffer, ReadHandler handler) :
@@ -201,15 +233,66 @@ namespace asiotap
 				} else
 				{
 					impl->cancel_read();
+					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
 				}
 			}
 			catch (boost::system::system_error& ex)
 			{
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
+		} else
+		{
+			this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
 		}
+	}
 
-		this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
+	template <typename TapAdapterImplementation>
+	template <typename WriteHandler>
+	inline basic_tap_adatper_service<TapAdapterImplementation>::write_operation<WriteHandler>::write_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::const_buffer& buffer, WriteHandler handler) :
+		m_impl(impl),
+		m_io_service(io_service),
+		m_work(m_io_service),
+		m_buffer(buffer),
+		m_handler(handler)
+	{
+	}
+
+	template <typename TapAdapterImplementation>
+	template <typename WriteHandler>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::write_operation<WriteHandler>::operator()() const
+	{
+		implementation_type impl = m_impl.lock();
+
+		if (impl)
+		{
+			const unsigned char* data = boost::asio::buffer_cast<const unsigned char*>(m_buffer);
+			size_t data_len = boost::asio::buffer_size(m_buffer);
+
+			impl->begin_write(data, data_len);
+
+			try
+			{
+				size_t cnt;
+				
+				if (impl->end_write(cnt))
+				{
+					boost::system::error_code ec;
+
+					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
+				} else
+				{
+					impl->cancel_write();
+					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
+				}
+			}
+			catch (boost::system::system_error& ex)
+			{
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
+			}
+		} else
+		{
+			this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
+		}
 	}
 
 	template <typename TapAdapterImplementation>

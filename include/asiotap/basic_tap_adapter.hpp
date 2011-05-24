@@ -126,6 +126,14 @@ namespace asiotap
 			void async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler);
 
 			/**
+			 * \brief Process to an asynchronous write.
+			 * \param buffer The buffer to write the data to.
+			 * \param handler The completion handler.
+			 */
+			template<typename WriteHandler>
+			void async_write(const boost::asio::const_buffer& buffer, WriteHandler handler);
+
+			/**
 			 * \brief Cancel any pending read operation.
 			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
 			 */
@@ -198,6 +206,13 @@ namespace asiotap
 	void basic_tap_adapter<Service>::async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler)
 	{
 		this->service.async_read(this->implementation, buffer, handler);
+	}
+
+	template <typename Service>
+	template<typename WriteHandler>
+	void basic_tap_adapter<Service>::async_write(const boost::asio::const_buffer& buffer, WriteHandler handler)
+	{
+		this->service.async_write(this->implementation, buffer, handler);
 	}
 
 	template <typename Service>
