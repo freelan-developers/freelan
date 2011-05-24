@@ -191,19 +191,25 @@ namespace asiotap
 
 			try
 			{
-				size_t cnt = impl->end_read();
-				boost::system::error_code ec;
+				size_t cnt;
+				
+				if (impl->end_read(cnt))
+				{
+					boost::system::error_code ec;
 
-				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
+					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
+				} else
+				{
+					impl->cancel_read();
+				}
 			}
 			catch (boost::system::system_error& ex)
 			{
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
-		} else
-		{
-			this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
 		}
+
+		this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
 	}
 
 	template <typename TapAdapterImplementation>

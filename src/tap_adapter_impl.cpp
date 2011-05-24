@@ -448,10 +448,9 @@ namespace asiotap
 
 					memset(&m_read_overlapped, 0, sizeof(m_read_overlapped));
 					m_read_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+					memset(&m_write_overlapped, 0, sizeof(m_write_overlapped));
+					m_write_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-					//TODO: Open overlapped events
-					// memset(&d_write_overlapped, 0, sizeof(d_write_overlapped));
-					// d_write_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 					break;
 				}
 			}
@@ -470,6 +469,7 @@ namespace asiotap
 #ifdef WINDOWS
 		if (is_open())
 		{
+			CloseHandle(m_write_overlapped.hEvent);
 			CloseHandle(m_read_overlapped.hEvent);
 			CloseHandle(m_handle);
 			m_handle = INVALID_HANDLE_VALUE;
@@ -517,7 +517,7 @@ namespace asiotap
 #endif
 	}
 	
-	size_t tap_adapter_impl::end_read(const boost::posix_time::time_duration& timeout)
+	bool tap_adapter_impl::end_read(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
 #ifdef WINDOWS
 		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
@@ -528,7 +528,8 @@ namespace asiotap
 
 			if (GetOverlappedResult(m_handle, &m_read_overlapped, &cnt, true))
 			{
-				return cnt;
+				_cnt = cnt;
+				return true;
 			}
 			else
 			{
@@ -536,7 +537,53 @@ namespace asiotap
 			}
 		}
 
-		return 0;
+		return false;
+#else
+#endif
+	}
+	
+	void tap_adapter_impl::begin_write(const void* buf, size_t buf_len)
+	{
+		assert(m_handle != INVALID_HANDLE_VALUE);
+		assert(buf);
+
+#ifdef WINDOWS
+		bool success = (WriteFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_write_overlapped) != 0);
+
+		if (!success)
+		{
+			DWORD last_error = ::GetLastError();
+
+			if (last_error != ERROR_IO_PENDING)
+			{
+				throw_system_error_if_not(last_error);
+			}
+		}
+#else
+#endif
+	}
+	
+	bool tap_adapter_impl::end_write(size_t& _cnt, const boost::posix_time::time_duration& timeout)
+	{
+#ifdef WINDOWS
+		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
+
+		if (WaitForSingleObject(m_write_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
+		{
+			DWORD cnt = 0;
+
+			if (GetOverlappedResult(m_handle, &m_write_overlapped, &cnt, true))
+			{
+				_cnt = cnt;
+				return true;
+			}
+			else
+			{
+				throw_last_system_error();
+			}
+		}
+
+		return false;
 #else
 #endif
 	}
@@ -545,6 +592,14 @@ namespace asiotap
 	{
 #ifdef WINDOWS
 		cancel_io_ex(m_handle, &m_read_overlapped);
+#else
+#endif
+	}
+
+	void tap_adapter_impl::cancel_write()
+	{
+#ifdef WINDOWS
+		cancel_io_ex(m_handle, &m_write_overlapped);
 #else
 #endif
 	}

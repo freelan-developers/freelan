@@ -143,16 +143,42 @@ namespace asiotap
 
 			/**
 			 * \brief End a read.
+			 * \param cnt If the call succeed, cnt is updated to the count of bytes read.
 			 * \param timeout The maximum time to wait for the read to end. A special value means "wait forever".
-			 * \return The count of bytes read, or 0 if the read failed.
+			 * \return true on success, false otherwise.
+			 *
+			 * If the call fails without throwing, you may retry the call or cancel the write operation using cancel_read().
 			 */
-			size_t end_read(const boost::posix_time::time_duration& timeout = boost::posix_time::time_duration(boost::posix_time::not_a_date_time));
+			bool end_read(size_t& cnt, const boost::posix_time::time_duration& timeout = boost::posix_time::time_duration(boost::posix_time::not_a_date_time));
+
+			/**
+			 * \brief Start a write.
+			 * \param buf The buffer to read the data from.
+			 * \param buf_len The length of buf.
+			 */
+			void begin_write(const void* buf, size_t buf_len);
+
+			/**
+			 * \brief End a write.
+			 * \param cnt If the call succeed, cnt is updated to the count of bytes write.
+			 * \param timeout The maximum time to wait for the write to end. A special value means "wait forever".
+			 * \return true on success, false otherwise.
+			 *
+			 * If the call fails without throwing, you may retry the call or cancel the write operation using cancel_write().
+			 */
+			bool end_write(size_t& cnt, const boost::posix_time::time_duration& timeout = boost::posix_time::time_duration(boost::posix_time::not_a_date_time));
 
 			/**
 			 * \brief Cancel any pending read operation.
 			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
 			 */
 			void cancel_read();
+
+			/**
+			 * \brief Cancel any pending write operation.
+			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
+			 */
+			void cancel_write();
 
 			/**
 			 * \brief Cancel any pending operation on the device.
@@ -170,6 +196,7 @@ namespace asiotap
 			std::string m_display_name;
 			DWORD m_interface_index;
 			OVERLAPPED m_read_overlapped;
+			OVERLAPPED m_write_overlapped;
 #else
 #endif
 	};
@@ -197,6 +224,7 @@ namespace asiotap
 	inline void tap_adapter_impl::cancel()
 	{
 		cancel_read();
+		cancel_write();
 	}
 }
 
