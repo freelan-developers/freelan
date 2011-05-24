@@ -197,7 +197,7 @@ namespace asiotap
 			}
 			catch (boost::system::system_error& ex)
 			{
-				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex, 0));
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
 		} else
 		{
