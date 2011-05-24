@@ -124,6 +124,25 @@ namespace asiotap
 			 */
 			template<typename ReadHandler>
 			void async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler);
+
+			/**
+			 * \brief Cancel any pending read operation.
+			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
+			 */
+			void cancel_read();
+
+			/**
+			 * \brief Cancel any pending write operation.
+			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
+			 */
+			void cancel_write();
+
+			/**
+			 * \brief Cancel any pending operation on the device.
+			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
+			 */
+			void cancel();
+
 	};
 	
 	template <typename Service>
@@ -179,6 +198,24 @@ namespace asiotap
 	void basic_tap_adapter<Service>::async_read(const boost::asio::mutable_buffer& buffer, ReadHandler handler)
 	{
 		this->service.async_read(this->implementation, buffer, handler);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::cancel_read()
+	{
+		this->implementation->cancel_read();
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::cancel_write()
+	{
+		this->implementation->cancel_write();
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::cancel()
+	{
+		this->implementation->cancel();
 	}
 }
 
