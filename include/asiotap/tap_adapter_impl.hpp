@@ -146,7 +146,7 @@ namespace asiotap
 			 * \param timeout The maximum time to wait for the read to end. A special value means "wait forever".
 			 * \return The count of bytes read, or 0 if the read failed.
 			 */
-			size_t end_read(const boost::posix_time::time_duration& timeout);
+			size_t end_read(const boost::posix_time::time_duration& timeout = boost::posix_time::time_duration(boost::posix_time::not_a_date_time));
 
 			/**
 			 * \brief Cancel all IO operations.

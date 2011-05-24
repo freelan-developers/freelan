@@ -83,6 +83,7 @@ int main()
 	char buf[2048];
 
 	tap_adapter.async_read(boost::asio::buffer(buf, sizeof(buf)), &read_done);
+
 	_io_service.run();
 
 	return EXIT_SUCCESS;

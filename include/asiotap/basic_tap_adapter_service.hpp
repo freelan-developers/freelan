@@ -190,7 +190,7 @@ namespace asiotap
 
 			try
 			{
-				size_t cnt = impl->end_read(boost::posix_time::time_duration());
+				size_t cnt = impl->end_read();
 				boost::system::error_code ec;
 
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
