@@ -150,9 +150,15 @@ namespace asiotap
 
 			/**
 			 * \brief Cancel any pending read operation.
-			 * \warning If the cancelling fails, an exception is thrown.
+			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
 			 */
 			void cancel_read();
+
+			/**
+			 * \brief Cancel any pending operation on the device.
+			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
+			 */
+			void cancel();
 
 		private:
 
@@ -186,6 +192,11 @@ namespace asiotap
 	inline const tap_adapter_impl::ethernet_address_type& tap_adapter_impl::ethernet_address() const
 	{
 		return m_ethernet_address;
+	}
+	
+	inline void tap_adapter_impl::cancel()
+	{
+		cancel_read();
 	}
 }
 
