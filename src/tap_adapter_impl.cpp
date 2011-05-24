@@ -46,6 +46,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/asio.hpp>
 
 #include <vector>
 #include <map>
@@ -100,7 +101,7 @@ namespace asiotap
 
 		void throw_last_system_error()
 		{
-			throw_system_error_if_not(GetLastError());
+			throw_system_error_if_not(::GetLastError());
 		}
 
 		guid_array_type enumerate_tap_adapters_guid()
@@ -441,7 +442,6 @@ namespace asiotap
 #ifdef WINDOWS
 		if (is_open())
 		{
-			CancelIo(m_handle);
 			CloseHandle(m_read_overlapped.hEvent);
 			CloseHandle(m_handle);
 			m_handle = INVALID_HANDLE_VALUE;
@@ -478,11 +478,11 @@ namespace asiotap
 
 		if (!success)
 		{
-			DWORD error = GetLastError();
+			DWORD last_error = ::GetLastError();
 
-			if (error != ERROR_IO_PENDING)
+			if (last_error != ERROR_IO_PENDING)
 			{
-				throw_system_error_if_not(error);
+				throw_system_error_if_not(last_error);
 			}
 		}
 #else
@@ -513,10 +513,28 @@ namespace asiotap
 #endif
 	}
 	
-	void tap_adapter_impl::cancel()
+	void tap_adapter_impl::cancel_read()
 	{
 #ifdef WINDOWS
-		CancelIo(m_handle);
+		FARPROC cancel_io_ex_ptr = ::GetProcAddress(::GetModuleHandleA("KERNEL32"), "CancelIoEx");
+
+		if (!cancel_io_ex_ptr)
+		{
+			throw boost::system::system_error(boost::asio::error::operation_not_supported, boost::system::system_category());
+		}
+
+    typedef BOOL (WINAPI* cancel_io_ex_t)(HANDLE, LPOVERLAPPED);
+    cancel_io_ex_t cancel_io_ex = reinterpret_cast<cancel_io_ex_t>(cancel_io_ex_ptr);
+
+    if (!cancel_io_ex(m_handle, &m_read_overlapped))
+		{
+			DWORD last_error = ::GetLastError();
+
+			if (last_error != ERROR_NOT_FOUND)
+			{
+				throw_system_error_if_not(last_error);
+			}
+		}
 #else
 #endif
 	}

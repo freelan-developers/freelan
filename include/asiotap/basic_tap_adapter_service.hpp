@@ -155,6 +155,7 @@ namespace asiotap
 	template <typename TapAdapterImplementation>
 	inline void basic_tap_adatper_service<TapAdapterImplementation>::destroy(implementation_type& impl)
 	{
+		impl->cancel_read();
 		impl.reset();
 	}
 	

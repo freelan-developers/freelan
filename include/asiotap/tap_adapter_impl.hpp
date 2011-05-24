@@ -149,10 +149,10 @@ namespace asiotap
 			size_t end_read(const boost::posix_time::time_duration& timeout = boost::posix_time::time_duration(boost::posix_time::not_a_date_time));
 
 			/**
-			 * \brief Cancel all IO operations.
+			 * \brief Cancel any pending read operation.
 			 * \warning If the cancelling fails, an exception is thrown.
 			 */
-			void cancel();
+			void cancel_read();
 
 		private:
 
