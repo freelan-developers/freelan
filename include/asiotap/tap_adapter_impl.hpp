@@ -160,7 +160,7 @@ namespace asiotap
 
 			/**
 			 * \brief End a write.
-			 * \param cnt If the call succeed, cnt is updated to the count of bytes write.
+			 * \param cnt If the call succeed, cnt is updated to the count of bytes written.
 			 * \param timeout The maximum time to wait for the write to end. A special value means "wait forever".
 			 * \return true on success, false otherwise.
 			 *
@@ -185,6 +185,22 @@ namespace asiotap
 			 * \warning This is only supported on Windows Vista and earlier versions. If the cancelling fails, an exception is thrown.
 			 */
 			void cancel();
+
+			/**
+			 * \brief Process to a blocking read.
+			 * \param buf The buffer to read the data to.
+			 * \param buf_len The length of buf.
+			 * \return The count of bytes read.
+			 */
+			size_t read(void* buf, size_t buf_len);
+
+			/**
+			 * \brief Process to a blocking write.
+			 * \param buf The buffer to read to the data from.
+			 * \param buf_len The length of buf.
+			 * \return The count of bytes written.
+			 */
+			size_t write(const void* buf, size_t buf_len);
 
 		private:
 

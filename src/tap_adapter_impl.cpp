@@ -499,10 +499,11 @@ namespace asiotap
 	
 	void tap_adapter_impl::begin_read(void* buf, size_t buf_len)
 	{
-		assert(m_handle != INVALID_HANDLE_VALUE);
 		assert(buf);
 
 #ifdef WINDOWS
+		assert(m_handle != INVALID_HANDLE_VALUE);
+
 		bool success = (ReadFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_read_overlapped) != 0);
 
 		if (!success)
@@ -521,6 +522,8 @@ namespace asiotap
 	bool tap_adapter_impl::end_read(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
 #ifdef WINDOWS
+		assert(m_handle != INVALID_HANDLE_VALUE);
+
 		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
 
 		if (WaitForSingleObject(m_read_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
@@ -545,10 +548,11 @@ namespace asiotap
 	
 	void tap_adapter_impl::begin_write(const void* buf, size_t buf_len)
 	{
-		assert(m_handle != INVALID_HANDLE_VALUE);
 		assert(buf);
 
 #ifdef WINDOWS
+		assert(m_handle != INVALID_HANDLE_VALUE);
+
 		bool success = (WriteFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_write_overlapped) != 0);
 
 		if (!success)
@@ -567,6 +571,8 @@ namespace asiotap
 	bool tap_adapter_impl::end_write(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
 #ifdef WINDOWS
+		assert(m_handle != INVALID_HANDLE_VALUE);
+
 		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
 
 		if (WaitForSingleObject(m_write_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
@@ -607,6 +613,38 @@ namespace asiotap
 		{
 			cancel_io_ex(m_handle, &m_write_overlapped);
 		}
+#else
+#endif
+	}
+	
+	size_t tap_adapter_impl::read(void* buf, size_t buf_len)
+	{
+		assert(buf);
+
+#ifdef WINDOWS
+		begin_read(buf, buf_len);
+
+		size_t cnt;
+
+		while (!end_read(cnt));
+
+		return cnt;
+#else
+#endif
+	}
+	
+	size_t tap_adapter_impl::write(const void* buf, size_t buf_len)
+	{
+		assert(buf);
+
+#ifdef WINDOWS
+		begin_write(buf, buf_len);
+
+		size_t cnt;
+
+		while (!end_write(cnt));
+
+		return cnt;
 #else
 #endif
 	}

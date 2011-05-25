@@ -151,6 +151,21 @@ namespace asiotap
 			 */
 			void cancel();
 
+			/**
+			 * \brief Process to a blocking read.
+			 * \param buffer The buffer to read the data to.
+			 * \param ec The returned error code.
+			 * \return The count of bytes read.
+			 */
+			size_t read(const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec);
+
+			/**
+			 * \brief Process to a blocking write.
+			 * \param buffer The buffer to write the data to.
+			 * \param ec The returned error code.
+			 * \return The count of bytes written.
+			 */
+			size_t write(const boost::asio::const_buffer& buffer, boost::system::error_code& ec);
 	};
 	
 	template <typename Service>
@@ -231,6 +246,18 @@ namespace asiotap
 	inline void basic_tap_adapter<Service>::cancel()
 	{
 		this->implementation->cancel();
+	}
+
+	template <typename Service>
+	inline size_t basic_tap_adapter<Service>::read(const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec)
+	{
+		return this->service->read(this->implementation, buffer, ec);
+	}
+
+	template <typename Service>
+	inline size_t basic_tap_adapter<Service>::write(const boost::asio::const_buffer& buffer, boost::system::error_code& ec)
+	{
+		return this->service->read(this->implementation, buffer, ec);
 	}
 }
 

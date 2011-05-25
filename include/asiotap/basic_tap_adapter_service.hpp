@@ -110,6 +110,24 @@ namespace asiotap
 			template<typename WriteHandler>
 			void async_write(implementation_type& impl, const boost::asio::const_buffer& buffer, WriteHandler handler);
 
+			/**
+			 * \brief Process to a synchronous read on the specified implementation.
+			 * \param impl The implementation on which to perform the read.
+			 * \param buffer The buffer.
+			 * \param ec The returned error, if any.
+			 * \return The count of bytes read.
+			 */
+			size_t read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec);
+
+			/**
+			 * \brief Process to a synchronous write on the specified implementation.
+			 * \param impl The implementation on which to perform the write.
+			 * \param buffer The buffer.
+			 * \param ec The returned error, if any.
+			 * \return The count of bytes write.
+			 */
+			size_t write(implementation_type& impl, const boost::asio::const_buffer& buffer, boost::system::error_code& ec);
+
 		private:
 
 			template <typename ReadHandler>
@@ -195,6 +213,44 @@ namespace asiotap
 	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_write(implementation_type& impl, const boost::asio::const_buffer& buffer, WriteHandler handler)
 	{
 		this->m_async_io_service.post(write_operation<WriteHandler>(impl, this->get_io_service(), buffer, handler));
+	}
+	
+	template<typename TapAdapterImplementation>
+	inline size_t basic_tap_adatper_service<TapAdapterImplementation>::read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec)
+	{
+		try
+		{
+			ec = boost::system::error_code();
+
+			unsigned char* data = boost::asio::buffer_cast<unsigned char*>(buffer);
+			size_t data_len = boost::asio::buffer_size(buffer);
+
+			return impl->read(data, data_len);
+		}
+		catch (boost::system::system_error& ex)
+		{
+			ec = ex.code();
+			return 0;
+		}
+	}
+
+	template<typename TapAdapterImplementation>
+	inline size_t basic_tap_adatper_service<TapAdapterImplementation>::write(implementation_type& impl, const boost::asio::const_buffer& buffer, boost::system::error_code& ec)
+	{
+		try
+		{
+			ec = boost::system::error_code();
+
+			const unsigned char* data = boost::asio::buffer_cast<const unsigned char*>(buffer);
+			size_t data_len = boost::asio::buffer_size(buffer);
+
+			return impl->write(data, data_len);
+		}
+		catch (boost::system::system_error& ex)
+		{
+			ec = ex.code();
+			return 0;
+		}
 	}
 
 	template <typename TapAdapterImplementation>
