@@ -47,6 +47,8 @@
 
 #include "os.hpp"
 
+#include <boost/asio.hpp>
+
 #ifdef WINDOWS
 #include <windows.h>
 #else

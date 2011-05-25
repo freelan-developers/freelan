@@ -46,7 +46,6 @@
 
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
-#include <boost/asio.hpp>
 
 #include <vector>
 #include <map>
