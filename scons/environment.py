@@ -61,6 +61,10 @@ class Environment(SConsEnvironment):
 
 		self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
 
+		if sys.platform != 'win32':
+			# We must remove this flag until Boost::ASIO is fixed.
+			self['CXXFLAGS'].remove('-Wshadow')
+
 		if sys.platform != 'darwin':
 			if self['arch'] == 'i386':
 				self['CXXFLAGS'].append('-m32')
