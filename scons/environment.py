@@ -156,6 +156,7 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('gdi32')
 		else:
 			kw['LIBS'].append('boost_system')
+			kw['LIBS'].append('boost_thread')
 			kw['LIBS'].append('pthread')
 			kw['LIBS'].append('cryptoplus')
 			kw['LIBS'].append('crypto')
