@@ -150,6 +150,7 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('iphlpapi')
 		else:
 			kw['LIBS'].append('boost_system')
+			kw['LIBS'].append('boost_thread')
 			kw['LIBS'].append('pthread')
 
 	@staticmethod
