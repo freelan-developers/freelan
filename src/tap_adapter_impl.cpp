@@ -342,6 +342,7 @@ namespace asiotap
 		m_handle(INVALID_HANDLE_VALUE),
 		m_interface_index(0)
 #else
+		m_device(-1)
 #endif
 	{
 	}

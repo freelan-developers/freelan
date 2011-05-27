@@ -216,6 +216,7 @@ namespace asiotap
 			OVERLAPPED m_read_overlapped;
 			OVERLAPPED m_write_overlapped;
 #else
+			int m_device;
 #endif
 	};
 	
