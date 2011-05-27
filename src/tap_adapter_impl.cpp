@@ -57,6 +57,9 @@
 #include <iphlpapi.h>
 #include <winbase.h>
 #include "../windows/common.h"
+#else
+#include <sys/types.h>
+#include <ifaddrs.h>
 #endif
 
 namespace asiotap
@@ -340,6 +343,26 @@ namespace asiotap
 #ifdef WINDOWS
 		return enumerate_tap_adapters();
 #else
+		std::map<std::string, std::string> result;
+
+		struct ifaddrs* addrs = NULL;
+
+		if (getifaddrs(&addrs) != -1)
+		{
+			boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+
+			for (struct ifaddrs* ifa = paddrs.get(); ifa != NULL ; ifa = ifa->ifa_next)
+			{
+				const std::string name(ifa->ifa_name);
+
+				if (name.substr(0, 3) == "tap")
+				{
+					result[name] = name;
+				}
+			}
+		}
+
+		return result;
 #endif
 	}
 
