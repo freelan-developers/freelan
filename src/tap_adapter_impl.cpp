@@ -382,6 +382,7 @@ namespace asiotap
 #ifdef WINDOWS
 		return m_handle != INVALID_HANDLE_VALUE;
 #else
+		return m_device >= 0;
 #endif
 	}
 
