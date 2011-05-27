@@ -58,6 +58,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
+#include <map>
 
 namespace asiotap
 {
@@ -74,6 +75,12 @@ namespace asiotap
 			 * \brief The Ethernet address type.
 			 */
 			typedef boost::array<unsigned char, ethernet_address_size> ethernet_address_type;
+			
+			/**
+			 * \brief Enumerate the available tap adapter on the system.
+			 * \return The identifiers and names of the available tap adapters on the system.
+			 */
+			static std::map<std::string, std::string> enumerate();
 
 			/**
 			 * \brief Create a new tap_adapter_impl.

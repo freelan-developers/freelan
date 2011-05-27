@@ -48,7 +48,6 @@
 #include <boost/system/system_error.hpp>
 
 #include <vector>
-#include <map>
 #include <stdexcept>
 #include <cassert>
 #include <cstring>
@@ -333,6 +332,14 @@ namespace asiotap
 				}
 			}
 		}
+#endif
+	}
+
+	std::map<std::string, std::string> tap_adapter_impl::enumerate()
+	{
+#ifdef WINDOWS
+		return enumerate_tap_adapters();
+#else
 #endif
 	}
 
