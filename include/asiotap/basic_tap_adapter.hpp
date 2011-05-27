@@ -48,6 +48,7 @@
 #include <boost/asio.hpp>
 
 #include <string>
+#include <map>
 
 namespace asiotap
 {
@@ -63,6 +64,12 @@ namespace asiotap
 			 * \brief The ethernet address type.
 			 */
 			typedef typename Service::implementation_type::element_type::ethernet_address_type ethernet_address_type;
+
+			/**
+			 * \brief Enumerate the available tap adapter on the system.
+			 * \return The identifiers and names of the available tap adapters on the system.
+			 */
+			static std::map<std::string, std::string> enumerate();
 
 			/**
 			 * \brief The constructor.
@@ -168,6 +175,12 @@ namespace asiotap
 			size_t write(const boost::asio::const_buffer& buffer, boost::system::error_code& ec);
 	};
 	
+	template <typename Service>
+	inline std::map<std::string, std::string> basic_tap_adapter<Service>::enumerate()
+	{
+		return Service::implementation_type::element_type::enumerate();
+	}
+
 	template <typename Service>
 	inline basic_tap_adapter<Service>::basic_tap_adapter(boost::asio::io_service& _io_service) :
 		boost::asio::basic_io_object<Service>(_io_service)
