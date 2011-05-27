@@ -65,6 +65,12 @@ namespace asiotap
 			typedef boost::shared_ptr<TapAdapterImplementation> implementation_type;
 
 			/**
+			 * \brief Enumerate the available tap adapter on the system.
+			 * \return The identifiers and names of the available tap adapters on the system.
+			 */
+			static std::map<std::string, std::string> enumerate();
+
+			/**
 			 * \brief The service identifier.
 			 */
 			static boost::asio::io_service::id id;
@@ -170,6 +176,12 @@ namespace asiotap
 			boost::scoped_ptr<boost::asio::io_service::work> m_async_work;
 			boost::thread m_async_thread;
 	};
+
+	template <typename TapAdapterImplementation>
+	inline std::map<std::string, std::string> basic_tap_adatper_service<TapAdapterImplementation>::enumerate()
+	{
+		return TapAdapterImplementation::enumerate();
+	}
 
 	template <typename TapAdapterImplementation>
 	boost::asio::io_service::id basic_tap_adatper_service<TapAdapterImplementation>::id;

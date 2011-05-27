@@ -178,7 +178,7 @@ namespace asiotap
 	template <typename Service>
 	inline std::map<std::string, std::string> basic_tap_adapter<Service>::enumerate()
 	{
-		return Service::implementation_type::element_type::enumerate();
+		return Service::enumerate();
 	}
 
 	template <typename Service>
