@@ -46,6 +46,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <vector>
 #include <stdexcept>
@@ -59,9 +60,14 @@
 #include "../windows/common.h"
 #else
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <ifaddrs.h>
 #include <errno.h>
-#include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
+#ifdef LINUX
+#include <linux/if_tun.h>
+#endif
 #endif
 
 namespace asiotap
@@ -555,23 +561,297 @@ namespace asiotap
 				throw std::runtime_error("Unable to open the specified tap adapter: " + _name);
 			}
 		}
-#else
+#elif defined(LINUX)
+		struct ifreq ifr;
+		memset(&ifr, 0x00, sizeof(struct ifreq));
+
+		const std::string dev_name = "/dev/net/tap";
+
+		ifr.ifr_flags = IFF_NO_PI;
+
+#if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
+		ifr.ifr_flags |= IFF_ONE_QUEUE;
+#endif
+
+		ifr.ifr_flags |= IFF_TAP;
+
+		{
+			if (::access(dev_name.c_str(), F_OK) == -1)
+			{
+				if (errno == ENOENT)
+				{
+					// No tap found, create one.
+					if (::mknod(dev_name.c_str(), S_IFCHR | S_IRUSR | S_IWUSR, ::makedev(10, 200)) == -1)
+					{
+						throw_last_system_error();
+					}
+				}
+				else
+				{
+					throw_last_system_error();
+				}
+			}
+
+			m_device = ::open(dev_name.c_str(), O_RDWR);
+
+			if (m_device == -1)
+			{
+				throw_last_system_error();
+			}
+
+			try
+			{
+				if (!_name.empty())
+				{
+					strncpy(ifr.ifr_name, _name.c_str(), IFNAMSIZ);
+				}
+
+				// Set the parameters on the tun device
+				if (::ioctl(m_device, TUNSETIFF, (void *)&ifr) < 0)
+				{
+					throw_last_system_error();
+				}
+
+				{
+					m_mtu = 1391; // Same as Windows driver
+
+					int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+					if (ctl_fd >= 0)
+					{
+						try
+						{
+							struct ifreq netifr;
+
+#if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
+							memset(&netifr, 0x00, sizeof(struct ifreq));
+							strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+							netifr.ifr_qlen = 100; // 100 is the default value
+
+							if (::ioctl(ctl_fd, SIOCSIFTXQLEN, (void *)&netifr) < 0)
+							{
+								throw_last_system_error();
+							}
+#endif
+							// Set the MTU
+							memset(&netifr, 0x00, sizeof(struct ifreq));
+							strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+
+							netifr.ifr_mtu = m_mtu;
+
+							if (::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr) < 0)
+							{
+								::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr);
+								m_mtu = netifr.ifr_mtu;
+							}
+
+							memset(&netifr, 0x00, sizeof(struct ifreq));
+							strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+
+							// Get the interface hwaddr
+							if (::ioctl(ctl_fd, SIOCGIFHWADDR, (void*)&netifr) < 0)
+							{
+								throw_last_system_error();
+							}
+
+							std::memcpy(m_ethernet_address.c_array(), netifr.ifr_hwaddr.sa_data, sizeof(netifr.ifr_hwaddr.sa_data));
+						}
+						catch (...)
+						{
+							::close(ctl_fd);
+							throw;
+						}
+
+						::close(ctl_fd);
+					}
+					else
+					{
+						throw_last_system_error();
+					}
+				}
+			}
+			catch (...)
+			{
+				::close(m_device);
+				m_device = -1;
+
+				throw;
+			}
+		}
+
+		m_name = ifr.ifr_name;
+
+#else /* *BSD and Mac OS X */
+
+		const std::string dev_name = "/dev/tap";
+		std::string dev = "/dev/";
+
+		if (!_name.empty())
+		{
+			dev += _name;
+			m_device = ::open(dev.c_str(), O_RDWR);
+		}
+		else
+		{
+			m_device = ::open(dev_name.c_str(), O_RDWR);
+
+			if (m_device < 0)
+			{
+				if (errno == ENOENT)
+				{
+					if (_name.empty())
+					{
+						unsigned int i = 0;
+
+						for (unsigned int i = 0 ; m_device < 0; ++i)
+						{
+							dev = "/dev/tap" + boost::lexical_cast<std::string>(i);
+
+							m_device = ::open(dev.c_str(), O_RDWR);
+
+							if ((d_dev < 0) && (errno == ENOENT))
+							{
+								// We reached the end of the available tap adapters.
+								break;
+							}
+						}
+					}
+				} else
+				{
+					throw_last_system_error();
+				}
+			}
+		}
+
+		if (m_device < 0)
+		{
+			throw_last_system_error();
+		}
+
+		try
+		{
+			struct stat st;
+
+			::fstat(m_device, &st);
+
+			m_name = ::devname(st.st_rdev, S_IFCHR);
+
+			if (if_nametoindex(m_name.c_str()) == 0)
+			{
+				throw std::runtime_error("if_nametoindex failed");
+			}
+
+			// Do not pass the descriptor to child
+			::fcntl(m_device, F_SETFD, FD_CLOEXEC);
+
+			int ctl_fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+			if (ctl_fd < 0)
+			{
+				throw_last_system_error();
+			}
+
+			try
+			{
+				struct ifreq netifr;
+
+				// Set the MTU
+				memset(&netifr, 0x00, sizeof(struct ifreq));
+				strncpy(netifr.ifr_name, d_name.c_str(), IFNAMSIZ);
+
+				m_mtu = 1391;
+				netifr.ifr_mtu = m_mtu;
+
+				if (::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr) < 0)
+				{
+					if (::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr) >= 0)
+					{
+						m_mtu = netifr.ifr_mtu;
+					} else
+					{
+						throw_last_system_error();
+					}
+				}
+
+				memset(&netifr, 0x00, sizeof(struct ifreq));
+				strncpy(netifr.ifr_name, d_name.c_str(), IFNAMSIZ);
+
+				struct ifaddrs* addrs = NULL;
+
+				/* find the hardware address of tap inteface */
+				if (getifaddrs(&addrs) != -1)
+				{
+					for(struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next)
+					{
+						if ((ifa->ifa_addr->sa_family == AF_LINK) && !std::memcmp(ifa->ifa_name, m_name.c_str(), m_name.length()))
+						{
+							struct sockaddr_dl* sdl = (struct sockaddr_dl*)ifa->ifa_addr;
+
+							if (sdl->sdl_type == IFT_ETHER)
+							{
+								std::memcpy(m_ethernet_address.c_array(), LLADDR(sdl), 6);
+
+								break;
+							}
+						}
+					}
+
+					freeifaddrs(addrs);
+				}
+			}
+			catch (...)
+			{
+				::close(ctl_fd);
+
+				throw;
+			}
+
+			::close(ctl_fd);
+		}
+		catch (...)
+		{
+			::close(m_device);
+			m_device = -1;
+
+			throw;
+		}
 #endif
 	}
 
 	void tap_adapter_impl::close()
 	{
-#ifdef WINDOWS
 		if (is_open())
 		{
+#ifdef WINDOWS
 			cancel();
 			CloseHandle(m_write_overlapped.hEvent);
 			CloseHandle(m_read_overlapped.hEvent);
 			CloseHandle(m_handle);
 			m_handle = INVALID_HANDLE_VALUE;
-		}
 #else
+#if defined(MACINTOSH) || defined(BSD)
+			int ctl_fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+			if (sock >= 0)
+			{
+				struct ifreq ifr;
+
+				memset(&ifr, 0x00, sizeof(ifr));
+				strncpy(ifr.ifr_name, d_name.c_str(), IFNAMSIZ);
+
+				// Destroy the virtual tap device
+				if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0)
+				{
+					// Oops ! The destruction failed. There is nothing much we can do.
+				}
+
+				::close(ctl_fd);
+			}
 #endif
+			::close(m_device);
+			m_device = -1;
+#endif
+		}
 	}
 
 	void tap_adapter_impl::set_connected_state(bool connected)
@@ -588,7 +868,53 @@ namespace asiotap
 		}
 
 #else
-		connected = connected; // Avoid unused parameters warnings
+		int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+		if (ctl_fd >= 0)
+		{
+			try
+			{
+				struct ifreq netifr;
+				memset(&netifr, 0x00, sizeof(struct ifreq));
+				strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+
+				// Set the interface UP
+				if (::ioctl(ctl_fd, SIOCGIFFLAGS, (void*)&netifr) >= 0)
+				{
+					if (connected)
+					{
+#ifdef MACINTOSH
+						netifr.ifr_flags |= IFF_UP;
+#else
+						netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+#endif
+					} else
+					{
+#ifdef MACINTOSH
+						netifr.ifr_flags &= ~IFF_UP;
+#else
+						netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+#endif
+					}
+
+					if (::ioctl(ctl_fd, SIOCSIFFLAGS, (void*)&netifr) < 0)
+					{
+						throw_last_system_error();
+					}
+				} else
+				{
+					throw_last_system_error();
+				}
+			}
+			catch (...)
+			{
+				::close(ctl_fd);
+
+				throw;
+			}
+
+			::close(ctl_fd);
+		}
 #endif
 	}
 	
