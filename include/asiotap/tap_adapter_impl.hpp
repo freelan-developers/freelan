@@ -115,10 +115,8 @@ namespace asiotap
 
 			/**
 			 * \brief Set the connected state of the device.
-			 * \param connected If true, set the device's state as connected.
+			 * \param connected If true, set the device's state as up/connected.
 			 * \warning The device must be open (see is_open()) or the behavior is undefined.
-			 *
-			 * This function does nothing on *NIX.
 			 */
 			void set_connected_state(bool connected);
 
