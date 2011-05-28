@@ -60,6 +60,8 @@
 #else
 #include <sys/types.h>
 #include <ifaddrs.h>
+#include <errno.h>
+#include <sys/wait.h>
 #endif
 
 namespace asiotap
@@ -333,6 +335,68 @@ namespace asiotap
 				{
 					throw_system_error(last_error);
 				}
+			}
+		}
+#else
+		void throw_system_error(int error)
+		{
+			char error_str[256] = { 0 };
+
+			if (strerror_r(error, error_str, sizeof(error_str)) != 0)
+			{
+				throw boost::system::system_error(error, boost::system::system_category());
+			} else
+			{
+				throw boost::system::system_error(error, boost::system::system_category(), error_str);
+			}
+		}
+
+		void throw_last_system_error()
+		{
+			throw_system_error(errno);
+		}
+
+		bool load_kernel_module()
+		{
+			pid_t pid = fork();
+
+			if (pid == 0) /* son */
+			{
+#ifdef LINUX
+				char *argv[] = { (char*) "/sbin/modprobe", (char*) "tun", NULL };
+#elif defined(MACINTOSH)
+				char* argv[] = { (char*) "/sbin/kextload", (char*) "/Library/Extensions/tap.kext", NULL };
+#else /* FreeBSD */
+				char* argv[] = { (char*) "/sbin/kldload", (char*) "if_tap", NULL };
+#endif
+				char* env[] = { NULL };
+				size_t max = sysconf(_SC_OPEN_MAX);
+
+				for (size_t i = STDIN_FILENO + 1 ; i < max ; i++)
+				{
+					::close(i);
+				}
+
+				/* exec the modprobe image */
+				::execve(argv[0], argv, env);
+
+				::exit(EXIT_FAILURE);
+			}
+			else if (pid) /* father */
+			{
+				int pid_status = 0;
+
+				/* wait and read the return code of the child */
+				waitpid(pid, &pid_status, 0);
+
+				/* if we modprobe two times the same module, it will return EXIT_SUCCESS */
+				return (WIFEXITED(pid_status) && WEXITSTATUS(pid_status) == EXIT_SUCCESS);
+			}
+			else
+			{
+				throw_last_system_error();
+
+				return false;
 			}
 		}
 #endif
