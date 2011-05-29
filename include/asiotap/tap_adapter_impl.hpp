@@ -52,6 +52,7 @@
 #ifdef WINDOWS
 #include <windows.h>
 #else
+#include <aio.h>
 #endif
 
 #include <boost/array.hpp>
@@ -222,6 +223,8 @@ namespace asiotap
 			OVERLAPPED m_write_overlapped;
 #else
 			int m_device;
+			struct aiocb m_read_aio;
+			struct aiocb m_write_aio;
 #endif
 	};
 	

@@ -405,6 +405,16 @@ namespace asiotap
 				return false;
 			}
 		}
+
+		timespec time_duration_to_timespec(const boost::posix_time::time_duration& duration)
+		{
+			timespec result = { 0, 0 };
+
+			result.tv_sec = duration.total_seconds();
+			result.tv_nsec = static_cast<long>(duration.fractional_seconds() * (10000000001 / duration.ticks_per_second()));
+
+			return result;
+		}
 #endif
 	}
 
@@ -937,6 +947,18 @@ namespace asiotap
 			}
 		}
 #else
+		assert(m_device >= 0);
+
+		::memset(&m_read_aio, 0, sizeof(m_read_aio));
+		m_read_aio.aio_fildes = m_device;
+		m_read_aio.aio_buf = buf;
+		m_read_aio.aio_nbytes = buf_len;
+		m_read_aio.aio_offset = 0;
+
+		if (::aio_read(&m_read_aio) != 0)
+		{
+			throw_last_system_error();
+		}
 #endif
 	}
 	
@@ -964,6 +986,35 @@ namespace asiotap
 
 		return false;
 #else
+		assert(m_device >= 0);
+
+		const timespec timeout_ts = time_duration_to_timespec(timeout);
+		const aiocb* const _read_aio[] = { &m_read_aio };
+
+		if (::aio_suspend(_read_aio, 1, timeout.is_special() ? NULL : &timeout_ts) == 0)
+		{
+			int error = ::aio_error(&m_read_aio);
+
+			if (error == 0)
+			{
+				error = ::aio_return(&m_read_aio);
+
+				if (error == 0)
+				{
+					_cnt = m_read_aio.aio_nbytes;
+					return true;
+				}
+			}
+
+			throw_system_error(error);
+		}
+
+		if ((errno != EAGAIN) && (errno != EINTR))
+		{
+			throw_last_system_error();
+		}
+
+		return false;
 #endif
 	}
 	
@@ -986,6 +1037,18 @@ namespace asiotap
 			}
 		}
 #else
+		assert(m_device >= 0);
+
+		::memset(&m_write_aio, 0, sizeof(m_write_aio));
+		m_write_aio.aio_fildes = m_device;
+		m_write_aio.aio_buf = const_cast<void*>(buf); // This is safe, since no attempt to modify the memory pointed by buf will be made.
+		m_write_aio.aio_nbytes = buf_len;
+		m_write_aio.aio_offset = 0;
+
+		if (::aio_write(&m_write_aio) != 0)
+		{
+			throw_last_system_error();
+		}
 #endif
 	}
 	
@@ -1013,29 +1076,70 @@ namespace asiotap
 
 		return false;
 #else
+		assert(m_device >= 0);
+
+		const timespec timeout_ts = time_duration_to_timespec(timeout);
+		const aiocb* const _write_aio[] = { &m_write_aio };
+
+		if (::aio_suspend(_write_aio, 1, timeout.is_special() ? NULL : &timeout_ts) == 0)
+		{
+			int error = ::aio_error(&m_write_aio);
+
+			if (error == 0)
+			{
+				error = ::aio_return(&m_write_aio);
+
+				if (error == 0)
+				{
+					_cnt = m_write_aio.aio_nbytes;
+					return true;
+				}
+			}
+
+			throw_system_error(error);
+		}
+
+		if ((errno != EAGAIN) && (errno != EINTR))
+		{
+			throw_last_system_error();
+		}
+
+		return false;
 #endif
 	}
 	
 	void tap_adapter_impl::cancel_read()
 	{
-#ifdef WINDOWS
 		if (is_open())
 		{
+#ifdef WINDOWS
 			cancel_io_ex(m_handle, &m_read_overlapped);
-		}
 #else
+			int error = ::aio_cancel(m_device, &m_read_aio);
+
+			if (error == -1)
+			{
+				throw_last_system_error();
+			}
 #endif
+		}
 	}
 
 	void tap_adapter_impl::cancel_write()
 	{
-#ifdef WINDOWS
 		if (is_open())
 		{
+#ifdef WINDOWS
 			cancel_io_ex(m_handle, &m_write_overlapped);
-		}
 #else
+			int error = ::aio_cancel(m_device, &m_write_aio);
+
+			if (error == -1)
+			{
+				throw_last_system_error();
+			}
 #endif
+		}
 	}
 	
 	size_t tap_adapter_impl::read(void* buf, size_t buf_len)
@@ -1051,6 +1155,14 @@ namespace asiotap
 
 		return cnt;
 #else
+		ssize_t result = ::read(m_device, buf, buf_len);
+
+		if (result <= 0)
+		{
+			throw_last_system_error();
+		}
+
+		return static_cast<size_t>(result);
 #endif
 	}
 	
@@ -1067,6 +1179,14 @@ namespace asiotap
 
 		return cnt;
 #else
+		ssize_t result = ::write(m_device, buf, buf_len);
+
+		if (result <= 0)
+		{
+			throw_last_system_error();
+		}
+
+		return static_cast<size_t>(result);
 #endif
 	}
 }
