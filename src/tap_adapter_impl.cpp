@@ -997,13 +997,8 @@ namespace asiotap
 
 			if (error == 0)
 			{
-				error = ::aio_return(&m_read_aio);
-
-				if (error == 0)
-				{
-					_cnt = m_read_aio.aio_nbytes;
-					return true;
-				}
+				_cnt = ::aio_return(&m_read_aio);
+				return true;
 			}
 
 			throw_system_error(error);
@@ -1087,13 +1082,8 @@ namespace asiotap
 
 			if (error == 0)
 			{
-				error = ::aio_return(&m_write_aio);
-
-				if (error == 0)
-				{
-					_cnt = m_write_aio.aio_nbytes;
-					return true;
-				}
+				_cnt = ::aio_return(&m_write_aio);
+				return true;
 			}
 
 			throw_system_error(error);
