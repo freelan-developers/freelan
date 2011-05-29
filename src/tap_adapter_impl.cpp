@@ -609,6 +609,7 @@ namespace asiotap
 				throw_last_system_error();
 			}
 
+
 			try
 			{
 				if (!_name.empty())
@@ -622,62 +623,60 @@ namespace asiotap
 					throw_last_system_error();
 				}
 
+				m_mtu = 1391; // Same as Windows driver
+
+				int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+				if (ctl_fd >= 0)
 				{
-					m_mtu = 1391; // Same as Windows driver
-
-					int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
-
-					if (ctl_fd >= 0)
+					try
 					{
-						try
-						{
-							struct ifreq netifr;
+						struct ifreq netifr;
 
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
-							memset(&netifr, 0x00, sizeof(struct ifreq));
-							strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
-							netifr.ifr_qlen = 100; // 100 is the default value
+						memset(&netifr, 0x00, sizeof(struct ifreq));
+						strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+						netifr.ifr_qlen = 100; // 100 is the default value
 
-							if (::ioctl(ctl_fd, SIOCSIFTXQLEN, (void *)&netifr) < 0)
-							{
-								throw_last_system_error();
-							}
-#endif
-							// Set the MTU
-							memset(&netifr, 0x00, sizeof(struct ifreq));
-							strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
-
-							netifr.ifr_mtu = m_mtu;
-
-							if (::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr) < 0)
-							{
-								::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr);
-								m_mtu = netifr.ifr_mtu;
-							}
-
-							memset(&netifr, 0x00, sizeof(struct ifreq));
-							strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
-
-							// Get the interface hwaddr
-							if (::ioctl(ctl_fd, SIOCGIFHWADDR, (void*)&netifr) < 0)
-							{
-								throw_last_system_error();
-							}
-
-							std::memcpy(m_ethernet_address.c_array(), netifr.ifr_hwaddr.sa_data, sizeof(netifr.ifr_hwaddr.sa_data));
-						}
-						catch (...)
+						if (::ioctl(ctl_fd, SIOCSIFTXQLEN, (void *)&netifr) < 0)
 						{
-							::close(ctl_fd);
-							throw;
+							throw_last_system_error();
+						}
+#endif
+						// Set the MTU
+						memset(&netifr, 0x00, sizeof(struct ifreq));
+						strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+
+						netifr.ifr_mtu = m_mtu;
+
+						if (::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr) < 0)
+						{
+							::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr);
+							m_mtu = netifr.ifr_mtu;
 						}
 
-						::close(ctl_fd);
+						memset(&netifr, 0x00, sizeof(struct ifreq));
+						strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+
+						// Get the interface hwaddr
+						if (::ioctl(ctl_fd, SIOCGIFHWADDR, (void*)&netifr) < 0)
+						{
+							throw_last_system_error();
+						}
+
+						std::memcpy(m_ethernet_address.c_array(), netifr.ifr_hwaddr.sa_data, m_ethernet_address.size());
 					}
-					else
+					catch (...)
 					{
-						throw_last_system_error();
+						::close(ctl_fd);
+						throw;
 					}
+
+					::close(ctl_fd);
+				}
+				else
+				{
+					throw_last_system_error();
 				}
 			}
 			catch (...)
@@ -954,6 +953,7 @@ namespace asiotap
 		m_read_aio.aio_buf = buf;
 		m_read_aio.aio_nbytes = buf_len;
 		m_read_aio.aio_offset = 0;
+
 
 		if (::aio_read(&m_read_aio) != 0)
 		{
