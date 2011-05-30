@@ -1205,18 +1205,57 @@ namespace asiotap
 #endif
 	}
 	
-	void tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address)
+	void tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
-		//TODO: Implement
+#ifdef WINDOWS
+		std::ostringstream oss;
+
+		const std::string cmd = "netsh.exe";
+		oss << "int ipv4 delete address \"" << m_interface_index << "\" " << address.to_string();
+
+		(void)prefix_len;
+
+		ShellExecute(NULL, "open", cmd.c_str(), oss.str().c_str(), NULL, SW_HIDE);
+#else
+#endif
 	}
 	
 	void tap_adapter_impl::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
-		//TODO: Implement
+#ifdef WINDOWS
+		std::ostringstream oss;
+
+		const std::string cmd = "netsh.exe";
+		oss << "int ipv6 add address " << m_interface_index << " " << address.to_string();
+
+		OSVERSIONINFO os_version;
+		GetVersionEx(&os_version);
+
+		// The /prefix parameter is only supported after Windows XP
+		if (os_version.dwMajorVersion >= 6)
+		{
+			oss << "/" << prefix_len;
+		}
+
+		oss << " store=active";
+
+		ShellExecute(NULL, "open", cmd.c_str(), oss.str().c_str(), NULL, SW_HIDE);
+#else
+#endif
 	}
 	
-	void tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address)
+	void tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
-		//TODO: Implement
+#ifdef WINDOWS
+		std::ostringstream oss;
+
+		const std::string cmd = "netsh.exe";
+		oss << "int ipv6 delete address \"" << m_interface_index << "\" " << address.to_string();
+
+		(void)prefix_len;
+
+		ShellExecute(NULL, "open", cmd.c_str(), oss.str().c_str(), NULL, SW_HIDE);
+#else
+#endif
 	}
 }

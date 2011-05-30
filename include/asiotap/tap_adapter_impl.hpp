@@ -220,8 +220,9 @@ namespace asiotap
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
 			 */
-			void remove_ip_address(const boost::asio::ip::address& address);
+			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv4 address to the tap adapter.
@@ -233,8 +234,9 @@ namespace asiotap
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
 			 */
-			void remove_ip_address_v4(const boost::asio::ip::address_v4& address);
+			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv6 address to the tap adapter.
@@ -246,8 +248,9 @@ namespace asiotap
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
 			 */
-			void remove_ip_address_v6(const boost::asio::ip::address_v6& address);
+			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 
 		private:
 
@@ -308,15 +311,15 @@ namespace asiotap
 		}
 	}
 
-	inline void tap_adapter_impl::remove_ip_address(const boost::asio::ip::address& address)
+	inline void tap_adapter_impl::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{
 		if (address.is_v4())
 		{
-			remove_ip_address_v4(address.to_v4());
+			remove_ip_address_v4(address.to_v4(), prefix_len);
 		} else
 		if (address.is_v6())
 		{
-			remove_ip_address_v6(address.to_v6());
+			remove_ip_address_v6(address.to_v6(), prefix_len);
 		} else
 		{
 			throw std::logic_error("The specified address must be an IPv4 or an IPv6 address.");
