@@ -81,9 +81,9 @@ namespace cryptoplus
 				 */
 				enum cipher_direction
 				{
-					unchanged = -1, /** \brief The direction did not change since the last call. */
-					decrypt = 0, /**< \brief Specifies a decryption cipher context. */
-					encrypt = 1 /**< \brief Specifies an encryption cipher context. */
+				    unchanged = -1, /**< \brief The direction did not change since the last call. */
+				    decrypt = 0, /**< \brief Specifies a decryption cipher context. */
+				    encrypt = 1 /**< \brief Specifies an encryption cipher context. */
 				};
 
 				/**

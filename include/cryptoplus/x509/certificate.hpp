@@ -584,7 +584,7 @@ namespace cryptoplus
 				/**
 				 * \brief Generate a X509 certificate request from this certificate.
 				 * \param pkey The private key to use to sign the request.
-				 * \param The message digest algorithm to use to sign the request.
+				 * \param algorithm The message digest algorithm to use to sign the request.
 				 * \return The certificate request.
 				 */
 				certificate_request to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
