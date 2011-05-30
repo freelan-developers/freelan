@@ -157,7 +157,7 @@ class Environment(SConsEnvironment):
 			variables.Add('boost_lib_suffix', 'The suffix for boost libraries', 'mgw45-mt')
 		else:
 			variables.AddVariables(PathVariable('install_path', 'The installation path', r'/usr/local', PathVariable.PathIsDir))
-			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr/include', PathVariable.PathIsDir))
-			variables.AddVariables(PathVariable('openssl_path', 'The path of the OpenSSL installation', r'/usr/include', PathVariable.PathIsDir))
+			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr', PathVariable.PathIsDir))
+			variables.AddVariables(PathVariable('openssl_path', 'The path of the OpenSSL installation', r'/usr', PathVariable.PathIsDir))
 
 		return variables
