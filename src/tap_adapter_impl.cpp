@@ -1179,4 +1179,24 @@ namespace asiotap
 		return static_cast<size_t>(result);
 #endif
 	}
+	
+	void tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	{
+		//TODO: Implement
+	}
+	
+	void tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address)
+	{
+		//TODO: Implement
+	}
+	
+	void tap_adapter_impl::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	{
+		//TODO: Implement
+	}
+	
+	void tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address)
+	{
+		//TODO: Implement
+	}
 }
