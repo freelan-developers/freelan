@@ -57,6 +57,7 @@
 #include <winioctl.h>
 #include <iphlpapi.h>
 #include <winbase.h>
+#include <shellapi.h>
 #include "../windows/common.h"
 #else
 #include <sys/types.h>
@@ -1182,7 +1183,26 @@ namespace asiotap
 	
 	void tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
-		//TODO: Implement
+#ifdef WINDOWS
+		std::ostringstream oss;
+
+		const std::string cmd = "netsh.exe";
+		oss << "int ipv4 add address " << m_interface_index << " " << address.to_string();
+
+		OSVERSIONINFO os_version;
+		GetVersionEx(&os_version);
+
+		// The /prefix parameter is only supported after Windows XP
+		if (os_version.dwMajorVersion >= 6)
+		{
+			oss << "/" << prefix_len;
+		}
+
+		oss << " store=active";
+
+		ShellExecute(NULL, "open", cmd.c_str(), oss.str().c_str(), NULL, SW_HIDE);
+#else
+#endif
 	}
 	
 	void tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address)
