@@ -61,6 +61,10 @@ class Environment(SConsEnvironment):
 
 		self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
 
+		if sys.platform != 'win32':
+			# We must remove this flag until Boost::ASIO is fixed.
+			self['CXXFLAGS'].remove('-Wshadow')
+
 		if sys.platform != 'darwin':
 			if self['arch'] == 'i386':
 				self['CXXFLAGS'].append('-m32')
@@ -169,6 +173,6 @@ class Environment(SConsEnvironment):
 			variables.Add('tap_id', 'The TAP adapter identifier', 'tap0901')
 		else:
 			variables.AddVariables(PathVariable('install_path', 'The installation path', r'/usr/local', PathVariable.PathIsDir))
-			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr/include', PathVariable.PathIsDir))
+			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr', PathVariable.PathIsDir))
 
 		return variables
