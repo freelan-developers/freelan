@@ -55,7 +55,7 @@ namespace cryptoplus
 	{
 		namespace
 		{
-			boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
+			const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
 		}
 
 		// We don't need this, because ASN1_UTCTIME is an ASN1_STRING.
