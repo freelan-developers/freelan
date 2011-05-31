@@ -1291,7 +1291,7 @@ namespace asiotap
 #ifdef WINDOWS
 		(void)prefix_len;
 
-		if (netsh_remove_address("ipv4", m_interface_index, address.to_string()) != 0)
+		if (netsh_remove_address("ipv6", m_interface_index, address.to_string()) != 0)
 		{
 			throw std::runtime_error("Non-zero exit status");
 		}
