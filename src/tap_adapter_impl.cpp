@@ -1273,7 +1273,73 @@ namespace asiotap
 	{
 #ifdef WINDOWS
 		return (netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len) == 0);
+
 #else
+		int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
+
+		if (ctl_fd < 0)
+		{
+			throw_last_system_error();
+		}
+
+		bool result = true;
+
+		try
+		{
+			unsigned int if_index = ::if_nametoindex(m_name.c_str());
+
+			if (if_index == 0)
+			{
+				throw std::runtime_error("No interface found with the specified name");
+			}
+
+#ifdef LINUX
+			in6_freq ifr;
+			std::memset(&ifr, 0x00, sizeof(ifr));
+			std::memcpy(&ifr.ifr6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+			ifr.ifr6_prefixlen = prefix_len;
+			ifr.ifr6_ifindex = if_index;
+
+			if (::ioctl(ctl_fd, SIOCSIFADDR, &ifr) < 0)
+#elif defined(MACINTOSH) || defined(BSD)
+			in6_aliasreq iar;
+			std::memset(&iar, 0x00, sizeof(iar));
+			std::memcpy(iar.ifra_name, m_name.c_str());
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+
+#ifdef SIN6_LEN
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+#endif
+
+			if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
+#endif
+			{
+				if (errno == EEXIST)
+				{
+					result = false;
+				} else
+				{
+					throw_last_system_error();
+				}
+			}
+		}
+		catch (...)
+		{
+			::close(ctl_fd);
+
+			throw;
+		}
+
+		::close(ctl_fd);
+
+		return result;
 #endif
 	}
 	
