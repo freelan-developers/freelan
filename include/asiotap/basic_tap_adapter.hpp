@@ -178,49 +178,61 @@ namespace asiotap
 			 * \brief Add an IP address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+			bool add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+			bool remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv4 address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			void add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+			bool add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+			bool remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv6 address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			void add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+			bool add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+			bool remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 	};
 	
 	template <typename Service>
@@ -322,37 +334,37 @@ namespace asiotap
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	inline bool basic_tap_adapter<Service>::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{
 		return this->implementation->add_ip_address(address, prefix_len);
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	inline bool basic_tap_adapter<Service>::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{
 		return this->implementation->remove_ip_address(address, prefix_len);
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	inline bool basic_tap_adapter<Service>::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		return this->implementation->add_ip_address_v4(address, prefix_len);
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	inline bool basic_tap_adapter<Service>::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		return this->implementation->remove_ip_address_v4(address, prefix_len);
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	inline bool basic_tap_adapter<Service>::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 		return this->implementation->add_ip_address_v6(address, prefix_len);
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	inline bool basic_tap_adapter<Service>::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 		return this->implementation->remove_ip_address_v6(address, prefix_len);
 	}

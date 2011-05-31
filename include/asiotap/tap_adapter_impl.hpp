@@ -214,43 +214,55 @@ namespace asiotap
 			 * \brief Add an IP address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
-			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+			bool add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
-			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+			bool remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv4 address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
-			void add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+			bool add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
-			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+			bool remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv6 address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
-			void add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+			bool add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \return true if the operation succeeded.
+			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
-			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+			bool remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 
 		private:
 
@@ -296,30 +308,30 @@ namespace asiotap
 		cancel_write();
 	}
 
-	inline void tap_adapter_impl::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	inline bool tap_adapter_impl::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{
 		if (address.is_v4())
 		{
-			add_ip_address_v4(address.to_v4(), prefix_len);
+			return add_ip_address_v4(address.to_v4(), prefix_len);
 		} else
 		if (address.is_v6())
 		{
-			add_ip_address_v6(address.to_v6(), prefix_len);
+			return add_ip_address_v6(address.to_v6(), prefix_len);
 		} else
 		{
 			throw std::logic_error("The specified address must be an IPv4 or an IPv6 address.");
 		}
 	}
 
-	inline void tap_adapter_impl::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	inline bool tap_adapter_impl::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{
 		if (address.is_v4())
 		{
-			remove_ip_address_v4(address.to_v4(), prefix_len);
+			return remove_ip_address_v4(address.to_v4(), prefix_len);
 		} else
 		if (address.is_v6())
 		{
-			remove_ip_address_v6(address.to_v6(), prefix_len);
+			return remove_ip_address_v6(address.to_v6(), prefix_len);
 		} else
 		{
 			throw std::logic_error("The specified address must be an IPv4 or an IPv6 address.");

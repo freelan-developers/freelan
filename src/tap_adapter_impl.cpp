@@ -1251,50 +1251,38 @@ namespace asiotap
 #endif
 	}
 	
-	void tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	bool tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 #ifdef WINDOWS
-		if (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) != 0)
-		{
-			throw std::runtime_error("Non-zero exit status");
-		}
+		return (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) == 0);
 #else
 #endif
 	}
 	
-	void tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	bool tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 #ifdef WINDOWS
 		(void)prefix_len;
 
-		if (netsh_remove_address("ipv4", m_interface_index, address.to_string()) != 0)
-		{
-			throw std::runtime_error("Non-zero exit status");
-		}
+		return (netsh_remove_address("ipv4", m_interface_index, address.to_string()) == 0);
 #else
 #endif
 	}
 	
-	void tap_adapter_impl::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	bool tap_adapter_impl::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 #ifdef WINDOWS
-		if (netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len) != 0)
-		{
-			throw std::runtime_error("Non-zero exit status");
-		}
+		return (netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len) == 0);
 #else
 #endif
 	}
 	
-	void tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	bool tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 #ifdef WINDOWS
 		(void)prefix_len;
 
-		if (netsh_remove_address("ipv6", m_interface_index, address.to_string()) != 0)
-		{
-			throw std::runtime_error("Non-zero exit status");
-		}
+		return (netsh_remove_address("ipv6", m_interface_index, address.to_string()) == 0);
 #else
 #endif
 	}
