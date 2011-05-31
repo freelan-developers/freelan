@@ -178,6 +178,7 @@ namespace asiotap
 			 * \brief Add an IP address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
@@ -185,6 +186,7 @@ namespace asiotap
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
@@ -192,6 +194,7 @@ namespace asiotap
 			 * \brief Add an IPv4 address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			void add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
@@ -199,6 +202,7 @@ namespace asiotap
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 
@@ -206,6 +210,7 @@ namespace asiotap
 			 * \brief Add an IPv6 address to the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			void add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 
@@ -213,6 +218,7 @@ namespace asiotap
 			 * \brief Remove an IP address from the tap adapter.
 			 * \param address The address.
 			 * \param prefix_len The prefix length, in bits.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 	};
