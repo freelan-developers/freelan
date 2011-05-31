@@ -173,6 +173,48 @@ namespace asiotap
 			 * \return The count of bytes written.
 			 */
 			size_t write(const boost::asio::const_buffer& buffer, boost::system::error_code& ec);
+
+			/**
+			 * \brief Add an IP address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 */
+			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 */
+			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Add an IPv4 address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 */
+			void add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 */
+			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Add an IPv6 address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 */
+			void add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 */
+			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 	};
 	
 	template <typename Service>
@@ -271,6 +313,42 @@ namespace asiotap
 	inline size_t basic_tap_adapter<Service>::write(const boost::asio::const_buffer& buffer, boost::system::error_code& ec)
 	{
 		return this->service->read(this->implementation, buffer, ec);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	{
+		return this->implementation->add_ip_address(address, prefix_len);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	{
+		return this->implementation->remove_ip_address(address, prefix_len);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	{
+		return this->implementation->add_ip_address_v4(address, prefix_len);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	{
+		return this->implementation->remove_ip_address_v4(address, prefix_len);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	{
+		return this->implementation->add_ip_address_v6(address, prefix_len);
+	}
+
+	template <typename Service>
+	inline void basic_tap_adapter<Service>::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	{
+		return this->implementation->remove_ip_address_v6(address, prefix_len);
 	}
 }
 
