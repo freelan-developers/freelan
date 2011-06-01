@@ -53,6 +53,7 @@
 #include <boost/noncopyable.hpp>
 
 #include <vector>
+#include <cstring>
 
 namespace cryptoplus
 {
@@ -178,6 +179,15 @@ namespace cryptoplus
 				 * \return The new size of the buffer.
 				 */
 				size_t add_iso_10126_padding(void* buf, size_t buf_len, size_t max_buf_len) const;
+
+				/**
+				 * \brief Get an ISO 10126 padded copy of the specified buffer.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \return The resulting buffer.
+				 */
+				template <typename T>
+				std::vector<T> get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const;
 
 				/**
 				 * \brief Verify the given buffer and check if it matches ISO 10126 padding.
@@ -368,6 +378,16 @@ namespace cryptoplus
 		inline size_t cipher_context::get_iso_10126_padding_size(size_t len) const
 		{
 			return ((len / algorithm().block_size()) + 1) * algorithm().block_size();
+		}
+
+		template <typename T>
+		inline std::vector<T> cipher_context::get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const
+		{
+			std::vector<T> result(get_iso_10126_padding_size(buf_len));
+			std::memcpy(&result[0], buf, buf_len);
+			result.resize(add_iso_10126_padding(&result[0], buf_len, result.size()));
+
+			return result;
 		}
 
 		inline size_t cipher_context::key_length() const
