@@ -89,6 +89,11 @@ namespace fscp
 	const int CIPHER_ALGORITHM = NID_aes_256_cbc;
 
 	/**
+	 * \brief The cipher algorithm used to generate initialization vectors.
+	 */
+	const int IV_CIPHER_ALGORITHM = NID_aes_256_ecb;
+
+	/**
 	 * \brief The message digest algorithm.
 	 */
 	const int MESSAGE_DIGEST_ALGORITHM = NID_sha256;

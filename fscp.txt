@@ -436,10 +436,12 @@ Abstract
                  | sequence_number |   must_be_zero  |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
-   The concatenation is then ciphered using the target host encryption
-   key (KE) (and, if needed, a zero initialization vector).
+   The must_be_zero field is 10 bytes set to 0x00 so that the whole frame
+   is 16 bytes long. 
 
-	 The must_be_zero field is a 10 bytes set to 0x00. 
+   The concatenation buffer, which is globally unique, is then ciphered
+   using the target host encryption key (KE) (in ECB mode, so no
+   initialization vector is required).
 
    The resulting 16 bytes block is the initialization vector to use to
    (de)cipher the DATA message.

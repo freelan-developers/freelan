@@ -76,7 +76,11 @@ namespace fscp
 
 		cryptoplus::cipher::cipher_context cipher_context;
 		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM), cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, &iv[0], iv.size());
-		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, _cleartext, cleartext_len);
+		cipher_context.set_padding(false);
+
+		std::vector<uint8_t> cleartext = cipher_context.get_iso_10126_padded_buffer<uint8_t>(_cleartext, cleartext_len);
+
+		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, &cleartext[0], cleartext.size());
 		cnt += cipher_context.finalize(ciphertext + cnt, ciphertext_len - cnt);
 
 		buffer_tools::set<sequence_number_type>(payload, 0, htons(_sequence_number));
@@ -160,8 +164,11 @@ namespace fscp
 
 			cryptoplus::cipher::cipher_context cipher_context;
 			cipher_context.initialize(cipher_algorithm, cryptoplus::cipher::cipher_context::decrypt, enc_key, enc_key_len, &iv[0], iv.size());
+			cipher_context.set_padding(false);
 			size_t cnt = cipher_context.update(buf, buf_len, ciphertext(), ciphertext_size());
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
+
+			cnt = cipher_context.verify_iso_10126_padding(buf, cnt);
 
 			return cnt;
 		}
@@ -177,15 +184,18 @@ namespace fscp
 
 		if (buf)
 		{
+			static const char must_be_zero_padding[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			session_number = htonl(session_number);
 			sequence_number = htons(sequence_number);
 
-			std::vector<unsigned char> zero_iv(cipher_algorithm.iv_length(), 0);
+			cryptoplus::cipher::cipher_algorithm iv_cipher_algorithm(IV_CIPHER_ALGORITHM);
 
 			cryptoplus::cipher::cipher_context cipher_context;
-			cipher_context.initialize(cipher_algorithm, cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, &zero_iv[0], zero_iv.size());
+			cipher_context.initialize(iv_cipher_algorithm, cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, NULL, 0);
+			cipher_context.set_padding(false);
 			size_t cnt = cipher_context.update(buf, buf_len, &session_number, sizeof(session_number));
 			cnt += cipher_context.update(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt, &sequence_number, sizeof(sequence_number));
+			cnt += cipher_context.update(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt, must_be_zero_padding, sizeof(must_be_zero_padding));
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
 
 			return cnt;
