@@ -169,7 +169,7 @@ namespace fscp
 		m_socket.async_receive_from(asio::buffer(m_recv_buffer), m_sender_endpoint, bind(&server::handle_receive_from, this, asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 	}
 
-	void server::handle_receive_from(const system::error_code& error, size_t bytes_recvd)
+	void server::handle_receive_from(const boost::system::error_code& error, size_t bytes_recvd)
 	{
 		if (m_socket.is_open())
 		{

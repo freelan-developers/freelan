@@ -61,6 +61,10 @@ class Environment(SConsEnvironment):
 
 		self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
 
+		if sys.platform != 'win32':
+			# We must remove this flag until Boost::ASIO is fixed.
+			self['CXXFLAGS'].remove('-Wshadow')
+
 		if sys.platform != 'darwin':
 			if self['arch'] == 'i386':
 				self['CXXFLAGS'].append('-m32')
@@ -152,6 +156,7 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('gdi32')
 		else:
 			kw['LIBS'].append('boost_system')
+			kw['LIBS'].append('boost_thread')
 			kw['LIBS'].append('pthread')
 			kw['LIBS'].append('cryptoplus')
 			kw['LIBS'].append('crypto')
@@ -173,8 +178,8 @@ class Environment(SConsEnvironment):
 			variables.Add('boost_lib_suffix', 'The suffix for boost libraries', 'mgw45-mt')
 		else:
 			variables.AddVariables(PathVariable('install_path', 'The installation path', r'/usr/local', PathVariable.PathIsDir))
-			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr/include', PathVariable.PathIsDir))
-			variables.AddVariables(PathVariable('openssl_path', 'The path of the OpenSSL installation', r'/usr/include', PathVariable.PathIsDir))
-			variables.AddVariables(PathVariable('cryptoplus_path', 'The path of the libcryptoplus installation', r'/usr/include', PathVariable.PathIsDir))
+			variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr', PathVariable.PathIsDir))
+			variables.AddVariables(PathVariable('openssl_path', 'The path of the OpenSSL installation', r'/usr', PathVariable.PathIsDir))
+			variables.AddVariables(PathVariable('cryptoplus_path', 'The path of the libcryptoplus installation', r'/usr', PathVariable.PathIsDir))
 
 		return variables
