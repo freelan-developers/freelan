@@ -39,6 +39,7 @@
 /**
  * \file tap_adapter_impl.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \author Sebastien Vincent <sebastien.vincent@freelan.org>
  * \brief The tap adapter implementation class.
  */
 
