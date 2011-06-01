@@ -164,6 +164,13 @@ namespace cryptoplus
 				void set_padding(bool enabled);
 
 				/**
+				 * \brief Get the size of the ISO 10126 padding for a buffer of the specified size.
+				 * \param len The length of the buffer.
+				 * \return The size of the ISO 10126 padded result.
+				 */
+				size_t get_iso_10126_padding_size(size_t len) const;
+
+				/**
 				 * \brief Pad the given buffer using the ISO 10126 padding.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
@@ -356,6 +363,11 @@ namespace cryptoplus
 		{
 			// The call always returns 1 so testing its return value is useless.
 			EVP_CIPHER_CTX_set_padding(&m_ctx, static_cast<int>(enabled));
+		}
+		
+		inline size_t cipher_context::get_iso_10126_padding_size(size_t len) const
+		{
+			return ((len / algorithm().block_size()) + 1) * algorithm().block_size();
 		}
 
 		inline size_t cipher_context::key_length() const

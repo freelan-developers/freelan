@@ -138,7 +138,7 @@ namespace cryptoplus
 			assert(buf);
 			assert(buf_len <= max_buf_len);
 
-			const size_t result_len = ((buf_len / algorithm().block_size()) + 1) * algorithm().block_size();
+			const size_t result_len = get_iso_10126_padding_size(buf_len);
 
 			if (result_len > max_buf_len)
 			{
