@@ -401,7 +401,7 @@ Abstract
    than the last used session_number, it MUST discard the message.
 
    Note that in any case, the session lifespan is way smaller than the
-   AES cipherment and sealing keys.
+   AES cipherment and sealing keys lifespan.
 
    A well designed implementation should however limit session renewals
    to a minimum since key exchange is a critical procedure.
@@ -433,11 +433,13 @@ Abstract
                  +-----------------------------------+
                  |          session_number           |
                  +-----------------+-----------------+
-                 | sequence_number |
-                 +-----------------+
+                 | sequence_number |   must_be_zero  |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
 
    The concatenation is then ciphered using the target host encryption
-   key (KE) and a zero initialization vector.
+   key (KE) (and, if needed, a zero initialization vector).
+
+	 The must_be_zero field is a 10 bytes set to 0x00. 
 
    The resulting 16 bytes block is the initialization vector to use to
    (de)cipher the DATA message.
