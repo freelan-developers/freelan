@@ -445,3 +445,8 @@ Abstract
 
    The resulting 16 bytes block is the initialization vector to use to
    (de)cipher the DATA message.
+
+5. Thanks
+
+   Thanks to N.Caritey for his precious help regarding the security
+   concerns and for his reviews of the present RFC.
