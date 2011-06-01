@@ -164,6 +164,23 @@ namespace cryptoplus
 				void set_padding(bool enabled);
 
 				/**
+				 * \brief Pad the given buffer using the ISO 10126 padding.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf.
+				 * \param max_buf_len The maximum length of buf. Should be at least ((buf_len / algorithm().block_size()) + 1) * algorithm().block_size().
+				 * \return The new size of the buffer.
+				 */
+				size_t add_iso_10126_padding(void* buf, size_t buf_len, size_t max_buf_len) const;
+
+				/**
+				 * \brief Verify the given buffer and check if it matches ISO 10126 padding.
+				 * \param buf The buffer.
+				 * \param buf_len The length of buf, including its padding. Should be a multiple of algorithm().block_size().
+				 * \return The size of the data, without any padding.
+				 */
+				size_t verify_iso_10126_padding(const void* buf, size_t buf_len) const;
+
+				/**
 				 * \brief Get the key length.
 				 * \return The key length.
 				 * \see set_key_length

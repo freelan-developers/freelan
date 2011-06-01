@@ -45,6 +45,7 @@
 #include "cipher/cipher_context.hpp"
 
 #include "pkey/pkey.hpp"
+#include "random/random.hpp"
 
 #include <cassert>
 
@@ -130,6 +131,49 @@ namespace cryptoplus
 			}
 
 			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
+		}
+
+		size_t cipher_context::add_iso_10126_padding(void* buf, size_t buf_len, size_t max_buf_len) const
+		{
+			assert(buf);
+			assert(buf_len <= max_buf_len);
+
+			const size_t result_len = ((buf_len / algorithm().block_size()) + 1) * algorithm().block_size();
+
+			if (result_len > max_buf_len)
+			{
+				throw std::logic_error("The resulting buffer is too small");
+			}
+
+			const size_t padding_len = result_len - buf_len;
+
+			unsigned char* padding = reinterpret_cast<unsigned char*>(buf) + buf_len;
+
+			random::get_random_bytes(padding, padding_len - 1);
+			padding[padding_len - 1] = static_cast<unsigned char>(padding_len);
+
+			return result_len;
+		}
+
+		size_t cipher_context::verify_iso_10126_padding(const void* buf, size_t buf_len) const
+		{
+			assert(buf);
+
+			if (buf_len % algorithm().block_size() != 0)
+			{
+				throw std::logic_error("buf_len should be a multiple of algorithm().block_size()");
+			}
+
+			const unsigned char* cbuf = reinterpret_cast<const unsigned char*>(buf);
+
+			const size_t padding_len = static_cast<size_t>(cbuf[buf_len - 1]);
+
+			if ((padding_len > algorithm().block_size()) || (padding_len == 0))
+			{
+				throw std::logic_error("Impossible padding length");
+			}
+
+			return buf_len - padding_len;
 		}
 
 		size_t cipher_context::update(void* out, size_t out_len, const void* in, size_t in_len)
