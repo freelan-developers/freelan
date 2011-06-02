@@ -237,7 +237,6 @@ namespace asiotap
 	template <typename TapAdapterImplementation>
 	inline void basic_tap_adatper_service<TapAdapterImplementation>::close(implementation_type& impl)
 	{
-		impl->cancel();
 		impl->close();
 	}
 

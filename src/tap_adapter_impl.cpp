@@ -1191,9 +1191,19 @@ namespace asiotap
 #else
 			int error = ::aio_cancel(m_device, &m_read_aio);
 
-			if (error == -1)
+			if (error == AIO_NOTCANCELED)
 			{
-				throw_last_system_error();
+				error = aio_error(&m_read_aio);
+
+				switch (error)
+				{
+					case EINPROGRESS:
+					case ECANCELED:
+					case 0:
+						break;
+					default:
+						throw_system_error(error);
+				}
 			}
 #endif
 		}
@@ -1208,9 +1218,19 @@ namespace asiotap
 #else
 			int error = ::aio_cancel(m_device, &m_write_aio);
 
-			if (error == -1)
+			if (error == AIO_NOTCANCELED)
 			{
-				throw_last_system_error();
+				error = aio_error(&m_read_aio);
+
+				switch (error)
+				{
+					case EINPROGRESS:
+					case ECANCELED:
+					case 0:
+						break;
+					default:
+						throw_system_error(error);
+				}
 			}
 #endif
 		}
