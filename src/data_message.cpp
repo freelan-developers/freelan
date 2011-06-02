@@ -201,7 +201,7 @@ namespace fscp
 			return cnt;
 		} else
 		{
-			return cipher_algorithm.iv_length();
+			return cipher_algorithm.iv_length() * 2;
 		}
 	}
 }
