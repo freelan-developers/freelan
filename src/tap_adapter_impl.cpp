@@ -949,237 +949,257 @@ namespace asiotap
 
 	void tap_adapter_impl::set_connected_state(bool connected)
 	{
-		assert(is_open());
-
+		if (is_open())
+		{
 #ifdef WINDOWS
-		ULONG status = connected ? TRUE : FALSE;
-		DWORD len;
+			ULONG status = connected ? TRUE : FALSE;
+			DWORD len;
 
-		if (!DeviceIoControl(m_handle, TAP_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
-		{
-			throw_last_system_error();
-		}
-
-#else
-		int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
-
-		if (ctl_fd >= 0)
-		{
-			try
+			if (!DeviceIoControl(m_handle, TAP_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
 			{
-				struct ifreq netifr;
-				memset(&netifr, 0x00, sizeof(struct ifreq));
-				strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+				throw_last_system_error();
+			}
 
-				// Set the interface UP
-				if (::ioctl(ctl_fd, SIOCGIFFLAGS, (void*)&netifr) >= 0)
+#else
+			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+			if (ctl_fd >= 0)
+			{
+				try
 				{
-					if (connected)
-					{
-#ifdef MACINTOSH
-						netifr.ifr_flags |= IFF_UP;
-#else
-						netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
-#endif
-					} else
-					{
-#ifdef MACINTOSH
-						netifr.ifr_flags &= ~IFF_UP;
-#else
-						netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
-#endif
-					}
+					struct ifreq netifr;
+					memset(&netifr, 0x00, sizeof(struct ifreq));
+					strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
 
-					if (::ioctl(ctl_fd, SIOCSIFFLAGS, (void*)&netifr) < 0)
+					// Set the interface UP
+					if (::ioctl(ctl_fd, SIOCGIFFLAGS, (void*)&netifr) >= 0)
+					{
+						if (connected)
+						{
+#ifdef MACINTOSH
+							netifr.ifr_flags |= IFF_UP;
+#else
+							netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+#endif
+						} else
+						{
+#ifdef MACINTOSH
+							netifr.ifr_flags &= ~IFF_UP;
+#else
+							netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+#endif
+						}
+
+						if (::ioctl(ctl_fd, SIOCSIFFLAGS, (void*)&netifr) < 0)
+						{
+							throw_last_system_error();
+						}
+					} else
 					{
 						throw_last_system_error();
 					}
-				} else
-				{
-					throw_last_system_error();
 				}
-			}
-			catch (...)
-			{
+				catch (...)
+				{
+					::close(ctl_fd);
+
+					throw;
+				}
+
 				::close(ctl_fd);
-
-				throw;
 			}
-
-			::close(ctl_fd);
-		}
 #endif
+		}
 	}
 	
 	void tap_adapter_impl::begin_read(void* buf, size_t buf_len)
 	{
 		assert(buf);
 
+		if (is_open())
+		{
 #ifdef WINDOWS
-		assert(m_handle != INVALID_HANDLE_VALUE);
+			bool success = (ReadFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_read_overlapped) != 0);
 
-		bool success = (ReadFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_read_overlapped) != 0);
-
-		if (!success)
-		{
-			DWORD last_error = ::GetLastError();
-
-			if (last_error != ERROR_IO_PENDING)
+			if (!success)
 			{
-				throw_system_error_if_not(last_error);
+				DWORD last_error = ::GetLastError();
+
+				if (last_error != ERROR_IO_PENDING)
+				{
+					throw_system_error_if_not(last_error);
+				}
 			}
-		}
 #else
-		assert(m_device >= 0);
-
-		::memset(&m_read_aio, 0, sizeof(m_read_aio));
-		m_read_aio.aio_fildes = m_device;
-		m_read_aio.aio_buf = buf;
-		m_read_aio.aio_nbytes = buf_len;
-		m_read_aio.aio_offset = 0;
+			::memset(&m_read_aio, 0, sizeof(m_read_aio));
+			m_read_aio.aio_fildes = m_device;
+			m_read_aio.aio_buf = buf;
+			m_read_aio.aio_nbytes = buf_len;
+			m_read_aio.aio_offset = 0;
 
 
-		if (::aio_read(&m_read_aio) != 0)
-		{
-			throw_last_system_error();
-		}
+			if (::aio_read(&m_read_aio) != 0)
+			{
+				throw_last_system_error();
+			}
 #endif
+		}
 	}
 	
 	bool tap_adapter_impl::end_read(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
+		if (is_open())
+		{
 #ifdef WINDOWS
-		assert(m_handle != INVALID_HANDLE_VALUE);
+			DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
 
-		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
-
-		if (WaitForSingleObject(m_read_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
-		{
-			DWORD cnt = 0;
-
-			if (GetOverlappedResult(m_handle, &m_read_overlapped, &cnt, true))
+			if (WaitForSingleObject(m_read_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
 			{
-				_cnt = cnt;
-				return true;
-			}
-			else
-			{
-				throw_last_system_error();
-			}
-		}
+				DWORD cnt = 0;
 
-		return false;
+				if (GetOverlappedResult(m_handle, &m_read_overlapped, &cnt, true))
+				{
+					_cnt = cnt;
+					return true;
+				}
+				else
+				{
+					throw_last_system_error();
+				}
+			}
+
+			return false;
 #else
-		assert(m_device >= 0);
-
-		const timespec timeout_ts = time_duration_to_timespec(timeout);
-		const aiocb* const _read_aio[] = { &m_read_aio };
-
-		if (::aio_suspend(_read_aio, 1, timeout.is_special() ? NULL : &timeout_ts) == 0)
-		{
-			int error = ::aio_error(&m_read_aio);
-
-			if (error == 0)
+			if (timeout.is_special())
 			{
-				_cnt = ::aio_return(&m_read_aio);
-				return true;
+				while (is_open() && !end_read(_cnt, boost::posix_time::milliseconds(1000)));
+
+				return is_open();
+			} else
+			{
+				const timespec timeout_ts = time_duration_to_timespec(timeout);
+				const aiocb* const _read_aio[] = { &m_read_aio };
+
+				if (::aio_suspend(_read_aio, 1, &timeout_ts) == 0)
+				{
+					int error = ::aio_error(&m_read_aio);
+
+					if (error == 0)
+					{
+						_cnt = ::aio_return(&m_read_aio);
+						return true;
+					}
+
+					throw_system_error(error);
+				}
+
+				if ((errno != EAGAIN) && (errno != EINTR))
+				{
+					throw_last_system_error();
+				}
+
+				return false;
 			}
-
-			throw_system_error(error);
-		}
-
-		if ((errno != EAGAIN) && (errno != EINTR))
-		{
-			throw_last_system_error();
-		}
-
-		return false;
 #endif
+		} else
+		{
+			return false;
+		}
 	}
 	
 	void tap_adapter_impl::begin_write(const void* buf, size_t buf_len)
 	{
 		assert(buf);
 
+		if (is_open())
+		{
 #ifdef WINDOWS
-		assert(m_handle != INVALID_HANDLE_VALUE);
+			bool success = (WriteFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_write_overlapped) != 0);
 
-		bool success = (WriteFile(m_handle, buf, static_cast<DWORD>(buf_len), NULL, &m_write_overlapped) != 0);
-
-		if (!success)
-		{
-			DWORD last_error = ::GetLastError();
-
-			if (last_error != ERROR_IO_PENDING)
+			if (!success)
 			{
-				throw_system_error_if_not(last_error);
+				DWORD last_error = ::GetLastError();
+
+				if (last_error != ERROR_IO_PENDING)
+				{
+					throw_system_error_if_not(last_error);
+				}
 			}
-		}
 #else
-		assert(m_device >= 0);
 
-		::memset(&m_write_aio, 0, sizeof(m_write_aio));
-		m_write_aio.aio_fildes = m_device;
-		m_write_aio.aio_buf = const_cast<void*>(buf); // This is safe, since no attempt to modify the memory pointed by buf will be made.
-		m_write_aio.aio_nbytes = buf_len;
-		m_write_aio.aio_offset = 0;
+			::memset(&m_write_aio, 0, sizeof(m_write_aio));
+			m_write_aio.aio_fildes = m_device;
+			m_write_aio.aio_buf = const_cast<void*>(buf); // This is safe, since no attempt to modify the memory pointed by buf will be made.
+			m_write_aio.aio_nbytes = buf_len;
+			m_write_aio.aio_offset = 0;
 
-		if (::aio_write(&m_write_aio) != 0)
-		{
-			throw_last_system_error();
-		}
+			if (::aio_write(&m_write_aio) != 0)
+			{
+				throw_last_system_error();
+			}
 #endif
+		}
 	}
 	
 	bool tap_adapter_impl::end_write(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
+		if (is_open())
+		{
 #ifdef WINDOWS
-		assert(m_handle != INVALID_HANDLE_VALUE);
+			DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
 
-		DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
-
-		if (WaitForSingleObject(m_write_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
-		{
-			DWORD cnt = 0;
-
-			if (GetOverlappedResult(m_handle, &m_write_overlapped, &cnt, true))
+			if (WaitForSingleObject(m_write_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
 			{
-				_cnt = cnt;
-				return true;
-			}
-			else
-			{
-				throw_last_system_error();
-			}
-		}
+				DWORD cnt = 0;
 
-		return false;
+				if (GetOverlappedResult(m_handle, &m_write_overlapped, &cnt, true))
+				{
+					_cnt = cnt;
+					return true;
+				}
+				else
+				{
+					throw_last_system_error();
+				}
+			}
+
+			return false;
 #else
-		assert(m_device >= 0);
-
-		const timespec timeout_ts = time_duration_to_timespec(timeout);
-		const aiocb* const _write_aio[] = { &m_write_aio };
-
-		if (::aio_suspend(_write_aio, 1, timeout.is_special() ? NULL : &timeout_ts) == 0)
-		{
-			int error = ::aio_error(&m_write_aio);
-
-			if (error == 0)
+			if (timeout.is_special())
 			{
-				_cnt = ::aio_return(&m_write_aio);
-				return true;
+				while (is_open() && !end_read(_cnt, boost::posix_time::milliseconds(1000)));
+
+				return is_open();
+			} else
+			{
+				const timespec timeout_ts = time_duration_to_timespec(timeout);
+				const aiocb* const _write_aio[] = { &m_write_aio };
+
+				if (::aio_suspend(_write_aio, 1, &timeout_ts) == 0)
+				{
+					int error = ::aio_error(&m_write_aio);
+
+					if (error == 0)
+					{
+						_cnt = ::aio_return(&m_write_aio);
+						return true;
+					}
+
+					throw_system_error(error);
+				}
+
+				if ((errno != EAGAIN) && (errno != EINTR))
+				{
+					throw_last_system_error();
+				}
+
+				return false;
 			}
-
-			throw_system_error(error);
-		}
-
-		if ((errno != EAGAIN) && (errno != EINTR))
-		{
-			throw_last_system_error();
-		}
-
-		return false;
 #endif
+		} else
+		{
+			return false;
+		}
 	}
 	
 	void tap_adapter_impl::cancel_read()
@@ -1240,220 +1260,256 @@ namespace asiotap
 	{
 		assert(buf);
 
-#ifdef WINDOWS
-		begin_read(buf, buf_len);
-
-		size_t cnt;
-
-		while (!end_read(cnt));
-
-		return cnt;
-#else
-		ssize_t result = ::read(m_device, buf, buf_len);
-
-		if (result <= 0)
+		if (is_open())
 		{
-			throw_last_system_error();
-		}
+#ifdef WINDOWS
+			begin_read(buf, buf_len);
 
-		return static_cast<size_t>(result);
+			size_t cnt;
+
+			while (!end_read(cnt));
+
+			return cnt;
+#else
+			ssize_t result = ::read(m_device, buf, buf_len);
+
+			if (result <= 0)
+			{
+				throw_last_system_error();
+			}
+
+			return static_cast<size_t>(result);
 #endif
+		} else
+		{
+			return 0;
+		}
 	}
 	
 	size_t tap_adapter_impl::write(const void* buf, size_t buf_len)
 	{
 		assert(buf);
 
-#ifdef WINDOWS
-		begin_write(buf, buf_len);
-
-		size_t cnt;
-
-		while (!end_write(cnt));
-
-		return cnt;
-#else
-		ssize_t result = ::write(m_device, buf, buf_len);
-
-		if (result <= 0)
+		if (is_open())
 		{
-			throw_last_system_error();
-		}
+#ifdef WINDOWS
+			begin_write(buf, buf_len);
 
-		return static_cast<size_t>(result);
+			size_t cnt;
+
+			while (!end_write(cnt));
+
+			return cnt;
+#else
+			ssize_t result = ::write(m_device, buf, buf_len);
+
+			if (result <= 0)
+			{
+				throw_last_system_error();
+			}
+
+			return static_cast<size_t>(result);
 #endif
+		} else
+		{
+			return 0;
+		}
 	}
 	
 	bool tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
+		if (is_open())
+		{
 #ifdef WINDOWS
-		return (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) == 0);
+			return (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) == 0);
 #else
-		(void)address;
-		(void)prefix_len;
-		return false;
+			(void)address;
+			(void)prefix_len;
+			return false;
 #endif
+		} else
+		{
+			return false;
+		}
 	}
 	
 	bool tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
+		if (is_open())
+		{
 #ifdef WINDOWS
-		(void)prefix_len;
+			(void)prefix_len;
 
-		return (netsh_remove_address("ipv4", m_interface_index, address.to_string()) == 0);
+			return (netsh_remove_address("ipv4", m_interface_index, address.to_string()) == 0);
 #else
-		(void)address;
-		(void)prefix_len;
-		return false;
+			(void)address;
+			(void)prefix_len;
+			return false;
 #endif
+		} else
+		{
+			return false;
+		}
 	}
 	
 	bool tap_adapter_impl::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
+		if (is_open())
+		{
 #ifdef WINDOWS
-		return (netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len) == 0);
+			return (netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len) == 0);
 
 #else
-		int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
+			int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
 
-		if (ctl_fd < 0)
-		{
-			throw_last_system_error();
-		}
-
-		bool result = true;
-
-		try
-		{
-			unsigned int if_index = ::if_nametoindex(m_name.c_str());
-
-			if (if_index == 0)
+			if (ctl_fd < 0)
 			{
-				throw std::runtime_error("No interface found with the specified name");
+				throw_last_system_error();
 			}
+
+			bool result = true;
+
+			try
+			{
+				unsigned int if_index = ::if_nametoindex(m_name.c_str());
+
+				if (if_index == 0)
+				{
+					throw std::runtime_error("No interface found with the specified name");
+				}
 
 #ifdef LINUX
-			in6_ifreq ifr;
-			std::memset(&ifr, 0x00, sizeof(ifr));
-			std::memcpy(&ifr.ifr6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-			ifr.ifr6_prefixlen = prefix_len;
-			ifr.ifr6_ifindex = if_index;
+				in6_ifreq ifr;
+				std::memset(&ifr, 0x00, sizeof(ifr));
+				std::memcpy(&ifr.ifr6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				ifr.ifr6_prefixlen = prefix_len;
+				ifr.ifr6_ifindex = if_index;
 
-			if (::ioctl(ctl_fd, SIOCSIFADDR, &ifr) < 0)
+				if (::ioctl(ctl_fd, SIOCSIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
-			in6_aliasreq iar;
-			std::memset(&iar, 0x00, sizeof(iar));
-			std::memcpy(iar.ifra_name, m_name.c_str());
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+					in6_aliasreq iar;
+				std::memset(&iar, 0x00, sizeof(iar));
+				std::memcpy(iar.ifra_name, m_name.c_str());
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+				std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+				iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+				iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
 
 #ifdef SIN6_LEN
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
 #endif
 
-			if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
+				if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
 #endif
-			{
-				if (errno == EEXIST)
 				{
-					result = false;
-				} else
-				{
-					throw_last_system_error();
+					if (errno == EEXIST)
+					{
+						result = false;
+					} else
+					{
+						throw_last_system_error();
+					}
 				}
 			}
-		}
-		catch (...)
-		{
+			catch (...)
+			{
+				::close(ctl_fd);
+
+				throw;
+			}
+
 			::close(ctl_fd);
 
-			throw;
-		}
-
-		::close(ctl_fd);
-
-		return result;
+			return result;
 #endif
+		} else
+		{
+			return false;
+		}
 	}
 	
 	bool tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
+		if (is_open())
+		{
 #ifdef WINDOWS
-		(void)prefix_len;
+			(void)prefix_len;
 
-		return (netsh_remove_address("ipv6", m_interface_index, address.to_string()) == 0);
+			return (netsh_remove_address("ipv6", m_interface_index, address.to_string()) == 0);
 #else
-		int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
+			int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
 
-		if (ctl_fd < 0)
-		{
-			throw_last_system_error();
-		}
-
-		bool result = true;
-
-		try
-		{
-			unsigned int if_index = ::if_nametoindex(m_name.c_str());
-
-			if (if_index == 0)
+			if (ctl_fd < 0)
 			{
-				throw std::runtime_error("No interface found with the specified name");
+				throw_last_system_error();
 			}
+
+			bool result = true;
+
+			try
+			{
+				unsigned int if_index = ::if_nametoindex(m_name.c_str());
+
+				if (if_index == 0)
+				{
+					throw std::runtime_error("No interface found with the specified name");
+				}
 
 #ifdef LINUX
-			in6_ifreq ifr;
-			std::memset(&ifr, 0x00, sizeof(ifr));
-			std::memcpy(&ifr.ifr6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-			ifr.ifr6_prefixlen = prefix_len;
-			ifr.ifr6_ifindex = if_index;
+				in6_ifreq ifr;
+				std::memset(&ifr, 0x00, sizeof(ifr));
+				std::memcpy(&ifr.ifr6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				ifr.ifr6_prefixlen = prefix_len;
+				ifr.ifr6_ifindex = if_index;
 
-			if (::ioctl(ctl_fd, SIOCDIFADDR, &ifr) < 0)
+				if (::ioctl(ctl_fd, SIOCDIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
-			in6_aliasreq iar;
-			std::memset(&iar, 0x00, sizeof(iar));
-			std::memcpy(iar.ifra_name, m_name.c_str());
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+					in6_aliasreq iar;
+				std::memset(&iar, 0x00, sizeof(iar));
+				std::memcpy(iar.ifra_name, m_name.c_str());
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+				std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+				iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+				iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
 
 #ifdef SIN6_LEN
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
 #endif
 
-			if (::ioctl(ctl_fd, SIOCDIFADDR_IN6, &iar) < 0)
+				if (::ioctl(ctl_fd, SIOCDIFADDR_IN6, &iar) < 0)
 #endif
-			{
-				if (errno == EEXIST)
 				{
-					result = false;
-				} else
-				{
-					throw_last_system_error();
+					if (errno == EEXIST)
+					{
+						result = false;
+					} else
+					{
+						throw_last_system_error();
+					}
 				}
 			}
-		}
-		catch (...)
-		{
+			catch (...)
+			{
+				::close(ctl_fd);
+
+				throw;
+			}
+
 			::close(ctl_fd);
 
-			throw;
-		}
-
-		::close(ctl_fd);
-
-		return result;
+			return result;
 #endif
+		} else
+		{
+			return false;
+		}
 	}
 }
