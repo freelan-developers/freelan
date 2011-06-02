@@ -162,7 +162,7 @@ namespace asiotap
 					boost::weak_ptr<TapAdapterImplementation> m_impl;
 					boost::asio::io_service& m_io_service;
 					boost::asio::io_service::work m_work;
-					const boost::asio::mutable_buffer& m_buffer;
+					boost::asio::mutable_buffer m_buffer;
 					ReadHandler m_handler;
 			};
 
@@ -179,7 +179,7 @@ namespace asiotap
 					boost::weak_ptr<TapAdapterImplementation> m_impl;
 					boost::asio::io_service& m_io_service;
 					boost::asio::io_service::work m_work;
-					const boost::asio::const_buffer& m_buffer;
+					boost::asio::const_buffer m_buffer;
 					WriteHandler m_handler;
 			};
 

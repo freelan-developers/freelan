@@ -71,7 +71,7 @@ static bool register_signal_handlers()
 	return true;
 }
 
-char my_buf[2048];
+static char my_buf[2048];
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
@@ -92,8 +92,7 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 	if (!ec)
 	{
-		(void)tap_adapter;
-		//tap_adapter.async_write(boost::asio::buffer(my_buf, cnt), boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
+		tap_adapter.async_write(boost::asio::buffer(my_buf, cnt), boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
 	}
 }
 
