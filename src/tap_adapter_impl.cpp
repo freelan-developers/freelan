@@ -1326,14 +1326,75 @@ namespace asiotap
 	
 	bool tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
+		assert(prefix_len > 0);
+		assert(prefix_len < 32);
+
 		if (is_open())
 		{
 #ifdef WINDOWS
 			return (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) == 0);
 #else
-			(void)address;
-			(void)prefix_len;
-			return false;
+			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+			if (ctl_fd < 0)
+			{
+				throw_last_system_error();
+			}
+
+			bool result = true;
+
+			try
+			{
+				ifreq ifr_a;
+				ifreq ifr_n;
+
+				std::memset(&ifr_a, 0x00, sizeof(ifr_a));
+				std::memset(&ifr_n, 0x00, sizeof(ifr_n));
+				std::strncpy(ifr_a.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+				std::strncpy(ifr_n.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+				sockaddr_in* ifr_a_addr = reinterpret_cast<sockaddr_in*>(&ifr_a.ifr_addr);
+				sockaddr_in* ifr_n_addr = reinterpret_cast<sockaddr_in*>(&ifr_n.ifr_addr);
+				ifr_a_addr->sin_family = AF_INET;
+				ifr_n_addr->sin_family = AF_INET;
+#ifdef BSD
+				ifr_a_addr->sin_len = sizeof(sockaddr_in);
+				ifr_n_addr->sin_len = sizeof(sockaddr_in);
+#endif
+				std::memcpy(&ifr_a_addr->sin_addr.s_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				ifr_n_addr->sin_addr.s_addr = htonl((0xFFFFFFFF >> (32 - prefix_len)) << (32 - prefix_len));
+
+				if (::ioctl(ctl_fd, SIOCSIFADDR, &ifr_a) < 0)
+				{
+					if (errno == EEXIST)
+					{
+						result = false;
+					} else
+					{
+						throw_last_system_error();
+					}
+				}
+
+				if (::ioctl(ctl_fd, SIOCSIFNETMASK, &ifr_n) < 0)
+				{
+					if (errno == EEXIST)
+					{
+						result = false;
+					} else
+					{
+						throw_last_system_error();
+					}
+				}
+			}
+			catch (...)
+			{
+				::close(ctl_fd);
+
+				throw;
+			}
+
+			::close(ctl_fd);
+
+			return result;
 #endif
 		} else
 		{
