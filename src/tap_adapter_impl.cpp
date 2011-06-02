@@ -1076,6 +1076,7 @@ namespace asiotap
 
 			return false;
 #else
+			// This is ugly, but aio_cancel somehow fails on tap interfaces and does never cancel the call so we have no choice...
 			if (timeout.is_special())
 			{
 				while (is_open() && !end_read(_cnt, AIO_RESOLUTION_DURATION));
@@ -1171,6 +1172,7 @@ namespace asiotap
 
 			return false;
 #else
+			// This is ugly, but aio_cancel somehow fails on tap interfaces and does never cancel the call so we have no choice...
 			if (timeout.is_special())
 			{
 				while (is_open() && !end_write(_cnt, AIO_RESOLUTION_DURATION));
