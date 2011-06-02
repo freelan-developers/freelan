@@ -545,6 +545,8 @@ namespace asiotap
 		m_device(-1)
 #endif
 	{
+		std::memset(&m_read_aio, 0, sizeof(m_read_aio));
+		std::memset(&m_write_aio, 0, sizeof(m_write_aio));
 	}
 	
 	bool tap_adapter_impl::is_open() const
@@ -647,9 +649,9 @@ namespace asiotap
 						throw_last_system_error();
 					}
 
-					memset(&m_read_overlapped, 0, sizeof(m_read_overlapped));
+					std::memset(&m_read_overlapped, 0, sizeof(m_read_overlapped));
 					m_read_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-					memset(&m_write_overlapped, 0, sizeof(m_write_overlapped));
+					std::memset(&m_write_overlapped, 0, sizeof(m_write_overlapped));
 					m_write_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 					break;
@@ -663,7 +665,7 @@ namespace asiotap
 		}
 #elif defined(LINUX)
 		struct ifreq ifr;
-		memset(&ifr, 0x00, sizeof(struct ifreq));
+		std::memset(&ifr, 0x00, sizeof(struct ifreq));
 
 		const std::string dev_name = "/dev/net/tap";
 
@@ -724,8 +726,8 @@ namespace asiotap
 						struct ifreq netifr;
 
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
-						memset(&netifr, 0x00, sizeof(struct ifreq));
-						strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+						std::memset(&netifr, 0x00, sizeof(struct ifreq));
+						std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 						netifr.ifr_qlen = 100; // 100 is the default value
 
 						if (::ioctl(ctl_fd, SIOCSIFTXQLEN, (void *)&netifr) < 0)
@@ -734,8 +736,8 @@ namespace asiotap
 						}
 #endif
 						// Set the MTU
-						memset(&netifr, 0x00, sizeof(struct ifreq));
-						strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+						std::memset(&netifr, 0x00, sizeof(struct ifreq));
+						std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 
 						netifr.ifr_mtu = m_mtu;
 
@@ -745,8 +747,8 @@ namespace asiotap
 							m_mtu = netifr.ifr_mtu;
 						}
 
-						memset(&netifr, 0x00, sizeof(struct ifreq));
-						strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+						std::memset(&netifr, 0x00, sizeof(struct ifreq));
+						std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 
 						// Get the interface hwaddr
 						if (::ioctl(ctl_fd, SIOCGIFHWADDR, (void*)&netifr) < 0)
