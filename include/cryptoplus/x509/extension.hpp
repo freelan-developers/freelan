@@ -73,7 +73,7 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a new extension.
-				 * \return The extension.
+				 * \return An extension.
 				 *
 				 * If allocation fails, a cryptographic_exception is thrown.
 				 */
@@ -82,7 +82,7 @@ namespace cryptoplus
 				/**
 				 * \brief Take ownership of a specified X509_EXTENSION pointer.
 				 * \param ptr The pointer. Cannot be NULL.
-				 * \return A extension_entry.
+				 * \return An extension.
 				 */
 				static extension take_ownership(pointer ptr);
 
@@ -90,7 +90,7 @@ namespace cryptoplus
 				 * \brief Load a X509 extension in DER format.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
-				 * \return The name.
+				 * \return An extension.
 				 */
 				static extension from_der(const void* buf, size_t buf_len);
 
@@ -99,6 +99,7 @@ namespace cryptoplus
 				 * \param nid The nid.
 				 * \param critical The critical flag.
 				 * \param data The data.
+				 * \return An extension.
 				 */
 				static extension from_nid(int nid, bool critical, asn1::string data);
 
@@ -107,6 +108,7 @@ namespace cryptoplus
 				 * \param obj The ASN1 object.
 				 * \param critical The critical flag.
 				 * \param data The data.
+				 * \return An extension.
 				 */
 				static extension from_obj(asn1::object obj, bool critical, asn1::string data);
 
@@ -116,6 +118,7 @@ namespace cryptoplus
 				 * \param value The value.
 				 * \param ctx The context. Can be NULL (defaut).
 				 * \param conf The configuration file. Can be NULL (default).
+				 * \return An extension.
 				 */
 				static extension from_nconf_nid(int nid, const char* value, x509v3_context ctx = NULL, CONF* conf = NULL);
 

@@ -53,11 +53,17 @@ namespace cryptoplus
 {
 	namespace
 	{
+		/**
+		 * \brief A function wrapper to call the OpenSSL_add_all_algorithms macro.
+		 */
 		inline void _OpenSSL_add_all_algorithms()
 		{
 			OpenSSL_add_all_algorithms();
 		}
 
+		/**
+		 * \brief A function that does nothing.
+		 */
 		inline void _null_function()
 		{
 		}
