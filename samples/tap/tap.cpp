@@ -24,6 +24,7 @@ namespace boost
 }
 #endif
 
+static volatile bool signaled = false;
 static boost::function<void ()> stop_function = 0;
 
 static void signal_handler(int code)
@@ -33,8 +34,9 @@ static void signal_handler(int code)
 		case SIGTERM:
 		case SIGINT:
 		case SIGABRT:
-			if (stop_function)
+			if (!signaled && stop_function)
 			{
+				signaled = true;
 				std::cerr << "Signal caught: stopping..." << std::endl;
 
 				stop_function();
