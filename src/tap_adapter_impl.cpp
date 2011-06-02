@@ -429,7 +429,7 @@ namespace asiotap
 		}
 #else
 #ifndef AIO_RESOLUTION
-#define AIO_RESOLUTION 100
+#define AIO_RESOLUTION 500
 #endif
 
 		const boost::posix_time::time_duration AIO_RESOLUTION_DURATION = boost::posix_time::milliseconds(AIO_RESOLUTION);
