@@ -545,8 +545,10 @@ namespace asiotap
 		m_device(-1)
 #endif
 	{
+#ifndef WINDOWS
 		std::memset(&m_read_aio, 0, sizeof(m_read_aio));
 		std::memset(&m_write_aio, 0, sizeof(m_write_aio));
+#endif
 	}
 	
 	bool tap_adapter_impl::is_open() const
