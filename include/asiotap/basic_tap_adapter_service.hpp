@@ -99,6 +99,19 @@ namespace asiotap
 			void destroy(implementation_type& impl);
 
 			/**
+			 * \brief Open the specified implementation.
+			 * \param impl The implementation that must be opened.
+			 * \param name The name of the device to open.
+			 */
+			void open(implementation_type& impl, const std::string& name);
+
+			/**
+			 * \brief Close the specified implementation.
+			 * \param impl The implementation to close.
+			 */
+			void close(implementation_type& impl);
+
+			/**
 			 * \brief Process to an asynchronous read on the specified implementation.
 			 * \param impl The implementation on which to perform the read.
 			 * \param buffer The buffer.
@@ -215,6 +228,19 @@ namespace asiotap
 		impl.reset();
 	}
 	
+	template <typename TapAdapterImplementation>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name)
+	{
+		impl->open(name);
+	}
+
+	template <typename TapAdapterImplementation>
+	inline void basic_tap_adatper_service<TapAdapterImplementation>::close(implementation_type& impl)
+	{
+		impl->cancel();
+		impl->close();
+	}
+
 	template<typename TapAdapterImplementation> template<typename ReadHandler>
 	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler)
 	{

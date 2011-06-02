@@ -256,13 +256,13 @@ namespace asiotap
 	template <typename Service>
 	inline void basic_tap_adapter<Service>::open(const std::string& _name)
 	{
-		this->implementation->open(_name);
+		this->service.open(this->implementation, _name);
 	}
 
 	template <typename Service>
 	inline void basic_tap_adapter<Service>::close()
 	{
-		this->implementation->close();
+		this->service.close(this->implementation);
 	}
 
 	template <typename Service>
