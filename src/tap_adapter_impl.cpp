@@ -428,6 +428,12 @@ namespace asiotap
 			return netsh_execute(oss.str());
 		}
 #else
+#ifndef AIO_RESOLUTION
+#define AIO_RESOLUTION 100
+#endif
+
+		const boost::posix_time::time_duration AIO_RESOLUTION_DURATION = boost::posix_time::milliseconds(AIO_RESOLUTION);
+
 		void throw_system_error(int error)
 		{
 			char error_str[256] = { 0 };
@@ -1072,7 +1078,7 @@ namespace asiotap
 #else
 			if (timeout.is_special())
 			{
-				while (is_open() && !end_read(_cnt, boost::posix_time::milliseconds(1000)));
+				while (is_open() && !end_read(_cnt, AIO_RESOLUTION_DURATION));
 
 				return is_open();
 			} else
@@ -1167,7 +1173,7 @@ namespace asiotap
 #else
 			if (timeout.is_special())
 			{
-				while (is_open() && !end_read(_cnt, boost::posix_time::milliseconds(1000)));
+				while (is_open() && !end_write(_cnt, AIO_RESOLUTION_DURATION));
 
 				return is_open();
 			} else
