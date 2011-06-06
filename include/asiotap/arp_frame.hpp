@@ -50,10 +50,6 @@
 
 namespace asiotap
 {
-	#ifdef MSV
-	#pragma pack(push, 1)
-	#endif
-
 	/**
 	 * \brief The ARP protocol number.
 	 */
@@ -74,6 +70,10 @@ namespace asiotap
 	 */
 	const uint16_t ARP_REPLY_OPERATION = 0x0002;
 	
+	#ifdef MSV
+	#pragma pack(push, 1)
+	#endif
+
 	/**
 	 * \brief An arp frame structure.
 	 */

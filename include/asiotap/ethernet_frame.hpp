@@ -49,15 +49,15 @@
 
 namespace asiotap
 {
-	#ifdef MSV
-	#pragma pack(push, 1)
-	#endif
-	
 	/**
 	 * \brief The size of an ethernet address.
 	 */
 	const size_t ETHERNET_ADDRESS_SIZE = 6;
 
+	#ifdef MSV
+	#pragma pack(push, 1)
+	#endif
+	
 	/**
 	 * \brief An Ethernet frame structure.
 	 */
