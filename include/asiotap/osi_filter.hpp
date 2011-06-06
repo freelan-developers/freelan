@@ -52,6 +52,7 @@ namespace asiotap
 	/**
 	 * \brief The base filter class.
 	 */
+	template <typename OSIFrameType>
 	class osi_filter
 	{
 		public:
@@ -72,7 +73,7 @@ namespace asiotap
 			 * \param reply_frame The reply frame, if any. If the return value differs from osi_filter::error_reply, the value is not used.
 			 * \return An error code that indicates the taken action.
 			 */
-			virtual error_code process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply) = 0;
+			error_code process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply);
 
 			/**
 			 * \brief Process an OSI frame.
@@ -80,14 +81,34 @@ namespace asiotap
 			 * \param reply_frame The reply frame, if any. If the return value differs from osi_filter::error_reply, the value is not used.
 			 * \return An error code that indicates the taken action.
 			 */
-			template <typename OSIFrameType>
 			error_code process(const OSIFrameType& frame, const boost::asio::mutable_buffer& reply);
+			
+		private:
+
+			/**
+			 * \brief Processes an OSI frame.
+			 * \param frame The frame.
+			 * \param reply_frame The reply frame, if any. If the return value differs from osi_filter::error_reply, the value is not used.
+			 * \return An error code that indicates the taken action.
+			 */
+			virtual error_code do_process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply) = 0;
 	};
 	
 	template <typename OSIFrameType>
-	inline osi_filter::error_code osi_filter::process(const OSIFrameType& frame, const boost::asio::mutable_buffer& reply)
+	inline typename osi_filter<OSIFrameType>::error_code osi_filter<OSIFrameType>::process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply)
 	{
-		return process(boost::asio::const_buffer(static_cast<const void*>(&frame), sizeof(frame)), reply);
+		if (boost::asio::buffer_size(frame) < sizeof(OSIFrameType))
+		{
+			return error_invalid;
+		}
+
+		return do_process(frame, reply);
+	}
+
+	template <typename OSIFrameType>
+	inline typename osi_filter<OSIFrameType>::error_code osi_filter<OSIFrameType>::process(const OSIFrameType& frame, const boost::asio::mutable_buffer& reply)
+	{
+		return do_process(boost::asio::const_buffer(static_cast<const void*>(&frame), sizeof(frame)), reply);
 	}
 }
 
