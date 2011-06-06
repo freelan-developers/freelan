@@ -63,9 +63,9 @@ namespace asiotap
 	 */
 	struct ethernet_frame
 	{
-		uint8_t destination[ETHERNET_ADDRESS_SIZE];
-		uint8_t source[ETHERNET_ADDRESS_SIZE];
-		uint16_t protocol;
+		uint8_t target[ETHERNET_ADDRESS_SIZE]; /**< The destination MAC address. */
+		uint8_t sender[ETHERNET_ADDRESS_SIZE]; /**< The source MAC address. */
+		uint16_t protocol; /**< The protocol. */
 	} PACKED;
 
 	#ifdef MSV
