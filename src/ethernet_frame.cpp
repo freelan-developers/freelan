@@ -44,3 +44,6 @@
 
 #include "ethernet_frame.hpp"
 
+namespace asiotap
+{
+}

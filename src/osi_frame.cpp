@@ -37,41 +37,10 @@
  */
 
 /**
- * \file ethernet_frame.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An Ethernet frame structure.
+ * \file osi_frame.cpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief An osi frame structure.
  */
 
-#ifndef ASIOTAP_ETHERNET_FRAME_HPP
-#define ASIOTAP_ETHERNET_FRAME_HPP
-
 #include "osi_frame.hpp"
-
-namespace asiotap
-{
-	#ifdef MSV
-	#pragma pack(push, 1)
-	#endif
-	
-	/**
-	 * \brief The size of an ethernet address.
-	 */
-	const size_t ETHERNET_ADDRESS_SIZE = 6;
-
-	/**
-	 * \brief An Ethernet frame structure.
-	 */
-	struct ethernet_frame
-	{
-		uint8_t destination[ETHERNET_ADDRESS_SIZE];
-		uint8_t source[ETHERNET_ADDRESS_SIZE];
-		uint16_t protocol;
-	} PACKED;
-
-	#ifdef MSV
-	#pragma pack(pop)
-	#endif
-}
-
-#endif /* ASIOTAP_ETHERNET_FRAME_HPP */
 

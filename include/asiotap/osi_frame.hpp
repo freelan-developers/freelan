@@ -37,41 +37,38 @@
  */
 
 /**
- * \file ethernet_frame.hpp
+ * \file osi_frame.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An Ethernet frame structure.
+ * \brief An osi frame structure.
  */
 
-#ifndef ASIOTAP_ETHERNET_FRAME_HPP
-#define ASIOTAP_ETHERNET_FRAME_HPP
+#ifndef ASIOTAP_OSI_FRAME_HPP
+#define ASIOTAP_OSI_FRAME_HPP
 
-#include "osi_frame.hpp"
+#include <boost/asio.hpp>
 
-namespace asiotap
-{
-	#ifdef MSV
-	#pragma pack(push, 1)
-	#endif
-	
-	/**
-	 * \brief The size of an ethernet address.
-	 */
-	const size_t ETHERNET_ADDRESS_SIZE = 6;
+/**
+ * \def PACKED
+ * \brief A "packed" C-structure has the minimal space in memory without take care of memory alignment.
+ *
+ * This is useful for network-related messages.
+ *
+ * \note GCC only. For Microsoft Visual C++ use:
+ * \code
+ * #pragma pack(push, 1)
+ * struct my_struct
+ * {
+ *   char a;
+ *   int b;
+ * };
+ * #pragma pack(pop)
+ * \endcode
+ */
+#ifdef MSV
+#define PACKED
+#else
+#define PACKED __attribute__((packed))
+#endif
 
-	/**
-	 * \brief An Ethernet frame structure.
-	 */
-	struct ethernet_frame
-	{
-		uint8_t destination[ETHERNET_ADDRESS_SIZE];
-		uint8_t source[ETHERNET_ADDRESS_SIZE];
-		uint16_t protocol;
-	} PACKED;
-
-	#ifdef MSV
-	#pragma pack(pop)
-	#endif
-}
-
-#endif /* ASIOTAP_ETHERNET_FRAME_HPP */
+#endif /* ASIOTAP_OSI_FRAME_HPP */
 
