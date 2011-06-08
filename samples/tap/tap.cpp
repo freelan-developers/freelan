@@ -5,6 +5,8 @@
  */
 
 #include <asiotap/asiotap.hpp>
+#include <asiotap/osi/ethernet_filter.hpp>
+#include <asiotap/osi/arp_filter.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -75,6 +77,7 @@ static char my_buf[2048];
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
+void arp_frame_read(const asiotap::osi::arp_frame& frame, const boost::asio::const_buffer& payload);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
@@ -92,8 +95,23 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 	if (!ec)
 	{
-		tap_adapter.async_write(boost::asio::buffer(my_buf, cnt), boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
+		boost::asio::const_buffer buffer(my_buf, cnt);
+
+		asiotap::osi::ethernet_filter ethernet_filter;
+		asiotap::osi::arp_filter<asiotap::osi::ethernet_filter> arp_filter(ethernet_filter);
+		arp_filter.add_callback(&arp_frame_read);
+
+		ethernet_filter.parse(buffer);
+
+		tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
 	}
+}
+
+void arp_frame_read(const asiotap::osi::arp_frame& frame, const boost::asio::const_buffer& payload)
+{
+	(void)payload;
+
+	std::cout << "ARP frame: " << boost::asio::ip::address_v4(frame.sender_logical_address.s_addr) << std::endl;
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
