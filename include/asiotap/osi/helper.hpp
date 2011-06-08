@@ -196,7 +196,7 @@ namespace asiotap
 		mutable_helper<OSIFrameType> helper(OSIFrameType& frame);
 
 		template <typename OSIFrameType>
-		const OSIFrameType& _base_const_helper<OSIFrameType>::frame() const
+		inline const OSIFrameType& _base_const_helper<OSIFrameType>::frame() const
 		{
 			return m_frame;
 		}
@@ -208,7 +208,7 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		OSIFrameType& _base_mutable_helper<OSIFrameType>::frame() const
+		inline OSIFrameType& _base_mutable_helper<OSIFrameType>::frame() const
 		{
 			return m_frame;
 		}
@@ -220,43 +220,43 @@ namespace asiotap
 		}
 		
 		template <typename OSIFrameType>
-		_const_helper_impl<OSIFrameType>::_const_helper_impl(const OSIFrameType& _frame) :
+		inline _const_helper_impl<OSIFrameType>::_const_helper_impl(const OSIFrameType& _frame) :
 			_base_const_helper<OSIFrameType>(_frame)
 		{
 		}
 
 		template <typename OSIFrameType>
-		_mutable_helper_impl<OSIFrameType>::_mutable_helper_impl(OSIFrameType& _frame) :
+		inline _mutable_helper_impl<OSIFrameType>::_mutable_helper_impl(OSIFrameType& _frame) :
 			_base_mutable_helper<OSIFrameType>(_frame)
 		{
 		}
 
 		template <typename OSIFrameType>
-		const_helper<OSIFrameType>::const_helper(const OSIFrameType& _frame) :
+		inline const_helper<OSIFrameType>::const_helper(const OSIFrameType& _frame) :
 			_const_helper_impl<OSIFrameType>(_frame)
 		{
 		}
 
 		template <typename OSIFrameType>
-		mutable_helper<OSIFrameType>::mutable_helper(OSIFrameType& _frame) :
+		inline mutable_helper<OSIFrameType>::mutable_helper(OSIFrameType& _frame) :
 			_mutable_helper_impl<OSIFrameType>(_frame)
 		{
 		}
 
 		template <typename OSIFrameType>
-		mutable_helper<OSIFrameType>::operator const_helper<OSIFrameType>() const
+		inline mutable_helper<OSIFrameType>::operator const_helper<OSIFrameType>() const
 		{
 			return const_helper<OSIFrameType>(mutable_helper<OSIFrameType>::frame());
 		}
 
 		template <typename OSIFrameType>
-		const_helper<OSIFrameType> helper(const OSIFrameType& frame)
+		inline const_helper<OSIFrameType> helper(const OSIFrameType& frame)
 		{
 			return const_helper<OSIFrameType>(frame);
 		}
 
 		template <typename OSIFrameType>
-		mutable_helper<OSIFrameType> helper(OSIFrameType& frame)
+		inline mutable_helper<OSIFrameType> helper(OSIFrameType& frame)
 		{
 			return mutable_helper<OSIFrameType>(frame);
 		}
