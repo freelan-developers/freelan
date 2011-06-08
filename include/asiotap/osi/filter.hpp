@@ -83,7 +83,7 @@ namespace asiotap
 		/**
 		 * \brief The generic filter class.
 		 */
-		template <typename OSIFrameType, class ParentFilterType>
+		template <typename OSIFrameType, class ParentFilterType = void>
 		class filter : public _base_filter<OSIFrameType, ParentFilterType>
 		{
 			public:
@@ -117,6 +117,32 @@ namespace asiotap
 				parent_filter_type m_parent;
 		};
 
+		/**
+		 * \brief The generic filter class.
+		 */
+		template <typename OSIFrameType>
+		class filter<OSIFrameType, void> : public _base_filter<OSIFrameType, void>
+		{
+			public:
+
+				/**
+				 * \brief The frame type.
+				 */
+				typedef typename _base_filter<OSIFrameType, void>::frame_type frame_type;
+
+				/**
+				 * \brief The parent filter type.
+				 */
+				typedef typename _base_filter<OSIFrameType, void>::parent_filter_type parent_filter_type;
+
+				/**
+				 * \brief Processes an OSI frame.
+				 * \param frame The frame. If the return value is filter_error_handled, frame is updated to point on the payload.
+				 * \return An error code that indicates the taken action.
+				 */
+				filter_error_code process(boost::asio::const_buffer& frame);
+		};
+
 		template <typename OSIFrameType, class ParentFilterType>
 		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process(boost::asio::const_buffer& frame)
 		{
@@ -137,6 +163,13 @@ namespace asiotap
 
 		template <typename OSIFrameType, class ParentFilterType>
 		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process_payload_only(boost::asio::const_buffer& frame)
+		{
+			(void)frame;
+			throw std::runtime_error("Missing specialization");
+		}
+
+		template <typename OSIFrameType>
+		inline filter_error_code filter<OSIFrameType, void>::process(boost::asio::const_buffer& frame)
 		{
 			(void)frame;
 			throw std::runtime_error("Missing specialization");
