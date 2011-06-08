@@ -45,10 +45,40 @@
 #ifndef ASIOTAP_OSI_ARP_FILTER_HPP
 #define ASIOTAP_OSI_ARP_FILTER_HPP
 
+#include "filter.hpp"
+#include "arp_frame.hpp"
+
 namespace asiotap
 {
 	namespace osi
 	{
+		/**
+		 * \brief The ARP filter.
+		 */
+		template <typename ParentFilterType>
+		class arp_filter : public filter<arp_frame, ParentFilterType>
+		{
+			public:
+
+				/**
+				 * \brief Constructor.
+				 * \param parent The parent filter.
+				 */
+				arp_filter(ParentFilterType& parent);
+		};
+		
+		/**
+		 * \brief The frame parent match function.
+		 * \param frame The frame.
+		 * \param parent The parent frame.
+		 * \return true if the frame matches the parent frame.
+		 */
+		bool frame_parent_match(const arp_frame& frame, const ethernet_frame& parent);
+
+		template <typename ParentFilterType>
+		inline arp_filter<ParentFilterType>::arp_filter(ParentFilterType& parent) : filter<arp_frame, ParentFilterType>(parent)
+		{
+		}
 	}
 }
 

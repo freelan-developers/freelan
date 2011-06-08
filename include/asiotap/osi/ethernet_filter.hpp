@@ -52,6 +52,9 @@ namespace asiotap
 {
 	namespace osi
 	{
+		/**
+		 * \brief The Ethernet filter.
+		 */
 		typedef filter<ethernet_frame> ethernet_filter;
 	}
 }

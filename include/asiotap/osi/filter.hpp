@@ -221,6 +221,8 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentOSIFrameType>
 		inline OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf, const ParentOSIFrameType& parent)
 		{
+			boost::asio::const_buffer _buf = buf;
+
 			OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
 
 			if (frame && frame_parent_match(*frame, parent))
@@ -228,12 +230,15 @@ namespace asiotap
 				return frame;
 			}
 
+			buf = _buf;
 			return NULL;
 		}
 
 		template <typename OSIFrameType, typename ParentOSIFrameType>
 		inline const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent)
 		{
+			boost::asio::const_buffer _buf = buf;
+
 			const OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
 
 			if (frame && frame_parent_match(*frame, parent))
@@ -241,6 +246,7 @@ namespace asiotap
 				return frame;
 			}
 
+			buf = _buf;
 			return NULL;
 		}
 
@@ -271,7 +277,7 @@ namespace asiotap
 
 			if (frame)
 			{
-				frame_handled(*frame, buf);
+				frame_handled(*frame, _buf);
 			}
 		}
 
@@ -284,7 +290,7 @@ namespace asiotap
 
 			if (frame)
 			{
-				frame_handled(*frame, buf);
+				frame_handled(*frame, _buf);
 			}
 		}
 	}
