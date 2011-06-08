@@ -50,10 +50,10 @@
 namespace asiotap
 {
 	/**
-	 * \brief The generic filter class.
+	 * \brief The generic filter base class.
 	 */
-	template <typename OSIFrameType>
-	class osi_filter
+	template <typename OSIFrameType, class ParentFilterType>
+	class _base_osi_filter
 	{
 		public:
 
@@ -61,6 +61,11 @@ namespace asiotap
 			 * \brief The frame type.
 			 */
 			typedef OSIFrameType frame_type;
+
+			/**
+			 * \brief The parent filter type.
+			 */
+			typedef ParentFilterType parent_filter_type;
 
 			/**
 			 * \brief The error codes.
@@ -71,6 +76,37 @@ namespace asiotap
 				error_replied, /**< A reply has been generated for the sender. */
 				error_ignored /**< The frame was not handled and should be forwarded to the next filter. */
 			};
+	};
+
+	/**
+	 * \brief The generic filter class.
+	 */
+	template <typename OSIFrameType, class ParentFilterType>
+	class osi_filter : public _base_osi_filter<OSIFrameType, ParentFilterType>
+	{
+		public:
+
+			/**
+			 * \brief The error_code type.
+			 */
+			typedef typename _base_osi_filter<OSIFrameType, ParentFilterType>::error_code error_code;
+
+			/**
+			 * \brief The error codes.
+			 */
+			using _base_osi_filter<OSIFrameType, ParentFilterType>::error_invalid;
+			using _base_osi_filter<OSIFrameType, ParentFilterType>::error_replied;
+			using _base_osi_filter<OSIFrameType, ParentFilterType>::error_ignored;
+
+			/**
+			 * \brief The frame type.
+			 */
+			typedef typename _base_osi_filter<OSIFrameType, ParentFilterType>::frame_type frame_type;
+
+			/**
+			 * \brief The parent filter type.
+			 */
+			typedef typename _base_osi_filter<OSIFrameType, ParentFilterType>::parent_filter_type parent_filter_type;
 
 			/**
 			 * \brief Processes an OSI frame.
@@ -87,32 +123,14 @@ namespace asiotap
 			 * \return An error code that indicates the taken action.
 			 */
 			error_code process(const frame_type& frame, const boost::asio::mutable_buffer& reply);
-	};
-	
-	/**
-	 * \brief The generic child filter class.
-	 */
-	template <typename OSIFrameType, class ParentFilterType>
-	class osi_child_filter : public osi_filter<OSIFrameType>
-	{
-		public:
-
-			/**
-			 * \brief The parent filter type.
-			 */
-			typedef ParentFilterType parent_filter_type;
-
-		protected:
-
-			parent_filter_type& parent();
 
 		private:
 
 			parent_filter_type m_parent;
 	};
-
-	template <typename OSIFrameType>
-	inline typename osi_filter<OSIFrameType>::error_code osi_filter<OSIFrameType>::process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply)
+	
+	template <typename OSIFrameType, class ParentFilterType>
+	inline typename osi_filter<OSIFrameType, ParentFilterType>::error_code osi_filter<OSIFrameType, ParentFilterType>::process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply)
 	{
 		if (boost::asio::buffer_size(frame) < sizeof(OSIFrameType))
 		{
@@ -122,18 +140,10 @@ namespace asiotap
 		return process(frame, reply);
 	}
 
-	template <typename OSIFrameType>
-	inline typename osi_filter<OSIFrameType>::error_code osi_filter<OSIFrameType>::process(const osi_filter<OSIFrameType>::frame_type& frame, const boost::asio::mutable_buffer& reply)
-	{
-		(void)frame;
-		(void)reply;
-		throw std::logic_error("Specialization not implemented");
-	}
-	
 	template <typename OSIFrameType, class ParentFilterType>
-	inline typename osi_child_filter<OSIFrameType, ParentFilterType>::parent_filter_type& osi_child_filter<OSIFrameType, ParentFilterType>::parent()
+	inline typename osi_filter<OSIFrameType, ParentFilterType>::error_code osi_filter<OSIFrameType, ParentFilterType>::process(const osi_filter<OSIFrameType, ParentFilterType>::frame_type& frame, const boost::asio::mutable_buffer& reply)
 	{
-		return m_parent;
+		m_parent.process(frame, reply);
 	}
 }
 
