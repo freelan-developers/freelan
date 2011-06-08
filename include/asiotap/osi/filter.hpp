@@ -127,7 +127,7 @@ namespace asiotap
 
 			protected:
 
-				void frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload);
+				void frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload) const;
 
 			public:
 
@@ -253,7 +253,7 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload)
+		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload) const
 		{
 			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame, payload));
 		}
@@ -276,7 +276,7 @@ namespace asiotap
 		{
 			boost::asio::const_buffer _buf = buf;
 
-			OSIFrameType* frame = frame_parse<OSIFrameType, ParentOSIFrameType>(buf, parent);
+			const OSIFrameType* frame = frame_parse<OSIFrameType, ParentOSIFrameType>(_buf, parent);
 
 			if (frame)
 			{
@@ -289,7 +289,7 @@ namespace asiotap
 		{
 			boost::asio::const_buffer _buf = buf;
 
-			OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
+			const OSIFrameType* frame = frame_parse<OSIFrameType>(_buf);
 
 			if (frame)
 			{
