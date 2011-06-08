@@ -139,6 +139,9 @@ namespace asiotap
 				std::vector<frame_handled_callback> m_callbacks;
 		};
 
+		/**
+		 * \brief A generic filter class.
+		 */
 		template <typename OSIFrameType, typename ParentFilterType = void>
 		class filter : public _base_filter<OSIFrameType>
 		{
@@ -158,6 +161,9 @@ namespace asiotap
 				void parse(const typename ParentFilterType::frame_type& parent, const boost::asio::const_buffer& buf) const;
 		};
 
+		/**
+		 * \brief A generic filter class.
+		 */
 		template <typename OSIFrameType>
 		class filter<OSIFrameType, void> : public _base_filter<OSIFrameType>
 		{
