@@ -52,18 +52,7 @@ namespace asiotap
 {
 	namespace osi
 	{
-		class ethernet_filter : public filter<ethernet_frame>
-		{
-			protected:
-
-				/**
-				 * \brief Processes only the payload of an OSI frame.
-				 * \param frame The frame.
-				 * \param payload The payload. Must point to &frame. If the return value is filter_error_handled, payload is updated to point on the payload of the specified frame.
-				 * \return An error code that indicates the taken action.
-				 */
-				filter_error_code process_payload(const frame_type& frame, boost::asio::const_buffer& payload);
-		};
+		typedef filter<ethernet_frame> ethernet_filter;
 	}
 }
 

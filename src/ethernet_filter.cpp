@@ -48,10 +48,5 @@ namespace asiotap
 {
 	namespace osi
 	{
-		filter_error_code ethernet_filter::process_payload(const frame_type& frame, boost::asio::const_buffer& payload)
-		{
-			payload = payload + sizeof(frame);
-			return filter_error_handled;
-		}
 	}
 }

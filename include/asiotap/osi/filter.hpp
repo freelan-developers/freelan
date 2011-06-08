@@ -46,165 +46,216 @@
 #define ASIOTAP_OSI_FILTER_HPP
 
 #include <boost/asio.hpp>
+#include <boost/function.hpp>
+#include <boost/lambda/bind.hpp>
+
+#include <vector>
 
 namespace asiotap
 {
 	namespace osi
 	{
 		/**
-		 * \brief The error codes.
-		 */
-		enum filter_error_code
-		{
-			filter_error_invalid, /**< The frame is invalid and should be dropped. */
-			filter_error_handled, /**< The frame was handled by the filter. */
-			filter_error_ignored /**< The frame seems well-formed, but cannot be handled by the current filter. */
-		};
-
-		/**
-		 * \brief The generic filter base class.
-		 */
-		template <typename OSIFrameType, class ParentFilterType>
-		class _base_filter
-			{
-				public:
-
-					/**
-					 * \brief Virtual destructor.
-					 */
-					virtual ~_base_filter();
-
-					/**
-					 * \brief The frame type.
-					 */
-					typedef OSIFrameType frame_type;
-
-					/**
-					 * \brief The parent filter type.
-					 */
-					typedef ParentFilterType parent_filter_type;
-
-				protected:
-
-					/**
-					 * \brief Check if the specified frame is big enough to be parsed.
-					 * \param frame The frame.
-					 * \return A pointer to the mapped frame structure, or NULL if the size does not match.
-					 */
-					static const frame_type* check_frame_size(const boost::asio::const_buffer& frame);
-
-					/**
-					 * \brief Processes only the payload of an OSI frame.
-					 * \param frame The frame.
-					 * \param payload The payload. Must point to &frame. If the return value is filter_error_handled, payload is updated to point on the payload of the specified frame.
-					 * \return An error code that indicates the taken action.
-					 */
-					virtual filter_error_code process_payload(const frame_type& frame, boost::asio::const_buffer& payload) = 0;
-			};
-
-		/**
-		 * \brief The generic filter class.
-		 */
-		template <typename OSIFrameType, class ParentFilterType = void>
-		class filter : public _base_filter<OSIFrameType, ParentFilterType>
-		{
-			public:
-
-				/**
-				 * \brief The frame type.
-				 */
-				typedef typename _base_filter<OSIFrameType, ParentFilterType>::frame_type frame_type;
-
-				/**
-				 * \brief The parent filter type.
-				 */
-				typedef typename _base_filter<OSIFrameType, ParentFilterType>::parent_filter_type parent_filter_type;
-
-				/**
-				 * \brief Processes an OSI frame.
-				 * \param frame The frame. If the return value is filter_error_handled, frame is updated to point on the payload.
-				 * \return An error code that indicates the taken action.
-				 */
-				filter_error_code process(boost::asio::const_buffer& frame);
-
-			private:
-
-				parent_filter_type m_parent;
-		};
-
-		/**
-		 * \brief The generic filter class.
+		 * \brief A frame cast.
+		 * \param buf The buffer to cast.
+		 * \return A pointer to the mapped data on success, NULL if the cast fails.
 		 */
 		template <typename OSIFrameType>
-		class filter<OSIFrameType, void> : public _base_filter<OSIFrameType, void>
+		OSIFrameType* frame_cast(const boost::asio::mutable_buffer& buf);
+
+		/**
+		 * \brief A frame cast.
+		 * \param buf The buffer to cast.
+		 * \return A pointer to the mapped data on success, NULL if the cast fails.
+		 */
+		template <typename OSIFrameType>
+		const OSIFrameType* frame_cast(const boost::asio::const_buffer& buf);
+
+		/**
+		 * \brief Get the payload associated to a given frame.
+		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
+		 * \return A pointer to the frame or NULL on failure.
+		 */
+		template <typename OSIFrameType>
+		OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf);
+
+		/**
+		 * \brief Get the payload associated to a given frame.
+		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
+		 * \return A pointer to the frame or NULL on failure.
+		 */
+		template <typename OSIFrameType>
+		const OSIFrameType* frame_parse(boost::asio::const_buffer& buf);
+
+		/**
+		 * \brief Get the payload associated to a given frame.
+		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
+		 * \param parent The parent structure.
+		 * \return A pointer to the frame or NULL on failure.
+		 */
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf, const ParentOSIFrameType& parent);
+
+		/**
+		 * \brief Get the payload associated to a given frame.
+		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
+		 * \param parent The parent structure.
+		 * \return A pointer to the frame or NULL on failure.
+		 */
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent);
+
+		/**
+		 * \brief A base filter class.
+		 */
+		template <typename OSIFrameType>
+		class _base_filter
 		{
 			public:
 
 				/**
-				 * \brief The frame type.
+				 * \brief The frame handled callback.
 				 */
-				typedef typename _base_filter<OSIFrameType, void>::frame_type frame_type;
+				typedef boost::function<void (const OSIFrameType&, const boost::asio::const_buffer&)> frame_handled_callback;
 
-				/**
-				 * \brief The parent filter type.
-				 */
-				typedef typename _base_filter<OSIFrameType, void>::parent_filter_type parent_filter_type;
+			protected:
 
-				/**
-				 * \brief Processes an OSI frame.
-				 * \param frame The frame. If the return value is filter_error_handled, frame is updated to point on the payload.
-				 * \return An error code that indicates the taken action.
-				 */
-				filter_error_code process(boost::asio::const_buffer& frame);
+				void frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload);
+
+			public:
+
+				std::vector<frame_handled_callback> m_callbacks;
 		};
 
-		template <typename OSIFrameType, class ParentFilterType>
-		inline _base_filter<OSIFrameType, ParentFilterType>::~_base_filter()
+		template <typename OSIFrameType, typename ParentOSIFrameType = void>
+		class filter : public _base_filter<OSIFrameType>
 		{
-		}
+			public:
 
-		template <typename OSIFrameType, class ParentFilterType>
-		const typename _base_filter<OSIFrameType, ParentFilterType>::frame_type* _base_filter<OSIFrameType, ParentFilterType>::check_frame_size(const boost::asio::const_buffer& frame)
+				/**
+				 * \brief Parse a frame.
+				 * \param parent The parent frame.
+				 * \param buf The frame buffer.
+				 */
+				void parse(const ParentOSIFrameType& parent, const boost::asio::const_buffer& buf) const;
+		};
+
+		template <typename OSIFrameType>
+		class filter<OSIFrameType, void> : public _base_filter<OSIFrameType>
 		{
-			if (boost::asio::buffer_size(frame) < sizeof(frame_type))
+			public:
+
+				/**
+				 * \brief Parse a frame.
+				 * \param buf The frame buffer.
+				 */
+				void parse(const boost::asio::const_buffer& buf) const;
+		};
+
+		template <typename OSIFrameType>
+		inline OSIFrameType* frame_cast(const boost::asio::mutable_buffer& buf)
+		{
+			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
 			{
 				return NULL;
 			}
 
-			return boost::asio::buffer_cast<const frame_type*>(frame);
-		}
-
-		template <typename OSIFrameType, class ParentFilterType>
-		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process(boost::asio::const_buffer& frame)
-		{
-			filter_error_code result = m_parent.process(frame);
-
-			if (result == filter_error_handled)
-			{
-				frame_type* frame_st = _base_filter<OSIFrameType, ParentFilterType>::check_frame_size(frame);
-
-				if (!frame_st)
-				{
-					return filter_error_invalid;
-				}
-
-				return process_payload(*frame_st, frame);
-			}
-
-			return result;
+			return boost::asio::buffer_cast<OSIFrameType*>(buf);
 		}
 
 		template <typename OSIFrameType>
-		inline filter_error_code filter<OSIFrameType, void>::process(boost::asio::const_buffer& frame)
+		inline const OSIFrameType* frame_cast(const boost::asio::const_buffer& buf)
 		{
-			frame_type* frame_st = _base_filter<OSIFrameType, void>::check_frame_size(frame);
-
-			if (!frame_st)
+			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
 			{
-				return filter_error_invalid;
+				return NULL;
 			}
 
-			return process_payload(*frame_st, frame);
+			return boost::asio::buffer_cast<const OSIFrameType*>(buf);
+		}
+
+		template <typename OSIFrameType>
+		inline OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf)
+		{
+			OSIFrameType* frame = frame_cast<OSIFrameType>(buf);
+
+			if (frame)
+			{
+				buf = buf + sizeof(OSIFrameType);
+			}
+
+			return frame;
+		}
+
+		template <typename OSIFrameType>
+		inline const OSIFrameType* frame_parse(boost::asio::const_buffer& buf)
+		{
+			const OSIFrameType* frame = frame_cast<OSIFrameType>(buf);
+
+			if (frame)
+			{
+				buf = buf + sizeof(OSIFrameType);
+			}
+
+			return frame;
+		}
+
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		inline OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf, const ParentOSIFrameType& parent)
+		{
+			OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
+
+			if (frame && frame_parent_match(*frame, parent))
+			{
+				return frame;
+			}
+
+			return NULL;
+		}
+
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		inline const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent)
+		{
+			const OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
+
+			if (frame && frame_parent_match(*frame, parent))
+			{
+				return frame;
+			}
+
+			return NULL;
+		}
+
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		void filter<OSIFrameType, ParentOSIFrameType>::parse(const ParentOSIFrameType& parent, const boost::asio::const_buffer& buf) const
+		{
+			boost::asio::const_buffer _buf = buf;
+
+			OSIFrameType* frame = frame_parse<OSIFrameType, ParentOSIFrameType>(buf, parent);
+
+			if (frame)
+			{
+				frame_handled(*frame, buf);
+			}
+		}
+
+		template <typename OSIFrameType>
+		void filter<OSIFrameType, void>::parse(const boost::asio::const_buffer& buf) const
+		{
+			boost::asio::const_buffer _buf = buf;
+
+			OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
+
+			if (frame)
+			{
+				frame_handled(*frame, buf);
+			}
+		}
+
+		template <typename OSIFrameType>
+		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload)
+		{
+			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame, payload));
 		}
 	}
 }
