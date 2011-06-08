@@ -39,7 +39,7 @@
 /**
  * \file filter.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An osi filter class.
+ * \brief An OSI filter class.
  */
 
 #include "osi/filter.hpp"
