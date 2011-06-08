@@ -44,7 +44,7 @@
 
 #include "osi/arp_filter.hpp"
 
-#include "osi/ethernet_frame.hpp"
+#include "osi/ethernet_helper.hpp"
 
 namespace asiotap
 {
@@ -52,7 +52,8 @@ namespace asiotap
 	{
 		bool frame_parent_match(const arp_frame& frame, const ethernet_frame& parent)
 		{
-			return (ntohs(parent.protocol) == ARP_PROTOCOL) && (ntohs(frame.hardware_type) == ETHERNET_HARDWARE_TYPE);
+			const_ethernet_helper parent_helper(parent);
+			return (parent_helper.protocol() == ARP_PROTOCOL) && (ntohs(frame.hardware_type) == ETHERNET_HARDWARE_TYPE);
 		}
 	}
 }
