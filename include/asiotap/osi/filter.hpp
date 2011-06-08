@@ -57,15 +57,15 @@ namespace asiotap
 		enum filter_error_code
 		{
 			filter_error_invalid, /**< The frame is invalid and should be dropped. */
-			filter_error_replied, /**< A reply has been generated for the sender. */
-			filter_error_ignored /**< The frame was not handled and should be forwarded to the next filter. */
+			filter_error_handled, /**< The frame was handled by the filter. */
+			filter_error_ignored /**< The frame seems well-formed, but cannot be handled by the current filter. */
 		};
 
 		/**
 		 * \brief The generic filter base class.
 		 */
 		template <typename OSIFrameType, class ParentFilterType>
-			class _base_filter
+		class _base_filter
 			{
 				public:
 
@@ -84,7 +84,7 @@ namespace asiotap
 		 * \brief The generic filter class.
 		 */
 		template <typename OSIFrameType, class ParentFilterType>
-			class filter : public _base_filter<OSIFrameType, ParentFilterType>
+		class filter : public _base_filter<OSIFrameType, ParentFilterType>
 		{
 			public:
 
@@ -100,40 +100,46 @@ namespace asiotap
 
 				/**
 				 * \brief Processes an OSI frame.
-				 * \param frame The frame.
-				 * \param reply_frame The reply frame, if any. If the return value differs from filter::error_reply, the value is not used.
+				 * \param frame The frame. If the return value is filter_error_handled, frame is updated to point on the payload.
 				 * \return An error code that indicates the taken action.
 				 */
-				filter_error_code process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply);
-
-				/**
-				 * \brief Process an OSI frame.
-				 * \param frame The frame.
-				 * \param reply_frame The reply frame, if any. If the return value differs from filter::error_reply, the value is not used.
-				 * \return An error code that indicates the taken action.
-				 */
-				filter_error_code process(const frame_type& frame, const boost::asio::mutable_buffer& reply);
+				filter_error_code process(boost::asio::const_buffer& frame);
 
 			private:
+
+				/**
+				 * \brief Processes only the payload of an OSI frame.
+				 * \param frame The frame. If the return value is filter_error_handled, frame is updated to point on the payload.
+				 * \return An error code that indicates the taken action.
+				 */
+				filter_error_code process_payload_only(boost::asio::const_buffer& frame);
 
 				parent_filter_type m_parent;
 		};
 
 		template <typename OSIFrameType, class ParentFilterType>
-		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process(const boost::asio::const_buffer& frame, const boost::asio::mutable_buffer& reply)
+		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process(boost::asio::const_buffer& frame)
 		{
-			if (boost::asio::buffer_size(frame) < sizeof(OSIFrameType))
+			filter_error_code result = m_parent.process(frame);
+
+			if (result == filter_error_handled)
 			{
-				return filter_error_invalid;
+				if (boost::asio::buffer_size(frame) < sizeof(OSIFrameType))
+				{
+					return filter_error_invalid;
+				}
+
+				return process_payload_only(frame);
 			}
 
-			return process(frame, reply);
+			return result;
 		}
 
 		template <typename OSIFrameType, class ParentFilterType>
-		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process(const filter<OSIFrameType, ParentFilterType>::frame_type& frame, const boost::asio::mutable_buffer& reply)
+		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process_payload_only(boost::asio::const_buffer& frame)
 		{
-			return m_parent.process(frame, reply);
+			(void)frame;
+			throw std::runtime_error("Missing specialization");
 		}
 	}
 }
