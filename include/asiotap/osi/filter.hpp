@@ -70,6 +70,11 @@ namespace asiotap
 				public:
 
 					/**
+					 * \brief Virtual destructor.
+					 */
+					virtual ~_base_filter();
+
+					/**
 					 * \brief The frame type.
 					 */
 					typedef OSIFrameType frame_type;
@@ -78,6 +83,23 @@ namespace asiotap
 					 * \brief The parent filter type.
 					 */
 					typedef ParentFilterType parent_filter_type;
+
+				protected:
+
+					/**
+					 * \brief Check if the specified frame is big enough to be parsed.
+					 * \param frame The frame.
+					 * \return A pointer to the mapped frame structure, or NULL if the size does not match.
+					 */
+					static const frame_type* check_frame_size(const boost::asio::const_buffer& frame);
+
+					/**
+					 * \brief Processes only the payload of an OSI frame.
+					 * \param frame The frame.
+					 * \param payload The payload. Must point to &frame. If the return value is filter_error_handled, payload is updated to point on the payload of the specified frame.
+					 * \return An error code that indicates the taken action.
+					 */
+					virtual filter_error_code process_payload(const frame_type& frame, boost::asio::const_buffer& payload) = 0;
 			};
 
 		/**
@@ -106,13 +128,6 @@ namespace asiotap
 				filter_error_code process(boost::asio::const_buffer& frame);
 
 			private:
-
-				/**
-				 * \brief Processes only the payload of an OSI frame.
-				 * \param frame The frame. If the return value is filter_error_handled, frame is updated to point on the payload.
-				 * \return An error code that indicates the taken action.
-				 */
-				filter_error_code process_payload_only(boost::asio::const_buffer& frame);
 
 				parent_filter_type m_parent;
 		};
@@ -144,35 +159,52 @@ namespace asiotap
 		};
 
 		template <typename OSIFrameType, class ParentFilterType>
+		inline _base_filter<OSIFrameType, ParentFilterType>::~_base_filter()
+		{
+		}
+
+		template <typename OSIFrameType, class ParentFilterType>
+		const typename _base_filter<OSIFrameType, ParentFilterType>::frame_type* _base_filter<OSIFrameType, ParentFilterType>::check_frame_size(const boost::asio::const_buffer& frame)
+		{
+			if (boost::asio::buffer_size(frame) < sizeof(frame_type))
+			{
+				return NULL;
+			}
+
+			return boost::asio::buffer_cast<const frame_type*>(frame);
+		}
+
+		template <typename OSIFrameType, class ParentFilterType>
 		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process(boost::asio::const_buffer& frame)
 		{
 			filter_error_code result = m_parent.process(frame);
 
 			if (result == filter_error_handled)
 			{
-				if (boost::asio::buffer_size(frame) < sizeof(OSIFrameType))
+				frame_type* frame_st = _base_filter<OSIFrameType, ParentFilterType>::check_frame_size(frame);
+
+				if (!frame_st)
 				{
 					return filter_error_invalid;
 				}
 
-				return process_payload_only(frame);
+				return process_payload(*frame_st, frame);
 			}
 
 			return result;
 		}
 
-		template <typename OSIFrameType, class ParentFilterType>
-		inline filter_error_code filter<OSIFrameType, ParentFilterType>::process_payload_only(boost::asio::const_buffer& frame)
-		{
-			(void)frame;
-			throw std::runtime_error("Missing specialization");
-		}
-
 		template <typename OSIFrameType>
 		inline filter_error_code filter<OSIFrameType, void>::process(boost::asio::const_buffer& frame)
 		{
-			(void)frame;
-			throw std::runtime_error("Missing specialization");
+			frame_type* frame_st = _base_filter<OSIFrameType, void>::check_frame_size(frame);
+
+			if (!frame_st)
+			{
+				return filter_error_invalid;
+			}
+
+			return process_payload(*frame_st, frame);
 		}
 	}
 }
