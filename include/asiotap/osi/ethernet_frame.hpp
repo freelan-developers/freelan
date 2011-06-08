@@ -37,17 +37,44 @@
  */
 
 /**
- * \file arp_filter.hpp
+ * \file ethernet_frame.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An ARP filter class.
+ * \brief An Ethernet frame structure.
  */
 
-#ifndef ASIOTAP_ARP_FILTER_HPP
-#define ASIOTAP_ARP_FILTER_HPP
+#ifndef ASIOTAP_OSI_ETHERNET_FRAME_HPP
+#define ASIOTAP_OSI_ETHERNET_FRAME_HPP
+
+#include "frame.hpp"
 
 namespace asiotap
 {
+	namespace osi
+	{
+		/**
+		 * \brief The size of an ethernet address.
+		 */
+		const size_t ETHERNET_ADDRESS_SIZE = 6;
+
+#ifdef MSV
+#pragma pack(push, 1)
+#endif
+
+		/**
+		 * \brief An Ethernet frame structure.
+		 */
+		struct ethernet_frame
+		{
+			uint8_t target[ETHERNET_ADDRESS_SIZE]; /**< The destination MAC address. */
+			uint8_t sender[ETHERNET_ADDRESS_SIZE]; /**< The source MAC address. */
+			uint16_t protocol; /**< The protocol. */
+		} PACKED;
+
+#ifdef MSV
+#pragma pack(pop)
+#endif
+	}
 }
 
-#endif /* ASIOTAP_ARP_FILTER_HPP */
+#endif /* ASIOTAP_ETHERNET_FRAME_HPP */
 

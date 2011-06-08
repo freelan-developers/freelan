@@ -42,8 +42,11 @@
  * \brief An ARP frame structure.
  */
 
-#include "arp_frame.hpp"
+#include "osi/arp_frame.hpp"
 
 namespace asiotap
 {
+	namespace osi
+	{
+	}
 }

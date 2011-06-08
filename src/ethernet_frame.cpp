@@ -42,8 +42,11 @@
  * \brief An Ethernet frame structure.
  */
 
-#include "ethernet_frame.hpp"
+#include "osi/ethernet_frame.hpp"
 
 namespace asiotap
 {
+	namespace osi
+	{
+	}
 }

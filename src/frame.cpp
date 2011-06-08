@@ -37,10 +37,10 @@
  */
 
 /**
- * \file osi_frame.cpp
+ * \file frame.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
  * \brief An osi frame structure.
  */
 
-#include "osi_frame.hpp"
+#include "osi/frame.hpp"
 

@@ -42,58 +42,61 @@
  * \brief An ARP frame structure.
  */
 
-#ifndef ASIOTAP_ARP_FRAME_HPP
-#define ASIOTAP_ARP_FRAME_HPP
+#ifndef ASIOTAP_OSI_ARP_FRAME_HPP
+#define ASIOTAP_OSI_ARP_FRAME_HPP
 
-#include "osi_frame.hpp"
+#include "frame.hpp"
 #include "ethernet_frame.hpp"
 
 namespace asiotap
 {
-	/**
-	 * \brief The ARP protocol number.
-	 */
-	const uint16_t ARP_PROTOCOL = 0x0806;
-
-	/**
-	 * \brief The Ethernet hardware type.
-	 */
-	const uint16_t ETHERNET_HARDWARE_TYPE = 0x0001;
-
-	/**
-	 * \brief An ARP request operation.
-	 */
-	const uint16_t ARP_REQUEST_OPERATION = 0x0001;
-
-	/**
-	 * \brief An ARP reply operation.
-	 */
-	const uint16_t ARP_REPLY_OPERATION = 0x0002;
-	
-	#ifdef MSV
-	#pragma pack(push, 1)
-	#endif
-
-	/**
-	 * \brief An arp frame structure.
-	 */
-	struct arp_frame
+	namespace osi
 	{
-		uint16_t hardware_type; /**< Link-layer protocol. */
-		uint16_t protocol_type; /**< Layer 3 protocol. */
-		uint8_t hardware_address_length; /**< Length of link-layer address (6 in case of ethernet). */
-		uint8_t logical_address_length; /**< Length of layer 3 address (4 in case of IPv4). */
-		uint16_t operation; /**< Operation of the sender (1 for requesting a resolution, 2 for replying to a request). */
-		uint8_t sender_hardware_address[ETHERNET_ADDRESS_SIZE]; /**< Link-layer address of sender. */
-		struct in_addr sender_logical_address; /**< Layer 3 address (i.e. IPv4) of sender. */
-		uint8_t target_hardware_address[ETHERNET_ADDRESS_SIZE]; /**< Link-layer address of target. */
-		struct in_addr target_logical_address; /**< Layer 3 address (i.e. IPv4) of target. */
-	} PACKED;
+		/**
+		 * \brief The ARP protocol number.
+		 */
+		const uint16_t ARP_PROTOCOL = 0x0806;
 
-	#ifdef MSV
-	#pragma pack(pop)
-	#endif
+		/**
+		 * \brief The Ethernet hardware type.
+		 */
+		const uint16_t ETHERNET_HARDWARE_TYPE = 0x0001;
+
+		/**
+		 * \brief An ARP request operation.
+		 */
+		const uint16_t ARP_REQUEST_OPERATION = 0x0001;
+
+		/**
+		 * \brief An ARP reply operation.
+		 */
+		const uint16_t ARP_REPLY_OPERATION = 0x0002;
+
+#ifdef MSV
+#pragma pack(push, 1)
+#endif
+
+		/**
+		 * \brief An arp frame structure.
+		 */
+		struct arp_frame
+		{
+			uint16_t hardware_type; /**< Link-layer protocol. */
+			uint16_t protocol_type; /**< Layer 3 protocol. */
+			uint8_t hardware_address_length; /**< Length of link-layer address (6 in case of ethernet). */
+			uint8_t logical_address_length; /**< Length of layer 3 address (4 in case of IPv4). */
+			uint16_t operation; /**< Operation of the sender (1 for requesting a resolution, 2 for replying to a request). */
+			uint8_t sender_hardware_address[ETHERNET_ADDRESS_SIZE]; /**< Link-layer address of sender. */
+			struct in_addr sender_logical_address; /**< Layer 3 address (i.e. IPv4) of sender. */
+			uint8_t target_hardware_address[ETHERNET_ADDRESS_SIZE]; /**< Link-layer address of target. */
+			struct in_addr target_logical_address; /**< Layer 3 address (i.e. IPv4) of target. */
+		} PACKED;
+
+#ifdef MSV
+#pragma pack(pop)
+#endif
+	}
 }
 
-#endif /* ASIOTAP_ARP_FRAME_HPP */
+#endif /* ASIOTAP_OSI_ARP_FRAME_HPP */
 

@@ -42,8 +42,11 @@
  * \brief An ARP filter class.
  */
 
-#include "arp_filter.hpp"
+#include "osi/arp_filter.hpp"
 
 namespace asiotap
 {
+	namespace osi
+	{
+	}
 }

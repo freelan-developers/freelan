@@ -37,13 +37,38 @@
  */
 
 /**
- * \file osi_filter.cpp
- * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An osi filter class.
+ * \file frame.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief An osi frame structure.
  */
 
-#include "osi_filter.hpp"
+#ifndef ASIOTAP_OSI_FRAME_HPP
+#define ASIOTAP_OSI_FRAME_HPP
 
-namespace asiotap
-{
-}
+#include <boost/asio.hpp>
+
+/**
+ * \def PACKED
+ * \brief A "packed" C-structure has the minimal space in memory without take care of memory alignment.
+ *
+ * This is useful for network-related messages.
+ *
+ * \note GCC only. For Microsoft Visual C++ use:
+ * \code
+ * #pragma pack(push, 1)
+ * struct my_struct
+ * {
+ *   char a;
+ *   int b;
+ * };
+ * #pragma pack(pop)
+ * \endcode
+ */
+#ifdef MSV
+#define PACKED
+#else
+#define PACKED __attribute__((packed))
+#endif
+
+#endif /* ASIOTAP_OSI_FRAME_HPP */
+
