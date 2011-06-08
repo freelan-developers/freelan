@@ -47,6 +47,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
+#include <boost/bind.hpp>
 #include <boost/lambda/bind.hpp>
 
 #include <vector>
@@ -118,6 +119,12 @@ namespace asiotap
 				 */
 				typedef boost::function<void (const OSIFrameType&, const boost::asio::const_buffer&)> frame_handled_callback;
 
+				/**
+				 * \brief Add a callback function.
+				 * \param callback The callback function to add.
+				 */
+				void add_callback(frame_handled_callback callback);
+
 			protected:
 
 				void frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload);
@@ -131,6 +138,19 @@ namespace asiotap
 		class filter : public _base_filter<OSIFrameType>
 		{
 			public:
+
+				/**
+				 * \brief Constructor.
+				 * \param parent The parent filter.
+				 */
+				filter(filter<ParentOSIFrameType>& parent);
+
+				/**
+				 * \brief Constructor.
+				 * \param parent The parent filter.
+				 */
+				template <typename GrandParentOSIFrameType>
+				filter(filter<ParentOSIFrameType, GrandParentOSIFrameType>& parent);
 
 				/**
 				 * \brief Parse a frame.
@@ -226,6 +246,31 @@ namespace asiotap
 			return NULL;
 		}
 
+		template <typename OSIFrameType>
+		void _base_filter<OSIFrameType>::add_callback(frame_handled_callback callback)
+		{
+			m_callbacks.push_back(callback);
+		}
+
+		template <typename OSIFrameType>
+		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload)
+		{
+			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame, payload));
+		}
+
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		template <typename GrandParentOSIFrameType>
+		filter<OSIFrameType, ParentOSIFrameType>::filter(filter<ParentOSIFrameType, GrandParentOSIFrameType>& parent)
+		{
+			parent.add_callback(boost::bind(&filter<OSIFrameType, ParentOSIFrameType>::parse, this, _1, _2));
+		}
+
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		filter<OSIFrameType, ParentOSIFrameType>::filter(filter<ParentOSIFrameType>& parent)
+		{
+			parent.add_callback(boost::bind(&filter<OSIFrameType, ParentOSIFrameType>::parse, this, _1, _2));
+		}
+
 		template <typename OSIFrameType, typename ParentOSIFrameType>
 		void filter<OSIFrameType, ParentOSIFrameType>::parse(const ParentOSIFrameType& parent, const boost::asio::const_buffer& buf) const
 		{
@@ -250,12 +295,6 @@ namespace asiotap
 			{
 				frame_handled(*frame, buf);
 			}
-		}
-
-		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload)
-		{
-			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame, payload));
 		}
 	}
 }
