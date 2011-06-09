@@ -71,6 +71,13 @@ namespace asiotap
 		};
 		
 		/**
+		 * \brif Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return The size of the frame if it is valid, 0 otherwise.
+		 */
+		size_t check_frame(const_arp_helper frame);
+
+		/**
 		 * \brief The frame parent match function.
 		 * \param frame The frame.
 		 * \param parent The parent frame.

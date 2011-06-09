@@ -75,6 +75,14 @@ namespace asiotap
 		const OSIFrameType* frame_cast(const boost::asio::const_buffer& buf);
 
 		/**
+		 * \brif Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return The size of the frame if it is valid, 0 otherwise.
+		 */
+		template <typename OSIFrameType>
+		size_t check_frame(const_helper<OSIFrameType> frame);
+
+		/**
 		 * \brief Get the payload associated to a given frame.
 		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
 		 * \return A pointer to the frame or NULL on failure.
@@ -201,13 +209,26 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
+		inline size_t check_frame(const_helper<OSIFrameType> frame)
+		{
+			(void)frame;
+			return sizeof(OSIFrameType);
+		}
+
+		template <typename OSIFrameType>
 		inline OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf)
 		{
 			OSIFrameType* frame = frame_cast<OSIFrameType>(buf);
 
 			if (frame)
 			{
-				buf = buf + sizeof(OSIFrameType);
+				if (size_t frame_size = check_frame(helper(*frame)))
+				{
+					buf = buf + frame_size;
+				} else
+				{
+					return NULL;
+				}
 			}
 
 			return frame;
@@ -220,7 +241,13 @@ namespace asiotap
 
 			if (frame)
 			{
-				buf = buf + sizeof(OSIFrameType);
+				if (size_t frame_size = check_frame(helper(*frame)))
+				{
+					buf = buf + frame_size;
+				} else
+				{
+					return NULL;
+				}
 			}
 
 			return frame;

@@ -63,6 +63,11 @@ namespace asiotap
 		const uint16_t ETHERNET_HARDWARE_TYPE = 0x0001;
 
 		/**
+		 * \brief The IP protocol type.
+		 */
+		const uint16_t IP_PROTOCOL_TYPE = 0x0800;
+
+		/**
 		 * \brief An ARP request operation.
 		 */
 		const uint16_t ARP_REQUEST_OPERATION = 0x0001;

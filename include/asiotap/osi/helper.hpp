@@ -158,6 +158,12 @@ namespace asiotap
 				const_helper(const OSIFrameType& frame);
 
 				/**
+				 * \brief The constructor.
+				 * \param frame The frame to refer to.
+				 */
+				const_helper(const OSIFrameType* frame);
+
+				/**
 				 * \brief Convert to the referenced type.
 				 * \return The referenced type.
 				 */
