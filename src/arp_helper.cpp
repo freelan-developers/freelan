@@ -37,20 +37,16 @@
  */
 
 /**
- * \file arp_filter.cpp
+ * \file arp_helper.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An ARP filter class.
+ * \brief An ARP helper class.
  */
 
-#include "osi/arp_filter.hpp"
+#include "osi/arp_helper.hpp"
 
 namespace asiotap
 {
 	namespace osi
 	{
-		bool frame_parent_match(const_arp_helper frame, const_ethernet_helper parent)
-		{
-			return (parent.protocol() == ARP_PROTOCOL) && (frame.hardware_type() == ETHERNET_HARDWARE_TYPE);
-		}
 	}
 }

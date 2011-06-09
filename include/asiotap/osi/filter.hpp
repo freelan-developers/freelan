@@ -45,6 +45,8 @@
 #ifndef ASIOTAP_OSI_FILTER_HPP
 #define ASIOTAP_OSI_FILTER_HPP
 
+#include "helper.hpp"
+
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -122,7 +124,7 @@ namespace asiotap
 				/**
 				 * \brief The frame handled callback.
 				 */
-				typedef boost::function<void (const OSIFrameType&, const boost::asio::const_buffer&)> frame_handled_callback;
+				typedef boost::function<void (const_helper<OSIFrameType>, const boost::asio::const_buffer&)> frame_handled_callback;
 
 				/**
 				 * \brief Add a callback function.
@@ -231,7 +233,7 @@ namespace asiotap
 
 			OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
 
-			if (frame && frame_parent_match(*frame, parent))
+			if (frame && frame_parent_match(helper(*frame), helper(parent)))
 			{
 				return frame;
 			}
@@ -247,7 +249,7 @@ namespace asiotap
 
 			const OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
 
-			if (frame && frame_parent_match(*frame, parent))
+			if (frame && frame_parent_match(helper(*frame), helper(parent)))
 			{
 				return frame;
 			}
@@ -265,7 +267,7 @@ namespace asiotap
 		template <typename OSIFrameType>
 		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload) const
 		{
-			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame, payload));
+			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, helper(frame), payload));
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>

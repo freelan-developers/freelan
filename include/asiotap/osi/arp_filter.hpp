@@ -48,6 +48,9 @@
 #include "filter.hpp"
 #include "arp_frame.hpp"
 
+#include "arp_helper.hpp"
+#include "ethernet_helper.hpp"
+
 namespace asiotap
 {
 	namespace osi
@@ -73,7 +76,7 @@ namespace asiotap
 		 * \param parent The parent frame.
 		 * \return true if the frame matches the parent frame.
 		 */
-		bool frame_parent_match(const arp_frame& frame, const ethernet_frame& parent);
+		bool frame_parent_match(const_arp_helper frame, const_ethernet_helper parent);
 
 		template <typename ParentFilterType>
 		inline arp_filter<ParentFilterType>::arp_filter(ParentFilterType& parent) : filter<arp_frame, ParentFilterType>(parent)

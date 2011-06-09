@@ -156,6 +156,12 @@ namespace asiotap
 				 * \param frame The frame to refer to.
 				 */
 				const_helper(const OSIFrameType& frame);
+
+				/**
+				 * \brief Convert to the referenced type.
+				 * \return The referenced type.
+				 */
+				operator const OSIFrameType&() const;
 		};
 
 		/**
@@ -177,6 +183,12 @@ namespace asiotap
 				 * \return A const_helper.
 				 */
 				operator const_helper<OSIFrameType>() const;
+
+				/**
+				 * \brief Convert to the referenced type.
+				 * \return The referenced type.
+				 */
+				operator OSIFrameType&() const;
 		};
 
 		/**
@@ -238,6 +250,12 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
+		inline const_helper<OSIFrameType>::operator const OSIFrameType&() const
+		{
+			return const_helper<OSIFrameType>::frame();
+		}
+
+		template <typename OSIFrameType>
 		inline mutable_helper<OSIFrameType>::mutable_helper(OSIFrameType& _frame) :
 			_mutable_helper_impl<OSIFrameType>(_frame)
 		{
@@ -247,6 +265,12 @@ namespace asiotap
 		inline mutable_helper<OSIFrameType>::operator const_helper<OSIFrameType>() const
 		{
 			return const_helper<OSIFrameType>(mutable_helper<OSIFrameType>::frame());
+		}
+
+		template <typename OSIFrameType>
+		inline mutable_helper<OSIFrameType>::operator OSIFrameType&() const
+		{
+			return mutable_helper<OSIFrameType>::frame();
 		}
 
 		template <typename OSIFrameType>
