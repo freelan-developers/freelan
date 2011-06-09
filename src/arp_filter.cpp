@@ -53,7 +53,7 @@ namespace asiotap
 			return (parent.protocol() == ARP_PROTOCOL) && (frame.hardware_type() == ETHERNET_HARDWARE_TYPE);
 		}
 
-		size_t check_frame(const_arp_helper frame)
+		bool check_frame(const_arp_helper frame, boost::asio::const_buffer& buf)
 		{
 			if (
 				(frame.protocol_type() == IP_PROTOCOL_TYPE) &&
@@ -61,11 +61,11 @@ namespace asiotap
 				(frame.logical_address_length() == sizeof(in_addr))
 				)
 			{
-				return sizeof(const_arp_helper::frame_type);
-			} else
-			{
-				return 0;
+				buf = boost::asio::buffer(buf + sizeof(const_arp_helper::frame_type), 0);
+				return true;
 			}
+
+			return false;
 		}
 	}
 }

@@ -71,11 +71,12 @@ namespace asiotap
 		};
 		
 		/**
-		 * \brif Check if a frame is valid.
+		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
-		 * \return The size of the frame if it is valid, 0 otherwise.
+		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
+		 * \return true on success.
 		 */
-		size_t check_frame(const_arp_helper frame);
+		bool check_frame(const_arp_helper frame, boost::asio::const_buffer& buf);
 
 		/**
 		 * \brief The frame parent match function.

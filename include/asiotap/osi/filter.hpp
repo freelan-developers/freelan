@@ -75,12 +75,22 @@ namespace asiotap
 		const OSIFrameType* frame_cast(const boost::asio::const_buffer& buf);
 
 		/**
-		 * \brif Check if a frame is valid.
+		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
-		 * \return The size of the frame if it is valid, 0 otherwise.
+		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
+		 * \return true on success.
 		 */
 		template <typename OSIFrameType>
-		size_t check_frame(const_helper<OSIFrameType> frame);
+		bool check_frame(const_helper<OSIFrameType> frame, boost::asio::mutable_buffer& buf);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
+		 * \return true on success.
+		 */
+		template <typename OSIFrameType>
+		bool check_frame(const_helper<OSIFrameType> frame, boost::asio::const_buffer& buf);
 
 		/**
 		 * \brief Get the payload associated to a given frame.
@@ -209,10 +219,29 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline size_t check_frame(const_helper<OSIFrameType> frame)
+		inline bool check_frame(const_helper<OSIFrameType> frame, boost::asio::mutable_buffer& buf)
+		{
+			boost::asio::const_buffer _buf = buf;
+
+			if (check_frame(frame, _buf))
+			{
+				ptrdiff_t offset = boost::asio::buffer_cast<const uint8_t*>(_buf) - boost::asio::buffer_cast<const uint8_t*>(buf);
+				size_t size = boost::asio::buffer_size(_buf);
+
+				buf = boost::asio::buffer(buf + offset, size);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		template <typename OSIFrameType>
+		inline bool check_frame(const_helper<OSIFrameType> frame, boost::asio::const_buffer& buf)
 		{
 			(void)frame;
-			return sizeof(OSIFrameType);
+			buf = buf + sizeof(OSIFrameType);
+			return true;
 		}
 
 		template <typename OSIFrameType>
@@ -222,10 +251,7 @@ namespace asiotap
 
 			if (frame)
 			{
-				if (size_t frame_size = check_frame(helper(*frame)))
-				{
-					buf = buf + frame_size;
-				} else
+				if (!check_frame(helper(*frame), buf))
 				{
 					return NULL;
 				}
@@ -241,10 +267,7 @@ namespace asiotap
 
 			if (frame)
 			{
-				if (size_t frame_size = check_frame(helper(*frame)))
-				{
-					buf = buf + frame_size;
-				} else
+				if (!check_frame(helper(*frame), buf))
 				{
 					return NULL;
 				}
