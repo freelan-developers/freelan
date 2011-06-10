@@ -153,6 +153,8 @@ class Environment(SConsEnvironment):
 			kw['LIBS'].append('gdi32')
 			kw['LIBS'].append('iphlpapi')
 		else:
+			if sys.platform == 'linux2':
+				kw['LIBS'].append('rt')
 			kw['LIBS'].append('boost_system')
 			kw['LIBS'].append('boost_thread')
 			kw['LIBS'].append('pthread')
