@@ -71,7 +71,7 @@ namespace asiotap
 				return static_cast<uint16_t>(~checksum);
 			}
 		}
-		
+
 		uint16_t _const_helper_impl<ipv4_frame>::compute_checksum() const
 		{
 			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());

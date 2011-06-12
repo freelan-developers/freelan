@@ -230,13 +230,13 @@ namespace asiotap
 		{
 			return m_frame;
 		}
-		
+
 		template <typename OSIFrameType>
 		inline _base_mutable_helper<OSIFrameType>::_base_mutable_helper(OSIFrameType& _frame) :
 			m_frame(_frame)
 		{
 		}
-		
+
 		template <typename OSIFrameType>
 		inline _const_helper_impl<OSIFrameType>::_const_helper_impl(const OSIFrameType& _frame) :
 			_base_const_helper<OSIFrameType>(_frame)

@@ -198,7 +198,7 @@ namespace asiotap
 
 	template <typename TapAdapterImplementation>
 	boost::asio::io_service::id basic_tap_adatper_service<TapAdapterImplementation>::id;
-	
+
 	template <typename TapAdapterImplementation>
 	inline basic_tap_adatper_service<TapAdapterImplementation>::basic_tap_adatper_service(boost::asio::io_service &_io_service) :
 		boost::asio::io_service::service(_io_service),
@@ -227,7 +227,7 @@ namespace asiotap
 		impl->cancel();
 		impl.reset();
 	}
-	
+
 	template <typename TapAdapterImplementation>
 	inline void basic_tap_adatper_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name)
 	{
@@ -251,7 +251,7 @@ namespace asiotap
 	{
 		this->m_async_io_service.post(write_operation<WriteHandler>(impl, this->get_io_service(), buffer, handler));
 	}
-	
+
 	template<typename TapAdapterImplementation>
 	inline size_t basic_tap_adatper_service<TapAdapterImplementation>::read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec)
 	{
@@ -317,13 +317,14 @@ namespace asiotap
 			try
 			{
 				size_t cnt;
-				
+
 				if (impl->end_read(cnt))
 				{
 					boost::system::error_code ec;
 
 					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
-				} else
+				}
+				else
 				{
 					impl->cancel_read();
 					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
@@ -333,7 +334,8 @@ namespace asiotap
 			{
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
-		} else
+		}
+		else
 		{
 			this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
 		}
@@ -366,13 +368,14 @@ namespace asiotap
 			try
 			{
 				size_t cnt;
-				
+
 				if (impl->end_write(cnt))
 				{
 					boost::system::error_code ec;
 
 					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
-				} else
+				}
+				else
 				{
 					impl->cancel_write();
 					this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
@@ -382,7 +385,8 @@ namespace asiotap
 			{
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
-		} else
+		}
+		else
 		{
 			this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, boost::asio::error::operation_aborted, 0));
 		}

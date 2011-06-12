@@ -76,7 +76,7 @@ namespace asiotap
 			 * \brief The Ethernet address type.
 			 */
 			typedef boost::array<unsigned char, ethernet_address_size> ethernet_address_type;
-			
+
 			/**
 			 * \brief Enumerate the available tap adapter on the system.
 			 * \return The identifiers and names of the available tap adapters on the system.
@@ -109,7 +109,7 @@ namespace asiotap
 
 			/**
 			 * \brief Close the tap adapter.
-			 * 
+			 *
 			 * If the tap adapter is already closed, nothing is done.
 			 */
 			void close();
@@ -281,27 +281,27 @@ namespace asiotap
 			struct aiocb m_write_aio;
 #endif
 	};
-	
+
 	inline tap_adapter_impl::~tap_adapter_impl()
 	{
 		close();
 	}
-	
+
 	inline const std::string& tap_adapter_impl::name() const
 	{
 		return m_name;
 	}
-	
+
 	inline unsigned int tap_adapter_impl::mtu() const
 	{
 		return m_mtu;
 	}
-	
+
 	inline const tap_adapter_impl::ethernet_address_type& tap_adapter_impl::ethernet_address() const
 	{
 		return m_ethernet_address;
 	}
-	
+
 	inline void tap_adapter_impl::cancel()
 	{
 		cancel_read();
@@ -313,11 +313,12 @@ namespace asiotap
 		if (address.is_v4())
 		{
 			return add_ip_address_v4(address.to_v4(), prefix_len);
-		} else
-		if (address.is_v6())
+		}
+		else if (address.is_v6())
 		{
 			return add_ip_address_v6(address.to_v6(), prefix_len);
-		} else
+		}
+		else
 		{
 			throw std::logic_error("The specified address must be an IPv4 or an IPv6 address.");
 		}
@@ -328,11 +329,12 @@ namespace asiotap
 		if (address.is_v4())
 		{
 			return remove_ip_address_v4(address.to_v4(), prefix_len);
-		} else
-		if (address.is_v6())
+		}
+		else if (address.is_v6())
 		{
 			return remove_ip_address_v6(address.to_v6(), prefix_len);
-		} else
+		}
+		else
 		{
 			throw std::logic_error("The specified address must be an IPv4 or an IPv6 address.");
 		}

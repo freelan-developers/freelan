@@ -98,14 +98,14 @@ namespace asiotap
 			LPSTR msgbuf = NULL;
 
 			FormatMessageA(
-					FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-					NULL,
-					error,
-					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					(LPSTR)&msgbuf,
-					0,
-					NULL
-					);
+			    FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+			    NULL,
+			    error,
+			    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			    (LPSTR)&msgbuf,
+			    0,
+			    NULL
+			);
 
 			try
 			{
@@ -210,7 +210,8 @@ namespace asiotap
 							RegCloseKey(network_adapter_key);
 						}
 					}
-				} while (status != ERROR_NO_MORE_ITEMS);
+				}
+				while (status != ERROR_NO_MORE_ITEMS);
 			}
 			catch (...)
 			{
@@ -288,7 +289,8 @@ namespace asiotap
 							RegCloseKey(connection_key);
 						}
 					}
-				} while (status != ERROR_NO_MORE_ITEMS);
+				}
+				while (status != ERROR_NO_MORE_ITEMS);
 			}
 			catch (...)
 			{
@@ -441,7 +443,8 @@ namespace asiotap
 			if (strerror_r(error, error_str, sizeof(error_str)) != 0)
 			{
 				throw boost::system::system_error(error, boost::system::system_category());
-			} else
+			}
+			else
 			{
 				throw boost::system::system_error(error, boost::system::system_category(), error_str);
 			}
@@ -461,9 +464,9 @@ namespace asiotap
 #ifdef LINUX
 				char *argv[] = { (char*) "/sbin/modprobe", (char*) "tun", NULL };
 #elif defined(MACINTOSH)
-				char* argv[] = { (char*) "/sbin/kextload", (char*) "/Library/Extensions/tap.kext", NULL };
+		char* argv[] = { (char*) "/sbin/kextload", (char*) "/Library/Extensions/tap.kext", NULL };
 #else /* FreeBSD */
-				char* argv[] = { (char*) "/sbin/kldload", (char*) "if_tap", NULL };
+		char* argv[] = { (char*) "/sbin/kldload", (char*) "if_tap", NULL };
 #endif
 				char* env[] = { NULL };
 				size_t max = sysconf(_SC_OPEN_MAX);
@@ -550,7 +553,7 @@ namespace asiotap
 		std::memset(&m_write_aio, 0, sizeof(m_write_aio));
 #endif
 	}
-	
+
 	bool tap_adapter_impl::is_open() const
 	{
 #ifdef WINDOWS
@@ -586,7 +589,8 @@ namespace asiotap
 			{
 				throw std::runtime_error("No suitable tap adapter found.");
 			}
-		} else
+		}
+		else
 		{
 			PIP_ADAPTER_INFO piai = NULL;
 			ULONG size = 0;
@@ -615,14 +619,14 @@ namespace asiotap
 				if (adapter.first == std::string(pi->AdapterName))
 				{
 					m_handle = CreateFileA(
-							(USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
-							GENERIC_READ | GENERIC_WRITE,
-							0,
-							0,
-							OPEN_EXISTING,
-							FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
-							0
-							);
+					               (USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
+					               GENERIC_READ | GENERIC_WRITE,
+					               0,
+					               0,
+					               OPEN_EXISTING,
+					               FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
+					               0
+					           );
 
 					if (m_handle == INVALID_HANDLE_VALUE)
 					{
@@ -819,7 +823,8 @@ namespace asiotap
 							}
 						}
 					}
-				} else
+				}
+				else
 				{
 					throw_last_system_error();
 				}
@@ -870,7 +875,8 @@ namespace asiotap
 					if (::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr) >= 0)
 					{
 						m_mtu = netifr.ifr_mtu;
-					} else
+					}
+					else
 					{
 						throw_last_system_error();
 					}
@@ -989,14 +995,15 @@ namespace asiotap
 #ifdef MACINTOSH
 							netifr.ifr_flags |= IFF_UP;
 #else
-							netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+			netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
 #endif
-						} else
+						}
+						else
 						{
 #ifdef MACINTOSH
 							netifr.ifr_flags &= ~IFF_UP;
 #else
-							netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+			netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
 #endif
 						}
 
@@ -1004,7 +1011,8 @@ namespace asiotap
 						{
 							throw_last_system_error();
 						}
-					} else
+					}
+					else
 					{
 						throw_last_system_error();
 					}
@@ -1021,7 +1029,7 @@ namespace asiotap
 #endif
 		}
 	}
-	
+
 	void tap_adapter_impl::begin_read(void* buf, size_t buf_len)
 	{
 		assert(buf);
@@ -1055,7 +1063,7 @@ namespace asiotap
 #endif
 		}
 	}
-	
+
 	bool tap_adapter_impl::end_read(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
 		if (is_open())
@@ -1086,7 +1094,8 @@ namespace asiotap
 				while (is_open() && !end_read(_cnt, AIO_RESOLUTION_DURATION));
 
 				return is_open();
-			} else
+			}
+			else
 			{
 				const timespec timeout_ts = time_duration_to_timespec(timeout);
 				const aiocb* const _read_aio[] = { &m_read_aio };
@@ -1112,12 +1121,13 @@ namespace asiotap
 				return false;
 			}
 #endif
-		} else
+		}
+		else
 		{
 			return false;
 		}
 	}
-	
+
 	void tap_adapter_impl::begin_write(const void* buf, size_t buf_len)
 	{
 		assert(buf);
@@ -1151,7 +1161,7 @@ namespace asiotap
 #endif
 		}
 	}
-	
+
 	bool tap_adapter_impl::end_write(size_t& _cnt, const boost::posix_time::time_duration& timeout)
 	{
 		if (is_open())
@@ -1182,7 +1192,8 @@ namespace asiotap
 				while (is_open() && !end_write(_cnt, AIO_RESOLUTION_DURATION));
 
 				return is_open();
-			} else
+			}
+			else
 			{
 				const timespec timeout_ts = time_duration_to_timespec(timeout);
 				const aiocb* const _write_aio[] = { &m_write_aio };
@@ -1208,12 +1219,13 @@ namespace asiotap
 				return false;
 			}
 #endif
-		} else
+		}
+		else
 		{
 			return false;
 		}
 	}
-	
+
 	void tap_adapter_impl::cancel_read()
 	{
 		if (is_open())
@@ -1267,7 +1279,7 @@ namespace asiotap
 #endif
 		}
 	}
-	
+
 	size_t tap_adapter_impl::read(void* buf, size_t buf_len)
 	{
 		assert(buf);
@@ -1292,12 +1304,13 @@ namespace asiotap
 
 			return static_cast<size_t>(result);
 #endif
-		} else
+		}
+		else
 		{
 			return 0;
 		}
 	}
-	
+
 	size_t tap_adapter_impl::write(const void* buf, size_t buf_len)
 	{
 		assert(buf);
@@ -1322,12 +1335,13 @@ namespace asiotap
 
 			return static_cast<size_t>(result);
 #endif
-		} else
+		}
+		else
 		{
 			return 0;
 		}
 	}
-	
+
 	bool tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		assert(prefix_len < 32);
@@ -1364,7 +1378,8 @@ namespace asiotap
 					if (errno == EEXIST)
 					{
 						result = false;
-					} else
+					}
+					else
 					{
 						throw_last_system_error();
 					}
@@ -1388,7 +1403,8 @@ namespace asiotap
 						if (errno == EEXIST)
 						{
 							result = false;
-						} else
+						}
+						else
 						{
 							throw_last_system_error();
 						}
@@ -1406,12 +1422,13 @@ namespace asiotap
 
 			return result;
 #endif
-		} else
+		}
+		else
 		{
 			return false;
 		}
 	}
-	
+
 	bool tap_adapter_impl::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		(void)prefix_len;
@@ -1470,12 +1487,13 @@ namespace asiotap
 
 			return result;
 #endif
-		} else
+		}
+		else
 		{
 			return false;
 		}
 	}
-	
+
 	bool tap_adapter_impl::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 		if (is_open())
@@ -1511,29 +1529,30 @@ namespace asiotap
 
 				if (::ioctl(ctl_fd, SIOCSIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
-					in6_aliasreq iar;
-				std::memset(&iar, 0x00, sizeof(iar));
-				std::memcpy(iar.ifra_name, m_name.c_str());
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-				std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-				std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-				iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-				iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+			in6_aliasreq iar;
+			std::memset(&iar, 0x00, sizeof(iar));
+			std::memcpy(iar.ifra_name, m_name.c_str());
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
 
 #ifdef SIN6_LEN
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
 #endif
 
-				if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
+			if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
 #endif
 				{
 					if (errno == EEXIST)
 					{
 						result = false;
-					} else
+					}
+					else
 					{
 						throw_last_system_error();
 					}
@@ -1550,12 +1569,13 @@ namespace asiotap
 
 			return result;
 #endif
-		} else
+		}
+		else
 		{
 			return false;
 		}
 	}
-	
+
 	bool tap_adapter_impl::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 		if (is_open())
@@ -1592,29 +1612,30 @@ namespace asiotap
 
 				if (::ioctl(ctl_fd, SIOCDIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
-					in6_aliasreq iar;
-				std::memset(&iar, 0x00, sizeof(iar));
-				std::memcpy(iar.ifra_name, m_name.c_str());
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-				std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-				std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-				iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-				iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+			in6_aliasreq iar;
+			std::memset(&iar, 0x00, sizeof(iar));
+			std::memcpy(iar.ifra_name, m_name.c_str());
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
 
 #ifdef SIN6_LEN
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
 #endif
 
-				if (::ioctl(ctl_fd, SIOCDIFADDR_IN6, &iar) < 0)
+			if (::ioctl(ctl_fd, SIOCDIFADDR_IN6, &iar) < 0)
 #endif
 				{
 					if (errno == EEXIST)
 					{
 						result = false;
-					} else
+					}
+					else
 					{
 						throw_last_system_error();
 					}
@@ -1631,7 +1652,8 @@ namespace asiotap
 
 			return result;
 #endif
-		} else
+		}
+		else
 		{
 			return false;
 		}

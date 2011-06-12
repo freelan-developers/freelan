@@ -96,7 +96,7 @@ namespace asiotap
 				 */
 				_const_helper_impl(const ethernet_frame& frame);
 		};
-		
+
 		/**
 		 * \brief The mutable Ethernet helper implementation class.
 		 */
@@ -137,7 +137,7 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(ethernet_frame& frame);
 		};
-		
+
 		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::target() const
 		{
 			return boost::asio::buffer(frame().target, sizeof(frame().target));

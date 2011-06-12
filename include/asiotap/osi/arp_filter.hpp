@@ -69,7 +69,7 @@ namespace asiotap
 				 */
 				arp_filter(ParentFilterType& parent);
 		};
-		
+
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.

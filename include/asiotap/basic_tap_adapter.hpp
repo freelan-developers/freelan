@@ -234,7 +234,7 @@ namespace asiotap
 			 */
 			bool remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
 	};
-	
+
 	template <typename Service>
 	inline std::map<std::string, std::string> basic_tap_adapter<Service>::enumerate()
 	{
@@ -246,7 +246,7 @@ namespace asiotap
 		boost::asio::basic_io_object<Service>(_io_service)
 	{
 	}
-	
+
 	template <typename Service>
 	inline bool basic_tap_adapter<Service>::is_open() const
 	{
@@ -282,7 +282,7 @@ namespace asiotap
 	{
 		return this->implementation->mtu();
 	}
-	
+
 	template <typename Service>
 	inline const typename basic_tap_adapter<Service>::ethernet_address_type& basic_tap_adapter<Service>::ethernet_address() const
 	{

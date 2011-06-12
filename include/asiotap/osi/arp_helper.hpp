@@ -132,7 +132,7 @@ namespace asiotap
 				 */
 				_const_helper_impl(const arp_frame& frame);
 		};
-		
+
 		/**
 		 * \brief The mutable arp helper implementation class.
 		 */
@@ -245,7 +245,7 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(arp_frame& frame);
 		};
-		
+
 		inline uint16_t _const_helper_impl<arp_frame>::hardware_type() const
 		{
 			return ntohs(frame().hardware_type);
