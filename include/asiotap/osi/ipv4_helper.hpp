@@ -177,10 +177,22 @@ namespace asiotap
 				uint8_t version() const;
 
 				/**
+				 * \brief Set the version.
+				 * \param version The version.
+				 */
+				void set_version(uint8_t version) const;
+
+				/**
 				 * \brief Get the Internet Header Length, in words.
 				 * \return The Internet Header Length, in words.
 				 */
 				uint8_t ihl() const;
+
+				/**
+				 * \brief Set the Internet Header Length, in words.
+				 * \param ihl The Internet Header Length, in words.
+				 */
+				void set_ihl(uint8_t ihl) const;
 
 				/**
 				 * \brief Get the Internet Header Length, in bytes.
@@ -195,10 +207,22 @@ namespace asiotap
 				uint8_t tos() const;
 
 				/**
+				 * \brief Set the Type Of Service.
+				 * \param tos The Type Of Service.
+				 */
+				void set_tos(uint8_t tos) const;
+
+				/**
 				 * \brief Get the total length.
 				 * \return The total length.
 				 */
 				size_t total_length() const;
+
+				/**
+				 * \brief Set the total length.
+				 * \param total_length The total length.
+				 */
+				void set_total_length(size_t total_length) const;
 
 				/**
 				 * \brief Get the payload length.
@@ -213,9 +237,21 @@ namespace asiotap
 				uint16_t identification() const;
 
 				/**
+				 * \brief Set the identification.
+				 * \param identification The identification.
+				 */
+				void set_identification(uint16_t identification) const;
+
+				/**
 				 * \brief Get the flags.
 				 */
 				uint8_t flags() const;
+
+				/**
+				 * \brief Set the flags.
+				 * \param flags The flags.
+				 */
+				void set_flags(uint8_t flags) const;
 
 				/**
 				 * \brief Get the position fragment.
@@ -224,10 +260,22 @@ namespace asiotap
 				uint16_t position_fragment() const;
 
 				/**
+				 * \brief Set the position fragment.
+				 * \param position_fragment The position fragment.
+				 */
+				void set_position_fragment(uint16_t position_fragment) const;
+
+				/**
 				 * \brief Get the time-to-live.
 				 * \return The time-to-live.
 				 */
 				uint8_t ttl() const;
+
+				/**
+				 * \brief Set the time-to-live.
+				 * \param ttl The time-to-live.
+				 */
+				void set_ttl(uint8_t ttl) const;
 
 				/**
 				 * \brief Get the protocol.
@@ -236,10 +284,22 @@ namespace asiotap
 				uint8_t protocol() const;
 
 				/**
+				 * \brief Set the protocol.
+				 * \param protocol The protocol.
+				 */
+				void set_protocol(uint8_t protocol) const;
+
+				/**
 				 * \brief Get the checksum.
 				 * \return The checksum.
 				 */
 				uint16_t checksum() const;
+
+				/**
+				 * \brief Set the checksum.
+				 * \param checksum The checksum.
+				 */
+				void set_checksum(uint16_t checksum) const;
 
 				/**
 				 * \brief Get the source address.
@@ -248,10 +308,23 @@ namespace asiotap
 				boost::asio::ip::address_v4 source() const;
 
 				/**
+				 * \brief Set the source address.
+				 * \param source The source address.
+				 */
+				void set_source(boost::asio::ip::address_v4 source) const;
+
+				/**
 				 * \brief Get the destination address.
 				 * \return The destination address.
 				 */
 				boost::asio::ip::address_v4 destination() const;
+
+				/**
+				 * \brief Set the destination address.
+				 * \param destination The destination address.
+				 */
+				void set_destination(boost::asio::ip::address_v4 destination) const;
+
 			protected:
 
 				/**
@@ -341,9 +414,19 @@ namespace asiotap
 			return (frame().version_ihl & 0xF0) >> 4;
 		}
 
+		inline void _mutable_helper_impl<ipv4_frame>::set_version(uint8_t _version) const
+		{
+			frame().version_ihl = (frame().version_ihl & 0x0F) | ((_version & 0x0F) << 4);
+		}
+
 		inline uint8_t _mutable_helper_impl<ipv4_frame>::ihl() const
 		{
 			return (frame().version_ihl & 0x0F);
+		}
+
+		inline void _mutable_helper_impl<ipv4_frame>::set_ihl(uint8_t _ihl) const
+		{
+			frame().version_ihl = (frame().version_ihl & 0xF0) | (_ihl & 0x0F);
 		}
 
 		inline size_t _mutable_helper_impl<ipv4_frame>::header_length() const
@@ -356,9 +439,19 @@ namespace asiotap
 			return frame().service_type;
 		}
 
+		inline void _mutable_helper_impl<ipv4_frame>::set_tos(uint8_t _tos) const
+		{
+			frame().service_type = _tos;
+		}
+
 		inline size_t _mutable_helper_impl<ipv4_frame>::total_length() const
 		{
 			return ntohs(frame().total_length);
+		}
+
+		inline void _mutable_helper_impl<ipv4_frame>::set_total_length(size_t _total_length) const
+		{
+			frame().total_length = htons(_total_length);
 		}
 
 		inline size_t _mutable_helper_impl<ipv4_frame>::payload_length() const
@@ -371,9 +464,19 @@ namespace asiotap
 			return ntohs(frame().identification);
 		}
 
+		inline void _mutable_helper_impl<ipv4_frame>::set_identification(uint16_t _identification) const
+		{
+			frame().identification = htons(_identification);
+		}
+
 		inline uint8_t _mutable_helper_impl<ipv4_frame>::flags() const
 		{
 			return static_cast<uint8_t>((frame().flags_fragment & 0xE000) >> 13);
+		}
+
+		inline void _mutable_helper_impl<ipv4_frame>::set_flags(uint8_t _flags) const
+		{
+			frame().flags_fragment = (frame().flags_fragment & 0x1FFF) | ((static_cast<uint16_t>(_flags) & 0x0007) << 13);
 		}
 
 		inline uint16_t _mutable_helper_impl<ipv4_frame>::position_fragment() const
@@ -381,9 +484,19 @@ namespace asiotap
 			return (frame().flags_fragment & 0x1FFF);
 		}
 
+		inline void _mutable_helper_impl<ipv4_frame>::set_position_fragment(uint16_t _position_fragment) const
+		{
+			frame().flags_fragment = (frame().flags_fragment & 0xE000) | (_position_fragment & 0x1FFF);
+		}
+
 		inline uint8_t _mutable_helper_impl<ipv4_frame>::ttl() const
 		{
 			return frame().ttl;
+		}
+
+		inline void _mutable_helper_impl<ipv4_frame>::set_ttl(uint8_t _ttl) const
+		{
+			frame().ttl = _ttl;
 		}
 
 		inline uint8_t _mutable_helper_impl<ipv4_frame>::protocol() const
@@ -391,9 +504,19 @@ namespace asiotap
 			return frame().protocol;
 		}
 
+		inline void _mutable_helper_impl<ipv4_frame>::set_protocol(uint8_t _protocol) const
+		{
+			frame().protocol = _protocol;
+		}
+
 		inline uint16_t _mutable_helper_impl<ipv4_frame>::checksum() const
 		{
 			return ntohs(frame().header_checksum);
+		}
+
+		inline void _mutable_helper_impl<ipv4_frame>::set_checksum(uint16_t _checksum) const
+		{
+			frame().header_checksum = htons(_checksum);
 		}
 
 		inline boost::asio::ip::address_v4 _mutable_helper_impl<ipv4_frame>::source() const
@@ -401,9 +524,19 @@ namespace asiotap
 			return boost::asio::ip::address_v4(frame().source.s_addr);
 		}
 
+		inline void _mutable_helper_impl<ipv4_frame>::set_source(boost::asio::ip::address_v4 _source) const
+		{
+			frame().source.s_addr = _source.to_ulong();
+		}
+
 		inline boost::asio::ip::address_v4 _mutable_helper_impl<ipv4_frame>::destination() const
 		{
 			return boost::asio::ip::address_v4(frame().destination.s_addr);
+		}
+
+		inline void _mutable_helper_impl<ipv4_frame>::set_destination(boost::asio::ip::address_v4 _destination) const
+		{
+			frame().destination.s_addr = _destination.to_ulong();
 		}
 
 		inline _mutable_helper_impl<ipv4_frame>::_mutable_helper_impl(ipv4_frame& _frame) :
