@@ -153,6 +153,18 @@ namespace asiotap
 				 */
 				boost::asio::ip::address_v4 destination() const;
 
+				/**
+				 * \brief Compute the checksum.
+				 * \return The checksum.
+				 */
+				uint16_t compute_checksum() const;
+
+				/**
+				 * \brief Verify the checksum.
+				 * \return true if the checksum is valid.
+				 */
+				bool verify_checksum() const;
+
 			protected:
 
 				/**
@@ -325,6 +337,18 @@ namespace asiotap
 				 */
 				void set_destination(boost::asio::ip::address_v4 destination) const;
 
+				/**
+				 * \brief Compute the checksum.
+				 * \return The checksum.
+				 */
+				uint16_t compute_checksum() const;
+
+				/**
+				 * \brief Verify the checksum.
+				 * \return true if the checksum is valid.
+				 */
+				bool verify_checksum() const;
+
 			protected:
 
 				/**
@@ -402,6 +426,11 @@ namespace asiotap
 		inline boost::asio::ip::address_v4 _const_helper_impl<ipv4_frame>::destination() const
 		{
 			return boost::asio::ip::address_v4(ntohl(frame().destination.s_addr));
+		}
+
+		inline bool _const_helper_impl<ipv4_frame>::verify_checksum() const
+		{
+			return compute_checksum() == 0x0000;
 		}
 
 		inline _const_helper_impl<ipv4_frame>::_const_helper_impl(const ipv4_frame& _frame) :
@@ -537,6 +566,11 @@ namespace asiotap
 		inline void _mutable_helper_impl<ipv4_frame>::set_destination(boost::asio::ip::address_v4 _destination) const
 		{
 			frame().destination.s_addr = htonl(_destination.to_ulong());
+		}
+
+		inline bool _mutable_helper_impl<ipv4_frame>::verify_checksum() const
+		{
+			return compute_checksum() == 0x0000;
 		}
 
 		inline _mutable_helper_impl<ipv4_frame>::_mutable_helper_impl(ipv4_frame& _frame) :
