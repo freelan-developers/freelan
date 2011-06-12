@@ -396,12 +396,12 @@ namespace asiotap
 
 		inline boost::asio::ip::address_v4 _const_helper_impl<ipv4_frame>::source() const
 		{
-			return boost::asio::ip::address_v4(frame().source.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().source.s_addr));
 		}
 
 		inline boost::asio::ip::address_v4 _const_helper_impl<ipv4_frame>::destination() const
 		{
-			return boost::asio::ip::address_v4(frame().destination.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().destination.s_addr));
 		}
 
 		inline _const_helper_impl<ipv4_frame>::_const_helper_impl(const ipv4_frame& _frame) :
@@ -521,22 +521,22 @@ namespace asiotap
 
 		inline boost::asio::ip::address_v4 _mutable_helper_impl<ipv4_frame>::source() const
 		{
-			return boost::asio::ip::address_v4(frame().source.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().source.s_addr));
 		}
 
 		inline void _mutable_helper_impl<ipv4_frame>::set_source(boost::asio::ip::address_v4 _source) const
 		{
-			frame().source.s_addr = _source.to_ulong();
+			frame().source.s_addr = htonl(_source.to_ulong());
 		}
 
 		inline boost::asio::ip::address_v4 _mutable_helper_impl<ipv4_frame>::destination() const
 		{
-			return boost::asio::ip::address_v4(frame().destination.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().destination.s_addr));
 		}
 
 		inline void _mutable_helper_impl<ipv4_frame>::set_destination(boost::asio::ip::address_v4 _destination) const
 		{
-			frame().destination.s_addr = _destination.to_ulong();
+			frame().destination.s_addr = htonl(_destination.to_ulong());
 		}
 
 		inline _mutable_helper_impl<ipv4_frame>::_mutable_helper_impl(ipv4_frame& _frame) :

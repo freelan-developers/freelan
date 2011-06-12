@@ -278,7 +278,7 @@ namespace asiotap
 
 		inline boost::asio::ip::address_v4 _const_helper_impl<arp_frame>::sender_logical_address() const
 		{
-			return boost::asio::ip::address_v4(frame().sender_logical_address.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().sender_logical_address.s_addr));
 		}
 
 		inline boost::asio::const_buffer _const_helper_impl<arp_frame>::target_hardware_address() const
@@ -288,7 +288,7 @@ namespace asiotap
 
 		inline boost::asio::ip::address_v4 _const_helper_impl<arp_frame>::target_logical_address() const
 		{
-			return boost::asio::ip::address_v4(frame().target_logical_address.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().target_logical_address.s_addr));
 		}
 
 		inline _const_helper_impl<arp_frame>::_const_helper_impl(const arp_frame& _frame) :
@@ -353,12 +353,12 @@ namespace asiotap
 
 		inline boost::asio::ip::address_v4 _mutable_helper_impl<arp_frame>::sender_logical_address() const
 		{
-			return boost::asio::ip::address_v4(frame().sender_logical_address.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().sender_logical_address.s_addr));
 		}
 
 		inline void _mutable_helper_impl<arp_frame>::set_sender_logical_address(boost::asio::ip::address_v4 _sender_logical_address) const
 		{
-			frame().sender_logical_address.s_addr = _sender_logical_address.to_ulong();
+			frame().sender_logical_address.s_addr = htonl(_sender_logical_address.to_ulong());
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<arp_frame>::target_hardware_address() const
@@ -368,12 +368,12 @@ namespace asiotap
 
 		inline boost::asio::ip::address_v4 _mutable_helper_impl<arp_frame>::target_logical_address() const
 		{
-			return boost::asio::ip::address_v4(frame().target_logical_address.s_addr);
+			return boost::asio::ip::address_v4(ntohl(frame().target_logical_address.s_addr));
 		}
 
 		inline void _mutable_helper_impl<arp_frame>::set_target_logical_address(boost::asio::ip::address_v4 _target_logical_address) const
 		{
-			frame().target_logical_address.s_addr = _target_logical_address.to_ulong();
+			frame().target_logical_address.s_addr = htonl(_target_logical_address.to_ulong());
 		}
 
 		inline _mutable_helper_impl<arp_frame>::_mutable_helper_impl(arp_frame& _frame) :
