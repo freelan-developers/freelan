@@ -7,6 +7,7 @@
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/ethernet_filter.hpp>
 #include <asiotap/osi/arp_filter.hpp>
+#include <asiotap/osi/ipv4_filter.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -78,6 +79,7 @@ static char my_buf[2048];
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void arp_frame_read(asiotap::osi::const_arp_helper frame, const boost::asio::const_buffer& payload);
+void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame, const boost::asio::const_buffer& payload);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
@@ -99,7 +101,9 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 		asiotap::osi::ethernet_filter ethernet_filter;
 		asiotap::osi::arp_filter<asiotap::osi::ethernet_filter> arp_filter(ethernet_filter);
+		asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> ipv4_filter(ethernet_filter);
 		arp_filter.add_callback(&arp_frame_read);
+		ipv4_filter.add_callback(&ipv4_frame_read);
 
 		ethernet_filter.parse(buffer);
 
@@ -112,6 +116,13 @@ void arp_frame_read(asiotap::osi::const_arp_helper frame, const boost::asio::con
 	(void)payload;
 
 	std::cout << "ARP frame: " << frame.sender_logical_address() << std::endl;
+}
+
+void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame, const boost::asio::const_buffer& payload)
+{
+	(void)payload;
+
+	std::cout << "IPv4 frame: " << frame.source() << std::endl;
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
