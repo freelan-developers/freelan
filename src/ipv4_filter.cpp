@@ -55,7 +55,7 @@ namespace asiotap
 
 		bool check_frame(const_ipv4_helper frame, boost::asio::const_buffer& buf)
 		{
-			if (frame.version() == IP_PROTOCOL_VERSION_4)
+			if ((frame.version() == IP_PROTOCOL_VERSION_4) && (frame.ihl() >= 5))
 			{
 				buf = boost::asio::buffer(buf + frame.header_length(), 0);
 				return true;
