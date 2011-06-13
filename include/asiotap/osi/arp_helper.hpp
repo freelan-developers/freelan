@@ -128,9 +128,9 @@ namespace asiotap
 
 				/**
 				 * \brief Create a helper from a frame type structure.
-				 * \param frame The frame to refer to.
+				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(const arp_frame& frame);
+				_const_helper_impl(boost::asio::const_buffer buf);
 		};
 
 		/**
@@ -241,9 +241,9 @@ namespace asiotap
 
 				/**
 				 * \brief Create a helper from a frame type structure.
-				 * \param frame The frame to refer to.
+				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(arp_frame& frame);
+				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
 
 		inline uint16_t _const_helper_impl<arp_frame>::hardware_type() const
@@ -291,8 +291,8 @@ namespace asiotap
 			return boost::asio::ip::address_v4(ntohl(frame().target_logical_address.s_addr));
 		}
 
-		inline _const_helper_impl<arp_frame>::_const_helper_impl(const arp_frame& _frame) :
-			_base_const_helper<arp_frame>(_frame)
+		inline _const_helper_impl<arp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
+			_base_const_helper<arp_frame>(buf)
 		{
 		}
 
@@ -376,8 +376,8 @@ namespace asiotap
 			frame().target_logical_address.s_addr = htonl(_target_logical_address.to_ulong());
 		}
 
-		inline _mutable_helper_impl<arp_frame>::_mutable_helper_impl(arp_frame& _frame) :
-			_base_mutable_helper<arp_frame>(_frame)
+		inline _mutable_helper_impl<arp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
+			_base_mutable_helper<arp_frame>(buf)
 		{
 		}
 	}

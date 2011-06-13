@@ -92,9 +92,9 @@ namespace asiotap
 
 				/**
 				 * \brief Create a helper from a frame type structure.
-				 * \param frame The frame to refer to.
+				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(const ethernet_frame& frame);
+				_const_helper_impl(boost::asio::const_buffer buf);
 		};
 
 		/**
@@ -133,9 +133,9 @@ namespace asiotap
 
 				/**
 				 * \brief Create a helper from a frame type structure.
-				 * \param frame The frame to refer to.
+				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(ethernet_frame& frame);
+				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
 
 		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::target() const
@@ -153,8 +153,8 @@ namespace asiotap
 			return ntohs(frame().protocol);
 		}
 
-		inline _const_helper_impl<ethernet_frame>::_const_helper_impl(const ethernet_frame& _frame) :
-			_base_const_helper<ethernet_frame>(_frame)
+		inline _const_helper_impl<ethernet_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
+			_base_const_helper<ethernet_frame>(buf)
 		{
 		}
 
@@ -178,8 +178,8 @@ namespace asiotap
 			frame().protocol = htons(_protocol);
 		}
 
-		inline _mutable_helper_impl<ethernet_frame>::_mutable_helper_impl(ethernet_frame& _frame) :
-			_base_mutable_helper<ethernet_frame>(_frame)
+		inline _mutable_helper_impl<ethernet_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
+			_base_mutable_helper<ethernet_frame>(buf)
 		{
 		}
 	}

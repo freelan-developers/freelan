@@ -111,20 +111,20 @@ namespace asiotap
 		/**
 		 * \brief Get the payload associated to a given frame.
 		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
-		 * \param parent The parent structure.
+		 * \param parent The parent frame.
 		 * \return A pointer to the frame or NULL on failure.
 		 */
 		template <typename OSIFrameType, typename ParentOSIFrameType>
-		OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf, const ParentOSIFrameType& parent);
+		OSIFrameType* parent_frame_parse(boost::asio::mutable_buffer& buf, boost::asio::mutable_buffer parent);
 
 		/**
 		 * \brief Get the payload associated to a given frame.
 		 * \param buf The buffer. Must point to a structure of the specified type. If the return value is not NULL, buf is updated to point on the payload of the specified frame.
-		 * \param parent The parent structure.
+		 * \param parent The parent frame.
 		 * \return A pointer to the frame or NULL on failure.
 		 */
 		template <typename OSIFrameType, typename ParentOSIFrameType>
-		const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent);
+		const OSIFrameType* parent_frame_parse(boost::asio::const_buffer& buf, boost::asio::const_buffer parent);
 
 		/**
 		 * \brief The base template function to check for frame encapsulation.
@@ -150,7 +150,7 @@ namespace asiotap
 				/**
 				 * \brief The frame handled callback.
 				 */
-				typedef boost::function<void (const_helper<OSIFrameType>, const boost::asio::const_buffer&)> frame_handled_callback;
+				typedef boost::function<void (boost::asio::const_buffer, boost::asio::const_buffer)> frame_handled_callback;
 
 				/**
 				 * \brief Add a callback function.
@@ -160,7 +160,7 @@ namespace asiotap
 
 			protected:
 
-				void frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload) const;
+				void frame_handled(boost::asio::const_buffer buf, const boost::asio::const_buffer& payload) const;
 
 			public:
 
@@ -183,10 +183,10 @@ namespace asiotap
 
 				/**
 				 * \brief Parse a frame.
-				 * \param parent The parent frame.
 				 * \param buf The frame buffer.
+				 * \param parent The parent buffer.
 				 */
-				void parse(const typename ParentFilterType::frame_type& parent, const boost::asio::const_buffer& buf) const;
+				void parse(boost::asio::const_buffer buf, boost::asio::const_buffer parent) const;
 		};
 
 		/**
@@ -201,7 +201,7 @@ namespace asiotap
 				 * \brief Parse a frame.
 				 * \param buf The frame buffer.
 				 */
-				void parse(const boost::asio::const_buffer& buf) const;
+				void parse(boost::asio::const_buffer buf) const;
 		};
 
 		template <typename OSIFrameType>
@@ -259,7 +259,7 @@ namespace asiotap
 
 			if (frame)
 			{
-				if (!check_frame(helper(*frame), buf))
+				if (!check_frame(helper<OSIFrameType>(buf), buf))
 				{
 					return NULL;
 				}
@@ -275,7 +275,7 @@ namespace asiotap
 
 			if (frame)
 			{
-				if (!check_frame(helper(*frame), buf))
+				if (!check_frame(helper<OSIFrameType>(buf), buf))
 				{
 					return NULL;
 				}
@@ -285,9 +285,9 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentOSIFrameType>
-		inline OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf, const ParentOSIFrameType& parent)
+		inline OSIFrameType* parent_frame_parse(boost::asio::mutable_buffer& buf, boost::asio::mutable_buffer parent)
 		{
-			if (frame_parent_match<OSIFrameType, ParentOSIFrameType>(helper(parent)))
+			if (frame_parent_match<OSIFrameType, ParentOSIFrameType>(helper<ParentOSIFrameType>(parent)))
 			{
 				boost::asio::mutable_buffer _buf = buf;
 
@@ -305,9 +305,9 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentOSIFrameType>
-		inline const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent)
+		inline const OSIFrameType* parent_frame_parse(boost::asio::const_buffer& buf, boost::asio::const_buffer parent)
 		{
-			if (frame_parent_match<OSIFrameType, ParentOSIFrameType>(helper(parent)))
+			if (frame_parent_match<OSIFrameType, ParentOSIFrameType>(helper<ParentOSIFrameType>(parent)))
 			{
 				boost::asio::const_buffer _buf = buf;
 
@@ -331,40 +331,40 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::frame_handled(const OSIFrameType& frame, const boost::asio::const_buffer& payload) const
+		void _base_filter<OSIFrameType>::frame_handled(boost::asio::const_buffer buf, const boost::asio::const_buffer& payload) const
 		{
-			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, helper(frame), payload));
+			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, buf, payload));
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
 		filter<OSIFrameType, ParentFilterType>::filter(ParentFilterType& parent)
 		{
-			parent.add_callback(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _1, _2));
+			parent.add_callback(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _2, _1));
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		void filter<OSIFrameType, ParentFilterType>::parse(const typename ParentFilterType::frame_type& parent, const boost::asio::const_buffer& buf) const
+		void filter<OSIFrameType, ParentFilterType>::parse(boost::asio::const_buffer buf, boost::asio::const_buffer parent) const
 		{
-			boost::asio::const_buffer _buf = buf;
+			boost::asio::const_buffer payload = buf;
 
-			const OSIFrameType* frame = frame_parse<OSIFrameType, typename ParentFilterType::frame_type>(_buf, parent);
+			const OSIFrameType* frame = parent_frame_parse<OSIFrameType, typename ParentFilterType::frame_type>(payload, parent);
 
 			if (frame)
 			{
-				frame_handled(*frame, _buf);
+				filter<OSIFrameType, ParentFilterType>::frame_handled(buf, payload);
 			}
 		}
 
 		template <typename OSIFrameType>
-		void filter<OSIFrameType, void>::parse(const boost::asio::const_buffer& buf) const
+		void filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
 		{
-			boost::asio::const_buffer _buf = buf;
+			boost::asio::const_buffer payload = buf;
 
-			const OSIFrameType* frame = frame_parse<OSIFrameType>(_buf);
+			const OSIFrameType* frame = frame_parse<OSIFrameType>(payload);
 
 			if (frame)
 			{
-				frame_handled(*frame, _buf);
+				filter<OSIFrameType, void>::frame_handled(buf, payload);
 			}
 		}
 	}
