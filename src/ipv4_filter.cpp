@@ -48,7 +48,8 @@ namespace asiotap
 {
 	namespace osi
 	{
-		bool frame_parent_match(const_ipv4_helper /*frame*/, const_ethernet_helper parent)
+		template <>
+		bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent)
 		{
 			return (parent.protocol() == IP_PROTOCOL);
 		}

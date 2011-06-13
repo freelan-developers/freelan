@@ -80,11 +80,11 @@ namespace asiotap
 
 		/**
 		 * \brief The frame parent match function.
-		 * \param frame The frame.
 		 * \param parent The parent frame.
 		 * \return true if the frame matches the parent frame.
 		 */
-		bool frame_parent_match(const_ipv4_helper frame, const_ethernet_helper parent);
+		template <>
+		bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent);
 
 		template <typename ParentFilterType>
 		inline ipv4_filter<ParentFilterType>::ipv4_filter(ParentFilterType& parent) : filter<ipv4_frame, ParentFilterType>(parent)

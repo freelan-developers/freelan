@@ -127,6 +127,14 @@ namespace asiotap
 		const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent);
 
 		/**
+		 * \brief The base template function to check for frame encapsulation.
+		 * \param parent The parent frame.
+		 * \return true if the parent frame should contain a frame of the specified type.
+		 */
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		bool frame_parent_match(const_helper<ParentOSIFrameType> parent);
+
+		/**
 		 * \brief A base filter class.
 		 */
 		template <typename OSIFrameType>
@@ -279,32 +287,40 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentOSIFrameType>
 		inline OSIFrameType* frame_parse(boost::asio::mutable_buffer& buf, const ParentOSIFrameType& parent)
 		{
-			boost::asio::const_buffer _buf = buf;
-
-			OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
-
-			if (frame && frame_parent_match(helper(*frame), helper(parent)))
+			if (frame_parent_match<OSIFrameType, ParentOSIFrameType>(helper(parent)))
 			{
-				return frame;
+				boost::asio::mutable_buffer _buf = buf;
+
+				OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
+
+				if (frame)
+				{
+					return frame;
+				}
+
+				buf = _buf;
 			}
 
-			buf = _buf;
 			return NULL;
 		}
 
 		template <typename OSIFrameType, typename ParentOSIFrameType>
 		inline const OSIFrameType* frame_parse(boost::asio::const_buffer& buf, const ParentOSIFrameType& parent)
 		{
-			boost::asio::const_buffer _buf = buf;
-
-			const OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
-
-			if (frame && frame_parent_match(helper(*frame), helper(parent)))
+			if (frame_parent_match<OSIFrameType, ParentOSIFrameType>(helper(parent)))
 			{
-				return frame;
+				boost::asio::const_buffer _buf = buf;
+
+				const OSIFrameType* frame = frame_parse<OSIFrameType>(buf);
+
+				if (frame)
+				{
+					return frame;
+				}
+
+				buf = _buf;
 			}
 
-			buf = _buf;
 			return NULL;
 		}
 

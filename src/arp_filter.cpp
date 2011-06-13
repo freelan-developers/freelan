@@ -48,9 +48,10 @@ namespace asiotap
 {
 	namespace osi
 	{
-		bool frame_parent_match(const_arp_helper frame, const_ethernet_helper parent)
+		template <>
+		bool frame_parent_match<arp_frame>(const_ethernet_helper parent)
 		{
-			return (parent.protocol() == ARP_PROTOCOL) && (frame.hardware_type() == ETHERNET_HARDWARE_TYPE);
+			return (parent.protocol() == ARP_PROTOCOL);
 		}
 
 		bool check_frame(const_arp_helper frame, boost::asio::const_buffer& buf)

@@ -80,11 +80,11 @@ namespace asiotap
 
 		/**
 		 * \brief The frame parent match function.
-		 * \param frame The frame.
 		 * \param parent The parent frame.
 		 * \return true if the frame matches the parent frame.
 		 */
-		bool frame_parent_match(const_arp_helper frame, const_ethernet_helper parent);
+		template <>
+		bool frame_parent_match<arp_frame>(const_ethernet_helper parent);
 
 		template <typename ParentFilterType>
 		inline arp_filter<ParentFilterType>::arp_filter(ParentFilterType& parent) : filter<arp_frame, ParentFilterType>(parent)
