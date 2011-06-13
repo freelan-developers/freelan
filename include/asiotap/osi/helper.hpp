@@ -70,6 +70,12 @@ namespace asiotap
 				 */
 				const OSIFrameType& frame() const;
 
+				/**
+				 * \brief Get the underlying buffer.
+				 * \return The underlying buffer.
+				 */
+				boost::asio::const_buffer buffer() const;
+
 			protected:
 
 				/**
@@ -107,6 +113,12 @@ namespace asiotap
 				 * \return The associated frame.
 				 */
 				OSIFrameType& frame() const;
+
+				/**
+				 * \brief Get the underlying buffer.
+				 * \return The underlying buffer.
+				 */
+				boost::asio::mutable_buffer buffer() const;
 
 			protected:
 
@@ -260,6 +272,12 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
+		inline boost::asio::const_buffer _base_const_helper<OSIFrameType>::buffer() const
+		{
+			return m_buf;
+		}
+
+		template <typename OSIFrameType>
 		inline _base_const_helper<OSIFrameType>::_base_const_helper(boost::asio::const_buffer buf) :
 			m_buf(buf)
 		{
@@ -269,6 +287,12 @@ namespace asiotap
 		inline OSIFrameType& _base_mutable_helper<OSIFrameType>::frame() const
 		{
 			return *boost::asio::buffer_cast<OSIFrameType*>(m_buf);
+		}
+
+		template <typename OSIFrameType>
+		inline boost::asio::mutable_buffer _base_mutable_helper<OSIFrameType>::buffer() const
+		{
+			return m_buf;
 		}
 
 		template <typename OSIFrameType>
