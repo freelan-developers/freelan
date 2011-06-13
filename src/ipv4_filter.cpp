@@ -48,12 +48,6 @@ namespace asiotap
 {
 	namespace osi
 	{
-		template <>
-		bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent)
-		{
-			return (parent.protocol() == IP_PROTOCOL);
-		}
-
 		bool check_frame(const_ipv4_helper frame, boost::asio::const_buffer& buf)
 		{
 			if ((frame.version() == IP_PROTOCOL_VERSION_4) && (frame.ihl() >= 5))

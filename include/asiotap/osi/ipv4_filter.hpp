@@ -90,6 +90,12 @@ namespace asiotap
 		inline ipv4_filter<ParentFilterType>::ipv4_filter(ParentFilterType& parent) : filter<ipv4_frame, ParentFilterType>(parent)
 		{
 		}
+
+		template <>
+		inline bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent)
+		{
+			return (parent.protocol() == IP_PROTOCOL);
+		}
 	}
 }
 

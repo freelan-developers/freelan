@@ -90,6 +90,12 @@ namespace asiotap
 		inline arp_filter<ParentFilterType>::arp_filter(ParentFilterType& parent) : filter<arp_frame, ParentFilterType>(parent)
 		{
 		}
+
+		template <>
+		inline bool frame_parent_match<arp_frame>(const_ethernet_helper parent)
+		{
+			return (parent.protocol() == ARP_PROTOCOL);
+		}
 	}
 }
 
