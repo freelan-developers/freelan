@@ -70,7 +70,7 @@ namespace asiotap
 		 */
 		struct ipv6_frame
 		{
-			uint32_t version_traffic_flow; /**< Version, traffic class and flow label */
+			uint32_t version_class_label; /**< Version, class and flow label */
 			uint16_t payload_length; /**< Payload length */
 			uint8_t next_header; /**< Next header number */
 			uint8_t hop_limit; /**< Hop limit value */

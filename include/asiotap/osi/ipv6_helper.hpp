@@ -77,28 +77,16 @@ namespace asiotap
 				uint8_t version() const;
 
 				/**
-				 * \brief Get the Internet Header Length, in words.
-				 * \return The Internet Header Length, in words.
+				 * \brief Get the class.
+				 * \return The class.
 				 */
-				uint8_t ihl() const;
+				uint8_t _class() const;
 
 				/**
-				 * \brief Get the Internet Header Length, in bytes.
-				 * \return The Internet Header Length, in bytes.
+				 * \brief Get the label.
+				 * \return The label.
 				 */
-				size_t header_length() const;
-
-				/**
-				 * \brief Get the Type Of Service.
-				 * \return The Type Of Service.
-				 */
-				uint8_t tos() const;
-
-				/**
-				 * \brief Get the total length.
-				 * \return The total length.
-				 */
-				size_t total_length() const;
+				uint32_t label() const;
 
 				/**
 				 * \brief Get the payload length.
@@ -107,39 +95,16 @@ namespace asiotap
 				size_t payload_length() const;
 
 				/**
-				 * \brief Get the identification.
-				 * \return The indentification.
+				 * \brief Get the next header.
+				 * \return The next header.
 				 */
-				uint16_t identification() const;
+				uint8_t next_header() const;
 
 				/**
-				 * \brief Get the flags.
+				 * \brief Get the hop limit.
+				 * \return The hop limit.
 				 */
-				uint8_t flags() const;
-
-				/**
-				 * \brief Get the position fragment.
-				 * \return The position fragment.
-				 */
-				uint16_t position_fragment() const;
-
-				/**
-				 * \brief Get the time-to-live.
-				 * \return The time-to-live.
-				 */
-				uint8_t ttl() const;
-
-				/**
-				 * \brief Get the protocol.
-				 * \return The protocol.
-				 */
-				uint8_t protocol() const;
-
-				/**
-				 * \brief Get the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t checksum() const;
+				uint8_t hop_limit() const;
 
 				/**
 				 * \brief Get the source address.
@@ -152,18 +117,6 @@ namespace asiotap
 				 * \return The destination address.
 				 */
 				boost::asio::ip::address_v6 destination() const;
-
-				/**
-				 * \brief Compute the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t compute_checksum() const;
-
-				/**
-				 * \brief Verify the checksum.
-				 * \return true if the checksum is valid.
-				 */
-				bool verify_checksum() const;
 
 			protected:
 
@@ -195,46 +148,28 @@ namespace asiotap
 				void set_version(uint8_t version) const;
 
 				/**
-				 * \brief Get the Internet Header Length, in words.
-				 * \return The Internet Header Length, in words.
+				 * \brief Get the class.
+				 * \return The class.
 				 */
-				uint8_t ihl() const;
+				uint8_t _class() const;
 
 				/**
-				 * \brief Set the Internet Header Length, in words.
-				 * \param ihl The Internet Header Length, in words.
+				 * \brief Set the class.
+				 * \param _class The class.
 				 */
-				void set_ihl(uint8_t ihl) const;
+				void set_class(uint8_t _class) const;
 
 				/**
-				 * \brief Get the Internet Header Length, in bytes.
-				 * \return The Internet Header Length, in bytes.
+				 * \brief Get the label.
+				 * \return The label.
 				 */
-				size_t header_length() const;
+				uint32_t label() const;
 
 				/**
-				 * \brief Get the Type Of Service.
-				 * \return The Type Of Service.
+				 * \brief Set the label.
+				 * \param label The label.
 				 */
-				uint8_t tos() const;
-
-				/**
-				 * \brief Set the Type Of Service.
-				 * \param tos The Type Of Service.
-				 */
-				void set_tos(uint8_t tos) const;
-
-				/**
-				 * \brief Get the total length.
-				 * \return The total length.
-				 */
-				size_t total_length() const;
-
-				/**
-				 * \brief Set the total length.
-				 * \param total_length The total length.
-				 */
-				void set_total_length(size_t total_length) const;
+				void set_label(uint32_t label) const;
 
 				/**
 				 * \brief Get the payload length.
@@ -243,75 +178,34 @@ namespace asiotap
 				size_t payload_length() const;
 
 				/**
-				 * \brief Get the identification.
-				 * \return The indentification.
+				 * \brief Set the payload length.
+				 * \param payload_length The payload length.
 				 */
-				uint16_t identification() const;
+				void set_payload_length(size_t payload_length) const;
 
 				/**
-				 * \brief Set the identification.
-				 * \param identification The identification.
+				 * \brief Get the next header.
+				 * \return The next header.
 				 */
-				void set_identification(uint16_t identification) const;
+				uint8_t next_header() const;
 
 				/**
-				 * \brief Get the flags.
+				 * \brief Set the next header.
+				 * \param next_header The next header.
 				 */
-				uint8_t flags() const;
+				void set_next_header(uint8_t next_header) const;
 
 				/**
-				 * \brief Set the flags.
-				 * \param flags The flags.
+				 * \brief Get the hop limit.
+				 * \return The hop limit.
 				 */
-				void set_flags(uint8_t flags) const;
+				uint8_t hop_limit() const;
 
 				/**
-				 * \brief Get the position fragment.
-				 * \return The position fragment.
+				 * \brief Set hop limit.
+				 * \param hop_limit The hop limit.
 				 */
-				uint16_t position_fragment() const;
-
-				/**
-				 * \brief Set the position fragment.
-				 * \param position_fragment The position fragment.
-				 */
-				void set_position_fragment(uint16_t position_fragment) const;
-
-				/**
-				 * \brief Get the time-to-live.
-				 * \return The time-to-live.
-				 */
-				uint8_t ttl() const;
-
-				/**
-				 * \brief Set the time-to-live.
-				 * \param ttl The time-to-live.
-				 */
-				void set_ttl(uint8_t ttl) const;
-
-				/**
-				 * \brief Get the protocol.
-				 * \return The protocol.
-				 */
-				uint8_t protocol() const;
-
-				/**
-				 * \brief Set the protocol.
-				 * \param protocol The protocol.
-				 */
-				void set_protocol(uint8_t protocol) const;
-
-				/**
-				 * \brief Get the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t checksum() const;
-
-				/**
-				 * \brief Set the checksum.
-				 * \param checksum The checksum.
-				 */
-				void set_checksum(uint16_t checksum) const;
+				void set_hop_limit(uint8_t hop_limit) const;
 
 				/**
 				 * \brief Get the source address.
@@ -337,18 +231,6 @@ namespace asiotap
 				 */
 				void set_destination(boost::asio::ip::address_v6 destination) const;
 
-				/**
-				 * \brief Compute the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t compute_checksum() const;
-
-				/**
-				 * \brief Verify the checksum.
-				 * \return true if the checksum is valid.
-				 */
-				bool verify_checksum() const;
-
 			protected:
 
 				/**
@@ -360,77 +242,52 @@ namespace asiotap
 
 		inline uint8_t _const_helper_impl<ipv6_frame>::version() const
 		{
-			return (frame().version_ihl & 0xF0) >> 4;
+			return (frame().version_class_label & 0xF0000000) >> 28;
 		}
 
-		inline uint8_t _const_helper_impl<ipv6_frame>::ihl() const
+		inline uint8_t _const_helper_impl<ipv6_frame>::_class() const
 		{
-			return (frame().version_ihl & 0x0F);
+			return (frame().version_class_label & 0x0FF00000) >> 20;
 		}
 
-		inline size_t _const_helper_impl<ipv6_frame>::header_length() const
+		inline uint32_t _const_helper_impl<ipv6_frame>::label() const
 		{
-			return ihl() * sizeof(uint32_t);
-		}
-
-		inline uint8_t _const_helper_impl<ipv6_frame>::tos() const
-		{
-			return frame().service_type;
-		}
-
-		inline size_t _const_helper_impl<ipv6_frame>::total_length() const
-		{
-			return ntohs(frame().total_length);
+			return (frame().version_class_label & 0x000FFFFF);
 		}
 
 		inline size_t _const_helper_impl<ipv6_frame>::payload_length() const
 		{
-			return total_length() - header_length();
+			return ntohs(frame().payload_length);
 		}
 
-		inline uint16_t _const_helper_impl<ipv6_frame>::identification() const
+		inline uint8_t _const_helper_impl<ipv6_frame>::next_header() const
 		{
-			return ntohs(frame().identification);
+			return frame().next_header;
 		}
 
-		inline uint8_t _const_helper_impl<ipv6_frame>::flags() const
+		inline uint8_t _const_helper_impl<ipv6_frame>::hop_limit() const
 		{
-			return static_cast<uint8_t>((frame().flags_fragment & 0xE000) >> 13);
-		}
-
-		inline uint16_t _const_helper_impl<ipv6_frame>::position_fragment() const
-		{
-			return (frame().flags_fragment & 0x1FFF);
-		}
-
-		inline uint8_t _const_helper_impl<ipv6_frame>::ttl() const
-		{
-			return frame().ttl;
-		}
-
-		inline uint8_t _const_helper_impl<ipv6_frame>::protocol() const
-		{
-			return frame().protocol;
-		}
-
-		inline uint16_t _const_helper_impl<ipv6_frame>::checksum() const
-		{
-			return ntohs(frame().header_checksum);
+			return frame().hop_limit;
 		}
 
 		inline boost::asio::ip::address_v6 _const_helper_impl<ipv6_frame>::source() const
 		{
-			return boost::asio::ip::address_v6(ntohl(frame().source.s_addr));
+			using boost::asio::ip::address_v6;
+
+			address_v6::bytes_type raw;
+			std::memcpy(raw.c_array(), frame().source.s6_addr, raw.size());
+
+			return address_v6(raw);
 		}
 
 		inline boost::asio::ip::address_v6 _const_helper_impl<ipv6_frame>::destination() const
 		{
-			return boost::asio::ip::address_v6(ntohl(frame().destination.s_addr));
-		}
+			using boost::asio::ip::address_v6;
 
-		inline bool _const_helper_impl<ipv6_frame>::verify_checksum() const
-		{
-			return compute_checksum() == 0x0000;
+			address_v6::bytes_type raw;
+			std::memcpy(raw.c_array(), frame().destination.s6_addr, raw.size());
+
+			return address_v6(raw);
 		}
 
 		inline _const_helper_impl<ipv6_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
@@ -440,137 +297,92 @@ namespace asiotap
 
 		inline uint8_t _mutable_helper_impl<ipv6_frame>::version() const
 		{
-			return (frame().version_ihl & 0xF0) >> 4;
+			return (frame().version_class_label & 0xF0000000) >> 28;
 		}
 
 		inline void _mutable_helper_impl<ipv6_frame>::set_version(uint8_t _version) const
 		{
-			frame().version_ihl = (frame().version_ihl & 0x0F) | ((_version & 0x0F) << 4);
+			frame().version_class_label = (frame().version_class_label & 0x0FFFFFFF) | ((_version & 0x0FL) << 28);
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::ihl() const
+		inline uint8_t _mutable_helper_impl<ipv6_frame>::_class() const
 		{
-			return (frame().version_ihl & 0x0F);
+			return (frame().version_class_label & 0x0FF00000) >> 20;
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_ihl(uint8_t _ihl) const
+		inline void _mutable_helper_impl<ipv6_frame>::set_class(uint8_t __class) const
 		{
-			frame().version_ihl = (frame().version_ihl & 0xF0) | (_ihl & 0x0F);
+			frame().version_class_label = (frame().version_class_label & 0xF00FFFFF) | ((__class & 0xFFL) << 20);
 		}
 
-		inline size_t _mutable_helper_impl<ipv6_frame>::header_length() const
+		inline uint32_t _mutable_helper_impl<ipv6_frame>::label() const
 		{
-			return ihl() * sizeof(uint32_t);
+			return (frame().version_class_label & 0x000FFFFF);
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::tos() const
+		inline void _mutable_helper_impl<ipv6_frame>::set_label(uint32_t _label) const
 		{
-			return frame().service_type;
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_tos(uint8_t _tos) const
-		{
-			frame().service_type = _tos;
-		}
-
-		inline size_t _mutable_helper_impl<ipv6_frame>::total_length() const
-		{
-			return ntohs(frame().total_length);
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_total_length(size_t _total_length) const
-		{
-			frame().total_length = htons(_total_length);
+			frame().version_class_label = (frame().version_class_label & 0xFFF00000) | (_label & 0x000FFFFFL);
 		}
 
 		inline size_t _mutable_helper_impl<ipv6_frame>::payload_length() const
 		{
-			return total_length() - header_length();
+			return ntohs(frame().payload_length);
 		}
 
-		inline uint16_t _mutable_helper_impl<ipv6_frame>::identification() const
+		inline void _mutable_helper_impl<ipv6_frame>::set_payload_length(size_t _payload_length) const
 		{
-			return ntohs(frame().identification);
+			frame().payload_length = htons(_payload_length);
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_identification(uint16_t _identification) const
+		inline uint8_t _mutable_helper_impl<ipv6_frame>::next_header() const
 		{
-			frame().identification = htons(_identification);
+			return frame().next_header;
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::flags() const
+		inline void _mutable_helper_impl<ipv6_frame>::set_next_header(uint8_t _next_header) const
 		{
-			return static_cast<uint8_t>((frame().flags_fragment & 0xE000) >> 13);
+			frame().next_header = _next_header;
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_flags(uint8_t _flags) const
+		inline uint8_t _mutable_helper_impl<ipv6_frame>::hop_limit() const
 		{
-			frame().flags_fragment = (frame().flags_fragment & 0x1FFF) | ((static_cast<uint16_t>(_flags) & 0x0007) << 13);
+			return frame().hop_limit;
 		}
 
-		inline uint16_t _mutable_helper_impl<ipv6_frame>::position_fragment() const
+		inline void _mutable_helper_impl<ipv6_frame>::set_hop_limit(uint8_t _hop_limit) const
 		{
-			return (frame().flags_fragment & 0x1FFF);
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_position_fragment(uint16_t _position_fragment) const
-		{
-			frame().flags_fragment = (frame().flags_fragment & 0xE000) | (_position_fragment & 0x1FFF);
-		}
-
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::ttl() const
-		{
-			return frame().ttl;
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_ttl(uint8_t _ttl) const
-		{
-			frame().ttl = _ttl;
-		}
-
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::protocol() const
-		{
-			return frame().protocol;
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_protocol(uint8_t _protocol) const
-		{
-			frame().protocol = _protocol;
-		}
-
-		inline uint16_t _mutable_helper_impl<ipv6_frame>::checksum() const
-		{
-			return ntohs(frame().header_checksum);
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_checksum(uint16_t _checksum) const
-		{
-			frame().header_checksum = htons(_checksum);
+			frame().hop_limit = _hop_limit;
 		}
 
 		inline boost::asio::ip::address_v6 _mutable_helper_impl<ipv6_frame>::source() const
 		{
-			return boost::asio::ip::address_v6(ntohl(frame().source.s_addr));
+			using boost::asio::ip::address_v6;
+
+			address_v6::bytes_type raw;
+			std::memcpy(raw.c_array(), frame().source.s6_addr, raw.size());
+
+			return address_v6(raw);
 		}
 
 		inline void _mutable_helper_impl<ipv6_frame>::set_source(boost::asio::ip::address_v6 _source) const
 		{
-			frame().source.s_addr = htonl(_source.to_ulong());
+			std::memcpy(frame().source.s6_addr, _source.to_bytes().data(), _source.to_bytes().size());
 		}
 
 		inline boost::asio::ip::address_v6 _mutable_helper_impl<ipv6_frame>::destination() const
 		{
-			return boost::asio::ip::address_v6(ntohl(frame().destination.s_addr));
+			using boost::asio::ip::address_v6;
+
+			address_v6::bytes_type raw;
+			std::memcpy(raw.c_array(), frame().destination.s6_addr, raw.size());
+
+			return address_v6(raw);
 		}
 
 		inline void _mutable_helper_impl<ipv6_frame>::set_destination(boost::asio::ip::address_v6 _destination) const
 		{
-			frame().destination.s_addr = htonl(_destination.to_ulong());
-		}
-
-		inline bool _mutable_helper_impl<ipv6_frame>::verify_checksum() const
-		{
-			return compute_checksum() == 0x0000;
+			std::memcpy(frame().destination.s6_addr, _destination.to_bytes().data(), _destination.to_bytes().size());
 		}
 
 		inline _mutable_helper_impl<ipv6_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :

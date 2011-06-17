@@ -37,20 +37,20 @@
  */
 
 /**
- * \file ipv4_filter.cpp
+ * \file ipv6_filter.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An IPv4 filter class.
+ * \brief An IPv6 filter class.
  */
 
-#include "osi/ipv4_filter.hpp"
+#include "osi/ipv6_filter.hpp"
 
 namespace asiotap
 {
 	namespace osi
 	{
-		bool check_frame(const_ipv4_helper frame, boost::asio::const_buffer& buf)
+		bool check_frame(const_ipv6_helper frame, boost::asio::const_buffer& buf)
 		{
-			if ((frame.version() == IP_PROTOCOL_VERSION_4) && (frame.ihl() >= 5))
+			if (frame.version() == IP_PROTOCOL_VERSION_6)
 			{
 				buf = boost::asio::buffer(buf + frame.header_length(), 0);
 				return true;

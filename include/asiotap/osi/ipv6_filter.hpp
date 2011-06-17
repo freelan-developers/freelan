@@ -37,18 +37,18 @@
  */
 
 /**
- * \file ipv4_filter.hpp
+ * \file ipv6_filter.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IPv4 filter class.
+ * \brief An IPv6 filter class.
  */
 
-#ifndef ASIOTAP_OSI_IPV4_FILTER_HPP
-#define ASIOTAP_OSI_IPV4_FILTER_HPP
+#ifndef ASIOTAP_OSI_IPV6_FILTER_HPP
+#define ASIOTAP_OSI_IPV6_FILTER_HPP
 
 #include "filter.hpp"
-#include "ipv4_frame.hpp"
+#include "ipv6_frame.hpp"
 
-#include "ipv4_helper.hpp"
+#include "ipv6_helper.hpp"
 #include "ethernet_helper.hpp"
 
 namespace asiotap
@@ -56,10 +56,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The IPv4 filter.
+		 * \brief The IPv6 filter.
 		 */
 		template <typename ParentFilterType>
-		class ipv4_filter : public filter<ipv4_frame, ParentFilterType>
+		class ipv6_filter : public filter<ipv6_frame, ParentFilterType>
 		{
 			public:
 
@@ -67,7 +67,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				ipv4_filter(ParentFilterType& parent);
+				ipv6_filter(ParentFilterType& parent);
 		};
 
 		/**
@@ -76,7 +76,7 @@ namespace asiotap
 		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
 		 * \return true on success.
 		 */
-		bool check_frame(const_ipv4_helper frame, boost::asio::const_buffer& buf);
+		bool check_frame(const_ipv6_helper frame, boost::asio::const_buffer& buf);
 
 		/**
 		 * \brief The frame parent match function.
@@ -84,20 +84,20 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent);
+		bool frame_parent_match<ipv6_frame>(const_ethernet_helper parent);
 
 		template <typename ParentFilterType>
-		inline ipv4_filter<ParentFilterType>::ipv4_filter(ParentFilterType& parent) : filter<ipv4_frame, ParentFilterType>(parent)
+		inline ipv6_filter<ParentFilterType>::ipv6_filter(ParentFilterType& parent) : filter<ipv6_frame, ParentFilterType>(parent)
 		{
 		}
 
 		template <>
-		inline bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent)
+		inline bool frame_parent_match<ipv6_frame>(const_ethernet_helper parent)
 		{
-			return (parent.protocol() == IP_PROTOCOL);
+			return (parent.protocol() == IPV6_PROTOCOL);
 		}
 	}
 }
 
-#endif /* ASIOTAP_OSI_IPV4_FILTER_HPP */
+#endif /* ASIOTAP_OSI_IPV6_FILTER_HPP */
 
