@@ -81,6 +81,16 @@ struct in6_ifreq
 	uint32_t ifr6_prefixlen; /**< Length of the prefix */
 	int ifr6_ifindex; /**< Interface index */
 };
+#elif defined(MACINTOSH) || defined(BSD)
+/* Note for Mac OS X users : you have to download and install the tun/tap driver from
+ * http://tuntaposx.sourceforge.net/
+ */
+#include <net/if_var.h>
+#include <net/if_types.h>
+#include <net/if_dl.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet6/in6_var.h>
 #endif
 #endif
 
@@ -504,7 +514,7 @@ namespace asiotap
 			timespec result = { 0, 0 };
 
 			result.tv_sec = duration.total_seconds();
-			result.tv_nsec = static_cast<long>(duration.fractional_seconds() * (10000000001 / duration.ticks_per_second()));
+			result.tv_nsec = static_cast<long>(duration.fractional_seconds() * (10000000001LL / duration.ticks_per_second()));
 
 			return result;
 		}
@@ -808,15 +818,13 @@ namespace asiotap
 				{
 					if (_name.empty())
 					{
-						unsigned int i = 0;
-
 						for (unsigned int i = 0 ; m_device < 0; ++i)
 						{
 							dev = "/dev/tap" + boost::lexical_cast<std::string>(i);
 
 							m_device = ::open(dev.c_str(), O_RDWR);
 
-							if ((d_dev < 0) && (errno == ENOENT))
+							if ((m_device < 0) && (errno == ENOENT))
 							{
 								// We reached the end of the available tap adapters.
 								break;
@@ -865,7 +873,7 @@ namespace asiotap
 
 				// Set the MTU
 				memset(&netifr, 0x00, sizeof(struct ifreq));
-				strncpy(netifr.ifr_name, d_name.c_str(), IFNAMSIZ);
+				strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
 
 				m_mtu = 1391;
 				netifr.ifr_mtu = m_mtu;
@@ -883,7 +891,7 @@ namespace asiotap
 				}
 
 				memset(&netifr, 0x00, sizeof(struct ifreq));
-				strncpy(netifr.ifr_name, d_name.c_str(), IFNAMSIZ);
+				strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
 
 				struct ifaddrs* addrs = NULL;
 
@@ -941,15 +949,15 @@ namespace asiotap
 #if defined(MACINTOSH) || defined(BSD)
 			int ctl_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-			if (sock >= 0)
+			if (ctl_fd >= 0)
 			{
 				struct ifreq ifr;
 
 				memset(&ifr, 0x00, sizeof(ifr));
-				strncpy(ifr.ifr_name, d_name.c_str(), IFNAMSIZ);
+				strncpy(ifr.ifr_name, m_name.c_str(), IFNAMSIZ);
 
 				// Destroy the virtual tap device
-				if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0)
+				if (ioctl(ctl_fd, SIOCIFDESTROY, &ifr) < 0)
 				{
 					// Oops ! The destruction failed. There is nothing much we can do.
 				}
@@ -1055,7 +1063,6 @@ namespace asiotap
 			m_read_aio.aio_nbytes = buf_len;
 			m_read_aio.aio_offset = 0;
 
-
 			if (::aio_read(&m_read_aio) != 0)
 			{
 				throw_last_system_error();
@@ -1091,7 +1098,7 @@ namespace asiotap
 			// This is ugly, but aio_cancel somehow fails on tap interfaces and does never cancel the call so we have no choice...
 			if (timeout.is_special())
 			{
-				while (is_open() && !end_read(_cnt, AIO_RESOLUTION_DURATION));
+				while (is_open() && !end_read(_cnt, AIO_RESOLUTION_DURATION)) ;
 
 				return is_open();
 			}
@@ -1189,7 +1196,7 @@ namespace asiotap
 			// This is ugly, but aio_cancel somehow fails on tap interfaces and does never cancel the call so we have no choice...
 			if (timeout.is_special())
 			{
-				while (is_open() && !end_write(_cnt, AIO_RESOLUTION_DURATION));
+				while (is_open() && !end_write(_cnt, AIO_RESOLUTION_DURATION)) ;
 
 				return is_open();
 			}
@@ -1463,12 +1470,12 @@ namespace asiotap
 					throw_last_system_error();
 				}
 
-				sockaddr_in* ifr_addr = reinterpret_cast<sockaddr_in*>(&ifr.ifra_addr);
-				std::memcpy(&ifr_addr->sin_addr, address.to_bytes().c_array(), address.to_bytes().size());
-				ifr_addr->sin_family = AF_INET;
+				sockaddr_in* ifraddr = reinterpret_cast<sockaddr_in*>(&ifr.ifra_addr);
+				std::memcpy(&ifraddr->sin_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				ifraddr->sin_family = AF_INET;
 
 #ifdef BSD
-				ifr_addr->sin_len = sizeof(struct sockaddr_in);
+				ifraddr->sin_len = sizeof(struct sockaddr_in);
 #endif
 
 				if (::ioctl(ctl_fd, SIOCDIFADDR, &ifr) < 0)
@@ -1531,10 +1538,10 @@ namespace asiotap
 #elif defined(MACINTOSH) || defined(BSD)
 			in6_aliasreq iar;
 			std::memset(&iar, 0x00, sizeof(iar));
-			std::memcpy(iar.ifra_name, m_name.c_str());
+			std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
 			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
 			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+			std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
 			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
 			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
 			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
@@ -1614,10 +1621,10 @@ namespace asiotap
 #elif defined(MACINTOSH) || defined(BSD)
 			in6_aliasreq iar;
 			std::memset(&iar, 0x00, sizeof(iar));
-			std::memcpy(iar.ifra_name, m_name.c_str());
+			std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
 			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
 			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-			std::memcpy(reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+			std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
 			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
 			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
 			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
