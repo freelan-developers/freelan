@@ -119,6 +119,12 @@ namespace asiotap
 				boost::asio::ip::address_v6 destination() const;
 
 				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::const_buffer payload() const;
+
+				/**
 				 * \brief Get the IPv6 header length, in bytes.
 				 * \return The IPv6 header length, in bytes.
 				 */
@@ -238,6 +244,12 @@ namespace asiotap
 				void set_destination(boost::asio::ip::address_v6 destination) const;
 
 				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::mutable_buffer payload() const;
+
+				/**
 				 * \brief Get the IPv6 header length, in bytes.
 				 * \return The IPv6 header length, in bytes.
 				 */
@@ -300,6 +312,11 @@ namespace asiotap
 			std::memcpy(raw.c_array(), frame().destination.s6_addr, raw.size());
 
 			return address_v6(raw);
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<ipv6_frame>::payload() const
+		{
+			return buffer() + header_length();
 		}
 
 		inline size_t _const_helper_impl<ipv6_frame>::header_length() const
@@ -405,6 +422,11 @@ namespace asiotap
 		inline _mutable_helper_impl<ipv6_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
 			_base_mutable_helper<ipv6_frame>(buf)
 		{
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<ipv6_frame>::payload() const
+		{
+			return buffer() + header_length();
 		}
 
 		inline size_t _mutable_helper_impl<ipv6_frame>::header_length() const
