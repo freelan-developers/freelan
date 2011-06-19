@@ -304,7 +304,7 @@ namespace asiotap
 
 		inline size_t _const_helper_impl<ipv6_frame>::header_length() const
 		{
-			return 40;
+			return sizeof(ipv6_frame);
 		}
 
 		inline _const_helper_impl<ipv6_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
@@ -409,7 +409,7 @@ namespace asiotap
 
 		inline size_t _mutable_helper_impl<ipv6_frame>::header_length() const
 		{
-			return 40;
+			return sizeof(ipv6_frame);
 		}
 	}
 }
