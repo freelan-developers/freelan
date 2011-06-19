@@ -79,10 +79,10 @@ static char my_buf[2048];
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
-void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame, boost::asio::const_buffer payload);
-void arp_frame_read(asiotap::osi::const_arp_helper frame, boost::asio::const_buffer payload);
-void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame, boost::asio::const_buffer payload);
-void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame, boost::asio::const_buffer payload);
+void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame);
+void arp_frame_read(asiotap::osi::const_arp_helper frame);
+void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame);
+void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
@@ -120,32 +120,25 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 	}
 }
 
-void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame, boost::asio::const_buffer payload)
+void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame)
 {
 	(void)frame;
-	(void)payload;
 
 	std::cout << "Ethernet frame" << std::endl;
 }
 
-void arp_frame_read(asiotap::osi::const_arp_helper frame, boost::asio::const_buffer payload)
+void arp_frame_read(asiotap::osi::const_arp_helper frame)
 {
-	(void)payload;
-
 	std::cout << "ARP frame: " << frame.sender_logical_address() << std::endl;
 }
 
-void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame, boost::asio::const_buffer payload)
+void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame)
 {
-	(void)payload;
-
 	std::cout << "IPv4 frame: " << frame.source() << std::endl;
 }
 
-void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame, boost::asio::const_buffer payload)
+void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame)
 {
-	(void)payload;
-
 	std::cout << "IPv6 frame: " << frame.source() << std::endl;
 }
 
