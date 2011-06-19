@@ -236,7 +236,7 @@ namespace asiotap
 				 * \param destination The destination address.
 				 */
 				void set_destination(boost::asio::ip::address_v6 destination) const;
- 
+
 				/**
 				 * \brief Get the IPv6 header length, in bytes.
 				 * \return The IPv6 header length, in bytes.
@@ -302,10 +302,10 @@ namespace asiotap
 			return address_v6(raw);
 		}
 
-                inline size_t _const_helper_impl<ipv6_frame>::header_length() const
-                {
-                        return 40;
-                }
+		inline size_t _const_helper_impl<ipv6_frame>::header_length() const
+		{
+			return 40;
+		}
 
 		inline _const_helper_impl<ipv6_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
 			_base_const_helper<ipv6_frame>(buf)
@@ -407,10 +407,10 @@ namespace asiotap
 		{
 		}
 
-                inline size_t _mutable_helper_impl<ipv6_frame>::header_length() const
-                {
-                        return 40;
-                }
+		inline size_t _mutable_helper_impl<ipv6_frame>::header_length() const
+		{
+			return 40;
+		}
 	}
 }
 
