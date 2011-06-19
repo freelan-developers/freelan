@@ -154,6 +154,12 @@ namespace asiotap
 				boost::asio::ip::address_v4 destination() const;
 
 				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::const_buffer payload() const;
+
+				/**
 				 * \brief Compute the checksum.
 				 * \return The checksum.
 				 */
@@ -338,6 +344,12 @@ namespace asiotap
 				void set_destination(boost::asio::ip::address_v4 destination) const;
 
 				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::mutable_buffer payload() const;
+
+				/**
 				 * \brief Compute the checksum.
 				 * \return The checksum.
 				 */
@@ -426,6 +438,11 @@ namespace asiotap
 		inline boost::asio::ip::address_v4 _const_helper_impl<ipv4_frame>::destination() const
 		{
 			return boost::asio::ip::address_v4(ntohl(frame().destination.s_addr));
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<ipv4_frame>::payload() const
+		{
+			return buffer() + header_length();
 		}
 
 		inline bool _const_helper_impl<ipv4_frame>::verify_checksum() const
@@ -566,6 +583,11 @@ namespace asiotap
 		inline void _mutable_helper_impl<ipv4_frame>::set_destination(boost::asio::ip::address_v4 _destination) const
 		{
 			frame().destination.s_addr = htonl(_destination.to_ulong());
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<ipv4_frame>::payload() const
+		{
+			return buffer() + header_length();
 		}
 
 		inline bool _mutable_helper_impl<ipv4_frame>::verify_checksum() const

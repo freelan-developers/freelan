@@ -124,6 +124,12 @@ namespace asiotap
 				 */
 				boost::asio::ip::address_v4 target_logical_address() const;
 
+				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::const_buffer payload() const;
+
 			protected:
 
 				/**
@@ -237,6 +243,12 @@ namespace asiotap
 				 */
 				void set_target_logical_address(boost::asio::ip::address_v4 target_logical_address) const;
 
+				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::mutable_buffer payload() const;
+
 			protected:
 
 				/**
@@ -289,6 +301,11 @@ namespace asiotap
 		inline boost::asio::ip::address_v4 _const_helper_impl<arp_frame>::target_logical_address() const
 		{
 			return boost::asio::ip::address_v4(ntohl(frame().target_logical_address.s_addr));
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<arp_frame>::payload() const
+		{
+			return buffer() + sizeof(arp_frame);
 		}
 
 		inline _const_helper_impl<arp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
@@ -374,6 +391,11 @@ namespace asiotap
 		inline void _mutable_helper_impl<arp_frame>::set_target_logical_address(boost::asio::ip::address_v4 _target_logical_address) const
 		{
 			frame().target_logical_address.s_addr = htonl(_target_logical_address.to_ulong());
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<arp_frame>::payload() const
+		{
+			return buffer() + sizeof(arp_frame);
 		}
 
 		inline _mutable_helper_impl<arp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :

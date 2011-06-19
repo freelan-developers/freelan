@@ -77,20 +77,18 @@ namespace asiotap
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
-		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
 		 * \return true on success.
 		 */
 		template <typename OSIFrameType>
-		bool check_frame(const_helper<OSIFrameType> frame, boost::asio::mutable_buffer& buf);
+		bool check_frame(mutable_helper<OSIFrameType> frame);
 
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
-		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
 		 * \return true on success.
 		 */
 		template <typename OSIFrameType>
-		bool check_frame(const_helper<OSIFrameType> frame, boost::asio::const_buffer& buf);
+		bool check_frame(const_helper<OSIFrameType> frame);
 
 		/**
 		 * \brief Get the payload associated to a given frame.
@@ -227,29 +225,9 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline bool check_frame(const_helper<OSIFrameType> frame, boost::asio::mutable_buffer& buf)
+		inline bool check_frame(mutable_helper<OSIFrameType> frame)
 		{
-			boost::asio::const_buffer _buf = buf;
-
-			if (check_frame(frame, _buf))
-			{
-				ptrdiff_t offset = boost::asio::buffer_cast<const uint8_t*>(_buf) - boost::asio::buffer_cast<const uint8_t*>(buf);
-				size_t size = boost::asio::buffer_size(_buf);
-
-				buf = boost::asio::buffer(buf + offset, size);
-
-				return true;
-			}
-
-			return false;
-		}
-
-		template <typename OSIFrameType>
-		inline bool check_frame(const_helper<OSIFrameType> frame, boost::asio::const_buffer& buf)
-		{
-			(void)frame;
-			buf = buf + sizeof(OSIFrameType);
-			return true;
+			return check_frame(const_helper<OSIFrameType>(frame));
 		}
 
 		template <typename OSIFrameType>
@@ -259,7 +237,12 @@ namespace asiotap
 
 			if (frame)
 			{
-				if (!check_frame(helper<OSIFrameType>(buf), buf))
+				mutable_helper<OSIFrameType> buf_helper = helper<OSIFrameType>(buf);
+
+				if (check_frame(buf_helper))
+				{
+					buf = buf_helper.payload();
+				} else
 				{
 					return NULL;
 				}
@@ -275,7 +258,12 @@ namespace asiotap
 
 			if (frame)
 			{
-				if (!check_frame(helper<OSIFrameType>(buf), buf))
+				const_helper<OSIFrameType> buf_helper = helper<OSIFrameType>(buf);
+
+				if (check_frame(buf_helper))
+				{
+					buf = buf_helper.payload();
+				} else
 				{
 					return NULL;
 				}

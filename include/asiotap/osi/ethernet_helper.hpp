@@ -87,6 +87,12 @@ namespace asiotap
 				 * \return The protocol.
 				 */
 				uint16_t protocol() const;
+				
+				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::const_buffer payload() const;
 
 			protected:
 
@@ -129,6 +135,12 @@ namespace asiotap
 				 */
 				void set_protocol(uint16_t protocol) const;
 
+				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload.
+				 */
+				boost::asio::mutable_buffer payload() const;
+
 			protected:
 
 				/**
@@ -151,6 +163,11 @@ namespace asiotap
 		inline uint16_t _const_helper_impl<ethernet_frame>::protocol() const
 		{
 			return ntohs(frame().protocol);
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::payload() const
+		{
+			return buffer() + sizeof(ethernet_frame);
 		}
 
 		inline _const_helper_impl<ethernet_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
@@ -176,6 +193,11 @@ namespace asiotap
 		inline void _mutable_helper_impl<ethernet_frame>::set_protocol(uint16_t _protocol) const
 		{
 			frame().protocol = htons(_protocol);
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<ethernet_frame>::payload() const
+		{
+			return buffer() + sizeof(ethernet_frame);
 		}
 
 		inline _mutable_helper_impl<ethernet_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :

@@ -73,10 +73,9 @@ namespace asiotap
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
-		 * \param buf The buffer. If the return value is true, buf will be updated to indicate the payload of the frame.
 		 * \return true on success.
 		 */
-		bool check_frame(const_ipv6_helper frame, boost::asio::const_buffer& buf);
+		bool check_frame(const_ipv6_helper frame);
 
 		/**
 		 * \brief The frame parent match function.
@@ -89,6 +88,11 @@ namespace asiotap
 		template <typename ParentFilterType>
 		inline ipv6_filter<ParentFilterType>::ipv6_filter(ParentFilterType& parent) : filter<ipv6_frame, ParentFilterType>(parent)
 		{
+		}
+
+		inline bool check_frame(const_ipv6_helper frame)
+		{
+			return (frame.version() == IP_PROTOCOL_VERSION_6);
 		}
 
 		template <>

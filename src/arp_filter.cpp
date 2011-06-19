@@ -48,19 +48,13 @@ namespace asiotap
 {
 	namespace osi
 	{
-		bool check_frame(const_arp_helper frame, boost::asio::const_buffer& buf)
+		bool check_frame(const_arp_helper frame)
 		{
-			if (
+			return (
 			    (frame.protocol_type() == IP_PROTOCOL_TYPE) &&
 			    (frame.hardware_address_length() == ETHERNET_ADDRESS_SIZE) &&
 			    (frame.logical_address_length() == sizeof(in_addr))
-			)
-			{
-				buf = boost::asio::buffer(buf + sizeof(const_arp_helper::frame_type), 0);
-				return true;
-			}
-
-			return false;
+			);
 		}
 	}
 }
