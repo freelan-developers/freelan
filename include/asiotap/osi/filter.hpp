@@ -111,26 +111,6 @@ namespace asiotap
 		const_helper<OSIFrameType> frame_parse(boost::asio::const_buffer buf);
 
 		/**
-		 * \brief Parse the specified frame, in the context of its parent.
-		 * \param parent The parent helper.
-		 * \return A helper.
-		 *
-		 * If the parsing fails, a std::runtime_error is thrown.
-		 */
-		template <typename OSIFrameType, typename ParentOSIFrameType>
-		mutable_helper<OSIFrameType> parent_frame_parse(mutable_helper<ParentOSIFrameType> parent);
-
-		/**
-		 * \brief Parse the specified frame, in the context of its parent.
-		 * \param parent The parent helper.
-		 * \return A helper.
-		 *
-		 * If the parsing fails, a std::runtime_error is thrown.
-		 */
-		template <typename OSIFrameType, typename ParentOSIFrameType>
-		const_helper<OSIFrameType> parent_frame_parse(const_helper<ParentOSIFrameType> parent);
-
-		/**
 		 * \brief The base template function to check for frame encapsulation.
 		 * \param parent The parent frame.
 		 * \return true if the parent frame should contain a frame of the specified type.
@@ -271,28 +251,6 @@ namespace asiotap
 			return result;
 		}
 
-		template <typename OSIFrameType, typename ParentOSIFrameType>
-		inline mutable_helper<OSIFrameType> parent_frame_parse(mutable_helper<ParentOSIFrameType> parent)
-		{
-			if (!frame_parent_match<OSIFrameType, ParentOSIFrameType>(parent))
-			{
-				throw std::runtime_error("Frame parent mismatch");
-			}
-
-			return frame_parse<OSIFrameType>(parent.payload());
-		}
-
-		template <typename OSIFrameType, typename ParentOSIFrameType>
-		inline const_helper<OSIFrameType> parent_frame_parse(const_helper<ParentOSIFrameType> parent)
-		{
-			if (!frame_parent_match<OSIFrameType, ParentOSIFrameType>(parent))
-			{
-				throw std::runtime_error("Frame parent mismatch");
-			}
-
-			return frame_parse<OSIFrameType>(parent.payload());
-		}
-
 		template <typename OSIFrameType>
 		void _base_filter<OSIFrameType>::add_callback(frame_handled_callback callback)
 		{
@@ -314,14 +272,17 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentFilterType>
 		void filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent) const
 		{
-			try
+			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent))
 			{
-				const_helper<OSIFrameType> frame = parent_frame_parse<OSIFrameType, typename ParentFilterType::frame_type>(parent);
+				try
+				{
+					const_helper<OSIFrameType> frame = frame_parse<OSIFrameType>(parent.payload());
 
-				filter<OSIFrameType, ParentFilterType>::frame_handled(frame);
-			}
-			catch (std::runtime_error&)
-			{
+					filter<OSIFrameType, ParentFilterType>::frame_handled(frame);
+				}
+				catch (std::runtime_error&)
+				{
+				}
 			}
 		}
 
