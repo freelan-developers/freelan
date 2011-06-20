@@ -59,22 +59,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief A frame cast.
-		 * \param buf The buffer to cast.
-		 * \return A pointer to the mapped data on success, NULL if the cast fails.
-		 */
-		template <typename OSIFrameType>
-		OSIFrameType* frame_cast(const boost::asio::mutable_buffer& buf);
-
-		/**
-		 * \brief A frame cast.
-		 * \param buf The buffer to cast.
-		 * \return A pointer to the mapped data on success, NULL if the cast fails.
-		 */
-		template <typename OSIFrameType>
-		const OSIFrameType* frame_cast(const boost::asio::const_buffer& buf);
-
-		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
 		 * \return true on success.
@@ -95,7 +79,7 @@ namespace asiotap
 		 * \param buf The buffer. Must point to a structure of the specified type.
 		 * \return A helper.
 		 *
-		 * If the parsing fails, a std::runtime_error is thrown.
+		 * If the parsing fails, a std::logic_error is thrown.
 		 */
 		template <typename OSIFrameType>
 		mutable_helper<OSIFrameType> frame_parse(boost::asio::mutable_buffer buf);
@@ -105,7 +89,7 @@ namespace asiotap
 		 * \param buf The buffer. Must point to a structure of the specified type.
 		 * \return A helper.
 		 *
-		 * If the parsing fails, a std::runtime_error is thrown.
+		 * If the parsing fails, a std::logic_error is thrown.
 		 */
 		template <typename OSIFrameType>
 		const_helper<OSIFrameType> frame_parse(boost::asio::const_buffer buf);
@@ -189,28 +173,6 @@ namespace asiotap
 		};
 
 		template <typename OSIFrameType>
-		inline OSIFrameType* frame_cast(const boost::asio::mutable_buffer& buf)
-		{
-			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
-			{
-				return NULL;
-			}
-
-			return boost::asio::buffer_cast<OSIFrameType*>(buf);
-		}
-
-		template <typename OSIFrameType>
-		inline const OSIFrameType* frame_cast(const boost::asio::const_buffer& buf)
-		{
-			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
-			{
-				return NULL;
-			}
-
-			return boost::asio::buffer_cast<const OSIFrameType*>(buf);
-		}
-
-		template <typename OSIFrameType>
 		inline bool check_frame(mutable_helper<OSIFrameType> frame)
 		{
 			return check_frame(const_helper<OSIFrameType>(frame));
@@ -219,16 +181,11 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline mutable_helper<OSIFrameType> frame_parse(boost::asio::mutable_buffer buf)
 		{
-			if (!frame_cast<OSIFrameType>(buf))
-			{
-				throw std::runtime_error("Frame too small");
-			}
-
 			mutable_helper<OSIFrameType> result = helper<OSIFrameType>(buf);
 
 			if (!check_frame(result))
 			{
-				throw std::runtime_error("Frame parsing failed");
+				throw std::domain_error("buf");
 			}
 
 			return result;
@@ -237,16 +194,11 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline const_helper<OSIFrameType> frame_parse(boost::asio::const_buffer buf)
 		{
-			if (!frame_cast<OSIFrameType>(buf))
-			{
-				throw std::runtime_error("Frame too small");
-			}
-
 			const_helper<OSIFrameType> result = helper<OSIFrameType>(buf);
 
 			if (!check_frame(result))
 			{
-				throw std::runtime_error("Frame parsing failed");
+				throw std::domain_error("buf");
 			}
 
 			return result;
@@ -267,7 +219,7 @@ namespace asiotap
 
 				_base_filter<OSIFrameType>::frame_handled(frame);
 			}
-			catch (std::runtime_error&)
+			catch (std::logic_error&)
 			{
 			}
 		}

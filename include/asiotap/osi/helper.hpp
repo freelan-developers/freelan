@@ -237,6 +237,10 @@ namespace asiotap
 		inline _base_const_helper<OSIFrameType>::_base_const_helper(boost::asio::const_buffer buf) :
 			m_buf(buf)
 		{
+			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
+			{
+				throw std::length_error("buf");
+			}
 		}
 
 		template <typename OSIFrameType>
@@ -255,6 +259,10 @@ namespace asiotap
 		inline _base_mutable_helper<OSIFrameType>::_base_mutable_helper(boost::asio::mutable_buffer buf) :
 			m_buf(buf)
 		{
+			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
+			{
+				throw std::length_error("buf");
+			}
 		}
 
 		template <typename OSIFrameType>
