@@ -80,12 +80,6 @@ namespace asiotap
 
 				/**
 				 * \brief Create a helper from a frame type structure.
-				 * \param frame The frame to refer to.
-				 */
-				_base_const_helper(const OSIFrameType& frame);
-
-				/**
-				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
 				_base_const_helper(boost::asio::const_buffer buf);
@@ -121,12 +115,6 @@ namespace asiotap
 				boost::asio::mutable_buffer buffer() const;
 
 			protected:
-
-				/**
-				 * \brief Create a helper from a frame type structure.
-				 * \param frame The frame to refer to.
-				 */
-				_base_mutable_helper(OSIFrameType& frame);
 
 				/**
 				 * \brief Create a helper from a frame type structure.
@@ -184,13 +172,6 @@ namespace asiotap
 				const_helper(boost::asio::const_buffer buf);
 
 				/**
-				 * \brief The constructor.
-				 * \param frame The frame to refer to.
-				 * \param frame_size The total size of the frame, including its payload.
-				 */
-				const_helper(const OSIFrameType& frame, size_t frame_size);
-
-				/**
 				 * \brief Convert to the referenced type.
 				 * \return The referenced type.
 				 */
@@ -210,13 +191,6 @@ namespace asiotap
 				 * \param buf The buffer to refer to.
 				 */
 				mutable_helper(boost::asio::mutable_buffer buf);
-
-				/**
-				 * \brief The constructor.
-				 * \param frame The frame to refer to.
-				 * \param frame_size The total size of the frame, including its payload.
-				 */
-				mutable_helper(OSIFrameType& frame, size_t frame_size);
 
 				/**
 				 * \brief Convert to a const_helper.
@@ -240,30 +214,12 @@ namespace asiotap
 		const_helper<OSIFrameType> helper(boost::asio::const_buffer buf);
 
 		/**
-		 * \brief Create a helper from a frame.
-		 * \param frame The frame.
-		 * \param frame_size The total size of the frame, including its payload.
-		 * \return The helper.
-		 */
-		template <typename OSIFrameType>
-		const_helper<OSIFrameType> helper(const OSIFrameType& frame, size_t frame_size);
-
-		/**
 		 * \brief Create a helper from a buffer.
 		 * \param buf The buffer.
 		 * \return The helper.
 		 */
 		template <typename OSIFrameType>
 		mutable_helper<OSIFrameType> helper(boost::asio::mutable_buffer buf);
-
-		/**
-		 * \brief Create a helper from a frame.
-		 * \param frame The frame.
-		 * \param frame_size The total size of the frame, including its payload.
-		 * \return The helper.
-		 */
-		template <typename OSIFrameType>
-		mutable_helper<OSIFrameType> helper(OSIFrameType& frame, size_t frame_size);
 
 		template <typename OSIFrameType>
 		inline const OSIFrameType& _base_const_helper<OSIFrameType>::frame() const
@@ -308,12 +264,6 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline const_helper<OSIFrameType>::const_helper(const OSIFrameType& _frame, size_t frame_size) :
-			_const_helper_impl<OSIFrameType>(boost::asio::buffer(&_frame, frame_size))
-		{
-		}
-
-		template <typename OSIFrameType>
 		inline const_helper<OSIFrameType>::operator const OSIFrameType&() const
 		{
 			return const_helper<OSIFrameType>::frame();
@@ -322,12 +272,6 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline mutable_helper<OSIFrameType>::mutable_helper(boost::asio::mutable_buffer buf) :
 			_mutable_helper_impl<OSIFrameType>(buf)
-		{
-		}
-
-		template <typename OSIFrameType>
-		inline mutable_helper<OSIFrameType>::mutable_helper(OSIFrameType& _frame, size_t frame_size) :
-			_mutable_helper_impl<OSIFrameType>(boost::asio::buffer(&_frame, frame_size))
 		{
 		}
 
@@ -350,21 +294,9 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline const_helper<OSIFrameType> helper(const OSIFrameType& frame, size_t frame_size)
-		{
-			return const_helper<OSIFrameType>(frame, frame_size);
-		}
-
-		template <typename OSIFrameType>
 		inline mutable_helper<OSIFrameType> helper(boost::asio::mutable_buffer buf)
 		{
 			return mutable_helper<OSIFrameType>(buf);
-		}
-
-		template <typename OSIFrameType>
-		inline mutable_helper<OSIFrameType> helper(OSIFrameType& frame, size_t frame_size)
-		{
-			return mutable_helper<OSIFrameType>(frame, frame_size);
 		}
 	}
 }
