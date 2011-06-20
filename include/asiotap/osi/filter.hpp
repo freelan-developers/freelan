@@ -144,6 +144,7 @@ namespace asiotap
 
 			protected:
 
+				void do_parse(boost::asio::const_buffer buf) const;
 				void frame_handled(const_helper<OSIFrameType>) const;
 
 			public:
@@ -181,8 +182,8 @@ namespace asiotap
 			public:
 
 				/**
-				 * \brief Parse a frame.
-				 * \param buf The frame buffer.
+				 * \brief Parse the specified buffer.
+				 * \param buf The buffer to parse.
 				 */
 				void parse(boost::asio::const_buffer buf) const;
 		};
@@ -258,6 +259,20 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
+		void _base_filter<OSIFrameType>::do_parse(boost::asio::const_buffer buf) const
+		{
+			try
+			{
+				const_helper<OSIFrameType> frame = frame_parse<OSIFrameType>(buf);
+
+				_base_filter<OSIFrameType>::frame_handled(frame);
+			}
+			catch (std::runtime_error&)
+			{
+			}
+		}
+
+		template <typename OSIFrameType>
 		void _base_filter<OSIFrameType>::frame_handled(const_helper<OSIFrameType> frame) const
 		{
 			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame));
@@ -274,30 +289,14 @@ namespace asiotap
 		{
 			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent))
 			{
-				try
-				{
-					const_helper<OSIFrameType> frame = frame_parse<OSIFrameType>(parent.payload());
-
-					filter<OSIFrameType, ParentFilterType>::frame_handled(frame);
-				}
-				catch (std::runtime_error&)
-				{
-				}
+				_base_filter<OSIFrameType>::do_parse(parent.payload());
 			}
 		}
-
+		
 		template <typename OSIFrameType>
 		void filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
 		{
-			try
-			{
-				const_helper<OSIFrameType> frame = frame_parse<OSIFrameType>(buf);
-
-				filter<OSIFrameType, void>::frame_handled(frame);
-			}
-			catch (std::runtime_error&)
-			{
-			}
+			_base_filter<OSIFrameType>::do_parse(buf);
 		}
 	}
 }
