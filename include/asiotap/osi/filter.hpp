@@ -59,42 +59,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		template <typename OSIFrameType>
-		bool check_frame(mutable_helper<OSIFrameType> frame);
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		template <typename OSIFrameType>
-		bool check_frame(const_helper<OSIFrameType> frame);
-
-		/**
-		 * \brief Parse the specified frame.
-		 * \param buf The buffer. Must point to a structure of the specified type.
-		 * \return A helper.
-		 *
-		 * If the parsing fails, a std::logic_error is thrown.
-		 */
-		template <typename OSIFrameType>
-		mutable_helper<OSIFrameType> frame_parse(boost::asio::mutable_buffer buf);
-
-		/**
-		 * \brief Parse the specified frame.
-		 * \param buf The buffer. Must point to a structure of the specified type.
-		 * \return A helper.
-		 *
-		 * If the parsing fails, a std::logic_error is thrown.
-		 */
-		template <typename OSIFrameType>
-		const_helper<OSIFrameType> frame_parse(boost::asio::const_buffer buf);
-
-		/**
 		 * \brief The base template function to check for frame encapsulation.
 		 * \param parent The parent frame.
 		 * \return true if the parent frame should contain a frame of the specified type.
@@ -173,38 +137,6 @@ namespace asiotap
 		};
 
 		template <typename OSIFrameType>
-		inline bool check_frame(mutable_helper<OSIFrameType> frame)
-		{
-			return check_frame(const_helper<OSIFrameType>(frame));
-		}
-
-		template <typename OSIFrameType>
-		inline mutable_helper<OSIFrameType> frame_parse(boost::asio::mutable_buffer buf)
-		{
-			mutable_helper<OSIFrameType> result = helper<OSIFrameType>(buf);
-
-			if (!check_frame(result))
-			{
-				throw std::domain_error("buf");
-			}
-
-			return result;
-		}
-
-		template <typename OSIFrameType>
-		inline const_helper<OSIFrameType> frame_parse(boost::asio::const_buffer buf)
-		{
-			const_helper<OSIFrameType> result = helper<OSIFrameType>(buf);
-
-			if (!check_frame(result))
-			{
-				throw std::domain_error("buf");
-			}
-
-			return result;
-		}
-
-		template <typename OSIFrameType>
 		void _base_filter<OSIFrameType>::add_callback(frame_handled_callback callback)
 		{
 			m_callbacks.push_back(callback);
@@ -215,9 +147,7 @@ namespace asiotap
 		{
 			try
 			{
-				const_helper<OSIFrameType> frame = frame_parse<OSIFrameType>(buf);
-
-				_base_filter<OSIFrameType>::frame_handled(frame);
+				_base_filter<OSIFrameType>::frame_handled(helper<OSIFrameType>(buf));
 			}
 			catch (std::logic_error&)
 			{

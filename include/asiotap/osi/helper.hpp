@@ -206,6 +206,22 @@ namespace asiotap
 		};
 
 		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		template <typename OSIFrameType>
+		bool check_frame(mutable_helper<OSIFrameType> frame);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		template <typename OSIFrameType>
+		bool check_frame(const_helper<OSIFrameType> frame);
+
+		/**
 		 * \brief Create a helper from a buffer.
 		 * \param buf The buffer.
 		 * \return The helper.
@@ -269,6 +285,10 @@ namespace asiotap
 		inline const_helper<OSIFrameType>::const_helper(boost::asio::const_buffer buf) :
 			_const_helper_impl<OSIFrameType>(buf)
 		{
+			if (!check_frame(*this))
+			{
+				throw std::domain_error("buf");
+			}
 		}
 
 		template <typename OSIFrameType>
@@ -281,6 +301,10 @@ namespace asiotap
 		inline mutable_helper<OSIFrameType>::mutable_helper(boost::asio::mutable_buffer buf) :
 			_mutable_helper_impl<OSIFrameType>(buf)
 		{
+			if (!check_frame(*this))
+			{
+				throw std::domain_error("buf");
+			}
 		}
 
 		template <typename OSIFrameType>
@@ -293,6 +317,12 @@ namespace asiotap
 		inline mutable_helper<OSIFrameType>::operator OSIFrameType&() const
 		{
 			return mutable_helper<OSIFrameType>::frame();
+		}
+
+		template <typename OSIFrameType>
+		inline bool check_frame(mutable_helper<OSIFrameType> frame)
+		{
+			return check_frame(const_helper<OSIFrameType>(frame));
 		}
 
 		template <typename OSIFrameType>

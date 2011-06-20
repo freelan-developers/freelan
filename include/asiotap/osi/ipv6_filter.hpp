@@ -48,8 +48,8 @@
 #include "filter.hpp"
 #include "ipv6_frame.hpp"
 
-#include "ipv6_helper.hpp"
 #include "ethernet_helper.hpp"
+#include "ipv6_helper.hpp"
 
 namespace asiotap
 {
@@ -71,13 +71,6 @@ namespace asiotap
 		};
 
 		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_ipv6_helper frame);
-
-		/**
 		 * \brief The frame parent match function.
 		 * \param parent The parent frame.
 		 * \return true if the frame matches the parent frame.
@@ -88,11 +81,6 @@ namespace asiotap
 		template <typename ParentFilterType>
 		inline ipv6_filter<ParentFilterType>::ipv6_filter(ParentFilterType& parent) : filter<ipv6_frame, ParentFilterType>(parent)
 		{
-		}
-
-		inline bool check_frame(const_ipv6_helper frame)
-		{
-			return (frame.version() == IP_PROTOCOL_VERSION_6);
 		}
 
 		template <>

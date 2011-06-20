@@ -48,8 +48,8 @@
 #include "filter.hpp"
 #include "arp_frame.hpp"
 
-#include "arp_helper.hpp"
 #include "ethernet_helper.hpp"
+#include "arp_helper.hpp"
 
 namespace asiotap
 {
@@ -69,13 +69,6 @@ namespace asiotap
 				 */
 				arp_filter(ParentFilterType& parent);
 		};
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_arp_helper frame);
 
 		/**
 		 * \brief The frame parent match function.

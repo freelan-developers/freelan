@@ -58,18 +58,6 @@ namespace asiotap
 		 * \brief The Ethernet filter.
 		 */
 		typedef filter<ethernet_frame> ethernet_filter;
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_ethernet_helper frame);
-
-		inline bool check_frame(const_ethernet_helper)
-		{
-			return true;
-		}
 	}
 }
 

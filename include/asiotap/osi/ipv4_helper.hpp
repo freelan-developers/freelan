@@ -63,6 +63,13 @@ namespace asiotap
 		typedef mutable_helper<ipv4_frame> mutable_ipv4_helper;
 
 		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_ipv4_helper frame);
+
+		/**
 		 * \brief The const ipv4 helper implementation class.
 		 */
 		template <>
@@ -369,6 +376,11 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
+
+		inline bool check_frame(const_ipv4_helper frame)
+		{
+			return ((frame.version() == IP_PROTOCOL_VERSION_4) && (frame.ihl() >= 5));
+		}
 
 		inline uint8_t _const_helper_impl<ipv4_frame>::version() const
 		{
