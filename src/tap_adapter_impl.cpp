@@ -514,7 +514,7 @@ namespace asiotap
 			timespec result = { 0, 0 };
 
 			result.tv_sec = duration.total_seconds();
-			result.tv_nsec = static_cast<long>(duration.fractional_seconds() * (10000000001LL / duration.ticks_per_second()));
+			result.tv_nsec = static_cast<long>(duration.fractional_seconds() * (1000000001LL / duration.ticks_per_second()));
 
 			return result;
 		}
