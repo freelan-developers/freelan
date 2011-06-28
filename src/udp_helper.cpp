@@ -75,7 +75,7 @@ namespace asiotap
 		uint16_t _const_helper_impl<udp_frame>::compute_checksum() const
 		{
 			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = header_length();
+			size_t buf_len = sizeof(frame_type);
 
 			return asiotap::osi::compute_checksum(buf, buf_len);
 		}
@@ -83,7 +83,7 @@ namespace asiotap
 		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum() const
 		{
 			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = header_length();
+			size_t buf_len = sizeof(frame_type);
 
 			return asiotap::osi::compute_checksum(buf, buf_len);
 		}
