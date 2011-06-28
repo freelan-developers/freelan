@@ -80,24 +80,31 @@ namespace asiotap
 				typedef OSIFrameType frame_type;
 
 				/**
-				 * \brief The frame handled callback.
+				 * \brief The frame filter callback.
 				 */
-				typedef boost::function<void (const_helper<OSIFrameType>)> frame_handled_callback;
+				typedef boost::function<bool (const_helper<OSIFrameType>)> frame_filter_callback;
+
+				/**
+				 * \brief The frame handler callback.
+				 */
+				typedef boost::function<void (const_helper<OSIFrameType>)> frame_handler_callback;
 
 				/**
 				 * \brief Add a callback function.
 				 * \param callback The callback function to add.
 				 */
-				void add_callback(frame_handled_callback callback);
+				void add_callback(frame_handler_callback callback);
 
 			protected:
 
 				void do_parse(boost::asio::const_buffer buf) const;
+				bool filter_frame(const_helper<OSIFrameType>) const;
 				void frame_handled(const_helper<OSIFrameType>) const;
 
 			public:
 
-				std::vector<frame_handled_callback> m_callbacks;
+				std::vector<frame_filter_callback> m_filters;
+				std::vector<frame_handler_callback> m_handlers;
 		};
 
 		/**
@@ -137,9 +144,9 @@ namespace asiotap
 		};
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::add_callback(frame_handled_callback callback)
+		void _base_filter<OSIFrameType>::add_callback(frame_handler_callback callback)
 		{
-			m_callbacks.push_back(callback);
+			m_handlers.push_back(callback);
 		}
 
 		template <typename OSIFrameType>
@@ -147,17 +154,28 @@ namespace asiotap
 		{
 			try
 			{
-				_base_filter<OSIFrameType>::frame_handled(helper<OSIFrameType>(buf));
+				const_helper<OSIFrameType> helper(buf);
+
+				if (_base_filter<OSIFrameType>::filter_frame(helper))
+				{
+					_base_filter<OSIFrameType>::frame_handled(helper);
+				}
 			}
 			catch (std::logic_error&)
 			{
 			}
 		}
+		
+		template <typename OSIFrameType>
+		bool _base_filter<OSIFrameType>::filter_frame(const_helper<OSIFrameType> helper) const
+		{
+			return (std::find_if(m_filters.begin(), m_filters.end(), !boost::bind(&frame_filter_callback::operator(), _1, helper)) == m_filters.end());
+		}
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::frame_handled(const_helper<OSIFrameType> frame) const
+		void _base_filter<OSIFrameType>::frame_handled(const_helper<OSIFrameType> helper) const
 		{
-			std::for_each(m_callbacks.begin(), m_callbacks.end(), boost::lambda::bind(boost::lambda::_1, frame));
+			std::for_each(m_handlers.begin(), m_handlers.end(), boost::bind(&frame_handler_callback::operator(), _1, helper));
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
