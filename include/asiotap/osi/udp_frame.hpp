@@ -71,10 +71,10 @@ namespace asiotap
 		 */
 		struct udp_ipv4_pseudo_header
 		{
-			struct in_addr source; /**< Source address */
-			struct in_addr destination; /**< Source address */
+			struct in_addr ipv4_source; /**< Source IPv4 address */
+			struct in_addr ipv4_destination; /**< Source IPv4 address */
 			uint8_t reserved; /**< 8 bits reserved field (must be zero) */
-			uint8_t protocol; /**< The protocol */
+			uint8_t ipv4_protocol; /**< The IPv4 protocol */
 			uint16_t udp_length; /**< The UDP length */
 		} PACKED;
 
