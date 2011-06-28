@@ -56,6 +56,11 @@ namespace asiotap
 #endif
 
 		/**
+		 * \brief The UDP protocol.
+		 */
+		const uint8_t UDP_PROTOCOL = 0x11;
+
+		/**
 		 * \brief An UDP frame structure.
 		 */
 		struct udp_frame
@@ -76,6 +81,19 @@ namespace asiotap
 			uint8_t reserved; /**< 8 bits reserved field (must be zero) */
 			uint8_t ipv4_protocol; /**< The IPv4 protocol */
 			uint16_t udp_length; /**< The UDP length */
+		} PACKED;
+
+		/**
+		 * \brief An UDP-IPv6 pseudo-header structure.
+		 */
+		struct udp_ipv6_pseudo_header
+		{
+			struct in6_addr ipv6_source; /**< Source IPv6 address */
+			struct in6_addr ipv6_destination; /**< Source IPv6 address */
+			uint16_t udp_length; /**< The UDP length */
+			uint16_t reserved; /**< 8 bits reserved field (must be zero) */
+			uint8_t reserved2; /**< 8 bits reserved field (must be zero) */
+			uint8_t ipv6_next_header; /**< The IPv6 next header */
 		} PACKED;
 
 #ifdef MSV
