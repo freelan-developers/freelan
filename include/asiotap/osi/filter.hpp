@@ -90,10 +90,16 @@ namespace asiotap
 				typedef boost::function<void (const_helper<OSIFrameType>)> frame_handler_callback;
 
 				/**
-				 * \brief Add a callback function.
-				 * \param callback The callback function to add.
+				 * \brief Add a filter function.
+				 * \param callback The filter function to add.
 				 */
-				void add_callback(frame_handler_callback callback);
+				void add_filter(frame_filter_callback callback);
+
+				/**
+				 * \brief Add a handler function.
+				 * \param callback The handler function to add.
+				 */
+				void add_handler(frame_handler_callback callback);
 
 			protected:
 
@@ -144,7 +150,13 @@ namespace asiotap
 		};
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::add_callback(frame_handler_callback callback)
+		void _base_filter<OSIFrameType>::add_filter(frame_filter_callback callback)
+		{
+			m_filters.push_back(callback);
+		}
+
+		template <typename OSIFrameType>
+		void _base_filter<OSIFrameType>::add_handler(frame_handler_callback callback)
 		{
 			m_handlers.push_back(callback);
 		}
@@ -181,7 +193,7 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentFilterType>
 		filter<OSIFrameType, ParentFilterType>::filter(ParentFilterType& parent)
 		{
-			parent.add_callback(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _1));
+			parent.add_handler(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _1));
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>

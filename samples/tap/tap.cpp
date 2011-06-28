@@ -105,22 +105,22 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 		boost::asio::const_buffer buffer(my_buf, cnt);
 
 		asiotap::osi::ethernet_filter ethernet_filter;
-		ethernet_filter.add_callback(&ethernet_frame_read);
+		ethernet_filter.add_handler(&ethernet_frame_read);
 
 		asiotap::osi::arp_filter<asiotap::osi::ethernet_filter> arp_filter(ethernet_filter);
-		arp_filter.add_callback(&arp_frame_read);
+		arp_filter.add_handler(&arp_frame_read);
 
 		asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> ipv4_filter(ethernet_filter);
-		ipv4_filter.add_callback(&ipv4_frame_read);
+		ipv4_filter.add_handler(&ipv4_frame_read);
 
 		asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> ipv6_filter(ethernet_filter);
-		ipv6_filter.add_callback(&ipv6_frame_read);
+		ipv6_filter.add_handler(&ipv6_frame_read);
 
 		asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > udp_ipv4_filter(ipv4_filter);
-		udp_ipv4_filter.add_callback(&udp_frame_read);
+		udp_ipv4_filter.add_handler(&udp_frame_read);
 
 		asiotap::osi::udp_filter<asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> > udp_ipv6_filter(ipv6_filter);
-		udp_ipv6_filter.add_callback(&udp_frame_read);
+		udp_ipv6_filter.add_handler(&udp_frame_read);
 
 		ethernet_filter.parse(buffer);
 
