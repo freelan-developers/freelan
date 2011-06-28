@@ -37,33 +37,29 @@
  */
 
 /**
- * \file ipv4_helper.cpp
- * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An IPv4 helper class.
+ * \file checksum.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief Checksum related functions.
  */
 
-#include "osi/ipv4_helper.hpp"
+#ifndef ASIOTAP_OSI_CHECKSUM_HPP
+#define ASIOTAP_OSI_CHECKSUM_HPP
 
-#include "osi/checksum.hpp"
+#include <boost/asio.hpp>
 
 namespace asiotap
 {
 	namespace osi
 	{
-		uint16_t _const_helper_impl<ipv4_frame>::compute_checksum() const
-		{
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = header_length();
-
-			return asiotap::osi::compute_checksum(buf, buf_len);
-		}
-
-		uint16_t _mutable_helper_impl<ipv4_frame>::compute_checksum() const
-		{
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = header_length();
-
-			return asiotap::osi::compute_checksum(buf, buf_len);
-		}
+		/**
+		 * \brief Compute a checksum from the specified buffer.
+		 * \param buf The buffer from which to compute a checksum.
+		 * \param buf_len The length of buf.
+		 * \return The computed checksum.
+		 */
+		uint16_t compute_checksum(const uint16_t* buf, size_t buf_len);
 	}
 }
+
+#endif /* ASIOTAP_OSI_CHECKSUM_HPP */
+
