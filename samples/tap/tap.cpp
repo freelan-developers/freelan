@@ -9,6 +9,7 @@
 #include <asiotap/osi/arp_filter.hpp>
 #include <asiotap/osi/ipv4_filter.hpp>
 #include <asiotap/osi/ipv6_filter.hpp>
+#include <asiotap/osi/udp_filter.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -83,6 +84,7 @@ void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame);
 void arp_frame_read(asiotap::osi::const_arp_helper frame);
 void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame);
 void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame);
+void udp_frame_read(asiotap::osi::const_udp_helper frame);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
@@ -114,6 +116,12 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 		asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> ipv6_filter(ethernet_filter);
 		ipv6_filter.add_callback(&ipv6_frame_read);
 
+		asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > udp_ipv4_filter(ipv4_filter);
+		udp_ipv4_filter.add_callback(&udp_frame_read);
+
+		asiotap::osi::udp_filter<asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> > udp_ipv6_filter(ipv6_filter);
+		udp_ipv6_filter.add_callback(&udp_frame_read);
+
 		ethernet_filter.parse(buffer);
 
 		tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
@@ -134,12 +142,17 @@ void arp_frame_read(asiotap::osi::const_arp_helper frame)
 
 void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame)
 {
-	std::cout << "IPv4 frame: " << frame.source() << std::endl;
+	std::cout << "IPv4 frame: " << frame.source() << " -> " << frame.destination() << std::endl;
 }
 
 void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame)
 {
-	std::cout << "IPv6 frame: " << frame.source() << std::endl;
+	std::cout << "IPv6 frame: " << frame.source() << " -> " << frame.destination() << std::endl;
+}
+
+void udp_frame_read(asiotap::osi::const_udp_helper frame)
+{
+	std::cout << "UDP frame: " << frame.source() << " -> " << frame.destination() << std::endl;
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
