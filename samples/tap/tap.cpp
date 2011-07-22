@@ -112,6 +112,7 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 		asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> ipv4_filter(ethernet_filter);
 		ipv4_filter.add_handler(&ipv4_frame_read);
+		ipv4_filter.add_checksum_filter();
 
 		asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> ipv6_filter(ethernet_filter);
 		ipv6_filter.add_handler(&ipv6_frame_read);
