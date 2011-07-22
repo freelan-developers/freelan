@@ -129,6 +129,7 @@ namespace asiotap
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}
+
 		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_ipv6_helper parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
