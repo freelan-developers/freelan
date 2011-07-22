@@ -122,16 +122,35 @@ namespace asiotap
 			public:
 
 				/**
+				 * \brief The frame bridge filter callback.
+				 */
+				typedef boost::function<bool (const_helper<typename ParentFilterType::frame_type>, const_helper<OSIFrameType>)> frame_bridge_filter_callback;
+
+				/**
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
 				filter(ParentFilterType& parent);
 
 				/**
+				 * \brief Add a bridge filter function.
+				 * \param callback The bridge filter function to add.
+				 */
+				void add_bridge_filter(frame_bridge_filter_callback callback);
+
+				/**
 				 * \brief Parse a frame.
 				 * \param parent The parent frame.
 				 */
 				void parse(const_helper<typename ParentFilterType::frame_type> parent) const;
+
+			protected:
+
+				bool bridge_filter_frame(const_helper<typename ParentFilterType::frame_type>, const_helper<OSIFrameType>) const;
+
+			private:
+
+				std::vector<frame_bridge_filter_callback> m_bridge_filters;
 		};
 
 		/**
@@ -197,14 +216,40 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
+		void filter<OSIFrameType, ParentFilterType>::add_bridge_filter(frame_bridge_filter_callback callback)
+		{
+			m_bridge_filters.push_back(callback);
+		}
+
+		template <typename OSIFrameType, typename ParentFilterType>
 		void filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent) const
 		{
 			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent))
 			{
-				_base_filter<OSIFrameType>::do_parse(parent.payload());
+				try
+				{
+					const_helper<OSIFrameType> helper(parent.payload());
+
+					if (_base_filter<OSIFrameType>::filter_frame(helper))
+					{
+						if (bridge_filter_frame(parent, helper))
+						{
+							_base_filter<OSIFrameType>::frame_handled(helper);
+						}
+					}
+				}
+				catch (std::logic_error&)
+				{
+				}
 			}
 		}
 		
+		template <typename OSIFrameType, typename ParentFilterType>
+		bool filter<OSIFrameType, ParentFilterType>::bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const
+		{
+			return (std::find_if(m_bridge_filters.begin(), m_bridge_filters.end(), !boost::bind(&frame_bridge_filter_callback::operator(), _1, parent_helper, helper)) == m_bridge_filters.end());
+		}
+
 		template <typename OSIFrameType>
 		void filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
 		{
