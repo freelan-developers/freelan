@@ -107,7 +107,7 @@ namespace asiotap
 				bool filter_frame(const_helper<OSIFrameType>) const;
 				void frame_handled(const_helper<OSIFrameType>) const;
 
-			public:
+			private:
 
 				std::vector<frame_filter_callback> m_filters;
 				std::vector<frame_handler_callback> m_handlers;
