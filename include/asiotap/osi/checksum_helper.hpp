@@ -37,16 +37,58 @@
  */
 
 /**
- * \file checksum.cpp
- * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Checksum related functions.
+ * \file checksum_helper.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief Checksum helper class.
  */
 
-#include "osi/checksum.hpp"
+#ifndef ASIOTAP_OSI_CHECKSUM_HELPER_HPP
+#define ASIOTAP_OSI_CHECKSUM_HELPER_HPP
+
+#include <boost/asio.hpp>
 
 namespace asiotap
 {
 	namespace osi
 	{
+		/**
+		 * \brief A checksum helper class.
+		 */
+		class checksum_helper
+		{
+			public:
+
+				/**
+				 * \brief Create a new checksum helper.
+				 */
+				checksum_helper();
+
+				/**
+				 * \brief Update the checksum.
+				 * \param buf The buffer to compute the checksum from.
+				 * \param buf_len The size of buf.
+				 */
+				void update(const uint16_t* buf, size_t buf_len);
+
+				/**
+				 * \brief Compute the checksum.
+				 * \return The computed checksum.
+				 */
+				uint32_t compute();
+
+			private:
+				
+				uint32_t m_checksum;
+				uint8_t m_left;
+		};
+
+		inline checksum_helper::checksum_helper() :
+			m_checksum(0),
+			m_left(0)
+		{
+		}
 	}
 }
+
+#endif /* ASIOTAP_OSI_CHECKSUM_HELPER_HPP */
+

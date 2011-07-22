@@ -47,6 +47,8 @@
 
 #include <boost/asio.hpp>
 
+#include "osi/checksum_helper.hpp"
+
 namespace asiotap
 {
 	namespace osi
@@ -58,6 +60,15 @@ namespace asiotap
 		 * \return The computed checksum.
 		 */
 		uint16_t compute_checksum(const uint16_t* buf, size_t buf_len);
+
+		inline uint16_t compute_checksum(const uint16_t* buf, size_t buf_len)
+		{
+			checksum_helper helper;
+
+			helper.update(buf, buf_len);
+
+			return helper.compute();
+		}
 	}
 }
 

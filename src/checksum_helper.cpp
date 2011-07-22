@@ -37,16 +37,55 @@
  */
 
 /**
- * \file checksum.cpp
+ * \file checksum_helper.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Checksum related functions.
+ * \brief Checksum helper class.
  */
 
-#include "osi/checksum.hpp"
+#include "osi/checksum_helper.hpp"
 
 namespace asiotap
 {
 	namespace osi
 	{
+		void checksum_helper::update(const uint16_t* buf, size_t buf_len)
+		{
+			if (buf_len > 0)
+			{
+				if (m_left != 0)
+				{
+					m_checksum += (static_cast<uint16_t>(m_left) << 8 | *reinterpret_cast<const uint8_t*>(buf));
+					buf_len -= sizeof(uint8_t);
+					m_left = 0;
+				}
+
+				while (buf_len > 1)
+				{
+					m_checksum += *buf++;
+					buf_len -= sizeof(uint16_t);
+				}
+
+				if (buf_len > 0)
+				{
+					m_left = *reinterpret_cast<const uint8_t*>(buf);
+				}
+			}
+		}
+
+		uint32_t checksum_helper::compute()
+		{
+			if (m_left != 0)
+			{
+				m_checksum += m_left;
+				m_left = 0;
+			}
+
+			while (m_checksum >> 16)
+			{
+				m_checksum = (m_checksum & 0xFFFF) + (m_checksum >> 16);
+			}
+
+			return static_cast<uint16_t>(~m_checksum);
+		}
 	}
 }
