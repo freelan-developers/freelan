@@ -44,28 +44,94 @@
 
 #include "osi/udp_helper.hpp"
 
-#include "osi/checksum.hpp"
+#include "osi/checksum_helper.hpp"
 
 namespace asiotap
 {
 	namespace osi
 	{
-		uint16_t _const_helper_impl<udp_frame>::compute_checksum() const
+		namespace
 		{
-			//TODO: Implement this correctly: we need to compute the pseudo header.
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = sizeof(frame_type);
+			template <typename HelperType>
+			struct udp_pseudo_header
+			{
+			};
 
-			return asiotap::osi::compute_checksum(buf, buf_len);
+			template <>
+			struct udp_pseudo_header<const_ipv4_helper>
+			{
+				public:
+
+					typedef udp_ipv4_pseudo_header type;
+			};
+
+			template <>
+			struct udp_pseudo_header<const_ipv6_helper>
+			{
+				public:
+
+					typedef udp_ipv6_pseudo_header type;
+			};
+
+			udp_ipv4_pseudo_header parent_frame_to_pseudo_header(const_ipv4_helper parent_frame, uint16_t udp_length)
+			{
+				udp_ipv4_pseudo_header pseudo_header;
+				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
+				
+				pseudo_header.ipv4_source = parent_frame.frame().source;
+				pseudo_header.ipv4_destination = parent_frame.frame().destination;
+				pseudo_header.ipv4_protocol = parent_frame.frame().protocol;
+				pseudo_header.udp_length = htons(udp_length);
+
+				return pseudo_header;
+			}
+
+			udp_ipv6_pseudo_header parent_frame_to_pseudo_header(const_ipv6_helper parent_frame, uint16_t udp_length)
+			{
+				udp_ipv6_pseudo_header pseudo_header;
+				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
+				
+				pseudo_header.ipv6_source = parent_frame.frame().source;
+				pseudo_header.ipv6_destination = parent_frame.frame().destination;
+				pseudo_header.ipv6_next_header = parent_frame.frame().next_header;
+				pseudo_header.udp_length = htons(udp_length);
+
+				return pseudo_header;
+			}
+
+			template <typename HelperType, typename ParentHelperType>
+			uint16_t compute_udp_checksum(ParentHelperType parent_frame, HelperType udp_frame)
+			{
+				const uint16_t* buf = reinterpret_cast<const uint16_t*>(&udp_frame.frame());
+				size_t buf_len = sizeof(typename HelperType::frame_type);
+
+				checksum_helper chk;
+				typename udp_pseudo_header<ParentHelperType>::type pseudo_header = parent_frame_to_pseudo_header(parent_frame, udp_frame.length());
+
+				chk.update(reinterpret_cast<const uint16_t*>(&pseudo_header), sizeof(pseudo_header));
+				chk.update(buf, buf_len);
+
+				return chk.compute();
+			}
 		}
 
-		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum() const
+		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_ipv4_helper parent_frame) const
 		{
-			//TODO: Implement this correctly: we need to compute the pseudo header.
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = sizeof(frame_type);
+			return compute_udp_checksum(parent_frame, *this);
+		}
 
-			return asiotap::osi::compute_checksum(buf, buf_len);
+		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_ipv6_helper parent_frame) const
+		{
+			return compute_udp_checksum(parent_frame, *this);
+		}
+
+		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_ipv4_helper parent_frame) const
+		{
+			return compute_udp_checksum(parent_frame, *this);
+		}
+		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_ipv6_helper parent_frame) const
+		{
+			return compute_udp_checksum(parent_frame, *this);
 		}
 	}
 }

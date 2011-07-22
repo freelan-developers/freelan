@@ -48,6 +48,9 @@
 #include "helper.hpp"
 #include "udp_frame.hpp"
 
+#include "ipv4_helper.hpp"
+#include "ipv6_helper.hpp"
+
 namespace asiotap
 {
 	namespace osi
@@ -109,15 +112,31 @@ namespace asiotap
 
 				/**
 				 * \brief Compute the checksum.
+				 * \param parent_frame The parent frame.
 				 * \return The checksum.
 				 */
-				uint16_t compute_checksum() const;
+				uint16_t compute_checksum(const_ipv4_helper parent_frame) const;
+
+				/**
+				 * \brief Compute the checksum.
+				 * \param parent_frame The parent frame.
+				 * \return The checksum.
+				 */
+				uint16_t compute_checksum(const_ipv6_helper parent_frame) const;
 
 				/**
 				 * \brief Verify the checksum.
+				 * \param parent_frame The parent frame.
 				 * \return true if the checksum is valid.
 				 */
-				bool verify_checksum() const;
+				bool verify_checksum(const_ipv4_helper parent_frame) const;
+
+				/**
+				 * \brief Verify the checksum.
+				 * \param parent_frame The parent frame.
+				 * \return true if the checksum is valid.
+				 */
+				bool verify_checksum(const_ipv6_helper parent_frame) const;
 
 			protected:
 
@@ -192,15 +211,31 @@ namespace asiotap
 
 				/**
 				 * \brief Compute the checksum.
+				 * \param parent_frame The parent frame.
 				 * \return The checksum.
 				 */
-				uint16_t compute_checksum() const;
+				uint16_t compute_checksum(const_ipv4_helper parent_frame) const;
+
+				/**
+				 * \brief Compute the checksum.
+				 * \param parent_frame The parent frame.
+				 * \return The checksum.
+				 */
+				uint16_t compute_checksum(const_ipv6_helper parent_frame) const;
 
 				/**
 				 * \brief Verify the checksum.
+				 * \param parent_frame The parent frame.
 				 * \return true if the checksum is valid.
 				 */
-				bool verify_checksum() const;
+				bool verify_checksum(const_ipv4_helper parent_frame) const;
+
+				/**
+				 * \brief Verify the checksum.
+				 * \param parent_frame The parent frame.
+				 * \return true if the checksum is valid.
+				 */
+				bool verify_checksum(const_ipv6_helper parent_frame) const;
 
 			protected:
 
@@ -241,9 +276,14 @@ namespace asiotap
 			return buffer() + sizeof(frame_type);
 		}
 
-		inline bool _const_helper_impl<udp_frame>::verify_checksum() const
+		inline bool _const_helper_impl<udp_frame>::verify_checksum(const_ipv4_helper parent_frame) const
 		{
-			return compute_checksum() == 0x0000;
+			return compute_checksum(parent_frame) == 0x0000;
+		}
+
+		inline bool _const_helper_impl<udp_frame>::verify_checksum(const_ipv6_helper parent_frame) const
+		{
+			return compute_checksum(parent_frame) == 0x0000;
 		}
 
 		inline _const_helper_impl<udp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
@@ -296,9 +336,14 @@ namespace asiotap
 			return buffer() + sizeof(frame_type);
 		}
 
-		inline bool _mutable_helper_impl<udp_frame>::verify_checksum() const
+		inline bool _mutable_helper_impl<udp_frame>::verify_checksum(const_ipv4_helper parent_frame) const
 		{
-			return compute_checksum() == 0x0000;
+			return compute_checksum(parent_frame) == 0x0000;
+		}
+
+		inline bool _mutable_helper_impl<udp_frame>::verify_checksum(const_ipv6_helper parent_frame) const
+		{
+			return compute_checksum(parent_frame) == 0x0000;
 		}
 
 		inline _mutable_helper_impl<udp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
