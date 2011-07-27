@@ -77,7 +77,7 @@ namespace asiotap
 			{
 				udp_ipv4_pseudo_header pseudo_header;
 				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
-				
+
 				pseudo_header.ipv4_source = parent_frame.frame().source;
 				pseudo_header.ipv4_destination = parent_frame.frame().destination;
 				pseudo_header.ipv4_protocol = parent_frame.frame().protocol;
@@ -90,7 +90,7 @@ namespace asiotap
 			{
 				udp_ipv6_pseudo_header pseudo_header;
 				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
-				
+
 				pseudo_header.ipv6_source = parent_frame.frame().source;
 				pseudo_header.ipv6_destination = parent_frame.frame().destination;
 				pseudo_header.ipv6_next_header = parent_frame.frame().next_header;
