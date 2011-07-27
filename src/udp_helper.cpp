@@ -102,8 +102,8 @@ namespace asiotap
 			template <typename HelperType, typename ParentHelperType>
 			uint16_t compute_udp_checksum(ParentHelperType parent_frame, HelperType udp_frame)
 			{
-				const uint16_t* buf = reinterpret_cast<const uint16_t*>(&udp_frame.frame());
-				size_t buf_len = sizeof(typename HelperType::frame_type);
+				const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(udp_frame.buffer());
+				size_t buf_len = boost::asio::buffer_size(udp_frame.buffer());
 
 				checksum_helper chk;
 				typename udp_pseudo_header<ParentHelperType>::type pseudo_header = parent_frame_to_pseudo_header(parent_frame, udp_frame.length());
