@@ -84,7 +84,7 @@ namespace asiotap
 		}
 
 		template <>
-		inline bool frame_parent_match<udp_frame>(const_udp_helper parent)
+		inline bool frame_parent_match<bootp_frame>(const_udp_helper parent)
 		{
 			return (parent.destination() == BOOTP_PROTOCOL);
 		}
