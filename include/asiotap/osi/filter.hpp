@@ -196,7 +196,7 @@ namespace asiotap
 			{
 			}
 		}
-		
+
 		template <typename OSIFrameType>
 		bool _base_filter<OSIFrameType>::filter_frame(const_helper<OSIFrameType> helper) const
 		{
@@ -243,7 +243,7 @@ namespace asiotap
 				}
 			}
 		}
-		
+
 		template <typename OSIFrameType, typename ParentFilterType>
 		bool filter<OSIFrameType, ParentFilterType>::bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const
 		{

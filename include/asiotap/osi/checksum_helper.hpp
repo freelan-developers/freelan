@@ -77,7 +77,7 @@ namespace asiotap
 				uint32_t compute();
 
 			private:
-				
+
 				uint32_t m_checksum;
 				uint8_t m_left;
 		};

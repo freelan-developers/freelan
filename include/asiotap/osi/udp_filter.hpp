@@ -110,7 +110,7 @@ namespace asiotap
 		inline udp_filter<ParentFilterType>::udp_filter(ParentFilterType& parent) : filter<udp_frame, ParentFilterType>(parent)
 		{
 		}
-		
+
 		template <typename ParentFilterType>
 		inline void udp_filter<ParentFilterType>::add_checksum_bridge_filter()
 		{

@@ -77,7 +77,7 @@ namespace asiotap
 			{
 				udp_ipv4_pseudo_header pseudo_header;
 				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
-				
+
 				pseudo_header.ipv4_source = parent_frame.frame().source;
 				pseudo_header.ipv4_destination = parent_frame.frame().destination;
 				pseudo_header.ipv4_protocol = parent_frame.frame().protocol;
@@ -90,7 +90,7 @@ namespace asiotap
 			{
 				udp_ipv6_pseudo_header pseudo_header;
 				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
-				
+
 				pseudo_header.ipv6_source = parent_frame.frame().source;
 				pseudo_header.ipv6_destination = parent_frame.frame().destination;
 				pseudo_header.ipv6_next_header = parent_frame.frame().next_header;
@@ -102,8 +102,8 @@ namespace asiotap
 			template <typename HelperType, typename ParentHelperType>
 			uint16_t compute_udp_checksum(ParentHelperType parent_frame, HelperType udp_frame)
 			{
-				const uint16_t* buf = reinterpret_cast<const uint16_t*>(&udp_frame.frame());
-				size_t buf_len = sizeof(typename HelperType::frame_type);
+				const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(udp_frame.buffer());
+				size_t buf_len = boost::asio::buffer_size(udp_frame.buffer());
 
 				checksum_helper chk;
 				typename udp_pseudo_header<ParentHelperType>::type pseudo_header = parent_frame_to_pseudo_header(parent_frame, udp_frame.length());

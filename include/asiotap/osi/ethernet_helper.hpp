@@ -94,7 +94,7 @@ namespace asiotap
 				 * \return The protocol.
 				 */
 				uint16_t protocol() const;
-				
+
 				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
