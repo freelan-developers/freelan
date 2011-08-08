@@ -83,6 +83,12 @@ namespace asiotap
 				 */
 				uint8_t operation() const;
 
+				/**
+				 * \brief Get the hardware type.
+				 * \return The hardware type.
+				 */
+				uint8_t hardware_type() const;
+
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -119,6 +125,18 @@ namespace asiotap
 				void set_operation(uint8_t operation) const;
 
 				/**
+				 * \brief Get the hardware type.
+				 * \return The hardware type.
+				 */
+				uint8_t hardware_type() const;
+
+				/**
+				 * \brief Set the hardware type.
+				 * \param hardware_type The hardware type.
+				 */
+				void set_hardware_type(uint8_t hardware_type) const;
+
+				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
@@ -145,6 +163,11 @@ namespace asiotap
 			return frame().operation;
 		}
 
+		inline uint8_t _const_helper_impl<bootp_frame>::hardware_type() const
+		{
+			return frame().hardware_type;
+		}
+
 		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
 		{
 			return buffer() + sizeof(frame_type);
@@ -163,6 +186,16 @@ namespace asiotap
 		inline void _mutable_helper_impl<bootp_frame>::set_operation(uint8_t _operation) const
 		{
 			frame().operation = _operation;
+		}
+
+		inline uint8_t _mutable_helper_impl<bootp_frame>::hardware_type() const
+		{
+			return frame().hardware_type;
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_hardware_type(uint8_t _hardware_type) const
+		{
+			frame().hardware_type = _hardware_type;
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
