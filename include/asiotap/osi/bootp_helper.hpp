@@ -89,6 +89,8 @@ namespace asiotap
 				 */
 				uint8_t hardware_type() const;
 
+				//TODO: Implement other fields
+
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -136,6 +138,8 @@ namespace asiotap
 				 */
 				void set_hardware_type(uint8_t hardware_type) const;
 
+				//TODO: Implement other fields
+				//
 				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
