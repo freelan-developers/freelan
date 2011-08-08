@@ -38,7 +38,7 @@
 
 /**
  * \file udp_frame.cpp
- * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief An UDP frame structure.
  */
 
