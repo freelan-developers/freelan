@@ -49,6 +49,7 @@
 #include "bootp_frame.hpp"
 
 #include "udp_helper.hpp"
+#include "bootp_helper.hpp"
 
 namespace asiotap
 {
