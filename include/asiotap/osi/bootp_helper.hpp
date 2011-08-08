@@ -77,6 +77,12 @@ namespace asiotap
 		{
 			public:
 
+				/**
+				 * \brief Get the operation.
+				 * \return The operation.
+				 */
+				uint8_t operation() const;
+
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -101,6 +107,18 @@ namespace asiotap
 			public:
 
 				/**
+				 * \brief Get the operation.
+				 * \return The operation.
+				 */
+				uint8_t operation() const;
+
+				/**
+				 * \brief Set the operation.
+				 * \param operation The operation.
+				 */
+				void set_operation(uint8_t operation) const;
+
+				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
@@ -122,6 +140,11 @@ namespace asiotap
 			return true;
 		}
 
+		inline uint8_t _const_helper_impl<bootp_frame>::operation() const
+		{
+			return frame().operation;
+		}
+
 		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
 		{
 			return buffer() + sizeof(frame_type);
@@ -130,6 +153,16 @@ namespace asiotap
 		inline _const_helper_impl<bootp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
 			_base_const_helper<bootp_frame>(buf)
 		{
+		}
+
+		inline uint8_t _mutable_helper_impl<bootp_frame>::operation() const
+		{
+			return frame().operation;
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_operation(uint8_t _operation) const
+		{
+			frame().operation = _operation;
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
