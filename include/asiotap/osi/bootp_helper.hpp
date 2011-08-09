@@ -119,6 +119,30 @@ namespace asiotap
 				 */
 				uint16_t flags() const;
 
+				/**
+				 * \brief Get the client address.
+				 * \return The client address.
+				 */
+				boost::asio::ip::address_v4 ciaddr() const;
+
+				/**
+				 * \brief Get the requested address.
+				 * \return The requested address.
+				 */
+				boost::asio::ip::address_v4 yiaddr() const;
+
+				/**
+				 * \brief Get the server address.
+				 * \return The server address.
+				 */
+				boost::asio::ip::address_v4 siaddr() const;
+
+				/**
+				 * \brief Get the gateway address.
+				 * \return The gateway address.
+				 */
+				boost::asio::ip::address_v4 giaddr() const;
+
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -227,6 +251,54 @@ namespace asiotap
 				void set_flags(uint16_t flags) const;
 
 				/**
+				 * \brief Get the client address.
+				 * \return The client address.
+				 */
+				boost::asio::ip::address_v4 ciaddr() const;
+
+				/**
+				 * \brief Set the client address.
+				 * \param ciaddr The client address.
+				 */
+				void set_ciaddr(boost::asio::ip::address_v4 ciaddr) const;
+
+				/**
+				 * \brief Get the requested address.
+				 * \return The requested address.
+				 */
+				boost::asio::ip::address_v4 yiaddr() const;
+
+				/**
+				 * \brief Set the requested address.
+				 * \param yiaddr The requested address.
+				 */
+				void set_yiaddr(boost::asio::ip::address_v4 yiaddr) const;
+
+				/**
+				 * \brief Get the server address.
+				 * \return The server address.
+				 */
+				boost::asio::ip::address_v4 siaddr() const;
+
+				/**
+				 * \brief Set the server address.
+				 * \param siaddr The server address.
+				 */
+				void set_siaddr(boost::asio::ip::address_v4 siaddr) const;
+
+				/**
+				 * \brief Get the gateway address.
+				 * \return The gateway address.
+				 */
+				boost::asio::ip::address_v4 giaddr() const;
+
+				/**
+				 * \brief Set the gateway address.
+				 * \param giaddr The gateway address.
+				 */
+				void set_giaddr(boost::asio::ip::address_v4 giaddr) const;
+
+				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
@@ -281,6 +353,26 @@ namespace asiotap
 		inline uint16_t _const_helper_impl<bootp_frame>::flags() const
 		{
 			return frame().flags;
+		}
+
+		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::ciaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().ciaddr.s_addr));
+		}
+
+		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::yiaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().yiaddr.s_addr));
+		}
+
+		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::siaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().siaddr.s_addr));
+		}
+
+		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::giaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().giaddr.s_addr));
 		}
 
 		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
@@ -361,6 +453,46 @@ namespace asiotap
 		inline void _mutable_helper_impl<bootp_frame>::set_flags(uint16_t _flags) const
 		{
 			frame().flags = _flags;
+		}
+
+		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::ciaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().ciaddr.s_addr));
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_ciaddr(boost::asio::ip::address_v4 _ciaddr) const
+		{
+			frame().ciaddr.s_addr = htonl(_ciaddr.to_ulong());
+		}
+
+		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::yiaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().yiaddr.s_addr));
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_yiaddr(boost::asio::ip::address_v4 _yiaddr) const
+		{
+			frame().yiaddr.s_addr = htonl(_yiaddr.to_ulong());
+		}
+
+		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::siaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().siaddr.s_addr));
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_siaddr(boost::asio::ip::address_v4 _siaddr) const
+		{
+			frame().siaddr.s_addr = htonl(_siaddr.to_ulong());
+		}
+
+		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::giaddr() const
+		{
+			return boost::asio::ip::address_v4(ntohl(frame().giaddr.s_addr));
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_giaddr(boost::asio::ip::address_v4 _giaddr) const
+		{
+			frame().giaddr.s_addr = htonl(_giaddr.to_ulong());
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
