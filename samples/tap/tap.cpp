@@ -165,9 +165,7 @@ void udp_frame_read(asiotap::osi::const_udp_helper frame)
 
 void bootp_frame_read(asiotap::osi::const_bootp_helper frame)
 {
-	(void) frame;
-
-	std::cout << "BOOTP frame." << std::endl;
+	std::cout << "BOOTP frame. Options size: " << boost::asio::buffer_size(frame.options()) << std::endl;
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
