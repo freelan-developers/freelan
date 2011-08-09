@@ -89,7 +89,11 @@ namespace asiotap
 				 */
 				uint8_t hardware_type() const;
 
-				//TODO: Implement other fields
+				/**
+				 * \brief Get the hardware length.
+				 * \return The hardware length.
+				 */
+				size_t hardware_length() const;
 
 				/*
 				 * \brief Get the payload buffer.
@@ -138,8 +142,18 @@ namespace asiotap
 				 */
 				void set_hardware_type(uint8_t hardware_type) const;
 
-				//TODO: Implement other fields
-				//
+				/**
+				 * \brief Get the hardware length.
+				 * \return The hardware length.
+				 */
+				size_t hardware_length() const;
+
+				/**
+				 * \brief Set the hardware length.
+				 * \param hardware_length The hardware length.
+				 */
+				void set_hardware_length(size_t hardware_length) const;
+
 				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -172,6 +186,11 @@ namespace asiotap
 			return frame().hardware_type;
 		}
 
+		inline size_t _const_helper_impl<bootp_frame>::hardware_length() const
+		{
+			return frame().hardware_length;
+		}
+
 		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
 		{
 			return buffer() + sizeof(frame_type);
@@ -200,6 +219,16 @@ namespace asiotap
 		inline void _mutable_helper_impl<bootp_frame>::set_hardware_type(uint8_t _hardware_type) const
 		{
 			frame().hardware_type = _hardware_type;
+		}
+
+		inline size_t _mutable_helper_impl<bootp_frame>::hardware_length() const
+		{
+			return frame().hardware_length;
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_hardware_length(size_t _hardware_length) const
+		{
+			frame().hardware_length = static_cast<uint8_t>(_hardware_length);
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
