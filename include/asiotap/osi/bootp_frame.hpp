@@ -58,7 +58,7 @@ namespace asiotap
 		/**
 		 * \brief The BOOTP protocol.
 		 */
-		const uint16_t BOOTP_PROTOCOL = 0x0067;
+		const uint16_t BOOTP_PROTOCOL = 67;
 
 		/**
 		 * \brief A BOOTP frame structure.
