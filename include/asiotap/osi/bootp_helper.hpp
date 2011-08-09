@@ -143,6 +143,30 @@ namespace asiotap
 				 */
 				boost::asio::ip::address_v4 giaddr() const;
 
+				/**
+				 * \brief Get the hardware address.
+				 * \return The hardware address.
+				 */
+				boost::asio::const_buffer chaddr() const;
+
+				/**
+				 * \brief Get the server name.
+				 * \return The server name.
+				 */
+				boost::asio::const_buffer sname() const;
+
+				/**
+				 * \brief Get the filename.
+				 * \return The filename.
+				 */
+				boost::asio::const_buffer file() const;
+
+				/**
+				 * \brief Get the options.
+				 * \return The options.
+				 */
+				boost::asio::const_buffer options() const;
+
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -299,6 +323,30 @@ namespace asiotap
 				void set_giaddr(boost::asio::ip::address_v4 giaddr) const;
 
 				/**
+				 * \brief Get the hardware address.
+				 * \return The hardware address.
+				 */
+				boost::asio::mutable_buffer chaddr() const;
+
+				/**
+				 * \brief Get the server name.
+				 * \return The server name.
+				 */
+				boost::asio::mutable_buffer sname() const;
+
+				/**
+				 * \brief Get the filename.
+				 * \return The filename.
+				 */
+				boost::asio::mutable_buffer file() const;
+
+				/**
+				 * \brief Get the options.
+				 * \return The options.
+				 */
+				boost::asio::mutable_buffer options() const;
+
+				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
@@ -373,6 +421,26 @@ namespace asiotap
 		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::giaddr() const
 		{
 			return boost::asio::ip::address_v4(ntohl(frame().giaddr.s_addr));
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::chaddr() const
+		{
+			return boost::asio::buffer(frame().chaddr, sizeof(frame().chaddr));
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::sname() const
+		{
+			return boost::asio::buffer(frame().sname, sizeof(frame().sname));
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::file() const
+		{
+			return boost::asio::buffer(frame().file, sizeof(frame().file));
+		}
+
+		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::options() const
+		{
+			return payload();
 		}
 
 		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
@@ -493,6 +561,26 @@ namespace asiotap
 		inline void _mutable_helper_impl<bootp_frame>::set_giaddr(boost::asio::ip::address_v4 _giaddr) const
 		{
 			frame().giaddr.s_addr = htonl(_giaddr.to_ulong());
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::chaddr() const
+		{
+			return boost::asio::buffer(frame().chaddr, sizeof(frame().chaddr));
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::sname() const
+		{
+			return boost::asio::buffer(frame().sname, sizeof(frame().sname));
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::file() const
+		{
+			return boost::asio::buffer(frame().file, sizeof(frame().file));
+		}
+
+		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::options() const
+		{
+			return payload();
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
