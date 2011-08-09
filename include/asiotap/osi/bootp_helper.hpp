@@ -95,6 +95,30 @@ namespace asiotap
 				 */
 				size_t hardware_length() const;
 
+				/**
+				 * \brief Get the hops count.
+				 * \return The hops count.
+				 */
+				uint8_t hops() const;
+
+				/**
+				 * \brief Get the X identifier.
+				 * \return The X identifier.
+				 */
+				uint32_t xid() const;
+
+				/**
+				 * \brief Get the seconds elapsed.
+				 * \return The seconds elapsed.
+				 */
+				uint16_t seconds() const;
+
+				/**
+				 * \brief Get the flags.
+				 * \return The flags.
+				 */
+				uint16_t flags() const;
+
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
@@ -155,6 +179,54 @@ namespace asiotap
 				void set_hardware_length(size_t hardware_length) const;
 
 				/**
+				 * \brief Get the hops count.
+				 * \return The hops count.
+				 */
+				uint8_t hops() const;
+
+				/**
+				 * \brief Set the hops count.
+				 * \param hops The hops count.
+				 */
+				void set_hops(uint8_t hops) const;
+
+				/**
+				 * \brief Get the X identifier.
+				 * \return The X identifier.
+				 */
+				uint32_t xid() const;
+
+				/**
+				 * \brief Set the X identifier.
+				 * \param xid The X identifier.
+				 */
+				void set_xid(uint32_t xid) const;
+
+				/**
+				 * \brief Get the seconds elapsed.
+				 * \return The seconds elapsed.
+				 */
+				uint16_t seconds() const;
+
+				/**
+				 * \brief Set the seconds elapsed.
+				 * \param seconds The seconds elapsed.
+				 */
+				void set_seconds(uint16_t seconds) const;
+
+				/**
+				 * \brief Get the flags.
+				 * \return The flags.
+				 */
+				uint16_t flags() const;
+
+				/**
+				 * \brief Set the flags.
+				 * \param flags The flags.
+				 */
+				void set_flags(uint16_t flags) const;
+
+				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
@@ -189,6 +261,26 @@ namespace asiotap
 		inline size_t _const_helper_impl<bootp_frame>::hardware_length() const
 		{
 			return frame().hardware_length;
+		}
+
+		inline uint8_t _const_helper_impl<bootp_frame>::hops() const
+		{
+			return frame().hops;
+		}
+
+		inline uint32_t _const_helper_impl<bootp_frame>::xid() const
+		{
+			return ntohl(frame().xid);
+		}
+
+		inline uint16_t _const_helper_impl<bootp_frame>::seconds() const
+		{
+			return ntohs(frame().seconds);
+		}
+
+		inline uint16_t _const_helper_impl<bootp_frame>::flags() const
+		{
+			return frame().flags;
 		}
 
 		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
@@ -229,6 +321,46 @@ namespace asiotap
 		inline void _mutable_helper_impl<bootp_frame>::set_hardware_length(size_t _hardware_length) const
 		{
 			frame().hardware_length = static_cast<uint8_t>(_hardware_length);
+		}
+
+		inline uint8_t _mutable_helper_impl<bootp_frame>::hops() const
+		{
+			return frame().hops;
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_hops(uint8_t _hops) const
+		{
+			frame().hops = _hops;
+		}
+
+		inline uint32_t _mutable_helper_impl<bootp_frame>::xid() const
+		{
+			return ntohl(frame().xid);
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_xid(uint32_t _xid) const
+		{
+			frame().xid = htonl(_xid);
+		}
+
+		inline uint16_t _mutable_helper_impl<bootp_frame>::seconds() const
+		{
+			return ntohs(frame().seconds);
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_seconds(uint16_t _seconds) const
+		{
+			frame().seconds = htons(_seconds);
+		}
+
+		inline uint16_t _mutable_helper_impl<bootp_frame>::flags() const
+		{
+			return frame().flags;
+		}
+
+		inline void _mutable_helper_impl<bootp_frame>::set_flags(uint16_t _flags) const
+		{
+			frame().flags = _flags;
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
