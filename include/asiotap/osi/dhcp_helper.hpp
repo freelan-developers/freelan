@@ -84,10 +84,10 @@ namespace asiotap
 				uint32_t magic_cookie() const;
 
 				/*
-				 * \brief Get the payload buffer.
-				 * \return The payload.
+				 * \brief Get the options buffer.
+				 * \return The options.
 				 */
-				boost::asio::const_buffer payload() const;
+				boost::asio::const_buffer options() const;
 
 			protected:
 
@@ -119,10 +119,10 @@ namespace asiotap
 				void set_magic_cookie(uint32_t magic_cookie) const;
 
 				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
+				 * \brief Get the options buffer.
+				 * \return The options.
 				 */
-				boost::asio::mutable_buffer payload() const;
+				boost::asio::mutable_buffer options() const;
 
 			protected:
 
@@ -143,7 +143,7 @@ namespace asiotap
 			return ntohl(frame().magic_cookie);
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<dhcp_frame>::payload() const
+		inline boost::asio::const_buffer _const_helper_impl<dhcp_frame>::options() const
 		{
 			return buffer() + sizeof(frame_type);
 		}
@@ -163,7 +163,7 @@ namespace asiotap
 			frame().magic_cookie = htonl(_magic_cookie);
 		}
 
-		inline boost::asio::mutable_buffer _mutable_helper_impl<dhcp_frame>::payload() const
+		inline boost::asio::mutable_buffer _mutable_helper_impl<dhcp_frame>::options() const
 		{
 			return buffer() + sizeof(frame_type);
 		}
