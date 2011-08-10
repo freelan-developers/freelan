@@ -11,6 +11,7 @@
 #include <asiotap/osi/ipv6_filter.hpp>
 #include <asiotap/osi/udp_filter.hpp>
 #include <asiotap/osi/bootp_filter.hpp>
+#include <asiotap/osi/dhcp_filter.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -87,6 +88,7 @@ void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame);
 void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame);
 void udp_frame_read(asiotap::osi::const_udp_helper frame);
 void bootp_frame_read(asiotap::osi::const_bootp_helper frame);
+void dhcp_frame_read(asiotap::osi::const_dhcp_helper frame);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
@@ -130,6 +132,9 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 		asiotap::osi::bootp_filter<asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > > bootp_filter(udp_ipv4_filter);
 		bootp_filter.add_handler(&bootp_frame_read);
 
+		asiotap::osi::dhcp_filter<asiotap::osi::bootp_filter<asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > > > dhcp_filter(bootp_filter);
+		dhcp_filter.add_handler(&dhcp_frame_read);
+
 		ethernet_filter.parse(buffer);
 
 		tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
@@ -166,6 +171,11 @@ void udp_frame_read(asiotap::osi::const_udp_helper frame)
 void bootp_frame_read(asiotap::osi::const_bootp_helper frame)
 {
 	std::cout << "BOOTP frame. Options size: " << boost::asio::buffer_size(frame.options()) << std::endl;
+}
+
+void dhcp_frame_read(asiotap::osi::const_dhcp_helper frame)
+{
+	std::cout << "DHCP frame. Options size: " << boost::asio::buffer_size(frame.options()) << std::endl;
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
