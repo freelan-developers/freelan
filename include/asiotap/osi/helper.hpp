@@ -86,7 +86,7 @@ namespace asiotap
 
 			private:
 
-				const boost::asio::const_buffer m_buf;
+				boost::asio::const_buffer m_buf;
 		};
 
 		/**
@@ -124,7 +124,7 @@ namespace asiotap
 
 			private:
 
-				const boost::asio::mutable_buffer m_buf;
+				boost::asio::mutable_buffer m_buf;
 		};
 
 		/**
