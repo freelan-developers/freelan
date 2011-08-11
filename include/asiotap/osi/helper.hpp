@@ -296,7 +296,7 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline mutable_helper<OSIFrameType>::operator const_helper<OSIFrameType>() const
 		{
-			return const_helper<OSIFrameType>(mutable_helper<OSIFrameType>::frame());
+			return const_helper<OSIFrameType>(mutable_helper<OSIFrameType>::buffer());
 		}
 
 		template <typename OSIFrameType>
