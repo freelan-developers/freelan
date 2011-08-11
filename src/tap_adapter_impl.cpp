@@ -1,6 +1,6 @@
 /*
  * libasiotap - A portable TAP adapter extension for Boost::ASIO.
- * Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
+ * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
  * This file is part of libasiotap.
  *
@@ -38,7 +38,7 @@
 
 /**
  * \file tap_adapter_impl.cpp
- * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \author Sebastien Vincent <sebastien.vincent@freelan.org>
  * \brief The tap adapter implementation class.
  */
