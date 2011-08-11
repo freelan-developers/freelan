@@ -45,7 +45,6 @@
 #ifndef ASIOTAP_OSI_EXTENDED_FILTER_HPP
 #define ASIOTAP_OSI_EXTENDED_FILTER_HPP
 
-#include <boost/optional.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
@@ -110,18 +109,18 @@ namespace asiotap
 
 			protected:
 
-				void reset();
-				void frame_handled(helper_1_type helper) const;
+				typedef filter_1_type last_filter_type;
+				typedef frame_1_type last_frame_type;
+				typedef helper_1_type last_helper_type;
+
+				void frame_handled(last_helper_type helper) const;
 
 			private:
 
-				void base_handler(base_helper_type);
-				void handler_1(helper_1_type);
+				void final_handler(last_helper_type);
 
 				base_filter_type m_base_filter;
 				filter_1_type m_filter_1;
-
-				boost::optional<base_helper_type> m_base_helper;
 
 				std::vector<frame_handler_callback> m_handlers;
 		};
@@ -130,8 +129,7 @@ namespace asiotap
 		inline extended_filter<BaseFilterType, Filter1TypeTemplate>::extended_filter() :
 			m_filter_1(m_base_filter)
 		{
-			m_base_filter.add_handler(boost::bind(&base_handler, this, _1));
-			m_filter_1.add_handler(boost::bind(&handler_1, this, _1));
+			m_filter_1.add_handler(boost::bind(&final_handler, this, _1));
 		}
 
 		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
@@ -141,25 +139,13 @@ namespace asiotap
 		}
 
 		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
-		inline void extended_filter<BaseFilterType, Filter1TypeTemplate>::reset()
+		void extended_filter<BaseFilterType, Filter1TypeTemplate>::frame_handled(last_helper_type helper) const
 		{
-			m_base_helper = boost::none;
+			std::for_each(m_handlers.begin(), m_handlers.end(), boost::bind(&frame_handler_callback::operator(), _1, *m_base_filter.get_last_helper(), helper));
 		}
 
 		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
-		void extended_filter<BaseFilterType, Filter1TypeTemplate>::frame_handled(helper_1_type helper) const
-		{
-			std::for_each(m_handlers.begin(), m_handlers.end(), boost::bind(&frame_handler_callback::operator(), _1, *m_base_helper, helper));
-		}
-
-		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
-		inline void extended_filter<BaseFilterType, Filter1TypeTemplate>::base_handler(base_helper_type helper)
-		{
-			m_base_helper = helper;
-		}
-
-		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
-		inline void extended_filter<BaseFilterType, Filter1TypeTemplate>::handler_1(helper_1_type helper)
+		inline void extended_filter<BaseFilterType, Filter1TypeTemplate>::final_handler(last_helper_type helper)
 		{
 			frame_handled(helper);
 		}
