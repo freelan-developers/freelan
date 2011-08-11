@@ -57,7 +57,19 @@ namespace asiotap
 		 */
 		class ethernet_builder : public _base_builder<ethernet_frame>
 		{
+			public:
+
+				/**
+				 * \brief Create a builder.
+				 * \param buf The buffer to use.
+				 */
+				ethernet_builder(boost::asio::mutable_buffer buf);
 		};
+		
+		inline ethernet_builder::ethernet_builder(boost::asio::mutable_buffer buf) :
+			_base_builder<ethernet_frame>(buf)
+		{
+		}
 	}
 }
 
