@@ -47,6 +47,8 @@
 
 #include <boost/asio.hpp>
 
+#include "helper.hpp"
+
 namespace asiotap
 {
 	namespace osi
@@ -63,6 +65,11 @@ namespace asiotap
 				 * \brief The frame type.
 				 */
 				typedef OSIFrameType frame_type;
+
+				/**
+				 * \brief The helper type.
+				 */
+				typedef mutable_helper<frame_type> helper_type;
 
 				/**
 				 * \brief Get the underlying buffer.
@@ -85,9 +92,16 @@ namespace asiotap
 				 */
 				_base_builder(boost::asio::mutable_buffer buf, size_t payload_size);
 
+				/**
+				 * \brief Get a helper.
+				 * \param frame_size The frame size.
+				 * \return The helper.
+				 */
+				helper_type get_helper(size_t frame_size = sizeof(frame_type)) const;
+
 			private:
 
-				const boost::asio::const_buffer m_buf;
+				const boost::asio::mutable_buffer m_buf;
 				size_t m_payload_size;
 		};
 		
@@ -108,6 +122,12 @@ namespace asiotap
 			m_buf(buf),
 			m_payload_size(payload_size)
 		{
+		}
+
+		template <typename OSIFrameType>
+		inline typename _base_builder<OSIFrameType>::helper_type _base_builder<OSIFrameType>::get_helper(size_t frame_size) const
+		{
+			return helper_type(payload() - frame_size);
 		}
 	}
 }
