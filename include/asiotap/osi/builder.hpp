@@ -127,7 +127,7 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline typename _base_builder<OSIFrameType>::helper_type _base_builder<OSIFrameType>::get_helper(size_t frame_size) const
 		{
-			return helper_type(payload() - frame_size);
+			return helper_type(m_buf + (boost::asio::buffer_size(m_buf) - m_payload_size - frame_size));
 		}
 	}
 }
