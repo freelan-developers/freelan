@@ -50,7 +50,7 @@ namespace asiotap
 {
 	namespace osi
 	{
-		size_t ethernet_builder::write(
+		size_t builder<ethernet_frame>::write(
 				boost::asio::const_buffer target,
 				boost::asio::const_buffer sender,
 				uint16_t protocol

@@ -55,7 +55,8 @@ namespace asiotap
 		/**
 		 * \brief An Ethernet frame builder class.
 		 */
-		class ethernet_builder : public _base_builder<ethernet_frame>
+		template <>
+		class builder<ethernet_frame> : public _base_builder<ethernet_frame>
 		{
 			public:
 
@@ -64,7 +65,7 @@ namespace asiotap
 				 * \param buf The buffer to use.
 				 * \param payload_size The size of the payload.
 				 */
-				ethernet_builder(boost::asio::mutable_buffer buf, size_t payload_size);
+				builder(boost::asio::mutable_buffer buf, size_t payload_size);
 
 				/**
 				 * \brief Write the frame.
@@ -80,7 +81,7 @@ namespace asiotap
 						) const;
 		};
 		
-		inline ethernet_builder::ethernet_builder(boost::asio::mutable_buffer buf, size_t payload_size) :
+		inline builder<ethernet_frame>::builder(boost::asio::mutable_buffer buf, size_t payload_size) :
 			_base_builder<ethernet_frame>(buf, payload_size)
 		{
 		}

@@ -54,7 +54,7 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief A base const helper class.
+		 * \brief The base ethernet builder class.
 		 */
 		template <typename OSIFrameType>
 		class _base_builder
@@ -104,7 +104,15 @@ namespace asiotap
 				const boost::asio::mutable_buffer m_buf;
 				size_t m_payload_size;
 		};
-		
+
+		/**
+		 * \brief An frame builder class.
+		 */
+		template <typename OSIFrameType>
+		class builder : public _base_builder<OSIFrameType>
+		{
+		};
+
 		template <typename OSIFrameType>
 		inline boost::asio::mutable_buffer _base_builder<OSIFrameType>::buffer() const
 		{
