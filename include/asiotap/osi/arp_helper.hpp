@@ -212,7 +212,7 @@ namespace asiotap
 				 * \brief Set the operation.
 				 * \param operation The operation.
 				 */
-				void operation(uint16_t operation) const;
+				void set_operation(uint16_t operation) const;
 
 				/**
 				 * \brief Get the sender hardware address.
@@ -365,7 +365,7 @@ namespace asiotap
 			return ntohs(frame().operation);
 		}
 
-		inline void _mutable_helper_impl<arp_frame>::operation(uint16_t _operation) const
+		inline void _mutable_helper_impl<arp_frame>::set_operation(uint16_t _operation) const
 		{
 			frame().operation = htons(_operation);
 		}
