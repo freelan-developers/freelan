@@ -65,7 +65,7 @@ namespace asiotap
 			memcpy(boost::asio::buffer_cast<uint8_t*>(helper.sender()), boost::asio::buffer_cast<const uint8_t*>(sender), ETHERNET_ADDRESS_SIZE);
 			helper.set_protocol(protocol);
 
-			return sizeof(frame_type);
+			return sizeof(frame_type) + boost::asio::buffer_size(payload());
 		}
 	}
 }
