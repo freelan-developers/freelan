@@ -107,15 +107,11 @@ namespace asiotap
 				 */
 				void add_handler(frame_handler_callback callback);
 
-			protected:
+			private:
 
 				typedef filter_1_type last_filter_type;
 				typedef frame_1_type last_frame_type;
 				typedef helper_1_type last_helper_type;
-
-				void frame_handled(last_helper_type helper) const;
-
-			private:
 
 				void final_handler(last_helper_type);
 
@@ -139,15 +135,9 @@ namespace asiotap
 		}
 
 		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
-		void extended_filter<BaseFilterType, Filter1TypeTemplate>::frame_handled(last_helper_type helper) const
-		{
-			std::for_each(m_handlers.begin(), m_handlers.end(), boost::bind(&frame_handler_callback::operator(), _1, *m_base_filter.get_last_helper(), helper));
-		}
-
-		template <class BaseFilterType, template <typename ParentFilter> class Filter1TypeTemplate>
 		inline void extended_filter<BaseFilterType, Filter1TypeTemplate>::final_handler(last_helper_type helper)
 		{
-			frame_handled(helper);
+			std::for_each(m_handlers.begin(), m_handlers.end(), boost::bind(&frame_handler_callback::operator(), _1, *m_base_filter.get_last_helper(), helper));
 		}
 	}
 }
