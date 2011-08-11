@@ -65,6 +65,19 @@ namespace asiotap
 				 * \param payload_size The size of the payload.
 				 */
 				ethernet_builder(boost::asio::mutable_buffer buf, size_t payload_size);
+
+				/**
+				 * \brief Write the frame.
+				 * \param target The target Ethernet address.
+				 * \param sender The sender Ethernet address.
+				 * \param protocol The protocol.
+				 * \return The total size of the written frame, including its payload.
+				 */
+				size_t write(
+						boost::asio::const_buffer target,
+						boost::asio::const_buffer sender,
+						uint16_t protocol
+						) const;
 		};
 		
 		inline ethernet_builder::ethernet_builder(boost::asio::mutable_buffer buf, size_t payload_size) :

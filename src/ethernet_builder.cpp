@@ -44,9 +44,28 @@
 
 #include "osi/ethernet_builder.hpp"
 
+#include "osi/ethernet_helper.hpp"
+
 namespace asiotap
 {
 	namespace osi
 	{
+		size_t ethernet_builder::write(
+				boost::asio::const_buffer target,
+				boost::asio::const_buffer sender,
+				uint16_t protocol
+				) const
+		{
+			assert(boost::asio::buffer_size(target) == ETHERNET_ADDRESS_SIZE);
+			assert(boost::asio::buffer_size(sender) == ETHERNET_ADDRESS_SIZE);
+
+			helper_type helper = get_helper();
+
+			memcpy(boost::asio::buffer_cast<uint8_t*>(helper.target()), boost::asio::buffer_cast<const uint8_t*>(target), ETHERNET_ADDRESS_SIZE);
+			memcpy(boost::asio::buffer_cast<uint8_t*>(helper.sender()), boost::asio::buffer_cast<const uint8_t*>(sender), ETHERNET_ADDRESS_SIZE);
+			helper.set_protocol(protocol);
+
+			return sizeof(frame_type);
+		}
 	}
 }
