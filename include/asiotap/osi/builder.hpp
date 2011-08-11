@@ -73,8 +73,8 @@ namespace asiotap
 			protected:
 
 				/**
-				 * \brief Create a helper from a frame type structure.
-				 * \param buf The buffer to refer to.
+				 * \brief Create a builder.
+				 * \param buf The buffer to use.
 				 */
 				_base_builder(boost::asio::mutable_buffer buf);
 
