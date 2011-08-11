@@ -9,6 +9,7 @@
 #include <asiotap/osi/arp_filter.hpp>
 #include <asiotap/osi/ipv4_filter.hpp>
 #include <asiotap/osi/ipv6_filter.hpp>
+#include <asiotap/osi/icmp_filter.hpp>
 #include <asiotap/osi/udp_filter.hpp>
 #include <asiotap/osi/bootp_filter.hpp>
 #include <asiotap/osi/dhcp_filter.hpp>
@@ -86,6 +87,7 @@ void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame);
 void arp_frame_read(asiotap::osi::const_arp_helper frame);
 void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame);
 void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame);
+void icmp_frame_read(asiotap::osi::const_icmp_helper frame);
 void udp_frame_read(asiotap::osi::const_udp_helper frame);
 void bootp_frame_read(asiotap::osi::const_bootp_helper frame);
 void dhcp_frame_read(asiotap::osi::const_dhcp_helper frame);
@@ -120,6 +122,10 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 		asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> ipv6_filter(ethernet_filter);
 		ipv6_filter.add_handler(&ipv6_frame_read);
+
+		asiotap::osi::icmp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > icmp_ipv4_filter(ipv4_filter);
+		icmp_ipv4_filter.add_handler(&icmp_frame_read);
+		icmp_ipv4_filter.add_checksum_filter();
 
 		asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > udp_ipv4_filter(ipv4_filter);
 		udp_ipv4_filter.add_handler(&udp_frame_read);
@@ -161,6 +167,11 @@ void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame)
 void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame)
 {
 	std::cout << "IPv6 frame: " << frame.source() << " -> " << frame.destination() << std::endl;
+}
+
+void icmp_frame_read(asiotap::osi::const_icmp_helper frame)
+{
+	std::cout << "ICMP frame: " << frame.type() << ": " << frame.code() << std::endl;
 }
 
 void udp_frame_read(asiotap::osi::const_udp_helper frame)
