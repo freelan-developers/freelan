@@ -70,17 +70,25 @@ namespace asiotap
 				 */
 				boost::asio::mutable_buffer buffer() const;
 
+				/**
+				 * \brief Get the payload buffer.
+				 * \return The payload buffer.
+				 */
+				boost::asio::mutable_buffer payload() const;
+
 			protected:
 
 				/**
 				 * \brief Create a builder.
 				 * \param buf The buffer to use.
+				 * \param payload_size The size of the payload.
 				 */
-				_base_builder(boost::asio::mutable_buffer buf);
+				_base_builder(boost::asio::mutable_buffer buf, size_t payload_size);
 
 			private:
 
 				const boost::asio::const_buffer m_buf;
+				size_t m_payload_size;
 		};
 		
 		template <typename OSIFrameType>
@@ -88,10 +96,17 @@ namespace asiotap
 		{
 			return m_buf;
 		}
+		
+		template <typename OSIFrameType>
+		inline boost::asio::mutable_buffer _base_builder<OSIFrameType>::payload() const
+		{
+			return m_buf + (boost::asio::buffer_size(m_buf) - m_payload_size);
+		}
 
 		template <typename OSIFrameType>
-		inline _base_builder<OSIFrameType>::_base_builder(boost::asio::mutable_buffer buf) :
-			m_buf(buf)
+		inline _base_builder<OSIFrameType>::_base_builder(boost::asio::mutable_buffer buf, size_t payload_size) :
+			m_buf(buf),
+			m_payload_size(payload_size)
 		{
 		}
 	}

@@ -62,12 +62,13 @@ namespace asiotap
 				/**
 				 * \brief Create a builder.
 				 * \param buf The buffer to use.
+				 * \param payload_size The size of the payload.
 				 */
-				ethernet_builder(boost::asio::mutable_buffer buf);
+				ethernet_builder(boost::asio::mutable_buffer buf, size_t payload_size);
 		};
 		
-		inline ethernet_builder::ethernet_builder(boost::asio::mutable_buffer buf) :
-			_base_builder<ethernet_frame>(buf)
+		inline ethernet_builder::ethernet_builder(boost::asio::mutable_buffer buf, size_t payload_size) :
+			_base_builder<ethernet_frame>(buf, payload_size)
 		{
 		}
 	}
