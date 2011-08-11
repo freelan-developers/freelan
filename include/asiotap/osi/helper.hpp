@@ -133,13 +133,6 @@ namespace asiotap
 		template <typename OSIFrameType>
 		class _const_helper_impl : public _base_const_helper<OSIFrameType>
 		{
-			protected:
-
-				/**
-				 * \brief Create a helper from a frame type structure.
-				 * \param buf The buffer to refer to.
-				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
 		};
 
 		/**
@@ -148,13 +141,6 @@ namespace asiotap
 		template <typename OSIFrameType>
 		class _mutable_helper_impl : public _base_mutable_helper<OSIFrameType>
 		{
-			protected:
-
-				/**
-				 * \brief Create a helper from a frame type structure.
-				 * \param buf The buffer to refer to.
-				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
 
 		/**
@@ -182,7 +168,7 @@ namespace asiotap
 		 * \brief A mutable helper class.
 		 */
 		template <typename OSIFrameType>
-		class mutable_helper : public _base_mutable_helper<OSIFrameType>
+		class mutable_helper : public _mutable_helper_impl<OSIFrameType>
 		{
 			public:
 
