@@ -61,39 +61,12 @@ namespace asiotap
 		{
 			public:
 
-				/**
-				 * \brief The base filter type.
-				 */
 				typedef BaseFilterType base_filter_type;
-
-				/**
-				 * \brief The first sub-filter type.
-				 */
 				typedef Filter1TypeTemplate<base_filter_type> filter_1_type;
-
-				/**
-				 * \brief The base frame type.
-				 */
 				typedef typename base_filter_type::frame_type base_frame_type;
-
-				/**
-				 * \brief The first frame type.
-				 */
 				typedef typename filter_1_type::frame_type frame_1_type;
-
-				/**
-				 * \brief The base helper type.
-				 */
 				typedef const_helper<base_frame_type> base_helper_type;
-
-				/**
-				 * \brief The first helper type.
-				 */
 				typedef const_helper<frame_1_type> helper_1_type;
-
-				/**
-				 * \brief The frame handler callback.
-				 */
 				typedef boost::function<void (base_helper_type, helper_1_type)> frame_handler_callback;
 
 				/**
