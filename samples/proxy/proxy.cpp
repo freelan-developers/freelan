@@ -72,18 +72,22 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static char my_buf[2048];
+static char read_buffer[2048];
+static char write_buffer[2048];
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
+void arp_proxy_on_reply(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
+	(void) tap_adapter;
+
 	std::cout << "Write: " << cnt << " bytes. Error: " << ec << std::endl;
 
 	if (!ec)
 	{
-		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+		//tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
 	}
 }
 
@@ -93,8 +97,18 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 	if (!ec)
 	{
-		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+		asiotap::osi::ethernet_filter ethernet_filter;
+		asiotap::osi::arp_proxy arp_proxy(boost::asio::buffer(write_buffer, sizeof(write_buffer)), boost::bind(&arp_proxy_on_reply, boost::ref(tap_adapter), _1), ethernet_filter);
+
+		arp_proxy.parse(boost::asio::buffer(read_buffer, cnt));
+
+		tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
 	}
+}
+
+void arp_proxy_on_reply(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer)
+{
+	tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
@@ -122,7 +136,7 @@ int main()
 		tap_adapter.open();
 		tap_adapter.set_connected_state(true);
 
-		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+		tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
 
 		_io_service.run();
 	}
