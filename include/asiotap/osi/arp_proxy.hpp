@@ -84,36 +84,41 @@ namespace asiotap
 				/**
 				 * \brief Add a proxy entry.
 				 * \param entry The entry to add.
-				 * \return If an entry for the specified software address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
+				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
 				 */
 				bool add_entry(const entry_type& entry);
 
 				/**
 				 * \brief Add a proxy entry.
-				 * \param software_address The software address.
+				 * \param logical_address The logical address.
 				 * \param hardware_address The hardware address.
-				 * \return If an entry for the specified software address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
+				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
 				 */
-				bool add_entry(const boost::asio::ip::address_v4& software_address, const ethernet_address_type& hardware_address);
+				bool add_entry(const boost::asio::ip::address_v4& logical_address, const ethernet_address_type& hardware_address);
 
 				/**
 				 * \brief Delete a proxy entry.
-				 * \param software_address The software address.
+				 * \param logical_address The logical address.
 				 * \return If an entry was deleted, true is returned. Otherwise, the call returns false.
 				 */
-				bool remove_entry(const boost::asio::ip::address_v4& software_address);
+				bool remove_entry(const boost::asio::ip::address_v4& logical_address);
 
 			private:
 
+				typedef std::map<boost::asio::ip::address_v4, ethernet_address_type> entry_map_type;
+				void arp_frame_handler(const_helper<arp_frame>);
+				void on_arp_request(const_helper<ethernet_frame>, const_helper<arp_frame>);
+
 				ethernet_filter& m_ethernet_filter;
 				arp_filter<ethernet_filter> m_arp_filter;
-				std::map<boost::asio::ip::address_v4, ethernet_address_type> m_entry_map;
+				entry_map_type m_entry_map;
 		};
 		
 		inline arp_proxy::arp_proxy(ethernet_filter& _ethernet_filter) :
 			m_ethernet_filter(_ethernet_filter),
 			m_arp_filter(m_ethernet_filter)
 		{
+			m_arp_filter.add_handler(boost::bind(&arp_proxy::arp_frame_handler, this, _1));
 		}
 		
 		inline bool arp_proxy::add_entry(const entry_type& entry)
@@ -121,14 +126,22 @@ namespace asiotap
 			return m_entry_map.insert(entry).second;
 		}
 		
-		inline bool arp_proxy::add_entry(const boost::asio::ip::address_v4& software_address, const ethernet_address_type& hardware_address)
+		inline bool arp_proxy::add_entry(const boost::asio::ip::address_v4& logical_address, const ethernet_address_type& hardware_address)
 		{
-			return add_entry(std::make_pair(software_address, hardware_address));
+			return add_entry(std::make_pair(logical_address, hardware_address));
 		}
 		
-		inline bool arp_proxy::remove_entry(const boost::asio::ip::address_v4& software_address)
+		inline bool arp_proxy::remove_entry(const boost::asio::ip::address_v4& logical_address)
 		{
-			return (m_entry_map.erase(software_address) > 0);
+			return (m_entry_map.erase(logical_address) > 0);
+		}
+		
+		inline void arp_proxy::arp_frame_handler(const_helper<arp_frame> helper)
+		{
+			if (helper.operation() == ARP_REQUEST_OPERATION)
+			{
+				on_arp_request(*m_ethernet_filter.get_last_helper(), helper);
+			}
 		}
 	}
 }

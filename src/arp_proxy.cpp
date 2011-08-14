@@ -50,5 +50,15 @@ namespace asiotap
 {
 	namespace osi
 	{
+		void arp_proxy::on_arp_request(const_helper<ethernet_frame> ethernet_helper, const_helper<arp_frame> arp_helper)
+		{
+			(void) ethernet_helper;
+
+			entry_map_type::const_iterator entry_it = m_entry_map.find(arp_helper.target_logical_address());
+
+			if (entry_it != m_entry_map.end())
+			{
+			}
+		}
 	}
 }
