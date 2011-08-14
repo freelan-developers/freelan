@@ -65,9 +65,9 @@ namespace asiotap
 				/**
 				 * \brief Create a builder.
 				 * \param buf The buffer to use.
-				 * \param payload_size The size of the payload.
+				 * \param payload_size The size of the payload. Should be 0 (the default), as ARP frame have no payload.
 				 */
-				builder(boost::asio::mutable_buffer buf, size_t payload_size);
+				builder(boost::asio::mutable_buffer buf, size_t payload_size = 0);
 
 				/**
 				 * \brief Write the frame.
@@ -80,9 +80,9 @@ namespace asiotap
 				 */
 				size_t write(
 						uint16_t operation,
-						boost::asio::mutable_buffer sender_hardware_address,
+						boost::asio::const_buffer sender_hardware_address,
 						boost::asio::ip::address_v4 sender_logical_address,
-						boost::asio::mutable_buffer target_hardware_address,
+						boost::asio::const_buffer target_hardware_address,
 						boost::asio::ip::address_v4 target_logical_address
 						) const;
 		};

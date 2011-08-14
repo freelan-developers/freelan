@@ -52,9 +52,9 @@ namespace asiotap
 	{
 		size_t builder<arp_frame>::write(
 				uint16_t operation,
-				boost::asio::mutable_buffer sender_hardware_address,
+				boost::asio::const_buffer sender_hardware_address,
 				boost::asio::ip::address_v4 sender_logical_address,
-				boost::asio::mutable_buffer target_hardware_address,
+				boost::asio::const_buffer target_hardware_address,
 				boost::asio::ip::address_v4 target_logical_address
 				) const
 		{
