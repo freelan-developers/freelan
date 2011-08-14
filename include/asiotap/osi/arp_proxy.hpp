@@ -47,7 +47,6 @@
 
 #include "ethernet_filter.hpp"
 #include "arp_filter.hpp"
-#include "arp_builder.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
@@ -77,9 +76,10 @@ namespace asiotap
 
 				/**
 				 * \brief Create a new ARP proxy.
+				 * \param buffer The buffer to use for the response.
 				 * \param ethernet_filter The Ethernet filter to use.
 				 */
-				arp_proxy(ethernet_filter& ethernet_filter);
+				arp_proxy(boost::asio::mutable_buffer buffer, ethernet_filter& ethernet_filter);
 
 				/**
 				 * \brief Add a proxy entry.
@@ -109,12 +109,16 @@ namespace asiotap
 				void arp_frame_handler(const_helper<arp_frame>);
 				void on_arp_request(const_helper<ethernet_frame>, const_helper<arp_frame>);
 
+				boost::asio::mutable_buffer m_buffer;
+
 				ethernet_filter& m_ethernet_filter;
 				arp_filter<ethernet_filter> m_arp_filter;
+
 				entry_map_type m_entry_map;
 		};
 		
-		inline arp_proxy::arp_proxy(ethernet_filter& _ethernet_filter) :
+		inline arp_proxy::arp_proxy(boost::asio::mutable_buffer buffer, ethernet_filter& _ethernet_filter) :
+			m_buffer(buffer),
 			m_ethernet_filter(_ethernet_filter),
 			m_arp_filter(m_ethernet_filter)
 		{

@@ -45,6 +45,8 @@
 #include "osi/arp_proxy.hpp"
 
 #include "osi/arp_helper.hpp"
+#include "osi/ethernet_builder.hpp"
+#include "osi/arp_builder.hpp"
 
 namespace asiotap
 {
@@ -58,6 +60,25 @@ namespace asiotap
 
 			if (entry_it != m_entry_map.end())
 			{
+				size_t payload_size;
+
+				builder<arp_frame> arp_builder(m_buffer);
+			
+				payload_size = arp_builder.write(
+						ARP_REPLY_OPERATION,
+						arp_helper.sender_hardware_address(),
+						arp_helper.sender_logical_address(),
+						boost::asio::buffer(entry_it->second),
+						entry_it->first
+						);
+
+				builder<ethernet_frame> ethernet_builder(m_buffer, payload_size);
+
+				payload_size = ethernet_builder.write(
+						ethernet_helper.sender(),
+						ethernet_helper.target(),
+						ethernet_helper.protocol()
+						);
 			}
 		}
 	}
