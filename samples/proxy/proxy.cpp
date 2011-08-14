@@ -97,8 +97,10 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 	if (!ec)
 	{
+		// In a real world scenario, you probably don't want to instantiate all the filters/proxy on every read.
 		asiotap::osi::ethernet_filter ethernet_filter;
 		asiotap::osi::arp_proxy arp_proxy(boost::asio::buffer(write_buffer, sizeof(write_buffer)), boost::bind(&arp_proxy_on_reply, boost::ref(tap_adapter), _1), ethernet_filter);
+		arp_proxy.add_entry(boost::asio::ip::address_v4::from_string("9.0.0.2"), tap_adapter.ethernet_address());
 
 		arp_proxy.parse(boost::asio::buffer(read_buffer, cnt));
 
