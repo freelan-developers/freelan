@@ -79,6 +79,8 @@ namespace asiotap
 						ethernet_helper.target(),
 						ethernet_helper.protocol()
 						);
+
+				m_on_reply(payload_size);
 			}
 		}
 	}

@@ -50,6 +50,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <boost/function.hpp>
 
 #include <map>
 
@@ -75,11 +76,17 @@ namespace asiotap
 				typedef std::pair<boost::asio::ip::address_v4, ethernet_address_type> entry_type;
 
 				/**
+				 * \brief The on_reply callback type.
+				 */
+				typedef boost::function<void (size_t)> on_reply_callback;
+
+				/**
 				 * \brief Create a new ARP proxy.
 				 * \param buffer The buffer to use for the response.
+				 * \param on_reply The callback to be called when a reply was written to buffer.
 				 * \param ethernet_filter The Ethernet filter to use.
 				 */
-				arp_proxy(boost::asio::mutable_buffer buffer, ethernet_filter& ethernet_filter);
+				arp_proxy(boost::asio::mutable_buffer buffer, on_reply_callback on_reply, ethernet_filter& ethernet_filter);
 
 				/**
 				 * \brief Add a proxy entry.
@@ -111,17 +118,22 @@ namespace asiotap
 
 				boost::asio::mutable_buffer m_buffer;
 
+				on_reply_callback m_on_reply;
+
 				ethernet_filter& m_ethernet_filter;
 				arp_filter<ethernet_filter> m_arp_filter;
 
 				entry_map_type m_entry_map;
 		};
 		
-		inline arp_proxy::arp_proxy(boost::asio::mutable_buffer buffer, ethernet_filter& _ethernet_filter) :
+		inline arp_proxy::arp_proxy(boost::asio::mutable_buffer buffer, on_reply_callback on_reply, ethernet_filter& _ethernet_filter) :
 			m_buffer(buffer),
+			m_on_reply(on_reply),
 			m_ethernet_filter(_ethernet_filter),
 			m_arp_filter(m_ethernet_filter)
 		{
+			assert(m_on_reply);
+
 			m_arp_filter.add_handler(boost::bind(&arp_proxy::arp_frame_handler, this, _1));
 		}
 		
