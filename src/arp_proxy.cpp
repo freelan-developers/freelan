@@ -80,7 +80,7 @@ namespace asiotap
 						ethernet_helper.protocol()
 						);
 
-				m_on_reply(payload_size);
+				m_on_reply(m_buffer + (boost::asio::buffer_size(m_buffer) - payload_size));
 			}
 		}
 	}

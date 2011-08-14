@@ -78,7 +78,7 @@ namespace asiotap
 				/**
 				 * \brief The on_reply callback type.
 				 */
-				typedef boost::function<void (size_t)> on_reply_callback;
+				typedef boost::function<void (boost::asio::const_buffer)> on_reply_callback;
 
 				/**
 				 * \brief Create a new ARP proxy.
@@ -109,6 +109,12 @@ namespace asiotap
 				 * \return If an entry was deleted, true is returned. Otherwise, the call returns false.
 				 */
 				bool remove_entry(const boost::asio::ip::address_v4& logical_address);
+
+				/**
+				 * \brief Parse the given buffer.
+				 * \param buffer The buffer to parse.
+				 */
+				void parse(boost::asio::const_buffer buffer);
 
 			private:
 
@@ -152,6 +158,11 @@ namespace asiotap
 			return (m_entry_map.erase(logical_address) > 0);
 		}
 		
+		inline void arp_proxy::parse(boost::asio::const_buffer buffer)
+		{
+			m_ethernet_filter.parse(buffer);
+		}
+
 		inline void arp_proxy::arp_frame_handler(const_helper<arp_frame> helper)
 		{
 			if (helper.operation() == ARP_REQUEST_OPERATION)
