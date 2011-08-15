@@ -53,23 +53,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const Ethernet helper class.
-		 */
-		typedef const_helper<ethernet_frame> const_ethernet_helper;
-
-		/**
-		 * \brief The mutable Ethernet helper class.
-		 */
-		typedef mutable_helper<ethernet_frame> mutable_ethernet_helper;
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_ethernet_helper frame);
-
-		/**
 		 * \brief The const Ethernet helper implementation class.
 		 */
 		template <>
@@ -156,11 +139,6 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
-
-		inline bool check_frame(const_ethernet_helper)
-		{
-			return true;
-		}
 
 		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::target() const
 		{

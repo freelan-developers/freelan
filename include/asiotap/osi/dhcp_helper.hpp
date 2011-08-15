@@ -53,23 +53,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const dhcp helper class.
-		 */
-		typedef const_helper<dhcp_frame> const_dhcp_helper;
-
-		/**
-		 * \brief The mutable dhcp helper class.
-		 */
-		typedef mutable_helper<dhcp_frame> mutable_dhcp_helper;
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_dhcp_helper frame);
-
-		/**
 		 * \brief The const dhcp helper implementation class.
 		 */
 		template <>
@@ -132,11 +115,6 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
-
-		inline bool check_frame(const_dhcp_helper frame)
-		{
-			return (frame.magic_cookie() == DHCP_MAGIC_COOKIE);
-		}
 
 		inline uint32_t _const_helper_impl<dhcp_frame>::magic_cookie() const
 		{

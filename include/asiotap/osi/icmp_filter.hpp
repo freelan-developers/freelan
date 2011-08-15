@@ -69,7 +69,7 @@ namespace asiotap
 				 * \param helper The current frame.
 				 * \return true if the ICMP checksum is correct.
 				 */
-				static bool checksum_filter(const_icmp_helper helper);
+				static bool checksum_filter(const_helper<icmp_frame> helper);
 
 				/**
 				 * \brief Constructor.
@@ -89,7 +89,7 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<icmp_frame>(const_ipv4_helper parent);
+		bool frame_parent_match<icmp_frame>(const_helper<ipv4_frame> parent);
 
 		/**
 		 * \brief The frame parent match function.
@@ -97,10 +97,17 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<icmp_frame>(const_ipv6_helper parent);
+		bool frame_parent_match<icmp_frame>(const_helper<ipv6_frame> parent);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_helper<icmp_frame> frame);
 
 		template <typename ParentFilterType>
-		inline bool filter<icmp_frame, ParentFilterType>::checksum_filter(const_icmp_helper helper)
+		inline bool filter<icmp_frame, ParentFilterType>::checksum_filter(const_helper<icmp_frame> helper)
 		{
 			return helper.verify_checksum();
 		}
@@ -117,19 +124,25 @@ namespace asiotap
 		}
 
 		template <>
-		inline bool frame_parent_match<icmp_frame>(const_ipv4_helper parent)
+		inline bool frame_parent_match<icmp_frame>(const_helper<ipv4_frame> parent)
 		{
 			return ((parent.protocol() == ICMP_PROTOCOL) && (parent.tos() == 0));
 		}
 
 		template <>
-		inline bool frame_parent_match<icmp_frame>(const_ipv6_helper parent)
+		inline bool frame_parent_match<icmp_frame>(const_helper<ipv6_frame> parent)
 		{
 			//TODO: Implement this
 			(void)parent;
 
 			return false;
 		}
+
+		inline bool check_frame(const_helper<icmp_frame>)
+		{
+			return true;
+		}
+
 	}
 }
 

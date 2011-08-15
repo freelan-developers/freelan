@@ -61,6 +61,18 @@ namespace asiotap
 		class filter<ethernet_frame> : public _filter<ethernet_frame>
 		{
 		};
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_helper<ethernet_frame> frame);
+
+		inline bool check_frame(const_helper<ethernet_frame>)
+		{
+			return true;
+		}
 	}
 }
 

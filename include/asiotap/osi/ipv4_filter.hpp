@@ -68,7 +68,7 @@ namespace asiotap
 				 * \param helper The current frame.
 				 * \return true if the IP checksum is correct.
 				 */
-				static bool checksum_filter(const_ipv4_helper helper);
+				static bool checksum_filter(const_helper<ipv4_frame> helper);
 
 				/**
 				 * \brief Constructor.
@@ -88,10 +88,17 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent);
+		bool frame_parent_match<ipv4_frame>(const_helper<ethernet_frame> parent);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_helper<ipv4_frame> frame);
 
 		template <typename ParentFilterType>
-		inline bool filter<ipv4_frame, ParentFilterType>::checksum_filter(const_ipv4_helper helper)
+		inline bool filter<ipv4_frame, ParentFilterType>::checksum_filter(const_helper<ipv4_frame> helper)
 		{
 			return helper.verify_checksum();
 		}
@@ -108,9 +115,14 @@ namespace asiotap
 		}
 
 		template <>
-		inline bool frame_parent_match<ipv4_frame>(const_ethernet_helper parent)
+		inline bool frame_parent_match<ipv4_frame>(const_helper<ethernet_frame> parent)
 		{
 			return (parent.protocol() == IP_PROTOCOL);
+		}
+
+		inline bool check_frame(const_helper<ipv4_frame> frame)
+		{
+			return ((frame.version() == IP_PROTOCOL_VERSION_4) && (frame.ihl() >= 5));
 		}
 	}
 }

@@ -58,7 +58,7 @@ namespace asiotap
 			};
 
 			template <>
-			struct udp_pseudo_header<const_ipv4_helper>
+			struct udp_pseudo_header<const_helper<ipv4_frame> >
 			{
 				public:
 
@@ -66,14 +66,14 @@ namespace asiotap
 			};
 
 			template <>
-			struct udp_pseudo_header<const_ipv6_helper>
+			struct udp_pseudo_header<const_helper<ipv6_frame> >
 			{
 				public:
 
 					typedef udp_ipv6_pseudo_header type;
 			};
 
-			udp_ipv4_pseudo_header parent_frame_to_pseudo_header(const_ipv4_helper parent_frame, uint16_t udp_length)
+			udp_ipv4_pseudo_header parent_frame_to_pseudo_header(const_helper<ipv4_frame> parent_frame, uint16_t udp_length)
 			{
 				udp_ipv4_pseudo_header pseudo_header;
 				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
@@ -86,7 +86,7 @@ namespace asiotap
 				return pseudo_header;
 			}
 
-			udp_ipv6_pseudo_header parent_frame_to_pseudo_header(const_ipv6_helper parent_frame, uint16_t udp_length)
+			udp_ipv6_pseudo_header parent_frame_to_pseudo_header(const_helper<ipv6_frame> parent_frame, uint16_t udp_length)
 			{
 				udp_ipv6_pseudo_header pseudo_header;
 				memset(&pseudo_header, 0x00, sizeof(pseudo_header));
@@ -115,22 +115,22 @@ namespace asiotap
 			}
 		}
 
-		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_ipv4_helper parent_frame) const
+		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_helper<ipv4_frame> parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}
 
-		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_ipv6_helper parent_frame) const
+		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}
 
-		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_ipv4_helper parent_frame) const
+		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_helper<ipv4_frame> parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}
 
-		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_ipv6_helper parent_frame) const
+		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}

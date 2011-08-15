@@ -76,7 +76,14 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<bootp_frame>(const_udp_helper parent);
+		bool frame_parent_match<bootp_frame>(const_helper<udp_frame> parent);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_helper<bootp_frame> frame);
 
 		template <typename ParentFilterType>
 		inline filter<bootp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<bootp_frame, ParentFilterType>(parent)
@@ -84,9 +91,14 @@ namespace asiotap
 		}
 
 		template <>
-		inline bool frame_parent_match<bootp_frame>(const_udp_helper parent)
+		inline bool frame_parent_match<bootp_frame>(const_helper<udp_frame> parent)
 		{
 			return (parent.destination() == BOOTP_PROTOCOL);
+		}
+
+		inline bool check_frame(const_helper<bootp_frame>)
+		{
+			return true;
 		}
 	}
 }

@@ -189,6 +189,22 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentFilterType = void>
 		class filter;
 
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		template <typename OSIFrameType>
+		bool check_frame(mutable_helper<OSIFrameType> frame);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		template <typename OSIFrameType>
+		bool check_frame(const_helper<OSIFrameType> frame);
+
 		template <typename OSIFrameType>
 		inline void _base_filter<OSIFrameType>::add_filter(frame_filter_callback callback)
 		{
@@ -216,9 +232,12 @@ namespace asiotap
 
 				const_helper<OSIFrameType> helper(buf);
 
-				if (_base_filter<OSIFrameType>::filter_frame(helper))
+				if (check_frame(helper))
 				{
-					_base_filter<OSIFrameType>::frame_handled(helper);
+					if (_base_filter<OSIFrameType>::filter_frame(helper))
+					{
+						_base_filter<OSIFrameType>::frame_handled(helper);
+					}
 				}
 			}
 			catch (std::logic_error&)
@@ -268,11 +287,14 @@ namespace asiotap
 				{
 					const_helper<OSIFrameType> helper(parent_helper.payload());
 
-					if (_base_filter<OSIFrameType>::filter_frame(helper))
+					if (check_frame(helper))
 					{
-						if (bridge_filter_frame(parent_helper, helper))
+						if (_base_filter<OSIFrameType>::filter_frame(helper))
 						{
-							_base_filter<OSIFrameType>::frame_handled(helper);
+							if (bridge_filter_frame(parent_helper, helper))
+							{
+								_base_filter<OSIFrameType>::frame_handled(helper);
+							}
 						}
 					}
 				}
@@ -292,6 +314,12 @@ namespace asiotap
 		inline void _filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
 		{
 			_base_filter<OSIFrameType>::do_parse(buf);
+		}
+
+		template <typename OSIFrameType>
+		inline bool check_frame(mutable_helper<OSIFrameType> frame)
+		{
+			return check_frame(const_helper<OSIFrameType>(frame));
 		}
 	}
 }

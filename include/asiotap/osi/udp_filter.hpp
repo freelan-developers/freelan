@@ -70,7 +70,7 @@ namespace asiotap
 				 * \param helper The current frame.
 				 * \return true if the UDP checksum is correct.
 				 */
-				static bool checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_udp_helper helper);
+				static bool checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<udp_frame> helper);
 
 				/**
 				 * \brief Constructor.
@@ -90,7 +90,7 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<udp_frame>(const_ipv4_helper parent);
+		bool frame_parent_match<udp_frame>(const_helper<ipv4_frame> parent);
 
 		/**
 		 * \brief The frame parent match function.
@@ -98,10 +98,17 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<udp_frame>(const_ipv6_helper parent);
+		bool frame_parent_match<udp_frame>(const_helper<ipv6_frame> parent);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_helper<udp_frame> frame);
 
 		template <typename ParentFilterType>
-		inline bool filter<udp_frame, ParentFilterType>::checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_udp_helper helper)
+		inline bool filter<udp_frame, ParentFilterType>::checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<udp_frame> helper)
 		{
 			return helper.verify_checksum(parent_helper);
 		}
@@ -118,18 +125,23 @@ namespace asiotap
 		}
 
 		template <>
-		inline bool frame_parent_match<udp_frame>(const_ipv4_helper parent)
+		inline bool frame_parent_match<udp_frame>(const_helper<ipv4_frame> parent)
 		{
 			return (parent.protocol() == UDP_PROTOCOL);
 		}
 
 		template <>
-		inline bool frame_parent_match<udp_frame>(const_ipv6_helper parent)
+		inline bool frame_parent_match<udp_frame>(const_helper<ipv6_frame> parent)
 		{
 			//TODO: Implement this
 			(void)parent;
 
 			return false;
+		}
+
+		inline bool check_frame(const_helper<udp_frame>)
+		{
+			return true;
 		}
 	}
 }

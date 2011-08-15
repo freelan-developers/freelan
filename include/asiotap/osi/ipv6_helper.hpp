@@ -53,23 +53,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const ipv6 helper class.
-		 */
-		typedef const_helper<ipv6_frame> const_ipv6_helper;
-
-		/**
-		 * \brief The mutable ipv6 helper class.
-		 */
-		typedef mutable_helper<ipv6_frame> mutable_ipv6_helper;
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_ipv6_helper frame);
-
-		/**
 		 * \brief The const ipv6 helper implementation class.
 		 */
 		template <>
@@ -270,11 +253,6 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
-
-		inline bool check_frame(const_ipv6_helper frame)
-		{
-			return (frame.version() == IP_PROTOCOL_VERSION_6);
-		}
 
 		inline uint8_t _const_helper_impl<ipv6_frame>::version() const
 		{

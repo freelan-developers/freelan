@@ -76,7 +76,14 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<dhcp_frame>(const_bootp_helper parent);
+		bool frame_parent_match<dhcp_frame>(const_helper<bootp_frame> parent);
+
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		bool check_frame(const_helper<dhcp_frame> frame);
 
 		template <typename ParentFilterType>
 		inline filter<dhcp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<dhcp_frame, ParentFilterType>(parent)
@@ -84,9 +91,14 @@ namespace asiotap
 		}
 
 		template <>
-		inline bool frame_parent_match<dhcp_frame>(const_bootp_helper parent)
+		inline bool frame_parent_match<dhcp_frame>(const_helper<bootp_frame> parent)
 		{
 			return (boost::asio::buffer_size(parent.options()) >= sizeof(DHCP_MAGIC_COOKIE));
+		}
+
+		inline bool check_frame(const_helper<dhcp_frame> frame)
+		{
+			return (frame.magic_cookie() == DHCP_MAGIC_COOKIE);
 		}
 	}
 }

@@ -48,13 +48,5 @@ namespace asiotap
 {
 	namespace osi
 	{
-		bool check_frame(const_arp_helper frame)
-		{
-			return (
-			           (frame.protocol_type() == IP_PROTOCOL_TYPE) &&
-			           (frame.hardware_address_length() == ETHERNET_ADDRESS_SIZE) &&
-			           (frame.logical_address_length() == sizeof(in_addr))
-			       );
-		}
 	}
 }

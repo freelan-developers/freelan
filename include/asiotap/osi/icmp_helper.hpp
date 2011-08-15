@@ -56,23 +56,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const icmp helper class.
-		 */
-		typedef const_helper<icmp_frame> const_icmp_helper;
-
-		/**
-		 * \brief The mutable icmp helper class.
-		 */
-		typedef mutable_helper<icmp_frame> mutable_icmp_helper;
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_icmp_helper frame);
-
-		/**
 		 * \brief The const icmp helper implementation class.
 		 */
 		template <>
@@ -213,13 +196,6 @@ namespace asiotap
 				 */
 				_mutable_helper_impl(boost::asio::mutable_buffer buf);
 		};
-
-		inline bool check_frame(const_icmp_helper frame)
-		{
-			(void) frame;
-
-			return true;
-		}
 
 		inline uint8_t _const_helper_impl<icmp_frame>::type() const
 		{

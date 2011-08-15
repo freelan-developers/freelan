@@ -53,23 +53,6 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const arp helper class.
-		 */
-		typedef const_helper<arp_frame> const_arp_helper;
-
-		/**
-		 * \brief The mutable arp helper class.
-		 */
-		typedef mutable_helper<arp_frame> mutable_arp_helper;
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_arp_helper frame);
-
-		/**
 		 * \brief The const arp helper implementation class.
 		 */
 		template <>
