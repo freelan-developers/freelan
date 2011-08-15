@@ -74,21 +74,17 @@ static bool register_signal_handlers()
 
 static char read_buffer[2048];
 static char write_buffer[2048];
+asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter;
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
-void arp_proxy_on_reply(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer);
+void do_write(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
 	(void) tap_adapter;
 
 	std::cout << "Write: " << cnt << " bytes. Error: " << ec << std::endl;
-
-	if (!ec)
-	{
-		//tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
-	}
 }
 
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
@@ -97,18 +93,13 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 	if (!ec)
 	{
-		// In a real world scenario, you probably don't want to instantiate all the filters/proxy on every read.
-		asiotap::osi::ethernet_filter ethernet_filter;
-		asiotap::osi::arp_proxy arp_proxy(boost::asio::buffer(write_buffer, sizeof(write_buffer)), boost::bind(&arp_proxy_on_reply, boost::ref(tap_adapter), _1), ethernet_filter);
-		arp_proxy.add_entry(boost::asio::ip::address_v4::from_string("9.0.0.2"), tap_adapter.ethernet_address());
-
-		arp_proxy.parse(boost::asio::buffer(read_buffer, cnt));
+		ethernet_filter.parse(boost::asio::buffer(read_buffer, cnt));
 
 		tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
 	}
 }
 
-void arp_proxy_on_reply(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer)
+void do_write(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer)
 {
 	tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
 }
@@ -139,6 +130,12 @@ int main()
 		tap_adapter.set_connected_state(true);
 
 		tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+
+		// We add the proxy
+		asiotap::osi::filter<asiotap::osi::arp_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > arp_filter(ethernet_filter);
+
+		asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy(boost::asio::buffer(write_buffer, sizeof(write_buffer)), boost::bind(&do_write, boost::ref(tap_adapter), _1), arp_filter);
+		arp_proxy.add_entry(boost::asio::ip::address_v4::from_string("9.0.0.2"), tap_adapter.ethernet_address());
 
 		_io_service.run();
 	}
