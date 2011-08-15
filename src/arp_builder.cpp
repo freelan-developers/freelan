@@ -51,12 +51,12 @@ namespace asiotap
 	namespace osi
 	{
 		size_t builder<arp_frame>::write(
-				uint16_t operation,
-				boost::asio::const_buffer sender_hardware_address,
-				boost::asio::ip::address_v4 sender_logical_address,
-				boost::asio::const_buffer target_hardware_address,
-				boost::asio::ip::address_v4 target_logical_address
-				) const
+		    uint16_t operation,
+		    boost::asio::const_buffer sender_hardware_address,
+		    boost::asio::ip::address_v4 sender_logical_address,
+		    boost::asio::const_buffer target_hardware_address,
+		    boost::asio::ip::address_v4 target_logical_address
+		) const
 		{
 			assert(boost::asio::buffer_size(sender_hardware_address) == ETHERNET_ADDRESS_SIZE);
 			assert(boost::asio::buffer_size(target_hardware_address) == ETHERNET_ADDRESS_SIZE);

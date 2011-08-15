@@ -79,14 +79,14 @@ namespace asiotap
 				 * \return The total size of the written frame, including its payload.
 				 */
 				size_t write(
-						uint16_t operation,
-						boost::asio::const_buffer sender_hardware_address,
-						boost::asio::ip::address_v4 sender_logical_address,
-						boost::asio::const_buffer target_hardware_address,
-						boost::asio::ip::address_v4 target_logical_address
-						) const;
+				    uint16_t operation,
+				    boost::asio::const_buffer sender_hardware_address,
+				    boost::asio::ip::address_v4 sender_logical_address,
+				    boost::asio::const_buffer target_hardware_address,
+				    boost::asio::ip::address_v4 target_logical_address
+				) const;
 		};
-		
+
 		inline builder<arp_frame>::builder(boost::asio::mutable_buffer buf, size_t payload_size) :
 			_base_builder<arp_frame>(buf, payload_size)
 		{

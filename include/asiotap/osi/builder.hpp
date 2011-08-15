@@ -118,7 +118,7 @@ namespace asiotap
 		{
 			return m_buf;
 		}
-		
+
 		template <typename OSIFrameType>
 		inline boost::asio::mutable_buffer _base_builder<OSIFrameType>::payload() const
 		{

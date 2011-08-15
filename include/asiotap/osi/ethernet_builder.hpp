@@ -75,12 +75,12 @@ namespace asiotap
 				 * \return The total size of the written frame, including its payload.
 				 */
 				size_t write(
-						boost::asio::const_buffer target,
-						boost::asio::const_buffer sender,
-						uint16_t protocol
-						) const;
+				    boost::asio::const_buffer target,
+				    boost::asio::const_buffer sender,
+				    uint16_t protocol
+				) const;
 		};
-		
+
 		inline builder<ethernet_frame>::builder(boost::asio::mutable_buffer buf, size_t payload_size) :
 			_base_builder<ethernet_frame>(buf, payload_size)
 		{

@@ -145,7 +145,7 @@ namespace asiotap
 		{
 			return buffer() + sizeof(frame_type);
 		}
-		
+
 		inline _mutable_helper_impl<dhcp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
 			_base_mutable_helper<dhcp_frame>(buf)
 		{

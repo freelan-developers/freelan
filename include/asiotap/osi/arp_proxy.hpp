@@ -117,34 +117,34 @@ namespace asiotap
 
 				entry_map_type m_entry_map;
 		};
-		
+
 		inline proxy<arp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter<arp_frame, filter<ethernet_frame> >& arp_filter) :
 			_base_proxy<arp_frame>(_response_buffer, on_data_available),
 			m_arp_filter(arp_filter)
 		{
 		}
-		
+
 		inline bool proxy<arp_frame>::add_entry(const entry_type& entry)
 		{
 			return m_entry_map.insert(entry).second;
 		}
-		
+
 		inline bool proxy<arp_frame>::add_entry(const boost::asio::ip::address_v4& logical_address, const ethernet_address_type& hardware_address)
 		{
 			return add_entry(std::make_pair(logical_address, hardware_address));
 		}
-		
+
 		inline bool proxy<arp_frame>::remove_entry(const boost::asio::ip::address_v4& logical_address)
 		{
 			return (m_entry_map.erase(logical_address) > 0);
 		}
-		
+
 		inline void proxy<arp_frame>::on_frame(const_helper<frame_type> helper)
 		{
 			do_handle_frame(
-					*m_arp_filter.parent().get_last_helper(),
-					helper
-					);
+			    *m_arp_filter.parent().get_last_helper(),
+			    helper
+			);
 		}
 	}
 }

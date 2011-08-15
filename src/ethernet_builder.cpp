@@ -51,10 +51,10 @@ namespace asiotap
 	namespace osi
 	{
 		size_t builder<ethernet_frame>::write(
-				boost::asio::const_buffer target,
-				boost::asio::const_buffer sender,
-				uint16_t protocol
-				) const
+		    boost::asio::const_buffer target,
+		    boost::asio::const_buffer sender,
+		    uint16_t protocol
+		) const
 		{
 			assert(boost::asio::buffer_size(target) == ETHERNET_ADDRESS_SIZE);
 			assert(boost::asio::buffer_size(sender) == ETHERNET_ADDRESS_SIZE);

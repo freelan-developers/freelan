@@ -109,7 +109,7 @@ namespace asiotap
 		 */
 		template <typename OSIFrameType>
 		class proxy;
-		
+
 		template <typename OSIFrameType>
 		inline _base_proxy<OSIFrameType>::_base_proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available) :
 			m_response_buffer(_response_buffer),
@@ -117,7 +117,7 @@ namespace asiotap
 		{
 			assert(m_on_data_available);
 		}
-		
+
 		template <typename OSIFrameType>
 		inline boost::asio::mutable_buffer _base_proxy<OSIFrameType>::response_buffer() const
 		{
@@ -129,7 +129,7 @@ namespace asiotap
 		{
 			return m_response_buffer + (boost::asio::buffer_size(m_response_buffer) - size);
 		}
-		
+
 		template <typename OSIFrameType>
 		inline void _base_proxy<OSIFrameType>::data_available(boost::asio::const_buffer buffer)
 		{

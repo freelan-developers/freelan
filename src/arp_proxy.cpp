@@ -67,20 +67,20 @@ namespace asiotap
 					builder<arp_frame> arp_builder(response_buffer());
 
 					payload_size = arp_builder.write(
-							ARP_REPLY_OPERATION,
-							boost::asio::buffer(entry_it->second),
-							entry_it->first,
-							arp_helper.sender_hardware_address(),
-							arp_helper.sender_logical_address()
-							);
+					                   ARP_REPLY_OPERATION,
+					                   boost::asio::buffer(entry_it->second),
+					                   entry_it->first,
+					                   arp_helper.sender_hardware_address(),
+					                   arp_helper.sender_logical_address()
+					               );
 
 					builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
 
 					payload_size = ethernet_builder.write(
-							ethernet_helper.sender(),
-							ethernet_helper.target(),
-							ethernet_helper.protocol()
-							);
+					                   ethernet_helper.sender(),
+					                   ethernet_helper.target(),
+					                   ethernet_helper.protocol()
+					               );
 
 					data_available(get_truncated_response_buffer(payload_size));
 				}
