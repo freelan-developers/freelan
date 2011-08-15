@@ -83,14 +83,14 @@ static char my_buf[2048];
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
 void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
-void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame);
-void arp_frame_read(asiotap::osi::const_arp_helper frame);
-void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame);
-void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame);
-void icmp_frame_read(asiotap::osi::const_icmp_helper frame);
-void udp_frame_read(asiotap::osi::const_udp_helper frame);
-void bootp_frame_read(asiotap::osi::const_bootp_helper frame);
-void dhcp_frame_read(asiotap::osi::const_dhcp_helper frame);
+void ethernet_frame_read(asiotap::osi::const_helper<asiotap::osi::ethernet_frame> frame);
+void arp_frame_read(asiotap::osi::const_helper<asiotap::osi::arp_frame> frame);
+void ipv4_frame_read(asiotap::osi::const_helper<asiotap::osi::ipv4_frame> frame);
+void ipv6_frame_read(asiotap::osi::const_helper<asiotap::osi::ipv6_frame> frame);
+void icmp_frame_read(asiotap::osi::const_helper<asiotap::osi::icmp_frame> frame);
+void udp_frame_read(asiotap::osi::const_helper<asiotap::osi::udp_frame> frame);
+void bootp_frame_read(asiotap::osi::const_helper<asiotap::osi::bootp_frame> frame);
+void dhcp_frame_read(asiotap::osi::const_helper<asiotap::osi::dhcp_frame> frame);
 
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
@@ -110,35 +110,35 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 	{
 		boost::asio::const_buffer buffer(my_buf, cnt);
 
-		asiotap::osi::ethernet_filter ethernet_filter;
+		asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter;
 		ethernet_filter.add_handler(&ethernet_frame_read);
 
-		asiotap::osi::arp_filter<asiotap::osi::ethernet_filter> arp_filter(ethernet_filter);
+		asiotap::osi::filter<asiotap::osi::arp_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > arp_filter(ethernet_filter);
 		arp_filter.add_handler(&arp_frame_read);
 
-		asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> ipv4_filter(ethernet_filter);
+		asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > ipv4_filter(ethernet_filter);
 		ipv4_filter.add_handler(&ipv4_frame_read);
 		ipv4_filter.add_checksum_filter();
 
-		asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> ipv6_filter(ethernet_filter);
+		asiotap::osi::filter<asiotap::osi::ipv6_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > ipv6_filter(ethernet_filter);
 		ipv6_filter.add_handler(&ipv6_frame_read);
 
-		asiotap::osi::icmp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > icmp_ipv4_filter(ipv4_filter);
+		asiotap::osi::filter<asiotap::osi::icmp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > icmp_ipv4_filter(ipv4_filter);
 		icmp_ipv4_filter.add_handler(&icmp_frame_read);
 		icmp_ipv4_filter.add_checksum_filter();
 
-		asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > udp_ipv4_filter(ipv4_filter);
+		asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > udp_ipv4_filter(ipv4_filter);
 		udp_ipv4_filter.add_handler(&udp_frame_read);
 		udp_ipv4_filter.add_checksum_bridge_filter();
 
-		asiotap::osi::udp_filter<asiotap::osi::ipv6_filter<asiotap::osi::ethernet_filter> > udp_ipv6_filter(ipv6_filter);
+		asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv6_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > udp_ipv6_filter(ipv6_filter);
 		udp_ipv6_filter.add_handler(&udp_frame_read);
 		udp_ipv6_filter.add_checksum_bridge_filter();
 
-		asiotap::osi::bootp_filter<asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > > bootp_filter(udp_ipv4_filter);
+		asiotap::osi::filter<asiotap::osi::bootp_frame, asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > > bootp_filter(udp_ipv4_filter);
 		bootp_filter.add_handler(&bootp_frame_read);
 
-		asiotap::osi::dhcp_filter<asiotap::osi::bootp_filter<asiotap::osi::udp_filter<asiotap::osi::ipv4_filter<asiotap::osi::ethernet_filter> > > > dhcp_filter(bootp_filter);
+		asiotap::osi::filter<asiotap::osi::dhcp_frame, asiotap::osi::filter<asiotap::osi::bootp_frame, asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > > > dhcp_filter(bootp_filter);
 		dhcp_filter.add_handler(&dhcp_frame_read);
 
 		ethernet_filter.parse(buffer);
@@ -147,44 +147,44 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 	}
 }
 
-void ethernet_frame_read(asiotap::osi::const_ethernet_helper frame)
+void ethernet_frame_read(asiotap::osi::const_helper<asiotap::osi::ethernet_frame> frame)
 {
 	(void)frame;
 
 	std::cout << "Ethernet frame" << std::endl;
 }
 
-void arp_frame_read(asiotap::osi::const_arp_helper frame)
+void arp_frame_read(asiotap::osi::const_helper<asiotap::osi::arp_frame> frame)
 {
 	std::cout << "ARP frame: " << frame.sender_logical_address() << std::endl;
 }
 
-void ipv4_frame_read(asiotap::osi::const_ipv4_helper frame)
+void ipv4_frame_read(asiotap::osi::const_helper<asiotap::osi::ipv4_frame> frame)
 {
 	std::cout << "IPv4 frame: " << frame.source() << " -> " << frame.destination() << std::endl;
 }
 
-void ipv6_frame_read(asiotap::osi::const_ipv6_helper frame)
+void ipv6_frame_read(asiotap::osi::const_helper<asiotap::osi::ipv6_frame> frame)
 {
 	std::cout << "IPv6 frame: " << frame.source() << " -> " << frame.destination() << std::endl;
 }
 
-void icmp_frame_read(asiotap::osi::const_icmp_helper frame)
+void icmp_frame_read(asiotap::osi::const_helper<asiotap::osi::icmp_frame> frame)
 {
 	std::cout << "ICMP frame: " << frame.type() << ": " << frame.code() << std::endl;
 }
 
-void udp_frame_read(asiotap::osi::const_udp_helper frame)
+void udp_frame_read(asiotap::osi::const_helper<asiotap::osi::udp_frame> frame)
 {
 	std::cout << "UDP frame: " << frame.source() << " -> " << frame.destination() << std::endl;
 }
 
-void bootp_frame_read(asiotap::osi::const_bootp_helper frame)
+void bootp_frame_read(asiotap::osi::const_helper<asiotap::osi::bootp_frame> frame)
 {
 	std::cout << "BOOTP frame. Options size: " << boost::asio::buffer_size(frame.options()) << std::endl;
 }
 
-void dhcp_frame_read(asiotap::osi::const_dhcp_helper frame)
+void dhcp_frame_read(asiotap::osi::const_helper<asiotap::osi::dhcp_frame> frame)
 {
 	std::cout << "DHCP frame. Options size: " << boost::asio::buffer_size(frame.options()) << std::endl;
 }
