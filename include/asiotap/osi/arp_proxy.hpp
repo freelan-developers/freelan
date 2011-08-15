@@ -122,6 +122,7 @@ namespace asiotap
 			_base_proxy<arp_frame>(_response_buffer, on_data_available),
 			m_arp_filter(arp_filter)
 		{
+			m_arp_filter.add_handler(boost::bind(&proxy<arp_frame>::on_frame, this, _1));
 		}
 
 		inline bool proxy<arp_frame>::add_entry(const entry_type& entry)
