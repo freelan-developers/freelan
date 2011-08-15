@@ -177,25 +177,25 @@ namespace asiotap
 		};
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::add_filter(frame_filter_callback callback)
+		inline void _base_filter<OSIFrameType>::add_filter(frame_filter_callback callback)
 		{
 			m_filters.push_back(callback);
 		}
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::add_handler(frame_handler_callback callback)
+		inline void _base_filter<OSIFrameType>::add_handler(frame_handler_callback callback)
 		{
 			m_handlers.push_back(callback);
 		}
 
 		template <typename OSIFrameType>
-		boost::optional<const_helper<OSIFrameType> > _base_filter<OSIFrameType>::get_last_helper() const
+		inline boost::optional<const_helper<OSIFrameType> > _base_filter<OSIFrameType>::get_last_helper() const
 		{
 			return m_last_helper;
 		}
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::do_parse(boost::asio::const_buffer buf) const
+		inline void _base_filter<OSIFrameType>::do_parse(boost::asio::const_buffer buf) const
 		{
 			try
 			{
@@ -214,13 +214,13 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		bool _base_filter<OSIFrameType>::filter_frame(const_helper<OSIFrameType> helper) const
+		inline bool _base_filter<OSIFrameType>::filter_frame(const_helper<OSIFrameType> helper) const
 		{
 			return (std::find_if(m_filters.begin(), m_filters.end(), !boost::bind(&frame_filter_callback::operator(), _1, helper)) == m_filters.end());
 		}
 
 		template <typename OSIFrameType>
-		void _base_filter<OSIFrameType>::frame_handled(const_helper<OSIFrameType> helper) const
+		inline void _base_filter<OSIFrameType>::frame_handled(const_helper<OSIFrameType> helper) const
 		{
 			m_last_helper = helper;
 
@@ -228,19 +228,19 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		filter<OSIFrameType, ParentFilterType>::filter(ParentFilterType& parent)
+		inline filter<OSIFrameType, ParentFilterType>::filter(ParentFilterType& parent)
 		{
 			parent.add_handler(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _1));
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		void filter<OSIFrameType, ParentFilterType>::add_bridge_filter(frame_bridge_filter_callback callback)
+		inline void filter<OSIFrameType, ParentFilterType>::add_bridge_filter(frame_bridge_filter_callback callback)
 		{
 			m_bridge_filters.push_back(callback);
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		void filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent) const
+		inline void filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent) const
 		{
 			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent))
 			{
@@ -263,13 +263,13 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		bool filter<OSIFrameType, ParentFilterType>::bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const
+		inline bool filter<OSIFrameType, ParentFilterType>::bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const
 		{
 			return (std::find_if(m_bridge_filters.begin(), m_bridge_filters.end(), !boost::bind(&frame_bridge_filter_callback::operator(), _1, parent_helper, helper)) == m_bridge_filters.end());
 		}
 
 		template <typename OSIFrameType>
-		void filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
+		inline void filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
 		{
 			_base_filter<OSIFrameType>::do_parse(buf);
 		}
