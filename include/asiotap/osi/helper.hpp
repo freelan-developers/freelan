@@ -273,7 +273,7 @@ namespace asiotap
 		{
 			if (!check_frame(*this))
 			{
-				throw std::domain_error("buf");
+				throw std::domain_error("frame not valid");
 			}
 		}
 
@@ -289,7 +289,7 @@ namespace asiotap
 		{
 			if (!check_frame(*this))
 			{
-				throw std::domain_error("buf");
+				throw std::domain_error("frame not valid");
 			}
 		}
 
