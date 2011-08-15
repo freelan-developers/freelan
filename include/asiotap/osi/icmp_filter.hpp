@@ -113,7 +113,7 @@ namespace asiotap
 		}
 
 		template <typename ParentFilterType>
-		inline filter<icmp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<icmp_frame, ParentFilterType>(parent)
+		inline filter<icmp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<icmp_frame, ParentFilterType>(_parent)
 		{
 		}
 

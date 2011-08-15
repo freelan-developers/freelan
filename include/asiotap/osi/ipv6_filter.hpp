@@ -86,7 +86,7 @@ namespace asiotap
 		bool check_frame(const_helper<ipv6_frame> frame);
 
 		template <typename ParentFilterType>
-		inline filter<ipv6_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<ipv6_frame, ParentFilterType>(parent)
+		inline filter<ipv6_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<ipv6_frame, ParentFilterType>(_parent)
 		{
 		}
 

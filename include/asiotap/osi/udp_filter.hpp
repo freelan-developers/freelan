@@ -114,7 +114,7 @@ namespace asiotap
 		}
 
 		template <typename ParentFilterType>
-		inline filter<udp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<udp_frame, ParentFilterType>(parent)
+		inline filter<udp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<udp_frame, ParentFilterType>(_parent)
 		{
 		}
 

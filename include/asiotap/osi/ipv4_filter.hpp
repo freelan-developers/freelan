@@ -104,7 +104,7 @@ namespace asiotap
 		}
 
 		template <typename ParentFilterType>
-		inline filter<ipv4_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<ipv4_frame, ParentFilterType>(parent)
+		inline filter<ipv4_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<ipv4_frame, ParentFilterType>(_parent)
 		{
 		}
 

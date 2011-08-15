@@ -86,7 +86,7 @@ namespace asiotap
 		bool check_frame(const_helper<dhcp_frame> frame);
 
 		template <typename ParentFilterType>
-		inline filter<dhcp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<dhcp_frame, ParentFilterType>(parent)
+		inline filter<dhcp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<dhcp_frame, ParentFilterType>(_parent)
 		{
 		}
 

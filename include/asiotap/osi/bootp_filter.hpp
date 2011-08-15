@@ -86,7 +86,7 @@ namespace asiotap
 		bool check_frame(const_helper<bootp_frame> frame);
 
 		template <typename ParentFilterType>
-		inline filter<bootp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<bootp_frame, ParentFilterType>(parent)
+		inline filter<bootp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<bootp_frame, ParentFilterType>(_parent)
 		{
 		}
 
