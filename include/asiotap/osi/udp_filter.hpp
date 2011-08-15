@@ -60,7 +60,7 @@ namespace asiotap
 		 * \brief The UDP filter.
 		 */
 		template <typename ParentFilterType>
-		class udp_filter : public filter<udp_frame, ParentFilterType>
+		class filter<udp_frame, ParentFilterType> : public _filter<udp_frame, ParentFilterType>
 		{
 			public:
 
@@ -76,7 +76,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				udp_filter(ParentFilterType& parent);
+				filter(ParentFilterType& parent);
 
 				/**
 				 * \brief Add the checksum bridge filter.
@@ -101,18 +101,18 @@ namespace asiotap
 		bool frame_parent_match<udp_frame>(const_ipv6_helper parent);
 
 		template <typename ParentFilterType>
-		inline bool udp_filter<ParentFilterType>::checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_udp_helper helper)
+		inline bool filter<udp_frame, ParentFilterType>::checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_udp_helper helper)
 		{
 			return helper.verify_checksum(parent_helper);
 		}
 
 		template <typename ParentFilterType>
-		inline udp_filter<ParentFilterType>::udp_filter(ParentFilterType& parent) : filter<udp_frame, ParentFilterType>(parent)
+		inline filter<udp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<udp_frame, ParentFilterType>(parent)
 		{
 		}
 
 		template <typename ParentFilterType>
-		inline void udp_filter<ParentFilterType>::add_checksum_bridge_filter()
+		inline void filter<udp_frame, ParentFilterType>::add_checksum_bridge_filter()
 		{
 			add_bridge_filter(checksum_bridge_filter);
 		}

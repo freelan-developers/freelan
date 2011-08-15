@@ -59,7 +59,7 @@ namespace asiotap
 		 * \brief The DHCP filter.
 		 */
 		template <typename ParentFilterType>
-		class dhcp_filter : public filter<dhcp_frame, ParentFilterType>
+		class filter<dhcp_frame, ParentFilterType> : public _filter<dhcp_frame, ParentFilterType>
 		{
 			public:
 
@@ -67,7 +67,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				dhcp_filter(ParentFilterType& parent);
+				filter(ParentFilterType& parent);
 		};
 
 		/**
@@ -79,7 +79,7 @@ namespace asiotap
 		bool frame_parent_match<dhcp_frame>(const_bootp_helper parent);
 
 		template <typename ParentFilterType>
-		inline dhcp_filter<ParentFilterType>::dhcp_filter(ParentFilterType& parent) : filter<dhcp_frame, ParentFilterType>(parent)
+		inline filter<dhcp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<dhcp_frame, ParentFilterType>(parent)
 		{
 		}
 

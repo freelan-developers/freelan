@@ -60,7 +60,7 @@ namespace asiotap
 		 * \brief The ICMP filter.
 		 */
 		template <typename ParentFilterType>
-		class icmp_filter : public filter<icmp_frame, ParentFilterType>
+		class filter<icmp_frame, ParentFilterType> : public _filter<icmp_frame, ParentFilterType>
 		{
 			public:
 
@@ -75,7 +75,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				icmp_filter(ParentFilterType& parent);
+				filter(ParentFilterType& parent);
 
 				/**
 				 * \brief Add the checksum filter.
@@ -100,18 +100,18 @@ namespace asiotap
 		bool frame_parent_match<icmp_frame>(const_ipv6_helper parent);
 
 		template <typename ParentFilterType>
-		inline bool icmp_filter<ParentFilterType>::checksum_filter(const_icmp_helper helper)
+		inline bool filter<icmp_frame, ParentFilterType>::checksum_filter(const_icmp_helper helper)
 		{
 			return helper.verify_checksum();
 		}
 
 		template <typename ParentFilterType>
-		inline icmp_filter<ParentFilterType>::icmp_filter(ParentFilterType& parent) : filter<icmp_frame, ParentFilterType>(parent)
+		inline filter<icmp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<icmp_frame, ParentFilterType>(parent)
 		{
 		}
 
 		template <typename ParentFilterType>
-		inline void icmp_filter<ParentFilterType>::add_checksum_filter()
+		inline void filter<icmp_frame, ParentFilterType>::add_checksum_filter()
 		{
 			add_filter(checksum_filter);
 		}

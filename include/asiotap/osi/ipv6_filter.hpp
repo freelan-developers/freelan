@@ -59,7 +59,7 @@ namespace asiotap
 		 * \brief The IPv6 filter.
 		 */
 		template <typename ParentFilterType>
-		class ipv6_filter : public filter<ipv6_frame, ParentFilterType>
+		class filter<ipv6_frame, ParentFilterType> : public _filter<ipv6_frame, ParentFilterType>
 		{
 			public:
 
@@ -67,7 +67,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				ipv6_filter(ParentFilterType& parent);
+				filter(ParentFilterType& parent);
 		};
 
 		/**
@@ -79,7 +79,7 @@ namespace asiotap
 		bool frame_parent_match<ipv6_frame>(const_ethernet_helper parent);
 
 		template <typename ParentFilterType>
-		inline ipv6_filter<ParentFilterType>::ipv6_filter(ParentFilterType& parent) : filter<ipv6_frame, ParentFilterType>(parent)
+		inline filter<ipv6_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<ipv6_frame, ParentFilterType>(parent)
 		{
 		}
 

@@ -59,7 +59,7 @@ namespace asiotap
 		 * \brief The BOOTP filter.
 		 */
 		template <typename ParentFilterType>
-		class bootp_filter : public filter<bootp_frame, ParentFilterType>
+		class filter<bootp_frame, ParentFilterType> : public _filter<bootp_frame, ParentFilterType>
 		{
 			public:
 
@@ -67,7 +67,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				bootp_filter(ParentFilterType& parent);
+				filter(ParentFilterType& parent);
 		};
 
 		/**
@@ -79,7 +79,7 @@ namespace asiotap
 		bool frame_parent_match<bootp_frame>(const_udp_helper parent);
 
 		template <typename ParentFilterType>
-		inline bootp_filter<ParentFilterType>::bootp_filter(ParentFilterType& parent) : filter<bootp_frame, ParentFilterType>(parent)
+		inline filter<bootp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<bootp_frame, ParentFilterType>(parent)
 		{
 		}
 

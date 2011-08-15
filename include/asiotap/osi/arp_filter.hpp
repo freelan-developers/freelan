@@ -59,7 +59,7 @@ namespace asiotap
 		 * \brief The ARP filter.
 		 */
 		template <typename ParentFilterType>
-		class arp_filter : public filter<arp_frame, ParentFilterType>
+		class filter<arp_frame, ParentFilterType> : public _filter<arp_frame, ParentFilterType>
 		{
 			public:
 
@@ -67,7 +67,7 @@ namespace asiotap
 				 * \brief Constructor.
 				 * \param parent The parent filter.
 				 */
-				arp_filter(ParentFilterType& parent);
+				filter(ParentFilterType& parent);
 		};
 
 		/**
@@ -79,7 +79,7 @@ namespace asiotap
 		bool frame_parent_match<arp_frame>(const_ethernet_helper parent);
 
 		template <typename ParentFilterType>
-		inline arp_filter<ParentFilterType>::arp_filter(ParentFilterType& parent) : filter<arp_frame, ParentFilterType>(parent)
+		inline filter<arp_frame, ParentFilterType>::filter(ParentFilterType& parent) : _filter<arp_frame, ParentFilterType>(parent)
 		{
 		}
 

@@ -108,12 +108,7 @@ namespace asiotap
 		 * \brief A generic proxy class.
 		 */
 		template <typename OSIFrameType>
-		class proxy : public _base_proxy<OSIFrameType>
-		{
-			private:
-
-				void cannot_instantiate_an_unspecialized_proxy_class();
-		};
+		class proxy;
 		
 		template <typename OSIFrameType>
 		inline _base_proxy<OSIFrameType>::_base_proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available) :

@@ -80,9 +80,9 @@ namespace asiotap
 				 * \brief Create an ARP proxy.
 				 * \param response_buffer The buffer to write the responses into.
 				 * \param on_data_available The callback function to call when data is available for writing.
-				 * \param _arp_filter The ARP filter to use.
+				 * \param arp_filter The ARP filter to use.
 				 */
-				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, arp_filter<ethernet_filter>& _arp_filter);
+				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter<arp_frame, filter<ethernet_frame> >& arp_filter);
 
 				/**
 				 * \brief Add a proxy entry.
@@ -111,16 +111,16 @@ namespace asiotap
 				void on_frame(const_helper<frame_type>);
 				void do_handle_frame(const_helper<ethernet_frame>, const_helper<arp_frame>);
 
-				arp_filter<ethernet_filter>& m_arp_filter;
+				filter<arp_frame, filter<ethernet_frame> >& m_arp_filter;
 
 				typedef std::map<boost::asio::ip::address_v4, ethernet_address_type> entry_map_type;
 
 				entry_map_type m_entry_map;
 		};
 		
-		inline proxy<arp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, arp_filter<ethernet_filter>& _arp_filter) :
+		inline proxy<arp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter<arp_frame, filter<ethernet_frame> >& arp_filter) :
 			_base_proxy<arp_frame>(_response_buffer, on_data_available),
-			m_arp_filter(_arp_filter)
+			m_arp_filter(arp_filter)
 		{
 		}
 		

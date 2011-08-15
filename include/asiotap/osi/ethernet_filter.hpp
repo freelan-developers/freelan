@@ -57,7 +57,10 @@ namespace asiotap
 		/**
 		 * \brief The Ethernet filter.
 		 */
-		typedef filter<ethernet_frame> ethernet_filter;
+		template <>
+		class filter<ethernet_frame> : public _filter<ethernet_frame>
+		{
+		};
 	}
 }
 
