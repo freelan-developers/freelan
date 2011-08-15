@@ -141,6 +141,12 @@ namespace asiotap
 				filter(ParentFilterType& parent);
 
 				/**
+				 * \brief Get the parent filter.
+				 * \return The parent filter.
+				 */
+				ParentFilterType& parent() const;
+
+				/**
 				 * \brief Add a bridge filter function.
 				 * \param callback The bridge filter function to add.
 				 */
@@ -158,6 +164,7 @@ namespace asiotap
 
 			private:
 
+				ParentFilterType& m_parent;
 				std::vector<frame_bridge_filter_callback> m_bridge_filters;
 		};
 
@@ -228,9 +235,16 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		inline filter<OSIFrameType, ParentFilterType>::filter(ParentFilterType& parent)
+		inline filter<OSIFrameType, ParentFilterType>::filter(ParentFilterType& _parent) :
+			m_parent(_parent)
 		{
-			parent.add_handler(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _1));
+			m_parent.add_handler(boost::bind(&filter<OSIFrameType, ParentFilterType>::parse, this, _1));
+		}
+
+		template <typename OSIFrameType, typename ParentFilterType>
+		inline ParentFilterType& filter<OSIFrameType, ParentFilterType>::parent() const
+		{
+			return m_parent;
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
@@ -240,17 +254,17 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		inline void filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent) const
+		inline void filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent_helper) const
 		{
-			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent))
+			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent_helper))
 			{
 				try
 				{
-					const_helper<OSIFrameType> helper(parent.payload());
+					const_helper<OSIFrameType> helper(parent_helper.payload());
 
 					if (_base_filter<OSIFrameType>::filter_frame(helper))
 					{
-						if (bridge_filter_frame(parent, helper))
+						if (bridge_filter_frame(parent_helper, helper))
 						{
 							_base_filter<OSIFrameType>::frame_handled(helper);
 						}

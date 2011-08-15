@@ -45,12 +45,12 @@
 #ifndef ASIOTAP_OSI_ARP_PROXY_HPP
 #define ASIOTAP_OSI_ARP_PROXY_HPP
 
+#include "proxy.hpp"
+
 #include "ethernet_filter.hpp"
 #include "arp_filter.hpp"
 
-#include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <boost/function.hpp>
 
 #include <map>
 
@@ -61,7 +61,8 @@ namespace asiotap
 		/**
 		 * \brief An ARP proxy class.
 		 */
-		class arp_proxy
+		template <>
+		class proxy<arp_frame> : public _base_proxy<arp_frame>
 		{
 			public:
 
@@ -76,17 +77,12 @@ namespace asiotap
 				typedef std::pair<boost::asio::ip::address_v4, ethernet_address_type> entry_type;
 
 				/**
-				 * \brief The on_reply callback type.
+				 * \brief Create an ARP proxy.
+				 * \param response_buffer The buffer to write the responses into.
+				 * \param on_data_available The callback function to call when data is available for writing.
+				 * \param _arp_filter The ARP filter to use.
 				 */
-				typedef boost::function<void (boost::asio::const_buffer)> on_reply_callback;
-
-				/**
-				 * \brief Create a new ARP proxy.
-				 * \param buffer The buffer to use for the response.
-				 * \param on_reply The callback to be called when a reply was written to buffer.
-				 * \param ethernet_filter The Ethernet filter to use.
-				 */
-				arp_proxy(boost::asio::mutable_buffer buffer, on_reply_callback on_reply, ethernet_filter& ethernet_filter);
+				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, arp_filter<ethernet_filter>& _arp_filter);
 
 				/**
 				 * \brief Add a proxy entry.
@@ -110,65 +106,45 @@ namespace asiotap
 				 */
 				bool remove_entry(const boost::asio::ip::address_v4& logical_address);
 
-				/**
-				 * \brief Parse the given buffer.
-				 * \param buffer The buffer to parse.
-				 */
-				void parse(boost::asio::const_buffer buffer);
-
 			private:
 
+				void on_frame(const_helper<frame_type>);
+				void do_handle_frame(const_helper<ethernet_frame>, const_helper<arp_frame>);
+
+				arp_filter<ethernet_filter>& m_arp_filter;
+
 				typedef std::map<boost::asio::ip::address_v4, ethernet_address_type> entry_map_type;
-				void arp_frame_handler(const_helper<arp_frame>);
-				void on_arp_request(const_helper<ethernet_frame>, const_helper<arp_frame>);
-
-				boost::asio::mutable_buffer m_buffer;
-
-				on_reply_callback m_on_reply;
-
-				ethernet_filter& m_ethernet_filter;
-				arp_filter<ethernet_filter> m_arp_filter;
 
 				entry_map_type m_entry_map;
 		};
 		
-		inline arp_proxy::arp_proxy(boost::asio::mutable_buffer buffer, on_reply_callback on_reply, ethernet_filter& _ethernet_filter) :
-			m_buffer(buffer),
-			m_on_reply(on_reply),
-			m_ethernet_filter(_ethernet_filter),
-			m_arp_filter(m_ethernet_filter)
+		inline proxy<arp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, arp_filter<ethernet_filter>& _arp_filter) :
+			_base_proxy<arp_frame>(_response_buffer, on_data_available),
+			m_arp_filter(_arp_filter)
 		{
-			assert(m_on_reply);
-
-			m_arp_filter.add_handler(boost::bind(&arp_proxy::arp_frame_handler, this, _1));
 		}
 		
-		inline bool arp_proxy::add_entry(const entry_type& entry)
+		inline bool proxy<arp_frame>::add_entry(const entry_type& entry)
 		{
 			return m_entry_map.insert(entry).second;
 		}
 		
-		inline bool arp_proxy::add_entry(const boost::asio::ip::address_v4& logical_address, const ethernet_address_type& hardware_address)
+		inline bool proxy<arp_frame>::add_entry(const boost::asio::ip::address_v4& logical_address, const ethernet_address_type& hardware_address)
 		{
 			return add_entry(std::make_pair(logical_address, hardware_address));
 		}
 		
-		inline bool arp_proxy::remove_entry(const boost::asio::ip::address_v4& logical_address)
+		inline bool proxy<arp_frame>::remove_entry(const boost::asio::ip::address_v4& logical_address)
 		{
 			return (m_entry_map.erase(logical_address) > 0);
 		}
 		
-		inline void arp_proxy::parse(boost::asio::const_buffer buffer)
+		inline void proxy<arp_frame>::on_frame(const_helper<frame_type> helper)
 		{
-			m_ethernet_filter.parse(buffer);
-		}
-
-		inline void arp_proxy::arp_frame_handler(const_helper<arp_frame> helper)
-		{
-			if (helper.operation() == ARP_REQUEST_OPERATION)
-			{
-				on_arp_request(*m_ethernet_filter.get_last_helper(), helper);
-			}
+			do_handle_frame(
+					*m_arp_filter.parent().get_last_helper(),
+					helper
+					);
 		}
 	}
 }
