@@ -52,13 +52,13 @@ namespace asiotap
 	namespace osi
 	{
 		template <typename A, typename B = void, typename C = void, typename D = void, typename E = void>
-		class complex_filter
+		struct complex_filter
 		{
 			typedef filter<A, typename complex_filter<B, C, D, E>::type> type;
 		};
 
 		template <>
-		class complex_filter<void, void, void, void, void>
+		struct complex_filter<void, void, void, void, void>
 		{
 			typedef void type;
 		};
