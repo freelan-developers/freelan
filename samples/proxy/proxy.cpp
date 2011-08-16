@@ -6,6 +6,7 @@
 
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
+#include <asiotap/osi/complex_filter.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -132,7 +133,7 @@ int main()
 		tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
 
 		// We add the proxy
-		asiotap::osi::filter<asiotap::osi::arp_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > arp_filter(ethernet_filter);
+		asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type arp_filter(ethernet_filter);
 
 		asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy(boost::asio::buffer(write_buffer, sizeof(write_buffer)), boost::bind(&do_write, boost::ref(tap_adapter), _1), arp_filter);
 		arp_proxy.add_entry(boost::asio::ip::address_v4::from_string("9.0.0.2"), tap_adapter.ethernet_address());
