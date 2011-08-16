@@ -13,6 +13,7 @@
 #include <asiotap/osi/udp_filter.hpp>
 #include <asiotap/osi/bootp_filter.hpp>
 #include <asiotap/osi/dhcp_filter.hpp>
+#include <asiotap/osi/complex_filter.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -108,37 +109,39 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 
 	if (!ec)
 	{
+		namespace ao = asiotap::osi;
+
 		boost::asio::const_buffer buffer(my_buf, cnt);
 
-		asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter;
+		ao::filter<ao::ethernet_frame> ethernet_filter;
 		ethernet_filter.add_handler(&ethernet_frame_read);
 
-		asiotap::osi::filter<asiotap::osi::arp_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > arp_filter(ethernet_filter);
+		ao::complex_filter<ao::arp_frame, ao::ethernet_frame>::type arp_filter(ethernet_filter);
 		arp_filter.add_handler(&arp_frame_read);
 
-		asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > ipv4_filter(ethernet_filter);
+		ao::complex_filter<ao::ipv4_frame, ao::ethernet_frame>::type ipv4_filter(ethernet_filter);
 		ipv4_filter.add_handler(&ipv4_frame_read);
 		ipv4_filter.add_checksum_filter();
 
-		asiotap::osi::filter<asiotap::osi::ipv6_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > ipv6_filter(ethernet_filter);
+		ao::complex_filter<ao::ipv6_frame, ao::ethernet_frame>::type ipv6_filter(ethernet_filter);
 		ipv6_filter.add_handler(&ipv6_frame_read);
 
-		asiotap::osi::filter<asiotap::osi::icmp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > icmp_ipv4_filter(ipv4_filter);
+		ao::complex_filter<ao::icmp_frame, ao::ipv4_frame, ao::ethernet_frame>::type icmp_ipv4_filter(ipv4_filter);
 		icmp_ipv4_filter.add_handler(&icmp_frame_read);
 		icmp_ipv4_filter.add_checksum_filter();
 
-		asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > udp_ipv4_filter(ipv4_filter);
+		ao::complex_filter<ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type udp_ipv4_filter(ipv4_filter);
 		udp_ipv4_filter.add_handler(&udp_frame_read);
 		udp_ipv4_filter.add_checksum_bridge_filter();
 
-		asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv6_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > udp_ipv6_filter(ipv6_filter);
+		ao::complex_filter<ao::udp_frame, ao::ipv6_frame, ao::ethernet_frame>::type udp_ipv6_filter(ipv6_filter);
 		udp_ipv6_filter.add_handler(&udp_frame_read);
 		udp_ipv6_filter.add_checksum_bridge_filter();
 
-		asiotap::osi::filter<asiotap::osi::bootp_frame, asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > > bootp_filter(udp_ipv4_filter);
+		ao::complex_filter<ao::bootp_frame, ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type bootp_filter(udp_ipv4_filter);
 		bootp_filter.add_handler(&bootp_frame_read);
 
-		asiotap::osi::filter<asiotap::osi::dhcp_frame, asiotap::osi::filter<asiotap::osi::bootp_frame, asiotap::osi::filter<asiotap::osi::udp_frame, asiotap::osi::filter<asiotap::osi::ipv4_frame, asiotap::osi::filter<asiotap::osi::ethernet_frame> > > > > dhcp_filter(bootp_filter);
+		ao::complex_filter<ao::dhcp_frame, ao::bootp_frame, ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type dhcp_filter(bootp_filter);
 		dhcp_filter.add_handler(&dhcp_frame_read);
 
 		ethernet_filter.parse(buffer);
