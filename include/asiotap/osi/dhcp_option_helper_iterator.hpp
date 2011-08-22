@@ -53,13 +53,83 @@ namespace asiotap
 {
 	namespace osi
 	{
+		template <class HelperTag>
+		class dhcp_option_helper_iterator;
+
+		/**
+		 * \brief Compare two iterators.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two arguments represent the same iterator.
+		 */
+		template <class HelperTag>
+		bool operator==(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
+
+		/**
+		 * \brief Compare two iterators.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two arguments represent different iterators.
+		 */
+		template <class HelperTag>
+		bool operator!=(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
+
 		/**
 		 * \brief The DHCP option helper iterator class.
 		 */
 		template <class HelperTag>
 		class dhcp_option_helper_iterator : public std::iterator<std::forward_iterator_tag, dhcp_option_helper<HelperTag> >
 		{
+			public:
+
+				/**
+				 * \brief Create an empty iterator.
+				 */
+				dhcp_option_helper_iterator();
+
+			private:
+
+				/**
+				 * \brief The buffer type.
+				 */
+				typedef typename helper_buffer<HelperTag>::type buffer_type;
+
+				dhcp_option_helper_iterator(buffer_type);
+
+				buffer_type m_buf;
+
+				friend bool operator==<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
+				friend bool operator!=<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
 		};
+		
+		template <class HelperTag>
+		inline bool operator==(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
+		{
+			return 
+				(boost::asio::buffer_cast<const void*>(lhs.m_buf) == boost::asio::buffer_cast<const void*>(rhs.m_buf)) && 
+				(boost::asio::buffer_size(lhs.m_buf) == boost::asio::buffer_size(rhs.m_buf))
+				;
+		}
+
+		template <class HelperTag>
+		inline bool operator!=(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
+		{
+			return 
+				(boost::asio::buffer_cast<const void*>(lhs.m_buf) != boost::asio::buffer_cast<const void*>(rhs.m_buf)) ||
+				(boost::asio::buffer_size(lhs.m_buf) != boost::asio::buffer_size(rhs.m_buf))
+				;
+		}
+
+		template <class HelperTag>
+		inline dhcp_option_helper_iterator<HelperTag>::dhcp_option_helper_iterator()
+		{
+		}
+
+		template <class HelperTag>
+		inline dhcp_option_helper_iterator<HelperTag>::dhcp_option_helper_iterator(buffer_type buf) :
+			m_buf(buf)
+		{
+		}
 	}
 }
 
