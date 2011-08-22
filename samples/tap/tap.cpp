@@ -189,7 +189,16 @@ void bootp_frame_read(asiotap::osi::const_helper<asiotap::osi::bootp_frame> fram
 
 void dhcp_frame_read(asiotap::osi::const_helper<asiotap::osi::dhcp_frame> frame)
 {
-	std::cout << "DHCP frame. Options size: " << boost::asio::buffer_size(frame.options()) << std::endl;
+	std::cout << "DHCP frame. Options: ";
+
+	typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame>::const_iterator const_iterator;
+
+	for (const_iterator it = frame.options_begin(); (it != frame.options_end()) && (it->tag() != asiotap::osi::dhcp_option::end); ++it)
+	{
+		std::cout << it->tag() << ", ";
+	}
+
+	std::cout << "end." << std::endl;
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
