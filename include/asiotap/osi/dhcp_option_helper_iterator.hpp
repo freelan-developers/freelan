@@ -141,8 +141,8 @@ namespace asiotap
 		inline bool operator==(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
 		{
 			return 
-				(boost::asio::buffer_cast<const void*>(lhs.m_helper.buffer()) == boost::asio::buffer_cast<const void*>(rhs.m_helper.buffer())) && 
-				(boost::asio::buffer_size(lhs.m_helper.buffer()) == boost::asio::buffer_size(rhs.m_helper.buffer()))
+				(boost::asio::buffer_cast<const void*>(lhs.m_helper->buffer()) == boost::asio::buffer_cast<const void*>(rhs.m_helper->buffer())) && 
+				(boost::asio::buffer_size(lhs.m_helper->buffer()) == boost::asio::buffer_size(rhs.m_helper->buffer()))
 				;
 		}
 
@@ -150,8 +150,8 @@ namespace asiotap
 		inline bool operator!=(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
 		{
 			return 
-				(boost::asio::buffer_cast<const void*>(lhs.m_helper.buffer()) != boost::asio::buffer_cast<const void*>(rhs.m_helper.buffer())) ||
-				(boost::asio::buffer_size(lhs.m_helper.buffer()) != boost::asio::buffer_size(rhs.m_helper.buffer()))
+				(boost::asio::buffer_cast<const void*>(lhs.m_helper->buffer()) != boost::asio::buffer_cast<const void*>(rhs.m_helper->buffer())) ||
+				(boost::asio::buffer_size(lhs.m_helper->buffer()) != boost::asio::buffer_size(rhs.m_helper->buffer()))
 				;
 		}
 
