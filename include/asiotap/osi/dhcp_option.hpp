@@ -212,7 +212,7 @@ namespace asiotap
 				 * \param option_tag The DHCP option tag.
 				 * \return true if it has a length, false otherwise.
 				 */
-				bool has_length(dhcp_option_tag option_tag);
+				static bool has_length(dhcp_option_tag option_tag);
 
 			private:
 
