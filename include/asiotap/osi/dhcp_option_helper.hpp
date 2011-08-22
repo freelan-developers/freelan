@@ -46,8 +46,7 @@
 #define ASIOTAP_OSI_DHCP_OPTION_HELPER_HPP
 
 #include "helper.hpp"
-
-#include <iterator>
+#include "dhcp_option.hpp"
 
 namespace asiotap
 {
