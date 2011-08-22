@@ -52,12 +52,57 @@ namespace asiotap
 	namespace osi
 	{
 		/**
+		 * \brief The const helper tag.
+		 */
+		class const_helper_tag;
+
+		/**
+		 * \brief The mutable helper tag.
+		 */
+		class mutable_helper_tag;
+
+		/**
+		 * \brief The helper buffer type.
+		 */
+		template <class HelperTag>
+		struct helper_buffer;
+
+		/**
+		 * \brief The const helper buffer type.
+		 */
+		template <>
+		struct helper_buffer<const_helper_tag>
+		{
+			/**
+			 * \brief The buffer type.
+			 */
+			typedef boost::asio::const_buffer type;
+		};
+
+		/**
+		 * \brief The mutable helper buffer type.
+		 */
+		template <>
+		struct helper_buffer<mutable_helper_tag>
+		{
+			/**
+			 * \brief The buffer type.
+			 */
+			typedef boost::asio::mutable_buffer type;
+		};
+
+		/**
 		 * \brief A base const helper class.
 		 */
 		template <typename OSIFrameType>
 		class _base_const_helper
 		{
 			public:
+
+				/**
+				 * \brief The helper tag.
+				 */
+				typedef const_helper_tag helper_tag;
 
 				/**
 				 * \brief The frame type.
@@ -96,6 +141,11 @@ namespace asiotap
 		class _base_mutable_helper
 		{
 			public:
+
+				/**
+				 * \brief The helper tag.
+				 */
+				typedef mutable_helper_tag helper_tag;
 
 				/**
 				 * \brief The frame type.
