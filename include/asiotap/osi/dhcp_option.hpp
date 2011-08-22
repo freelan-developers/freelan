@@ -97,7 +97,7 @@ namespace asiotap
 				tcp_keepalive_internal =													0x26,
 				tcp_keepalive_garbage =														0x27,
 				network_information_service_domain =							0x28,
-				network_information_servers =											0x29,
+				network_information_service_servers =							0x29,
 				ntp_servers =																			0x2a,
 				vendor_specific =																	0x2b,
 				netbios_over_tcpip_name_server =									0x2c,
@@ -120,8 +120,8 @@ namespace asiotap
 				client_identifier =																0x3d,
 				netware_ip_domain_name =													0x3e,
 				netware_ip_information =													0x3f,
-				network_information_service_domain =							0x40,
-				network_information_service_servers =							0x41,
+				network_information_service_plus_domain =					0x40,
+				network_information_service_plus_servers =				0x41,
 				tftp_server_name =																0x42,
 				bootfile_name =																		0x43,
 				mobile_ip_home_agent =														0x44,
@@ -199,6 +199,7 @@ namespace asiotap
 				virtual_subnet_selection =												0xdd,
 				end =																							0xff
 			};
+		}
 	}
 }
 
