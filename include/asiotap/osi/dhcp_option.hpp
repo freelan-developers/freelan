@@ -45,6 +45,8 @@
 #ifndef ASIOTAP_OSI_DHCP_OPTION_HPP
 #define ASIOTAP_OSI_DHCP_OPTION_HPP
 
+#include <boost/asio.hpp>
+
 namespace asiotap
 {
 	namespace osi
@@ -199,6 +201,20 @@ namespace asiotap
 				virtual_subnet_selection =												0xdd,
 				end =																							0xff
 			};
+
+			extern const uint8_t has_length_map[256];
+		}
+
+		/**
+		 * \brief Check if the specified DHCP option code has a length.
+		 * \param option The DHCP option.
+		 * \return true if it has a length, false otherwise.
+		 */
+		bool dhcp_option_has_length(dhcp_option::dhcp_option option);
+
+		inline bool dhcp_option_has_length(dhcp_option::dhcp_option option)
+		{
+			return (dhcp_option::has_length_map[static_cast<uint8_t>(option)] != 0);
 		}
 	}
 }
