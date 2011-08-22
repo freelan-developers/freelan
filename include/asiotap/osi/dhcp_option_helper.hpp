@@ -64,53 +64,53 @@ namespace asiotap
 		{
 			public:
 
-			/**
-			 * \brief The buffer type.
-			 */
-			typedef helper_buffer<HelperTag> buffer_type;
+				/**
+				 * \brief The buffer type.
+				 */
+				typedef typename helper_buffer<HelperTag>::type buffer_type;
 
-			/**
-			 * \brief The option tag type.
-			 */
-			typedef dhcp_option::dhcp_option_tag dhcp_option_tag;
+				/**
+				 * \brief The option tag type.
+				 */
+				typedef dhcp_option::dhcp_option_tag dhcp_option_tag;
 
-			/**
-			 * \brief Create a new DHCP option.
-			 * \param buf The buffer to parse and use.
-			 */
-			_base_dhcp_option_helper(buffer_type buf);
+				/**
+				 * \brief Create a new DHCP option helper.
+				 * \param buf The buffer to parse and use.
+				 */
+				_base_dhcp_option_helper(buffer_type buf);
 
-			/**
-			 * \brief Get the option tag.
-			 * \return The option tag.
-			 */
-			dhcp_option_tag tag() const;
+				/**
+				 * \brief Get the option tag.
+				 * \return The option tag.
+				 */
+				dhcp_option_tag tag() const;
 
-			/**
-			 * \brief Check if the option tag matches his length.
-			 * \return true if the option is valid. 
-			 */
-			bool is_valid() const;
+				/**
+				 * \brief Check if the option tag matches his length.
+				 * \return true if the option is valid. 
+				 */
+				bool is_valid() const;
 
-			/**
-			 * \brief Check if the option has a length.
-			 * \return true if the option has a length.
-			 */
-			bool has_length() const;
+				/**
+				 * \brief Check if the option has a length.
+				 * \return true if the option has a length.
+				 */
+				bool has_length() const;
 
-			/**
-			 * \brief Get the option length.
-			 * \return The option length.
-			 * \warning Calling this method when has_length() returns false has undefined behavior.
-			 */
-			size_t length() const;
+				/**
+				 * \brief Get the option length.
+				 * \return The option length.
+				 * \warning Calling this method when has_length() returns false has undefined behavior.
+				 */
+				size_t length() const;
 
-			/**
-			 * \brief Get the option value.
-			 * \return The option value.
-			 * \warning Calling this method when has_length() returns false has undefined behavior.
-			 */
-			buffer_type value() const;
+				/**
+				 * \brief Get the option value.
+				 * \return The option value.
+				 * \warning Calling this method when has_length() returns false has undefined behavior.
+				 */
+				buffer_type value() const;
 
 			protected:
 
@@ -123,6 +123,50 @@ namespace asiotap
 				buffer_type m_buf;
 		};
 		
+		template <class HelperTag>
+		class dhcp_option_helper;
+
+		template <>
+		class dhcp_option_helper<const_helper_tag> : public _base_dhcp_option_helper<const_helper_tag>
+		{
+			public:
+
+				/**
+				 * \brief Create a new DHCP option helper.
+				 * \param buf The buffer to parse and use.
+				 */
+				dhcp_option_helper(buffer_type buf);
+		};
+
+		template <>
+		class dhcp_option_helper<mutable_helper_tag> : public _base_dhcp_option_helper<mutable_helper_tag>
+		{
+			public:
+
+				/**
+				 * \brief Create a new DHCP option helper.
+				 * \param buf The buffer to parse and use.
+				 */
+				dhcp_option_helper(buffer_type buf);
+
+				/**
+				 * \brief Set the tag.
+				 * \param tag The option tag.
+				 */
+				void set_tag(dhcp_option_tag tag);
+
+				/**
+				 * \brief Set the length.
+				 * \param length The length to set.
+				 * \warning Calling this method when has_length() returns false has undefined behavior.
+				 */
+				void set_length(size_t length);
+
+			private:
+
+				uint8_t* data() const;
+		};
+
 		template <class HelperTag>
 		inline _base_dhcp_option_helper<HelperTag>::_base_dhcp_option_helper(buffer_type buf) :
 			m_buf(buf)
@@ -178,11 +222,31 @@ namespace asiotap
 		template <class HelperTag>
 		inline const uint8_t* _base_dhcp_option_helper<HelperTag>::const_data() const
 		{
-			return boost::asio::buffer_cast<const uint8_t>(buffer());
+			return boost::asio::buffer_cast<const uint8_t*>(buffer());
 		}
 
-		template <class HelperTag>
-		class dhcp_option_helper;
+		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(buffer_type buf) : _base_dhcp_option_helper<const_helper_tag>(buf)
+		{
+		}
+
+		inline dhcp_option_helper<mutable_helper_tag>::dhcp_option_helper(buffer_type buf) : _base_dhcp_option_helper<mutable_helper_tag>(buf)
+		{
+		}
+
+		inline void dhcp_option_helper<mutable_helper_tag>::set_tag(dhcp_option_tag _tag)
+		{
+			data()[0] = static_cast<uint8_t>(_tag);
+		}
+
+		inline void dhcp_option_helper<mutable_helper_tag>::set_length(size_t _length)
+		{
+			data()[1] = static_cast<uint8_t>(_length);
+		}
+
+		inline uint8_t* dhcp_option_helper<mutable_helper_tag>::data() const
+		{
+			return boost::asio::buffer_cast<uint8_t*>(buffer());
+		}
 	}
 }
 
