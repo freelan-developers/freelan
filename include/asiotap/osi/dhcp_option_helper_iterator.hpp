@@ -55,6 +55,8 @@ namespace asiotap
 {
 	namespace osi
 	{
+		struct dhcp_frame;
+
 		template <class HelperTag>
 		class dhcp_option_helper_iterator;
 
@@ -131,6 +133,8 @@ namespace asiotap
 
 				friend bool operator==<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
 				friend bool operator!=<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
+				friend class _const_helper_impl<dhcp_frame>;
+				friend class _mutable_helper_impl<dhcp_frame>;
 		};
 		
 		template <class HelperTag>

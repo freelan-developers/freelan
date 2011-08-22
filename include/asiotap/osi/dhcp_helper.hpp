@@ -47,6 +47,7 @@
 
 #include "helper.hpp"
 #include "dhcp_frame.hpp"
+#include "dhcp_option_helper_iterator.hpp"
 
 namespace asiotap
 {
@@ -61,12 +62,29 @@ namespace asiotap
 			public:
 
 				/**
+				 * \brief The iterator type.
+				 */
+				typedef dhcp_option_helper_iterator<helper_tag> const_iterator;
+
+				/**
 				 * \brief Get the magic cookie.
 				 * \return The magic cookie.
 				 */
 				uint32_t magic_cookie() const;
 
 				/*
+				 * \brief Get the options begin iterator.
+				 * \return An iterator to the first option.
+				 */
+				 const_iterator options_begin() const;
+
+				/*
+				 * \brief Get the options end iterator.
+				 * \return An iterator past the last option.
+				 */
+				 const_iterator options_end() const;
+
+				/**
 				 * \brief Get the options buffer.
 				 * \return The options.
 				 */
@@ -90,6 +108,11 @@ namespace asiotap
 			public:
 
 				/**
+				 * \brief The iterator type.
+				 */
+				typedef dhcp_option_helper_iterator<helper_tag> const_iterator;
+
+				/**
 				 * \brief Get the magic cookie.
 				 * \return The magic cookie.
 				 */
@@ -100,6 +123,18 @@ namespace asiotap
 				 * \param magic_cookie The magic cookie.
 				 */
 				void set_magic_cookie(uint32_t magic_cookie) const;
+
+				/*
+				 * \brief Get the options begin iterator.
+				 * \return An iterator to the first option.
+				 */
+				 const_iterator options_begin() const;
+
+				/*
+				 * \brief Get the options end iterator.
+				 * \return An iterator past the last option.
+				 */
+				 const_iterator options_end() const;
 
 				/**
 				 * \brief Get the options buffer.
@@ -121,6 +156,16 @@ namespace asiotap
 			return ntohl(frame().magic_cookie);
 		}
 
+		inline _const_helper_impl<dhcp_frame>::const_iterator _const_helper_impl<dhcp_frame>::options_begin() const
+		{
+			return const_iterator(options());
+		}
+
+		inline _const_helper_impl<dhcp_frame>::const_iterator _const_helper_impl<dhcp_frame>::options_end() const
+		{
+			return const_iterator();
+		}
+
 		inline boost::asio::const_buffer _const_helper_impl<dhcp_frame>::options() const
 		{
 			return buffer() + sizeof(frame_type);
@@ -139,6 +184,16 @@ namespace asiotap
 		inline void _mutable_helper_impl<dhcp_frame>::set_magic_cookie(uint32_t _magic_cookie) const
 		{
 			frame().magic_cookie = htonl(_magic_cookie);
+		}
+
+		inline _mutable_helper_impl<dhcp_frame>::const_iterator _mutable_helper_impl<dhcp_frame>::options_begin() const
+		{
+			return const_iterator(options());
+		}
+
+		inline _mutable_helper_impl<dhcp_frame>::const_iterator _mutable_helper_impl<dhcp_frame>::options_end() const
+		{
+			return const_iterator();
 		}
 
 		inline boost::asio::mutable_buffer _mutable_helper_impl<dhcp_frame>::options() const
