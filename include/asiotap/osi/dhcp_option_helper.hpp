@@ -81,6 +81,12 @@ namespace asiotap
 				_base_dhcp_option_helper(buffer_type buf);
 
 				/**
+				 * \brief Get the underlying buffer.
+				 * \return The buffer.
+				 */
+				buffer_type buffer() const;
+
+				/**
 				 * \brief Get the option tag.
 				 * \return The option tag.
 				 */
@@ -112,9 +118,14 @@ namespace asiotap
 				 */
 				buffer_type value() const;
 
+				/**
+				 * \brief Get the total length.
+				 * \return The total length of the option, including its tag and length.
+				 */
+				size_t total_length() const;
+
 			protected:
 
-				const buffer_type& buffer() const;
 				size_t size() const;
 				const uint8_t* const_data() const;
 
@@ -178,6 +189,12 @@ namespace asiotap
 		}
 		
 		template <class HelperTag>
+		inline typename _base_dhcp_option_helper<HelperTag>::buffer_type _base_dhcp_option_helper<HelperTag>::buffer() const
+		{
+			return m_buf;
+		}
+
+		template <class HelperTag>
 		inline typename _base_dhcp_option_helper<HelperTag>::dhcp_option_tag _base_dhcp_option_helper<HelperTag>::tag() const
 		{
 			return static_cast<dhcp_option_tag>(const_data()[0]);
@@ -208,9 +225,15 @@ namespace asiotap
 		}
 
 		template <class HelperTag>
-		inline const typename _base_dhcp_option_helper<HelperTag>::buffer_type& _base_dhcp_option_helper<HelperTag>::buffer() const
+		inline size_t _base_dhcp_option_helper<HelperTag>::total_length() const
 		{
-			return m_buf;
+			if (has_length())
+			{
+				return 2 + length();
+			} else
+			{
+				return 1;
+			}
 		}
 
 		template <class HelperTag>
