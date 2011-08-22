@@ -37,7 +37,7 @@
  */
 
 /**
- * \file dhcp_option.hpp
+ * \file dhcp_option_helper.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A DHCP option helper class.
  */

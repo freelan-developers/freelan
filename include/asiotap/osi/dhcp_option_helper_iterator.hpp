@@ -37,7 +37,7 @@
  */
 
 /**
- * \file dhcp_option_iterator.hpp
+ * \file dhcp_option_helper_iterator.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A DHCP option helper iterator class.
  */
