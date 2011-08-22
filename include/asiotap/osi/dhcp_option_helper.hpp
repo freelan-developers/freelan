@@ -48,6 +48,10 @@
 #include "helper.hpp"
 #include "dhcp_option.hpp"
 
+#include <boost/asio.hpp>
+
+#include <stdexcept>
+
 namespace asiotap
 {
 	namespace osi
@@ -66,14 +70,53 @@ namespace asiotap
 			typedef helper_buffer<HelperTag> buffer_type;
 
 			/**
+			 * \brief The option tag type.
+			 */
+			typedef dhcp_option::dhcp_option_tag dhcp_option_tag;
+
+			/**
 			 * \brief Create a new DHCP option.
 			 * \param buf The buffer to parse and use.
 			 */
 			_base_dhcp_option_helper(buffer_type buf);
 
+			/**
+			 * \brief Get the option tag.
+			 * \return The option tag.
+			 */
+			dhcp_option_tag tag() const;
+
+			/**
+			 * \brief Check if the option tag matches his length.
+			 * \return true if the option is valid. 
+			 */
+			bool is_valid() const;
+
+			/**
+			 * \brief Check if the option has a length.
+			 * \return true if the option has a length.
+			 */
+			bool has_length() const;
+
+			/**
+			 * \brief Get the option length.
+			 * \return The option length.
+			 * \warning Calling this method when has_length() returns false has undefined behavior.
+			 */
+			size_t length() const;
+
+			/**
+			 * \brief Get the option value.
+			 * \return The option value.
+			 * \warning Calling this method when has_length() returns false has undefined behavior.
+			 */
+			buffer_type value() const;
+
 			protected:
 
-				const buffer_type& buffer();
+				const buffer_type& buffer() const;
+				size_t size() const;
+				const uint8_t* const_data() const;
 
 			private:
 
@@ -84,18 +127,62 @@ namespace asiotap
 		inline _base_dhcp_option_helper<HelperTag>::_base_dhcp_option_helper(buffer_type buf) :
 			m_buf(buf)
 		{
+			if (size() == 0)
+			{
+				throw std::logic_error("Invalid buffer size");
+			}
+		}
+		
+		template <class HelperTag>
+		inline typename _base_dhcp_option_helper<HelperTag>::dhcp_option_tag _base_dhcp_option_helper<HelperTag>::tag() const
+		{
+			return static_cast<dhcp_option_tag>(const_data()[0]);
 		}
 
 		template <class HelperTag>
-		inline const typename _base_dhcp_option_helper<HelperTag>::buffer_type& _base_dhcp_option_helper<HelperTag>::buffer()
+		inline bool _base_dhcp_option_helper<HelperTag>::is_valid() const
+		{
+			return (dhcp_option::has_length(tag()) == (size() > 1));
+		}
+
+		template <class HelperTag>
+		inline bool _base_dhcp_option_helper<HelperTag>::has_length() const
+		{
+			return (size() > 1);
+		}
+
+		template <class HelperTag>
+		inline size_t _base_dhcp_option_helper<HelperTag>::length() const
+		{
+			return static_cast<size_t>(const_data()[1]);
+		}
+		
+		template <class HelperTag>
+		inline typename _base_dhcp_option_helper<HelperTag>::buffer_type _base_dhcp_option_helper<HelperTag>::value() const
+		{
+			return buffer_type(buffer() + 2, length());
+		}
+
+		template <class HelperTag>
+		inline const typename _base_dhcp_option_helper<HelperTag>::buffer_type& _base_dhcp_option_helper<HelperTag>::buffer() const
 		{
 			return m_buf;
 		}
 
 		template <class HelperTag>
-		class dhcp_option_helper : public _base_dhcp_option_helper<HelperTag>
+		inline size_t _base_dhcp_option_helper<HelperTag>::size() const
 		{
-		};
+			return boost::asio::buffer_size(buffer());
+		}
+
+		template <class HelperTag>
+		inline const uint8_t* _base_dhcp_option_helper<HelperTag>::const_data() const
+		{
+			return boost::asio::buffer_cast<const uint8_t>(buffer());
+		}
+
+		template <class HelperTag>
+		class dhcp_option_helper;
 	}
 }
 
