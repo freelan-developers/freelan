@@ -92,22 +92,60 @@ namespace asiotap
 		};
 
 		/**
-		 * \brief A base const helper class.
+		 * \brief A base helper class.
 		 */
-		template <typename OSIFrameType>
-		class _base_const_helper
+		template <class HelperTag, typename OSIFrameType>
+		class _generic_base_helper
 		{
 			public:
 
 				/**
 				 * \brief The helper tag.
 				 */
-				typedef const_helper_tag helper_tag;
+				typedef HelperTag helper_tag;
+
+				/**
+				 * \brief The buffer type.
+				 */
+				typedef typename helper_buffer<helper_tag>::type buffer_type;
 
 				/**
 				 * \brief The frame type.
 				 */
 				typedef OSIFrameType frame_type;
+
+				/**
+				 * \brief Get the underlying buffer.
+				 * \return The underlying buffer.
+				 */
+				buffer_type buffer() const;
+
+			protected:
+
+				/**
+				 * \brief Create a helper from a frame type structure.
+				 * \param buf The buffer to refer to.
+				 */
+				_generic_base_helper(buffer_type buf);
+
+			private:
+
+				buffer_type m_buf;
+		};
+
+		/**
+		 * \brief A base helper class.
+		 */
+		template <class HelperTag, typename OSIFrameType>
+		class _base_helper;
+
+		/**
+		 * \brief A base const helper class.
+		 */
+		template <typename OSIFrameType>
+		class _base_helper<const_helper_tag, OSIFrameType> : public _generic_base_helper<const_helper_tag, OSIFrameType>
+		{
+			public:
 
 				/**
 				 * \brief Get the associated frame.
@@ -115,42 +153,22 @@ namespace asiotap
 				 */
 				const OSIFrameType& frame() const;
 
-				/**
-				 * \brief Get the underlying buffer.
-				 * \return The underlying buffer.
-				 */
-				boost::asio::const_buffer buffer() const;
-
 			protected:
 
 				/**
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_base_const_helper(boost::asio::const_buffer buf);
-
-			private:
-
-				boost::asio::const_buffer m_buf;
+				_base_helper(typename _base_helper::buffer_type buf);
 		};
 
 		/**
 		 * \brief A base mutable helper class.
 		 */
 		template <typename OSIFrameType>
-		class _base_mutable_helper
+		class _base_helper<mutable_helper_tag, OSIFrameType> : public _generic_base_helper<mutable_helper_tag, OSIFrameType>
 		{
 			public:
-
-				/**
-				 * \brief The helper tag.
-				 */
-				typedef mutable_helper_tag helper_tag;
-
-				/**
-				 * \brief The frame type.
-				 */
-				typedef OSIFrameType frame_type;
 
 				/**
 				 * \brief Get the associated frame.
@@ -158,40 +176,26 @@ namespace asiotap
 				 */
 				OSIFrameType& frame() const;
 
-				/**
-				 * \brief Get the underlying buffer.
-				 * \return The underlying buffer.
-				 */
-				boost::asio::mutable_buffer buffer() const;
-
 			protected:
 
 				/**
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_base_mutable_helper(boost::asio::mutable_buffer buf);
-
-			private:
-
-				boost::asio::mutable_buffer m_buf;
+				_base_helper(typename _base_helper::buffer_type buf);
 		};
 
 		/**
 		 * \brief The implementation type for const helpers.
 		 */
 		template <typename OSIFrameType>
-		class _const_helper_impl : public _base_const_helper<OSIFrameType>
-		{
-		};
+		class _const_helper_impl;
 
 		/**
 		 * \brief The implementation type for mutable helpers.
 		 */
 		template <typename OSIFrameType>
-		class _mutable_helper_impl : public _base_mutable_helper<OSIFrameType>
-		{
-		};
+		class _mutable_helper_impl;
 
 		/**
 		 * \brief A const helper class.
@@ -257,20 +261,14 @@ namespace asiotap
 		template <typename OSIFrameType>
 		mutable_helper<OSIFrameType> helper(boost::asio::mutable_buffer buf);
 
-		template <typename OSIFrameType>
-		inline const OSIFrameType& _base_const_helper<OSIFrameType>::frame() const
-		{
-			return *boost::asio::buffer_cast<const OSIFrameType*>(m_buf);
-		}
-
-		template <typename OSIFrameType>
-		inline boost::asio::const_buffer _base_const_helper<OSIFrameType>::buffer() const
+		template <class HelperTag, typename OSIFrameType>
+		inline typename _generic_base_helper<HelperTag, OSIFrameType>::buffer_type _generic_base_helper<HelperTag, OSIFrameType>::buffer() const
 		{
 			return m_buf;
 		}
 
-		template <typename OSIFrameType>
-		inline _base_const_helper<OSIFrameType>::_base_const_helper(boost::asio::const_buffer buf) :
+		template <class HelperTag, typename OSIFrameType>
+		inline _generic_base_helper<HelperTag, OSIFrameType>::_generic_base_helper(buffer_type buf) :
 			m_buf(buf)
 		{
 			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
@@ -280,25 +278,25 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline OSIFrameType& _base_mutable_helper<OSIFrameType>::frame() const
+		inline const OSIFrameType& _base_helper<const_helper_tag, OSIFrameType>::frame() const
 		{
-			return *boost::asio::buffer_cast<OSIFrameType*>(m_buf);
+			return *boost::asio::buffer_cast<const OSIFrameType*>(_base_helper<const_helper_tag, OSIFrameType>::buffer());
 		}
 
 		template <typename OSIFrameType>
-		inline boost::asio::mutable_buffer _base_mutable_helper<OSIFrameType>::buffer() const
+		inline _base_helper<const_helper_tag, OSIFrameType>::_base_helper(typename _base_helper<const_helper_tag, OSIFrameType>::buffer_type buf) : _generic_base_helper<const_helper_tag, OSIFrameType>(buf)
 		{
-			return m_buf;
 		}
 
 		template <typename OSIFrameType>
-		inline _base_mutable_helper<OSIFrameType>::_base_mutable_helper(boost::asio::mutable_buffer buf) :
-			m_buf(buf)
+		inline OSIFrameType& _base_helper<mutable_helper_tag, OSIFrameType>::frame() const
 		{
-			if (boost::asio::buffer_size(buf) < sizeof(OSIFrameType))
-			{
-				throw std::length_error("buf");
-			}
+			return *boost::asio::buffer_cast<OSIFrameType*>(_base_helper<mutable_helper_tag, OSIFrameType>::buffer());
+		}
+
+		template <typename OSIFrameType>
+		inline _base_helper<mutable_helper_tag, OSIFrameType>::_base_helper(typename _base_helper<mutable_helper_tag, OSIFrameType>::buffer_type buf) : _generic_base_helper<mutable_helper_tag, OSIFrameType>(buf)
+		{
 		}
 
 		template <typename OSIFrameType>
