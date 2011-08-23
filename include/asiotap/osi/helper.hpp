@@ -186,22 +186,16 @@ namespace asiotap
 		};
 
 		/**
-		 * \brief The implementation type for const helpers.
+		 * \brief The implementation type for helpers.
 		 */
-		template <typename OSIFrameType>
-		class _const_helper_impl;
-
-		/**
-		 * \brief The implementation type for mutable helpers.
-		 */
-		template <typename OSIFrameType>
-		class _mutable_helper_impl;
+		template <class HelperTag, typename OSIFrameType>
+		class _helper_impl;
 
 		/**
 		 * \brief A const helper class.
 		 */
 		template <typename OSIFrameType>
-		class const_helper : public _const_helper_impl<OSIFrameType>
+		class const_helper : public _helper_impl<const_helper_tag, OSIFrameType>
 		{
 			public:
 
@@ -222,7 +216,7 @@ namespace asiotap
 		 * \brief A mutable helper class.
 		 */
 		template <typename OSIFrameType>
-		class mutable_helper : public _mutable_helper_impl<OSIFrameType>
+		class mutable_helper : public _helper_impl<mutable_helper_tag, OSIFrameType>
 		{
 			public:
 
@@ -301,7 +295,7 @@ namespace asiotap
 
 		template <typename OSIFrameType>
 		inline const_helper<OSIFrameType>::const_helper(boost::asio::const_buffer buf) :
-			_const_helper_impl<OSIFrameType>(buf)
+			_helper_impl<const_helper_tag, OSIFrameType>(buf)
 		{
 		}
 
@@ -313,7 +307,7 @@ namespace asiotap
 
 		template <typename OSIFrameType>
 		inline mutable_helper<OSIFrameType>::mutable_helper(boost::asio::mutable_buffer buf) :
-			_mutable_helper_impl<OSIFrameType>(buf)
+			_helper_impl<mutable_helper_tag, OSIFrameType>(buf)
 		{
 		}
 
