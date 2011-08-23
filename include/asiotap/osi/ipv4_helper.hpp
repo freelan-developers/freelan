@@ -53,10 +53,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const ipv4 helper implementation class.
+		 * \brief The base ipv4 helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<ipv4_frame> : public _base_const_helper<ipv4_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, ipv4_frame> : public _base_helper<HelperTag, ipv4_frame>
 		{
 			public:
 
@@ -147,7 +147,7 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 				/**
 				 * \brief Compute the checksum.
@@ -167,22 +167,16 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable ipv4 helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<ipv4_frame> : public _base_mutable_helper<ipv4_frame>
+		class _helper_impl<mutable_helper_tag, ipv4_frame> : public _base_helper_impl<mutable_helper_tag, ipv4_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the version.
-				 * \return The version.
-				 */
-				uint8_t version() const;
 
 				/**
 				 * \brief Set the version.
@@ -191,28 +185,10 @@ namespace asiotap
 				void set_version(uint8_t version) const;
 
 				/**
-				 * \brief Get the Internet Header Length, in words.
-				 * \return The Internet Header Length, in words.
-				 */
-				uint8_t ihl() const;
-
-				/**
 				 * \brief Set the Internet Header Length, in words.
 				 * \param ihl The Internet Header Length, in words.
 				 */
 				void set_ihl(uint8_t ihl) const;
-
-				/**
-				 * \brief Get the Internet Header Length, in bytes.
-				 * \return The Internet Header Length, in bytes.
-				 */
-				size_t header_length() const;
-
-				/**
-				 * \brief Get the Type Of Service.
-				 * \return The Type Of Service.
-				 */
-				uint8_t tos() const;
 
 				/**
 				 * \brief Set the Type Of Service.
@@ -221,28 +197,10 @@ namespace asiotap
 				void set_tos(uint8_t tos) const;
 
 				/**
-				 * \brief Get the total length.
-				 * \return The total length.
-				 */
-				size_t total_length() const;
-
-				/**
 				 * \brief Set the total length.
 				 * \param total_length The total length.
 				 */
 				void set_total_length(size_t total_length) const;
-
-				/**
-				 * \brief Get the payload length.
-				 * \return The payload length.
-				 */
-				size_t payload_length() const;
-
-				/**
-				 * \brief Get the identification.
-				 * \return The indentification.
-				 */
-				uint16_t identification() const;
 
 				/**
 				 * \brief Set the identification.
@@ -251,21 +209,10 @@ namespace asiotap
 				void set_identification(uint16_t identification) const;
 
 				/**
-				 * \brief Get the flags.
-				 */
-				uint8_t flags() const;
-
-				/**
 				 * \brief Set the flags.
 				 * \param flags The flags.
 				 */
 				void set_flags(uint8_t flags) const;
-
-				/**
-				 * \brief Get the position fragment.
-				 * \return The position fragment.
-				 */
-				uint16_t position_fragment() const;
 
 				/**
 				 * \brief Set the position fragment.
@@ -274,22 +221,10 @@ namespace asiotap
 				void set_position_fragment(uint16_t position_fragment) const;
 
 				/**
-				 * \brief Get the time-to-live.
-				 * \return The time-to-live.
-				 */
-				uint8_t ttl() const;
-
-				/**
 				 * \brief Set the time-to-live.
 				 * \param ttl The time-to-live.
 				 */
 				void set_ttl(uint8_t ttl) const;
-
-				/**
-				 * \brief Get the protocol.
-				 * \return The protocol.
-				 */
-				uint8_t protocol() const;
 
 				/**
 				 * \brief Set the protocol.
@@ -298,22 +233,10 @@ namespace asiotap
 				void set_protocol(uint8_t protocol) const;
 
 				/**
-				 * \brief Get the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t checksum() const;
-
-				/**
 				 * \brief Set the checksum.
 				 * \param checksum The checksum.
 				 */
 				void set_checksum(uint16_t checksum) const;
-
-				/**
-				 * \brief Get the source address.
-				 * \return The source address.
-				 */
-				boost::asio::ip::address_v4 source() const;
 
 				/**
 				 * \brief Set the source address.
@@ -322,34 +245,10 @@ namespace asiotap
 				void set_source(boost::asio::ip::address_v4 source) const;
 
 				/**
-				 * \brief Get the destination address.
-				 * \return The destination address.
-				 */
-				boost::asio::ip::address_v4 destination() const;
-
-				/**
 				 * \brief Set the destination address.
 				 * \param destination The destination address.
 				 */
 				void set_destination(boost::asio::ip::address_v4 destination) const;
-
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
-				/**
-				 * \brief Compute the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t compute_checksum() const;
-
-				/**
-				 * \brief Verify the checksum.
-				 * \return true if the checksum is valid.
-				 */
-				bool verify_checksum() const;
 
 			protected:
 
@@ -357,236 +256,173 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint8_t _const_helper_impl<ipv4_frame>::version() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv4_frame>::version() const
 		{
-			return (frame().version_ihl & 0xF0) >> 4;
+			return (this->frame().version_ihl & 0xF0) >> 4;
 		}
 
-		inline uint8_t _const_helper_impl<ipv4_frame>::ihl() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv4_frame>::ihl() const
 		{
-			return (frame().version_ihl & 0x0F);
+			return (this->frame().version_ihl & 0x0F);
 		}
 
-		inline size_t _const_helper_impl<ipv4_frame>::header_length() const
-		{
-			return ihl() * sizeof(uint32_t);
-		}
-
-		inline uint8_t _const_helper_impl<ipv4_frame>::tos() const
-		{
-			return frame().service_type;
-		}
-
-		inline size_t _const_helper_impl<ipv4_frame>::total_length() const
-		{
-			return ntohs(frame().total_length);
-		}
-
-		inline size_t _const_helper_impl<ipv4_frame>::payload_length() const
-		{
-			return total_length() - header_length();
-		}
-
-		inline uint16_t _const_helper_impl<ipv4_frame>::identification() const
-		{
-			return ntohs(frame().identification);
-		}
-
-		inline uint8_t _const_helper_impl<ipv4_frame>::flags() const
-		{
-			return static_cast<uint8_t>((frame().flags_fragment & 0xE000) >> 13);
-		}
-
-		inline uint16_t _const_helper_impl<ipv4_frame>::position_fragment() const
-		{
-			return (frame().flags_fragment & 0x1FFF);
-		}
-
-		inline uint8_t _const_helper_impl<ipv4_frame>::ttl() const
-		{
-			return frame().ttl;
-		}
-
-		inline uint8_t _const_helper_impl<ipv4_frame>::protocol() const
-		{
-			return frame().protocol;
-		}
-
-		inline uint16_t _const_helper_impl<ipv4_frame>::checksum() const
-		{
-			return ntohs(frame().header_checksum);
-		}
-
-		inline boost::asio::ip::address_v4 _const_helper_impl<ipv4_frame>::source() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().source.s_addr));
-		}
-
-		inline boost::asio::ip::address_v4 _const_helper_impl<ipv4_frame>::destination() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().destination.s_addr));
-		}
-
-		inline boost::asio::const_buffer _const_helper_impl<ipv4_frame>::payload() const
-		{
-			return buffer() + header_length();
-		}
-
-		inline bool _const_helper_impl<ipv4_frame>::verify_checksum() const
-		{
-			return compute_checksum() == 0x0000;
-		}
-
-		inline _const_helper_impl<ipv4_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<ipv4_frame>(buf)
-		{
-		}
-
-		inline uint8_t _mutable_helper_impl<ipv4_frame>::version() const
-		{
-			return (frame().version_ihl & 0xF0) >> 4;
-		}
-
-		inline void _mutable_helper_impl<ipv4_frame>::set_version(uint8_t _version) const
-		{
-			frame().version_ihl = (frame().version_ihl & 0x0F) | ((_version & 0x0F) << 4);
-		}
-
-		inline uint8_t _mutable_helper_impl<ipv4_frame>::ihl() const
-		{
-			return (frame().version_ihl & 0x0F);
-		}
-
-		inline void _mutable_helper_impl<ipv4_frame>::set_ihl(uint8_t _ihl) const
-		{
-			frame().version_ihl = (frame().version_ihl & 0xF0) | (_ihl & 0x0F);
-		}
-
-		inline size_t _mutable_helper_impl<ipv4_frame>::header_length() const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, ipv4_frame>::header_length() const
 		{
 			return ihl() * sizeof(uint32_t);
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv4_frame>::tos() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv4_frame>::tos() const
 		{
-			return frame().service_type;
+			return this->frame().service_type;
 		}
 
-		inline void _mutable_helper_impl<ipv4_frame>::set_tos(uint8_t _tos) const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, ipv4_frame>::total_length() const
 		{
-			frame().service_type = _tos;
+			return ntohs(this->frame().total_length);
 		}
 
-		inline size_t _mutable_helper_impl<ipv4_frame>::total_length() const
-		{
-			return ntohs(frame().total_length);
-		}
-
-		inline void _mutable_helper_impl<ipv4_frame>::set_total_length(size_t _total_length) const
-		{
-			frame().total_length = htons(_total_length);
-		}
-
-		inline size_t _mutable_helper_impl<ipv4_frame>::payload_length() const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, ipv4_frame>::payload_length() const
 		{
 			return total_length() - header_length();
 		}
 
-		inline uint16_t _mutable_helper_impl<ipv4_frame>::identification() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, ipv4_frame>::identification() const
 		{
-			return ntohs(frame().identification);
+			return ntohs(this->frame().identification);
 		}
 
-		inline void _mutable_helper_impl<ipv4_frame>::set_identification(uint16_t _identification) const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv4_frame>::flags() const
 		{
-			frame().identification = htons(_identification);
+			return static_cast<uint8_t>((this->frame().flags_fragment & 0xE000) >> 13);
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv4_frame>::flags() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, ipv4_frame>::position_fragment() const
 		{
-			return static_cast<uint8_t>((frame().flags_fragment & 0xE000) >> 13);
+			return (this->frame().flags_fragment & 0x1FFF);
 		}
 
-		inline void _mutable_helper_impl<ipv4_frame>::set_flags(uint8_t _flags) const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv4_frame>::ttl() const
 		{
-			frame().flags_fragment = (frame().flags_fragment & 0x1FFF) | ((static_cast<uint16_t>(_flags) & 0x0007) << 13);
+			return this->frame().ttl;
 		}
 
-		inline uint16_t _mutable_helper_impl<ipv4_frame>::position_fragment() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv4_frame>::protocol() const
 		{
-			return (frame().flags_fragment & 0x1FFF);
+			return this->frame().protocol;
 		}
 
-		inline void _mutable_helper_impl<ipv4_frame>::set_position_fragment(uint16_t _position_fragment) const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, ipv4_frame>::checksum() const
 		{
-			frame().flags_fragment = (frame().flags_fragment & 0xE000) | (_position_fragment & 0x1FFF);
+			return ntohs(this->frame().header_checksum);
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv4_frame>::ttl() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, ipv4_frame>::source() const
 		{
-			return frame().ttl;
+			return boost::asio::ip::address_v4(ntohl(this->frame().source.s_addr));
 		}
 
-		inline void _mutable_helper_impl<ipv4_frame>::set_ttl(uint8_t _ttl) const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, ipv4_frame>::destination() const
 		{
-			frame().ttl = _ttl;
+			return boost::asio::ip::address_v4(ntohl(this->frame().destination.s_addr));
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv4_frame>::protocol() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, ipv4_frame>::buffer_type _base_helper_impl<HelperTag, ipv4_frame>::payload() const
 		{
-			return frame().protocol;
+			return this->buffer() + header_length();
 		}
 
-		inline void _mutable_helper_impl<ipv4_frame>::set_protocol(uint8_t _protocol) const
-		{
-			frame().protocol = _protocol;
-		}
-
-		inline uint16_t _mutable_helper_impl<ipv4_frame>::checksum() const
-		{
-			return ntohs(frame().header_checksum);
-		}
-
-		inline void _mutable_helper_impl<ipv4_frame>::set_checksum(uint16_t _checksum) const
-		{
-			frame().header_checksum = htons(_checksum);
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<ipv4_frame>::source() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().source.s_addr));
-		}
-
-		inline void _mutable_helper_impl<ipv4_frame>::set_source(boost::asio::ip::address_v4 _source) const
-		{
-			frame().source.s_addr = htonl(_source.to_ulong());
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<ipv4_frame>::destination() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().destination.s_addr));
-		}
-
-		inline void _mutable_helper_impl<ipv4_frame>::set_destination(boost::asio::ip::address_v4 _destination) const
-		{
-			frame().destination.s_addr = htonl(_destination.to_ulong());
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<ipv4_frame>::payload() const
-		{
-			return buffer() + header_length();
-		}
-
-		inline bool _mutable_helper_impl<ipv4_frame>::verify_checksum() const
+		template <class HelperTag>
+		inline bool _base_helper_impl<HelperTag, ipv4_frame>::verify_checksum() const
 		{
 			return compute_checksum() == 0x0000;
 		}
 
-		inline _mutable_helper_impl<ipv4_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<ipv4_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, ipv4_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, ipv4_frame>::buffer_type buf) :
+			_base_helper<HelperTag, ipv4_frame>(buf)
+		{
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_version(uint8_t _version) const
+		{
+			this->frame().version_ihl = (this->frame().version_ihl & 0x0F) | ((_version & 0x0F) << 4);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_ihl(uint8_t _ihl) const
+		{
+			this->frame().version_ihl = (this->frame().version_ihl & 0xF0) | (_ihl & 0x0F);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_tos(uint8_t _tos) const
+		{
+			this->frame().service_type = _tos;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_total_length(size_t _total_length) const
+		{
+			this->frame().total_length = htons(_total_length);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_identification(uint16_t _identification) const
+		{
+			this->frame().identification = htons(_identification);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_flags(uint8_t _flags) const
+		{
+			this->frame().flags_fragment = (this->frame().flags_fragment & 0x1FFF) | ((static_cast<uint16_t>(_flags) & 0x0007) << 13);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_position_fragment(uint16_t _position_fragment) const
+		{
+			this->frame().flags_fragment = (this->frame().flags_fragment & 0xE000) | (_position_fragment & 0x1FFF);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_ttl(uint8_t _ttl) const
+		{
+			this->frame().ttl = _ttl;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_protocol(uint8_t _protocol) const
+		{
+			this->frame().protocol = _protocol;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_checksum(uint16_t _checksum) const
+		{
+			this->frame().header_checksum = htons(_checksum);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_source(boost::asio::ip::address_v4 _source) const
+		{
+			this->frame().source.s_addr = htonl(_source.to_ulong());
+		}
+
+		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_destination(boost::asio::ip::address_v4 _destination) const
+		{
+			this->frame().destination.s_addr = htonl(_destination.to_ulong());
+		}
+
+		inline _helper_impl<mutable_helper_tag, ipv4_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, ipv4_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, ipv4_frame>(buf)
 		{
 		}
 	}

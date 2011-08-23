@@ -50,18 +50,11 @@ namespace asiotap
 {
 	namespace osi
 	{
-		uint16_t _const_helper_impl<ipv4_frame>::compute_checksum() const
+		template <class HelperTag>
+		uint16_t _base_helper_impl<HelperTag, ipv4_frame>::compute_checksum() const
 		{
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = header_length();
-
-			return asiotap::osi::compute_checksum(buf, buf_len);
-		}
-
-		uint16_t _mutable_helper_impl<ipv4_frame>::compute_checksum() const
-		{
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&frame());
-			size_t buf_len = header_length();
+			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&this->frame());
+			size_t buf_len = this->header_length();
 
 			return asiotap::osi::compute_checksum(buf, buf_len);
 		}
