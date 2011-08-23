@@ -54,17 +54,17 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const dhcp helper implementation class.
+		 * \brief The base dhcp helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<dhcp_frame> : public _base_const_helper<dhcp_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, dhcp_frame> : public _base_helper<HelperTag, dhcp_frame>
 		{
 			public:
 
 				/**
 				 * \brief The iterator type.
 				 */
-				typedef dhcp_option_helper_iterator<helper_tag> const_iterator;
+				typedef dhcp_option_helper_iterator<typename _base_helper_impl::helper_tag> const_iterator;
 
 				/**
 				 * \brief Get the magic cookie.
@@ -72,13 +72,13 @@ namespace asiotap
 				 */
 				uint32_t magic_cookie() const;
 
-				/*
+				/**
 				 * \brief Get the options begin iterator.
 				 * \return An iterator to the first option.
 				 */
 				 const_iterator options_begin() const;
 
-				/*
+				/**
 				 * \brief Get the options end iterator.
 				 * \return An iterator past the last option.
 				 */
@@ -88,7 +88,7 @@ namespace asiotap
 				 * \brief Get the options buffer.
 				 * \return The options.
 				 */
-				boost::asio::const_buffer options() const;
+				 typename _base_helper_impl::buffer_type options() const;
 
 			protected:
 
@@ -96,27 +96,16 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable udp helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<dhcp_frame> : public _base_mutable_helper<dhcp_frame>
+		class _helper_impl<mutable_helper_tag, dhcp_frame> : public _base_helper_impl<mutable_helper_tag, dhcp_frame>
 		{
 			public:
-
-				/**
-				 * \brief The iterator type.
-				 */
-				typedef dhcp_option_helper_iterator<helper_tag> const_iterator;
-
-				/**
-				 * \brief Get the magic cookie.
-				 * \return The magic cookie.
-				 */
-				uint32_t magic_cookie() const;
 
 				/**
 				 * \brief Set the magic cookie.
@@ -124,85 +113,52 @@ namespace asiotap
 				 */
 				void set_magic_cookie(uint32_t magic_cookie) const;
 
-				/*
-				 * \brief Get the options begin iterator.
-				 * \return An iterator to the first option.
-				 */
-				 const_iterator options_begin() const;
-
-				/*
-				 * \brief Get the options end iterator.
-				 * \return An iterator past the last option.
-				 */
-				 const_iterator options_end() const;
-
-				/**
-				 * \brief Get the options buffer.
-				 * \return The options.
-				 */
-				boost::asio::mutable_buffer options() const;
-
 			protected:
 
 				/**
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint32_t _const_helper_impl<dhcp_frame>::magic_cookie() const
+		template <class HelperTag>
+		inline uint32_t _base_helper_impl<HelperTag, dhcp_frame>::magic_cookie() const
 		{
-			return ntohl(frame().magic_cookie);
+			return ntohl(this->frame().magic_cookie);
 		}
 
-		inline _const_helper_impl<dhcp_frame>::const_iterator _const_helper_impl<dhcp_frame>::options_begin() const
-		{
-			return const_iterator(options());
-		}
-
-		inline _const_helper_impl<dhcp_frame>::const_iterator _const_helper_impl<dhcp_frame>::options_end() const
-		{
-			return const_iterator();
-		}
-
-		inline boost::asio::const_buffer _const_helper_impl<dhcp_frame>::options() const
-		{
-			return buffer() + sizeof(frame_type);
-		}
-
-		inline _const_helper_impl<dhcp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<dhcp_frame>(buf)
-		{
-		}
-
-		inline uint32_t _mutable_helper_impl<dhcp_frame>::magic_cookie() const
-		{
-			return ntohl(frame().magic_cookie);
-		}
-
-		inline void _mutable_helper_impl<dhcp_frame>::set_magic_cookie(uint32_t _magic_cookie) const
-		{
-			frame().magic_cookie = htonl(_magic_cookie);
-		}
-
-		inline _mutable_helper_impl<dhcp_frame>::const_iterator _mutable_helper_impl<dhcp_frame>::options_begin() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::options_begin() const
 		{
 			return const_iterator(options());
 		}
 
-		inline _mutable_helper_impl<dhcp_frame>::const_iterator _mutable_helper_impl<dhcp_frame>::options_end() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::options_end() const
 		{
 			return const_iterator();
 		}
 
-		inline boost::asio::mutable_buffer _mutable_helper_impl<dhcp_frame>::options() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::buffer_type _base_helper_impl<HelperTag, dhcp_frame>::options() const
 		{
-			return buffer() + sizeof(frame_type);
+			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, dhcp_frame>::frame_type);
 		}
 
-		inline _mutable_helper_impl<dhcp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<dhcp_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, dhcp_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, dhcp_frame>::buffer_type buf) :
+			_base_helper<HelperTag, dhcp_frame>(buf)
+		{
+		}
+
+		inline void _helper_impl<mutable_helper_tag, dhcp_frame>::set_magic_cookie(uint32_t _magic_cookie) const
+		{
+			this->frame().magic_cookie = htonl(_magic_cookie);
+		}
+
+		inline _helper_impl<mutable_helper_tag, dhcp_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, dhcp_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, dhcp_frame>(buf)
 		{
 		}
 	}
