@@ -53,10 +53,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const arp helper implementation class.
+		 * \brief The base arp helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<arp_frame> : public _base_const_helper<arp_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, arp_frame> : public _base_helper<HelperTag, arp_frame>
 		{
 			public:
 
@@ -94,7 +94,7 @@ namespace asiotap
 				 * \brief Get the sender hardware address.
 				 * \return The sender hardware address.
 				 */
-				boost::asio::const_buffer sender_hardware_address() const;
+				typename _base_helper_impl::buffer_type sender_hardware_address() const;
 
 				/**
 				 * \brief Get the sender logical address.
@@ -106,7 +106,7 @@ namespace asiotap
 				 * \brief Get the target hardware address.
 				 * \return The target hardware address.
 				 */
-				boost::asio::const_buffer target_hardware_address() const;
+				typename _base_helper_impl::buffer_type target_hardware_address() const;
 
 				/**
 				 * \brief Get the target logical address.
@@ -118,7 +118,7 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 			protected:
 
@@ -126,22 +126,31 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
+		};
+
+		/**
+		 * \brief The const arp helper implementation class.
+		 */
+		template <>
+		class _helper_impl<const_helper_tag, arp_frame> : public _base_helper_impl<const_helper_tag, arp_frame>
+		{
+			protected:
+
+				/**
+				 * \brief Create a helper from a frame type structure.
+				 * \param buf The buffer to refer to.
+				 */
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable arp helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<arp_frame> : public _base_mutable_helper<arp_frame>
+		class _helper_impl<mutable_helper_tag, arp_frame> : public _base_helper_impl<mutable_helper_tag, arp_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the hardware type.
-				 * \return The hardware type.
-				 */
-				uint16_t hardware_type() const;
 
 				/**
 				 * \brief Set the hardware type.
@@ -150,22 +159,10 @@ namespace asiotap
 				void set_hardware_type(uint16_t hardware_type) const;
 
 				/**
-				 * \brief Get the protocol type.
-				 * \return The protocol type.
-				 */
-				uint16_t protocol_type() const;
-
-				/**
 				 * \brief Set the protocol type.
 				 * \param protocol_type The protocol type.
 				 */
 				void set_protocol_type(uint16_t protocol_type) const;
-
-				/**
-				 * \brief Get the hardware address length.
-				 * \return The hardware address length.
-				 */
-				size_t hardware_address_length() const;
 
 				/**
 				 * \brief Set the hardware address length.
@@ -174,22 +171,10 @@ namespace asiotap
 				void set_hardware_address_length(size_t hardware_address_length) const;
 
 				/**
-				 * \brief Get the logical address length.
-				 * \return The logical address length.
-				 */
-				size_t logical_address_length() const;
-
-				/**
 				 * \brief Set the logical address length.
 				 * \param logical_address_length The logical address length.
 				 */
 				void set_logical_address_length(size_t logical_address_length) const;
-
-				/**
-				 * \brief Get the operation.
-				 * \return The operation.
-				 */
-				uint16_t operation() const;
 
 				/**
 				 * \brief Set the operation.
@@ -198,34 +183,10 @@ namespace asiotap
 				void set_operation(uint16_t operation) const;
 
 				/**
-				 * \brief Get the sender hardware address.
-				 * \return The sender hardware address.
-				 */
-				boost::asio::mutable_buffer sender_hardware_address() const;
-
-				/**
-				 * \brief Get the sender logical address.
-				 * \return The sender logical address.
-				 */
-				boost::asio::ip::address_v4 sender_logical_address() const;
-
-				/**
 				 * \brief Set the sender logical address.
 				 * \param sender_logical_address The sender logical address.
 				 */
 				void set_sender_logical_address(boost::asio::ip::address_v4 sender_logical_address) const;
-
-				/**
-				 * \brief Get the target hardware address.
-				 * \return The target hardware address.
-				 */
-				boost::asio::mutable_buffer target_hardware_address() const;
-
-				/**
-				 * \brief Get the target logical address.
-				 * \return The target logical address.
-				 */
-				boost::asio::ip::address_v4 target_logical_address() const;
 
 				/**
 				 * \brief Set the target logical address.
@@ -233,163 +194,123 @@ namespace asiotap
 				 */
 				void set_target_logical_address(boost::asio::ip::address_v4 target_logical_address) const;
 
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
 			protected:
 
 				/**
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint16_t _const_helper_impl<arp_frame>::hardware_type() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, arp_frame>::hardware_type() const
 		{
-			return ntohs(frame().hardware_type);
+			return ntohs(this->frame().hardware_type);
 		}
 
-		inline uint16_t _const_helper_impl<arp_frame>::protocol_type() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, arp_frame>::protocol_type() const
 		{
-			return ntohs(frame().protocol_type);
+			return ntohs(this->frame().protocol_type);
 		}
 
-		inline size_t _const_helper_impl<arp_frame>::hardware_address_length() const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, arp_frame>::hardware_address_length() const
 		{
-			return frame().hardware_address_length;
+			return this->frame().hardware_address_length;
 		}
 
-		inline size_t _const_helper_impl<arp_frame>::logical_address_length() const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, arp_frame>::logical_address_length() const
 		{
-			return frame().logical_address_length;
+			return this->frame().logical_address_length;
 		}
 
-		inline uint16_t _const_helper_impl<arp_frame>::operation() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, arp_frame>::operation() const
 		{
-			return ntohs(frame().operation);
+			return ntohs(this->frame().operation);
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<arp_frame>::sender_hardware_address() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, arp_frame>::buffer_type _base_helper_impl<HelperTag, arp_frame>::sender_hardware_address() const
 		{
-			return boost::asio::buffer(frame().sender_hardware_address, sizeof(frame().sender_hardware_address));
+			return boost::asio::buffer(this->frame().sender_hardware_address, sizeof(this->frame().sender_hardware_address));
 		}
 
-		inline boost::asio::ip::address_v4 _const_helper_impl<arp_frame>::sender_logical_address() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, arp_frame>::sender_logical_address() const
 		{
-			return boost::asio::ip::address_v4(ntohl(frame().sender_logical_address.s_addr));
+			return boost::asio::ip::address_v4(ntohl(this->frame().sender_logical_address.s_addr));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<arp_frame>::target_hardware_address() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, arp_frame>::buffer_type _base_helper_impl<HelperTag, arp_frame>::target_hardware_address() const
 		{
-			return boost::asio::buffer(frame().target_hardware_address, sizeof(frame().target_hardware_address));
+			return boost::asio::buffer(this->frame().target_hardware_address, sizeof(this->frame().target_hardware_address));
 		}
 
-		inline boost::asio::ip::address_v4 _const_helper_impl<arp_frame>::target_logical_address() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, arp_frame>::target_logical_address() const
 		{
-			return boost::asio::ip::address_v4(ntohl(frame().target_logical_address.s_addr));
+			return boost::asio::ip::address_v4(ntohl(this->frame().target_logical_address.s_addr));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<arp_frame>::payload() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, arp_frame>::buffer_type _base_helper_impl<HelperTag, arp_frame>::payload() const
 		{
-			return buffer() + sizeof(arp_frame);
+			return this->buffer() + sizeof(arp_frame);
 		}
 
-		inline _const_helper_impl<arp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<arp_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, arp_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, arp_frame>::buffer_type buf) :
+			_base_helper<HelperTag, arp_frame>(buf)
 		{
 		}
 
-		inline uint16_t _mutable_helper_impl<arp_frame>::hardware_type() const
+		inline _helper_impl<const_helper_tag, arp_frame>::_helper_impl(_helper_impl<const_helper_tag, arp_frame>::buffer_type buf) :
+			_base_helper_impl<const_helper_tag, arp_frame>(buf)
 		{
-			return ntohs(frame().hardware_type);
 		}
 
-		inline void _mutable_helper_impl<arp_frame>::set_hardware_type(uint16_t _hardware_type) const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_hardware_type(uint16_t _hardware_type) const
 		{
-			frame().hardware_type = htons(_hardware_type);
+			this->frame().hardware_type = htons(_hardware_type);
 		}
 
-		inline uint16_t _mutable_helper_impl<arp_frame>::protocol_type() const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_protocol_type(uint16_t _protocol_type) const
 		{
-			return ntohs(frame().protocol_type);
+			this->frame().protocol_type = htons(_protocol_type);
 		}
 
-		inline void _mutable_helper_impl<arp_frame>::set_protocol_type(uint16_t _protocol_type) const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_hardware_address_length(size_t _hardware_address_length) const
 		{
-			frame().protocol_type = htons(_protocol_type);
+			this->frame().hardware_address_length = static_cast<uint8_t>(_hardware_address_length);
 		}
 
-		inline size_t _mutable_helper_impl<arp_frame>::hardware_address_length() const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_logical_address_length(size_t _logical_address_length) const
 		{
-			return frame().hardware_address_length;
+			this->frame().logical_address_length = static_cast<uint8_t>(_logical_address_length);
 		}
 
-		inline void _mutable_helper_impl<arp_frame>::set_hardware_address_length(size_t _hardware_address_length) const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_operation(uint16_t _operation) const
 		{
-			frame().hardware_address_length = static_cast<uint8_t>(_hardware_address_length);
+			this->frame().operation = htons(_operation);
 		}
 
-		inline size_t _mutable_helper_impl<arp_frame>::logical_address_length() const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_sender_logical_address(boost::asio::ip::address_v4 _sender_logical_address) const
 		{
-			return frame().logical_address_length;
+			this->frame().sender_logical_address.s_addr = htonl(_sender_logical_address.to_ulong());
 		}
 
-		inline void _mutable_helper_impl<arp_frame>::set_logical_address_length(size_t _logical_address_length) const
+		inline void _helper_impl<mutable_helper_tag, arp_frame>::set_target_logical_address(boost::asio::ip::address_v4 _target_logical_address) const
 		{
-			frame().logical_address_length = static_cast<uint8_t>(_logical_address_length);
+			this->frame().target_logical_address.s_addr = htonl(_target_logical_address.to_ulong());
 		}
 
-		inline uint16_t _mutable_helper_impl<arp_frame>::operation() const
-		{
-			return ntohs(frame().operation);
-		}
-
-		inline void _mutable_helper_impl<arp_frame>::set_operation(uint16_t _operation) const
-		{
-			frame().operation = htons(_operation);
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<arp_frame>::sender_hardware_address() const
-		{
-			return boost::asio::buffer(frame().sender_hardware_address, sizeof(frame().sender_hardware_address));
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<arp_frame>::sender_logical_address() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().sender_logical_address.s_addr));
-		}
-
-		inline void _mutable_helper_impl<arp_frame>::set_sender_logical_address(boost::asio::ip::address_v4 _sender_logical_address) const
-		{
-			frame().sender_logical_address.s_addr = htonl(_sender_logical_address.to_ulong());
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<arp_frame>::target_hardware_address() const
-		{
-			return boost::asio::buffer(frame().target_hardware_address, sizeof(frame().target_hardware_address));
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<arp_frame>::target_logical_address() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().target_logical_address.s_addr));
-		}
-
-		inline void _mutable_helper_impl<arp_frame>::set_target_logical_address(boost::asio::ip::address_v4 _target_logical_address) const
-		{
-			frame().target_logical_address.s_addr = htonl(_target_logical_address.to_ulong());
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<arp_frame>::payload() const
-		{
-			return buffer() + sizeof(arp_frame);
-		}
-
-		inline _mutable_helper_impl<arp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<arp_frame>(buf)
+		inline _helper_impl<mutable_helper_tag, arp_frame>::_helper_impl(_helper_impl<mutable_helper_tag, arp_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, arp_frame>(buf)
 		{
 		}
 	}
