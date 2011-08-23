@@ -341,7 +341,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::payload() const
 		{
-			return this->buffer() + sizeof(_base_helper_impl<HelperTag, bootp_frame>::frame_type);
+			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, bootp_frame>::frame_type);
 		}
 
 		template <class HelperTag>
