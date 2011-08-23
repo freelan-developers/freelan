@@ -195,7 +195,16 @@ namespace asiotap
 		 * \brief The implementation type for helpers.
 		 */
 		template <class HelperTag, typename OSIFrameType>
-		class _helper_impl;
+		class _helper_impl : public _base_helper_impl<HelperTag, OSIFrameType>
+		{
+			protected:
+
+				/**
+				 * \brief Create a helper from a frame type structure.
+				 * \param buf The buffer to refer to.
+				 */
+				_helper_impl(typename _helper_impl::buffer_type buf);
+		};
 
 		/**
 		 * \brief A const helper class.
@@ -299,6 +308,12 @@ namespace asiotap
 		{
 		}
 
+		template <typename HelperTag, typename OSIFrameType>
+		inline _helper_impl<HelperTag, OSIFrameType>::_helper_impl(typename _helper_impl<HelperTag, OSIFrameType>::buffer_type buf) :
+			_base_helper_impl<HelperTag, OSIFrameType>(buf)
+		{
+		}
+		
 		template <typename OSIFrameType>
 		inline const_helper<OSIFrameType>::const_helper(boost::asio::const_buffer buf) :
 			_helper_impl<const_helper_tag, OSIFrameType>(buf)
