@@ -186,6 +186,12 @@ namespace asiotap
 		};
 
 		/**
+		 * \brief The base implementation type for helpers.
+		 */
+		template <class HelperTag, typename OSIFrameType>
+		class _base_helper_impl;
+
+		/**
 		 * \brief The implementation type for helpers.
 		 */
 		template <class HelperTag, typename OSIFrameType>
