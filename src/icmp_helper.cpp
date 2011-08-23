@@ -58,5 +58,8 @@ namespace asiotap
 
 			return osi::compute_checksum(buf, buf_len);
 		}
+
+		template uint16_t _base_helper_impl<const_helper_tag, icmp_frame>::compute_checksum() const;
+		template uint16_t _base_helper_impl<mutable_helper_tag, icmp_frame>::compute_checksum() const;
 	}
 }
