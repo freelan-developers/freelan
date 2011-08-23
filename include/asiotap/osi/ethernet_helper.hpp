@@ -53,10 +53,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const Ethernet helper implementation class.
+		 * \brief The base Ethernet helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<ethernet_frame> : public _base_const_helper<ethernet_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, ethernet_frame> : public _base_helper<HelperTag, ethernet_frame>
 		{
 			public:
 
@@ -64,13 +64,13 @@ namespace asiotap
 				 * \brief Get the target.
 				 * \return The target.
 				 */
-				boost::asio::const_buffer target() const;
+				typename _base_helper_impl::buffer_type target() const;
 
 				/**
 				 * \brief Get the sender.
 				 * \return The sender.
 				 */
-				boost::asio::const_buffer sender() const;
+				typename _base_helper_impl::buffer_type sender() const;
 
 				/**
 				 * \brief Get the protocol.
@@ -82,7 +82,7 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 			protected:
 
@@ -90,34 +90,31 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
+		};
+
+		/**
+		 * \brief The const Ethernet helper implementation class.
+		 */
+		template <>
+		class _helper_impl<const_helper_tag, ethernet_frame> : public _base_helper_impl<const_helper_tag, ethernet_frame>
+		{
+			protected:
+
+				/**
+				 * \brief Create a helper from a frame type structure.
+				 * \param buf The buffer to refer to.
+				 */
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable Ethernet helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<ethernet_frame> : public _base_mutable_helper<ethernet_frame>
+		class _helper_impl<mutable_helper_tag, ethernet_frame> : public _base_helper_impl<mutable_helper_tag, ethernet_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the target.
-				 * \return The target.
-				 */
-				boost::asio::mutable_buffer target() const;
-
-				/**
-				 * \brief Get the sender.
-				 * \return The sender.
-				 */
-				boost::asio::mutable_buffer sender() const;
-
-				/**
-				 * \brief Get the protocol.
-				 * \return The protocol.
-				 */
-				uint16_t protocol() const;
 
 				/**
 				 * \brief Set the protocol.
@@ -125,73 +122,57 @@ namespace asiotap
 				 */
 				void set_protocol(uint16_t protocol) const;
 
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
 			protected:
 
 				/**
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::target() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type _base_helper_impl<HelperTag, ethernet_frame>::target() const
 		{
-			return boost::asio::buffer(frame().target, sizeof(frame().target));
+			return boost::asio::buffer(this->frame().target, sizeof(this->frame().target));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::sender() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type _base_helper_impl<HelperTag, ethernet_frame>::sender() const
 		{
-			return boost::asio::buffer(frame().sender, sizeof(frame().sender));
+			return boost::asio::buffer(this->frame().sender, sizeof(this->frame().sender));
 		}
 
-		inline uint16_t _const_helper_impl<ethernet_frame>::protocol() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, ethernet_frame>::protocol() const
 		{
-			return ntohs(frame().protocol);
+			return ntohs(this->frame().protocol);
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<ethernet_frame>::payload() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type _base_helper_impl<HelperTag, ethernet_frame>::payload() const
 		{
-			return buffer() + sizeof(ethernet_frame);
+			return this->buffer() + sizeof(ethernet_frame);
 		}
 
-		inline _const_helper_impl<ethernet_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<ethernet_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, ethernet_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type buf) :
+			_base_helper<HelperTag, ethernet_frame>(buf)
 		{
 		}
 
-		inline boost::asio::mutable_buffer _mutable_helper_impl<ethernet_frame>::target() const
+		inline _helper_impl<const_helper_tag, ethernet_frame>::_helper_impl(typename _helper_impl<const_helper_tag, ethernet_frame>::buffer_type buf) :
+			_base_helper_impl<const_helper_tag, ethernet_frame>(buf)
 		{
-			return boost::asio::buffer(frame().target, sizeof(frame().target));
 		}
 
-		inline boost::asio::mutable_buffer _mutable_helper_impl<ethernet_frame>::sender() const
+		inline void _helper_impl<mutable_helper_tag, ethernet_frame>::set_protocol(uint16_t _protocol) const
 		{
-			return boost::asio::buffer(frame().sender, sizeof(frame().sender));
+			this->frame().protocol = htons(_protocol);
 		}
 
-		inline uint16_t _mutable_helper_impl<ethernet_frame>::protocol() const
-		{
-			return ntohs(frame().protocol);
-		}
-
-		inline void _mutable_helper_impl<ethernet_frame>::set_protocol(uint16_t _protocol) const
-		{
-			frame().protocol = htons(_protocol);
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<ethernet_frame>::payload() const
-		{
-			return buffer() + sizeof(ethernet_frame);
-		}
-
-		inline _mutable_helper_impl<ethernet_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<ethernet_frame>(buf)
+		inline _helper_impl<mutable_helper_tag, ethernet_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, ethernet_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, ethernet_frame>(buf)
 		{
 		}
 	}
