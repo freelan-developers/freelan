@@ -56,10 +56,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const udp helper implementation class.
+		 * \brief The base udp helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<udp_frame> : public _base_const_helper<udp_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, udp_frame> : public _base_helper<HelperTag, udp_frame>
 		{
 			public:
 
@@ -91,7 +91,7 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 				/**
 				 * \brief Compute the checksum.
@@ -127,22 +127,16 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable udp helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<udp_frame> : public _base_mutable_helper<udp_frame>
+		class _helper_impl<mutable_helper_tag, udp_frame> : public _base_helper_impl<mutable_helper_tag, udp_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the source port.
-				 * \return The source port.
-				 */
-				uint16_t source() const;
 
 				/**
 				 * \brief Set the source port.
@@ -151,22 +145,10 @@ namespace asiotap
 				void set_source(uint16_t source) const;
 
 				/**
-				 * \brief Get the destination port.
-				 * \return The destination port.
-				 */
-				uint16_t destination() const;
-
-				/**
 				 * \brief Set the destination port.
 				 * \param destination The destination port.
 				 */
 				void set_destination(uint16_t destination) const;
-
-				/**
-				 * \brief Get the length.
-				 * \return The length.
-				 */
-				uint16_t length() const;
 
 				/**
 				 * \brief Set the length.
@@ -175,50 +157,10 @@ namespace asiotap
 				void set_length(uint16_t length) const;
 
 				/**
-				 * \brief Get the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t checksum() const;
-
-				/**
 				 * \brief Set the checksum.
 				 * \param checksum The checksum.
 				 */
 				void set_checksum(uint16_t checksum) const;
-
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
-				/**
-				 * \brief Compute the checksum.
-				 * \param parent_frame The parent frame.
-				 * \return The checksum.
-				 */
-				uint16_t compute_checksum(const_helper<ipv4_frame> parent_frame) const;
-
-				/**
-				 * \brief Compute the checksum.
-				 * \param parent_frame The parent frame.
-				 * \return The checksum.
-				 */
-				uint16_t compute_checksum(const_helper<ipv6_frame> parent_frame) const;
-
-				/**
-				 * \brief Verify the checksum.
-				 * \param parent_frame The parent frame.
-				 * \return true if the checksum is valid.
-				 */
-				bool verify_checksum(const_helper<ipv4_frame> parent_frame) const;
-
-				/**
-				 * \brief Verify the checksum.
-				 * \param parent_frame The parent frame.
-				 * \return true if the checksum is valid.
-				 */
-				bool verify_checksum(const_helper<ipv6_frame> parent_frame) const;
 
 			protected:
 
@@ -226,106 +168,79 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint16_t _const_helper_impl<udp_frame>::source() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, udp_frame>::source() const
 		{
-			return ntohs(frame().source);
+			return ntohs(this->frame().source);
 		}
 
-		inline uint16_t _const_helper_impl<udp_frame>::destination() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, udp_frame>::destination() const
 		{
-			return ntohs(frame().destination);
+			return ntohs(this->frame().destination);
 		}
 
-		inline uint16_t _const_helper_impl<udp_frame>::length() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, udp_frame>::length() const
 		{
-			return ntohs(frame().length);
+			return ntohs(this->frame().length);
 		}
 
-		inline uint16_t _const_helper_impl<udp_frame>::checksum() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, udp_frame>::checksum() const
 		{
-			return ntohs(frame().checksum);
+			return ntohs(this->frame().checksum);
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<udp_frame>::payload() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, udp_frame>::buffer_type _base_helper_impl<HelperTag, udp_frame>::payload() const
 		{
-			return buffer() + sizeof(frame_type);
+			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, udp_frame>::frame_type);
 		}
 
-		inline bool _const_helper_impl<udp_frame>::verify_checksum(const_helper<ipv4_frame> parent_frame) const
+		template <class HelperTag>
+		inline bool _base_helper_impl<HelperTag, udp_frame>::verify_checksum(const_helper<ipv4_frame> parent_frame) const
 		{
-			return compute_checksum(parent_frame) == 0x0000;
+			return this->compute_checksum(parent_frame) == 0x0000;
 		}
 
-		inline bool _const_helper_impl<udp_frame>::verify_checksum(const_helper<ipv6_frame> parent_frame) const
+		template <class HelperTag>
+		inline bool _base_helper_impl<HelperTag, udp_frame>::verify_checksum(const_helper<ipv6_frame> parent_frame) const
 		{
-			return compute_checksum(parent_frame) == 0x0000;
+			return this->compute_checksum(parent_frame) == 0x0000;
 		}
 
-		inline _const_helper_impl<udp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<udp_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, udp_frame>::_const_helper_impl(typename _base_helper_impl<HelperTag, udp_frame>::buffer_type buf) :
+			_base_helper<HelperTag, udp_frame>(buf)
 		{
 		}
 
-		inline uint16_t _mutable_helper_impl<udp_frame>::source() const
+		inline void _helper_impl<mutable_helper_tag, udp_frame>::set_source(uint16_t _source) const
 		{
-			return ntohs(frame().source);
+			this->frame().source = htons(_source);
 		}
 
-		inline void _mutable_helper_impl<udp_frame>::set_source(uint16_t _source) const
+		inline void _helper_impl<mutable_helper_tag, udp_frame>::set_destination(uint16_t _destination) const
 		{
-			frame().source = htons(_source);
+			this->frame().destination = htons(_destination);
 		}
 
-		inline uint16_t _mutable_helper_impl<udp_frame>::destination() const
+		inline void _helper_impl<mutable_helper_tag, udp_frame>::set_length(uint16_t _length) const
 		{
-			return ntohs(frame().destination);
+			this->frame().length = htons(_length);
 		}
 
-		inline void _mutable_helper_impl<udp_frame>::set_destination(uint16_t _destination) const
+		inline void _helper_impl<mutable_helper_tag, udp_frame>::set_checksum(uint16_t _checksum) const
 		{
-			frame().destination = htons(_destination);
+			this->frame().checksum = htons(_checksum);
 		}
 
-		inline uint16_t _mutable_helper_impl<udp_frame>::length() const
-		{
-			return ntohs(frame().length);
-		}
-
-		inline void _mutable_helper_impl<udp_frame>::set_length(uint16_t _length) const
-		{
-			frame().length = htons(_length);
-		}
-
-		inline uint16_t _mutable_helper_impl<udp_frame>::checksum() const
-		{
-			return ntohs(frame().checksum);
-		}
-
-		inline void _mutable_helper_impl<udp_frame>::set_checksum(uint16_t _checksum) const
-		{
-			frame().checksum = htons(_checksum);
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<udp_frame>::payload() const
-		{
-			return buffer() + sizeof(frame_type);
-		}
-
-		inline bool _mutable_helper_impl<udp_frame>::verify_checksum(const_helper<ipv4_frame> parent_frame) const
-		{
-			return compute_checksum(parent_frame) == 0x0000;
-		}
-
-		inline bool _mutable_helper_impl<udp_frame>::verify_checksum(const_helper<ipv6_frame> parent_frame) const
-		{
-			return compute_checksum(parent_frame) == 0x0000;
-		}
-
-		inline _mutable_helper_impl<udp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<udp_frame>(buf)
+		inline _helper_impl<mutable_helper_tag, udp_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, udp_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, udp_frame>(buf)
 		{
 		}
 	}

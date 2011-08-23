@@ -53,24 +53,18 @@ namespace asiotap
 		namespace
 		{
 			template <typename HelperType>
-			struct udp_pseudo_header
-			{
-			};
+			struct udp_pseudo_header;
 
 			template <>
 			struct udp_pseudo_header<const_helper<ipv4_frame> >
 			{
-				public:
-
-					typedef udp_ipv4_pseudo_header type;
+				typedef udp_ipv4_pseudo_header type;
 			};
 
 			template <>
 			struct udp_pseudo_header<const_helper<ipv6_frame> >
 			{
-				public:
-
-					typedef udp_ipv6_pseudo_header type;
+				typedef udp_ipv6_pseudo_header type;
 			};
 
 			udp_ipv4_pseudo_header parent_frame_to_pseudo_header(const_helper<ipv4_frame> parent_frame, uint16_t udp_length)
@@ -115,22 +109,14 @@ namespace asiotap
 			}
 		}
 
-		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_helper<ipv4_frame> parent_frame) const
+		template <class HelperTag>
+		uint16_t _base_helper_impl<HelperTag, udp_frame>::compute_checksum(const_helper<ipv4_frame> parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}
 
-		uint16_t _const_helper_impl<udp_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
-		{
-			return compute_udp_checksum(parent_frame, *this);
-		}
-
-		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_helper<ipv4_frame> parent_frame) const
-		{
-			return compute_udp_checksum(parent_frame, *this);
-		}
-
-		uint16_t _mutable_helper_impl<udp_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
+		template <class HelperTag>
+		uint16_t _base_helper_impl<HelperTag, udp_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
 		{
 			return compute_udp_checksum(parent_frame, *this);
 		}
