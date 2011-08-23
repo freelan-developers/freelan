@@ -56,10 +56,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const icmp helper implementation class.
+		 * \brief The base icmp helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<icmp_frame> : public _base_const_helper<icmp_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, icmp_frame> : public _base_helper<HelperTag, icmp_frame>
 		{
 			public:
 
@@ -91,7 +91,7 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 				/**
 				 * \brief Compute the checksum.
@@ -111,22 +111,16 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable icmp helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<icmp_frame> : public _base_mutable_helper<icmp_frame>
+		class _helper_impl<mutable_helper_tag, icmp_frame> : public _base_helper_impl<mutable_helper_tag, icmp_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the message type.
-				 * \return The message type.
-				 */
-				uint8_t type() const;
 
 				/**
 				 * \brief Set the message type.
@@ -135,22 +129,10 @@ namespace asiotap
 				void set_type(uint8_t type) const;
 
 				/**
-				 * \brief Get the error code.
-				 * \return The error code.
-				 */
-				uint8_t code() const;
-
-				/**
 				 * \brief Set the error code.
 				 * \param code The error code.
 				 */
 				void set_code(uint8_t code) const;
-
-				/**
-				 * \brief Get the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t checksum() const;
 
 				/**
 				 * \brief Set the checksum.
@@ -159,34 +141,10 @@ namespace asiotap
 				void set_checksum(uint16_t checksum) const;
 
 				/**
-				 * \brief Get the data.
-				 * \return The data.
-				 */
-				uint32_t data() const;
-
-				/**
 				 * \brief Set the data.
 				 * \param data The data.
 				 */
 				void set_data(uint32_t data) const;
-
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
-				/**
-				 * \brief Compute the checksum.
-				 * \return The checksum.
-				 */
-				uint16_t compute_checksum() const;
-
-				/**
-				 * \brief Verify the checksum.
-				 * \return true if the checksum is valid.
-				 */
-				bool verify_checksum() const;
 
 			protected:
 
@@ -194,96 +152,73 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint8_t _const_helper_impl<icmp_frame>::type() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, icmp_frame>::type() const
 		{
-			return frame().type;
+			return this->frame().type;
 		}
 
-		inline uint8_t _const_helper_impl<icmp_frame>::code() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, icmp_frame>::code() const
 		{
-			return frame().code;
+			return this->frame().code;
 		}
 
-		inline uint16_t _const_helper_impl<icmp_frame>::checksum() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, icmp_frame>::checksum() const
 		{
-			return ntohs(frame().checksum);
+			return ntohs(this->frame().checksum);
 		}
 
-		inline uint32_t _const_helper_impl<icmp_frame>::data() const
+		template <class HelperTag>
+		inline uint32_t _base_helper_impl<HelperTag, icmp_frame>::data() const
 		{
-			return ntohl(frame().data);
+			return ntohl(this->frame().data);
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<icmp_frame>::payload() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, icmp_frame>::buffer_type _base_helper_impl<HelperTag, icmp_frame>::payload() const
 		{
-			return buffer() + sizeof(frame_type);
+			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, icmp_frame>::frame_type);
 		}
 
-		inline bool _const_helper_impl<icmp_frame>::verify_checksum() const
+		template <class HelperTag>
+		inline bool _base_helper_impl<HelperTag, icmp_frame>::verify_checksum() const
 		{
-			return compute_checksum() == 0x0000;
+			return this->compute_checksum() == 0x0000;
 		}
 
-		inline _const_helper_impl<icmp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<icmp_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, icmp_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, icmp_frame>::buffer_type buf) :
+			_base_helper<HelperTag, icmp_frame>(buf)
 		{
 		}
 
-		inline uint8_t _mutable_helper_impl<icmp_frame>::type() const
+		inline void _helper_impl<mutable_helper_tag, icmp_frame>::set_type(uint8_t _type) const
 		{
-			return frame().type;
+			this->frame().type = _type;
 		}
 
-		inline void _mutable_helper_impl<icmp_frame>::set_type(uint8_t _type) const
+		inline void _helper_impl<mutable_helper_tag, icmp_frame>::set_code(uint8_t _code) const
 		{
-			frame().type = _type;
+			this->frame().code = _code;
 		}
 
-		inline uint8_t _mutable_helper_impl<icmp_frame>::code() const
+		inline void _helper_impl<mutable_helper_tag, icmp_frame>::set_checksum(uint16_t _checksum) const
 		{
-			return frame().code;
+			this->frame().checksum = htons(_checksum);
 		}
 
-		inline void _mutable_helper_impl<icmp_frame>::set_code(uint8_t _code) const
+		inline void _helper_impl<mutable_helper_tag, icmp_frame>::set_data(uint32_t _data) const
 		{
-			frame().code = _code;
+			this->frame().data = htonl(_data);
 		}
 
-		inline uint16_t _mutable_helper_impl<icmp_frame>::checksum() const
-		{
-			return ntohs(frame().checksum);
-		}
-
-		inline void _mutable_helper_impl<icmp_frame>::set_checksum(uint16_t _checksum) const
-		{
-			frame().checksum = htons(_checksum);
-		}
-
-		inline uint32_t _mutable_helper_impl<icmp_frame>::data() const
-		{
-			return ntohl(frame().data);
-		}
-
-		inline void _mutable_helper_impl<icmp_frame>::set_data(uint32_t _data) const
-		{
-			frame().data = htonl(_data);
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<icmp_frame>::payload() const
-		{
-			return buffer() + sizeof(frame_type);
-		}
-
-		inline bool _mutable_helper_impl<icmp_frame>::verify_checksum() const
-		{
-			return compute_checksum() == 0x0000;
-		}
-
-		inline _mutable_helper_impl<icmp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<icmp_frame>(buf)
+		inline _helper_impl<mutable_helper_tag, icmp_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, icmp_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, icmp_frame>(buf)
 		{
 		}
 	}

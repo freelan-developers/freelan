@@ -50,18 +50,11 @@ namespace asiotap
 {
 	namespace osi
 	{
-		uint16_t _const_helper_impl<icmp_frame>::compute_checksum() const
+		template <class HelperTag>
+		uint16_t _base_helper_impl<HelperTag, icmp_frame>::compute_checksum() const
 		{
-			const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(buffer());
-			size_t buf_len = boost::asio::buffer_size(buffer());
-
-			return osi::compute_checksum(buf, buf_len);
-		}
-
-		uint16_t _mutable_helper_impl<icmp_frame>::compute_checksum() const
-		{
-			const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(buffer());
-			size_t buf_len = boost::asio::buffer_size(buffer());
+			const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(this->buffer());
+			size_t buf_len = boost::asio::buffer_size(this->buffer());
 
 			return osi::compute_checksum(buf, buf_len);
 		}
