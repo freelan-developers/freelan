@@ -130,21 +130,6 @@ namespace asiotap
 		};
 
 		/**
-		 * \brief The const arp helper implementation class.
-		 */
-		template <>
-		class _helper_impl<const_helper_tag, arp_frame> : public _base_helper_impl<const_helper_tag, arp_frame>
-		{
-			protected:
-
-				/**
-				 * \brief Create a helper from a frame type structure.
-				 * \param buf The buffer to refer to.
-				 */
-				_helper_impl(typename _helper_impl::buffer_type buf);
-		};
-
-		/**
 		 * \brief The mutable arp helper implementation class.
 		 */
 		template <>
@@ -266,11 +251,6 @@ namespace asiotap
 		template <class HelperTag>
 		inline _base_helper_impl<HelperTag, arp_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, arp_frame>::buffer_type buf) :
 			_base_helper<HelperTag, arp_frame>(buf)
-		{
-		}
-
-		inline _helper_impl<const_helper_tag, arp_frame>::_helper_impl(_helper_impl<const_helper_tag, arp_frame>::buffer_type buf) :
-			_base_helper_impl<const_helper_tag, arp_frame>(buf)
 		{
 		}
 
