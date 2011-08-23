@@ -53,10 +53,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const bootp helper implementation class.
+		 * \brief The base bootp helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<bootp_frame> : public _base_const_helper<bootp_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, bootp_frame> : public _base_helper<HelperTag, bootp_frame>
 		{
 			public:
 
@@ -130,31 +130,31 @@ namespace asiotap
 				 * \brief Get the hardware address.
 				 * \return The hardware address.
 				 */
-				boost::asio::const_buffer chaddr() const;
+				typename _base_helper_impl::buffer_type chaddr() const;
 
 				/**
 				 * \brief Get the server name.
 				 * \return The server name.
 				 */
-				boost::asio::const_buffer sname() const;
+				typename _base_helper_impl::buffer_type sname() const;
 
 				/**
 				 * \brief Get the filename.
 				 * \return The filename.
 				 */
-				boost::asio::const_buffer file() const;
+				typename _base_helper_impl::buffer_type file() const;
 
 				/**
 				 * \brief Get the options.
 				 * \return The options.
 				 */
-				boost::asio::const_buffer options() const;
+				typename _base_helper_impl::buffer_type options() const;
 
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 			protected:
 
@@ -162,22 +162,31 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
+		};
+
+		/**
+		 * \brief The const udp helper implementation class.
+		 */
+		template <>
+		class _helper_impl<const_helper_tag, bootp_frame> : public _base_helper_impl<const_helper_tag, bootp_frame>
+		{
+			protected:
+
+				/**
+				 * \brief Create a helper from a frame type structure.
+				 * \param buf The buffer to refer to.
+				 */
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable udp helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<bootp_frame> : public _base_mutable_helper<bootp_frame>
+		class _helper_impl<mutable_helper_tag, bootp_frame> : public _base_helper_impl<mutable_helper_tag, bootp_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the operation.
-				 * \return The operation.
-				 */
-				uint8_t operation() const;
 
 				/**
 				 * \brief Set the operation.
@@ -186,22 +195,10 @@ namespace asiotap
 				void set_operation(uint8_t operation) const;
 
 				/**
-				 * \brief Get the hardware type.
-				 * \return The hardware type.
-				 */
-				uint8_t hardware_type() const;
-
-				/**
 				 * \brief Set the hardware type.
 				 * \param hardware_type The hardware type.
 				 */
 				void set_hardware_type(uint8_t hardware_type) const;
-
-				/**
-				 * \brief Get the hardware length.
-				 * \return The hardware length.
-				 */
-				size_t hardware_length() const;
 
 				/**
 				 * \brief Set the hardware length.
@@ -210,22 +207,10 @@ namespace asiotap
 				void set_hardware_length(size_t hardware_length) const;
 
 				/**
-				 * \brief Get the hops count.
-				 * \return The hops count.
-				 */
-				uint8_t hops() const;
-
-				/**
 				 * \brief Set the hops count.
 				 * \param hops The hops count.
 				 */
 				void set_hops(uint8_t hops) const;
-
-				/**
-				 * \brief Get the X identifier.
-				 * \return The X identifier.
-				 */
-				uint32_t xid() const;
 
 				/**
 				 * \brief Set the X identifier.
@@ -234,22 +219,10 @@ namespace asiotap
 				void set_xid(uint32_t xid) const;
 
 				/**
-				 * \brief Get the seconds elapsed.
-				 * \return The seconds elapsed.
-				 */
-				uint16_t seconds() const;
-
-				/**
 				 * \brief Set the seconds elapsed.
 				 * \param seconds The seconds elapsed.
 				 */
 				void set_seconds(uint16_t seconds) const;
-
-				/**
-				 * \brief Get the flags.
-				 * \return The flags.
-				 */
-				uint16_t flags() const;
 
 				/**
 				 * \brief Set the flags.
@@ -258,22 +231,10 @@ namespace asiotap
 				void set_flags(uint16_t flags) const;
 
 				/**
-				 * \brief Get the client address.
-				 * \return The client address.
-				 */
-				boost::asio::ip::address_v4 ciaddr() const;
-
-				/**
 				 * \brief Set the client address.
 				 * \param ciaddr The client address.
 				 */
 				void set_ciaddr(boost::asio::ip::address_v4 ciaddr) const;
-
-				/**
-				 * \brief Get the requested address.
-				 * \return The requested address.
-				 */
-				boost::asio::ip::address_v4 yiaddr() const;
 
 				/**
 				 * \brief Set the requested address.
@@ -282,22 +243,10 @@ namespace asiotap
 				void set_yiaddr(boost::asio::ip::address_v4 yiaddr) const;
 
 				/**
-				 * \brief Get the server address.
-				 * \return The server address.
-				 */
-				boost::asio::ip::address_v4 siaddr() const;
-
-				/**
 				 * \brief Set the server address.
 				 * \param siaddr The server address.
 				 */
 				void set_siaddr(boost::asio::ip::address_v4 siaddr) const;
-
-				/**
-				 * \brief Get the gateway address.
-				 * \return The gateway address.
-				 */
-				boost::asio::ip::address_v4 giaddr() const;
 
 				/**
 				 * \brief Set the gateway address.
@@ -305,267 +254,179 @@ namespace asiotap
 				 */
 				void set_giaddr(boost::asio::ip::address_v4 giaddr) const;
 
-				/**
-				 * \brief Get the hardware address.
-				 * \return The hardware address.
-				 */
-				boost::asio::mutable_buffer chaddr() const;
-
-				/**
-				 * \brief Get the server name.
-				 * \return The server name.
-				 */
-				boost::asio::mutable_buffer sname() const;
-
-				/**
-				 * \brief Get the filename.
-				 * \return The filename.
-				 */
-				boost::asio::mutable_buffer file() const;
-
-				/**
-				 * \brief Get the options.
-				 * \return The options.
-				 */
-				boost::asio::mutable_buffer options() const;
-
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
 			protected:
 
 				/**
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint8_t _const_helper_impl<bootp_frame>::operation() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, bootp_frame>::operation() const
 		{
-			return frame().operation;
+			return this->frame().operation;
 		}
 
-		inline uint8_t _const_helper_impl<bootp_frame>::hardware_type() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, bootp_frame>::hardware_type() const
 		{
-			return frame().hardware_type;
+			return this->frame().hardware_type;
 		}
 
-		inline size_t _const_helper_impl<bootp_frame>::hardware_length() const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, bootp_frame>::hardware_length() const
 		{
-			return frame().hardware_length;
+			return this->frame().hardware_length;
 		}
 
-		inline uint8_t _const_helper_impl<bootp_frame>::hops() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, bootp_frame>::hops() const
 		{
-			return frame().hops;
+			return this->frame().hops;
 		}
 
-		inline uint32_t _const_helper_impl<bootp_frame>::xid() const
+		template <class HelperTag>
+		inline uint32_t _base_helper_impl<HelperTag, bootp_frame>::xid() const
 		{
-			return ntohl(frame().xid);
+			return ntohl(this->frame().xid);
 		}
 
-		inline uint16_t _const_helper_impl<bootp_frame>::seconds() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, bootp_frame>::seconds() const
 		{
-			return ntohs(frame().seconds);
+			return ntohs(this->frame().seconds);
 		}
 
-		inline uint16_t _const_helper_impl<bootp_frame>::flags() const
+		template <class HelperTag>
+		inline uint16_t _base_helper_impl<HelperTag, bootp_frame>::flags() const
 		{
-			return frame().flags;
+			return this->frame().flags;
 		}
 
-		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::ciaddr() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, bootp_frame>::ciaddr() const
 		{
-			return boost::asio::ip::address_v4(ntohl(frame().ciaddr.s_addr));
+			return boost::asio::ip::address_v4(ntohl(this->frame().ciaddr.s_addr));
 		}
 
-		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::yiaddr() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, bootp_frame>::yiaddr() const
 		{
-			return boost::asio::ip::address_v4(ntohl(frame().yiaddr.s_addr));
+			return boost::asio::ip::address_v4(ntohl(this->frame().yiaddr.s_addr));
 		}
 
-		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::siaddr() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, bootp_frame>::siaddr() const
 		{
-			return boost::asio::ip::address_v4(ntohl(frame().siaddr.s_addr));
+			return boost::asio::ip::address_v4(ntohl(this->frame().siaddr.s_addr));
 		}
 
-		inline boost::asio::ip::address_v4 _const_helper_impl<bootp_frame>::giaddr() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, bootp_frame>::giaddr() const
 		{
-			return boost::asio::ip::address_v4(ntohl(frame().giaddr.s_addr));
+			return boost::asio::ip::address_v4(ntohl(this->frame().giaddr.s_addr));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::chaddr() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::chaddr() const
 		{
-			return boost::asio::buffer(frame().chaddr, sizeof(frame().chaddr));
+			return boost::asio::buffer(this->frame().chaddr, sizeof(this->frame().chaddr));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::sname() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::sname() const
 		{
-			return boost::asio::buffer(frame().sname, sizeof(frame().sname));
+			return boost::asio::buffer(this->frame().sname, sizeof(this->frame().sname));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::file() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::file() const
 		{
-			return boost::asio::buffer(frame().file, sizeof(frame().file));
+			return boost::asio::buffer(this->frame().file, sizeof(this->frame().file));
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::options() const
-		{
-			return payload();
-		}
-
-		inline boost::asio::const_buffer _const_helper_impl<bootp_frame>::payload() const
-		{
-			return buffer() + sizeof(frame_type);
-		}
-
-		inline _const_helper_impl<bootp_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<bootp_frame>(buf)
-		{
-		}
-
-		inline uint8_t _mutable_helper_impl<bootp_frame>::operation() const
-		{
-			return frame().operation;
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_operation(uint8_t _operation) const
-		{
-			frame().operation = _operation;
-		}
-
-		inline uint8_t _mutable_helper_impl<bootp_frame>::hardware_type() const
-		{
-			return frame().hardware_type;
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_hardware_type(uint8_t _hardware_type) const
-		{
-			frame().hardware_type = _hardware_type;
-		}
-
-		inline size_t _mutable_helper_impl<bootp_frame>::hardware_length() const
-		{
-			return frame().hardware_length;
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_hardware_length(size_t _hardware_length) const
-		{
-			frame().hardware_length = static_cast<uint8_t>(_hardware_length);
-		}
-
-		inline uint8_t _mutable_helper_impl<bootp_frame>::hops() const
-		{
-			return frame().hops;
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_hops(uint8_t _hops) const
-		{
-			frame().hops = _hops;
-		}
-
-		inline uint32_t _mutable_helper_impl<bootp_frame>::xid() const
-		{
-			return ntohl(frame().xid);
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_xid(uint32_t _xid) const
-		{
-			frame().xid = htonl(_xid);
-		}
-
-		inline uint16_t _mutable_helper_impl<bootp_frame>::seconds() const
-		{
-			return ntohs(frame().seconds);
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_seconds(uint16_t _seconds) const
-		{
-			frame().seconds = htons(_seconds);
-		}
-
-		inline uint16_t _mutable_helper_impl<bootp_frame>::flags() const
-		{
-			return frame().flags;
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_flags(uint16_t _flags) const
-		{
-			frame().flags = _flags;
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::ciaddr() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().ciaddr.s_addr));
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_ciaddr(boost::asio::ip::address_v4 _ciaddr) const
-		{
-			frame().ciaddr.s_addr = htonl(_ciaddr.to_ulong());
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::yiaddr() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().yiaddr.s_addr));
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_yiaddr(boost::asio::ip::address_v4 _yiaddr) const
-		{
-			frame().yiaddr.s_addr = htonl(_yiaddr.to_ulong());
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::siaddr() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().siaddr.s_addr));
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_siaddr(boost::asio::ip::address_v4 _siaddr) const
-		{
-			frame().siaddr.s_addr = htonl(_siaddr.to_ulong());
-		}
-
-		inline boost::asio::ip::address_v4 _mutable_helper_impl<bootp_frame>::giaddr() const
-		{
-			return boost::asio::ip::address_v4(ntohl(frame().giaddr.s_addr));
-		}
-
-		inline void _mutable_helper_impl<bootp_frame>::set_giaddr(boost::asio::ip::address_v4 _giaddr) const
-		{
-			frame().giaddr.s_addr = htonl(_giaddr.to_ulong());
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::chaddr() const
-		{
-			return boost::asio::buffer(frame().chaddr, sizeof(frame().chaddr));
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::sname() const
-		{
-			return boost::asio::buffer(frame().sname, sizeof(frame().sname));
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::file() const
-		{
-			return boost::asio::buffer(frame().file, sizeof(frame().file));
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::options() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::options() const
 		{
 			return payload();
 		}
 
-		inline boost::asio::mutable_buffer _mutable_helper_impl<bootp_frame>::payload() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::payload() const
 		{
-			return buffer() + sizeof(frame_type);
+			return this->buffer() + sizeof(_base_helper_impl<HelperTag, bootp_frame>::frame_type);
 		}
 
-		inline _mutable_helper_impl<bootp_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<bootp_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, bootp_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type buf) :
+			_base_helper<HelperTag, bootp_frame>(buf)
+		{
+		}
+
+		inline _helper_impl<const_helper_tag, bootp_frame>::_helper_impl(typename _helper_impl<const_helper_tag, bootp_frame>::buffer_type buf) :
+			_base_helper_impl<const_helper_tag, bootp_frame>(buf)
+		{
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_operation(uint8_t _operation) const
+		{
+			this->frame().operation = _operation;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_hardware_type(uint8_t _hardware_type) const
+		{
+			this->frame().hardware_type = _hardware_type;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_hardware_length(size_t _hardware_length) const
+		{
+			this->frame().hardware_length = static_cast<uint8_t>(_hardware_length);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_hops(uint8_t _hops) const
+		{
+			this->frame().hops = _hops;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_xid(uint32_t _xid) const
+		{
+			this->frame().xid = htonl(_xid);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_seconds(uint16_t _seconds) const
+		{
+			this->frame().seconds = htons(_seconds);
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_flags(uint16_t _flags) const
+		{
+			this->frame().flags = _flags;
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_ciaddr(boost::asio::ip::address_v4 _ciaddr) const
+		{
+			this->frame().ciaddr.s_addr = htonl(_ciaddr.to_ulong());
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_yiaddr(boost::asio::ip::address_v4 _yiaddr) const
+		{
+			this->frame().yiaddr.s_addr = htonl(_yiaddr.to_ulong());
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_siaddr(boost::asio::ip::address_v4 _siaddr) const
+		{
+			this->frame().siaddr.s_addr = htonl(_siaddr.to_ulong());
+		}
+
+		inline void _helper_impl<mutable_helper_tag, bootp_frame>::set_giaddr(boost::asio::ip::address_v4 _giaddr) const
+		{
+			this->frame().giaddr.s_addr = htonl(_giaddr.to_ulong());
+		}
+
+		inline _helper_impl<mutable_helper_tag, bootp_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, bootp_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, bootp_frame>(buf)
 		{
 		}
 	}
