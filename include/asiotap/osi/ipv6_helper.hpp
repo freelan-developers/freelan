@@ -53,10 +53,10 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The const ipv6 helper implementation class.
+		 * \brief The base ipv6 helper implementation class.
 		 */
-		template <>
-		class _const_helper_impl<ipv6_frame> : public _base_const_helper<ipv6_frame>
+		template <class HelperTag>
+		class _base_helper_impl<HelperTag, ipv6_frame> : public _base_helper<HelperTag, ipv6_frame>
 		{
 			public:
 
@@ -112,7 +112,7 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				boost::asio::const_buffer payload() const;
+				typename _base_helper_impl::buffer_type payload() const;
 
 				/**
 				 * \brief Get the IPv6 header length, in bytes.
@@ -126,22 +126,16 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_const_helper_impl(boost::asio::const_buffer buf);
+				_base_helper_impl(typename _base_helper_impl::buffer_type buf);
 		};
 
 		/**
 		 * \brief The mutable ipv6 helper implementation class.
 		 */
 		template <>
-		class _mutable_helper_impl<ipv6_frame> : public _base_mutable_helper<ipv6_frame>
+		class _helper_impl<mutable_helper_tag, ipv6_frame> : public _base_helper_impl<mutable_helper_tag, ipv6_frame>
 		{
 			public:
-
-				/**
-				 * \brief Get the version.
-				 * \return The version.
-				 */
-				uint8_t version() const;
 
 				/**
 				 * \brief Set the version.
@@ -150,22 +144,10 @@ namespace asiotap
 				void set_version(uint8_t version) const;
 
 				/**
-				 * \brief Get the class.
-				 * \return The class.
-				 */
-				uint8_t _class() const;
-
-				/**
 				 * \brief Set the class.
 				 * \param _class The class.
 				 */
 				void set_class(uint8_t _class) const;
-
-				/**
-				 * \brief Get the label.
-				 * \return The label.
-				 */
-				uint32_t label() const;
 
 				/**
 				 * \brief Set the label.
@@ -174,22 +156,10 @@ namespace asiotap
 				void set_label(uint32_t label) const;
 
 				/**
-				 * \brief Get the payload length.
-				 * \return The payload length.
-				 */
-				size_t payload_length() const;
-
-				/**
 				 * \brief Set the payload length.
 				 * \param payload_length The payload length.
 				 */
 				void set_payload_length(size_t payload_length) const;
-
-				/**
-				 * \brief Get the next header.
-				 * \return The next header.
-				 */
-				uint8_t next_header() const;
 
 				/**
 				 * \brief Set the next header.
@@ -198,22 +168,10 @@ namespace asiotap
 				void set_next_header(uint8_t next_header) const;
 
 				/**
-				 * \brief Get the hop limit.
-				 * \return The hop limit.
-				 */
-				uint8_t hop_limit() const;
-
-				/**
 				 * \brief Set hop limit.
 				 * \param hop_limit The hop limit.
 				 */
 				void set_hop_limit(uint8_t hop_limit) const;
-
-				/**
-				 * \brief Get the source address.
-				 * \return The source address.
-				 */
-				boost::asio::ip::address_v6 source() const;
 
 				/**
 				 * \brief Set the source address.
@@ -222,28 +180,10 @@ namespace asiotap
 				void set_source(boost::asio::ip::address_v6 source) const;
 
 				/**
-				 * \brief Get the destination address.
-				 * \return The destination address.
-				 */
-				boost::asio::ip::address_v6 destination() const;
-
-				/**
 				 * \brief Set the destination address.
 				 * \param destination The destination address.
 				 */
 				void set_destination(boost::asio::ip::address_v6 destination) const;
-
-				/**
-				 * \brief Get the payload buffer.
-				 * \return The payload.
-				 */
-				boost::asio::mutable_buffer payload() const;
-
-				/**
-				 * \brief Get the IPv6 header length, in bytes.
-				 * \return The IPv6 header length, in bytes.
-				 */
-				size_t header_length() const;
 
 			protected:
 
@@ -251,177 +191,128 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_mutable_helper_impl(boost::asio::mutable_buffer buf);
+				_helper_impl(typename _helper_impl::buffer_type buf);
 		};
 
-		inline uint8_t _const_helper_impl<ipv6_frame>::version() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv6_frame>::version() const
 		{
-			return (frame().version_class_label & 0xF0000000) >> 28;
+			return (this->frame().version_class_label & 0xF0000000) >> 28;
 		}
 
-		inline uint8_t _const_helper_impl<ipv6_frame>::_class() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv6_frame>::_class() const
 		{
-			return (frame().version_class_label & 0x0FF00000) >> 20;
+			return (this->frame().version_class_label & 0x0FF00000) >> 20;
 		}
 
-		inline uint32_t _const_helper_impl<ipv6_frame>::label() const
+		template <class HelperTag>
+		inline uint32_t _base_helper_impl<HelperTag, ipv6_frame>::label() const
 		{
-			return (frame().version_class_label & 0x000FFFFF);
+			return (this->frame().version_class_label & 0x000FFFFF);
 		}
 
-		inline size_t _const_helper_impl<ipv6_frame>::payload_length() const
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, ipv6_frame>::payload_length() const
 		{
-			return ntohs(frame().payload_length);
+			return ntohs(this->frame().payload_length);
 		}
 
-		inline uint8_t _const_helper_impl<ipv6_frame>::next_header() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv6_frame>::next_header() const
 		{
-			return frame().next_header;
+			return this->frame().next_header;
 		}
 
-		inline uint8_t _const_helper_impl<ipv6_frame>::hop_limit() const
+		template <class HelperTag>
+		inline uint8_t _base_helper_impl<HelperTag, ipv6_frame>::hop_limit() const
 		{
-			return frame().hop_limit;
+			return this->frame().hop_limit;
 		}
 
-		inline boost::asio::ip::address_v6 _const_helper_impl<ipv6_frame>::source() const
-		{
-			using boost::asio::ip::address_v6;
-
-			address_v6::bytes_type raw;
-			std::memcpy(raw.c_array(), frame().source.s6_addr, raw.size());
-
-			return address_v6(raw);
-		}
-
-		inline boost::asio::ip::address_v6 _const_helper_impl<ipv6_frame>::destination() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v6 _base_helper_impl<HelperTag, ipv6_frame>::source() const
 		{
 			using boost::asio::ip::address_v6;
 
 			address_v6::bytes_type raw;
-			std::memcpy(raw.c_array(), frame().destination.s6_addr, raw.size());
+			std::memcpy(raw.c_array(), this->frame().source.s6_addr, raw.size());
 
 			return address_v6(raw);
 		}
 
-		inline boost::asio::const_buffer _const_helper_impl<ipv6_frame>::payload() const
+		template <class HelperTag>
+		inline boost::asio::ip::address_v6 _base_helper_impl<HelperTag, ipv6_frame>::destination() const
 		{
-			return buffer() + header_length();
+			using boost::asio::ip::address_v6;
+
+			address_v6::bytes_type raw;
+			std::memcpy(raw.c_array(), this->frame().destination.s6_addr, raw.size());
+
+			return address_v6(raw);
 		}
 
-		inline size_t _const_helper_impl<ipv6_frame>::header_length() const
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, ipv6_frame>::buffer_type _base_helper_impl<HelperTag, ipv6_frame>::payload() const
+		{
+			return this->buffer() + header_length();
+		}
+
+		template <class HelperTag>
+		inline size_t _base_helper_impl<HelperTag, ipv6_frame>::header_length() const
 		{
 			return sizeof(ipv6_frame);
 		}
 
-		inline _const_helper_impl<ipv6_frame>::_const_helper_impl(boost::asio::const_buffer buf) :
-			_base_const_helper<ipv6_frame>(buf)
+		template <class HelperTag>
+		inline _base_helper_impl<HelperTag, ipv6_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, ipv6_frame>::buffer_type buf) :
+			_base_helper<HelperTag, ipv6_frame>(buf)
 		{
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::version() const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_version(uint8_t _version) const
 		{
-			return (frame().version_class_label & 0xF0000000) >> 28;
+			this->frame().version_class_label = (this->frame().version_class_label & 0x0FFFFFFF) | ((_version & 0x0FL) << 28);
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_version(uint8_t _version) const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_class(uint8_t __class) const
 		{
-			frame().version_class_label = (frame().version_class_label & 0x0FFFFFFF) | ((_version & 0x0FL) << 28);
+			this->frame().version_class_label = (this->frame().version_class_label & 0xF00FFFFF) | ((__class & 0xFFL) << 20);
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::_class() const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_label(uint32_t _label) const
 		{
-			return (frame().version_class_label & 0x0FF00000) >> 20;
+			this->frame().version_class_label = (this->frame().version_class_label & 0xFFF00000) | (_label & 0x000FFFFFL);
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_class(uint8_t __class) const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_payload_length(size_t _payload_length) const
 		{
-			frame().version_class_label = (frame().version_class_label & 0xF00FFFFF) | ((__class & 0xFFL) << 20);
+			this->frame().payload_length = htons(_payload_length);
 		}
 
-		inline uint32_t _mutable_helper_impl<ipv6_frame>::label() const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_next_header(uint8_t _next_header) const
 		{
-			return (frame().version_class_label & 0x000FFFFF);
+			this->frame().next_header = _next_header;
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_label(uint32_t _label) const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_hop_limit(uint8_t _hop_limit) const
 		{
-			frame().version_class_label = (frame().version_class_label & 0xFFF00000) | (_label & 0x000FFFFFL);
+			this->frame().hop_limit = _hop_limit;
 		}
 
-		inline size_t _mutable_helper_impl<ipv6_frame>::payload_length() const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_source(boost::asio::ip::address_v6 _source) const
 		{
-			return ntohs(frame().payload_length);
+			std::memcpy(this->frame().source.s6_addr, _source.to_bytes().data(), _source.to_bytes().size());
 		}
 
-		inline void _mutable_helper_impl<ipv6_frame>::set_payload_length(size_t _payload_length) const
+		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_destination(boost::asio::ip::address_v6 _destination) const
 		{
-			frame().payload_length = htons(_payload_length);
+			std::memcpy(this->frame().destination.s6_addr, _destination.to_bytes().data(), _destination.to_bytes().size());
 		}
 
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::next_header() const
+		inline _helper_impl<mutable_helper_tag, ipv6_frame>::_helper_impl(_helper_impl<mutable_helper_tag, ipv6_frame>::buffer_type buf) :
+			_base_helper_impl<mutable_helper_tag, ipv6_frame>(buf)
 		{
-			return frame().next_header;
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_next_header(uint8_t _next_header) const
-		{
-			frame().next_header = _next_header;
-		}
-
-		inline uint8_t _mutable_helper_impl<ipv6_frame>::hop_limit() const
-		{
-			return frame().hop_limit;
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_hop_limit(uint8_t _hop_limit) const
-		{
-			frame().hop_limit = _hop_limit;
-		}
-
-		inline boost::asio::ip::address_v6 _mutable_helper_impl<ipv6_frame>::source() const
-		{
-			using boost::asio::ip::address_v6;
-
-			address_v6::bytes_type raw;
-			std::memcpy(raw.c_array(), frame().source.s6_addr, raw.size());
-
-			return address_v6(raw);
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_source(boost::asio::ip::address_v6 _source) const
-		{
-			std::memcpy(frame().source.s6_addr, _source.to_bytes().data(), _source.to_bytes().size());
-		}
-
-		inline boost::asio::ip::address_v6 _mutable_helper_impl<ipv6_frame>::destination() const
-		{
-			using boost::asio::ip::address_v6;
-
-			address_v6::bytes_type raw;
-			std::memcpy(raw.c_array(), frame().destination.s6_addr, raw.size());
-
-			return address_v6(raw);
-		}
-
-		inline void _mutable_helper_impl<ipv6_frame>::set_destination(boost::asio::ip::address_v6 _destination) const
-		{
-			std::memcpy(frame().destination.s6_addr, _destination.to_bytes().data(), _destination.to_bytes().size());
-		}
-
-		inline _mutable_helper_impl<ipv6_frame>::_mutable_helper_impl(boost::asio::mutable_buffer buf) :
-			_base_mutable_helper<ipv6_frame>(buf)
-		{
-		}
-
-		inline boost::asio::mutable_buffer _mutable_helper_impl<ipv6_frame>::payload() const
-		{
-			return buffer() + header_length();
-		}
-
-		inline size_t _mutable_helper_impl<ipv6_frame>::header_length() const
-		{
-			return sizeof(ipv6_frame);
 		}
 	}
 }
