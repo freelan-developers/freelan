@@ -147,6 +147,12 @@ namespace asiotap
 				 * \param buf The buffer to parse and use.
 				 */
 				dhcp_option_helper(buffer_type buf);
+
+				/**
+				 * \brief Create a DHCP option helper from a mutable DHCP option helper.
+				 * \param helper The helper.
+				 */
+				dhcp_option_helper(const dhcp_option_helper<mutable_helper_tag>& helper);
 		};
 
 		template <>
@@ -248,11 +254,18 @@ namespace asiotap
 			return boost::asio::buffer_cast<const uint8_t*>(buffer());
 		}
 
-		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(buffer_type buf) : _base_dhcp_option_helper<const_helper_tag>(buf)
+		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(buffer_type buf) : 
+			_base_dhcp_option_helper<const_helper_tag>(buf)
 		{
 		}
 
-		inline dhcp_option_helper<mutable_helper_tag>::dhcp_option_helper(buffer_type buf) : _base_dhcp_option_helper<mutable_helper_tag>(buf)
+		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(const dhcp_option_helper<mutable_helper_tag>& helper) : 
+			_base_dhcp_option_helper<const_helper_tag>(helper.buffer())
+		{
+		}
+
+		inline dhcp_option_helper<mutable_helper_tag>::dhcp_option_helper(buffer_type buf) :
+			_base_dhcp_option_helper<mutable_helper_tag>(buf)
 		{
 		}
 
