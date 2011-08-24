@@ -217,11 +217,16 @@ namespace asiotap
 			private:
 
 				static const uint8_t has_length_map[256];
+				dhcp_option();
 		};
 
 		inline bool dhcp_option::has_length(dhcp_option::dhcp_option_tag option_tag)
 		{
 			return (has_length_map[static_cast<uint8_t>(option_tag)] != 0);
+		}
+		
+		inline dhcp_option::dhcp_option()
+		{
 		}
 	}
 }
