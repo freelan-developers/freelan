@@ -49,6 +49,8 @@
 #include "dhcp_frame.hpp"
 #include "dhcp_option_helper_iterator.hpp"
 
+#include <boost/range.hpp>
+
 namespace asiotap
 {
 	namespace osi
@@ -76,13 +78,13 @@ namespace asiotap
 				 * \brief Get the options begin iterator.
 				 * \return An iterator to the first option.
 				 */
-				 const_iterator options_begin() const;
+				 const_iterator begin() const;
 
 				/**
 				 * \brief Get the options end iterator.
 				 * \return An iterator past the last option.
 				 */
-				 const_iterator options_end() const;
+				 const_iterator end() const;
 
 				/**
 				 * \brief Get the options buffer.
@@ -129,13 +131,13 @@ namespace asiotap
 		}
 
 		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::options_begin() const
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::begin() const
 		{
 			return const_iterator(options());
 		}
 
 		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::options_end() const
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::end() const
 		{
 			return const_iterator();
 		}
@@ -161,7 +163,60 @@ namespace asiotap
 			_base_helper_impl<mutable_helper_tag, dhcp_frame>(buf)
 		{
 		}
+		
+		// Boost specializations
+
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator range_begin(_base_helper_impl<HelperTag, dhcp_frame>& x)
+		{
+			return x.begin();
+		}
+
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator range_begin(const _base_helper_impl<HelperTag, dhcp_frame>& x)
+		{
+			return x.begin();
+		}
+
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator range_end(_base_helper_impl<HelperTag, dhcp_frame>& x)
+		{
+			return x.end();
+		}
+
+		template <class HelperTag>
+		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator range_end(const _base_helper_impl<HelperTag, dhcp_frame>& x)
+		{
+			return x.end();
+		}
 	}
+}
+
+namespace boost
+{
+	template <>
+	struct range_mutable_iterator<asiotap::osi::const_helper<asiotap::osi::dhcp_frame> >
+	{
+		typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame>::const_iterator type;
+	};
+
+	template <>
+	struct range_const_iterator<asiotap::osi::const_helper<asiotap::osi::dhcp_frame> >
+	{
+		typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame>::const_iterator type;
+	};
+
+	template <>
+	struct range_mutable_iterator<asiotap::osi::mutable_helper<asiotap::osi::dhcp_frame> >
+	{
+		typedef asiotap::osi::mutable_helper<asiotap::osi::dhcp_frame>::const_iterator type;
+	};
+
+	template <>
+	struct range_const_iterator<asiotap::osi::mutable_helper<asiotap::osi::dhcp_frame> >
+	{
+		typedef asiotap::osi::mutable_helper<asiotap::osi::dhcp_frame>::const_iterator type;
+	};
 }
 
 #endif /* ASIOTAP_OSI_DHCP_HELPER_HPP */
