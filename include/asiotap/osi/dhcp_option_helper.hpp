@@ -227,7 +227,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline typename _base_dhcp_option_helper<HelperTag>::buffer_type _base_dhcp_option_helper<HelperTag>::value() const
 		{
-			return buffer_type(buffer() + 2, length());
+			return boost::asio::buffer(buffer() + 2, length());
 		}
 
 		template <class HelperTag>
