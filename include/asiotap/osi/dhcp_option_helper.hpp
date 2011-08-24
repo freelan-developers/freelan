@@ -209,7 +209,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline bool _base_dhcp_option_helper<HelperTag>::is_valid() const
 		{
-			return (dhcp_option::has_length(tag()) == (size() > 1));
+			return (!dhcp_option::has_length(tag()) || (size() > 1));
 		}
 
 		template <class HelperTag>
@@ -233,7 +233,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline size_t _base_dhcp_option_helper<HelperTag>::total_length() const
 		{
-			if (has_length())
+			if (dhcp_option::has_length(tag()) && has_length())
 			{
 				return 2 + length();
 			} else
