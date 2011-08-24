@@ -57,14 +57,14 @@ namespace asiotap
 			{
 				const size_t src_size = boost::asio::buffer_size(src);
 
-				::memcpy(boost::asio::buffer_cast<void*>(dst), boost::asio::buffer_cast<const void*>(src), src_size);
+				std::memcpy(boost::asio::buffer_cast<void*>(dst), boost::asio::buffer_cast<const void*>(src), src_size);
 			}
 
 			void memmove(boost::asio::mutable_buffer dst, boost::asio::const_buffer src)
 			{
 				const size_t src_size = boost::asio::buffer_size(src);
 
-				::memmove(boost::asio::buffer_cast<void*>(dst), boost::asio::buffer_cast<const void*>(src), src_size);
+				std::memmove(boost::asio::buffer_cast<void*>(dst), boost::asio::buffer_cast<const void*>(src), src_size);
 			}
 		}
 
