@@ -47,6 +47,7 @@
 
 #include "builder.hpp"
 #include "dhcp_frame.hpp"
+#include "dhcp_option.hpp"
 
 #include <boost/asio.hpp>
 
@@ -69,15 +70,46 @@ namespace asiotap
 				builder(boost::asio::mutable_buffer buf);
 
 				/**
+				 * \brief Add an option.
+				 * \param tag The option tag.
+				 */
+				void add_option(dhcp_option::dhcp_option_tag tag);
+
+				/**
+				 * \brief Add an option.
+				 * \param tag The option tag.
+				 * \param value The option value.
+				 */
+				void add_option(dhcp_option::dhcp_option_tag tag, boost::asio::const_buffer value);
+
+				/**
+				 * \brief Add an option.
+				 * \param tag The option tag.
+				 * \param value The option value.
+				 * \param value_size The size of value.
+				 */
+				void add_option(dhcp_option::dhcp_option_tag tag, const void* value, size_t value_size);
+
+				/**
 				 * \brief Write the frame.
 				 * \return The total size of the written frame, including its payload.
 				 */
 				size_t write() const;
+
+			private:
+
+				size_t m_options_offset;
 		};
 
 		inline builder<dhcp_frame>::builder(boost::asio::mutable_buffer buf) :
-			_base_builder<dhcp_frame>(buf, 0)
+			_base_builder<dhcp_frame>(buf, 0),
+			m_options_offset(0)
 		{
+		}
+		
+		inline void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, const void* value, size_t value_size)
+		{
+			add_option(tag, boost::asio::buffer(value, value_size));
 		}
 	}
 }

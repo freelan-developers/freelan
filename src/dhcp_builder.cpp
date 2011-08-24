@@ -45,18 +45,63 @@
 #include "osi/dhcp_builder.hpp"
 
 #include "osi/dhcp_helper.hpp"
+#include "osi/dhcp_option_helper.hpp"
 
 namespace asiotap
 {
 	namespace osi
 	{
+		namespace
+		{
+			void memcpy(boost::asio::mutable_buffer dst, boost::asio::const_buffer src)
+			{
+				const size_t src_size = boost::asio::buffer_size(src);
+
+				::memcpy(boost::asio::buffer_cast<void*>(dst), boost::asio::buffer_cast<const void*>(src), src_size);
+			}
+
+			void memmove(boost::asio::mutable_buffer dst, boost::asio::const_buffer src)
+			{
+				const size_t src_size = boost::asio::buffer_size(src);
+
+				::memmove(boost::asio::buffer_cast<void*>(dst), boost::asio::buffer_cast<const void*>(src), src_size);
+			}
+		}
+
+		void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag)
+		{
+			dhcp_option_helper<mutable_helper_tag> dhcp_option_helper(buffer() + m_options_offset);
+			dhcp_option_helper.set_tag(tag);
+
+			++m_options_offset;
+		}
+		
+		void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, boost::asio::const_buffer value)
+		{
+			dhcp_option_helper<mutable_helper_tag> dhcp_option_helper(buffer() + m_options_offset);
+
+			const size_t value_size = boost::asio::buffer_size(value);
+
+			if (value_size + 2 > boost::asio::buffer_size(buffer() + m_options_offset))
+			{
+				throw std::runtime_error("Insufficient buffer size");
+			}
+
+			dhcp_option_helper.set_tag(tag);
+			dhcp_option_helper.set_length(value_size);
+			memcpy(dhcp_option_helper.value(), value);
+
+			m_options_offset += dhcp_option_helper.total_length();
+		}
+
 		size_t builder<dhcp_frame>::write() const
 		{
-			helper_type helper = get_helper();
+			helper_type helper(buffer() + (boost::asio::buffer_size(buffer()) - m_options_offset - sizeof(frame_type)));
 
 			helper.set_magic_cookie(DHCP_MAGIC_COOKIE);
+			memmove(helper.options(), boost::asio::buffer(buffer(), m_options_offset));
 
-			return sizeof(frame_type);
+			return boost::asio::buffer_size(helper.buffer());
 		}
 	}
 }
