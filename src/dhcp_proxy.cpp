@@ -51,10 +51,12 @@
 #include "osi/dhcp_helper.hpp"
 
 #include "osi/ethernet_builder.hpp"
-//#include "osi/ipv4_builder.hpp"
-//#include "osi/udp_builder.hpp"
-//#include "osi/bootp_builder.hpp"
-//#include "osi/dhcp_builder.hpp"
+#include "osi/ipv4_builder.hpp"
+#include "osi/udp_builder.hpp"
+#include "osi/bootp_builder.hpp"
+#include "osi/dhcp_builder.hpp"
+
+#include <boost/foreach.hpp>
 
 namespace asiotap
 {
@@ -72,7 +74,18 @@ namespace asiotap
 			(void)ipv4_helper;
 			(void)udp_helper;
 			(void)bootp_helper;
-			(void)dhcp_helper;
+
+			builder<dhcp_frame> dhcp_builder(response_buffer());
+
+			BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
+			{
+				switch (dhcp_option_helper.tag())
+				{
+					default:
+						{
+						}
+				}
+			}
 		}
 	}
 }
