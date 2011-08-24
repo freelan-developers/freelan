@@ -65,9 +65,8 @@ namespace asiotap
 				/**
 				 * \brief Create a builder.
 				 * \param buf The buffer to use.
-				 * \param payload_size The size of the payload.
 				 */
-				builder(boost::asio::mutable_buffer buf, size_t payload_size);
+				builder(boost::asio::mutable_buffer buf);
 
 				/**
 				 * \brief Write the frame.
@@ -76,8 +75,8 @@ namespace asiotap
 				size_t write() const;
 		};
 
-		inline builder<dhcp_frame>::builder(boost::asio::mutable_buffer buf, size_t payload_size) :
-			_base_builder<dhcp_frame>(buf, payload_size)
+		inline builder<dhcp_frame>::builder(boost::asio::mutable_buffer buf) :
+			_base_builder<dhcp_frame>(buf, 0)
 		{
 		}
 	}
