@@ -133,7 +133,7 @@ namespace asiotap
 
 				friend bool operator==<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
 				friend bool operator!=<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
-				friend class _helper_impl<HelperTag, dhcp_frame>;
+				friend class _base_helper_impl<HelperTag, dhcp_frame>;
 		};
 		
 		template <class HelperTag>
