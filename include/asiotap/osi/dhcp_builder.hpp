@@ -66,6 +66,7 @@ namespace asiotap
 				/**
 				 * \brief Create a builder.
 				 * \param buf The buffer to use.
+				 * \warning buf will also be used internally to generate the temporary options buffer. That is, its whole content is undefined after calling this constructor.
 				 */
 				builder(boost::asio::mutable_buffer buf);
 
@@ -89,6 +90,12 @@ namespace asiotap
 				 * \param value_size The size of value.
 				 */
 				void add_option(dhcp_option::dhcp_option_tag tag, const void* value, size_t value_size);
+
+				/**
+				 * \brief Add padding.
+				 * \param cnt The count of padding bytes to add.
+				 */
+				void add_padding(size_t cnt);
 
 				/**
 				 * \brief Write the frame.

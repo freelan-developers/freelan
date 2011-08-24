@@ -94,6 +94,17 @@ namespace asiotap
 			m_options_offset += dhcp_option_helper.total_length();
 		}
 
+		void builder<dhcp_frame>::add_padding(size_t cnt)
+		{
+			if (cnt > boost::asio::buffer_size(buffer() + m_options_offset))
+			{
+				throw std::runtime_error("Insufficient buffer size");
+			}
+
+			std::memset(boost::asio::buffer_cast<void*>(buffer() + m_options_offset), static_cast<uint8_t>(dhcp_option::pad), cnt);
+			m_options_offset += cnt;
+		}
+
 		size_t builder<dhcp_frame>::write() const
 		{
 			helper_type helper(buffer() + (boost::asio::buffer_size(buffer()) - m_options_offset - sizeof(frame_type)));
