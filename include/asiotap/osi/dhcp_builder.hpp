@@ -98,6 +98,12 @@ namespace asiotap
 				void add_padding(size_t cnt);
 
 				/**
+				 * \brief Complete with padding, if needed.
+				 * \param size The minimum size to get to.
+				 */
+				void complete_padding(size_t size);
+
+				/**
 				 * \brief Write the frame.
 				 * \return The total size of the written frame, including its payload.
 				 */
@@ -117,6 +123,14 @@ namespace asiotap
 		inline void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, const void* value, size_t value_size)
 		{
 			add_option(tag, boost::asio::buffer(value, value_size));
+		}
+		
+		inline void builder<dhcp_frame>::complete_padding(size_t size)
+		{
+			if (size > m_options_offset)
+			{
+				add_padding(size - m_options_offset);
+			}
 		}
 	}
 }
