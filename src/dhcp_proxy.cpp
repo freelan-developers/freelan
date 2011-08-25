@@ -136,6 +136,8 @@ namespace asiotap
 						ipv4_helper.source()
 						);
 
+				udp_builder.update_checksum(ipv4_builder.get_helper());
+
 				builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
 
 				payload_size = ethernet_builder.write(ethernet_helper.sender(), ethernet_helper.target(), ethernet_helper.protocol());
