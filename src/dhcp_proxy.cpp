@@ -58,8 +58,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <iostream>
-
 namespace asiotap
 {
 	namespace osi
@@ -78,22 +76,15 @@ namespace asiotap
 
 				builder<dhcp_frame> dhcp_builder(response_buffer());
 
-				try
+				BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
 				{
-					BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
+					switch (dhcp_option_helper.tag())
 					{
-						switch (dhcp_option_helper.tag())
-						{
-							default:
-								{
-									break;
-								}
-						}
+						default:
+							{
+								break;
+							}
 					}
-				}
-				catch (std::exception& ex)
-				{
-					std::cerr << ex.what() << std::endl;
 				}
 
 				dhcp_builder.add_option(dhcp_option::end);
