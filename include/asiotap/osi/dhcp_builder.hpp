@@ -92,6 +92,13 @@ namespace asiotap
 				void add_option(dhcp_option::dhcp_option_tag tag, const void* value, size_t value_size);
 
 				/**
+				 * \brief Add an option.
+				 * \param tag The option tag.
+				 * \param value The option value.
+				 */
+				void add_option(dhcp_option::dhcp_option_tag tag, uint8_t value);
+
+				/**
 				 * \brief Add padding.
 				 * \param cnt The count of padding bytes to add.
 				 */
@@ -125,6 +132,11 @@ namespace asiotap
 			add_option(tag, boost::asio::buffer(value, value_size));
 		}
 		
+		inline void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, uint8_t value)
+		{
+			add_option(tag, &value, sizeof(value));
+		}
+
 		inline void builder<dhcp_frame>::complete_padding(size_t size)
 		{
 			if (size > m_options_offset)
