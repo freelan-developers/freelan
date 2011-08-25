@@ -83,6 +83,13 @@ namespace asiotap
 				 */
 				boost::asio::mutable_buffer payload() const;
 
+				/**
+				 * \brief Get a helper.
+				 * \param frame_size The frame size.
+				 * \return The helper.
+				 */
+				helper_type get_helper(size_t frame_size = sizeof(frame_type)) const;
+
 			protected:
 
 				/**
@@ -91,13 +98,6 @@ namespace asiotap
 				 * \param payload_size The size of the payload.
 				 */
 				_base_builder(boost::asio::mutable_buffer buf, size_t payload_size);
-
-				/**
-				 * \brief Get a helper.
-				 * \param frame_size The frame size.
-				 * \return The helper.
-				 */
-				helper_type get_helper(size_t frame_size = sizeof(frame_type)) const;
 
 			private:
 
@@ -126,17 +126,18 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
+		inline typename _base_builder<OSIFrameType>::helper_type _base_builder<OSIFrameType>::get_helper(size_t frame_size) const
+		{
+			return helper_type(m_buf + (boost::asio::buffer_size(m_buf) - m_payload_size - frame_size));
+		}
+
+		template <typename OSIFrameType>
 		inline _base_builder<OSIFrameType>::_base_builder(boost::asio::mutable_buffer buf, size_t payload_size) :
 			m_buf(buf),
 			m_payload_size(payload_size)
 		{
 		}
 
-		template <typename OSIFrameType>
-		inline typename _base_builder<OSIFrameType>::helper_type _base_builder<OSIFrameType>::get_helper(size_t frame_size) const
-		{
-			return helper_type(m_buf + (boost::asio::buffer_size(m_buf) - m_payload_size - frame_size));
-		}
 	}
 }
 
