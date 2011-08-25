@@ -68,6 +68,7 @@ namespace asiotap
 		{
 			helper_type helper = get_helper();
 
+			helper.set_checksum(0x0000);
 			helper.set_checksum(helper.compute_checksum(parent_frame));
 		}
 	}

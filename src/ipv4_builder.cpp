@@ -74,6 +74,7 @@ namespace asiotap
 			helper.set_protocol(protocol);
 			helper.set_source(source);
 			helper.set_destination(destination);
+			helper.set_checksum(0x0000);
 			helper.set_checksum(helper.compute_checksum());
 
 			return helper.total_length();
