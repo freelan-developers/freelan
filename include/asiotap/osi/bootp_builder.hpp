@@ -90,7 +90,7 @@ namespace asiotap
 				size_t write(
 					uint8_t operation,
 					uint8_t hardware_type,
-					uint8_t hardware_length,
+					size_t hardware_length,
 					uint8_t hops,
 					uint32_t xid,
 					uint16_t seconds,
