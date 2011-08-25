@@ -61,6 +61,46 @@ namespace asiotap
 		const uint32_t DHCP_MAGIC_COOKIE = 0x63825363;
 
 		/**
+		 * \brief The DHCP discover message.
+		 */
+		const uint8_t DHCP_DISCOVER_MESSAGE = 0x01;
+
+		/**
+		 * \brief The DHCP offer message.
+		 */
+		const uint8_t DHCP_OFFER_MESSAGE = 0x02;
+
+		/**
+		 * \brief The DHCP request message.
+		 */
+		const uint8_t DHCP_REQUEST_MESSAGE = 0x03;
+
+		/**
+		 * \brief The DHCP decline message.
+		 */
+		const uint8_t DHCP_DECLINE_MESSAGE = 0x04;
+
+		/**
+		 * \brief The DHCP acknowledgment message.
+		 */
+		const uint8_t DHCP_ACKNOWLEDGMENT_MESSAGE = 0x05;
+
+		/**
+		 * \brief The DHCP negative acknowledgment message.
+		 */
+		const uint8_t DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE = 0x06;
+
+		/**
+		 * \brief The DHCP release message.
+		 */
+		const uint8_t DHCP_RELEASE_MESSAGE = 0x07;
+
+		/**
+		 * \brief The DHCP informational message.
+		 */
+		const uint8_t DHCP_INFORMATIONAL_MESSAGE = 0x08;
+
+		/**
 		 * \brief A DHCP frame structure.
 		 */
 		struct dhcp_frame
