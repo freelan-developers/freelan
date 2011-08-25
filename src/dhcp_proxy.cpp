@@ -80,6 +80,23 @@ namespace asiotap
 				{
 					switch (dhcp_option_helper.tag())
 					{
+						case dhcp_option::dhcp_message_type:
+							{
+								switch (dhcp_option_helper.value_as<uint8_t>())
+								{
+									case DHCP_DISCOVER_MESSAGE:
+									{
+										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_OFFER_MESSAGE);
+										break;
+									}
+									case DHCP_REQUEST_MESSAGE:
+									{
+										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
+										break;
+									}
+								}
+								break;
+							}
 						default:
 							{
 								break;
