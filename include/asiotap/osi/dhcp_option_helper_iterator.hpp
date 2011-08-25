@@ -178,7 +178,15 @@ namespace asiotap
 		template <class HelperTag>
 		inline dhcp_option_helper_iterator<HelperTag>& dhcp_option_helper_iterator<HelperTag>::operator++()
 		{
-			m_helper = helper_type(m_helper->buffer() + m_helper->total_length());
+			const buffer_type new_buffer = m_helper->buffer() + m_helper->total_length();
+
+			if (boost::asio::buffer_size(new_buffer) > 0)
+			{
+				m_helper = helper_type(new_buffer);
+			} else
+			{
+				m_helper = boost::optional<helper_type>();
+			}
 
 			return *this;
 		}
