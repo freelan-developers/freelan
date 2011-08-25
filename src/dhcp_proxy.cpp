@@ -58,6 +58,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <iostream>
+
 namespace asiotap
 {
 	namespace osi
@@ -70,21 +72,75 @@ namespace asiotap
 				const_helper<dhcp_frame> dhcp_helper
 				)
 		{
-			(void)ethernet_helper;
-			(void)ipv4_helper;
-			(void)udp_helper;
-			(void)bootp_helper;
-
-			builder<dhcp_frame> dhcp_builder(response_buffer());
-
-			BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
+			if (bootp_helper.operation() == BOOTP_BOOTREQUEST)
 			{
-				switch (dhcp_option_helper.tag())
+				size_t payload_size;
+
+				builder<dhcp_frame> dhcp_builder(response_buffer());
+
+				try
 				{
-					default:
+					BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
+					{
+						switch (dhcp_option_helper.tag())
 						{
+							default:
+								{
+									break;
+								}
 						}
+					}
 				}
+				catch (std::exception& ex)
+				{
+					std::cerr << ex.what() << std::endl;
+				}
+
+				dhcp_builder.add_option(dhcp_option::end);
+				dhcp_builder.complete_padding(60);
+				payload_size = dhcp_builder.write();
+
+				builder<bootp_frame> bootp_builder(response_buffer(), payload_size);
+
+				payload_size = bootp_builder.write(
+						BOOTP_BOOTREPLY,
+						bootp_helper.hardware_type(),
+						bootp_helper.hardware_length(),
+						bootp_helper.hops(),
+						bootp_helper.xid(),
+						bootp_helper.seconds(),
+						bootp_helper.flags(),
+						boost::asio::ip::address_v4::any(),
+						boost::asio::ip::address_v4::any(),
+						boost::asio::ip::address_v4::any(),
+						boost::asio::ip::address_v4::any(),
+						boost::asio::const_buffer(NULL, 0),
+						boost::asio::const_buffer(NULL, 0),
+						boost::asio::const_buffer(NULL, 0)
+						);
+
+				builder<udp_frame> udp_builder(response_buffer(), payload_size);
+
+				payload_size = udp_builder.write(udp_helper.destination(), udp_helper.source());
+
+				builder<ipv4_frame> ipv4_builder(response_buffer(), payload_size);
+
+				payload_size = ipv4_builder.write(
+						ipv4_helper.tos(),
+						ipv4_helper.identification(),
+						ipv4_helper.flags(),
+						ipv4_helper.position_fragment(),
+						ipv4_helper.ttl(),
+						ipv4_helper.protocol(),
+						ipv4_helper.destination(),
+						ipv4_helper.source()
+						);
+
+				builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
+
+				payload_size = ethernet_builder.write(ethernet_helper.sender(), ethernet_helper.target(), ethernet_helper.protocol());
+
+				data_available(get_truncated_response_buffer(payload_size));
 			}
 		}
 	}
