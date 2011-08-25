@@ -192,7 +192,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline uint16_t _base_helper_impl<HelperTag, udp_frame>::checksum() const
 		{
-			return ntohs(this->frame().checksum);
+			return this->frame().checksum;
 		}
 
 		template <class HelperTag>
@@ -236,7 +236,7 @@ namespace asiotap
 
 		inline void _helper_impl<mutable_helper_tag, udp_frame>::set_checksum(uint16_t _checksum) const
 		{
-			this->frame().checksum = htons(_checksum);
+			this->frame().checksum = _checksum;
 		}
 
 		inline _helper_impl<mutable_helper_tag, udp_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, udp_frame>::buffer_type buf) :

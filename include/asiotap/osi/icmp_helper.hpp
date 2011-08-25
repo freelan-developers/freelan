@@ -170,7 +170,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline uint16_t _base_helper_impl<HelperTag, icmp_frame>::checksum() const
 		{
-			return ntohs(this->frame().checksum);
+			return this->frame().checksum;
 		}
 
 		template <class HelperTag>
@@ -209,7 +209,7 @@ namespace asiotap
 
 		inline void _helper_impl<mutable_helper_tag, icmp_frame>::set_checksum(uint16_t _checksum) const
 		{
-			this->frame().checksum = htons(_checksum);
+			this->frame().checksum = _checksum;
 		}
 
 		inline void _helper_impl<mutable_helper_tag, icmp_frame>::set_data(uint32_t _data) const

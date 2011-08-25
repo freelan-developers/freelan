@@ -328,7 +328,7 @@ namespace asiotap
 		template <class HelperTag>
 		inline uint16_t _base_helper_impl<HelperTag, ipv4_frame>::checksum() const
 		{
-			return ntohs(this->frame().header_checksum);
+			return this->frame().header_checksum;
 		}
 
 		template <class HelperTag>
@@ -408,7 +408,7 @@ namespace asiotap
 
 		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_checksum(uint16_t _checksum) const
 		{
-			this->frame().header_checksum = htons(_checksum);
+			this->frame().header_checksum = _checksum;
 		}
 
 		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_source(boost::asio::ip::address_v4 _source) const
