@@ -61,6 +61,16 @@ namespace asiotap
 		const uint16_t BOOTP_PROTOCOL = 67;
 
 		/**
+		 * \brief The BOOTP BOOTREQUEST operation code.
+		 */
+		const uint8_t BOOTP_BOOTREQUEST = 0x01;
+
+		/**
+		 * \brief The BOOTP BOOTREPLY operation code.
+		 */
+		const uint8_t BOOTP_BOOTREPLY = 0x02;
+
+		/**
 		 * \brief A BOOTP frame structure.
 		 */
 		struct bootp_frame
