@@ -119,6 +119,15 @@ namespace asiotap
 				buffer_type value() const;
 
 				/**
+				 * \brief Get the option value as the specified type.
+				 * \return The value.
+				 * \warning Calling this method when has_length() returns false has undefined behavior.
+				 * \warning If the option value and its length mismatch, a std::logic_error is thrown.
+				 */
+				template <typename T>
+				const T& value_as() const;
+
+				/**
 				 * \brief Get the total length.
 				 * \return The total length of the option, including its tag and length.
 				 */
@@ -228,6 +237,16 @@ namespace asiotap
 		inline typename _base_dhcp_option_helper<HelperTag>::buffer_type _base_dhcp_option_helper<HelperTag>::value() const
 		{
 			return boost::asio::buffer(buffer() + 2, length());
+		}
+
+		template <class HelperTag>
+		template <typename T>
+		const T& _base_dhcp_option_helper<HelperTag>::value_as() const
+		{
+			if (boost::asio::buffer_size(value()) != sizeof(T))
+				throw std::logic_error("Value size and type mismatch");
+
+			return *boost::asio::buffer_cast<const T*>(value());
 		}
 
 		template <class HelperTag>
