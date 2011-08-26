@@ -108,6 +108,8 @@ namespace asiotap
 
 					if (message_type_option != dhcp_helper.end())
 					{
+						const_helper<dhcp_frame>::const_iterator requested_ip_address_option = dhcp_helper.find(dhcp_option::requested_ip_address);
+
 						size_t payload_size;
 
 						builder<dhcp_frame> dhcp_builder(response_buffer());
@@ -119,7 +121,21 @@ namespace asiotap
 								break;
 
 							case DHCP_REQUEST_MESSAGE:
-								dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
+								if (requested_ip_address_option != dhcp_helper.end())
+								{
+									const boost::asio::ip::address_v4 requested_ip_address(ntohl(requested_ip_address_option->value_as<uint32_t>()));
+
+									if (requested_ip_address != entry->second)
+									{
+										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE);
+									} else
+									{
+										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
+									}
+								} else
+								{
+									dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE);
+								}
 								break;
 						}
 
