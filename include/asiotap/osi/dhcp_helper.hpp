@@ -92,6 +92,13 @@ namespace asiotap
 				 */
 				 typename _base_helper_impl::buffer_type options() const;
 
+				 /**
+					* \brief Search for the specified option.
+					* \param option_tag The option tag.
+					* \return An iterator to the option, or end() if no such option is found.
+					*/
+				 const_iterator find(dhcp_option::dhcp_option_tag option_tag) const;
+
 			protected:
 
 				/**

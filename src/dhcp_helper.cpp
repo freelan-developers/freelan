@@ -48,5 +48,17 @@ namespace asiotap
 {
 	namespace osi
 	{
+		template <class HelperTag>
+		typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::find(dhcp_option::dhcp_option_tag option_tag) const
+		{
+			const_iterator it = this->begin();
+
+			for(; (it != this->end()) && (it->tag() != option_tag); ++it);
+			
+			return it;
+		}
+
+		template typename _base_helper_impl<const_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<const_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
+		template typename _base_helper_impl<mutable_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<mutable_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
 	}
 }
