@@ -108,6 +108,8 @@ namespace asiotap
 
 					if (message_type_option != dhcp_helper.end())
 					{
+						bool info = false;
+
 						const_helper<dhcp_frame>::const_iterator requested_ip_address_option = dhcp_helper.find(dhcp_option::requested_ip_address);
 
 						size_t payload_size;
@@ -137,11 +139,20 @@ namespace asiotap
 									dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE);
 								}
 								break;
+
+							case DHCP_INFORMATIONAL_MESSAGE:
+								dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
+								info = true;
+								break;
 						}
 
-						const uint32_t lease_time = htonl(3600);
 						dhcp_builder.add_option(dhcp_option::server_identifier, boost::asio::buffer(m_software_address.to_bytes()));
-						dhcp_builder.add_option(dhcp_option::ip_address_lease_time, &lease_time, sizeof(lease_time));
+
+						if (!info)
+						{
+							const uint32_t lease_time = htonl(3600);
+							dhcp_builder.add_option(dhcp_option::ip_address_lease_time, &lease_time, sizeof(lease_time));
+						}
 
 						BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
 						{
@@ -188,7 +199,7 @@ namespace asiotap
 								bootp_helper.seconds(),
 								bootp_helper.flags(),
 								boost::asio::ip::address_v4::any(),
-								entry->second,
+								info ? boost::asio::ip::address_v4::any() : entry->second,
 								m_software_address,
 								boost::asio::ip::address_v4::any(),
 								boost::asio::buffer(entry->first),
