@@ -140,6 +140,7 @@ int main()
 		ba::ip::address_v4 dhcp_server_ipv4_address = ba::ip::address_v4::from_string("9.0.0.0");
 		ba::ip::address_v4 dhcp_server_ipv4_netmask = ba::ip::address_v4::from_string("255.255.255.0");
 		ba::ip::address_v4 my_ipv4_address = ba::ip::address_v4::from_string("9.0.0.1");
+		ba::ip::address_v4 other_ipv4_address = ba::ip::address_v4::from_string("9.0.0.2");
 
 		// We need some filters
 		ao::complex_filter<ao::arp_frame, ao::ethernet_frame>::type arp_filter(ethernet_filter);
@@ -150,7 +151,7 @@ int main()
 
 		// We add the ARP proxy
 		ao::proxy<ao::arp_frame> arp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), arp_filter);
-		arp_proxy.add_entry(my_ipv4_address, tap_adapter.ethernet_address());
+		arp_proxy.add_entry(other_ipv4_address, tap_adapter.ethernet_address());
 
 		// We add the DHCP proxy
 		ao::proxy<ao::dhcp_frame> dhcp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), dhcp_filter);
