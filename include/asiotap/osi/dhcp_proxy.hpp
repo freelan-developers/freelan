@@ -94,6 +94,24 @@ namespace asiotap
 				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter);
 
 				/**
+				 * \brief Set the hardware address.
+				 * \param hardware_address The hardware address.
+				 */
+				void set_hardware_address(const ethernet_address_type& hardware_address);
+
+				/**
+				 * \brief Set the software address.
+				 * \param software_address The software address.
+				 */
+				void set_software_address(const boost::asio::ip::address_v4& software_address);
+
+				/**
+				 * \brief Set the software netmask.
+				 * \param software_netmask The software netmask.
+				 */
+				void set_software_netmask(const boost::asio::ip::address_v4& software_netmask);
+
+				/**
 				 * \brief Add a proxy entry.
 				 * \param entry The entry to add.
 				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
@@ -124,6 +142,9 @@ namespace asiotap
 
 				typedef std::map<ethernet_address_type, boost::asio::ip::address_v4> entry_map_type;
 
+				ethernet_address_type m_hardware_address;
+				boost::asio::ip::address_v4 m_software_address;
+				boost::asio::ip::address_v4 m_software_netmask;
 				entry_map_type m_entry_map;
 		};
 
@@ -132,6 +153,21 @@ namespace asiotap
 			m_dhcp_filter(dhcp_filter)
 		{
 			m_dhcp_filter.add_handler(boost::bind(&proxy<dhcp_frame>::on_frame, this, _1));
+		}
+
+		inline void proxy<dhcp_frame>::set_hardware_address(const ethernet_address_type& hardware_address)
+		{
+			m_hardware_address = hardware_address;
+		}
+
+		inline void proxy<dhcp_frame>::set_software_address(const boost::asio::ip::address_v4& software_address)
+		{
+			m_software_address = software_address;
+		}
+
+		inline void proxy<dhcp_frame>::set_software_netmask(const boost::asio::ip::address_v4& software_netmask)
+		{
+			m_software_netmask = software_netmask;
 		}
 
 		inline bool proxy<dhcp_frame>::add_entry(const entry_type& entry)
