@@ -62,6 +62,28 @@ namespace asiotap
 {
 	namespace osi
 	{
+		namespace
+		{
+			bool is_bootp_request(const_helper<bootp_frame> bootp_helper)
+			{
+				return (bootp_helper.operation() == BOOTP_BOOTREQUEST);
+			}
+
+			bool bootp_is_ethernet(const_helper<bootp_frame> bootp_helper)
+			{
+				return ((bootp_helper.hardware_type() == BOOTP_HARDWARE_TYPE_ETHERNET) && (bootp_helper.hardware_length() == ETHERNET_ADDRESS_SIZE));
+			}
+
+			proxy<dhcp_frame>::ethernet_address_type bootp_get_ethernet_address(const_helper<bootp_frame> bootp_helper)
+			{
+				proxy<dhcp_frame>::ethernet_address_type result;
+
+				std::memcpy(result.data(), boost::asio::buffer_cast<const void*>(bootp_helper.chaddr()), result.size());
+
+				return result;
+			}
+		}
+
 		void proxy<dhcp_frame>::do_handle_frame(
 				const_helper<ethernet_frame> ethernet_helper,
 				const_helper<ipv4_frame> ipv4_helper,
@@ -70,90 +92,98 @@ namespace asiotap
 				const_helper<dhcp_frame> dhcp_helper
 				)
 		{
-			// This implementation is partial and far from being perfect
+			// This implementation is partial and far from being perfect.
 			// In a ideal world, there should be some udp_socket and a real (complete) DHCP server implementation.
 
-			if (bootp_helper.operation() == BOOTP_BOOTREQUEST)
+			if (is_bootp_request(bootp_helper) && bootp_is_ethernet(bootp_helper))
 			{
-				size_t payload_size;
+				const ethernet_address_type ethernet_address_source = bootp_get_ethernet_address(bootp_helper);
 
-				builder<dhcp_frame> dhcp_builder(response_buffer());
+				const entry_map_type::const_iterator entry = m_entry_map.find(ethernet_address_source);
 
-				BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
+				// A matching entry was found.
+				if (entry != m_entry_map.end())
 				{
-					switch (dhcp_option_helper.tag())
+					size_t payload_size;
+
+					builder<dhcp_frame> dhcp_builder(response_buffer());
+
+					BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
 					{
-						case dhcp_option::dhcp_message_type:
-							{
-								switch (dhcp_option_helper.value_as<uint8_t>())
+						switch (dhcp_option_helper.tag())
+						{
+							case dhcp_option::dhcp_message_type:
 								{
-									case DHCP_DISCOVER_MESSAGE:
+									switch (dhcp_option_helper.value_as<uint8_t>())
 									{
-										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_OFFER_MESSAGE);
-										break;
+										case DHCP_DISCOVER_MESSAGE:
+											{
+												dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_OFFER_MESSAGE);
+												break;
+											}
+										case DHCP_REQUEST_MESSAGE:
+											{
+												dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
+												break;
+											}
 									}
-									case DHCP_REQUEST_MESSAGE:
-									{
-										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
-										break;
-									}
+									break;
 								}
-								break;
-							}
-						default:
-							{
-								break;
-							}
+							default:
+								{
+									break;
+								}
+						}
 					}
+
+					dhcp_builder.add_option(dhcp_option::end);
+					dhcp_builder.complete_padding(60);
+					payload_size = dhcp_builder.write();
+
+					builder<bootp_frame> bootp_builder(response_buffer(), payload_size);
+
+					payload_size = bootp_builder.write(
+							BOOTP_BOOTREPLY,
+							bootp_helper.hardware_type(),
+							bootp_helper.hardware_length(),
+							bootp_helper.hops(),
+							bootp_helper.xid(),
+							bootp_helper.seconds(),
+							bootp_helper.flags(),
+							boost::asio::ip::address_v4::any(),
+							boost::asio::ip::address_v4::any(),
+							boost::asio::ip::address_v4::any(),
+							boost::asio::ip::address_v4::any(),
+							boost::asio::buffer(ethernet_address_source),
+							boost::asio::const_buffer(NULL, 0),
+							boost::asio::const_buffer(NULL, 0)
+							);
+
+					builder<udp_frame> udp_builder(response_buffer(), payload_size);
+
+					payload_size = udp_builder.write(udp_helper.destination(), udp_helper.source());
+
+					builder<ipv4_frame> ipv4_builder(response_buffer(), payload_size);
+
+					payload_size = ipv4_builder.write(
+							ipv4_helper.tos(),
+							ipv4_helper.identification(),
+							ipv4_helper.flags(),
+							ipv4_helper.position_fragment(),
+							ipv4_helper.ttl(),
+							ipv4_helper.protocol(),
+							ipv4_helper.destination(),
+							ipv4_helper.source()
+							);
+
+					udp_builder.update_checksum(ipv4_builder.get_helper());
+
+					builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
+
+					payload_size = ethernet_builder.write(ethernet_helper.sender(), ethernet_helper.sender(), ethernet_helper.protocol());
+
+					data_available(get_truncated_response_buffer(payload_size));
 				}
-
-				dhcp_builder.add_option(dhcp_option::end);
-				dhcp_builder.complete_padding(60);
-				payload_size = dhcp_builder.write();
-
-				builder<bootp_frame> bootp_builder(response_buffer(), payload_size);
-
-				payload_size = bootp_builder.write(
-						BOOTP_BOOTREPLY,
-						bootp_helper.hardware_type(),
-						bootp_helper.hardware_length(),
-						bootp_helper.hops(),
-						bootp_helper.xid(),
-						bootp_helper.seconds(),
-						bootp_helper.flags(),
-						boost::asio::ip::address_v4::any(),
-						boost::asio::ip::address_v4::any(),
-						boost::asio::ip::address_v4::any(),
-						boost::asio::ip::address_v4::any(),
-						boost::asio::const_buffer(NULL, 0),
-						boost::asio::const_buffer(NULL, 0),
-						boost::asio::const_buffer(NULL, 0)
-						);
-
-				builder<udp_frame> udp_builder(response_buffer(), payload_size);
-
-				payload_size = udp_builder.write(udp_helper.destination(), udp_helper.source());
-
-				builder<ipv4_frame> ipv4_builder(response_buffer(), payload_size);
-
-				payload_size = ipv4_builder.write(
-						ipv4_helper.tos(),
-						ipv4_helper.identification(),
-						ipv4_helper.flags(),
-						ipv4_helper.position_fragment(),
-						ipv4_helper.ttl(),
-						ipv4_helper.protocol(),
-						ipv4_helper.destination(),
-						ipv4_helper.source()
-						);
-
-				udp_builder.update_checksum(ipv4_builder.get_helper());
-
-				builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
-
-				payload_size = ethernet_builder.write(ethernet_helper.sender(), ethernet_helper.target(), ethernet_helper.protocol());
-
-				data_available(get_truncated_response_buffer(payload_size));
 			}
 		}
 	}

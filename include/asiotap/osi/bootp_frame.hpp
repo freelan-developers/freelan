@@ -71,6 +71,11 @@ namespace asiotap
 		const uint8_t BOOTP_BOOTREPLY = 0x02;
 
 		/**
+		 * \brief The BOOTP ethernet hardware type.
+		 */
+		const uint8_t BOOTP_HARDWARE_TYPE_ETHERNET = 0x01;
+
+		/**
 		 * \brief A BOOTP frame structure.
 		 */
 		struct bootp_frame
