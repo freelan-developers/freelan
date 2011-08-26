@@ -76,6 +76,16 @@ namespace asiotap
 				typedef complex_filter<frame_type, bootp_frame, udp_frame, ipv4_frame, ethernet_frame>::type filter_type;
 
 				/**
+				 * \brief The Ethernet address type.
+				 */
+				typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> ethernet_address_type;
+
+				/**
+				 * \brief The entry type.
+				 */
+				typedef std::pair<ethernet_address_type, boost::asio::ip::address_v4> entry_type;
+
+				/**
 				 * \brief Create an DHCP proxy.
 				 * \param response_buffer The buffer to write the responses into.
 				 * \param on_data_available The callback function to call when data is available for writing.
@@ -83,12 +93,38 @@ namespace asiotap
 				 */
 				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter);
 
+				/**
+				 * \brief Add a proxy entry.
+				 * \param entry The entry to add.
+				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
+				 */
+				bool add_entry(const entry_type& entry);
+
+				/**
+				 * \brief Add a proxy entry.
+				 * \param logical_address The logical address.
+				 * \param hardware_address The hardware address.
+				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
+				 */
+				bool add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address);
+
+				/**
+				 * \brief Delete a proxy entry.
+				 * \param hardware_address The hardware address.
+				 * \return If an entry was deleted, true is returned. Otherwise, the call returns false.
+				 */
+				bool remove_entry(const ethernet_address_type& hardware_address);
+
 			private:
 
 				void on_frame(const_helper<frame_type>);
 				void do_handle_frame(const_helper<ethernet_frame>, const_helper<ipv4_frame>, const_helper<udp_frame>, const_helper<bootp_frame>, const_helper<dhcp_frame>);
 
 				filter_type& m_dhcp_filter;
+
+				typedef std::map<ethernet_address_type, boost::asio::ip::address_v4> entry_map_type;
+
+				entry_map_type m_entry_map;
 		};
 
 		inline proxy<dhcp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter) :
@@ -96,6 +132,21 @@ namespace asiotap
 			m_dhcp_filter(dhcp_filter)
 		{
 			m_dhcp_filter.add_handler(boost::bind(&proxy<dhcp_frame>::on_frame, this, _1));
+		}
+
+		inline bool proxy<dhcp_frame>::add_entry(const entry_type& entry)
+		{
+			return m_entry_map.insert(entry).second;
+		}
+
+		inline bool proxy<dhcp_frame>::add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address)
+		{
+			return add_entry(std::make_pair(hardware_address, logical_address));
+		}
+
+		inline bool proxy<dhcp_frame>::remove_entry(const ethernet_address_type& hardware_address)
+		{
+			return (m_entry_map.erase(hardware_address) > 0);
 		}
 
 		inline void proxy<dhcp_frame>::on_frame(const_helper<frame_type> helper)
