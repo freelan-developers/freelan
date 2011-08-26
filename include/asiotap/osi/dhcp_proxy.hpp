@@ -102,8 +102,8 @@ namespace asiotap
 
 				/**
 				 * \brief Add a proxy entry.
-				 * \param logical_address The logical address.
 				 * \param hardware_address The hardware address.
+				 * \param logical_address The logical address.
 				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
 				 */
 				bool add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address);
