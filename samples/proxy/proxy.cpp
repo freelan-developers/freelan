@@ -120,9 +120,12 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	namespace ba = boost::asio;
+	namespace ao = asiotap::osi;
+
 	try
 	{
-		boost::asio::io_service _io_service;
+		ba::io_service _io_service;
 
 		asiotap::tap_adapter tap_adapter(_io_service);
 
@@ -131,21 +134,30 @@ int main()
 		tap_adapter.open();
 		tap_adapter.set_connected_state(true);
 
-		tap_adapter.async_read(boost::asio::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+		tap_adapter.async_read(ba::buffer(read_buffer, sizeof(read_buffer)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+
+		// The requested address
+		ba::ip::address_v4 dhcp_server_ipv4_address = ba::ip::address_v4::from_string("9.0.0.0");
+		ba::ip::address_v4 dhcp_server_ipv4_netmask = ba::ip::address_v4::from_string("255.255.255.0");
+		ba::ip::address_v4 my_ipv4_address = ba::ip::address_v4::from_string("9.0.0.1");
 
 		// We need some filters
-		asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type arp_filter(ethernet_filter);
-		asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type ipv4_filter(ethernet_filter);
-		asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type udp_filter(ipv4_filter);
-		asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type bootp_filter(udp_filter);
-		asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type dhcp_filter(bootp_filter);
+		ao::complex_filter<ao::arp_frame, ao::ethernet_frame>::type arp_filter(ethernet_filter);
+		ao::complex_filter<ao::ipv4_frame, ao::ethernet_frame>::type ipv4_filter(ethernet_filter);
+		ao::complex_filter<ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type udp_filter(ipv4_filter);
+		ao::complex_filter<ao::bootp_frame, ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type bootp_filter(udp_filter);
+		ao::complex_filter<ao::dhcp_frame, ao::bootp_frame, ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type dhcp_filter(bootp_filter);
 
 		// We add the ARP proxy
-		asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy(boost::asio::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), arp_filter);
-		arp_proxy.add_entry(boost::asio::ip::address_v4::from_string("9.0.0.2"), tap_adapter.ethernet_address());
+		ao::proxy<ao::arp_frame> arp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), arp_filter);
+		arp_proxy.add_entry(my_ipv4_address, tap_adapter.ethernet_address());
 
 		// We add the DHCP proxy
-		asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy(boost::asio::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), dhcp_filter);
+		ao::proxy<ao::dhcp_frame> dhcp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), dhcp_filter);
+		dhcp_proxy.set_hardware_address(tap_adapter.ethernet_address());
+		dhcp_proxy.set_software_address(dhcp_server_ipv4_address);
+		dhcp_proxy.set_software_netmask(dhcp_server_ipv4_netmask);
+		dhcp_proxy.add_entry(tap_adapter.ethernet_address(), my_ipv4_address);
 
 		// Let's run !
 		_io_service.run();
