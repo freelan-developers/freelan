@@ -55,15 +55,15 @@ namespace asiotap
 			void boost_asio_buffer_memcpy(boost::asio::mutable_buffer destination, boost::asio::const_buffer source)
 			{
 				const size_t destination_size = boost::asio::buffer_size(destination);
-				void* const destination_data = boost::asio::buffer_cast<void*>(destination);
+				uint8_t* const destination_data = boost::asio::buffer_cast<uint8_t*>(destination);
 				const size_t source_size = boost::asio::buffer_size(source);
-				const void* const source_data = boost::asio::buffer_cast<const void*>(source);
+				const uint8_t* const source_data = boost::asio::buffer_cast<const uint8_t*>(source);
 
 				const size_t copy_cnt = source_size > destination_size ? destination_size : source_size;
 				const size_t left_cnt = destination_size - copy_cnt;
 
 				memcpy(destination_data, source_data, copy_cnt);
-				memset(destination_data, 0x00, left_cnt);
+				memset(destination_data + copy_cnt, 0x00, left_cnt);
 			}
 		}
 
