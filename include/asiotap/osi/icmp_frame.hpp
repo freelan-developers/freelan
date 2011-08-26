@@ -61,6 +61,16 @@ namespace asiotap
 		const uint8_t ICMP_PROTOCOL = 0x01;
 
 		/**
+		 * \brief The ICMP echo reply message type.
+		 */
+		const uint8_t ICMP_ECHO_REPLY = 0x00;
+
+		/**
+		 * \brief The ICMP echo request message type.
+		 */
+		const uint8_t ICMP_ECHO_REQUEST = 0x08;
+
+		/**
 		 * \brief An ICMP frame structure.
 		 */
 		struct icmp_frame
