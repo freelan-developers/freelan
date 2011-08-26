@@ -55,6 +55,7 @@
 #include "complex_filter.hpp"
 
 #include <boost/array.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <map>
 
@@ -69,6 +70,11 @@ namespace asiotap
 		class proxy<dhcp_frame> : public _base_proxy<dhcp_frame>
 		{
 			public:
+
+				/**
+				 * \brief The default lease time.
+				 */
+				static const boost::posix_time::time_duration DEFAULT_LEASE_TIME;
 
 				/**
 				 * \brief The filter type.
@@ -112,6 +118,12 @@ namespace asiotap
 				void set_software_netmask(const boost::asio::ip::address_v4& software_netmask);
 
 				/**
+				 * \brief Set the lease time.
+				 * \param lease_time The lease time.
+				 */
+				void set_lease_time(boost::posix_time::time_duration lease_time);
+
+				/**
 				 * \brief Add a proxy entry.
 				 * \param entry The entry to add.
 				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
@@ -145,12 +157,14 @@ namespace asiotap
 				ethernet_address_type m_hardware_address;
 				boost::asio::ip::address_v4 m_software_address;
 				boost::asio::ip::address_v4 m_software_netmask;
+				boost::posix_time::time_duration m_lease_time;
 				entry_map_type m_entry_map;
 		};
 
 		inline proxy<dhcp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter) :
 			_base_proxy<dhcp_frame>(_response_buffer, on_data_available),
-			m_dhcp_filter(dhcp_filter)
+			m_dhcp_filter(dhcp_filter),
+			m_lease_time(DEFAULT_LEASE_TIME)
 		{
 			m_dhcp_filter.add_handler(boost::bind(&proxy<dhcp_frame>::on_frame, this, _1));
 		}
@@ -168,6 +182,11 @@ namespace asiotap
 		inline void proxy<dhcp_frame>::set_software_netmask(const boost::asio::ip::address_v4& software_netmask)
 		{
 			m_software_netmask = software_netmask;
+		}
+		
+		inline void proxy<dhcp_frame>::set_lease_time(boost::posix_time::time_duration lease_time)
+		{
+			m_lease_time = lease_time;
 		}
 
 		inline bool proxy<dhcp_frame>::add_entry(const entry_type& entry)

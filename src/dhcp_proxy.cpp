@@ -84,6 +84,8 @@ namespace asiotap
 			}
 		}
 
+		const boost::posix_time::time_duration proxy<dhcp_frame>::DEFAULT_LEASE_TIME = boost::posix_time::hours(1);
+
 		void proxy<dhcp_frame>::do_handle_frame(
 				const_helper<ethernet_frame> ethernet_helper,
 				const_helper<ipv4_frame> ipv4_helper,
@@ -150,7 +152,7 @@ namespace asiotap
 
 						if (!info)
 						{
-							const uint32_t lease_time = htonl(3600);
+							const uint32_t lease_time = htonl(m_lease_time.total_seconds());
 							dhcp_builder.add_option(dhcp_option::ip_address_lease_time, &lease_time, sizeof(lease_time));
 						}
 
