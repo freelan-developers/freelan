@@ -152,7 +152,7 @@ namespace asiotap
 							bootp_helper.flags(),
 							boost::asio::ip::address_v4::any(),
 							boost::asio::ip::address_v4::any(),
-							boost::asio::ip::address_v4::any(),
+							m_software_address,
 							boost::asio::ip::address_v4::any(),
 							boost::asio::buffer(ethernet_address_source),
 							boost::asio::const_buffer(NULL, 0),
@@ -172,7 +172,7 @@ namespace asiotap
 							ipv4_helper.position_fragment(),
 							ipv4_helper.ttl(),
 							ipv4_helper.protocol(),
-							ipv4_helper.destination(),
+							m_software_address,
 							ipv4_helper.source()
 							);
 
@@ -180,7 +180,7 @@ namespace asiotap
 
 					builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
 
-					payload_size = ethernet_builder.write(ethernet_helper.sender(), ethernet_helper.sender(), ethernet_helper.protocol());
+					payload_size = ethernet_builder.write(ethernet_helper.sender(), boost::asio::buffer(m_hardware_address), ethernet_helper.protocol());
 
 					data_available(get_truncated_response_buffer(payload_size));
 				}
