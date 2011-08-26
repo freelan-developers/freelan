@@ -98,7 +98,7 @@ namespace asiotap
 
 		inline bool check_frame(const_helper<dhcp_frame> frame)
 		{
-			return (frame.magic_cookie() == DHCP_MAGIC_COOKIE);
+			return (frame.magic_cookie() == DHCP_MAGIC_COOKIE) && frame.check_options();
 		}
 	}
 }

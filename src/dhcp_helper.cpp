@@ -44,21 +44,38 @@
 
 #include "osi/dhcp_helper.hpp"
 
+#include <boost/bind.hpp>
+
+#include <algorithm>
+
 namespace asiotap
 {
 	namespace osi
 	{
-		template <class HelperTag>
-		typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::find(dhcp_option::dhcp_option_tag option_tag) const
+		namespace
 		{
-			const_iterator it = this->begin();
+			template <class HelperTag>
+			bool has_tag(const dhcp_option_helper<HelperTag> helper, dhcp_option::dhcp_option_tag tag)
+			{
+				return helper.tag() == tag;
+			}
+		}
 
-			for(; (it != this->end()) && (it->tag() != option_tag); ++it);
-			
-			return it;
+		template <class HelperTag>
+		typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::find(dhcp_option::dhcp_option_tag tag) const
+		{
+			return std::find_if(this->begin(), this->end(), boost::bind(&has_tag<HelperTag>, _1, tag));
+		}
+		
+		template <class HelperTag>
+		bool _base_helper_impl<HelperTag, dhcp_frame>::check_options() const
+		{
+			return (std::find_if(this->begin(), this->end(), boost::bind(&dhcp_option_helper<HelperTag>::is_valid, _1)) == this->end());
 		}
 
 		template typename _base_helper_impl<const_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<const_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
 		template typename _base_helper_impl<mutable_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<mutable_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
+		template bool _base_helper_impl<const_helper_tag, dhcp_frame>::check_options() const;
+		template bool _base_helper_impl<mutable_helper_tag, dhcp_frame>::check_options() const;
 	}
 }

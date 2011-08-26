@@ -94,10 +94,16 @@ namespace asiotap
 
 				 /**
 					* \brief Search for the specified option.
-					* \param option_tag The option tag.
+					* \param tag The option tag.
 					* \return An iterator to the option, or end() if no such option is found.
 					*/
-				 const_iterator find(dhcp_option::dhcp_option_tag option_tag) const;
+				 const_iterator find(dhcp_option::dhcp_option_tag tag) const;
+
+				 /**
+					* \brief Check if all the options are valid.
+					* \return true if all the options are valid, false otherwise.
+					*/
+				 bool check_options() const;
 
 			protected:
 
