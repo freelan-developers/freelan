@@ -70,6 +70,9 @@ namespace asiotap
 				const_helper<dhcp_frame> dhcp_helper
 				)
 		{
+			// This implementation is partial and far from being perfect
+			// In a ideal world, there should be some udp_socket and a real (complete) DHCP server implementation.
+
 			if (bootp_helper.operation() == BOOTP_BOOTREQUEST)
 			{
 				size_t payload_size;
