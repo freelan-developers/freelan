@@ -125,6 +125,19 @@ namespace asiotap
 									}
 									break;
 
+							default:
+									break;
+						}
+					}
+
+					const uint32_t lease_time = htonl(3600);
+					dhcp_builder.add_option(dhcp_option::server_identifier, boost::asio::buffer(m_software_address.to_bytes()));
+					dhcp_builder.add_option(dhcp_option::ip_address_lease_time, &lease_time, sizeof(lease_time));
+
+					BOOST_FOREACH(dhcp_option_helper<const_helper_tag>& dhcp_option_helper, dhcp_helper)
+					{
+						switch (dhcp_option_helper.tag())
+						{
 							case dhcp_option::parameter_request_list:
 									if (dhcp_option_helper.has_length())
 									{
@@ -151,10 +164,6 @@ namespace asiotap
 						}
 					}
 
-					const uint32_t lease_time = htonl(3600);
-
-					dhcp_builder.add_option(dhcp_option::server_identifier, boost::asio::buffer(m_software_address.to_bytes()));
-					dhcp_builder.add_option(dhcp_option::ip_address_lease_time, &lease_time, sizeof(lease_time));
 					dhcp_builder.add_option(dhcp_option::end);
 					dhcp_builder.complete_padding(60);
 					payload_size = dhcp_builder.write();
@@ -173,7 +182,7 @@ namespace asiotap
 							entry->second,
 							m_software_address,
 							boost::asio::ip::address_v4::any(),
-							boost::asio::buffer(ethernet_address_source),
+							boost::asio::buffer(entry->first),
 							boost::asio::const_buffer(NULL, 0),
 							boost::asio::const_buffer(NULL, 0)
 							);
