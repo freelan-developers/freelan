@@ -113,29 +113,48 @@ namespace asiotap
 						switch (dhcp_option_helper.tag())
 						{
 							case dhcp_option::dhcp_message_type:
-								{
 									switch (dhcp_option_helper.value_as<uint8_t>())
 									{
 										case DHCP_DISCOVER_MESSAGE:
-											{
 												dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_OFFER_MESSAGE);
 												break;
-											}
+
 										case DHCP_REQUEST_MESSAGE:
-											{
 												dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
 												break;
-											}
 									}
 									break;
-								}
-							default:
-								{
+
+							case dhcp_option::parameter_request_list:
+									if (dhcp_option_helper.has_length())
+									{
+										const uint8_t* options = boost::asio::buffer_cast<const uint8_t*>(dhcp_option_helper.value());
+										const size_t options_count = boost::asio::buffer_size(dhcp_option_helper.value());
+
+										for (size_t i = 0; i < options_count; ++i)
+										{
+											switch (static_cast<dhcp_option::dhcp_option_tag>(options[i]))
+											{
+												case dhcp_option::subnet_mask:
+													dhcp_builder.add_option(dhcp_option::subnet_mask, boost::asio::buffer(m_software_netmask.to_bytes()));
+													break;
+
+												default:
+													break;
+											}
+										}
+									}
 									break;
-								}
+
+							default:
+									break;
 						}
 					}
 
+					const uint32_t lease_time = htonl(3600);
+
+					dhcp_builder.add_option(dhcp_option::server_identifier, boost::asio::buffer(m_software_address.to_bytes()));
+					dhcp_builder.add_option(dhcp_option::ip_address_lease_time, &lease_time, sizeof(lease_time));
 					dhcp_builder.add_option(dhcp_option::end);
 					dhcp_builder.complete_padding(60);
 					payload_size = dhcp_builder.write();
@@ -151,7 +170,7 @@ namespace asiotap
 							bootp_helper.seconds(),
 							bootp_helper.flags(),
 							boost::asio::ip::address_v4::any(),
-							boost::asio::ip::address_v4::any(),
+							entry->second,
 							m_software_address,
 							boost::asio::ip::address_v4::any(),
 							boost::asio::buffer(ethernet_address_source),
