@@ -177,7 +177,7 @@ namespace fscp
 			return ciphertext_size();
 		}
 	}
-	
+
 	size_t data_message::compute_initialization_vector(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const void* enc_key, size_t enc_key_len)
 	{
 		cryptoplus::cipher::cipher_algorithm cipher_algorithm(CIPHER_ALGORITHM);
@@ -199,7 +199,8 @@ namespace fscp
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
 
 			return cnt;
-		} else
+		}
+		else
 		{
 			return cipher_algorithm.iv_length() * 2;
 		}

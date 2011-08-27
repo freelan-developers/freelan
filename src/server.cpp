@@ -488,7 +488,7 @@ namespace fscp
 					size_t size = data_message::write(
 					                  m_send_buffer.data(),
 					                  m_send_buffer.size(),
-														session_pair.remote_session().session_number(),
+					                  session_pair.remote_session().session_number(),
 					                  session_pair.remote_session().sequence_number(),
 					                  &data_store.front()[0],
 					                  data_store.front().size(),
@@ -524,7 +524,7 @@ namespace fscp
 				size_t cnt = _data_message.get_cleartext(
 				                 m_data_buffer.data(),
 				                 m_data_buffer.size(),
-												 session_pair.local_session().session_number(),
+				                 session_pair.local_session().session_number(),
 				                 session_pair.local_session().encryption_key(),
 				                 session_pair.local_session().encryption_key_size()
 				             );
