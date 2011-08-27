@@ -51,9 +51,9 @@ namespace asiotap
 	namespace osi
 	{
 		size_t builder<udp_frame>::write(
-				uint16_t source,
-				uint16_t destination
-			) const
+		    uint16_t source,
+		    uint16_t destination
+		) const
 		{
 			helper_type helper = get_helper();
 
@@ -63,7 +63,7 @@ namespace asiotap
 
 			return helper.length();
 		}
-		
+
 		void builder<udp_frame>::update_checksum(const_helper<ipv4_frame> parent_frame)
 		{
 			helper_type helper = get_helper();

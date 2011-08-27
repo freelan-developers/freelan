@@ -313,7 +313,7 @@ namespace asiotap
 			_base_helper_impl<HelperTag, OSIFrameType>(buf)
 		{
 		}
-		
+
 		template <typename OSIFrameType>
 		inline const_helper<OSIFrameType>::const_helper(boost::asio::const_buffer buf) :
 			_helper_impl<const_helper_tag, OSIFrameType>(buf)

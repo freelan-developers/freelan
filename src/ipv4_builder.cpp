@@ -51,15 +51,15 @@ namespace asiotap
 	namespace osi
 	{
 		size_t builder<ipv4_frame>::write(
-				uint8_t tos,
-				uint16_t identification,
-				uint8_t flags,
-				uint16_t position_fragment,
-				uint8_t ttl,
-				uint8_t protocol,
-				boost::asio::ip::address_v4 source,
-				boost::asio::ip::address_v4 destination
-				) const
+		    uint8_t tos,
+		    uint16_t identification,
+		    uint8_t flags,
+		    uint16_t position_fragment,
+		    uint8_t ttl,
+		    uint8_t protocol,
+		    boost::asio::ip::address_v4 source,
+		    boost::asio::ip::address_v4 destination
+		) const
 		{
 			helper_type helper = get_helper();
 

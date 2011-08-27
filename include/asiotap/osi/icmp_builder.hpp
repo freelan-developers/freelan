@@ -77,9 +77,9 @@ namespace asiotap
 				 * \return The total size of the written frame, including its payload.
 				 */
 				size_t write(
-						uint8_t type,
-						uint8_t code,
-						uint32_t data
+				    uint8_t type,
+				    uint8_t code,
+				    uint32_t data
 				) const;
 		};
 

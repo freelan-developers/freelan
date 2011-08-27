@@ -66,7 +66,7 @@ namespace asiotap
 		{
 			return std::find_if(this->begin(), this->end(), boost::bind(&has_tag<HelperTag>, _1, tag));
 		}
-		
+
 		template <class HelperTag>
 		bool _base_helper_impl<HelperTag, dhcp_frame>::check_options() const
 		{

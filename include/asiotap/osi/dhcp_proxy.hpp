@@ -183,7 +183,7 @@ namespace asiotap
 		{
 			m_software_netmask = software_netmask;
 		}
-		
+
 		inline void proxy<dhcp_frame>::set_lease_time(boost::posix_time::time_duration lease_time)
 		{
 			m_lease_time = lease_time;

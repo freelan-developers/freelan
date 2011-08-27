@@ -126,12 +126,12 @@ namespace asiotap
 			m_options_offset(0)
 		{
 		}
-		
+
 		inline void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, const void* value, size_t value_size)
 		{
 			add_option(tag, boost::asio::buffer(value, value_size));
 		}
-		
+
 		inline void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, uint8_t value)
 		{
 			add_option(tag, &value, sizeof(value));

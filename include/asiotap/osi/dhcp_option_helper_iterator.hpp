@@ -135,18 +135,19 @@ namespace asiotap
 				friend bool operator!=<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
 				friend class _base_helper_impl<HelperTag, dhcp_frame>;
 		};
-		
+
 		template <class HelperTag>
 		inline bool operator==(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
 		{
 			if (lhs.m_helper)
 			{
 				return
-					rhs.m_helper &&
-					(boost::asio::buffer_cast<const void*>(lhs.m_helper->buffer()) == boost::asio::buffer_cast<const void*>(rhs.m_helper->buffer())) && 
-					(boost::asio::buffer_size(lhs.m_helper->buffer()) == boost::asio::buffer_size(rhs.m_helper->buffer()))
-					;
-			} else
+				    rhs.m_helper &&
+				    (boost::asio::buffer_cast<const void*>(lhs.m_helper->buffer()) == boost::asio::buffer_cast<const void*>(rhs.m_helper->buffer())) &&
+				    (boost::asio::buffer_size(lhs.m_helper->buffer()) == boost::asio::buffer_size(rhs.m_helper->buffer()))
+				    ;
+			}
+			else
 			{
 				return (!rhs.m_helper);
 			}
@@ -183,7 +184,8 @@ namespace asiotap
 			if (boost::asio::buffer_size(new_buffer) > 0)
 			{
 				m_helper = helper_type(new_buffer);
-			} else
+			}
+			else
 			{
 				m_helper = boost::optional<helper_type>();
 			}

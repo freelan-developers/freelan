@@ -78,32 +78,32 @@ namespace asiotap
 				 * \brief Get the options begin iterator.
 				 * \return An iterator to the first option.
 				 */
-				 const_iterator begin() const;
+				const_iterator begin() const;
 
 				/**
 				 * \brief Get the options end iterator.
 				 * \return An iterator past the last option.
 				 */
-				 const_iterator end() const;
+				const_iterator end() const;
 
 				/**
 				 * \brief Get the options buffer.
 				 * \return The options.
 				 */
-				 typename _base_helper_impl::buffer_type options() const;
+				typename _base_helper_impl::buffer_type options() const;
 
-				 /**
-					* \brief Search for the specified option.
-					* \param tag The option tag.
-					* \return An iterator to the option, or end() if no such option is found.
-					*/
-				 const_iterator find(dhcp_option::dhcp_option_tag tag) const;
+				/**
+				* \brief Search for the specified option.
+				* \param tag The option tag.
+				* \return An iterator to the option, or end() if no such option is found.
+				*/
+				const_iterator find(dhcp_option::dhcp_option_tag tag) const;
 
-				 /**
-					* \brief Check if all the options are valid.
-					* \return true if all the options are valid, false otherwise.
-					*/
-				 bool check_options() const;
+				/**
+				* \brief Check if all the options are valid.
+				* \return true if all the options are valid, false otherwise.
+				*/
+				bool check_options() const;
 
 			protected:
 
@@ -176,7 +176,7 @@ namespace asiotap
 			_base_helper_impl<mutable_helper_tag, dhcp_frame>(buf)
 		{
 		}
-		
+
 		// Boost specializations
 
 		template <class HelperTag>

@@ -82,14 +82,14 @@ namespace asiotap
 				 * \return The total size of the written frame, including its payload.
 				 */
 				size_t write(
-						uint8_t tos,
-						uint16_t identification,
-						uint8_t flags,
-						uint16_t position_fragment,
-						uint8_t ttl,
-						uint8_t protocol,
-						boost::asio::ip::address_v4 source,
-						boost::asio::ip::address_v4 destination
+				    uint8_t tos,
+				    uint16_t identification,
+				    uint8_t flags,
+				    uint16_t position_fragment,
+				    uint8_t ttl,
+				    uint8_t protocol,
+				    boost::asio::ip::address_v4 source,
+				    boost::asio::ip::address_v4 destination
 				) const;
 		};
 

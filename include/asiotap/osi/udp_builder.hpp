@@ -77,8 +77,8 @@ namespace asiotap
 				 * \return The total size of the written frame, including its payload.
 				 */
 				size_t write(
-					uint16_t source,
-					uint16_t destination
+				    uint16_t source,
+				    uint16_t destination
 				) const;
 
 				/**

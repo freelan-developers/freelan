@@ -75,7 +75,7 @@ namespace asiotap
 
 			++m_options_offset;
 		}
-		
+
 		void builder<dhcp_frame>::add_option(dhcp_option::dhcp_option_tag tag, boost::asio::const_buffer value)
 		{
 			dhcp_option_helper<mutable_helper_tag> dhcp_option_helper(buffer() + m_options_offset);

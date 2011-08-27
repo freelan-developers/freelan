@@ -87,12 +87,12 @@ namespace asiotap
 		const boost::posix_time::time_duration proxy<dhcp_frame>::DEFAULT_LEASE_TIME = boost::posix_time::hours(1);
 
 		void proxy<dhcp_frame>::do_handle_frame(
-				const_helper<ethernet_frame> ethernet_helper,
-				const_helper<ipv4_frame> ipv4_helper,
-				const_helper<udp_frame> udp_helper,
-				const_helper<bootp_frame> bootp_helper,
-				const_helper<dhcp_frame> dhcp_helper
-				)
+		    const_helper<ethernet_frame> ethernet_helper,
+		    const_helper<ipv4_frame> ipv4_helper,
+		    const_helper<udp_frame> udp_helper,
+		    const_helper<bootp_frame> bootp_helper,
+		    const_helper<dhcp_frame> dhcp_helper
+		)
 		{
 			// This implementation is partial and far from being perfect.
 			// In a ideal world, there should be some udp_socket and a real (complete) DHCP server implementation.
@@ -132,11 +132,13 @@ namespace asiotap
 									if (requested_ip_address != entry->second)
 									{
 										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE);
-									} else
+									}
+									else
 									{
 										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_ACKNOWLEDGMENT_MESSAGE);
 									}
-								} else
+								}
+								else
 								{
 									dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE);
 								}
@@ -193,21 +195,21 @@ namespace asiotap
 						builder<bootp_frame> bootp_builder(response_buffer(), payload_size);
 
 						payload_size = bootp_builder.write(
-								BOOTP_BOOTREPLY,
-								bootp_helper.hardware_type(),
-								bootp_helper.hardware_length(),
-								bootp_helper.hops(),
-								bootp_helper.xid(),
-								bootp_helper.seconds(),
-								bootp_helper.flags(),
-								boost::asio::ip::address_v4::any(),
-								info ? boost::asio::ip::address_v4::any() : entry->second,
-								m_software_address,
-								boost::asio::ip::address_v4::any(),
-								boost::asio::buffer(entry->first),
-								boost::asio::const_buffer(NULL, 0),
-								boost::asio::const_buffer(NULL, 0)
-								);
+						                   BOOTP_BOOTREPLY,
+						                   bootp_helper.hardware_type(),
+						                   bootp_helper.hardware_length(),
+						                   bootp_helper.hops(),
+						                   bootp_helper.xid(),
+						                   bootp_helper.seconds(),
+						                   bootp_helper.flags(),
+						                   boost::asio::ip::address_v4::any(),
+						                   info ? boost::asio::ip::address_v4::any() : entry->second,
+						                   m_software_address,
+						                   boost::asio::ip::address_v4::any(),
+						                   boost::asio::buffer(entry->first),
+						                   boost::asio::const_buffer(NULL, 0),
+						                   boost::asio::const_buffer(NULL, 0)
+						               );
 
 						builder<udp_frame> udp_builder(response_buffer(), payload_size);
 
@@ -216,15 +218,15 @@ namespace asiotap
 						builder<ipv4_frame> ipv4_builder(response_buffer(), payload_size);
 
 						payload_size = ipv4_builder.write(
-								ipv4_helper.tos(),
-								ipv4_helper.identification(),
-								ipv4_helper.flags(),
-								ipv4_helper.position_fragment(),
-								ipv4_helper.ttl(),
-								ipv4_helper.protocol(),
-								m_software_address,
-								ipv4_helper.source()
-								);
+						                   ipv4_helper.tos(),
+						                   ipv4_helper.identification(),
+						                   ipv4_helper.flags(),
+						                   ipv4_helper.position_fragment(),
+						                   ipv4_helper.ttl(),
+						                   ipv4_helper.protocol(),
+						                   m_software_address,
+						                   ipv4_helper.source()
+						               );
 
 						udp_builder.update_checksum(ipv4_builder.get_helper());
 

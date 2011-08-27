@@ -51,10 +51,10 @@ namespace asiotap
 	namespace osi
 	{
 		size_t builder<icmp_frame>::write(
-				uint8_t type,
-				uint8_t code,
-				uint32_t data
-				) const
+		    uint8_t type,
+		    uint8_t code,
+		    uint32_t data
+		) const
 		{
 			helper_type helper = get_helper();
 

@@ -94,7 +94,7 @@ namespace asiotap
 
 				/**
 				 * \brief Check if the option tag matches his length.
-				 * \return true if the option is valid. 
+				 * \return true if the option is valid.
 				 */
 				bool is_valid() const;
 
@@ -142,7 +142,7 @@ namespace asiotap
 
 				buffer_type m_buf;
 		};
-		
+
 		template <class HelperTag>
 		class dhcp_option_helper;
 
@@ -202,7 +202,7 @@ namespace asiotap
 				throw std::logic_error("Invalid buffer size");
 			}
 		}
-		
+
 		template <class HelperTag>
 		inline typename _base_dhcp_option_helper<HelperTag>::buffer_type _base_dhcp_option_helper<HelperTag>::buffer() const
 		{
@@ -232,7 +232,7 @@ namespace asiotap
 		{
 			return static_cast<size_t>(const_data()[1]);
 		}
-		
+
 		template <class HelperTag>
 		inline typename _base_dhcp_option_helper<HelperTag>::buffer_type _base_dhcp_option_helper<HelperTag>::value() const
 		{
@@ -255,7 +255,8 @@ namespace asiotap
 			if (dhcp_option::has_length(tag()) && has_length())
 			{
 				return 2 + length();
-			} else
+			}
+			else
 			{
 				return 1;
 			}
@@ -273,12 +274,12 @@ namespace asiotap
 			return boost::asio::buffer_cast<const uint8_t*>(buffer());
 		}
 
-		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(buffer_type buf) : 
+		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(buffer_type buf) :
 			_base_dhcp_option_helper<const_helper_tag>(buf)
 		{
 		}
 
-		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(const dhcp_option_helper<mutable_helper_tag>& helper) : 
+		inline dhcp_option_helper<const_helper_tag>::dhcp_option_helper(const dhcp_option_helper<mutable_helper_tag>& helper) :
 			_base_dhcp_option_helper<const_helper_tag>(helper.buffer())
 		{
 		}

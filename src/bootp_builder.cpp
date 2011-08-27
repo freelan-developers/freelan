@@ -68,21 +68,21 @@ namespace asiotap
 		}
 
 		size_t builder<bootp_frame>::write(
-				uint8_t operation,
-				uint8_t hardware_type,
-				size_t hardware_length,
-				uint8_t hops,
-				uint32_t xid,
-				uint16_t seconds,
-				uint16_t flags,
-				boost::asio::ip::address_v4 ciaddr,
-				boost::asio::ip::address_v4 yiaddr,
-				boost::asio::ip::address_v4 siaddr,
-				boost::asio::ip::address_v4 giaddr,
-				boost::asio::const_buffer chaddr,
-				boost::asio::const_buffer sname,
-				boost::asio::const_buffer file
-			) const
+		    uint8_t operation,
+		    uint8_t hardware_type,
+		    size_t hardware_length,
+		    uint8_t hops,
+		    uint32_t xid,
+		    uint16_t seconds,
+		    uint16_t flags,
+		    boost::asio::ip::address_v4 ciaddr,
+		    boost::asio::ip::address_v4 yiaddr,
+		    boost::asio::ip::address_v4 siaddr,
+		    boost::asio::ip::address_v4 giaddr,
+		    boost::asio::const_buffer chaddr,
+		    boost::asio::const_buffer sname,
+		    boost::asio::const_buffer file
+		) const
 		{
 			helper_type helper = get_helper();
 

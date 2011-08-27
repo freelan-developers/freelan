@@ -224,7 +224,7 @@ namespace asiotap
 		{
 			return (has_length_map[static_cast<uint8_t>(option_tag)] != 0);
 		}
-		
+
 		inline dhcp_option::dhcp_option()
 		{
 		}
