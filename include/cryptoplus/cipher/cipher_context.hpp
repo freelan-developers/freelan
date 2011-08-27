@@ -82,9 +82,9 @@ namespace cryptoplus
 				 */
 				enum cipher_direction
 				{
-				    unchanged = -1, /**< \brief The direction did not change since the last call. */
-				    decrypt = 0, /**< \brief Specifies a decryption cipher context. */
-				    encrypt = 1 /**< \brief Specifies an encryption cipher context. */
+					unchanged = -1, /**< \brief The direction did not change since the last call. */
+					decrypt = 0, /**< \brief Specifies a decryption cipher context. */
+					encrypt = 1 /**< \brief Specifies an encryption cipher context. */
 				};
 
 				/**
@@ -374,7 +374,7 @@ namespace cryptoplus
 			// The call always returns 1 so testing its return value is useless.
 			EVP_CIPHER_CTX_set_padding(&m_ctx, static_cast<int>(enabled));
 		}
-		
+
 		inline size_t cipher_context::get_iso_10126_padding_size(size_t len) const
 		{
 			return ((len / algorithm().block_size()) + 1) * algorithm().block_size();
