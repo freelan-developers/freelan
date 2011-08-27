@@ -1,5 +1,5 @@
 ##
-# libfscp build file.
+# libasiotap build file.
 #
 module = 'asiotap'
 major = '1'
