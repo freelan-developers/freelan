@@ -1,0 +1,4 @@
+SConsignFile('../.sconsign.dblite')
+SConscript('../SConstruct')
+
+Default('test')
