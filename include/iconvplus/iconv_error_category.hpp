@@ -37,13 +37,13 @@
  */
 
 /**
- * \file iconv_error.hpp
+ * \file iconv_error_category.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv errors.
+ * \brief The iconv error category.
  */
 
-#ifndef ICONVPLUS_ICONV_ERROR_HPP
-#define ICONVPLUS_ICONV_ERROR_HPP
+#ifndef ICONVPLUS_ICONV_ERROR_CATEGORY_HPP
+#define ICONVPLUS_ICONV_ERROR_CATEGORY_HPP
 
 #include <boost/system/error_code.hpp>
 
@@ -70,4 +70,4 @@ namespace iconvplus
 	};
 }
 
-#endif /* ICONVPLUS_ICONV_ERROR_HPP */
+#endif /* ICONVPLUS_ICONV_ERROR_CATEGORY_HPP */

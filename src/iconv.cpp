@@ -44,7 +44,7 @@
 
 #include "iconv.hpp"
 
-#include "iconv_error.hpp"
+#include "iconv_error_category.hpp"
 
 namespace iconvplus
 {

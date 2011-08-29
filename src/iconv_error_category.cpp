@@ -37,12 +37,12 @@
  */
 
 /**
- * \file iconv_error.cpp
+ * \file iconv_error_category.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv errors.
+ * \brief The iconv error category.
  */
 
-#include "iconv_error.hpp"
+#include "iconv_error_category.hpp"
 
 #include <boost/lexical_cast.hpp>
 
