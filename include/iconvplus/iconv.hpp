@@ -37,14 +37,84 @@
  */
 
 /**
- * \file iconvplus.hpp
+ * \file iconv.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The global iconvplus include file.
+ * \brief The iconv class.
  */
 
-#ifndef ICONVPLUS_ICONVPLUS_HPP
-#define ICONVPLUS_ICONVPLUS_HPP
+#ifndef ICONVPLUS_ICONV_HPP
+#define ICONVPLUS_ICONV_HPP
 
-#include "iconv.hpp"
+#include <iconv.h>
 
-#endif /* ICONVPLUS_ICONVPLUS_HPP */
+#include <boost/noncopyable.hpp>
+
+#include <stdexcept>
+
+namespace iconvplus
+{
+	/**
+	 * \brief A class that wraps a iconv_t structure.
+	 */
+	class iconv : public boost::noncopyable
+	{
+		public:
+
+			/**
+			 * \brief The native type.
+			 */
+			typedef iconv_t native_type;
+
+			/**
+			 * \brief Create a new iconv instance.
+			 * \param to The destination encoding.
+			 * \param from The source encoding.
+			 */
+			iconv(const char* to, const char* from);
+
+			/**
+			 * \brief Create a new iconv instance.
+			 * \param to The destination encoding.
+			 * \param from The source encoding.
+			 */
+			iconv(const std::string& to, const std::string& from);
+
+			/**
+			 * \brief Destroy the iconv instance.
+			 */
+			~iconv();
+
+		private:
+
+			void check_iconv() const;
+
+			native_type m_iconv;
+	};
+	
+	inline iconv::iconv(const char* to, const char* from) :
+		m_iconv(::iconv_open(to, from))
+	{
+		check_iconv();
+	}
+
+	inline iconv::iconv(const std::string& to, const std::string& from) :
+		m_iconv(::iconv_open(to.c_str(), from.c_str()))
+	{
+		check_iconv();
+	}
+	
+	inline iconv::~iconv()
+	{
+		::iconv_close(m_iconv);
+	}
+	
+	inline void iconv::check_iconv() const
+	{
+		if (m_iconv == reinterpret_cast<native_type>(-1))
+		{
+			throw std::runtime_error("Unknown encoding");
+		}
+	}
+}
+
+#endif /* ICONVPLUS_ICONV_HPP */

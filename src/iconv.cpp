@@ -1,5 +1,5 @@
 /*
- * libiconvplus - A C++ lightweight wrapper around the iconv library.
+ * libiconvplus - A lightweight C++ wrapper around the iconv library.
  * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
  * This file is part of libfreelan.
@@ -37,14 +37,13 @@
  */
 
 /**
- * \file iconvplus.hpp
+ * \file iconv.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The global iconvplus include file.
+ * \brief The iconv class.
  */
-
-#ifndef ICONVPLUS_ICONVPLUS_HPP
-#define ICONVPLUS_ICONVPLUS_HPP
 
 #include "iconv.hpp"
 
-#endif /* ICONVPLUS_ICONVPLUS_HPP */
+namespace iconvplus
+{
+}

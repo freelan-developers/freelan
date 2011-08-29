@@ -43,7 +43,3 @@
  */
 
 #include "iconvplus.hpp"
-
-namespace iconvplus
-{
-}
