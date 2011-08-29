@@ -90,6 +90,16 @@ namespace iconvplus
 			 */
 			native_type raw() const;
 
+			/**
+			 * \brief Proceed to a native iconv() call.
+			 * \param inbuf The input buffer.
+			 * \param inbytesleft The count of bytes left to be converted.
+			 * \param outbuf The output buffer.
+			 * \param outbytesleft The count of bytes left to output.
+			 * \return The number of characters cibverted ub a bib-reversible way during the call. In case of error, (size_t)(-1) is returned.
+			 */
+			size_t raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
+
 		private:
 
 			void check_iconv() const;
@@ -117,6 +127,11 @@ namespace iconvplus
 	inline iconv::native_type iconv::raw() const
 	{
 		return m_iconv;
+	}
+
+	inline size_t iconv::raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
+	{
+		return ::iconv(m_iconv, const_cast<char**>(inbuf), inbytesleft, outbuf, outbytesleft);
 	}
 
 	inline void iconv::check_iconv() const
