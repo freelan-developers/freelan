@@ -48,6 +48,7 @@
 #include <iconv.h>
 
 #include <boost/noncopyable.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <stdexcept>
 
@@ -102,6 +103,8 @@ namespace iconvplus
 			 * \param outbuf The output buffer.
 			 * \param outbytesleft The count of bytes left to output.
 			 * \return The number of characters converted in a non-reversible way during the call. In case of error, ERROR_VALUE is returned and errno is set accordingly. See iconv() man page for details.
+			 *
+			 * This call cannot throw.
 			 */
 			size_t raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
 
@@ -109,6 +112,19 @@ namespace iconvplus
 			 * \brief Reset the iconv context.
 			 */
 			void reset() const;
+
+			/**
+			 * \brief Proceed to a conversion.
+			 * \param inbuf The input buffer.
+			 * \param inbytesleft The count of bytes left to be converted.
+			 * \param outbuf The output buffer.
+			 * \param outbytesleft The count of bytes left to output.
+			 * \param ec The error code, if an error occurs.
+			 * \return The number of characters converted in a non-reversible way during the call. In case of error, ERROR_VALUE is returned and ec is updated to indicate the error.
+			 *
+			 * This call cannot throw.
+			 */
+			size_t convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const;
 
 		private:
 

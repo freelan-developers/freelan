@@ -46,4 +46,14 @@
 
 namespace iconvplus
 {
+	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
+	{
+		size_t result = raw_convert(inbuf, inbytesleft, outbuf, outbytesleft);
+
+		if (result == ERROR_VALUE)
+		{
+		}
+
+		return result;
+	}
 }
