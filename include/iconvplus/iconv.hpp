@@ -100,6 +100,11 @@ namespace iconvplus
 			 */
 			size_t raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
 
+			/**
+			 * \brief Reset the iconv context.
+			 */
+			void reset() const;
+
 		private:
 
 			void check_iconv() const;
@@ -132,6 +137,11 @@ namespace iconvplus
 	inline size_t iconv::raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
 	{
 		return ::iconv(m_iconv, const_cast<char**>(inbuf), inbytesleft, outbuf, outbytesleft);
+	}
+	
+	inline void iconv::reset() const
+	{
+		::iconv(m_iconv, NULL, NULL, NULL, NULL);
 	}
 
 	inline void iconv::check_iconv() const
