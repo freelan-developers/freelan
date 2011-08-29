@@ -134,7 +134,7 @@ namespace iconvplus
 			 * \param inbytesleft The count of bytes left to be converted.
 			 * \param outbuf The output buffer.
 			 * \param outbytesleft The count of bytes left to output.
-			 * \return The number of characters converted in a non-reversible way during the call. In case of error, a boost::system::error_code is thrown.
+			 * \return The number of characters converted in a non-reversible way during the call. In case of error, a boost::system::system_error is thrown.
 			 */
 			size_t convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
 
@@ -145,7 +145,7 @@ namespace iconvplus
 			 * \param out The output buffer. Cannot be NULL.
 			 * \param out_len The length of out, in bytes.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
-			 * \return The count of bytes written to out. In case of error, a boost::system::error_code is thrown.
+			 * \return The count of bytes written to out. In case of error, a boost::system::system_error is thrown.
 			 *
 			 * A reset() is performed inside the call, before the conversion takes place.
 			 */

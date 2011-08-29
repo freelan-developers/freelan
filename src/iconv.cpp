@@ -46,6 +46,8 @@
 
 #include "iconv_error_category.hpp"
 
+#include <boost/system/system_error.hpp>
+
 #include <cassert>
 
 namespace iconvplus
@@ -70,7 +72,7 @@ namespace iconvplus
 
 		if (result == ERROR_VALUE)
 		{
-			throw ec;
+			throw boost::system::system_error(ec);
 		}
 
 		return result;

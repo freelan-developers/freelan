@@ -44,6 +44,8 @@
 
 #include "converter.hpp"
 
+#include <boost/system/system_error.hpp>
+
 namespace iconvplus
 {
 	bool converter::convert(iconv& ic, boost::system::error_code& ec, size_t* non_reversible_conversions) const
@@ -94,7 +96,7 @@ namespace iconvplus
 
 		if (!convert(ic, ec, non_reversible_conversions))
 		{
-			throw ec;
+			throw boost::system::system_error(ec);
 		}
 	}
 }

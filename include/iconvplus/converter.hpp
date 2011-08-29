@@ -87,7 +87,7 @@ namespace iconvplus
 			 * \brief Proceed to the conversion, using the specified iconv instance.
 			 * \param ic The iconv instance to use.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
-			 * \return true on success. On error, a boost::system::error_code is thrown.
+			 * \return true on success. On error, a boost::system::system_error is thrown.
 			 */
 			void convert(iconv& ic, size_t* non_reversible_conversions = NULL) const;
 
