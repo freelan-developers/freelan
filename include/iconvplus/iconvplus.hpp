@@ -46,5 +46,6 @@
 #define ICONVPLUS_ICONVPLUS_HPP
 
 #include "iconv.hpp"
+#include "iconv_error.hpp"
 
 #endif /* ICONVPLUS_ICONVPLUS_HPP */

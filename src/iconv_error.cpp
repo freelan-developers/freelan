@@ -37,26 +37,32 @@
  */
 
 /**
- * \file iconv.cpp
+ * \file iconv_error.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv class.
+ * \brief The iconv errors.
  */
-
-#include "iconv.hpp"
 
 #include "iconv_error.hpp"
 
+#include <boost/lexical_cast.hpp>
+
+#include <cerrno>
+#include <cstring>
+
 namespace iconvplus
 {
-	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
+	std::string iconv_error_category::message(int ev) const
 	{
-		size_t result = raw_convert(inbuf, inbytesleft, outbuf, outbytesleft);
-
-		if (result == ERROR_VALUE)
+		switch (ev)
 		{
-			ec = boost::system::error_code(errno, iconv_error_category());
+			case E2BIG:
+				return "Output buffer is too small";
+			case EILSEQ:
+				return "An invalid multibyte sequence has been encountered in the input";
+			case EINVAL:
+				return "An incomplete multibyte sequence has been encountered in the input";
+			default:
+				return "Unknown error " + boost::lexical_cast<std::string>(ev) + ": " + strerror(ev);
 		}
-
-		return result;
 	}
 }

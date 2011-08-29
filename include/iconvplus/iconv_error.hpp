@@ -1,5 +1,5 @@
 /*
- * libiconvplus - A lightweight C++ wrapper around the iconv library.
+ * libiconvplus - A C++ lightweight wrapper around the iconv library.
  * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
  * This file is part of libfreelan.
@@ -37,26 +37,37 @@
  */
 
 /**
- * \file iconv.cpp
+ * \file iconv_error.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv class.
+ * \brief The iconv errors.
  */
 
-#include "iconv.hpp"
+#ifndef ICONVPLUS_ICONV_ERROR_HPP
+#define ICONVPLUS_ICONV_ERROR_HPP
 
-#include "iconv_error.hpp"
+#include <boost/system/error_code.hpp>
 
 namespace iconvplus
 {
-	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
+	/**
+	 * \brief The iconv error category.
+	 */
+	class iconv_error_category : public boost::system::error_category
 	{
-		size_t result = raw_convert(inbuf, inbytesleft, outbuf, outbytesleft);
+		public:
 
-		if (result == ERROR_VALUE)
-		{
-			ec = boost::system::error_code(errno, iconv_error_category());
-		}
+			/**
+			 * \brief Get the name of the category.
+			 * \return The name of the category.
+			 */
+			const char* name() const { return "iconv"; }
 
-		return result;
-	}
+			/**
+			 * \brief Get the error message for the specified event.
+			 * \param ev The event.
+			 */
+			std::string message(int ev) const;
+	};
 }
+
+#endif /* ICONVPLUS_ICONV_ERROR_HPP */
