@@ -84,6 +84,12 @@ namespace iconvplus
 			 */
 			~iconv();
 
+			/**
+			 * \brief Get the native pointer.
+			 * \return The native pointer.
+			 */
+			native_type raw() const;
+
 		private:
 
 			void check_iconv() const;
@@ -108,6 +114,11 @@ namespace iconvplus
 		::iconv_close(m_iconv);
 	}
 	
+	inline iconv::native_type iconv::raw() const
+	{
+		return m_iconv;
+	}
+
 	inline void iconv::check_iconv() const
 	{
 		if (m_iconv == reinterpret_cast<native_type>(-1))
