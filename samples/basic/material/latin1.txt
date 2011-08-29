@@ -1,0 +1,3 @@
+This is a latin1 encoded file.
+
+L'encodage, dès l'instant où l'on s'en préoccupe, ça devient plus simple !
