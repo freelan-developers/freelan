@@ -1,0 +1,8 @@
+.sconsign.dblite
+*.pyc
+*.o
+*.os
+*.exe
+variables.cache
+doc/html
+lib/*

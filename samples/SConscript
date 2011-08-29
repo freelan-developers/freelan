@@ -1,0 +1,13 @@
+##
+# Samples
+#
+
+Import('env module libraries')
+
+import os
+
+samples_dirs = os.walk('.').next()[1]
+
+samples = env.SConscript(dirs = samples_dirs, exports = 'env module libraries')
+
+Return('samples')
