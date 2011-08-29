@@ -47,5 +47,6 @@
 
 #include "iconv.hpp"
 #include "iconv_error_category.hpp"
+#include "converter.hpp"
 
 #endif /* ICONVPLUS_ICONVPLUS_HPP */
