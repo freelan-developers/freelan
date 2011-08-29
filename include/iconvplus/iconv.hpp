@@ -101,7 +101,7 @@ namespace iconvplus
 			 * \param inbytesleft The count of bytes left to be converted.
 			 * \param outbuf The output buffer.
 			 * \param outbytesleft The count of bytes left to output.
-			 * \return The number of characters cibverted ub a bib-reversible way during the call. In case of error, ERROR_VALUE is returned.
+			 * \return The number of characters converted in a non-reversible way during the call. In case of error, ERROR_VALUE is returned and errno is set accordingly. See iconv() man page for details.
 			 */
 			size_t raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
 
