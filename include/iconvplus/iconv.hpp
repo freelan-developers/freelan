@@ -66,6 +66,11 @@ namespace iconvplus
 			typedef iconv_t native_type;
 
 			/**
+			 * \brief The error value.
+			 */
+			static const size_t ERROR_VALUE = static_cast<size_t>(-1);
+
+			/**
 			 * \brief Create a new iconv instance.
 			 * \param to The destination encoding.
 			 * \param from The source encoding.
@@ -96,7 +101,7 @@ namespace iconvplus
 			 * \param inbytesleft The count of bytes left to be converted.
 			 * \param outbuf The output buffer.
 			 * \param outbytesleft The count of bytes left to output.
-			 * \return The number of characters cibverted ub a bib-reversible way during the call. In case of error, (size_t)(-1) is returned.
+			 * \return The number of characters cibverted ub a bib-reversible way during the call. In case of error, ERROR_VALUE is returned.
 			 */
 			size_t raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
 
