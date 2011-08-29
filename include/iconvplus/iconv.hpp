@@ -110,6 +110,8 @@ namespace iconvplus
 
 			/**
 			 * \brief Reset the iconv context.
+			 *
+			 * Reset the iconv context, as specified in the iconv man page.
 			 */
 			void reset() const;
 
@@ -135,6 +137,19 @@ namespace iconvplus
 			 * \return The number of characters converted in a non-reversible way during the call. In case of error, a boost::system::error_code is thrown.
 			 */
 			size_t convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
+
+			/**
+			 * \brief Convert some data using the specified iconv instance.
+			 * \param in The input buffer. Cannot be NULL.
+			 * \param in_len The length of in, in bytes.
+			 * \param out The output buffer. Cannot be NULL.
+			 * \param out_len The length of out, in bytes.
+			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
+			 * \return The count of bytes written to out. In case of error, a boost::system::error_code is thrown.
+			 *
+			 * A reset() is performed inside the call, before the conversion takes place.
+			 */
+			size_t convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions = NULL);
 
 		private:
 

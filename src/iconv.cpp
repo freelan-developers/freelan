@@ -46,6 +46,8 @@
 
 #include "iconv_error_category.hpp"
 
+#include <cassert>
+
 namespace iconvplus
 {
 	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
@@ -74,4 +76,20 @@ namespace iconvplus
 		return result;
 	}
 
+	size_t iconv::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions)
+	{
+		assert(in);
+		assert(out);
+
+		reset();
+
+		const char* inbuf = static_cast<const char*>(in);
+		char* outbuf = static_cast<char*>(out);
+
+		size_t result = convert(&inbuf, &in_len, &outbuf, &out_len);
+
+		if (non_reversible_conversions) *non_reversible_conversions = result;
+
+		return (outbuf - static_cast<char*>(out));
+	}
 }
