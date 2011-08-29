@@ -54,6 +54,8 @@ namespace iconvplus
 
 		ic.reset();
 
+		size_t result;
+
 		while (m_is)
 		{
 			m_is.read(&m_ibuf[0], m_ibuf.size());
@@ -62,19 +64,24 @@ namespace iconvplus
 			{
 				size_t itmp_len = m_is.gcount();
 				const char* inbuf = &m_ibuf[0];
-				size_t otmp_len = m_obuf.size();
-				char* outbuf = &m_obuf[0];
 
-				size_t result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
-
-				if ((result == iconv::ERROR_VALUE) && (ec.value() != E2BIG))
+				do
 				{
-					return false;
+					size_t otmp_len = m_obuf.size();
+					char* outbuf = &m_obuf[0];
+
+					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
+
+					if ((result == iconv::ERROR_VALUE) && (ec.value() != E2BIG))
+					{
+						return false;
+					}
+
+					non_reversible_conversions += result;
+
+					m_os.write(&m_obuf[0], m_obuf.size() - otmp_len);
 				}
-
-				non_reversible_conversions += result;
-
-				m_os.write(&m_obuf[0], m_obuf.size() - otmp_len);
+				while ((result == iconv::ERROR_VALUE) && (ec.value() == E2BIG));
 			}
 		}
 
