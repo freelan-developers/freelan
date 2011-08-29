@@ -146,18 +146,12 @@ class Environment(SConsEnvironment):
 		return astyle
 
 	def __add_libs(self, kw):
+		kw['LIBS'].append('iconv')
+
 		if sys.platform == 'win32':
 			kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
-			kw['LIBS'].append('boost_thread-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
-			kw['LIBS'].append('ws2_32')
-			kw['LIBS'].append('gdi32')
-			kw['LIBS'].append('iphlpapi')
 		else:
-			if sys.platform == 'linux2':
-				kw['LIBS'].append('rt')
 			kw['LIBS'].append('boost_system')
-			kw['LIBS'].append('boost_thread')
-			kw['LIBS'].append('pthread')
 
 	@staticmethod
 	def _create_variables(variable_file):
