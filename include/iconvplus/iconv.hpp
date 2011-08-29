@@ -126,6 +126,16 @@ namespace iconvplus
 			 */
 			size_t convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const;
 
+			/**
+			 * \brief Proceed to a conversion.
+			 * \param inbuf The input buffer.
+			 * \param inbytesleft The count of bytes left to be converted.
+			 * \param outbuf The output buffer.
+			 * \param outbytesleft The count of bytes left to output.
+			 * \return The number of characters converted in a non-reversible way during the call. In case of error, a boost::system::error_code is thrown.
+			 */
+			size_t convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const;
+
 		private:
 
 			void check_iconv() const;

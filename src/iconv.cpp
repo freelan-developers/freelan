@@ -59,4 +59,19 @@ namespace iconvplus
 
 		return result;
 	}
+	
+	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
+	{
+		boost::system::error_code ec;
+
+		size_t result = convert(inbuf, inbytesleft, outbuf, outbytesleft, ec);
+
+		if (result == ERROR_VALUE)
+		{
+			throw ec;
+		}
+
+		return result;
+	}
+
 }
