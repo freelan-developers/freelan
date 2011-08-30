@@ -44,11 +44,13 @@
 
 #include "converter.hpp"
 
+#include "iconv.hpp"
+
 #include <boost/system/system_error.hpp>
 
 namespace iconvplus
 {
-	bool converter::convert(iconv& ic, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	bool converter::convert(const iconv& ic, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
 		size_t counter = 0;
 
@@ -90,7 +92,7 @@ namespace iconvplus
 		return true;
 	}
 	
-	void converter::convert(iconv& ic, size_t* non_reversible_conversions) const
+	void converter::convert(const iconv& ic, size_t* non_reversible_conversions) const
 	{
 		boost::system::error_code ec;
 

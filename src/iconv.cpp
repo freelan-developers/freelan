@@ -44,11 +44,13 @@
 
 #include "iconv.hpp"
 
+#include "converter.hpp"
 #include "iconv_error_category.hpp"
 
 #include <boost/system/system_error.hpp>
 
 #include <cassert>
+#include <sstream>
 
 namespace iconvplus
 {
@@ -78,7 +80,7 @@ namespace iconvplus
 		return result;
 	}
 
-	size_t iconv::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions)
+	size_t iconv::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions) const
 	{
 		assert(in);
 		assert(out);
@@ -94,4 +96,20 @@ namespace iconvplus
 
 		return (outbuf - static_cast<char*>(out));
 	}
+
+	bool iconv::convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions, size_t chunk_size) const
+	{
+		std::ostringstream oss;
+		std::istringstream iss(istr);
+
+		if (converter(iss, oss, chunk_size).convert(*this, ec, non_reversible_conversions))
+		{
+			ostr = oss.str();
+
+			return true;
+		}
+
+		return false;
+	}
+
 }
