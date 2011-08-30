@@ -167,6 +167,15 @@ namespace iconvplus
 			 */
 			bool convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL, size_t chunk_size = DEFAULT_CHUNK_SIZE) const;
 
+			/**
+			 * \brief Convert a string.
+			 * \param istr The string to convert.
+			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
+			 * \param chunk_size The size of the internal buffers to use, for the conversion. A good value is something near the expected result size.
+			 * \return The converted string. In case of error, a boost::system::system_error is thrown.
+			 */
+			std::string convert_string(const std::string& istr, size_t* non_reversible_conversions = NULL, size_t chunk_size = DEFAULT_CHUNK_SIZE) const;
+
 		private:
 
 			void check_iconv() const;

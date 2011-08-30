@@ -112,4 +112,16 @@ namespace iconvplus
 		return false;
 	}
 
+	std::string iconv::convert_string(const std::string& istr, size_t* non_reversible_conversions, size_t chunk_size) const
+	{
+		boost::system::error_code ec;
+		std::string result;
+
+		if (!convert_string(result, istr, ec, non_reversible_conversions, chunk_size))
+		{
+			throw boost::system::system_error(ec);
+		}
+
+		return result;
+	}
 }
