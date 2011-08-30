@@ -15,10 +15,17 @@ int main()
 {
 	try
 	{
+		iconvplus::iconv windows_ic("cp1252", "latin1");
+		iconvplus::iconv unix_ic("utf-8", "latin1");
+
 		std::ifstream is("material/latin1.txt");
 		iconvplus::converter cv(is, std::cout);
-		iconvplus::iconv ic("cp1252", "latin1");
-		cv.convert(ic);
+
+		cv.convert(unix_ic);
+
+ 		is.clear();
+		is.seekg(0);
+		cv.convert(windows_ic);
 	}
 	catch (std::exception& ex)
 	{
