@@ -99,10 +99,10 @@ namespace iconvplus
 
 	bool iconv::convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions, size_t chunk_size) const
 	{
-		std::ostringstream oss;
 		std::istringstream iss(istr);
+		std::ostringstream oss;
 
-		if (converter(iss, oss, chunk_size).convert(*this, ec, non_reversible_conversions))
+		if (converter(chunk_size).convert(*this, iss, oss, ec, non_reversible_conversions))
 		{
 			ostr = oss.str();
 

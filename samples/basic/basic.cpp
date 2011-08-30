@@ -19,13 +19,14 @@ int main()
 		iconvplus::iconv unix_ic("utf-8", "latin1");
 
 		std::ifstream is("material/latin1.txt");
-		iconvplus::converter cv(is, std::cout);
 
-		cv.convert(unix_ic);
+		iconvplus::converter cv;
+		
+		cv.convert(unix_ic, is, std::cout);
 
  		is.clear();
 		is.seekg(0);
-		cv.convert(windows_ic);
+		cv.convert(windows_ic, is, std::cout);
 	}
 	catch (std::exception& ex)
 	{

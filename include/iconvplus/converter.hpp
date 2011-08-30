@@ -68,22 +68,22 @@ namespace iconvplus
 
 			/**
 			 * \brief Create a new converter.
-			 * \param is The input stream to use.
-			 * \param os The output stream to use.
 			 * \param chunk_size The chunk size.
 			 *
 			 * The streams must remain valid during the lifetime of the converter instance.
 			 */
-			converter(std::istream& is, std::ostream& os, size_t chunk_size = DEFAULT_CHUNK_SIZE);
+			converter(size_t chunk_size = DEFAULT_CHUNK_SIZE);
 
 			/**
 			 * \brief Proceed to the conversion, using the specified iconv instance.
 			 * \param ic The iconv instance to use.
+			 * \param is The input stream.
+			 * \param os The output stream.
 			 * \param ec The error code, if an error occurs.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, ec is updated to indicate the error.
 			 */
-			bool convert(const iconv& ic, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
+			bool convert(const iconv& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
 
 			/**
 			 * \brief Proceed to the conversion, using the specified iconv instance.
@@ -91,19 +91,15 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, a boost::system::system_error is thrown.
 			 */
-			void convert(const iconv& ic, size_t* non_reversible_conversions = NULL) const;
+			void convert(const iconv& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions = NULL) const;
 
 		private:
 
-			std::istream& m_is;
-			std::ostream& m_os;
 			mutable std::vector<char> m_ibuf;
 			mutable std::vector<char> m_obuf;
 	};
 	
-	inline converter::converter(std::istream& is, std::ostream& os, size_t chunk_size) :
-		m_is(is),
-		m_os(os),
+	inline converter::converter(size_t chunk_size) :
 		m_ibuf(chunk_size),
 		m_obuf(chunk_size)
 	{

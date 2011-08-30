@@ -50,7 +50,7 @@
 
 namespace iconvplus
 {
-	bool converter::convert(const iconv& ic, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	bool converter::convert(const iconv& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
 		size_t counter = 0;
 
@@ -60,13 +60,13 @@ namespace iconvplus
 
 		size_t result;
 
-		while (m_is)
+		while (is)
 		{
-			m_is.read(&m_ibuf[0], m_ibuf.size());
+			is.read(&m_ibuf[0], m_ibuf.size());
 
-			if (m_is.good() || m_is.eof())
+			if (is.good() || is.eof())
 			{
-				size_t itmp_len = m_is.gcount();
+				size_t itmp_len = is.gcount();
 				const char* inbuf = &m_ibuf[0];
 
 				do
@@ -83,7 +83,7 @@ namespace iconvplus
 
 					non_reversible_conversions += result;
 
-					m_os.write(&m_obuf[0], m_obuf.size() - otmp_len);
+					os.write(&m_obuf[0], m_obuf.size() - otmp_len);
 				}
 				while ((result == iconv::ERROR_VALUE) && (ec.value() == E2BIG));
 			}
@@ -92,11 +92,11 @@ namespace iconvplus
 		return true;
 	}
 	
-	void converter::convert(const iconv& ic, size_t* non_reversible_conversions) const
+	void converter::convert(const iconv& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions) const
 	{
 		boost::system::error_code ec;
 
-		if (!convert(ic, ec, non_reversible_conversions))
+		if (!convert(ic, is, os, ec, non_reversible_conversions))
 		{
 			throw boost::system::system_error(ec);
 		}
