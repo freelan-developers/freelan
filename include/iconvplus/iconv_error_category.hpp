@@ -68,6 +68,11 @@ namespace iconvplus
 			 */
 			std::string message(int ev) const;
 	};
+
+	/**
+		* \brief The iconv error category.
+		*/
+	const iconv_error_category& iconv_category();
 }
 
 #endif /* ICONVPLUS_ICONV_ERROR_CATEGORY_HPP */

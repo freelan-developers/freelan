@@ -58,7 +58,7 @@ namespace iconvplus
 
 		if (result == ERROR_VALUE)
 		{
-			ec = boost::system::error_code(errno, iconv_error_category());
+			ec = boost::system::error_code(errno, iconv_category());
 		}
 
 		return result;
