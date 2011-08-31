@@ -15,18 +15,27 @@ int main()
 {
 	try
 	{
-		iconvplus::iconv_instance windows_ic("cp1252", "latin1");
-		iconvplus::iconv_instance unix_ic("utf-8", "latin1");
+		iconvplus::iconv_instance latin1_to_cp1252("cp1252", "latin1");
+		iconvplus::iconv_instance latin1_to_utf8("utf-8", "latin1");
+		iconvplus::iconv_instance utf8_to_cp1252("cp1252", "utf-8");
+		iconvplus::iconv_instance utf8_to_latin1("latin1", "utf-8");
 
-		std::ifstream is("material/latin1.txt");
+		std::ifstream latin1("material/latin1.txt");
+		std::ifstream utf8("material/utf8.txt");
 
 		iconvplus::converter cv;
 		
-		cv.convert(unix_ic, is, std::cout);
+		cv.convert(latin1_to_utf8, latin1, std::cout);
 
- 		is.clear();
-		is.seekg(0);
-		cv.convert(windows_ic, is, std::cout);
+ 		latin1.clear();
+		latin1.seekg(0);
+		cv.convert(latin1_to_cp1252, latin1, std::cout);
+
+		cv.convert(utf8_to_latin1, utf8, std::cout);
+
+ 		utf8.clear();
+		utf8.seekg(0);
+		cv.convert(utf8_to_cp1252, utf8, std::cout);
 	}
 	catch (std::exception& ex)
 	{
