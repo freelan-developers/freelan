@@ -90,6 +90,8 @@ namespace iconvplus
 		const char* inbuf = static_cast<const char*>(in);
 		char* outbuf = static_cast<char*>(out);
 
+		write_initial_state(&outbuf, &out_len);
+
 		size_t result = convert(&inbuf, &in_len, &outbuf, &out_len);
 
 		if (non_reversible_conversions) *non_reversible_conversions = result;

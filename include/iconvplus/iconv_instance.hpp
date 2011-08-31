@@ -121,6 +121,24 @@ namespace iconvplus
 			void reset() const;
 
 			/**
+			 * \brief Write the initial state to a destination buffer.
+			 * \param outbuf The output buffer.
+			 * \param outbytesleft The count of bytes left to output.
+			 * \param ec The error code, if an error occurs.
+			 * \return true on success. In case of error, false is returned and ec is updated to indicate the error.
+			 */
+			bool write_initial_state(char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const;
+
+			/**
+			 * \brief Write the initial state to a destination buffer.
+			 * \param outbuf The output buffer.
+			 * \param outbytesleft The count of bytes left to output.
+			 *
+			 * On error, a boost::system::system_error is thrown.
+			 */
+			void write_initial_state(char** outbuf, size_t* outbytesleft) const;
+
+			/**
 			 * \brief Proceed to a conversion.
 			 * \param inbuf The input buffer.
 			 * \param inbytesleft The count of bytes left to be converted.
@@ -152,7 +170,7 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return The count of bytes written to out. In case of error, a boost::system::system_error is thrown.
 			 *
-			 * A reset() is performed inside the call, before the conversion takes place.
+			 * A reset() and a write_initial_state() are performed inside the call, before the conversion takes place.
 			 */
 			size_t convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions = NULL) const;
 
@@ -164,6 +182,8 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \param chunk_size The size of the internal buffers to use, for the conversion. A good value is something near the expected result size.
 			 * \return true on success. In case of error, false is returned and ec is updated to indicate the error.
+			 *
+			 * A reset() and a write_initial_state() are performed inside the call, before the conversion takes place.
 			 */
 			bool convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL, size_t chunk_size = DEFAULT_CHUNK_SIZE) const;
 
@@ -173,6 +193,8 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \param chunk_size The size of the internal buffers to use, for the conversion. A good value is something near the expected result size.
 			 * \return The converted string. In case of error, a boost::system::system_error is thrown.
+			 *
+			 * A reset() and a write_initial_state() are performed inside the call, before the conversion takes place.
 			 */
 			std::string convert_string(const std::string& istr, size_t* non_reversible_conversions = NULL, size_t chunk_size = DEFAULT_CHUNK_SIZE) const;
 
@@ -215,6 +237,16 @@ namespace iconvplus
 		::iconv(m_iconv, NULL, NULL, NULL, NULL);
 	}
 	
+	inline bool iconv_instance::write_initial_state(char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
+	{
+		return (convert(NULL, NULL, outbuf, outbytesleft, ec) != ERROR_VALUE);
+	}
+
+	inline void iconv_instance::write_initial_state(char** outbuf, size_t* outbytesleft) const
+	{
+		convert(NULL, NULL, outbuf, outbytesleft);
+	}
+
 	inline void iconv_instance::check_iconv() const
 	{
 		if (m_iconv == reinterpret_cast<native_type>(-1))

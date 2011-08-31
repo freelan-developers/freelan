@@ -56,6 +56,17 @@ namespace iconvplus
 
 		ic.reset();
 
+		size_t otmp_len = m_obuf.size();
+		char* outbuf = &m_obuf[0];
+
+		if (!ic.write_initial_state(&outbuf, &otmp_len, ec))
+		{
+			return false;
+		} else
+		{
+			os.write(&m_obuf[0], m_obuf.size() - otmp_len);
+		}
+
 		size_t result;
 
 		while (is)
@@ -69,8 +80,8 @@ namespace iconvplus
 
 				do
 				{
-					size_t otmp_len = m_obuf.size();
-					char* outbuf = &m_obuf[0];
+					otmp_len = m_obuf.size();
+					outbuf = &m_obuf[0];
 
 					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
 
