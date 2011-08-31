@@ -45,7 +45,7 @@
 #ifndef ICONVPLUS_ICONVPLUS_HPP
 #define ICONVPLUS_ICONVPLUS_HPP
 
-#include "iconv.hpp"
+#include "iconv_instance.hpp"
 #include "iconv_error_category.hpp"
 #include "converter.hpp"
 

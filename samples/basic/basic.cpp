@@ -15,8 +15,8 @@ int main()
 {
 	try
 	{
-		iconvplus::iconv windows_ic("cp1252", "latin1");
-		iconvplus::iconv unix_ic("utf-8", "latin1");
+		iconvplus::iconv_instance windows_ic("cp1252", "latin1");
+		iconvplus::iconv_instance unix_ic("utf-8", "latin1");
 
 		std::ifstream is("material/latin1.txt");
 

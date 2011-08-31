@@ -45,7 +45,7 @@
 #ifndef ICONVPLUS_CONVERTER_HPP
 #define ICONVPLUS_CONVERTER_HPP
 
-#include "iconv.hpp"
+#include "iconv_instance.hpp"
 
 #include <boost/system/error_code.hpp>
 
@@ -83,7 +83,7 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, ec is updated to indicate the error.
 			 */
-			bool convert(const iconv& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
+			bool convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
 
 			/**
 			 * \brief Proceed to the conversion, using the specified iconv instance.
@@ -91,7 +91,7 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, a boost::system::system_error is thrown.
 			 */
-			void convert(const iconv& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions = NULL) const;
+			void convert(const iconv_instance& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions = NULL) const;
 
 		private:
 

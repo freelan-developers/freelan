@@ -44,13 +44,11 @@
 
 #include "converter.hpp"
 
-#include "iconv.hpp"
-
 #include <boost/system/system_error.hpp>
 
 namespace iconvplus
 {
-	bool converter::convert(const iconv& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
 		size_t counter = 0;
 
@@ -76,7 +74,7 @@ namespace iconvplus
 
 					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
 
-					if ((result == iconv::ERROR_VALUE) && (ec.value() != E2BIG))
+					if ((result == iconv_instance::ERROR_VALUE) && (ec.value() != E2BIG))
 					{
 						return false;
 					}
@@ -85,14 +83,14 @@ namespace iconvplus
 
 					os.write(&m_obuf[0], m_obuf.size() - otmp_len);
 				}
-				while ((result == iconv::ERROR_VALUE) && (ec.value() == E2BIG));
+				while ((result == iconv_instance::ERROR_VALUE) && (ec.value() == E2BIG));
 			}
 		}
 
 		return true;
 	}
 	
-	void converter::convert(const iconv& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions) const
+	void converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions) const
 	{
 		boost::system::error_code ec;
 

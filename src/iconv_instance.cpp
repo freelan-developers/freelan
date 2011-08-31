@@ -37,12 +37,12 @@
  */
 
 /**
- * \file iconv.cpp
+ * \file iconv_instance.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief The iconv class.
  */
 
-#include "iconv.hpp"
+#include "iconv_instance.hpp"
 
 #include "converter.hpp"
 #include "iconv_error_category.hpp"
@@ -54,7 +54,7 @@
 
 namespace iconvplus
 {
-	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
+	size_t iconv_instance::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
 	{
 		size_t result = raw_convert(inbuf, inbytesleft, outbuf, outbytesleft);
 
@@ -66,7 +66,7 @@ namespace iconvplus
 		return result;
 	}
 	
-	size_t iconv::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
+	size_t iconv_instance::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
 	{
 		boost::system::error_code ec;
 
@@ -80,7 +80,7 @@ namespace iconvplus
 		return result;
 	}
 
-	size_t iconv::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions) const
+	size_t iconv_instance::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions) const
 	{
 		assert(in);
 		assert(out);
@@ -97,7 +97,7 @@ namespace iconvplus
 		return (outbuf - static_cast<char*>(out));
 	}
 
-	bool iconv::convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions, size_t chunk_size) const
+	bool iconv_instance::convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions, size_t chunk_size) const
 	{
 		std::istringstream iss(istr);
 		std::ostringstream oss;
@@ -112,7 +112,7 @@ namespace iconvplus
 		return false;
 	}
 
-	std::string iconv::convert_string(const std::string& istr, size_t* non_reversible_conversions, size_t chunk_size) const
+	std::string iconv_instance::convert_string(const std::string& istr, size_t* non_reversible_conversions, size_t chunk_size) const
 	{
 		boost::system::error_code ec;
 		std::string result;

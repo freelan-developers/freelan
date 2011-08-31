@@ -37,13 +37,13 @@
  */
 
 /**
- * \file iconv.hpp
+ * \file iconv_instance.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief The iconv class.
  */
 
-#ifndef ICONVPLUS_ICONV_HPP
-#define ICONVPLUS_ICONV_HPP
+#ifndef ICONVPLUS_ICONV_INSTANCE_HPP
+#define ICONVPLUS_ICONV_INSTANCE_HPP
 
 #include <iconv.h>
 
@@ -55,9 +55,9 @@
 namespace iconvplus
 {
 	/**
-	 * \brief A class that wraps a iconv_t structure.
+	 * \brief A class that wraps a iconv_t.
 	 */
-	class iconv : public boost::noncopyable
+	class iconv_instance : public boost::noncopyable
 	{
 		public:
 
@@ -81,19 +81,19 @@ namespace iconvplus
 			 * \param to The destination encoding.
 			 * \param from The source encoding.
 			 */
-			iconv(const char* to, const char* from);
+			iconv_instance(const char* to, const char* from);
 
 			/**
 			 * \brief Create a new iconv instance.
 			 * \param to The destination encoding.
 			 * \param from The source encoding.
 			 */
-			iconv(const std::string& to, const std::string& from);
+			iconv_instance(const std::string& to, const std::string& from);
 
 			/**
 			 * \brief Destroy the iconv instance.
 			 */
-			~iconv();
+			~iconv_instance();
 
 			/**
 			 * \brief Get the native pointer.
@@ -183,39 +183,39 @@ namespace iconvplus
 			native_type m_iconv;
 	};
 	
-	inline iconv::iconv(const char* to, const char* from) :
+	inline iconv_instance::iconv_instance(const char* to, const char* from) :
 		m_iconv(::iconv_open(to, from))
 	{
 		check_iconv();
 	}
 
-	inline iconv::iconv(const std::string& to, const std::string& from) :
+	inline iconv_instance::iconv_instance(const std::string& to, const std::string& from) :
 		m_iconv(::iconv_open(to.c_str(), from.c_str()))
 	{
 		check_iconv();
 	}
 	
-	inline iconv::~iconv()
+	inline iconv_instance::~iconv_instance()
 	{
 		::iconv_close(m_iconv);
 	}
 	
-	inline iconv::native_type iconv::raw() const
+	inline iconv_instance::native_type iconv_instance::raw() const
 	{
 		return m_iconv;
 	}
 
-	inline size_t iconv::raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
+	inline size_t iconv_instance::raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
 	{
 		return ::iconv(m_iconv, const_cast<char**>(inbuf), inbytesleft, outbuf, outbytesleft);
 	}
 	
-	inline void iconv::reset() const
+	inline void iconv_instance::reset() const
 	{
 		::iconv(m_iconv, NULL, NULL, NULL, NULL);
 	}
 	
-	inline void iconv::check_iconv() const
+	inline void iconv_instance::check_iconv() const
 	{
 		if (m_iconv == reinterpret_cast<native_type>(-1))
 		{
@@ -224,4 +224,4 @@ namespace iconvplus
 	}
 }
 
-#endif /* ICONVPLUS_ICONV_HPP */
+#endif /* ICONVPLUS_ICONV_INSTANCE_HPP */
