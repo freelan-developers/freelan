@@ -46,6 +46,8 @@
 
 #include <boost/system/system_error.hpp>
 
+#include <cstring>
+
 namespace iconvplus
 {
 	bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
@@ -56,6 +58,8 @@ namespace iconvplus
 
 		ic.reset();
 
+		size_t itmp_len = 0;
+		const char* inbuf = NULL;
 		size_t otmp_len = m_obuf.size();
 		char* outbuf = &m_obuf[0];
 
@@ -71,12 +75,12 @@ namespace iconvplus
 
 		while (is)
 		{
-			is.read(&m_ibuf[0], m_ibuf.size());
+			is.read(&m_ibuf[itmp_len], m_ibuf.size() - itmp_len);
 
 			if (is.good() || is.eof())
 			{
-				size_t itmp_len = is.gcount();
-				const char* inbuf = &m_ibuf[0];
+				itmp_len += is.gcount();
+				inbuf = &m_ibuf[0];
 
 				do
 				{
@@ -85,9 +89,20 @@ namespace iconvplus
 
 					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
 
-					if ((result == iconv_instance::ERROR_VALUE) && (ec.value() != E2BIG))
+					if (result == iconv_instance::ERROR_VALUE)
 					{
-						return false;
+						if (ec.value() == E2BIG)
+						{
+							// Nothing special to do. Let's just loop.
+						}
+						else if (ec.value() == EINVAL)
+						{
+							// An incomplete multi-byte sequence was cut. Lets copy the bytes to the beginning of the next input buffer and try again.
+							std::memmove(&m_ibuf[0], inbuf, itmp_len);
+						} else
+						{
+							return false;
+						}
 					}
 
 					non_reversible_conversions += result;
