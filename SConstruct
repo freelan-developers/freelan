@@ -15,7 +15,7 @@ source = Glob('src/*.cpp')
 include = dict()
 for submodule in submodules: include[submodule] = Glob(os.path.join(include_path, submodule, '*.hpp'))
 cpppath = [include_path]
-libs = ['iconv']
+libs = []
 
 # Import the customized environment
 sys.path.append(os.path.abspath('scons'))

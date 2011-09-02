@@ -146,10 +146,9 @@ class Environment(SConsEnvironment):
 		return astyle
 
 	def __add_libs(self, kw):
-		kw['LIBS'].append('iconv')
-
 		if sys.platform == 'win32':
 			kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
+			kw['LIBS'].append('iconv')
 		else:
 			kw['LIBS'].append('boost_system')
 
