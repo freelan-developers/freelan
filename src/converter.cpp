@@ -89,6 +89,8 @@ namespace iconvplus
 
 					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
 
+					os.write(&m_obuf[0], m_obuf.size() - otmp_len);
+
 					if (result == iconv_instance::ERROR_VALUE)
 					{
 						if (ec.value() == E2BIG)
@@ -110,8 +112,6 @@ namespace iconvplus
 					}
 
 					non_reversible_conversions += result;
-
-					os.write(&m_obuf[0], m_obuf.size() - otmp_len);
 				}
 				while ((result == iconv_instance::ERROR_VALUE) && (ec.value() == E2BIG));
 			}
