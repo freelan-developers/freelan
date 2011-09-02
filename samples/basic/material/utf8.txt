@@ -1,3 +1,5 @@
 This file is encoded in UTF-8
 
 Ça c'est de l'UTF-8 !
+
+Some japonese characters: 開开開
