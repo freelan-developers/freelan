@@ -93,7 +93,11 @@ namespace iconvplus
 					{
 						if (ec.value() == E2BIG)
 						{
-							// Nothing special to do. Let's just loop.
+							// We check if the destination buffer will always be too small.
+							if (otmp_len >= m_obuf.size())
+							{
+								return false;
+							}
 						}
 						else if (ec.value() == EINVAL)
 						{
