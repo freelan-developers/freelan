@@ -50,7 +50,8 @@
 
 namespace iconvplus
 {
-	bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	template <class InputStreamType, class OutputStreamType>
+	bool converter::do_convert(const iconv_instance& ic, InputStreamType& is, OutputStreamType& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
 		size_t counter = 0;
 
@@ -60,8 +61,8 @@ namespace iconvplus
 
 		size_t itmp_len = 0;
 		const char* inbuf = NULL;
-		size_t otmp_len = m_obuf.size();
-		char* outbuf = &m_obuf[0];
+		size_t otmp_len = get_output_buffer_size();
+		char* outbuf = get_output_buffer();
 
 		if (!ic.write_initial_state(&outbuf, &otmp_len, ec))
 		{
@@ -69,35 +70,35 @@ namespace iconvplus
 		}
 		else
 		{
-			os.write(&m_obuf[0], m_obuf.size() - otmp_len);
+			os.write(get_output_buffer(), get_output_buffer_size() - otmp_len);
 		}
 
 		size_t result;
 
 		while (is)
 		{
-			is.read(&m_ibuf[itmp_len], m_ibuf.size() - itmp_len);
+			is.read(get_input_buffer() + itmp_len, get_input_buffer_size() - itmp_len);
 
 			if (is.good() || is.eof())
 			{
 				itmp_len += is.gcount();
-				inbuf = &m_ibuf[0];
+				inbuf = get_input_buffer();
 
 				do
 				{
-					otmp_len = m_obuf.size();
-					outbuf = &m_obuf[0];
+					otmp_len = get_output_buffer_size();
+					outbuf = get_output_buffer();
 
 					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
 
-					os.write(&m_obuf[0], m_obuf.size() - otmp_len);
+					os.write(get_output_buffer(), get_output_buffer_size() - otmp_len);
 
 					if (result == iconv_instance::ERROR_VALUE)
 					{
 						if (ec.value() == E2BIG)
 						{
 							// We check if the destination buffer will always be too small.
-							if (otmp_len >= m_obuf.size())
+							if (otmp_len >= get_output_buffer_size())
 							{
 								return false;
 							}
@@ -105,7 +106,7 @@ namespace iconvplus
 						else if (ec.value() == EINVAL)
 						{
 							// An incomplete multi-byte sequence was cut. Lets copy the bytes to the beginning of the next input buffer and try again.
-							std::memmove(&m_ibuf[0], inbuf, itmp_len);
+							std::memmove(get_input_buffer(), inbuf, itmp_len);
 						}
 						else
 						{

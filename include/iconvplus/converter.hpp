@@ -95,14 +95,45 @@ namespace iconvplus
 
 		private:
 
-			mutable std::vector<char> m_ibuf;
-			mutable std::vector<char> m_obuf;
+			char* get_input_buffer() const;
+			size_t get_input_buffer_size() const;
+			char* get_output_buffer() const;
+			size_t get_output_buffer_size() const;
+
+			template <class InputStreamType, class OutputStreamType>
+			bool do_convert(const iconv_instance&, InputStreamType&, OutputStreamType&, boost::system::error_code&, size_t*) const;
+
+			mutable std::vector<char> m_buffer;
 	};
 
 	inline converter::converter(size_t chunk_size) :
-		m_ibuf(chunk_size),
-		m_obuf(chunk_size)
+		m_buffer(chunk_size * 2)
 	{
+	}
+	
+	inline bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	{
+		return do_convert(ic, is, os, ec, non_reversible_conversions);
+	}
+
+	inline char* converter::get_input_buffer() const
+	{
+		return &m_buffer[0];
+	}
+
+	inline size_t converter::get_input_buffer_size() const
+	{
+		return m_buffer.size() / 2;
+	}
+
+	inline char* converter::get_output_buffer() const
+	{
+		return &m_buffer[get_input_buffer_size()];
+	}
+
+	inline size_t converter::get_output_buffer_size() const
+	{
+		return get_input_buffer_size();
 	}
 }
 
