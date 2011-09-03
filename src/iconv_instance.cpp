@@ -65,7 +65,7 @@ namespace iconvplus
 
 		return result;
 	}
-	
+
 	size_t iconv_instance::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
 	{
 		boost::system::error_code ec;

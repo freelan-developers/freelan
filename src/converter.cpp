@@ -66,7 +66,8 @@ namespace iconvplus
 		if (!ic.write_initial_state(&outbuf, &otmp_len, ec))
 		{
 			return false;
-		} else
+		}
+		else
 		{
 			os.write(&m_obuf[0], m_obuf.size() - otmp_len);
 		}
@@ -105,7 +106,8 @@ namespace iconvplus
 						{
 							// An incomplete multi-byte sequence was cut. Lets copy the bytes to the beginning of the next input buffer and try again.
 							std::memmove(&m_ibuf[0], inbuf, itmp_len);
-						} else
+						}
+						else
 						{
 							return false;
 						}
@@ -119,7 +121,7 @@ namespace iconvplus
 
 		return true;
 	}
-	
+
 	void converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions) const
 	{
 		boost::system::error_code ec;

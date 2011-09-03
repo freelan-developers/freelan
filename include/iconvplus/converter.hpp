@@ -98,7 +98,7 @@ namespace iconvplus
 			mutable std::vector<char> m_ibuf;
 			mutable std::vector<char> m_obuf;
 	};
-	
+
 	inline converter::converter(size_t chunk_size) :
 		m_ibuf(chunk_size),
 		m_obuf(chunk_size)

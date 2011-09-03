@@ -204,7 +204,7 @@ namespace iconvplus
 
 			native_type m_iconv;
 	};
-	
+
 	inline iconv_instance::iconv_instance(const char* to, const char* from) :
 		m_iconv(::iconv_open(to, from))
 	{
@@ -216,12 +216,12 @@ namespace iconvplus
 	{
 		check_iconv();
 	}
-	
+
 	inline iconv_instance::~iconv_instance()
 	{
 		::iconv_close(m_iconv);
 	}
-	
+
 	inline iconv_instance::native_type iconv_instance::raw() const
 	{
 		return m_iconv;
@@ -231,12 +231,12 @@ namespace iconvplus
 	{
 		return ::iconv(m_iconv, const_cast<char**>(inbuf), inbytesleft, outbuf, outbytesleft);
 	}
-	
+
 	inline void iconv_instance::reset() const
 	{
 		::iconv(m_iconv, NULL, NULL, NULL, NULL);
 	}
-	
+
 	inline bool iconv_instance::write_initial_state(char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
 	{
 		return (convert(NULL, NULL, outbuf, outbytesleft, ec) != ERROR_VALUE);

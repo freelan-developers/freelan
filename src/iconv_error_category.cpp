@@ -65,7 +65,7 @@ namespace iconvplus
 				return "Unknown error " + boost::lexical_cast<std::string>(ev) + ": " + strerror(ev);
 		}
 	}
-	
+
 	const iconv_error_category iconv_error_category_instance;
 
 	const iconv_error_category& iconv_category()

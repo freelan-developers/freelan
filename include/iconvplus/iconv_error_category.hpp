@@ -60,7 +60,10 @@ namespace iconvplus
 			 * \brief Get the name of the category.
 			 * \return The name of the category.
 			 */
-			const char* name() const { return "iconv"; }
+			const char* name() const
+			{
+				return "iconv";
+			}
 
 			/**
 			 * \brief Get the error message for the specified event.
