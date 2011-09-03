@@ -95,9 +95,13 @@ namespace iconvplus
 
 		private:
 
-			char* get_input_buffer() const;
+			template <typename CharType>
+			CharType* get_input_buffer() const;
+			template <typename CharType>
 			size_t get_input_buffer_size() const;
-			char* get_output_buffer() const;
+			template <typename CharType>
+			CharType* get_output_buffer() const;
+			template <typename CharType>
 			size_t get_output_buffer_size() const;
 
 			template <class InputStreamType, class OutputStreamType>
@@ -116,24 +120,28 @@ namespace iconvplus
 		return do_convert(ic, is, os, ec, non_reversible_conversions);
 	}
 
-	inline char* converter::get_input_buffer() const
+	template <typename CharType>
+	inline CharType* converter::get_input_buffer() const
 	{
-		return &m_buffer[0];
+		return reinterpret_cast<CharType*>(&m_buffer[0]);
 	}
 
+	template <typename CharType>
 	inline size_t converter::get_input_buffer_size() const
 	{
-		return m_buffer.size() / 2;
+		return (m_buffer.size() / 2) / sizeof(CharType);
 	}
 
-	inline char* converter::get_output_buffer() const
+	template <typename CharType>
+	inline CharType* converter::get_output_buffer() const
 	{
-		return &m_buffer[get_input_buffer_size()];
+		return reinterpret_cast<CharType*>(&m_buffer[m_buffer.size() / 2]);
 	}
 
+	template <typename CharType>
 	inline size_t converter::get_output_buffer_size() const
 	{
-		return get_input_buffer_size();
+		return get_input_buffer_size<CharType>();
 	}
 }
 

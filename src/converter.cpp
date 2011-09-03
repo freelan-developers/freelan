@@ -61,8 +61,8 @@ namespace iconvplus
 
 		size_t itmp_len = 0;
 		const char* inbuf = NULL;
-		size_t otmp_len = get_output_buffer_size();
-		char* outbuf = get_output_buffer();
+		size_t otmp_len = get_output_buffer_size<char>();
+		char* outbuf = get_output_buffer<char>();
 
 		if (!ic.write_initial_state(&outbuf, &otmp_len, ec))
 		{
@@ -70,35 +70,35 @@ namespace iconvplus
 		}
 		else
 		{
-			os.write(get_output_buffer(), get_output_buffer_size() - otmp_len);
+			os.write(get_output_buffer<typename OutputStreamType::char_type>(), get_output_buffer_size<typename OutputStreamType::char_type>() - otmp_len / sizeof(typename OutputStreamType::char_type));
 		}
 
 		size_t result;
 
 		while (is)
 		{
-			is.read(get_input_buffer() + itmp_len, get_input_buffer_size() - itmp_len);
+			is.read(get_input_buffer<typename InputStreamType::char_type>() + itmp_len / sizeof(typename InputStreamType::char_type), get_input_buffer_size<typename InputStreamType::char_type>() - itmp_len / sizeof(typename InputStreamType::char_type));
 
 			if (is.good() || is.eof())
 			{
 				itmp_len += is.gcount();
-				inbuf = get_input_buffer();
+				inbuf = get_input_buffer<char>();
 
 				do
 				{
-					otmp_len = get_output_buffer_size();
-					outbuf = get_output_buffer();
+					otmp_len = get_output_buffer_size<char>();
+					outbuf = get_output_buffer<char>();
 
 					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
 
-					os.write(get_output_buffer(), get_output_buffer_size() - otmp_len);
+					os.write(get_output_buffer<typename OutputStreamType::char_type>(), get_output_buffer_size<typename OutputStreamType::char_type>() - otmp_len / sizeof(typename OutputStreamType::char_type));
 
 					if (result == iconv_instance::ERROR_VALUE)
 					{
 						if (ec.value() == E2BIG)
 						{
 							// We check if the destination buffer will always be too small.
-							if (otmp_len >= get_output_buffer_size())
+							if (otmp_len >= get_output_buffer_size<char>())
 							{
 								return false;
 							}
@@ -106,7 +106,7 @@ namespace iconvplus
 						else if (ec.value() == EINVAL)
 						{
 							// An incomplete multi-byte sequence was cut. Lets copy the bytes to the beginning of the next input buffer and try again.
-							std::memmove(get_input_buffer(), inbuf, itmp_len);
+							std::memmove(get_input_buffer<char>(), inbuf, itmp_len);
 						}
 						else
 						{
