@@ -39,7 +39,7 @@
 /**
  * \file iconv_instance.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv class.
+ * \brief The iconv_instance class.
  */
 
 #ifndef ICONVPLUS_ICONV_INSTANCE_HPP

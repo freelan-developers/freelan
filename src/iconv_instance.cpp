@@ -39,7 +39,7 @@
 /**
  * \file iconv_instance.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv class.
+ * \brief The iconv_instance class.
  */
 
 #include "iconv_instance.hpp"

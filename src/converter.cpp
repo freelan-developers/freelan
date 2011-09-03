@@ -37,9 +37,9 @@
  */
 
 /**
- * \file iconv_error_category.cpp
+ * \file converter.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The iconv error category.
+ * \brief The iconv converter class.
  */
 
 #include "converter.hpp"

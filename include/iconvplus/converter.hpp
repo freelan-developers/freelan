@@ -69,8 +69,6 @@ namespace iconvplus
 			/**
 			 * \brief Create a new converter.
 			 * \param chunk_size The chunk size.
-			 *
-			 * The streams must remain valid during the lifetime of the converter instance.
 			 */
 			converter(size_t chunk_size = DEFAULT_CHUNK_SIZE);
 
@@ -88,6 +86,8 @@ namespace iconvplus
 			/**
 			 * \brief Proceed to the conversion, using the specified iconv instance.
 			 * \param ic The iconv instance to use.
+			 * \param is The input stream.
+			 * \param os The output stream.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, a boost::system::system_error is thrown.
 			 */
