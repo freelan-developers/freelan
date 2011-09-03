@@ -25,17 +25,17 @@ int main()
 
 		iconvplus::converter cv;
 		
-		cv.convert(latin1_to_utf8, latin1, std::cout);
+		cv.convert(latin1_to_utf8, latin1, std::wcout);
 
  		latin1.clear();
 		latin1.seekg(0);
-		cv.convert(latin1_to_cp1252, latin1, std::cout);
+		cv.convert(latin1_to_cp1252, latin1, std::wcout);
 
-		cv.convert(utf8_to_latin1, utf8, std::cout);
+		cv.convert(utf8_to_latin1, utf8, std::wcout);
 
  		utf8.clear();
 		utf8.seekg(0);
-		cv.convert(utf8_to_cp1252, utf8, std::cout);
+		cv.convert(utf8_to_cp1252, utf8, std::wcout);
 	}
 	catch (std::exception& ex)
 	{

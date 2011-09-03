@@ -44,8 +44,6 @@
 
 #include "converter.hpp"
 
-#include <boost/system/system_error.hpp>
-
 #include <cstring>
 
 namespace iconvplus
@@ -123,13 +121,13 @@ namespace iconvplus
 		return true;
 	}
 
-	void converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions) const
+	bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
-		boost::system::error_code ec;
+		return do_convert(ic, is, os, ec, non_reversible_conversions);
+	}
 
-		if (!convert(ic, is, os, ec, non_reversible_conversions))
-		{
-			throw boost::system::system_error(ec);
-		}
+	bool converter::convert(const iconv_instance& ic, std::istream& is, std::wostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	{
+		return do_convert(ic, is, os, ec, non_reversible_conversions);
 	}
 }

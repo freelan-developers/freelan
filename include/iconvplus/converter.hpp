@@ -48,6 +48,7 @@
 #include "iconv_instance.hpp"
 
 #include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <iostream>
 #include <vector>
@@ -88,10 +89,22 @@ namespace iconvplus
 			 * \param ic The iconv instance to use.
 			 * \param is The input stream.
 			 * \param os The output stream.
+			 * \param ec The error code, if an error occurs.
+			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
+			 * \return true on success. On error, ec is updated to indicate the error.
+			 */
+			bool convert(const iconv_instance& ic, std::istream& is, std::wostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
+
+			/**
+			 * \brief Proceed to the conversion, using the specified iconv instance.
+			 * \param ic The iconv instance to use.
+			 * \param is The input stream.
+			 * \param os The output stream.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, a boost::system::system_error is thrown.
 			 */
-			void convert(const iconv_instance& ic, std::istream& is, std::ostream& os, size_t* non_reversible_conversions = NULL) const;
+			template <class InputStreamType, class OutputStreamType>
+			void convert(const iconv_instance& ic, InputStreamType& is, OutputStreamType& os, size_t* non_reversible_conversions = NULL) const;
 
 		private:
 
@@ -115,9 +128,16 @@ namespace iconvplus
 	{
 	}
 	
-	inline bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+
+	template <class InputStreamType, class OutputStreamType>
+	inline void converter::convert(const iconv_instance& ic, InputStreamType& is, OutputStreamType& os, size_t* non_reversible_conversions) const
 	{
-		return do_convert(ic, is, os, ec, non_reversible_conversions);
+		boost::system::error_code ec;
+
+		if (!convert(ic, is, os, ec, non_reversible_conversions))
+		{
+			throw boost::system::system_error(ec);
+		}
 	}
 
 	template <typename CharType>
