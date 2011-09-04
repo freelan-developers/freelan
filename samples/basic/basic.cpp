@@ -17,7 +17,7 @@ int main()
 	try
 	{
 		std::ifstream latin1_file("material/latin1.txt");
-		std::ifstream utf8_file("material/utf8.txt");
+		std::ifstream utf8_file("material/utf-8.txt");
 
 #ifdef WINDOWS
 		iconvplus::iconv_instance latin1_to_cp1252("cp1252", "latin1");
