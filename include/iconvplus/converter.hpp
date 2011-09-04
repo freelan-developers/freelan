@@ -165,7 +165,7 @@ namespace iconvplus
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, ec is updated to indicate the error.
 			 */
-			bool convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
+			bool convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL);
 
 			/**
 			 * \brief Proceed to the conversion.
@@ -175,7 +175,7 @@ namespace iconvplus
 			 *
 			 * On error, a boost::system::system_error is thrown.
 			 */
-			void convert(input_stream_type& is, output_stream_type& os, size_t* non_reversible_conversions = NULL) const;
+			void convert(input_stream_type& is, output_stream_type& os, size_t* non_reversible_conversions = NULL);
 
 		private:
 
@@ -202,7 +202,7 @@ namespace iconvplus
 	}
 
 	template <typename InputCharType, typename OutputCharType>
-	inline void converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, size_t* non_reversible_conversions) const
+	inline void converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, size_t* non_reversible_conversions)
 	{
 		boost::system::error_code ec;
 

@@ -49,7 +49,7 @@
 namespace iconvplus
 {
 	template <typename InputCharType, typename OutputCharType>
-	bool converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	bool converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions)
 	{
 		size_t counter = 0;
 
@@ -120,4 +120,9 @@ namespace iconvplus
 
 		return true;
 	}
+
+	template class converter<char, char>;
+	template class converter<char, wchar_t>;
+	template class converter<wchar_t, char>;
+	template class converter<wchar_t, wchar_t>;
 }
