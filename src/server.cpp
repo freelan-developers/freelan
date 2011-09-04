@@ -229,9 +229,19 @@ namespace fscp
 				catch (std::runtime_error&)
 				{
 				}
-
-				async_receive();
+			} else
+			{
+#ifdef WINDOWS
+				if (error.value() == WSAECONNREFUSED)
+#else
+				if (error.value() == ECONNREFUSED)
+#endif
+				{
+					do_close_session(m_sender_endpoint);
+				}
 			}
+
+			async_receive();
 		}
 	}
 
