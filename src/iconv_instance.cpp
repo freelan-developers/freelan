@@ -98,32 +98,4 @@ namespace iconvplus
 
 		return (outbuf - static_cast<char*>(out));
 	}
-
-	bool iconv_instance::convert_string(std::string& ostr, const std::string& istr, boost::system::error_code& ec, size_t* non_reversible_conversions, size_t chunk_size) const
-	{
-		std::istringstream iss(istr);
-		std::ostringstream oss;
-
-		if (converter(chunk_size).convert(*this, iss, oss, ec, non_reversible_conversions))
-		{
-			ostr = oss.str();
-
-			return true;
-		}
-
-		return false;
-	}
-
-	std::string iconv_instance::convert_string(const std::string& istr, size_t* non_reversible_conversions, size_t chunk_size) const
-	{
-		boost::system::error_code ec;
-		std::string result;
-
-		if (!convert_string(result, istr, ec, non_reversible_conversions, chunk_size))
-		{
-			throw boost::system::system_error(ec);
-		}
-
-		return result;
-	}
 }

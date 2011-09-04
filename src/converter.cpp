@@ -48,55 +48,55 @@
 
 namespace iconvplus
 {
-	template <class InputStreamType, class OutputStreamType>
-	bool converter::do_convert(const iconv_instance& ic, InputStreamType& is, OutputStreamType& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
+	template <typename InputCharType, typename OutputCharType>
+	bool converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
 		size_t counter = 0;
 
 		if (!non_reversible_conversions) non_reversible_conversions = &counter;
 
-		ic.reset();
+		m_iconv_instance->reset();
 
-		size_t itmp_len = 0;
+		size_t itmp_size = 0;
 		const char* inbuf = NULL;
-		size_t otmp_len = get_output_buffer_size<char>();
-		char* outbuf = get_output_buffer<char>();
+		size_t otmp_size = m_output_buffer.size() * sizeof(output_char_type);
+		char* outbuf = reinterpret_cast<char*>(&m_output_buffer[0]);
 
-		if (!ic.write_initial_state(&outbuf, &otmp_len, ec))
+		if (!m_iconv_instance->write_initial_state(&outbuf, &otmp_size, ec))
 		{
 			return false;
 		}
 		else
 		{
-			os.write(get_output_buffer<typename OutputStreamType::char_type>(), get_output_buffer_size<typename OutputStreamType::char_type>() - otmp_len / sizeof(typename OutputStreamType::char_type));
+			os.write(&m_output_buffer[0], m_output_buffer.size() - otmp_size / sizeof(output_char_type));
 		}
 
 		size_t result;
 
 		while (is)
 		{
-			is.read(get_input_buffer<typename InputStreamType::char_type>() + itmp_len / sizeof(typename InputStreamType::char_type), get_input_buffer_size<typename InputStreamType::char_type>() - itmp_len / sizeof(typename InputStreamType::char_type));
+			is.read(&m_input_buffer[itmp_size / sizeof(input_char_type)], m_input_buffer.size() - itmp_size / sizeof(input_char_type));
 
 			if (is.good() || is.eof())
 			{
-				itmp_len += is.gcount();
-				inbuf = get_input_buffer<char>();
+				itmp_size += is.gcount() * sizeof(input_char_type);
+				inbuf = reinterpret_cast<const char*>(&m_input_buffer[0]);
 
 				do
 				{
-					otmp_len = get_output_buffer_size<char>();
-					outbuf = get_output_buffer<char>();
+					otmp_size = m_output_buffer.size() * sizeof(output_char_type);
+					outbuf = reinterpret_cast<char*>(&m_output_buffer[0]);
 
-					result = ic.convert(&inbuf, &itmp_len, &outbuf, &otmp_len, ec);
+					result = m_iconv_instance->convert(&inbuf, &itmp_size, &outbuf, &otmp_size, ec);
 
-					os.write(get_output_buffer<typename OutputStreamType::char_type>(), get_output_buffer_size<typename OutputStreamType::char_type>() - otmp_len / sizeof(typename OutputStreamType::char_type));
+					os.write(&m_output_buffer[0], m_output_buffer.size() - otmp_size / sizeof(output_char_type));
 
 					if (result == iconv_instance::ERROR_VALUE)
 					{
 						if (ec.value() == E2BIG)
 						{
 							// We check if the destination buffer will always be too small.
-							if (otmp_len >= get_output_buffer_size<char>())
+							if (otmp_size >= m_output_buffer.size() * sizeof(output_char_type))
 							{
 								return false;
 							}
@@ -104,7 +104,7 @@ namespace iconvplus
 						else if (ec.value() == EINVAL)
 						{
 							// An incomplete multi-byte sequence was cut. Lets copy the bytes to the beginning of the next input buffer and try again.
-							std::memmove(get_input_buffer<char>(), inbuf, itmp_len);
+							std::memmove(reinterpret_cast<char*>(&m_input_buffer[0]), inbuf, itmp_size);
 						}
 						else
 						{
@@ -119,15 +119,5 @@ namespace iconvplus
 		}
 
 		return true;
-	}
-
-	bool converter::convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
-	{
-		return do_convert(ic, is, os, ec, non_reversible_conversions);
-	}
-
-	bool converter::convert(const iconv_instance& ic, std::istream& is, std::wostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions) const
-	{
-		return do_convert(ic, is, os, ec, non_reversible_conversions);
 	}
 }

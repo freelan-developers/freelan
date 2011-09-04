@@ -49,119 +49,167 @@
 
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/mpl/if.hpp>
 
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 namespace iconvplus
 {
 	/**
+	 * \brief An input stream type.
+	 */
+	template <typename CharType>
+	struct input_stream;
+
+	/**
+	 * \brief A char-specialized input stream type.
+	 */
+	template <>
+	struct input_stream<char>
+	{
+		typedef std::istream type;
+	};
+
+	/**
+	 * \brief A wchar_t-specialized input stream type.
+	 */
+	template <>
+	struct input_stream<wchar_t>
+	{
+		typedef std::wistream type;
+	};
+
+	/**
+	 * \brief An output stream type.
+	 */
+	template <typename CharType>
+	struct output_stream;
+
+	/**
+	 * \brief A char-specialized output stream type.
+	 */
+	template <>
+	struct output_stream<char>
+	{
+		typedef std::ostream type;
+	};
+
+	/**
+	 * \brief A wchar_t-specialized output stream type.
+	 */
+	template <>
+	struct output_stream<wchar_t>
+	{
+		typedef std::wostream type;
+	};
+
+	/**
 	 * \brief A converter class.
 	 */
+	template <typename InputCharType, typename OutputCharType>
 	class converter
 	{
 		public:
 
 			/**
-			 * \brief The default size of chunks.
+			 * \brief The default size of chunks, in bytes.
 			 */
 			static const size_t DEFAULT_CHUNK_SIZE = 8192;
 
 			/**
+			 * \brief The input char type.
+			 */
+			typedef InputCharType input_char_type;
+
+			/**
+			 * \brief The output char type.
+			 */
+			typedef OutputCharType output_char_type;
+
+			/**
+			 * \brief The input stream type.
+			 */
+			typedef typename input_stream<input_char_type>::type input_stream_type;
+
+			/**
+			 * \brief The onput stream type.
+			 */
+			typedef typename output_stream<output_char_type>::type output_stream_type;
+
+			/**
 			 * \brief Create a new converter.
-			 * \param chunk_size The chunk size.
+			 * \param ic The iconv instance to use.
+			 * \param chunk_size The chunk size, in bytes. Must be at least max(sizeof(InputCharType), sizeof(OutputCharType)).
+			 * \see set_iconv_instance
+			 *
+			 * A reference is kept on the specified iconv_instance, so it must remain valid during all the lifetime of the converter instance or until set_iconv_instance() is called.
 			 */
-			converter(size_t chunk_size = DEFAULT_CHUNK_SIZE);
+			converter(const iconv_instance& ic, size_t chunk_size = DEFAULT_CHUNK_SIZE);
 
 			/**
-			 * \brief Proceed to the conversion, using the specified iconv instance.
-			 * \param ic The iconv instance to use.
+			 * \brief Set another iconv_instance to use.
+			 * \param ic The new iconv instance to use.
+			 *
+			 * A reference is kept on the specified iconv_instance, so it must remain valid during all the lifetime of the converter instance or until set_iconv_instance() is called again.
+			 */
+			void set_iconv_instance(const iconv_instance& ic);
+
+			/**
+			 * \brief Proceed to the conversion.
 			 * \param is The input stream.
 			 * \param os The output stream.
 			 * \param ec The error code, if an error occurs.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return true on success. On error, ec is updated to indicate the error.
 			 */
-			bool convert(const iconv_instance& ic, std::istream& is, std::ostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
+			bool convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
 
 			/**
-			 * \brief Proceed to the conversion, using the specified iconv instance.
-			 * \param ic The iconv instance to use.
-			 * \param is The input stream.
-			 * \param os The output stream.
-			 * \param ec The error code, if an error occurs.
-			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
-			 * \return true on success. On error, ec is updated to indicate the error.
-			 */
-			bool convert(const iconv_instance& ic, std::istream& is, std::wostream& os, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
-
-			/**
-			 * \brief Proceed to the conversion, using the specified iconv instance.
-			 * \param ic The iconv instance to use.
+			 * \brief Proceed to the conversion.
 			 * \param is The input stream.
 			 * \param os The output stream.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
-			 * \return true on success. On error, a boost::system::system_error is thrown.
+			 *
+			 * On error, a boost::system::system_error is thrown.
 			 */
-			template <class InputStreamType, class OutputStreamType>
-			void convert(const iconv_instance& ic, InputStreamType& is, OutputStreamType& os, size_t* non_reversible_conversions = NULL) const;
+			void convert(input_stream_type& is, output_stream_type& os, size_t* non_reversible_conversions = NULL) const;
 
 		private:
 
-			template <typename CharType>
-			CharType* get_input_buffer() const;
-			template <typename CharType>
-			size_t get_input_buffer_size() const;
-			template <typename CharType>
-			CharType* get_output_buffer() const;
-			template <typename CharType>
-			size_t get_output_buffer_size() const;
-
-			template <class InputStreamType, class OutputStreamType>
-			bool do_convert(const iconv_instance&, InputStreamType&, OutputStreamType&, boost::system::error_code&, size_t*) const;
-
-			mutable std::vector<char> m_buffer;
+			const iconv_instance* m_iconv_instance;
+			std::vector<input_char_type> m_input_buffer;
+			std::vector<output_char_type> m_output_buffer;
 	};
 
-	inline converter::converter(size_t chunk_size) :
-		m_buffer(chunk_size * 2)
+	template <typename InputCharType, typename OutputCharType>
+	inline converter<InputCharType, OutputCharType>::converter(const iconv_instance& ic, size_t chunk_size) :
+		m_iconv_instance(&ic),
+		m_input_buffer(chunk_size / sizeof(input_char_type)),
+		m_output_buffer(chunk_size / sizeof(output_char_type))
 	{
+		assert(chunk_size > 0);
+		assert(m_input_buffer.size() > 0);
+		assert(m_output_buffer.size() > 0);
 	}
-	
 
-	template <class InputStreamType, class OutputStreamType>
-	inline void converter::convert(const iconv_instance& ic, InputStreamType& is, OutputStreamType& os, size_t* non_reversible_conversions) const
+	template <typename InputCharType, typename OutputCharType>
+	inline void converter<InputCharType, OutputCharType>::set_iconv_instance(const iconv_instance& ic)
+	{
+		m_iconv_instance = &ic;
+	}
+
+	template <typename InputCharType, typename OutputCharType>
+	inline void converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, size_t* non_reversible_conversions) const
 	{
 		boost::system::error_code ec;
 
-		if (!convert(ic, is, os, ec, non_reversible_conversions))
+		if (!convert(is, os, ec, non_reversible_conversions))
 		{
 			throw boost::system::system_error(ec);
 		}
-	}
-
-	template <typename CharType>
-	inline CharType* converter::get_input_buffer() const
-	{
-		return reinterpret_cast<CharType*>(&m_buffer[0]);
-	}
-
-	template <typename CharType>
-	inline size_t converter::get_input_buffer_size() const
-	{
-		return (m_buffer.size() / 2) / sizeof(CharType);
-	}
-
-	template <typename CharType>
-	inline CharType* converter::get_output_buffer() const
-	{
-		return reinterpret_cast<CharType*>(&m_buffer[m_buffer.size() / 2]);
-	}
-
-	template <typename CharType>
-	inline size_t converter::get_output_buffer_size() const
-	{
-		return get_input_buffer_size<CharType>();
 	}
 }
 
