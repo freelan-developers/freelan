@@ -79,12 +79,34 @@ namespace freelan
 			 * \brief The constructor.
 			 */
 			core(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity);
+
+			/**
+			 * \brief Get the associated tap adapter.
+			 * \return The associated tap adapter.
+			 */
+			asiotap::tap_adapter& tap_adapter();
+
+			/**
+			 * \brief Get the associated server.
+			 * \return The associated server.
+			 */
+			fscp::server& server();
 	
 		private:
 	
 			asiotap::tap_adapter m_tap_adapter;
 			fscp::server m_server;
 	};
+	
+	inline asiotap::tap_adapter& core::tap_adapter()
+	{
+		return m_tap_adapter;
+	}
+
+	inline fscp::server& core::server()
+	{
+		return m_server;
+	}
 }
 
 #endif /* FREELAN_CORE_HPP */
