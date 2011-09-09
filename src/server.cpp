@@ -137,20 +137,20 @@ namespace fscp
 		get_io_service().post(bind(&server::do_close_session, this, host));
 	}
 
-	void server::async_send_data(const ep_type& target, const void* buf, size_t buf_len)
+	void server::async_send_data(const ep_type& target, boost::asio::const_buffer data)
 	{
-		m_data_map[target].push(buf, buf_len);
+		m_data_map[target].push(data);
 
 		get_io_service().post(bind(&server::do_send_data, this, target));
 	}
 
-	void server::async_send_data_to_all(const void* buf, size_t buf_len)
+	void server::async_send_data_to_all(boost::asio::const_buffer data)
 	{
 		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
 		{
 			if (session_pair->second.has_remote_session())
 			{
-				async_send_data(session_pair->first, buf, buf_len);
+				async_send_data(session_pair->first, data);
 			}
 		}
 	}
@@ -550,7 +550,7 @@ namespace fscp
 
 				if (m_data_message_callback)
 				{
-					m_data_message_callback(*this, sender, m_data_buffer.data(), cnt);
+					m_data_message_callback(*this, sender, boost::asio::buffer(m_data_buffer.data(), cnt));
 				}
 			}
 		}

@@ -125,10 +125,9 @@ namespace fscp
 			 * \brief Data message callback type.
 			 * \param server The server instance that called the callback function.
 			 * \param sender The endpoint that sent the data message.
-			 * \param buf The sent data.
-			 * \param buf_len The length of the sent data.
+			 * \param data The sent data.
 			 */
-			typedef boost::function<void (server& server, const ep_type& sender, const void* buf, size_t buf_len)> data_message_callback;
+			typedef boost::function<void (server& server, const ep_type& sender, boost::asio::const_buffer data)> data_message_callback;
 
 			/**
 			 * \brief A session established callback.
@@ -297,49 +296,24 @@ namespace fscp
 			/**
 			 * \brief Send data to a host.
 			 * \param target The target host.
-			 * \param buf The data to send.
-			 * \param buf_len The length of buf.
+			 * \param data The data to send.
 			 */
-			void async_send_data(const ep_type& target, const void* buf, size_t buf_len);
-
-			/**
-			 * \brief Send string data to a host.
-			 * \param target The target host.
-			 * \param str The string to send. No null terminating characeter is sent.
-			 */
-			void async_send_data(const ep_type& target, const std::string& str);
+			void async_send_data(const ep_type& target, boost::asio::const_buffer data);
 
 			/**
 			 * \brief Send data to a list of hosts.
 			 * \param begin An iterator to the first target.
 			 * \param end An iterator past the last target.
-			 * \param buf The data to send.
-			 * \param buf_len The length of buf.
+			 * \param data The data to send.
 			 */
 			template <typename T>
-			void async_send_data_to_list(const T& begin, const T& end, const void* buf, size_t buf_len);
+			void async_send_data_to_list(const T& begin, const T& end, boost::asio::const_buffer data);
 
 			/**
 			 * \brief Send data to all the hosts.
-			 * \param begin An iterator to the first target.
-			 * \param end An iterator past the last target.
-			 * \param str The string to send. No null terminating characeter is sent.
+			 * \param data The data to send.
 			 */
-			template <typename T>
-			void async_send_data_to_list(const T& begin, const T& end, const std::string& str);
-
-			/**
-			 * \brief Send data to all the hosts.
-			 * \param buf The data to send.
-			 * \param buf_len The length of buf.
-			 */
-			void async_send_data_to_all(const void* buf, size_t buf_len);
-
-			/**
-			 * \brief Send data to all the hosts.
-			 * \param str The string to send. No null terminating characeter is sent.
-			 */
-			void async_send_data_to_all(const std::string& str);
+			void async_send_data_to_all(boost::asio::const_buffer data);
 
 			/**
 			 * \brief Set the data message callback.
@@ -499,29 +473,13 @@ namespace fscp
 		m_session_lost_callback = callback;
 	}
 
-	inline void server::async_send_data(const ep_type& target, const std::string& str)
-	{
-		async_send_data(target, str.c_str(), str.size());
-	}
-
 	template <typename T>
-	inline void server::async_send_data_to_list(const T& begin, const T& end, const void* buf, size_t buf_len)
+	inline void server::async_send_data_to_list(const T& begin, const T& end, boost::asio::const_buffer data)
 	{
 		for (T it = begin; it != end; ++it)
 		{
-			async_send_data(*it, buf, buf_len);
+			async_send_data(*it, data);
 		}
-	}
-
-	template <typename T>
-	inline void server::async_send_data_to_list(const T& begin, const T& end, const std::string& str)
-	{
-		async_send_data_to_list(begin, end, str.c_str(), str.size());
-	}
-
-	inline void server::async_send_data_to_all(const std::string& str)
-	{
-		async_send_data_to_all(str.c_str(), str.size());
 	}
 
 	inline void server::set_data_message_callback(data_message_callback callback)

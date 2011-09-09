@@ -50,6 +50,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/asio.hpp>
 
 namespace fscp
 {
@@ -77,10 +78,9 @@ namespace fscp
 
 			/**
 			 * \brief Push data to the data store.
-			 * \param buf The data.
-			 * \param buf_len The length of buf.
+			 * \param data The data to push.
 			 */
-			void push(const void* buf, size_t buf_len);
+			void push(boost::asio::const_buffer data);
 
 			/**
 			 * \brief Check if the data store is empty.
@@ -108,9 +108,9 @@ namespace fscp
 			std::queue<pointer_data_type> m_queue;
 	};
 
-	inline void data_store::push(const void* buf, size_t buf_len)
+	inline void data_store::push(boost::asio::const_buffer data)
 	{
-		m_queue.push(boost::make_shared<array_data_type>(static_cast<const data_type*>(buf), static_cast<const data_type*>(buf) + buf_len));
+		m_queue.push(boost::make_shared<array_data_type>(boost::asio::buffer_cast<const data_type*>(data), boost::asio::buffer_cast<const data_type*>(data + boost::asio::buffer_size(data))));
 	}
 
 	inline bool data_store::empty() const
