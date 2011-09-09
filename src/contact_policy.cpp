@@ -38,77 +38,13 @@
  */
 
 /**
- * \file core.hpp
+ * \file contact_policy.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The freelan core class.
+ * \brief The contact policy.
  */
-
-#ifndef FREELAN_CORE_HPP
-#define FREELAN_CORE_HPP
-
-#include <boost/asio.hpp>
-
-#include <asiotap/asiotap.hpp>
-#include <fscp/fscp.hpp>
 
 #include "contact_policy.hpp"
 
 namespace freelan
 {
-	/**
-	 * \brief The core class.
-	 */
-	class core
-	{
-		public:
-	
-			/**
-			 * \brief The endpoint type.
-			 */
-			typedef fscp::server::ep_type ep_type;
-
-			/**
-			 * \brief The certificate type.
-			 */
-			typedef fscp::server::cert_type cert_type;
-
-			/**
-			 * \brief The identity store type.
-			 */
-			typedef fscp::identity_store identity_store;
-
-			/**
-			 * \brief The constructor.
-			 */
-			core(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity);
-
-			/**
-			 * \brief Get the associated tap adapter.
-			 * \return The associated tap adapter.
-			 */
-			asiotap::tap_adapter& tap_adapter();
-
-			/**
-			 * \brief Get the associated server.
-			 * \return The associated server.
-			 */
-			fscp::server& server();
-	
-		private:
-	
-			asiotap::tap_adapter m_tap_adapter;
-			fscp::server m_server;
-	};
-	
-	inline asiotap::tap_adapter& core::tap_adapter()
-	{
-		return m_tap_adapter;
-	}
-
-	inline fscp::server& core::server()
-	{
-		return m_server;
-	}
 }
-
-#endif /* FREELAN_CORE_HPP */
