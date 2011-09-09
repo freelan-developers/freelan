@@ -187,7 +187,7 @@ class Environment(SConsEnvironment):
             variables.AddVariables(PathVariable('fscp_path', 'The path of the libfscp installation', r'C:\fscp', PathVariable.PathIsDir))
             variables.AddVariables(PathVariable('asiotap_path', 'The path of the libasiotap installation', r'C:\asiotap', PathVariable.PathIsDir))
             variables.AddVariables(PathVariable('cryptoplus_path', 'The path of the libcryptoplus installation', r'C:\cryptoplus', PathVariable.PathIsDir))
-            variables.Add('boost_version', 'The boost version (in format x_y)', '1_46_1')
+            variables.Add('boost_version', 'The boost version (in format x_y)', '1_47')
             variables.Add('boost_lib_suffix', 'The suffix for boost libraries', 'mgw45-mt')
             variables.Add('tap_id', 'The TAP adapter identifier', 'tap0901')
         else:
