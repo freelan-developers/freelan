@@ -83,8 +83,10 @@ class Environment(SConsEnvironment):
             
             self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['mingw_path'], 'include')))
             self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['boost_path'], 'include', 'boost-' + self['boost_version'])))
+            self['CXXFLAGS'].append('-isystem' + os.path.abspath(os.path.join(self['openssl_path'], 'include')))
 
             self['LIBPATH'].append(os.path.join(self['boost_path'], 'lib'))
+            self['LIBPATH'].append(os.path.join(self['openssl_path'], 'lib'))
         else:
             if sys.platform.startswith('freebsd'):
                 self['CXXFLAGS'].remove('-pedantic')
@@ -147,6 +149,8 @@ class Environment(SConsEnvironment):
 
     def __add_libs(self, kw):
         if sys.platform == 'win32':
+            kw['LIBS'].append('cryptoplus_static')
+            kw['LIBS'].append('crypto')
             kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
             kw['LIBS'].append('boost_thread-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
             kw['LIBS'].append('ws2_32')
@@ -158,6 +162,8 @@ class Environment(SConsEnvironment):
             kw['LIBS'].append('boost_system')
             kw['LIBS'].append('boost_thread')
             kw['LIBS'].append('pthread')
+            kw['LIBS'].append('cryptoplus')
+            kw['LIBS'].append('crypto')
 
     @staticmethod
     def _create_variables(variable_file):
@@ -170,11 +176,15 @@ class Environment(SConsEnvironment):
             variables.AddVariables(PathVariable('install_path', 'The installation path', r'C:\MinGW', PathVariable.PathIsDir))
             variables.AddVariables(PathVariable('mingw_path', 'The path of the MinGW installation', r'C:\MinGW', PathVariable.PathIsDir))
             variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'C:\Boost', PathVariable.PathIsDir))
+            variables.AddVariables(PathVariable('openssl_path', 'The path of the OpenSSL installation', r'C:\OpenSSL', PathVariable.PathIsDir))
+            variables.AddVariables(PathVariable('cryptoplus_path', 'The path of the libcryptoplus installation', r'C:\cryptoplus', PathVariable.PathIsDir))
             variables.Add('boost_version', 'The boost version (in format x_y)', '1_46_1')
             variables.Add('boost_lib_suffix', 'The suffix for boost libraries', 'mgw45-mt')
             variables.Add('tap_id', 'The TAP adapter identifier', 'tap0901')
         else:
             variables.AddVariables(PathVariable('install_path', 'The installation path', r'/usr/local', PathVariable.PathIsDir))
             variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr', PathVariable.PathIsDir))
+            variables.AddVariables(PathVariable('openssl_path', 'The path of the OpenSSL installation', r'/usr', PathVariable.PathIsDir))
+            variables.AddVariables(PathVariable('cryptoplus_path', 'The path of the libcryptoplus installation', r'/usr', PathVariable.PathIsDir))
 
         return variables
