@@ -48,6 +48,22 @@
 
 namespace freelan
 {
+	namespace contact_policy
+	{
+		/**
+		 * \brief The enumeration values.
+		 */
+		enum type
+		{
+			USE_WHITELIST = 0x01, /*< \brief Use the whitelist. */
+			USE_BLACKLIST = 0x02 /*< \brief Use the blacklist. */
+		};
+	}
+
+	/**
+	 * \brief The contact policy type.
+	 */
+	typedef contact_policy::type contact_policy_type;
 }
 
 #endif /* FREELAN_CONTACT_POLICY_HPP */
