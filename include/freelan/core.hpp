@@ -61,9 +61,24 @@ namespace freelan
 		public:
 	
 			/**
+			 * \brief The endpoint type.
+			 */
+			typedef fscp::server::ep_type ep_type;
+
+			/**
+			 * \brief The certificate type.
+			 */
+			typedef fscp::server::cert_type cert_type;
+
+			/**
+			 * \brief The identity store type.
+			 */
+			typedef fscp::identity_store identity_store;
+
+			/**
 			 * \brief The constructor.
 			 */
-			core(boost::asio::io_service& io_service);
+			core(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity);
 	
 		private:
 	

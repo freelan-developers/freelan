@@ -47,4 +47,9 @@
 
 namespace freelan
 {
+	core::core(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity) :
+		m_tap_adapter(io_service),
+		m_server(io_service, listen_endpoint, identity)
+	{
+	}
 }
