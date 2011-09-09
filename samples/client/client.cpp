@@ -105,14 +105,14 @@ static bool on_session(fscp::server& server, const boost::asio::ip::udp::endpoin
 {
 	std::cout << "Received SESSION from " << sender << std::endl;
 
-	server.async_send_data(sender, "Hello you !");
+	server.async_send_data(sender, boost::asio::buffer(std::string("Hello you !")));
 
 	return default_accept;
 }
 
-static void on_data(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& sender, const void* buf, size_t buf_len)
+static void on_data(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& sender, boost::asio::const_buffer data)
 {
-	std::cout << "Received DATA from " << sender << ": " << std::string(static_cast<const char*>(buf), buf_len) << std::endl;
+	std::cout << "Received DATA from " << sender << ": " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
 }
 
 static void _stop_function(fscp::server& s1, fscp::server& s2)

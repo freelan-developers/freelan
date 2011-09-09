@@ -118,12 +118,12 @@ static void on_session_lost(fscp::server& /*server*/, const boost::asio::ip::udp
 	std::cout << "Session lost with " << host << std::endl;
 }
 
-static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, const void* buf, size_t buf_len)
+static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, boost::asio::const_buffer data)
 {
 	try
 	{
 		const std::string sender_name = server.get_presentation(sender).signature_certificate().subject().find(NID_commonName)->data().str();
-		std::cout << sender_name << ": " << std::string(static_cast<const char*>(buf), buf_len) << std::endl;
+		std::cout << sender_name << ": " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
 	}
 	catch (std::exception&)
 	{
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 				}
 			} else
 			{
-				server.async_send_data_to_all(line, strlen(line));
+				server.async_send_data_to_all(boost::asio::buffer(line, strlen(line)));
 			}
 		}
 
