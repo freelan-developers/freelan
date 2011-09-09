@@ -11,10 +11,10 @@ import os, subprocess
 cxxflags = env['CXXFLAGS'][:]
 
 try:
-	cxxflags.append('-Wno-unused-parameter')
-	cxxflags.append(subprocess.Popen(['cppunit-config', '--cflags'], stdout=subprocess.PIPE).communicate()[0].split())
+    cxxflags.append('-Wno-unused-parameter')
+    cxxflags.append(subprocess.Popen(['cppunit-config', '--cflags'], stdout=subprocess.PIPE).communicate()[0].split())
 except:
-	pass
+    pass
 
 cpppath = [os.path.join('../include')]
 libpath = [os.path.join('../lib')]
@@ -23,9 +23,9 @@ source = Glob('src/*.cpp')
 libs = [libraries[2], 'crypto']
 
 try:
-	libs.append(subprocess.Popen(['cppunit-config', '--libs'], stdout=subprocess.PIPE).communicate()[0].split())
+    libs.append(subprocess.Popen(['cppunit-config', '--libs'], stdout=subprocess.PIPE).communicate()[0].split())
 except:
-	pass
+    pass
 
 # Build the test
 tests = env.Program('tests', source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs, CXXFLAGS = cxxflags)
