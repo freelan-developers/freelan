@@ -46,6 +46,8 @@
 #ifndef FREELAN_FREELAN_HPP
 #define FREELAN_FREELAN_HPP
 
+#include "core.hpp"
+
 namespace freelan
 {
 }
