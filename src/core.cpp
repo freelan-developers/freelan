@@ -57,6 +57,11 @@ namespace freelan
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
 	}
 	
+	void core::async_greet(const ep_type& target)
+	{
+		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3, _4), m_configuration.hello_timeout);
+	}
+
 	bool core::on_hello_request(fscp::server& _server, const ep_type& sender, bool default_accept)
 	{
 		if (default_accept)
@@ -72,5 +77,15 @@ namespace freelan
 		}
 
 		return false;
+	}
+	
+	void core::on_hello_response(fscp::server& _server, const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
+	{
+		(void)time_duration;
+
+		if (success)
+		{
+			_server.async_introduce_to(sender);
+		}
 	}
 }

@@ -50,6 +50,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fscp/server.hpp>
 #include <fscp/identity_store.hpp>
@@ -147,6 +148,11 @@ namespace freelan
 		 * \brief The routing method.
 		 */
 		routing_method_type routing_method;
+
+		/**
+		 * \brief The hello timeout.
+		 */
+		boost::posix_time::time_duration hello_timeout;
 
 		/**
 		 * \brief The identity.

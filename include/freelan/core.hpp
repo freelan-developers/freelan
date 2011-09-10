@@ -104,7 +104,9 @@ namespace freelan
 
 		private:
 	
+			void async_greet(const ep_type&);
 			bool on_hello_request(fscp::server&, const ep_type&, bool);
+			void on_hello_response(fscp::server&, const ep_type&, const boost::posix_time::time_duration&, bool);
 
 			configuration m_configuration;
 			asiotap::tap_adapter m_tap_adapter;
