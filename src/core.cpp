@@ -45,6 +45,8 @@
 
 #include "core.hpp"
 
+#include <boost/bind.hpp>
+
 namespace freelan
 {
 	core::core(boost::asio::io_service& io_service, const configuration& _configuration) :
@@ -52,5 +54,14 @@ namespace freelan
 		m_tap_adapter(io_service),
 		m_server(io_service, m_configuration.listen_on, *m_configuration.identity)
 	{
+		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
+	}
+	
+	bool core::on_hello_request(fscp::server& _server, const ep_type& sender, bool default_accept)
+	{
+		(void)_server;
+		(void)sender;
+
+		return default_accept;
 	}
 }

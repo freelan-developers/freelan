@@ -104,6 +104,8 @@ namespace freelan
 
 		private:
 	
+			bool on_hello_request(fscp::server&, const ep_type&, bool);
+
 			configuration m_configuration;
 			asiotap::tap_adapter m_tap_adapter;
 			fscp::server m_server;
