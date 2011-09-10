@@ -59,6 +59,7 @@ namespace freelan
 		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3));
 		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2));
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1, _2));
+		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 	}
 	
 	void core::async_greet(const ep_type& target)
@@ -140,5 +141,23 @@ namespace freelan
 	{
 		(void)_server;
 		(void)sender;
+	}
+	
+	void core::on_data(fscp::server& _server, const ep_type& sender, boost::asio::const_buffer data)
+	{
+		(void)_server;
+		(void)sender;
+
+		// TODO: Here we must read the source ethernet address and update the switch routing table according to it.
+
+		m_tap_adapter.async_write(data, boost::bind(&core::on_write_done, this, _1, _2));
+	}
+	
+	void core::on_write_done(const boost::system::error_code& ec, size_t cnt)
+	{
+		(void)ec;
+		(void)cnt;
+
+		// TODO: Check ec for the possible cause of the error and eventually do something.
 	}
 }

@@ -104,6 +104,7 @@ namespace freelan
 
 		private:
 	
+			//fscp::server related methods
 			void async_greet(const ep_type&);
 			bool on_hello_request(fscp::server&, const ep_type&, bool);
 			void on_hello_response(fscp::server&, const ep_type&, const boost::posix_time::time_duration&, bool);
@@ -111,6 +112,10 @@ namespace freelan
 			bool on_session_request(fscp::server&, const ep_type&, bool);
 			void on_session_established(fscp::server&, const ep_type&);
 			void on_session_lost(fscp::server&, const ep_type&);
+			void on_data(fscp::server&, const ep_type&, boost::asio::const_buffer);
+
+			//asiotap::tap_adapter related methods
+			void on_write_done(const boost::system::error_code&, size_t);
 
 			configuration m_configuration;
 			asiotap::tap_adapter m_tap_adapter;
