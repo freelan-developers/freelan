@@ -51,7 +51,7 @@
 #include <asiotap/asiotap.hpp>
 #include <fscp/fscp.hpp>
 
-#include "contact_policy.hpp"
+#include "configuration.hpp"
 
 namespace freelan
 {
@@ -79,9 +79,17 @@ namespace freelan
 
 			/**
 			 * \brief The constructor.
+			 * \param io_service The io_service to bind to.
+			 * \param configuration The configuration to use.
 			 */
-			core(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity);
+			core(boost::asio::io_service& io_service, const configuration& configuration);
 
+			/**
+			 * \brief Get the configuration.
+			 * \return The current configuration.
+			 */
+			const configuration& configuration_() const;
+	
 			/**
 			 * \brief Get the associated tap adapter.
 			 * \return The associated tap adapter.
@@ -93,13 +101,19 @@ namespace freelan
 			 * \return The associated server.
 			 */
 			fscp::server& server();
-	
+
 		private:
 	
+			configuration m_configuration;
 			asiotap::tap_adapter m_tap_adapter;
 			fscp::server m_server;
 	};
 	
+	inline const configuration& core::configuration_() const
+	{
+		return m_configuration;
+	}
+
 	inline asiotap::tap_adapter& core::tap_adapter()
 	{
 		return m_tap_adapter;
