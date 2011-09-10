@@ -59,9 +59,18 @@ namespace freelan
 	
 	bool core::on_hello_request(fscp::server& _server, const ep_type& sender, bool default_accept)
 	{
-		(void)_server;
-		(void)sender;
+		if (default_accept)
+		{
+			// TODO: Here we should check if sender is in the blacklist.
+			// For now, let's assume it is not.
+			if (true)
+			{
+				_server.async_introduce_to(sender);
 
-		return default_accept;
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
