@@ -56,6 +56,7 @@ namespace freelan
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
 		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4, _5));
+		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3));
 	}
 	
 	void core::async_greet(const ep_type& target)
@@ -102,6 +103,24 @@ namespace freelan
 			if (true)
 			{
 				_server.async_request_session(sender);
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
+	bool core::on_session_request(fscp::server& _server, const ep_type& sender, bool default_accept)
+	{
+		(void)_server;
+		(void)sender;
+
+		if (default_accept)
+		{
+			// TODO: Here we should check if sender is in the blacklist.
+			// For now, let's assume it is not.
+			if (true)
+			{
 				return true;
 			}
 		}

@@ -108,6 +108,7 @@ namespace freelan
 			bool on_hello_request(fscp::server&, const ep_type&, bool);
 			void on_hello_response(fscp::server&, const ep_type&, const boost::posix_time::time_duration&, bool);
 			bool on_presentation(fscp::server&, const ep_type&, cert_type, cert_type, bool);
+			bool on_session_request(fscp::server&, const ep_type&, bool);
 
 			configuration m_configuration;
 			asiotap::tap_adapter m_tap_adapter;
