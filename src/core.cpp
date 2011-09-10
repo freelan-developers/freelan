@@ -57,6 +57,8 @@ namespace freelan
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
 		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4, _5));
 		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3));
+		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2));
+		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1, _2));
 	}
 	
 	void core::async_greet(const ep_type& target)
@@ -126,5 +128,17 @@ namespace freelan
 		}
 
 		return false;
+	}
+
+	void core::on_session_established(fscp::server& _server, const ep_type& sender)
+	{
+		(void)_server;
+		(void)sender;
+	}
+
+	void core::on_session_lost(fscp::server& _server, const ep_type& sender)
+	{
+		(void)_server;
+		(void)sender;
 	}
 }
