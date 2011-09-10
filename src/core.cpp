@@ -55,6 +55,7 @@ namespace freelan
 		m_server(io_service, m_configuration.listen_on, *m_configuration.identity)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
+		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4, _5));
 	}
 	
 	void core::async_greet(const ep_type& target)
@@ -87,5 +88,24 @@ namespace freelan
 		{
 			_server.async_introduce_to(sender);
 		}
+	}
+	
+	bool core::on_presentation(fscp::server& _server, const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)
+	{
+		(void)sig_cert;
+		(void)enc_cert;
+
+		if (default_accept)
+		{
+			// TODO: Here we should check for the certificates validity.
+			// For now, let's assume they are valid.
+			if (true)
+			{
+				_server.async_request_session(sender);
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
