@@ -58,7 +58,7 @@ const std::string DEFAULT_CONFIGURATION_FILE = "config/freelan.cfg";
 namespace po = boost::program_options;
 namespace fl = freelan;
 
-void parse_options(int argc, char** argv, fl::configuration& configuration)
+bool parse_options(int argc, char** argv, fl::configuration& configuration)
 {
 	po::options_description generic_options("Generic options");
 	generic_options.add_options()
@@ -79,24 +79,33 @@ void parse_options(int argc, char** argv, fl::configuration& configuration)
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, all_options), vm);
+
+	if (vm.count("configuration_file"))
+	{
+		const std::string configuration_file_str = vm["configuration_file"].as<std::string>();
+
+		std::ifstream configuration_file(configuration_file_str.c_str());
+
+		if (!configuration_file)
+		{
+			throw po::reading_file(configuration_file_str.c_str());
+		}
+
+		po::store(po::parse_config_file(configuration_file, configuration_options, true), vm);
+	}
+
 	po::notify(vm);
 
 	if (vm.count("help"))
 	{
 		std::cout << visible_options << std::endl;
 
-		return;
-	}
-
-	if (vm.count("configuration_file"))
-	{
-		std::ifstream configuration_file(vm["configuration_file"].as<std::string>().c_str());
-
-		po::store(po::parse_config_file(configuration_file, configuration_options, true), vm);
-		po::notify(vm);
+		return false;
 	}
 
 	setup_configuration(configuration, vm);
+
+	return true;
 }
 
 int main(int argc, char** argv)
@@ -105,9 +114,10 @@ int main(int argc, char** argv)
 	{
 		fl::configuration configuration;
 
-		parse_options(argc, argv, configuration);
-
-		std::cout << "HRP: " << configuration.hostname_resolution_protocol << std::endl;
+		if (parse_options(argc, argv, configuration))
+		{
+			std::cout << "HRP: " << configuration.hostname_resolution_protocol << std::endl;
+		}
 	}
 	catch (std::exception& ex)
 	{

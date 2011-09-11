@@ -60,7 +60,7 @@ namespace
 		else if (str == "ipv6")
 			return fl::configuration::HRP_IPV6;
 
-		throw po::invalid_option_value("\"" + str + "\" is not a valid hostname resolution protocol");
+		throw po::invalid_option_value(str);
 	}
 }
 
