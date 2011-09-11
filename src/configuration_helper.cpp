@@ -75,7 +75,7 @@ po::options_description get_network_options()
 		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
 		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
-		("network.hello_timeout", po::value<unsigned int>()->default_value(3000), "The default hello message timeout, in milliseconds.")
+		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
 		;
 
 	return result;
