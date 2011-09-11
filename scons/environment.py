@@ -123,6 +123,7 @@ class Environment(SConsEnvironment):
             kw['LIBS'].append('crypto')
             kw['LIBS'].append('boost_system-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
             kw['LIBS'].append('boost_thread-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
+            kw['LIBS'].append('boost_program_options-%s-%s' % (self['boost_lib_suffix'], self['boost_version']))
             kw['LIBS'].append('ws2_32')
             kw['LIBS'].append('gdi32')
             kw['LIBS'].append('iphlpapi')
@@ -137,6 +138,7 @@ class Environment(SConsEnvironment):
                 kw['LIBS'].append('rt')
             kw['LIBS'].append('boost_system')
             kw['LIBS'].append('boost_thread')
+            kw['LIBS'].append('boost_program_options')
             kw['LIBS'].append('pthread')
 
     @staticmethod
