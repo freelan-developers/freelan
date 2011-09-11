@@ -46,11 +46,55 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <fstream>
+
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
+
+void parse_options(int argc, char** argv)
+{
+	po::options_description generic("Generic options");
+	generic.add_options()
+		("help,h", "Produce help message.")
+		;
+
+	po::options_description network("Network options");
+	network.add_options()
+		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
+		("network.hostname_resolution_protocol", "The hostname resolution protocol to use.")
+		;
+
+	po::options_description visible;
+	visible.add(generic).add(network);
+
+	po::variables_map vm;
+	std::ifstream config_file("config/freelan.cfg");
+	po::store(po::parse_config_file(config_file, network, true), vm);
+	po::store(po::parse_command_line(argc, argv, visible), vm);
+	po::notify(vm);
+
+	if (vm.count("help"))
+	{
+		std::cout << visible << std::endl;
+	}
+
+	if (vm.count("network.listen_on"))
+	{
+		std::cout << "Listen on: " << vm["network.listen_on"].as<std::string>() << std::endl;
+	}
+}
 
 int main(int argc, char** argv)
 {
-	(void)argc;
-	(void)argv;
+	try
+	{
+		parse_options(argc, argv);
+	}
+	catch (std::exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 }
