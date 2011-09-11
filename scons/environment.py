@@ -91,7 +91,7 @@ class Environment(SConsEnvironment):
 
                 self['LIBPATH'].append(os.path.join(self['boost_path'], 'lib'))
 
-    def Program(self, target, source, **kw):
+    def FProgram(self, target, source, **kw):
 
         if 'LIBPATH' in kw:
             kw['LIBPATH'] += self['LIBPATH']
@@ -101,7 +101,7 @@ class Environment(SConsEnvironment):
 
         self.__add_libs(kw)
 
-        return super(self.__class__, self).Program(target, source, **kw)
+        return self.Program(target, source, **kw)
 
     def Documentation(self, **kw):
         doxygen = self.Doxygen('doxyfile', **kw)

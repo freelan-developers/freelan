@@ -17,7 +17,7 @@ import environment
 env = environment.Environment(ENV = os.environ.copy())
 
 # Build the program
-program = env.Program(os.path.join('bin', program_name), source)
+program = env.FProgram(os.path.join('bin', program_name), source)
 documentation = env.Documentation()
 indentation = env.Indentation(source)
 
