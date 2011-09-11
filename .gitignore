@@ -1,4 +1,5 @@
 .sconsign.dblite
 variables.cache
+*.pyc
 *.o
 bin/*
