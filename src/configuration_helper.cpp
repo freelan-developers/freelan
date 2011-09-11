@@ -1,0 +1,105 @@
+/*
+ * freelan - An open, multi-platform software to establish peer-to-peer virtual
+ * private networks.
+ *
+ * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ *
+ * This file is part of freelan.
+ *
+ * freelan is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * freelan is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * In addition, as a special exception, the copyright holders give
+ * permission to link the code of portions of this program with the
+ * OpenSSL library under certain conditions as described in each
+ * individual source file, and distribute linked combinations
+ * including the two.
+ * You must obey the GNU General Public License in all respects
+ * for all of the code used other than OpenSSL.  If you modify
+ * file(s) with this exception, you may extend this exception to your
+ * version of the file(s), but you are not obligated to do so.  If you
+ * do not wish to do so, delete this exception statement from your
+ * version.  If you delete this exception statement from all source
+ * files in the program, then also delete it here.
+ *
+ * If you intend to use freelan in a commercial software, please
+ * contact me : we may arrange this for a small fee or no fee at all,
+ * depending on the nature of your project.
+ */
+
+/**
+ * \file configuration_helper.cpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief A configuration helper.
+ */
+
+#include "configuration_helper.hpp"
+
+namespace po = boost::program_options;
+namespace fl = freelan;
+
+namespace
+{
+	fl::configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
+	{
+		if (str == "system_default")
+			return fl::configuration::HRP_SYSTEM_DEFAULT;
+		else if (str == "ipv4")
+			return fl::configuration::HRP_IPV4;
+		else if (str == "ipv6")
+			return fl::configuration::HRP_IPV6;
+
+		throw po::invalid_option_value("\"" + str + "\" is not a valid hostname resolution protocol");
+	}
+}
+
+po::options_description get_network_options()
+{
+	po::options_description result("Network options");
+
+	result.add_options()
+		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
+		("network.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
+		("network.tap_adapter_addresses", po::value<std::string>()->multitoken()->default_value("9.0.0.1/24"), "The tap adapter network addresses.")
+		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
+		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
+		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
+		("network.hello_timeout", po::value<unsigned int>()->default_value(3000), "The default hello message timeout, in milliseconds.")
+		;
+
+	return result;
+}
+
+po::options_description get_security_options()
+{
+	po::options_description result("Security options");
+
+	result.add_options()
+		("security.certificate_file", po::value<std::string>()->required(), "The certificate file to use.")
+		("security.private_key_file", po::value<std::string>()->required(), "The private key file to use.")
+		("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
+		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
+		("security.use_whitelist", po::value<bool>()->default_value(false), "Whether to use the whitelist.")
+		("security.use_blacklist", po::value<bool>()->default_value(true), "Whether to use the blacklist.")
+		("security.whitelist", po::value<std::string>()->multitoken()->composing(), "The whitelist.")
+		("security.blacklist", po::value<std::string>()->multitoken()->composing(), "The blacklist.")
+		;
+
+	return result;
+}
+
+void setup_configuration(fl::configuration& configuration, const po::variables_map& vm)
+{
+	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
+}

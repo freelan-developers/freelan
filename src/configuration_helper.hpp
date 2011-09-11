@@ -39,82 +39,31 @@
  */
 
 /**
- * \file main.cpp
+ * \file configuration_helper.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The program entry point.
+ * \brief A configuration helper.
  */
 
-#include <iostream>
-#include <cstdlib>
-#include <fstream>
+#include <freelan/configuration.hpp>
 
-#include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 
-#include "configuration_helper.hpp"
+/**
+ * \brief Get the network options.
+ * \return The network options.
+ */
+boost::program_options::options_description get_network_options();
 
-const std::string DEFAULT_CONFIGURATION_FILE = "config/freelan.cfg";
+/**
+ * \brief Get the security options.
+ * \return The security options.
+ */
+boost::program_options::options_description get_security_options();
 
-namespace po = boost::program_options;
-namespace fl = freelan;
-
-void parse_options(int argc, char** argv, fl::configuration& configuration)
-{
-	po::options_description generic_options("Generic options");
-	generic_options.add_options()
-		("help,h", "Produce help message.")
-		("configuration_file,c", po::value<std::string>()->default_value(DEFAULT_CONFIGURATION_FILE), "The configuration file to use")
-		;
-
-	po::options_description visible_options;
-	visible_options.add(generic_options);
-
-	po::options_description configuration_options;
-	configuration_options.add(get_network_options());
-	configuration_options.add(get_security_options());
-
-	po::options_description all_options;
-	all_options.add(generic_options);
-	all_options.add(configuration_options);
-
-	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, all_options), vm);
-	po::notify(vm);
-
-	if (vm.count("help"))
-	{
-		std::cout << visible_options << std::endl;
-
-		return;
-	}
-
-	if (vm.count("configuration_file"))
-	{
-		std::ifstream configuration_file(vm["configuration_file"].as<std::string>().c_str());
-
-		po::store(po::parse_config_file(configuration_file, configuration_options, true), vm);
-		po::notify(vm);
-	}
-
-	setup_configuration(configuration, vm);
-}
-
-int main(int argc, char** argv)
-{
-	try
-	{
-		fl::configuration configuration;
-
-		parse_options(argc, argv, configuration);
-
-		std::cout << "HRP: " << configuration.hostname_resolution_protocol << std::endl;
-	}
-	catch (std::exception& ex)
-	{
-		std::cerr << ex.what() << std::endl;
-
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
+/**
+ * \brief Setup a freelan configuration from a variables map.
+ * \param configuration The configuration to setup.
+ * \param vm The variables map.
+ * \warning On error, a boost::program_options::error might be thrown.
+ */
+void setup_configuration(freelan::configuration& configuration, const boost::program_options::variables_map& vm);
