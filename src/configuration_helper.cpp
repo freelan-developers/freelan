@@ -51,6 +51,7 @@
 #include <boost/spirit/include/qi_no_case.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "ipv4_address_parser.hpp"
 #include "ipv6_address_parser.hpp"
@@ -102,15 +103,15 @@ namespace
 		boost::asio::ip::address_v4 address_v4;
 		boost::asio::ip::address_v6 address_v6;
 		unsigned int port = DEFAULT_PORT;
-		std::string hostname;
-		std::string service;
+		std::string host;
+		std::string service = boost::lexical_cast<std::string>(DEFAULT_PORT);
 
 		bool r;
 		std::string::const_iterator first;
 
 		// Parse IPv4 addresses.
 		first = str.begin();
-		r = qi::parse(first, str.end(), ipv4_address[ph::ref(address_v4) = qi::_1] >> -(':' >> port_parser()[ph::ref(port) = qi::_1]), qi::space);
+		r = qi::phrase_parse(first, str.end(), ipv4_address[ph::ref(address_v4) = qi::_1] >> -(':' >> port_parser()[ph::ref(port) = qi::_1]), qi::space);
 
 		if (r && (first == str.end()))
 		{
@@ -119,7 +120,7 @@ namespace
 
 		// Parse IPv6 addresses.
 		first = str.begin();
-		r = qi::parse(first, str.end(), ipv6_address[ph::ref(address_v6) == qi::_1] | ('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser()[ph::ref(port) = qi::_1]), qi::space);
+		r = qi::phrase_parse(first, str.end(), ipv6_address[ph::ref(address_v6) == qi::_1] | ('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser()[ph::ref(port) = qi::_1]), qi::space);
 
 		if (r && (first == str.end()))
 		{
@@ -128,14 +129,15 @@ namespace
 
 		// Parse hostname notation.
 		first = str.begin();
-		//r = qi::parse(first, str.end(), (*(qi::repeat(1, 63)[qi::alnum | '-'] >> '.') >> qi::repeat(1, 63)[qi::alnum | '-']) >> -(':' >> (qi::repeat(1, 63)[qi::alnum])), qi::space);
+		r = qi::phrase_parse(first, str.end(), (*(qi::repeat(1, 63)[qi::alnum | '-'] >> '.') >> qi::repeat(1, 63)[qi::alnum | '-']) >> -(':' >> (qi::repeat(1, 63)[qi::alnum])), qi::space);
+		//r = qi::phrase_parse(first, str.end(), (*(qi::repeat(1, 63)[qi::alnum | '-'] >> '.') >> qi::repeat(1, 63)[qi::alnum | '-'])[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum]))[ph::ref(service) = qi::_1], qi::space);
 
 		if (r && (first == str.end()))
 		{
 			as::io_service io_service;
 			ip::udp::resolver resolver(io_service);
 			ip::udp::resolver::query::protocol_type protocol_type = to_protocol_type(hostname_resolution_protocol);
-			ip::udp::resolver::query query(protocol_type, hostname, service, ip::udp::resolver::query::address_configured | ip::udp::resolver::query::passive);
+			ip::udp::resolver::query query(protocol_type, host, service, ip::udp::resolver::query::address_configured | ip::udp::resolver::query::passive);
 
 			return *resolver.resolve(query);
 		}
