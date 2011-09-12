@@ -59,7 +59,7 @@ class Environment(SConsEnvironment):
         else:
             self['CXXFLAGS'].append('-DNDEBUG')
 
-        self['CXXFLAGS'] += ['-std=c++98', '-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
+        self['CXXFLAGS'] += ['-Wall', '-Wextra', '-Werror', '-pedantic', '-Wredundant-decls', '-Wno-uninitialized', '-Wno-long-long', '-Wshadow']
 
         if sys.platform != 'win32':
             # We must remove this flag until Boost::ASIO is fixed.
