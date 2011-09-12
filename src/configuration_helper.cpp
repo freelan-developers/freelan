@@ -46,11 +46,22 @@
 
 #include "configuration_helper.hpp"
 
+#include <boost/asio.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+
+#include "ipv4_address_parser.hpp"
+
 namespace po = boost::program_options;
+namespace qi = boost::spirit::qi;
+namespace ph = boost::phoenix;
 namespace fl = freelan;
 
 namespace
 {
+	const unsigned int DEFAULT_PORT = 12000;
+
 	fl::configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
 	{
 		if (str == "system_default")
@@ -62,6 +73,27 @@ namespace
 
 		throw po::invalid_option_value(str);
 	}
+
+	fl::configuration::ep_type parse_endpoint(const std::string& str, fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
+	{
+		(void)hostname_resolution_protocol;
+
+		boost::asio::ip::address_v4 address;
+		unsigned int port = DEFAULT_PORT;
+
+		std::string::const_iterator first = str.begin();
+		bool r = qi::phrase_parse(first, str.end(), custom_parser::ipv4_address[ph::ref(address) = qi::_1] >> -(':' >> qi::uint_parser<uint16_t, 10, 1, 5>()[ph::ref(port) = qi::_1]), qi::space);
+
+		if (r)
+		{
+			if (first == str.end())
+			{
+				return fl::configuration::ep_type(address, port);
+			}
+		}
+
+		throw po::invalid_option_value(str);
+	}
 }
 
 po::options_description get_network_options()
@@ -69,8 +101,8 @@ po::options_description get_network_options()
 	po::options_description result("Network options");
 
 	result.add_options()
-		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
 		("network.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
+		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
 		("network.tap_adapter_addresses", po::value<std::string>()->multitoken()->default_value("9.0.0.1/24"), "The tap adapter network addresses.")
 		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
@@ -102,4 +134,5 @@ po::options_description get_security_options()
 void setup_configuration(fl::configuration& configuration, const po::variables_map& vm)
 {
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
+	configuration.listen_on = parse_endpoint(vm["network.listen_on"].as<std::string>(), configuration.hostname_resolution_protocol);
 }
