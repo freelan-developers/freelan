@@ -76,6 +76,20 @@ namespace
 		throw po::invalid_option_value(str);
 	}
 
+	boost::asio::ip::udp::resolver::query::protocol_type to_protocol_type(fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
+	{
+		switch (hostname_resolution_protocol)
+		{
+			case fl::configuration::HRP_SYSTEM_DEFAULT:
+			case fl::configuration::HRP_IPV4:
+				return boost::asio::ip::udp::v4();
+			case fl::configuration::HRP_IPV6:
+				return boost::asio::ip::udp::v6();
+		}
+
+		throw std::logic_error("invalid hostname_resolution_protocol");
+	}
+
 	fl::configuration::ep_type parse_endpoint(const std::string& str, fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
 	{
 		namespace as = boost::asio;
@@ -120,22 +134,9 @@ namespace
 		{
 			as::io_service io_service;
 			ip::udp::resolver resolver(io_service);
-			ip::udp::resolver::query::protocol_type protocol_type = ip::udp::v4();
-
-			switch (hostname_resolution_protocol)
-			{
-				case fl::configuration::HRP_SYSTEM_DEFAULT:
-					protocol_type = ip::udp::v4();
-					break;
-				case fl::configuration::HRP_IPV4:
-					protocol_type = ip::udp::v4();
-					break;
-				case fl::configuration::HRP_IPV6:
-					protocol_type = ip::udp::v6();
-					break;
-			}
-
+			ip::udp::resolver::query::protocol_type protocol_type = to_protocol_type(hostname_resolution_protocol);
 			ip::udp::resolver::query query(protocol_type, hostname, service, ip::udp::resolver::query::address_configured | ip::udp::resolver::query::passive);
+
 			return *resolver.resolve(query);
 		}
 
