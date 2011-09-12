@@ -39,23 +39,32 @@
  */
 
 /**
- * \file ipv6_address_parser.hpp
+ * \file endpoint_parser.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IPv6 address parser.
+ * \brief An endpoint parser.
  */
 
-#ifndef IPV6_ADDRESS_PARSER_HPP
-#define IPV6_ADDRESS_PARSER_HPP
+#ifndef ENDPOINT_PARSER_HPP
+#define ENDPOINT_PARSER_HPP
 
 #include <boost/asio.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "endpoint.hpp"
+
+#include "ipv4_address_parser.hpp"
+#include "ipv6_address_parser.hpp"
+#include "hostname_parser.hpp"
 
 // This was written according to:
 // http://boost-spirit.com/home/articles/qi-example/creating-your-own-parser-component-for-spirit-qi/
 
 namespace custom_parser
 {
-	BOOST_SPIRIT_TERMINAL(ipv6_address)
+	BOOST_SPIRIT_TERMINAL(endpoint)
 }
 
 namespace boost
@@ -63,7 +72,7 @@ namespace boost
 	namespace spirit
 	{
 		template <>
-		struct use_terminal<qi::domain, custom_parser::tag::ipv6_address> : mpl::true_
+		struct use_terminal<qi::domain, custom_parser::tag::endpoint> : mpl::true_
 		{
 		};
 	}
@@ -71,56 +80,95 @@ namespace boost
 
 namespace custom_parser
 {
-	struct ipv6_address_parser :
-		boost::spirit::qi::primitive_parser<ipv6_address_parser>
+	struct endpoint_parser :
+		boost::spirit::qi::primitive_parser<endpoint_parser>
 	{
 		template <typename Context, typename Iterator>
 		struct attribute
 		{
-			typedef boost::asio::ip::address_v6 type;
+			typedef boost::shared_ptr< ::endpoint> type;
 		};
+
+		endpoint_parser(uint16_t default_port) :
+			m_default_port(default_port)
+		{
+		}
 
 		template <typename Iterator, typename Context, typename Skipper, typename Attribute>
 		bool parse(Iterator& first, Iterator const& last, Context&, Skipper const& skipper, Attribute& attr) const
 		{
 			namespace qi = boost::spirit::qi;
-			typedef qi::uint_parser<uint16_t, 16, 1, 4> digit;
+			namespace ph = boost::phoenix;
+
+			using custom_parser::ipv4_address;
+			using custom_parser::ipv6_address;
+			using custom_parser::hostname;
+
+			typedef qi::uint_parser<uint16_t, 10, 1, 5> port_parser;
 
 			qi::skip_over(first, last, skipper);
 
 			const Iterator first_save = first;
+			bool r;
 
+			boost::asio::ip::address_v6 address_v6;
+			boost::asio::ip::address_v4 address_v4;
+			uint16_t port = m_default_port;
+			std::string host;
+			std::string service = boost::lexical_cast<std::string>(m_default_port);
 
-			bool result = qi::parse(
+			r = qi::parse(
 					first,
 					last,
-					+(digit() | ':')
+					ipv6_address[ph::ref(address_v6) = qi::_1] |
+					qi::no_skip[('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser()[ph::ref(port) = qi::_1])]
 					);
 
-
-			if (result)
+			if (r)
 			{
-				boost::system::error_code ec;
+				boost::spirit::traits::assign_to(boost::make_shared<ipv6_endpoint>(address_v6, port), attr);
+			} else
+			{
+				first = first_save;
 
-				typename attribute<Context, Iterator>::type value = attribute<Context, Iterator>::type::from_string(std::string(first_save, first), ec);
+				r = qi::parse(
+						first,
+						last,
+						ipv4_address[ph::ref(address_v4) = qi::_1] >> qi::no_skip[-(':' >> (port_parser())[ph::ref(port) = qi::_1])]
+						);
 
-				if (!ec)
+				if (r)
 				{
-					boost::spirit::traits::assign_to(value, attr);
+					boost::spirit::traits::assign_to(boost::make_shared<ipv4_endpoint>(address_v4, port), attr);
 				} else
 				{
-					return false;
+					first = first_save;
+
+					r = qi::parse(
+							first,
+							last,
+							hostname[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum]))
+							);
+
+					if (r)
+					{
+						boost::spirit::traits::assign_to(boost::make_shared<hostname_endpoint>(host, service), attr);
+					}
 				}
 			}
 
-			return result;
+			return r;
 		}
 
 		template <typename Context>
 		boost::spirit::info what(Context&) const
 		{
-			return boost::spirit::info("ipv6_address");
+			return boost::spirit::info("endpoint");
 		}
+
+		private:
+
+			uint16_t m_default_port;
 	};
 }
 
@@ -131,17 +179,18 @@ namespace boost
 		namespace qi
 		{
 			template <typename Modifiers>
-			struct make_primitive<custom_parser::tag::ipv6_address, Modifiers>
+			struct make_primitive<custom_parser::tag::endpoint, Modifiers>
 			{
-				typedef custom_parser::ipv6_address_parser result_type;
+				typedef custom_parser::endpoint_parser result_type;
 
 				result_type operator()(unused_type, unused_type) const
 				{
-					return result_type();
+					//TODO: Remove this constant
+					return result_type(12000);
 				}
 			};
 		}
 	}
 }
 
-#endif /* IPV6_ADDRESS_PARSER_HPP */
+#endif /* ENDPOINT_PARSER_HPP */
