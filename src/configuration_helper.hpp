@@ -39,10 +39,13 @@
  */
 
 /**
- * \file configuration_helper.cpp
+ * \file configuration_helper.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A configuration helper.
  */
+
+#ifndef CONFIGURATION_HELPER_HPP
+#define CONFIGURATION_HELPER_HPP
 
 #include <freelan/configuration.hpp>
 
@@ -67,3 +70,5 @@ boost::program_options::options_description get_security_options();
  * \warning On error, a boost::program_options::error might be thrown.
  */
 void setup_configuration(freelan::configuration& configuration, const boost::program_options::variables_map& vm);
+
+#endif /* CONFIGURATION_HELPER_HPP */
