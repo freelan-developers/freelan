@@ -91,6 +91,7 @@ namespace
 
 	fl::configuration::ep_type parse_endpoint(const std::string& str, fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
 	{
+		//TODO: Change hostname_resolution_protocol_type parameter to boost::asio::ip::udp::resolver::query::protocol_type
 		typedef boost::asio::ip::udp::resolver::query query;
 
 		boost::shared_ptr<endpoint> ep;
