@@ -47,8 +47,8 @@
 #ifndef IPV6_ADDRESS_PARSER_HPP
 #define IPV6_ADDRESS_PARSER_HPP
 
-#include <boost/spirit/include/qi.hpp>
 #include <boost/asio.hpp>
+#include <boost/spirit/include/qi.hpp>
 
 // This was written according to:
 // http://boost-spirit.com/home/articles/qi-example/creating-your-own-parser-component-for-spirit-qi/
