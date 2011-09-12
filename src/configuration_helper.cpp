@@ -52,6 +52,7 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 
 #include "ipv4_address_parser.hpp"
+#include "ipv6_address_parser.hpp"
 
 namespace po = boost::program_options;
 namespace qi = boost::spirit::qi;
@@ -78,11 +79,11 @@ namespace
 	{
 		(void)hostname_resolution_protocol;
 
-		boost::asio::ip::address_v4 address;
+		boost::asio::ip::address_v6 address;
 		unsigned int port = DEFAULT_PORT;
 
 		std::string::const_iterator first = str.begin();
-		bool r = qi::phrase_parse(first, str.end(), custom_parser::ipv4_address[ph::ref(address) = qi::_1] >> -(':' >> qi::uint_parser<uint16_t, 10, 1, 5>()[ph::ref(port) = qi::_1]), qi::space);
+		bool r = qi::phrase_parse(first, str.end(), '[' >> custom_parser::ipv6_address[ph::ref(address) = qi::_1] >> ']' >> -(':' >> qi::uint_parser<uint16_t, 10, 1, 5>()[ph::ref(port) = qi::_1]), qi::space);
 
 		if (r)
 		{
