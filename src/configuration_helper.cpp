@@ -55,6 +55,7 @@
 
 #include "ipv4_address_parser.hpp"
 #include "ipv6_address_parser.hpp"
+#include "hostname_parser.hpp"
 
 namespace po = boost::program_options;
 namespace qi = boost::spirit::qi;
@@ -97,6 +98,7 @@ namespace
 		namespace ip = boost::asio::ip;
 		using custom_parser::ipv4_address;
 		using custom_parser::ipv6_address;
+		using custom_parser::hostname;
 
 		typedef qi::uint_parser<uint16_t, 10, 1, 5> port_parser;
 
@@ -111,7 +113,7 @@ namespace
 
 		// Parse IPv4 addresses.
 		first = str.begin();
-		r = qi::phrase_parse(first, str.end(), ipv4_address[ph::ref(address_v4) = qi::_1] >> -(':' >> port_parser()[ph::ref(port) = qi::_1]), qi::space);
+		r = qi::phrase_parse(first, str.end(), ipv4_address[ph::ref(address_v4) = qi::_1] >> qi::no_skip[-(':' >> port_parser()[ph::ref(port) = qi::_1])], qi::space);
 
 		if (r && (first == str.end()))
 		{
@@ -120,7 +122,7 @@ namespace
 
 		// Parse IPv6 addresses.
 		first = str.begin();
-		r = qi::phrase_parse(first, str.end(), ipv6_address[ph::ref(address_v6) == qi::_1] | ('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser()[ph::ref(port) = qi::_1]), qi::space);
+		r = qi::phrase_parse(first, str.end(), ipv6_address[ph::ref(address_v6) = qi::_1] | qi::no_skip[('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser()[ph::ref(port) = qi::_1])], qi::space);
 
 		if (r && (first == str.end()))
 		{
@@ -129,8 +131,7 @@ namespace
 
 		// Parse hostname notation.
 		first = str.begin();
-		r = qi::phrase_parse(first, str.end(), (*(qi::repeat(1, 63)[qi::alnum | '-'] >> '.') >> qi::repeat(1, 63)[qi::alnum | '-']) >> -(':' >> (qi::repeat(1, 63)[qi::alnum])), qi::space);
-		//r = qi::phrase_parse(first, str.end(), (*(qi::repeat(1, 63)[qi::alnum | '-'] >> '.') >> qi::repeat(1, 63)[qi::alnum | '-'])[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum]))[ph::ref(service) = qi::_1], qi::space);
+		r = qi::phrase_parse(first, str.end(), hostname[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum])), qi::space);
 
 		if (r && (first == str.end()))
 		{

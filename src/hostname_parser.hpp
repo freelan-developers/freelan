@@ -39,13 +39,13 @@
  */
 
 /**
- * \file ipv6_address_parser.hpp
+ * \file hostname_parser.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IPv6 address parser.
+ * \brief A hostname parser.
  */
 
-#ifndef IPV6_ADDRESS_PARSER_HPP
-#define IPV6_ADDRESS_PARSER_HPP
+#ifndef HOSTNAME_PARSER_HPP
+#define HOSTNAME_PARSER_HPP
 
 #include <boost/asio.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -55,7 +55,7 @@
 
 namespace custom_parser
 {
-	BOOST_SPIRIT_TERMINAL(ipv6_address)
+	BOOST_SPIRIT_TERMINAL(hostname)
 }
 
 namespace boost
@@ -63,7 +63,7 @@ namespace boost
 	namespace spirit
 	{
 		template <>
-		struct use_terminal<qi::domain, custom_parser::tag::ipv6_address> : mpl::true_
+		struct use_terminal<qi::domain, custom_parser::tag::hostname> : mpl::true_
 		{
 		};
 	}
@@ -71,20 +71,20 @@ namespace boost
 
 namespace custom_parser
 {
-	struct ipv6_address_parser :
-		boost::spirit::qi::primitive_parser<ipv6_address_parser>
+	struct hostname_parser :
+		boost::spirit::qi::primitive_parser<hostname_parser>
 	{
 		template <typename Context, typename Iterator>
 		struct attribute
 		{
-			typedef boost::asio::ip::address_v6 type;
+			typedef std::string type;
 		};
 
 		template <typename Iterator, typename Context, typename Skipper, typename Attribute>
 		bool parse(Iterator& first, Iterator const& last, Context&, Skipper const& skipper, Attribute& attr) const
 		{
 			namespace qi = boost::spirit::qi;
-			typedef qi::uint_parser<uint16_t, 16, 1, 4> digit;
+			namespace ph = boost::phoenix;
 
 			qi::skip_over(first, last, skipper);
 
@@ -93,22 +93,12 @@ namespace custom_parser
 			bool result = qi::parse(
 					first,
 					last,
-					+(digit() ^ ':')
+					*(qi::repeat(1, 63)[qi::alnum | '-'] >> '.') >> qi::repeat(1, 63)[qi::alnum | '-']
 					);
 
 			if (result)
 			{
-				boost::system::error_code ec;
-
-				typename attribute<Context, Iterator>::type value = attribute<Context, Iterator>::type::from_string(std::string(first_save, first), ec);
-
-				if (!ec)
-				{
-					boost::spirit::traits::assign_to(value, attr);
-				} else
-				{
-					return false;
-				}
+				boost::spirit::traits::assign_to(std::string(first_save, first), attr);
 			}
 
 			return result;
@@ -117,7 +107,7 @@ namespace custom_parser
 		template <typename Context>
 		boost::spirit::info what(Context&) const
 		{
-			return boost::spirit::info("ipv6_address");
+			return boost::spirit::info("hostname");
 		}
 	};
 }
@@ -129,9 +119,9 @@ namespace boost
 		namespace qi
 		{
 			template <typename Modifiers>
-			struct make_primitive<custom_parser::tag::ipv6_address, Modifiers>
+			struct make_primitive<custom_parser::tag::hostname, Modifiers>
 			{
-				typedef custom_parser::ipv6_address_parser result_type;
+				typedef custom_parser::hostname_parser result_type;
 
 				result_type operator()(unused_type, unused_type) const
 				{
@@ -142,4 +132,4 @@ namespace boost
 	}
 }
 
-#endif /* IPV6_ADDRESS_PARSER_HPP */
+#endif /* HOSTNAME_PARSER_HPP */
