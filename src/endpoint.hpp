@@ -48,6 +48,8 @@
 #define ENDPOINT_HPP
 
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 
 /**
  * \brief A base endpoint class.
@@ -72,6 +74,11 @@ class endpoint
 		typedef boost::asio::ip::udp::resolver::query::flags flags_type;
 
 		/**
+		 * \brief Base service type.
+		 */
+		typedef std::string base_service_type;
+
+		/**
 		 * \brief The Boost ASIO endpoint type.
 		 */
 		typedef boost::asio::ip::udp::endpoint ep_type;
@@ -80,9 +87,10 @@ class endpoint
 		 * \brief Get a Boost ASIO endpoint.
 		 * \param protocol The protocol to use.
 		 * \param flags The flags to use for the resolution.
+		 * \param default_service The default service to use.
 		 * \return The Boost ASIO endpoint.
 		 */
-		virtual ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags) = 0;
+		virtual ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service) = 0;
 };
 
 /**
@@ -99,9 +107,14 @@ class ip_endpoint : public endpoint
 		typedef AddressType address_type;
 
 		/**
+		 * \brief The base port type.
+		 */
+		typedef uint16_t base_port_type;
+
+		/**
 		 * \brief The port type.
 		 */
-		typedef uint16_t port_type;
+		typedef boost::optional<base_port_type> port_type;
 
 		/**
 		 * \brief Create an IPv4 endpoint.
@@ -114,9 +127,10 @@ class ip_endpoint : public endpoint
 		 * \brief Get a Boost ASIO endpoint.
 		 * \param protocol The protocol to use.
 		 * \param flags The flags to use for the resolution.
+		 * \param default_service The default service to use.
 		 * \return The Boost ASIO endpoint.
 		 */
-		ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags);
+		ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service);
 
 	private:
 
@@ -149,7 +163,7 @@ class hostname_endpoint : public endpoint
 		/**
 		 * \brief The service type.
 		 */
-		typedef std::string service_type;
+		typedef boost::optional<base_service_type> service_type;
 
 		/**
 		 * \brief Create a hostname endpoint.
@@ -162,9 +176,10 @@ class hostname_endpoint : public endpoint
 		 * \brief Get a Boost ASIO endpoint.
 		 * \param protocol The protocol to use.
 		 * \param flags The flags to use for the resolution.
+		 * \param default_service The default service to use.
 		 * \return The Boost ASIO endpoint.
 		 */
-		ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags);
+		ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service);
 
 	private:
 
@@ -182,9 +197,15 @@ inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_t
 }
 
 template <typename AddressType>
-inline typename ip_endpoint<AddressType>::ep_type ip_endpoint<AddressType>::to_boost_asio_endpoint(protocol_type, flags_type)
+inline typename ip_endpoint<AddressType>::ep_type ip_endpoint<AddressType>::to_boost_asio_endpoint(protocol_type, flags_type, const base_service_type& default_service)
 {
-	return ep_type(m_address, m_port);
+	if (m_port)
+	{
+		return ep_type(m_address, *m_port);
+	} else
+	{
+		return ep_type(m_address, boost::lexical_cast<base_port_type>(default_service));
+	}
 }
 
 inline hostname_endpoint::hostname_endpoint(const host_type& host, const service_type& service) :

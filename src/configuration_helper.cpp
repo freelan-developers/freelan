@@ -61,7 +61,7 @@ namespace fl = freelan;
 
 namespace
 {
-	const uint16_t DEFAULT_PORT = 12000;
+	const std::string DEFAULT_PORT = "12000";
 
 	fl::configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
 	{
@@ -101,7 +101,7 @@ namespace
 
 		if (r && (first == str.end()) && ep)
 		{
-			return ep->to_boost_asio_endpoint(to_protocol_type(hostname_resolution_protocol), query::address_configured | query::passive);
+			return ep->to_boost_asio_endpoint(to_protocol_type(hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_PORT);
 		}
 
 		throw po::invalid_option_value(str);

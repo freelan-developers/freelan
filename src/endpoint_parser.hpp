@@ -52,6 +52,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 #include "endpoint.hpp"
 
@@ -89,11 +90,6 @@ namespace custom_parser
 			typedef boost::shared_ptr< ::endpoint> type;
 		};
 
-		endpoint_parser(uint16_t default_port) :
-			m_default_port(default_port)
-		{
-		}
-
 		template <typename Iterator, typename Context, typename Skipper, typename Attribute>
 		bool parse(Iterator& first, Iterator const& last, Context&, Skipper const& skipper, Attribute& attr) const
 		{
@@ -113,9 +109,9 @@ namespace custom_parser
 
 			boost::asio::ip::address_v6 address_v6;
 			boost::asio::ip::address_v4 address_v4;
-			uint16_t port = m_default_port;
+			boost::optional<uint16_t> port;
 			std::string host;
-			std::string service = boost::lexical_cast<std::string>(m_default_port);
+			boost::optional<std::string> service;
 
 			r = qi::parse(
 					first,
@@ -144,19 +140,19 @@ namespace custom_parser
 				{
 					first = first_save;
 
-					std::vector<char> _service;
+					std::vector<char> service_vector;
 
 					r = qi::parse(
 							first,
 							last,
-							hostname[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum][ph::ref(_service) = qi::_1]))
+							hostname[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum][ph::ref(service_vector) = qi::_1]))
 							);
 
 					if (r)
 					{
-						if (_service.size())
+						if (service_vector.size())
 						{
-							service = std::string(_service.begin(), _service.end());
+							service = std::string(service_vector.begin(), service_vector.end());
 						}
 
 						boost::spirit::traits::assign_to(boost::make_shared<hostname_endpoint>(host, service), attr);
@@ -172,10 +168,6 @@ namespace custom_parser
 		{
 			return boost::spirit::info("endpoint");
 		}
-
-		private:
-
-			uint16_t m_default_port;
 	};
 }
 
@@ -192,8 +184,7 @@ namespace boost
 
 				result_type operator()(unused_type, unused_type) const
 				{
-					//TODO: Remove this constant
-					return result_type(12000);
+					return result_type();
 				}
 			};
 		}
