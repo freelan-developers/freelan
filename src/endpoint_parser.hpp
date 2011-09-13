@@ -104,7 +104,7 @@ namespace custom_parser
 			using custom_parser::ipv6_address;
 			using custom_parser::hostname;
 
-			typedef qi::uint_parser<uint16_t, 10, 1, 5> port_parser;
+			qi::uint_parser<uint16_t, 10, 1, 5> port_parser;
 
 			qi::skip_over(first, last, skipper);
 
@@ -121,7 +121,7 @@ namespace custom_parser
 					first,
 					last,
 					ipv6_address[ph::ref(address_v6) = qi::_1] |
-					qi::no_skip[('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser()[ph::ref(port) = qi::_1])]
+					qi::no_skip[('[' >> ipv6_address[ph::ref(address_v6) = qi::_1] >> ']' >> ':' >> port_parser[ph::ref(port) = qi::_1])]
 					);
 
 			if (r)
@@ -134,7 +134,7 @@ namespace custom_parser
 				r = qi::parse(
 						first,
 						last,
-						ipv4_address[ph::ref(address_v4) = qi::_1] >> qi::no_skip[-(':' >> (port_parser())[ph::ref(port) = qi::_1])]
+						ipv4_address[ph::ref(address_v4) = qi::_1] >> qi::no_skip[-(':' >> (port_parser)[ph::ref(port) = qi::_1])]
 						);
 
 				if (r)
@@ -144,15 +144,21 @@ namespace custom_parser
 				{
 					first = first_save;
 
-					//TODO: Handle service
+					std::vector<char> _service;
+
 					r = qi::parse(
 							first,
 							last,
-							hostname[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum]))
+							hostname[ph::ref(host) = qi::_1] >> -(':' >> (qi::repeat(1, 63)[qi::alnum][ph::ref(_service) = qi::_1]))
 							);
 
 					if (r)
 					{
+						if (_service.size())
+						{
+							service = std::string(_service.begin(), _service.end());
+						}
+
 						boost::spirit::traits::assign_to(boost::make_shared<hostname_endpoint>(host, service), attr);
 					}
 				}
