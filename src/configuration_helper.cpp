@@ -86,7 +86,14 @@ namespace
 
 		if (r && (first == str.end()) && ep)
 		{
-			return ep->to_boost_asio_endpoint(hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_PORT);
+			try
+			{
+				return ep->to_boost_asio_endpoint(hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_PORT);
+			}
+			catch (boost::system::system_error& se)
+			{
+				throw po::invalid_option_value(str + ": " + se.what());
+			}
 		}
 
 		throw po::invalid_option_value(str);
