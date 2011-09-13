@@ -70,12 +70,7 @@ namespace freelan
 		/**
 		 * \brief The hostname resolution protocol type.
 		 */
-		enum hostname_resolution_protocol_type
-		{
-			HRP_SYSTEM_DEFAULT, /**< \brief The system default. */
-			HRP_IPV4, /**< \brief IPv4 protocol. */
-			HRP_IPV6 /**< \brief IPv6 protocol. */
-		};
+		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
 
 		/**
 		 * \brief The address/netmask pair.
