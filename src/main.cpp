@@ -116,8 +116,6 @@ int main(int argc, char** argv)
 
 		if (parse_options(argc, argv, configuration))
 		{
-			std::cout << "network.hostname_resolution_protocol: " << configuration.hostname_resolution_protocol << std::endl;
-			std::cout << "network.listen_on: " << configuration.listen_on << std::endl;
 		}
 	}
 	catch (std::exception& ex)

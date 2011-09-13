@@ -50,9 +50,11 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/bind.hpp>
 
 #include "endpoint.hpp"
 #include "endpoint_parser.hpp"
+#include "ip_address_netmask_parser.hpp"
 
 namespace po = boost::program_options;
 namespace qi = boost::spirit::qi;
@@ -75,10 +77,12 @@ namespace
 		throw po::invalid_option_value(str);
 	}
 
-	fl::configuration::ep_type parse_endpoint(const std::string& str, fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
+	fl::configuration::ep_type parse_endpoint(
+			const std::string& str,
+			fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol,
+			boost::asio::ip::udp::resolver::query::flags flags
+			)
 	{
-		typedef boost::asio::ip::udp::resolver::query query;
-
 		boost::shared_ptr<endpoint> ep;
 
 		std::string::const_iterator first = str.begin();
@@ -88,12 +92,29 @@ namespace
 		{
 			try
 			{
-				return ep->to_boost_asio_endpoint(hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_PORT);
+				return ep->to_boost_asio_endpoint(hostname_resolution_protocol, flags, DEFAULT_PORT);
 			}
 			catch (boost::system::system_error& se)
 			{
 				throw po::invalid_option_value(str + ": " + se.what());
 			}
+		}
+
+		throw po::invalid_option_value(str);
+	}
+
+	std::vector<fl::configuration::ip_address_netmask_type> parse_ip_address_netmask_list(const std::string& str)
+	{
+		typedef std::vector<fl::configuration::ip_address_netmask_type> result_type;
+		
+		result_type result;
+
+		std::string::const_iterator first = str.begin();
+		bool r = qi::phrase_parse(first, str.end(), *(custom_parser::ip_address_netmask[boost::bind(&result_type::push_back, &result, _1)]), qi::space);
+
+		if (r && (first == str.end()))
+		{
+			return result;
 		}
 
 		throw po::invalid_option_value(str);
@@ -137,6 +158,9 @@ po::options_description get_security_options()
 
 void setup_configuration(fl::configuration& configuration, const po::variables_map& vm)
 {
+	typedef boost::asio::ip::udp::resolver::query query;
+
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
-	configuration.listen_on = parse_endpoint(vm["network.listen_on"].as<std::string>(), configuration.hostname_resolution_protocol);
+	configuration.listen_on = parse_endpoint(vm["network.listen_on"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured | query::passive);
+	configuration.tap_adapter_addresses = parse_ip_address_netmask_list(vm["network.tap_adapter_addresses"].as<std::string>());
 }
