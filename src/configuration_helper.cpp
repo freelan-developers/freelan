@@ -61,7 +61,7 @@ namespace fl = freelan;
 
 namespace
 {
-	const unsigned int DEFAULT_PORT = 12000;
+	const uint16_t DEFAULT_PORT = 12000;
 
 	fl::configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
 	{
