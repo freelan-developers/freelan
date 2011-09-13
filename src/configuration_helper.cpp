@@ -66,32 +66,17 @@ namespace
 	fl::configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
 	{
 		if (str == "system_default")
-			return fl::configuration::HRP_SYSTEM_DEFAULT;
+			return boost::asio::ip::udp::v4();
 		else if (str == "ipv4")
-			return fl::configuration::HRP_IPV4;
+			return boost::asio::ip::udp::v4();
 		else if (str == "ipv6")
-			return fl::configuration::HRP_IPV6;
+			return boost::asio::ip::udp::v6();
 
 		throw po::invalid_option_value(str);
 	}
 
-	boost::asio::ip::udp::resolver::query::protocol_type to_protocol_type(fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
-	{
-		switch (hostname_resolution_protocol)
-		{
-			case fl::configuration::HRP_SYSTEM_DEFAULT:
-			case fl::configuration::HRP_IPV4:
-				return boost::asio::ip::udp::v4();
-			case fl::configuration::HRP_IPV6:
-				return boost::asio::ip::udp::v6();
-		}
-
-		throw std::logic_error("invalid hostname_resolution_protocol");
-	}
-
 	fl::configuration::ep_type parse_endpoint(const std::string& str, fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol)
 	{
-		//TODO: Change hostname_resolution_protocol_type parameter to boost::asio::ip::udp::resolver::query::protocol_type
 		typedef boost::asio::ip::udp::resolver::query query;
 
 		boost::shared_ptr<endpoint> ep;
@@ -101,7 +86,7 @@ namespace
 
 		if (r && (first == str.end()) && ep)
 		{
-			return ep->to_boost_asio_endpoint(to_protocol_type(hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_PORT);
+			return ep->to_boost_asio_endpoint(hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_PORT);
 		}
 
 		throw po::invalid_option_value(str);
