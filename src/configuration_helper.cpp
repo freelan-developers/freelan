@@ -233,8 +233,8 @@ po::options_description get_security_options()
 		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
 		("security.use_whitelist", po::value<bool>()->default_value(false), "Whether to use the whitelist.")
 		("security.use_blacklist", po::value<bool>()->default_value(true), "Whether to use the blacklist.")
-		("security.whitelist", po::value<std::string>()->multitoken()->composing(), "The whitelist.")
-		("security.blacklist", po::value<std::string>()->multitoken()->composing(), "The blacklist.")
+		("security.whitelist", po::value<std::string>()->multitoken(), "The whitelist.")
+		("security.blacklist", po::value<std::string>()->multitoken(), "The blacklist.")
 		;
 
 	return result;
