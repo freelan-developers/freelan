@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 	}
 	catch (std::exception& ex)
 	{
-		std::cerr << ex.what() << std::endl;
+		std::cerr << "Error: " << ex.what() << std::endl;
 
 		return EXIT_FAILURE;
 	}

@@ -51,6 +51,7 @@
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
 #include "endpoint.hpp"
 #include "endpoint_parser.hpp"
@@ -103,6 +104,40 @@ namespace
 		throw po::invalid_option_value(str);
 	}
 
+	std::vector<fl::configuration::ep_type> parse_endpoint_list(
+			const std::string& str,
+			fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol,
+			boost::asio::ip::udp::resolver::query::flags flags
+			)
+	{
+		typedef std::vector<boost::shared_ptr<endpoint> > list_type;
+		
+		list_type list;
+
+		std::string::const_iterator first = str.begin();
+		bool r = qi::phrase_parse(first, str.end(), *(custom_parser::endpoint[boost::bind(&list_type::push_back, &list, _1)]), qi::space);
+
+		if (r && (first == str.end()))
+		{
+			typedef std::vector<fl::configuration::ep_type> result_type;
+
+			result_type result;
+
+			BOOST_FOREACH(boost::shared_ptr<endpoint>& ep, list)
+			{
+				try
+				{
+					result.push_back(ep->to_boost_asio_endpoint(hostname_resolution_protocol, flags, DEFAULT_PORT));
+				}
+				catch (boost::system::system_error&)
+				{
+				}
+			}
+		}
+
+		throw po::invalid_option_value(str);
+	}
+
 	std::vector<fl::configuration::ip_address_netmask_type> parse_ip_address_netmask_list(const std::string& str)
 	{
 		typedef std::vector<fl::configuration::ip_address_netmask_type> result_type;
@@ -118,6 +153,53 @@ namespace
 		}
 
 		throw po::invalid_option_value(str);
+	}
+
+	fl::configuration::routing_method_type to_routing_method(const std::string& str)
+	{
+		if (str == "switch")
+			return fl::configuration::RM_SWITCH;
+		if (str == "hub")
+			return fl::configuration::RM_HUB;
+
+		throw po::invalid_option_value(str);
+	}
+
+	fl::configuration::certificate_validation_method_type to_certificate_validation_method(const std::string& str)
+	{
+		if (str == "default")
+			return fl::configuration::CVM_DEFAULT;
+		if (str == "none")
+			return fl::configuration::CVM_NONE;
+
+		throw po::invalid_option_value(str);
+	}
+
+	boost::posix_time::time_duration to_time_duration(unsigned int msduration)
+	{
+		return boost::posix_time::milliseconds(msduration);
+	}
+
+	cryptoplus::file load_file(const std::string& filename)
+	{
+		try
+		{
+			return cryptoplus::file::open(filename);
+		}
+		catch (std::runtime_error&)
+		{
+			throw std::runtime_error("Unable to open the specified file: " + filename);
+		}
+	}
+
+	fl::configuration::cert_type load_certificate(const std::string& filename)
+	{
+		return fl::configuration::cert_type::from_certificate(load_file(filename));
+	}
+
+	cryptoplus::pkey::pkey load_private_key(const std::string& filename)
+	{
+		return cryptoplus::pkey::pkey::from_private_key(load_file(filename));
 	}
 }
 
@@ -159,8 +241,26 @@ po::options_description get_security_options()
 void setup_configuration(fl::configuration& configuration, const po::variables_map& vm)
 {
 	typedef boost::asio::ip::udp::resolver::query query;
+	typedef fl::configuration::cert_type cert_type;
+	typedef cryptoplus::pkey::pkey pkey;
 
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
 	configuration.listen_on = parse_endpoint(vm["network.listen_on"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured | query::passive);
 	configuration.tap_adapter_addresses = parse_ip_address_netmask_list(vm["network.tap_adapter_addresses"].as<std::string>());
+	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
+	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
+	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
+	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
+
+	cert_type certificate = load_certificate(vm["security.certificate_file"].as<std::string>());
+	pkey private_key = load_private_key(vm["security.private_key"].as<std::string>());
+
+	configuration.identity = fscp::identity_store(certificate, private_key);
+	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
+	//TODO: We need to create a callback
+	//configuration.certificate_validation_script =
+	configuration.use_whitelist = vm["security.use_whitelist"].as<bool>();
+	configuration.whitelist = parse_endpoint_list(vm["security.whitelist"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured);
+	configuration.use_blacklist = vm["security.use_blacklist"].as<bool>();
+	configuration.blacklist = parse_endpoint_list(vm["security.blacklist"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured);
 }
