@@ -144,8 +144,11 @@ int main()
 
 	boost::asio::io_service _io_service;
 
-	fscp::server alice_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000), load_identity_store("alice"));
-	fscp::server bob_server(_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001), load_identity_store("bob"));
+	fscp::server alice_server(_io_service, load_identity_store("alice"));
+	fscp::server bob_server(_io_service, load_identity_store("bob"));
+
+	alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
+	bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
 
 	boost::asio::ip::udp::resolver resolver(_io_service);
 	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");

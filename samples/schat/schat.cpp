@@ -153,7 +153,8 @@ int main(int argc, char** argv)
 
 		const std::string local_name = certificate.subject().find(NID_commonName)->data().str();
 
-		fscp::server server(io_service, listen_ep, fscp::identity_store(certificate, private_key));
+		fscp::server server(io_service, fscp::identity_store(certificate, private_key));
+		server.open(listen_ep);
 
 		server.set_hello_message_callback(&on_hello_request);
 		server.set_presentation_message_callback(&on_presentation);
