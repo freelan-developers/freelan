@@ -146,15 +146,26 @@ namespace fscp
 			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
-			 * \param listen_endpoint The listen endpoint.
 			 * \param identity The identity store.
 			 */
-			server(boost::asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& identity);
+			server(boost::asio::io_service& io_service, const identity_store& identity);
+
+			/**
+			 * \brief Open the server.
+			 * \param listen_endpoint The listen endpoint.
+			 */
+			void open(const ep_type& listen_endpoint);
 
 			/**
 			 * \brief Close the server.
 			 */
 			void close();
+
+			/**
+			 * \brief Determine whether the socket is open.
+			 * \return true if the socket is open.
+			 */
+			bool is_open() const;
 
 			/**
 			 * \brief Set the attached data.
@@ -400,6 +411,11 @@ namespace fscp
 
 			boost::asio::deadline_timer m_keep_alive_timer;
 	};
+
+	inline bool server::is_open() const
+	{
+		return m_socket.is_open();
+	}
 
 	template <typename T>
 	inline void server::set_data(T* data)

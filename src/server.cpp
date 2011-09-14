@@ -62,9 +62,9 @@ using namespace boost;
 
 namespace fscp
 {
-	server::server(asio::io_service& io_service, const ep_type& listen_endpoint, const identity_store& _identity) :
+	server::server(asio::io_service& io_service, const identity_store& _identity) :
 		m_data(0),
-		m_socket(io_service, listen_endpoint),
+		m_socket(io_service),
 		m_identity_store(_identity),
 		m_hello_current_unique_number(0),
 		m_accept_hello_messages_default(true),
@@ -79,6 +79,12 @@ namespace fscp
 		m_data_message_callback(0),
 		m_keep_alive_timer(io_service, SESSION_KEEP_ALIVE_PERIOD)
 	{
+	}
+
+	void server::open(const ep_type& listen_endpoint)
+	{
+		m_socket.open(listen_endpoint.protocol());
+		m_socket.bind(listen_endpoint);
 		async_receive();
 		m_keep_alive_timer.async_wait(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error));
 	}
