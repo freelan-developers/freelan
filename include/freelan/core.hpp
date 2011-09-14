@@ -91,16 +91,21 @@ namespace freelan
 			const configuration& configuration_() const;
 	
 			/**
+			 * \brief Get the associated server.
+			 * \return The associated server.
+			 */
+			fscp::server& server();
+
+			/**
 			 * \brief Get the associated tap adapter.
 			 * \return The associated tap adapter.
 			 */
 			asiotap::tap_adapter& tap_adapter();
 
 			/**
-			 * \brief Get the associated server.
-			 * \return The associated server.
+			 * \brief Close the current core instance.
 			 */
-			fscp::server& server();
+			void close();
 
 		private:
 	
@@ -118,8 +123,8 @@ namespace freelan
 			void on_write_done(const boost::system::error_code&, size_t);
 
 			configuration m_configuration;
-			asiotap::tap_adapter m_tap_adapter;
 			fscp::server m_server;
+			asiotap::tap_adapter m_tap_adapter;
 	};
 	
 	inline const configuration& core::configuration_() const
@@ -127,14 +132,14 @@ namespace freelan
 		return m_configuration;
 	}
 
-	inline asiotap::tap_adapter& core::tap_adapter()
-	{
-		return m_tap_adapter;
-	}
-
 	inline fscp::server& core::server()
 	{
 		return m_server;
+	}
+
+	inline asiotap::tap_adapter& core::tap_adapter()
+	{
+		return m_tap_adapter;
 	}
 }
 

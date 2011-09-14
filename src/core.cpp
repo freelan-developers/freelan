@@ -51,8 +51,8 @@ namespace freelan
 {
 	core::core(boost::asio::io_service& io_service, const configuration& _configuration) :
 		m_configuration(_configuration),
-		m_tap_adapter(io_service),
-		m_server(io_service, m_configuration.listen_on, *m_configuration.identity)
+		m_server(io_service, m_configuration.listen_on, *m_configuration.identity),
+		m_tap_adapter(io_service)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
 		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4, _5));
@@ -62,6 +62,15 @@ namespace freelan
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 	}
 	
+	void core::close()
+	{
+		m_tap_adapter.cancel();
+		m_tap_adapter.set_connected_state(false);
+		m_tap_adapter.close();
+
+		m_server.close();
+	}
+
 	void core::async_greet(const ep_type& target)
 	{
 		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3, _4), m_configuration.hello_timeout);
