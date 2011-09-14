@@ -133,6 +133,8 @@ namespace
 				{
 				}
 			}
+
+			return result;
 		}
 
 		throw po::invalid_option_value(str);
@@ -253,7 +255,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 
 	cert_type certificate = load_certificate(vm["security.certificate_file"].as<std::string>());
-	pkey private_key = load_private_key(vm["security.private_key"].as<std::string>());
+	pkey private_key = load_private_key(vm["security.private_key_file"].as<std::string>());
 
 	configuration.identity = fscp::identity_store(certificate, private_key);
 	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
