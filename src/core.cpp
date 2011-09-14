@@ -62,11 +62,11 @@ namespace freelan
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1, _2));
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 	}
-	
+
 	void core::open()
 	{
 		m_server.open(m_configuration.listen_on);
-		
+
 		m_tap_adapter.open();
 
 		BOOST_FOREACH(const configuration::ip_address_netmask_type& ian, m_configuration.tap_adapter_addresses)
@@ -115,7 +115,7 @@ namespace freelan
 
 		return false;
 	}
-	
+
 	void core::on_hello_response(fscp::server& _server, const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
 	{
 		(void)time_duration;
@@ -125,7 +125,7 @@ namespace freelan
 			_server.async_introduce_to(sender);
 		}
 	}
-	
+
 	bool core::on_presentation(fscp::server& _server, const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)
 	{
 		(void)sig_cert;
@@ -144,7 +144,7 @@ namespace freelan
 
 		return false;
 	}
-	
+
 	bool core::on_session_request(fscp::server& _server, const ep_type& sender, bool default_accept)
 	{
 		(void)_server;
@@ -174,7 +174,7 @@ namespace freelan
 		(void)_server;
 		(void)sender;
 	}
-	
+
 	void core::on_data(fscp::server& _server, const ep_type& sender, boost::asio::const_buffer data)
 	{
 		(void)_server;
@@ -185,7 +185,7 @@ namespace freelan
 		// FIXME: We should copy the data buffer as its lifetime is *not* guaranteed to span across the async_write !
 		m_tap_adapter.async_write(data, boost::bind(&core::on_write_done, this, _1, _2));
 	}
-	
+
 	void core::on_write_done(const boost::system::error_code& ec, size_t cnt)
 	{
 		(void)ec;

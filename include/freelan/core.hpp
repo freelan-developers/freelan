@@ -61,7 +61,7 @@ namespace freelan
 	class core
 	{
 		public:
-	
+
 			/**
 			 * \brief The endpoint type.
 			 */
@@ -89,7 +89,7 @@ namespace freelan
 			 * \return The current configuration.
 			 */
 			const configuration& configuration_() const;
-	
+
 			/**
 			 * \brief Get the associated server.
 			 * \return The associated server.
@@ -113,7 +113,7 @@ namespace freelan
 			void close();
 
 		private:
-	
+
 			//fscp::server related methods
 			void async_greet(const ep_type&);
 			bool on_hello_request(fscp::server&, const ep_type&, bool);
@@ -131,7 +131,7 @@ namespace freelan
 			fscp::server m_server;
 			asiotap::tap_adapter m_tap_adapter;
 	};
-	
+
 	inline const configuration& core::configuration_() const
 	{
 		return m_configuration;

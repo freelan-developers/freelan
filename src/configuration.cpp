@@ -50,6 +50,6 @@ namespace freelan
 	configuration::configuration() :
 		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
 		certificate_validation_callback(0)
-		{
-		}
+	{
+	}
 }
