@@ -46,12 +46,13 @@
 #include "core.hpp"
 
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
 namespace freelan
 {
 	core::core(boost::asio::io_service& io_service, const configuration& _configuration) :
 		m_configuration(_configuration),
-		m_server(io_service, m_configuration.listen_on, *m_configuration.identity),
+		m_server(io_service, *m_configuration.identity),
 		m_tap_adapter(io_service)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
@@ -62,8 +63,30 @@ namespace freelan
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 	}
 	
+	void core::open()
+	{
+		m_server.open(m_configuration.listen_on);
+		
+		m_tap_adapter.open();
+
+		BOOST_FOREACH(const configuration::ip_address_netmask_type& ian, m_configuration.tap_adapter_addresses)
+		{
+			m_tap_adapter.add_ip_address(ian.address, ian.netmask);
+		}
+
+		m_tap_adapter.set_connected_state(true);
+
+		//TODO: Start an asynchronous read on the tap adapter
+		//m_tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+	}
+
 	void core::close()
 	{
+		BOOST_FOREACH(configuration::ip_address_netmask_type& ian, m_configuration.tap_adapter_addresses)
+		{
+			m_tap_adapter.remove_ip_address(ian.address, ian.netmask);
+		}
+
 		m_tap_adapter.cancel();
 		m_tap_adapter.set_connected_state(false);
 		m_tap_adapter.close();

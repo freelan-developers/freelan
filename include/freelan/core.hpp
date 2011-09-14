@@ -103,6 +103,11 @@ namespace freelan
 			asiotap::tap_adapter& tap_adapter();
 
 			/**
+			 * \brief Open the current core instance.
+			 */
+			void open();
+
+			/**
 			 * \brief Close the current core instance.
 			 */
 			void close();
