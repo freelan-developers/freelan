@@ -360,8 +360,6 @@ namespace fscp
 			typedef std::map<ep_type, presentation_store> presentation_store_map;
 
 			void do_introduce_to(const ep_type&);
-			void do_set_presentation(const ep_type&, cert_type, cert_type);
-			void do_clear_presentation(const ep_type&);
 			void handle_presentation_message_from(const presentation_message&, const ep_type&);
 
 			presentation_message_callback m_presentation_message_callback;
@@ -457,6 +455,11 @@ namespace fscp
 	inline void server::set_presentation_message_callback(presentation_message_callback callback)
 	{
 		m_presentation_message_callback = callback;
+	}
+
+	inline void server::clear_presentation(const ep_type& target)
+	{
+		m_presentation_map.erase(target);
 	}
 
 	inline void server::set_accept_session_request_messages_default(bool value)
