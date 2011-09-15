@@ -91,7 +91,10 @@ namespace fscp
 
 	void server::close()
 	{
-		get_io_service().post(bind(&server::do_close, this));
+		get_io_service().post(bind(&hello_request_list::clear, &m_hello_request_list));
+
+		m_keep_alive_timer.cancel();
+		m_socket.close();
 	}
 
 	void server::async_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
@@ -157,13 +160,6 @@ namespace fscp
 	}
 
 	/* Common */
-
-	void server::do_close()
-	{
-		m_keep_alive_timer.cancel();
-		m_hello_request_list.clear();
-		m_socket.close();
-	}
 
 	void server::async_receive()
 	{

@@ -340,7 +340,6 @@ namespace fscp
 
 		private:
 
-			void do_close();
 			void async_receive();
 			void handle_receive_from(const boost::system::error_code&, size_t);
 
