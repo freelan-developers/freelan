@@ -68,6 +68,10 @@ namespace fscp
 
 	/**
 	 * \brief A FSCP server.
+	 *
+	 * This class is *NOT* thread-safe !
+	 *
+	 * Once an instance is running into a io_service, calling any method (except close()) is undefined behavior.
 	 */
 	class server
 	{
@@ -158,6 +162,8 @@ namespace fscp
 
 			/**
 			 * \brief Close the server.
+			 *
+			 * This method can be called from another thread.
 			 */
 			void close();
 
