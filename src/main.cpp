@@ -182,9 +182,13 @@ int main(int argc, char** argv)
 
 			core.open();
 
+			stop_function = boost::bind(&freelan::core::close, boost::ref(core));
+
 			std::cout << "Starting freelan core using tap adapter: " << core.tap_adapter().name() << std::endl;
 
 			io_service.run();
+
+			stop_function = 0;
 		}
 	}
 	catch (std::exception& ex)
