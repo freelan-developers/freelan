@@ -55,6 +55,12 @@ namespace iconvplus
 	class iconv_error_category : public boost::system::error_category
 	{
 		public:
+			/**
+			 * \brief Constructor.
+			 */
+			iconv_error_category()
+			{
+			}
 
 			/**
 			 * \brief Get the name of the category.
