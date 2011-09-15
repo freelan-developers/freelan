@@ -183,7 +183,7 @@ void dhcp_frame_read(asiotap::osi::const_helper<asiotap::osi::dhcp_frame> frame)
 
 	typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame>::const_iterator const_iterator;
 
-	for (const_iterator it = frame.options_begin(); (it != frame.options_end()) && (it->tag() != asiotap::osi::dhcp_option::end); ++it)
+	for (const_iterator it = frame.begin(); (it != frame.end()) && (it->tag() != asiotap::osi::dhcp_option::end); ++it)
 	{
 		std::cout << it->tag() << ", ";
 	}
