@@ -120,6 +120,48 @@ static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& 
 	}
 }
 
+void handle_read_line(fscp::server& server, const char* line)
+{
+	if (line[0] == '!')
+	{
+		std::istringstream iss(line + 1);
+
+		std::string command;
+
+		if (iss >> command)
+		{
+			if (command == "connect")
+			{
+				std::string host, port;
+
+				iss >> host >> port;
+
+				boost::asio::ip::udp::resolver resolver(server.get_io_service());
+				boost::asio::ip::udp::resolver::query query(host, port);
+
+				try
+				{
+					boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
+
+					server.async_greet(ep, &on_hello_response);
+
+					std::cout << "Contacting " << ep << "..." << std::endl;
+				}
+				catch (std::exception& ex)
+				{
+					std::cerr << "Unable to resolve the specified host/port: " << ex.what() << std::endl;
+				}
+			} else if (command == "quit" || command == "exit")
+			{
+				server.close();
+			}
+		}
+	} else
+	{
+		server.async_send_data_to_all(boost::asio::buffer(line, strlen(line)));
+	}
+}
+
 #ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 
 void handle_read_input(fscp::server& server, boost::asio::posix::stream_descriptor& input, const boost::system::error_code& ec, boost::asio::streambuf& input_buffer, size_t length)
@@ -131,46 +173,9 @@ void handle_read_input(fscp::server& server, boost::asio::posix::stream_descript
 		input_buffer.sgetn(line, length - 1);
 		input_buffer.consume(1);
 
-		if (line[0] == '!')
-		{
-			std::istringstream iss(line + 1);
+		handle_read_line(server, line);
 
-			std::string command;
-
-			if (iss >> command)
-			{
-				if (command == "connect")
-				{
-					std::string host, port;
-
-					iss >> host >> port;
-
-					boost::asio::ip::udp::resolver resolver(server.get_io_service());
-					boost::asio::ip::udp::resolver::query query(host, port);
-
-					try
-					{
-						boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
-
-						server.async_greet(ep, &on_hello_response);
-
-						std::cout << "Contacting " << ep << "..." << std::endl;
-					}
-					catch (std::exception& ex)
-					{
-						std::cerr << "Unable to resolve the specified host/port: " << ex.what() << std::endl;
-					}
-				} else if (command == "quit" || command == "exit")
-				{
-					server.close();
-				}
-			}
-		} else
-		{
-			server.async_send_data_to_all(boost::asio::buffer(line, strlen(line)));
-		}
-
-		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, server, input, boost::asio::placeholders::error, input_buffer, boost::asio::placeholders::bytes_transferred));
+		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, boost::ref(server), boost::ref(input), boost::asio::placeholders::error, boost::ref(input_buffer), boost::asio::placeholders::bytes_transferred));
 	} else
 	{
 		server.close();
@@ -178,6 +183,22 @@ void handle_read_input(fscp::server& server, boost::asio::posix::stream_descript
 }
 
 #else
+
+void read_input(fscp::server& server)
+{
+	char line[512] = {};
+
+	if (std::cin.getline(line, sizeof(line)))
+	{
+		handle_read_line(server, line);
+	}	
+
+	if (server.is_open())
+	{
+		server.get_io_service().post(boost::bind(&read_input, boost::ref(server)));
+	}
+}
+
 #endif
 
 int main(int argc, char** argv)
@@ -229,10 +250,9 @@ int main(int argc, char** argv)
 #ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 		boost::asio::streambuf input_buffer(512);
 		boost::asio::posix::stream_descriptor input(io_service, ::dup(STDIN_FILENO));
-		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, server, input, boost::asio::placeholders::error, input_buffer, boost::asio::placeholders::bytes_transferred));
+		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, boost::ref(server), boost::ref(input), boost::asio::placeholders::error, boost::ref(input_buffer), boost::asio::placeholders::bytes_transferred));
 #else
-		(void)on_hello_response;
-		//TODO: Implement Windows specific code
+		server.get_io_service().post(boost::bind(&read_input, boost::ref(server)));
 #endif
 
 		boost::thread thread(boost::bind(&boost::asio::io_service::run, &io_service));
