@@ -330,7 +330,7 @@ namespace asiotap
 	template <typename Service>
 	inline size_t basic_tap_adapter<Service>::write(const boost::asio::const_buffer& buffer, boost::system::error_code& ec)
 	{
-		return this->service.read(this->implementation, buffer, ec);
+		return this->service.write(this->implementation, buffer, ec);
 	}
 
 	template <typename Service>
