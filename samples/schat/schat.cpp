@@ -120,11 +120,11 @@ static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& 
 	}
 }
 
-void handle_read_line(fscp::server& server, const char* line)
+void handle_read_line(fscp::server& server, std::string line)
 {
 	if (line[0] == '!')
 	{
-		std::istringstream iss(line + 1);
+		std::istringstream iss(line.substr(1));
 
 		std::string command;
 
@@ -158,7 +158,7 @@ void handle_read_line(fscp::server& server, const char* line)
 		}
 	} else
 	{
-		server.async_send_data_to_all(boost::asio::buffer(line, strlen(line)));
+		server.async_send_data_to_all(boost::asio::buffer(line));
 	}
 }
 
@@ -168,9 +168,9 @@ void handle_read_input(fscp::server& server, boost::asio::posix::stream_descript
 {
 	if (!ec)
 	{
-		char line[512] = {};
+		std::string line(length - 1, '\0');
 
-		input_buffer.sgetn(line, length - 1);
+		input_buffer.sgetn(&line[0], length - 1);
 		input_buffer.consume(1);
 
 		handle_read_line(server, line);
@@ -186,16 +186,8 @@ void handle_read_input(fscp::server& server, boost::asio::posix::stream_descript
 
 void read_input(fscp::server& server)
 {
-	char line[512] = {};
-
-	if (std::cin.getline(line, sizeof(line)))
-	{
-		handle_read_line(server, line);
-	}	
-
 	if (server.is_open())
 	{
-		server.get_io_service().post(boost::bind(&read_input, boost::ref(server)));
 	}
 }
 
@@ -247,19 +239,29 @@ int main(int argc, char** argv)
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;
 
+		boost::thread thread(boost::bind(&boost::asio::io_service::run, &io_service));
+
 #ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 		boost::asio::streambuf input_buffer(512);
 		boost::asio::posix::stream_descriptor input(io_service, ::dup(STDIN_FILENO));
 		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, boost::ref(server), boost::ref(input), boost::asio::placeholders::error, boost::ref(input_buffer), boost::asio::placeholders::bytes_transferred));
+
 #else
-		server.get_io_service().post(boost::bind(&read_input, boost::ref(server)));
+
+		std::cout << "No POSIX stream descriptors available. Press Ctrl+C twice to exit." << std::endl;
+
+		char line[512] = {};
+
+		while (std::cin.getline(line, sizeof(line)))
+		{
+			server.get_io_service().post(boost::bind(&handle_read_line, boost::ref(server), std::string(line)));
+		}	
+
 #endif
 
-		boost::thread thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		thread.join();
 
 		std::cout << "Chat closing..." << std::endl;
-
-		thread.join();
 	}
 	catch (std::exception& ex)
 	{
