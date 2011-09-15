@@ -298,6 +298,30 @@ Abstract
    matches the message. If the HMAC doesn't match, the message MUST be
    ignored.
 
+2.7. KEEP-ALIVE message format
+
+   A KEEP-ALIVE message is similar to a DATA message.
+
+2.7.1. KEEP-ALIVE message type
+
+   A KEEP-ALIVE message has a type value of 0x06.
+
+2.7.2. KEEP-ALIVE message fields
+
+   A KEEP-ALIVE is similar to a DATA message.
+
+   KEEP-ALIVE and DATA message share the same sequence counter.
+
+   A host who receives a KEEP-ALIVE message MUST also first check if
+   the hmac matches the message. If the HMAC doesn't match, the
+   message MUST be ignored.
+
+   The data contained in a KEEP-ALIVE message MUST be random to
+   prevent key analysis attacks.
+
+   The deciphered data SHOULD be ignored and not made accessible to the
+   upper layers.
+
 3. Algorithms
 
 3.1. Sealing
@@ -406,6 +430,14 @@ Abstract
    A well designed implementation should however limit session renewals
    to a minimum since key exchange is a critical procedure.
 
+4.3.2. Session timeout
+
+   If an host does not receive any DATA or KEEP-ALIVE message from 
+   another host during 30 seconds, he SHOULD consider the session lost.
+
+   After a session is lost, the hosts MUST renegotiate session keys
+   before sending any DATA message.
+   
 4.4. DATA messages
 
    Once a host has the session parameters for a target host, he can
@@ -446,6 +478,12 @@ Abstract
    The resulting 16 bytes block is the initialization vector to use to
    (de)cipher the DATA message.
 
+4.5. KEEP-ALIVE messages
+
+   If a host does not send any DATA message to another host within 10
+   seconds, he SHOULD send a KEEP-ALIVE message to maintain the session
+   alive.
+   
 5. Thanks
 
    Thanks to N.Caritey for his precious help regarding the security
