@@ -51,6 +51,8 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 
+#include <freelan/freelan.hpp>
+
 #include "configuration_helper.hpp"
 
 const std::string DEFAULT_CONFIGURATION_FILE = "config/freelan.cfg";
@@ -116,6 +118,15 @@ int main(int argc, char** argv)
 
 		if (parse_options(argc, argv, configuration))
 		{
+			boost::asio::io_service io_service;
+
+			freelan::core core(io_service, configuration);
+
+			core.open();
+
+			std::cout << "Starting freelan core using tap adapter: " << core.tap_adapter().name() << std::endl;
+
+			io_service.run();
 		}
 	}
 	catch (std::exception& ex)
