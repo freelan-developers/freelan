@@ -125,10 +125,12 @@ namespace freelan
 			void on_data(fscp::server&, const ep_type&, boost::asio::const_buffer);
 
 			//asiotap::tap_adapter related methods
+			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
 
 			configuration m_configuration;
 			fscp::server m_server;
 			asiotap::tap_adapter m_tap_adapter;
+			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 	};
 
 	inline const configuration& core::configuration_() const

@@ -76,8 +76,7 @@ namespace freelan
 
 		m_tap_adapter.set_connected_state(true);
 
-		//TODO: Start an asynchronous read on the tap adapter
-		//m_tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+		m_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(m_tap_adapter), _1, _2));
 	}
 
 	void core::close()
@@ -189,6 +188,26 @@ namespace freelan
 		if (ec)
 		{
 			//TODO: Report the error somehow.
+		}
+	}
+
+	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
+	{
+		if (!ec)
+		{
+			boost::asio::const_buffer data = boost::asio::buffer(m_tap_adapter_buffer, cnt);
+
+			//TODO: Here we must read the destination ethernet address and send to the targetted hosts only.
+
+			m_server.async_send_data_to_all(data);
+
+			// Start another read
+			_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(_tap_adapter), _1, _2));
+		}
+		else
+		{
+			//TODO: Report the error somehow.
+			close();
 		}
 	}
 }
