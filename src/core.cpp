@@ -182,15 +182,13 @@ namespace freelan
 
 		// TODO: Here we must read the source ethernet address and update the switch routing table according to it.
 
-		// FIXME: We should copy the data buffer as its lifetime is *not* guaranteed to span across the async_write !
-		m_tap_adapter.async_write(data, boost::bind(&core::on_write_done, this, _1, _2));
-	}
+		boost::system::error_code ec;
 
-	void core::on_write_done(const boost::system::error_code& ec, size_t cnt)
-	{
-		(void)ec;
-		(void)cnt;
+		m_tap_adapter.write(data, ec);
 
-		// TODO: Check ec for the possible cause of the error and eventually do something.
+		if (ec)
+		{
+			//TODO: Report the error somehow.
+		}
 	}
 }
