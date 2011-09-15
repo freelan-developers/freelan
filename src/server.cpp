@@ -179,6 +179,7 @@ namespace fscp
 					switch (message.type())
 					{
 						case MESSAGE_TYPE_DATA:
+						case MESSAGE_TYPE_KEEP_ALIVE:
 							{
 								data_message data_message(message);
 
@@ -535,7 +536,7 @@ namespace fscp
 
 				session_pair.keep_alive();
 
-				if (m_data_message_callback)
+				if ((_data_message.type() == MESSAGE_TYPE_DATA) && m_data_message_callback)
 				{
 					m_data_message_callback(*this, sender, boost::asio::buffer(m_data_buffer.data(), cnt));
 				}
@@ -567,8 +568,30 @@ namespace fscp
 		}
 	}
 
-	void server::do_send_keep_alive(const ep_type& /*target*/)
+	void server::do_send_keep_alive(const ep_type& target)
 	{
-		//TODO: Implement this method
+		if (m_socket.is_open())
+		{
+			session_pair& session_pair = m_session_map[target];
+
+			if (session_pair.has_remote_session())
+			{
+				size_t size = data_message::write_keep_alive(
+						m_send_buffer.data(),
+						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
+						session_pair.remote_session().sequence_number(),
+						session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
+						session_pair.remote_session().seal_key(),
+						session_pair.remote_session().seal_key_size(),
+						session_pair.remote_session().encryption_key(),
+						session_pair.remote_session().encryption_key_size()
+						);
+
+				session_pair.remote_session().increment_sequence_number();
+
+				m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target);
+			}
+		}
 	}
 }

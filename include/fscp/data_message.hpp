@@ -77,6 +77,21 @@ namespace fscp
 			static size_t write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
+			 * \brief Write a keep-alive message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
+			 * \param sequence_number The sequence number.
+			 * \param random_len The length of the random content to send.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \return The count of bytes written.
+			 */
+			static size_t write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, size_t random_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+
+			/**
 			 * \brief Create a data_message and map it on a buffer.
 			 * \param buf The buffer.
 			 * \param buf_len The buffer length.
@@ -187,6 +202,23 @@ namespace fscp
 			 */
 			template <typename T>
 			static std::vector<T> compute_initialization_vector(session_number_type session_number, sequence_number_type sequence_number, const void* enc_key, size_t enc_key_len);
+
+			/**
+			 * \brief Write a data message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
+			 * \param sequence_number The sequence number.
+			 * \param cleartext The cleartext data.
+			 * \param cleartext_len The data length.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \param type The message type.
+			 * \return The count of bytes written.
+			 */
+			static size_t raw_write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len, message_type type);
 
 		private:
 
