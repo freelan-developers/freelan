@@ -120,6 +120,66 @@ static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& 
 	}
 }
 
+#ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
+
+void handle_read_input(fscp::server& server, boost::asio::posix::stream_descriptor& input, const boost::system::error_code& ec, boost::asio::streambuf& input_buffer, size_t length)
+{
+	if (!ec)
+	{
+		char line[512] = {};
+
+		input_buffer.sgetn(line, length - 1);
+		input_buffer.consume(1);
+
+		if (line[0] == '!')
+		{
+			std::istringstream iss(line + 1);
+
+			std::string command;
+
+			if (iss >> command)
+			{
+				if (command == "connect")
+				{
+					std::string host, port;
+
+					iss >> host >> port;
+
+					boost::asio::ip::udp::resolver resolver(server.get_io_service());
+					boost::asio::ip::udp::resolver::query query(host, port);
+
+					try
+					{
+						boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
+
+						server.async_greet(ep, &on_hello_response);
+
+						std::cout << "Contacting " << ep << "..." << std::endl;
+					}
+					catch (std::exception& ex)
+					{
+						std::cerr << "Unable to resolve the specified host/port: " << ex.what() << std::endl;
+					}
+				} else if (command == "quit" || command == "exit")
+				{
+					server.close();
+				}
+			}
+		} else
+		{
+			server.async_send_data_to_all(boost::asio::buffer(line, strlen(line)));
+		}
+
+		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, server, input, boost::asio::placeholders::error, input_buffer, boost::asio::placeholders::bytes_transferred));
+	} else
+	{
+		server.close();
+	}
+}
+
+#else
+#endif
+
 int main(int argc, char** argv)
 {
 	register_signal_handlers();
@@ -166,54 +226,19 @@ int main(int argc, char** argv)
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;
 
+#ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
+		boost::asio::streambuf input_buffer(512);
+		boost::asio::posix::stream_descriptor input(io_service, ::dup(STDIN_FILENO));
+		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, server, input, boost::asio::placeholders::error, input_buffer, boost::asio::placeholders::bytes_transferred));
+#else
+		(void)on_hello_response;
+		//TODO: Implement Windows specific code
+#endif
+
 		boost::thread thread(boost::bind(&boost::asio::io_service::run, &io_service));
-
-		char line[512];
-
-		while (std::cin.getline(line, sizeof(line)))
-		{
-			if (line[0] == '!')
-			{
-				std::istringstream iss(line + 1);
-
-				std::string command;
-
-				if (iss >> command)
-				{
-					if (command == "connect")
-					{
-						std::string host, port;
-
-						iss >> host >> port;
-
-						boost::asio::ip::udp::resolver resolver(io_service);
-						boost::asio::ip::udp::resolver::query query(host, port);
-
-						try
-						{
-							boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
-
-							server.async_greet(ep, &on_hello_response);
-							std::cout << "Contacting " << ep << "..." << std::endl;
-						}
-						catch (std::exception& ex)
-						{
-							std::cerr << "Unable to resolve the specified host/port: " << ex.what() << std::endl;
-						}
-					} else if (command == "quit" || command == "exit")
-					{
-						break;
-					}
-				}
-			} else
-			{
-				server.async_send_data_to_all(boost::asio::buffer(line, strlen(line)));
-			}
-		}
 
 		std::cout << "Chat closing..." << std::endl;
 
-		server.close();
 		thread.join();
 	}
 	catch (std::exception& ex)
