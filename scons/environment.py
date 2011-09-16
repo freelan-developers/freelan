@@ -152,6 +152,9 @@ class Environment(SConsEnvironment):
         else:
             kw['LIBS'].append('boost_system')
 
+            if sys.platform.startswith('freebsd'):
+              kw['LIBS'].append('iconv')
+
     @staticmethod
     def _create_variables(variable_file):
         variables = Variables([variable_file], ARGUMENTS)
