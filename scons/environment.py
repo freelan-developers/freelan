@@ -136,6 +136,8 @@ class Environment(SConsEnvironment):
             kw['LIBS'].append('crypto')
             if sys.platform == 'linux2':
                 kw['LIBS'].append('rt')
+            elif sys.platform.startswith('freebsd'):
+                kw['LIBS'].append('iconv')
             kw['LIBS'].append('boost_system')
             kw['LIBS'].append('boost_thread')
             kw['LIBS'].append('boost_program_options')
