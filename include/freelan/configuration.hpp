@@ -68,6 +68,11 @@ namespace freelan
 		typedef fscp::server::ep_type ep_type;
 
 		/**
+		 * \brief The endpoint list type.
+		 */
+		typedef std::vector<ep_type> ep_list_type;
+
+		/**
 		 * \brief The hostname resolution protocol type.
 		 */
 		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
@@ -165,6 +170,11 @@ namespace freelan
 		certificate_validation_callback_type certificate_validation_callback;
 
 		/**
+		 * \brief The contact list.
+		 */
+		ep_list_type contactlist;
+
+		/**
 		 * \brief Whether to use the whitelist.
 		 */
 		bool use_whitelist;
@@ -172,7 +182,7 @@ namespace freelan
 		/**
 		 * \brief The whitelist.
 		 */
-		std::vector<ep_type> whitelist;
+		ep_list_type whitelist;
 
 		/**
 		 * \brief Whether to use the blacklist.
@@ -182,7 +192,7 @@ namespace freelan
 		/**
 		 * \brief The blacklist.
 		 */
-		std::vector<ep_type> blacklist;
+		ep_list_type blacklist;
 	};
 }
 

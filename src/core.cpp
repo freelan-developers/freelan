@@ -222,6 +222,13 @@ namespace freelan
 
 	void core::do_contact()
 	{
+		BOOST_FOREACH(const freelan::configuration::ep_type& ep, m_configuration.contactlist)
+		{
+			if (!m_server.has_session(ep))
+			{
+				async_greet(ep);
+			}
+		}
 	}
 
 	void core::do_contact(const boost::system::error_code& ec)
