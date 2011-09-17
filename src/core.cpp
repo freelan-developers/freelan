@@ -52,7 +52,7 @@ namespace freelan
 {
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
 
-	core::core(boost::asio::io_service& io_service, const configuration& _configuration) :
+	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
 		m_tap_adapter(io_service),

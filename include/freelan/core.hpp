@@ -88,25 +88,13 @@ namespace freelan
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
 			 */
-			core(boost::asio::io_service& io_service, const configuration& configuration);
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration);
 
 			/**
 			 * \brief Get the configuration.
 			 * \return The current configuration.
 			 */
-			const configuration& configuration_() const;
-
-			/**
-			 * \brief Get the associated server.
-			 * \return The associated server.
-			 */
-			fscp::server& server();
-
-			/**
-			 * \brief Get the associated tap adapter.
-			 * \return The associated tap adapter.
-			 */
-			asiotap::tap_adapter& tap_adapter();
+			const freelan::configuration& configuration() const;
 
 			/**
 			 * \brief Open the current core instance.
@@ -136,26 +124,16 @@ namespace freelan
 			//other methods
 			void do_contact(const boost::system::error_code&);
 
-			configuration m_configuration;
+			freelan::configuration m_configuration;
 			fscp::server m_server;
 			asiotap::tap_adapter m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 			boost::asio::deadline_timer m_contact_timer;
 	};
 
-	inline const configuration& core::configuration_() const
+	inline const freelan::configuration& core::configuration() const
 	{
 		return m_configuration;
-	}
-
-	inline fscp::server& core::server()
-	{
-		return m_server;
-	}
-
-	inline asiotap::tap_adapter& core::tap_adapter()
-	{
-		return m_tap_adapter;
 	}
 }
 
