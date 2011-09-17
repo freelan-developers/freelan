@@ -185,6 +185,7 @@ int main(int argc, char** argv)
 			stop_function = boost::bind(&freelan::core::close, boost::ref(core));
 
 			std::cout << "Starting freelan core using tap adapter: " << core.tap_adapter().name() << std::endl;
+			std::cout << "Listening on: " << core.server().socket().local_endpoint() << std::endl;
 
 			io_service.run();
 
