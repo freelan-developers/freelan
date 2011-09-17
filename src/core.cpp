@@ -222,7 +222,7 @@ namespace freelan
 
 	void core::do_contact()
 	{
-		BOOST_FOREACH(const freelan::configuration::ep_type& ep, m_configuration.contactlist)
+		BOOST_FOREACH(const freelan::configuration::ep_type& ep, m_configuration.contact_list)
 		{
 			if (!m_server.has_session(ep))
 			{

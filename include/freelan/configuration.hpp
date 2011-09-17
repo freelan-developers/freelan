@@ -172,7 +172,7 @@ namespace freelan
 		/**
 		 * \brief The contact list.
 		 */
-		ep_list_type contactlist;
+		ep_list_type contact_list;
 
 		/**
 		 * \brief Whether to use the whitelist.
