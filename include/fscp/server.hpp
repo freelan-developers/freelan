@@ -305,6 +305,13 @@ namespace fscp
 			void set_session_lost_callback(session_lost_callback callback);
 
 			/**
+			 * \brief Check if a session is established with the specified host.
+			 * \param host The host.
+			 * \return true if a session is currently active.
+			 */
+			bool has_session(const ep_type& host) const;
+
+			/**
 			 * \brief Close any existing session with the specified host.
 			 * \param host The host.
 			 */

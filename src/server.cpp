@@ -136,6 +136,18 @@ namespace fscp
 		get_io_service().post(bind(&server::do_request_session, this, target));
 	}
 
+	bool server::has_session(const ep_type& host) const
+	{
+		session_pair_map::const_iterator session_pair = m_session_map.find(host);
+
+		if (session_pair != m_session_map.end())
+		{
+			return session_pair->second.has_remote_session();
+		}
+
+		return false;
+	}
+
 	void server::async_close_session(const ep_type& host)
 	{
 		get_io_service().post(bind(&server::do_close_session, this, host));
