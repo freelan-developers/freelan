@@ -97,6 +97,18 @@ namespace freelan
 			const freelan::configuration& configuration() const;
 
 			/**
+			 * \brief Get the associated tap adapter.
+			 * \return The associated tap adapter.
+			 */
+			const asiotap::tap_adapter& tap_adapter() const;
+
+			/**
+			 * \brief Get the associated server.
+			 * \return The associated server.
+			 */
+			const fscp::server& server() const;
+
+			/**
 			 * \brief Open the current core instance.
 			 */
 			void open();
@@ -135,6 +147,16 @@ namespace freelan
 	inline const freelan::configuration& core::configuration() const
 	{
 		return m_configuration;
+	}
+	
+	inline const asiotap::tap_adapter& core::tap_adapter() const
+	{
+		return m_tap_adapter;
+	}
+	
+	inline const fscp::server& core::server() const
+	{
+		return m_server;
 	}
 }
 

@@ -175,6 +175,8 @@ namespace freelan
 	{
 		(void)_server;
 		(void)sender;
+
+		std::cout << "Session established with " << sender << std::endl;
 	}
 
 	void core::on_session_lost(fscp::server& _server, const ep_type& sender)
