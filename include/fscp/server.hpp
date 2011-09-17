@@ -198,7 +198,7 @@ namespace fscp
 			 * \brief Get the associated socket.
 			 * \return The associated socket.
 			 */
-			boost::asio::ip::udp::socket& socket();
+			const boost::asio::ip::udp::socket& socket() const;
 
 			/**
 			 * \brief Get the identity store.
@@ -441,10 +441,10 @@ namespace fscp
 
 	inline boost::asio::io_service& server::get_io_service()
 	{
-		return socket().get_io_service();
+		return m_socket.get_io_service();
 	}
 
-	inline boost::asio::ip::udp::socket& server::socket()
+	inline const boost::asio::ip::udp::socket& server::socket() const
 	{
 		return m_socket;
 	}
