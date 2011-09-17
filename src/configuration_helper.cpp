@@ -217,6 +217,7 @@ po::options_description get_network_options()
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
 		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
 		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
+		("network.contact_list", po::value<std::string>()->multitoken(), "The contact list.")
 		;
 
 	return result;
@@ -253,6 +254,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
+	configuration.contact_list = parse_endpoint_list(vm["network.contact_list"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured);
 
 	cert_type certificate = load_certificate(vm["security.certificate_file"].as<std::string>());
 	pkey private_key = load_private_key(vm["security.private_key_file"].as<std::string>());
