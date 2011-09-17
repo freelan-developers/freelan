@@ -81,6 +81,7 @@ namespace freelan
 
 		m_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(m_tap_adapter), _1, _2));
 
+		do_contact();
 		m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
 	}
 
@@ -219,10 +220,16 @@ namespace freelan
 		}
 	}
 
+	void core::do_contact()
+	{
+	}
+
 	void core::do_contact(const boost::system::error_code& ec)
 	{
 		if (ec != boost::asio::error::operation_aborted)
 		{
+			do_contact();
+
 			m_contact_timer.expires_from_now(CONTACT_PERIOD);
 			m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
 		}
