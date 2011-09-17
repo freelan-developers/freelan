@@ -50,10 +50,13 @@
 
 namespace freelan
 {
+	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
+
 	core::core(boost::asio::io_service& io_service, const configuration& _configuration) :
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
-		m_tap_adapter(io_service)
+		m_tap_adapter(io_service),
+		m_contact_timer(io_service, CONTACT_PERIOD)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
 		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4, _5));
@@ -77,17 +80,22 @@ namespace freelan
 		m_tap_adapter.set_connected_state(true);
 
 		m_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(m_tap_adapter), _1, _2));
+
+		m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
 	}
 
 	void core::close()
 	{
+		m_contact_timer.cancel();
+
+		m_tap_adapter.cancel();
+		m_tap_adapter.set_connected_state(false);
+
 		BOOST_FOREACH(configuration::ip_address_netmask_type& ian, m_configuration.tap_adapter_addresses)
 		{
 			m_tap_adapter.remove_ip_address(ian.address, ian.netmask);
 		}
 
-		m_tap_adapter.cancel();
-		m_tap_adapter.set_connected_state(false);
 		m_tap_adapter.close();
 
 		m_server.close();
@@ -208,6 +216,15 @@ namespace freelan
 		{
 			//TODO: Report the error somehow.
 			close();
+		}
+	}
+
+	void core::do_contact(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			m_contact_timer.expires_from_now(CONTACT_PERIOD);
+			m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
 		}
 	}
 }

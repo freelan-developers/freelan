@@ -47,6 +47,7 @@
 #define FREELAN_CORE_HPP
 
 #include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <asiotap/asiotap.hpp>
 #include <fscp/fscp.hpp>
@@ -76,6 +77,11 @@ namespace freelan
 			 * \brief The identity store type.
 			 */
 			typedef fscp::identity_store identity_store;
+
+			/**
+			 * \brief The contact period.
+			 */
+			static const boost::posix_time::time_duration CONTACT_PERIOD;
 
 			/**
 			 * \brief The constructor.
@@ -127,10 +133,14 @@ namespace freelan
 			//asiotap::tap_adapter related methods
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
 
+			//other methods
+			void do_contact(const boost::system::error_code&);
+
 			configuration m_configuration;
 			fscp::server m_server;
 			asiotap::tap_adapter m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
+			boost::asio::deadline_timer m_contact_timer;
 	};
 
 	inline const configuration& core::configuration_() const
