@@ -84,26 +84,26 @@ static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::en
   return default_accept;
 }
 
-static bool on_session_request(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
 {
 	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static bool on_session(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_session(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
 {
 	std::cout << "Received SESSION from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static void on_session_established(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& host)
+static void on_session_established(const boost::asio::ip::udp::endpoint& host)
 {
 	std::cout << "Session established with " << host << std::endl;
 }
 
-static void on_session_lost(fscp::server& /*server*/, const boost::asio::ip::udp::endpoint& host)
+static void on_session_lost(const boost::asio::ip::udp::endpoint& host)
 {
 	std::cout << "Session lost with " << host << std::endl;
 }
@@ -143,7 +143,7 @@ void handle_read_line(fscp::server& server, std::string line)
 				{
 					boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
 
-					server.async_greet(ep, &on_hello_response);
+					server.async_greet(ep, boost::bind(&on_hello_response, boost::ref(server), _1, _2, _3));
 
 					std::cout << "Contacting " << ep << "..." << std::endl;
 				}
@@ -229,13 +229,13 @@ int main(int argc, char** argv)
 		fscp::server server(io_service, fscp::identity_store(certificate, private_key));
 		server.open(listen_ep);
 
-		server.set_hello_message_callback(&on_hello_request);
-		server.set_presentation_message_callback(&on_presentation);
+		server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(server), _1, _2));
+		server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(server), _1, _2, _3, _4));
 		server.set_session_request_message_callback(&on_session_request);
 		server.set_session_message_callback(&on_session);
 		server.set_session_established_callback(&on_session_established);
 		server.set_session_lost_callback(&on_session_lost);
-		server.set_data_message_callback(&on_data);
+		server.set_data_message_callback(boost::bind(&on_data, boost::ref(server), _1, _2));
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;
 
