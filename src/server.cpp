@@ -261,7 +261,7 @@ namespace fscp
 	{
 		if (m_socket.is_open())
 		{
-			boost::shared_ptr<hello_request> _hello_request(new hello_request(*this, m_hello_current_unique_number, target, callback, timeout));
+			boost::shared_ptr<hello_request> _hello_request(new hello_request(get_io_service(), m_hello_current_unique_number, target, callback, timeout));
 
 			erase_expired_hello_requests(m_hello_request_list);
 

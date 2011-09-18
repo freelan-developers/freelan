@@ -57,8 +57,6 @@
 
 namespace fscp
 {
-	class server;
-
 	/**
 	 * \brief A basic hello request class.
 	 */
@@ -69,17 +67,17 @@ namespace fscp
 			/**
 			 * \brief A request callback function.
 			 */
-			typedef boost::function<void (server& server, const boost::asio::ip::udp::endpoint&, const boost::posix_time::time_duration&, bool)> callback_type;
+			typedef boost::function<void (const boost::asio::ip::udp::endpoint&, const boost::posix_time::time_duration&, bool)> callback_type;
 
 			/**
 			 * \brief Create a new request.
-			 * \param server The server to use.
+			 * \param io_service The io_service to use.
 			 * \param unique_number The unique number.
 			 * \param target The target host.
 			 * \param callback The callback.
 			 * \param timeout The timeout value.
 			 */
-			hello_request(server& server, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target, callback_type callback, boost::posix_time::time_duration timeout);
+			hello_request(boost::asio::io_service& io_service, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target, callback_type callback, boost::posix_time::time_duration timeout);
 
 			/**
 			 * \brief Destroy the request.
@@ -129,7 +127,6 @@ namespace fscp
 			void handle_timeout(const boost::system::error_code&);
 			void trigger();
 
-			server& m_server;
 			uint32_t m_unique_number;
 			boost::asio::ip::udp::endpoint m_target;
 			callback_type m_callback;
@@ -200,7 +197,7 @@ namespace fscp
 		if (!m_triggered)
 		{
 			m_triggered = true;
-			m_callback(m_server, m_target, age(), m_cancel_status);
+			m_callback(m_target, age(), m_cancel_status);
 		}
 	}
 }
