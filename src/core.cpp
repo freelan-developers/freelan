@@ -48,6 +48,8 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include "os.hpp"
+
 namespace freelan
 {
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
@@ -80,7 +82,18 @@ namespace freelan
 		// IPv4 address
 		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
 		{
+#ifdef WINDOWS
+			// Quick fix for Windows:
+			// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
+			// We disable direct setting if DHCP is enabled.
+
+			if (!m_configuration.enable_dhcp_proxy)
+			{
+				m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+			}
+#else
 			m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+#endif
 		}
 
 		// IPv6 address
