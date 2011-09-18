@@ -159,6 +159,16 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 	return true;
 }
 
+void notify_session_established(const fl::core::ep_type& host)
+{
+	std::cout << "Session established with " << host << std::endl;
+}
+
+void notify_session_lost(const fl::core::ep_type& host)
+{
+	std::cout << "Session lost with " << host << std::endl;
+}
+
 int main(int argc, char** argv)
 {
 	cryptoplus::crypto_initializer crypto_initializer;
@@ -180,6 +190,8 @@ int main(int argc, char** argv)
 
 			freelan::core core(io_service, configuration);
 
+			core.set_session_established_callback(&notify_session_established);
+			core.set_session_lost_callback(&notify_session_lost);
 			core.open();
 
 			stop_function = boost::bind(&freelan::core::close, boost::ref(core));
