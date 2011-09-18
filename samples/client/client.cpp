@@ -169,5 +169,7 @@ int main()
 
 	_io_service.run();
 
+	stop_function = 0;
+
 	return EXIT_SUCCESS;
 }

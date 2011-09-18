@@ -17,6 +17,8 @@
 #include <sstream>
 #include <csignal>
 
+static boost::function<void ()> stop_function = 0;
+
 static void signal_handler(int code)
 {
 	switch (code)
@@ -24,6 +26,13 @@ static void signal_handler(int code)
 		case SIGTERM:
 		case SIGINT:
 		case SIGABRT:
+			if (stop_function)
+			{
+				std::cerr << "Signal caught: stopping..." << std::endl;
+
+				stop_function();
+				stop_function = 0;
+			}
 			break;
 		default:
 			break;
@@ -182,15 +191,6 @@ void handle_read_input(fscp::server& server, boost::asio::posix::stream_descript
 	}
 }
 
-#else
-
-void read_input(fscp::server& server)
-{
-	if (server.is_open())
-	{
-	}
-}
-
 #endif
 
 int main(int argc, char** argv)
@@ -246,7 +246,11 @@ int main(int argc, char** argv)
 		boost::asio::posix::stream_descriptor input(io_service, ::dup(STDIN_FILENO));
 		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, boost::ref(server), boost::ref(input), boost::asio::placeholders::error, boost::ref(input_buffer), boost::asio::placeholders::bytes_transferred));
 
+		stop_function = boost::bind(&boost::asio::posix::stream_descriptor::close, &input);
+
 #else
+
+		stop_function = boost::bind(&fscp::server::close, &server);
 
 		std::cout << "No POSIX stream descriptors available. Press Ctrl+C twice to exit." << std::endl;
 
@@ -260,6 +264,8 @@ int main(int argc, char** argv)
 #endif
 
 		thread.join();
+
+		stop_function = 0;
 
 		std::cout << "Chat closing..." << std::endl;
 	}
