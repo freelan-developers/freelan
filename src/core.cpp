@@ -56,7 +56,12 @@ namespace freelan
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
 		m_tap_adapter(io_service),
-		m_contact_timer(io_service, CONTACT_PERIOD)
+		m_contact_timer(io_service, CONTACT_PERIOD),
+		m_arp_filter(m_ethernet_filter),
+		m_ipv4_filter(m_ethernet_filter),
+		m_udp_filter(m_ipv4_filter),
+		m_bootp_filter(m_udp_filter),
+		m_dhcp_filter(m_bootp_filter)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
 		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
@@ -83,10 +88,35 @@ namespace freelan
 
 		do_contact();
 		m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
+
+		// The ARP proxy
+		if (m_configuration.enable_arp_proxy)
+		{
+			m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
+		} else
+		{
+			m_arp_proxy.reset();
+		}
+
+		// The DHCP proxy
+		if (m_configuration.enable_dhcp_proxy)
+		{
+			m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
+			m_dhcp_proxy->set_hardware_address(m_tap_adapter.ethernet_address());
+			m_dhcp_proxy->set_software_address(m_configuration.dhcp_server_ipv4_address);
+			m_dhcp_proxy->set_software_netmask(m_configuration.dhcp_server_ipv4_netmask);
+			m_dhcp_proxy->add_entry(m_tap_adapter.ethernet_address(), m_configuration.dhcp_client_ipv4_address);
+		} else
+		{
+			m_dhcp_proxy.reset();
+		}
 	}
 
 	void core::close()
 	{
+		m_dhcp_proxy.reset();
+		m_arp_proxy.reset();
+
 		m_contact_timer.cancel();
 
 		m_tap_adapter.cancel();
@@ -190,14 +220,7 @@ namespace freelan
 
 		// TODO: Here we must read the source ethernet address and update the switch routing table according to it.
 
-		boost::system::error_code ec;
-
-		m_tap_adapter.write(data, ec);
-
-		if (ec)
-		{
-			//TODO: Report the error somehow.
-		}
+		m_tap_adapter.write(data);
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
@@ -206,9 +229,29 @@ namespace freelan
 		{
 			boost::asio::const_buffer data = boost::asio::buffer(m_tap_adapter_buffer, cnt);
 
-			//TODO: Here we must read the destination ethernet address and send to the targetted hosts only.
+			bool handled = false;
 
-			m_server.async_send_data_to_all(data);
+			if (m_arp_proxy || m_dhcp_proxy)
+			{
+				m_ethernet_filter.parse(data);
+
+				if (m_arp_proxy && m_arp_filter.get_last_helper())
+				{
+					handled = true;
+				}
+
+				if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
+				{
+					handled = true;
+				}
+			}
+
+			if (!handled)
+			{
+				//TODO: Here we must read the destination ethernet address and send to the targetted hosts only.
+
+				m_server.async_send_data_to_all(data);
+			}
 
 			// Start another read
 			_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(_tap_adapter), _1, _2));
@@ -240,5 +283,10 @@ namespace freelan
 			m_contact_timer.expires_from_now(CONTACT_PERIOD);
 			m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
 		}
+	}
+
+	void core::on_proxy_data(boost::asio::const_buffer data)
+	{
+		m_tap_adapter.write(data);
 	}
 }

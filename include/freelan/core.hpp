@@ -51,6 +51,9 @@
 #include <boost/function.hpp>
 
 #include <asiotap/asiotap.hpp>
+#include <asiotap/osi/arp_proxy.hpp>
+#include <asiotap/osi/dhcp_proxy.hpp>
+#include <asiotap/osi/complex_filter.hpp>
 #include <fscp/fscp.hpp>
 
 #include "configuration.hpp"
@@ -145,7 +148,7 @@ namespace freelan
 
 		private:
 
-			//fscp::server related methods
+			// fscp::server related methods
 			void async_greet(const ep_type&);
 			bool on_hello_request(const ep_type&, bool);
 			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
@@ -155,23 +158,43 @@ namespace freelan
 			void on_session_lost(const ep_type&);
 			void on_data(const ep_type&, boost::asio::const_buffer);
 
-			//asiotap::tap_adapter related methods
+			// asiotap::tap_adapter related methods
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
 
-			//other methods
+			// Other methods
 			void do_contact();
 			void do_contact(const boost::system::error_code&);
 
+			// Members
 			freelan::configuration m_configuration;
 			fscp::server m_server;
 			asiotap::tap_adapter m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 			boost::asio::deadline_timer m_contact_timer;
 
-			//callbacks
+			// User callbacks
 			session_established_callback m_session_established_callback;
 			session_lost_callback m_session_lost_callback;
-	};
+
+			// Filters
+			asiotap::osi::filter<asiotap::osi::ethernet_frame> m_ethernet_filter;
+			asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type m_arp_filter;
+			asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_ipv4_filter;
+			asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_udp_filter;
+			asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_bootp_filter;
+			asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_dhcp_filter;
+
+			// Proxies
+			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
+			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
+			boost::shared_ptr<arp_proxy_type> m_arp_proxy;
+			boost::shared_ptr<dhcp_proxy_type> m_dhcp_proxy;
+			boost::array<unsigned char, 2048> m_proxy_buffer;
+
+			// Proxies related methods
+			void on_proxy_data(boost::asio::const_buffer data);
+
+		};
 
 	inline const freelan::configuration& core::configuration() const
 	{

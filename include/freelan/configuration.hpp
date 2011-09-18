@@ -135,14 +135,29 @@ namespace freelan
 		std::vector<ip_address_netmask_type> tap_adapter_addresses;
 
 		/**
+		 * \brief Whether to enable the ARP proxy.
+		 */
+		bool enable_arp_proxy;
+
+		/**
 		 * \brief Whether to enable the DHCP proxy.
 		 */
 		bool enable_dhcp_proxy;
 
 		/**
-		 * \brief Whether to enable the ARP proxy.
+		 * \brief The DHCP server IPv4 address.
 		 */
-		bool enable_arp_proxy;
+		boost::asio::ip::address_v4 dhcp_server_ipv4_address;
+
+		/**
+		 * \brief The DHCP server IPv4 netmask.
+		 */
+		boost::asio::ip::address_v4 dhcp_server_ipv4_netmask;
+
+		/**
+		 * \brief The DHCP client IPv4 address.
+		 */
+		boost::asio::ip::address_v4 dhcp_client_ipv4_address;
 
 		/**
 		 * \brief The routing method.
