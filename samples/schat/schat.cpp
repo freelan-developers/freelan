@@ -84,13 +84,19 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	}
 }
 
-static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool default_accept)
+static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool is_new)
 {
-	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
+	if (is_new)
+	{
+		std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
+	} else
+	{
+		std::cout << "Received another PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
+	}
 
 	server.async_request_session(sender);
 
-  return default_accept;
+  return true;
 }
 
 static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)

@@ -100,7 +100,7 @@ namespace fscp
 			 * \param sender The endpoint that sent the presentation message.
 			 * \param sig_cert The signature certificate.
 			 * \param enc_cert The encryption certificate.
-			 * \param default_accept The default return value.
+			 * \param is_new True if the host is not currently known.
 			 * \return true to accept the presentation message for the originating host.
 			 */
 			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)> presentation_message_callback;
