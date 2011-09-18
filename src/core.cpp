@@ -58,12 +58,12 @@ namespace freelan
 		m_tap_adapter(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD)
 	{
-		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2, _3));
-		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4, _5));
-		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3));
-		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2));
-		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1, _2));
-		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
+		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
+		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
+		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2));
+		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
+		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
+		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2));
 	}
 
 	void core::open()
@@ -104,10 +104,10 @@ namespace freelan
 
 	void core::async_greet(const ep_type& target)
 	{
-		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3, _4), m_configuration.hello_timeout);
+		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.hello_timeout);
 	}
 
-	bool core::on_hello_request(fscp::server& _server, const ep_type& sender, bool default_accept)
+	bool core::on_hello_request(const ep_type& sender, bool default_accept)
 	{
 		if (default_accept)
 		{
@@ -115,7 +115,7 @@ namespace freelan
 			// For now, let's assume it is not.
 			if (true)
 			{
-				_server.async_introduce_to(sender);
+				m_server.async_introduce_to(sender);
 
 				return true;
 			}
@@ -124,17 +124,17 @@ namespace freelan
 		return false;
 	}
 
-	void core::on_hello_response(fscp::server& _server, const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
+	void core::on_hello_response(const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
 	{
 		(void)time_duration;
 
 		if (success)
 		{
-			_server.async_introduce_to(sender);
+			m_server.async_introduce_to(sender);
 		}
 	}
 
-	bool core::on_presentation(fscp::server& _server, const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)
+	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)
 	{
 		(void)sig_cert;
 		(void)enc_cert;
@@ -145,7 +145,7 @@ namespace freelan
 			// For now, let's assume they are valid.
 			if (true)
 			{
-				_server.async_request_session(sender);
+				m_server.async_request_session(sender);
 				return true;
 			}
 		}
@@ -153,9 +153,8 @@ namespace freelan
 		return false;
 	}
 
-	bool core::on_session_request(fscp::server& _server, const ep_type& sender, bool default_accept)
+	bool core::on_session_request(const ep_type& sender, bool default_accept)
 	{
-		(void)_server;
 		(void)sender;
 
 		if (default_accept)
@@ -171,23 +170,24 @@ namespace freelan
 		return false;
 	}
 
-	void core::on_session_established(fscp::server& _server, const ep_type& sender)
+	void core::on_session_established(const ep_type& sender)
 	{
-		(void)_server;
-		(void)sender;
-
-		std::cout << "Session established with " << sender << std::endl;
+		if (m_session_established_callback)
+		{
+			m_session_established_callback(sender);
+		}
 	}
 
-	void core::on_session_lost(fscp::server& _server, const ep_type& sender)
+	void core::on_session_lost(const ep_type& sender)
 	{
-		(void)_server;
-		(void)sender;
+		if (m_session_lost_callback)
+		{
+			m_session_lost_callback(sender);
+		}
 	}
 
-	void core::on_data(fscp::server& _server, const ep_type& sender, boost::asio::const_buffer data)
+	void core::on_data(const ep_type& sender, boost::asio::const_buffer data)
 	{
-		(void)_server;
 		(void)sender;
 
 		// TODO: Here we must read the source ethernet address and update the switch routing table according to it.
