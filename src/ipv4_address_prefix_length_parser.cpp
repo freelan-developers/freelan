@@ -39,9 +39,9 @@
  */
 
 /**
- * \file ip_address_netmask_parser.cpp
+ * \file ipv4_address_prefix_length_parser.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IP address/netmask parser.
+ * \brief An IPv4 address/prefix length parser.
  */
 
-#include "ip_address_netmask_parser.hpp"
+#include "ipv4_address_prefix_length_parser.hpp"

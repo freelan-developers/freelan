@@ -39,13 +39,13 @@
  */
 
 /**
- * \file ip_address_netmask_parser.hpp
+ * \file ipv6_address_prefix_length_parser.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IP address/netmask parser.
+ * \brief An IPv6 address/prefix length parser.
  */
 
-#ifndef IP_ADDRESS_NETMASK_PARSER_HPP
-#define IP_ADDRESS_NETMASK_PARSER_HPP
+#ifndef IPV6_ADDRESS_PREFIX_LENGTH_PARSER_HPP
+#define IPV6_ADDRESS_PREFIX_LENGTH_PARSER_HPP
 
 #include <boost/asio.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -53,7 +53,7 @@
 
 #include <freelan/configuration.hpp>
 
-#include "ipv4_address_parser.hpp"
+#include "ipv6_address_parser.hpp"
 #include "ipv6_address_parser.hpp"
 
 // This was written according to:
@@ -61,7 +61,7 @@
 
 namespace custom_parser
 {
-	BOOST_SPIRIT_TERMINAL(ip_address_netmask)
+	BOOST_SPIRIT_TERMINAL(ipv6_address_prefix_length)
 }
 
 namespace boost
@@ -69,7 +69,7 @@ namespace boost
 	namespace spirit
 	{
 		template <>
-		struct use_terminal<qi::domain, custom_parser::tag::ip_address_netmask> : mpl::true_
+		struct use_terminal<qi::domain, custom_parser::tag::ipv6_address_prefix_length> : mpl::true_
 		{
 		};
 	}
@@ -77,13 +77,13 @@ namespace boost
 
 namespace custom_parser
 {
-	struct ip_address_netmask_parser :
-		boost::spirit::qi::primitive_parser<ip_address_netmask_parser>
+	struct ipv6_address_prefix_length_parser :
+		boost::spirit::qi::primitive_parser<ipv6_address_prefix_length_parser>
 	{
 		template <typename Context, typename Iterator>
 		struct attribute
 		{
-			typedef freelan::configuration::ip_address_netmask_type type;
+			typedef freelan::configuration::ipv6_address_prefix_length_type type;
 		};
 
 		template <typename Iterator, typename Context, typename Skipper, typename Attribute>
@@ -92,41 +92,26 @@ namespace custom_parser
 			namespace qi = boost::spirit::qi;
 			namespace ph = boost::phoenix;
 
-			using custom_parser::ipv4_address;
 			using custom_parser::ipv6_address;
 
-			qi::uint_parser<uint8_t, 10, 1, 3> netmask_parser;
+			qi::uint_parser<uint8_t, 10, 1, 3> prefix_length_parser;
 
 			qi::skip_over(first, last, skipper);
 
 			const Iterator first_save = first;
 			bool r;
 
-			freelan::configuration::ip_address_netmask_type result;
+			freelan::configuration::ipv6_address_prefix_length_type result;
 
 			r = qi::parse(
 					first,
 					last,
-					ipv6_address[ph::ref(result.address) = qi::_1] >> '/' >> netmask_parser[ph::ref(result.netmask) = qi::_1]
+					ipv6_address[ph::ref(result.address) = qi::_1] >> '/' >> prefix_length_parser[ph::ref(result.prefix_length) = qi::_1]
 					);
 
 			if (r)
 			{
 				boost::spirit::traits::assign_to(result, attr);
-			} else
-			{
-				first = first_save;
-
-				r = qi::parse(
-						first,
-						last,
-						ipv4_address[ph::ref(result.address) = qi::_1] >> '/' >> netmask_parser[ph::ref(result.netmask) = qi::_1]
-						);
-
-				if (r)
-				{
-					boost::spirit::traits::assign_to(result, attr);
-				}
 			}
 
 			return r;
@@ -135,7 +120,7 @@ namespace custom_parser
 		template <typename Context>
 		boost::spirit::info what(Context&) const
 		{
-			return boost::spirit::info("ip_address_netmask");
+			return boost::spirit::info("ipv6_address_prefix_length");
 		}
 	};
 }
@@ -147,9 +132,9 @@ namespace boost
 		namespace qi
 		{
 			template <typename Modifiers>
-			struct make_primitive<custom_parser::tag::ip_address_netmask, Modifiers>
+			struct make_primitive<custom_parser::tag::ipv6_address_prefix_length, Modifiers>
 			{
-				typedef custom_parser::ip_address_netmask_parser result_type;
+				typedef custom_parser::ipv6_address_prefix_length_parser result_type;
 
 				result_type operator()(unused_type, unused_type) const
 				{
@@ -160,4 +145,4 @@ namespace boost
 	}
 }
 
-#endif /* IP_ADDRESS_NETMASK_PARSER_HPP */
+#endif /* IPV6_ADDRESS_PREFIX_LENGTH_PARSER_HPP */

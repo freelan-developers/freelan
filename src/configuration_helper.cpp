@@ -55,7 +55,8 @@
 
 #include "endpoint.hpp"
 #include "endpoint_parser.hpp"
-#include "ip_address_netmask_parser.hpp"
+#include "ipv4_address_prefix_length_parser.hpp"
+#include "ipv6_address_prefix_length_parser.hpp"
 
 namespace po = boost::program_options;
 namespace qi = boost::spirit::qi;
@@ -140,14 +141,27 @@ namespace
 		throw po::invalid_option_value(str);
 	}
 
-	std::vector<fl::configuration::ip_address_netmask_type> parse_ip_address_netmask_list(const std::string& str)
+	boost::optional<fl::configuration::ipv4_address_prefix_length_type> parse_ipv4_address_prefix_length(const std::string& str)
 	{
-		typedef std::vector<fl::configuration::ip_address_netmask_type> result_type;
-		
-		result_type result;
+		boost::optional<fl::configuration::ipv4_address_prefix_length_type> result;
 
 		std::string::const_iterator first = str.begin();
-		bool r = qi::phrase_parse(first, str.end(), *(custom_parser::ip_address_netmask[boost::bind(&result_type::push_back, &result, _1)]), qi::space);
+		bool r = qi::phrase_parse(first, str.end(), -custom_parser::ipv4_address_prefix_length[ph::ref(result) = qi::_1], qi::space);
+
+		if (r && (first == str.end()))
+		{
+			return result;
+		}
+
+		throw po::invalid_option_value(str);
+	}
+
+	boost::optional<fl::configuration::ipv6_address_prefix_length_type> parse_ipv6_address_prefix_length(const std::string& str)
+	{
+		boost::optional<fl::configuration::ipv6_address_prefix_length_type> result;
+
+		std::string::const_iterator first = str.begin();
+		bool r = qi::phrase_parse(first, str.end(), -custom_parser::ipv6_address_prefix_length[ph::ref(result) = qi::_1], qi::space);
 
 		if (r && (first == str.end()))
 		{
@@ -212,12 +226,12 @@ po::options_description get_network_options()
 	result.add_options()
 		("network.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
 		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
-		("network.tap_adapter_addresses", po::value<std::string>()->multitoken()->zero_tokens()->default_value("9.0.0.1/24"), "The tap adapter network addresses.")
+		("network.tap_adapter_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.1/24"), "The tap adapter IPv4 address and prefix length.")
+		("network.tap_adapter_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::1/10"), "The tap adapter IPv6 address and prefix length.")
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
 		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
-		("network.dhcp_server_ipv4_address", po::value<std::string>()->default_value("9.0.0.0"), "The DHCP proxy server IPv4 address.")
-		("network.dhcp_server_ipv4_netmask", po::value<std::string>()->default_value("255.255.255.0"), "The DHCP proxy server IPv4 netmask.")
-		("network.dhcp_client_ipv4_address", po::value<std::string>()->default_value("9.0.0.1"), "The DHCP proxy client IPv4 address.")
+		("network.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
+		("network.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
 		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
 		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
 		("network.contact_list", po::value<std::string>()->multitoken()->zero_tokens(), "The contact list.")
@@ -252,12 +266,12 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
 	configuration.listen_on = parse_endpoint(vm["network.listen_on"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured | query::passive);
-	configuration.tap_adapter_addresses = parse_ip_address_netmask_list(vm["network.tap_adapter_addresses"].as<std::string>());
+	configuration.tap_adapter_ipv4_address_prefix_length = parse_ipv4_address_prefix_length(vm["network.tap_adapter_ipv4_address_prefix_length"].as<std::string>());
+	configuration.tap_adapter_ipv6_address_prefix_length = parse_ipv6_address_prefix_length(vm["network.tap_adapter_ipv6_address_prefix_length"].as<std::string>());
 	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
 	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
-	configuration.dhcp_server_ipv4_address = boost::asio::ip::address_v4::from_string(vm["network.dhcp_server_ipv4_address"].as<std::string>());
-	configuration.dhcp_server_ipv4_netmask = boost::asio::ip::address_v4::from_string(vm["network.dhcp_server_ipv4_netmask"].as<std::string>());
-	configuration.dhcp_client_ipv4_address = boost::asio::ip::address_v4::from_string(vm["network.dhcp_client_ipv4_address"].as<std::string>());
+	configuration.dhcp_server_ipv4_address_prefix_length = parse_ipv4_address_prefix_length(vm["network.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
+	configuration.dhcp_server_ipv6_address_prefix_length = parse_ipv6_address_prefix_length(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 	configuration.contact_list = parse_endpoint_list(vm["network.contact_list"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured);
