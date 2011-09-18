@@ -48,6 +48,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/function.hpp>
 
 #include <asiotap/asiotap.hpp>
 #include <fscp/fscp.hpp>
@@ -84,6 +85,18 @@ namespace freelan
 			static const boost::posix_time::time_duration CONTACT_PERIOD;
 
 			/**
+			 * \brief A session established callback.
+			 * \param host The host with which a session is established.
+			 */
+			typedef boost::function<void (const ep_type& host)> session_established_callback;
+
+			/**
+			 * \brief A session lost callback.
+			 * \param host The host with which a session was lost.
+			 */
+			typedef boost::function<void (const ep_type& host)> session_lost_callback;
+
+			/**
 			 * \brief The constructor.
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
@@ -107,6 +120,18 @@ namespace freelan
 			 * \return The associated server.
 			 */
 			const fscp::server& server() const;
+
+			/**
+			 * \brief Set the session established callback.
+			 * \param callback The callback.
+			 */
+			void set_session_established_callback(session_established_callback callback);
+
+			/**
+			 * \brief Set the session lost callback.
+			 * \param callback The callback.
+			 */
+			void set_session_lost_callback(session_lost_callback callback);
 
 			/**
 			 * \brief Open the current core instance.
@@ -142,6 +167,10 @@ namespace freelan
 			asiotap::tap_adapter m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 			boost::asio::deadline_timer m_contact_timer;
+
+			//callbacks
+			session_established_callback m_session_established_callback;
+			session_lost_callback m_session_lost_callback;
 	};
 
 	inline const freelan::configuration& core::configuration() const
@@ -157,6 +186,16 @@ namespace freelan
 	inline const fscp::server& core::server() const
 	{
 		return m_server;
+	}
+
+	inline void core::set_session_established_callback(session_established_callback callback)
+	{
+		m_session_established_callback = callback;
+	}
+
+	inline void core::set_session_lost_callback(session_lost_callback callback)
+	{
+		m_session_lost_callback = callback;
 	}
 }
 
