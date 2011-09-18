@@ -77,9 +77,16 @@ namespace freelan
 
 		m_tap_adapter.open();
 
-		BOOST_FOREACH(const configuration::ip_address_netmask_type& ian, m_configuration.tap_adapter_addresses)
+		// IPv4 address
+		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
 		{
-			m_tap_adapter.add_ip_address(ian.address, ian.netmask);
+			m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+		}
+
+		// IPv6 address
+		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+		{
+			m_tap_adapter.add_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
 		}
 
 		m_tap_adapter.set_connected_state(true);
@@ -93,7 +100,8 @@ namespace freelan
 		if (m_configuration.enable_arp_proxy)
 		{
 			m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
-		} else
+		}
+		else
 		{
 			m_arp_proxy.reset();
 		}
@@ -103,10 +111,18 @@ namespace freelan
 		{
 			m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
 			m_dhcp_proxy->set_hardware_address(m_tap_adapter.ethernet_address());
-			m_dhcp_proxy->set_software_address(m_configuration.dhcp_server_ipv4_address);
-			m_dhcp_proxy->set_software_netmask(m_configuration.dhcp_server_ipv4_netmask);
-			m_dhcp_proxy->add_entry(m_tap_adapter.ethernet_address(), m_configuration.dhcp_client_ipv4_address);
-		} else
+
+			if (m_configuration.dhcp_server_ipv4_address_prefix_length)
+			{
+				m_dhcp_proxy->set_software_address(m_configuration.dhcp_server_ipv4_address_prefix_length->address);
+			}
+
+			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+			{
+				m_dhcp_proxy->add_entry(m_tap_adapter.ethernet_address(), m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+			}
+		}
+		else
 		{
 			m_dhcp_proxy.reset();
 		}
@@ -122,9 +138,16 @@ namespace freelan
 		m_tap_adapter.cancel();
 		m_tap_adapter.set_connected_state(false);
 
-		BOOST_FOREACH(configuration::ip_address_netmask_type& ian, m_configuration.tap_adapter_addresses)
+		// IPv6 address
+		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
 		{
-			m_tap_adapter.remove_ip_address(ian.address, ian.netmask);
+			m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+		}
+
+		// IPv4 address
+		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+		{
+			m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
 		}
 
 		m_tap_adapter.close();

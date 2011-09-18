@@ -194,18 +194,18 @@ namespace freelan
 			// Proxies related methods
 			void on_proxy_data(boost::asio::const_buffer data);
 
-		};
+	};
 
 	inline const freelan::configuration& core::configuration() const
 	{
 		return m_configuration;
 	}
-	
+
 	inline const asiotap::tap_adapter& core::tap_adapter() const
 	{
 		return m_tap_adapter;
 	}
-	
+
 	inline const fscp::server& core::server() const
 	{
 		return m_server;

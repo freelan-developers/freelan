@@ -78,12 +78,21 @@ namespace freelan
 		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
 
 		/**
-		 * \brief The address/netmask pair.
+		 * \brief The IPv4 address/prefix length pair.
 		 */
-		struct ip_address_netmask_type
+		struct ipv4_address_prefix_length_type
 		{
-			boost::asio::ip::address address;
-			unsigned int netmask;
+			boost::asio::ip::address_v4 address;
+			unsigned int prefix_length;
+		};
+
+		/**
+		 * \brief The IPv6 address/prefix length pair.
+		 */
+		struct ipv6_address_prefix_length_type
+		{
+			boost::asio::ip::address_v6 address;
+			unsigned int prefix_length;
 		};
 
 		/**
@@ -130,9 +139,14 @@ namespace freelan
 		hostname_resolution_protocol_type hostname_resolution_protocol;
 
 		/**
-		 * \brief The tap adapter addresses.
+		 * \brief The IPv4 tap adapter address.
 		 */
-		std::vector<ip_address_netmask_type> tap_adapter_addresses;
+		boost::optional<ipv4_address_prefix_length_type> tap_adapter_ipv4_address_prefix_length;
+
+		/**
+		 * \brief The IPv6 tap adapter address.
+		 */
+		boost::optional<ipv6_address_prefix_length_type> tap_adapter_ipv6_address_prefix_length;
 
 		/**
 		 * \brief Whether to enable the ARP proxy.
@@ -147,17 +161,12 @@ namespace freelan
 		/**
 		 * \brief The DHCP server IPv4 address.
 		 */
-		boost::asio::ip::address_v4 dhcp_server_ipv4_address;
+		boost::optional<ipv4_address_prefix_length_type> dhcp_server_ipv4_address_prefix_length;
 
 		/**
-		 * \brief The DHCP server IPv4 netmask.
+		 * \brief The DHCP server IPv6 address.
 		 */
-		boost::asio::ip::address_v4 dhcp_server_ipv4_netmask;
-
-		/**
-		 * \brief The DHCP client IPv4 address.
-		 */
-		boost::asio::ip::address_v4 dhcp_client_ipv4_address;
+		boost::optional<ipv6_address_prefix_length_type> dhcp_server_ipv6_address_prefix_length;
 
 		/**
 		 * \brief The routing method.
