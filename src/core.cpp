@@ -134,20 +134,18 @@ namespace freelan
 		}
 	}
 
-	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool default_accept)
+	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
 	{
 		(void)sig_cert;
 		(void)enc_cert;
+		(void)is_new;
 
-		if (default_accept)
+		// TODO: Here we should check for the certificates validity.
+		// For now, let's assume they are valid.
+		if (true)
 		{
-			// TODO: Here we should check for the certificates validity.
-			// For now, let's assume they are valid.
-			if (true)
-			{
-				m_server.async_request_session(sender);
-				return true;
-			}
+			m_server.async_request_session(sender);
+			return true;
 		}
 
 		return false;
