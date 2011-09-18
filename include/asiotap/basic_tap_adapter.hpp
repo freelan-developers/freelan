@@ -46,6 +46,7 @@
 #define ASIOTAP_BASIC_TAP_ADAPTER_HPP
 
 #include <boost/asio.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <string>
 #include <map>
@@ -161,10 +162,26 @@ namespace asiotap
 			/**
 			 * \brief Process to a blocking read.
 			 * \param buffer The buffer to read the data to.
+			 * \warning On error, a boost::system::system_error is thrown.
+			 * \return The count of bytes read.
+			 */
+			size_t read(const boost::asio::mutable_buffer& buffer);
+
+			/**
+			 * \brief Process to a blocking read.
+			 * \param buffer The buffer to read the data to.
 			 * \param ec The returned error code.
 			 * \return The count of bytes read.
 			 */
 			size_t read(const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec);
+
+			/**
+			 * \brief Process to a blocking write.
+			 * \param buffer The buffer to write the data to.
+			 * \return The count of bytes written.
+			 * \warning On error, a boost::system::system_error is thrown.
+			 */
+			size_t write(const boost::asio::const_buffer& buffer);
 
 			/**
 			 * \brief Process to a blocking write.
@@ -322,9 +339,39 @@ namespace asiotap
 	}
 
 	template <typename Service>
+	inline size_t basic_tap_adapter<Service>::read(const boost::asio::mutable_buffer& buffer)
+	{
+		boost::system::error_code ec;
+
+		size_t result = this->service.read(this->implementation, buffer, ec);
+
+		if (ec)
+		{
+			throw boost::system::system_error(ec);
+		}
+
+		return result;
+	}
+
+	template <typename Service>
 	inline size_t basic_tap_adapter<Service>::read(const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec)
 	{
 		return this->service.read(this->implementation, buffer, ec);
+	}
+
+	template <typename Service>
+	inline size_t basic_tap_adapter<Service>::write(const boost::asio::const_buffer& buffer)
+	{
+		boost::system::error_code ec;
+
+		size_t result = this->service.write(this->implementation, buffer, ec);
+
+		if (ec)
+		{
+			throw boost::system::system_error(ec);
+		}
+
+		return result;
 	}
 
 	template <typename Service>
