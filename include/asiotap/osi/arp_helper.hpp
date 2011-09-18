@@ -185,7 +185,7 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_helper_impl(typename _helper_impl::buffer_type buf);
+				_helper_impl(_helper_impl::buffer_type buf);
 		};
 
 		template <class HelperTag>

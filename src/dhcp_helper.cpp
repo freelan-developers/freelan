@@ -73,8 +73,8 @@ namespace asiotap
 			return (std::find_if(this->begin(), this->end(), !boost::bind(&dhcp_option_helper<HelperTag>::is_valid, _1)) == this->end());
 		}
 
-		template typename _base_helper_impl<const_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<const_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
-		template typename _base_helper_impl<mutable_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<mutable_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
+		template _base_helper_impl<const_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<const_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
+		template _base_helper_impl<mutable_helper_tag, dhcp_frame>::const_iterator _base_helper_impl<mutable_helper_tag, dhcp_frame>::find(dhcp_option::dhcp_option_tag) const;
 		template bool _base_helper_impl<const_helper_tag, dhcp_frame>::check_options() const;
 		template bool _base_helper_impl<mutable_helper_tag, dhcp_frame>::check_options() const;
 	}

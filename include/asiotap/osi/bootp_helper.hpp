@@ -245,7 +245,7 @@ namespace asiotap
 				 * \brief Create a helper from a frame type structure.
 				 * \param buf The buffer to refer to.
 				 */
-				_helper_impl(typename _helper_impl::buffer_type buf);
+				_helper_impl(_helper_impl::buffer_type buf);
 		};
 
 		template <class HelperTag>
@@ -405,7 +405,7 @@ namespace asiotap
 			this->frame().giaddr.s_addr = htonl(_giaddr.to_ulong());
 		}
 
-		inline _helper_impl<mutable_helper_tag, bootp_frame>::_helper_impl(typename _helper_impl<mutable_helper_tag, bootp_frame>::buffer_type buf) :
+		inline _helper_impl<mutable_helper_tag, bootp_frame>::_helper_impl(_helper_impl<mutable_helper_tag, bootp_frame>::buffer_type buf) :
 			_base_helper_impl<mutable_helper_tag, bootp_frame>(buf)
 		{
 		}
