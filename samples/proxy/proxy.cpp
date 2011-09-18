@@ -157,8 +157,7 @@ int main()
 		ao::proxy<ao::dhcp_frame> dhcp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), dhcp_filter);
 		dhcp_proxy.set_hardware_address(tap_adapter.ethernet_address());
 		dhcp_proxy.set_software_address(dhcp_server_ipv4_address);
-		dhcp_proxy.set_software_netmask(dhcp_server_ipv4_netmask);
-		dhcp_proxy.add_entry(tap_adapter.ethernet_address(), my_ipv4_address);
+		dhcp_proxy.add_entry(tap_adapter.ethernet_address(), my_ipv4_address, my_ipv4_netmask);
 
 		// Let's run !
 		_io_service.run();

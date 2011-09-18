@@ -87,9 +87,18 @@ namespace asiotap
 				typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> ethernet_address_type;
 
 				/**
+				 * \brief An IPv4 address netmask type.
+				 */
+				struct ipv4_address_netmask_type
+				{
+					boost::asio::ip::address_v4 address;
+					unsigned int prefix_length;
+				};
+
+				/**
 				 * \brief The entry type.
 				 */
-				typedef std::pair<ethernet_address_type, boost::asio::ip::address_v4> entry_type;
+				typedef std::pair<ethernet_address_type, ipv4_address_netmask_type> entry_type;
 
 				/**
 				 * \brief Create an DHCP proxy.
@@ -118,12 +127,6 @@ namespace asiotap
 				void set_software_address(const boost::asio::ip::address_v4& software_address);
 
 				/**
-				 * \brief Set the software netmask.
-				 * \param software_netmask The software netmask.
-				 */
-				void set_software_netmask(const boost::asio::ip::address_v4& software_netmask);
-
-				/**
 				 * \brief Set the lease time.
 				 * \param lease_time The lease time.
 				 */
@@ -140,9 +143,10 @@ namespace asiotap
 				 * \brief Add a proxy entry.
 				 * \param hardware_address The hardware address.
 				 * \param logical_address The logical address.
+				 * \param logical_prefix_length The prefix length.
 				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
 				 */
-				bool add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address);
+				bool add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address, unsigned int logical_prefix_length);
 
 				/**
 				 * \brief Delete a proxy entry.
@@ -158,11 +162,10 @@ namespace asiotap
 
 				filter_type& m_dhcp_filter;
 
-				typedef std::map<ethernet_address_type, boost::asio::ip::address_v4> entry_map_type;
+				typedef std::map<ethernet_address_type, ipv4_address_netmask_type> entry_map_type;
 
 				ethernet_address_type m_hardware_address;
 				boost::asio::ip::address_v4 m_software_address;
-				boost::asio::ip::address_v4 m_software_netmask;
 				boost::posix_time::time_duration m_lease_time;
 				entry_map_type m_entry_map;
 		};
@@ -190,11 +193,6 @@ namespace asiotap
 			m_software_address = software_address;
 		}
 
-		inline void proxy<dhcp_frame>::set_software_netmask(const boost::asio::ip::address_v4& software_netmask)
-		{
-			m_software_netmask = software_netmask;
-		}
-
 		inline void proxy<dhcp_frame>::set_lease_time(boost::posix_time::time_duration lease_time)
 		{
 			m_lease_time = lease_time;
@@ -205,9 +203,11 @@ namespace asiotap
 			return m_entry_map.insert(entry).second;
 		}
 
-		inline bool proxy<dhcp_frame>::add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address)
+		inline bool proxy<dhcp_frame>::add_entry(const ethernet_address_type& hardware_address, const boost::asio::ip::address_v4& logical_address, unsigned int logical_prefix_length)
 		{
-			return add_entry(std::make_pair(hardware_address, logical_address));
+			ipv4_address_netmask_type ipv4_address_netmask = { logical_address, logical_prefix_length };
+
+			return add_entry(std::make_pair(hardware_address, ipv4_address_netmask));
 		}
 
 		inline bool proxy<dhcp_frame>::remove_entry(const ethernet_address_type& hardware_address)

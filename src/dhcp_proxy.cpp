@@ -82,6 +82,13 @@ namespace asiotap
 
 				return result;
 			}
+
+			boost::asio::ip::address_v4 prefix_length_to_netmask_v4(unsigned int netmask)
+			{
+				uint32_t numeric_netmask = (1 << (32 - netmask)) - 1;
+
+				return boost::asio::ip::address_v4(~numeric_netmask);
+			}
 		}
 
 		const boost::posix_time::time_duration proxy<dhcp_frame>::DEFAULT_LEASE_TIME = boost::posix_time::hours(1);
@@ -129,7 +136,7 @@ namespace asiotap
 								{
 									const boost::asio::ip::address_v4 requested_ip_address(ntohl(requested_ip_address_option->value_as<uint32_t>()));
 
-									if (requested_ip_address != entry->second)
+									if (requested_ip_address != entry->second.address)
 									{
 										dhcp_builder.add_option(dhcp_option::dhcp_message_type, DHCP_NEGATIVE_ACKNOWLEDGMENT_MESSAGE);
 									}
@@ -173,7 +180,7 @@ namespace asiotap
 											switch (static_cast<dhcp_option::dhcp_option_tag>(options[i]))
 											{
 												case dhcp_option::subnet_mask:
-													dhcp_builder.add_option(dhcp_option::subnet_mask, boost::asio::buffer(m_software_netmask.to_bytes()));
+													dhcp_builder.add_option(dhcp_option::subnet_mask, boost::asio::buffer(prefix_length_to_netmask_v4(entry->second.prefix_length).to_bytes()));
 													break;
 
 												default:
@@ -203,7 +210,7 @@ namespace asiotap
 						                   bootp_helper.seconds(),
 						                   bootp_helper.flags(),
 						                   boost::asio::ip::address_v4::any(),
-						                   info ? boost::asio::ip::address_v4::any() : entry->second,
+						                   info ? boost::asio::ip::address_v4::any() : entry->second.address,
 						                   m_software_address,
 						                   boost::asio::ip::address_v4::any(),
 						                   boost::asio::buffer(entry->first),
