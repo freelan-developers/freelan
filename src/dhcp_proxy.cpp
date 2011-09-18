@@ -85,9 +85,21 @@ namespace asiotap
 
 			boost::asio::ip::address_v4 prefix_length_to_netmask_v4(unsigned int netmask)
 			{
-				uint32_t numeric_netmask = (1 << (32 - netmask)) - 1;
+				if (netmask <= 0)
+				{
+					return boost::asio::ip::address_v4::any();
+				}
+				else
+				{
+					if (netmask > 32)
+					{
+						netmask = 32;
+					}
 
-				return boost::asio::ip::address_v4(~numeric_netmask);
+					uint32_t numeric_netmask = (1 << (32 - netmask)) - 1;
+
+					return boost::asio::ip::address_v4(~numeric_netmask);
+				}
 			}
 		}
 
