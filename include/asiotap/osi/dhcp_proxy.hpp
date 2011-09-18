@@ -100,6 +100,12 @@ namespace asiotap
 				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter);
 
 				/**
+				 * \brief Check if the proxy matched during the last parsing.
+				 * \return true if the proxy matched.
+				 */
+				bool matched() const;
+
+				/**
 				 * \brief Set the hardware address.
 				 * \param hardware_address The hardware address.
 				 */
@@ -167,6 +173,11 @@ namespace asiotap
 			m_lease_time(DEFAULT_LEASE_TIME)
 		{
 			m_dhcp_filter.add_handler(boost::bind(&proxy<dhcp_frame>::on_frame, this, _1));
+		}
+
+		inline bool proxy<dhcp_frame>::matched() const
+		{
+			return m_dhcp_filter.get_last_helper();
 		}
 
 		inline void proxy<dhcp_frame>::set_hardware_address(const ethernet_address_type& hardware_address)

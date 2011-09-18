@@ -91,6 +91,12 @@ namespace asiotap
 				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter_type& arp_filter);
 
 				/**
+				 * \brief Check if the proxy matched during the last parsing.
+				 * \return true if the proxy matched.
+				 */
+				bool matched() const;
+
+				/**
 				 * \brief Add a proxy entry.
 				 * \param entry The entry to add.
 				 * \return If an entry for the specified logical address already exists, nothing is done and the call returns false. Otherwise, the call returns true.
@@ -129,6 +135,11 @@ namespace asiotap
 			m_arp_filter(arp_filter)
 		{
 			m_arp_filter.add_handler(boost::bind(&proxy<arp_frame>::on_frame, this, _1));
+		}
+
+		inline bool proxy<arp_frame>::matched() const
+		{
+			return m_arp_filter.get_last_helper();
 		}
 
 		inline bool proxy<arp_frame>::add_entry(const entry_type& entry)
