@@ -138,8 +138,8 @@ int main()
 
 		// The requested address
 		ba::ip::address_v4 dhcp_server_ipv4_address = ba::ip::address_v4::from_string("9.0.0.0");
-		ba::ip::address_v4 dhcp_server_ipv4_netmask = ba::ip::address_v4::from_string("255.255.255.0");
 		ba::ip::address_v4 my_ipv4_address = ba::ip::address_v4::from_string("9.0.0.1");
+		unsigned long my_ipv4_prefix_length = 24;
 		ba::ip::address_v4 other_ipv4_address = ba::ip::address_v4::from_string("9.0.0.2");
 
 		// We need some filters
@@ -157,7 +157,7 @@ int main()
 		ao::proxy<ao::dhcp_frame> dhcp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), dhcp_filter);
 		dhcp_proxy.set_hardware_address(tap_adapter.ethernet_address());
 		dhcp_proxy.set_software_address(dhcp_server_ipv4_address);
-		dhcp_proxy.add_entry(tap_adapter.ethernet_address(), my_ipv4_address, my_ipv4_netmask);
+		dhcp_proxy.add_entry(tap_adapter.ethernet_address(), my_ipv4_address, my_ipv4_prefix_length);
 
 		// Let's run !
 		_io_service.run();
