@@ -212,12 +212,15 @@ po::options_description get_network_options()
 	result.add_options()
 		("network.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
 		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
-		("network.tap_adapter_addresses", po::value<std::string>()->multitoken()->default_value("9.0.0.1/24"), "The tap adapter network addresses.")
-		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
+		("network.tap_adapter_addresses", po::value<std::string>()->multitoken()->zero_tokens()->default_value("9.0.0.1/24"), "The tap adapter network addresses.")
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
+		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
+		("network.dhcp_server_ipv4_address", po::value<std::string>()->default_value("9.0.0.0"), "The DHCP proxy server IPv4 address.")
+		("network.dhcp_server_ipv4_netmask", po::value<std::string>()->default_value("255.255.255.0"), "The DHCP proxy server IPv4 netmask.")
+		("network.dhcp_client_ipv4_address", po::value<std::string>()->default_value("9.0.0.1"), "The DHCP proxy client IPv4 address.")
 		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
 		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
-		("network.contact_list", po::value<std::string>()->multitoken(), "The contact list.")
+		("network.contact_list", po::value<std::string>()->multitoken()->zero_tokens(), "The contact list.")
 		;
 
 	return result;
@@ -234,8 +237,8 @@ po::options_description get_security_options()
 		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
 		("security.use_whitelist", po::value<bool>()->default_value(false), "Whether to use the whitelist.")
 		("security.use_blacklist", po::value<bool>()->default_value(true), "Whether to use the blacklist.")
-		("security.whitelist", po::value<std::string>()->multitoken(), "The whitelist.")
-		("security.blacklist", po::value<std::string>()->multitoken(), "The blacklist.")
+		("security.whitelist", po::value<std::string>()->multitoken()->zero_tokens(), "The whitelist.")
+		("security.blacklist", po::value<std::string>()->multitoken()->zero_tokens(), "The blacklist.")
 		;
 
 	return result;
@@ -250,8 +253,11 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
 	configuration.listen_on = parse_endpoint(vm["network.listen_on"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured | query::passive);
 	configuration.tap_adapter_addresses = parse_ip_address_netmask_list(vm["network.tap_adapter_addresses"].as<std::string>());
-	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
 	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
+	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
+	configuration.dhcp_server_ipv4_address = boost::asio::ip::address_v4::from_string(vm["network.dhcp_server_ipv4_address"].as<std::string>());
+	configuration.dhcp_server_ipv4_netmask = boost::asio::ip::address_v4::from_string(vm["network.dhcp_server_ipv4_netmask"].as<std::string>());
+	configuration.dhcp_client_ipv4_address = boost::asio::ip::address_v4::from_string(vm["network.dhcp_client_ipv4_address"].as<std::string>());
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 	configuration.contact_list = parse_endpoint_list(vm["network.contact_list"].as<std::string>(), configuration.hostname_resolution_protocol, query::address_configured);
