@@ -171,6 +171,15 @@ namespace
 		throw po::invalid_option_value(str);
 	}
 
+	fl::configuration::ethernet_address_type parse_ethernet_address(const std::string& str)
+	{
+		fl::configuration::ethernet_address_type result;
+
+		//TODO: Add parser code here
+
+		throw po::invalid_option_value(str);
+	}
+
 	fl::configuration::routing_method_type to_routing_method(const std::string& str)
 	{
 		if (str == "switch")
@@ -229,6 +238,7 @@ po::options_description get_network_options()
 		("network.tap_adapter_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.1/24"), "The tap adapter IPv4 address and prefix length.")
 		("network.tap_adapter_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::1/10"), "The tap adapter IPv6 address and prefix length.")
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
+		("network.arp_proxy_fake_ethernet_address", po::value<std::string>()->default_value("00:aa:bb:cc:dd:ee"), "The ARP proxy fake ethernet address.")
 		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
 		("network.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
 		("network.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
@@ -269,6 +279,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.tap_adapter_ipv4_address_prefix_length = parse_ipv4_address_prefix_length(vm["network.tap_adapter_ipv4_address_prefix_length"].as<std::string>());
 	configuration.tap_adapter_ipv6_address_prefix_length = parse_ipv6_address_prefix_length(vm["network.tap_adapter_ipv6_address_prefix_length"].as<std::string>());
 	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
+	configuration.arp_proxy_fake_ethernet_address = parse_ethernet_address(vm["network.arp_proxy_fake_ethernet_address"].as<std::string>());
 	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
 	configuration.dhcp_server_ipv4_address_prefix_length = parse_ipv4_address_prefix_length(vm["network.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
 	configuration.dhcp_server_ipv6_address_prefix_length = parse_ipv6_address_prefix_length(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
