@@ -84,7 +84,7 @@ namespace custom_parser
 		bool parse(Iterator& first, Iterator const& last, Context&, Skipper const& skipper, Attribute& attr) const
 		{
 			namespace qi = boost::spirit::qi;
-			typedef qi::uint_parser<uint8_t, 10, 1, 3> digit;
+			qi::uint_parser<uint8_t, 10, 1, 3> digit;
 
 			qi::skip_over(first, last, skipper);
 
@@ -93,7 +93,7 @@ namespace custom_parser
 			bool result = qi::parse(
 					first,
 					last,
-					boost::spirit::repeat(0, 3)[digit() >> '.'] >> digit()
+					boost::spirit::repeat(0, 3)[digit >> '.'] >> digit
 					);
 
 			if (result)
