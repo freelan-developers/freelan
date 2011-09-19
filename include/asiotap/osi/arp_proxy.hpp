@@ -83,6 +83,11 @@ namespace asiotap
 				typedef std::pair<boost::asio::ip::address_v4, ethernet_address_type> entry_type;
 
 				/**
+				 * \brief The ARP request callback type.
+				 */
+				typedef boost::function<bool (const boost::asio::ip::address_v4&, ethernet_address_type&)> arp_request_callback_type;
+
+				/**
 				 * \brief Create an ARP proxy.
 				 * \param response_buffer The buffer to write the responses into.
 				 * \param on_data_available The callback function to call when data is available for writing.
@@ -118,6 +123,12 @@ namespace asiotap
 				 */
 				bool remove_entry(const boost::asio::ip::address_v4& logical_address);
 
+				/**
+				 * \brief Set the callback function when a ARP request is received.
+				 * \param callback The callback function.
+				 */
+				void set_arp_request_callback(arp_request_callback_type callback);
+
 			private:
 
 				void on_frame(const_helper<frame_type>);
@@ -128,11 +139,13 @@ namespace asiotap
 				typedef std::map<boost::asio::ip::address_v4, ethernet_address_type> entry_map_type;
 
 				entry_map_type m_entry_map;
+				arp_request_callback_type m_arp_request_callback;
 		};
 
 		inline proxy<arp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter_type& arp_filter) :
 			_base_proxy<arp_frame>(_response_buffer, on_data_available),
-			m_arp_filter(arp_filter)
+			m_arp_filter(arp_filter),
+			m_arp_request_callback(0)
 		{
 			m_arp_filter.add_handler(boost::bind(&proxy<arp_frame>::on_frame, this, _1));
 		}
@@ -155,6 +168,11 @@ namespace asiotap
 		inline bool proxy<arp_frame>::remove_entry(const boost::asio::ip::address_v4& logical_address)
 		{
 			return (m_entry_map.erase(logical_address) > 0);
+		}
+
+		inline void proxy<arp_frame>::set_arp_request_callback(arp_request_callback_type callback)
+		{
+			m_arp_request_callback = callback;
 		}
 
 		inline void proxy<arp_frame>::on_frame(const_helper<frame_type> helper)

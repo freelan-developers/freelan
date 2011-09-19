@@ -60,6 +60,23 @@ namespace asiotap
 			{
 				entry_map_type::const_iterator entry_it = m_entry_map.find(arp_helper.target_logical_address());
 
+				ethernet_address_type ethernet_address;
+
+				bool should_answer = false;
+
+				if (entry_it != m_entry_map.end())
+				{
+					ethernet_address = entry_it->second;
+					should_answer = true;
+				}
+				else
+				{
+					if (m_arp_request_callback)
+					{
+						should_answer = m_arp_request_callback(arp_helper.target_logical_address(), ethernet_address);
+					}
+				}
+
 				if (entry_it != m_entry_map.end())
 				{
 					size_t payload_size;
@@ -68,8 +85,8 @@ namespace asiotap
 
 					payload_size = arp_builder.write(
 					                   ARP_REPLY_OPERATION,
-					                   boost::asio::buffer(entry_it->second),
-					                   entry_it->first,
+					                   boost::asio::buffer(ethernet_address),
+					                   arp_helper.target_logical_address(),
 					                   arp_helper.sender_hardware_address(),
 					                   arp_helper.sender_logical_address()
 					               );
