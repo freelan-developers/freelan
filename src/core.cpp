@@ -113,6 +113,7 @@ namespace freelan
 		if (m_configuration.enable_arp_proxy)
 		{
 			m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
+			m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
 		}
 		else
 		{
@@ -324,5 +325,20 @@ namespace freelan
 	void core::on_proxy_data(boost::asio::const_buffer data)
 	{
 		m_tap_adapter.write(data);
+	}
+
+	bool core::on_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
+	{
+		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+		{
+			if (logical_address != m_configuration.tap_adapter_ipv4_address_prefix_length->address)
+			{
+				ethernet_address = m_configuration.arp_proxy_fake_ethernet_address;
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

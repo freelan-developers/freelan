@@ -55,6 +55,8 @@
 #include <fscp/server.hpp>
 #include <fscp/identity_store.hpp>
 
+#include <asiotap/osi/arp_proxy.hpp>
+
 namespace freelan
 {
 	/**
@@ -62,6 +64,11 @@ namespace freelan
 	 */
 	struct configuration
 	{
+		/**
+		 * \brief The ethernet address type.
+		 */
+		typedef asiotap::osi::proxy<asiotap::osi::arp_frame>::ethernet_address_type ethernet_address_type;
+			
 		/**
 		 * \brief The endpoint type.
 		 */
@@ -152,6 +159,11 @@ namespace freelan
 		 * \brief Whether to enable the ARP proxy.
 		 */
 		bool enable_arp_proxy;
+
+		/**
+		 * \brief The ARP proxy fake ethernet address.
+		 */
+		ethernet_address_type arp_proxy_fake_ethernet_address;
 
 		/**
 		 * \brief Whether to enable the DHCP proxy.

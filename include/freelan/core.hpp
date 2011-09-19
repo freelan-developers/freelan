@@ -68,6 +68,11 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief The ethernet address type.
+			 */
+			typedef freelan::configuration::ethernet_address_type ethernet_address_type;
+
+			/**
 			 * \brief The endpoint type.
 			 */
 			typedef fscp::server::ep_type ep_type;
@@ -192,8 +197,8 @@ namespace freelan
 			boost::array<unsigned char, 2048> m_proxy_buffer;
 
 			// Proxies related methods
-			void on_proxy_data(boost::asio::const_buffer data);
-
+			void on_proxy_data(boost::asio::const_buffer);
+			bool on_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
 	};
 
 	inline const freelan::configuration& core::configuration() const
