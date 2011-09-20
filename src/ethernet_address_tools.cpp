@@ -68,5 +68,5 @@ fl::configuration::ethernet_address_type parse_ethernet_address(const std::strin
 		return result;
 	}
 
-	throw std::runtime_error("Unable to parse the specified IPv4 address/prefix length: " + str);
+	throw std::runtime_error("Unable to parse the specified ethernet address: " + str);
 }
