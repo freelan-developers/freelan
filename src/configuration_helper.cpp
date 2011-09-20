@@ -47,26 +47,17 @@
 #include "configuration_helper.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 
-#include "endpoint.hpp"
-#include "endpoint_parser.hpp"
-#include "ipv4_address_prefix_length_parser.hpp"
-#include "ipv6_address_prefix_length_parser.hpp"
+#include "endpoint_tools.hpp"
+#include "ethernet_address_tools.hpp"
+#include "ipv4_address_tools.hpp"
+#include "ipv6_address_tools.hpp"
 
 namespace po = boost::program_options;
-namespace qi = boost::spirit::qi;
-namespace ph = boost::phoenix;
 namespace fl = freelan;
 
 namespace
 {
-	const std::string DEFAULT_PORT = "12000";
-
 	fl::configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
 	{
 		if (str == "system_default")
@@ -76,108 +67,7 @@ namespace
 		else if (str == "ipv6")
 			return boost::asio::ip::udp::v6();
 
-		throw po::invalid_option_value(str);
-	}
-
-	fl::configuration::ep_type parse_endpoint(
-			const std::string& str,
-			fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol,
-			boost::asio::ip::udp::resolver::query::flags flags
-			)
-	{
-		boost::shared_ptr<endpoint> ep;
-
-		std::string::const_iterator first = str.begin();
-		bool r = qi::phrase_parse(first, str.end(), custom_parser::endpoint[ph::ref(ep) = qi::_1], qi::space);
-
-		if (r && (first == str.end()) && ep)
-		{
-			try
-			{
-				return ep->to_boost_asio_endpoint(hostname_resolution_protocol, flags, DEFAULT_PORT);
-			}
-			catch (boost::system::system_error& se)
-			{
-				throw po::invalid_option_value(str + ": " + se.what());
-			}
-		}
-
-		throw po::invalid_option_value(str);
-	}
-
-	std::vector<fl::configuration::ep_type> parse_endpoint_list(
-			const std::string& str,
-			fl::configuration::hostname_resolution_protocol_type hostname_resolution_protocol,
-			boost::asio::ip::udp::resolver::query::flags flags
-			)
-	{
-		typedef std::vector<boost::shared_ptr<endpoint> > list_type;
-		
-		list_type list;
-
-		std::string::const_iterator first = str.begin();
-		bool r = qi::phrase_parse(first, str.end(), *(custom_parser::endpoint[boost::bind(&list_type::push_back, &list, _1)]), qi::space);
-
-		if (r && (first == str.end()))
-		{
-			typedef std::vector<fl::configuration::ep_type> result_type;
-
-			result_type result;
-
-			BOOST_FOREACH(boost::shared_ptr<endpoint>& ep, list)
-			{
-				try
-				{
-					result.push_back(ep->to_boost_asio_endpoint(hostname_resolution_protocol, flags, DEFAULT_PORT));
-				}
-				catch (boost::system::system_error&)
-				{
-				}
-			}
-
-			return result;
-		}
-
-		throw po::invalid_option_value(str);
-	}
-
-	boost::optional<fl::configuration::ipv4_address_prefix_length_type> parse_ipv4_address_prefix_length(const std::string& str)
-	{
-		boost::optional<fl::configuration::ipv4_address_prefix_length_type> result;
-
-		std::string::const_iterator first = str.begin();
-		bool r = qi::phrase_parse(first, str.end(), -custom_parser::ipv4_address_prefix_length[ph::ref(result) = qi::_1], qi::space);
-
-		if (r && (first == str.end()))
-		{
-			return result;
-		}
-
-		throw po::invalid_option_value(str);
-	}
-
-	boost::optional<fl::configuration::ipv6_address_prefix_length_type> parse_ipv6_address_prefix_length(const std::string& str)
-	{
-		boost::optional<fl::configuration::ipv6_address_prefix_length_type> result;
-
-		std::string::const_iterator first = str.begin();
-		bool r = qi::phrase_parse(first, str.end(), -custom_parser::ipv6_address_prefix_length[ph::ref(result) = qi::_1], qi::space);
-
-		if (r && (first == str.end()))
-		{
-			return result;
-		}
-
-		throw po::invalid_option_value(str);
-	}
-
-	fl::configuration::ethernet_address_type parse_ethernet_address(const std::string& str)
-	{
-		fl::configuration::ethernet_address_type result;
-
-		//TODO: Add parser code here
-
-		throw po::invalid_option_value(str);
+		throw std::runtime_error("\"" + str + "\" is not a valid hostname resolution protocol");
 	}
 
 	fl::configuration::routing_method_type to_routing_method(const std::string& str)
@@ -187,7 +77,7 @@ namespace
 		if (str == "hub")
 			return fl::configuration::RM_HUB;
 
-		throw po::invalid_option_value(str);
+		throw std::runtime_error("\"" + str + "\" is not a valid routing method");
 	}
 
 	fl::configuration::certificate_validation_method_type to_certificate_validation_method(const std::string& str)
@@ -197,7 +87,7 @@ namespace
 		if (str == "none")
 			return fl::configuration::CVM_NONE;
 
-		throw po::invalid_option_value(str);
+		throw std::runtime_error("\"" + str + "\" is not a valid certificate validation method");
 	}
 
 	boost::posix_time::time_duration to_time_duration(unsigned int msduration)

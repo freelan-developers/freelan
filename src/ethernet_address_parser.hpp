@@ -39,13 +39,15 @@
  */
 
 /**
- * \file ipv6_address_prefix_length_parser.hpp
+ * \file ethernet_address_parser.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IPv6 address/prefix length parser.
+ * \brief An ethernet address parser.
  */
 
-#ifndef IPV6_ADDRESS_PREFIX_LENGTH_PARSER_HPP
-#define IPV6_ADDRESS_PREFIX_LENGTH_PARSER_HPP
+#ifndef ETHERNET_ADDRESS_PARSER_HPP
+#define ETHERNET_ADDRESS_PARSER_HPP
+
+#include <vector>
 
 #include <boost/asio.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -53,14 +55,12 @@
 
 #include <freelan/configuration.hpp>
 
-#include "ipv6_address_parser.hpp"
-
 // This was written according to:
 // http://boost-spirit.com/home/articles/qi-example/creating-your-own-parser-component-for-spirit-qi/
 
 namespace custom_parser
 {
-	BOOST_SPIRIT_TERMINAL(ipv6_address_prefix_length)
+	BOOST_SPIRIT_TERMINAL(ethernet_address)
 }
 
 namespace boost
@@ -68,7 +68,7 @@ namespace boost
 	namespace spirit
 	{
 		template <>
-		struct use_terminal<qi::domain, custom_parser::tag::ipv6_address_prefix_length> : mpl::true_
+		struct use_terminal<qi::domain, custom_parser::tag::ethernet_address> : mpl::true_
 		{
 		};
 	}
@@ -76,13 +76,13 @@ namespace boost
 
 namespace custom_parser
 {
-	struct ipv6_address_prefix_length_parser :
-		boost::spirit::qi::primitive_parser<ipv6_address_prefix_length_parser>
+	struct ethernet_address_parser:
+		boost::spirit::qi::primitive_parser<ethernet_address_parser>
 	{
 		template <typename Context, typename Iterator>
 		struct attribute
 		{
-			typedef freelan::configuration::ipv6_address_prefix_length_type type;
+			typedef freelan::configuration::ethernet_address_type type;
 		};
 
 		template <typename Iterator, typename Context, typename Skipper, typename Attribute>
@@ -91,25 +91,27 @@ namespace custom_parser
 			namespace qi = boost::spirit::qi;
 			namespace ph = boost::phoenix;
 
-			using custom_parser::ipv6_address;
-
-			qi::uint_parser<uint8_t, 10, 1, 3> prefix_length_parser;
+			qi::uint_parser<uint8_t, 16, 2, 2> digit;
 
 			qi::skip_over(first, last, skipper);
 
 			const Iterator first_save = first;
 			bool r;
 
-			freelan::configuration::ipv6_address_prefix_length_type result;
+			std::vector<uint8_t> values;
 
 			r = qi::parse(
 					first,
 					last,
-					ipv6_address[ph::ref(result.address) = qi::_1] >> '/' >> prefix_length_parser[ph::ref(result.prefix_length) = qi::_1]
+					qi::repeat(5, 5)[digit[boost::bind(&std::vector<uint8_t>::push_back, &values, _1)] >> -(qi::char_(':') | '-')] >>
+					digit[boost::bind(&std::vector<uint8_t>::push_back, &values, _1)]
 					);
 
-			if (r)
+			freelan::configuration::ethernet_address_type result;
+
+			if (r && values.size() == result.size())
 			{
+				std::copy(result.begin(), &*values.begin(), &*values.end());
 				boost::spirit::traits::assign_to(result, attr);
 			}
 
@@ -119,7 +121,7 @@ namespace custom_parser
 		template <typename Context>
 		boost::spirit::info what(Context&) const
 		{
-			return boost::spirit::info("ipv6_address_prefix_length");
+			return boost::spirit::info("ethernet_address");
 		}
 	};
 }
@@ -131,9 +133,9 @@ namespace boost
 		namespace qi
 		{
 			template <typename Modifiers>
-			struct make_primitive<custom_parser::tag::ipv6_address_prefix_length, Modifiers>
+			struct make_primitive<custom_parser::tag::ethernet_address, Modifiers>
 			{
-				typedef custom_parser::ipv6_address_prefix_length_parser result_type;
+				typedef custom_parser::ethernet_address_parser result_type;
 
 				result_type operator()(unused_type, unused_type) const
 				{
@@ -144,4 +146,4 @@ namespace boost
 	}
 }
 
-#endif /* IPV6_ADDRESS_PREFIX_LENGTH_PARSER_HPP */
+#endif /* ETHERNET_ADDRESS_PARSER_HPP */
