@@ -111,7 +111,11 @@ namespace custom_parser
 
 			if (r && values.size() == result.size())
 			{
-				std::copy(result.begin(), &*values.begin(), &*values.end());
+				for (size_t i = 0; i < result.size(); ++i)
+				{
+					result[i] = values[i];
+				}
+
 				boost::spirit::traits::assign_to(result, attr);
 			}
 
