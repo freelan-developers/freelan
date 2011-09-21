@@ -14,9 +14,6 @@ class Environment(SConsEnvironment):
             parse_flags=None,
             **kw):
         
-        # Members
-        self._libdir = 'lib'
-
         # Variables
         if path:
             variable_file = os.path.join(path, Environment._VARIABLE_FILE)
@@ -40,6 +37,8 @@ class Environment(SConsEnvironment):
         self.variables_help_text = variables.GenerateHelpText(self)
 
         variables.Save(variable_file, self)
+
+        self['arch'] = (self['arch'] in ['64', 'x86_64']) and '64' or '32'
 
         if not 'CXXFLAGS' in self:
             self['CXXFLAGS'] = []
@@ -65,8 +64,14 @@ class Environment(SConsEnvironment):
             # We must remove this flag until Boost::ASIO is fixed.
             self['CXXFLAGS'].remove('-Wshadow')
 
+        # Members
+        if self['arch'] == '32':
+            self.__libdir = 'lib'
+        elif self['arch'] == '64':
+            self.__libdir = 'lib64'
+
         if sys.platform != 'darwin':
-            if self['arch'] == 'i386':
+            if self['arch'] == '32':
                 self['CXXFLAGS'].append('-m32')
                 self['LINKFLAGS'].append('-m32')
             elif self['arch'] == '64':
@@ -100,7 +105,7 @@ class Environment(SConsEnvironment):
 
         if sys.platform == 'win32':
             static_source = shared_source
-            shlinkflags += ['-Wl,--output-def,%s' % os.path.abspath(os.path.join(sys.path[0], self._libdir, module + '.def'))]
+            shlinkflags += ['-Wl,--output-def,%s' % os.path.abspath(os.path.join(sys.path[0], self.__libdir, module + '.def'))]
 
             if not 'LIBS' in kw:
                 kw['LIBS'] = []
@@ -113,13 +118,13 @@ class Environment(SConsEnvironment):
 
         self.__add_libs(kw)
 
-        devel_shared_library = self.SharedLibrary(os.path.join(self._libdir, module), shared_source, SHLINKFLAGS = shlinkflags, **kw)
-        static_library = self.StaticLibrary(os.path.join(self._libdir, module + '_static'), static_source, **kw)
+        devel_shared_library = self.SharedLibrary(os.path.join(self.__libdir, module), shared_source, SHLINKFLAGS = shlinkflags, **kw)
+        static_library = self.StaticLibrary(os.path.join(self.__libdir, module + '_static'), static_source, **kw)
 
         if sys.platform == 'win32':
             shared_library = devel_shared_library
         else:
-            shared_library = self.Command(os.path.join(self._libdir, 'lib%s.so.%s.%s' % (module, major, minor)), devel_shared_library, Copy("$TARGET", "$SOURCE"))      
+            shared_library = self.Command(os.path.join(self.__libdir, 'lib%s.so.%s.%s' % (module, major, minor)), devel_shared_library, Copy("$TARGET", "$SOURCE"))      
 
         return (devel_shared_library, shared_library, static_library)
 
@@ -178,3 +183,9 @@ class Environment(SConsEnvironment):
             variables.AddVariables(PathVariable('boost_path', 'The path of the Boost installation', r'/usr', PathVariable.PathIsDir))
 
         return variables
+
+    def __get_libdir(self):
+        """Get the library directory."""
+        return self.__libdir
+
+    libdir = property(__get_libdir)

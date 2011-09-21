@@ -32,7 +32,7 @@ include_install = []
 
 for (k, v) in include.items():
     include_install += [env.Install(os.path.join(env['install_path'], 'include', module, k), v)]
-libraries_install = env.Install(os.path.join(env['install_path'], 'lib'), libraries)
+libraries_install = env.Install(os.path.join(env['install_path'], env.libdir), libraries)
 
 install = [include_install, libraries_install]
 
