@@ -1,21 +1,21 @@
 [submodule "libcryptoplus"]
 	path = libcryptoplus
-	url = git@github.com/ereOn/libcryptoplus.git
+	url = git@github.com:ereOn/libcryptoplus.git
 [submodule "libiconvplus"]
 	path = libiconvplus
-	url = git@github.com/ereOn/libiconvplus.git
+	url = git@github.com:ereOn/libiconvplus.git
 [submodule "libfscp"]
 	path = libfscp
-	url = git@github.com/ereOn/libfscp.git
+	url = git@github.com:ereOn/libfscp.git
 [submodule "libasiotap"]
 	path = libasiotap
-	url = git@github.com/ereOn/libasiotap.git
+	url = git@github.com:ereOn/libasiotap.git
 [submodule "libfreelan"]
 	path = libfreelan
-	url = git@github.com/ereOn/libfreelan.git
+	url = git@github.com:ereOn/libfreelan.git
 [submodule "freelan"]
 	path = freelan
-	url = git@github.com/ereOn/freelan.git
+	url = git@github.com:ereOn/freelan.git
 [submodule "freelan-build_tools"]
 	path = freelan-build_tools
-	url = git@github.com/ereOn/freelan-build_tools.git
+	url = git@github.com:ereOn/freelan-build_tools.git
