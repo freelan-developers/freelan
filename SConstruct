@@ -1,3 +1,7 @@
 """The SConstruct file"""
 
-import freelan.build_tools
+from freelan.build_tools import LibraryProject
+
+project = LibraryProject()
+
+print project.include_files
