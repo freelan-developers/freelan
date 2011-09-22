@@ -2,8 +2,15 @@
 
 import os
 import fnmatch
-import json
+
+try:
+    import json
+except ImportError:
+    import simplejson
+
 import file_tools
+
+from environment import EnvironmentHelper
 
 class Project(object):
     """A class to handle project attributes."""
@@ -33,6 +40,10 @@ class Project(object):
 
             self.__setattr__(key, value)
 
+    def create_environment(self, environment_class, arguments):
+        environment_helper = EnvironmentHelper(environment_class, arguments)
+        self.configure_environment_helper(environment_helper)
+
 class LibraryProject(Project):
     """A class to handle library project attributes."""
 
@@ -61,3 +72,21 @@ class LibraryProject(Project):
 
         for root, directories, files in os.walk(self.source_path):
             self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
+
+    def get_library_dir(self, arch):
+        """Get the library directory for the specified architecture."""
+
+        if arch == '64':
+            return os.path.join(self.path, 'lib64')
+        else:
+            return os.path.join(self.path, 'lib')
+
+    def configure_environment_helper(self, environment_helper):
+        environment_helper.build_library(
+            self.name,
+            self.major,
+            self.minor,
+            self.include_path,
+            self.source_files,
+            self.get_library_dir(environment_helper.get_architecture())
+        )
