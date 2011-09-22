@@ -3,6 +3,7 @@
 import os
 import fnmatch
 import json
+import file_tools
 
 class Project(object):
     """A class to handle project attributes."""
@@ -31,20 +32,23 @@ class Project(object):
 class LibraryProject(Project):
     """A class to handle library project attributes."""
 
-    def __init__(self, path=None, include_dir=None):
+    def __init__(self, path=None, include_dir=None, source_dir=None):
         """Create a new LibraryProject reading from the specified path."""
         super(LibraryProject, self).__init__(path)
 
         if include_dir is None:
             include_dir = os.path.join('include', self.name)
+        if source_dir is None:
+            source_dir = os.path.join('src')
 
         # Scan for include files
         self.include_files = []
 
         for root, directories, files in os.walk(include_dir):
-            self.include_files += [os.path.join(root, file) for file in fnmatch.filter(files, '*.hpp')]
+            self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
 
         # Scan for source files
         self.source_files = []
 
-
+        for root, directories, files in os.walk(source_dir):
+            self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
