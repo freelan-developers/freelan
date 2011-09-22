@@ -14,10 +14,14 @@ class Project(object):
         super(Project, self).__init__()
 
         if path is None:
-            path = os.getcwd()
+            self.abspath = os.getcwd()
+        else:
+            self.abspath = os.path.normpath(os.path.join(os.getcwd(), path))
+
+        self.path = os.path.relpath(self.abspath)
 
         # Set the project file
-        self.project_file = os.path.join(path, 'project.json')
+        self.project_file = os.path.join(self.path, 'project.json')
 
         # Load the project file
         attributes = json.loads(open(self.project_file).read())
@@ -37,9 +41,9 @@ class LibraryProject(Project):
         super(LibraryProject, self).__init__(path)
 
         if include_dir is None:
-            include_dir = os.path.join('include', self.name)
+            include_dir = os.path.join(self.path, 'include', self.name)
         if source_dir is None:
-            source_dir = os.path.join('src')
+            source_dir = os.path.join(self.path, 'src')
 
         # Scan for include files
         self.include_files = []
