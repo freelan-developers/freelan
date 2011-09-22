@@ -36,23 +36,28 @@ class Project(object):
 class LibraryProject(Project):
     """A class to handle library project attributes."""
 
-    def __init__(self, path=None, include_dir=None, source_dir=None):
+    def __init__(self, path=None, include_path=None, source_path=None):
         """Create a new LibraryProject reading from the specified path."""
         super(LibraryProject, self).__init__(path)
 
-        if include_dir is None:
-            include_dir = os.path.join(self.path, 'include', self.name)
-        if source_dir is None:
-            source_dir = os.path.join(self.path, 'src')
+        if include_path is None:
+            self.include_path = os.path.join(self.path, 'include', self.name)
+        else:
+            self.include_path = include_path
+
+        if source_path is None:
+            self.source_path = os.path.join(self.path, 'src')
+        else:
+            self.source_path = source_path
 
         # Scan for include files
         self.include_files = []
 
-        for root, directories, files in os.walk(include_dir):
+        for root, directories, files in os.walk(self.include_path):
             self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
 
         # Scan for source files
         self.source_files = []
 
-        for root, directories, files in os.walk(source_dir):
+        for root, directories, files in os.walk(self.source_path):
             self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
