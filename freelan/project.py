@@ -1,6 +1,7 @@
 """Project related classes and functions."""
 
 import os
+import sys
 import fnmatch
 
 try:
@@ -31,18 +32,20 @@ class Project(object):
         self.project_file = os.path.join(self.path, 'project.json')
 
         # Load the project file
-        attributes = json.loads(open(self.project_file).read())
-        
-        # Add attributes to the Project instance
-        for key, value in attributes.items():
-            if key == 'project_file':
-                raise RuntimeError('Invalid \'%s\' attribute in %s: keyword is reserved.' % (key, self.project_file))
-
-            self.__setattr__(key, value)
+        self.attributes = json.loads(open(self.project_file).read())
 
     def create_environment(self, scons_module, arguments):
+        """Create the environment helper."""
+
         environment_helper = EnvironmentHelper(scons_module, arguments)
         self.configure_environment_helper(environment_helper)
+
+    def __get_libraries(self):
+        """Return the list of used libraries."""
+
+        return sorted(set(self.attributes.get('*', []) + self.attributes.get(sys.platform, [])))
+
+    libraries = property(__get_libraries)
 
 class LibraryProject(Project):
     """A class to handle library project attributes."""
@@ -52,7 +55,7 @@ class LibraryProject(Project):
         super(LibraryProject, self).__init__(path)
 
         if include_path is None:
-            self.include_path = os.path.join(self.path, 'include', self.name)
+            self.include_path = os.path.join(self.path, 'include', self.attributes['name'])
         else:
             self.include_path = include_path
 
@@ -83,10 +86,11 @@ class LibraryProject(Project):
 
     def configure_environment_helper(self, environment_helper):
         environment_helper.build_library(
-            self.name,
-            self.major,
-            self.minor,
+            self.get_library_dir(environment_helper.get_architecture()),
+            self.attributes['name'],
+            self.attributes['major'],
+            self.attributes['minor'],
             self.include_path,
             self.source_files,
-            self.get_library_dir(environment_helper.get_architecture())
+            self.libraries
         )

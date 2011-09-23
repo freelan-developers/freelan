@@ -33,7 +33,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         else:
             pass
 
-    def build_library(self, name, major, minor, include_path, source_files, target_dir):
+    def build_library(self, target_dir, name, major, minor, include_path, source_files, libraries):
         """Build a library."""
 
         result = []
