@@ -40,8 +40,8 @@ class Project(object):
 
             self.__setattr__(key, value)
 
-    def create_environment(self, environment_class, arguments):
-        environment_helper = EnvironmentHelper(environment_class, arguments)
+    def create_environment(self, scons_module, arguments):
+        environment_helper = EnvironmentHelper(scons_module, arguments)
         self.configure_environment_helper(environment_helper)
 
 class LibraryProject(Project):

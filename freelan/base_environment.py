@@ -1,34 +1,35 @@
 """A base environment helper class."""
 
-import platform
 import os
+import platform
 
 class BaseEnvironmentHelper(object):
     """A base environment class."""
 
-    def __init__(self, environment_class, arguments):
+    def __init__(self, scons_module, arguments):
         """Create a new BaseEnvironmentHelper instance."""
 
         super(BaseEnvironmentHelper, self).__init__()
 
-        self.environment_class = environment_class
-        self.arguments = arguments
+        self.mode = arguments.get('mode', 'release')
 
-        self.os_platform = arguments.get('os_platform')
-        self.toolset = arguments.get('toolset', 'default')
-        
-        self.environment = self.environment_class(self.os_platform, [self.toolset], None, None, None, ENV = os.environ.copy())
+        if not self.mode in ['release', 'debug']:
+            raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
 
-        
-    def get_architecture(self):
+        self.arch = arguments.get('arch', platform.machine())
+        self.toolset = arguments.get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
+
+        self.environment = scons_module.Environment.Environment(None, [self.toolset], None, None, None, ENV = os.environ.copy())
+
+    def get_architecture(self, arch=None):
         """Get the current architecture ('32' or '64')."""
 
-        if not 'arch' in self.environment:
-            arch = platform.machine()
-        else:
-            arch = self.environment['arch']
+        if arch is None:
+            arch = self.arch
 
         if arch in ['x64', '64', 'x86_64']:
             return '64'
-        else:
+        elif arch in ['x86', '32', 'i386']:
             return '32'
+        else:
+            raise ValueError('Unknown architecture \"%s\"' % arch)
