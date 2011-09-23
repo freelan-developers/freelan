@@ -1,5 +1,12 @@
 {
 	"name": "cryptoplus",
 	"major": 1,
-	"minor": 3
+	"minor": 3,
+	"libraries": 
+	{
+		"*": ["openssl_crypto", "boost"],
+		"win32": [],
+		"linux2": [],
+		"macos": []
+	}
 }
