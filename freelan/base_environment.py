@@ -2,24 +2,35 @@
 
 import os
 import platform
+import SCons
 
 class BaseEnvironmentHelper(object):
     """A base environment class."""
 
-    def __init__(self, scons_module, arguments):
+    def __init__(self, arguments):
         """Create a new BaseEnvironmentHelper instance."""
 
         super(BaseEnvironmentHelper, self).__init__()
 
-        self.mode = arguments.get('mode', 'release')
+        self.arguments = arguments
+        self.mode = self.arguments.get('mode', 'release')
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
 
-        self.arch = arguments.get('arch', platform.machine())
-        self.toolset = arguments.get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
+        self.arch = self.arguments.get('arch', platform.machine())
+        self.toolset = self.arguments.get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
 
-        self.environment = scons_module.Environment.Environment(None, [self.toolset], None, None, None, ENV = os.environ.copy())
+        self.environment = SCons.Environment.Environment(None, [self.toolset], None, None, None, ENV = os.environ.copy())
+
+        if not 'CXXFLAGS' in self.environment:
+            self.environment['CXXFLAGS'] = []
+
+        if not 'LINKFLAGS' in self.environment:
+            self.environment['LINKFLAGS'] = []
+
+        if not 'SHLINKFLAGS' in self.environment:
+            self.environment['SHLINKFLAGS'] = []
 
     def get_architecture(self, arch=None):
         """Get the current architecture ('32' or '64')."""
