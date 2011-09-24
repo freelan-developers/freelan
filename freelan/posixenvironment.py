@@ -33,6 +33,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
                 self.environment['CXXFLAGS'].append('-m64')
                 self.environment['LINKFLAGS'].append('-m64')
 
+        self.arguments.setdefault('prefix', '/usr/local')
         self.arguments.setdefault('openssl_path', '/usr')
         self.arguments.setdefault('boost_path', '/usr')
         self.arguments.setdefault('cryptoplus_path', '/usr/local')
@@ -63,7 +64,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         static_library = self.environment.StaticLibrary(os.path.join(target_dir, name + '_static'), source_files, **environment)
         versioned_shared_library = self.environment.Command(os.path.join(target_dir, 'lib%s.so.%s.%s' % (name, major, minor)), shared_library, SCons.Script.Copy("$TARGET", "$SOURCE"))
 
-        return shared_library + static_library + versioned_shared_library
+        return shared_library, static_library + versioned_shared_library
 
     def update_environment_from_library(self, env, library):
         """Update the environment according to the specified library."""

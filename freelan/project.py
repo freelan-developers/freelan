@@ -81,16 +81,21 @@ class LibraryProject(Project):
         for root, directories, files in os.walk(self.source_path):
             self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
 
+    def get_library_name(self, arch):
+        """Get the library directory name for the specified architecture."""
+
+        if arch == '64':
+            return 'lib64'
+        else:
+            return 'lib'
+
     def get_library_dir(self, arch):
         """Get the library directory for the specified architecture."""
 
-        if arch == '64':
-            return os.path.join(self.path, 'lib64')
-        else:
-            return os.path.join(self.path, 'lib')
+        return os.path.join(self.path, self.get_library_name(arch))
 
     def configure_environment_helper(self, environment_helper):
-        environment_helper.build_library(
+        devel_libraries, libraries = environment_helper.build_library(
             self.get_library_dir(environment_helper.get_architecture()),
             self.attributes['name'],
             self.attributes['major'],
@@ -99,3 +104,23 @@ class LibraryProject(Project):
             self.source_files,
             self.libraries
         )
+
+        devel_libraries_install = environment_helper.environment.Install(os.path.join(self.arguments['prefix'], self.get_library_name(environment_helper.get_architecture())), devel_libraries)
+
+        for include_file in self.include_files:
+            devel_libraries_install += environment_helper.environment.Install(os.path.dirname(os.path.join(self.arguments['prefix'], include_file)), include_file)
+
+        #devel_libraries_install += environment_helper.environment.Install(os.path.join(self.arguments['prefix'], 'include'), self.include_files)
+        libraries_install = environment_helper.environment.Install(os.path.join(self.arguments['prefix'], self.get_library_name(environment_helper.get_architecture())), libraries)
+
+        documentation = environment_helper.environment.Doxygen('doxyfile')
+        environment_helper.environment.AlwaysBuild(documentation)
+        indentation = environment_helper.environment.AStyle(self.source_files + self.include_files)
+        environment_helper.environment.AlwaysBuild(indentation)
+
+        environment_helper.environment.Alias('build', libraries)
+        environment_helper.environment.Alias('install', devel_libraries_install + libraries_install)
+        environment_helper.environment.Alias('doc', documentation)
+        environment_helper.environment.Alias('indent', indentation)
+
+        environment_helper.environment.Default('build')

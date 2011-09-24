@@ -36,6 +36,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         else:
             pass
 
+        self.arguments.setdefault('prefix', r'C:\mingw')
         self.arguments.setdefault('openssl_path', r'C:\openssl')
         self.arguments.setdefault('boost_path', r'C:\boost')
         self.arguments.setdefault('boost_version', '1_47')
@@ -53,6 +54,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
 
         environment = {
             'CPPPATH': [include_path]
+            'SHLINKFLAGS': ['-Wl,--output-def,%s' % os.path.abspath(os.path.join(target_dir, name + '.def'))]
         }
 
         for library in libraries:
@@ -65,9 +67,9 @@ class EnvironmentHelper(BaseEnvironmentHelper):
 
                 environment[key][:] = tools.unique(environment[key])
 
-        result += self.environment.SharedLibrary(os.path.join(target_dir, name), source_files, **environment)
+        shared_library = self.environment.SharedLibrary(os.path.join(target_dir, name), source_files, **environment)
 
-        return result
+        return shared_library, None
 
     def update_environment_from_library(self, env, library):
         """Update the environment according to the specified library."""
