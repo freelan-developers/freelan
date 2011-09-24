@@ -40,7 +40,7 @@ class BaseEnvironmentHelper(object):
         if arch is None:
             arch = self.arch
 
-        if arch in ['x64', '64', 'x86_64']:
+        if arch in ['x64', '64', 'x86_64', 'AMD64']:
             return '64'
         elif arch in ['x86', '32', 'i386', 'i486', 'i586', 'i686']:
             return '32'
