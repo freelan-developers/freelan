@@ -59,8 +59,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         result = []
 
         environment = {
-            'CPPPATH': [include_path],
-            'SHLINKFLAGS': ['-Wl,--output-def,%s' % os.path.abspath(os.path.join(target_dir, name + '.def'))]
+            'CPPPATH': [include_path]
         }
 
         for library in libraries:
@@ -85,20 +84,28 @@ class EnvironmentHelper(BaseEnvironmentHelper):
             env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['openssl_path'], 'lib'))
 
         if library == 'openssl_ssl':
-            env.setdefault('LIBS', []).append('ssl')
+            if self.toolset == 'mingw':
+                env.setdefault('LIBS', []).append('ssl')
+            else:
+                env.setdefault('LIBS', []).append('ssleay32')
 
         if library == 'openssl_crypto':
-            env.setdefault('LIBS', []).append('crypto')
+            if self.toolset == 'mingw':
+                env.setdefault('LIBS', []).append('crypto')
+            else:
+                env.setdefault('LIBS', []).append('libeay32')
             env.setdefault('LIBS', []).append('gdi32')
 
         if library.startswith('boost'):
             if self.toolset == 'mingw':
                 env.setdefault('CXXFLAGS', []).append('-isystem' + os.path.join(self.arguments['boost_path'], 'include', 'boost-' + self.arguments['boost_version']))
             else:
+                env.setdefault('CXXFLAGS', []).append('-DBOOST_ALL_NO_LIB=1')
                 env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['boost_path'], 'include', 'boost-' + self.arguments['boost_version']))
 
             if library.startswith('boost_'):
-                env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_lib_suffix'], self.arguments['boost_version']))
+                env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['boost_path'], 'lib'))
+                env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_suffix'], self.arguments['boost_version']))
 
         if library.startswith('cryptoplus'):
             env.setdefault('LIBS', []).append(library)
