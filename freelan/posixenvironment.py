@@ -39,10 +39,9 @@ class EnvironmentHelper(BaseEnvironmentHelper):
     def build_library(self, target_dir, name, major, minor, include_path, source_files, libraries):
         """Build a library."""
 
-        result = []
-
         environment = {
-            'CPPPATH': [include_path]
+            'CPPPATH': [include_path],
+            'SHLINKFLAGS': ['-Wl,-soname,lib%s.so.%s' % (name, major)]
         }
 
         for library in libraries:
@@ -55,9 +54,11 @@ class EnvironmentHelper(BaseEnvironmentHelper):
 
                 environment[key][:] = tools.unique(environment[key])
 
-        result += self.environment.SharedLibrary(os.path.join(target_dir, name), source_files, **environment)
+        shared_library = self.environment.SharedLibrary(os.path.join(target_dir, name), source_files, **environment)
+        static_library = self.environment.StaticLibrary(os.path.join(target_dir, name + '_static'), source_files, **environment)
+        versioned_shared_library = self.environment.Command(os.path.join(target_dir, 'lib%s.so.%s.%s' % (name, major, minor)), shared_library, SCons.Script.Copy("$TARGET", "$SOURCE"))
 
-        return result
+        return shared_library + static_library + versioned_shared_library
 
     def update_environment_from_library(self, env, library):
         """Update the environment according to the specified library."""
