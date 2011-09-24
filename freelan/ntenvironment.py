@@ -86,7 +86,8 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         if library.startswith('boost'):
             if self.toolset == 'mingw':
                 env.setdefault('CXXFLAGS', []).append('-isystem' + os.path.join(self.arguments['boost_path'], 'include', 'boost-' + self.arguments['boost_version']))
-                env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_lib_suffix'], self.arguments['boost_version']))
+                if library.startswith('boost_'):
+                    env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_lib_suffix'], self.arguments['boost_version']))
             else:
                 pass
 

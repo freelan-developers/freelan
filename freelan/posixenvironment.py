@@ -80,7 +80,9 @@ class EnvironmentHelper(BaseEnvironmentHelper):
 
         if library.startswith('boost'):
             env.setdefault('CXXFLAGS', []).append('-isystem' + os.path.join(self.arguments['boost_path'], 'include'))
-            env.setdefault('LIBS', []).append(library)
+
+            if library.startswith('boost_'):
+                env.setdefault('LIBS', []).append(library)
 
         if library.startswith('cryptoplus'):
             env.setdefault('LIBS', []).append(library)
