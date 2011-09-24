@@ -40,6 +40,11 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         self.arguments.setdefault('boost_path', r'C:\boost')
         self.arguments.setdefault('boost_version', '1_47')
         self.arguments.setdefault('boost_suffix', 'mgw45-mt')
+        self.arguments.setdefault('cryptoplus_path', r'C:\mingw')
+        self.arguments.setdefault('asiotap_path', r'C:\mingw')
+        self.arguments.setdefault('iconvplus_path', r'C:\mingw')
+        self.arguments.setdefault('fscp_path', r'C:\mingw')
+        self.arguments.setdefault('freelan_path', r'C:\mingw')
 
     def build_library(self, target_dir, name, major, minor, include_path, source_files, libraries):
         """Build a library."""
@@ -81,6 +86,32 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         if library.startswith('boost'):
             if self.toolset == 'mingw':
                 env.setdefault('CXXFLAGS', []).append('-isystem' + os.path.join(self.arguments['boost_path'], 'include', 'boost-' + self.arguments['boost_version']))
+                env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_lib_suffix'], self.arguments['boost_version']))
             else:
                 pass
+
+        if library.startswith('cryptoplus'):
+            env.setdefault('LIBS', []).append(library)
+            env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['cryptoplus_path'], 'include'))
+            env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['cryptoplus_path'], 'lib'))
+
+        if library.startswith('asiotap'):
+            env.setdefault('LIBS', []).append(library)
+            env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['asiotap_path'], 'include'))
+            env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['asiotap_path'], 'lib'))
+
+        if library.startswith('fscp'):
+            env.setdefault('LIBS', []).append(library)
+            env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['fscp_path'], 'include'))
+            env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['fscp_path'], 'lib'))
+
+        if library.startswith('iconvplus'):
+            env.setdefault('LIBS', []).append(library)
+            env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['iconvplus_path'], 'include'))
+            env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['iconvplus_path'], 'lib'))
+
+        if library.startswith('freelan'):
+            env.setdefault('LIBS', []).append(library)
+            env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['freelan_path'], 'include'))
+            env.setdefault('LIBPATH', []).append(os.path.join(self.arguments['freelan_path'], 'lib'))
 
