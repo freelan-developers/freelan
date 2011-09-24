@@ -20,8 +20,10 @@ class BaseEnvironmentHelper(object):
 
         self.arch = self.arguments.get('arch', platform.machine())
         self.toolset = self.arguments.get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
+        tools = [self.toolset, 'astyle', 'doxygen']
+        toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
-        self.environment = SCons.Environment.Environment(None, [self.toolset], None, None, None, ENV = os.environ.copy())
+        self.environment = SCons.Environment.Environment(None, tools, toolpath, None, None, ENV = os.environ.copy())
 
         if not 'CXXFLAGS' in self.environment:
             self.environment['CXXFLAGS'] = []
