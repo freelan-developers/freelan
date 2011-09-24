@@ -53,7 +53,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         result = []
 
         environment = {
-            'CPPPATH': [include_path]
+            'CPPPATH': [include_path],
             'SHLINKFLAGS': ['-Wl,--output-def,%s' % os.path.abspath(os.path.join(target_dir, name + '.def'))]
         }
 
