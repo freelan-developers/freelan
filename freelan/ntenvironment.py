@@ -34,13 +34,19 @@ class EnvironmentHelper(BaseEnvironmentHelper):
                     self.environment['CXXFLAGS'].append('-m64')
                     self.environment['LINKFLAGS'].append('-m64')
         else:
-            pass
+            self.environment['CXXFLAGS'].append('/O2')
+            self.environment['CXXFLAGS'].append('/EHsc')
 
         self.arguments.setdefault('prefix', r'C:\mingw')
         self.arguments.setdefault('openssl_path', r'C:\openssl')
         self.arguments.setdefault('boost_path', r'C:\boost')
         self.arguments.setdefault('boost_version', '1_47')
-        self.arguments.setdefault('boost_suffix', 'mgw45-mt')
+
+        if self.toolset == 'mingw':
+            self.arguments.setdefault('boost_suffix', 'mgw45-mt')
+        else:
+            self.arguments.setdefault('boost_suffix', 'vc100-mt')
+
         self.arguments.setdefault('cryptoplus_path', r'C:\mingw')
         self.arguments.setdefault('asiotap_path', r'C:\mingw')
         self.arguments.setdefault('iconvplus_path', r'C:\mingw')
@@ -88,10 +94,11 @@ class EnvironmentHelper(BaseEnvironmentHelper):
         if library.startswith('boost'):
             if self.toolset == 'mingw':
                 env.setdefault('CXXFLAGS', []).append('-isystem' + os.path.join(self.arguments['boost_path'], 'include', 'boost-' + self.arguments['boost_version']))
-                if library.startswith('boost_'):
-                    env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_lib_suffix'], self.arguments['boost_version']))
             else:
-                pass
+                env.setdefault('CPPPATH', []).append(os.path.join(self.arguments['boost_path'], 'include', 'boost-' + self.arguments['boost_version']))
+
+            if library.startswith('boost_'):
+                env.setdefault('LIBS', []).append(library + '-%s-%s' % (self.arguments['boost_lib_suffix'], self.arguments['boost_version']))
 
         if library.startswith('cryptoplus'):
             env.setdefault('LIBS', []).append(library)
