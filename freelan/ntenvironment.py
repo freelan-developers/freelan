@@ -69,7 +69,7 @@ class EnvironmentHelper(BaseEnvironmentHelper):
 
         shared_library = self.environment.SharedLibrary(os.path.join(target_dir, name), source_files, **environment)
 
-        return shared_library, None
+        return shared_library, []
 
     def update_environment_from_library(self, env, library):
         """Update the environment according to the specified library."""

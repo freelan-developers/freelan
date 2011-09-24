@@ -118,7 +118,7 @@ class LibraryProject(Project):
         indentation = environment_helper.environment.AStyle(self.source_files + self.include_files)
         environment_helper.environment.AlwaysBuild(indentation)
 
-        environment_helper.environment.Alias('build', libraries)
+        environment_helper.environment.Alias('build', devel_libraries + libraries)
         environment_helper.environment.Alias('install', devel_libraries_install + libraries_install)
         environment_helper.environment.Alias('doc', documentation)
         environment_helper.environment.Alias('indent', indentation)
