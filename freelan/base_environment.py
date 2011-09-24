@@ -40,7 +40,7 @@ class BaseEnvironmentHelper(object):
 
         if arch in ['x64', '64', 'x86_64']:
             return '64'
-        elif arch in ['x86', '32', 'i386']:
+        elif arch in ['x86', '32', 'i386', 'i486', 'i586', 'i686']:
             return '32'
         else:
             raise ValueError('Unknown architecture \"%s\"' % arch)
