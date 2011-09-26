@@ -1,48 +1,58 @@
-"""A base environment helper class."""
+"""A base environment class."""
 
 import os
 import platform
-import SCons
 
-class BaseEnvironmentHelper(object):
+from SCons.Script.SConscript import SConsEnvironment
+
+class BaseEnvironment(SConsEnvironment):
     """A base environment class."""
 
-    def __init__(self, arguments):
-        """Create a new BaseEnvironmentHelper instance."""
+    def __init__(
+        self,
+        _platform=None,
+        _tools=None,
+        toolpath=None,
+        variables=None,
+        parse_flags=None,
+        **kw
+    ):
+        """Create a new BaseEnvironment instance."""
 
-        super(BaseEnvironmentHelper, self).__init__()
+        if _tools is None:
+            self.toolset = kw.setdefault('ARGUMENTS', {}).get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
+            _tools = [self.toolset, 'astyle', 'doxygen']
+        else:
+            self.toolset = 'default'
 
-        self.arguments = arguments
-        self.mode = self.arguments.get('mode', 'release')
+        if toolpath is None:
+            toolpath = [os.path.abspath(os.path.dirname(__file__))]
+
+        super(BaseEnvironment, self).__init__(
+            _platform,
+            _tools,
+            toolpath,
+            variables,
+            parse_flags,
+            **kw
+        )
+
+        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', platform.machine())
+        self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', 'release')
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
 
-        self.arch = self.arguments.get('arch', platform.machine())
-        self.toolset = self.arguments.get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
-        tools = [self.toolset, 'astyle', 'doxygen']
-        toolpath = [os.path.abspath(os.path.dirname(__file__))]
+        if not 'CXXFLAGS' in self:
+            self['CXXFLAGS'] = []
 
-        self.environment = SCons.Environment.Environment(None, tools, toolpath, None, None, ENV = os.environ.copy())
+        if not 'LINKFLAGS' in self:
+            self['LINKFLAGS'] = []
 
-        if not 'CXXFLAGS' in self.environment:
-            self.environment['CXXFLAGS'] = []
+        if not 'SHLINKFLAGS' in self:
+            self['SHLINKFLAGS'] = []
 
-        if not 'LINKFLAGS' in self.environment:
-            self.environment['LINKFLAGS'] = []
+    def FreelanProject(self, project):
+        """Build a FreeLAN project."""
 
-        if not 'SHLINKFLAGS' in self.environment:
-            self.environment['SHLINKFLAGS'] = []
-
-    def get_architecture(self, arch=None):
-        """Get the current architecture ('32' or '64')."""
-
-        if arch is None:
-            arch = self.arch
-
-        if arch in ['x64', '64', 'x86_64', 'AMD64']:
-            return '64'
-        elif arch in ['x86', '32', 'i386', 'i486', 'i586', 'i686']:
-            return '32'
-        else:
-            raise ValueError('Unknown architecture \"%s\"' % arch)
+        project.configure_environment(self)
