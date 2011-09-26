@@ -1,6 +1,8 @@
 """The SConstruct file"""
 
-from freelan.build_tools import LibraryProject
+from freelan.build_tools import LibraryProject, Environment
 
-project = LibraryProject(ARGUMENTS = ARGUMENTS)
-project.configure_environment()
+env = Environment(ARGUMENTS = ARGUMENTS)
+project = LibraryProject()
+
+env.FreelanProject(project)
