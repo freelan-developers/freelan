@@ -74,7 +74,7 @@ class NtEnvironment(BaseEnvironment):
         }
 
         for library in libraries:
-            self.update_environment_from_library(kw, library)
+            self.__update_environment_from_library(kw, library)
 
         for key, value in kw.items():
             if isinstance(value, list):
@@ -83,11 +83,13 @@ class NtEnvironment(BaseEnvironment):
 
                 kw[key][:] = tools.unique(kw[key])
 
-        shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **kw)
+        objects = self.Object(source = source_files, **kw)
+        shared_library = self.SharedLibrary(os.path.join(target_dir, name), objects, **kw)
+        static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), objects, **kw)
 
-        return shared_library
+        return shared_library + static_library
 
-    def update_environment_from_library(self, env, library):
+    def __update_environment_from_library(self, env, library):
         """Update the environment according to the specified library."""
 
         if library.startswith('openssl_'):
