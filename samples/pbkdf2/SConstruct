@@ -5,4 +5,4 @@ sample_name = os.path.split(os.path.abspath('.'))[1]
 SConsignFile('../../.sconsign.dblite')
 SConscript('../../SConstruct')
 
-Default('build-sample-' + sample_name)
+Default('sample_' + sample_name)
