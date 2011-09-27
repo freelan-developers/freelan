@@ -78,24 +78,9 @@ class LibraryProject(Project):
         for root, directories, files in os.walk(self.source_path):
             self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
 
-    def get_library_directory_name(self, arch):
-        """Get the library directory name for the specified architecture."""
-
-        if tools.is_32_bits_architecture(arch):
-            return 'lib'
-        elif tools.is_64_bits_architecture(arch):
-            return 'lib64'
-        else:
-            raise ValueError('Unknown architecture: ' + arch)
-
-    def get_library_directory(self, arch):
-        """Get the library directory for the specified architecture."""
-
-        return os.path.join(self.path, self.get_library_directory_name(arch))
-
     def configure_environment(self, env):
         libraries = env.FreelanLibrary(
-            self.get_library_directory(env.arch),
+            os.path.join(self.path, env.libdir),
             self.attributes['name'],
             self.attributes['major'],
             self.attributes['minor'],
@@ -104,7 +89,7 @@ class LibraryProject(Project):
             self.libraries
         )
 
-        libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], self.get_library_directory_name(env.arch)), libraries)
+        libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), libraries)
 
         for include_file in self.include_files:
             libraries_install += env.Install(os.path.dirname(os.path.join(env['ARGUMENTS']['prefix'], include_file)), include_file)

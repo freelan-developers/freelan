@@ -40,6 +40,7 @@ class BaseEnvironment(SConsEnvironment):
 
         self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', platform.machine())
         self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', 'release')
+        self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', 'lib')
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
