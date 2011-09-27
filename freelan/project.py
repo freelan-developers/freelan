@@ -4,21 +4,21 @@ import os
 import sys
 import fnmatch
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 import file_tools
 import tools
 
 class Project(object):
-    """A class to handle project attributes."""
+    """A class to handle projects."""
 
-    def __init__(self, path=None):
+    def __init__(self, name, major, minor, libraries, path=None):
         """Create a new Project reading from the specified path."""
 
         super(Project, self).__init__()
+
+        self.name = name
+        self.major = major
+        self.minor = minor
+        self.libraries = libraries
 
         if path is None:
             self.abspath = os.getcwd()
@@ -32,32 +32,16 @@ class Project(object):
         else:
             self.path = os.path.relpath(self.abspath)
 
-        # Set the project file
-        self.project_file = os.path.join(self.path, 'project.json')
-
-        # Load the project file
-        self.attributes = json.loads(open(self.project_file).read())
-
-    def get_libraries(self, platform=None):
-        """Return the list of used libraries."""
-
-        if platform is None:
-            platform = sys.platform
-
-        return sorted(set(self.attributes['libraries'].get('*', []) + self.attributes['libraries'].get(platform, [])))
-
-    libraries = property(get_libraries)
-
 class LibraryProject(Project):
-    """A class to handle library project attributes."""
+    """A class to handle library projects."""
 
-    def __init__(self, path=None, include_path=None, source_path=None):
+    def __init__(self, name, major, minor, libraries, path=None, include_path=None, source_path=None):
         """Create a new LibraryProject reading from the specified path."""
 
-        super(LibraryProject, self).__init__(path)
+        super(LibraryProject, self).__init__(name, major, minor, libraries, path)
 
         if include_path is None:
-            self.include_path = os.path.join(self.path, 'include', self.attributes['name'])
+            self.include_path = os.path.join(self.path, 'include', self.name)
         else:
             self.include_path = include_path
 
@@ -81,9 +65,9 @@ class LibraryProject(Project):
     def configure_environment(self, env):
         libraries = env.FreelanLibrary(
             os.path.join(self.path, env.libdir),
-            self.attributes['name'],
-            self.attributes['major'],
-            self.attributes['minor'],
+            self.name,
+            self.major,
+            self.minor,
             self.include_path,
             self.source_files,
             self.libraries
