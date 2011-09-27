@@ -6,6 +6,9 @@ libraries = []
 
 Import('env project')
 
-sample = env.FreelanProject(project.Sample(libraries))
+sample_project = project.Sample(libraries)
+sample = env.FreelanProject(sample_project)
+
+env.Alias('sample_' + sample_project.name, sample)
 
 Return('sample')
