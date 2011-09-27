@@ -31,7 +31,7 @@ class NtEnvironment(BaseEnvironment):
             **kw
         )
 
-        if self.toolset == 'mingw':
+        if self['CC'] == 'gcc':
             self['CXXFLAGS'].append('-Wall')
             self['CXXFLAGS'].append('-Wextra')
             self['CXXFLAGS'].append('-Werror')

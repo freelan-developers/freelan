@@ -20,10 +20,8 @@ class BaseEnvironment(SConsEnvironment):
         """Create a new BaseEnvironment instance."""
 
         if _tools is None:
-            self.toolset = kw.setdefault('ARGUMENTS', {}).get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
-            _tools = [self.toolset, 'astyle', 'doxygen']
-        else:
-            self.toolset = 'default'
+            toolset = kw.setdefault('ARGUMENTS', {}).get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
+            _tools = [toolset, 'astyle', 'doxygen']
 
         if toolpath is None:
             toolpath = [os.path.abspath(os.path.dirname(__file__))]
