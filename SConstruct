@@ -5,6 +5,13 @@ major = '1'
 minor = '3'
 libraries = []
 
+# Libraries logic
+
+import sys
+
+if sys.platform == 'linux2':
+    libraries.append('crypto')
+
 # You should not need to modify anything below this line
 
 import os
