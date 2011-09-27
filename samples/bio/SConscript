@@ -2,9 +2,17 @@
 
 libraries = []
 
-### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
+import os
 
 Import('env project')
+
+if os.name == 'nt':
+    if env['CC'] == 'gcc':
+        libraries.append('crypto')
+    else:
+        libraries.append('libeay32')
+
+### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
 sample_project = project.Sample(libraries)
 sample = env.FreelanProject(sample_project)
