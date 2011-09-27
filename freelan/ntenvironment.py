@@ -53,13 +53,8 @@ class NtEnvironment(BaseEnvironment):
 
         self['ARGUMENTS'].setdefault('prefix', r'C:\mingw')
 
-    def FreelanLibrary(self, target_dir, name, major, minor, include_path, source_files, libraries):
+    def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a library."""
-
-        env = {
-            'CPPPATH': [include_path],
-            'LIBS': libraries
-        }
 
         for key, value in env.items():
             if isinstance(value, list):
@@ -70,4 +65,4 @@ class NtEnvironment(BaseEnvironment):
         shared_library = self.SharedLibrary(os.path.join(target_dir, name), objects, **env)
         static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), objects, **env)
 
-        return shared_library + static_library
+        return static_library + shared_library

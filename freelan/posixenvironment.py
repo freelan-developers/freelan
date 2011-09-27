@@ -51,14 +51,10 @@ class PosixEnvironment(BaseEnvironment):
 
         self['ARGUMENTS'].setdefault('prefix', '/usr/local')
 
-    def FreelanLibrary(self, target_dir, name, major, minor, include_path, source_files, libraries):
+    def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a library."""
 
-        env = {
-            'CPPPATH': [include_path],
-            'SHLINKFLAGS': ['-Wl,-soname,lib%s.so.%s' % (name, major)],
-            'LIBS': libraries
-        }
+        env.setdefault('SHLINKFLAGS', []).append('-Wl,-soname,lib%s.so.%s' % (name, major))
 
         # We add values to existing ones
         for key, value in env.items():
@@ -70,4 +66,17 @@ class PosixEnvironment(BaseEnvironment):
         static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), source_files, **env)
         versioned_shared_library = self.Command(os.path.join(target_dir, 'lib%s.so.%s.%s' % (name, major, minor)), shared_library, SCons.Script.Copy("$TARGET", "$SOURCE"))
 
-        return shared_library + static_library + versioned_shared_library
+        return static_library + shared_library + versioned_shared_library
+
+    def FreelanProgram(self, target_dir, name, source_files, **env):
+        """Build a program."""
+
+        # We add values to existing ones
+        for key, value in env.items():
+            if isinstance(value, list):
+                if key in self:
+                    env[key] += self[key]
+
+        program = self.Program(os.path.join(target_dir, name), source_files, **env)
+
+        return program
