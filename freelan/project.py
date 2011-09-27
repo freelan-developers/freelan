@@ -89,3 +89,5 @@ class LibraryProject(Project):
         env.Alias('indent', indentation)
 
         env.Default('build')
+
+        return libraries + libraries_install + documentation + indentation

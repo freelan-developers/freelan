@@ -57,4 +57,4 @@ class BaseEnvironment(SConsEnvironment):
     def FreelanProject(self, project):
         """Build a FreeLAN project."""
 
-        project.configure_environment(self)
+        return project.configure_environment(self)
