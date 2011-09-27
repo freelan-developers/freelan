@@ -25,7 +25,12 @@ class Project(object):
         else:
             self.abspath = os.path.normpath(os.path.join(os.getcwd(), path))
 
-        self.path = os.path.relpath(self.abspath)
+        if not hasattr(os, 'related'):
+            if not self.abspath.startswith(os.getcwd()):
+                raise ValueError('Invalid path: ' + self.abspath)
+            self.path = self.abspath[len(os.getcwd()):]
+        else:
+            self.path = os.path.relpath(self.abspath)
 
         # Set the project file
         self.project_file = os.path.join(self.path, 'project.json')
