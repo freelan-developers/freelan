@@ -7,7 +7,7 @@ import fnmatch
 try:
     import json
 except ImportError:
-    import simplejson
+    import simplejson as json
 
 import file_tools
 import tools

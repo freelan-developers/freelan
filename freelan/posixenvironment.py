@@ -5,6 +5,8 @@ from base_environment import BaseEnvironment
 import os
 import platform
 
+import SCons
+
 import tools
 
 class PosixEnvironment(BaseEnvironment):
