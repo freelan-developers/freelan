@@ -22,3 +22,6 @@ env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 project = LibraryProject(name, major, minor, libraries)
 
 env.FreelanProject(project)
+
+samples = env.SConscript('samples/SConscript', exports = 'env project')
+env.Alias('samples', samples)

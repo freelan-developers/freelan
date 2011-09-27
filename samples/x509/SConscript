@@ -1,19 +1,11 @@
+"""A sample SConscript file."""
+
+libraries = []
+
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
-Import('env module libraries')
+Import('env project')
 
-import sys, os
-
-sample_name = os.path.split(os.path.abspath('.'))[1]
-source = Glob('*.cpp')
-cpppath = [os.path.join('..', '..', 'include')]
-libpath = [os.path.join('..', '..', 'lib')]
-libs = [libraries[2], 'crypto']
-
-# Build the sample
-sample = env.Sample(sample_name, source, CPPPATH = cpppath, LIBPATH = libpath, LIBS = libs)
-
-# Aliases
-env.Alias('build-sample-' + sample_name, sample)
+sample = env.FreelanProject(project.Sample(libraries))
 
 Return('sample')
