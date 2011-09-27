@@ -28,7 +28,8 @@ class BaseEnvironment(SConsEnvironment):
         if toolpath is None:
             toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
-        super(BaseEnvironment, self).__init__(
+        SConsEnvironment.__init__(
+            self,
             _platform,
             _tools,
             toolpath,

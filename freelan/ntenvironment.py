@@ -21,7 +21,8 @@ class NtEnvironment(BaseEnvironment):
     ):
         """Create a new NtEnvironment instance."""
 
-        super(NtEnvironment, self).__init__(
+        BaseEnvironment.__init__(
+            self,
             _platform,
             _tools,
             toolpath,

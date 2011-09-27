@@ -21,7 +21,8 @@ class PosixEnvironment(BaseEnvironment):
     ):
         """Create a new PosixEnvironment instance."""
 
-        super(PosixEnvironment, self).__init__(
+        BaseEnvironment.__init__(
+            self,
             _platform,
             _tools,
             toolpath,
