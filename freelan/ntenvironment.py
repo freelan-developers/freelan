@@ -61,8 +61,20 @@ class NtEnvironment(BaseEnvironment):
                 if key in self:
                     env[key] += self[key]
 
-        objects = self.Object(source = source_files, **env)
-        shared_library = self.SharedLibrary(os.path.join(target_dir, name), objects, **env)
-        static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), objects, **env)
+        shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **env)
+        static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), source_files, **env)
 
         return static_library + shared_library
+
+    def FreelanProgram(self, target_dir, name, source_files, **env):
+        """Build a program."""
+
+        # We add values to existing ones
+        for key, value in env.items():
+            if isinstance(value, list):
+                if key in self:
+                    env[key] += self[key]
+
+        program = self.Program(os.path.join(target_dir, name), source_files, **env)
+
+        return program
