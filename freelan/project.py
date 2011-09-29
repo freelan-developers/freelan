@@ -116,7 +116,7 @@ class SampleProject(Project):
         """Create a new sample project."""
 
         if not parent_project.name in libraries:
-            libraries.append(parent_project.name)
+            libraries.insert(0, parent_project.name)
 
         super(SampleProject, self).__init__(name, libraries, path)
 
