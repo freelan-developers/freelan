@@ -26,6 +26,10 @@ class BaseEnvironment(SConsEnvironment):
         if toolpath is None:
             toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
+        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', platform.machine())
+
+        kw.setdefault('TARGET_ARCH', self.arch)
+
         SConsEnvironment.__init__(
             self,
             _platform,
@@ -36,7 +40,6 @@ class BaseEnvironment(SConsEnvironment):
             **kw
         )
 
-        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', platform.machine())
         self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', 'release')
         self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', 'lib')
 
