@@ -76,7 +76,7 @@ class PosixEnvironment(BaseEnvironment):
                 if key in self:
                     env[key] += self[key]
 
-        static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), source_files, **env)
+        static_library = self.StaticLibrary(os.path.join(target_dir, name), source_files, **env)
 
         return static_library
 
