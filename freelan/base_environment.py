@@ -26,7 +26,7 @@ class BaseEnvironment(SConsEnvironment):
         if toolpath is None:
             toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
-        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', platform.machine())
+        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', os.environ.get('FREELAN_ARCH', platform.machine()))
 
         kw.setdefault('TARGET_ARCH', self.arch)
 
@@ -40,9 +40,9 @@ class BaseEnvironment(SConsEnvironment):
             **kw
         )
 
-        self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', 'release')
-        self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', 'lib')
-        self.link = kw.setdefault('ARGUMENTS', {}).get('link', 'static')
+        self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', os.environ.get('FREELAN_MODE', 'release'))
+        self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', os.environ.get('FREELAN_LIBDIR', 'lib'))
+        self.link = kw.setdefault('ARGUMENTS', {}).get('link', os.environ.get('FREELAN_LINK', 'static'))
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
