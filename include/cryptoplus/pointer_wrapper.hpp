@@ -107,6 +107,12 @@ namespace cryptoplus
 			 */
 			operator const_pointer() const;
 
+			/**
+			 * \brief The negate boolean operator.
+			 * \return true if *this evaluates to false.
+			 */
+			bool operator!() const;
+
 		protected:
 
 			/**
@@ -156,6 +162,11 @@ namespace cryptoplus
 			friend class nullable<pointer_wrapper<T> >;
 	};
 
+	template <typename T>
+	inline bool pointer_wrapper<T>::operator!() const
+	{
+		return !boolean_test();
+	}
 	template <typename T>
 	inline typename pointer_wrapper<T>::const_pointer pointer_wrapper<T>::raw() const
 	{
