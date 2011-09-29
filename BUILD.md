@@ -35,10 +35,6 @@ Change architecture
 -------------------
 
 > scons arch=x64
-> scons arch=x86_64
-> scons arch=i386
-> scons arch=32
-> ...
 
 Clean the build
 ---------------
