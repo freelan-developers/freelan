@@ -56,6 +56,9 @@ class NtEnvironment(BaseEnvironment):
     def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a library."""
 
+        if self['CC'] == 'cl':
+            env.setdefault('SHOBJSUFFIX', '.sobj');
+
         for key, value in env.items():
             if isinstance(value, list):
                 if key in self:
