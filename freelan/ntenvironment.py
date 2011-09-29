@@ -54,8 +54,8 @@ class NtEnvironment(BaseEnvironment):
 
         self['ARGUMENTS'].setdefault('prefix', r'C:\mingw')
 
-    def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
-        """Build a library."""
+    def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
+        """Build a shared library."""
 
         if self['CC'] == 'gcc':
             env.setdefault('SHOBJSUFFIX', '.os');
@@ -68,9 +68,20 @@ class NtEnvironment(BaseEnvironment):
                     env[key] += self[key]
 
         shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **env)
-        static_library = self.StaticLibrary(os.path.join(target_dir, name + '_static'), source_files, **env)
 
-        return static_library + shared_library
+        return shared_library
+
+    def FreelanStaticLibrary(self, target_dir, name, major, minor, source_files, **env):
+        """Build a static library."""
+
+        for key, value in env.items():
+            if isinstance(value, list):
+                if key in self:
+                    env[key] += self[key]
+
+        static_library = self.StaticLibrary(os.path.join(target_dir, name), source_files, **env)
+
+        return static_library
 
     def FreelanProgram(self, target_dir, name, source_files, **env):
         """Build a program."""

@@ -42,9 +42,13 @@ class BaseEnvironment(SConsEnvironment):
 
         self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', 'release')
         self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', 'lib')
+        self.link = kw.setdefault('ARGUMENTS', {}).get('link', 'static')
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
+
+        if not self.link in ['static', 'shared']:
+            raise ValueError('\"link\" can be either \"static\" or \"shared\"')
 
         if not 'CXXFLAGS' in self:
             self['CXXFLAGS'] = []
@@ -59,3 +63,12 @@ class BaseEnvironment(SConsEnvironment):
         """Build a FreeLAN project."""
 
         return project.configure_environment(self)
+    
+    def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
+        """Build a FreeLAN library."""
+
+        if self.link == 'static':
+            return self.FreelanStaticLibrary(target_dir, name, major, minor, source_files, **env)
+        elif self.link == 'shared':
+            return self.FreelanSharedLibrary(target_dir, name, major, minor, source_files, **env)
+
