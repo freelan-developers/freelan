@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_POINTER_WRAPPER_HPP
 
 #include "nullable.hpp"
+#include "os.hpp"
 
 #include <boost/shared_ptr.hpp>
 

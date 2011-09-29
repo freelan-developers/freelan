@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_BIO_BIO_PTR_HPP
 
 #include "../nullable.hpp"
+#include "../os.hpp"
 #include "../cipher/cipher_algorithm.hpp"
 #include "../cipher/cipher_context.hpp"
 #include "../hash/message_digest_algorithm.hpp"
