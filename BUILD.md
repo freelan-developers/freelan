@@ -43,4 +43,4 @@ Change architecture
 Clean the build
 ---------------
 
-> scons -c <same options>
+> scons -c [same options]
