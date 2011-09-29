@@ -50,6 +50,7 @@ class NtEnvironment(BaseEnvironment):
         else:
             self['CXXFLAGS'].append('/O2')
             self['CXXFLAGS'].append('/EHsc')
+            self['CXXFLAGS'].append('/DBOOST_ALL_NO_LIB')
 
         self['ARGUMENTS'].setdefault('prefix', r'C:\mingw')
 
