@@ -19,6 +19,10 @@
 #include <iomanip>
 #include <vector>
 
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+
 int main()
 {
 	cryptoplus::crypto_initializer crypto_initializer;

@@ -16,6 +16,10 @@
 #include <string>
 #include <cstdio>
 
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+
 namespace
 {
 	int pem_passphrase_callback(char* buf, int buf_len, int rwflag, void*)
