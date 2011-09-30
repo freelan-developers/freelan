@@ -40,6 +40,11 @@ class NtEnvironment(BaseEnvironment):
             self['CXXFLAGS'].append('-Wno-long-long')
             self['CXXFLAGS'].append('-Wno-uninitialized')
 
+            if self.mode == 'debug':
+                self['CXXFLAGS'].append('-g')
+            else:
+                self['CXXFLAGS'].append('-O3')
+
             if self.arch != platform.machine():
                 if tools.is_32_bits_architecture(self.arch):
                     self['CXXFLAGS'].append('-m32')
@@ -48,7 +53,9 @@ class NtEnvironment(BaseEnvironment):
                     self['CXXFLAGS'].append('-m64')
                     self['LINKFLAGS'].append('-m64')
         else:
-            self['CXXFLAGS'].append('/O2')
+            if self.mode != 'debug':
+                self['CXXFLAGS'].append('/O2')
+
             self['CXXFLAGS'].append('/EHsc')
             self['CXXFLAGS'].append('/DBOOST_ALL_NO_LIB')
 

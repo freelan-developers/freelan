@@ -41,6 +41,11 @@ class PosixEnvironment(BaseEnvironment):
         self['CXXFLAGS'].append('-Wno-long-long')
         self['CXXFLAGS'].append('-Wno-uninitialized')
 
+        if self.mode == 'debug':
+            self['CXXFLAGS'].append('-g')
+        else:
+            self['CXXFLAGS'].append('-O3')
+
         if self.arch != platform.machine():
             if tools.is_32_bits_architecture(self.arch):
                 self['CXXFLAGS'].append('-m32')
