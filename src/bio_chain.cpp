@@ -46,7 +46,10 @@
 
 #ifdef MSV
 // Avoid LNK4221: no public symbols found; archive member will be inacessible
-namespace { char not_empty; }
+namespace
+{
+	char not_empty;
+}
 #endif
 
 namespace cryptoplus
