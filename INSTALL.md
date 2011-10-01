@@ -58,16 +58,18 @@ You must run these commands from a MSys console.
 
 For 32 bits:
 
-> perl Configure mingw shared no-asm --prefix=/c/OpenSSL
+> perl Configure mingw no-shared no-asm --prefix=/c/OpenSSL
 
 For 64 bits:
 
-> perl Configure mingw64 shared no-asm --prefix=/C/OpenSSL-x64
+> perl Configure mingw64 no-shared no-asm --prefix=/C/OpenSSL-x64
 
 Then:
 
 > make
 > make install
+
+Note that this will compile OpenSSL in static mode.
 
 #### Microsoft Visual Studio
 
@@ -87,3 +89,10 @@ Then:
 
 > nmake -f ms\ntdll.mak
 > nmake -f ms\ntdll.mak install
+
+To build in shared mode or:
+
+> nmake -f ms\nt.mak
+> nmake -f ms\nt.mak install
+
+To build in static mode.
