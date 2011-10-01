@@ -31,13 +31,25 @@ Then, depending on your target platform:
 
 `gcc` must be in your PATH for this command to work.
 
+For 32 bits:
+
 > .\b2.exe install toolset=gcc --prefix=C:\Boost
+
+For 64 bits:
+
+> .\b2.exe install toolset=gcc address-model=64 --prefix=C:\Boost
 
 #### Microsoft Visual Studio
 
 You must run this command from a "Visual Studio command prompt".
 
+For 32 bits:
+
 > .\b2.exe install toolset=msvc --prefix=C:\Boost-VC
+
+For 64 bits:
+
+> .\b2.exe install toolset=msvc address-model=64 --prefix=C:\Boost-VC
 
 This will build and install all Boost static libraries, in both release and debug configurations.
 
