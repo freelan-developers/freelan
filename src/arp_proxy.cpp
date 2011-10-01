@@ -77,7 +77,7 @@ namespace asiotap
 					}
 				}
 
-				if (entry_it != m_entry_map.end())
+				if (should_answer)
 				{
 					size_t payload_size;
 
