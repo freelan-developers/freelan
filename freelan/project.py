@@ -99,8 +99,11 @@ class LibraryProject(Project):
 
         return libraries + libraries_install + documentation + indentation
 
-    def Sample(self, libraries, path=None):
+    def Sample(self, libraries=None, path=None):
         """Build a sample project at the given path, or in the current directory if no path is specified."""
+
+        if libraries is None:
+            libraries = self.libraries[:]
 
         if path is None:
             name = os.path.basename(os.path.abspath(os.getcwd()))
