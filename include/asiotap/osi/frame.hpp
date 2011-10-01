@@ -47,6 +47,8 @@
 
 #include <boost/asio.hpp>
 
+#include "../os.hpp"
+
 /**
  * \def PACKED
  * \brief A "packed" C-structure has the minimal space in memory without take care of memory alignment.
