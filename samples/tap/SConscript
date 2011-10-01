@@ -1,20 +1,12 @@
 """A sample SConscript file."""
 
-libraries = []
-
 import os
 
 Import('env project')
 
-if os.name == 'nt':
-    if env['CC'] == 'gcc':
-        libraries.append('crypto')
-    else:
-        libraries.append('libeay32')
-
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
-sample_project = project.Sample(libraries)
+sample_project = project.Sample()
 sample = env.FreelanProject(sample_project)
 
 env.Alias('sample_' + sample_project.name, sample)
