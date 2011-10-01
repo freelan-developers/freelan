@@ -13,6 +13,10 @@
 #include <iomanip>
 #include <vector>
 
+#ifdef MSV
+#include <openssl/applink.c>
+#endif
+
 template <typename T>
 std::string to_hex(const T& begin, const T& end)
 {

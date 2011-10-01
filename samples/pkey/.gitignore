@@ -1,2 +1,4 @@
 pkey
 *.pem
+*.lib
+*.exp

@@ -15,6 +15,10 @@
 #include <string>
 #include <cstdio>
 
+#ifdef MSV
+#include <openssl/applink.c>
+#endif
+
 namespace
 {
 	int pem_passphrase_callback(char* buf, int buf_len, int rwflag, void*)

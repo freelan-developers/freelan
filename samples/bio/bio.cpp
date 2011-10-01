@@ -17,6 +17,10 @@
 #define STDOUT_FILENO 1
 #endif
 
+#ifdef MSV
+#include <openssl/applink.c>
+#endif
+
 int main()
 {
 	cryptoplus::crypto_initializer crypto_initializer;
