@@ -28,6 +28,7 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
     else:
         libraries.append('advapi32')
+        libraries.append('shell32')
 
         env['CXXFLAGS'].append('/DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
