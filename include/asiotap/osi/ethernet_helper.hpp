@@ -64,13 +64,19 @@ namespace asiotap
 				 * \brief Get the target.
 				 * \return The target.
 				 */
-				typename _base_helper_impl::buffer_type target() const;
+				typename _base_helper_impl::buffer_type target() const
+				{
+					return boost::asio::buffer(this->frame().target, sizeof(this->frame().target));
+				}
 
 				/**
 				 * \brief Get the sender.
 				 * \return The sender.
 				 */
-				typename _base_helper_impl::buffer_type sender() const;
+				typename _base_helper_impl::buffer_type sender() const
+				{
+					return boost::asio::buffer(this->frame().sender, sizeof(this->frame().sender));
+				}
 
 				/**
 				 * \brief Get the protocol.
@@ -82,7 +88,10 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				typename _base_helper_impl::buffer_type payload() const;
+				typename _base_helper_impl::buffer_type payload() const
+				{
+					return this->buffer() + sizeof(ethernet_frame);
+				}
 
 			protected:
 
@@ -117,27 +126,9 @@ namespace asiotap
 		};
 
 		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type _base_helper_impl<HelperTag, ethernet_frame>::target() const
-		{
-			return boost::asio::buffer(this->frame().target, sizeof(this->frame().target));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type _base_helper_impl<HelperTag, ethernet_frame>::sender() const
-		{
-			return boost::asio::buffer(this->frame().sender, sizeof(this->frame().sender));
-		}
-
-		template <class HelperTag>
 		inline uint16_t _base_helper_impl<HelperTag, ethernet_frame>::protocol() const
 		{
 			return ntohs(this->frame().protocol);
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type _base_helper_impl<HelperTag, ethernet_frame>::payload() const
-		{
-			return this->buffer() + sizeof(ethernet_frame);
 		}
 
 		template <class HelperTag>

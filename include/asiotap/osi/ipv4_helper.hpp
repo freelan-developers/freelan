@@ -147,7 +147,10 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				typename _base_helper_impl::buffer_type payload() const;
+				typename _base_helper_impl::buffer_type payload() const
+				{
+					return this->buffer() + header_length();
+				}
 
 				/**
 				 * \brief Compute the checksum.
@@ -341,12 +344,6 @@ namespace asiotap
 		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, ipv4_frame>::destination() const
 		{
 			return boost::asio::ip::address_v4(ntohl(this->frame().destination.s_addr));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, ipv4_frame>::buffer_type _base_helper_impl<HelperTag, ipv4_frame>::payload() const
-		{
-			return this->buffer() + header_length();
 		}
 
 		template <class HelperTag>

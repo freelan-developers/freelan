@@ -94,7 +94,10 @@ namespace asiotap
 				 * \brief Get the sender hardware address.
 				 * \return The sender hardware address.
 				 */
-				typename _base_helper_impl::buffer_type sender_hardware_address() const;
+				typename _base_helper_impl::buffer_type sender_hardware_address() const
+				{
+					return boost::asio::buffer(this->frame().sender_hardware_address, sizeof(this->frame().sender_hardware_address));
+				}
 
 				/**
 				 * \brief Get the sender logical address.
@@ -106,7 +109,10 @@ namespace asiotap
 				 * \brief Get the target hardware address.
 				 * \return The target hardware address.
 				 */
-				typename _base_helper_impl::buffer_type target_hardware_address() const;
+				typename _base_helper_impl::buffer_type target_hardware_address() const
+				{
+					return boost::asio::buffer(this->frame().target_hardware_address, sizeof(this->frame().target_hardware_address));
+				}
 
 				/**
 				 * \brief Get the target logical address.
@@ -118,7 +124,10 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				typename _base_helper_impl::buffer_type payload() const;
+				typename _base_helper_impl::buffer_type payload() const
+				{
+					return this->buffer() + sizeof(arp_frame);
+				}
 
 			protected:
 
@@ -219,33 +228,15 @@ namespace asiotap
 		}
 
 		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, arp_frame>::buffer_type _base_helper_impl<HelperTag, arp_frame>::sender_hardware_address() const
-		{
-			return boost::asio::buffer(this->frame().sender_hardware_address, sizeof(this->frame().sender_hardware_address));
-		}
-
-		template <class HelperTag>
 		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, arp_frame>::sender_logical_address() const
 		{
 			return boost::asio::ip::address_v4(ntohl(this->frame().sender_logical_address.s_addr));
 		}
 
 		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, arp_frame>::buffer_type _base_helper_impl<HelperTag, arp_frame>::target_hardware_address() const
-		{
-			return boost::asio::buffer(this->frame().target_hardware_address, sizeof(this->frame().target_hardware_address));
-		}
-
-		template <class HelperTag>
 		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, arp_frame>::target_logical_address() const
 		{
 			return boost::asio::ip::address_v4(ntohl(this->frame().target_logical_address.s_addr));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, arp_frame>::buffer_type _base_helper_impl<HelperTag, arp_frame>::payload() const
-		{
-			return this->buffer() + sizeof(arp_frame);
 		}
 
 		template <class HelperTag>

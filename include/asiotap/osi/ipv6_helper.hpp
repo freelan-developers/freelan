@@ -112,7 +112,10 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				typename _base_helper_impl::buffer_type payload() const;
+				typename _base_helper_impl::buffer_type payload() const
+				{
+					return this->buffer() + header_length();
+				}
 
 				/**
 				 * \brief Get the IPv6 header length, in bytes.
@@ -250,12 +253,6 @@ namespace asiotap
 			std::memcpy(raw.c_array(), this->frame().destination.s6_addr, raw.size());
 
 			return address_v6(raw);
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, ipv6_frame>::buffer_type _base_helper_impl<HelperTag, ipv6_frame>::payload() const
-		{
-			return this->buffer() + header_length();
 		}
 
 		template <class HelperTag>

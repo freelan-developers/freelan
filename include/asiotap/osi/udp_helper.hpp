@@ -91,7 +91,10 @@ namespace asiotap
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				typename _base_helper_impl::buffer_type payload() const;
+				typename _base_helper_impl::buffer_type payload() const
+				{
+					return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, udp_frame>::frame_type);
+				}
 
 				/**
 				 * \brief Compute the checksum.
@@ -193,12 +196,6 @@ namespace asiotap
 		inline uint16_t _base_helper_impl<HelperTag, udp_frame>::checksum() const
 		{
 			return this->frame().checksum;
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, udp_frame>::buffer_type _base_helper_impl<HelperTag, udp_frame>::payload() const
-		{
-			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, udp_frame>::frame_type);
 		}
 
 		template <class HelperTag>

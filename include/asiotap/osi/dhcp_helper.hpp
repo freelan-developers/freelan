@@ -90,7 +90,10 @@ namespace asiotap
 				 * \brief Get the options buffer.
 				 * \return The options.
 				 */
-				typename _base_helper_impl::buffer_type options() const;
+				typename _base_helper_impl::buffer_type options() const
+				{
+					return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, dhcp_frame>::frame_type);
+				}
 
 				/**
 				* \brief Search for the specified option.
@@ -153,12 +156,6 @@ namespace asiotap
 		inline typename _base_helper_impl<HelperTag, dhcp_frame>::const_iterator _base_helper_impl<HelperTag, dhcp_frame>::end() const
 		{
 			return const_iterator();
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, dhcp_frame>::buffer_type _base_helper_impl<HelperTag, dhcp_frame>::options() const
-		{
-			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, dhcp_frame>::frame_type);
 		}
 
 		template <class HelperTag>

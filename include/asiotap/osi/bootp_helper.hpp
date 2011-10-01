@@ -130,31 +130,46 @@ namespace asiotap
 				 * \brief Get the hardware address.
 				 * \return The hardware address.
 				 */
-				typename _base_helper_impl::buffer_type chaddr() const;
+				typename _base_helper_impl::buffer_type chaddr() const
+				{
+					return boost::asio::buffer(this->frame().chaddr, sizeof(this->frame().chaddr));
+				}
 
 				/**
 				 * \brief Get the server name.
 				 * \return The server name.
 				 */
-				typename _base_helper_impl::buffer_type sname() const;
+				typename _base_helper_impl::buffer_type sname() const
+				{
+					return boost::asio::buffer(this->frame().sname, sizeof(this->frame().sname));
+				}
 
 				/**
 				 * \brief Get the filename.
 				 * \return The filename.
 				 */
-				typename _base_helper_impl::buffer_type file() const;
+				typename _base_helper_impl::buffer_type file() const
+				{
+					return boost::asio::buffer(this->frame().file, sizeof(this->frame().file));
+				}
 
 				/**
 				 * \brief Get the options.
 				 * \return The options.
 				 */
-				typename _base_helper_impl::buffer_type options() const;
+				typename _base_helper_impl::buffer_type options() const
+				{
+					return payload();
+				}
 
 				/*
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
-				typename _base_helper_impl::buffer_type payload() const;
+				typename _base_helper_impl::buffer_type payload() const
+				{
+					return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, bootp_frame>::frame_type);
+				}
 
 			protected:
 
@@ -312,36 +327,6 @@ namespace asiotap
 		inline boost::asio::ip::address_v4 _base_helper_impl<HelperTag, bootp_frame>::giaddr() const
 		{
 			return boost::asio::ip::address_v4(ntohl(this->frame().giaddr.s_addr));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::chaddr() const
-		{
-			return boost::asio::buffer(this->frame().chaddr, sizeof(this->frame().chaddr));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::sname() const
-		{
-			return boost::asio::buffer(this->frame().sname, sizeof(this->frame().sname));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::file() const
-		{
-			return boost::asio::buffer(this->frame().file, sizeof(this->frame().file));
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::options() const
-		{
-			return payload();
-		}
-
-		template <class HelperTag>
-		inline typename _base_helper_impl<HelperTag, bootp_frame>::buffer_type _base_helper_impl<HelperTag, bootp_frame>::payload() const
-		{
-			return this->buffer() + sizeof(typename _base_helper_impl<HelperTag, bootp_frame>::frame_type);
 		}
 
 		template <class HelperTag>
