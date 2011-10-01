@@ -56,7 +56,6 @@ class NtEnvironment(BaseEnvironment):
             self['BOOST_SUFFIX'] = {}
             self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX')
             self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
-            self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\mingw'))
         else:
             if self.mode != 'debug':
                 self['CXXFLAGS'].append('/O2')
@@ -67,7 +66,8 @@ class NtEnvironment(BaseEnvironment):
             self['BOOST_SUFFIX'] = {}
             self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MSVC_RELEASE_BOOST_SUFFIX')
             self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MSVC_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
-            self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\freelan'))
+
+        self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\freelan'))
 
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
