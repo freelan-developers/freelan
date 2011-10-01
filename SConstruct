@@ -25,10 +25,12 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('-DTAP_ID=\\"%s\\"' % os.environ.get('FREELAN_TAP_ID', 'tap0901'))
+        env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
     else:
         env['CXXFLAGS'].append('/DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('/DTAP_ID=\\"%s\\"' % os.environ.get('FREELAN_TAP_ID', 'tap0901'))
+        env['CXXFLAGS'].append('/D_WIN32_WINNT=0x0501')
 else:
     libraries.append('pthread')
 
