@@ -71,6 +71,8 @@ Then:
 
 Note that this will compile OpenSSL in static mode.
 
+If at some point you get a "make (e=2):" error, ensure you don't have another "make.exe" in your PATH or just type `/bin/make` instead of `make`.
+
 #### Microsoft Visual Studio
 
 You must run these commands from a "Visual Studio command prompt".
