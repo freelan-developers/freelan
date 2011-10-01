@@ -52,12 +52,20 @@ class NtEnvironment(BaseEnvironment):
                 elif tools.is_64_bits_architecture(self.arch):
                     self['CXXFLAGS'].append('-m64')
                     self['LINKFLAGS'].append('-m64')
+
+            self['BOOST_SUFFIX'] = {}
+            self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX')
+            self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
         else:
             if self.mode != 'debug':
                 self['CXXFLAGS'].append('/O2')
 
             self['CXXFLAGS'].append('/EHsc')
             self['CXXFLAGS'].append('/DBOOST_ALL_NO_LIB')
+
+            self['BOOST_SUFFIX'] = {}
+            self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MSVC_RELEASE_BOOST_SUFFIX')
+            self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MSVC_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
 
         self['ARGUMENTS'].setdefault('prefix', r'C:\mingw')
 
@@ -73,6 +81,8 @@ class NtEnvironment(BaseEnvironment):
             if isinstance(value, list):
                 if key in self:
                     env[key] += self[key]
+
+        self.__suffix_boost_libraries(env)
 
         shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **env)
 
@@ -99,6 +109,23 @@ class NtEnvironment(BaseEnvironment):
                 if key in self:
                     env[key] += self[key]
 
+        self.__suffix_boost_libraries(env)
+
         program = self.Program(os.path.join(target_dir, name), source_files, **env)
 
         return program
+
+    def __suffix_boost_libraries(self, env):
+        """Suffix the boost libraries found in the specified environment."""
+
+        if self['BOOST_SUFFIX'][self.mode]:
+            if 'LIBS' in env:
+                env['LIBS'] = [self.__suffix_boost_library(lib) for lib in env['LIBS']]
+
+    def __suffix_boost_library(self, lib):
+        """Suffix the specified library if it belongs to boost."""
+
+        if lib.startswith('boost_'):
+            return lib + self['BOOST_SUFFIX'][self.mode]
+        else:
+            return lib
