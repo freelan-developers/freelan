@@ -54,7 +54,7 @@ class PosixEnvironment(BaseEnvironment):
                 self['CXXFLAGS'].append('-m64')
                 self['LINKFLAGS'].append('-m64')
 
-        self['ARGUMENTS'].setdefault('prefix', '/usr/local')
+        self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', '/usr/local'))
 
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
