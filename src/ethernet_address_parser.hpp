@@ -95,7 +95,6 @@ namespace custom_parser
 
 			qi::skip_over(first, last, skipper);
 
-			const Iterator first_save = first;
 			bool r;
 
 			std::vector<uint8_t> values;

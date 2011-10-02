@@ -97,7 +97,6 @@ namespace custom_parser
 
 			qi::skip_over(first, last, skipper);
 
-			const Iterator first_save = first;
 			bool r;
 
 			freelan::configuration::ipv6_address_prefix_length_type result;
