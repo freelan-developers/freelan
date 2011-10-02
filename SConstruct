@@ -1,55 +1,51 @@
-##
-# freelan build file.
-#
+"""The SConstruct file"""
 
-program_name = 'freelan'
+name = 'freelan'
+major = '1'
+minor = '0'
+libraries = []
 
-### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
+# You should not need to modify anything below this line
 
-import sys, os
+import os, sys
 
-source = Glob('src/*.cpp')
+from freelan.build_tools import ProgramProject, Environment
 
-# Import the customized environment
-sys.path.append(os.path.abspath('scons'))
-import environment
+env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-env = environment.Environment(ENV = os.environ.copy())
+libraries.append('freelan')
+libraries.append('asiotap')
+libraries.append('fscp')
+libraries.append('cryptoplus')
+libraries.append('boost_system')
+libraries.append('boost_thread')
+libraries.append('boost_program_options')
 
-# Build the program
-program = env.FProgram(os.path.join('bin', program_name), source)
-documentation = env.Documentation()
-indentation = env.Indentation(source)
+if sys.platform.startswith('win32'):
 
-program_install = env.Install(os.path.join(env['install_path'], 'bin'), program)
+    if env['CC'] == 'gcc':
+        libraries.append('crypto')
+        env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
+        env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
+        env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
+    else:
+        libraries.append('libeay32')
+        libraries.append('advapi32')
+        libraries.append('shell32')
 
-install = [program_install]
+        env['CXXFLAGS'].append('/DBOOST_THREAD_USE_LIB')
+        env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
+        env['CXXFLAGS'].append('/D_WIN32_WINNT=0x0501')
 
-# Aliases
-env.Alias('build', program)
-env.Alias('install', install)
-env.Alias('doc', documentation)
-env.Alias('indent', indentation)
-env.Alias('all', ['build', 'doc'])
-env.Alias('release', ['indent', 'all'])
+    libraries.append('ws2_32')
+    libraries.append('gdi32')
+    libraries.append('iphlpapi')
+else:
+    libraries.append('pthread')
 
-# Help documentation
-Help("""Usage:
+    if sys.platform.startswith('linux2'):
+        libraries.append('rt')
 
-'scons build' to build the program.
-'scons install' to install the program on the system.
-'scons doc' to build the documentation.
-'scons all' to build the program and the documentation.
-'scons release' to indent the code and build everything.
-'scons -c' to cleanup object and program files.
-'scons -c install' to uninstall the program.
-'scons -c doc' to cleanup documentation files.
-'scons -c all' to cleanup program and documentation files.
+project = ProgramProject(name, major, minor, libraries)
 
-If scons is called without parameters, the default target is "build".
-
-Available options:
-%s""" % env.variables_help_text)
-
-# Default
-Default('build')
+env.FreelanProject(project)
