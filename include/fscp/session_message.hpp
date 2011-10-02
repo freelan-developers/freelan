@@ -157,6 +157,9 @@ namespace fscp
 			 */
 			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
 
+			/**
+			 * \brief Check that the format of the message matches his type.
+			 */
 			void check_format() const;
 	};
 

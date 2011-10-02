@@ -112,7 +112,7 @@ namespace fscp
 
 			/**
 			 * \brief Cancel the timeout.
-			 * \param status The cancel status. true for success, false otherwise. true is the default.
+			 * \param success The cancel reason. true for success, false otherwise. true is the default.
 			 */
 			void cancel_timeout(bool success = true);
 
