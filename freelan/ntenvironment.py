@@ -66,6 +66,7 @@ class NtEnvironment(BaseEnvironment):
             if self.mode != 'debug':
                 self['CXXFLAGS'].append('/O2')
 
+            self['CXXFLAGS'].append('/MD')
             self['CXXFLAGS'].append('/EHsc')
             self['CXXFLAGS'].append('/DBOOST_ALL_NO_LIB')
 
