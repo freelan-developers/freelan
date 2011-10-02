@@ -14,6 +14,7 @@ from freelan.build_tools import LibraryProject, Environment
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
 libraries.append('cryptoplus')
+libraries.append('crypto')
 libraries.append('boost_system')
 libraries.append('boost_thread')
 
