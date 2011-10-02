@@ -239,7 +239,8 @@ namespace fscp
 				catch (std::runtime_error&)
 				{
 				}
-			} else
+			}
+			else
 			{
 #ifdef WINDOWS
 				if (error.value() == WSAECONNREFUSED)
@@ -589,16 +590,16 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				size_t size = data_message::write_keep_alive(
-						m_send_buffer.data(),
-						m_send_buffer.size(),
-						session_pair.remote_session().session_number(),
-						session_pair.remote_session().sequence_number(),
-						session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
-						session_pair.remote_session().seal_key(),
-						session_pair.remote_session().seal_key_size(),
-						session_pair.remote_session().encryption_key(),
-						session_pair.remote_session().encryption_key_size()
-						);
+				                  m_send_buffer.data(),
+				                  m_send_buffer.size(),
+				                  session_pair.remote_session().session_number(),
+				                  session_pair.remote_session().sequence_number(),
+				                  session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
+				                  session_pair.remote_session().seal_key(),
+				                  session_pair.remote_session().seal_key_size(),
+				                  session_pair.remote_session().encryption_key(),
+				                  session_pair.remote_session().encryption_key_size()
+				              );
 
 				session_pair.remote_session().increment_sequence_number();
 
