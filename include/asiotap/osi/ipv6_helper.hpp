@@ -239,7 +239,7 @@ namespace asiotap
 			using boost::asio::ip::address_v6;
 
 			address_v6::bytes_type raw;
-			std::memcpy(raw.c_array(), this->frame().source.s6_addr, raw.size());
+			std::memcpy(&raw.front(), this->frame().source.s6_addr, raw.size());
 
 			return address_v6(raw);
 		}
@@ -250,7 +250,7 @@ namespace asiotap
 			using boost::asio::ip::address_v6;
 
 			address_v6::bytes_type raw;
-			std::memcpy(raw.c_array(), this->frame().destination.s6_addr, raw.size());
+			std::memcpy(&raw.front(), this->frame().destination.s6_addr, raw.size());
 
 			return address_v6(raw);
 		}
