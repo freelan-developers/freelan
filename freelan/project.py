@@ -148,7 +148,7 @@ class ProgramProject(Project):
         }
 
         program = env.FreelanProgram(
-            self.path,
+            os.path.join(self.path, env.bindir),
             self.name,
             self.source_files,
             **_env
