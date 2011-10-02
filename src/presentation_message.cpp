@@ -52,8 +52,8 @@ namespace fscp
 {
 	size_t presentation_message::write(void* buf, size_t buf_len, presentation_message::cert_type sig_cert, presentation_message::cert_type enc_cert)
 	{
-		size_t sig_cert_len = sig_cert ? sig_cert.write_der(static_cast<void*>(0)) : 0;
-		size_t enc_cert_len = enc_cert ? enc_cert.write_der(static_cast<void*>(0)) : 0;
+		size_t sig_cert_len = !sig_cert.is_null() ? sig_cert.write_der(static_cast<void*>(0)) : 0;
+		size_t enc_cert_len = !enc_cert.is_null() ? enc_cert.write_der(static_cast<void*>(0)) : 0;
 
 		if (buf_len < HEADER_LENGTH + MIN_BODY_LENGTH + sig_cert_len + enc_cert_len)
 		{
@@ -65,7 +65,7 @@ namespace fscp
 		buffer_tools::set<uint16_t>(pbuf, 0, htons(static_cast<uint16_t>(sig_cert_len)));
 		pbuf += sizeof(uint16_t);
 
-		if (sig_cert)
+		if (!sig_cert.is_null())
 		{
 			pbuf += sig_cert.write_der(pbuf);
 		}
@@ -73,7 +73,7 @@ namespace fscp
 		buffer_tools::set<uint16_t>(pbuf, 0, htons(static_cast<uint16_t>(enc_cert_len)));
 		pbuf += sizeof(uint16_t);
 
-		if (enc_cert)
+		if (!enc_cert.is_null())
 		{
 			pbuf += enc_cert.write_der(pbuf);
 		}
