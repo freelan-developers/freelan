@@ -2,8 +2,7 @@
 *.pyc
 *.o
 *.os
-*.exe
-variables.cache
+*.obj
+*.sobj
 doc/html
 lib/*
-lib64/*
