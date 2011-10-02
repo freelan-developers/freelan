@@ -142,34 +142,42 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	boost::asio::io_service _io_service;
+	try
+	{
+		boost::asio::io_service _io_service;
 
-	fscp::server alice_server(_io_service, load_identity_store("alice"));
-	fscp::server bob_server(_io_service, load_identity_store("bob"));
+		fscp::server alice_server(_io_service, load_identity_store("alice"));
+		fscp::server bob_server(_io_service, load_identity_store("bob"));
 
-	alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
-	bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
+		alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
+		bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
 
-	boost::asio::ip::udp::resolver resolver(_io_service);
-	boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
-	boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
+		boost::asio::ip::udp::resolver resolver(_io_service);
+		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
+		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-	alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
-	bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
-	alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2, _3, _4));
-	bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
-	alice_server.set_session_request_message_callback(boost::bind(&on_session_request, boost::ref(alice_server), _1, _2));
-	bob_server.set_session_request_message_callback(boost::bind(&on_session_request, boost::ref(bob_server), _1, _2));
-	alice_server.set_session_message_callback(boost::bind(&on_session, boost::ref(alice_server), _1, _2));
-	bob_server.set_session_message_callback(boost::bind(&on_session, boost::ref(bob_server), _1, _2));
-	alice_server.set_data_message_callback(boost::bind(&on_data, boost::ref(alice_server), _1, _2));
-	bob_server.set_data_message_callback(boost::bind(&on_data, boost::ref(bob_server), _1, _2));
+		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
+		alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
+		alice_server.set_session_request_message_callback(boost::bind(&on_session_request, boost::ref(alice_server), _1, _2));
+		bob_server.set_session_request_message_callback(boost::bind(&on_session_request, boost::ref(bob_server), _1, _2));
+		alice_server.set_session_message_callback(boost::bind(&on_session, boost::ref(alice_server), _1, _2));
+		bob_server.set_session_message_callback(boost::bind(&on_session, boost::ref(bob_server), _1, _2));
+		alice_server.set_data_message_callback(boost::bind(&on_data, boost::ref(alice_server), _1, _2));
+		bob_server.set_data_message_callback(boost::bind(&on_data, boost::ref(bob_server), _1, _2));
 
-	stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
+		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
 
-	_io_service.run();
+		_io_service.run();
 
-	stop_function = 0;
+		stop_function = 0;
+	} catch (std::exception& ex)
+	{
+		std::cerr << "Error: " << ex.what() << std::endl;
+
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }
