@@ -91,7 +91,7 @@ namespace fscp
 
 	void server::close()
 	{
-		get_io_service().post(bind(&hello_request_list::clear, &m_hello_request_list));
+		get_io_service().post(boost::bind(&hello_request_list::clear, &m_hello_request_list));
 
 		m_keep_alive_timer.cancel();
 		m_socket.close();
