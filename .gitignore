@@ -2,4 +2,7 @@
 variables.cache
 *.pyc
 *.o
+*.os
+*.obj
+*.sobj
 bin/*
