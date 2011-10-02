@@ -112,6 +112,61 @@ class LibraryProject(Project):
 
         return SampleProject(self, name, libraries, path)
 
+class ProgramProject(Project):
+    "A class to handle program projects."""
+
+    def __init__(self, name, major, minor, libraries, path=None, source_path=None):
+        """Create a new ProgramProject reading from the specified path."""
+
+        super(ProgramProject, self).__init__(name, libraries, path)
+
+        self.major = major
+        self.minor = minor
+
+        if source_path is None:
+            self.source_path = os.path.join(self.path, 'src')
+        else:
+            self.source_path = source_path
+
+        # Scan for include files
+        self.include_files = []
+
+        for root, directories, files in os.walk(self.source_path):
+            self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
+
+        # Scan for source files
+        self.source_files = []
+
+        for root, directories, files in os.walk(self.source_path):
+            self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
+
+    def configure_environment(self, env):
+        """Configure the given environment for building the current project."""
+
+        _env = {
+            'LIBS': self.libraries
+        }
+
+        program = env.FreelanProgram(
+            self.path,
+            self.name,
+            self.source_files,
+            **_env
+        )
+
+        program_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.bindir), program)
+
+        indentation = env.AStyle(self.source_files + self.include_files)
+        env.AlwaysBuild(indentation)
+
+        env.Alias('build', program)
+        env.Alias('install', program_install)
+        env.Alias('indent', indentation)
+
+        env.Default('build')
+
+        return program + program_install + indentation
+
 class SampleProject(Project):
     """A class to handle samples."""
 
