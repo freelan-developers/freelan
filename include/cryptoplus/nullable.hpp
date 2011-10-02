@@ -105,6 +105,15 @@ namespace cryptoplus
 				return (static_cast<const T*>(this))->boolean_test() ? &nullable_base::this_type_does_not_support_comparisons : 0;
 			}
 
+			/**
+			 * \brief Explicit test.
+			 * \return true if the instance is null.
+			 */
+			bool is_null() const
+			{
+				return !static_cast<const T*>(this)->boolean_test();
+			}
+
 		protected:
 
 			~nullable() {}
@@ -123,6 +132,15 @@ namespace cryptoplus
 			operator bool_type() const
 			{
 				return (boolean_test() == true) ? &nullable<void>::this_type_does_not_support_comparisons : 0;
+			}
+
+			/**
+			 * \brief Explicit test.
+			 * \return true if the instance is null.
+			 */
+			bool is_null() const
+			{
+				return boolean_test();
 			}
 
 		protected:
