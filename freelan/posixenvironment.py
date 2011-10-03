@@ -46,13 +46,12 @@ class PosixEnvironment(BaseEnvironment):
         else:
             self['CXXFLAGS'].append('-O3')
 
-        if self.arch != platform.machine():
-            if tools.is_32_bits_architecture(self.arch):
-                self['CXXFLAGS'].append('-m32')
-                self['LINKFLAGS'].append('-m32')
-            elif tools.is_64_bits_architecture(self.arch):
-                self['CXXFLAGS'].append('-m64')
-                self['LINKFLAGS'].append('-m64')
+        if tools.is_32_bits_architecture(self.arch):
+            self['CXXFLAGS'].append('-m32')
+            self['LINKFLAGS'].append('-m32')
+        elif tools.is_64_bits_architecture(self.arch):
+            self['CXXFLAGS'].append('-m64')
+            self['LINKFLAGS'].append('-m64')
 
         self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', '/usr/local'))
 

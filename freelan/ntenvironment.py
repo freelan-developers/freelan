@@ -45,13 +45,12 @@ class NtEnvironment(BaseEnvironment):
             else:
                 self['CXXFLAGS'].append('-O3')
 
-            if self.arch != platform.machine():
-                if tools.is_32_bits_architecture(self.arch):
-                    self['CXXFLAGS'].append('-m32')
-                    self['LINKFLAGS'].append('-m32')
-                elif tools.is_64_bits_architecture(self.arch):
-                    self['CXXFLAGS'].append('-m64')
-                    self['LINKFLAGS'].append('-m64')
+            if tools.is_32_bits_architecture(self.arch):
+                self['CXXFLAGS'].append('-m32')
+                self['LINKFLAGS'].append('-m32')
+            elif tools.is_64_bits_architecture(self.arch):
+                self['CXXFLAGS'].append('-m64')
+                self['LINKFLAGS'].append('-m64')
 
             self['BOOST_PREFIX'] = {}
             self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_PREFIX')
