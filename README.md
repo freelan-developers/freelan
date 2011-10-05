@@ -1,7 +1,7 @@
 FreeLAN build tools
 ===================
 
-A set of Python script to automate builds of FreeLAN related libraries.
+A set of Python scripts to automate builds of FreeLAN related libraries.
 
 Requirements
 ------------
