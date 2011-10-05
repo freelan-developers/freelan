@@ -46,27 +46,18 @@
 
 #include "ipv6_address_tools.hpp"
 
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/lexical_cast.hpp>
 
-#include "ipv6_address_prefix_length_parser.hpp"
-
-namespace qi = boost::spirit::qi;
-namespace ph = boost::phoenix;
 namespace fl = freelan;
 
 boost::optional<fl::configuration::ipv6_address_prefix_length_type> parse_ipv6_address_prefix_length(const std::string& str)
 {
-	boost::optional<fl::configuration::ipv6_address_prefix_length_type> result;
-
-	std::string::const_iterator first = str.begin();
-	bool r = qi::phrase_parse(first, str.end(), -custom_parser::ipv6_address_prefix_length[ph::ref(result) = qi::_1], qi::space);
-
-	if (r && (first == str.end()))
+	if (!str.empty())
 	{
-		return result;
+		return boost::lexical_cast<fl::configuration::ipv6_address_prefix_length_type>(str);
+	} else
+	{
+		return boost::none;
 	}
-
-	throw std::runtime_error("Unable to parse the specified IPv6 address/prefix length: " + str);
 }
+
