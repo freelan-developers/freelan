@@ -46,18 +46,7 @@
 
 #include "endpoint_tools.hpp"
 
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-
 #include "endpoint.hpp"
-#include "endpoint_parser.hpp"
-
-namespace qi = boost::spirit::qi;
-namespace ph = boost::phoenix;
-namespace fl = freelan;
 
 const std::string DEFAULT_PORT = "12000";
 
