@@ -79,6 +79,7 @@ For 64 bits:
 Then:
 
 > make
+
 > make install
 
 Note that this will compile OpenSSL in static mode.
@@ -92,21 +93,25 @@ You must run these commands from a "Visual Studio command prompt".
 For 32 bits:
 
 > perl Configure VC-WIN32 no-asm --prefix=C:\OpenSSL-VC
+
 > ms\do_ms
 
 For 64 bits:
 
 > perl Configure VC-WIN64A --prefix=C:\OpenSSL-VC-x64
+
 > ms\do_win64a
 
 Then:
 
 > nmake -f ms\ntdll.mak
+
 > nmake -f ms\ntdll.mak install
 
 To build in shared mode or:
 
 > nmake -f ms\nt.mak
+
 > nmake -f ms\nt.mak install
 
 To build in static mode.
@@ -125,13 +130,15 @@ The preferred method is to compile libiconv in a static library.
 Fire up a MSYS console, go into the libiconv extracted archive directory and type:
 
 > ./configure --enable-shared=no --enable-static=yes --prefix=/c/iconv
-> make
-> make install
 
-To build the shared library version:
+Or for the shared library version:
 
 > ./configure --prefix=/c/iconv
+
+Then, in both cases:
+
 > make
+
 > make install
 
 ### Microsoft Visual Studio
@@ -141,7 +148,9 @@ libiconv dropped official support for Visual Studio after its 11.1 version. Howe
 Follow the steps to build the **shared** library version with MinGW. Just change the `--prefix` to something else, like `/c/iconv-VC`.
 
 > ./configure --prefix=/c/iconv-VC
+
 > make
+
 > make install
 
 Close MSys, fire up a Visual Studio command prompt and go to installed directory, `C:\iconv-VC`. Type:
@@ -152,20 +161,20 @@ Which will show you the list of exported symbols.
 
 Copy that list to a `lib\iconv.def` file, beginning with `EXPORTS`. You should get a file like:
 
-> EXPORTS
-> _libiconv_version
-> aliases2_lookup
-> aliases_lookup
-> iconv_canonicalize
-> libiconv
-> libiconv_close
-> libiconv_open
-> libiconv_open_into
-> libiconv_relocate
-> libiconv_set_relocation_prefix
-> libiconvctl
-> libiconvlist
-> locale_charset
+    EXPORTS
+    _libiconv_version
+    aliases2_lookup
+    aliases_lookup
+    iconv_canonicalize
+    libiconv
+    libiconv_close
+    libiconv_open
+    libiconv_open_into
+    libiconv_relocate
+    libiconv_set_relocation_prefix
+    libiconvctl
+    libiconvlist
+    locale_charset
 
 Then, generate the `iconv.lib` file, with the following command:
 
