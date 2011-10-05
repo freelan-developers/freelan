@@ -45,11 +45,35 @@
 
 #include "configuration.hpp"
 
+#include <sstream>
+
 namespace freelan
 {
 	configuration::configuration() :
 		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
 		certificate_validation_callback(0)
 	{
+	}
+
+	std::istream& operator>>(std::istream& is, configuration::ipv4_address_prefix_length_type& value)
+	{
+		std::ostringstream oss;
+
+		is.get(*oss.rdbuf(), '/').ignore() >> std::dec >> value.prefix_length;
+
+		value.address = boost::asio::ip::address_v4::from_string(oss.str());
+
+		return is;
+	}
+
+	std::istream& operator>>(std::istream& is, configuration::ipv6_address_prefix_length_type& value)
+	{
+		std::ostringstream oss;
+
+		is.get(*oss.rdbuf(), '/').ignore() >> std::dec >> value.prefix_length;
+
+		value.address = boost::asio::ip::address_v6::from_string(oss.str());
+
+		return is;
 	}
 }

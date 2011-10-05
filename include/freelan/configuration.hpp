@@ -47,6 +47,8 @@
 #define FREELAN_CONFIGURATION_HPP
 
 #include <vector>
+#include <iostream>
+#include <iomanip>
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
@@ -230,6 +232,48 @@ namespace freelan
 		 */
 		ep_list_type blacklist;
 	};
+
+	/**
+	 * \brief Output an IPv4 address/prefix length to a stream.
+	 * \param os The output stream.
+	 * \param value The IPv4 address/prefix length.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, configuration::ipv4_address_prefix_length_type value);
+
+	/**
+	 * \brief Input an IPv4 address/prefix length from a stream.
+	 * \param is The input stream.
+	 * \param value The IPv4 address/prefix length.
+	 * \return in.
+	 */
+	std::istream& operator>>(std::istream& is, configuration::ipv4_address_prefix_length_type& value);
+
+	/**
+	 * \brief Output an IPv6 address/prefix length to a stream.
+	 * \param os The output stream.
+	 * \param value The IPv6 address/prefix length.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, configuration::ipv6_address_prefix_length_type value);
+
+	/**
+	 * \brief Input an IPv6 address/prefix length from a stream.
+	 * \param is The input stream.
+	 * \param value The IPv6 address/prefix length.
+	 * \return in.
+	 */
+	std::istream& operator>>(std::istream& is, configuration::ipv6_address_prefix_length_type& value);
+
+	inline std::ostream& operator<<(std::ostream& os, configuration::ipv4_address_prefix_length_type value)
+	{
+		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;
+	}
+
+	inline std::ostream& operator<<(std::ostream& os, configuration::ipv6_address_prefix_length_type value)
+	{
+		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;
+	}
 }
 
 #endif /* FREELAN_CONFIGURATION_HPP */
