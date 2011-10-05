@@ -15,11 +15,11 @@ Rationale
 
 Most FreeLAN related projects have the same architecture and are built the same way. That is, instead of having similar build scripts duplicated for each library, we decided it was better to have an unique method for that.
 
-That is, every time FreeLAN build tools is improved, every other library can benefit from it.
+Every time the FreeLAN build tools are improved, every other library can benefit from it.
 
-FreeLAN build tools can build projects for Windows, Linux Mac OSX and probably any other UNIX based operating system.
+The tools can build projects for Windows, Linux Mac OSX and probably any other UNIX based operating system.
 
-It also supports several compiler toolchains, especially for Windows when you can build everything using either MinGW or Microsoft Visual Studio.
+They also supports several compiler toolchains, especially for Windows when you can build everything using either MinGW or Microsoft Visual Studio.
 
 How to use FreeLAN build tools
 ------------------------------
@@ -123,9 +123,9 @@ The rationale for the prefix/suffix variables is that under Windows, Boost by de
 Reusability
 -----------
 
-While FreeLAN build tools is not meant to be used for non FreeLAN related project, you might however use it (as-is, or modified) to build your own projects.
+While FreeLAN build tools are not meant to be used for non FreeLAN related project, you might however use them (as-is, or modified) to build your own projects.
 
-If you do so and think about an improvement that could also improve our compilation process, feel free to suggest changes or patches ! The preferred way is to fork the project on GitHub, then to do a pull-request.
+If you do so and think about an improvement of which we could also benefit, feel free to suggest changes ! The preferred way is to fork the project on GitHub, then to do a pull-request.
 
 Does the project have a website ?
 ---------------------------------
