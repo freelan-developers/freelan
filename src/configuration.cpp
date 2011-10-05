@@ -55,6 +55,48 @@ namespace freelan
 	{
 	}
 
+	std::ostream& operator<<(std::ostream& os, configuration::ethernet_address_type value)
+	{
+		return os 
+			<< std::hex << std::setfill('0') << std::setw(2) <<
+			static_cast<unsigned int>(value[0]) << ':' <<
+			static_cast<unsigned int>(value[1]) << ':' <<
+			static_cast<unsigned int>(value[2]) << ':' <<
+			static_cast<unsigned int>(value[3]) << ':' <<
+			static_cast<unsigned int>(value[4]) << ':' <<
+			static_cast<unsigned int>(value[5]);
+	}
+
+	std::istream& operator>>(std::istream& is, configuration::ethernet_address_type& value)
+	{
+		unsigned int digit;
+		char delimiter;
+		size_t i = 0;
+
+		is >> std::hex >> std::setfill('0') >> std::setw(2);
+
+		for (; is && (i < value.size() - 1); ++i)
+		{
+			is >> digit >> delimiter;
+
+			if ((delimiter != ':') && (delimiter != '-'))
+			{
+				is.setstate(std::ios::badbit);
+			} else
+			{
+				value[i] = static_cast<configuration::ethernet_address_type::value_type>(digit);
+			}
+		}
+
+		if (is)
+		{
+			is >> digit;
+			value[i] = static_cast<configuration::ethernet_address_type::value_type>(digit);
+		}
+
+		return is;
+	}
+
 	std::istream& operator>>(std::istream& is, configuration::ipv4_address_prefix_length_type& value)
 	{
 		std::ostringstream oss;

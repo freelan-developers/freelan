@@ -234,6 +234,22 @@ namespace freelan
 	};
 
 	/**
+	 * \brief Output an Ethernet address to a stream.
+	 * \param os The output stream.
+	 * \param value The Ethernet address.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, configuration::ethernet_address_type value);
+
+	/**
+	 * \brief Input an Ethernet address from a stream.
+	 * \param is The input stream.
+	 * \param value The Ethernet address.
+	 * \return in.
+	 */
+	std::istream& operator>>(std::istream& is, configuration::ethernet_address_type& value);
+
+	/**
 	 * \brief Output an IPv4 address/prefix length to a stream.
 	 * \param os The output stream.
 	 * \param value The IPv4 address/prefix length.
