@@ -76,11 +76,27 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, uint16_t& val);
 
 /**
+ * \brief Parse a prefix length
+ * \param str The string to parse.
+ * \param val The value to put the result into.
+ * \return true if the parsing succeeded. On false, the value of val is undetermined.
+ */
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, size_t& val);
+
+/**
  * \brief Parse an Ethernet address.
  * \param str The string to parse.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ethernet_address_type& val);
+
+/**
+ * \brief Parse an IPv4 address and its prefix length.
+ * \param str The string to parse.
+ * \param val The value to put the result into.
+ * \return true if the parsing succeeded. On false, the value of val is undetermined.
+ */
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv4_address_prefix_length_type& val);
 
 #endif /* PARSERS_HPP */

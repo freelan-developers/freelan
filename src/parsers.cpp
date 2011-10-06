@@ -54,40 +54,40 @@
 namespace
 {
 	template <typename IpAddressType>
-	bool is_ip_address_character(char c);
+		bool is_ip_address_character(char c);
 
 	template <>
-	bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
-	{
-		return (std::isdigit(c) || (c == '.'));
-	}
+		bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
+		{
+			return (std::isdigit(c) || (c == '.'));
+		}
 
 	template <>
-	bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
-	{
-		return (std::isxdigit(c) || (c == ':'));
-	}
+		bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
+		{
+			return (std::isxdigit(c) || (c == ':'));
+		}
 
 	template <typename IpAddressType>
-	bool parse_ip_address(std::string::const_iterator& begin, std::string::const_iterator end, IpAddressType& val)
-	{
-		assert(begin < end);
-
-		const std::string::const_iterator save_begin = begin;
-
-		for (; (begin != end) && is_ip_address_character<IpAddressType>(*begin); ++begin);
-
-		try
+		bool parse_ip_address(std::string::const_iterator& begin, std::string::const_iterator end, IpAddressType& val)
 		{
-			val = IpAddressType::from_string(std::string(save_begin, begin));
-		}
-		catch (std::exception&)
-		{
-			return false;
-		}
+			assert(begin < end);
 
-		return true;
-	}
+			const std::string::const_iterator save_begin = begin;
+
+			for (; (begin != end) && is_ip_address_character<IpAddressType>(*begin); ++begin);
+
+			try
+			{
+				val = IpAddressType::from_string(std::string(save_begin, begin));
+			}
+			catch (std::exception&)
+			{
+				return false;
+			}
+
+			return true;
+		}
 
 	bool is_ethernet_address_delimiter(char c)
 	{
@@ -98,6 +98,27 @@ namespace
 	{
 		return (std::isxdigit(c) || is_ethernet_address_delimiter(c));
 	}
+
+	template <typename NumberType>
+		bool parse_number(std::string::const_iterator& begin, std::string::const_iterator end, NumberType& val)
+		{
+			assert(begin < end);
+
+			const std::string::const_iterator save_begin = begin;
+
+			for (; (begin != end) && std::isdigit(*begin); ++begin);
+
+			try
+			{
+				val = boost::lexical_cast<NumberType>(std::string(save_begin, begin));
+			}
+			catch (std::exception&)
+			{
+				return false;
+			}
+
+			return true;
+		}
 
 	uint8_t xdigit_to_numeric(char c)
 	{
@@ -137,22 +158,12 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, uint16_t& val)
 {
-	assert(begin < end);
+	return parse_number(begin, end, val);
+}
 
-	const std::string::const_iterator save_begin = begin;
-
-	for (; (begin != end) && std::isdigit(*begin); ++begin);
-
-	try
-	{
-		val = boost::lexical_cast<uint16_t>(std::string(save_begin, begin));
-	}
-	catch (std::exception&)
-	{
-		return false;
-	}
-
-	return true;
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, size_t& val)
+{
+	return parse_number(begin, end, val);
 }
 
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ethernet_address_type& val)
@@ -188,6 +199,28 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 				val[std::distance(save_begin, begin) / 3] = (xdigit_to_numeric(*(begin - 1)) << 4) | xdigit_to_numeric(*begin);
 			}
 		}
+	}
+
+	return true;
+}
+
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv4_address_prefix_length_type& val)
+{
+	if (!parse(begin, end, val.address))
+	{
+		return false;
+	}
+
+	if ((begin == end) || (*begin != ':'))
+	{
+		return false;
+	}
+
+	++begin;
+
+	if (!parse(begin, end, val.prefix_length))
+	{
+		return false;
 	}
 
 	return true;
