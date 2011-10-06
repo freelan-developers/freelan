@@ -48,6 +48,8 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include <asiotap/osi/ethernet_helper.hpp>
+
 #include "os.hpp"
 
 namespace freelan
@@ -259,7 +261,19 @@ namespace freelan
 	{
 		(void)sender;
 
-		// TODO: Here we must read the source ethernet address and update the switch routing table according to it.
+		if (m_configuration.routing_method == configuration::RM_SWITCH)
+		{
+			try
+			{
+				// We read the source ethernet address and update the switch routing table according to it.
+				asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
+
+				m_switch.update_entry(ethernet_helper.sender(), sender);
+			}
+			catch (std::length_error&)
+			{
+			}
+		}
 
 		m_tap_adapter.write(data);
 	}
@@ -289,9 +303,31 @@ namespace freelan
 
 			if (!handled)
 			{
-				//TODO: Here we must read the destination ethernet address and send to the targetted hosts only.
+				if (m_configuration.routing_method == configuration::RM_SWITCH)
+				{
+					ep_type endpoint;
 
-				m_server.async_send_data_to_all(data);
+					try
+					{
+						// We read the destination ethernet address and send to the targetted host only.
+						asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
+
+						if (m_switch.get_entry(ethernet_helper.target(), endpoint))
+						{
+							m_server.async_send_data(endpoint, data);
+
+							handled = true;
+						}
+					}
+					catch (std::length_error&)
+					{
+					}
+				}
+				
+				if (!handled)
+				{
+					m_server.async_send_data_to_all(data);
+				}
 			}
 
 			// Start another read

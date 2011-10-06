@@ -57,6 +57,7 @@
 #include <fscp/fscp.hpp>
 
 #include "configuration.hpp"
+#include "switch.hpp"
 
 namespace freelan
 {
@@ -204,6 +205,9 @@ namespace freelan
 			// Proxies related methods
 			void on_proxy_data(boost::asio::const_buffer);
 			bool on_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
+
+			// Switch
+			switch_ m_switch;
 	};
 
 	inline const freelan::configuration& core::configuration() const
