@@ -45,10 +45,20 @@
 
 #include "switch.hpp"
 
+namespace
+{
+	const boost::array<uint8_t, 6> BROADCAST_ADDRESS = { { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } };
+}
+
 namespace freelan
 {
 	bool switch_::update_entry(const ethernet_address_type& address, const ep_type& endpoint)
 	{
+		if (is_broadcast(address))
+		{
+			return false;
+		}
+
 		const map_type::iterator entry = m_map.find(address);
 
 		if (entry != m_map.end())
@@ -68,7 +78,7 @@ namespace freelan
 			return true;
 		}
 	}
-	
+
 	bool switch_::get_entry(const ethernet_address_type& address, ep_type& endpoint)
 	{
 		const map_type::const_iterator entry = m_map.find(address);
@@ -81,12 +91,19 @@ namespace freelan
 
 		return false;
 	}
-	
+
 	bool switch_::ethernet_address_comp::operator() (const ethernet_address_type& lhs, const ethernet_address_type& rhs) const
 	{
 		assert(boost::asio::buffer_size(lhs) == boost::asio::buffer_size(rhs));
 
 		return (std::memcmp(boost::asio::buffer_cast<const void*>(lhs), boost::asio::buffer_cast<const void*>(rhs), boost::asio::buffer_size(lhs)) < 0);
+	}
+
+	bool switch_::is_broadcast(const ethernet_address_type& address)
+	{
+		assert(boost::asio::buffer_size(address) == ::BROADCAST_ADDRESS.size());
+
+		return (std::memcmp(boost::asio::buffer_cast<const void*>(address), &::BROADCAST_ADDRESS[0], BROADCAST_ADDRESS.size()) == 0);
 	}
 
 	void switch_::remove_older_entry()
@@ -109,4 +126,5 @@ namespace freelan
 			m_map.erase(entry);
 		}
 	}
+
 }

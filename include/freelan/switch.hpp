@@ -104,6 +104,8 @@ namespace freelan
 			 * \param address The ethernet address of the entry.
 			 * \param endpoint The associated endpoint.
 			 * \return true if the entry was just created.
+			 *
+			 * \warning Broadcast addresses are never added.
 			 */
 			bool update_entry(const ethernet_address_type& address, const ep_type& endpoint);
 
@@ -123,6 +125,8 @@ namespace freelan
 			};
 
 			typedef std::map<ethernet_address_type, entry_type, ethernet_address_comp> map_type;
+
+			static bool is_broadcast(const ethernet_address_type& address);
 
 			void remove_older_entry();
 
