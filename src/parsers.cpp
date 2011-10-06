@@ -145,7 +145,7 @@ namespace
 
 	bool is_hostname_label_regular_character(char c)
 	{
-		return (c == '-');
+		return std::isalnum(c);
 	}
 
 	bool is_hostname_label_special_character(char c)
