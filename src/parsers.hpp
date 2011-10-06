@@ -52,8 +52,6 @@
 
 #include <freelan/configuration.hpp>
 
-#include "endpoint.hpp"
-
 /**
  * \brief Parse a string.
  * \param str The string to parse.
@@ -134,7 +132,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::shared_ptr<endpoint>& val);
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ep_type& val);
 
 template <typename Type>
 inline Type parse(const std::string& str)

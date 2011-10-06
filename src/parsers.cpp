@@ -368,7 +368,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	return true;
 }
 
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::shared_ptr<endpoint>& val)
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ep_type& val)
 {
 	if (begin == end)
 	{
