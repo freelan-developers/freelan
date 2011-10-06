@@ -13,7 +13,9 @@ from freelan.build_tools import LibraryProject, Environment
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-libraries.append('iconv')
+if sys.platform.startswith('win32'):
+    libraries.append('iconv')
+
 libraries.append('boost_system')
 
 project = LibraryProject(name, major, minor, libraries)
