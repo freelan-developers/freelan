@@ -158,7 +158,7 @@ class hostname_endpoint : public endpoint
 		/**
 		 * \brief The host type.
 		 */
-		typedef std::string host_type;
+		typedef std::string hostname_type;
 
 		/**
 		 * \brief The service type.
@@ -170,7 +170,7 @@ class hostname_endpoint : public endpoint
 		 * \param host The host component.
 		 * \param service The service component.
 		 */
-		hostname_endpoint(const host_type& address, const service_type& service);
+		hostname_endpoint(const hostname_type& address, const service_type& service);
 
 		/**
 		 * \brief Get a Boost ASIO endpoint.
@@ -183,7 +183,7 @@ class hostname_endpoint : public endpoint
 
 	private:
 
-		host_type m_host;
+		hostname_type m_hostname;
 		service_type m_service;
 };
 
@@ -208,8 +208,8 @@ inline typename ip_endpoint<AddressType>::ep_type ip_endpoint<AddressType>::to_b
 	}
 }
 
-inline hostname_endpoint::hostname_endpoint(const host_type& host, const service_type& service) :
-	m_host(host),
+inline hostname_endpoint::hostname_endpoint(const hostname_type& host, const service_type& service) :
+	m_hostname(host),
 	m_service(service)
 {
 }

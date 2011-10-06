@@ -51,7 +51,7 @@ hostname_endpoint::ep_type hostname_endpoint::to_boost_asio_endpoint(protocol_ty
 	boost::asio::io_service io_service;
 
 	boost::asio::ip::udp::resolver resolver(io_service);
-	boost::asio::ip::udp::resolver::query query(protocol, m_host, m_service ? *m_service : default_service, flags);
+	boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
 
 	return *resolver.resolve(query);
 }
