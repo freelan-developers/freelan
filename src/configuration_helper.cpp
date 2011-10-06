@@ -49,8 +49,6 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "endpoint_tools.hpp"
-
 namespace po = boost::program_options;
 namespace fl = freelan;
 
