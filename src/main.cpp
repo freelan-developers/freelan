@@ -51,12 +51,14 @@
 
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <boost/foreach.hpp>
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
 #include <freelan/freelan.hpp>
 
+#include "system.hpp"
 #include "configuration_helper.hpp"
 
 namespace po = boost::program_options;
@@ -107,18 +109,12 @@ static bool register_signal_handlers()
 	return true;
 }
 
-std::string get_configuration_file()
-{
-	//TODO: Implement
-	return "";
-}
-
 bool parse_options(int argc, char** argv, fl::configuration& configuration)
 {
 	po::options_description generic_options("Generic options");
 	generic_options.add_options()
 		("help,h", "Produce help message.")
-		("configuration_file,c", po::value<std::string>()->default_value(""), "The configuration file to use")
+		("configuration_file,c", po::value<std::string>(), "The configuration file to use")
 		;
 
 	po::options_description visible_options;
@@ -135,31 +131,64 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, all_options), vm);
 
-	std::string configuration_file_str;
+	std::string configuration_file;
 
 	if (vm.count("configuration_file"))
 	{
-		configuration_file_str = vm["configuration_file"].as<std::string>();
-	} else
+		configuration_file = vm["configuration_file"].as<std::string>();
+	}
+	else
 	{
-		configuration_file_str = get_configuration_file();
+		char* val = getenv("FREELAN_CONFIGURATION_FILE");
+
+		if (val)
+		{
+			configuration_file = std::string(val);
+		}
 	}
 
-	if (!configuration_file_str.empty())
+	if (!configuration_file.empty())
 	{
-		std::cout << "Reading configuration file at: " << configuration_file_str << std::endl;
+		std::cout << "Reading configuration file at: " << configuration_file << std::endl;
 
-		std::ifstream configuration_file(configuration_file_str.c_str());
+		std::ifstream ifs(configuration_file.c_str());
 
-		if (!configuration_file)
+		if (!ifs)
 		{
-			throw po::reading_file(configuration_file_str.c_str());
+			throw po::reading_file(configuration_file.c_str());
 		}
 
-		po::store(po::parse_config_file(configuration_file, configuration_options, true), vm);
+		po::store(po::parse_config_file(ifs, configuration_options, true), vm);
 	} else
 	{
-		std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
+		bool configuration_read = false;
+
+		const std::vector<std::string> configuration_files = get_configuration_files();
+
+		for (std::vector<std::string>::const_iterator it = configuration_files.begin(); (it != configuration_files.end()) && (!configuration_read); ++it)
+		{
+			std::ifstream ifs(configuration_file.c_str());
+
+			if (ifs)
+			{
+				std::cout << "Reading configuration file at: " << *it << std::endl;
+
+				po::store(po::parse_config_file(ifs, configuration_options, true), vm);
+
+				configuration_read = true;
+			}
+		}
+
+		if (!configuration_read)
+		{
+			std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
+			std::cerr << "Looked up locations were:" << std::endl;
+
+			BOOST_FOREACH(const std::string& conf, configuration_files)
+			{
+				std::cerr << "- " << conf << std::endl;
+			}
+		}
 	}
 
 	po::notify(vm);
