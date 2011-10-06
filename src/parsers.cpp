@@ -49,6 +49,8 @@
 #include <cctype>
 #include <cassert>
 
+#include <boost/lexical_cast.hpp>
+
 namespace
 {
 	template <typename IpAddressType>
@@ -81,6 +83,7 @@ namespace
 		}
 		catch (std::exception&)
 		{
+			begin = save_begin;
 			return false;
 		}
 
@@ -97,4 +100,25 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::asio::ip::address_v6& val)
 {
 	return parse_ip_address(begin, end, val);
+}
+
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, uint16_t& val)
+{
+	assert(begin < end);
+
+	const std::string::const_iterator save_begin = begin;
+
+	for (; (begin != end) && std::isdigit(*begin); ++begin);
+
+	try
+	{
+		val = boost::lexical_cast<uint16_t>(std::string(save_begin, begin));
+	}
+	catch (std::exception&)
+	{
+		begin = save_begin;
+		return false;
+	}
+
+	return true;
 }
