@@ -71,7 +71,7 @@ namespace
 	template <typename IpAddressType>
 		bool parse_ip_address(std::string::const_iterator& begin, std::string::const_iterator end, IpAddressType& val)
 		{
-			assert(begin < end);
+			assert(begin <= end);
 
 			const std::string::const_iterator save_begin = begin;
 
@@ -102,7 +102,7 @@ namespace
 	template <typename NumberType>
 		bool parse_number(std::string::const_iterator& begin, std::string::const_iterator end, NumberType& val)
 		{
-			assert(begin < end);
+			assert(begin <= end);
 
 			const std::string::const_iterator save_begin = begin;
 
@@ -144,6 +144,128 @@ namespace
 
 		return table[static_cast<uint8_t>(c)];
 	}
+
+	bool is_hostname_label_regular_character(char c)
+	{
+		return (c == '-');
+	}
+
+	bool is_hostname_label_special_character(char c)
+	{
+		return (c == '-');
+	}
+
+	bool is_hostname_label_character(char c)
+	{
+		return is_hostname_label_regular_character(c) || is_hostname_label_special_character(c);
+	}
+
+	bool parse_hostname_label(std::string::const_iterator& begin, std::string::const_iterator end, std::string& val)
+	{
+		// Parse hostname labels according to RFC1123
+		assert(begin <= end);
+
+		if (begin == end)
+		{
+			return false;
+		}
+
+		const std::string::const_iterator save_begin = begin;
+
+		if (!std::isalnum(*begin))
+		{
+			return false;
+		}
+
+		++begin;
+
+		// Hostname labels are 63 characters long at most
+		const size_t hostname_label_max_size = 63;
+
+		for (; (begin != end) && is_hostname_label_character(*begin); ++begin);
+
+		if (static_cast<size_t>(std::distance(save_begin, begin)) > hostname_label_max_size)
+		{
+			begin = save_begin + hostname_label_max_size;
+
+			return false;
+		}
+
+		if (is_hostname_label_special_character(*(begin - 1)))
+		{
+			--begin;
+
+			return false;
+		}
+
+		val.assign(save_begin, begin);
+
+		return true;
+	}
+
+	bool parse_hostname(std::string::const_iterator& begin, std::string::const_iterator end, std::string& val)
+	{
+		// Parse hostnames labels according to RFC952 and RFC1123
+		assert(begin <= end);
+
+		const std::string::const_iterator save_begin = begin;
+
+		std::string label;
+
+		if (!parse_hostname_label(begin, end, label))
+		{
+			return false;
+		}
+
+		while ((begin != end) && (*begin == '.'))
+		{
+			++begin;
+
+			if (!parse_hostname_label(begin, end, label))
+			{
+				return false;
+			}
+		}
+
+		// Hostname are 255 characters long at most
+		const size_t hostname_max_size = 255;
+		
+		if (static_cast<size_t>(std::distance(save_begin, begin)) > hostname_max_size)
+		{
+			begin = save_begin + hostname_max_size;
+
+			return false;
+		}
+
+		if (is_hostname_label_special_character(*(begin - 1)))
+		{
+			--begin;
+
+			return false;
+		}
+
+		val.assign(save_begin, begin);
+
+		return true;
+	}
+
+	bool parse_service(std::string::const_iterator& begin, std::string::const_iterator end, std::string& val)
+	{
+		assert(begin <= end);
+
+		if (begin == end)
+		{
+			return false;
+		}
+
+		const std::string::const_iterator save_begin = begin;
+
+		for (; (begin != end) && std::isalnum(*begin); ++begin);
+
+		val.assign(save_begin, begin);
+
+		return true;
+	}
 }
 
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::asio::ip::address_v4& val)
@@ -168,7 +290,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ethernet_address_type& val)
 {
-	assert(begin < end);
+	assert(begin <= end);
 
 	// Wrong size
 	if (std::distance(begin, end) != (val.size() * 3 - 1))
@@ -341,6 +463,36 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 			} else
 			{
 				begin = save_begin;
+
+				hostname_endpoint::hostname_type hostname;
+
+				if (!parse_hostname(begin, end, hostname))
+				{
+					return false;
+				}
+
+				hostname_endpoint::service_type service;
+
+				if (begin != end)
+				{
+					if (*begin != ':')
+					{
+						return false;
+					}
+
+					++begin;
+
+					hostname_endpoint::base_service_type base_service;
+
+					if (!parse_service(begin, end, base_service))
+					{
+						return false;
+					}
+
+					service = base_service;
+				}
+
+				val.reset(new hostname_endpoint(hostname, service));
 			}
 		}
 	}
