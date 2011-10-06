@@ -93,6 +93,11 @@ namespace freelan
 			static const boost::posix_time::time_duration CONTACT_PERIOD;
 
 			/**
+			 * \brief The default service.
+			 */
+			static const std::string DEFAULT_SERVICE;
+
+			/**
 			 * \brief A session established callback.
 			 * \param host The host with which a session is established.
 			 */

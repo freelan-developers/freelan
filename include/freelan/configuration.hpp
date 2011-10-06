@@ -59,6 +59,8 @@
 
 #include <asiotap/osi/arp_proxy.hpp>
 
+#include "endpoint.hpp"
+
 namespace freelan
 {
 	/**
@@ -74,7 +76,7 @@ namespace freelan
 		/**
 		 * \brief The endpoint type.
 		 */
-		typedef fscp::server::ep_type ep_type;
+		typedef boost::shared_ptr<endpoint> ep_type;
 
 		/**
 		 * \brief The endpoint list type.

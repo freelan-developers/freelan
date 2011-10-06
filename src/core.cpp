@@ -54,6 +54,8 @@ namespace freelan
 {
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
 
+	const std::string core::DEFAULT_SERVICE = "12000";
+
 	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
@@ -75,7 +77,9 @@ namespace freelan
 
 	void core::open()
 	{
-		m_server.open(m_configuration.listen_on);
+		typedef boost::asio::ip::udp::resolver::query query;
+		
+		m_server.open(m_configuration.listen_on->to_boost_asio_endpoint(m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
 
 		m_tap_adapter.open();
 
@@ -304,9 +308,13 @@ namespace freelan
 	{
 		BOOST_FOREACH(const freelan::configuration::ep_type& ep, m_configuration.contact_list)
 		{
-			if (!m_server.has_session(ep))
+			typedef boost::asio::ip::udp::resolver::query query;
+
+			fscp::server::ep_type _ep = ep->to_boost_asio_endpoint(m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE);
+
+			if (!m_server.has_session(_ep))
 			{
-				async_greet(ep);
+				async_greet(_ep);
 			}
 		}
 	}
