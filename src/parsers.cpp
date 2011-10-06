@@ -211,7 +211,43 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 		return false;
 	}
 
-	if ((begin == end) || (*begin != ':'))
+	if ((begin == end) || (*begin != '/'))
+	{
+		return false;
+	}
+
+	++begin;
+
+	if (!parse(begin, end, val.prefix_length))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv6_address_prefix_length_type& val)
+{
+	if ((begin == end) || (*begin != '['))
+	{
+		return false;
+	}
+
+	++begin;
+
+	if (!parse(begin, end, val.address))
+	{
+		return false;
+	}
+
+	if ((begin == end) || (*begin != ']'))
+	{
+		return false;
+	}
+
+	++begin;
+
+	if ((begin == end) || (*begin != '/'))
 	{
 		return false;
 	}
