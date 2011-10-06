@@ -62,8 +62,6 @@
 namespace po = boost::program_options;
 namespace fl = freelan;
 
-const std::string DEFAULT_CONFIGURATION_FILE = "config/freelan.cfg";
-
 static boost::function<void ()> stop_function = 0;
 
 static void signal_handler(int code)
@@ -109,12 +107,18 @@ static bool register_signal_handlers()
 	return true;
 }
 
+std::string get_configuration_file()
+{
+	//TODO: Implement
+	return "";
+}
+
 bool parse_options(int argc, char** argv, fl::configuration& configuration)
 {
 	po::options_description generic_options("Generic options");
 	generic_options.add_options()
 		("help,h", "Produce help message.")
-		("configuration_file,c", po::value<std::string>()->default_value(DEFAULT_CONFIGURATION_FILE), "The configuration file to use")
+		("configuration_file,c", po::value<std::string>()->default_value(""), "The configuration file to use")
 		;
 
 	po::options_description visible_options;
@@ -131,10 +135,18 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, all_options), vm);
 
+	std::string configuration_file_str;
+
 	if (vm.count("configuration_file"))
 	{
-		const std::string configuration_file_str = vm["configuration_file"].as<std::string>();
+		configuration_file_str = vm["configuration_file"].as<std::string>();
+	} else
+	{
+		configuration_file_str = get_configuration_file();
+	}
 
+	if (!configuration_file_str.empty())
+	{
 		std::cout << "Reading configuration file at: " << configuration_file_str << std::endl;
 
 		std::ifstream configuration_file(configuration_file_str.c_str());
@@ -145,6 +157,9 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 		}
 
 		po::store(po::parse_config_file(configuration_file, configuration_options, true), vm);
+	} else
+	{
+		std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
 	}
 
 	po::notify(vm);
