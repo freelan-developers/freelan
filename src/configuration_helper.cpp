@@ -49,6 +49,8 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "parsers.hpp"
+
 namespace po = boost::program_options;
 namespace fl = freelan;
 
