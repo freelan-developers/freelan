@@ -57,65 +57,13 @@ namespace freelan
 
 	std::ostream& operator<<(std::ostream& os, configuration::ethernet_address_type value)
 	{
-		return os 
-			<< std::hex << std::setfill('0') << std::setw(2) <<
-			static_cast<unsigned int>(value[0]) << ':' <<
-			static_cast<unsigned int>(value[1]) << ':' <<
-			static_cast<unsigned int>(value[2]) << ':' <<
-			static_cast<unsigned int>(value[3]) << ':' <<
-			static_cast<unsigned int>(value[4]) << ':' <<
-			static_cast<unsigned int>(value[5]);
-	}
+		os<< std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(value[0]);
 
-	std::istream& operator>>(std::istream& is, configuration::ethernet_address_type& value)
-	{
-		unsigned int digit;
-		char delimiter;
-		size_t i = 0;
-
-		is >> std::hex >> std::setfill('0') >> std::setw(2);
-
-		for (; is && (i < value.size() - 1); ++i)
+		for (size_t i = 1; i < value.size(); ++i)
 		{
-			is >> digit >> delimiter;
-
-			if ((delimiter != ':') && (delimiter != '-'))
-			{
-				is.setstate(std::ios::badbit);
-			} else
-			{
-				value[i] = static_cast<configuration::ethernet_address_type::value_type>(digit);
-			}
+			os << ':' << static_cast<unsigned int>(value[1]);
 		}
 
-		if (is)
-		{
-			is >> digit;
-			value[i] = static_cast<configuration::ethernet_address_type::value_type>(digit);
-		}
-
-		return is;
-	}
-
-	std::istream& operator>>(std::istream& is, configuration::ipv4_address_prefix_length_type& value)
-	{
-		std::ostringstream oss;
-
-		is.get(*oss.rdbuf(), '/').ignore() >> std::dec >> value.prefix_length;
-
-		value.address = boost::asio::ip::address_v4::from_string(oss.str());
-
-		return is;
-	}
-
-	std::istream& operator>>(std::istream& is, configuration::ipv6_address_prefix_length_type& value)
-	{
-		std::ostringstream oss;
-
-		is.get(*oss.rdbuf(), '/').ignore() >> std::dec >> value.prefix_length;
-
-		value.address = boost::asio::ip::address_v6::from_string(oss.str());
-
-		return is;
+		return os;
 	}
 }

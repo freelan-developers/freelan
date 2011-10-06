@@ -242,14 +242,6 @@ namespace freelan
 	std::ostream& operator<<(std::ostream& os, configuration::ethernet_address_type value);
 
 	/**
-	 * \brief Input an Ethernet address from a stream.
-	 * \param is The input stream.
-	 * \param value The Ethernet address.
-	 * \return in.
-	 */
-	std::istream& operator>>(std::istream& is, configuration::ethernet_address_type& value);
-
-	/**
 	 * \brief Output an IPv4 address/prefix length to a stream.
 	 * \param os The output stream.
 	 * \param value The IPv4 address/prefix length.
@@ -258,28 +250,12 @@ namespace freelan
 	std::ostream& operator<<(std::ostream& os, configuration::ipv4_address_prefix_length_type value);
 
 	/**
-	 * \brief Input an IPv4 address/prefix length from a stream.
-	 * \param is The input stream.
-	 * \param value The IPv4 address/prefix length.
-	 * \return in.
-	 */
-	std::istream& operator>>(std::istream& is, configuration::ipv4_address_prefix_length_type& value);
-
-	/**
 	 * \brief Output an IPv6 address/prefix length to a stream.
 	 * \param os The output stream.
 	 * \param value The IPv6 address/prefix length.
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, configuration::ipv6_address_prefix_length_type value);
-
-	/**
-	 * \brief Input an IPv6 address/prefix length from a stream.
-	 * \param is The input stream.
-	 * \param value The IPv6 address/prefix length.
-	 * \return in.
-	 */
-	std::istream& operator>>(std::istream& is, configuration::ipv6_address_prefix_length_type& value);
 
 	inline std::ostream& operator<<(std::ostream& os, configuration::ipv4_address_prefix_length_type value)
 	{
