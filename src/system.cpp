@@ -47,6 +47,7 @@
 #include "system.hpp"
 
 #include <stdexcept>
+#include <cstdlib>
 
 #include <cryptoplus/os.hpp>
 
