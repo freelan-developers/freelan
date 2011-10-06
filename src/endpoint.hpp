@@ -121,7 +121,7 @@ class ip_endpoint : public endpoint
 		 * \param address The address component.
 		 * \param port The port component.
 		 */
-		ip_endpoint(const address_type& address, port_type port);
+		ip_endpoint(const address_type& address, port_type port = port_type());
 
 		/**
 		 * \brief Get a Boost ASIO endpoint.
