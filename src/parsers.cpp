@@ -247,3 +247,56 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 	return true;
 }
+
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::shared_ptr<endpoint>& val)
+{
+	if (begin == end)
+	{
+		return false;
+	}
+
+	// Enclosed IPv6 address and optional port
+	if (*begin == '[')
+	{
+		++begin;
+
+		ipv6_endpoint::address_type address;
+
+		if (!parse(begin, end, address))
+		{
+			return false;
+		}
+
+		if ((begin == end) || (*begin != ']'))
+		{
+			return false;
+		}
+
+		++begin;
+
+		ipv6_endpoint::port_type port;
+
+		if (begin != end)
+		{
+			if (*begin != ':')
+			{
+				return false;
+			}
+
+			++begin;
+
+			ipv6_endpoint::base_port_type base_port;
+
+			if (!parse(begin, end, base_port))
+			{
+				return false;
+			}
+
+			port = base_port;
+		}
+
+		val.reset(new ipv6_endpoint(address, port));
+	}
+
+	return true;
+}

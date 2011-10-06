@@ -51,6 +51,8 @@
 
 #include <freelan/configuration.hpp>
 
+#include "endpoint.hpp"
+
 /**
  * \brief Parse an IPv4 address.
  * \param str The string to parse.
@@ -106,5 +108,13 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv6_address_prefix_length_type& val);
+
+/**
+ * \brief Parse an endpoint.
+ * \param str The string to parse.
+ * \param val The value to put the result into.
+ * \return true if the parsing succeeded. On false, the value of val is undetermined.
+ */
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::shared_ptr<endpoint>& val);
 
 #endif /* PARSERS_HPP */
