@@ -281,7 +281,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	return parse_number(begin, end, val);
 }
 
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, size_t& val)
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, unsigned int& val)
 {
 	return parse_number(begin, end, val);
 }

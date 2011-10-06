@@ -96,7 +96,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, size_t& val);
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, unsigned int& val);
 
 /**
  * \brief Parse an Ethernet address.
