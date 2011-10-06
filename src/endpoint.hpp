@@ -170,7 +170,7 @@ class hostname_endpoint : public endpoint
 		 * \param host The host component.
 		 * \param service The service component.
 		 */
-		hostname_endpoint(const hostname_type& address, const service_type& service);
+		hostname_endpoint(const hostname_type& address, const service_type& service = service_type());
 
 		/**
 		 * \brief Get a Boost ASIO endpoint.
