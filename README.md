@@ -21,6 +21,15 @@ The tools can build projects for Windows, Linux Mac OSX and probably any other U
 
 They also supports several compiler toolchains, especially for Windows when you can build everything using either MinGW or Microsoft Visual Studio.
 
+Install
+-------
+
+To install FreeLAN build tools, you just have to put the project root directory into your PYTHONPATH.
+
+For example on Linux, you may use:
+
+> export PYTHONPATH=`pwd`:${PYTHONPATH}
+
 How to use FreeLAN build tools
 ------------------------------
 
