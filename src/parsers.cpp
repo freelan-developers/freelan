@@ -49,8 +49,6 @@
 #include <cctype>
 #include <cassert>
 
-#include <boost/lexical_cast.hpp>
-
 namespace
 {
 	template <typename IpAddressType>

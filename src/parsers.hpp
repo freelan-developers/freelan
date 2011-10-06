@@ -48,14 +48,26 @@
 #define PARSERS_HPP
 
 #include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <freelan/configuration.hpp>
 
 #include "endpoint.hpp"
 
 /**
- * \brief Parse an IPv4 address.
+ * \brief Parse a string.
  * \param str The string to parse.
+ * \return The result of the parsing.
+ *
+ * If the string contains unparsed characters or if the parsing fails, an exception is thrown.
+ */
+template <typename Type>
+Type parse(const std::string& str);
+
+/**
+ * \brief Parse an IPv4 address.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -63,7 +75,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse an IPv6 address.
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -71,7 +84,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse a port number.
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -79,7 +93,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse a prefix length
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -87,7 +102,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse an Ethernet address.
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -95,7 +111,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse an IPv4 address and its prefix length.
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -103,7 +120,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse an IPv6 address and its prefix length.
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
@@ -111,10 +129,31 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 /**
  * \brief Parse an endpoint.
- * \param str The string to parse.
+ * \param begin The first character to parse.
+ * \param end The last character to stop parsing at.
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::shared_ptr<endpoint>& val);
+
+template <typename Type>
+inline Type parse(const std::string& str)
+{
+	std::string::const_iterator begin = str.begin();
+	const std::string::const_iterator end = str.end();
+	Type val;
+
+	if (!parse(begin, end, val))
+	{
+		throw std::runtime_error("Parsing of \"" + str + "\" failed at position " + boost::lexical_cast<std::string>(std::distance(str.begin(), begin)));
+	}
+
+	if (begin != end)
+	{
+		throw std::runtime_error("Extra characters found in \"" + str + "\" at position " + boost::lexical_cast<std::string>(std::distance(str.begin(), begin)));
+	}
+
+	return val;
+}
 
 #endif /* PARSERS_HPP */
