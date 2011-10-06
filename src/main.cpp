@@ -135,6 +135,8 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 	{
 		const std::string configuration_file_str = vm["configuration_file"].as<std::string>();
 
+		std::cout << "Reading configuration file at: " << configuration_file_str << std::endl;
+
 		std::ifstream configuration_file(configuration_file_str.c_str());
 
 		if (!configuration_file)
