@@ -164,13 +164,13 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
 	configuration.listen_on = parse<fl::configuration::ep_type>(vm["network.listen_on"].as<std::string>());
-	configuration.tap_adapter_ipv4_address_prefix_length = parse<fl::configuration::ipv4_address_prefix_length_type>(vm["network.tap_adapter_ipv4_address_prefix_length"].as<std::string>());
-	configuration.tap_adapter_ipv6_address_prefix_length = parse<fl::configuration::ipv6_address_prefix_length_type>(vm["network.tap_adapter_ipv6_address_prefix_length"].as<std::string>());
+	configuration.tap_adapter_ipv4_address_prefix_length = parse_optional<fl::configuration::ipv4_address_prefix_length_type>(vm["network.tap_adapter_ipv4_address_prefix_length"].as<std::string>());
+	configuration.tap_adapter_ipv6_address_prefix_length = parse_optional<fl::configuration::ipv6_address_prefix_length_type>(vm["network.tap_adapter_ipv6_address_prefix_length"].as<std::string>());
 	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
 	configuration.arp_proxy_fake_ethernet_address = parse<fl::configuration::ethernet_address_type>(vm["network.arp_proxy_fake_ethernet_address"].as<std::string>());
 	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
-	configuration.dhcp_server_ipv4_address_prefix_length = parse<fl::configuration::ipv4_address_prefix_length_type>(vm["network.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
-	configuration.dhcp_server_ipv6_address_prefix_length = parse<fl::configuration::ipv6_address_prefix_length_type>(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
+	configuration.dhcp_server_ipv4_address_prefix_length = parse_optional<fl::configuration::ipv4_address_prefix_length_type>(vm["network.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
+	configuration.dhcp_server_ipv6_address_prefix_length = parse_optional<fl::configuration::ipv6_address_prefix_length_type>(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 	configuration.contact_list = parse<fl::configuration::ep_list_type>(vm["network.contact_list"].as<std::string>());

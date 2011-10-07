@@ -49,6 +49,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 #include <freelan/configuration.hpp>
 
@@ -61,6 +62,18 @@
  */
 template <typename Type>
 Type parse(const std::string& str);
+
+/**
+ * \brief Parse an optional string.
+ * \param str The string to parse.
+ * \return The result of the parsing.
+ *
+ * If the string contains unparsed characters or if the parsing fails, an exception is thrown.
+ *
+ * An empty string returns boost::none.
+ */
+template <typename Type>
+boost::optional<Type> parse_optional(const std::string& str);
 
 /**
  * \brief Parse an IPv4 address.
@@ -161,6 +174,18 @@ inline Type parse(const std::string& str)
 	}
 
 	return val;
+}
+
+template <typename Type>
+boost::optional<Type> parse_optional(const std::string& str)
+{
+	if (str.empty())
+	{
+		return boost::none;
+	} else
+	{
+		return parse<Type>(str);
+	}
 }
 
 #endif /* PARSERS_HPP */
