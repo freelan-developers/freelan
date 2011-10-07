@@ -71,9 +71,9 @@ std::vector<std::string> get_configuration_files();
 /**
  * \brief Execute a script and get the exit status.
  * \param script The script to execute.
- * \param parameters The script parameters.
+ * \param args The arguments.
  * \return The exit status.
  */
-int execute(const std::string& script, const std::string& parameters);
+int execute(const char* script, char** args);
 
 #endif /* SYSTEM_HPP */

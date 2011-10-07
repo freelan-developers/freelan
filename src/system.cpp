@@ -51,13 +51,37 @@
 
 #include <cryptoplus/os.hpp>
 
+#include <boost/system/system_error.hpp>
+
 #ifdef WINDOWS
 #include <shlobj.h>
 #include <shellapi.h>
 #elif defined(UNIX)
 #include <unistd.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
 #endif
+
+namespace
+{
+#ifdef WINDOWS
+#elif defined(UNIX)
+	void throw_system_error(int error)
+	{
+		char error_str[256] = { 0 };
+
+		if (strerror_r(error, error_str, sizeof(error_str)) != 0)
+		{
+			throw boost::system::system_error(error, boost::system::system_category());
+		}
+		else
+		{
+			throw boost::system::system_error(error, boost::system::system_category(), error_str);
+		}
+	}
+#endif
+}
 
 std::string get_home_directory()
 {
@@ -117,7 +141,7 @@ std::vector<std::string> get_configuration_files()
 	return configuration_files;
 }
 
-int execute(const std::string& script, const std::string& parameters)
+int execute(const char* script, char** args)
 {
 	int exit_status = 255;
 
@@ -162,35 +186,85 @@ int execute(const std::string& script, const std::string& parameters)
 
 	CoUninitialize();
 #else
-	pid_t pid = fork();
+	pid_t pid;
+	int fd[2];
 
-	if (pid >= 0)
+	if (::pipe(fd) < 0)
 	{
-		if (pid == 0)
-		{
-			// Child process
-			//TODO: Use the parameters
-			// They must be passed as several const char* and be terminated by NULL.
-			(void)parameters;
-
-			execl(script.c_str(), NULL, NULL);
-
-			_exit(255);
-		} else
-		{
-			// Parent process
-			int status = 0;
-
-			// Lets wait the child process to finish
-			if (waitpid(pid, &status, 0) == pid)
-			{
-				if (WIFEXITED(status))
-				{
-					exit_status = WEXITSTATUS(status);
-				}
-			}
-		}
+		throw_system_error(errno);
 	}
+
+	switch (pid = fork())
+	{
+		case -1:
+			{
+				::close(fd[0]);
+				::close(fd[1]);
+
+				throw_system_error(errno);
+				break;
+			}
+
+		case 0:
+			{
+				// Child process
+				int fdlimit = ::sysconf(_SC_OPEN_MAX);
+
+				for (int n = 0; n < fdlimit; ++n)
+				{
+					if (n != fd[1])
+					{
+						::close(n);
+					}
+				}
+
+				fcntl(fd[1], F_SETFD, FD_CLOEXEC);
+
+				// Execute the script
+				::execv(script, args);
+
+				// Something went wrong. Sending back errno to parent process then exiting.
+				::write(fd[1], &errno, sizeof(errno));
+				_exit(EXIT_FAILURE);
+				break;
+			}
+
+		default:
+			{
+				// Parent process
+				int errno_child = 0;
+				::close(fd[1]);
+
+				ssize_t readcnt = ::read(fd[0], &errno_child, sizeof(errno_child));
+				::close(fd[0]);
+
+				if (readcnt < 0)
+				{
+					throw_system_error(errno);
+				}
+				else if (readcnt == sizeof(errno_child))
+				{
+					throw_system_error(errno_child);
+				} else
+				{
+					int status;
+
+					if (::waitpid(pid, &status, 0) < 0)
+					{
+						throw_system_error(errno);
+					} else
+					{
+						if (WIFEXITED(status))
+						{
+							exit_status = WEXITSTATUS(status);
+						}
+					}
+				}
+
+				break;
+			}
+	}
+
 #endif
 
 	return exit_status;
