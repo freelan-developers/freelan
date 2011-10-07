@@ -45,6 +45,8 @@
 
 #include "endpoint.hpp"
 
+endpoint::~endpoint() {}
+
 hostname_endpoint::ep_type hostname_endpoint::to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service)
 {
 	boost::asio::io_service io_service;

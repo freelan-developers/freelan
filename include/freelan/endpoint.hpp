@@ -186,8 +186,6 @@ class hostname_endpoint : public endpoint
 		service_type m_service;
 };
 
-inline endpoint::~endpoint() {}
-
 template <typename AddressType>
 inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
 	m_address(address),
