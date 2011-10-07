@@ -68,4 +68,12 @@ std::string get_application_directory();
  */
 std::vector<std::string> get_configuration_files();
 
+/**
+ * \brief Execute a script and get the exit status.
+ * \param script The script to execute.
+ * \param parameters The script parameters.
+ * \return The exit status.
+ */
+int execute(const std::string& script, const std::string& parameters);
+
 #endif /* SYSTEM_HPP */

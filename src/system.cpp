@@ -53,6 +53,7 @@
 
 #ifdef WINDOWS
 #include <shlobj.h>
+#include <shellapi.h>
 #endif
 
 std::string get_home_directory()
@@ -111,4 +112,54 @@ std::vector<std::string> get_configuration_files()
 #endif
 
 	return configuration_files;
+}
+
+int execute(const std::string& script, const std::string& parameters)
+{
+	int exit_status = 255;
+
+#ifdef WINDOWS
+	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+	SHELLEXECUTEINFO shi;
+	shi.cbSize = sizeof(shi);
+	shi.fMask = SEE_MASK_NOCLOSEPROCESS;
+	shi.hwnd = NULL;
+	shi.lpVerb = "open";
+	shi.lpFile = script.c_str();
+	shi.lpParameters = parameters.c_str();
+	shi.lpDirectory = NULL;
+	shi.nShow = SW_HIDE;
+	shi.hInstApp = NULL;
+	shi.lpIDList = NULL;
+	shi.lpClass = NULL;
+	shi.hkeyClass = NULL;
+	shi.dwHotKey = 0;
+	shi.hIcon = NULL;
+	shi.hProcess = NULL;
+
+	if (ShellExecuteEx(&shi))
+	{
+		if (WaitForSingleObject(shi.hProcess, INFINITE) == WAIT_OBJECT_0)
+		{
+			DWORD exit_code = 0;
+
+			if (GetExitCodeProcess(shi.hProcess, &exit_code))
+			{
+				exit_status = static_cast<int>(exit_code);
+			}
+		}
+
+		if (shi.hProcess != 0)
+		{
+			CloseHandle(shi.hProcess);
+			shi.hProcess = 0;
+		}
+	}
+
+	CoUninitialize();
+#else
+#endif
+
+	return exit_status;
 }
