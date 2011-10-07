@@ -308,7 +308,7 @@ int execute(const char* script, unsigned int cnt, ...)
 
 				fcntl(fd[1], F_SETFD, FD_CLOEXEC);
 
-				char** argv = ::alloca((cnt + 2) * sizeof(char*));
+				const char** argv = static_cast<const char**>(::alloca((cnt + 2) * sizeof(char*)));
 
 				if (argv == NULL)
 				{
@@ -334,7 +334,7 @@ int execute(const char* script, unsigned int cnt, ...)
 				argv[cnt + 1] = NULL;
 
 				// Execute the script
-				::execv(script, argv);
+				::execv(script, (char* const*)(argv));
 
 				// Something went wrong. Sending back errno to parent process then exiting.
 				if (::write(fd[1], &errno, sizeof(errno))) {}
