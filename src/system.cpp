@@ -54,6 +54,9 @@
 #ifdef WINDOWS
 #include <shlobj.h>
 #include <shellapi.h>
+#elif defined(UNIX)
+#include <unistd.h>
+#include <sys/wait.h>
 #endif
 
 std::string get_home_directory()
@@ -159,6 +162,35 @@ int execute(const std::string& script, const std::string& parameters)
 
 	CoUninitialize();
 #else
+	pid_t pid = fork();
+
+	if (pid >= 0)
+	{
+		if (pid == 0)
+		{
+			// Child process
+			//TODO: Use the parameters
+			// They must be passed as several const char* and be terminated by NULL.
+			(void)parameters;
+
+			execl(script.c_str(), NULL, NULL);
+
+			_exit(255);
+		} else
+		{
+			// Parent process
+			int status = 0;
+
+			// Lets wait the child process to finish
+			if (waitpid(pid, &status, 0) == pid)
+			{
+				if (WIFEXITED(status))
+				{
+					exit_status = WEXITSTATUS(status);
+				}
+			}
+		}
+	}
 #endif
 
 	return exit_status;
