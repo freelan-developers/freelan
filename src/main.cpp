@@ -167,7 +167,7 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 
 		for (std::vector<std::string>::const_iterator it = configuration_files.begin(); (it != configuration_files.end()) && (!configuration_read); ++it)
 		{
-			std::ifstream ifs(configuration_file.c_str());
+			std::ifstream ifs(it->c_str());
 
 			if (ifs)
 			{
