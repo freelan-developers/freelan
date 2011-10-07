@@ -334,6 +334,7 @@ int execute(const char* script, unsigned int cnt, ...)
 				argv[cnt + 1] = NULL;
 
 				// Execute the script
+				// TODO: Remove the ugly cast down there...
 				::execv(script, (char* const*)(argv));
 
 				// Something went wrong. Sending back errno to parent process then exiting.
