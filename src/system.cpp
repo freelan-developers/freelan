@@ -225,7 +225,7 @@ int execute(const char* script, char** args)
 				::execv(script, args);
 
 				// Something went wrong. Sending back errno to parent process then exiting.
-				::write(fd[1], &errno, sizeof(errno));
+				if (::write(fd[1], &errno, sizeof(errno))) {}
 				_exit(EXIT_FAILURE);
 				break;
 			}
