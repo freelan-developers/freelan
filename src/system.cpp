@@ -48,6 +48,8 @@
 
 #include <stdexcept>
 #include <cstdlib>
+#include <cstdarg>
+#include <sstream>
 
 #include <cryptoplus/os.hpp>
 
@@ -67,6 +69,32 @@
 namespace
 {
 #ifdef WINDOWS
+	void throw_system_error(LONG error)
+	{
+		LPSTR msgbuf = NULL;
+
+		FormatMessageA(
+				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL,
+				error,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPSTR)&msgbuf,
+				0,
+				NULL
+				);
+
+		try
+		{
+			throw boost::system::system_error(error, boost::system::system_category(), msgbuf);
+		}
+		catch (...)
+		{
+			LocalFree(msgbuf);
+
+			throw;
+		}
+	}
+
 #elif defined(UNIX)
 	void throw_system_error(int error)
 	{
@@ -142,50 +170,109 @@ std::vector<std::string> get_configuration_files()
 	return configuration_files;
 }
 
-int execute(const char* script, char** args)
+int execute(const char* script, unsigned int cnt, ...)
 {
 	int exit_status = 255;
 
 #ifdef WINDOWS
-	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-	SHELLEXECUTEINFO shi;
-	shi.cbSize = sizeof(shi);
-	shi.fMask = SEE_MASK_NOCLOSEPROCESS;
-	shi.hwnd = NULL;
-	shi.lpVerb = "open";
-	shi.lpFile = script.c_str();
-	shi.lpParameters = parameters.c_str();
-	shi.lpDirectory = NULL;
-	shi.nShow = SW_HIDE;
-	shi.hInstApp = NULL;
-	shi.lpIDList = NULL;
-	shi.lpClass = NULL;
-	shi.hkeyClass = NULL;
-	shi.dwHotKey = 0;
-	shi.hIcon = NULL;
-	shi.hProcess = NULL;
+	HRESULT com_result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-	if (ShellExecuteEx(&shi))
+	try
 	{
-		if (WaitForSingleObject(shi.hProcess, INFINITE) == WAIT_OBJECT_0)
-		{
-			DWORD exit_code = 0;
+		va_list vl;
+		va_start(vl, cnt);
 
-			if (GetExitCodeProcess(shi.hProcess, &exit_code))
-			{
-				exit_status = static_cast<int>(exit_code);
-			}
+		std::ostringstream oss;
+
+		for (unsigned int i = 0; i < cnt; ++i)
+		{
+			oss << va_arg(vl, const char*) << " ";
 		}
 
-		if (shi.hProcess != 0)
+		va_end(vl);
+
+		SHELLEXECUTEINFO shi;
+		shi.cbSize = sizeof(shi);
+		shi.fMask = SEE_MASK_NOCLOSEPROCESS;
+		shi.hwnd = NULL;
+		shi.lpVerb = "open";
+		shi.lpFile = script;
+		shi.lpParameters = oss.str().c_str();
+		shi.lpDirectory = NULL;
+		shi.nShow = SW_HIDE;
+		shi.hInstApp = NULL;
+		shi.lpIDList = NULL;
+		shi.lpClass = NULL;
+		shi.hkeyClass = NULL;
+		shi.dwHotKey = 0;
+		shi.hIcon = NULL;
+		shi.hProcess = NULL;
+
+		if (ShellExecuteEx(&shi))
 		{
-			CloseHandle(shi.hProcess);
-			shi.hProcess = 0;
+			try
+			{
+				DWORD wait_result = WaitForSingleObject(shi.hProcess, INFINITE);
+
+				switch (wait_result)
+				{
+					case WAIT_OBJECT_0:
+						{
+							DWORD exit_code = 0;
+
+							if (GetExitCodeProcess(shi.hProcess, &exit_code))
+							{
+								exit_status = static_cast<int>(exit_code);
+							} else
+							{
+								throw_system_error(::GetLastError());
+							}
+
+							break;
+						}
+					default:
+						{
+							throw_system_error(::GetLastError());
+						}
+				}
+			}
+			catch (...)
+			{
+				if (shi.hProcess != 0)
+				{
+					CloseHandle(shi.hProcess);
+					shi.hProcess = 0;
+				}
+
+				throw;
+			}
+
+			if (shi.hProcess != 0)
+			{
+				CloseHandle(shi.hProcess);
+				shi.hProcess = 0;
+			}
+		} else
+		{
+			throw_system_error(::GetLastError());
 		}
 	}
+	catch (...)
+	{
+		if ((com_result == S_OK) || (com_result == S_FALSE))
+		{
+			CoUninitialize();
+		}
 
-	CoUninitialize();
+		throw;
+	}
+
+	if ((com_result == S_OK) || (com_result == S_FALSE))
+	{
+		CoUninitialize();
+	}
+
 #else
 	pid_t pid;
 	int fd[2];
@@ -221,8 +308,33 @@ int execute(const char* script, char** args)
 
 				fcntl(fd[1], F_SETFD, FD_CLOEXEC);
 
+				char** argv = ::alloca((cnt + 2) * sizeof(char*));
+
+				if (argv == NULL)
+				{
+					// Something went wrong. Sending back errno to parent process then exiting.
+					errno = ENOMEM;
+
+					if (::write(fd[1], &errno, sizeof(errno))) {}
+					_exit(EXIT_FAILURE);
+				}
+
+				argv[0] = script;
+
+				va_list vl;
+				va_start(vl, cnt);
+
+				for (unsigned int i = 0; i < cnt; ++i)
+				{
+					argv[i + 1] = va_arg(vl, const char*);
+				}
+
+				va_end(vl);
+
+				argv[cnt + 1] = NULL;
+
 				// Execute the script
-				::execv(script, args);
+				::execv(script, argv);
 
 				// Something went wrong. Sending back errno to parent process then exiting.
 				if (::write(fd[1], &errno, sizeof(errno))) {}
