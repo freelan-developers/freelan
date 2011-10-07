@@ -61,6 +61,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <cstring>
 #endif
 
 namespace
