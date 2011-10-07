@@ -291,7 +291,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	assert(begin <= end);
 
 	// Wrong size
-	if (std::distance(begin, end) != (val.size() * 3 - 1))
+	if (std::distance(begin, end) != static_cast<std::iterator_traits<std::string::const_iterator>::difference_type>(val.size() * 3 - 1))
 	{
 		begin = end;
 		return false;
