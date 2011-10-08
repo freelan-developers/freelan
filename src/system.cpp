@@ -201,9 +201,12 @@ namespace
 
 					for (int n = 0; n < fdlimit; ++n)
 					{
-						if (n != fd[1] && (!enable_stdout || (fd[1] != STDOUT_FILENO)))
+						if (n != fd[1])
 						{
-							::close(n);
+							if (!enable_stdout || (n != STDOUT_FILENO))
+							{
+								::close(n);
+							}
 						}
 					}
 
