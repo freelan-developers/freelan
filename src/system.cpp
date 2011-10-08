@@ -359,14 +359,14 @@ int execute(const char* file, ...)
 
 		for (const char* arg = va_arg(vl, const char*); arg != NULL; arg = va_arg(vl, const char*))
 		{
-			argv[cnt++] = &command_line[offset];
+			argv[cnt++] = &args[offset];
 
 			for (; *arg != '\0'; ++arg)
 			{
-				command_line[offset++] = *arg;
+				args[offset++] = *arg;
 			}
 
-			command_line[offset++] = '\0';
+			args[offset++] = '\0';
 		}
 
 		exit_status = execute_script(file, argv);
