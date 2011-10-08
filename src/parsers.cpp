@@ -382,7 +382,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	{
 		++begin;
 
-		ipv6_endpoint::address_type address;
+		freelan::ipv6_endpoint::address_type address;
 
 		if (!parse(begin, end, address))
 		{
@@ -396,7 +396,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 		++begin;
 
-		ipv6_endpoint::port_type port;
+		freelan::ipv6_endpoint::port_type port;
 
 		if (begin != end)
 		{
@@ -407,7 +407,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 			++begin;
 
-			ipv6_endpoint::base_port_type base_port;
+			freelan::ipv6_endpoint::base_port_type base_port;
 
 			if (!parse(begin, end, base_port))
 			{
@@ -417,26 +417,26 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 			port = base_port;
 		}
 
-		val.reset(new ipv6_endpoint(address, port));
+		val.reset(new freelan::ipv6_endpoint(address, port));
 	}
 	else 
 	{
-		ipv6_endpoint::address_type address_v6;
+		freelan::ipv6_endpoint::address_type address_v6;
 
 		// Is it a single IPv6 address ?
 		if (parse(begin, end, address_v6))
 		{
-			val.reset(new ipv6_endpoint(address_v6));
+			val.reset(new freelan::ipv6_endpoint(address_v6));
 		} else
 		{
 			begin = save_begin;
 
-			ipv4_endpoint::address_type address_v4;
+			freelan::ipv4_endpoint::address_type address_v4;
 
 			// Is it an IPv4 address ?
 			if (parse(begin, end, address_v4))
 			{
-				ipv4_endpoint::port_type port;
+				freelan::ipv4_endpoint::port_type port;
 
 				if (begin != end)
 				{
@@ -447,7 +447,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 					++begin;
 
-					ipv4_endpoint::base_port_type base_port;
+					freelan::ipv4_endpoint::base_port_type base_port;
 
 					if (!parse(begin, end, base_port))
 					{
@@ -457,19 +457,19 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 					port = base_port;
 				}
 
-				val.reset(new ipv4_endpoint(address_v4, port));
+				val.reset(new freelan::ipv4_endpoint(address_v4, port));
 			} else
 			{
 				begin = save_begin;
 
-				hostname_endpoint::hostname_type hostname;
+				freelan::hostname_endpoint::hostname_type hostname;
 
 				if (!parse_hostname(begin, end, hostname))
 				{
 					return false;
 				}
 
-				hostname_endpoint::service_type service;
+				freelan::hostname_endpoint::service_type service;
 
 				if (begin != end)
 				{
@@ -480,7 +480,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 					++begin;
 
-					hostname_endpoint::base_service_type base_service;
+					freelan::hostname_endpoint::base_service_type base_service;
 
 					if (!parse_service(begin, end, base_service))
 					{
@@ -490,7 +490,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 					service = base_service;
 				}
 
-				val.reset(new hostname_endpoint(hostname, service));
+				val.reset(new freelan::hostname_endpoint(hostname, service));
 			}
 		}
 	}
