@@ -293,11 +293,13 @@ namespace freelan
 				if (m_arp_proxy && m_arp_filter.get_last_helper())
 				{
 					handled = true;
+					m_arp_filter.clear_last_helper();
 				}
 
 				if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
 				{
 					handled = true;
+					m_dhcp_filter.clear_last_helper();
 				}
 			}
 
