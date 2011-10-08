@@ -71,10 +71,9 @@ std::vector<std::string> get_configuration_files();
 /**
  * \brief Execute a script and get the exit status.
  * \param script The script to execute.
- * \param cnt The number of parameters.
- * \param ... The parameters.
+ * \param ... The parameters. The last parameter MUST be NULL or very bad things will happen ! Something involving dinosaurs and meteorites.
  * \return The exit status.
  */
-int execute(const char* script, unsigned int cnt = 0, ...);
+int execute(const char* file, ...);
 
 #endif /* SYSTEM_HPP */

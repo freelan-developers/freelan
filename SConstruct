@@ -42,7 +42,6 @@ if sys.platform.startswith('win32'):
     libraries.append('ws2_32')
     libraries.append('gdi32')
     libraries.append('iphlpapi')
-    libraries.append('ole32')
 else:
     libraries.append('pthread')
 

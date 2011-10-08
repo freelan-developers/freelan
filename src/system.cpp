@@ -71,28 +71,89 @@ namespace
 #ifdef WINDOWS
 	void throw_system_error(LONG error)
 	{
-		LPSTR msgbuf = NULL;
+		throw boost::system::system_error(error, boost::system::system_category());
+	}
 
-		FormatMessageA(
-				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-				NULL,
-				error,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPSTR)&msgbuf,
-				0,
-				NULL
-				);
+	DWORD create_process(const char* application, char* command_line, bool enable_stdout = false)
+	{
+		DWORD exit_status;
+
+		STARTUPINFO si;
+		si.cb = sizeof(si);
+		si.lpReserved = NULL;
+		si.lpDesktop = NULL;
+		si.lpTitle = NULL;
+		si.dwX = 0;
+		si.dwY = 0;
+		si.dwXSize = 0;
+		si.dwYSize = 0;
+		si.dwXCountChars = 0;
+		si.dwYCountChars = 0;
+		si.dwFillAttribute = 0;
+		si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES; // Remove STARTF_USESTDHANDLES to show stdout
+		si.wShowWindow = SW_HIDE;
+		si.cbReserved2 = 0;
+		si.lpReserved2 = NULL;
+		si.hStdInput = INVALID_HANDLE_VALUE;
+		si.hStdOutput = enable_stdout ? ::GetStdHandle(STD_OUTPUT_HANDLE) : INVALID_HANDLE_VALUE;
+		si.hStdError = INVALID_HANDLE_VALUE;
+
+		PROCESS_INFORMATION pi;
+
+		if (!::CreateProcess(
+					application,
+					command_line,
+					NULL,
+					NULL,
+					FALSE,
+					0,
+					NULL, //environment
+					NULL,
+					&si,
+					&pi
+					))
+		{
+			throw_system_error(::GetLastError());
+		}
+
+		::CloseHandle(pi.hThread);
+
+		DWORD wait_result = ::WaitForSingleObject(pi.hProcess, INFINITE);
 
 		try
 		{
-			throw boost::system::system_error(error, boost::system::system_category(), msgbuf);
+			switch (wait_result)
+			{
+				case WAIT_OBJECT_0:
+					{
+						DWORD exit_code = 0;
+
+						if (::GetExitCodeProcess(pi.hProcess, &exit_code))
+						{
+							exit_status = static_cast<int>(exit_code);
+						} else
+						{
+							throw_system_error(::GetLastError());
+						}
+
+						break;
+					}
+				default:
+					{
+						throw_system_error(::GetLastError());
+					}
+			}
 		}
 		catch (...)
 		{
-			LocalFree(msgbuf);
+			::CloseHandle(pi.hProcess);
 
 			throw;
 		}
+
+		::CloseHandle(pi.hProcess);
+
+		return exit_status;
 	}
 
 #elif defined(UNIX)
@@ -109,6 +170,93 @@ namespace
 			throw boost::system::system_error(error, boost::system::system_category(), error_str);
 		}
 	}
+
+	int execute_script(const char* file, char* const argv[], bool enable_stdout = false)
+	{
+		int exit_status = 255;
+		int fd[2];
+
+		if (::pipe(fd) < 0)
+		{
+			throw_system_error(errno);
+		}
+
+		pid_t pid;
+
+		switch (pid = fork())
+		{
+			case -1:
+				{
+					::close(fd[0]);
+					::close(fd[1]);
+
+					throw_system_error(errno);
+					break;
+				}
+
+			case 0:
+				{
+					// Child process
+					int fdlimit = ::sysconf(_SC_OPEN_MAX);
+
+					for (int n = 0; n < fdlimit; ++n)
+					{
+						if (n != fd[1] && (!enable_stdout || (fd[1] != stdout)))
+						{
+							::close(n);
+						}
+					}
+
+					fcntl(fd[1], F_SETFD, FD_CLOEXEC);
+
+					// Execute the file specified
+					::execv(file, argv);
+
+					// Something went wrong. Sending back errno to parent process then exiting.
+					if (::write(fd[1], &errno, sizeof(errno))) {}
+					_exit(EXIT_FAILURE);
+					break;
+				}
+
+			default:
+				{
+					// Parent process
+					int errno_child = 0;
+					::close(fd[1]);
+
+					ssize_t readcnt = ::read(fd[0], &errno_child, sizeof(errno_child));
+					::close(fd[0]);
+
+					if (readcnt < 0)
+					{
+						throw_system_error(errno);
+					}
+					else if (readcnt == sizeof(errno_child))
+					{
+						throw_system_error(errno_child);
+					} else
+					{
+						int status;
+
+						if (::waitpid(pid, &status, 0) < 0)
+						{
+							throw_system_error(errno);
+						} else
+						{
+							if (WIFEXITED(status))
+							{
+								exit_status = WEXITSTATUS(status);
+							}
+						}
+					}
+
+					break;
+				}
+		}
+
+		return exit_status;
+	}
+
 #endif
 }
 
@@ -170,216 +318,50 @@ std::vector<std::string> get_configuration_files()
 	return configuration_files;
 }
 
-int execute(const char* script, unsigned int cnt, ...)
+int execute(const char* file, ...)
 {
-	int exit_status = 255;
+	int exit_status;
 
-#ifdef WINDOWS
-
-	HRESULT com_result = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	va_list vl;
+	va_start(vl, file);
 
 	try
 	{
-		va_list vl;
-		va_start(vl, cnt);
-
-		std::ostringstream oss;
-
-		for (unsigned int i = 0; i < cnt; ++i)
+#ifdef WINDOWS
+		char command_line[32768] = {};
+		size_t offset = 0;
+		
+		for (const char* arg = va_arg(vl, const char*); arg != NULL; arg = va_arg(vl, const char*))
 		{
-			oss << va_arg(vl, const char*) << " ";
-		}
+			command_line[offset++] = '"';
 
-		va_end(vl);
-
-		SHELLEXECUTEINFO shi;
-		shi.cbSize = sizeof(shi);
-		shi.fMask = SEE_MASK_NOCLOSEPROCESS;
-		shi.hwnd = NULL;
-		shi.lpVerb = "open";
-		shi.lpFile = script;
-		shi.lpParameters = oss.str().c_str();
-		shi.lpDirectory = NULL;
-		shi.nShow = SW_HIDE;
-		shi.hInstApp = NULL;
-		shi.lpIDList = NULL;
-		shi.lpClass = NULL;
-		shi.hkeyClass = NULL;
-		shi.dwHotKey = 0;
-		shi.hIcon = NULL;
-		shi.hProcess = NULL;
-
-		if (ShellExecuteEx(&shi))
-		{
-			try
+			for (; *arg != '\0'; ++arg)
 			{
-				DWORD wait_result = WaitForSingleObject(shi.hProcess, INFINITE);
-
-				switch (wait_result)
+				if (*arg == '"')
 				{
-					case WAIT_OBJECT_0:
-						{
-							DWORD exit_code = 0;
-
-							if (GetExitCodeProcess(shi.hProcess, &exit_code))
-							{
-								exit_status = static_cast<int>(exit_code);
-							} else
-							{
-								throw_system_error(::GetLastError());
-							}
-
-							break;
-						}
-					default:
-						{
-							throw_system_error(::GetLastError());
-						}
-				}
-			}
-			catch (...)
-			{
-				if (shi.hProcess != 0)
-				{
-					CloseHandle(shi.hProcess);
-					shi.hProcess = 0;
+					command_line[offset++] = '\\';
 				}
 
-				throw;
+				command_line[offset++] = *arg;
 			}
 
-			if (shi.hProcess != 0)
-			{
-				CloseHandle(shi.hProcess);
-				shi.hProcess = 0;
-			}
-		} else
-		{
-			throw_system_error(::GetLastError());
+			command_line[offset++] = '"';
+			command_line[offset++] = ' ';
 		}
+		
+		exit_status = create_process(file, command_line, true);
+
+#elif defined(UNIX)
+#endif
 	}
 	catch (...)
 	{
-		if ((com_result == S_OK) || (com_result == S_FALSE))
-		{
-			CoUninitialize();
-		}
+		va_end(vl);
 
 		throw;
 	}
 
-	if ((com_result == S_OK) || (com_result == S_FALSE))
-	{
-		CoUninitialize();
-	}
-
-#else
-	pid_t pid;
-	int fd[2];
-
-	if (::pipe(fd) < 0)
-	{
-		throw_system_error(errno);
-	}
-
-	switch (pid = fork())
-	{
-		case -1:
-			{
-				::close(fd[0]);
-				::close(fd[1]);
-
-				throw_system_error(errno);
-				break;
-			}
-
-		case 0:
-			{
-				// Child process
-				int fdlimit = ::sysconf(_SC_OPEN_MAX);
-
-				for (int n = 0; n < fdlimit; ++n)
-				{
-					if (n != fd[1])
-					{
-						::close(n);
-					}
-				}
-
-				fcntl(fd[1], F_SETFD, FD_CLOEXEC);
-
-				const char** argv = static_cast<const char**>(::alloca((cnt + 2) * sizeof(char*)));
-
-				if (argv == NULL)
-				{
-					// Something went wrong. Sending back errno to parent process then exiting.
-					errno = ENOMEM;
-
-					if (::write(fd[1], &errno, sizeof(errno))) {}
-					_exit(EXIT_FAILURE);
-				}
-
-				argv[0] = script;
-
-				va_list vl;
-				va_start(vl, cnt);
-
-				for (unsigned int i = 0; i < cnt; ++i)
-				{
-					argv[i + 1] = va_arg(vl, const char*);
-				}
-
-				va_end(vl);
-
-				argv[cnt + 1] = NULL;
-
-				// Execute the script
-				// TODO: Remove the ugly cast down there...
-				::execv(script, (char* const*)(argv));
-
-				// Something went wrong. Sending back errno to parent process then exiting.
-				if (::write(fd[1], &errno, sizeof(errno))) {}
-				_exit(EXIT_FAILURE);
-				break;
-			}
-
-		default:
-			{
-				// Parent process
-				int errno_child = 0;
-				::close(fd[1]);
-
-				ssize_t readcnt = ::read(fd[0], &errno_child, sizeof(errno_child));
-				::close(fd[0]);
-
-				if (readcnt < 0)
-				{
-					throw_system_error(errno);
-				}
-				else if (readcnt == sizeof(errno_child))
-				{
-					throw_system_error(errno_child);
-				} else
-				{
-					int status;
-
-					if (::waitpid(pid, &status, 0) < 0)
-					{
-						throw_system_error(errno);
-					} else
-					{
-						if (WIFEXITED(status))
-						{
-							exit_status = WEXITSTATUS(status);
-						}
-					}
-				}
-
-				break;
-			}
-	}
-
-#endif
+	va_end(vl);
 
 	return exit_status;
 }
