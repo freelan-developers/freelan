@@ -43,173 +43,178 @@
  * \brief A endpoint class.
  */
 
-#ifndef ENDPOINT_HPP
-#define ENDPOINT_HPP
+#ifndef FREELAN_ENDPOINT_HPP
+#define FREELAN_ENDPOINT_HPP
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 
-/**
- * \brief A base endpoint class.
- */
-class endpoint
+namespace freelan
 {
-	public:
-
-		/**
-		 * \brief Virtual destructor.
-		 */
-		virtual ~endpoint();
-
-		/**
-		 * \brief The protocol type.
-		 */
-		typedef boost::asio::ip::udp::resolver::query::protocol_type protocol_type;
-
-		/**
-		 * \brief The flags type.
-		 */
-		typedef boost::asio::ip::udp::resolver::query::flags flags_type;
-
-		/**
-		 * \brief Base service type.
-		 */
-		typedef std::string base_service_type;
-
-		/**
-		 * \brief The Boost ASIO endpoint type.
-		 */
-		typedef boost::asio::ip::udp::endpoint ep_type;
-
-		/**
-		 * \brief Get a Boost ASIO endpoint.
-		 * \param protocol The protocol to use.
-		 * \param flags The flags to use for the resolution.
-		 * \param default_service The default service to use.
-		 * \return The Boost ASIO endpoint.
-		 */
-		virtual ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service) = 0;
-};
-
-/**
- * \brief A generic IP endpoint template class.
- */
-template <typename AddressType>
-class ip_endpoint : public endpoint
-{
-	public:
-
-		/**
-		 * \brief The address type.
-		 */
-		typedef AddressType address_type;
-
-		/**
-		 * \brief The base port type.
-		 */
-		typedef uint16_t base_port_type;
-
-		/**
-		 * \brief The port type.
-		 */
-		typedef boost::optional<base_port_type> port_type;
-
-		/**
-		 * \brief Create an IPv4 endpoint.
-		 * \param address The address component.
-		 * \param port The port component.
-		 */
-		ip_endpoint(const address_type& address, port_type port = port_type());
-
-		/**
-		 * \brief Get a Boost ASIO endpoint.
-		 * \param protocol The protocol to use.
-		 * \param flags The flags to use for the resolution.
-		 * \param default_service The default service to use.
-		 * \return The Boost ASIO endpoint.
-		 */
-		ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service);
-
-	private:
-
-		address_type m_address;
-		port_type m_port;
-};
-
-/**
- * \brief The IPv4 instantiation.
- */
-typedef ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;
-
-/**
- * \brief The IPv6 instantiation.
- */
-typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
-
-/**
- * \brief A hostname endpoint class.
- */
-class hostname_endpoint : public endpoint
-{
-	public:
-
-		/**
-		 * \brief The host type.
-		 */
-		typedef std::string hostname_type;
-
-		/**
-		 * \brief The service type.
-		 */
-		typedef boost::optional<base_service_type> service_type;
-
-		/**
-		 * \brief Create a hostname endpoint.
-		 * \param host The host component.
-		 * \param service The service component.
-		 */
-		hostname_endpoint(const hostname_type& address, const service_type& service = service_type());
-
-		/**
-		 * \brief Get a Boost ASIO endpoint.
-		 * \param protocol The protocol to use.
-		 * \param flags The flags to use for the resolution.
-		 * \param default_service The default service to use.
-		 * \return The Boost ASIO endpoint.
-		 */
-		ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service);
-
-	private:
-
-		hostname_type m_hostname;
-		service_type m_service;
-};
-
-template <typename AddressType>
-inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
-	m_address(address),
-	m_port(port)
-{
-}
-
-template <typename AddressType>
-inline typename ip_endpoint<AddressType>::ep_type ip_endpoint<AddressType>::to_boost_asio_endpoint(protocol_type, flags_type, const base_service_type& default_service)
-{
-	if (m_port)
+	/**
+	 * \brief A base endpoint class.
+	 */
+	class endpoint
 	{
-		return ep_type(m_address, *m_port);
-	} else
+		public:
+
+			/**
+			 * \brief Virtual destructor.
+			 */
+			virtual ~endpoint();
+
+			/**
+			 * \brief The protocol type.
+			 */
+			typedef boost::asio::ip::udp::resolver::query::protocol_type protocol_type;
+
+			/**
+			 * \brief The flags type.
+			 */
+			typedef boost::asio::ip::udp::resolver::query::flags flags_type;
+
+			/**
+			 * \brief Base service type.
+			 */
+			typedef std::string base_service_type;
+
+			/**
+			 * \brief The Boost ASIO endpoint type.
+			 */
+			typedef boost::asio::ip::udp::endpoint ep_type;
+
+			/**
+			 * \brief Get a Boost ASIO endpoint.
+			 * \param protocol The protocol to use.
+			 * \param flags The flags to use for the resolution.
+			 * \param default_service The default service to use.
+			 * \return The Boost ASIO endpoint.
+			 */
+			virtual ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service) = 0;
+	};
+
+	/**
+	 * \brief A generic IP endpoint template class.
+	 */
+	template <typename AddressType>
+		class ip_endpoint : public endpoint
 	{
-		return ep_type(m_address, boost::lexical_cast<base_port_type>(default_service));
+		public:
+
+			/**
+			 * \brief The address type.
+			 */
+			typedef AddressType address_type;
+
+			/**
+			 * \brief The base port type.
+			 */
+			typedef uint16_t base_port_type;
+
+			/**
+			 * \brief The port type.
+			 */
+			typedef boost::optional<base_port_type> port_type;
+
+			/**
+			 * \brief Create an IPv4 endpoint.
+			 * \param address The address component.
+			 * \param port The port component.
+			 */
+			ip_endpoint(const address_type& address, port_type port = port_type());
+
+			/**
+			 * \brief Get a Boost ASIO endpoint.
+			 * \param protocol The protocol to use.
+			 * \param flags The flags to use for the resolution.
+			 * \param default_service The default service to use.
+			 * \return The Boost ASIO endpoint.
+			 */
+			ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service);
+
+		private:
+
+			address_type m_address;
+			port_type m_port;
+	};
+
+	/**
+	 * \brief The IPv4 instantiation.
+	 */
+	typedef ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;
+
+	/**
+	 * \brief The IPv6 instantiation.
+	 */
+	typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
+
+	/**
+	 * \brief A hostname endpoint class.
+	 */
+	class hostname_endpoint : public endpoint
+	{
+		public:
+
+			/**
+			 * \brief The host type.
+			 */
+			typedef std::string hostname_type;
+
+			/**
+			 * \brief The service type.
+			 */
+			typedef boost::optional<base_service_type> service_type;
+
+			/**
+			 * \brief Create a hostname endpoint.
+			 * \param host The host component.
+			 * \param service The service component.
+			 */
+			hostname_endpoint(const hostname_type& address, const service_type& service = service_type());
+
+			/**
+			 * \brief Get a Boost ASIO endpoint.
+			 * \param protocol The protocol to use.
+			 * \param flags The flags to use for the resolution.
+			 * \param default_service The default service to use.
+			 * \return The Boost ASIO endpoint.
+			 */
+			ep_type to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service);
+
+		private:
+
+			hostname_type m_hostname;
+			service_type m_service;
+	};
+
+	inline endpoint::~endpoint() {}
+
+	template <typename AddressType>
+		inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
+			m_address(address),
+			m_port(port)
+	{
+	}
+
+	template <typename AddressType>
+		inline typename ip_endpoint<AddressType>::ep_type ip_endpoint<AddressType>::to_boost_asio_endpoint(protocol_type, flags_type, const base_service_type& default_service)
+		{
+			if (m_port)
+			{
+				return ep_type(m_address, *m_port);
+			} else
+			{
+				return ep_type(m_address, boost::lexical_cast<base_port_type>(default_service));
+			}
+		}
+
+	inline hostname_endpoint::hostname_endpoint(const hostname_type& host, const service_type& service) :
+		m_hostname(host),
+		m_service(service)
+	{
 	}
 }
 
-inline hostname_endpoint::hostname_endpoint(const hostname_type& host, const service_type& service) :
-	m_hostname(host),
-	m_service(service)
-{
-}
-
-#endif /* ENDPOINT_HPP */
+#endif /* FREELAN_ENDPOINT_HPP */
 

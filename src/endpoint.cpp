@@ -45,14 +45,15 @@
 
 #include "endpoint.hpp"
 
-endpoint::~endpoint() {}
-
-hostname_endpoint::ep_type hostname_endpoint::to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service)
+namespace freelan
 {
-	boost::asio::io_service io_service;
+	hostname_endpoint::ep_type hostname_endpoint::to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service)
+	{
+		boost::asio::io_service io_service;
 
-	boost::asio::ip::udp::resolver resolver(io_service);
-	boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
+		boost::asio::ip::udp::resolver resolver(io_service);
+		boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
 
-	return *resolver.resolve(query);
+		return *resolver.resolve(query);
+	}
 }
