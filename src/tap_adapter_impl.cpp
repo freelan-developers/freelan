@@ -105,28 +105,7 @@ namespace asiotap
 
 		void throw_system_error(LONG error)
 		{
-			LPSTR msgbuf = NULL;
-
-			FormatMessageA(
-			    FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-			    NULL,
-			    error,
-			    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			    (LPSTR)&msgbuf,
-			    0,
-			    NULL
-			);
-
-			try
-			{
-				throw boost::system::system_error(error, boost::system::system_category(), msgbuf);
-			}
-			catch (...)
-			{
-				LocalFree(msgbuf);
-
-				throw;
-			}
+			throw boost::system::system_error(error, boost::system::system_category());
 		}
 
 		void throw_system_error_if_not(LONG error)
