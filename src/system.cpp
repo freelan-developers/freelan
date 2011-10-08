@@ -352,6 +352,25 @@ int execute(const char* file, ...)
 		exit_status = create_process(file, command_line, true);
 
 #elif defined(UNIX)
+		char* argv[256] = {};
+		size_t cnt = 0;
+		char args[32728] = {};
+		size_t offset = 0;
+
+		for (const char* arg = va_arg(vl, const char*); arg != NULL; arg = va_arg(vl, const char*))
+		{
+			argv[cnt++] = &command_line[offset];
+
+			for (; *arg != '\0'; ++arg)
+			{
+				command_line[offset++] = *arg;
+			}
+
+			command_line[offset++] = '\0';
+		}
+
+		exit_status = execute_script(file, argv);
+		
 #endif
 	}
 	catch (...)
