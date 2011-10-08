@@ -108,6 +108,11 @@ namespace asiotap
 				 */
 				boost::optional<const_helper<frame_type> > get_last_helper() const;
 
+				/**
+				 * \brief Clear the last helper.
+				 */
+				void clear_last_helper() const;
+
 			protected:
 
 				void do_parse(boost::asio::const_buffer buf) const;
@@ -222,14 +227,18 @@ namespace asiotap
 		{
 			return m_last_helper;
 		}
+		
+		template <typename OSIFrameType>
+		inline void _base_filter<OSIFrameType>::clear_last_helper() const
+		{
+			m_last_helper = boost::none;
+		}
 
 		template <typename OSIFrameType>
 		inline void _base_filter<OSIFrameType>::do_parse(boost::asio::const_buffer buf) const
 		{
 			try
 			{
-				m_last_helper = boost::none;
-
 				const_helper<OSIFrameType> helper(buf);
 
 				if (check_frame(helper))
@@ -281,6 +290,8 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentFilterType>
 		inline void _filter<OSIFrameType, ParentFilterType>::parse(const_helper<typename ParentFilterType::frame_type> parent_helper) const
 		{
+			_base_filter<OSIFrameType>::clear_last_helper();
+
 			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent_helper))
 			{
 				try
@@ -313,6 +324,8 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline void _filter<OSIFrameType, void>::parse(boost::asio::const_buffer buf) const
 		{
+			_base_filter<OSIFrameType>::clear_last_helper();
+
 			_base_filter<OSIFrameType>::do_parse(buf);
 		}
 
