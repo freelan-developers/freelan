@@ -348,11 +348,18 @@ namespace freelan
 		{
 			typedef boost::asio::ip::udp::resolver::query query;
 
-			fscp::server::ep_type _ep = ep->to_boost_asio_endpoint(m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE);
-
-			if (!m_server.has_session(_ep))
+			try
 			{
-				async_greet(_ep);
+				fscp::server::ep_type _ep = ep->to_boost_asio_endpoint(m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE);
+
+				if (!m_server.has_session(_ep))
+				{
+					async_greet(_ep);
+				}
+			}
+			catch (boost::system::system_error&)
+			{
+				//TODO: Report the error somehow
 			}
 		}
 	}
