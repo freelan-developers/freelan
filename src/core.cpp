@@ -61,6 +61,7 @@ namespace freelan
 	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
+		m_resolver(io_service),
 		m_tap_adapter(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
 		m_arp_filter(m_ethernet_filter),
@@ -81,7 +82,7 @@ namespace freelan
 	{
 		typedef boost::asio::ip::udp::resolver::query query;
 		
-		m_server.open(m_configuration.listen_on->to_boost_asio_endpoint(m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
+		m_server.open(m_configuration.listen_on->resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
 
 		m_tap_adapter.open();
 
@@ -342,25 +343,27 @@ namespace freelan
 		}
 	}
 
+	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator ep)
+	{
+		if (!ec)
+		{
+			if (!m_server.has_session(*ep))
+			{
+				async_greet(*ep);
+			}
+		} else
+		{
+			//TODO: Report the error somehow
+		}
+	}
+
 	void core::do_contact()
 	{
 		BOOST_FOREACH(const freelan::configuration::ep_type& ep, m_configuration.contact_list)
 		{
 			typedef boost::asio::ip::udp::resolver::query query;
 
-			try
-			{
-				fscp::server::ep_type _ep = ep->to_boost_asio_endpoint(m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE);
-
-				if (!m_server.has_session(_ep))
-				{
-					async_greet(_ep);
-				}
-			}
-			catch (boost::system::system_error&)
-			{
-				//TODO: Report the error somehow
-			}
+			ep->async_resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE, boost::bind(&core::do_greet, this, _1, _2));
 		}
 	}
 

@@ -173,12 +173,14 @@ namespace freelan
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
 
 			// Other methods
+			void do_greet(const boost::system::error_code&, boost::asio::ip::udp::resolver::iterator);
 			void do_contact();
 			void do_contact(const boost::system::error_code&);
 
 			// Members
 			freelan::configuration m_configuration;
 			fscp::server m_server;
+			boost::asio::ip::udp::resolver m_resolver;
 			asiotap::tap_adapter m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 			boost::asio::deadline_timer m_contact_timer;

@@ -47,13 +47,17 @@
 
 namespace freelan
 {
-	hostname_endpoint::ep_type hostname_endpoint::to_boost_asio_endpoint(protocol_type protocol, flags_type flags, const base_service_type& default_service)
+	endpoint::ep_type hostname_endpoint::resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service)
 	{
-		boost::asio::io_service io_service;
-
-		boost::asio::ip::udp::resolver resolver(io_service);
 		boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
 
 		return *resolver.resolve(query);
+	}
+
+	void hostname_endpoint::async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler)
+	{
+		boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
+
+		resolver.async_resolve(query, handler);
 	}
 }
