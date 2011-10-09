@@ -473,21 +473,19 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 				if (begin != end)
 				{
-					if (*begin != ':')
+					if (*begin == ':')
 					{
-						return false;
+						++begin;
+
+						freelan::hostname_endpoint::base_service_type base_service;
+
+						if (!parse_service(begin, end, base_service))
+						{
+							return false;
+						}
+
+						service = base_service;
 					}
-
-					++begin;
-
-					freelan::hostname_endpoint::base_service_type base_service;
-
-					if (!parse_service(begin, end, base_service))
-					{
-						return false;
-					}
-
-					service = base_service;
 				}
 
 				val.reset(new freelan::hostname_endpoint(hostname, service));
