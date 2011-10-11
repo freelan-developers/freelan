@@ -126,6 +126,13 @@ namespace cryptoplus
 				 */
 				X509_LOOKUP* add_lookup_method(X509_LOOKUP_METHOD* lookup_method);
 
+				/**
+				 * \brief Add a file and a directory to the loaded locations for certificates and CRLs.
+				 * \param file A certificate or CRL file.
+				 * \param dir A directory containing hash named certificates or CRLs.
+				 */
+				void load_locations(const char* file, const char* dir);
+
 			private:
 
 				store(pointer _ptr, deleter_type _del);
@@ -184,6 +191,10 @@ namespace cryptoplus
 			X509_LOOKUP* lookup = X509_STORE_add_lookup(raw(), lookup_method);
 			error::throw_error_if_not(lookup != NULL);
 			return lookup;
+		}
+		inline void store::load_locations(const char* file, const char* dir)
+		{
+			error::throw_error_if_not(X509_STORE_load_locations(raw(), const_cast<char*>(file), const_cast<char*>(dir)) != 0);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
