@@ -48,6 +48,8 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
@@ -123,6 +125,12 @@ namespace cryptoplus
 				 */
 				void set_trust(int trust);
 
+				/**
+				 * \brief Set the time.
+				 * \param time The time.
+				 */
+				void set_time(boost::posix_time::ptime time);
+
 			private:
 
 				verify_param(pointer _ptr, deleter_type _del);
@@ -183,6 +191,11 @@ namespace cryptoplus
 		inline void verify_param::set_trust(int trust)
 		{
 			error::throw_error_if_not(X509_VERIFY_PARAM_set_trust(raw(), trust));
+		}
+		inline void verify_param::set_time(boost::posix_time::ptime time)
+		{
+			::tm t = boost::posix_time::to_tm(time);
+			X509_VERIFY_PARAM_set_time(raw(), ::mktime(&t));
 		}
 		inline verify_param::verify_param(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
