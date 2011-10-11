@@ -40,15 +40,13 @@
 /**
  * \file endpoint.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A endpoint class.
+ * \brief An endpoint class.
  */
 
 #ifndef FREELAN_ENDPOINT_HPP
 #define FREELAN_ENDPOINT_HPP
 
 #include <boost/asio.hpp>
-#include <boost/optional.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 
 namespace freelan
@@ -110,101 +108,7 @@ namespace freelan
 			virtual void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, handler_type handler) = 0;
 	};
 
-	/**
-	 * \brief A generic IP endpoint template class.
-	 */
-	template <typename AddressType>
-		class ip_endpoint : public endpoint
-	{
-		public:
-
-			/**
-			 * \brief The address type.
-			 */
-			typedef AddressType address_type;
-
-			/**
-			 * \brief The base port type.
-			 */
-			typedef uint16_t base_port_type;
-
-			/**
-			 * \brief The port type.
-			 */
-			typedef boost::optional<base_port_type> port_type;
-
-			/**
-			 * \brief Create an IPv4 endpoint.
-			 * \param address The address component.
-			 * \param port The port component.
-			 */
-			ip_endpoint(const address_type& address, port_type port = port_type());
-
-			/**
-			 * \brief Perform a host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
-			 */
-			endpoint::ep_type resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service);
-
-			/**
-			 * \brief Perform an asynchronous host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
-			 * \param handler The handler.
-			 */
-			void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler);
-
-		private:
-
-			address_type m_address;
-			port_type m_port;
-	};
-
-	/**
-	 * \brief The IPv4 instantiation.
-	 */
-	typedef ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;
-
-	/**
-	 * \brief The IPv6 instantiation.
-	 */
-	typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
-
 	inline endpoint::~endpoint() {}
-
-	template <typename AddressType>
-		inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
-			m_address(address),
-			m_port(port)
-	{
-	}
-
-	template <typename AddressType>
-	endpoint::ep_type ip_endpoint<AddressType>::resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service)
-	{
-		if (m_port)
-		{
-			return ep_type(m_address, *m_port);
-		} else
-		{
-			return ep_type(m_address, boost::lexical_cast<base_port_type>(default_service));
-		}
-	}
-
-	template <typename AddressType>
-	void ip_endpoint<AddressType>::async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler)
-	{
-		ep_type ep = resolve(resolver, protocol, flags, default_service);
-
-		boost::asio::ip::udp::resolver::iterator it = boost::asio::ip::udp::resolver::iterator::create(ep, ep.address().to_string(), boost::lexical_cast<std::string>(ep.port()));
-
-		handler(boost::system::error_code(), it);
-	}
 }
 
 #endif /* FREELAN_ENDPOINT_HPP */

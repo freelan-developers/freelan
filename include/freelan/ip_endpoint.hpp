@@ -38,43 +38,50 @@
  */
 
 /**
- * \file hostname_endpoint.hpp
+ * \file ip_endpoint.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A hostname endpoint class.
+ * \brief An IP endpoint class.
  */
 
-#ifndef FREELAN_HOSTNAME_ENDPOINT_HPP
-#define FREELAN_HOSTNAME_ENDPOINT_HPP
+#ifndef FREELAN_IP_ENDPOINT_HPP
+#define FREELAN_IP_ENDPOINT_HPP
 
 #include "endpoint.hpp"
 
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace freelan
 {
 	/**
-	 * \brief A hostname endpoint class.
+	 * \brief A generic IP endpoint template class.
 	 */
-	class hostname_endpoint : public endpoint
+	template <typename AddressType>
+		class ip_endpoint : public endpoint
 	{
 		public:
 
 			/**
-			 * \brief The host type.
+			 * \brief The address type.
 			 */
-			typedef std::string hostname_type;
+			typedef AddressType address_type;
 
 			/**
-			 * \brief The service type.
+			 * \brief The base port type.
 			 */
-			typedef boost::optional<base_service_type> service_type;
+			typedef uint16_t base_port_type;
 
 			/**
-			 * \brief Create a hostname endpoint.
-			 * \param host The host component.
-			 * \param service The service component.
+			 * \brief The port type.
 			 */
-			hostname_endpoint(const hostname_type& address, const service_type& service = service_type());
+			typedef boost::optional<base_port_type> port_type;
+
+			/**
+			 * \brief Create an IPv4 endpoint.
+			 * \param address The address component.
+			 * \param port The port component.
+			 */
+			ip_endpoint(const address_type& address, port_type port = port_type());
 
 			/**
 			 * \brief Perform a host resolution on the endpoint.
@@ -97,16 +104,49 @@ namespace freelan
 
 		private:
 
-			hostname_type m_hostname;
-			service_type m_service;
+			address_type m_address;
+			port_type m_port;
 	};
 
-	inline hostname_endpoint::hostname_endpoint(const hostname_type& host, const service_type& service) :
-		m_hostname(host),
-		m_service(service)
+	/**
+	 * \brief The IPv4 instantiation.
+	 */
+	typedef ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;
+
+	/**
+	 * \brief The IPv6 instantiation.
+	 */
+	typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
+
+	template <typename AddressType>
+		inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
+			m_address(address),
+			m_port(port)
 	{
+	}
+
+	template <typename AddressType>
+	endpoint::ep_type ip_endpoint<AddressType>::resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service)
+	{
+		if (m_port)
+		{
+			return ep_type(m_address, *m_port);
+		} else
+		{
+			return ep_type(m_address, boost::lexical_cast<base_port_type>(default_service));
+		}
+	}
+
+	template <typename AddressType>
+	void ip_endpoint<AddressType>::async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler)
+	{
+		ep_type ep = resolve(resolver, protocol, flags, default_service);
+
+		boost::asio::ip::udp::resolver::iterator it = boost::asio::ip::udp::resolver::iterator::create(ep, ep.address().to_string(), boost::lexical_cast<std::string>(ep.port()));
+
+		handler(boost::system::error_code(), it);
 	}
 }
 
-#endif /* FREELAN_HOSTNAME_ENDPOINT_HPP */
+#endif /* FREELAN_IP_ENDPOINT_HPP */
 

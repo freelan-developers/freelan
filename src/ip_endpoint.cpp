@@ -38,12 +38,12 @@
  */
 
 /**
- * \file endpoint.cpp
+ * \file ip_endpoint.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An endpoint class.
+ * \brief An IP endpoint class.
  */
 
-#include "endpoint.hpp"
+#include "ip_endpoint.hpp"
 
 namespace freelan
 {
