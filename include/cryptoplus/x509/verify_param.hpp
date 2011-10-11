@@ -47,6 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
+#include "../asn1/object.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -131,6 +132,18 @@ namespace cryptoplus
 				 */
 				void set_time(boost::posix_time::ptime time = boost::posix_time::second_clock::local_time());
 
+				/**
+				 * \brief Add a policy.
+				 * \param policy The policy to add.
+				 */
+				void add_policy(asn1::object policy);
+
+				/**
+				 * \brief Set the policies.
+				 * \param policies The policies to set. May be NULL to clear policies.
+				 */
+				void set_policies(STACK_OF(ASN1_OBJECT)* policies);
+
 			private:
 
 				verify_param(pointer _ptr, deleter_type _del);
@@ -196,6 +209,14 @@ namespace cryptoplus
 		{
 			::tm t = boost::posix_time::to_tm(time);
 			X509_VERIFY_PARAM_set_time(raw(), ::mktime(&t));
+		}
+		inline void verify_param::add_policy(asn1::object policy)
+		{
+			error::throw_error_if_not(X509_VERIFY_PARAM_add0_policy(raw(), policy.raw()));
+		}
+		inline void verify_param::set_policies(STACK_OF(ASN1_OBJECT)* policies)
+		{
+			error::throw_error_if_not(X509_VERIFY_PARAM_set1_policies(raw(), policies));
 		}
 		inline verify_param::verify_param(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
