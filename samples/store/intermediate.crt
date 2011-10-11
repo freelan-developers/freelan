@@ -1,0 +1,66 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+        Signature Algorithm: sha1WithRSAEncryption
+        Issuer: C=FR, ST=Alsace, L=Strasbourg, O=FreeLAN, OU=FreeLAN, CN=FreeLAN Sample Certificate Authority
+        Validity
+            Not Before: Oct 11 20:10:37 2011 GMT
+            Not After : Oct 10 20:10:37 2012 GMT
+        Subject: C=FR, ST=Alsace, L=Strasbourg, O=FreeLAN, OU=FreeLAN, CN=FreeLAN Sample Intermediate Certificate Authority
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:ee:91:52:94:dc:d4:90:78:77:d8:b8:51:14:e7:
+                    c6:51:e2:69:2e:91:5f:e5:be:d9:d2:b9:80:68:fd:
+                    b4:d3:aa:75:d9:cd:09:ff:a8:a5:7b:46:e1:e4:01:
+                    fb:06:c4:f8:0d:0d:71:02:c8:b7:89:c0:78:5d:60:
+                    c8:05:2b:50:eb:32:79:85:f5:7d:6f:fd:10:0f:90:
+                    5e:38:34:de:05:75:ce:f9:2c:9a:1a:b4:42:90:19:
+                    88:27:ad:6e:c4:09:08:8b:1a:b3:ea:ce:19:53:59:
+                    95:b1:64:30:1f:37:48:cb:7a:ed:c5:9e:70:72:0b:
+                    6e:85:c9:70:ea:c4:f5:78:f3
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:TRUE
+            Netscape Comment: 
+                OpenSSL Generated Certificate
+            X509v3 Subject Key Identifier: 
+                CD:E9:55:E2:E6:B4:05:C8:E9:A4:93:AC:97:F1:7A:40:30:97:5E:CF
+            X509v3 Authority Key Identifier: 
+                DirName:/C=FR/ST=Alsace/L=Strasbourg/O=FreeLAN/OU=FreeLAN/CN=FreeLAN Sample Certificate Authority
+                serial:C7:77:A7:8C:69:8F:C0:7B
+
+    Signature Algorithm: sha1WithRSAEncryption
+        2b:ee:07:aa:a3:98:5b:17:ed:0c:fb:2e:b5:9e:b9:9d:db:b6:
+        61:47:30:2f:e6:2d:3c:a1:73:1d:96:dd:1d:cd:13:34:ac:44:
+        d6:3a:cd:b2:9c:71:53:5c:ab:23:64:00:14:94:a4:a3:9f:72:
+        e5:07:f4:86:66:c1:63:13:f9:5f:d1:bf:f5:54:1c:d5:02:55:
+        4e:14:72:80:76:c2:7c:66:51:15:e3:97:9b:dc:70:27:2c:4f:
+        d3:1e:64:69:a4:e1:c6:48:a4:19:29:a3:05:8a:91:1e:5b:d2:
+        0e:f2:2e:c4:d4:d5:70:91:f8:45:88:f7:ff:15:30:32:64:78:
+        52:e8
+-----BEGIN CERTIFICATE-----
+MIIDmjCCAwOgAwIBAgIBATANBgkqhkiG9w0BAQUFADCBhjELMAkGA1UEBhMCRlIx
+DzANBgNVBAgMBkFsc2FjZTETMBEGA1UEBwwKU3RyYXNib3VyZzEQMA4GA1UECgwH
+RnJlZUxBTjEQMA4GA1UECwwHRnJlZUxBTjEtMCsGA1UEAwwkRnJlZUxBTiBTYW1w
+bGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMTAxMTIwMTAzN1oXDTEyMTAx
+MDIwMTAzN1owgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIDAZBbHNhY2UxEzARBgNV
+BAcMClN0cmFzYm91cmcxEDAOBgNVBAoMB0ZyZWVMQU4xEDAOBgNVBAsMB0ZyZWVM
+QU4xOjA4BgNVBAMMMUZyZWVMQU4gU2FtcGxlIEludGVybWVkaWF0ZSBDZXJ0aWZp
+Y2F0ZSBBdXRob3JpdHkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAO6RUpTc
+1JB4d9i4URTnxlHiaS6RX+W+2dK5gGj9tNOqddnNCf+opXtG4eQB+wbE+A0NcQLI
+t4nAeF1gyAUrUOsyeYX1fW/9EA+QXjg03gV1zvksmhq0QpAZiCetbsQJCIsas+rO
+GVNZlbFkMB83SMt67cWecHILboXJcOrE9XjzAgMBAAGjggEHMIIBAzAMBgNVHRME
+BTADAQH/MCwGCWCGSAGG+EIBDQQfFh1PcGVuU1NMIEdlbmVyYXRlZCBDZXJ0aWZp
+Y2F0ZTAdBgNVHQ4EFgQUzelV4ua0BcjppJOsl/F6QDCXXs8wgaUGA1UdIwSBnTCB
+mqGBjKSBiTCBhjELMAkGA1UEBhMCRlIxDzANBgNVBAgMBkFsc2FjZTETMBEGA1UE
+BwwKU3RyYXNib3VyZzEQMA4GA1UECgwHRnJlZUxBTjEQMA4GA1UECwwHRnJlZUxB
+TjEtMCsGA1UEAwwkRnJlZUxBTiBTYW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5
+ggkAx3enjGmPwHswDQYJKoZIhvcNAQEFBQADgYEAK+4HqqOYWxftDPsutZ65ndu2
+YUcwL+YtPKFzHZbdHc0TNKxE1jrNspxxU1yrI2QAFJSko59y5Qf0hmbBYxP5X9G/
+9VQc1QJVThRygHbCfGZRFeOXm9xwJyxP0x5kaaThxkikGSmjBYqRHlvSDvIuxNTV
+cJH4RYj3/xUwMmR4Uug=
+-----END CERTIFICATE-----
