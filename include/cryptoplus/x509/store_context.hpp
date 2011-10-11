@@ -107,6 +107,14 @@ namespace cryptoplus
 				void initialize(store _store, certificate cert, STACK_OF(X509)* chain);
 
 				/**
+				 * \brief Set a trusted stack of certificates.
+				 * \param certs The trusted stack of certificates to set.
+				 *
+				 * This is an alternative way of specifying trusted certificates instead of using a x509::store.
+				 */
+				void set_trusted_certificates(STACK_OF(X509)* certs);
+
+				/**
 				 * \brief Cleanup the store context.
 				 *
 				 * The context can then be reused and you can call initialize() again.
@@ -157,6 +165,10 @@ namespace cryptoplus
 		inline void store_context::initialize(store _store, certificate cert, STACK_OF(X509)* chain)
 		{
 			error::throw_error_if_not(X509_STORE_CTX_init(raw(), _store.raw(), cert.raw(), chain) != 0);
+		}
+		inline void store_context::set_trusted_certificates(STACK_OF(X509)* certs)
+		{
+			X509_STORE_CTX_trusted_stack(raw(), certs);
 		}
 		inline void store_context::cleanup()
 		{
