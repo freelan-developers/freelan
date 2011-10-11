@@ -116,6 +116,12 @@ namespace cryptoplus
 				 */
 				void set_verification_parameters(verify_param vp);
 
+				/**
+				 * \brief Set the verification flags.
+				 * \param flags The verification flags.
+				 */
+				void set_verification_flags(int flags);
+
 			private:
 
 				store(pointer _ptr, deleter_type _del);
@@ -164,6 +170,10 @@ namespace cryptoplus
 		inline void store::set_verification_parameters(verify_param vp)
 		{
 			X509_STORE_set1_param(raw(), vp.raw());
+		}
+		inline void store::set_verification_flags(int flags)
+		{
+			X509_STORE_set_flags(raw(), flags);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
