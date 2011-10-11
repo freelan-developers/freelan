@@ -49,11 +49,8 @@
 #include "../error/cryptographic_exception.hpp"
 #include "verify_param.hpp"
 
-#include <openssl/bio.h>
-#include <openssl/err.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
-#include <openssl/pem.h>
 
 namespace cryptoplus
 {
