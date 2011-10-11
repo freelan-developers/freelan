@@ -93,6 +93,24 @@ namespace cryptoplus
 				 */
 				verify_param(pointer ptr);
 
+				/**
+				 * \brief Set the specified flags.
+				 * \param flags The flags to set.
+				 */
+				void set_flags(unsigned long flags);
+
+				/**
+				 * \brief Clear the specified flags.
+				 * \param flags The flags to clear.
+				 */
+				void clear_flags(unsigned long flags);
+
+				/**
+				 * \brief Get the flags.
+				 * \return The flags.
+				 */
+				unsigned long flags() const;
+
 			private:
 
 				verify_param(pointer _ptr, deleter_type _del);
@@ -133,6 +151,18 @@ namespace cryptoplus
 		}
 		inline verify_param::verify_param(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline void verify_param::set_flags(unsigned long _flags)
+		{
+			error::throw_error_if_not(X509_VERIFY_PARAM_set_flags(raw(), _flags) != 0);
+		}
+		inline void verify_param::clear_flags(unsigned long _flags)
+		{
+			error::throw_error_if_not(X509_VERIFY_PARAM_clear_flags(raw(), _flags) != 0);
+		}
+		inline unsigned long verify_param::flags() const
+		{
+			return X509_VERIFY_PARAM_get_flags(const_cast<pointer>(raw()));
 		}
 		inline verify_param::verify_param(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
