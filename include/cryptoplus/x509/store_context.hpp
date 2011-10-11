@@ -150,9 +150,15 @@ namespace cryptoplus
 				 * \brief Set the verification parameters.
 				 * \param vp The verification parameters. vp should not be used after this method was called.
 				 *
-				 * \warning The store_context instance takes ownership on vp and his responsible for his deletion.
+				 * \warning The store_context instance takes ownership on vp and is responsible for his deletion.
 				 */
 				void set_verification_parameters(verify_param vp);
+
+				/**
+				 * \brief Lookups and sets the default verification method.
+				 * \param name The verification method name.
+				 */
+				void set_default(const std::string& name);
 
 			private:
 
@@ -226,6 +232,10 @@ namespace cryptoplus
 		inline void store_context::set_verification_parameters(verify_param vp)
 		{
 			X509_STORE_CTX_set0_param(raw(), vp.raw());
+		}
+		inline void store_context::set_default(const std::string& name)
+		{
+			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name.c_str()) != 0);
 		}
 		inline store_context::store_context(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
