@@ -47,6 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
+#include "certificate.hpp"
 #include "verify_param.hpp"
 
 #include <openssl/x509.h>
@@ -133,6 +134,18 @@ namespace cryptoplus
 				 */
 				void load_locations(const char* file, const char* dir);
 
+				/**
+				 * \brief Add a certificate to the store.
+				 * \param cert The certificate.
+				 */
+				void add_certificate(certificate cert);
+
+				/**
+				 * \brief Add a CRL to the store.
+				 * \param crl The CRL.
+				 */
+				void add_crl(X509_CRL* crl);
+
 			private:
 
 				store(pointer _ptr, deleter_type _del);
@@ -195,6 +208,14 @@ namespace cryptoplus
 		inline void store::load_locations(const char* file, const char* dir)
 		{
 			error::throw_error_if_not(X509_STORE_load_locations(raw(), const_cast<char*>(file), const_cast<char*>(dir)) != 0);
+		}
+		inline void store::add_certificate(certificate cert)
+		{
+			error::throw_error_if_not(X509_STORE_add_cert(raw(), cert.raw()) != 0);
+		}
+		inline void store::add_crl(X509_CRL* crl)
+		{
+			error::throw_error_if_not(X509_STORE_add_crl(raw(), crl) != 0);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
