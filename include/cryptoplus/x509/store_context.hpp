@@ -102,7 +102,7 @@ namespace cryptoplus
 				 * \brief Initialize the store context.
 				 * \param _store The store to use, if any. Can be NULL.
 				 * \param cert The certificate to be verified. Can be NULL.
-				 * \param chain Additional untrusted certificates that might be used to build the chain.
+				 * \param chain Additional untrusted certificates that might be used to build the chain. Can be NULL.
 				 */
 				void initialize(store _store, certificate cert, STACK_OF(X509)* chain);
 
@@ -113,6 +113,18 @@ namespace cryptoplus
 				 * This is an alternative way of specifying trusted certificates instead of using a x509::store.
 				 */
 				void set_trusted_certificates(STACK_OF(X509)* certs);
+
+				/**
+				 * \brief Set the certificate to be verified.
+				 * \param cert The certificate to be verified.
+				 */
+				void set_certificate(certificate cert);
+
+				/**
+				 * \brief Set the additional untrusted certificates that might be used to build the chain.
+				 * \param chain The certificates.
+				 */
+				void set_chain(STACK_OF(X509)* chain);
 
 				/**
 				 * \brief Cleanup the store context.
@@ -166,13 +178,21 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_STORE_CTX_init(raw(), _store.raw(), cert.raw(), chain) != 0);
 		}
+		inline void store_context::cleanup()
+		{
+			X509_STORE_CTX_cleanup(raw());
+		}
 		inline void store_context::set_trusted_certificates(STACK_OF(X509)* certs)
 		{
 			X509_STORE_CTX_trusted_stack(raw(), certs);
 		}
-		inline void store_context::cleanup()
+		inline void store_context::set_certificate(certificate cert)
 		{
-			X509_STORE_CTX_cleanup(raw());
+			X509_STORE_CTX_set_cert(raw(), cert.raw());
+		}
+		inline void store_context::set_chain(STACK_OF(X509)* chain)
+		{
+			X509_STORE_CTX_set_chain(raw(), chain);
 		}
 		inline store_context::store_context(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
