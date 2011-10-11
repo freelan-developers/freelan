@@ -161,6 +161,24 @@ namespace cryptoplus
 				void set_default(const std::string& name);
 
 				/**
+				 * \brief Get the error.
+				 * \return The error.
+				 */
+				int get_error() const;
+
+				/**
+				 * \brief Get the error depth.
+				 * \return The error depth.
+				 */
+				int get_error_depth() const;
+
+				/**
+				 * \brief Get the certificate where the error occured.
+				 * \return The certificate where the error occured. May be null.
+				 */
+				certificate get_current_certificate() const;
+
+				/**
 				 * \brief Verifies the certificate.
 				 * \return true on success, false if the certificate could not be verified.
 				 */
@@ -242,6 +260,18 @@ namespace cryptoplus
 		inline void store_context::set_default(const std::string& name)
 		{
 			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name.c_str()) != 0);
+		}
+		inline int store_context::get_error() const
+		{
+			return X509_STORE_CTX_get_error(const_cast<pointer>(raw()));
+		}
+		inline int store_context::get_error_depth() const
+		{
+			return X509_STORE_CTX_get_error_depth(const_cast<pointer>(raw()));
+		}
+		inline certificate store_context::get_current_certificate() const
+		{
+			return X509_STORE_CTX_get_current_cert(const_cast<pointer>(raw()));
 		}
 		inline bool store_context::verify()
 		{
