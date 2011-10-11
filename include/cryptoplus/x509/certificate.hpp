@@ -248,7 +248,7 @@ namespace cryptoplus
 				static certificate from_certificate(file file, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
-				 * \brief Load a X509 trusted certificate from a BIO.
+				 * \brief Load a X509 trusted certificate from a file.
 				 * \param file The file.
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
