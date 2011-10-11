@@ -47,6 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
+#include "verify_param.hpp"
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -109,6 +110,12 @@ namespace cryptoplus
 				 */
 				void set_verification_callback(verification_callback_type callback);
 
+				/**
+				 * \brief Set the verification parameters.
+				 * \param vp The verification parameters.
+				 */
+				void set_verification_parameters(verify_param vp);
+
 			private:
 
 				store(pointer _ptr, deleter_type _del);
@@ -153,6 +160,10 @@ namespace cryptoplus
 		inline void store::set_verification_callback(verification_callback_type callback)
 		{
 			X509_STORE_set_verify_cb(raw(), callback);
+		}
+		inline void store::set_verification_parameters(verify_param vp)
+		{
+			X509_STORE_set1_param(raw(), vp.raw());
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
