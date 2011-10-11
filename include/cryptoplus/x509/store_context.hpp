@@ -158,13 +158,25 @@ namespace cryptoplus
 				 * \brief Lookups and sets the default verification method.
 				 * \param name The verification method name.
 				 */
+				void set_default(const char* name);
+
+				/**
+				 * \brief Lookups and sets the default verification method.
+				 * \param name The verification method name.
+				 */
 				void set_default(const std::string& name);
 
 				/**
 				 * \brief Get the error.
 				 * \return The error.
 				 */
-				int get_error() const;
+				long get_error() const;
+
+				/**
+				 * \brief Get the error string.
+				 * \return The error string.
+				 */
+				const char* get_error_string() const;
 
 				/**
 				 * \brief Get the error depth.
@@ -257,13 +269,21 @@ namespace cryptoplus
 		{
 			X509_STORE_CTX_set0_param(raw(), vp.raw());
 		}
+		inline void store_context::set_default(const char* name)
+		{
+			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name) != 0);
+		}
 		inline void store_context::set_default(const std::string& name)
 		{
 			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name.c_str()) != 0);
 		}
-		inline int store_context::get_error() const
+		inline long store_context::get_error() const
 		{
 			return X509_STORE_CTX_get_error(const_cast<pointer>(raw()));
+		}
+		inline const char* store_context::get_error_string() const
+		{
+			return X509_verify_cert_error_string(get_error());
 		}
 		inline int store_context::get_error_depth() const
 		{
