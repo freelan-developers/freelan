@@ -50,6 +50,7 @@
 
 #include "store.hpp"
 #include "certificate.hpp"
+#include "verify_param.hpp"
 
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
@@ -139,6 +140,20 @@ namespace cryptoplus
 				 */
 				void set_crls(STACK_OF(X509_CRL)* crls);
 
+				/**
+				 * \brief Get the associated verification parameters.
+				 * \return The associated verification parameters.
+				 */
+				verify_param verification_parameters() const;
+
+				/**
+				 * \brief Set the verification parameters.
+				 * \param vp The verification parameters. vp should not be used after this method was called.
+				 *
+				 * \warning The store_context instance takes ownership on vp and his responsible for his deletion.
+				 */
+				void set_verification_parameters(verify_param vp);
+
 			private:
 
 				store_context(pointer _ptr, deleter_type _del);
@@ -203,6 +218,14 @@ namespace cryptoplus
 		inline void store_context::set_crls(STACK_OF(X509_CRL)* crls)
 		{
 			X509_STORE_CTX_set0_crls(raw(), crls);
+		}
+		inline verify_param store_context::verification_parameters() const
+		{
+			return X509_STORE_CTX_get0_param(const_cast<pointer>(raw()));
+		}
+		inline void store_context::set_verification_parameters(verify_param vp)
+		{
+			X509_STORE_CTX_set0_param(raw(), vp.raw());
 		}
 		inline store_context::store_context(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
