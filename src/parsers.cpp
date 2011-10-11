@@ -49,6 +49,9 @@
 #include <cctype>
 #include <cassert>
 
+#include <freelan/ip_endpoint.hpp>
+#include <freelan/hostname_endpoint.hpp>
+
 namespace
 {
 	template <typename IpAddressType>
