@@ -47,7 +47,9 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
-#include "verify_param.hpp"
+
+#include "store.hpp"
+#include "certificate.hpp"
 
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
@@ -96,6 +98,21 @@ namespace cryptoplus
 				 */
 				store_context(pointer ptr);
 
+				/**
+				 * \brief Initialize the store context.
+				 * \param _store The store to use, if any. Can be NULL.
+				 * \param cert The certificate to be verified. Can be NULL.
+				 * \param chain Additional untrusted certificates that might be used to build the chain.
+				 */
+				void initialize(store _store, certificate cert, STACK_OF(X509)* chain);
+
+				/**
+				 * \brief Cleanup the store context.
+				 *
+				 * The context can then be reused and you can call initialize() again.
+				 */
+				void cleanup();
+
 			private:
 
 				store_context(pointer _ptr, deleter_type _del);
@@ -136,6 +153,14 @@ namespace cryptoplus
 		}
 		inline store_context::store_context(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline void store_context::initialize(store _store, certificate cert, STACK_OF(X509)* chain)
+		{
+			error::throw_error_if_not(X509_STORE_CTX_init(raw(), _store.raw(), cert.raw(), chain) != 0);
+		}
+		inline void store_context::cleanup()
+		{
+			X509_STORE_CTX_cleanup(raw());
 		}
 		inline store_context::store_context(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
