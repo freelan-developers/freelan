@@ -160,6 +160,12 @@ namespace cryptoplus
 				 */
 				void set_default(const std::string& name);
 
+				/**
+				 * \brief Verifies the certificate.
+				 * \return true on success, false if the certificate could not be verified.
+				 */
+				bool verify();
+
 			private:
 
 				store_context(pointer _ptr, deleter_type _del);
@@ -236,6 +242,10 @@ namespace cryptoplus
 		inline void store_context::set_default(const std::string& name)
 		{
 			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name.c_str()) != 0);
+		}
+		inline bool store_context::verify()
+		{
+			return (X509_verify_cert(raw()) > 0);
 		}
 		inline store_context::store_context(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
