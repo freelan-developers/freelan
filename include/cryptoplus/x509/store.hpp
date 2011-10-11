@@ -103,6 +103,12 @@ namespace cryptoplus
 				 */
 				store(pointer ptr);
 
+				/**
+				 * \brief Set the verification callback.
+				 * \param callback The verification callback.
+				 */
+				void set_verification_callback(verification_callback_type callback);
+
 			private:
 
 				store(pointer _ptr, deleter_type _del);
@@ -143,6 +149,10 @@ namespace cryptoplus
 		}
 		inline store::store(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline void store::set_verification_callback(verification_callback_type callback)
+		{
+			X509_STORE_set_verify_cb(raw(), callback);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
