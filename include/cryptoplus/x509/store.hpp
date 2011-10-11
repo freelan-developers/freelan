@@ -119,6 +119,12 @@ namespace cryptoplus
 				 */
 				void set_verification_flags(int flags);
 
+				/**
+				 * \brief Add a lookup method to the store.
+				 * \param lookup_method The lookup method to add.
+				 */
+				void add_lookup_method(X509_LOOKUP_METHOD* lookup_method);
+
 			private:
 
 				store(pointer _ptr, deleter_type _del);
@@ -171,6 +177,10 @@ namespace cryptoplus
 		inline void store::set_verification_flags(int flags)
 		{
 			X509_STORE_set_flags(raw(), flags);
+		}
+		inline void store::add_lookup_method(X509_LOOKUP_METHOD* lookup_method)
+		{
+			error::throw_error_if_not(X509_STORE_add_lookup(raw(), lookup_method) != NULL);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
