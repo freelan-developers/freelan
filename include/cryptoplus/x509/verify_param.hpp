@@ -144,6 +144,18 @@ namespace cryptoplus
 				 */
 				void set_policies(STACK_OF(ASN1_OBJECT)* policies);
 
+				/**
+				 * \brief Set the verification depth.
+				 * \param depth The depth.
+				 */
+				void set_depth(int depth);
+
+				/**
+				 * \brief Get the verification depth.
+				 * \return The depth.
+				 */
+				int depth() const;
+
 			private:
 
 				verify_param(pointer _ptr, deleter_type _del);
@@ -217,6 +229,14 @@ namespace cryptoplus
 		inline void verify_param::set_policies(STACK_OF(ASN1_OBJECT)* policies)
 		{
 			error::throw_error_if_not(X509_VERIFY_PARAM_set1_policies(raw(), policies));
+		}
+		inline void verify_param::set_depth(int _depth)
+		{
+			X509_VERIFY_PARAM_set_depth(raw(), _depth);
+		}
+		inline int verify_param::depth() const
+		{
+			return X509_VERIFY_PARAM_get_depth(raw());
 		}
 		inline verify_param::verify_param(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
