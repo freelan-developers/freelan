@@ -21,6 +21,29 @@
 #include <openssl/applink.c>
 #endif
 
+int verification_callback(int ok, X509_STORE_CTX* ctx)
+{
+	using namespace cryptoplus;
+
+	x509::store_context store_context(ctx);
+	x509::certificate current_cert = store_context.get_current_certificate();
+
+	std::cout << "Verifying \"" << current_cert.subject().oneline() << "\"..." << std::endl;
+	if (!ok)
+	{
+		long error = store_context.get_error();
+		int depth = store_context.get_error_depth();
+		std::string error_str = store_context.get_error_string();
+
+		std::cerr << "Error " << error << "(depth: " << depth << "): " << error_str << std::endl;
+	} else
+	{
+		std::cout << "Ok." << std::endl;
+	}
+
+	return ok;
+}
+
 int main()
 {
 	cryptoplus::crypto_initializer crypto_initializer;
@@ -33,6 +56,14 @@ int main()
 
 	try
 	{
+		using namespace cryptoplus;
+
+		x509::store store = x509::store::create();
+
+		store.set_verification_callback(&verification_callback);
+
+		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("ca.crt")));
+		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("intermediate.crt")));
 	}
 	catch (std::exception& ex)
 	{
