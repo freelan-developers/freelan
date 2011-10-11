@@ -117,6 +117,12 @@ namespace cryptoplus
 				 */
 				void set_purpose(int purpose);
 
+				/**
+				 * \brief Set the trust setting.
+				 * \param trust The trust setting.
+				 */
+				void set_trust(int trust);
+
 			private:
 
 				verify_param(pointer _ptr, deleter_type _del);
@@ -173,6 +179,10 @@ namespace cryptoplus
 		inline void verify_param::set_purpose(int purpose)
 		{
 			error::throw_error_if_not(X509_VERIFY_PARAM_set_purpose(raw(), purpose));
+		}
+		inline void verify_param::set_trust(int trust)
+		{
+			error::throw_error_if_not(X509_VERIFY_PARAM_set_trust(raw(), trust));
 		}
 		inline verify_param::verify_param(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
