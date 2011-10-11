@@ -38,13 +38,26 @@
  */
 
 /**
- * \file endpoint.cpp
+ * \file hostname_endpoint.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A endpoint class.
+ * \brief A hostname endpoint class.
  */
 
-#include "endpoint.hpp"
+#include "hostname_endpoint.hpp"
 
 namespace freelan
 {
+	endpoint::ep_type hostname_endpoint::resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service)
+	{
+		boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
+
+		return *resolver.resolve(query);
+	}
+
+	void hostname_endpoint::async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler)
+	{
+		boost::asio::ip::udp::resolver::query query(protocol, m_hostname, m_service ? *m_service : default_service, flags);
+
+		resolver.async_resolve(query, handler);
+	}
 }

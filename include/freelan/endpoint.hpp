@@ -175,55 +175,6 @@ namespace freelan
 	 */
 	typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
 
-	/**
-	 * \brief A hostname endpoint class.
-	 */
-	class hostname_endpoint : public endpoint
-	{
-		public:
-
-			/**
-			 * \brief The host type.
-			 */
-			typedef std::string hostname_type;
-
-			/**
-			 * \brief The service type.
-			 */
-			typedef boost::optional<base_service_type> service_type;
-
-			/**
-			 * \brief Create a hostname endpoint.
-			 * \param host The host component.
-			 * \param service The service component.
-			 */
-			hostname_endpoint(const hostname_type& address, const service_type& service = service_type());
-
-			/**
-			 * \brief Perform a host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
-			 */
-			endpoint::ep_type resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service);
-
-			/**
-			 * \brief Perform an asynchronous host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
-			 * \param handler The handler.
-			 */
-			void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler);
-
-		private:
-
-			hostname_type m_hostname;
-			service_type m_service;
-	};
-
 	inline endpoint::~endpoint() {}
 
 	template <typename AddressType>
@@ -253,12 +204,6 @@ namespace freelan
 		boost::asio::ip::udp::resolver::iterator it = boost::asio::ip::udp::resolver::iterator::create(ep, ep.address().to_string(), boost::lexical_cast<std::string>(ep.port()));
 
 		handler(boost::system::error_code(), it);
-	}
-
-	inline hostname_endpoint::hostname_endpoint(const hostname_type& host, const service_type& service) :
-		m_hostname(host),
-		m_service(service)
-	{
 	}
 }
 
