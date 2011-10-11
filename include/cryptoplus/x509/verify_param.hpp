@@ -129,7 +129,7 @@ namespace cryptoplus
 				 * \brief Set the time.
 				 * \param time The time.
 				 */
-				void set_time(boost::posix_time::ptime time);
+				void set_time(boost::posix_time::ptime time = boost::posix_time::second_clock::local_time());
 
 			private:
 
