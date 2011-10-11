@@ -122,8 +122,9 @@ namespace cryptoplus
 				/**
 				 * \brief Add a lookup method to the store.
 				 * \param lookup_method The lookup method to add.
+				 * \return The new created X509_LOOKUP. Return value is never NULL.
 				 */
-				void add_lookup_method(X509_LOOKUP_METHOD* lookup_method);
+				X509_LOOKUP* add_lookup_method(X509_LOOKUP_METHOD* lookup_method);
 
 			private:
 
@@ -178,9 +179,11 @@ namespace cryptoplus
 		{
 			X509_STORE_set_flags(raw(), flags);
 		}
-		inline void store::add_lookup_method(X509_LOOKUP_METHOD* lookup_method)
+		inline X509_LOOKUP* store::add_lookup_method(X509_LOOKUP_METHOD* lookup_method)
 		{
-			error::throw_error_if_not(X509_STORE_add_lookup(raw(), lookup_method) != NULL);
+			X509_LOOKUP* lookup = X509_STORE_add_lookup(raw(), lookup_method);
+			error::throw_error_if_not(lookup != NULL);
+			return lookup;
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
