@@ -107,6 +107,13 @@ namespace cryptoplus
 				void initialize(store _store, certificate cert, STACK_OF(X509)* chain);
 
 				/**
+				 * \brief Cleanup the store context.
+				 *
+				 * The context can then be reused and you can call initialize() again.
+				 */
+				void cleanup();
+
+				/**
 				 * \brief Set a trusted stack of certificates.
 				 * \param certs The trusted stack of certificates to set.
 				 *
@@ -127,11 +134,10 @@ namespace cryptoplus
 				void set_chain(STACK_OF(X509)* chain);
 
 				/**
-				 * \brief Cleanup the store context.
-				 *
-				 * The context can then be reused and you can call initialize() again.
+				 * \brief Set the CRL to use to aid certificate verification. Thiese CRLs will only be used if CRL verification is enable in the associated x509::verify_param structure.
+				 * \param crls The CRLs.
 				 */
-				void cleanup();
+				void set_crls(STACK_OF(X509_CRL)* crls);
 
 			private:
 
@@ -193,6 +199,10 @@ namespace cryptoplus
 		inline void store_context::set_chain(STACK_OF(X509)* chain)
 		{
 			X509_STORE_CTX_set_chain(raw(), chain);
+		}
+		inline void store_context::set_crls(STACK_OF(X509_CRL)* crls)
+		{
+			X509_STORE_CTX_set0_crls(raw(), crls);
 		}
 		inline store_context::store_context(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
