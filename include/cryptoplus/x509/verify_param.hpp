@@ -111,6 +111,12 @@ namespace cryptoplus
 				 */
 				unsigned long flags() const;
 
+				/**
+				 * \brief Set the purpose.
+				 * \param purpose The purpose.
+				 */
+				void set_purpose(int purpose);
+
 			private:
 
 				verify_param(pointer _ptr, deleter_type _del);
@@ -163,6 +169,10 @@ namespace cryptoplus
 		inline unsigned long verify_param::flags() const
 		{
 			return X509_VERIFY_PARAM_get_flags(const_cast<pointer>(raw()));
+		}
+		inline void verify_param::set_purpose(int purpose)
+		{
+			error::throw_error_if_not(X509_VERIFY_PARAM_set_purpose(raw(), purpose));
 		}
 		inline verify_param::verify_param(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
