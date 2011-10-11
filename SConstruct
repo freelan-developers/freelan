@@ -20,6 +20,8 @@ libraries.append('cryptoplus')
 libraries.append('boost_system')
 libraries.append('boost_thread')
 libraries.append('boost_program_options')
+libraries.append('ssl')
+libraries.append('crypto')
 
 if sys.platform.startswith('win32'):
 
