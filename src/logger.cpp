@@ -45,10 +45,36 @@
 
 #include "logger.hpp"
 
+#include <cassert>
+#include <stdexcept>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace freelan
 {
+	namespace
+	{
+		const char* log_level_to_string(log_level level)
+		{
+			switch (level)
+			{
+				case LOG_DEBUG:
+					return "DEBUG";
+				case LOG_INFORMATION:
+					return "INFORMATION";
+				case LOG_WARNING:
+					return "WARNING";
+				case LOG_ERROR:
+					return "ERROR";
+				case LOG_FATAL:
+					return "FATAL";
+			}
+
+			assert(false);
+			throw std::logic_error("Unsupported enumeration value");
+		}
+	}
+
 	logger_stream& logger::operator()(log_level level)
 	{
 		logger_stream& ls = (level >= m_level) ? m_ls : m_null_ls;

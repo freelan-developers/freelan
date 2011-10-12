@@ -45,30 +45,6 @@
 
 #include "logger_stream.hpp"
 
-#include "logger.hpp"
-
-#include <cassert>
-#include <stdexcept>
-
 namespace freelan
 {
-	const char* log_level_to_string(log_level level)
-	{
-		switch (level)
-		{
-			case LOG_DEBUG:
-				return "DEBUG";
-			case LOG_INFORMATION:
-				return "INFORMATION";
-			case LOG_WARNING:
-				return "WARNING";
-			case LOG_ERROR:
-				return "ERROR";
-			case LOG_FATAL:
-				return "FATAL";
-		}
-
-		assert(false);
-		throw std::logic_error("Unsupported enumeration value");
-	}
 }

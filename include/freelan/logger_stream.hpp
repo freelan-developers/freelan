@@ -137,13 +137,6 @@ namespace freelan
 	 */
 	logger_stream& endl(logger_stream& ls);
 	
-	/**
-	 * \brief Convert a log level to its string representation.
-	 * \param level The log level to convert.
-	 * \return The string representing the log level.
-	 */
-	const char* log_level_to_string(log_level level);
-
 	inline logger_stream::logger_stream()
 	{
 	}
