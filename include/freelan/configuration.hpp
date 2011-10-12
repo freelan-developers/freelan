@@ -213,26 +213,6 @@ namespace freelan
 		 * \brief The contact list.
 		 */
 		ep_list_type contact_list;
-
-		/**
-		 * \brief Whether to use the whitelist.
-		 */
-		bool use_whitelist;
-
-		/**
-		 * \brief The whitelist.
-		 */
-		ep_list_type whitelist;
-
-		/**
-		 * \brief Whether to use the blacklist.
-		 */
-		bool use_blacklist;
-
-		/**
-		 * \brief The blacklist.
-		 */
-		ep_list_type blacklist;
 	};
 
 	/**

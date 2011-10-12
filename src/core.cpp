@@ -185,14 +185,9 @@ namespace freelan
 	{
 		if (default_accept)
 		{
-			// TODO: Here we should check if sender is in the blacklist.
-			// For now, let's assume it is not.
-			if (true)
-			{
-				m_server.async_introduce_to(sender);
+			m_server.async_introduce_to(sender);
 
-				return true;
-			}
+			return true;
 		}
 
 		return false;
@@ -231,12 +226,7 @@ namespace freelan
 
 		if (default_accept)
 		{
-			// TODO: Here we should check if sender is in the blacklist.
-			// For now, let's assume it is not.
-			if (true)
-			{
-				return true;
-			}
+			return true;
 		}
 
 		return false;

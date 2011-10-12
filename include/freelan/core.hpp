@@ -46,6 +46,8 @@
 #ifndef FREELAN_CORE_HPP
 #define FREELAN_CORE_HPP
 
+#include <vector>
+
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/function.hpp>
