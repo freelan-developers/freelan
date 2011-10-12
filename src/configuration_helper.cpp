@@ -147,10 +147,6 @@ po::options_description get_security_options()
 		("security.private_key_file", po::value<std::string>()->required(), "The private key file to use.")
 		("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
 		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
-		("security.use_whitelist", po::value<bool>()->default_value(false), "Whether to use the whitelist.")
-		("security.use_blacklist", po::value<bool>()->default_value(true), "Whether to use the blacklist.")
-		("security.whitelist", po::value<std::string>()->multitoken()->zero_tokens(), "The whitelist.")
-		("security.blacklist", po::value<std::string>()->multitoken()->zero_tokens(), "The blacklist.")
 		;
 
 	return result;
@@ -182,8 +178,4 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
 	//TODO: We need to create a callback
 	//configuration.certificate_validation_script =
-	configuration.use_whitelist = vm["security.use_whitelist"].as<bool>();
-	configuration.whitelist = parse<fl::configuration::ep_list_type>(vm["security.whitelist"].as<std::string>());
-	configuration.use_blacklist = vm["security.use_blacklist"].as<bool>();
-	configuration.blacklist = parse<fl::configuration::ep_list_type>(vm["security.blacklist"].as<std::string>());
 }
