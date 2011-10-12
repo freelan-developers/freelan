@@ -86,8 +86,6 @@ namespace freelan
 
 	void core::open()
 	{
-		m_logger(LOG_DEBUG) << "Core is opening..." << endl;
-
 		typedef boost::asio::ip::udp::resolver::query query;
 		
 		m_server.open(m_configuration.listen_on->resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
@@ -158,6 +156,11 @@ namespace freelan
 
 		m_logger(LOG_DEBUG) << "Core opened." << endl;
 
+		if (m_open_callback)
+		{
+			m_server.get_io_service().post(m_open_callback);
+		}
+
 		m_running = true;
 	}
 
@@ -167,34 +170,42 @@ namespace freelan
 		{
 			m_running = false;
 
-			m_logger(LOG_DEBUG) << "Core is closing..." << endl;
-
-			m_dhcp_proxy.reset();
-			m_arp_proxy.reset();
-
-			m_contact_timer.cancel();
-
-			m_tap_adapter.cancel();
-			m_tap_adapter.set_connected_state(false);
-
-			// IPv6 address
-			if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+			if (m_close_callback)
 			{
-				m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+				m_server.get_io_service().post(m_close_callback);
 			}
 
-			// IPv4 address
-			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
-			{
-				m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-			}
-
-			m_tap_adapter.close();
-
-			m_server.close();
-
-			m_logger(LOG_DEBUG) << "Core closed." << endl;
+			m_server.get_io_service().post(boost::bind(&core::do_close, this));
 		}
+	}
+
+	void core::do_close()
+	{
+		m_dhcp_proxy.reset();
+		m_arp_proxy.reset();
+
+		m_contact_timer.cancel();
+
+		m_tap_adapter.cancel();
+		m_tap_adapter.set_connected_state(false);
+
+		// IPv6 address
+		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+		{
+			m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+		}
+
+		// IPv4 address
+		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+		{
+			m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+		}
+
+		m_tap_adapter.close();
+
+		m_server.close();
+
+		m_logger(LOG_DEBUG) << "Core closed." << endl;
 	}
 
 	void core::async_greet(const ep_type& target)
