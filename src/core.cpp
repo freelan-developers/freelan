@@ -184,6 +184,8 @@ namespace freelan
 			m_tap_adapter.close();
 
 			m_server.close();
+
+			m_running = false;
 		}
 	}
 
