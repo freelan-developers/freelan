@@ -73,6 +73,11 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief A verification callback type.
+				 */
+				typedef int (*verification_callback_type)(int, X509_STORE_CTX*);
+
+				/**
 				 * \brief Create a new store context.
 				 * \return The store context.
 				 *
@@ -98,6 +103,12 @@ namespace cryptoplus
 				 * \warning The caller is still responsible for freeing the memory.
 				 */
 				store_context(pointer ptr);
+
+				/**
+				 * \brief Set the verification callback.
+				 * \param callback The verification callback.
+				 */
+				void set_verification_callback(verification_callback_type callback);
 
 				/**
 				 * \brief Initialize the store context.
@@ -236,6 +247,10 @@ namespace cryptoplus
 		}
 		inline store_context::store_context(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline void store_context::set_verification_callback(verification_callback_type callback)
+		{
+			X509_STORE_CTX_set_verify_cb(raw(), callback);
 		}
 		inline void store_context::initialize(store _store, certificate cert, STACK_OF(X509)* chain)
 		{
