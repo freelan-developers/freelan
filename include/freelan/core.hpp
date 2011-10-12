@@ -102,6 +102,16 @@ namespace freelan
 			static const std::string DEFAULT_SERVICE;
 
 			/**
+			 * \brief The open callback.
+			 */
+			typedef boost::function<void ()> open_callback;
+
+			/**
+			 * \brief The close callback.
+			 */
+			typedef boost::function<void ()> close_callback;
+
+			/**
 			 * \brief A session established callback.
 			 * \param host The host with which a session is established.
 			 */
@@ -138,6 +148,22 @@ namespace freelan
 			 * \return The associated server.
 			 */
 			const fscp::server& server() const;
+
+			/**
+			 * \brief Set the open callback.
+			 * \param callback The callback.
+			 *
+			 * This callback is called when the core was just opened.
+			 */
+			void set_open_callback(open_callback callback);
+
+			/**
+			 * \brief Set the close callback.
+			 * \param callback The callback.
+			 *
+			 * This callback is called when the core was just closed.
+			 */
+			void set_close_callback(close_callback callback);
 
 			/**
 			 * \brief Set the session established callback.
@@ -193,6 +219,8 @@ namespace freelan
 			boost::asio::deadline_timer m_contact_timer;
 
 			// User callbacks
+			open_callback m_open_callback;
+			close_callback m_close_callback;
 			session_established_callback m_session_established_callback;
 			session_lost_callback m_session_lost_callback;
 
@@ -237,6 +265,14 @@ namespace freelan
 		return m_server;
 	}
 
+	inline void core::set_open_callback(open_callback callback)
+	{
+		m_open_callback = callback;
+	}
+	inline void core::set_close_callback(close_callback callback)
+	{
+		m_close_callback = callback;
+	}
 	inline void core::set_session_established_callback(session_established_callback callback)
 	{
 		m_session_established_callback = callback;

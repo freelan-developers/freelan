@@ -65,6 +65,10 @@ namespace freelan
 		m_resolver(io_service),
 		m_tap_adapter(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
+		m_open_callback(),
+		m_close_callback(),
+		m_session_established_callback(),
+		m_session_lost_callback(),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
@@ -82,7 +86,7 @@ namespace freelan
 
 	void core::open()
 	{
-		m_logger(LOG_DEBUG) << "Core is opening." << endl;
+		m_logger(LOG_DEBUG) << "Core is opening..." << endl;
 
 		typedef boost::asio::ip::udp::resolver::query query;
 		
@@ -152,6 +156,8 @@ namespace freelan
 			m_dhcp_proxy.reset();
 		}
 
+		m_logger(LOG_DEBUG) << "Core opened." << endl;
+
 		m_running = true;
 	}
 
@@ -161,7 +167,7 @@ namespace freelan
 		{
 			m_running = false;
 
-			m_logger(LOG_DEBUG) << "Core is closing." << endl;
+			m_logger(LOG_DEBUG) << "Core is closing..." << endl;
 
 			m_dhcp_proxy.reset();
 			m_arp_proxy.reset();
@@ -186,6 +192,8 @@ namespace freelan
 			m_tap_adapter.close();
 
 			m_server.close();
+
+			m_logger(LOG_DEBUG) << "Core closed." << endl;
 		}
 	}
 
