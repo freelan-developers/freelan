@@ -38,13 +38,19 @@
  */
 
 /**
- * \file logger.cpp
+ * \file logger_stream.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A logger class.
+ * \brief A logger_stream class.
  */
 
-#include "logger.hpp"
+#include "logger_stream.hpp"
+
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace freelan
 {
+	logger_stream& timestamp(logger_stream& ls)
+	{
+		return ls << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time());
+	}
 }

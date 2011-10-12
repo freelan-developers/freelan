@@ -46,134 +46,28 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include <iostream>
+#include "logger_stream.hpp"
 
 namespace freelan
 {
+	/**
+	 * \brief Log level type.
+	 */
+	enum log_level
+	{
+		LOG_DEBUG, /**< \brief The debug log level. */
+		LOG_INFORMATION, /**< \brief The information log level. */
+		LOG_WARNING, /**< \brief The warning log level. */
+		LOG_ERROR, /**< \brief The error log level. */
+		LOG_FATAL /**< \brief The fatal log level. */
+	};
+
 	/**
 	 * \brief A logger class.
 	 */
 	class logger
 	{
-		public:
-
-			/**
-			 * \brief The output stream type.
-			 */
-			typedef std::ostream stream_type;
-
-			/**
-			 * \brief The manipulator type.
-			 */
-			typedef logger& (manipulator_type)(logger&);
-
-			/**
-			 * \brief The ostream manipulator type.
-			 */
-			typedef stream_type& (ostream_manipulator_type)(stream_type&);
-
-			/**
-			 * \brief Create a new logger that uses the specified output stream.
-			 * \param os The output stream to use.
-			 *
-			 * \warning os must remain valid during the whole lifetime of the logger instance.
-			 */
-			logger(stream_type& os);
-
-			/**
-			 * \brief Write something to the logger.
-			 * \param val The value to write.
-			 */
-			template <typename T>
-			logger& operator<<(const T& val);
-
-			/**
-			 * \brief Execute an ostream manipulator on the logger.
-			 * \param manipulator The ostream manipulator to execute.
-			 */
-			logger& operator<<(ostream_manipulator_type manipulator);
-
-			/**
-			 * \brief Execute an manipulator on the logger.
-			 * \param manipulator The manipulator to execute.
-			 */
-			logger& operator<<(manipulator_type manipulator);
-
-		private:
-
-			std::ostream& m_os;
 	};
-	
-	/**
-	 * \brief The timestamp manipulator.
-	 * \param lg The logger instance to manipulate.
-	 * \return lg.
-	 *
-	 * Add a timestamp to the log.
-	 */
-	logger& timestamp(logger& lg);
-	
-	/**
-	 * \brief The prefix manipulator.
-	 * \param lg The logger instance to manipulate.
-	 * \return lg.
-	 *
-	 * Add a typical prefix to the log.
-	 */
-	logger& prefix(logger& lg);
-	
-	/**
-	 * \brief The flush manipulator.
-	 * \param lg The logger instance to manipulate.
-	 * \return lg.
-	 */
-	logger& flush(logger& lg);
-	
-	/**
-	 * \brief The end-line manipulator.
-	 * \param lg The logger instance to manipulate.
-	 * \return lg.
-	 */
-	logger& endl(logger& lg);
-	
-	inline logger::logger(stream_type& os) : m_os(os)
-	{
-	}
-	
-	template <typename T>
-	inline logger& logger::operator<<(const T& val)
-	{
-		m_os << val;
-
-		return *this;
-	}
-	
-	logger& logger::operator<<(ostream_manipulator_type manipulator)
-	{
-		m_os << manipulator;
-
-		return *this;
-	}
-
-	logger& logger::operator<<(manipulator_type manipulator)
-	{
-		return manipulator(*this);
-	}
-	
-	logger& prefix(logger& lg)
-	{
-		return lg << "[" << timestamp << "] ";
-	}
-
-	logger& flush(logger& lg)
-	{
-		return lg << std::flush;
-	}
-
-	logger& endl(logger& lg)
-	{
-		return lg << std::endl;
-	}
 }
 
 #endif /* LOGGER_HPP */

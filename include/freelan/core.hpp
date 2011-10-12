@@ -117,9 +117,9 @@ namespace freelan
 			 * \brief The constructor.
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
-			 * \param os The output stream to use for logging.
+			 * \param log The logger to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, logger::stream_type& os);
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const logger& log = logger());
 
 			/**
 			 * \brief Get the configuration.
