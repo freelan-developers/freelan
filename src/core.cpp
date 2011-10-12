@@ -97,24 +97,38 @@ namespace freelan
 		// IPv4 address
 		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
 		{
-#ifdef WINDOWS
-			// Quick fix for Windows:
-			// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
-			// We disable direct setting if DHCP is enabled.
-
-			if (!m_configuration.enable_dhcp_proxy)
+			try
 			{
-				m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-			}
+#ifdef WINDOWS
+				// Quick fix for Windows:
+				// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
+				// We disable direct setting if DHCP is enabled.
+
+				if (!m_configuration.enable_dhcp_proxy)
+				{
+					m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+				}
 #else
-			m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+				m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
 #endif
+			}
+			catch (std::runtime_error& ex)
+			{
+				m_logger(LOG_WARNING) << "Cannot set IPv4 address: " << ex.what() << endl;
+			}
 		}
 
 		// IPv6 address
 		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
 		{
-			m_tap_adapter.add_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+			try
+			{
+				m_tap_adapter.add_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+			}
+			catch (std::runtime_error& ex)
+			{
+				m_logger(LOG_WARNING) << "Cannot set IPv6 address: " << ex.what() << endl;
+			}
 		}
 
 		m_tap_adapter.set_connected_state(true);
@@ -196,13 +210,27 @@ namespace freelan
 		// IPv6 address
 		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
 		{
-			m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+			try
+			{
+				m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+			}
+			catch (std::runtime_error& ex)
+			{
+				m_logger(LOG_WARNING) << "Cannot unset IPv6 address: " << ex.what() << endl;
+			}
 		}
 
 		// IPv4 address
 		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
 		{
-			m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+			try
+			{
+				m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+			}
+			catch (std::runtime_error& ex)
+			{
+				m_logger(LOG_WARNING) << "Cannot unset IPv4 address: " << ex.what() << endl;
+			}
 		}
 
 		m_tap_adapter.close();
