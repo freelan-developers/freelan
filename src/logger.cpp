@@ -47,4 +47,8 @@
 
 namespace freelan
 {
+	logger_stream& logger::operator()(log_level level)
+	{
+		return (level >= m_level) ? m_ls : m_null_ls;
+	}
 }

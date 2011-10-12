@@ -67,7 +67,34 @@ namespace freelan
 	 */
 	class logger
 	{
+		public:
+
+			/**
+			 * \brief Create a new logger.
+			 * \param ls The logger stream to use.
+			 * \param level The desired log level.
+			 */
+			logger(const logger_stream& ls = logger_stream(), log_level level = LOG_INFORMATION);
+
+			/**
+			 * \brief Get the appropriate logger stream for the specified log level.
+			 * \param level The log level.
+			 * \return The appropriate logger stream.
+			 */
+			logger_stream& operator()(log_level level);
+
+		private:
+
+			logger_stream m_ls;
+			logger_stream m_null_ls;
+			log_level m_level;
 	};
+	
+	inline logger::logger(const logger_stream& ls, log_level level) :
+		m_ls(ls),
+		m_level(level)
+	{
+	}
 }
 
 #endif /* LOGGER_HPP */

@@ -153,7 +153,7 @@ namespace freelan
 		return *this;
 	}
 	
-	logger_stream& logger_stream::operator<<(ostream_manipulator_type manipulator)
+	inline logger_stream& logger_stream::operator<<(ostream_manipulator_type manipulator)
 	{
 		if (m_os)
 		{
@@ -163,22 +163,22 @@ namespace freelan
 		return *this;
 	}
 
-	logger_stream& logger_stream::operator<<(manipulator_type manipulator)
+	inline logger_stream& logger_stream::operator<<(manipulator_type manipulator)
 	{
 		return manipulator(*this);
 	}
 	
-	logger_stream& prefix(logger_stream& ls)
+	inline logger_stream& prefix(logger_stream& ls)
 	{
 		return ls << "[" << timestamp << "] ";
 	}
 
-	logger_stream& flush(logger_stream& ls)
+	inline logger_stream& flush(logger_stream& ls)
 	{
 		return ls << std::flush;
 	}
 
-	logger_stream& endl(logger_stream& ls)
+	inline logger_stream& endl(logger_stream& ls)
 	{
 		return ls << std::endl;
 	}
