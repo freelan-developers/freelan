@@ -82,8 +82,6 @@ int main()
 		// Setup the certificate store
 		x509::store store = x509::store::create();
 
-		store.set_verification_callback(&verification_callback);
-
 		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("ca.crt")));
 		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("intermediate.crt")));
 
@@ -92,6 +90,8 @@ int main()
 
 		// Create a store context to proceed to verification
 		x509::store_context store_context = x509::store_context::create();
+
+		store_context.set_verification_callback(&verification_callback);
 		store_context.initialize(store, cert, NULL);
 
 		// Put some custom data in the store context
