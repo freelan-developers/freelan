@@ -91,8 +91,10 @@ int main()
 		// Create a store context to proceed to verification
 		x509::store_context store_context = x509::store_context::create();
 
-		store_context.set_verification_callback(&verification_callback);
 		store_context.initialize(store, cert, NULL);
+
+		// Ensure to set the verification callback *AFTER* you called initialize or it will be ignored.
+		store_context.set_verification_callback(&verification_callback);
 
 		// Put some custom data in the store context
 		unsigned int verified_count = 0;
