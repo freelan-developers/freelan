@@ -337,7 +337,8 @@ namespace freelan
 		}
 		else
 		{
-			//TODO: Report the error somehow.
+			m_logger(LOG_WARNING) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec << endl;
+
 			close();
 		}
 	}
@@ -354,7 +355,7 @@ namespace freelan
 			}
 		} else
 		{
-			//TODO: Report the error somehow
+			m_logger(LOG_WARNING) << "Failed to resolve " << ep->host_name() << ":" << ep->service_name() << endl;
 		}
 	}
 
