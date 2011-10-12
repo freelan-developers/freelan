@@ -159,6 +159,8 @@ namespace freelan
 	{
 		if (m_running)
 		{
+			m_running = false;
+
 			m_logger(LOG_DEBUG) << "Core is closing." << endl;
 
 			m_dhcp_proxy.reset();
@@ -184,8 +186,6 @@ namespace freelan
 			m_tap_adapter.close();
 
 			m_server.close();
-
-			m_running = false;
 		}
 	}
 
