@@ -102,11 +102,13 @@ namespace cryptoplus
 				 */
 				store(pointer ptr);
 
+#ifdef X509_STORE_set_verify_cb
 				/**
 				 * \brief Set the verification callback.
 				 * \param callback The verification callback.
 				 */
 				void set_verification_callback(verification_callback_type callback);
+#endif
 
 				/**
 				 * \brief Set the verification parameters.
@@ -187,10 +189,12 @@ namespace cryptoplus
 		inline store::store(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
+#ifdef X509_STORE_set_verify_cb
 		inline void store::set_verification_callback(verification_callback_type callback)
 		{
 			X509_STORE_set_verify_cb(raw(), callback);
 		}
+#endif
 		inline void store::set_verification_parameters(verify_param vp)
 		{
 			X509_STORE_set1_param(raw(), vp.raw());
