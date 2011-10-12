@@ -101,6 +101,8 @@ namespace freelan
 
 	bool switch_::is_broadcast(const ethernet_address_type& address)
 	{
+		//TODO: Implement this better. I believe it exists some bits with a special
+		//meaning in an Ethernet address to determine if it is a broadcast address.
 		assert(boost::asio::buffer_size(address) == ::BROADCAST_ADDRESS.size());
 
 		return (std::memcmp(boost::asio::buffer_cast<const void*>(address), &::BROADCAST_ADDRESS[0], BROADCAST_ADDRESS.size()) == 0);
