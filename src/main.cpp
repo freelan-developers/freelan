@@ -109,11 +109,12 @@ static bool register_signal_handlers()
 	return true;
 }
 
-bool parse_options(int argc, char** argv, fl::configuration& configuration)
+bool parse_options(int argc, char** argv, fl::configuration& configuration, bool& debug)
 {
 	po::options_description generic_options("Generic options");
 	generic_options.add_options()
 		("help,h", "Produce help message.")
+		("debug,d", "Enables debug output.")
 		("configuration_file,c", po::value<std::string>(), "The configuration file to use")
 		;
 
@@ -202,6 +203,11 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration)
 
 	setup_configuration(configuration, vm);
 
+	if (vm.count("debug"))
+	{
+		debug = true;
+	}
+
 	return true;
 }
 
@@ -229,12 +235,13 @@ int main(int argc, char** argv)
 	try
 	{
 		fl::configuration configuration;
+		bool debug = false;
 
-		if (parse_options(argc, argv, configuration))
+		if (parse_options(argc, argv, configuration, debug))
 		{
 			boost::asio::io_service io_service;
 
-			freelan::core core(io_service, configuration);
+			freelan::core core(io_service, configuration, fl::logger(std::cout, debug ? fl::LOG_DEBUG : fl::LOG_INFORMATION));
 
 			core.set_session_established_callback(&notify_session_established);
 			core.set_session_lost_callback(&notify_session_lost);
