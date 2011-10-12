@@ -51,6 +51,15 @@
 namespace freelan
 {
 	/**
+	 * \brief The logger flags.
+	 */
+	enum logger_flags
+	{
+		LOGGER_SHOW_LOG_LEVEL = 0x01, /**< \brief Show the log level in output. */
+		LOGGER_SHOW_TIMESTAMP = 0x02 /**< \brief Show the timestamp in output. */
+	};
+
+	/**
 	 * \brief A logger class.
 	 */
 	class logger
@@ -62,7 +71,7 @@ namespace freelan
 			 * \param ls The logger stream to use.
 			 * \param level The desired log level.
 			 */
-			logger(const logger_stream& ls = logger_stream(), log_level level = LOG_INFORMATION);
+			logger(const logger_stream& ls = logger_stream(), log_level level = LOG_INFORMATION, int flags = LOGGER_SHOW_LOG_LEVEL | LOGGER_SHOW_TIMESTAMP);
 
 			/**
 			 * \brief Get the appropriate logger stream for the specified log level.
@@ -76,11 +85,13 @@ namespace freelan
 			logger_stream m_ls;
 			logger_stream m_null_ls;
 			log_level m_level;
+			int m_flags;
 	};
 	
-	inline logger::logger(const logger_stream& ls, log_level level) :
+	inline logger::logger(const logger_stream& ls, log_level level, int flags) :
 		m_ls(ls),
-		m_level(level)
+		m_level(level),
+		m_flags(flags)
 	{
 	}
 }

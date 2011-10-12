@@ -79,6 +79,16 @@ namespace freelan
 	{
 		logger_stream& ls = (level >= m_level) ? m_ls : m_null_ls;
 
-		return ls << "[" << log_level_to_string(level) << "] " << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << ": ";
+		if ((LOGGER_SHOW_LOG_LEVEL & m_flags) != 0)
+		{
+			ls << "[" << log_level_to_string(level) << "] ";
+		}
+
+		if ((LOGGER_SHOW_TIMESTAMP & m_flags) != 0)
+		{
+			ls << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << ": ";
+		}
+
+		return ls;
 	}
 }
