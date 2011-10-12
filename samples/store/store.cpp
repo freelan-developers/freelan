@@ -21,14 +21,29 @@
 #include <openssl/applink.c>
 #endif
 
+namespace
+{
+	static int my_index = 0;
+}
+
 int verification_callback(int ok, X509_STORE_CTX* ctx)
 {
 	using namespace cryptoplus;
 
+	// Create a store_context wrapping instance
 	x509::store_context store_context(ctx);
+
+	// Get the custom data from the store context
+	unsigned int& verified_count = *static_cast<unsigned int*>(store_context.get_external_data(my_index));
+
+	// Increment the verified_count
+	verified_count++;
+	
+	// Get the currently verified certificate
 	x509::certificate current_cert = store_context.get_current_certificate();
 
 	std::cout << "Verifying \"" << current_cert.subject().oneline() << "\"..." << std::endl;
+
 	if (!ok)
 	{
 		long error = store_context.get_error();
@@ -57,6 +72,12 @@ int main()
 	try
 	{
 		using namespace cryptoplus;
+		
+		// Register a new index
+		// In a real application, you probably want to keep this value in
+		// highly-accessible context as it is not bound to any particular instance
+		// and will be destroyed when OpenSSL unloads.
+		my_index = x509::store_context::register_index();
 
 		// Setup the certificate store
 		x509::store store = x509::store::create();
@@ -73,8 +94,15 @@ int main()
 		x509::store_context store_context = x509::store_context::create();
 		store_context.initialize(store, cert, NULL);
 
+		// Put some custom data in the store context
+		unsigned int verified_count = 0;
+		store_context.set_external_data(my_index, &verified_count);
+
 		// Verify !
 		std::cout << "Verify: " << store_context.verify() << std::endl;
+
+		// Ouput the custom data.
+		std::cout << "Verified certificates count: " << verified_count << std::endl;
 	}
 	catch (std::exception& ex)
 	{
