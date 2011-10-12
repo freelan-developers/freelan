@@ -60,6 +60,7 @@
 
 #include "configuration.hpp"
 #include "switch.hpp"
+#include "logger.hpp"
 
 namespace freelan
 {
@@ -116,8 +117,9 @@ namespace freelan
 			 * \brief The constructor.
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
+			 * \param os The output stream to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration);
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, logger::stream_type& os);
 
 			/**
 			 * \brief Get the configuration.
@@ -212,6 +214,9 @@ namespace freelan
 
 			// Switch
 			switch_ m_switch;
+
+			// Logger
+			logger m_logger;
 	};
 
 	inline const freelan::configuration& core::configuration() const
