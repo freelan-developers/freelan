@@ -53,6 +53,18 @@
 namespace freelan
 {
 	/**
+	 * \brief Log level type.
+	 */
+	enum log_level
+	{
+		LOG_DEBUG, /**< \brief The debug log level. */
+		LOG_INFORMATION, /**< \brief The information log level. */
+		LOG_WARNING, /**< \brief The warning log level. */
+		LOG_ERROR, /**< \brief The error log level. */
+		LOG_FATAL /**< \brief The fatal log level. */
+	};
+
+	/**
 	 * \brief A logger stream class.
 	 */
 	class logger_stream
@@ -107,24 +119,6 @@ namespace freelan
 	};
 
 	/**
-	 * \brief The timestamp manipulator.
-	 * \param ls The logger_stream instance to manipulate.
-	 * \return ls.
-	 *
-	 * Add a timestamp to the log.
-	 */
-	logger_stream& timestamp(logger_stream& ls);
-	
-	/**
-	 * \brief The prefix manipulator.
-	 * \param ls The logger_stream instance to manipulate.
-	 * \return ls.
-	 *
-	 * Add a typical prefix to the log.
-	 */
-	logger_stream& prefix(logger_stream& ls);
-	
-	/**
 	 * \brief The flush manipulator.
 	 * \param ls The logger_stream instance to manipulate.
 	 * \return ls.
@@ -138,6 +132,13 @@ namespace freelan
 	 */
 	logger_stream& endl(logger_stream& ls);
 	
+	/**
+	 * \brief Convert a log level to its string representation.
+	 * \param level The log level to convert.
+	 * \return The string representing the log level.
+	 */
+	const char* log_level_to_string(log_level level);
+
 	inline logger_stream::logger_stream(boost::optional<stream_type&> os) : m_os(os)
 	{
 	}
@@ -168,11 +169,6 @@ namespace freelan
 		return manipulator(*this);
 	}
 	
-	inline logger_stream& prefix(logger_stream& ls)
-	{
-		return ls << "[" << timestamp << "] ";
-	}
-
 	inline logger_stream& flush(logger_stream& ls)
 	{
 		return ls << std::flush;

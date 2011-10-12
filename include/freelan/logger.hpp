@@ -51,18 +51,6 @@
 namespace freelan
 {
 	/**
-	 * \brief Log level type.
-	 */
-	enum log_level
-	{
-		LOG_DEBUG, /**< \brief The debug log level. */
-		LOG_INFORMATION, /**< \brief The information log level. */
-		LOG_WARNING, /**< \brief The warning log level. */
-		LOG_ERROR, /**< \brief The error log level. */
-		LOG_FATAL /**< \brief The fatal log level. */
-	};
-
-	/**
 	 * \brief A logger class.
 	 */
 	class logger

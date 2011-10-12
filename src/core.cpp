@@ -81,6 +81,8 @@ namespace freelan
 
 	void core::open()
 	{
+		m_logger(LOG_DEBUG) << "Core is opening." << endl;
+
 		typedef boost::asio::ip::udp::resolver::query query;
 		
 		m_server.open(m_configuration.listen_on->resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
@@ -152,6 +154,8 @@ namespace freelan
 
 	void core::close()
 	{
+		m_logger(LOG_DEBUG) << "Core is closing." << endl;
+
 		m_dhcp_proxy.reset();
 		m_arp_proxy.reset();
 

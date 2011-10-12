@@ -45,10 +45,14 @@
 
 #include "logger.hpp"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 namespace freelan
 {
 	logger_stream& logger::operator()(log_level level)
 	{
-		return (level >= m_level) ? m_ls : m_null_ls;
+		logger_stream& ls = (level >= m_level) ? m_ls : m_null_ls;
+
+		return ls << "[" << log_level_to_string(level) << "] " << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << ": ";
 	}
 }

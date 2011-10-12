@@ -45,12 +45,30 @@
 
 #include "logger_stream.hpp"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "logger.hpp"
+
+#include <cassert>
+#include <stdexcept>
 
 namespace freelan
 {
-	logger_stream& timestamp(logger_stream& ls)
+	const char* log_level_to_string(log_level level)
 	{
-		return ls << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time());
+		switch (level)
+		{
+			case LOG_DEBUG:
+				return "DEBUG";
+			case LOG_INFORMATION:
+				return "INFORMATION";
+			case LOG_WARNING:
+				return "WARNING";
+			case LOG_ERROR:
+				return "ERROR";
+			case LOG_FATAL:
+				return "FATAL";
+		}
+
+		assert(false);
+		throw std::logic_error("Unsupported enumeration value");
 	}
 }
