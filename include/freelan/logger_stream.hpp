@@ -87,12 +87,17 @@ namespace freelan
 			typedef stream_type& (ostream_manipulator_type)(stream_type&);
 
 			/**
+			 * \brief Create an empty logger stream that logs nothing.
+			 */
+			logger_stream();
+
+			/**
 			 * \brief Create a new logger stream that uses the specified output stream.
 			 * \param os The output stream to use.
 			 *
 			 * \warning os must remain valid during the whole lifetime of the logger instance.
 			 */
-			logger_stream(boost::optional<stream_type&> os = boost::none);
+			logger_stream(stream_type& os);
 
 			/**
 			 * \brief Write something to the logger stream.
@@ -139,7 +144,11 @@ namespace freelan
 	 */
 	const char* log_level_to_string(log_level level);
 
-	inline logger_stream::logger_stream(boost::optional<stream_type&> os) : m_os(os)
+	inline logger_stream::logger_stream()
+	{
+	}
+
+	inline logger_stream::logger_stream(stream_type& os) : m_os(os)
 	{
 	}
 	
