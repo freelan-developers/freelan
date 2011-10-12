@@ -202,11 +202,14 @@ namespace freelan
 
 	void core::on_hello_response(const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
 	{
-		m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << "." << endl;
-
 		if (success)
 		{
+			m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << "." << endl;
+
 			m_server.async_introduce_to(sender);
+		} else
+		{
+			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout:" << time_duration << "." << endl;
 		}
 	}
 
