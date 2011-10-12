@@ -73,6 +73,25 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief Register a new index for external data.
+				 * \param argl A long argument to pass to the functions.
+				 * \param argp A pointer argument to pass to the functions.
+				 * \param new_func The function to call when a new store_context is allocated.
+				 * \param dup_func The function to call when a store_context is duplicated.
+				 * \param free_func The function to call when a store_context is deleted.
+				 * \return The new index.
+				 */
+				static int register_index(long argl, void* argp, CRYPTO_EX_new* new_func, CRYPTO_EX_dup* dup_func, CRYPTO_EX_free* free_func);
+
+				/**
+				 * \brief Register a new index for external data.
+				 * \return The new index.
+				 *
+				 * This method is equivalent to store_context::register_index(0, NULL, NULL, NULL, NULL).
+				 */
+				static int register_index();
+
+				/**
 				 * \brief A verification callback type.
 				 */
 				typedef int (*verification_callback_type)(int, X509_STORE_CTX*);
@@ -228,6 +247,18 @@ namespace cryptoplus
 		 */
 		bool operator!=(const store_context& lhs, const store_context& rhs);
 
+		inline int store_context::register_index(long argl, void* argp, CRYPTO_EX_new* new_func, CRYPTO_EX_dup* dup_func, CRYPTO_EX_free* free_func)
+		{
+			int index = X509_STORE_CTX_get_ex_new_index(argl, argp, new_func, dup_func, free_func);
+
+			error::throw_error_if(index < 0);
+
+			return index;
+		}
+		inline int store_context::register_index()
+		{
+			return register_index(0, NULL, NULL, NULL, NULL);
+		}
 		inline store_context store_context::create()
 		{
 			pointer _ptr = X509_STORE_CTX_new();
