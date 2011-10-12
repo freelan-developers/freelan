@@ -146,7 +146,7 @@ namespace cryptoplus
 				void set_chain(STACK_OF(X509)* chain);
 
 				/**
-				 * \brief Set the CRL to use to aid certificate verification. Thiese CRLs will only be used if CRL verification is enable in the associated x509::verify_param structure.
+				 * \brief Set the CRL to use to aid certificate verification. These CRLs will only be used if CRL verification is enable in the associated x509::verify_param structure.
 				 * \param crls The CRLs.
 				 */
 				void set_crls(STACK_OF(X509_CRL)* crls);
