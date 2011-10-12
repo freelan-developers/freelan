@@ -188,6 +188,8 @@ namespace freelan
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
 	{
+		m_logger(LOG_DEBUG) << "Received HELLO_REQUEST from " << sender << "." << endl;
+
 		if (default_accept)
 		{
 			m_server.async_introduce_to(sender);
@@ -200,7 +202,7 @@ namespace freelan
 
 	void core::on_hello_response(const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
 	{
-		(void)time_duration;
+		m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << "." << endl;
 
 		if (success)
 		{
@@ -210,9 +212,7 @@ namespace freelan
 
 	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
 	{
-		(void)sig_cert;
-		(void)enc_cert;
-		(void)is_new;
+		m_logger(LOG_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << "." << endl;
 
 		// TODO: Here we should check for the certificates validity.
 		// For now, let's assume they are valid.
@@ -227,7 +227,7 @@ namespace freelan
 
 	bool core::on_session_request(const ep_type& sender, bool default_accept)
 	{
-		(void)sender;
+		m_logger(LOG_DEBUG) << "Received SESSION_REQUEST from " << sender << "." << endl;
 
 		if (default_accept)
 		{
@@ -239,6 +239,8 @@ namespace freelan
 
 	void core::on_session_established(const ep_type& sender)
 	{
+		m_logger(LOG_INFORMATION) << "Session established with " << sender << "." << endl;
+
 		if (m_session_established_callback)
 		{
 			m_session_established_callback(sender);
@@ -247,6 +249,8 @@ namespace freelan
 
 	void core::on_session_lost(const ep_type& sender)
 	{
+		m_logger(LOG_INFORMATION) << "Session with " << sender << " lost." << endl;
+
 		if (m_session_lost_callback)
 		{
 			m_session_lost_callback(sender);
@@ -344,6 +348,8 @@ namespace freelan
 		{
 			if (!m_server.has_session(*ep))
 			{
+				m_logger(LOG_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*ep) << "..." << endl;
+
 				async_greet(*ep);
 			}
 		} else

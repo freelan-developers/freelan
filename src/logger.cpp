@@ -75,13 +75,13 @@ namespace freelan
 		}
 	}
 
-	logger_stream& logger::operator()(log_level level)
+	logger_stream& logger::operator()(log_level _level)
 	{
-		logger_stream& ls = (level >= m_level) ? m_ls : m_null_ls;
+		logger_stream& ls = (_level >= m_level) ? m_ls : m_null_ls;
 
 		if ((LOGGER_SHOW_LOG_LEVEL & m_flags) != 0)
 		{
-			ls << "[" << log_level_to_string(level) << "] ";
+			ls << "[" << log_level_to_string(_level) << "] ";
 		}
 
 		if ((LOGGER_SHOW_TIMESTAMP & m_flags) != 0)

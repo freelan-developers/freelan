@@ -80,6 +80,12 @@ namespace freelan
 			 */
 			logger_stream& operator()(log_level level);
 
+			/**
+			 * \brief Get the logger's level.
+			 * \return The logger's level.
+			 */
+			log_level level() const;
+
 		private:
 
 			logger_stream m_ls;
@@ -88,11 +94,16 @@ namespace freelan
 			int m_flags;
 	};
 	
-	inline logger::logger(const logger_stream& ls, log_level level, int flags) :
+	inline logger::logger(const logger_stream& ls, log_level _level, int flags) :
 		m_ls(ls),
-		m_level(level),
+		m_level(_level),
 		m_flags(flags)
 	{
+	}
+	
+	inline log_level logger::level() const
+	{
+		return m_level;
 	}
 }
 
