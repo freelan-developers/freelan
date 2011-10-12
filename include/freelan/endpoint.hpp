@@ -106,9 +106,22 @@ namespace freelan
 			 * \param handler The handler.
 			 */
 			virtual void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, handler_type handler) = 0;
+
+		protected:
+
+			virtual std::ostream& write(std::ostream&) const = 0;
+
+			friend std::ostream& operator<<(std::ostream&, const endpoint&);
 	};
 
+	std::ostream& operator<<(std::ostream&, const endpoint&);
+
 	inline endpoint::~endpoint() {}
+
+	inline std::ostream& operator<<(std::ostream& os, const endpoint& ep)
+	{
+		return ep.write(os);
+	}
 }
 
 #endif /* FREELAN_ENDPOINT_HPP */

@@ -102,6 +102,10 @@ namespace freelan
 			 */
 			void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler);
 
+		protected:
+
+			std::ostream& write(std::ostream&) const;
+
 		private:
 
 			address_type m_address;
@@ -126,7 +130,7 @@ namespace freelan
 	}
 
 	template <typename AddressType>
-	endpoint::ep_type ip_endpoint<AddressType>::resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service)
+	inline endpoint::ep_type ip_endpoint<AddressType>::resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service)
 	{
 		if (m_port)
 		{
@@ -138,13 +142,37 @@ namespace freelan
 	}
 
 	template <typename AddressType>
-	void ip_endpoint<AddressType>::async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler)
+	inline void ip_endpoint<AddressType>::async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler)
 	{
 		ep_type ep = resolve(resolver, protocol, flags, default_service);
 
 		boost::asio::ip::udp::resolver::iterator it = boost::asio::ip::udp::resolver::iterator::create(ep, ep.address().to_string(), boost::lexical_cast<std::string>(ep.port()));
 
 		handler(boost::system::error_code(), it);
+	}
+
+	template <>
+	inline std::ostream& ip_endpoint<boost::asio::ip::address_v4>::write(std::ostream& os) const
+	{
+		if (m_port)
+		{
+			return os << m_address << ":" << *m_port;
+		} else
+		{
+			return os << m_address << ":<default>" << std::endl;
+		}
+	}
+
+	template <>
+	inline std::ostream& ip_endpoint<boost::asio::ip::address_v6>::write(std::ostream& os) const
+	{
+		if (m_port)
+		{
+			return os << "[" << m_address << "]:" << *m_port;
+		} else
+		{
+			return os << "[" << m_address << "]:<default>" << std::endl;
+		}
 	}
 }
 

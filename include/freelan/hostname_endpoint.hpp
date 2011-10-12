@@ -95,6 +95,10 @@ namespace freelan
 			 */
 			void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler);
 
+		protected:
+
+			std::ostream& write(std::ostream&) const;
+
 		private:
 
 			hostname_type m_hostname;
@@ -105,6 +109,17 @@ namespace freelan
 		m_hostname(host),
 		m_service(service)
 	{
+	}
+
+	inline std::ostream& hostname_endpoint::write(std::ostream& os) const
+	{
+		if (m_service)
+		{
+			return os << m_hostname << ":" << *m_service;
+		} else
+		{
+			return os << m_hostname << ":<default>";
+		}
 	}
 }
 
