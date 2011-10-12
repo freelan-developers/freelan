@@ -224,6 +224,20 @@ namespace cryptoplus
 				rsa_key(pointer ptr);
 
 				/**
+				 * \brief Set the external data.
+				 * \param index The index, as returned by register_index().
+				 * \param data The data.
+				 */
+				void set_external_data(int index, void* data);
+
+				/**
+				 * \brief Get the external data.
+				 * \param index The index, as returned by register_index().
+				 * \return The data.
+				 */
+				void* get_external_data(int index);
+
+				/**
 				 * \brief Write the private RSA key to a BIO.
 				 * \param bio The BIO.
 				 * \param algorithm The cipher algorithm to use.
@@ -523,6 +537,15 @@ namespace cryptoplus
 		}
 		inline rsa_key::rsa_key(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
+		}
+		inline void rsa_key::set_external_data(int index, void* data)
+		{
+			error::throw_error_if(RSA_set_ex_data(raw(), index, data) == 0);
+		}
+		inline void* rsa_key::get_external_data(int index)
+		{
+			// This call can fail but we cannot know for sure when it happens since NULL as a return value could also be a valid value...
+			return RSA_get_ex_data(raw(), index);
 		}
 		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
 		{

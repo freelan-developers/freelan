@@ -145,6 +145,20 @@ namespace cryptoplus
 				void cleanup();
 
 				/**
+				 * \brief Set the external data.
+				 * \param index The index, as returned by register_index().
+				 * \param data The data.
+				 */
+				void set_external_data(int index, void* data);
+
+				/**
+				 * \brief Get the external data.
+				 * \param index The index, as returned by register_index().
+				 * \return The data.
+				 */
+				void* get_external_data(int index);
+
+				/**
 				 * \brief Set a trusted stack of certificates.
 				 * \param certs The trusted stack of certificates to set.
 				 *
@@ -290,6 +304,15 @@ namespace cryptoplus
 		inline void store_context::cleanup()
 		{
 			X509_STORE_CTX_cleanup(raw());
+		}
+		inline void store_context::set_external_data(int index, void* data)
+		{
+			error::throw_error_if(X509_STORE_CTX_set_ex_data(raw(), index, data) == 0);
+		}
+		inline void* store_context::get_external_data(int index)
+		{
+			// This call can fail but we cannot know for sure when it happens since NULL as a return value could also be a valid value...
+			return X509_STORE_CTX_get_ex_data(raw(), index);
 		}
 		inline void store_context::set_trusted_certificates(STACK_OF(X509)* certs)
 		{
