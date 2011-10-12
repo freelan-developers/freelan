@@ -74,6 +74,25 @@ namespace cryptoplus
 			public:
 
 				/**
+				 * \brief Register a new index for external data.
+				 * \param argl A long argument to pass to the functions.
+				 * \param argp A pointer argument to pass to the functions.
+				 * \param new_func The function to call when a new store_context is allocated.
+				 * \param dup_func The function to call when a store_context is duplicated.
+				 * \param free_func The function to call when a store_context is deleted.
+				 * \return The new index.
+				 */
+				static int register_index(long argl, void* argp, CRYPTO_EX_new* new_func, CRYPTO_EX_dup* dup_func, CRYPTO_EX_free* free_func);
+
+				/**
+				 * \brief Register a new index for external data.
+				 * \return The new index.
+				 *
+				 * This method is equivalent to store_context::register_index(0, NULL, NULL, NULL, NULL).
+				 */
+				static int register_index();
+
+				/**
 				 * \brief A generate callback type.
 				 */
 				typedef void (*generate_callback_type)(int, int, void*);
@@ -453,6 +472,18 @@ namespace cryptoplus
 		 */
 		bool operator!=(const rsa_key& lhs, const rsa_key& rhs);
 
+		inline int rsa_key::register_index(long argl, void* argp, CRYPTO_EX_new* new_func, CRYPTO_EX_dup* dup_func, CRYPTO_EX_free* free_func)
+		{
+			int index = RSA_get_ex_new_index(argl, argp, new_func, dup_func, free_func);
+
+			error::throw_error_if(index < 0);
+
+			return index;
+		}
+		inline int rsa_key::register_index()
+		{
+			return register_index(0, NULL, NULL, NULL, NULL);
+		}
 		inline rsa_key rsa_key::create()
 		{
 			return take_ownership(RSA_new());
