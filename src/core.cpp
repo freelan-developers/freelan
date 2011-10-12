@@ -209,7 +209,7 @@ namespace freelan
 			m_server.async_introduce_to(sender);
 		} else
 		{
-			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout:" << time_duration << "." << endl;
+			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << "." << endl;
 		}
 	}
 
@@ -346,19 +346,19 @@ namespace freelan
 		}
 	}
 
-	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator ep)
+	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::configuration::ep_type& ep)
 	{
 		if (!ec)
 		{
-			if (!m_server.has_session(*ep))
+			if (!m_server.has_session(*it))
 			{
-				m_logger(LOG_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*ep) << "..." << endl;
+				m_logger(LOG_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*it) << "..." << endl;
 
-				async_greet(*ep);
+				async_greet(*it);
 			}
 		} else
 		{
-			m_logger(LOG_WARNING) << "Failed to resolve " << ep->host_name() << ":" << ep->service_name() << endl;
+			m_logger(LOG_WARNING) << "Failed to resolve " << *ep << "." << endl;
 		}
 	}
 
@@ -368,7 +368,7 @@ namespace freelan
 		{
 			typedef boost::asio::ip::udp::resolver::query query;
 
-			ep->async_resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE, boost::bind(&core::do_greet, this, _1, _2));
+			ep->async_resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE, boost::bind(&core::do_greet, this, _1, _2, ep));
 		}
 	}
 
