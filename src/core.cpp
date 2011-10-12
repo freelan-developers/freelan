@@ -59,6 +59,7 @@ namespace freelan
 	const std::string core::DEFAULT_SERVICE = "12000";
 
 	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration, const logger& log) :
+		m_running(false),
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
 		m_resolver(io_service),
@@ -150,35 +151,40 @@ namespace freelan
 		{
 			m_dhcp_proxy.reset();
 		}
+
+		m_running = true;
 	}
 
 	void core::close()
 	{
-		m_logger(LOG_DEBUG) << "Core is closing." << endl;
-
-		m_dhcp_proxy.reset();
-		m_arp_proxy.reset();
-
-		m_contact_timer.cancel();
-
-		m_tap_adapter.cancel();
-		m_tap_adapter.set_connected_state(false);
-
-		// IPv6 address
-		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+		if (m_running)
 		{
-			m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+			m_logger(LOG_DEBUG) << "Core is closing." << endl;
+
+			m_dhcp_proxy.reset();
+			m_arp_proxy.reset();
+
+			m_contact_timer.cancel();
+
+			m_tap_adapter.cancel();
+			m_tap_adapter.set_connected_state(false);
+
+			// IPv6 address
+			if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+			{
+				m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+			}
+
+			// IPv4 address
+			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+			{
+				m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+			}
+
+			m_tap_adapter.close();
+
+			m_server.close();
 		}
-
-		// IPv4 address
-		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
-		{
-			m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-		}
-
-		m_tap_adapter.close();
-
-		m_server.close();
 	}
 
 	void core::async_greet(const ep_type& target)
@@ -340,9 +346,13 @@ namespace freelan
 		}
 		else
 		{
-			m_logger(LOG_WARNING) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec << endl;
+			// If the core is currently stopping, this kind of error is expected.
+			if (m_running)
+			{
+				m_logger(LOG_ERROR) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec << endl;
 
-			close();
+				close();
+			}
 		}
 	}
 

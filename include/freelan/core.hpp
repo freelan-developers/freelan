@@ -163,6 +163,9 @@ namespace freelan
 
 		private:
 
+			// The running flag
+			bool m_running;
+
 			// fscp::server related methods
 			void async_greet(const ep_type&);
 			bool on_hello_request(const ep_type&, bool);
