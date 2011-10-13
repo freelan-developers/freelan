@@ -28,7 +28,7 @@ To install FreeLAN build tools, you just have to put the project root directory 
 
 For example on Linux, you may use:
 
-> export PYTHONPATH=`pwd`:${PYTHONPATH}
+> export PYTHONPATH=\`pwd\`:${PYTHONPATH}
 
 How to use FreeLAN build tools
 ------------------------------
