@@ -129,6 +129,10 @@ Here is the list of the supported variables:
 
 The rationale for the prefix/suffix variables is that under Windows, Boost by default decorates its libraries names with the compiler name and the Boost version. We designed FreeLAN build tools so that they match the defaults of the libraries we depend on.
 
+You may also define SCons specific environment variables by prefixing them with `FREELAN_ENV_`.
+
+Example: To use `g++44` instead of `g++` as the `CXX` environment variable, define `FREELAN_ENV_CXX` to `g++44`.
+
 Reusability
 -----------
 
