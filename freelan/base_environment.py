@@ -51,6 +51,12 @@ class BaseEnvironment(SConsEnvironment):
         if not self.link in ['static', 'shared']:
             raise ValueError('\"link\" can be either \"static\" or \"shared\"')
 
+        # Parse environment overloads
+        if 'ENV' in kw:
+            for key, value in kw['ENV'].items():
+                if key.startswith('FREELAN_ENV_'):
+                    self[key[len('FREELAN_ENV_'):]] = value
+
         if not 'CXXFLAGS' in self:
             self['CXXFLAGS'] = []
 
