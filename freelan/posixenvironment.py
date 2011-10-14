@@ -40,6 +40,7 @@ class PosixEnvironment(BaseEnvironment):
         self['CXXFLAGS'].append('-Wshadow')
         self['CXXFLAGS'].append('-Wno-long-long')
         self['CXXFLAGS'].append('-Wno-uninitialized')
+        self['CXXFLAGS'].append('-Wno-strict-aliasing')
 
         if self.mode == 'debug':
             self['CXXFLAGS'].append('-g')
