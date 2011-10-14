@@ -427,6 +427,9 @@ namespace fscp
 	{
 		session_pair& session_pair = m_session_map[sender];
 
+		// FIXME: Handle the possible overflow for session numbers ! Even if it
+		// will happen in a *very long* time, it can still happen and will result
+		// in a session loss.
 		if (!session_pair.has_remote_session() || session_pair.remote_session().session_number() < _clear_session_message.session_number())
 		{
 			bool can_accept = m_accept_session_messages_default;
