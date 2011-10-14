@@ -143,14 +143,15 @@ namespace fscp
 
 		if (buf)
 		{
-			static const char must_be_zero_padding[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			static const unsigned char null_iv[16] = {};
+			static const char must_be_zero_padding[10] = {};
 			session_number = htonl(session_number);
 			sequence_number = htons(sequence_number);
 
 			cryptoplus::cipher::cipher_algorithm iv_cipher_algorithm(IV_CIPHER_ALGORITHM);
 
 			cryptoplus::cipher::cipher_context cipher_context;
-			cipher_context.initialize(iv_cipher_algorithm, cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, NULL, 0);
+			cipher_context.initialize(iv_cipher_algorithm, cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, null_iv, sizeof(null_iv));
 			cipher_context.set_padding(false);
 			size_t cnt = cipher_context.update(buf, buf_len, &session_number, sizeof(session_number));
 			cnt += cipher_context.update(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt, &sequence_number, sizeof(sequence_number));

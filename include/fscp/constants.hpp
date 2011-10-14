@@ -92,7 +92,7 @@ namespace fscp
 	/**
 	 * \brief The cipher algorithm used to generate initialization vectors.
 	 */
-	const int IV_CIPHER_ALGORITHM = NID_aes_256_ecb;
+	const int IV_CIPHER_ALGORITHM = NID_aes_256_cbc;
 
 	/**
 	 * \brief The message digest algorithm.
