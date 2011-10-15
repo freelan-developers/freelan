@@ -493,7 +493,17 @@ namespace freelan
 	{
 		(void)store_context;
 
-		//TODO: Report validation errors
+		cert_type cert = store_context.get_current_certificate();
+
+		if (m_logger.level() >= LOG_DEBUG)
+		{
+			m_logger(LOG_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error") << endl;
+		}
+
+		if (!ok)
+		{
+			m_logger(LOG_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")" << endl;
+		}
 
 		return ok;
 	}
