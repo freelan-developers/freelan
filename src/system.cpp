@@ -306,6 +306,24 @@ std::string get_application_directory()
 #endif
 }
 
+std::string get_temporary_directory()
+{
+#ifdef WINDOWS
+	char path[MAX_PATH] = {};
+
+	HRESULT ret = ::GetTempPath(sizeof(path), path);
+
+	if (FAILED(ret))
+	{
+		throw std::runtime_error("Unable to determine the temporary directory");
+	}
+
+	return std::string(path);
+#else
+	return "/tmp";
+#endif
+}
+
 std::vector<std::string> get_configuration_files()
 {
 	std::vector<std::string> configuration_files;

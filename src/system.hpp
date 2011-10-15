@@ -63,6 +63,12 @@ std::string get_home_directory();
 std::string get_application_directory();
 
 /**
+ * \brief Get the temporary directory.
+ * \return The temporary directory.
+ */
+std::string get_temporary_directory();
+
+/**
  * \brief Get the configuration files, ordered by relevance.
  * \return The configurations files.
  */
