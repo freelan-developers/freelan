@@ -320,7 +320,7 @@ std::string get_temporary_directory()
 
 	return std::string(path);
 #else
-	return "/tmp";
+	return "/tmp/";
 #endif
 }
 
