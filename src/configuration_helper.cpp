@@ -176,6 +176,8 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	configuration.identity = fscp::identity_store(certificate, private_key);
 	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
+
+	//TODO: Implement support for certificate authorities
 }
 
 std::string get_certificate_validation_script(const boost::program_options::variables_map& vm)
