@@ -118,6 +118,11 @@ bool execute_certificate_validation_script(const std::string& script, fl::core& 
 	{
 		const std::string filename = get_temporary_directory() + "freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt";
 
+		if (core.logger().level() <= freelan::LOG_DEBUG)
+		{
+			core.logger()(freelan::LOG_DEBUG) << "Writing temporary certificate file at: " << filename << freelan::endl;
+		}
+
 		cert.write_certificate(cryptoplus::file::open(filename, "w"));
 
 		const int exit_status = execute(script.c_str(), filename.c_str(), NULL);
