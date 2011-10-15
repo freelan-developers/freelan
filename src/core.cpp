@@ -495,7 +495,7 @@ namespace freelan
 
 		cert_type cert = store_context.get_current_certificate();
 
-		if (m_logger.level() >= LOG_DEBUG)
+		if (m_logger.level() <= LOG_DEBUG)
 		{
 			m_logger(LOG_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error") << endl;
 		}
