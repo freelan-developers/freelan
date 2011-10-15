@@ -131,7 +131,7 @@ namespace freelan
 			 * \param configuration The configuration to use.
 			 * \param log The logger to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const logger& log = logger());
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& log = freelan::logger());
 
 			/**
 			 * \brief Get the configuration.
@@ -150,6 +150,12 @@ namespace freelan
 			 * \return The associated server.
 			 */
 			const fscp::server& server() const;
+
+			/**
+			 * \brief Get the associated logger instance.
+			 * \return The associated logger instance.
+			 */
+			freelan::logger& logger();
 
 			/**
 			 * \brief Set the open callback.
@@ -250,7 +256,7 @@ namespace freelan
 			switch_ m_switch;
 
 			// Logger
-			logger m_logger;
+			freelan::logger m_logger;
 
 			// Certificate validation
 			static const int ex_data_index;
@@ -273,6 +279,11 @@ namespace freelan
 	inline const fscp::server& core::server() const
 	{
 		return m_server;
+	}
+
+	inline freelan::logger& core::logger()
+	{
+		return m_logger;
 	}
 
 	inline void core::set_open_callback(open_callback callback)
