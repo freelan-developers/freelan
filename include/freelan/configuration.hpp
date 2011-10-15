@@ -63,6 +63,8 @@
 
 namespace freelan
 {
+	class core;
+
 	/**
 	 * \brief The configuration structure.
 	 */
@@ -137,7 +139,7 @@ namespace freelan
 		/**
 		 * \brief The certificate validation callback type.
 		 */
-		typedef boost::function<bool (cert_type)> certificate_validation_callback_type;
+		typedef boost::function<bool (core&, cert_type)> certificate_validation_callback_type;
 
 		/**
 		 * \brief The constructor.

@@ -542,7 +542,7 @@ namespace freelan
 
 		if (m_configuration.certificate_validation_callback)
 		{
-			return m_configuration.certificate_validation_callback(cert);
+			return m_configuration.certificate_validation_callback(*this, cert);
 		}
 
 		return true;
