@@ -66,6 +66,12 @@
 #include <cstring>
 #endif
 
+#ifdef EXECUTE_ENABLE_STDOUT
+#define ENABLE_STDOUT_DEFAULT true
+#else
+#define ENABLE_STDOUT_DEFAULT false
+#endif
+
 namespace
 {
 #ifdef WINDOWS
@@ -74,7 +80,7 @@ namespace
 		throw boost::system::system_error(error, boost::system::system_category());
 	}
 
-	DWORD create_process(const char* application, char* command_line, bool enable_stdout = false)
+	DWORD create_process(const char* application, char* command_line, bool enable_stdout = ENABLE_STDOUT_DEFAULT)
 	{
 		DWORD exit_status;
 
@@ -171,7 +177,7 @@ namespace
 		}
 	}
 
-	int execute_script(const char* file, char* const argv[], bool enable_stdout = false)
+	int execute_script(const char* file, char* const argv[], bool enable_stdout = ENABLE_STDOUT_DEFAULT)
 	{
 		int exit_status = 255;
 		int fd[2];
@@ -370,7 +376,7 @@ int execute(const char* file, ...)
 			command_line[offset++] = ' ';
 		}
 		
-		exit_status = create_process(file, command_line, true);
+		exit_status = create_process(file, command_line);
 
 #elif defined(UNIX)
 		char* argv[256] = {};
