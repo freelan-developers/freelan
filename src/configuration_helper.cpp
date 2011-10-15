@@ -176,6 +176,9 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	configuration.identity = fscp::identity_store(certificate, private_key);
 	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
-	//TODO: We need to create a callback
-	//configuration.certificate_validation_script =
+}
+
+std::string get_certificate_validation_script(const boost::program_options::variables_map& vm)
+{
+	return vm["security.certificate_validation_script"].as<std::string>();
 }

@@ -71,4 +71,11 @@ boost::program_options::options_description get_security_options();
  */
 void setup_configuration(freelan::configuration& configuration, const boost::program_options::variables_map& vm);
 
+/**
+ * \brief Get the certificate validation script.
+ * \param vm The variables map.
+ * \return The certificate validation script.
+ */
+std::string get_certificate_validation_script(const boost::program_options::variables_map& vm);
+
 #endif /* CONFIGURATION_HELPER_HPP */
