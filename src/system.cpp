@@ -378,7 +378,7 @@ int execute(const char* file, ...)
 		char args[32728] = {};
 		size_t offset = 0;
 
-		for (const char* arg = va_arg(vl, const char*); arg != NULL; arg = va_arg(vl, const char*))
+		for (const char* arg = file; arg != NULL; arg = va_arg(vl, const char*))
 		{
 			argv[cnt++] = &args[offset];
 
