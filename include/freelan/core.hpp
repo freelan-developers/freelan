@@ -52,6 +52,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/function.hpp>
 
+#include <cryptoplus/x509/store.hpp>
+#include <cryptoplus/x509/store_context.hpp>
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
 #include <asiotap/osi/dhcp_proxy.hpp>
@@ -249,6 +251,13 @@ namespace freelan
 
 			// Logger
 			logger m_logger;
+
+			// Certificate validation
+			static const int ex_data_index;
+			static int certificate_validation_callback(int, X509_STORE_CTX*);
+			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
+			bool certificate_is_valid(cert_type cert);
+			cryptoplus::x509::store m_ca_store;
 	};
 
 	inline const freelan::configuration& core::configuration() const

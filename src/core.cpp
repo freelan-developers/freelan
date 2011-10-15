@@ -54,6 +54,9 @@
 
 namespace freelan
 {
+	// Has to be put first, as static variables definition order matters
+	const int core::ex_data_index = cryptoplus::x509::store_context::register_index();
+
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
@@ -170,6 +173,16 @@ namespace freelan
 			m_dhcp_proxy.reset();
 		}
 
+		if (m_configuration.certificate_validation_method == configuration::CVM_DEFAULT)
+		{
+			m_ca_store = cryptoplus::x509::store::create();
+			
+			BOOST_FOREACH(const cert_type& cert, m_configuration.certificate_authorities)
+			{
+				m_ca_store.add_certificate(cert);
+			}
+		}
+
 		m_logger(LOG_DEBUG) << "Core opened." << endl;
 
 		if (m_open_callback)
@@ -274,11 +287,12 @@ namespace freelan
 
 	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
 	{
-		m_logger(LOG_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << "." << endl;
+		if (m_logger.level() <= LOG_DEBUG)
+		{
+			m_logger(LOG_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << "." << endl;
+		}
 
-		// TODO: Here we should check for the certificates validity.
-		// For now, let's assume they are valid.
-		if (true)
+		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
 		{
 			m_server.async_request_session(sender);
 			return true;
@@ -464,5 +478,63 @@ namespace freelan
 		}
 
 		return false;
+	}
+	
+	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
+	{
+		cryptoplus::x509::store_context store_context(ctx);
+
+		core* _this = static_cast<core*>(store_context.get_external_data(core::ex_data_index));
+		
+		return (_this->certificate_validation_method(ok != 0, store_context)) ? 1 : 0;
+	}
+
+	bool core::certificate_validation_method(bool ok, cryptoplus::x509::store_context store_context)
+	{
+		(void)store_context;
+
+		//TODO: Report validation errors
+
+		return ok;
+	}
+
+	bool core::certificate_is_valid(cert_type cert)
+	{
+		switch (m_configuration.certificate_validation_method)
+		{
+			case configuration::CVM_DEFAULT:
+				{
+					using namespace cryptoplus;
+
+					// Create a store context to proceed to verification
+					x509::store_context store_context = x509::store_context::create();
+
+					store_context.initialize(m_ca_store, cert, NULL);
+
+					// Ensure to set the verification callback *AFTER* you called initialize or it will be ignored.
+					store_context.set_verification_callback(&core::certificate_validation_callback);
+
+					// Add a reference to the current instance into the store context.
+					store_context.set_external_data(core::ex_data_index, this);
+
+					if (!store_context.verify())
+					{
+						return false;
+					}
+
+					break;
+				}
+			case configuration::CVM_NONE:
+				{
+					break;
+				}
+		}
+
+		if (m_configuration.certificate_validation_callback)
+		{
+			return m_configuration.certificate_validation_callback(cert);
+		}
+
+		return true;
 	}
 }

@@ -130,6 +130,11 @@ namespace freelan
 		typedef fscp::identity_store::cert_type cert_type;
 
 		/**
+		 * \brief The certificate list type.
+		 */
+		typedef std::vector<cert_type> cert_list_type;
+
+		/**
 		 * \brief The certificate validation callback type.
 		 */
 		typedef boost::function<bool (cert_type)> certificate_validation_callback_type;
@@ -208,6 +213,11 @@ namespace freelan
 		 * \brief The certificate validation callback.
 		 */
 		certificate_validation_callback_type certificate_validation_callback;
+
+		/**
+		 * \brief The certificate authorities.
+		 */
+		cert_list_type certificate_authorities;
 
 		/**
 		 * \brief The contact list.
