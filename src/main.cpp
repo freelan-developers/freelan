@@ -52,6 +52,7 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -107,6 +108,35 @@ static bool register_signal_handlers()
 	}
 
 	return true;
+}
+
+bool execute_certificate_validation_script(const std::string& script, fl::core& core, fl::configuration::cert_type cert)
+{
+	static unsigned int counter = 0;
+
+	try
+	{
+		const std::string filename = get_temporary_directory() + "freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt";
+
+		cert.write_certificate(cryptoplus::file::open(filename, "w"));
+
+		const int exit_status = execute(script.c_str(), filename.c_str(), NULL);
+
+		if (core.logger().level() <= freelan::LOG_DEBUG)
+		{
+			core.logger()(freelan::LOG_DEBUG) << script << " terminated execution with exit status " << exit_status << freelan::endl;
+		}
+
+		::remove(filename.c_str());
+
+		return (exit_status == 0);
+	}
+	catch (std::exception& ex)
+	{
+		core.logger()(freelan::LOG_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() << freelan::endl;
+
+		return false;
+	}
 }
 
 bool parse_options(int argc, char** argv, fl::configuration& configuration, bool& debug)
@@ -202,6 +232,13 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 	}
 
 	setup_configuration(configuration, vm);
+
+	const std::string certificate_validation_script = get_certificate_validation_script(vm);
+
+	if (!certificate_validation_script.empty())
+	{
+		configuration.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
+	}
 
 	if (vm.count("debug"))
 	{
