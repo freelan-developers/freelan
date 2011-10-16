@@ -77,6 +77,8 @@ namespace
 			return fl::configuration::RM_SWITCH;
 		if (str == "hub")
 			return fl::configuration::RM_HUB;
+		if (str == "none")
+			return fl::configuration::RM_NONE;
 
 		throw std::runtime_error("\"" + str + "\" is not a valid routing method");
 	}
