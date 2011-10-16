@@ -279,7 +279,14 @@ int main(int argc, char** argv)
 
 			stop_function = boost::bind(&freelan::core::close, boost::ref(core));
 
-			std::cout << "Starting freelan core using tap adapter: " << core.tap_adapter().name() << std::endl;
+			if (core.has_tap_adapter())
+			{
+				std::cout << "Using tap adapter: " << core.tap_adapter().name() << std::endl;
+			} else
+			{
+				std::cout << "Configured not to use any tap adapter." << std::endl;
+			}
+
 			std::cout << "Listening on: " << core.server().socket().local_endpoint() << std::endl;
 
 			io_service.run();
