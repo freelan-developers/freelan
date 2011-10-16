@@ -46,8 +46,11 @@
 
 #include "configuration_helper.hpp"
 
+#include <vector>
+
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
 
 #include "parsers.hpp"
 
@@ -132,7 +135,7 @@ po::options_description get_network_options()
 		("network.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
 		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
 		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
-		("network.contact_list", po::value<std::string>()->multitoken()->zero_tokens(), "The contact list.")
+		("network.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The contact list.")
 		;
 
 	return result;
@@ -169,7 +172,15 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.dhcp_server_ipv6_address_prefix_length = parse_optional<fl::configuration::ipv6_address_prefix_length_type>(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
-	configuration.contact_list = parse<fl::configuration::ep_list_type>(vm["network.contact_list"].as<std::string>());
+
+	std::vector<std::string> contact_list = vm["network.contact"].as<std::vector<std::string> >();
+
+	configuration.contact_list.clear();
+
+	BOOST_FOREACH(const std::string& contact, contact_list)
+	{
+		configuration.contact_list.push_back(parse<fl::configuration::ep_type>(contact));
+	}
 
 	cert_type certificate = load_certificate(vm["security.certificate_file"].as<std::string>());
 	pkey private_key = load_private_key(vm["security.private_key_file"].as<std::string>());
