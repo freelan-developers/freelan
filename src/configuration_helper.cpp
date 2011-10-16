@@ -77,8 +77,6 @@ namespace
 			return fl::configuration::RM_SWITCH;
 		if (str == "hub")
 			return fl::configuration::RM_HUB;
-		if (str == "none")
-			return fl::configuration::RM_NONE;
 
 		throw std::runtime_error("\"" + str + "\" is not a valid routing method");
 	}
@@ -133,6 +131,7 @@ po::options_description get_network_options()
 	result.add_options()
 		("network.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
 		("network.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
+		("network.enable_tap_adapter", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
 		("network.tap_adapter_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.1/24"), "The tap adapter IPv4 address and prefix length.")
 		("network.tap_adapter_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::1/10"), "The tap adapter IPv6 address and prefix length.")
 		("network.enable_arp_proxy", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
@@ -173,6 +172,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
 	configuration.listen_on = parse<fl::configuration::ep_type>(vm["network.listen_on"].as<std::string>());
+	configuration.enable_tap_adapter = vm["network.enable_tap_adapter"].as<bool>();
 	configuration.tap_adapter_ipv4_address_prefix_length = parse_optional<fl::configuration::ipv4_address_prefix_length_type>(vm["network.tap_adapter_ipv4_address_prefix_length"].as<std::string>());
 	configuration.tap_adapter_ipv6_address_prefix_length = parse_optional<fl::configuration::ipv6_address_prefix_length_type>(vm["network.tap_adapter_ipv6_address_prefix_length"].as<std::string>());
 	configuration.enable_arp_proxy = vm["network.enable_arp_proxy"].as<bool>();
