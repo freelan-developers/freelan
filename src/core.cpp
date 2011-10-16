@@ -66,7 +66,6 @@ namespace freelan
 		m_configuration(_configuration),
 		m_server(io_service, *m_configuration.identity),
 		m_resolver(io_service),
-		m_tap_adapter(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
 		m_open_callback(),
 		m_close_callback(),
@@ -85,101 +84,111 @@ namespace freelan
 		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2));
+
+		if (m_configuration.enable_tap_adapter)
+		{
+			m_tap_adapter.reset(new asiotap::tap_adapter(io_service));
+		}
 	}
 
 	void core::open()
 	{
 		typedef boost::asio::ip::udp::resolver::query query;
-		
+
 		m_logger(LOG_DEBUG) << "Core opening..." << endl;
 
+		// FSCP
 		m_server.open(m_configuration.listen_on->resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
-
-		m_tap_adapter.open();
-
-		// IPv4 address
-		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
-		{
-			try
-			{
-#ifdef WINDOWS
-				// Quick fix for Windows:
-				// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
-				// We disable direct setting if DHCP is enabled.
-
-				if (!m_configuration.enable_dhcp_proxy)
-				{
-					m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-				}
-#else
-				m_tap_adapter.add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-#endif
-			}
-			catch (std::runtime_error& ex)
-			{
-				m_logger(LOG_WARNING) << "Cannot set IPv4 address: " << ex.what() << endl;
-			}
-		}
-
-		// IPv6 address
-		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
-		{
-			try
-			{
-				m_tap_adapter.add_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
-			}
-			catch (std::runtime_error& ex)
-			{
-				m_logger(LOG_WARNING) << "Cannot set IPv6 address: " << ex.what() << endl;
-			}
-		}
-
-		m_tap_adapter.set_connected_state(true);
-
-		m_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(m_tap_adapter), _1, _2));
-
-		do_contact();
-		m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
-
-		// The ARP proxy
-		if (m_configuration.enable_arp_proxy)
-		{
-			m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
-			m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
-		}
-		else
-		{
-			m_arp_proxy.reset();
-		}
-
-		// The DHCP proxy
-		if (m_configuration.enable_dhcp_proxy)
-		{
-			m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
-			m_dhcp_proxy->set_hardware_address(m_tap_adapter.ethernet_address());
-
-			if (m_configuration.dhcp_server_ipv4_address_prefix_length)
-			{
-				m_dhcp_proxy->set_software_address(m_configuration.dhcp_server_ipv4_address_prefix_length->address);
-			}
-
-			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
-			{
-				m_dhcp_proxy->add_entry(m_tap_adapter.ethernet_address(), m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-			}
-		}
-		else
-		{
-			m_dhcp_proxy.reset();
-		}
 
 		if (m_configuration.certificate_validation_method == configuration::CVM_DEFAULT)
 		{
 			m_ca_store = cryptoplus::x509::store::create();
-			
+
 			BOOST_FOREACH(const cert_type& cert, m_configuration.certificate_authorities)
 			{
 				m_ca_store.add_certificate(cert);
+			}
+		}
+
+		do_contact();
+		m_contact_timer.async_wait(boost::bind(&core::do_contact, this, boost::asio::placeholders::error));
+
+		// Tap adapter
+		if (m_tap_adapter)
+		{
+			m_tap_adapter->open();
+
+			// IPv4 address
+			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+			{
+				try
+				{
+#ifdef WINDOWS
+					// Quick fix for Windows:
+					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
+					// We disable direct setting if DHCP is enabled.
+
+					if (!m_configuration.enable_dhcp_proxy)
+					{
+						m_tap_adapter->add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+					}
+#else
+					m_tap_adapter->add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+#endif
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LOG_WARNING) << "Cannot set IPv4 address: " << ex.what() << endl;
+				}
+			}
+
+			// IPv6 address
+			if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+			{
+				try
+				{
+					m_tap_adapter->add_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LOG_WARNING) << "Cannot set IPv6 address: " << ex.what() << endl;
+				}
+			}
+
+			m_tap_adapter->set_connected_state(true);
+
+			m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
+
+			// The ARP proxy
+			if (m_configuration.enable_arp_proxy)
+			{
+				m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
+				m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
+			}
+			else
+			{
+				m_arp_proxy.reset();
+			}
+
+			// The DHCP proxy
+			if (m_configuration.enable_dhcp_proxy)
+			{
+				m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
+				m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
+
+				if (m_configuration.dhcp_server_ipv4_address_prefix_length)
+				{
+					m_dhcp_proxy->set_software_address(m_configuration.dhcp_server_ipv4_address_prefix_length->address);
+				}
+
+				if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+				{
+					m_dhcp_proxy->add_entry(m_tap_adapter->ethernet_address(), m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+				}
+			}
+			else
+			{
+				m_dhcp_proxy.reset();
 			}
 		}
 
@@ -215,38 +224,41 @@ namespace freelan
 		m_dhcp_proxy.reset();
 		m_arp_proxy.reset();
 
+		if (m_tap_adapter)
+		{
+			m_tap_adapter->cancel();
+			m_tap_adapter->set_connected_state(false);
+
+			// IPv6 address
+			if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+			{
+				try
+				{
+					m_tap_adapter->remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LOG_WARNING) << "Cannot unset IPv6 address: " << ex.what() << endl;
+				}
+			}
+
+			// IPv4 address
+			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+			{
+				try
+				{
+					m_tap_adapter->remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LOG_WARNING) << "Cannot unset IPv4 address: " << ex.what() << endl;
+				}
+			}
+
+			m_tap_adapter->close();
+		}
+
 		m_contact_timer.cancel();
-
-		m_tap_adapter.cancel();
-		m_tap_adapter.set_connected_state(false);
-
-		// IPv6 address
-		if (m_configuration.tap_adapter_ipv6_address_prefix_length)
-		{
-			try
-			{
-				m_tap_adapter.remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
-			}
-			catch (std::runtime_error& ex)
-			{
-				m_logger(LOG_WARNING) << "Cannot unset IPv6 address: " << ex.what() << endl;
-			}
-		}
-
-		// IPv4 address
-		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
-		{
-			try
-			{
-				m_tap_adapter.remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
-			}
-			catch (std::runtime_error& ex)
-			{
-				m_logger(LOG_WARNING) << "Cannot unset IPv4 address: " << ex.what() << endl;
-			}
-		}
-
-		m_tap_adapter.close();
 
 		m_server.close();
 
@@ -337,34 +349,22 @@ namespace freelan
 	{
 		(void)sender;
 
-		switch (m_configuration.routing_method)
+		if (m_configuration.routing_method == configuration::RM_SWITCH)
 		{
-			case configuration::RM_SWITCH:
-				{
-					try
-					{
-						// We read the source ethernet address and update the switch routing table according to it.
-						asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
+			try
+			{
+				// We read the source ethernet address and update the switch routing table according to it.
+				asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
-						m_switch.update_entry(ethernet_helper.sender(), sender);
-					}
-					catch (std::length_error&)
-					{
-					}
-
-					m_tap_adapter.write(data);
-					break;
-				}
-			case configuration::RM_HUB:
-				{
-					m_tap_adapter.write(data);
-					break;
-				}
-			case configuration::RM_NONE:
-				{
-					break;
-				}
+				m_switch.update_entry(ethernet_helper.sender(), sender);
+			}
+			catch (std::length_error&)
+			{
+				// Parsing of the ethernet frame failed, we do nothing special.
+			}
 		}
+
+		m_tap_adapter->write(data);
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
@@ -475,7 +475,7 @@ namespace freelan
 
 	void core::on_proxy_data(boost::asio::const_buffer data)
 	{
-		m_tap_adapter.write(data);
+		m_tap_adapter->write(data);
 	}
 
 	bool core::on_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)

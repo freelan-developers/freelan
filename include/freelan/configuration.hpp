@@ -114,8 +114,7 @@ namespace freelan
 		enum routing_method_type
 		{
 			RM_SWITCH, /**< \brief The switch routing method. */
-			RM_HUB, /**< \brief The hub routing method. */
-			RM_NONE /**< \brief No routing. */
+			RM_HUB /**< \brief The hub routing method. */
 		};
 
 		/**
@@ -156,6 +155,11 @@ namespace freelan
 		 * \brief The hostname resolution protocol.
 		 */
 		hostname_resolution_protocol_type hostname_resolution_protocol;
+
+		/**
+		 * \brief Whether the tap adapter is enabled.
+		 */
+		bool enable_tap_adapter;
 
 		/**
 		 * \brief The IPv4 tap adapter address.

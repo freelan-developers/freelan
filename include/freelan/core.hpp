@@ -140,8 +140,16 @@ namespace freelan
 			const freelan::configuration& configuration() const;
 
 			/**
+			 * \brief Check if the core has a tap adapter.
+			 * \return true if the core has a tap adapter.
+			 */
+			bool has_tap_adapter() const;
+
+			/**
 			 * \brief Get the associated tap adapter.
 			 * \return The associated tap adapter.
+			 *
+			 * \warning Calling this method while has_tap_adapter() is false is undefined behavior.
 			 */
 			const asiotap::tap_adapter& tap_adapter() const;
 
@@ -223,7 +231,7 @@ namespace freelan
 			freelan::configuration m_configuration;
 			fscp::server m_server;
 			boost::asio::ip::udp::resolver m_resolver;
-			asiotap::tap_adapter m_tap_adapter;
+			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 			boost::asio::deadline_timer m_contact_timer;
 
@@ -271,9 +279,14 @@ namespace freelan
 		return m_configuration;
 	}
 
+	inline bool core::has_tap_adapter() const
+	{
+		return static_cast<bool>(m_tap_adapter);
+	}
+
 	inline const asiotap::tap_adapter& core::tap_adapter() const
 	{
-		return m_tap_adapter;
+		return *m_tap_adapter;
 	}
 
 	inline const fscp::server& core::server() const
