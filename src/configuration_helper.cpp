@@ -146,8 +146,10 @@ po::options_description get_security_options()
 	po::options_description result("Security options");
 
 	result.add_options()
-		("security.certificate_file", po::value<std::string>()->required(), "The certificate file to use.")
-		("security.private_key_file", po::value<std::string>()->required(), "The private key file to use.")
+		("security.signature_certificate_file", po::value<std::string>()->required(), "The certificate file to use for signing.")
+		("security.signature_private_key_file", po::value<std::string>()->required(), "The private key file to use for signing.")
+		("security.encryption_certificate_file", po::value<std::string>()->default_value(""), "The certificate file to use for encryption.")
+		("security.encryption_private_key_file", po::value<std::string>()->default_value(""), "The private key file to use for encryption.")
 		("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
 		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
 		;
@@ -182,10 +184,24 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 		configuration.contact_list.push_back(parse<fl::configuration::ep_type>(contact));
 	}
 
-	cert_type certificate = load_certificate(vm["security.certificate_file"].as<std::string>());
-	pkey private_key = load_private_key(vm["security.private_key_file"].as<std::string>());
+	cert_type signature_certificate = load_certificate(vm["security.signature_certificate_file"].as<std::string>());
+	pkey signature_private_key = load_private_key(vm["security.signature_private_key_file"].as<std::string>());
 
-	configuration.identity = fscp::identity_store(certificate, private_key);
+	cert_type encryption_certificate;
+	pkey encryption_private_key;
+
+	if (vm.count("security.encryption_certificate_file"))
+	{
+		encryption_certificate = load_certificate(vm["security.encryption_certificate_file"].as<std::string>());
+	}
+
+	if (vm.count("security.encryption_private_key_file"))
+	{
+		encryption_private_key = load_private_key(vm["security.encryption_private_key_file"].as<std::string>());
+	}
+
+	configuration.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
+
 	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
 
 	//TODO: Implement support for certificate authorities
