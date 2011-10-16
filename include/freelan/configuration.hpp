@@ -114,7 +114,8 @@ namespace freelan
 		enum routing_method_type
 		{
 			RM_SWITCH, /**< \brief The switch routing method. */
-			RM_HUB /**< \brief The hub routing method. */
+			RM_HUB, /**< \brief The hub routing method. */
+			RM_NONE /**< \brief No routing. */
 		};
 
 		/**
