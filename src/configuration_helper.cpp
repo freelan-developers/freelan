@@ -117,6 +117,11 @@ namespace
 	{
 		return cryptoplus::pkey::pkey::from_private_key(load_file(filename));
 	}
+
+	fl::configuration::cert_type load_trusted_certificate(const std::string& filename)
+	{
+		return fl::configuration::cert_type::from_trusted_certificate(load_file(filename));
+	}
 }
 
 po::options_description get_network_options()
@@ -152,6 +157,7 @@ po::options_description get_security_options()
 		("security.encryption_private_key_file", po::value<std::string>()->default_value(""), "The private key file to use for encryption.")
 		("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
 		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
+		("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The authority certificates.")
 		;
 
 	return result;
@@ -175,7 +181,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 
-	std::vector<std::string> contact_list = vm["network.contact"].as<std::vector<std::string> >();
+	const std::vector<std::string> contact_list = vm["network.contact"].as<std::vector<std::string> >();
 
 	configuration.contact_list.clear();
 
@@ -204,7 +210,14 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	configuration.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
 
-	//TODO: Implement support for certificate authorities
+	const std::vector<std::string> authority_certificate_file_list = vm["security.authority_certificate_file"].as<std::vector<std::string> >();
+
+	configuration.certificate_authorities.clear();
+
+	BOOST_FOREACH(const std::string& authority_certificate_file, authority_certificate_file_list)
+	{
+		configuration.certificate_authorities.push_back(load_trusted_certificate(authority_certificate_file));
+	}
 }
 
 std::string get_certificate_validation_script(const boost::program_options::variables_map& vm)
