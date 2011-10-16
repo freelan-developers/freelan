@@ -337,21 +337,34 @@ namespace freelan
 	{
 		(void)sender;
 
-		if (m_configuration.routing_method == configuration::RM_SWITCH)
+		switch (m_configuration.routing_method)
 		{
-			try
-			{
-				// We read the source ethernet address and update the switch routing table according to it.
-				asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
+			case configuration::RM_SWITCH:
+				{
+					try
+					{
+						// We read the source ethernet address and update the switch routing table according to it.
+						asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
-				m_switch.update_entry(ethernet_helper.sender(), sender);
-			}
-			catch (std::length_error&)
-			{
-			}
+						m_switch.update_entry(ethernet_helper.sender(), sender);
+					}
+					catch (std::length_error&)
+					{
+					}
+
+					m_tap_adapter.write(data);
+					break;
+				}
+			case configuration::RM_HUB:
+				{
+					m_tap_adapter.write(data);
+					break;
+				}
+			case configuration::RM_NONE:
+				{
+					break;
+				}
 		}
-
-		m_tap_adapter.write(data);
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
