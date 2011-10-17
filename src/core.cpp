@@ -48,8 +48,6 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-#include <asiotap/osi/ethernet_helper.hpp>
-
 #include "os.hpp"
 #include "tap_adapter_switch_port.hpp"
 #include "endpoint_switch_port.hpp"
@@ -78,6 +76,7 @@ namespace freelan
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
+		m_switch(m_configuration.routing_method),
 		m_logger(log)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));

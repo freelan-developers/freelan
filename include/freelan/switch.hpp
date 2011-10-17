@@ -52,6 +52,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "switch_port.hpp"
+#include "configuration.hpp"
 
 namespace freelan
 {
@@ -76,6 +77,12 @@ namespace freelan
 			 * \brief The port iterator type.
 			 */
 			typedef port_list_type::iterator port_iterator_type;
+
+			/**
+			 * \brief Create a new switch.
+			 * \param routing_method The routing method to use.
+			 */
+			switch_(configuration::routing_method_type routing_method);
 
 			/**
 			 * \brief Add a switch port.
@@ -117,9 +124,15 @@ namespace freelan
 			void send_data_from(port_iterator_type it, boost::asio::const_buffer data);
 			void send_data_to(port_iterator_type it, boost::asio::const_buffer data);
 
+			configuration::routing_method_type m_routing_method;
 			port_list_type m_ports;
 	};
 	
+	inline switch_::switch_(configuration::routing_method_type routing_method) :
+		m_routing_method(routing_method)
+	{
+	}
+
 	inline switch_::port_iterator_type switch_::add_port(port_type* port)
 	{
 		return m_ports.insert(m_ports.end(), port);
