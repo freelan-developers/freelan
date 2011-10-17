@@ -46,12 +46,11 @@
 #ifndef SWITCH_HPP
 #define SWITCH_HPP
 
-#include <map>
+#include <algorithm>
 
-#include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
-#include <fscp/server.hpp>
+#include "switch_port.hpp"
 
 namespace freelan
 {
@@ -63,86 +62,39 @@ namespace freelan
 		public:
 
 			/**
-			 * \brief The default maximum number of entries.
+			 * \brief The port type.
 			 */
-			static const unsigned int DEFAULT_MAX_ENTRIES = 500;
+			typedef switch_port port_type;
 
 			/**
-			 * \brief The ethernet address type.
-			 */
-			typedef boost::asio::const_buffer ethernet_address_type;
-
-			/**
-			 * \brief The endpoint type.
-			 */
-			typedef fscp::server::ep_type ep_type;
-
-			/**
-			 * \brief The entry type.
-			 */
-			struct entry_type
-			{
-				/**
-				 * \brief Create a new entry.
-				 * \param endpoint The endpoint.
-				 * \param date The date.
-				 */
-				entry_type(ep_type endpoint, boost::posix_time::ptime date = boost::posix_time::second_clock::local_time());
-
-				ep_type endpoint; /**< \brief The associated endpoint. */
-				boost::posix_time::ptime date; /**< \brief The entry date. */
-			};
-
-			/**
-			 * \brief Create a new switch.
-			 * \param max_entries The maximum number of entries.
-			 */
-			switch_(unsigned int max_entries = DEFAULT_MAX_ENTRIES);
-
-			/**
-			 * \brief Update an entry.
-			 * \param address The ethernet address of the entry.
-			 * \param endpoint The associated endpoint.
-			 * \return true if the entry was just created.
+			 * \brief Add a switch port.
+			 * \param port The port to add. Cannot be null.
 			 *
-			 * \warning Broadcast addresses are never added.
+			 * The switch takes ownership of the specified port.
 			 */
-			bool update_entry(const ethernet_address_type& address, const ep_type& endpoint);
+			void add_port(port_type* port);
 
 			/**
-			 * \brief Get an entry.
-			 * \param address The address of the entry.
-			 * \param endpoint The endpoint value to update if an entry is found.
-			 * \return true if an entry was found, false otherwise.
+			 * \brief Remove a port.
+			 * \param port The port to remove.
 			 */
-			bool get_entry(const ethernet_address_type& address, ep_type& endpoint);
+			void remove_port(port_type& port);
 
 		private:
 
-			struct ethernet_address_comp
-			{
-				bool operator() (const ethernet_address_type& lhs, const ethernet_address_type& rhs) const;
-			};
+			typedef boost::ptr_vector<port_type> port_list_type;
 
-			typedef std::map<ethernet_address_type, entry_type, ethernet_address_comp> map_type;
-
-			static bool is_broadcast(const ethernet_address_type& address);
-
-			void remove_older_entry();
-
-			unsigned int m_max_entries;
-			map_type m_map;
+			port_list_type m_ports;
 	};
-
-	inline switch_::entry_type::entry_type(ep_type _endpoint, boost::posix_time::ptime _date) :
-		endpoint(_endpoint),
-		date(_date)
+	
+	inline void switch_::add_port(port_type* port)
 	{
+		m_ports.push_back(port);
 	}
-
-	inline switch_::switch_(unsigned int max_entries) :
-		m_max_entries(max_entries)
+	
+	inline void switch_::remove_port(port_type& port)
 	{
+		m_ports.erase(std::find(m_ports.begin(), m_ports.end(), port));
 	}
 }
 
