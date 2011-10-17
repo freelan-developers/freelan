@@ -58,6 +58,12 @@
 boost::program_options::options_description get_network_options();
 
 /**
+ * \brief Get the switch options.
+ * \return The swtich options.
+ */
+boost::program_options::options_description get_switch_options();
+
+/**
  * \brief Get the security options.
  * \return The security options.
  */

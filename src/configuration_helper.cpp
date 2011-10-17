@@ -71,12 +71,12 @@ namespace
 		throw std::runtime_error("\"" + str + "\" is not a valid hostname resolution protocol");
 	}
 
-	fl::configuration::routing_method_type to_routing_method(const std::string& str)
+	fl::switch_configuration::routing_method_type to_routing_method(const std::string& str)
 	{
 		if (str == "switch")
-			return fl::configuration::RM_SWITCH;
+			return fl::switch_configuration::RM_SWITCH;
 		if (str == "hub")
-			return fl::configuration::RM_HUB;
+			return fl::switch_configuration::RM_HUB;
 
 		throw std::runtime_error("\"" + str + "\" is not a valid routing method");
 	}
@@ -139,11 +139,21 @@ po::options_description get_network_options()
 		("network.enable_dhcp_proxy", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
 		("network.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
 		("network.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
-		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
-		("network.enable_relay_mode", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
-		("network.enable_stp", po::value<bool>()->default_value(false, "no"), "Whether to enable the Spanning Tree Protocol.")
 		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
 		("network.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The contact list.")
+		;
+
+	return result;
+}
+
+po::options_description get_switch_options()
+{
+	po::options_description result("Switch options");
+
+	result.add_options()
+		("switch.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
+		("switch.enable_relay_mode", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
+		("switch.enable_stp", po::value<bool>()->default_value(false, "no"), "Whether to enable the Spanning Tree Protocol.")
 		;
 
 	return result;
@@ -172,6 +182,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	typedef fl::configuration::cert_type cert_type;
 	typedef cryptoplus::pkey::pkey pkey;
 
+	// Network options
 	configuration.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["network.hostname_resolution_protocol"].as<std::string>());
 	configuration.listen_on = parse<fl::configuration::ep_type>(vm["network.listen_on"].as<std::string>());
 	configuration.enable_tap_adapter = vm["network.enable_tap_adapter"].as<bool>();
@@ -182,9 +193,6 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.enable_dhcp_proxy = vm["network.enable_dhcp_proxy"].as<bool>();
 	configuration.dhcp_server_ipv4_address_prefix_length = parse_optional<fl::configuration::ipv4_address_prefix_length_type>(vm["network.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
 	configuration.dhcp_server_ipv6_address_prefix_length = parse_optional<fl::configuration::ipv6_address_prefix_length_type>(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
-	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
-	configuration.enable_relay_mode = vm["network.enable_relay_mode"].as<bool>();
-	configuration.enable_stp = vm["network.enable_stp"].as<bool>();
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 
 	const std::vector<std::string> contact_list = vm["network.contact"].as<std::vector<std::string> >();
@@ -196,6 +204,12 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 		configuration.contact_list.push_back(parse<fl::configuration::ep_type>(contact));
 	}
 
+	// Switch options
+	configuration.switch_configuration.routing_method = to_routing_method(vm["switch.routing_method"].as<std::string>());
+	configuration.switch_configuration.enable_relay_mode = vm["switch.enable_relay_mode"].as<bool>();
+	configuration.switch_configuration.enable_stp = vm["switch.enable_stp"].as<bool>();
+
+	// Security options
 	cert_type signature_certificate = load_certificate(vm["security.signature_certificate_file"].as<std::string>());
 	pkey signature_private_key = load_private_key(vm["security.signature_private_key_file"].as<std::string>());
 
