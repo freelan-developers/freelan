@@ -48,8 +48,47 @@
 
 #include "switch_port.hpp"
 
+#include <asiotap/tap_adapter.hpp>
+
 namespace freelan
 {
+	/**
+	 * \brief A switch port bound to a tap adapter.
+	 */
+	class tap_adapter_switch_port : public switch_port
+	{
+		public:
+
+			/**
+			 * \brief Create a switch port bound to the specified tap adapter.
+			 * \param tap_adapter The tap adapter to bind to. The instance must
+			 * remain valid during the lifetime of the tap_adapter_switch_port
+			 * instance.
+			 */
+			tap_adapter_switch_port(asiotap::tap_adapter& tap_adapter);
+
+		protected:
+
+			/**
+			 * \brief Send data trough the port.
+			 * \param data The data to send trough the port.
+			 */
+			void write(boost::asio::const_buffer data);
+
+		private:
+
+			asiotap::tap_adapter& m_tap_adapter;
+	};
+
+	inline tap_adapter_switch_port::tap_adapter_switch_port(asiotap::tap_adapter& tap_adapter) :
+		m_tap_adapter(tap_adapter)
+	{
+	}
+
+	inline void tap_adapter_switch_port::write(boost::asio::const_buffer data)
+	{
+		m_tap_adapter.write(data);
+	}
 }
 
 #endif /* TAP_ADAPTER_SWITCH_PORT_HPP */

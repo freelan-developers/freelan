@@ -46,8 +46,36 @@
 #ifndef SWITCH_PORT_HPP
 #define SWITCH_PORT_HPP
 
+#include <boost/asio.hpp>
+
 namespace freelan
 {
+	/**
+	 * \brief A base switch port class.
+	 *
+	 * Represent a switch port.
+	 */
+	class switch_port
+	{
+		public:
+
+			/**
+			 * \brief Virtual destructor.
+			 */
+			virtual ~switch_port();
+
+		protected:
+
+			/**
+			 * \brief Send data trough the port.
+			 * \param data The data to send trough the port.
+			 */
+			virtual void write(boost::asio::const_buffer data) = 0;
+	};
+	
+	inline switch_port::~switch_port()
+	{
+	}
 }
 
 #endif /* SWITCH_PORT_HPP */

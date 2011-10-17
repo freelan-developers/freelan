@@ -48,8 +48,49 @@
 
 #include "switch_port.hpp"
 
+#include <fscp/server.hpp>
+
 namespace freelan
 {
+	/**
+	 * \brief A switch port bound to an endpoint.
+	 */
+	class endpoint_switch_port : public switch_port
+	{
+		public:
+
+			/**
+			 * \brief Create a switch port bound to a specified fscp server and an
+			 * endpoint.
+			 * \param server
+			 * \param endpoint
+			 */
+			endpoint_switch_port(fscp::server& server, fscp::server::ep_type endpoint);
+
+		protected:
+
+			/**
+			 * \brief Send data trough the port.
+			 * \param data The data to send trough the port.
+			 */
+			void write(boost::asio::const_buffer data);
+
+		private:
+
+			fscp::server& m_server;
+			fscp::server::ep_type m_endpoint;
+	};
+
+	inline endpoint_switch_port::endpoint_switch_port(fscp::server& server, fscp::server::ep_type endpoint) :
+		m_server(server),
+		m_endpoint(endpoint)
+	{
+	}
+
+	inline void endpoint_switch_port::write(boost::asio::const_buffer data)
+	{
+		m_server.async_send_data(m_endpoint, data);
+	}
 }
 
 #endif /* ENDPOINT_SWITCH_PORT_HPP */
