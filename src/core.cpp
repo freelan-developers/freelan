@@ -345,17 +345,17 @@ namespace freelan
 	{
 		m_logger(LOG_INFORMATION) << "Session with " << sender << " lost." << endl;
 
-		if (m_session_lost_callback)
-		{
-			m_session_lost_callback(sender);
-		}
-
 		const endpoint_switch_port_iterator_map_type::iterator it = m_endpoint_switch_port_iterator_map.find(sender);
 
 		if (it != m_endpoint_switch_port_iterator_map.end())
 		{
 			m_switch.remove_port(it->second);
 			m_endpoint_switch_port_iterator_map.erase(it);
+		}
+
+		if (m_session_lost_callback)
+		{
+			m_session_lost_callback(sender);
 		}
 	}
 
