@@ -49,13 +49,18 @@
 
 namespace freelan
 {
+	switch_configuration::switch_configuration() :
+		routing_method(RM_SWITCH),
+		enable_relay_mode(false),
+		enable_stp(false)
+	{
+	}
+
 	configuration::configuration() :
 		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
 		enable_tap_adapter(true),
 		enable_arp_proxy(false),
 		enable_dhcp_proxy(true),
-		enable_relay_mode(false),
-		enable_stp(false),
 		certificate_validation_callback(0)
 	{
 	}

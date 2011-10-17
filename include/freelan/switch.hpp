@@ -82,9 +82,9 @@ namespace freelan
 
 			/**
 			 * \brief Create a new switch.
-			 * \param routing_method The routing method to use.
+			 * \param configuration The switch configuration.
 			 */
-			switch_(configuration::routing_method_type routing_method);
+			switch_(const switch_configuration& configuration);
 
 			/**
 			 * \brief Register a switch port.
@@ -119,7 +119,8 @@ namespace freelan
 			void send_data_from(port_type, boost::asio::const_buffer);
 			void send_data_to(port_type, boost::asio::const_buffer);
 
-			configuration::routing_method_type m_routing_method;
+			switch_configuration m_configuration;
+
 			port_list_type m_ports;
 
 			typedef boost::array<uint8_t, 6> ethernet_address_type;
@@ -131,8 +132,8 @@ namespace freelan
 			ethernet_address_map_type m_ethernet_address_map;
 	};
 	
-	inline switch_::switch_(configuration::routing_method_type routing_method) :
-		m_routing_method(routing_method)
+	inline switch_::switch_(const switch_configuration& configuration) :
+		m_configuration(configuration)
 	{
 	}
 

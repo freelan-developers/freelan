@@ -66,6 +66,41 @@ namespace freelan
 	class core;
 
 	/**
+	 * \brief The switch related options type.
+	 */
+	struct switch_configuration
+	{
+		/**
+		 * \brief The routing method type.
+		 */
+		enum routing_method_type
+		{
+			RM_SWITCH, /**< \brief The switch routing method. */
+			RM_HUB /**< \brief The hub routing method. */
+		};
+
+		/**
+		 * \brief Constructor.
+		 */
+		switch_configuration();
+
+		/**
+		 * \brief The routing method.
+		 */
+		routing_method_type routing_method;
+
+		/**
+		 * \brief Whether to enable the relay mode.
+		 */
+		bool enable_relay_mode;
+
+		/**
+		 * \brief Whether to enable the Spanning Tree Protocol.
+		 */
+		bool enable_stp;
+	};
+
+	/**
 	 * \brief The configuration structure.
 	 */
 	struct configuration
@@ -74,7 +109,7 @@ namespace freelan
 		 * \brief The ethernet address type.
 		 */
 		typedef asiotap::osi::proxy<asiotap::osi::arp_frame>::ethernet_address_type ethernet_address_type;
-			
+
 		/**
 		 * \brief The endpoint type.
 		 */
@@ -109,13 +144,9 @@ namespace freelan
 		};
 
 		/**
-		 * \brief The routing method type.
+		 * \brief The switch related options.
 		 */
-		enum routing_method_type
-		{
-			RM_SWITCH, /**< \brief The switch routing method. */
-			RM_HUB /**< \brief The hub routing method. */
-		};
+		freelan::switch_configuration switch_configuration;
 
 		/**
 		 * \brief The certificate validation method type.
@@ -195,21 +226,6 @@ namespace freelan
 		 * \brief The DHCP server IPv6 address.
 		 */
 		boost::optional<ipv6_address_prefix_length_type> dhcp_server_ipv6_address_prefix_length;
-
-		/**
-		 * \brief The routing method.
-		 */
-		routing_method_type routing_method;
-
-		/**
-		 * \brief Whether to enable the relay mode.
-		 */
-		bool enable_relay_mode;
-
-		/**
-		 * \brief Whether to enable the Spanning Tree Protocol.
-		 */
-		bool enable_stp;
 
 		/**
 		 * \brief The hello timeout.

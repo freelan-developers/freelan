@@ -57,15 +57,15 @@ namespace freelan
 	{
 		assert(port);
 
-		switch (m_routing_method)
+		switch (m_configuration.routing_method)
 		{
-			case configuration::RM_HUB:
+			case switch_configuration::RM_HUB:
 				{
 					send_data_from(port, data);
 
 					break;
 				}
-			case configuration::RM_SWITCH:
+			case switch_configuration::RM_SWITCH:
 				{
 					asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
