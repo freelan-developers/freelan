@@ -140,6 +140,8 @@ po::options_description get_network_options()
 		("network.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
 		("network.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
 		("network.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
+		("network.enable_relay_mode", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
+		("network.enable_stp", po::value<bool>()->default_value(false, "no"), "Whether to enable the Spanning Tree Protocol.")
 		("network.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
 		("network.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The contact list.")
 		;
@@ -181,6 +183,8 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.dhcp_server_ipv4_address_prefix_length = parse_optional<fl::configuration::ipv4_address_prefix_length_type>(vm["network.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
 	configuration.dhcp_server_ipv6_address_prefix_length = parse_optional<fl::configuration::ipv6_address_prefix_length_type>(vm["network.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
 	configuration.routing_method = to_routing_method(vm["network.routing_method"].as<std::string>());
+	configuration.enable_relay_mode = vm["network.enable_relay_mode"].as<bool>();
+	configuration.enable_stp = vm["network.enable_stp"].as<bool>();
 	configuration.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["network.hello_timeout"].as<std::string>()));
 
 	const std::vector<std::string> contact_list = vm["network.contact"].as<std::vector<std::string> >();
