@@ -67,7 +67,20 @@ namespace freelan
 				{
 					asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
-					//TODO: Do something with ethernet_helper.target() and ethernet_helper.sender().
+					m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = it;
+
+					const ethernet_address_type target = to_ethernet_address(ethernet_helper.target());
+
+					// We look in the ethernet address map
+
+					const ethernet_address_map_type::iterator target_entry = m_ethernet_address_map.find(target);
+
+					if (target != m_ethernet_address_map.end())
+					{
+						//TODO: Implement
+					}
+
+					// TODO: Implement
 				}
 		}
 	}
@@ -86,5 +99,16 @@ namespace freelan
 	void switch_::send_data_to(port_iterator_type it, boost::asio::const_buffer data)
 	{
 		it->write(data);
+	}
+
+	switch_::ethernet_address_type switch_::to_ethernet_address(boost::asio::const_buffer buf)
+	{
+		assert(boost::asio::buffer_size(buf) == ethernet_address_type::static_size);
+
+		ethernet_address_type result;
+
+		std::memcpy(result.c_array(), boost::asio::buffer_cast<const ethernet_address_type::value_type*>(buf), result.size());
+
+		return result;
 	}
 }

@@ -47,9 +47,11 @@
 #define SWITCH_HPP
 
 #include <algorithm>
+#include <map>
 
 #include <boost/asio.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/array.hpp>
 
 #include "switch_port.hpp"
 #include "configuration.hpp"
@@ -126,6 +128,13 @@ namespace freelan
 
 			configuration::routing_method_type m_routing_method;
 			port_list_type m_ports;
+
+			typedef boost::array<uint8_t, 6> ethernet_address_type;
+			typedef std::map<ethernet_address_type, port_iterator_type> ethernet_address_map_type;
+
+			static ethernet_address_type to_ethernet_address(boost::asio::const_buffer);
+
+			ethernet_address_map_type m_ethernet_address_map;
 	};
 	
 	inline switch_::switch_(configuration::routing_method_type routing_method) :
