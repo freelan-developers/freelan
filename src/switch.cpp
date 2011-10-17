@@ -57,6 +57,8 @@ namespace freelan
 	{
 		assert(port);
 
+		m_logger(LOG_DEBUG) << "Received data on port: " << *port << endl;
+
 		switch (m_configuration.routing_method)
 		{
 			case switch_configuration::RM_HUB:
@@ -73,6 +75,8 @@ namespace freelan
 
 					if (!is_multicast_address(target_address))
 					{
+						m_logger(LOG_DEBUG) << "Target is not multicast." << endl;
+
 						// TODO: We should probably limit the count of entries somehow to avoid DoS attacks.
 						m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = port;
 
@@ -84,6 +88,8 @@ namespace freelan
 						{
 							port_type target_port = target_entry->second.lock();
 
+							m_logger(LOG_DEBUG) << "Found entry: " << *target_port << endl;
+
 							if (target_port)
 							{
 								send_data_from_to(port, target_port, data);
@@ -94,18 +100,22 @@ namespace freelan
 							}
 						} else
 						{
+							m_logger(LOG_DEBUG) << "No entry found: forwarding to everybody." << endl;
+
 							// No target entry: we send the message to everybody.
 							send_data_from(port, data);
 						}
 					} else
 					{
+						m_logger(LOG_DEBUG) << "Multicast: forwarding to everybody." << endl;
+
 						// Address is multicast: we send to everybody.
 						send_data_from(port, data);
 					}
 				}
 		}
 	}
-	
+
 	void switch_::send_data_from(port_type source_port, boost::asio::const_buffer data)
 	{
 		BOOST_FOREACH(port_type& port, m_ports)
@@ -116,7 +126,7 @@ namespace freelan
 			}
 		}
 	}
-	
+
 	void switch_::send_data_from_to(port_type source_port, port_type target_port, boost::asio::const_buffer data)
 	{
 		if (source_port != target_port)
@@ -138,7 +148,7 @@ namespace freelan
 
 		return result;
 	}
-	
+
 	bool switch_::is_multicast_address(const switch_::ethernet_address_type& address)
 	{
 		return ((address[0] & 0x01) != 0x00);
