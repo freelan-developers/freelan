@@ -108,7 +108,10 @@ namespace freelan
 		{
 			if (source_port != port)
 			{
-				send_data_to(port, data);
+				if (m_configuration.enable_relay_mode || (typeid(source_port.get()) != typeid(port.get())))
+				{
+					send_data_to(port, data);
+				}
 			}
 		}
 	}
