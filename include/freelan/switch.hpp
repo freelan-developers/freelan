@@ -100,6 +100,18 @@ namespace freelan
 			 */
 			void receive_data(port_iterator_type it, boost::asio::const_buffer data);
 
+			/**
+			 * \brief Get an iterator to the first port.
+			 * \return An iterator to the first port.
+			 */
+			port_iterator_type begin();
+
+			/**
+			 * \brief Get an iterator past the last port.
+			 * \return An iterator past the last port.
+			 */
+			port_iterator_type end();
+
 		private:
 
 			void send_data_from(port_iterator_type it, boost::asio::const_buffer data);
@@ -116,6 +128,16 @@ namespace freelan
 	inline switch_::port_iterator_type switch_::remove_port(port_iterator_type it)
 	{
 		return m_ports.erase(it);
+	}
+
+	inline switch_::port_iterator_type switch_::begin()
+	{
+		return m_ports.begin();
+	}
+
+	inline switch_::port_iterator_type switch_::end()
+	{
+		return m_ports.end();
 	}
 }
 
