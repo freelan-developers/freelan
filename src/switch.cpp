@@ -45,12 +45,16 @@
 
 #include "switch.hpp"
 
+#include <cassert>
+
 #include <asiotap/osi/ethernet_helper.hpp>
 
 namespace freelan
 {
 	void switch_::receive_data(port_iterator_type it, boost::asio::const_buffer data)
 	{
+		assert(it != end());
+
 		switch (m_routing_method)
 		{
 			case configuration::RM_HUB:
