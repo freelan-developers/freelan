@@ -47,10 +47,10 @@
 #define SWITCH_HPP
 
 #include <algorithm>
+#include <vector>
 #include <map>
 
 #include <boost/asio.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/array.hpp>
 
 #include "switch_port.hpp"
@@ -68,17 +68,12 @@ namespace freelan
 			/**
 			 * \brief The port type.
 			 */
-			typedef switch_port port_type;
+			typedef boost::shared_ptr<switch_port> port_type;
 
 			/**
 			 * \brief The port list type.
 			 */
-			typedef boost::ptr_vector<port_type> port_list_type;
-
-			/**
-			 * \brief The port iterator type.
-			 */
-			typedef port_list_type::iterator port_iterator_type;
+			typedef std::vector<port_type> port_list_type;
 
 			/**
 			 * \brief Create a new switch.
@@ -87,50 +82,43 @@ namespace freelan
 			switch_(configuration::routing_method_type routing_method);
 
 			/**
-			 * \brief Add a switch port.
-			 * \param port The port to add. Cannot be null.
-			 * \return An iterator to the port.
-			 *
-			 * The switch takes ownership of the specified port.
+			 * \brief Register a switch port.
+			 * \param port The port to register. Cannot be null.
 			 */
-			port_iterator_type add_port(port_type* port);
+			void register_port(port_type port);
 
 			/**
-			 * \brief Remove a port.
-			 * \param it An iterator to the port to remove. Must be a valid iterator.
-			 * \return The next port in the list.
+			 * \brief Unregister a port.
+			 * \param port The port to unregister. Cannot be null.
+			 *
+			 * If the port was not registered, nothing is done.
 			 */
-			port_iterator_type remove_port(port_iterator_type it);
+			void unregister_port(port_type port);
+
+			/**
+			 * \brief Check if the specified port is registered.
+			 * \param port The port to check.
+			 * \return true if the port is registered, false otherwise.
+			 */
+			bool is_registered(port_type port) const;
 
 			/**
 			 * \brief Receive data trough the specified port.
-			 * \param it An iterator to the port onto which the data was received.
+			 * \param port The port from which the data comes. Cannot be null.
 			 * \param data The data.
 			 */
-			void receive_data(port_iterator_type it, boost::asio::const_buffer data);
-
-			/**
-			 * \brief Get an iterator to the first port.
-			 * \return An iterator to the first port.
-			 */
-			port_iterator_type begin();
-
-			/**
-			 * \brief Get an iterator past the last port.
-			 * \return An iterator past the last port.
-			 */
-			port_iterator_type end();
+			void receive_data(port_type port, boost::asio::const_buffer data);
 
 		private:
 
-			void send_data_from(port_iterator_type it, boost::asio::const_buffer data);
-			void send_data_to(port_iterator_type it, boost::asio::const_buffer data);
+			void send_data_from(port_type, boost::asio::const_buffer);
+			void send_data_to(port_type, boost::asio::const_buffer);
 
 			configuration::routing_method_type m_routing_method;
 			port_list_type m_ports;
 
 			typedef boost::array<uint8_t, 6> ethernet_address_type;
-			typedef std::map<ethernet_address_type, port_iterator_type> ethernet_address_map_type;
+			typedef std::map<ethernet_address_type, port_type> ethernet_address_map_type;
 
 			static ethernet_address_type to_ethernet_address(boost::asio::const_buffer);
 
@@ -142,24 +130,19 @@ namespace freelan
 	{
 	}
 
-	inline switch_::port_iterator_type switch_::add_port(port_type* port)
+	inline void switch_::register_port(port_type port)
 	{
-		return m_ports.insert(m_ports.end(), port);
+		m_ports.push_back(port);
 	}
 
-	inline switch_::port_iterator_type switch_::remove_port(port_iterator_type it)
+	inline void switch_::unregister_port(port_type port)
 	{
-		return m_ports.erase(it);
+		m_ports.erase(std::remove(m_ports.begin(), m_ports.end(), port), m_ports.end());
 	}
 
-	inline switch_::port_iterator_type switch_::begin()
+	inline bool switch_::is_registered(port_type port) const
 	{
-		return m_ports.begin();
-	}
-
-	inline switch_::port_iterator_type switch_::end()
-	{
-		return m_ports.end();
+		return (std::find(m_ports.begin(), m_ports.end(), port) != m_ports.end());
 	}
 }
 

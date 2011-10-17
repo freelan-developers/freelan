@@ -90,7 +90,8 @@ namespace freelan
 		{
 			m_tap_adapter.reset(new asiotap::tap_adapter(io_service));
 
-			m_tap_adapter_switch_port_iterator = m_switch.add_port(new tap_adapter_switch_port(*m_tap_adapter));
+			m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
+			m_switch.register_port(m_tap_adapter_switch_port);
 		}
 	}
 
@@ -332,7 +333,9 @@ namespace freelan
 	{
 		m_logger(LOG_INFORMATION) << "Session established with " << sender << "." << endl;
 
-		m_endpoint_switch_port_iterator_map[sender] = m_switch.add_port(new endpoint_switch_port(m_server, sender));
+		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(boost::ref(m_server), sender);
+		m_endpoint_switch_port_map[sender] = port;
+		m_switch.register_port(port);
 
 		if (m_session_established_callback)
 		{
@@ -344,12 +347,12 @@ namespace freelan
 	{
 		m_logger(LOG_INFORMATION) << "Session with " << sender << " lost." << endl;
 
-		const endpoint_switch_port_iterator_map_type::iterator it = m_endpoint_switch_port_iterator_map.find(sender);
+		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
-		if (it != m_endpoint_switch_port_iterator_map.end())
+		if (port)
 		{
-			m_switch.remove_port(it->second);
-			m_endpoint_switch_port_iterator_map.erase(it);
+			m_switch.unregister_port(port);
+			m_endpoint_switch_port_map.erase(sender);
 		}
 
 		if (m_session_lost_callback)
@@ -360,11 +363,11 @@ namespace freelan
 
 	void core::on_data(const ep_type& sender, boost::asio::const_buffer data)
 	{
-		const endpoint_switch_port_iterator_map_type::iterator it = m_endpoint_switch_port_iterator_map.find(sender);
+		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
-		if (it != m_endpoint_switch_port_iterator_map.end())
+		if (port)
 		{
-			m_switch.receive_data(it->second, data);
+			m_switch.receive_data(port, data);
 		}
 	}
 
@@ -395,7 +398,7 @@ namespace freelan
 
 			if (!handled)
 			{
-				m_switch.receive_data(m_tap_adapter_switch_port_iterator, data);
+				m_switch.receive_data(m_tap_adapter_switch_port, data);
 			}
 
 			// Start another read

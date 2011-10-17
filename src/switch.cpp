@@ -47,19 +47,21 @@
 
 #include <cassert>
 
+#include <boost/foreach.hpp>
+
 #include <asiotap/osi/ethernet_helper.hpp>
 
 namespace freelan
 {
-	void switch_::receive_data(port_iterator_type it, boost::asio::const_buffer data)
+	void switch_::receive_data(port_type port, boost::asio::const_buffer data)
 	{
-		assert(it != end());
+		assert(port);
 
 		switch (m_routing_method)
 		{
 			case configuration::RM_HUB:
 				{
-					send_data_from(it, data);
+					send_data_from(port, data);
 
 					break;
 				}
@@ -67,7 +69,7 @@ namespace freelan
 				{
 					asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
-					m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = it;
+					m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = port;
 
 					const ethernet_address_type target = to_ethernet_address(ethernet_helper.target());
 
@@ -75,7 +77,7 @@ namespace freelan
 
 					const ethernet_address_map_type::iterator target_entry = m_ethernet_address_map.find(target);
 
-					if (target != m_ethernet_address_map.end())
+					if (target_entry != m_ethernet_address_map.end())
 					{
 						//TODO: Implement
 					}
@@ -85,20 +87,20 @@ namespace freelan
 		}
 	}
 	
-	void switch_::send_data_from(port_iterator_type it, boost::asio::const_buffer data)
+	void switch_::send_data_from(port_type source_port, boost::asio::const_buffer data)
 	{
-		for (port_iterator_type port = m_ports.begin(); port != m_ports.end(); ++port)
+		BOOST_FOREACH(port_type& port, m_ports)
 		{
-			if (port != it)
+			if (source_port != port)
 			{
 				send_data_to(port, data);
 			}
 		}
 	}
 	
-	void switch_::send_data_to(port_iterator_type it, boost::asio::const_buffer data)
+	void switch_::send_data_to(port_type port, boost::asio::const_buffer data)
 	{
-		it->write(data);
+		port->write(data);
 	}
 
 	switch_::ethernet_address_type switch_::to_ethernet_address(boost::asio::const_buffer buf)

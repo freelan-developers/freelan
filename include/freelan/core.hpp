@@ -263,10 +263,10 @@ namespace freelan
 			// Switch
 			switch_ m_switch;
 
-			typedef std::map<ep_type, switch_::port_iterator_type> endpoint_switch_port_iterator_map_type;
-			endpoint_switch_port_iterator_map_type m_endpoint_switch_port_iterator_map;
+			typedef std::map<ep_type, switch_::port_type> endpoint_switch_port_map_type;
+			endpoint_switch_port_map_type m_endpoint_switch_port_map;
 
-			switch_::port_iterator_type m_tap_adapter_switch_port_iterator;
+			switch_::port_type m_tap_adapter_switch_port;
 
 			// Logger
 			freelan::logger m_logger;
