@@ -123,10 +123,7 @@ namespace freelan
 	{
 		BOOST_FOREACH(port_type& port, m_ports)
 		{
-			if (source_port != port)
-			{
-				send_data_from_to(source_port, port, data);
-			}
+			send_data_from_to(source_port, port, data);
 		}
 	}
 
