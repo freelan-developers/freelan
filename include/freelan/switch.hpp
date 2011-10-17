@@ -131,6 +131,7 @@ namespace freelan
 			typedef std::map<ethernet_address_type, weak_port_type> ethernet_address_map_type;
 
 			static ethernet_address_type to_ethernet_address(boost::asio::const_buffer);
+			static bool is_multicast_address(const ethernet_address_type& address);
 
 			ethernet_address_map_type m_ethernet_address_map;
 	};

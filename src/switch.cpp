@@ -69,33 +69,40 @@ namespace freelan
 				{
 					asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
-					// TODO: We should probably limit the count of entries somehow to avoid DoS attacks.
-					m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = port;
-
 					const ethernet_address_type target_address = to_ethernet_address(ethernet_helper.target());
 
-					// We look in the ethernet address map
-
-					const ethernet_address_map_type::iterator target_entry = m_ethernet_address_map.find(target_address);
-
-					if (target_entry != m_ethernet_address_map.end())
+					if (!is_multicast_address(target_address))
 					{
-						port_type target_port = target_entry->second.lock();
+						// TODO: We should probably limit the count of entries somehow to avoid DoS attacks.
+						m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = port;
 
-						if (target_port)
+						// We look in the ethernet address map
+
+						const ethernet_address_map_type::iterator target_entry = m_ethernet_address_map.find(target_address);
+
+						if (target_entry != m_ethernet_address_map.end())
 						{
-							if (target_port != port)
+							port_type target_port = target_entry->second.lock();
+
+							if (target_port)
 							{
-								send_data_to(target_port, data);
+								if (target_port != port)
+								{
+									send_data_to(target_port, data);
+								}
+							} else
+							{
+								// The port is no longer valid: we delete the entry.
+								m_ethernet_address_map.erase(target_entry);
 							}
 						} else
 						{
-							// The port is no longer valid: we delete the entry.
-							m_ethernet_address_map.erase(target_entry);
+							// No target entry: we send the message to everybody.
+							send_data_from(port, data);
 						}
 					} else
 					{
-						// No target entry: we send the message to everybody.
+						// Address is multicast: we send to everybody.
 						send_data_from(port, data);
 					}
 				}
@@ -130,5 +137,10 @@ namespace freelan
 		std::memcpy(result.c_array(), boost::asio::buffer_cast<const ethernet_address_type::value_type*>(buf), result.size());
 
 		return result;
+	}
+	
+	bool switch_::is_multicast_address(const switch_::ethernet_address_type& address)
+	{
+		return ((address[0] & 0x01) != 0x00);
 	}
 }
