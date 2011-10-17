@@ -71,10 +71,32 @@ namespace freelan
 			 * \param data The data to send trough the port.
 			 */
 			virtual void write(boost::asio::const_buffer data) = 0;
+
+			/**
+			 * \brief Check if the instance is equal to another.
+			 * \param other The other instance to test for equality.
+			 * \return true if the two instances are equal. Two instances of different subtypes are never equal.
+			 */
+			virtual bool equals(const switch_port& other) const = 0;
+
+			friend bool operator==(const switch_port&, const switch_port&);
 	};
 	
+	/**
+	 * \brief Test two switch_port for equality.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if lhs and rhs have the exact same attributes.
+	 */
+	bool operator==(const switch_port& lhs, const switch_port& rhs);
+
 	inline switch_port::~switch_port()
 	{
+	}
+
+	inline bool operator==(const switch_port& lhs, const switch_port& rhs)
+	{
+		return lhs.equals(rhs);
 	}
 }
 

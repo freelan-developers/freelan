@@ -75,11 +75,28 @@ namespace freelan
 			 */
 			void write(boost::asio::const_buffer data);
 
+			/**
+			 * \brief Check if the instance is equal to another.
+			 * \param other The other instance to test for equality.
+			 * \return true if the two instances are equal. Two instances of different subtypes are never equal.
+			 */
+			bool equals(const switch_port& other) const;
+
 		private:
 
 			fscp::server& m_server;
 			fscp::server::ep_type m_endpoint;
+
+			friend bool operator==(const endpoint_switch_port&, const endpoint_switch_port&);
 	};
+
+	/**
+	 * \brief Test two endpoint_switch_port for equality.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if lhs and rhs have the exact same attributes.
+	 */
+	bool operator==(const endpoint_switch_port& lhs, const endpoint_switch_port& rhs);
 
 	inline endpoint_switch_port::endpoint_switch_port(fscp::server& server, fscp::server::ep_type endpoint) :
 		m_server(server),
@@ -90,6 +107,11 @@ namespace freelan
 	inline void endpoint_switch_port::write(boost::asio::const_buffer data)
 	{
 		m_server.async_send_data(m_endpoint, data);
+	}
+
+	inline bool operator==(const endpoint_switch_port& lhs, const endpoint_switch_port& rhs)
+	{
+		return (&lhs.m_server == &rhs.m_server) && (lhs.m_endpoint == rhs.m_endpoint);
 	}
 }
 

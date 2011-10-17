@@ -75,10 +75,27 @@ namespace freelan
 			 */
 			void write(boost::asio::const_buffer data);
 
+			/**
+			 * \brief Check if the instance is equal to another.
+			 * \param other The other instance to test for equality.
+			 * \return true if the two instances are equal. Two instances of different subtypes are never equal.
+			 */
+			bool equals(const switch_port& other) const;
+
 		private:
 
 			asiotap::tap_adapter& m_tap_adapter;
+
+			friend bool operator==(const tap_adapter_switch_port&, const tap_adapter_switch_port&);
 	};
+
+	/**
+	 * \brief Test two tap_adapter_switch_port for equality.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if lhs and rhs have the exact same attributes.
+	 */
+	bool operator==(const tap_adapter_switch_port& lhs, const tap_adapter_switch_port& rhs);
 
 	inline tap_adapter_switch_port::tap_adapter_switch_port(asiotap::tap_adapter& tap_adapter) :
 		m_tap_adapter(tap_adapter)
@@ -88,6 +105,11 @@ namespace freelan
 	inline void tap_adapter_switch_port::write(boost::asio::const_buffer data)
 	{
 		m_tap_adapter.write(data);
+	}
+	
+	inline bool operator==(const tap_adapter_switch_port& lhs, const tap_adapter_switch_port& rhs)
+	{
+		return (&lhs.m_tap_adapter == &rhs.m_tap_adapter);
 	}
 }
 

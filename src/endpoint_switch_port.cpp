@@ -47,4 +47,15 @@
 
 namespace freelan
 {
+	bool endpoint_switch_port::equals(const switch_port& other) const
+	{
+		const endpoint_switch_port* casted_other = dynamic_cast<const endpoint_switch_port*>(&other);
+
+		if (casted_other)
+		{
+			return (*this == *casted_other);
+		}
+
+		return false;
+	}
 }
