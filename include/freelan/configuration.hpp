@@ -202,6 +202,16 @@ namespace freelan
 		routing_method_type routing_method;
 
 		/**
+		 * \brief Whether to enable the relay mode.
+		 */
+		bool enable_relay_mode;
+
+		/**
+		 * \brief Whether to enable the Spanning Tree Protocol.
+		 */
+		bool enable_stp;
+
+		/**
 		 * \brief The hello timeout.
 		 */
 		boost::posix_time::time_duration hello_timeout;
