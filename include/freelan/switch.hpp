@@ -66,9 +66,14 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief The base port type.
+			 */
+			typedef switch_port base_port_type;
+
+			/**
 			 * \brief The port type.
 			 */
-			typedef boost::shared_ptr<switch_port> port_type;
+			typedef boost::shared_ptr<base_port_type> port_type;
 
 			/**
 			 * \brief The port list type.
@@ -118,7 +123,8 @@ namespace freelan
 			port_list_type m_ports;
 
 			typedef boost::array<uint8_t, 6> ethernet_address_type;
-			typedef std::map<ethernet_address_type, port_type> ethernet_address_map_type;
+			typedef boost::weak_ptr<base_port_type> weak_port_type;
+			typedef std::map<ethernet_address_type, weak_port_type> ethernet_address_map_type;
 
 			static ethernet_address_type to_ethernet_address(boost::asio::const_buffer);
 
