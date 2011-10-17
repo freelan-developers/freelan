@@ -364,7 +364,10 @@ namespace freelan
 			}
 		}
 
-		m_tap_adapter->write(data);
+		if (m_tap_adapter)
+		{
+			m_tap_adapter->write(data);
+		}
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
@@ -475,7 +478,10 @@ namespace freelan
 
 	void core::on_proxy_data(boost::asio::const_buffer data)
 	{
-		m_tap_adapter->write(data);
+		if (m_tap_adapter)
+		{
+			m_tap_adapter->write(data);
+		}
 	}
 
 	bool core::on_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
