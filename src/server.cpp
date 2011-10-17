@@ -148,6 +148,21 @@ namespace fscp
 		return false;
 	}
 
+	std::vector<server::ep_type> server::get_session_endpoints() const
+	{
+		std::vector<server::ep_type> result;
+
+		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+		{
+			if (session_pair->second.has_remote_session())
+			{
+				result.push_back(session_pair->first);
+			}
+		}
+
+		return result;
+	}
+
 	void server::async_close_session(const ep_type& host)
 	{
 		get_io_service().post(bind(&server::do_close_session, this, host));

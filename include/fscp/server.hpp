@@ -305,6 +305,12 @@ namespace fscp
 			bool has_session(const ep_type& host) const;
 
 			/**
+			 * \brief Get the sessions endpoints.
+			 * \return A list of all the hosts with which a session is established.
+			 */
+			std::vector<server::ep_type> get_session_endpoints() const;
+
+			/**
 			 * \brief Close any existing session with the specified host.
 			 * \param host The host.
 			 */
