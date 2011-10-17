@@ -129,14 +129,14 @@ namespace freelan
 	 * \return ls.
 	 */
 	logger_stream& flush(logger_stream& ls);
-	
+
 	/**
 	 * \brief The end-line manipulator.
 	 * \param ls The logger_stream instance to manipulate.
 	 * \return ls.
 	 */
 	logger_stream& endl(logger_stream& ls);
-	
+
 	inline logger_stream::logger_stream()
 	{
 	}
@@ -144,7 +144,7 @@ namespace freelan
 	inline logger_stream::logger_stream(stream_type& os) : m_os(os)
 	{
 	}
-	
+
 	template <typename T>
 	inline logger_stream& logger_stream::operator<<(const T& val)
 	{
@@ -155,7 +155,7 @@ namespace freelan
 
 		return *this;
 	}
-	
+
 	inline logger_stream& logger_stream::operator<<(ostream_manipulator_type manipulator)
 	{
 		if (m_os)
@@ -170,7 +170,7 @@ namespace freelan
 	{
 		return manipulator(*this);
 	}
-	
+
 	inline logger_stream& flush(logger_stream& ls)
 	{
 		return ls << std::flush;

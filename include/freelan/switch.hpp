@@ -135,7 +135,7 @@ namespace freelan
 
 			ethernet_address_map_type m_ethernet_address_map;
 	};
-	
+
 	inline switch_::switch_(const switch_configuration& configuration, const freelan::logger& _logger) :
 		m_configuration(configuration),
 		m_logger(_logger)

@@ -113,7 +113,7 @@ namespace freelan
 	{
 		m_tap_adapter.write(data);
 	}
-	
+
 	inline std::ostream& tap_adapter_switch_port::output(std::ostream& os) const
 	{
 		return os << "Tap adapter (" << m_tap_adapter.name() << ")";

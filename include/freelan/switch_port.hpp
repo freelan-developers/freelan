@@ -92,7 +92,7 @@ namespace freelan
 			friend bool operator==(const switch_port&, const switch_port&);
 			friend std::ostream& operator<<(std::ostream&, const switch_port&);
 	};
-	
+
 	/**
 	 * \brief Test two switch_port for equality.
 	 * \param lhs The left argument.
@@ -117,7 +117,7 @@ namespace freelan
 	{
 		return lhs.equals(rhs);
 	}
-	
+
 	inline std::ostream& operator<<(std::ostream& os, const switch_port& port)
 	{
 		return port.output(os);

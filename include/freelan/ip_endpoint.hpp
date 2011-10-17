@@ -57,7 +57,7 @@ namespace freelan
 	 * \brief A generic IP endpoint template class.
 	 */
 	template <typename AddressType>
-		class ip_endpoint : public endpoint
+	class ip_endpoint : public endpoint
 	{
 		public:
 
@@ -123,9 +123,9 @@ namespace freelan
 	typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
 
 	template <typename AddressType>
-		inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
-			m_address(address),
-			m_port(port)
+	inline ip_endpoint<AddressType>::ip_endpoint(const address_type& address, port_type port) :
+		m_address(address),
+		m_port(port)
 	{
 	}
 
@@ -135,7 +135,8 @@ namespace freelan
 		if (m_port)
 		{
 			return ep_type(m_address, *m_port);
-		} else
+		}
+		else
 		{
 			return ep_type(m_address, boost::lexical_cast<base_port_type>(default_service));
 		}
@@ -157,7 +158,8 @@ namespace freelan
 		if (m_port)
 		{
 			return os << m_address << ":" << *m_port;
-		} else
+		}
+		else
 		{
 			return os << m_address << ":<default>" << std::endl;
 		}
@@ -169,7 +171,8 @@ namespace freelan
 		if (m_port)
 		{
 			return os << "[" << m_address << "]:" << *m_port;
-		} else
+		}
+		else
 		{
 			return os << "[" << m_address << "]:<default>" << std::endl;
 		}

@@ -93,19 +93,22 @@ namespace freelan
 							if (target_port)
 							{
 								send_data_from_to(port, target_port, data);
-							} else
+							}
+							else
 							{
 								// The port is no longer valid: we delete the entry.
 								m_ethernet_address_map.erase(target_entry);
 							}
-						} else
+						}
+						else
 						{
 							m_logger(LOG_DEBUG) << "No entry found: forwarding to everybody." << endl;
 
 							// No target entry: we send the message to everybody.
 							send_data_from(port, data);
 						}
-					} else
+					}
+					else
 					{
 						m_logger(LOG_DEBUG) << "Multicast: forwarding to everybody." << endl;
 

@@ -93,14 +93,14 @@ namespace freelan
 			log_level m_level;
 			int m_flags;
 	};
-	
+
 	inline logger::logger(const logger_stream& ls, log_level _level, int flags) :
 		m_ls(ls),
 		m_level(_level),
 		m_flags(flags)
 	{
 	}
-	
+
 	inline log_level logger::level() const
 	{
 		return m_level;

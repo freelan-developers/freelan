@@ -295,7 +295,8 @@ namespace freelan
 			m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << "." << endl;
 
 			m_server.async_introduce_to(sender);
-		} else
+		}
+		else
 		{
 			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << "." << endl;
 		}
@@ -426,7 +427,8 @@ namespace freelan
 
 				async_greet(*it);
 			}
-		} else
+		}
+		else
 		{
 			m_logger(LOG_WARNING) << "Failed to resolve " << *ep << "." << endl;
 		}
@@ -475,13 +477,13 @@ namespace freelan
 
 		return false;
 	}
-	
+
 	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
 	{
 		cryptoplus::x509::store_context store_context(ctx);
 
 		core* _this = static_cast<core*>(store_context.get_external_data(core::ex_data_index));
-		
+
 		return (_this->certificate_validation_method(ok != 0, store_context)) ? 1 : 0;
 	}
 

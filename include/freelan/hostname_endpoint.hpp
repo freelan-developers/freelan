@@ -116,7 +116,8 @@ namespace freelan
 		if (m_service)
 		{
 			return os << m_hostname << ":" << *m_service;
-		} else
+		}
+		else
 		{
 			return os << m_hostname << ":<default>";
 		}
