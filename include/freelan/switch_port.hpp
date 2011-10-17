@@ -46,6 +46,8 @@
 #ifndef SWITCH_PORT_HPP
 #define SWITCH_PORT_HPP
 
+#include <iostream>
+
 #include <boost/asio.hpp>
 
 namespace freelan
@@ -79,8 +81,16 @@ namespace freelan
 			 */
 			virtual bool equals(const switch_port& other) const = 0;
 
+			/**
+			 * \brief Output the name of the switch port to an output stream.
+			 * \param os The output stream.
+			 * \return os.
+			 */
+			virtual std::ostream& output(std::ostream& os) const = 0;
+
 			friend class switch_;
 			friend bool operator==(const switch_port&, const switch_port&);
+			friend std::ostream& operator<<(std::ostream&, const switch_port&);
 	};
 	
 	/**
@@ -91,6 +101,14 @@ namespace freelan
 	 */
 	bool operator==(const switch_port& lhs, const switch_port& rhs);
 
+	/**
+	 * \brief Print a switch port to an output stream.
+	 * \param os The output stream.
+	 * \param port The switch port.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const switch_port& port);
+
 	inline switch_port::~switch_port()
 	{
 	}
@@ -98,6 +116,11 @@ namespace freelan
 	inline bool operator==(const switch_port& lhs, const switch_port& rhs)
 	{
 		return lhs.equals(rhs);
+	}
+	
+	inline std::ostream& operator<<(std::ostream& os, const switch_port& port)
+	{
+		return port.output(os);
 	}
 }
 

@@ -82,6 +82,13 @@ namespace freelan
 			 */
 			bool equals(const switch_port& other) const;
 
+			/**
+			 * \brief Output the name of the switch port to an output stream.
+			 * \param os The output stream.
+			 * \return os.
+			 */
+			std::ostream& output(std::ostream& os) const;
+
 		private:
 
 			asiotap::tap_adapter& m_tap_adapter;
@@ -107,6 +114,11 @@ namespace freelan
 		m_tap_adapter.write(data);
 	}
 	
+	inline std::ostream& tap_adapter_switch_port::output(std::ostream& os) const
+	{
+		return os << "Tap adapter (" << m_tap_adapter.name() << ")";
+	}
+
 	inline bool operator==(const tap_adapter_switch_port& lhs, const tap_adapter_switch_port& rhs)
 	{
 		return (&lhs.m_tap_adapter == &rhs.m_tap_adapter);

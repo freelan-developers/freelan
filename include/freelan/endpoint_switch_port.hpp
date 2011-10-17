@@ -82,6 +82,13 @@ namespace freelan
 			 */
 			bool equals(const switch_port& other) const;
 
+			/**
+			 * \brief Output the name of the switch port to an output stream.
+			 * \param os The output stream.
+			 * \return os.
+			 */
+			std::ostream& output(std::ostream& os) const;
+
 		private:
 
 			fscp::server& m_server;
@@ -107,6 +114,11 @@ namespace freelan
 	inline void endpoint_switch_port::write(boost::asio::const_buffer data)
 	{
 		m_server.async_send_data(m_endpoint, data);
+	}
+
+	inline std::ostream& endpoint_switch_port::output(std::ostream& os) const
+	{
+		return os << "Endpoint (" << m_endpoint << ")";
 	}
 
 	inline bool operator==(const endpoint_switch_port& lhs, const endpoint_switch_port& rhs)
