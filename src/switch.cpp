@@ -51,6 +51,8 @@
 
 #include <asiotap/osi/ethernet_helper.hpp>
 
+#include "tap_adapter_switch_port.hpp"
+
 namespace freelan
 {
 	void switch_::receive_data(port_type port, boost::asio::const_buffer data)
@@ -131,7 +133,11 @@ namespace freelan
 	{
 		if (source_port != target_port)
 		{
-			if (m_configuration.enable_relay_mode || (typeid(source_port.get()) != typeid(target_port.get())))
+			if (
+					m_configuration.enable_relay_mode ||
+					boost::dynamic_pointer_cast<tap_adapter_switch_port>(source_port) ||
+					boost::dynamic_pointer_cast<tap_adapter_switch_port>(target_port)
+				 )
 			{
 				target_port->write(data);
 			}
