@@ -47,13 +47,24 @@
 
 namespace freelan
 {
-	void switch_::remove_port(port_type& port)
+	void switch_::receive_data(port_iterator_type it, boost::asio::const_buffer data)
 	{
-		port_list_type::iterator it = std::find(m_ports.begin(), m_ports.end(), port);
-
-		if (it != m_ports.end())
+		send_data_from(it, data);
+	}
+	
+	void switch_::send_data_from(port_iterator_type it, boost::asio::const_buffer data)
+	{
+		for (port_iterator_type port = m_ports.begin(); port != m_ports.end(); ++port)
 		{
-			m_ports.erase(it);
+			if (port != it)
+			{
+				send_data_to(port, data);
+			}
 		}
+	}
+	
+	void switch_::send_data_to(port_iterator_type it, boost::asio::const_buffer data)
+	{
+		it->write(data);
 	}
 }

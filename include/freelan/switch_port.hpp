@@ -79,6 +79,7 @@ namespace freelan
 			 */
 			virtual bool equals(const switch_port& other) const = 0;
 
+			friend class switch_;
 			friend bool operator==(const switch_port&, const switch_port&);
 	};
 	

@@ -48,6 +48,7 @@
 
 #include <algorithm>
 
+#include <boost/asio.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include "switch_port.hpp"
@@ -67,29 +68,54 @@ namespace freelan
 			typedef switch_port port_type;
 
 			/**
+			 * \brief The port list type.
+			 */
+			typedef boost::ptr_vector<port_type> port_list_type;
+
+			/**
+			 * \brief The port iterator type.
+			 */
+			typedef port_list_type::iterator port_iterator_type;
+
+			/**
 			 * \brief Add a switch port.
 			 * \param port The port to add. Cannot be null.
+			 * \return An iterator to the port.
 			 *
 			 * The switch takes ownership of the specified port.
 			 */
-			void add_port(port_type* port);
+			port_iterator_type add_port(port_type* port);
 
 			/**
 			 * \brief Remove a port.
-			 * \param port The port to remove.
+			 * \param it An iterator to the port to remove. Must be a valid iterator.
+			 * \return The next port in the list.
 			 */
-			void remove_port(port_type& port);
+			port_iterator_type remove_port(port_iterator_type it);
+
+			/**
+			 * \brief Receive data trough the specified port.
+			 * \param it An iterator to the port onto which the data was received.
+			 * \param data The data.
+			 */
+			void receive_data(port_iterator_type it, boost::asio::const_buffer data);
 
 		private:
 
-			typedef boost::ptr_vector<port_type> port_list_type;
+			void send_data_from(port_iterator_type it, boost::asio::const_buffer data);
+			void send_data_to(port_iterator_type it, boost::asio::const_buffer data);
 
 			port_list_type m_ports;
 	};
 	
-	inline void switch_::add_port(port_type* port)
+	inline switch_::port_iterator_type switch_::add_port(port_type* port)
 	{
-		m_ports.push_back(port);
+		return m_ports.insert(m_ports.end(), port);
+	}
+
+	inline switch_::port_iterator_type switch_::remove_port(port_iterator_type it)
+	{
+		return m_ports.erase(it);
 	}
 }
 
