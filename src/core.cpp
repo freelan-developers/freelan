@@ -61,9 +61,10 @@ namespace freelan
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
-	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration, const freelan::logger& log) :
+	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration, const freelan::logger& _logger) :
 		m_running(false),
 		m_configuration(_configuration),
+		m_logger(_logger),
 		m_server(io_service, *m_configuration.identity),
 		m_resolver(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
@@ -76,8 +77,7 @@ namespace freelan
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
-		m_switch(m_configuration.switch_configuration),
-		m_logger(log)
+		m_switch(m_configuration.switch_configuration, m_logger)
 	{
 		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
 		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));

@@ -129,9 +129,9 @@ namespace freelan
 			 * \brief The constructor.
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
-			 * \param log The logger to use for logging.
+			 * \param _logger The logger to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& log = freelan::logger());
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& _logger = freelan::logger());
 
 			/**
 			 * \brief Get the configuration.
@@ -209,7 +209,7 @@ namespace freelan
 			volatile bool m_running;
 			void do_close();
 
-			// fscp::server related methods
+			// FSCP methods
 			void async_greet(const ep_type&);
 			bool on_hello_request(const ep_type&, bool);
 			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
@@ -219,7 +219,7 @@ namespace freelan
 			void on_session_lost(const ep_type&);
 			void on_data(const ep_type&, boost::asio::const_buffer);
 
-			// asiotap::tap_adapter related methods
+			// Tap adapter methods
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
 
 			// Other methods
@@ -229,11 +229,16 @@ namespace freelan
 
 			// Members
 			freelan::configuration m_configuration;
+			freelan::logger m_logger;
+
+			// FSCP
 			fscp::server m_server;
 			boost::asio::ip::udp::resolver m_resolver;
+			boost::asio::deadline_timer m_contact_timer;
+
+			// Tap adapter
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
-			boost::asio::deadline_timer m_contact_timer;
 
 			// User callbacks
 			open_callback m_open_callback;
@@ -267,9 +272,6 @@ namespace freelan
 			endpoint_switch_port_map_type m_endpoint_switch_port_map;
 
 			switch_::port_type m_tap_adapter_switch_port;
-
-			// Logger
-			freelan::logger m_logger;
 
 			// Certificate validation
 			static const int ex_data_index;

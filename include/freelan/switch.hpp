@@ -55,6 +55,7 @@
 
 #include "switch_port.hpp"
 #include "configuration.hpp"
+#include "logger.hpp"
 
 namespace freelan
 {
@@ -83,8 +84,9 @@ namespace freelan
 			/**
 			 * \brief Create a new switch.
 			 * \param configuration The switch configuration.
+			 * \param _logger The logger to use.
 			 */
-			switch_(const switch_configuration& configuration);
+			switch_(const switch_configuration& configuration, const freelan::logger& _logger);
 
 			/**
 			 * \brief Register a switch port.
@@ -120,6 +122,7 @@ namespace freelan
 			void send_data_to(port_type, boost::asio::const_buffer);
 
 			switch_configuration m_configuration;
+			freelan::logger m_logger;
 
 			port_list_type m_ports;
 
@@ -132,8 +135,9 @@ namespace freelan
 			ethernet_address_map_type m_ethernet_address_map;
 	};
 	
-	inline switch_::switch_(const switch_configuration& configuration) :
-		m_configuration(configuration)
+	inline switch_::switch_(const switch_configuration& configuration, const freelan::logger& _logger) :
+		m_configuration(configuration),
+		m_logger(_logger)
 	{
 	}
 
