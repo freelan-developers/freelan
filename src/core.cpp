@@ -51,6 +51,8 @@
 #include <asiotap/osi/ethernet_helper.hpp>
 
 #include "os.hpp"
+#include "tap_adapter_switch_port.hpp"
+#include "endpoint_switch_port.hpp"
 
 namespace freelan
 {
@@ -88,6 +90,8 @@ namespace freelan
 		if (m_configuration.enable_tap_adapter)
 		{
 			m_tap_adapter.reset(new asiotap::tap_adapter(io_service));
+
+			m_tap_adapter_switch_port_iterator = m_switch.add_port(new tap_adapter_switch_port(*m_tap_adapter));
 		}
 	}
 
@@ -329,6 +333,8 @@ namespace freelan
 	{
 		m_logger(LOG_INFORMATION) << "Session established with " << sender << "." << endl;
 
+		m_endpoint_switch_port_iterator_map[sender] = m_switch.add_port(new endpoint_switch_port(m_server, sender));
+
 		if (m_session_established_callback)
 		{
 			m_session_established_callback(sender);
@@ -343,43 +349,23 @@ namespace freelan
 		{
 			m_session_lost_callback(sender);
 		}
+
+		const endpoint_switch_port_iterator_map_type::iterator it = m_endpoint_switch_port_iterator_map.find(sender);
+
+		if (it != m_endpoint_switch_port_iterator_map.end())
+		{
+			m_switch.remove_port(it->second);
+			m_endpoint_switch_port_iterator_map.erase(it);
+		}
 	}
 
 	void core::on_data(const ep_type& sender, boost::asio::const_buffer data)
 	{
-		(void)sender;
+		const endpoint_switch_port_iterator_map_type::iterator it = m_endpoint_switch_port_iterator_map.find(sender);
 
-		if (m_configuration.routing_method == configuration::RM_SWITCH)
+		if (it != m_endpoint_switch_port_iterator_map.end())
 		{
-			try
-			{
-				// We read the source ethernet address and update the switch routing table according to it.
-				asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
-
-				m_switch.update_entry(ethernet_helper.sender(), sender);
-			}
-			catch (std::length_error&)
-			{
-				// Parsing of the ethernet frame failed, we do nothing special.
-			}
-		}
-
-		if (m_tap_adapter)
-		{
-			m_tap_adapter->write(data);
-		}
-
-		if (m_configuration.enable_relay_mode)
-		{
-			const std::vector<ep_type> endpoints = m_server.get_session_endpoints();
-
-			BOOST_FOREACH(const ep_type& endpoint, endpoints)
-			{
-				if (endpoint != sender)
-				{
-					m_server.async_send_data(endpoint, data);
-				}
-			}
+			m_switch.receive_data(it->second, data);
 		}
 	}
 
@@ -410,31 +396,7 @@ namespace freelan
 
 			if (!handled)
 			{
-				if (m_configuration.routing_method == configuration::RM_SWITCH)
-				{
-					ep_type endpoint;
-
-					try
-					{
-						// We read the destination ethernet address and send to the targetted host only.
-						asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
-
-						if (m_switch.get_entry(ethernet_helper.target(), endpoint))
-						{
-							m_server.async_send_data(endpoint, data);
-
-							handled = true;
-						}
-					}
-					catch (std::length_error&)
-					{
-					}
-				}
-				
-				if (!handled)
-				{
-					m_server.async_send_data_to_all(data);
-				}
+				m_switch.receive_data(m_tap_adapter_switch_port_iterator, data);
 			}
 
 			// Start another read

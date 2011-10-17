@@ -45,6 +45,11 @@
 
 #include "switch.hpp"
 
+// // We read the destination ethernet address and send to the targetted host only.
+// asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
+
+// if (m_switch.get_entry(ethernet_helper.target(), endpoint))
+
 namespace freelan
 {
 	void switch_::receive_data(port_iterator_type it, boost::asio::const_buffer data)
