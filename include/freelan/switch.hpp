@@ -91,11 +91,6 @@ namespace freelan
 	{
 		m_ports.push_back(port);
 	}
-	
-	inline void switch_::remove_port(port_type& port)
-	{
-		m_ports.erase(std::find(m_ports.begin(), m_ports.end(), port));
-	}
 }
 
 #endif /* SWITCH_HPP */

@@ -47,4 +47,13 @@
 
 namespace freelan
 {
+	void switch_::remove_port(port_type& port)
+	{
+		port_list_type::iterator it = std::find(m_ports.begin(), m_ports.end(), port);
+
+		if (it != m_ports.end())
+		{
+			m_ports.erase(it);
+		}
+	}
 }
