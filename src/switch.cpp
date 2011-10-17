@@ -86,10 +86,7 @@ namespace freelan
 
 							if (target_port)
 							{
-								if (target_port != port)
-								{
-									send_data_to(target_port, data);
-								}
+								send_data_from_to(port, target_port, data);
 							} else
 							{
 								// The port is no longer valid: we delete the entry.
@@ -115,17 +112,20 @@ namespace freelan
 		{
 			if (source_port != port)
 			{
-				if (m_configuration.enable_relay_mode || (typeid(source_port.get()) != typeid(port.get())))
-				{
-					send_data_to(port, data);
-				}
+				send_data_from_to(source_port, port, data);
 			}
 		}
 	}
 	
-	void switch_::send_data_to(port_type port, boost::asio::const_buffer data)
+	void switch_::send_data_from_to(port_type source_port, port_type target_port, boost::asio::const_buffer data)
 	{
-		port->write(data);
+		if (source_port != target_port)
+		{
+			if (m_configuration.enable_relay_mode || (typeid(source_port.get()) != typeid(target_port.get())))
+			{
+				target_port->write(data);
+			}
+		}
 	}
 
 	switch_::ethernet_address_type switch_::to_ethernet_address(boost::asio::const_buffer buf)

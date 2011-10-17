@@ -119,7 +119,7 @@ namespace freelan
 		private:
 
 			void send_data_from(port_type, boost::asio::const_buffer);
-			void send_data_to(port_type, boost::asio::const_buffer);
+			void send_data_from_to(port_type, port_type, boost::asio::const_buffer);
 
 			switch_configuration m_configuration;
 			freelan::logger m_logger;
