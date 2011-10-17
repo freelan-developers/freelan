@@ -250,6 +250,11 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 		debug = true;
 	}
 
+	if (configuration.enable_stp && !configuration.enable_relay_mode)
+	{
+		std::cerr << "Warning ! Spanning Tree Protocol is enabled but relay mode is disabled: ignoring." << std::endl;
+	}
+
 	return true;
 }
 
