@@ -368,6 +368,19 @@ namespace freelan
 		{
 			m_tap_adapter->write(data);
 		}
+
+		if (m_configuration.enable_relay_mode)
+		{
+			const std::vector<ep_type> endpoints = m_server.get_session_endpoints();
+
+			BOOST_FOREACH(const ep_type& endpoint, endpoints)
+			{
+				if (endpoint != sender)
+				{
+					m_server.async_send_data(endpoint, data);
+				}
+			}
+		}
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
