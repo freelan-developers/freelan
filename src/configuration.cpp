@@ -51,8 +51,7 @@ namespace freelan
 {
 	switch_configuration::switch_configuration() :
 		routing_method(RM_SWITCH),
-		enable_relay_mode(false),
-		enable_stp(false)
+		enable_relay_mode(false)
 	{
 	}
 
