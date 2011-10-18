@@ -66,6 +66,52 @@ namespace freelan
 	class core;
 
 	/**
+	 * \brief The FSCP related options type.
+	 */
+	struct fscp_configuration
+	{
+		/**
+		 * \brief The endpoint type.
+		 */
+		typedef boost::shared_ptr<endpoint> ep_type;
+
+		/**
+		 * \brief The endpoint list type.
+		 */
+		typedef std::vector<ep_type> ep_list_type;
+
+		/**
+		 * \brief The hostname resolution protocol type.
+		 */
+		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
+
+		/**
+		 * \brief Create a new FSCP configuration.
+		 */
+		fscp_configuration();
+
+		/**
+		 * \brief The endpoint to listen on.
+		 */
+		ep_type listen_on;
+
+		/**
+		 * \brief The contact list.
+		 */
+		ep_list_type contact_list;
+
+		/**
+		 * \brief The hostname resolution protocol.
+		 */
+		hostname_resolution_protocol_type hostname_resolution_protocol;
+
+		/**
+		 * \brief The hello timeout.
+		 */
+		boost::posix_time::time_duration hello_timeout;
+	};
+
+	/**
 	 * \brief The security related options type.
 	 */
 	struct security_configuration
@@ -118,57 +164,6 @@ namespace freelan
 		 * \brief The certificate authorities.
 		 */
 		cert_list_type certificate_authority_list;
-	};
-
-	/**
-	 * \brief The FSCP related options type.
-	 */
-	struct fscp_configuration
-	{
-		/**
-		 * \brief The endpoint type.
-		 */
-		typedef boost::shared_ptr<endpoint> ep_type;
-
-		/**
-		 * \brief The endpoint list type.
-		 */
-		typedef std::vector<ep_type> ep_list_type;
-
-		/**
-		 * \brief The hostname resolution protocol type.
-		 */
-		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
-
-		/**
-		 * \brief Create a new FSCP configuration.
-		 */
-		fscp_configuration();
-
-		/**
-		 * \brief The endpoint to listen on.
-		 */
-		ep_type listen_on;
-
-		/**
-		 * \brief The contact list.
-		 */
-		ep_list_type contact_list;
-
-		/**
-		 * \brief The hostname resolution protocol.
-		 */
-		hostname_resolution_protocol_type hostname_resolution_protocol;
-
-		/**
-		 * \brief The hello timeout.
-		 */
-		boost::posix_time::time_duration hello_timeout;
-
-		/**
-		 * \brief The security configuration.
-		 */
-		freelan::security_configuration security_configuration;
 	};
 
 	/**
@@ -284,6 +279,11 @@ namespace freelan
 		 * \brief The FSCP related options.
 		 */
 		freelan::fscp_configuration fscp_configuration;
+
+		/**
+		 * \brief The security configuration.
+		 */
+		freelan::security_configuration security_configuration;
 
 		/**
 		 * \brief The Tap adapter related options.

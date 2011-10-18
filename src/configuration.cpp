@@ -49,20 +49,19 @@
 
 namespace freelan
 {
+	fscp_configuration::fscp_configuration() :
+		listen_on(),
+		contact_list(),
+		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
+		hello_timeout(boost::posix_time::seconds(3))
+	{
+	}
+
 	security_configuration::security_configuration() :
 		identity(),
 		certificate_validation_method(CVM_DEFAULT),
 		certificate_validation_callback(0),
 		certificate_authority_list()
-	{
-	}
-
-	fscp_configuration::fscp_configuration() :
-		listen_on(),
-		contact_list(),
-		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
-		hello_timeout(boost::posix_time::seconds(3)),
-		security_configuration()
 	{
 	}
 
@@ -86,6 +85,7 @@ namespace freelan
 
 	configuration::configuration() :
 		fscp_configuration(),
+		security_configuration(),
 		tap_adapter_configuration(),
 		switch_configuration()
 	{

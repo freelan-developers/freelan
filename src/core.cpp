@@ -71,7 +71,7 @@ namespace freelan
 		m_running(false),
 		m_configuration(_configuration),
 		m_logger(_logger),
-		m_server(io_service, *m_configuration.fscp_configuration.security_configuration.identity),
+		m_server(io_service, *m_configuration.security_configuration.identity),
 		m_resolver(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
 		m_open_callback(),
@@ -110,11 +110,11 @@ namespace freelan
 		// FSCP
 		m_server.open(m_configuration.fscp_configuration.listen_on->resolve(m_resolver, m_configuration.fscp_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
 
-		if (m_configuration.fscp_configuration.security_configuration.certificate_validation_method == security_configuration::CVM_DEFAULT)
+		if (m_configuration.security_configuration.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
 			m_ca_store = cryptoplus::x509::store::create();
 
-			BOOST_FOREACH(const cert_type& cert, m_configuration.fscp_configuration.security_configuration.certificate_authority_list)
+			BOOST_FOREACH(const cert_type& cert, m_configuration.security_configuration.certificate_authority_list)
 			{
 				m_ca_store.add_certificate(cert);
 			}
@@ -539,7 +539,7 @@ namespace freelan
 
 	bool core::certificate_is_valid(cert_type cert)
 	{
-		switch (m_configuration.fscp_configuration.security_configuration.certificate_validation_method)
+		switch (m_configuration.security_configuration.certificate_validation_method)
 		{
 			case security_configuration::CVM_DEFAULT:
 				{
@@ -569,9 +569,9 @@ namespace freelan
 				}
 		}
 
-		if (m_configuration.fscp_configuration.security_configuration.certificate_validation_callback)
+		if (m_configuration.security_configuration.certificate_validation_callback)
 		{
-			return m_configuration.fscp_configuration.security_configuration.certificate_validation_callback(*this, cert);
+			return m_configuration.security_configuration.certificate_validation_callback(*this, cert);
 		}
 
 		return true;
