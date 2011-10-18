@@ -47,7 +47,6 @@
 #define SWITCH_HPP
 
 #include <algorithm>
-#include <vector>
 #include <map>
 
 #include <boost/asio.hpp>
@@ -77,9 +76,14 @@ namespace freelan
 			typedef boost::shared_ptr<base_port_type> port_type;
 
 			/**
+			 * \brief The group type.
+			 */
+			typedef unsigned int group_type;
+
+			/**
 			 * \brief The port list type.
 			 */
-			typedef std::vector<port_type> port_list_type;
+			typedef std::map<port_type, group_type> port_list_type;
 
 			/**
 			 * \brief Create a new switch.
@@ -91,8 +95,9 @@ namespace freelan
 			/**
 			 * \brief Register a switch port.
 			 * \param port The port to register. Cannot be null.
+			 * \param group The group of the port.
 			 */
-			void register_port(port_type port);
+			void register_port(port_type port, group_type group = 0);
 
 			/**
 			 * \brief Unregister a port.
@@ -142,19 +147,19 @@ namespace freelan
 	{
 	}
 
-	inline void switch_::register_port(port_type port)
+	inline void switch_::register_port(port_type port, group_type group)
 	{
-		m_ports.push_back(port);
+		m_ports[port] = group;
 	}
 
 	inline void switch_::unregister_port(port_type port)
 	{
-		m_ports.erase(std::remove(m_ports.begin(), m_ports.end(), port), m_ports.end());
+		m_ports.erase(port);
 	}
 
 	inline bool switch_::is_registered(port_type port) const
 	{
-		return (std::find(m_ports.begin(), m_ports.end(), port) != m_ports.end());
+		return (m_ports.find(port) != m_ports.end());
 	}
 }
 

@@ -54,6 +54,12 @@
 
 namespace freelan
 {
+	namespace
+	{
+		static const switch_::group_type TAP_ADAPTERS_GROUP = 0;
+		static const switch_::group_type ENDPOINTS_GROUP = 1;
+	}
+
 	// Has to be put first, as static variables definition order matters
 	const int core::ex_data_index = cryptoplus::x509::store_context::register_index();
 
@@ -91,7 +97,7 @@ namespace freelan
 			m_tap_adapter.reset(new asiotap::tap_adapter(io_service));
 
 			m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
-			m_switch.register_port(m_tap_adapter_switch_port);
+			m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
 		}
 	}
 
@@ -336,7 +342,7 @@ namespace freelan
 
 		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(boost::ref(m_server), sender);
 		m_endpoint_switch_port_map[sender] = port;
-		m_switch.register_port(port);
+		m_switch.register_port(port, ENDPOINTS_GROUP);
 
 		if (m_session_established_callback)
 		{

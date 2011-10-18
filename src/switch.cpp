@@ -123,9 +123,9 @@ namespace freelan
 
 	void switch_::send_data_from(port_type source_port, boost::asio::const_buffer data)
 	{
-		BOOST_FOREACH(port_type& port, m_ports)
+		BOOST_FOREACH(port_list_type::value_type& entry, m_ports)
 		{
-			send_data_from_to(source_port, port, data);
+			send_data_from_to(source_port, entry.first, data);
 		}
 	}
 
@@ -133,11 +133,7 @@ namespace freelan
 	{
 		if (source_port != target_port)
 		{
-			if (
-					m_configuration.enable_relay_mode ||
-					boost::dynamic_pointer_cast<tap_adapter_switch_port>(source_port) ||
-					boost::dynamic_pointer_cast<tap_adapter_switch_port>(target_port)
-				 )
+			if (m_configuration.enable_relay_mode || (m_ports[source_port] != m_ports[target_port]))
 			{
 				target_port->write(data);
 			}
