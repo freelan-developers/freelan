@@ -66,6 +66,186 @@ namespace freelan
 	class core;
 
 	/**
+	 * \brief The security related options type.
+	 */
+	struct security_configuration
+	{
+		/**
+		 * \brief The certificate validation method type.
+		 */
+		enum certificate_validation_method_type
+		{
+			CVM_DEFAULT, /**< \brief The default certificate validation method. */
+			CVM_NONE /**< \brief No certificate validation. */
+		};
+
+		/**
+		 * \brief The certificate type.
+		 */
+		typedef fscp::identity_store::cert_type cert_type;
+
+		/**
+		 * \brief The certificate list type.
+		 */
+		typedef std::vector<cert_type> cert_list_type;
+
+		/**
+		 * \brief The certificate validation callback type.
+		 */
+		typedef boost::function<bool (core&, cert_type)> certificate_validation_callback_type;
+
+		/**
+		 * \brief Constructor.
+		 */
+		security_configuration();
+
+		/**
+		 * \brief The identity.
+		 */
+		boost::optional<fscp::identity_store> identity;
+
+		/**
+		 * \brief The certificate validation method.
+		 */
+		certificate_validation_method_type certificate_validation_method;
+
+		/**
+		 * \brief The certificate validation callback.
+		 */
+		certificate_validation_callback_type certificate_validation_callback;
+
+		/**
+		 * \brief The certificate authorities.
+		 */
+		cert_list_type certificate_authority_list;
+	};
+
+	/**
+	 * \brief The FSCP related options type.
+	 */
+	struct fscp_configuration
+	{
+		/**
+		 * \brief The endpoint type.
+		 */
+		typedef boost::shared_ptr<endpoint> ep_type;
+
+		/**
+		 * \brief The endpoint list type.
+		 */
+		typedef std::vector<ep_type> ep_list_type;
+
+		/**
+		 * \brief The hostname resolution protocol type.
+		 */
+		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
+
+		/**
+		 * \brief Create a new FSCP configuration.
+		 */
+		fscp_configuration();
+
+		/**
+		 * \brief The endpoint to listen on.
+		 */
+		ep_type listen_on;
+
+		/**
+		 * \brief The contact list.
+		 */
+		ep_list_type contact_list;
+
+		/**
+		 * \brief The hostname resolution protocol.
+		 */
+		hostname_resolution_protocol_type hostname_resolution_protocol;
+
+		/**
+		 * \brief The hello timeout.
+		 */
+		boost::posix_time::time_duration hello_timeout;
+
+		/**
+		 * \brief The security configuration.
+		 */
+		freelan::security_configuration security_configuration;
+	};
+
+	/**
+	 * \brief Tap adapter related options type.
+	 */
+	struct tap_adapter_configuration
+	{
+		/**
+		 * \brief The ethernet address type.
+		 */
+		typedef asiotap::osi::proxy<asiotap::osi::arp_frame>::ethernet_address_type ethernet_address_type;
+
+		/**
+		 * \brief The IPv4 address/prefix length pair.
+		 */
+		struct ipv4_address_prefix_length_type
+		{
+			boost::asio::ip::address_v4 address;
+			unsigned int prefix_length;
+		};
+
+		/**
+		 * \brief The IPv6 address/prefix length pair.
+		 */
+		struct ipv6_address_prefix_length_type
+		{
+			boost::asio::ip::address_v6 address;
+			unsigned int prefix_length;
+		};
+
+		/**
+		 * \brief Constructor.
+		 */
+		tap_adapter_configuration();
+
+		/**
+		 * \brief Whether the tap adapter is enabled.
+		 */
+		bool enabled;
+
+		/**
+		 * \brief The IPv4 tap adapter address.
+		 */
+		boost::optional<ipv4_address_prefix_length_type> ipv4_address_prefix_length;
+
+		/**
+		 * \brief The IPv6 tap adapter address.
+		 */
+		boost::optional<ipv6_address_prefix_length_type> ipv6_address_prefix_length;
+
+		/**
+		 * \brief Whether to enable the ARP proxy.
+		 */
+		bool arp_proxy_enabled;
+
+		/**
+		 * \brief The ARP proxy fake ethernet address.
+		 */
+		ethernet_address_type arp_proxy_fake_ethernet_address;
+
+		/**
+		 * \brief Whether to enable the DHCP proxy.
+		 */
+		bool dhcp_proxy_enabled;
+
+		/**
+		 * \brief The DHCP server IPv4 address.
+		 */
+		boost::optional<ipv4_address_prefix_length_type> dhcp_server_ipv4_address_prefix_length;
+
+		/**
+		 * \brief The DHCP server IPv6 address.
+		 */
+		boost::optional<ipv6_address_prefix_length_type> dhcp_server_ipv6_address_prefix_length;
+	};
+
+	/**
 	 * \brief The switch related options type.
 	 */
 	struct switch_configuration
@@ -92,7 +272,7 @@ namespace freelan
 		/**
 		 * \brief Whether to enable the relay mode.
 		 */
-		bool enable_relay_mode;
+		bool relay_mode_enabled;
 	};
 
 	/**
@@ -101,42 +281,14 @@ namespace freelan
 	struct configuration
 	{
 		/**
-		 * \brief The ethernet address type.
+		 * \brief The FSCP related options.
 		 */
-		typedef asiotap::osi::proxy<asiotap::osi::arp_frame>::ethernet_address_type ethernet_address_type;
+		freelan::fscp_configuration fscp_configuration;
 
 		/**
-		 * \brief The endpoint type.
+		 * \brief The Tap adapter related options.
 		 */
-		typedef boost::shared_ptr<endpoint> ep_type;
-
-		/**
-		 * \brief The endpoint list type.
-		 */
-		typedef std::vector<ep_type> ep_list_type;
-
-		/**
-		 * \brief The hostname resolution protocol type.
-		 */
-		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
-
-		/**
-		 * \brief The IPv4 address/prefix length pair.
-		 */
-		struct ipv4_address_prefix_length_type
-		{
-			boost::asio::ip::address_v4 address;
-			unsigned int prefix_length;
-		};
-
-		/**
-		 * \brief The IPv6 address/prefix length pair.
-		 */
-		struct ipv6_address_prefix_length_type
-		{
-			boost::asio::ip::address_v6 address;
-			unsigned int prefix_length;
-		};
+		freelan::tap_adapter_configuration tap_adapter_configuration;
 
 		/**
 		 * \brief The switch related options.
@@ -144,113 +296,9 @@ namespace freelan
 		freelan::switch_configuration switch_configuration;
 
 		/**
-		 * \brief The certificate validation method type.
-		 */
-		enum certificate_validation_method_type
-		{
-			CVM_DEFAULT, /**< \brief The default certificate validation method. */
-			CVM_NONE /**< \brief No certificate validation. */
-		};
-
-		/**
-		 * \brief The certificate type.
-		 */
-		typedef fscp::identity_store::cert_type cert_type;
-
-		/**
-		 * \brief The certificate list type.
-		 */
-		typedef std::vector<cert_type> cert_list_type;
-
-		/**
-		 * \brief The certificate validation callback type.
-		 */
-		typedef boost::function<bool (core&, cert_type)> certificate_validation_callback_type;
-
-		/**
 		 * \brief The constructor.
 		 */
 		configuration();
-
-		/**
-		 * \brief The endpoint to listen on.
-		 */
-		ep_type listen_on;
-
-		/**
-		 * \brief The hostname resolution protocol.
-		 */
-		hostname_resolution_protocol_type hostname_resolution_protocol;
-
-		/**
-		 * \brief Whether the tap adapter is enabled.
-		 */
-		bool enable_tap_adapter;
-
-		/**
-		 * \brief The IPv4 tap adapter address.
-		 */
-		boost::optional<ipv4_address_prefix_length_type> tap_adapter_ipv4_address_prefix_length;
-
-		/**
-		 * \brief The IPv6 tap adapter address.
-		 */
-		boost::optional<ipv6_address_prefix_length_type> tap_adapter_ipv6_address_prefix_length;
-
-		/**
-		 * \brief Whether to enable the ARP proxy.
-		 */
-		bool enable_arp_proxy;
-
-		/**
-		 * \brief The ARP proxy fake ethernet address.
-		 */
-		ethernet_address_type arp_proxy_fake_ethernet_address;
-
-		/**
-		 * \brief Whether to enable the DHCP proxy.
-		 */
-		bool enable_dhcp_proxy;
-
-		/**
-		 * \brief The DHCP server IPv4 address.
-		 */
-		boost::optional<ipv4_address_prefix_length_type> dhcp_server_ipv4_address_prefix_length;
-
-		/**
-		 * \brief The DHCP server IPv6 address.
-		 */
-		boost::optional<ipv6_address_prefix_length_type> dhcp_server_ipv6_address_prefix_length;
-
-		/**
-		 * \brief The hello timeout.
-		 */
-		boost::posix_time::time_duration hello_timeout;
-
-		/**
-		 * \brief The identity.
-		 */
-		boost::optional<fscp::identity_store> identity;
-
-		/**
-		 * \brief The certificate validation method.
-		 */
-		certificate_validation_method_type certificate_validation_method;
-
-		/**
-		 * \brief The certificate validation callback.
-		 */
-		certificate_validation_callback_type certificate_validation_callback;
-
-		/**
-		 * \brief The certificate authorities.
-		 */
-		cert_list_type certificate_authorities;
-
-		/**
-		 * \brief The contact list.
-		 */
-		ep_list_type contact_list;
 	};
 
 	/**
@@ -259,7 +307,7 @@ namespace freelan
 	 * \param value The Ethernet address.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, configuration::ethernet_address_type value);
+	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value);
 
 	/**
 	 * \brief Output an IPv4 address/prefix length to a stream.
@@ -267,7 +315,7 @@ namespace freelan
 	 * \param value The IPv4 address/prefix length.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, configuration::ipv4_address_prefix_length_type value);
+	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv4_address_prefix_length_type value);
 
 	/**
 	 * \brief Output an IPv6 address/prefix length to a stream.
@@ -275,14 +323,14 @@ namespace freelan
 	 * \param value The IPv6 address/prefix length.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, configuration::ipv6_address_prefix_length_type value);
+	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv6_address_prefix_length_type value);
 
-	inline std::ostream& operator<<(std::ostream& os, configuration::ipv4_address_prefix_length_type value)
+	inline std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv4_address_prefix_length_type value)
 	{
 		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;
 	}
 
-	inline std::ostream& operator<<(std::ostream& os, configuration::ipv6_address_prefix_length_type value)
+	inline std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv6_address_prefix_length_type value)
 	{
 		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;
 	}

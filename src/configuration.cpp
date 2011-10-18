@@ -49,22 +49,49 @@
 
 namespace freelan
 {
+	security_configuration::security_configuration() :
+		identity(),
+		certificate_validation_method(CVM_DEFAULT),
+		certificate_validation_callback(0),
+		certificate_authority_list()
+	{
+	}
+
+	fscp_configuration::fscp_configuration() :
+		listen_on(),
+		contact_list(),
+		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
+		hello_timeout(boost::posix_time::seconds(3)),
+		security_configuration()
+	{
+	}
+
+	tap_adapter_configuration::tap_adapter_configuration() :
+		enabled(true),
+		ipv4_address_prefix_length(),
+		ipv6_address_prefix_length(),
+		arp_proxy_enabled(false),
+		arp_proxy_fake_ethernet_address(),
+		dhcp_proxy_enabled(false),
+		dhcp_server_ipv4_address_prefix_length(),
+		dhcp_server_ipv6_address_prefix_length()
+	{
+	}
+
 	switch_configuration::switch_configuration() :
 		routing_method(RM_SWITCH),
-		enable_relay_mode(false)
+		relay_mode_enabled(false)
 	{
 	}
 
 	configuration::configuration() :
-		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
-		enable_tap_adapter(true),
-		enable_arp_proxy(false),
-		enable_dhcp_proxy(true),
-		certificate_validation_callback(0)
+		fscp_configuration(),
+		tap_adapter_configuration(),
+		switch_configuration()
 	{
 	}
 
-	std::ostream& operator<<(std::ostream& os, configuration::ethernet_address_type value)
+	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value)
 	{
 		os<< std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(value[0]);
 
