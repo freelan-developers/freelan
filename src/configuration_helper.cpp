@@ -132,7 +132,7 @@ po::options_description get_fscp_options()
 		("fscp.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
 		("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
 		("fscp.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
-		("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The contact list.")
+		("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
 		;
 
 	return result;
@@ -149,7 +149,7 @@ po::options_description get_security_options()
 		("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
 		("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
 		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
-		("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The authority certificates.")
+		("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
 		;
 
 	return result;

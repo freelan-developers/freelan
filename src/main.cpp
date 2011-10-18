@@ -153,14 +153,15 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 		("configuration_file,c", po::value<std::string>(), "The configuration file to use")
 		;
 
-	po::options_description visible_options;
-	visible_options.add(generic_options);
-
-	po::options_description configuration_options;
+	po::options_description configuration_options("Configuration");
 	configuration_options.add(get_fscp_options());
 	configuration_options.add(get_security_options());
 	configuration_options.add(get_tap_adapter_options());
 	configuration_options.add(get_switch_options());
+
+	po::options_description visible_options;
+	visible_options.add(generic_options);
+	visible_options.add(configuration_options);
 
 	po::options_description all_options;
 	all_options.add(generic_options);
