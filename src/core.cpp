@@ -71,7 +71,7 @@ namespace freelan
 		m_running(false),
 		m_configuration(_configuration),
 		m_logger(_logger),
-		m_server(io_service, *m_configuration.identity),
+		m_server(io_service, *m_configuration.fscp_configuration.security_configuration.identity),
 		m_resolver(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
 		m_open_callback(),
@@ -92,7 +92,7 @@ namespace freelan
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2));
 
-		if (m_configuration.enable_tap_adapter)
+		if (m_configuration.tap_adapter_configuration.enabled)
 		{
 			m_tap_adapter.reset(new asiotap::tap_adapter(io_service));
 
@@ -108,13 +108,13 @@ namespace freelan
 		m_logger(LOG_DEBUG) << "Core opening..." << endl;
 
 		// FSCP
-		m_server.open(m_configuration.listen_on->resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
+		m_server.open(m_configuration.fscp_configuration.listen_on->resolve(m_resolver, m_configuration.fscp_configuration.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
 
-		if (m_configuration.certificate_validation_method == configuration::CVM_DEFAULT)
+		if (m_configuration.fscp_configuration.security_configuration.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
 			m_ca_store = cryptoplus::x509::store::create();
 
-			BOOST_FOREACH(const cert_type& cert, m_configuration.certificate_authorities)
+			BOOST_FOREACH(const cert_type& cert, m_configuration.fscp_configuration.security_configuration.certificate_authority_list)
 			{
 				m_ca_store.add_certificate(cert);
 			}
@@ -129,7 +129,7 @@ namespace freelan
 			m_tap_adapter->open();
 
 			// IPv4 address
-			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+			if (m_configuration.tap_adapter_configuration.ipv4_address_prefix_length)
 			{
 				try
 				{
@@ -138,12 +138,18 @@ namespace freelan
 					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
 					// We disable direct setting if DHCP is enabled.
 
-					if (!m_configuration.enable_dhcp_proxy)
+					if (!m_configuration.tap_adapter_configuration.dhcp_proxy_enabled)
 					{
-						m_tap_adapter->add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+						m_tap_adapter->add_ip_address_v4(
+								m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->address,
+								m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->prefix_length
+								);
 					}
 #else
-					m_tap_adapter->add_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+					m_tap_adapter->add_ip_address_v4(
+							m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->address,
+							m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->prefix_length
+							);
 #endif
 				}
 				catch (std::runtime_error& ex)
@@ -153,11 +159,14 @@ namespace freelan
 			}
 
 			// IPv6 address
-			if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+			if (m_configuration.tap_adapter_configuration.ipv6_address_prefix_length)
 			{
 				try
 				{
-					m_tap_adapter->add_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+					m_tap_adapter->add_ip_address_v6(
+							m_configuration.tap_adapter_configuration.ipv6_address_prefix_length->address,
+							m_configuration.tap_adapter_configuration.ipv6_address_prefix_length->prefix_length
+							);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -170,7 +179,7 @@ namespace freelan
 			m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
 
 			// The ARP proxy
-			if (m_configuration.enable_arp_proxy)
+			if (m_configuration.tap_adapter_configuration.arp_proxy_enabled)
 			{
 				m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
 				m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
@@ -181,19 +190,23 @@ namespace freelan
 			}
 
 			// The DHCP proxy
-			if (m_configuration.enable_dhcp_proxy)
+			if (m_configuration.tap_adapter_configuration.dhcp_proxy_enabled)
 			{
 				m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
 				m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
 
-				if (m_configuration.dhcp_server_ipv4_address_prefix_length)
+				if (m_configuration.tap_adapter_configuration.dhcp_server_ipv4_address_prefix_length)
 				{
-					m_dhcp_proxy->set_software_address(m_configuration.dhcp_server_ipv4_address_prefix_length->address);
+					m_dhcp_proxy->set_software_address(m_configuration.tap_adapter_configuration.dhcp_server_ipv4_address_prefix_length->address);
 				}
 
-				if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+				if (m_configuration.tap_adapter_configuration.ipv4_address_prefix_length)
 				{
-					m_dhcp_proxy->add_entry(m_tap_adapter->ethernet_address(), m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+					m_dhcp_proxy->add_entry(
+							m_tap_adapter->ethernet_address(),
+							m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->address,
+							m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->prefix_length
+							);
 				}
 			}
 			else
@@ -240,11 +253,14 @@ namespace freelan
 			m_tap_adapter->set_connected_state(false);
 
 			// IPv6 address
-			if (m_configuration.tap_adapter_ipv6_address_prefix_length)
+			if (m_configuration.tap_adapter_configuration.ipv6_address_prefix_length)
 			{
 				try
 				{
-					m_tap_adapter->remove_ip_address_v6(m_configuration.tap_adapter_ipv6_address_prefix_length->address, m_configuration.tap_adapter_ipv6_address_prefix_length->prefix_length);
+					m_tap_adapter->remove_ip_address_v6(
+							m_configuration.tap_adapter_configuration.ipv6_address_prefix_length->address,
+							m_configuration.tap_adapter_configuration.ipv6_address_prefix_length->prefix_length
+							);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -253,11 +269,14 @@ namespace freelan
 			}
 
 			// IPv4 address
-			if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+			if (m_configuration.tap_adapter_configuration.ipv4_address_prefix_length)
 			{
 				try
 				{
-					m_tap_adapter->remove_ip_address_v4(m_configuration.tap_adapter_ipv4_address_prefix_length->address, m_configuration.tap_adapter_ipv4_address_prefix_length->prefix_length);
+					m_tap_adapter->remove_ip_address_v4(
+							m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->address,
+							m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->prefix_length
+							);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -277,7 +296,7 @@ namespace freelan
 
 	void core::async_greet(const ep_type& target)
 	{
-		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.hello_timeout);
+		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.fscp_configuration.hello_timeout);
 	}
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
@@ -423,7 +442,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::configuration::ep_type& ep)
+	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::fscp_configuration::ep_type& ep)
 	{
 		if (!ec)
 		{
@@ -442,11 +461,17 @@ namespace freelan
 
 	void core::do_contact()
 	{
-		BOOST_FOREACH(const freelan::configuration::ep_type& ep, m_configuration.contact_list)
+		BOOST_FOREACH(const freelan::fscp_configuration::ep_type& ep, m_configuration.fscp_configuration.contact_list)
 		{
 			typedef boost::asio::ip::udp::resolver::query query;
 
-			ep->async_resolve(m_resolver, m_configuration.hostname_resolution_protocol, query::address_configured, DEFAULT_SERVICE, boost::bind(&core::do_greet, this, _1, _2, ep));
+			ep->async_resolve(
+					m_resolver,
+					m_configuration.fscp_configuration.hostname_resolution_protocol,
+					query::address_configured,
+					DEFAULT_SERVICE,
+					boost::bind(&core::do_greet, this, _1, _2, ep)
+					);
 		}
 	}
 
@@ -471,11 +496,11 @@ namespace freelan
 
 	bool core::on_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
 	{
-		if (m_configuration.tap_adapter_ipv4_address_prefix_length)
+		if (m_configuration.tap_adapter_configuration.ipv4_address_prefix_length)
 		{
-			if (logical_address != m_configuration.tap_adapter_ipv4_address_prefix_length->address)
+			if (logical_address != m_configuration.tap_adapter_configuration.ipv4_address_prefix_length->address)
 			{
-				ethernet_address = m_configuration.arp_proxy_fake_ethernet_address;
+				ethernet_address = m_configuration.tap_adapter_configuration.arp_proxy_fake_ethernet_address;
 
 				return true;
 			}
@@ -514,9 +539,9 @@ namespace freelan
 
 	bool core::certificate_is_valid(cert_type cert)
 	{
-		switch (m_configuration.certificate_validation_method)
+		switch (m_configuration.fscp_configuration.security_configuration.certificate_validation_method)
 		{
-			case configuration::CVM_DEFAULT:
+			case security_configuration::CVM_DEFAULT:
 				{
 					using namespace cryptoplus;
 
@@ -538,15 +563,15 @@ namespace freelan
 
 					break;
 				}
-			case configuration::CVM_NONE:
+			case security_configuration::CVM_NONE:
 				{
 					break;
 				}
 		}
 
-		if (m_configuration.certificate_validation_callback)
+		if (m_configuration.fscp_configuration.security_configuration.certificate_validation_callback)
 		{
-			return m_configuration.certificate_validation_callback(*this, cert);
+			return m_configuration.fscp_configuration.security_configuration.certificate_validation_callback(*this, cert);
 		}
 
 		return true;

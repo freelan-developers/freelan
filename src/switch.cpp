@@ -123,7 +123,7 @@ namespace freelan
 	{
 		if (source_port != target_port)
 		{
-			if (m_configuration.enable_relay_mode || (m_ports[source_port] != m_ports[target_port]))
+			if (m_configuration.relay_mode_enabled || (m_ports[source_port] != m_ports[target_port]))
 			{
 				target_port->write(data);
 			}

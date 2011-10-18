@@ -76,7 +76,7 @@ namespace freelan
 			/**
 			 * \brief The ethernet address type.
 			 */
-			typedef freelan::configuration::ethernet_address_type ethernet_address_type;
+			typedef freelan::tap_adapter_configuration::ethernet_address_type ethernet_address_type;
 
 			/**
 			 * \brief The endpoint type.
@@ -223,7 +223,7 @@ namespace freelan
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
 
 			// Other methods
-			void do_greet(const boost::system::error_code&, boost::asio::ip::udp::resolver::iterator, const freelan::configuration::ep_type&);
+			void do_greet(const boost::system::error_code&, boost::asio::ip::udp::resolver::iterator, const freelan::fscp_configuration::ep_type&);
 			void do_contact();
 			void do_contact(const boost::system::error_code&);
 
