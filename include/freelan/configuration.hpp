@@ -278,22 +278,22 @@ namespace freelan
 		/**
 		 * \brief The FSCP related options.
 		 */
-		freelan::fscp_configuration fscp_configuration;
+		freelan::fscp_configuration fscp;
 
 		/**
 		 * \brief The security configuration.
 		 */
-		freelan::security_configuration security_configuration;
+		freelan::security_configuration security;
 
 		/**
 		 * \brief The Tap adapter related options.
 		 */
-		freelan::tap_adapter_configuration tap_adapter_configuration;
+		freelan::tap_adapter_configuration tap_adapter;
 
 		/**
 		 * \brief The switch related options.
 		 */
-		freelan::switch_configuration switch_configuration;
+		freelan::switch_configuration switch_;
 
 		/**
 		 * \brief The constructor.

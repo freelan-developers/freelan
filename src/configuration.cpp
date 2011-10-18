@@ -84,10 +84,10 @@ namespace freelan
 	}
 
 	configuration::configuration() :
-		fscp_configuration(),
-		security_configuration(),
-		tap_adapter_configuration(),
-		switch_configuration()
+		fscp(),
+		security(),
+		tap_adapter(),
+		switch_()
 	{
 	}
 
