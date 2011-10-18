@@ -118,7 +118,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ethernet_address_type& val);
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ethernet_address_type& val);
 
 /**
  * \brief Parse an IPv4 address and its prefix length.
@@ -127,7 +127,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv4_address_prefix_length_type& val);
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv4_address_prefix_length_type& val);
 
 /**
  * \brief Parse an IPv6 address and its prefix length.
@@ -136,7 +136,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv6_address_prefix_length_type& val);
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv6_address_prefix_length_type& val);
 
 /**
  * \brief Parse an endpoint.
@@ -145,7 +145,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \param val The value to put the result into.
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ep_type& val);
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::fscp_configuration::ep_type& val);
 
 template <typename Type>
 inline Type parse(const std::string& str)

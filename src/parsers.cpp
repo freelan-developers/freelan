@@ -289,7 +289,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	return parse_number(begin, end, val);
 }
 
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ethernet_address_type& val)
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ethernet_address_type& val)
 {
 	assert(begin <= end);
 
@@ -327,7 +327,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	return true;
 }
 
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv4_address_prefix_length_type& val)
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv4_address_prefix_length_type& val)
 {
 	if (!parse(begin, end, val.address))
 	{
@@ -349,7 +349,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	return true;
 }
 
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ipv6_address_prefix_length_type& val)
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv6_address_prefix_length_type& val)
 {
 	if (!parse(begin, end, val.address))
 	{
@@ -371,7 +371,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 	return true;
 }
 
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::configuration::ep_type& val)
+bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::fscp_configuration::ep_type& val)
 {
 	if (begin == end)
 	{

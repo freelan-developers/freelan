@@ -52,22 +52,28 @@
 #include <boost/program_options.hpp>
 
 /**
- * \brief Get the network options.
- * \return The network options.
+ * \brief Get the fscp options.
+ * \return The fscp options.
  */
-boost::program_options::options_description get_network_options();
-
-/**
- * \brief Get the switch options.
- * \return The swtich options.
- */
-boost::program_options::options_description get_switch_options();
+boost::program_options::options_description get_fscp_options();
 
 /**
  * \brief Get the security options.
  * \return The security options.
  */
 boost::program_options::options_description get_security_options();
+
+/**
+ * \brief Get the tap adapter options.
+ * \return The tap adapter options.
+ */
+boost::program_options::options_description get_tap_adapter_options();
+
+/**
+ * \brief Get the switch options.
+ * \return The swtich options.
+ */
+boost::program_options::options_description get_switch_options();
 
 /**
  * \brief Setup a freelan configuration from a variables map.

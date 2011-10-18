@@ -110,7 +110,7 @@ static bool register_signal_handlers()
 	return true;
 }
 
-bool execute_certificate_validation_script(const std::string& script, fl::core& core, fl::configuration::cert_type cert)
+bool execute_certificate_validation_script(const std::string& script, fl::core& core, fl::security_configuration::cert_type cert)
 {
 	static unsigned int counter = 0;
 
@@ -157,9 +157,10 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 	visible_options.add(generic_options);
 
 	po::options_description configuration_options;
-	configuration_options.add(get_network_options());
-	configuration_options.add(get_switch_options());
+	configuration_options.add(get_fscp_options());
 	configuration_options.add(get_security_options());
+	configuration_options.add(get_tap_adapter_options());
+	configuration_options.add(get_switch_options());
 
 	po::options_description all_options;
 	all_options.add(generic_options);
@@ -243,17 +244,12 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 
 	if (!certificate_validation_script.empty())
 	{
-		configuration.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
+		configuration.security.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
 	}
 
 	if (vm.count("debug"))
 	{
 		debug = true;
-	}
-
-	if (configuration.switch_configuration.enable_stp && !configuration.switch_configuration.enable_relay_mode)
-	{
-		std::cerr << "Warning ! Spanning Tree Protocol is enabled but relay mode is disabled: ignoring." << std::endl;
 	}
 
 	return true;
