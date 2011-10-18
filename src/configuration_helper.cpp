@@ -49,7 +49,6 @@
 #include <vector>
 
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
 #include "parsers.hpp"
@@ -131,7 +130,7 @@ po::options_description get_fscp_options()
 	result.add_options()
 		("fscp.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
 		("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
-		("fscp.hello_timeout", po::value<std::string>()->default_value("3000"), "The default hello message timeout, in milliseconds.")
+		("fscp.hello_timeout", po::value<unsigned int>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
 		("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
 		;
 
@@ -194,7 +193,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["fscp.hostname_resolution_protocol"].as<std::string>());
 	configuration.fscp.listen_on = parse<fl::fscp_configuration::ep_type>(vm["fscp.listen_on"].as<std::string>());
-	configuration.fscp.hello_timeout = to_time_duration(boost::lexical_cast<unsigned int>(vm["fscp.hello_timeout"].as<std::string>()));
+	configuration.fscp.hello_timeout = to_time_duration(vm["fscp.hello_timeout"].as<unsigned int>());
 
 	const std::vector<std::string> contact_list = vm["fscp.contact"].as<std::vector<std::string> >();
 
