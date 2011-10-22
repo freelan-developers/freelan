@@ -65,6 +65,11 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief The default maximum entry count.
+			 */
+			static const unsigned int MAX_ENTRIES_DEFAULT;
+
+			/**
 			 * \brief The base port type.
 			 */
 			typedef switch_port base_port_type;
@@ -88,7 +93,7 @@ namespace freelan
 			 * \brief Create a new switch.
 			 * \param configuration The switch configuration.
 			 */
-			switch_(const switch_configuration& configuration);
+			switch_(const switch_configuration& configuration, const unsigned int max_entries = MAX_ENTRIES_DEFAULT);
 
 			/**
 			 * \brief Register a switch port.
@@ -125,6 +130,7 @@ namespace freelan
 			void send_data_from_to(port_type, port_type, boost::asio::const_buffer);
 
 			switch_configuration m_configuration;
+			unsigned int m_max_entries;
 
 			port_list_type m_ports;
 
@@ -138,8 +144,9 @@ namespace freelan
 			ethernet_address_map_type m_ethernet_address_map;
 	};
 
-	inline switch_::switch_(const switch_configuration& configuration) :
-		m_configuration(configuration)
+	inline switch_::switch_(const switch_configuration& configuration, const unsigned int max_entries) :
+		m_configuration(configuration),
+		m_max_entries(max_entries)
 	{
 	}
 

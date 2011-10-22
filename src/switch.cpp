@@ -48,6 +48,8 @@
 #include <cassert>
 
 #include <boost/foreach.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 
 #include <asiotap/osi/ethernet_helper.hpp>
 
@@ -55,6 +57,8 @@
 
 namespace freelan
 {
+	const unsigned int switch_::MAX_ENTRIES_DEFAULT = 1024;
+
 	void switch_::receive_data(port_type port, boost::asio::const_buffer data)
 	{
 		assert(port);
@@ -75,8 +79,18 @@ namespace freelan
 
 					if (!is_multicast_address(target_address))
 					{
-						// TODO: We should probably limit the count of entries somehow to avoid DoS attacks.
 						m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = port;
+
+						// We exceeded the maximum count for entries: we delete random entries to fix it.
+						while (m_ethernet_address_map.size() > m_max_entries)
+						{
+							ethernet_address_map_type::iterator entry = m_ethernet_address_map.begin();
+
+							boost::random::mt19937 gen;
+							std::advance(entry, boost::random::uniform_int_distribution<>(0, m_ethernet_address_map.size() - 1)(gen));
+
+							m_ethernet_address_map.erase(entry);
+						}
 
 						// We look in the ethernet address map
 
