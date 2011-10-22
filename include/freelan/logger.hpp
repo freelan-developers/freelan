@@ -46,18 +46,24 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include "logger_stream.hpp"
+#include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 
 namespace freelan
 {
 	/**
-	 * \brief The logger flags.
+	 * \brief Log level type.
 	 */
-	enum logger_flags
+	enum log_level
 	{
-		LOGGER_SHOW_LOG_LEVEL = 0x01, /**< \brief Show the log level in output. */
-		LOGGER_SHOW_TIMESTAMP = 0x02 /**< \brief Show the timestamp in output. */
+		LOG_DEBUG, /**< \brief The debug log level. */
+		LOG_INFORMATION, /**< \brief The information log level. */
+		LOG_WARNING, /**< \brief The warning log level. */
+		LOG_ERROR, /**< \brief The error log level. */
+		LOG_FATAL /**< \brief The fatal log level. */
 	};
+
+	class logger_stream;
 
 	/**
 	 * \brief A logger class.
@@ -67,11 +73,16 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief The log callback function type.
+			 */
+			typedef boost::function<void (log_level, const std::string&)> log_callback_type;
+
+			/**
 			 * \brief Create a new logger.
-			 * \param ls The logger stream to use.
+			 * \param callback The callback to use for logging.
 			 * \param level The desired log level.
 			 */
-			logger(const logger_stream& ls = logger_stream(), log_level level = LOG_INFORMATION, int flags = LOGGER_SHOW_LOG_LEVEL | LOGGER_SHOW_TIMESTAMP);
+			logger(log_callback_type callback, log_level level = LOG_INFORMATION);
 
 			/**
 			 * \brief Get the appropriate logger stream for the specified log level.
@@ -88,18 +99,17 @@ namespace freelan
 
 		private:
 
-			logger_stream m_ls;
-			logger_stream m_null_ls;
-			log_level m_level;
-			int m_flags;
-	};
+			logger_stream& null_stream();
+			logger_stream& log_stream();
+			std::ostream& ostream();
+			void flush();
 
-	inline logger::logger(const logger_stream& ls, log_level _level, int flags) :
-		m_ls(ls),
-		m_level(_level),
-		m_flags(flags)
-	{
-	}
+			log_callback_type m_callback;
+			log_level m_level;
+			boost::shared_ptr<void> m_pimpl;
+
+			friend class logger_stream;
+	};
 
 	inline log_level logger::level() const
 	{

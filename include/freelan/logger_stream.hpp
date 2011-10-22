@@ -46,35 +46,18 @@
 #ifndef LOGGER_STREAM_HPP
 #define LOGGER_STREAM_HPP
 
-#include <iostream>
+#include "logger.hpp"
 
 #include <boost/optional.hpp>
 
 namespace freelan
 {
 	/**
-	 * \brief Log level type.
-	 */
-	enum log_level
-	{
-		LOG_DEBUG, /**< \brief The debug log level. */
-		LOG_INFORMATION, /**< \brief The information log level. */
-		LOG_WARNING, /**< \brief The warning log level. */
-		LOG_ERROR, /**< \brief The error log level. */
-		LOG_FATAL /**< \brief The fatal log level. */
-	};
-
-	/**
 	 * \brief A logger stream class.
 	 */
 	class logger_stream
 	{
 		public:
-
-			/**
-			 * \brief The output stream type.
-			 */
-			typedef std::ostream stream_type;
 
 			/**
 			 * \brief The manipulator type.
@@ -84,7 +67,7 @@ namespace freelan
 			/**
 			 * \brief The ostream manipulator type.
 			 */
-			typedef stream_type& (ostream_manipulator_type)(stream_type&);
+			typedef std::ostream& (ostream_manipulator_type)(std::ostream&);
 
 			/**
 			 * \brief Create an empty logger stream that logs nothing.
@@ -92,12 +75,12 @@ namespace freelan
 			logger_stream();
 
 			/**
-			 * \brief Create a new logger stream that uses the specified output stream.
-			 * \param os The output stream to use.
+			 * \brief Create a new logger stream that refers to the specified logger instance.
+			 * \param logger The logger instance to refer to.
 			 *
-			 * \warning os must remain valid during the whole lifetime of the logger instance.
+			 * \warning logger must remain valid during the whole lifetime of the logger_stream instance.
 			 */
-			logger_stream(stream_type& os);
+			logger_stream(logger& logger);
 
 			/**
 			 * \brief Write something to the logger stream.
@@ -120,7 +103,11 @@ namespace freelan
 
 		private:
 
-			boost::optional<std::ostream&> m_os;
+			void flush();
+
+			boost::optional<logger> m_logger;
+
+			friend logger_stream& flush(logger_stream& ls);
 	};
 
 	/**
@@ -130,27 +117,20 @@ namespace freelan
 	 */
 	logger_stream& flush(logger_stream& ls);
 
-	/**
-	 * \brief The end-line manipulator.
-	 * \param ls The logger_stream instance to manipulate.
-	 * \return ls.
-	 */
-	logger_stream& endl(logger_stream& ls);
-
 	inline logger_stream::logger_stream()
 	{
 	}
 
-	inline logger_stream::logger_stream(stream_type& os) : m_os(os)
+	inline logger_stream::logger_stream(logger& logger) : m_logger(logger)
 	{
 	}
 
 	template <typename T>
 	inline logger_stream& logger_stream::operator<<(const T& val)
 	{
-		if (m_os)
+		if (m_logger)
 		{
-			*m_os << val;
+			m_logger->ostream() << val;
 		}
 
 		return *this;
@@ -158,9 +138,9 @@ namespace freelan
 
 	inline logger_stream& logger_stream::operator<<(ostream_manipulator_type manipulator)
 	{
-		if (m_os)
+		if (m_logger)
 		{
-			*m_os << manipulator;
+			m_logger->ostream() << manipulator;
 		}
 
 		return *this;
@@ -170,15 +150,20 @@ namespace freelan
 	{
 		return manipulator(*this);
 	}
+	
+	inline void logger_stream::flush()
+	{
+		if (m_logger)
+		{
+			m_logger->flush();
+		}
+	}
 
 	inline logger_stream& flush(logger_stream& ls)
 	{
-		return ls << std::flush;
-	}
+		ls.flush();
 
-	inline logger_stream& endl(logger_stream& ls)
-	{
-		return ls << std::endl;
+		return ls;
 	}
 }
 

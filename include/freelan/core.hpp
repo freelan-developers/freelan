@@ -131,7 +131,7 @@ namespace freelan
 			 * \param configuration The configuration to use.
 			 * \param _logger The logger to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& _logger = freelan::logger());
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& _logger);
 
 			/**
 			 * \brief Get the configuration.

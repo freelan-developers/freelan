@@ -51,6 +51,7 @@
 #include "os.hpp"
 #include "tap_adapter_switch_port.hpp"
 #include "endpoint_switch_port.hpp"
+#include "logger_stream.hpp"
 
 namespace freelan
 {
@@ -105,7 +106,7 @@ namespace freelan
 	{
 		typedef boost::asio::ip::udp::resolver::query query;
 
-		m_logger(LOG_DEBUG) << "Core opening..." << endl;
+		m_logger(LOG_DEBUG) << "Core opening..." << flush;
 
 		// FSCP
 		m_server.open(m_configuration.fscp.listen_on->resolve(m_resolver, m_configuration.fscp.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
@@ -154,7 +155,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot set IPv4 address: " << ex.what() << endl;
+					m_logger(LOG_WARNING) << "Cannot set IPv4 address: " << ex.what() << flush;
 				}
 			}
 
@@ -170,7 +171,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot set IPv6 address: " << ex.what() << endl;
+					m_logger(LOG_WARNING) << "Cannot set IPv6 address: " << ex.what() << flush;
 				}
 			}
 
@@ -215,7 +216,7 @@ namespace freelan
 			}
 		}
 
-		m_logger(LOG_DEBUG) << "Core opened." << endl;
+		m_logger(LOG_DEBUG) << "Core opened." << flush;
 
 		if (m_open_callback)
 		{
@@ -242,7 +243,7 @@ namespace freelan
 
 	void core::do_close()
 	{
-		m_logger(LOG_DEBUG) << "Core closing..." << endl;
+		m_logger(LOG_DEBUG) << "Core closing..." << flush;
 
 		m_dhcp_proxy.reset();
 		m_arp_proxy.reset();
@@ -264,7 +265,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot unset IPv6 address: " << ex.what() << endl;
+					m_logger(LOG_WARNING) << "Cannot unset IPv6 address: " << ex.what() << flush;
 				}
 			}
 
@@ -280,7 +281,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot unset IPv4 address: " << ex.what() << endl;
+					m_logger(LOG_WARNING) << "Cannot unset IPv4 address: " << ex.what() << flush;
 				}
 			}
 
@@ -291,7 +292,7 @@ namespace freelan
 
 		m_server.close();
 
-		m_logger(LOG_DEBUG) << "Core closed." << endl;
+		m_logger(LOG_DEBUG) << "Core closed." << flush;
 	}
 
 	void core::async_greet(const ep_type& target)
@@ -301,7 +302,7 @@ namespace freelan
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
 	{
-		m_logger(LOG_DEBUG) << "Received HELLO_REQUEST from " << sender << "." << endl;
+		m_logger(LOG_DEBUG) << "Received HELLO_REQUEST from " << sender << "." << flush;
 
 		if (default_accept)
 		{
@@ -317,13 +318,13 @@ namespace freelan
 	{
 		if (success)
 		{
-			m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << "." << endl;
+			m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << "." << flush;
 
 			m_server.async_introduce_to(sender);
 		}
 		else
 		{
-			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << "." << endl;
+			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << "." << flush;
 		}
 	}
 
@@ -331,7 +332,7 @@ namespace freelan
 	{
 		if (m_logger.level() <= LOG_DEBUG)
 		{
-			m_logger(LOG_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << "." << endl;
+			m_logger(LOG_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << "." << flush;
 		}
 
 		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
@@ -345,7 +346,7 @@ namespace freelan
 
 	bool core::on_session_request(const ep_type& sender, bool default_accept)
 	{
-		m_logger(LOG_DEBUG) << "Received SESSION_REQUEST from " << sender << "." << endl;
+		m_logger(LOG_DEBUG) << "Received SESSION_REQUEST from " << sender << "." << flush;
 
 		if (default_accept)
 		{
@@ -357,7 +358,7 @@ namespace freelan
 
 	void core::on_session_established(const ep_type& sender)
 	{
-		m_logger(LOG_INFORMATION) << "Session established with " << sender << "." << endl;
+		m_logger(LOG_INFORMATION) << "Session established with " << sender << "." << flush;
 
 		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(boost::ref(m_server), sender);
 		m_endpoint_switch_port_map[sender] = port;
@@ -371,7 +372,7 @@ namespace freelan
 
 	void core::on_session_lost(const ep_type& sender)
 	{
-		m_logger(LOG_INFORMATION) << "Session with " << sender << " lost." << endl;
+		m_logger(LOG_INFORMATION) << "Session with " << sender << " lost." << flush;
 
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
@@ -435,7 +436,7 @@ namespace freelan
 			// If the core is currently stopping, this kind of error is expected.
 			if (m_running)
 			{
-				m_logger(LOG_ERROR) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec << endl;
+				m_logger(LOG_ERROR) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec << flush;
 
 				close();
 			}
@@ -448,14 +449,14 @@ namespace freelan
 		{
 			if (!m_server.has_session(*it))
 			{
-				m_logger(LOG_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*it) << "..." << endl;
+				m_logger(LOG_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*it) << "..." << flush;
 
 				async_greet(*it);
 			}
 		}
 		else
 		{
-			m_logger(LOG_WARNING) << "Failed to resolve " << *ep << "." << endl;
+			m_logger(LOG_WARNING) << "Failed to resolve " << *ep << "." << flush;
 		}
 	}
 
@@ -526,12 +527,12 @@ namespace freelan
 
 		if (m_logger.level() <= LOG_DEBUG)
 		{
-			m_logger(LOG_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error") << endl;
+			m_logger(LOG_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error") << flush;
 		}
 
 		if (!ok)
 		{
-			m_logger(LOG_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")" << endl;
+			m_logger(LOG_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")" << flush;
 		}
 
 		return ok;

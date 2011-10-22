@@ -45,50 +45,64 @@
 
 #include "logger.hpp"
 
-#include <cassert>
-#include <stdexcept>
+#include <sstream>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "logger_stream.hpp"
 
 namespace freelan
 {
 	namespace
 	{
-		const char* log_level_to_string(log_level level)
+		struct logger_pimpl
 		{
-			switch (level)
+			logger_pimpl(logger& logger) :
+				null_stream(),
+				log_stream(logger)
 			{
-				case LOG_DEBUG:
-					return "DEBUG";
-				case LOG_INFORMATION:
-					return "INFORMATION";
-				case LOG_WARNING:
-					return "WARNING";
-				case LOG_ERROR:
-					return "ERROR";
-				case LOG_FATAL:
-					return "FATAL";
 			}
 
-			assert(false);
-			throw std::logic_error("Unsupported enumeration value");
-		}
+			logger_stream null_stream;
+			logger_stream log_stream;
+			std::ostringstream ostream;
+		};
+	}
+
+	logger::logger(log_callback_type callback, log_level _level) :
+		m_callback(callback),
+		m_level(_level),
+		m_pimpl(new logger_pimpl(*this))
+	{
 	}
 
 	logger_stream& logger::operator()(log_level _level)
 	{
-		logger_stream& ls = (_level >= m_level) ? m_ls : m_null_ls;
-
-		if ((LOGGER_SHOW_LOG_LEVEL & m_flags) != 0)
-		{
-			ls << "[" << log_level_to_string(_level) << "] ";
-		}
-
-		if ((LOGGER_SHOW_TIMESTAMP & m_flags) != 0)
-		{
-			ls << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << ": ";
-		}
+		logger_stream& ls = 
+			(_level >= m_level) ?
+			log_stream() :
+			null_stream();
 
 		return ls;
+	}
+	
+	logger_stream& logger::null_stream()
+	{
+		return boost::static_pointer_cast<logger_pimpl>(m_pimpl)->null_stream;
+	}
+
+	logger_stream& logger::log_stream()
+	{
+		return boost::static_pointer_cast<logger_pimpl>(m_pimpl)->log_stream;
+	}
+
+	std::ostream& logger::ostream()
+	{
+		return boost::static_pointer_cast<logger_pimpl>(m_pimpl)->ostream;
+	}
+
+	void logger::flush()
+	{
+		ostream() << std::flush;
+
+		//TODO: Implement
 	}
 }
