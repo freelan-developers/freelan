@@ -46,6 +46,8 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
+#include <iostream>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
@@ -82,14 +84,14 @@ namespace freelan
 			 * \param callback The callback to use for logging.
 			 * \param level The desired log level.
 			 */
-			logger(log_callback_type callback, log_level level = LOG_INFORMATION);
+			logger(log_callback_type callback = log_callback_type(0), log_level level = LOG_INFORMATION);
 
 			/**
 			 * \brief Get the appropriate logger stream for the specified log level.
 			 * \param level The log level.
 			 * \return The appropriate logger stream.
 			 */
-			logger_stream& operator()(log_level level);
+			logger_stream operator()(log_level level);
 
 			/**
 			 * \brief Get the logger's level.
@@ -99,14 +101,15 @@ namespace freelan
 
 		private:
 
-			logger_stream& null_stream();
-			logger_stream& log_stream();
-			std::ostream& ostream();
-			void flush();
+			void flush(log_level);
+
+		private:
+
+			std::ostream& oss();
 
 			log_callback_type m_callback;
 			log_level m_level;
-			boost::shared_ptr<void> m_pimpl;
+			boost::shared_ptr<std::ostream> m_oss;
 
 			friend class logger_stream;
 	};

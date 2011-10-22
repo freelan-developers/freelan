@@ -77,10 +77,11 @@ namespace freelan
 			/**
 			 * \brief Create a new logger stream that refers to the specified logger instance.
 			 * \param logger The logger instance to refer to.
+			 * \param level The log level of the logger_stream.
 			 *
 			 * \warning logger must remain valid during the whole lifetime of the logger_stream instance.
 			 */
-			logger_stream(logger& logger);
+			explicit logger_stream(logger& logger, log_level level);
 
 			/**
 			 * \brief Write something to the logger stream.
@@ -103,25 +104,33 @@ namespace freelan
 
 		private:
 
+			class flusher
+			{
+				public:
+
+					flusher(logger_stream& ls);
+					~flusher();
+
+				private:
+
+					logger_stream& m_ls;
+			};
+
 			void flush();
 
 			boost::optional<logger> m_logger;
-
-			friend logger_stream& flush(logger_stream& ls);
+			log_level m_level;
+			boost::shared_ptr<flusher> m_flusher;
 	};
-
-	/**
-	 * \brief The flush manipulator.
-	 * \param ls The logger_stream instance to manipulate.
-	 * \return ls.
-	 */
-	logger_stream& flush(logger_stream& ls);
 
 	inline logger_stream::logger_stream()
 	{
 	}
 
-	inline logger_stream::logger_stream(logger& logger) : m_logger(logger)
+	inline logger_stream::logger_stream(logger& logger, log_level level) :
+		m_logger(logger),
+		m_level(level),
+		m_flusher(new flusher(*this))
 	{
 	}
 
@@ -130,7 +139,7 @@ namespace freelan
 	{
 		if (m_logger)
 		{
-			m_logger->ostream() << val;
+			m_logger->oss() << val;
 		}
 
 		return *this;
@@ -140,7 +149,7 @@ namespace freelan
 	{
 		if (m_logger)
 		{
-			m_logger->ostream() << manipulator;
+			m_logger->oss() << manipulator;
 		}
 
 		return *this;
@@ -151,19 +160,22 @@ namespace freelan
 		return manipulator(*this);
 	}
 	
+	inline logger_stream::flusher::flusher(logger_stream& ls) :
+		m_ls(ls)
+	{
+	}
+
+	inline logger_stream::flusher::~flusher()
+	{
+		m_ls.flush();
+	}
+	
 	inline void logger_stream::flush()
 	{
 		if (m_logger)
 		{
-			m_logger->flush();
+			m_logger->flush(m_level);
 		}
-	}
-
-	inline logger_stream& flush(logger_stream& ls)
-	{
-		ls.flush();
-
-		return ls;
 	}
 }
 

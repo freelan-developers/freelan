@@ -51,58 +51,36 @@
 
 namespace freelan
 {
-	namespace
-	{
-		struct logger_pimpl
-		{
-			logger_pimpl(logger& logger) :
-				null_stream(),
-				log_stream(logger)
-			{
-			}
-
-			logger_stream null_stream;
-			logger_stream log_stream;
-			std::ostringstream ostream;
-		};
-	}
-
 	logger::logger(log_callback_type callback, log_level _level) :
 		m_callback(callback),
 		m_level(_level),
-		m_pimpl(new logger_pimpl(*this))
+		m_oss(new std::ostringstream())
 	{
 	}
 
-	logger_stream& logger::operator()(log_level _level)
+	logger_stream logger::operator()(log_level _level)
 	{
-		logger_stream& ls = 
-			(_level >= m_level) ?
-			log_stream() :
-			null_stream();
-
-		return ls;
+		if (_level >= m_level)
+		{
+			return logger_stream(*this, _level);
+		} else
+		{
+			return logger_stream();
+		}
 	}
 	
-	logger_stream& logger::null_stream()
+	void logger::flush(log_level _level)
 	{
-		return boost::static_pointer_cast<logger_pimpl>(m_pimpl)->null_stream;
+		const std::string msg = static_cast<std::ostringstream&>(oss() << std::flush).str();
+
+		if (m_callback)
+		{
+			m_callback(_level, msg);
+		}
 	}
-
-	logger_stream& logger::log_stream()
+	
+	std::ostream& logger::oss()
 	{
-		return boost::static_pointer_cast<logger_pimpl>(m_pimpl)->log_stream;
-	}
-
-	std::ostream& logger::ostream()
-	{
-		return boost::static_pointer_cast<logger_pimpl>(m_pimpl)->ostream;
-	}
-
-	void logger::flush()
-	{
-		ostream() << std::flush;
-
-		//TODO: Implement
+		return *m_oss;
 	}
 }
