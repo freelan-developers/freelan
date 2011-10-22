@@ -128,11 +128,11 @@ po::options_description get_fscp_options()
 	po::options_description result("FreeLAN Secure Channel Protocol (FSCP) options");
 
 	result.add_options()
-		("fscp.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
-		("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
-		("fscp.hello_timeout", po::value<unsigned int>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
-		("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
-		;
+	("fscp.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
+	("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
+	("fscp.hello_timeout", po::value<unsigned int>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
+	("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
+	;
 
 	return result;
 }
@@ -142,14 +142,14 @@ po::options_description get_security_options()
 	po::options_description result("Security options");
 
 	result.add_options()
-		("security.signature_certificate_file", po::value<std::string>()->required(), "The certificate file to use for signing.")
-		("security.signature_private_key_file", po::value<std::string>()->required(), "The private key file to use for signing.")
-		("security.encryption_certificate_file", po::value<std::string>(), "The certificate file to use for encryption.")
-		("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
-		("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
-		("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
-		("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
-		;
+	("security.signature_certificate_file", po::value<std::string>()->required(), "The certificate file to use for signing.")
+	("security.signature_private_key_file", po::value<std::string>()->required(), "The private key file to use for signing.")
+	("security.encryption_certificate_file", po::value<std::string>(), "The certificate file to use for encryption.")
+	("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
+	("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
+	("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
+	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
+	;
 
 	return result;
 }
@@ -159,15 +159,15 @@ po::options_description get_tap_adapter_options()
 	po::options_description result("Tap adapter options");
 
 	result.add_options()
-		("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
-		("tap_adapter.ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.1/24"), "The tap adapter IPv4 address and prefix length.")
-		("tap_adapter.ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::1/10"), "The tap adapter IPv6 address and prefix length.")
-		("tap_adapter.arp_proxy_enabled", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
-		("tap_adapter.arp_proxy_fake_ethernet_address", po::value<std::string>()->default_value("00:aa:bb:cc:dd:ee"), "The ARP proxy fake ethernet address.")
-		("tap_adapter.dhcp_proxy_enabled", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
-		("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
-		("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
-		;
+	("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
+	("tap_adapter.ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.1/24"), "The tap adapter IPv4 address and prefix length.")
+	("tap_adapter.ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::1/10"), "The tap adapter IPv6 address and prefix length.")
+	("tap_adapter.arp_proxy_enabled", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
+	("tap_adapter.arp_proxy_fake_ethernet_address", po::value<std::string>()->default_value("00:aa:bb:cc:dd:ee"), "The ARP proxy fake ethernet address.")
+	("tap_adapter.dhcp_proxy_enabled", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
+	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
+	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
+	;
 
 	return result;
 }
@@ -177,9 +177,9 @@ po::options_description get_switch_options()
 	po::options_description result("Switch options");
 
 	result.add_options()
-		("switch.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
-		("switch.relay_mode_enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
-		;
+	("switch.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
+	("switch.relay_mode_enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
+	;
 
 	return result;
 }

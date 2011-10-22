@@ -175,10 +175,10 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 {
 	po::options_description generic_options("Generic options");
 	generic_options.add_options()
-		("help,h", "Produce help message.")
-		("debug,d", "Enables debug output.")
-		("configuration_file,c", po::value<std::string>(), "The configuration file to use")
-		;
+	("help,h", "Produce help message.")
+	("debug,d", "Enables debug output.")
+	("configuration_file,c", po::value<std::string>(), "The configuration file to use")
+	;
 
 	po::options_description configuration_options("Configuration");
 	configuration_options.add(get_fscp_options());
@@ -225,7 +225,8 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 		}
 
 		po::store(po::parse_config_file(ifs, configuration_options, true), vm);
-	} else
+	}
+	else
 	{
 		bool configuration_read = false;
 
@@ -312,7 +313,8 @@ int main(int argc, char** argv)
 			if (core.has_tap_adapter())
 			{
 				std::cout << "Using tap adapter: " << core.tap_adapter().name() << std::endl;
-			} else
+			}
+			else
 			{
 				std::cout << "Configured not to use any tap adapter." << std::endl;
 			}

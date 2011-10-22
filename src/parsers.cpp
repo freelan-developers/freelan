@@ -55,40 +55,40 @@
 namespace
 {
 	template <typename IpAddressType>
-		bool is_ip_address_character(char c);
+	bool is_ip_address_character(char c);
 
 	template <>
-		bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
-		{
-			return (std::isdigit(c) || (c == '.'));
-		}
+	bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
+	{
+		return (std::isdigit(c) || (c == '.'));
+	}
 
 	template <>
-		bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
-		{
-			return (std::isxdigit(c) || (c == ':'));
-		}
+	bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
+	{
+		return (std::isxdigit(c) || (c == ':'));
+	}
 
 	template <typename IpAddressType>
-		bool parse_ip_address(std::string::const_iterator& begin, std::string::const_iterator end, IpAddressType& val)
+	bool parse_ip_address(std::string::const_iterator& begin, std::string::const_iterator end, IpAddressType& val)
+	{
+		assert(begin <= end);
+
+		const std::string::const_iterator save_begin = begin;
+
+		for (; (begin != end) && is_ip_address_character<IpAddressType>(*begin); ++begin);
+
+		try
 		{
-			assert(begin <= end);
-
-			const std::string::const_iterator save_begin = begin;
-
-			for (; (begin != end) && is_ip_address_character<IpAddressType>(*begin); ++begin);
-
-			try
-			{
-				val = IpAddressType::from_string(std::string(save_begin, begin));
-			}
-			catch (std::exception&)
-			{
-				return false;
-			}
-
-			return true;
+			val = IpAddressType::from_string(std::string(save_begin, begin));
 		}
+		catch (std::exception&)
+		{
+			return false;
+		}
+
+		return true;
+	}
 
 	bool is_ethernet_address_delimiter(char c)
 	{
@@ -101,25 +101,25 @@ namespace
 	}
 
 	template <typename NumberType>
-		bool parse_number(std::string::const_iterator& begin, std::string::const_iterator end, NumberType& val)
+	bool parse_number(std::string::const_iterator& begin, std::string::const_iterator end, NumberType& val)
+	{
+		assert(begin <= end);
+
+		const std::string::const_iterator save_begin = begin;
+
+		for (; (begin != end) && std::isdigit(*begin); ++begin);
+
+		try
 		{
-			assert(begin <= end);
-
-			const std::string::const_iterator save_begin = begin;
-
-			for (; (begin != end) && std::isdigit(*begin); ++begin);
-
-			try
-			{
-				val = boost::lexical_cast<NumberType>(std::string(save_begin, begin));
-			}
-			catch (std::exception&)
-			{
-				return false;
-			}
-
-			return true;
+			val = boost::lexical_cast<NumberType>(std::string(save_begin, begin));
 		}
+		catch (std::exception&)
+		{
+			return false;
+		}
+
+		return true;
+	}
 
 	uint8_t xdigit_to_numeric(char c)
 	{
@@ -230,7 +230,7 @@ namespace
 
 		// Hostname are 255 characters long at most
 		const size_t hostname_max_size = 255;
-		
+
 		if (static_cast<size_t>(std::distance(save_begin, begin)) > hostname_max_size)
 		{
 			begin = save_begin + hostname_max_size;
@@ -310,7 +310,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 			{
 				return false;
 			}
-		} else
+		}
+		else
 		{
 			if (!std::isxdigit(*begin))
 			{
@@ -422,7 +423,7 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 
 		val.reset(new freelan::ipv6_endpoint(address, port));
 	}
-	else 
+	else
 	{
 		freelan::ipv6_endpoint::address_type address_v6;
 
@@ -430,7 +431,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 		if (parse(begin, end, address_v6))
 		{
 			val.reset(new freelan::ipv6_endpoint(address_v6));
-		} else
+		}
+		else
 		{
 			begin = save_begin;
 
@@ -461,7 +463,8 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
 				}
 
 				val.reset(new freelan::ipv4_endpoint(address_v4, port));
-			} else
+			}
+			else
 			{
 				begin = save_begin;
 

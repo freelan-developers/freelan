@@ -107,17 +107,17 @@ namespace
 		PROCESS_INFORMATION pi;
 
 		if (!::CreateProcess(
-					application,
-					command_line,
-					NULL,
-					NULL,
-					FALSE,
-					0,
-					NULL, //environment
-					NULL,
-					&si,
-					&pi
-					))
+		            application,
+		            command_line,
+		            NULL,
+		            NULL,
+		            FALSE,
+		            0,
+		            NULL, //environment
+		            NULL,
+		            &si,
+		            &pi
+		        ))
 		{
 			throw_system_error(::GetLastError());
 		}
@@ -137,7 +137,8 @@ namespace
 						if (::GetExitCodeProcess(pi.hProcess, &exit_code))
 						{
 							exit_status = static_cast<int>(exit_code);
-						} else
+						}
+						else
 						{
 							throw_system_error(::GetLastError());
 						}
@@ -243,14 +244,16 @@ namespace
 					else if (readcnt == sizeof(errno_child))
 					{
 						throw_system_error(errno_child);
-					} else
+					}
+					else
 					{
 						int status;
 
 						if (::waitpid(pid, &status, 0) < 0)
 						{
 							throw_system_error(errno);
-						} else
+						}
+						else
 						{
 							if (WIFEXITED(status))
 							{
@@ -357,7 +360,7 @@ int execute(const char* file, ...)
 #ifdef WINDOWS
 		char command_line[32768] = {};
 		size_t offset = 0;
-		
+
 		for (const char* arg = va_arg(vl, const char*); arg != NULL; arg = va_arg(vl, const char*))
 		{
 			command_line[offset++] = '"';
@@ -375,7 +378,7 @@ int execute(const char* file, ...)
 			command_line[offset++] = '"';
 			command_line[offset++] = ' ';
 		}
-		
+
 		exit_status = create_process(file, command_line);
 
 #elif defined(UNIX)
@@ -397,7 +400,7 @@ int execute(const char* file, ...)
 		}
 
 		exit_status = execute_script(file, argv);
-		
+
 #endif
 	}
 	catch (...)

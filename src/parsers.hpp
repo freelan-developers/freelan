@@ -173,7 +173,8 @@ boost::optional<Type> parse_optional(const std::string& str)
 	if (str.empty())
 	{
 		return boost::none;
-	} else
+	}
+	else
 	{
 		return parse<Type>(str);
 	}
