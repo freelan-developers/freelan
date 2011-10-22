@@ -159,7 +159,7 @@ namespace freelan
 	{
 		return manipulator(*this);
 	}
-	
+
 	inline logger_stream::flusher::flusher(logger_stream& ls) :
 		m_ls(ls)
 	{
@@ -169,7 +169,7 @@ namespace freelan
 	{
 		m_ls.flush();
 	}
-	
+
 	inline void logger_stream::flush()
 	{
 		if (m_logger)

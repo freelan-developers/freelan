@@ -63,12 +63,13 @@ namespace freelan
 		if (_level >= m_level)
 		{
 			return logger_stream(*this, _level);
-		} else
+		}
+		else
 		{
 			return logger_stream();
 		}
 	}
-	
+
 	void logger::flush(log_level _level)
 	{
 		std::ostringstream& oss = static_cast<std::ostringstream&>(os());
@@ -83,7 +84,7 @@ namespace freelan
 			m_callback(_level, msg);
 		}
 	}
-	
+
 	std::ostream& logger::os()
 	{
 		return *m_os;

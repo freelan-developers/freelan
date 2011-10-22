@@ -142,15 +142,15 @@ namespace freelan
 					if (!m_configuration.tap_adapter.dhcp_proxy_enabled)
 					{
 						m_tap_adapter->add_ip_address_v4(
-								m_configuration.tap_adapter.ipv4_address_prefix_length->address,
-								m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
-								);
+						    m_configuration.tap_adapter.ipv4_address_prefix_length->address,
+						    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
+						);
 					}
 #else
 					m_tap_adapter->add_ip_address_v4(
-							m_configuration.tap_adapter.ipv4_address_prefix_length->address,
-							m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
-							);
+					    m_configuration.tap_adapter.ipv4_address_prefix_length->address,
+					    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
+					);
 #endif
 				}
 				catch (std::runtime_error& ex)
@@ -165,9 +165,9 @@ namespace freelan
 				try
 				{
 					m_tap_adapter->add_ip_address_v6(
-							m_configuration.tap_adapter.ipv6_address_prefix_length->address,
-							m_configuration.tap_adapter.ipv6_address_prefix_length->prefix_length
-							);
+					    m_configuration.tap_adapter.ipv6_address_prefix_length->address,
+					    m_configuration.tap_adapter.ipv6_address_prefix_length->prefix_length
+					);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -204,10 +204,10 @@ namespace freelan
 				if (m_configuration.tap_adapter.ipv4_address_prefix_length)
 				{
 					m_dhcp_proxy->add_entry(
-							m_tap_adapter->ethernet_address(),
-							m_configuration.tap_adapter.ipv4_address_prefix_length->address,
-							m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
-							);
+					    m_tap_adapter->ethernet_address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length->address,
+					    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
+					);
 				}
 			}
 			else
@@ -259,9 +259,9 @@ namespace freelan
 				try
 				{
 					m_tap_adapter->remove_ip_address_v6(
-							m_configuration.tap_adapter.ipv6_address_prefix_length->address,
-							m_configuration.tap_adapter.ipv6_address_prefix_length->prefix_length
-							);
+					    m_configuration.tap_adapter.ipv6_address_prefix_length->address,
+					    m_configuration.tap_adapter.ipv6_address_prefix_length->prefix_length
+					);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -275,9 +275,9 @@ namespace freelan
 				try
 				{
 					m_tap_adapter->remove_ip_address_v4(
-							m_configuration.tap_adapter.ipv4_address_prefix_length->address,
-							m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
-							);
+					    m_configuration.tap_adapter.ipv4_address_prefix_length->address,
+					    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length
+					);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -467,12 +467,12 @@ namespace freelan
 			typedef boost::asio::ip::udp::resolver::query query;
 
 			ep->async_resolve(
-					m_resolver,
-					m_configuration.fscp.hostname_resolution_protocol,
-					query::address_configured,
-					DEFAULT_SERVICE,
-					boost::bind(&core::do_greet, this, _1, _2, ep)
-					);
+			    m_resolver,
+			    m_configuration.fscp.hostname_resolution_protocol,
+			    query::address_configured,
+			    DEFAULT_SERVICE,
+			    boost::bind(&core::do_greet, this, _1, _2, ep)
+			);
 		}
 	}
 
