@@ -53,11 +53,13 @@
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
 #include <freelan/freelan.hpp>
+#include <freelan/logger_stream.hpp>
 
 #include "system.hpp"
 #include "configuration_helper.hpp"
@@ -110,6 +112,31 @@ static bool register_signal_handlers()
 	return true;
 }
 
+const char* log_level_to_string(freelan::log_level level)
+{
+	switch (level)
+	{
+		case freelan::LOG_DEBUG:
+			return "DEBUG";
+		case freelan::LOG_INFORMATION:
+			return "INFORMATION";
+		case freelan::LOG_WARNING:
+			return "WARNING";
+		case freelan::LOG_ERROR:
+			return "ERROR";
+		case freelan::LOG_FATAL:
+			return "FATAL";
+	}
+
+	assert(false);
+	throw std::logic_error("Unsupported enumeration value");
+}
+
+void log_function(freelan::log_level level, const std::string& msg)
+{
+	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+}
+
 bool execute_certificate_validation_script(const std::string& script, fl::core& core, fl::security_configuration::cert_type cert)
 {
 	static unsigned int counter = 0;
@@ -120,7 +147,7 @@ bool execute_certificate_validation_script(const std::string& script, fl::core& 
 
 		if (core.logger().level() <= freelan::LOG_DEBUG)
 		{
-			core.logger()(freelan::LOG_DEBUG) << "Writing temporary certificate file at: " << filename << freelan::endl;
+			core.logger()(freelan::LOG_DEBUG) << "Writing temporary certificate file at: " << filename;
 		}
 
 		cert.write_certificate(cryptoplus::file::open(filename, "w"));
@@ -129,7 +156,7 @@ bool execute_certificate_validation_script(const std::string& script, fl::core& 
 
 		if (core.logger().level() <= freelan::LOG_DEBUG)
 		{
-			core.logger()(freelan::LOG_DEBUG) << script << " terminated execution with exit status " << exit_status << freelan::endl;
+			core.logger()(freelan::LOG_DEBUG) << script << " terminated execution with exit status " << exit_status ;
 		}
 
 		::remove(filename.c_str());
@@ -138,7 +165,7 @@ bool execute_certificate_validation_script(const std::string& script, fl::core& 
 	}
 	catch (std::exception& ex)
 	{
-		core.logger()(freelan::LOG_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() << freelan::endl;
+		core.logger()(freelan::LOG_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
 
 		return false;
 	}
@@ -276,7 +303,7 @@ int main(int argc, char** argv)
 		{
 			boost::asio::io_service io_service;
 
-			freelan::core core(io_service, configuration, fl::logger(std::cout, debug ? fl::LOG_DEBUG : fl::LOG_INFORMATION));
+			freelan::core core(io_service, configuration, fl::logger(&log_function, debug ? fl::LOG_DEBUG : fl::LOG_INFORMATION));
 
 			core.open();
 
