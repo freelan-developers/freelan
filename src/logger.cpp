@@ -54,7 +54,7 @@ namespace freelan
 	logger::logger(log_callback_type callback, log_level _level) :
 		m_callback(callback),
 		m_level(_level),
-		m_oss(new std::ostringstream())
+		m_os(new std::ostringstream())
 	{
 	}
 
@@ -71,7 +71,12 @@ namespace freelan
 	
 	void logger::flush(log_level _level)
 	{
-		const std::string msg = static_cast<std::ostringstream&>(oss() << std::flush).str();
+		std::ostringstream& oss = static_cast<std::ostringstream&>(os());
+
+		oss << std::flush;
+
+		const std::string msg = oss.str();
+		oss.str("");
 
 		if (m_callback)
 		{
@@ -79,8 +84,8 @@ namespace freelan
 		}
 	}
 	
-	std::ostream& logger::oss()
+	std::ostream& logger::os()
 	{
-		return *m_oss;
+		return *m_os;
 	}
 }

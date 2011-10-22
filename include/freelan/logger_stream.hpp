@@ -139,7 +139,7 @@ namespace freelan
 	{
 		if (m_logger)
 		{
-			m_logger->oss() << val;
+			m_logger->os() << val;
 		}
 
 		return *this;
@@ -149,7 +149,7 @@ namespace freelan
 	{
 		if (m_logger)
 		{
-			m_logger->oss() << manipulator;
+			m_logger->os() << manipulator;
 		}
 
 		return *this;

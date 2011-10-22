@@ -105,11 +105,11 @@ namespace freelan
 
 		private:
 
-			std::ostream& oss();
+			std::ostream& os();
 
 			log_callback_type m_callback;
 			log_level m_level;
-			boost::shared_ptr<std::ostream> m_oss;
+			boost::shared_ptr<std::ostream> m_os;
 
 			friend class logger_stream;
 	};
