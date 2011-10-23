@@ -49,7 +49,15 @@
 
 #include <boost/foreach.hpp>
 #include <boost/random/mersenne_twister.hpp>
+
+#include <boost/version.hpp>
+
+#if BOOST_VERSION >= 104700
 #include <boost/random/uniform_int_distribution.hpp>
+#else
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/variate_generator.hpp>
+#endif
 
 #include <asiotap/osi/ethernet_helper.hpp>
 
@@ -87,7 +95,12 @@ namespace freelan
 							ethernet_address_map_type::iterator entry = m_ethernet_address_map.begin();
 
 							boost::random::mt19937 gen;
+
+#if BOOST_VERSION >= 104700
 							std::advance(entry, boost::random::uniform_int_distribution<>(0, m_ethernet_address_map.size() - 1)(gen));
+#else
+							std::advance(entry, boost::variate_generator<boost::mt19937&, boost::uniform_int<> >(gen, boost::uniform_int<>(0, m_ethernet_address_map.size() - 1)));
+#endif
 
 							m_ethernet_address_map.erase(entry);
 						}
