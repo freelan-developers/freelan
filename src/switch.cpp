@@ -94,12 +94,15 @@ namespace freelan
 						{
 							ethernet_address_map_type::iterator entry = m_ethernet_address_map.begin();
 
+#if BOOST_VERSION >= 104700
 							boost::random::mt19937 gen;
 
-#if BOOST_VERSION >= 104700
 							std::advance(entry, boost::random::uniform_int_distribution<>(0, m_ethernet_address_map.size() - 1)(gen));
 #else
-							std::advance(entry, boost::variate_generator<boost::mt19937&, boost::uniform_int<> >(gen, boost::uniform_int<>(0, m_ethernet_address_map.size() - 1)));
+							boost::mt19937 gen;
+
+							boost::variate_generator<boost::mt19937&, boost::uniform_int<> > vgen(gen, boost::uniform_int<>(0, m_ethernet_address_map.size() - 1));
+							std::advance(entry, vgen());
 #endif
 
 							m_ethernet_address_map.erase(entry);
