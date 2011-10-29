@@ -61,9 +61,11 @@ cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = G
 service_project = ProgramProject(service_name, major, minor, libraries, source_files = Glob('build/service/common/*.cpp') + [os.path.join('build/service', 'service.cpp')])
 daemon_project = ProgramProject(daemon_name, major, minor, libraries, source_files = Glob('build/daemon/common/*.cpp') + [os.path.join('build/daemon', 'daemon.cpp')])
 
-cli = env.FreelanProject(cli_project)
+env.Indent(cli_project)
+
+env.FreelanProject(cli_project)
 
 if sys.platform.startswith('win32'):
-    service = env.FreelanProject(service_project)
+    env.FreelanProject(service_project)
 else:
-    daemon = env.FreelanProject(daemon_project)
+    env.FreelanProject(daemon_project)
