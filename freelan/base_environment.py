@@ -70,7 +70,7 @@ class BaseEnvironment(SConsEnvironment):
         """Build a FreeLAN project."""
 
         return project.configure_environment(self)
-    
+
     def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a FreeLAN library."""
 
