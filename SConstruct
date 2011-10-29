@@ -2,6 +2,8 @@
 
 cli_name = 'freelan'
 service_name = 'freelan_svc'
+daemon_name = 'freeland'
+
 major = '1'
 minor = '0'
 libraries = []
@@ -52,7 +54,17 @@ else:
         libraries.append('rt')
 
 common_source_files = Glob('src/common/*.cpp')
+env.VariantDir('build/cli', 'src')
+env.VariantDir('build/service', 'src')
+env.VariantDir('build/daemon', 'src')
 
-cli = ProgramProject(cli_name, major, minor, libraries, source_files = common_source_files + [os.path.join('src', 'cli.cpp')])
+cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = Glob('build/cli/common/*.cpp') + [os.path.join('build/cli', 'cli.cpp')])
+service_project = ProgramProject(service_name, major, minor, libraries, source_files = Glob('build/service/common/*.cpp') + [os.path.join('build/service', 'service.cpp')])
+daemon_project = ProgramProject(daemon_name, major, minor, libraries, source_files = Glob('build/daemon/common/*.cpp') + [os.path.join('build/daemon', 'daemon.cpp')])
 
-env.FreelanProject(cli)
+cli = env.FreelanProject(cli_project)
+
+if sys.platform.startswith('win32'):
+    service = env.FreelanProject(service_project)
+else:
+    daemon = env.FreelanProject(daemon_project)
