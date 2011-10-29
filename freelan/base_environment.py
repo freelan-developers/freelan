@@ -79,3 +79,12 @@ class BaseEnvironment(SConsEnvironment):
         elif self.link == 'shared':
             return self.FreelanSharedLibrary(target_dir, name, major, minor, source_files, **env)
 
+    def Indent(self, project):
+        """Indent a FreeLAN project."""
+
+        indentation = self.AStyle(project.include_files + project.source_files)
+
+        self.AlwaysBuild(indentation)
+        self.Alias('indent', indentation)
+
+        return indentation

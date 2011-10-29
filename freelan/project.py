@@ -77,17 +77,14 @@ class LibraryProject(Project):
 
         documentation = env.Doxygen('doxyfile')
         env.AlwaysBuild(documentation)
-        indentation = env.AStyle(self.source_files + self.include_files)
-        env.AlwaysBuild(indentation)
 
         env.Alias('build', libraries)
         env.Alias('install', libraries_install)
         env.Alias('doc', documentation)
-        env.Alias('indent', indentation)
 
         env.Default('build')
 
-        return libraries + libraries_install + documentation + indentation
+        return libraries + libraries_install + documentation
 
     def Sample(self, libraries=None, path=None):
         """Build a sample project at the given path, or in the current directory if no path is specified."""
@@ -141,16 +138,12 @@ class ProgramProject(Project):
 
         program_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.bindir), program)
 
-        indentation = env.AStyle(self.source_files + self.include_files)
-        env.AlwaysBuild(indentation)
-
         env.Alias('build', program)
         env.Alias('install', program_install)
-        env.Alias('indent', indentation)
 
         env.Default('build')
 
-        return program + program_install + indentation
+        return program + program_install
 
 class SampleProject(Project):
     """A class to handle samples."""
