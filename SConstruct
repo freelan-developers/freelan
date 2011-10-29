@@ -20,6 +20,8 @@ libraries.append('boost_system')
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
+env.Indent(project)
+
 env.FreelanProject(project)
 
 samples = env.SConscript('samples/SConscript', exports = 'env project')
