@@ -6,3 +6,4 @@ variables.cache
 *.obj
 *.sobj
 bin/*
+build
