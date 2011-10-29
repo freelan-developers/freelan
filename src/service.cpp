@@ -46,7 +46,42 @@
 
 #include <cstdlib>
 
+#include <windows.h>
+
+DWORD HandlerEx(DWORD control, DWORD event_type, void* event_data, void* context)
+{
+	(void)control;
+	(void)event_type;
+	(void)event_data;
+	(void)context;
+
+	//TODO: Implement
+	
+	return NO_ERROR;
+}
+
+VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
+{
+	(void)argc;
+	(void)argv;
+
+	SERVICE_STATUS_HANDLE service_status_handle = RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, NULL);
+
+	(void)service_status_handle;
+}
+
 int main()
 {
+	char service_name[] = "FreeLAN Service";
+
+	SERVICE_TABLE_ENTRY ServiceTable[2];
+	ServiceTable[0].lpServiceName = service_name;
+	ServiceTable[0].lpServiceProc = &ServiceMain;
+
+	ServiceTable[1].lpServiceName = NULL;
+	ServiceTable[1].lpServiceProc = NULL;
+
+	StartServiceCtrlDispatcher(ServiceTable);
+
 	return EXIT_SUCCESS;
 }
