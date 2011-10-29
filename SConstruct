@@ -18,7 +18,7 @@ if sys.platform.startswith('win32'):
 
 libraries.append('boost_system')
 
-project = LibraryProject(name, major, minor, libraries)
+project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
 env.FreelanProject(project)
 
