@@ -40,7 +40,7 @@ else:
     if sys.platform.startswith('linux2'):
         libraries.append('rt')
 
-project = LibraryProject(name, major, minor, libraries)
+project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
 env.FreelanProject(project)
 
