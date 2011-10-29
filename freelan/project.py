@@ -33,35 +33,25 @@ class Project(object):
 class LibraryProject(Project):
     """A class to handle library projects."""
 
-    def __init__(self, name, major, minor, libraries, path=None, include_path=None, source_path=None):
+    def __init__(self, name, major, minor, libraries, source_files, include_path=None, path=None):
         """Create a new LibraryProject reading from the specified path."""
 
         super(LibraryProject, self).__init__(name, libraries, path)
 
         self.major = major
         self.minor = minor
+        self.source_files = source_files
 
         if include_path is None:
             self.include_path = os.path.join(self.path, 'include', self.name)
         else:
             self.include_path = include_path
 
-        if source_path is None:
-            self.source_path = os.path.join(self.path, 'src')
-        else:
-            self.source_path = source_path
-
         # Scan for include files
         self.include_files = []
 
         for root, directories, files in os.walk(self.include_path):
             self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
-
-        # Scan for source files
-        self.source_files = []
-
-        for root, directories, files in os.walk(self.source_path):
-            self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
 
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
@@ -110,35 +100,30 @@ class LibraryProject(Project):
         else:
             name = os.path.basename(os.path.abspath(path))
 
-        return SampleProject(self, name, libraries, path)
+        return SampleProject(self, name, libraries, None, path)
 
 class ProgramProject(Project):
     "A class to handle program projects."""
 
-    def __init__(self, name, major, minor, libraries, path=None, source_path=None):
+    def __init__(self, name, major, minor, libraries, source_files, include_path=None, path=None):
         """Create a new ProgramProject reading from the specified path."""
 
         super(ProgramProject, self).__init__(name, libraries, path)
 
         self.major = major
         self.minor = minor
+        self.source_files = source_files
 
-        if source_path is None:
-            self.source_path = os.path.join(self.path, 'src')
+        if include_path is None:
+            self.include_path = os.path.join(self.path, 'src')
         else:
-            self.source_path = source_path
+            self.include_path = include_path
 
         # Scan for include files
         self.include_files = []
 
-        for root, directories, files in os.walk(self.source_path):
+        for root, directories, files in os.walk(self.include_path):
             self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
-
-        # Scan for source files
-        self.source_files = []
-
-        for root, directories, files in os.walk(self.source_path):
-            self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
 
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
@@ -170,7 +155,7 @@ class ProgramProject(Project):
 class SampleProject(Project):
     """A class to handle samples."""
 
-    def __init__(self, parent_project, name, libraries, path=None, source_files=None):
+    def __init__(self, parent_project, name, libraries, source_files=None, path=None):
         """Create a new sample project."""
 
         if not parent_project.name in libraries:
