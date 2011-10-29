@@ -54,11 +54,10 @@ else:
         libraries.append('rt')
 
 common_source_files = Glob('src/common/*.cpp')
-env.VariantDir('build/cli', 'src')
 env.VariantDir('build/service', 'src')
 env.VariantDir('build/daemon', 'src')
 
-cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = Glob('build/cli/common/*.cpp') + [os.path.join('build/cli', 'cli.cpp')])
+cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = Glob('src/common/*.cpp') + [os.path.join('src', 'cli.cpp')])
 service_project = ProgramProject(service_name, major, minor, libraries, source_files = Glob('build/service/common/*.cpp') + [os.path.join('build/service', 'service.cpp')])
 daemon_project = ProgramProject(daemon_name, major, minor, libraries, source_files = Glob('build/daemon/common/*.cpp') + [os.path.join('build/daemon', 'daemon.cpp')])
 
