@@ -39,9 +39,9 @@
  */
 
 /**
- * \file main.cpp
+ * \file cli.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The program entry point.
+ * \brief The Command-Line Interface program entry point.
  */
 
 #include <iostream>
@@ -61,8 +61,8 @@
 #include <freelan/freelan.hpp>
 #include <freelan/logger_stream.hpp>
 
-#include "system.hpp"
-#include "configuration_helper.hpp"
+#include "common/system.hpp"
+#include "common/configuration_helper.hpp"
 
 namespace po = boost::program_options;
 namespace fl = freelan;

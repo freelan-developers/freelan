@@ -1,6 +1,7 @@
 """The SConstruct file"""
 
-name = 'freelan'
+cli_name = 'freelan'
+service_name = 'freelan_svc'
 major = '1'
 minor = '0'
 libraries = []
@@ -50,6 +51,8 @@ else:
     if sys.platform.startswith('linux2'):
         libraries.append('rt')
 
-project = ProgramProject(name, major, minor, libraries)
+common_source_files = Glob('src/common/*.cpp')
 
-env.FreelanProject(project)
+cli = ProgramProject(cli_name, major, minor, libraries, source_files = common_source_files + [os.path.join('src', 'cli.cpp')])
+
+env.FreelanProject(cli)
