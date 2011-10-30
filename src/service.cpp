@@ -45,8 +45,43 @@
  */
 
 #include <cstdlib>
+#include <stdexcept>
+
+#include <boost/system/system_error.hpp>
 
 #include <windows.h>
+
+/**
+ * \brief A class to handle the EventLog
+ */
+class event_log_handler
+{
+	public:
+
+		/**
+		 * \brief Create the event log.
+		 */
+		event_log_handler() :
+			m_handle(::OpenEventLog(NULL, "Application"))
+		{
+			if (m_handle == NULL)
+			{
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "Unable to open the EventLog");
+			}
+		}
+
+		/**
+		 * \brief Closes the event log.
+		 */
+		~event_log_handler()
+		{
+			::CloseEventLog(m_handle);
+		}
+
+	private:
+
+		HANDLE m_handle;
+};
 
 DWORD HandlerEx(DWORD control, DWORD event_type, void* event_data, void* context)
 {
@@ -65,9 +100,13 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 	(void)argc;
 	(void)argv;
 
-	SERVICE_STATUS_HANDLE service_status_handle = RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, NULL);
+	event_log_handler event_log;
 
-	(void)service_status_handle;
+	SERVICE_STATUS_HANDLE service_status_handle = ::RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, NULL);
+
+	if (service_status_handle != 0)
+	{
+	}
 }
 
 int main()
@@ -80,7 +119,7 @@ int main()
 		{NULL, NULL}
 	};
 
-	StartServiceCtrlDispatcher(ServiceTable);
+	::StartServiceCtrlDispatcher(ServiceTable);
 
 	return EXIT_SUCCESS;
 }
