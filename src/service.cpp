@@ -74,12 +74,11 @@ int main()
 {
 	char service_name[] = "FreeLAN Service";
 
-	SERVICE_TABLE_ENTRY ServiceTable[2];
-	ServiceTable[0].lpServiceName = service_name;
-	ServiceTable[0].lpServiceProc = &ServiceMain;
-
-	ServiceTable[1].lpServiceName = NULL;
-	ServiceTable[1].lpServiceProc = NULL;
+	SERVICE_TABLE_ENTRY ServiceTable[] =
+	{
+		{service_name, &ServiceMain},
+		{NULL, NULL}
+	};
 
 	StartServiceCtrlDispatcher(ServiceTable);
 
