@@ -129,7 +129,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 
 		// Start pending
 		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
-		
+
 		//TODO: Initialization
 
 		// Running
@@ -177,27 +177,28 @@ void InstallService()
 			if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
 			{
 				SC_HANDLE service = ::CreateService(
-						service_control_manager,
-						SERVICE_NAME,
-						SERVICE_NAME,
-						SERVICE_ALL_ACCESS,
-						SERVICE_WIN32_OWN_PROCESS,
-						SERVICE_AUTO_START,
-						SERVICE_ERROR_IGNORE,
-						path,
-						NULL,
-						NULL,
-						NULL,
-						NULL,
-						NULL
-						);
+				                        service_control_manager,
+				                        SERVICE_NAME,
+				                        SERVICE_NAME,
+				                        SERVICE_ALL_ACCESS,
+				                        SERVICE_WIN32_OWN_PROCESS,
+				                        SERVICE_AUTO_START,
+				                        SERVICE_ERROR_IGNORE,
+				                        path,
+				                        NULL,
+				                        NULL,
+				                        NULL,
+				                        NULL,
+				                        NULL
+				                    );
 
 				if (service)
 				{
 					std::cout << "Service installed." << std::endl;
 
 					::CloseServiceHandle(service);
-				} else
+				}
+				else
 				{
 					DWORD last_error = ::GetLastError();
 
@@ -210,7 +211,8 @@ void InstallService()
 							throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
 					}
 				}
-			} else
+			}
+			else
 			{
 				throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
 			}
@@ -223,7 +225,8 @@ void InstallService()
 		}
 
 		::CloseServiceHandle(service_control_manager);
-	} else
+	}
+	else
 	{
 		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
 	}
@@ -238,10 +241,10 @@ void UninstallService()
 		try
 		{
 			SC_HANDLE service = ::OpenService(
-					service_control_manager,
-					SERVICE_NAME,
-					SERVICE_QUERY_STATUS | DELETE
-					);
+			                        service_control_manager,
+			                        SERVICE_NAME,
+			                        SERVICE_QUERY_STATUS | DELETE
+			                    );
 
 			if (service)
 			{
@@ -270,11 +273,13 @@ void UninstallService()
 										throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
 								}
 							}
-						} else
+						}
+						else
 						{
 							std::cout << "The service is still running. Doing nothing." << std::endl;
 						}
-					} else
+					}
+					else
 					{
 						throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "QueryServiceStatus()");
 					}
@@ -287,7 +292,8 @@ void UninstallService()
 				}
 
 				::CloseServiceHandle(service);
-			} else
+			}
+			else
 			{
 				DWORD last_error = ::GetLastError();
 
@@ -309,7 +315,8 @@ void UninstallService()
 		}
 
 		::CloseServiceHandle(service_control_manager);
-	} else
+	}
+	else
 	{
 		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
 	}
