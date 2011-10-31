@@ -156,7 +156,12 @@ void RunService()
 		{NULL, NULL}
 	};
 
-	::StartServiceCtrlDispatcher(ServiceTable);
+	std::cout << "Starting service..." << std::endl;
+
+	if (!::StartServiceCtrlDispatcher(ServiceTable))
+	{
+		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "StartServiceCtrlDispatcher()");
+	}
 }
 
 void InstallService()
@@ -167,31 +172,60 @@ void InstallService()
 	{
 		TCHAR path[_MAX_PATH + 1];
 
-		if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
+		try
 		{
-			SC_HANDLE service = ::CreateService(
-					service_control_manager,
-					SERVICE_NAME,
-					SERVICE_NAME,
-					SERVICE_ALL_ACCESS,
-					SERVICE_WIN32_OWN_PROCESS,
-					SERVICE_AUTO_START,
-					SERVICE_ERROR_IGNORE,
-					path,
-					NULL,
-					NULL,
-					NULL,
-					NULL,
-					NULL
-					);
-
-			if (service)
+			if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
 			{
-				::CloseServiceHandle(service);
+				SC_HANDLE service = ::CreateService(
+						service_control_manager,
+						SERVICE_NAME,
+						SERVICE_NAME,
+						SERVICE_ALL_ACCESS,
+						SERVICE_WIN32_OWN_PROCESS,
+						SERVICE_AUTO_START,
+						SERVICE_ERROR_IGNORE,
+						path,
+						NULL,
+						NULL,
+						NULL,
+						NULL,
+						NULL
+						);
+
+				if (service)
+				{
+					std::cout << "Service installed." << std::endl;
+
+					::CloseServiceHandle(service);
+				} else
+				{
+					DWORD last_error = ::GetLastError();
+
+					switch (last_error)
+					{
+						case ERROR_SERVICE_EXISTS:
+							std::cout << "The service is already installed. Ignoring." << std::endl;
+							break;
+						default:
+							throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
+					}
+				}
+			} else
+			{
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
 			}
 		}
-		
+		catch (...)
+		{
+			::CloseServiceHandle(service_control_manager);
+
+			throw;
+		}
+
 		::CloseServiceHandle(service_control_manager);
+	} else
+	{
+		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
 	}
 }
 
@@ -201,28 +235,83 @@ void UninstallService()
 
 	if (service_control_manager)
 	{
-		SC_HANDLE service = ::OpenService(
-				service_control_manager,
-				SERVICE_NAME,
-				SERVICE_QUERY_STATUS | DELETE
-				);
-
-		if (service)
+		try
 		{
-			SERVICE_STATUS service_status;
+			SC_HANDLE service = ::OpenService(
+					service_control_manager,
+					SERVICE_NAME,
+					SERVICE_QUERY_STATUS | DELETE
+					);
 
-			if (::QueryServiceStatus(service, &service_status))
+			if (service)
 			{
-				if (service_status.dwCurrentState == SERVICE_STOPPED)
+				try
 				{
-					::DeleteService(service);
+					SERVICE_STATUS service_status;
+
+					if (::QueryServiceStatus(service, &service_status))
+					{
+						if (service_status.dwCurrentState == SERVICE_STOPPED)
+						{
+							if (::DeleteService(service))
+							{
+								std::cout << "Service uninstalled." << std::endl;
+							}
+							else
+							{
+								DWORD last_error = ::GetLastError();
+
+								switch (last_error)
+								{
+									case ERROR_SERVICE_MARKED_FOR_DELETE:
+										std::cout << "The service has already been marked for deletion. Ignoring." << std::endl;
+										break;
+									default:
+										throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
+								}
+							}
+						} else
+						{
+							std::cout << "The service is still running. Doing nothing." << std::endl;
+						}
+					} else
+					{
+						throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "QueryServiceStatus()");
+					}
+				}
+				catch (...)
+				{
+					::CloseServiceHandle(service);
+
+					throw;
+				}
+
+				::CloseServiceHandle(service);
+			} else
+			{
+				DWORD last_error = ::GetLastError();
+
+				switch (last_error)
+				{
+					case ERROR_SERVICE_DOES_NOT_EXIST:
+						std::cout << "The service is not currently installed. Ignoring." << std::endl;
+						break;
+					default:
+						throw boost::system::system_error(last_error, boost::system::system_category(), "OpenService()");
 				}
 			}
+		}
+		catch (...)
+		{
+			::CloseServiceHandle(service_control_manager);
 
-			::CloseServiceHandle(service);
+			throw;
 		}
 
 		::CloseServiceHandle(service_control_manager);
+	} else
+	{
+		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
 	}
 }
 
@@ -246,24 +335,33 @@ int main(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 
-	if (vm.count("install"))
+	try
 	{
-		if (vm.count("uninstall"))
+		if (vm.count("install"))
 		{
-			std::cerr << "Cannot specify both --install and --uninstall options." << std::endl;
+			if (vm.count("uninstall"))
+			{
+				std::cerr << "Cannot specify both --install and --uninstall options." << std::endl;
 
-			return EXIT_FAILURE;
+				return EXIT_FAILURE;
+			}
+
+			InstallService();
 		}
+		else if (vm.count("uninstall"))
+		{
+			UninstallService();
+		}
+		else
+		{
+			RunService();
+		}
+	}
+	catch (boost::system::system_error& ex)
+	{
+		std::cerr << ex.code() << ":" << ex.what() << std::endl;
 
-		InstallService();
-	}
-	else if (vm.count("uninstall"))
-	{
-		UninstallService();
-	}
-	else
-	{
-		RunService();
+		return EXIT_FAILURE;
 	}
 
 	return EXIT_SUCCESS;
