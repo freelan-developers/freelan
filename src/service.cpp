@@ -48,18 +48,46 @@
 #include <stdexcept>
 
 #include <boost/system/system_error.hpp>
+#include <boost/asio.hpp>
 
 #include <windows.h>
+
+#include "common/tools.hpp"
+
+struct service_context
+{
+	SERVICE_STATUS_HANDLE service_status_handle;
+	SERVICE_STATUS service_status;
+};
 
 DWORD HandlerEx(DWORD control, DWORD event_type, void* event_data, void* context)
 {
 	(void)control;
 	(void)event_type;
 	(void)event_data;
-	(void)context;
 
-	//TODO: Implement
-	
+	service_context& ctx = *static_cast<service_context*>(context);
+
+	switch (control)
+	{
+		case SERVICE_CONTROL_INTERROGATE:
+			return NO_ERROR;
+		case SERVICE_CONTROL_SHUTDOWN:
+		case SERVICE_CONTROL_STOP:
+			ctx.service_status.dwCurrentState = SERVICE_STOP_PENDING;
+			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+			return NO_ERROR;
+		case SERVICE_CONTROL_PAUSE:
+			break;
+		case SERVICE_CONTROL_CONTINUE:
+			break;
+		default:
+			if (control >= 128 && control <= 255)
+			{
+				return ERROR_CALL_NOT_IMPLEMENTED;
+			}
+	}
+
 	return NO_ERROR;
 }
 
@@ -68,10 +96,40 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 	(void)argc;
 	(void)argv;
 
-	SERVICE_STATUS_HANDLE service_status_handle = ::RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, NULL);
+	boost::asio::io_service io_service;
 
-	if (service_status_handle != 0)
+	service_context ctx;
+
+	ctx.service_status.dwServiceType = SERVICE_WIN32;
+	ctx.service_status.dwCurrentState = SERVICE_STOPPED;
+	ctx.service_status.dwControlsAccepted = 0;
+	ctx.service_status.dwWin32ExitCode = NO_ERROR;
+	ctx.service_status.dwServiceSpecificExitCode = NO_ERROR;
+	ctx.service_status.dwCheckPoint = 0;
+	ctx.service_status.dwWaitHint = 0;
+
+	ctx.service_status_handle = ::RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, &ctx);
+
+	if (ctx.service_status_handle != 0)
 	{
+		ctx.service_status.dwCurrentState = SERVICE_START_PENDING;
+
+		// Start pending
+		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+		
+		//TODO: Initialization
+
+		// Running
+		ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+		ctx.service_status.dwCurrentState = SERVICE_RUNNING;
+		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+
+		io_service.run();
+
+		// Stop
+		ctx.service_status.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+		ctx.service_status.dwCurrentState = SERVICE_STOPPED;
+		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 	}
 }
 
