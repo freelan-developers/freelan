@@ -39,53 +39,16 @@
  */
 
 /**
- * \file service.cpp
+ * \file tools.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The Command-Line Interface program entry point.
+ * \brief Tools.
  */
 
-#include <cstdlib>
-#include <stdexcept>
+#ifndef TOOLS_HPP
+#define TOOLS_HPP
 
-#include <boost/system/system_error.hpp>
+#include <freelan/logger.hpp>
 
-#include <windows.h>
+const char* log_level_to_string(freelan::log_level level);
 
-DWORD HandlerEx(DWORD control, DWORD event_type, void* event_data, void* context)
-{
-	(void)control;
-	(void)event_type;
-	(void)event_data;
-	(void)context;
-
-	//TODO: Implement
-	
-	return NO_ERROR;
-}
-
-VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
-{
-	(void)argc;
-	(void)argv;
-
-	SERVICE_STATUS_HANDLE service_status_handle = ::RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, NULL);
-
-	if (service_status_handle != 0)
-	{
-	}
-}
-
-int main()
-{
-	char service_name[] = "FreeLAN Service";
-
-	SERVICE_TABLE_ENTRY ServiceTable[] =
-	{
-		{service_name, &ServiceMain},
-		{NULL, NULL}
-	};
-
-	::StartServiceCtrlDispatcher(ServiceTable);
-
-	return EXIT_SUCCESS;
-}
+#endif /* TOOLS_HPP */

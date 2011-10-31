@@ -61,6 +61,7 @@
 #include <freelan/freelan.hpp>
 #include <freelan/logger_stream.hpp>
 
+#include "common/tools.hpp"
 #include "common/system.hpp"
 #include "common/configuration_helper.hpp"
 
@@ -110,26 +111,6 @@ static bool register_signal_handlers()
 	}
 
 	return true;
-}
-
-const char* log_level_to_string(freelan::log_level level)
-{
-	switch (level)
-	{
-		case freelan::LOG_DEBUG:
-			return "DEBUG";
-		case freelan::LOG_INFORMATION:
-			return "INFORMATION";
-		case freelan::LOG_WARNING:
-			return "WARNING";
-		case freelan::LOG_ERROR:
-			return "ERROR";
-		case freelan::LOG_FATAL:
-			return "FATAL";
-	}
-
-	assert(false);
-	throw std::logic_error("Unsupported enumeration value");
 }
 
 void log_function(freelan::log_level level, const std::string& msg)
