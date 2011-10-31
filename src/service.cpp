@@ -47,14 +47,21 @@
 #include <cstdlib>
 #include <stdexcept>
 
-#include <boost/system/system_error.hpp>
 #include <boost/asio.hpp>
+#include <boost/program_options.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <windows.h>
+
+#include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/error/error_strings.hpp>
 
 #include "common/tools.hpp"
 
 #define SERVICE_NAME "FreeLAN Service"
+
+namespace po = boost::program_options;
+namespace fl = freelan;
 
 struct service_context
 {
@@ -97,6 +104,10 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 {
 	(void)argc;
 	(void)argv;
+
+	cryptoplus::crypto_initializer crypto_initializer;
+	cryptoplus::algorithms_initializer algorithms_initializer;
+	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 	boost::asio::io_service io_service;
 
@@ -215,9 +226,44 @@ void UninstallService()
 	}
 }
 
-int main()
+int main(int argc, char** argv)
 {
-	RunService();
+	po::options_description generic_options("Generic options");
+
+	generic_options.add_options()
+	("help,h", "Produce help message.")
+	("install", "Install the service.")
+	("uninstall", "Uninstall the service.")
+	;
+
+	po::variables_map vm;
+	po::store(po::parse_command_line(argc, argv, generic_options), vm);
+
+	if (vm.count("help"))
+	{
+		std::cout << generic_options << std::endl;
+
+		return EXIT_SUCCESS;
+	}
+
+	if (vm.count("install"))
+	{
+		if (vm.count("uninstall"))
+		{
+			std::cerr << "Cannot specify both --install and --uninstall options." << std::endl;
+
+			return EXIT_FAILURE;
+		}
+
+		InstallService();
+	}
+	else if (vm.count("uninstall"))
+	{
+	}
+	else
+	{
+		RunService();
+	}
 
 	return EXIT_SUCCESS;
 }
