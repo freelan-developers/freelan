@@ -184,6 +184,37 @@ void InstallService()
 	}
 }
 
+void UninstallService()
+{
+	SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+
+	if (service_control_manager)
+	{
+		SC_HANDLE service = ::OpenService(
+				service_control_manager,
+				SERVICE_NAME,
+				SERVICE_QUERY_STATUS | DELETE
+				);
+
+		if (service)
+		{
+			SERVICE_STATUS service_status;
+
+			if (::QueryServiceStatus(service, &service_status))
+			{
+				if (service_status.dwCurrentState == SERVICE_STOPPED)
+				{
+					::DeleteService(service);
+				}
+			}
+
+			::CloseServiceHandle(service);
+		}
+
+		::CloseServiceHandle(service_control_manager);
+	}
+}
+
 int main()
 {
 	RunService();
