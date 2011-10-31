@@ -54,6 +54,8 @@
 
 #include "common/tools.hpp"
 
+#define SERVICE_NAME "FreeLAN Service"
+
 struct service_context
 {
 	SERVICE_STATUS_HANDLE service_status_handle;
@@ -133,9 +135,9 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 	}
 }
 
-int main()
+void RunService()
 {
-	char service_name[] = "FreeLAN Service";
+	char service_name[] = SERVICE_NAME;
 
 	SERVICE_TABLE_ENTRY ServiceTable[] =
 	{
@@ -144,6 +146,48 @@ int main()
 	};
 
 	::StartServiceCtrlDispatcher(ServiceTable);
+}
+
+void InstallService()
+{
+	SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
+
+	if (service_control_manager)
+	{
+		TCHAR path[_MAX_PATH + 1];
+
+		if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
+		{
+			SC_HANDLE service = ::CreateService(
+					service_control_manager,
+					SERVICE_NAME,
+					SERVICE_NAME,
+					SERVICE_ALL_ACCESS,
+					SERVICE_WIN32_OWN_PROCESS,
+					SERVICE_AUTO_START,
+					SERVICE_ERROR_IGNORE,
+					path,
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					NULL
+					);
+
+			if (service)
+			{
+				::CloseServiceHandle(service);
+			}
+		}
+		
+		::CloseServiceHandle(service_control_manager);
+	}
+}
+
+int main()
+{
+	RunService();
 
 	return EXIT_SUCCESS;
 }
+
