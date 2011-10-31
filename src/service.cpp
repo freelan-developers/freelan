@@ -259,6 +259,7 @@ int main(int argc, char** argv)
 	}
 	else if (vm.count("uninstall"))
 	{
+		UninstallService();
 	}
 	else
 	{
