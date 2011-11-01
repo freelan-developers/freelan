@@ -99,6 +99,13 @@ class LibraryProject(Project):
 
         return SampleProject(self, name, libraries, None, path)
 
+    def __get_files(self):
+        """Get the project source files."""
+
+        return self.include_files + self.source_files
+
+    files = property(__get_files, None, None, "All the project source files.")
+
 class ProgramProject(Project):
     "A class to handle program projects."""
 
@@ -144,6 +151,13 @@ class ProgramProject(Project):
         env.Default('build')
 
         return program + program_install
+
+    def __get_files(self):
+        """Get the project source files."""
+
+        return self.include_files + self.source_files
+
+    files = property(__get_files, None, None, "All the project source files.")
 
 class SampleProject(Project):
     """A class to handle samples."""
