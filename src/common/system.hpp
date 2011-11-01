@@ -53,42 +53,6 @@
 #include <boost/filesystem.hpp>
 
 /**
- * \brief Get the module filename.
- * \return The module filename.
- */
-boost::filesystem::path get_module_filename();
-
-/**
- * \brief Get the module directory.
- * \return The module directory.
- */
-boost::filesystem::path get_module_directory();
-
-/**
- * \brief Get the root directory.
- * \return The root directory.
- */
-boost::filesystem::path get_root_directory();
-
-/**
- * \brief Get the bin directory.
- * \return The bin directory.
- */
-boost::filesystem::path get_bin_directory();
-
-/**
- * \brief Get the log directory.
- * \return The log directory.
- */
-boost::filesystem::path get_log_directory();
-
-/**
- * \brief Get the config directory.
- * \return The config directory.
- */
-boost::filesystem::path get_config_directory();
-
-/**
  * \brief Get the home directory for the current user.
  * \return The home directory for the current user.
  */

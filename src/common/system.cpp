@@ -274,45 +274,6 @@ namespace
 #endif
 }
 
-fs::path get_module_filename()
-{
-	TCHAR path[_MAX_PATH + 1];
-
-	if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
-	{
-		return path;
-	}
-	else
-	{
-		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
-	}
-}
-
-fs::path get_module_directory()
-{
-	return get_module_filename().parent_path();
-}
-
-fs::path get_root_directory()
-{
-	return get_module_directory().parent_path();
-}
-
-fs::path get_bin_directory()
-{
-	return get_root_directory() / "bin";
-}
-
-fs::path get_log_directory()
-{
-	return get_root_directory() / "log";
-}
-
-fs::path get_config_directory()
-{
-	return get_root_directory() / "log";
-}
-
 fs::path get_home_directory()
 {
 #ifdef WINDOWS
