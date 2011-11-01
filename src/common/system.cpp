@@ -80,7 +80,7 @@ namespace
 		throw boost::system::system_error(error, boost::system::system_category());
 	}
 
-	DWORD create_process(const char* application, char* command_line, bool enable_stdout = ENABLE_STDOUT_DEFAULT)
+	DWORD create_process(const TCHAR* application, TCHAR* command_line, bool enable_stdout = ENABLE_STDOUT_DEFAULT)
 	{
 		DWORD exit_status;
 
@@ -272,10 +272,10 @@ namespace
 #endif
 }
 
-std::string get_home_directory()
+boost::filesystem::path get_home_directory()
 {
 #ifdef WINDOWS
-	char path[MAX_PATH] = {};
+	TCHAR path[MAX_PATH] = {};
 
 	HRESULT ret = SHGetFolderPath(0, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, path);
 
@@ -297,10 +297,10 @@ std::string get_home_directory()
 #endif
 }
 
-std::string get_application_directory()
+boost::filesystem::path get_application_directory()
 {
 #ifdef WINDOWS
-	char path[MAX_PATH] = {};
+	TCHAR path[MAX_PATH] = {};
 
 	HRESULT ret = SHGetFolderPath(0, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, path);
 
@@ -309,16 +309,16 @@ std::string get_application_directory()
 		throw std::runtime_error("Unable to determine the application directory");
 	}
 
-	return std::string(path) + "\\freelan";
+	return boost::filesystem::path(path) / "freelan";
 #else
 	return "/etc/freelan";
 #endif
 }
 
-std::string get_temporary_directory()
+boost::filesystem::path get_temporary_directory()
 {
 #ifdef WINDOWS
-	char path[MAX_PATH] = {};
+	TCHAR path[MAX_PATH] = {};
 
 	HRESULT ret = ::GetTempPath(sizeof(path), path);
 
@@ -327,41 +327,41 @@ std::string get_temporary_directory()
 		throw std::runtime_error("Unable to determine the temporary directory");
 	}
 
-	return std::string(path);
+	return path;
 #else
 	return "/tmp/";
 #endif
 }
 
-std::vector<std::string> get_configuration_files()
+std::vector<boost::filesystem::path> get_configuration_files()
 {
-	std::vector<std::string> configuration_files;
+	std::vector<boost::filesystem::path> configuration_files;
 
 #ifdef WINDOWS
-	configuration_files.push_back(get_home_directory() + "\\freelan.cfg");
-	configuration_files.push_back(get_application_directory() + "\\freelan.cfg");
+	configuration_files.push_back(get_home_directory() / "freelan.cfg");
+	configuration_files.push_back(get_application_directory() / "freelan.cfg");
 #else
-	configuration_files.push_back(get_home_directory() + "/.freelan/freelan.cfg");
-	configuration_files.push_back(get_application_directory() + "/freelan.cfg");
+	configuration_files.push_back(get_home_directory() / ".freelan/freelan.cfg");
+	configuration_files.push_back(get_application_directory() / "freelan.cfg");
 #endif
 
 	return configuration_files;
 }
 
-int execute(const char* file, ...)
+int execute(boost::filesystem::path script, ...)
 {
 	int exit_status;
 
 	va_list vl;
-	va_start(vl, file);
+	va_start(vl, script);
 
 	try
 	{
 #ifdef WINDOWS
-		char command_line[32768] = {};
+		TCHAR command_line[32768] = {};
 		size_t offset = 0;
 
-		for (const char* arg = va_arg(vl, const char*); arg != NULL; arg = va_arg(vl, const char*))
+		for (const TCHAR* arg = va_arg(vl, const TCHAR*); arg != NULL; arg = va_arg(vl, const TCHAR*))
 		{
 			command_line[offset++] = '"';
 
@@ -379,7 +379,7 @@ int execute(const char* file, ...)
 			command_line[offset++] = ' ';
 		}
 
-		exit_status = create_process(file, command_line);
+		exit_status = create_process(script.c_str(), command_line);
 
 #elif defined(UNIX)
 		char* argv[256] = {};

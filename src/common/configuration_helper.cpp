@@ -249,7 +249,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
 }
 
-std::string get_certificate_validation_script(const boost::program_options::variables_map& vm)
+boost::filesystem::path get_certificate_validation_script(const boost::program_options::variables_map& vm)
 {
 	return vm["security.certificate_validation_script"].as<std::string>();
 }

@@ -50,29 +50,31 @@
 #include <vector>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 /**
  * \brief Get the home directory for the current user.
  * \return The home directory for the current user.
  */
-std::string get_home_directory();
+boost::filesystem::path get_home_directory();
 
 /**
  * \brief Get the application directory.
  * \return The application directory.
  */
-std::string get_application_directory();
+boost::filesystem::path get_application_directory();
 
 /**
  * \brief Get the temporary directory.
  * \return The temporary directory.
  */
-std::string get_temporary_directory();
+boost::filesystem::path get_temporary_directory();
 
 /**
  * \brief Get the configuration files, ordered by relevance.
  * \return The configurations files.
  */
-std::vector<std::string> get_configuration_files();
+std::vector<boost::filesystem::path> get_configuration_files();
 
 /**
  * \brief Execute a script and get the exit status.
@@ -80,6 +82,6 @@ std::vector<std::string> get_configuration_files();
  * \param ... The parameters. The last parameter MUST be NULL or very bad things will happen ! Something involving dinosaurs and meteorites.
  * \return The exit status.
  */
-int execute(const char* file, ...);
+int execute(boost::filesystem::path script, ...);
 
 #endif /* SYSTEM_HPP */

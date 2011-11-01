@@ -50,6 +50,7 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/filesystem.hpp>
 
 #include <windows.h>
 
@@ -58,25 +59,31 @@
 
 #include "common/tools.hpp"
 
-#define SERVICE_NAME "FreeLAN Service"
+#define SERVICE_NAME L"FreeLAN Service"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 namespace fl = freelan;
 
 namespace
 {
-	std::string get_module_filename()
+	fs::path get_module_filename()
 	{
 		TCHAR path[_MAX_PATH + 1];
 
 		if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
 		{
-			return std::string(path);
+			return path;
 		}
 		else
 		{
 			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
 		}
+	}
+
+	fs::path get_module_directory()
+	{
+		return get_module_filename().parent_path();
 	}
 }
 
@@ -126,8 +133,6 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 	cryptoplus::algorithms_initializer algorithms_initializer;
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
-	boost::asio::io_service io_service;
-
 	service_context ctx;
 
 	ctx.service_status.dwServiceType = SERVICE_WIN32;
@@ -138,7 +143,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 	ctx.service_status.dwCheckPoint = 0;
 	ctx.service_status.dwWaitHint = 0;
 
-	ctx.service_status_handle = ::RegisterServiceCtrlHandlerEx("FreeLAN Service", &HandlerEx, &ctx);
+	ctx.service_status_handle = ::RegisterServiceCtrlHandlerEx(L"FreeLAN Service", &HandlerEx, &ctx);
 
 	if (ctx.service_status_handle != 0)
 	{
@@ -148,6 +153,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
 		//TODO: Initialization
+		boost::asio::io_service io_service;
 
 		// Running
 		ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
@@ -165,7 +171,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 
 void RunService()
 {
-	char service_name[] = SERVICE_NAME;
+	TCHAR service_name[] = SERVICE_NAME;
 
 	SERVICE_TABLE_ENTRY ServiceTable[] =
 	{
@@ -189,7 +195,7 @@ void InstallService()
 	{
 		try
 		{
-			const std::string path = get_module_filename();
+			const fs::path path = get_module_filename();
 
 			SC_HANDLE service = ::CreateService(
 			                        service_control_manager,

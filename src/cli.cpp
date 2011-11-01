@@ -54,6 +54,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -66,6 +67,7 @@
 #include "common/configuration_helper.hpp"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 namespace fl = freelan;
 
 static boost::function<void ()> stop_function = 0;
@@ -118,29 +120,33 @@ void log_function(freelan::log_level level, const std::string& msg)
 	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
 }
 
-bool execute_certificate_validation_script(const std::string& script, fl::core& core, fl::security_configuration::cert_type cert)
+bool execute_certificate_validation_script(const fs::path& script, fl::core& core, fl::security_configuration::cert_type cert)
 {
 	static unsigned int counter = 0;
 
 	try
 	{
-		const std::string filename = get_temporary_directory() + "freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt";
+		const fs::path filename = get_temporary_directory() / ("freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt");
 
 		if (core.logger().level() <= freelan::LOG_DEBUG)
 		{
 			core.logger()(freelan::LOG_DEBUG) << "Writing temporary certificate file at: " << filename;
 		}
 
-		cert.write_certificate(cryptoplus::file::open(filename, "w"));
+#if defined(WINDOWS) && defined(UNICODE)
+		cert.write_certificate(cryptoplus::file::open(filename.native(), L"w"));
+#else
+		cert.write_certificate(cryptoplus::file::open(filename.native(), "w"));
+#endif
 
-		const int exit_status = execute(script.c_str(), filename.c_str(), NULL);
+		const int exit_status = execute(script, filename.c_str(), NULL);
 
 		if (core.logger().level() <= freelan::LOG_DEBUG)
 		{
 			core.logger()(freelan::LOG_DEBUG) << script << " terminated execution with exit status " << exit_status ;
 		}
 
-		::remove(filename.c_str());
+		fs::remove(filename);
 
 		return (exit_status == 0);
 	}
@@ -211,19 +217,19 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 	{
 		bool configuration_read = false;
 
-		const std::vector<std::string> configuration_files = get_configuration_files();
+		const std::vector<fs::path> configuration_files = get_configuration_files();
 
-		for (std::vector<std::string>::const_iterator it = configuration_files.begin(); (it != configuration_files.end()) && (!configuration_read); ++it)
+		BOOST_FOREACH(const fs::path& conf, configuration_files)
 		{
-			std::ifstream ifs(it->c_str());
+			fs::basic_ifstream<char> ifs(conf);
 
 			if (ifs)
 			{
-				std::cout << "Reading configuration file at: " << *it << std::endl;
+				std::cout << "Reading configuration file at: " << conf << std::endl;
 
 				po::store(po::parse_config_file(ifs, configuration_options, true), vm);
 
-				configuration_read = true;
+				break;
 			}
 		}
 
@@ -232,7 +238,7 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 			std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
 			std::cerr << "Looked up locations were:" << std::endl;
 
-			BOOST_FOREACH(const std::string& conf, configuration_files)
+			BOOST_FOREACH(const fs::path& conf, configuration_files)
 			{
 				std::cerr << "- " << conf << std::endl;
 			}
@@ -250,7 +256,7 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 
 	setup_configuration(configuration, vm);
 
-	const std::string certificate_validation_script = get_certificate_validation_script(vm);
+	const fs::path certificate_validation_script = get_certificate_validation_script(vm);
 
 	if (!certificate_validation_script.empty())
 	{

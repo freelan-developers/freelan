@@ -50,6 +50,7 @@
 #include <freelan/configuration.hpp>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 /**
  * \brief Get the fscp options.
@@ -88,6 +89,6 @@ void setup_configuration(freelan::configuration& configuration, const boost::pro
  * \param vm The variables map.
  * \return The certificate validation script.
  */
-std::string get_certificate_validation_script(const boost::program_options::variables_map& vm);
+boost::filesystem::path get_certificate_validation_script(const boost::program_options::variables_map& vm);
 
 #endif /* CONFIGURATION_HELPER_HPP */
