@@ -31,7 +31,6 @@ libraries.append('crypto')
 
 if sys.platform.startswith('win32'):
 
-    env['CXXFLAGS'] = ['-DUNICODE']
 
     if env['CC'] == 'gcc':
         libraries.append('crypto')
@@ -39,6 +38,7 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
         env['CXXFLAGS'].append('-D_WIN32_IE=0x0500')
+        env['CXXFLAGS'].append('-DUNICODE')
     else:
         libraries.remove('ssl')
         libraries.remove('crypto')
@@ -50,6 +50,7 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('/D_WIN32_WINNT=0x0501')
         env['CXXFLAGS'].append('/D_WIN32_IE=0x0500')
+        env['CXXFLAGS'].append('/DUNICODE')
 
     libraries.append('ws2_32')
     libraries.append('gdi32')
