@@ -132,7 +132,7 @@ namespace freelan
 		m_logger(logger),
 		m_level(level)
 	{
-		m_flusher = boost::make_shared<flusher>(*this);
+		m_flusher.reset(new flusher(*this));
 	}
 
 	template <typename T>
