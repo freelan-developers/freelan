@@ -335,21 +335,6 @@ fs::path get_temporary_directory()
 #endif
 }
 
-std::vector<fs::path> get_configuration_files()
-{
-	std::vector<fs::path> configuration_files;
-
-#ifdef WINDOWS
-	configuration_files.push_back(get_home_directory() / "freelan.cfg");
-	configuration_files.push_back(get_application_directory() / "freelan.cfg");
-#else
-	configuration_files.push_back(get_home_directory() / ".freelan/freelan.cfg");
-	configuration_files.push_back(get_application_directory() / "freelan.cfg");
-#endif
-
-	return configuration_files;
-}
-
 int execute(fs::path script, ...)
 {
 	int exit_status;

@@ -115,6 +115,21 @@ static bool register_signal_handlers()
 	return true;
 }
 
+std::vector<fs::path> get_configuration_files()
+{
+	std::vector<fs::path> configuration_files;
+
+#ifdef WINDOWS
+	configuration_files.push_back(get_home_directory() / "freelan.cfg");
+	configuration_files.push_back(get_application_directory() / "freelan.cfg");
+#else
+	configuration_files.push_back(get_home_directory() / ".freelan/freelan.cfg");
+	configuration_files.push_back(get_application_directory() / "freelan.cfg");
+#endif
+
+	return configuration_files;
+}
+
 void log_function(freelan::log_level level, const std::string& msg)
 {
 	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;

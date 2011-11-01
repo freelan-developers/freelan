@@ -71,12 +71,6 @@ boost::filesystem::path get_application_directory();
 boost::filesystem::path get_temporary_directory();
 
 /**
- * \brief Get the configuration files, ordered by relevance.
- * \return The configurations files.
- */
-std::vector<boost::filesystem::path> get_configuration_files();
-
-/**
  * \brief Execute a script and get the exit status.
  * \param script The script to execute.
  * \param ... The parameters. The last parameter MUST be NULL or very bad things will happen ! Something involving dinosaurs and meteorites.
