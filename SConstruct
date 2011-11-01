@@ -61,7 +61,7 @@ cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = G
 service_project = ProgramProject(service_name, major, minor, libraries, source_files = Glob('build/service/common/*.cpp') + [os.path.join('build/service', 'service.cpp')])
 daemon_project = ProgramProject(daemon_name, major, minor, libraries, source_files = Glob('build/daemon/common/*.cpp') + [os.path.join('build/daemon', 'daemon.cpp')])
 
-env.Indent(cli_project)
+env.Indent(list(set(cli_project.files + service_project.files + daemon_project.files)))
 
 env.FreelanProject(cli_project)
 
