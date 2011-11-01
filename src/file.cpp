@@ -125,7 +125,7 @@ namespace cryptoplus
 #ifdef MSV
 		file::pointer ptr = 0;
 
-		int err = _wfopen_s(&ptr, filename.c_str(), L"r");
+		int err = _wfopen_s(&ptr, filename.c_str(), mode.c_str());
 
 		if (err != 0)
 		{
