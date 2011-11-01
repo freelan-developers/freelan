@@ -36,6 +36,8 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
         env['CXXFLAGS'].append('-D_WIN32_IE=0x0500')
     else:
+        libraries.remove('ssl')
+        libraries.remove('crypto')
         libraries.append('libeay32')
         libraries.append('advapi32')
         libraries.append('shell32')
