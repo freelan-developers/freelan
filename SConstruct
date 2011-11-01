@@ -13,6 +13,7 @@ libraries = []
 import os, sys
 
 from freelan.build_tools import ProgramProject, Environment
+import freelan.file_tools as file_tools
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
@@ -61,7 +62,13 @@ cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = G
 service_project = ProgramProject(service_name, major, minor, libraries, source_files = Glob('build/service/common/*.cpp') + [os.path.join('build/service', 'service.cpp')])
 daemon_project = ProgramProject(daemon_name, major, minor, libraries, source_files = Glob('build/daemon/common/*.cpp') + [os.path.join('build/daemon', 'daemon.cpp')])
 
-env.Indent(list(set(cli_project.files + service_project.files + daemon_project.files)))
+# Scan for source files
+source_files = []
+
+for root, directories, files in os.walk('src'):
+    source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp', '*.c', '*.cpp'])]
+
+env.Indent(source_files)
 
 env.FreelanProject(cli_project)
 
