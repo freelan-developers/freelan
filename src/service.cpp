@@ -117,6 +117,24 @@ namespace
 	{
 		return get_log_directory() / "freelan.log";
 	}
+
+	std::vector<fs::path> get_configuration_files()
+	{
+		std::vector<fs::path> configuration_files;
+
+		for (fs::directory_iterator entry = fs::directory_iterator(get_config_directory()); entry != fs::directory_iterator(); ++entry)
+		{
+			if (entry->status().type() == fs::regular_file)
+			{
+				if (entry->path().extension() == ".cfg")
+				{
+					configuration_files.push_back(entry->path());
+				}
+			}
+		}
+
+		return configuration_files;
+	}
 }
 
 struct service_context
@@ -191,6 +209,8 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 		//TODO: Initialization
 		boost::asio::io_service io_service;
 
+		const std::vector<fs::path> configuration_files = get_configuration_files();
+
 		// Running
 		ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
 		ctx.service_status.dwCurrentState = SERVICE_RUNNING;
@@ -203,6 +223,8 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 		ctx.service_status.dwCurrentState = SERVICE_STOPPED;
 		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 	}
+
+	log << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time()) << std::endl;
 }
 
 void RunService()
