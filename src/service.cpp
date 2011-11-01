@@ -51,6 +51,8 @@
 #include <boost/program_options.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <windows.h>
 
@@ -110,6 +112,11 @@ namespace
 	{
 		return get_root_directory() / "config";
 	}
+
+	fs::path get_main_log_filename()
+	{
+		return get_log_directory() / "freelan.log";
+	}
 }
 
 struct service_context
@@ -153,6 +160,10 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 {
 	(void)argc;
 	(void)argv;
+
+	fs::basic_ofstream<char> log(get_main_log_filename());
+
+	log << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time()) << std::endl;
 
 	cryptoplus::crypto_initializer crypto_initializer;
 	cryptoplus::algorithms_initializer algorithms_initializer;
