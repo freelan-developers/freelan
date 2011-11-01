@@ -63,6 +63,23 @@
 namespace po = boost::program_options;
 namespace fl = freelan;
 
+namespace
+{
+	std::string get_module_filename()
+	{
+		TCHAR path[_MAX_PATH + 1];
+
+		if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
+		{
+			return std::string(path);
+		}
+		else
+		{
+			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
+		}
+	}
+}
+
 struct service_context
 {
 	SERVICE_STATUS_HANDLE service_status_handle;
@@ -170,51 +187,44 @@ void InstallService()
 
 	if (service_control_manager)
 	{
-		TCHAR path[_MAX_PATH + 1];
-
 		try
 		{
-			if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
+			const std::string path = get_module_filename();
+
+			SC_HANDLE service = ::CreateService(
+			                        service_control_manager,
+			                        SERVICE_NAME,
+			                        SERVICE_NAME,
+			                        SERVICE_ALL_ACCESS,
+			                        SERVICE_WIN32_OWN_PROCESS,
+			                        SERVICE_AUTO_START,
+			                        SERVICE_ERROR_IGNORE,
+			                        path.c_str(),
+			                        NULL,
+			                        NULL,
+			                        NULL,
+			                        NULL,
+			                        NULL
+			                    );
+
+			if (service)
 			{
-				SC_HANDLE service = ::CreateService(
-				                        service_control_manager,
-				                        SERVICE_NAME,
-				                        SERVICE_NAME,
-				                        SERVICE_ALL_ACCESS,
-				                        SERVICE_WIN32_OWN_PROCESS,
-				                        SERVICE_AUTO_START,
-				                        SERVICE_ERROR_IGNORE,
-				                        path,
-				                        NULL,
-				                        NULL,
-				                        NULL,
-				                        NULL,
-				                        NULL
-				                    );
+				std::cout << "Service installed." << std::endl;
 
-				if (service)
-				{
-					std::cout << "Service installed." << std::endl;
-
-					::CloseServiceHandle(service);
-				}
-				else
-				{
-					DWORD last_error = ::GetLastError();
-
-					switch (last_error)
-					{
-						case ERROR_SERVICE_EXISTS:
-							std::cout << "The service is already installed. Ignoring." << std::endl;
-							break;
-						default:
-							throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
-					}
-				}
+				::CloseServiceHandle(service);
 			}
 			else
 			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
+				DWORD last_error = ::GetLastError();
+
+				switch (last_error)
+				{
+					case ERROR_SERVICE_EXISTS:
+						std::cout << "The service is already installed. Ignoring." << std::endl;
+						break;
+					default:
+						throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
+				}
 			}
 		}
 		catch (...)
