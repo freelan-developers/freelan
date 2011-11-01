@@ -374,8 +374,20 @@ int main(int argc, char** argv)
 	;
 
 	po::variables_map vm;
-	po::store(po::parse_command_line(argc, argv, generic_options), vm);
-	po::notify(vm);
+
+	try
+	{
+		po::store(po::parse_command_line(argc, argv, generic_options), vm);
+		po::notify(vm);
+	}
+	catch (boost::program_options::error& ex)
+	{
+		std::cerr << "Error: " << ex.what() << std::endl;
+
+		std::cerr << generic_options << std::endl;
+
+		return EXIT_FAILURE;
+	}
 
 	if (vm.count("help"))
 	{
