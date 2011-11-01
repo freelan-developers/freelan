@@ -59,7 +59,11 @@
 
 #include "common/tools.hpp"
 
+#ifdef UNICODE
 #define SERVICE_NAME L"FreeLAN Service"
+#else
+#define SERVICE_NAME "FreeLAN Service"
+#endif
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -143,7 +147,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 	ctx.service_status.dwCheckPoint = 0;
 	ctx.service_status.dwWaitHint = 0;
 
-	ctx.service_status_handle = ::RegisterServiceCtrlHandlerEx(L"FreeLAN Service", &HandlerEx, &ctx);
+	ctx.service_status_handle = ::RegisterServiceCtrlHandlerEx(SERVICE_NAME, &HandlerEx, &ctx);
 
 	if (ctx.service_status_handle != 0)
 	{
@@ -205,7 +209,7 @@ void InstallService()
 			                        SERVICE_WIN32_OWN_PROCESS,
 			                        SERVICE_AUTO_START,
 			                        SERVICE_ERROR_IGNORE,
-			                        path.c_str(),
+			                        path.string<std::basic_string<TCHAR> >().c_str(),
 			                        NULL,
 			                        NULL,
 			                        NULL,

@@ -134,9 +134,9 @@ bool execute_certificate_validation_script(const fs::path& script, fl::core& cor
 		}
 
 #if defined(WINDOWS) && defined(UNICODE)
-		cert.write_certificate(cryptoplus::file::open(filename.native(), L"w"));
+		cert.write_certificate(cryptoplus::file::open(filename.string<std::basic_string<TCHAR> >(), L"w"));
 #else
-		cert.write_certificate(cryptoplus::file::open(filename.native(), "w"));
+		cert.write_certificate(cryptoplus::file::open(filename.string<std::basic_string<TCHAR> >(), "w"));
 #endif
 
 		const int exit_status = execute(script, filename.c_str(), NULL);

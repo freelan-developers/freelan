@@ -379,7 +379,7 @@ int execute(boost::filesystem::path script, ...)
 			command_line[offset++] = ' ';
 		}
 
-		exit_status = create_process(script.c_str(), command_line);
+		exit_status = create_process(script.string<std::basic_string<TCHAR> >().c_str(), command_line);
 
 #elif defined(UNIX)
 		char* argv[256] = {};
