@@ -208,7 +208,15 @@ void RunService()
 
 	if (!::StartServiceCtrlDispatcher(ServiceTable))
 	{
-		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "StartServiceCtrlDispatcher()");
+		DWORD last_error = ::GetLastError();
+
+		switch (last_error)
+		{
+			case ERROR_FAILED_SERVICE_CONTROLLER_CONNECT:
+				throw std::runtime_error("This program is supposed to run as a Windows service.");
+			default:
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "StartServiceCtrlDispatcher()");
+		}
 	}
 }
 
@@ -421,6 +429,12 @@ int main(int argc, char** argv)
 	catch (boost::system::system_error& ex)
 	{
 		std::cerr << ex.code() << ":" << ex.what() << std::endl;
+
+		return EXIT_FAILURE;
+	}
+	catch (std::exception& ex)
+	{
+		std::cerr << "Error: " << ex.what() << std::endl;
 
 		return EXIT_FAILURE;
 	}
