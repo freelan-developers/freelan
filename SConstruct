@@ -20,7 +20,7 @@ libraries.append('boost_system')
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
-env.Indent(project)
+env.Indent(project.files)
 
 env.FreelanProject(project)
 
