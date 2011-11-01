@@ -49,6 +49,7 @@
 #include "logger.hpp"
 
 #include <boost/optional.hpp>
+#include <boost/make_shared.hpp>
 
 namespace freelan
 {
@@ -129,9 +130,9 @@ namespace freelan
 
 	inline logger_stream::logger_stream(logger& logger, log_level level) :
 		m_logger(logger),
-		m_level(level),
-		m_flusher(new flusher(*this))
+		m_level(level)
 	{
+		m_flusher = boost::make_shared<flusher>(*this);
 	}
 
 	template <typename T>
