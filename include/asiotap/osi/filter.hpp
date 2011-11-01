@@ -227,7 +227,7 @@ namespace asiotap
 		{
 			return m_last_helper;
 		}
-		
+
 		template <typename OSIFrameType>
 		inline void _base_filter<OSIFrameType>::clear_last_helper() const
 		{
