@@ -204,8 +204,6 @@ void RunService()
 		{NULL, NULL}
 	};
 
-	std::cout << "Starting service..." << std::endl;
-
 	if (!::StartServiceCtrlDispatcher(ServiceTable))
 	{
 		DWORD last_error = ::GetLastError();
