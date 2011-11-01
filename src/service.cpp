@@ -48,6 +48,7 @@
 #include <stdexcept>
 
 #include <boost/asio.hpp>
+#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
@@ -61,6 +62,7 @@
 
 #include "common/system.hpp"
 #include "common/tools.hpp"
+#include "common/configuration_helper.hpp"
 
 #ifdef UNICODE
 #define SERVICE_NAME L"FreeLAN Service"
@@ -137,6 +139,12 @@ namespace
 	}
 }
 
+void log_function(freelan::log_level level, const std::string& msg)
+{
+	//TODO: Implement
+	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+}
+
 struct service_context
 {
 	SERVICE_STATUS_HANDLE service_status_handle;
@@ -206,17 +214,72 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
 		// Start pending
 		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-		//TODO: Initialization
-		boost::asio::io_service io_service;
-
 		const std::vector<fs::path> configuration_files = get_configuration_files();
 
-		// Running
-		ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
-		ctx.service_status.dwCurrentState = SERVICE_RUNNING;
-		::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+		if (configuration_files.size() > 0)
+		{
+			po::options_description configuration_options("Configuration");
+			configuration_options.add(get_fscp_options());
+			configuration_options.add(get_security_options());
+			configuration_options.add(get_tap_adapter_options());
+			configuration_options.add(get_switch_options());
 
-		io_service.run();
+			boost::asio::io_service io_service;
+
+			std::vector<boost::shared_ptr<fl::core> > core_list;
+
+			BOOST_FOREACH(const fs::path& configuration_file, configuration_files)
+			{
+				log << "Parsing configuration file: " << configuration_file << std::endl;
+
+				try
+				{
+					fl::configuration configuration;
+
+					po::variables_map vm;
+
+					fs::basic_ifstream<char> ifs(configuration_file);
+
+					if (ifs)
+					{
+						po::store(po::parse_config_file(ifs, configuration_options, true), vm);
+					}
+
+					po::notify(vm);
+
+					setup_configuration(configuration, vm);
+
+					const fs::path certificate_validation_script = get_certificate_validation_script(vm);
+
+					if (!certificate_validation_script.empty())
+					{
+						configuration.security.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
+					}
+
+					boost::shared_ptr<freelan::core> core(new freelan::core(io_service, configuration, fl::logger(&log_function, fl::LOG_INFORMATION)));
+
+					core->open();
+
+					core_list.push_back(core);
+
+					log << "Done." << std::endl;
+				}
+				catch (std::exception& ex)
+				{
+					log << "Error: " << ex.what() << std::endl;
+				}
+			}
+
+			// Running
+			ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+			ctx.service_status.dwCurrentState = SERVICE_RUNNING;
+			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+
+			io_service.run();
+		} else
+		{
+			log << "No configuration files found at " << get_config_directory() << std::endl;
+		}
 
 		// Stop
 		ctx.service_status.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);

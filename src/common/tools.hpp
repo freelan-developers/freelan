@@ -47,8 +47,26 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
 
-#include <freelan/logger.hpp>
+#include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 
+#include <freelan/logger.hpp>
+#include <freelan/core.hpp>
+
+/**
+ * \brief Convert the specified log level to its string representation.
+ * \param level The log level.
+ * \return The string representation of level.
+ */
 const char* log_level_to_string(freelan::log_level level);
+
+/**
+ * \brief The certificate validation function.
+ * \param script The script to call.
+ * \param core The core instance.
+ * \param cert The certificate.
+ * \return The execution result of the specified script.
+ */
+bool execute_certificate_validation_script(const boost::filesystem::path& script, freelan::core& core, freelan::security_configuration::cert_type cert);
 
 #endif /* TOOLS_HPP */

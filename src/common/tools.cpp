@@ -46,6 +46,13 @@
 
 #include "tools.hpp"
 
+#include <freelan/logger_stream.hpp>
+
+#include "system.hpp"
+
+namespace fs = boost::filesystem;
+namespace fl = freelan;
+
 const char* log_level_to_string(freelan::log_level level)
 {
 	switch (level)
@@ -64,4 +71,42 @@ const char* log_level_to_string(freelan::log_level level)
 
 	assert(false);
 	throw std::logic_error("Unsupported enumeration value");
+}
+
+bool execute_certificate_validation_script(const fs::path& script, fl::core& core, fl::security_configuration::cert_type cert)
+{
+	static unsigned int counter = 0;
+
+	try
+	{
+		const fs::path filename = get_temporary_directory() / ("freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt");
+
+		if (core.logger().level() <= freelan::LOG_DEBUG)
+		{
+			core.logger()(freelan::LOG_DEBUG) << "Writing temporary certificate file at: " << filename;
+		}
+
+#if defined(WINDOWS) && defined(UNICODE)
+		cert.write_certificate(cryptoplus::file::open(filename.string<std::basic_string<TCHAR> >(), L"w"));
+#else
+		cert.write_certificate(cryptoplus::file::open(filename.string<std::basic_string<TCHAR> >(), "w"));
+#endif
+
+		const int exit_status = execute(script, filename.c_str(), NULL);
+
+		if (core.logger().level() <= freelan::LOG_DEBUG)
+		{
+			core.logger()(freelan::LOG_DEBUG) << script << " terminated execution with exit status " << exit_status ;
+		}
+
+		fs::remove(filename);
+
+		return (exit_status == 0);
+	}
+	catch (std::exception& ex)
+	{
+		core.logger()(freelan::LOG_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
+
+		return false;
+	}
 }
