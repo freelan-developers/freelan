@@ -57,6 +57,7 @@
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
+#include "common/system.hpp"
 #include "common/tools.hpp"
 
 #ifdef UNICODE
@@ -71,24 +72,6 @@ namespace fl = freelan;
 
 namespace
 {
-	fs::path get_module_filename()
-	{
-		TCHAR path[_MAX_PATH + 1];
-
-		if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
-		{
-			return path;
-		}
-		else
-		{
-			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
-		}
-	}
-
-	fs::path get_module_directory()
-	{
-		return get_module_filename().parent_path();
-	}
 }
 
 struct service_context

@@ -72,6 +72,8 @@
 #define ENABLE_STDOUT_DEFAULT false
 #endif
 
+namespace fs = boost::filesystem;
+
 namespace
 {
 #ifdef WINDOWS
@@ -272,7 +274,46 @@ namespace
 #endif
 }
 
-boost::filesystem::path get_home_directory()
+fs::path get_module_filename()
+{
+	TCHAR path[_MAX_PATH + 1];
+
+	if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
+	{
+		return path;
+	}
+	else
+	{
+		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
+	}
+}
+
+fs::path get_module_directory()
+{
+	return get_module_filename().parent_path();
+}
+
+fs::path get_root_directory()
+{
+	return get_module_directory().parent_path();
+}
+
+fs::path get_bin_directory()
+{
+	return get_root_directory() / "bin";
+}
+
+fs::path get_log_directory()
+{
+	return get_root_directory() / "log";
+}
+
+fs::path get_config_directory()
+{
+	return get_root_directory() / "log";
+}
+
+fs::path get_home_directory()
 {
 #ifdef WINDOWS
 	TCHAR path[MAX_PATH] = {};
@@ -297,7 +338,7 @@ boost::filesystem::path get_home_directory()
 #endif
 }
 
-boost::filesystem::path get_application_directory()
+fs::path get_application_directory()
 {
 #ifdef WINDOWS
 	TCHAR path[MAX_PATH] = {};
@@ -309,13 +350,13 @@ boost::filesystem::path get_application_directory()
 		throw std::runtime_error("Unable to determine the application directory");
 	}
 
-	return boost::filesystem::path(path) / "freelan";
+	return fs::path(path) / "freelan";
 #else
 	return "/etc/freelan";
 #endif
 }
 
-boost::filesystem::path get_temporary_directory()
+fs::path get_temporary_directory()
 {
 #ifdef WINDOWS
 	TCHAR path[MAX_PATH] = {};
@@ -333,9 +374,9 @@ boost::filesystem::path get_temporary_directory()
 #endif
 }
 
-std::vector<boost::filesystem::path> get_configuration_files()
+std::vector<fs::path> get_configuration_files()
 {
-	std::vector<boost::filesystem::path> configuration_files;
+	std::vector<fs::path> configuration_files;
 
 #ifdef WINDOWS
 	configuration_files.push_back(get_home_directory() / "freelan.cfg");
@@ -348,7 +389,7 @@ std::vector<boost::filesystem::path> get_configuration_files()
 	return configuration_files;
 }
 
-int execute(boost::filesystem::path script, ...)
+int execute(fs::path script, ...)
 {
 	int exit_status;
 
