@@ -374,6 +374,8 @@ int execute(fs::path script, ...)
 		char args[32728] = {};
 		size_t offset = 0;
 
+		const char* file = script.c_str();
+
 		for (const char* arg = file; arg != NULL; arg = va_arg(vl, const char*))
 		{
 			argv[cnt++] = &args[offset];
