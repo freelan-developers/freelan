@@ -39,11 +39,18 @@
  */
 
 /**
- * \file daemon.cpp
+ * \file main.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The UNIX daemon entry point.
+ * \brief The main file.
  */
 
-int main()
+#include <iostream>
+#include <cstdlib>
+
+int main(int argc, char** argv)
 {
+	(void)argc;
+	(void)argv;
+
+	return EXIT_SUCCESS;
 }

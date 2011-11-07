@@ -1,8 +1,6 @@
 """The SConstruct file"""
 
-cli_name = 'freelan'
-service_name = 'freelan_svc'
-daemon_name = 'freeland'
+name = 'freelan'
 
 major = '1'
 minor = '0'
@@ -65,21 +63,8 @@ common_source_files = Glob('src/common/*.cpp')
 env.VariantDir('build/service', 'src')
 env.VariantDir('build/daemon', 'src')
 
-cli_project = ProgramProject(cli_name, major, minor, libraries, source_files = Glob('src/common/*.cpp') + [os.path.join('src', 'cli.cpp')])
-service_project = ProgramProject(service_name, major, minor, libraries, source_files = Glob('build/service/common/*.cpp') + [os.path.join('build/service', 'service.cpp')])
-daemon_project = ProgramProject(daemon_name, major, minor, libraries, source_files = Glob('build/daemon/common/*.cpp') + [os.path.join('build/daemon', 'daemon.cpp')])
+project = ProgramProject(name, major, minor, libraries, source_files = Glob('src/*.cpp'))
 
-# Scan for source files
-source_files = []
+env.Indent(project.files)
 
-for root, directories, files in os.walk('src'):
-    source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp', '*.c', '*.cpp'])]
-
-env.Indent(source_files)
-
-env.FreelanProject(cli_project)
-
-if sys.platform.startswith('win32'):
-    env.FreelanProject(service_project)
-else:
-    env.FreelanProject(daemon_project)
+env.FreelanProject(project)
