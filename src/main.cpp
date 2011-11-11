@@ -190,6 +190,13 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, all_options), vm);
 
+	if (vm.count("help"))
+	{
+		std::cout << visible_options << std::endl;
+
+		return false;
+	}
+
 #ifdef WINDOWS
 	if (vm.count("install"))
 	{
@@ -288,13 +295,6 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 
 	po::notify(vm);
-
-	if (vm.count("help"))
-	{
-		std::cout << visible_options << std::endl;
-
-		return false;
-	}
 
 	setup_configuration(configuration.fl_configuration, vm);
 
