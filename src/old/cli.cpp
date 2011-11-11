@@ -46,7 +46,6 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <csignal>
 #include <fstream>
 
 #include <boost/asio.hpp>
@@ -69,51 +68,6 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace fl = freelan;
-
-static boost::function<void ()> stop_function = 0;
-
-static void signal_handler(int code)
-{
-	switch (code)
-	{
-		case SIGTERM:
-		case SIGINT:
-		case SIGABRT:
-			if (stop_function)
-			{
-				std::cerr << "Signal caught: stopping..." << std::endl;
-
-				stop_function();
-				stop_function = 0;
-			}
-			break;
-		default:
-			break;
-	}
-}
-
-static bool register_signal_handlers()
-{
-	if (signal(SIGTERM, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGTERM signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGINT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGINT signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGABRT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGABRT signals." << std::endl;
-		return false;
-	}
-
-	return true;
-}
 
 std::vector<fs::path> get_configuration_files()
 {
@@ -253,11 +207,6 @@ int main(int argc, char** argv)
 	cryptoplus::crypto_initializer crypto_initializer;
 	cryptoplus::algorithms_initializer algorithms_initializer;
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
-
-	if (!register_signal_handlers())
-	{
-		return EXIT_FAILURE;
-	}
 
 	try
 	{

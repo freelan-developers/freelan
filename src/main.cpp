@@ -46,12 +46,67 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <csignal>
+
+#include <boost/function.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 
 #include <freelan/os.hpp>
 
 #ifdef WINDOWS
 #include "win32/service.hpp"
 #endif
+
+static boost::mutex stop_function_mutex;
+static boost::function<void ()> stop_function = 0;
+
+static void signal_handler(int code)
+{
+	switch (code)
+	{
+		case SIGTERM:
+		case SIGINT:
+		case SIGABRT:
+			{
+				boost::lock_guard<boost::mutex> lock(stop_function_mutex);
+
+				if (stop_function)
+				{
+					std::cerr << "Signal caught: stopping..." << std::endl;
+
+					stop_function();
+					stop_function = 0;
+				}
+				break;
+			}
+		default:
+			break;
+	}
+}
+
+static bool register_signal_handlers()
+{
+	if (signal(SIGTERM, signal_handler) == SIG_ERR)
+	{
+		std::cerr << "Failed to catch SIGTERM signals." << std::endl;
+		return false;
+	}
+
+	if (signal(SIGINT, signal_handler) == SIG_ERR)
+	{
+		std::cerr << "Failed to catch SIGINT signals." << std::endl;
+		return false;
+	}
+
+	if (signal(SIGABRT, signal_handler) == SIG_ERR)
+	{
+		std::cerr << "Failed to catch SIGABRT signals." << std::endl;
+		return false;
+	}
+
+	return true;
+}
 
 int main(int argc, char** argv)
 {
@@ -61,6 +116,11 @@ int main(int argc, char** argv)
 		return EXIT_SUCCESS;
 	}
 #endif
+
+	if (!register_signal_handlers())
+	{
+		return EXIT_FAILURE;
+	}
 
 	(void)argc;
 	(void)argv;
