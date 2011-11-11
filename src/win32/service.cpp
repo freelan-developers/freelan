@@ -287,16 +287,18 @@ namespace win32
 		po::store(po::parse_command_line(argc, argv, service_options), vm);
 		po::notify(vm);
 
+		const fs::path execution_root_directory = get_execution_root_directory();
+
 		if (vm.count("configuration_file"))
 		{
-			configuration.configuration_file = vm["configuration_file"].as<std::string>();
+			configuration.configuration_file = fs::absolute(vm["configuration_file"].as<std::string>(), execution_root_directory);
 		}
 
 		configuration.debug = (vm.count("debug") > 0);
 
 		if (vm.count("log_file"))
 		{
-			configuration.log_file = vm["log_file"].as<std::string>();
+			configuration.log_file = fs::absolute(vm["log_file"].as<std::string>(), execution_root_directory);
 		}
 		else
 		{
