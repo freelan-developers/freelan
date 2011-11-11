@@ -50,7 +50,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
 
 #include "parsers.hpp"
 
@@ -179,7 +178,7 @@ po::options_description get_switch_options()
 	return result;
 }
 
-void setup_configuration(fl::configuration& configuration, const po::variables_map& vm)
+void setup_configuration(fl::configuration& configuration, const boost::filesystem::path& root, const po::variables_map& vm)
 {
 	typedef boost::asio::ip::udp::resolver::query query;
 	typedef fl::security_configuration::cert_type cert_type;
@@ -200,20 +199,20 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	}
 
 	// Security options
-	cert_type signature_certificate = load_certificate(vm["security.signature_certificate_file"].as<std::string>());
-	pkey signature_private_key = load_private_key(vm["security.signature_private_key_file"].as<std::string>());
+	cert_type signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<std::string>(), root));
+	pkey signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<std::string>(), root));
 
 	cert_type encryption_certificate;
 	pkey encryption_private_key;
 
 	if (vm.count("security.encryption_certificate_file"))
 	{
-		encryption_certificate = load_certificate(vm["security.encryption_certificate_file"].as<std::string>());
+		encryption_certificate = load_certificate(fs::absolute(vm["security.encryption_certificate_file"].as<std::string>(), root));
 	}
 
 	if (vm.count("security.encryption_private_key_file"))
 	{
-		encryption_private_key = load_private_key(vm["security.encryption_private_key_file"].as<std::string>());
+		encryption_private_key = load_private_key(fs::absolute(vm["security.encryption_private_key_file"].as<std::string>(), root));
 	}
 
 	configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
@@ -226,7 +225,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 
 	BOOST_FOREACH(const std::string& authority_certificate_file, authority_certificate_file_list)
 	{
-		configuration.security.certificate_authority_list.push_back(load_trusted_certificate(authority_certificate_file));
+		configuration.security.certificate_authority_list.push_back(load_trusted_certificate(fs::absolute(authority_certificate_file, root)));
 	}
 
 	// Tap adapter options
@@ -244,7 +243,7 @@ void setup_configuration(fl::configuration& configuration, const po::variables_m
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
 }
 
-boost::filesystem::path get_certificate_validation_script(const boost::program_options::variables_map& vm)
+boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	return vm["security.certificate_validation_script"].as<std::string>();
+	return fs::absolute(vm["security.certificate_validation_script"].as<std::string>(), root);
 }

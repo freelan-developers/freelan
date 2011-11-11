@@ -349,9 +349,11 @@ namespace win32
 
 		po::notify(vm);
 
-		setup_configuration(fl_configuration, vm);
+		const fs::path execution_root_directory = get_execution_root_directory();
 
-		const fs::path certificate_validation_script = get_certificate_validation_script(vm);
+		setup_configuration(fl_configuration, execution_root_directory, vm);
+
+		const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
 
 		if (!certificate_validation_script.empty())
 		{

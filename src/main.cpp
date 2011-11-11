@@ -296,9 +296,11 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	po::notify(vm);
 
-	setup_configuration(configuration.fl_configuration, vm);
+	const fs::path execution_root_directory = get_execution_root_directory();
 
-	const fs::path certificate_validation_script = get_certificate_validation_script(vm);
+	setup_configuration(configuration.fl_configuration, execution_root_directory, vm);
+
+	const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
 
 	if (!certificate_validation_script.empty())
 	{

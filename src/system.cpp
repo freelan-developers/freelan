@@ -290,6 +290,15 @@ fs::path get_module_filename()
 }
 #endif
 
+boost::filesystem::path get_execution_root_directory()
+{
+#ifdef WINDOWS
+	return get_module_filename();
+#else
+	return "/etc/freelan";
+#endif
+}
+
 fs::path get_home_directory()
 {
 #ifdef WINDOWS

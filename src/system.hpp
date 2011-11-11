@@ -61,6 +61,12 @@ boost::filesystem::path get_module_filename();
 #endif
 
 /**
+ * \brief Get the execution root directory for configuration, log files and stuff.
+ * \return The execution root directory for configuration, log files and stuff.
+ */
+boost::filesystem::path get_execution_root_directory();
+
+/**
  * \brief Get the home directory for the current user.
  * \return The home directory for the current user.
  */

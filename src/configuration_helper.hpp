@@ -79,16 +79,18 @@ boost::program_options::options_description get_switch_options();
 /**
  * \brief Setup a freelan configuration from a variables map.
  * \param configuration The configuration to setup.
+ * \param root The root directory for file operations.
  * \param vm The variables map.
  * \warning On error, a boost::program_options::error might be thrown.
  */
-void setup_configuration(freelan::configuration& configuration, const boost::program_options::variables_map& vm);
+void setup_configuration(freelan::configuration& configuration, const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
 
 /**
  * \brief Get the certificate validation script.
+ * \param root The root directory for file operations.
  * \param vm The variables map.
  * \return The certificate validation script.
  */
-boost::filesystem::path get_certificate_validation_script(const boost::program_options::variables_map& vm);
+boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
 
 #endif /* CONFIGURATION_HELPER_HPP */
