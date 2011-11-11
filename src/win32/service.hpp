@@ -39,31 +39,21 @@
  */
 
 /**
- * \file main.cpp
+ * \file service.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The main file.
+ * \brief Windows related service functions.
  */
 
-#include <iostream>
-#include <cstdlib>
+#ifndef WIN32_SERVICE_HPP
+#define WIN32_SERVICE_HPP
 
-#include <freelan/os.hpp>
-
-#ifdef WINDOWS
-#include "win32/service.hpp"
-#endif
-
-int main(int argc, char** argv)
+namespace win32
 {
-#ifdef WINDOWS
-	if (win32::run_service())
-	{
-		return EXIT_SUCCESS;
-	}
-#endif
-
-	(void)argc;
-	(void)argv;
-
-	return EXIT_SUCCESS;
+	/**
+	 * \brief Try to run the current process as a service.
+	 * \return true if the process was run as a service, false if it is run from the command-line interface.
+	 */
+	bool run_service();
 }
+
+#endif

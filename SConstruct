@@ -29,7 +29,6 @@ libraries.append('crypto')
 
 if sys.platform.startswith('win32'):
 
-
     if env['CC'] == 'gcc':
         libraries.append('crypto')
         env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
@@ -63,7 +62,12 @@ common_source_files = Glob('src/common/*.cpp')
 env.VariantDir('build/service', 'src')
 env.VariantDir('build/daemon', 'src')
 
-project = ProgramProject(name, major, minor, libraries, source_files = Glob('src/*.cpp'))
+source_files = Glob('src/*.cpp')
+
+if sys.platform.startswith('win32'):
+    source_files = source_files + Glob('src/win32/*.cpp')
+
+project = ProgramProject(name, major, minor, libraries, source_files = source_files)
 
 env.Indent(project.files)
 
