@@ -50,10 +50,12 @@
 
 #include <boost/asio.hpp>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
 
 #include "parsers.hpp"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 namespace fl = freelan;
 
 namespace
@@ -85,29 +87,22 @@ namespace
 		return boost::posix_time::milliseconds(msduration);
 	}
 
-	cryptoplus::file load_file(const std::string& filename)
+	cryptoplus::file load_file(const fs::path& filename)
 	{
-		try
-		{
-			return cryptoplus::file::open(filename);
-		}
-		catch (std::runtime_error&)
-		{
-			throw std::runtime_error("Unable to open the specified file: " + filename);
-		}
+		return cryptoplus::file::open(filename.native());
 	}
 
-	fl::security_configuration::cert_type load_certificate(const std::string& filename)
+	fl::security_configuration::cert_type load_certificate(const fs::path& filename)
 	{
 		return fl::security_configuration::cert_type::from_certificate(load_file(filename));
 	}
 
-	cryptoplus::pkey::pkey load_private_key(const std::string& filename)
+	cryptoplus::pkey::pkey load_private_key(const fs::path& filename)
 	{
 		return cryptoplus::pkey::pkey::from_private_key(load_file(filename));
 	}
 
-	fl::security_configuration::cert_type load_trusted_certificate(const std::string& filename)
+	fl::security_configuration::cert_type load_trusted_certificate(const fs::path& filename)
 	{
 		return fl::security_configuration::cert_type::from_trusted_certificate(load_file(filename));
 	}
