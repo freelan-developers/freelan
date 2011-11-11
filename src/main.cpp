@@ -181,6 +181,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	service_options.add_options()
 	("install", "Install the service.")
 	("uninstall", "Uninstall the service.")
+	("reinstall", "Reinstall the service.")
 	;
 
 	visible_options.add(service_options);
@@ -202,7 +203,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	{
 		if (vm.count("uninstall"))
 		{
-			throw std::runtime_error("Cannot specify both --install and --uninstall options");
+			throw std::runtime_error("Cannot specify both --install and --uninstall options. Use --reinstall instead.");
 		}
 		else
 		{
@@ -227,6 +228,28 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 		else
 		{
 			std::cerr << "The service has already been deleted." << std::endl;
+		}
+
+		return false;
+	}
+	else if (vm.count("reinstall"))
+	{
+		if (win32::uninstall_service())
+		{
+			std::cout << "Service uninstalled." << std::endl;
+		}
+		else
+		{
+			std::cerr << "The service has already been deleted." << std::endl;
+		}
+
+		if (win32::install_service())
+		{
+			std::cout << "Service installed." << std::endl;
+		}
+		else
+		{
+			std::cerr << "The service was already installed." << std::endl;
 		}
 
 		return false;
