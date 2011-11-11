@@ -338,11 +338,20 @@ namespace win32
 		configuration_options.add(get_tap_adapter_options());
 		configuration_options.add(get_switch_options());
 
+		const fs::path execution_root_directory = get_execution_root_directory();
+
 		fl::configuration fl_configuration;
 
 		po::variables_map vm;
 
-		fs::basic_ifstream<char> ifs(configuration.configuration_file);
+		fs::path configuration_file = configuration.configuration_file;
+
+		if (configuration_file.empty())
+		{
+			configuration_file = execution_root_directory / "config" / "freelan.cfg";
+		}
+
+		fs::basic_ifstream<char> ifs(configuration_file);
 
 		if (ifs)
 		{
@@ -350,8 +359,6 @@ namespace win32
 		}
 
 		po::notify(vm);
-
-		const fs::path execution_root_directory = get_execution_root_directory();
 
 		setup_configuration(fl_configuration, execution_root_directory, vm);
 
