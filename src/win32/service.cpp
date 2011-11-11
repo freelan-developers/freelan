@@ -419,38 +419,21 @@ namespace win32
 				{
 					try
 					{
-						SERVICE_STATUS service_status;
-
-						if (::QueryServiceStatus(service, &service_status))
+						if (::DeleteService(service))
 						{
-							if (service_status.dwCurrentState == SERVICE_STOPPED)
-							{
-								if (::DeleteService(service))
-								{
-									result = true;
-								}
-								else
-								{
-									DWORD last_error = ::GetLastError();
-
-									switch (last_error)
-									{
-										case ERROR_SERVICE_MARKED_FOR_DELETE:
-											break;
-										default:
-											throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
-									}
-								}
-							}
-							else
-							{
-								//TODO: Report this.
-								//std::cout << "The service is still running. Doing nothing." << std::endl;
-							}
+							result = true;
 						}
 						else
 						{
-							throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "QueryServiceStatus()");
+							DWORD last_error = ::GetLastError();
+
+							switch (last_error)
+							{
+								case ERROR_SERVICE_MARKED_FOR_DELETE:
+									break;
+								default:
+									throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
+							}
 						}
 					}
 					catch (...)
