@@ -71,8 +71,12 @@ namespace fl = freelan;
 
 #ifdef UNICODE
 #define SERVICE_NAME L"FreeLAN Service"
+#define SERVICE_DEPENDENCIES L"TCP/IP\0DHCP\0TAP0901\0"
+#define SERVICE_START_NAME L"NT AUTHORITY\\NetworkService"
 #else
 #define SERVICE_NAME "FreeLAN Service"
+#define SERVICE_DEPENDENCIES "TCP/IP\0DHCP\0TAP0901\0"
+#define SERVICE_START_NAME "NT AUTHORITY\\NetworkService"
 #endif
 
 namespace win32
@@ -154,8 +158,8 @@ namespace win32
 				                        path.string<std::basic_string<TCHAR> >().c_str(),
 				                        NULL,
 				                        NULL,
-				                        NULL,
-				                        NULL,
+				                        SERVICE_DEPENDENCIES,
+				                        SERVICE_START_NAME,
 				                        NULL
 				                    );
 
