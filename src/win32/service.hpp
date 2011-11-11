@@ -54,6 +54,18 @@ namespace win32
 	 * \return true if the process was run as a service, false if it is run from the command-line interface.
 	 */
 	bool run_service();
+
+	/**
+	 * \brief Install the service.
+	 * \return true if the service was installed, false if it was already installed.
+	 */
+	bool install_service();
+
+	/**
+	 * \brief Uninstall the service.
+	 * \return true if the service was uninstalled, false if it was not installed.
+	 */
+	bool uninstall_service();
 }
 
 #endif

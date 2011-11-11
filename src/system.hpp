@@ -52,6 +52,14 @@
 
 #include <boost/filesystem.hpp>
 
+#ifdef WINDOWS
+/**
+ * \brief Get the filename of the current module.
+ * \return The current module filename.
+ */
+boost::filesystem::path get_module_filename();
+#endif
+
 /**
  * \brief Get the home directory for the current user.
  * \return The home directory for the current user.

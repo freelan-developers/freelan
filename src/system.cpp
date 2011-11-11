@@ -274,6 +274,22 @@ namespace
 #endif
 }
 
+#ifdef WINDOWS
+fs::path get_module_filename()
+{
+	TCHAR path[_MAX_PATH + 1];
+
+	if (::GetModuleFileName(NULL, path, sizeof(path) / sizeof(path[0])) > 0)
+	{
+		return path;
+	}
+	else
+	{
+		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
+	}
+}
+#endif
+
 fs::path get_home_directory()
 {
 #ifdef WINDOWS

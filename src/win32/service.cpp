@@ -334,4 +334,161 @@ namespace win32
 
 		logger(fl::LOG_INFORMATION) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 	}
+
+	bool install_service()
+	{
+		bool result = false;
+
+		SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
+
+		if (service_control_manager)
+		{
+			try
+			{
+				const fs::path path = get_module_filename();
+
+				SC_HANDLE service = ::CreateService(
+				                        service_control_manager,
+				                        SERVICE_NAME,
+				                        SERVICE_NAME,
+				                        SERVICE_ALL_ACCESS,
+				                        SERVICE_WIN32_OWN_PROCESS,
+				                        SERVICE_AUTO_START,
+				                        SERVICE_ERROR_IGNORE,
+				                        path.string<std::basic_string<TCHAR> >().c_str(),
+				                        NULL,
+				                        NULL,
+				                        NULL,
+				                        NULL,
+				                        NULL
+				                    );
+
+				if (service)
+				{
+					result = true;
+
+					::CloseServiceHandle(service);
+				}
+				else
+				{
+					DWORD last_error = ::GetLastError();
+
+					switch (last_error)
+					{
+						case ERROR_SERVICE_EXISTS:
+							break;
+						default:
+							throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
+					}
+				}
+			}
+			catch (...)
+			{
+				::CloseServiceHandle(service_control_manager);
+
+				throw;
+			}
+
+			::CloseServiceHandle(service_control_manager);
+		}
+		else
+		{
+			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
+		}
+		
+		return result;
+	}
+
+	bool uninstall_service()
+	{
+		bool result = false;
+
+		SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+
+		if (service_control_manager)
+		{
+			try
+			{
+				SC_HANDLE service = ::OpenService(
+				                        service_control_manager,
+				                        SERVICE_NAME,
+				                        SERVICE_QUERY_STATUS | DELETE
+				                    );
+
+				if (service)
+				{
+					try
+					{
+						SERVICE_STATUS service_status;
+
+						if (::QueryServiceStatus(service, &service_status))
+						{
+							if (service_status.dwCurrentState == SERVICE_STOPPED)
+							{
+								if (::DeleteService(service))
+								{
+									result = true;
+								}
+								else
+								{
+									DWORD last_error = ::GetLastError();
+
+									switch (last_error)
+									{
+										case ERROR_SERVICE_MARKED_FOR_DELETE:
+											break;
+										default:
+											throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
+									}
+								}
+							}
+							else
+							{
+								//TODO: Report this.
+								//std::cout << "The service is still running. Doing nothing." << std::endl;
+							}
+						}
+						else
+						{
+							throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "QueryServiceStatus()");
+						}
+					}
+					catch (...)
+					{
+						::CloseServiceHandle(service);
+
+						throw;
+					}
+
+					::CloseServiceHandle(service);
+				}
+				else
+				{
+					DWORD last_error = ::GetLastError();
+
+					switch (last_error)
+					{
+						case ERROR_SERVICE_DOES_NOT_EXIST:
+							break;
+						default:
+							throw boost::system::system_error(last_error, boost::system::system_category(), "OpenService()");
+					}
+				}
+			}
+			catch (...)
+			{
+				::CloseServiceHandle(service_control_manager);
+
+				throw;
+			}
+
+			::CloseServiceHandle(service_control_manager);
+		}
+		else
+		{
+			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
+		}
+
+		return result;
+	}
 }
