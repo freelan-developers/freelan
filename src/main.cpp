@@ -187,8 +187,6 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	all_options.add(service_options);
 #endif
 
-	const fs::path execution_root_directory = get_execution_root_directory();
-
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, all_options), vm);
 
@@ -280,6 +278,8 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 				po::store(po::parse_config_file(ifs, configuration_options, true), vm);
 
+				configuration_file = fs::absolute(conf);
+
 				break;
 			}
 		}
@@ -297,6 +297,8 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 
 	po::notify(vm);
+
+	const fs::path execution_root_directory = fs::current_path();
 
 	setup_configuration(configuration.fl_configuration, execution_root_directory, vm);
 
