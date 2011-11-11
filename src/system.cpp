@@ -293,7 +293,7 @@ fs::path get_module_filename()
 boost::filesystem::path get_execution_root_directory()
 {
 #ifdef WINDOWS
-	return get_module_filename();
+	return get_module_filename().parent_path();
 #else
 	return "/etc/freelan";
 #endif
