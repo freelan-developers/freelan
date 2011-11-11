@@ -138,10 +138,10 @@ namespace win32
 
 		po::options_description service_options("Service options");
 		service_options.add_options()
-			("configuration_file,c", po::value<std::string>(), "The configuration file to use")
-			("debug,d", "Enables debug output.")
-			("log_file,l", po::value<std::string>(), "The log file to use")
-			;
+		("configuration_file,c", po::value<std::string>(), "The configuration file to use")
+		("debug,d", "Enables debug output.")
+		("log_file,l", po::value<std::string>(), "The log file to use")
+		;
 
 		po::variables_map vm;
 		po::store(po::parse_command_line(argc, argv, service_options), vm);
