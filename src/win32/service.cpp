@@ -465,8 +465,19 @@ namespace win32
 
 				lock.unlock();
 			}
+			catch (boost::system::system_error& ex)
+			{
+				ctx.service_status.dwWin32ExitCode = ex.code().value();
+				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+
+				logger(fl::LOG_ERROR) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
+			}
 			catch (std::exception& ex)
 			{
+				ctx.service_status.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR;
+				ctx.service_status.dwServiceSpecificExitCode = 1;
+				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+
 				logger(fl::LOG_ERROR) << "Error: " << ex.what();
 			}
 
