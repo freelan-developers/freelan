@@ -141,7 +141,7 @@ po::options_description get_security_options()
 	("security.encryption_certificate_file", po::value<std::string>(), "The certificate file to use for encryption.")
 	("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
 	("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
-	("security.certificate_validation_script", po::value<std::string>(), "The certificate validation script to use.")
+	("security.certificate_validation_script", po::value<std::string>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
 	;
 
@@ -245,5 +245,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	return fs::absolute(vm["security.certificate_validation_script"].as<std::string>(), root);
+	fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<std::string>();
+
+	return certificate_validation_script_file.empty() ? certificate_validation_script_file : fs::absolute(certificate_validation_script_file, root);
 }
