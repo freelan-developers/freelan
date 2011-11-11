@@ -298,6 +298,10 @@ namespace win32
 		{
 			configuration.log_file = vm["log_file"].as<std::string>();
 		}
+		else
+		{
+			configuration.log_file = get_module_filename().parent_path() / "log" / "freelan.log";
+		}
 	}
 
 	fl::logger create_logger(const service_configuration& configuration)
