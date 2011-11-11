@@ -277,21 +277,26 @@ namespace win32
 			// Start pending
 			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-			boost::asio::io_service io_service;
+			try
+			{
+				boost::asio::io_service io_service;
 
-			std::vector<boost::shared_ptr<fl::core> > core_list;
+				fl::configuration fl_configuration = get_freelan_configuration(configuration);
+				freelan::core core(io_service, fl_configuration, logger);
 
-			fl::configuration fl_configuration = get_freelan_configuration(configuration);
-			freelan::core core(io_service, fl_configuration, logger);
+				core.open();
 
-			core.open();
+				// Running
+				ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
+				ctx.service_status.dwCurrentState = SERVICE_RUNNING;
+				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-			// Running
-			ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
-			ctx.service_status.dwCurrentState = SERVICE_RUNNING;
-			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
-
-			io_service.run();
+				io_service.run();
+			}
+			catch (std::exception& ex)
+			{
+				logger(fl::LOG_ERROR) << "Error: " << ex.what();
+			}
 
 			// Stop
 			ctx.service_status.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);

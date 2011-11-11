@@ -117,12 +117,6 @@ namespace
 	}
 }
 
-void log_function(freelan::log_level level, const std::string& msg)
-{
-	//TODO: Implement
-	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
-}
-
 void InstallService()
 {
 	SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
