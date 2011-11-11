@@ -302,7 +302,7 @@ namespace win32
 		}
 		else
 		{
-			configuration.log_file = get_module_filename().parent_path() / "log" / "freelan.log";
+			configuration.log_file = execution_root_directory / "log" / "freelan.log";
 		}
 	}
 
