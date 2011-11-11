@@ -52,6 +52,9 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
+#include <boost/function.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -88,6 +91,8 @@ namespace win32
 		{
 			SERVICE_STATUS_HANDLE service_status_handle;
 			SERVICE_STATUS service_status;
+			boost::mutex stop_function_mutex;
+			boost::function<void ()> stop_function;
 		};
 	}
 
@@ -226,9 +231,20 @@ namespace win32
 				return NO_ERROR;
 			case SERVICE_CONTROL_SHUTDOWN:
 			case SERVICE_CONTROL_STOP:
-				ctx.service_status.dwCurrentState = SERVICE_STOP_PENDING;
-				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
-				return NO_ERROR;
+				{
+					boost::lock_guard<boost::mutex> lock(ctx.stop_function_mutex);
+
+					if (ctx.stop_function)
+					{
+						ctx.stop_function();
+						ctx.stop_function = NULL;
+					}
+
+					ctx.service_status.dwCurrentState = SERVICE_STOP_PENDING;
+					::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
+
+					return NO_ERROR;
+				}
 			case SERVICE_CONTROL_PAUSE:
 				break;
 			case SERVICE_CONTROL_CONTINUE:
@@ -286,12 +302,24 @@ namespace win32
 
 				core.open();
 
+				{
+					boost::lock_guard<boost::mutex> lock(ctx.stop_function_mutex);
+
+					ctx.stop_function = boost::bind(&fl::core::close, boost::ref(core));
+				}
+
 				// Running
 				ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
 				ctx.service_status.dwCurrentState = SERVICE_RUNNING;
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
 				io_service.run();
+
+				{
+					boost::lock_guard<boost::mutex> lock(ctx.stop_function_mutex);
+
+					ctx.stop_function = NULL;
+				}
 			}
 			catch (std::exception& ex)
 			{
@@ -306,5 +334,4 @@ namespace win32
 
 		logger(fl::LOG_INFORMATION) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 	}
-
 }
