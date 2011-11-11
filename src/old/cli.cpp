@@ -55,9 +55,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-#include <cryptoplus/cryptoplus.hpp>
-#include <cryptoplus/error/error_strings.hpp>
-
 #include <freelan/freelan.hpp>
 #include <freelan/logger_stream.hpp>
 
@@ -204,10 +201,6 @@ bool parse_options(int argc, char** argv, fl::configuration& configuration, bool
 
 int main(int argc, char** argv)
 {
-	cryptoplus::crypto_initializer crypto_initializer;
-	cryptoplus::algorithms_initializer algorithms_initializer;
-	cryptoplus::error::error_strings_initializer error_strings_initializer;
-
 	try
 	{
 		fl::configuration configuration;
@@ -238,12 +231,6 @@ int main(int argc, char** argv)
 
 			stop_function = 0;
 		}
-	}
-	catch (std::exception& ex)
-	{
-		std::cerr << "Error: " << ex.what() << std::endl;
-
-		return EXIT_FAILURE;
 	}
 
 	return EXIT_SUCCESS;

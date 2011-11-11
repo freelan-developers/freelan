@@ -52,6 +52,9 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 
+#include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/error/error_strings.hpp>
+
 #include <freelan/os.hpp>
 
 #ifdef WINDOWS
@@ -108,6 +111,12 @@ static bool register_signal_handlers()
 	return true;
 }
 
+void run(int argc, char** argv)
+{
+	(void)argc;
+	(void)argv;
+}
+
 int main(int argc, char** argv)
 {
 #ifdef WINDOWS
@@ -122,8 +131,20 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	(void)argc;
-	(void)argv;
+	try
+	{
+		cryptoplus::crypto_initializer crypto_initializer;
+		cryptoplus::algorithms_initializer algorithms_initializer;
+		cryptoplus::error::error_strings_initializer error_strings_initializer;
+
+		run(argc, argv);
+	}
+	catch (std::exception& ex)
+	{
+		std::cerr << "Error: " << ex.what() << std::endl;
+
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }
