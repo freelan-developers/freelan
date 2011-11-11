@@ -302,11 +302,11 @@ namespace win32
 
 				core.open();
 
-				{
-					boost::lock_guard<boost::mutex> lock(ctx.stop_function_mutex);
+				boost::unique_lock<boost::mutex> lock(ctx.stop_function_mutex);
 
-					ctx.stop_function = boost::bind(&fl::core::close, boost::ref(core));
-				}
+				ctx.stop_function = boost::bind(&fl::core::close, boost::ref(core));
+
+				lock.unlock();
 
 				// Running
 				ctx.service_status.dwControlsAccepted |= (SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN);
@@ -315,11 +315,11 @@ namespace win32
 
 				io_service.run();
 
-				{
-					boost::lock_guard<boost::mutex> lock(ctx.stop_function_mutex);
+				lock.lock();
 
-					ctx.stop_function = NULL;
-				}
+				ctx.stop_function = NULL;
+
+				lock.unlock();
 			}
 			catch (std::exception& ex)
 			{
