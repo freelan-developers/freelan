@@ -48,6 +48,11 @@
 #include <cstdlib>
 #include <csignal>
 
+#include <boost/asio.hpp>
+#include <boost/program_options.hpp>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
@@ -55,11 +60,19 @@
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
-#include <freelan/os.hpp>
+#include <freelan/freelan.hpp>
+#include <freelan/logger_stream.hpp>
 
 #ifdef WINDOWS
 #include "win32/service.hpp"
 #endif
+
+#include "tools.hpp"
+#include "system.hpp"
+#include "configuration_helper.hpp"
+
+namespace fs = boost::filesystem;
+namespace fl = freelan;
 
 static boost::mutex stop_function_mutex;
 static boost::function<void ()> stop_function = 0;
@@ -111,10 +124,224 @@ static bool register_signal_handlers()
 	return true;
 }
 
-void run(int argc, char** argv)
+struct cli_configuration
 {
-	(void)argc;
-	(void)argv;
+	fl::configuration fl_configuration;
+	bool debug;
+};
+
+std::vector<fs::path> get_configuration_files()
+{
+	std::vector<fs::path> configuration_files;
+
+#ifdef WINDOWS
+	configuration_files.push_back(get_home_directory() / "freelan.cfg");
+	configuration_files.push_back(get_application_directory() / "freelan.cfg");
+#else
+	configuration_files.push_back(get_home_directory() / ".freelan/freelan.cfg");
+	configuration_files.push_back(get_application_directory() / "freelan.cfg");
+#endif
+
+	return configuration_files;
+}
+
+void log_function(freelan::log_level level, const std::string& msg)
+{
+	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+}
+
+bool parse_options(int argc, char** argv, cli_configuration& configuration)
+{
+	namespace po = boost::program_options;
+
+	po::options_description visible_options;
+	po::options_description all_options;
+
+	po::options_description generic_options("Generic options");
+	generic_options.add_options()
+	("help,h", "Produce help message.")
+	("debug,d", "Enables debug output.")
+	("configuration_file,c", po::value<std::string>(), "The configuration file to use")
+	;
+
+	visible_options.add(generic_options);
+	all_options.add(generic_options);
+
+	po::options_description configuration_options("Configuration");
+	configuration_options.add(get_fscp_options());
+	configuration_options.add(get_security_options());
+	configuration_options.add(get_tap_adapter_options());
+	configuration_options.add(get_switch_options());
+
+	visible_options.add(configuration_options);
+	all_options.add(configuration_options);
+
+#ifdef WINDOWS
+	po::options_description service_options("Service");
+	service_options.add_options()
+	("install", "Install the service.")
+	("uninstall", "Uninstall the service.")
+	;
+
+	visible_options.add(service_options);
+	all_options.add(service_options);
+#endif
+
+	po::variables_map vm;
+	po::store(po::parse_command_line(argc, argv, all_options), vm);
+
+#ifdef WINDOWS
+	if (vm.count("install"))
+	{
+		if (vm.count("uninstall"))
+		{
+			throw std::runtime_error("Cannot specify both --install and --uninstall options");
+		}
+		else
+		{
+			if (win32::install_service())
+			{
+				std::cout << "Service installed." << std::endl;
+			}
+			else
+			{
+				std::cerr << "The service was already installed." << std::endl;
+			}
+
+			return false;
+		}
+	}
+	else if (vm.count("uninstall"))
+	{
+		if (win32::uninstall_service())
+		{
+			std::cout << "Service uninstalled." << std::endl;
+		}
+		else
+		{
+			std::cerr << "The service has already been deleted." << std::endl;
+		}
+
+		return false;
+	}
+#endif
+
+	fs::path configuration_file;
+
+	if (vm.count("configuration_file"))
+	{
+		configuration_file = vm["configuration_file"].as<std::string>();
+	}
+	else
+	{
+		char* val = getenv("FREELAN_CONFIGURATION_FILE");
+
+		if (val)
+		{
+			configuration_file = std::string(val);
+		}
+	}
+
+	if (!configuration_file.empty())
+	{
+		std::cout << "Reading configuration file at: " << configuration_file << std::endl;
+		
+		fs::basic_ifstream<char> ifs(configuration_file);
+
+		if (!ifs)
+		{
+			throw po::reading_file(configuration_file.string().c_str());
+		}
+
+		po::store(po::parse_config_file(ifs, configuration_options, true), vm);
+	}
+	else
+	{
+		bool configuration_read = false;
+
+		const std::vector<fs::path> configuration_files = get_configuration_files();
+
+		BOOST_FOREACH(const fs::path& conf, configuration_files)
+		{
+			fs::basic_ifstream<char> ifs(conf);
+
+			if (ifs)
+			{
+				std::cout << "Reading configuration file at: " << conf << std::endl;
+
+				po::store(po::parse_config_file(ifs, configuration_options, true), vm);
+
+				break;
+			}
+		}
+
+		if (!configuration_read)
+		{
+			std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
+			std::cerr << "Looked up locations were:" << std::endl;
+
+			BOOST_FOREACH(const fs::path& conf, configuration_files)
+			{
+				std::cerr << "- " << conf << std::endl;
+			}
+		}
+	}
+
+	po::notify(vm);
+
+	if (vm.count("help"))
+	{
+		std::cout << visible_options << std::endl;
+
+		return false;
+	}
+
+	setup_configuration(configuration.fl_configuration, vm);
+
+	const fs::path certificate_validation_script = get_certificate_validation_script(vm);
+
+	if (!certificate_validation_script.empty())
+	{
+		configuration.fl_configuration.security.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
+	}
+
+	configuration.debug = vm.count("debug");
+
+	return true;
+}
+
+void run(const cli_configuration& configuration)
+{
+	boost::asio::io_service io_service;
+
+	fl::core core(io_service, configuration.fl_configuration, fl::logger(&log_function, configuration.debug ? fl::LOG_DEBUG : fl::LOG_INFORMATION));
+
+	core.open();
+
+	boost::unique_lock<boost::mutex> lock(stop_function_mutex);
+
+	stop_function = boost::bind(&freelan::core::close, boost::ref(core));
+
+	lock.unlock();
+
+	if (core.has_tap_adapter())
+	{
+		std::cout << "Using tap adapter: " << core.tap_adapter().name() << std::endl;
+	}
+	else
+	{
+		std::cout << "Configured not to use any tap adapter." << std::endl;
+	}
+
+	std::cout << "Listening on: " << core.server().socket().local_endpoint() << std::endl;
+
+	io_service.run();
+
+	lock.lock();
+
+	stop_function = 0;
+
+	lock.unlock();
 }
 
 int main(int argc, char** argv)
@@ -137,7 +364,12 @@ int main(int argc, char** argv)
 		cryptoplus::algorithms_initializer algorithms_initializer;
 		cryptoplus::error::error_strings_initializer error_strings_initializer;
 
-		run(argc, argv);
+		cli_configuration configuration;
+
+		if (parse_options(argc, argv, configuration))
+		{
+			run(configuration);
+		}
 	}
 	catch (std::exception& ex)
 	{
