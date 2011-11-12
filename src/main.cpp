@@ -357,14 +357,8 @@ void run(const cli_configuration& configuration)
 	boost::function<void (freelan::log_level, const std::string&)> log_func = &do_log;
 
 #ifndef WINDOWS
-	if (configuration.foreground)
+	if (!configuration.foreground)
 	{
-		std::cerr << "--foreground option specified: not running as a daemon." << std::endl;
-	}
-	else
-	{
-		std::cerr << "No --foreground option specified: forking to background." << std::endl;
-
 		posix::daemonize();
 
 		log_func = &posix::syslog;
