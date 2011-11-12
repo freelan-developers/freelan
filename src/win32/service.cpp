@@ -320,7 +320,7 @@ namespace win32
 		{
 			boost::shared_ptr<std::ostream> log_stream = boost::make_shared<fs::basic_ofstream<char> >(configuration.log_file);
 
-			return fl::logger(boost::bind(&log_function, log_stream, _1, _2), configuration.debug ? fl::LOG_DEBUG : fl::LOG_INFORMATION);
+			return fl::logger(boost::bind(&log_function, log_stream, _1, _2), configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
 		}
 	}
 
@@ -428,7 +428,7 @@ namespace win32
 
 		fl::logger logger = create_logger(configuration);
 
-		logger(fl::LOG_INFORMATION) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+		logger(fl::LL_INFORMATION) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 
 		/* Initializations */
 		cryptoplus::crypto_initializer crypto_initializer;
@@ -487,7 +487,7 @@ namespace win32
 				ctx.service_status.dwWin32ExitCode = ex.code().value();
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				logger(fl::LOG_ERROR) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
+				logger(fl::LL_ERROR) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
 			}
 			catch (std::exception& ex)
 			{
@@ -495,7 +495,7 @@ namespace win32
 				ctx.service_status.dwServiceSpecificExitCode = 1;
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				logger(fl::LOG_ERROR) << "Error: " << ex.what();
+				logger(fl::LL_ERROR) << "Error: " << ex.what();
 			}
 
 			// Stop
@@ -504,6 +504,6 @@ namespace win32
 			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 		}
 
-		logger(fl::LOG_INFORMATION) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+		logger(fl::LL_INFORMATION) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 	}
 }
