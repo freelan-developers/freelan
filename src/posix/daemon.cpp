@@ -39,44 +39,60 @@
  */
 
 /**
- * \file tools.hpp
+ * \file service.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Tools.
+ * \brief POSIX related daemon functions.
  */
 
-#ifndef TOOLS_HPP
-#define TOOLS_HPP
+#include "daemon.hpp"
 
-#include <boost/asio.hpp>
-#include <boost/filesystem.hpp>
+#include <boost/system/system_error.hpp>
 
-#include <freelan/os.hpp>
-#include <freelan/logger.hpp>
-#include <freelan/core.hpp>
+#include <unistd.h>
+#include <errno.h>
+#include <syslog.h>
 
-#ifndef WINDOWS
-/**
- * \brief Convert the specified log level to its syslog equivalent priority.
- * \param level The log level.
- * \return The syslog equivalent priority.
- */
-int log_level_to_syslog_priority(freelan::log_level level);
-#endif
+#include "../tools.hpp"
 
-/**
- * \brief Convert the specified log level to its string representation.
- * \param level The log level.
- * \return The string representation of level.
- */
-const char* log_level_to_string(freelan::log_level level);
+namespace posix
+{
+	void daemonize()
+	{
+		pid_t pid = ::fork();
 
-/**
- * \brief The certificate validation function.
- * \param script The script to call.
- * \param core The core instance.
- * \param cert The certificate.
- * \return The execution result of the specified script.
- */
-bool execute_certificate_validation_script(const boost::filesystem::path& script, freelan::core& core, freelan::security_configuration::cert_type cert);
+		if (pid < 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category(), "Cannot fork the current process.");
+		}
 
-#endif /* TOOLS_HPP */
+		if (pid > 0)
+		{
+			exit(EXIT_SUCCESS);
+		}
+
+		::openlog("freelan", LOG_PID, LOG_DAEMON);
+
+		pid_t sid = ::setsid();
+
+		if (sid < 0)
+		{
+			::syslog(LOG_ERR, "setsid():%u:%s", errno, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		if (::chdir("/") < 0)
+		{
+			::syslog(LOG_ERR, "chdir():%u:%s", errno, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		::close(STDIN_FILENO);
+		::close(STDOUT_FILENO);
+		::close(STDERR_FILENO);
+	}
+
+	void syslog(freelan::log_level level, const std::string& msg)
+	{
+		::syslog(log_level_to_syslog_priority(level), "%s", msg.c_str());
+	}
+}

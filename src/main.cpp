@@ -65,6 +65,8 @@
 
 #ifdef WINDOWS
 #include "win32/service.hpp"
+#else
+#include "posix/daemon.hpp"
 #endif
 
 #include "tools.hpp"
@@ -128,6 +130,9 @@ struct cli_configuration
 {
 	fl::configuration fl_configuration;
 	bool debug;
+#ifndef WINDOWS
+	bool foreground;
+#endif
 };
 
 std::vector<fs::path> get_configuration_files()
@@ -145,7 +150,7 @@ std::vector<fs::path> get_configuration_files()
 	return configuration_files;
 }
 
-void log_function(freelan::log_level level, const std::string& msg)
+void do_log(freelan::log_level level, const std::string& msg)
 {
 	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
 }
@@ -186,6 +191,14 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	visible_options.add(service_options);
 	all_options.add(service_options);
+#else
+	po::options_description daemon_options("Daemon");
+	daemon_options.add_options()
+	("foreground,f", "Do not run as a daemon.")
+	;
+
+	visible_options.add(daemon_options);
+	all_options.add(daemon_options);
 #endif
 
 	po::variables_map vm;
@@ -254,6 +267,8 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 		return false;
 	}
+#else
+	configuration.foreground = (vm.count("foreground") > 0);
 #endif
 
 	fs::path configuration_file;
@@ -339,9 +354,28 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 void run(const cli_configuration& configuration)
 {
+	boost::function<void (freelan::log_level, const std::string&)> log_func = &do_log;
+
+#ifndef WINDOWS
+	if (configuration.foreground)
+	{
+		std::cerr << "--foreground option specified: not running as a daemon." << std::endl;
+	}
+	else
+	{
+		std::cerr << "No --foreground option specified: forking to background." << std::endl;
+
+		posix::daemonize();
+
+		log_func = &posix::syslog;
+	}
+#endif
+
 	boost::asio::io_service io_service;
 
-	fl::core core(io_service, configuration.fl_configuration, fl::logger(&log_function, configuration.debug ? fl::LOG_DEBUG : fl::LOG_INFORMATION));
+	fl::logger logger(log_func, configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
+
+	fl::core core(io_service, configuration.fl_configuration, logger);
 
 	core.open();
 
@@ -351,18 +385,22 @@ void run(const cli_configuration& configuration)
 
 	lock.unlock();
 
+	logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
+
 	if (core.has_tap_adapter())
 	{
-		std::cout << "Using tap adapter: " << core.tap_adapter().name() << std::endl;
+		logger(fl::LL_INFORMATION) << "Using tap adapter: " << core.tap_adapter().name();
 	}
 	else
 	{
-		std::cout << "Configured not to use any tap adapter." << std::endl;
+		logger(fl::LL_INFORMATION) << "Configured not to use any tap adapter.";
 	}
 
-	std::cout << "Listening on: " << core.server().socket().local_endpoint() << std::endl;
+	logger(fl::LL_INFORMATION) << "Listening on: " << core.server().socket().local_endpoint();
 
 	io_service.run();
+
+	logger(fl::LL_INFORMATION) << "Execution stopped." << std::endl;
 
 	lock.lock();
 

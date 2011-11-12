@@ -46,6 +46,10 @@
 
 #include "tools.hpp"
 
+#ifndef WINDOWS
+#include <syslog.h>
+#endif
+
 #include <freelan/logger_stream.hpp>
 
 #include "system.hpp"
@@ -53,19 +57,41 @@
 namespace fs = boost::filesystem;
 namespace fl = freelan;
 
+#ifndef WINDOWS
+int log_level_to_syslog_priority(freelan::log_level level)
+{
+	switch (level)
+	{
+		case freelan::LL_DEBUG:
+			return LOG_DEBUG;
+		case freelan::LL_INFORMATION:
+			return LOG_INFO;
+		case freelan::LL_WARNING:
+			return LOG_WARNING;
+		case freelan::LL_ERROR:
+			return LOG_ERR;
+		case freelan::LL_FATAL:
+			return LOG_CRIT;
+	}
+
+	assert(false);
+	throw std::logic_error("Unsupported enumeration value");
+}
+#endif
+
 const char* log_level_to_string(freelan::log_level level)
 {
 	switch (level)
 	{
-		case freelan::LOG_DEBUG:
+		case freelan::LL_DEBUG:
 			return "DEBUG";
-		case freelan::LOG_INFORMATION:
+		case freelan::LL_INFORMATION:
 			return "INFORMATION";
-		case freelan::LOG_WARNING:
+		case freelan::LL_WARNING:
 			return "WARNING";
-		case freelan::LOG_ERROR:
+		case freelan::LL_ERROR:
 			return "ERROR";
-		case freelan::LOG_FATAL:
+		case freelan::LL_FATAL:
 			return "FATAL";
 	}
 
@@ -81,9 +107,9 @@ bool execute_certificate_validation_script(const fs::path& script, fl::core& cor
 	{
 		const fs::path filename = get_temporary_directory() / ("freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt");
 
-		if (core.logger().level() <= freelan::LOG_DEBUG)
+		if (core.logger().level() <= freelan::LL_DEBUG)
 		{
-			core.logger()(freelan::LOG_DEBUG) << "Writing temporary certificate file at: " << filename;
+			core.logger()(freelan::LL_DEBUG) << "Writing temporary certificate file at: " << filename;
 		}
 
 #ifdef WINDOWS
@@ -98,9 +124,9 @@ bool execute_certificate_validation_script(const fs::path& script, fl::core& cor
 
 		const int exit_status = execute(script, filename.c_str(), NULL);
 
-		if (core.logger().level() <= freelan::LOG_DEBUG)
+		if (core.logger().level() <= freelan::LL_DEBUG)
 		{
-			core.logger()(freelan::LOG_DEBUG) << script << " terminated execution with exit status " << exit_status ;
+			core.logger()(freelan::LL_DEBUG) << script << " terminated execution with exit status " << exit_status ;
 		}
 
 		fs::remove(filename);
@@ -109,7 +135,7 @@ bool execute_certificate_validation_script(const fs::path& script, fl::core& cor
 	}
 	catch (std::exception& ex)
 	{
-		core.logger()(freelan::LOG_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
+		core.logger()(freelan::LL_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
 
 		return false;
 	}

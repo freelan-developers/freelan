@@ -66,6 +66,8 @@ source_files = Glob('src/*.cpp')
 
 if sys.platform.startswith('win32'):
     source_files = source_files + Glob('src/win32/*.cpp')
+else:
+    source_files = source_files + Glob('src/posix/*.cpp')
 
 project = ProgramProject(name, major, minor, libraries, source_files = source_files)
 

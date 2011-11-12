@@ -39,44 +39,31 @@
  */
 
 /**
- * \file tools.hpp
+ * \file daemon.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Tools.
+ * \brief POSIX related daemon functions.
  */
 
-#ifndef TOOLS_HPP
-#define TOOLS_HPP
+#ifndef POSIX_DAEMON_HPP
+#define POSIX_DAEMON_HPP
 
-#include <boost/asio.hpp>
-#include <boost/filesystem.hpp>
+#include <string>
 
-#include <freelan/os.hpp>
 #include <freelan/logger.hpp>
-#include <freelan/core.hpp>
 
-#ifndef WINDOWS
-/**
- * \brief Convert the specified log level to its syslog equivalent priority.
- * \param level The log level.
- * \return The syslog equivalent priority.
- */
-int log_level_to_syslog_priority(freelan::log_level level);
-#endif
+namespace posix
+{
+	/**
+	 * \brief Turn the current process into a daemon.
+	 */
+	void daemonize();
 
-/**
- * \brief Convert the specified log level to its string representation.
- * \param level The log level.
- * \return The string representation of level.
- */
-const char* log_level_to_string(freelan::log_level level);
+	/**
+	 * \brief Log a message to syslog.
+	 * \param level The freelan level.
+	 * \param msg The message to log.
+	 */
+	void syslog(freelan::log_level level, const std::string& msg);
+}
 
-/**
- * \brief The certificate validation function.
- * \param script The script to call.
- * \param core The core instance.
- * \param cert The certificate.
- * \return The execution result of the specified script.
- */
-bool execute_certificate_validation_script(const boost::filesystem::path& script, freelan::core& core, freelan::security_configuration::cert_type cert);
-
-#endif /* TOOLS_HPP */
+#endif /* POSIX_DAEMON_HPP */
