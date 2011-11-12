@@ -58,11 +58,11 @@ namespace freelan
 	 */
 	enum log_level
 	{
-		LOG_DEBUG, /**< \brief The debug log level. */
-		LOG_INFORMATION, /**< \brief The information log level. */
-		LOG_WARNING, /**< \brief The warning log level. */
-		LOG_ERROR, /**< \brief The error log level. */
-		LOG_FATAL /**< \brief The fatal log level. */
+		LL_DEBUG, /**< \brief The debug log level. */
+		LL_INFORMATION, /**< \brief The information log level. */
+		LL_WARNING, /**< \brief The warning log level. */
+		LL_ERROR, /**< \brief The error log level. */
+		LL_FATAL /**< \brief The fatal log level. */
 	};
 
 	class logger_stream;
@@ -84,7 +84,7 @@ namespace freelan
 			 * \param callback The callback to use for logging.
 			 * \param level The desired log level.
 			 */
-			logger(log_callback_type callback = log_callback_type(0), log_level level = LOG_INFORMATION);
+			logger(log_callback_type callback = log_callback_type(0), log_level level = LL_INFORMATION);
 
 			/**
 			 * \brief Get the appropriate logger stream for the specified log level.

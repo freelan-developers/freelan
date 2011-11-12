@@ -106,7 +106,7 @@ namespace freelan
 	{
 		typedef boost::asio::ip::udp::resolver::query query;
 
-		m_logger(LOG_DEBUG) << "Core opening...";
+		m_logger(LL_DEBUG) << "Core opening...";
 
 		// FSCP
 		m_server.open(m_configuration.fscp.listen_on->resolve(m_resolver, m_configuration.fscp.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
@@ -155,7 +155,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot set IPv4 address: " << ex.what();
+					m_logger(LL_WARNING) << "Cannot set IPv4 address: " << ex.what();
 				}
 			}
 
@@ -171,7 +171,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot set IPv6 address: " << ex.what();
+					m_logger(LL_WARNING) << "Cannot set IPv6 address: " << ex.what();
 				}
 			}
 
@@ -216,7 +216,7 @@ namespace freelan
 			}
 		}
 
-		m_logger(LOG_DEBUG) << "Core opened.";
+		m_logger(LL_DEBUG) << "Core opened.";
 
 		if (m_open_callback)
 		{
@@ -243,7 +243,7 @@ namespace freelan
 
 	void core::do_close()
 	{
-		m_logger(LOG_DEBUG) << "Core closing...";
+		m_logger(LL_DEBUG) << "Core closing...";
 
 		m_dhcp_proxy.reset();
 		m_arp_proxy.reset();
@@ -265,7 +265,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot unset IPv6 address: " << ex.what();
+					m_logger(LL_WARNING) << "Cannot unset IPv6 address: " << ex.what();
 				}
 			}
 
@@ -281,7 +281,7 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LOG_WARNING) << "Cannot unset IPv4 address: " << ex.what();
+					m_logger(LL_WARNING) << "Cannot unset IPv4 address: " << ex.what();
 				}
 			}
 
@@ -292,7 +292,7 @@ namespace freelan
 
 		m_server.close();
 
-		m_logger(LOG_DEBUG) << "Core closed.";
+		m_logger(LL_DEBUG) << "Core closed.";
 	}
 
 	void core::async_greet(const ep_type& target)
@@ -302,7 +302,7 @@ namespace freelan
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
 	{
-		m_logger(LOG_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
+		m_logger(LL_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
 
 		if (default_accept)
 		{
@@ -318,21 +318,21 @@ namespace freelan
 	{
 		if (success)
 		{
-			m_logger(LOG_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << ".";
+			m_logger(LL_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << ".";
 
 			m_server.async_introduce_to(sender);
 		}
 		else
 		{
-			m_logger(LOG_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << ".";
+			m_logger(LL_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << ".";
 		}
 	}
 
 	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
 	{
-		if (m_logger.level() <= LOG_DEBUG)
+		if (m_logger.level() <= LL_DEBUG)
 		{
-			m_logger(LOG_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << ".";
+			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << ".";
 		}
 
 		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
@@ -346,7 +346,7 @@ namespace freelan
 
 	bool core::on_session_request(const ep_type& sender, bool default_accept)
 	{
-		m_logger(LOG_DEBUG) << "Received SESSION_REQUEST from " << sender << ".";
+		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << ".";
 
 		if (default_accept)
 		{
@@ -358,7 +358,7 @@ namespace freelan
 
 	void core::on_session_established(const ep_type& sender)
 	{
-		m_logger(LOG_INFORMATION) << "Session established with " << sender << ".";
+		m_logger(LL_INFORMATION) << "Session established with " << sender << ".";
 
 		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(boost::ref(m_server), sender);
 		m_endpoint_switch_port_map[sender] = port;
@@ -372,7 +372,7 @@ namespace freelan
 
 	void core::on_session_lost(const ep_type& sender)
 	{
-		m_logger(LOG_INFORMATION) << "Session with " << sender << " lost.";
+		m_logger(LL_INFORMATION) << "Session with " << sender << " lost.";
 
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
@@ -436,7 +436,7 @@ namespace freelan
 			// If the core is currently stopping, this kind of error is expected.
 			if (m_running)
 			{
-				m_logger(LOG_ERROR) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec;
+				m_logger(LL_ERROR) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec;
 
 				close();
 			}
@@ -449,14 +449,14 @@ namespace freelan
 		{
 			if (!m_server.has_session(*it))
 			{
-				m_logger(LOG_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*it) << "...";
+				m_logger(LL_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*it) << "...";
 
 				async_greet(*it);
 			}
 		}
 		else
 		{
-			m_logger(LOG_WARNING) << "Failed to resolve " << *ep << ".";
+			m_logger(LL_WARNING) << "Failed to resolve " << *ep << ".";
 		}
 	}
 
@@ -525,14 +525,14 @@ namespace freelan
 
 		cert_type cert = store_context.get_current_certificate();
 
-		if (m_logger.level() <= LOG_DEBUG)
+		if (m_logger.level() <= LL_DEBUG)
 		{
-			m_logger(LOG_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error");
+			m_logger(LL_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error");
 		}
 
 		if (!ok)
 		{
-			m_logger(LOG_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
+			m_logger(LL_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
 		}
 
 		return ok;
