@@ -1,0 +1,181 @@
+; ****************************************************************************
+; * Copyright (C) 2006-2009 FreeLAN project.                                 *
+; *  This program is free software; you can redistribute it and/or modify    *
+; *  it under the terms of the GNU General Public License version 2          *
+; *  as published by the Free Software Foundation.                           *
+; ****************************************************************************
+; * Original Copyright (C) 2002-2009 OpenVPN Technologies, Inc.              *
+; *  This program is free software; you can redistribute it and/or modify    *
+; *  it under the terms of the GNU General Public License version 2          *
+; *  as published by the Free Software Foundation.                           *
+; ****************************************************************************
+
+; INSTALL/REMOVE DRIVER
+;   tapinstall install OemWin2k.inf FLTAP0101
+;   tapinstall update OemWin2k.inf FLTAP0101
+;   tapinstall remove FLTAP0101
+
+;*********************************************************
+; Note to Developers:
+;
+; If you are bundling the TAP driver with your app,
+; you should try to rename it in such a way that it will
+; not collide with other instances of TAP defined
+; by other apps.  Multiple versions of the TAP-Win32
+; driver, each installed by different apps, can coexist
+; on the same machine if you follow these guidelines.
+;
+; (1) Rename all fltapXXXX instances in this file to
+;     something different (use at least 5 characters
+;     for this name!)
+; (2) Change TARGETNAME in SOURCES to match what you
+;     changed tapXXXX to.
+; (3) Rename all fltapXXXX in config-win32.h to match what you
+;     changed tapXXXX to.
+; (4) Rename all fltapXXXX in resource.rc to match what you
+;     changed tapXXXX to.
+; (5) Change TAP_COMPONENT_ID in defs.h to match what
+;     you changed fltapXXXX to.
+; (6) Change DeviceDescription and Provider strings.
+;
+;*********************************************************
+
+[Version]
+   Signature = "$Windows NT$"
+   CatalogFile = fltap0101.cat
+   ClassGUID = {4d36e972-e325-11ce-bfc1-08002be10318}
+   Provider = %Provider%
+   Class = Net
+
+; This version number should match the version
+; number given in SOURCES.
+   DriverVer=06/22/2009,9.00.00.6
+
+[Strings]
+   DeviceDescription = "FreeLAN TAP Adapter V1"
+   Provider = "FreeLAN TAP Provider V1"
+
+;----------------------------------------------------------------
+;                      Manufacturer + Product Section (Done)
+;----------------------------------------------------------------
+[Manufacturer]
+   %Provider% = fltap0101, NTamd64
+
+[fltap0101.NTamd64]
+   %DeviceDescription% = fltap0101.ndi, fltap0101
+
+;---------------------------------------------------------------
+;                             Driver Section (Done)
+;---------------------------------------------------------------
+
+;----------------- Characteristics ------------
+;    NCF_PHYSICAL = 0x04
+;    NCF_VIRTUAL = 0x01
+;    NCF_SOFTWARE_ENUMERATED = 0x02
+;    NCF_HIDDEN = 0x08
+;    NCF_NO_SERVICE = 0x10
+;    NCF_HAS_UI = 0x80
+;----------------- Characteristics ------------
+
+[fltap0101.ndi]
+   CopyFiles       = fltap0101.driver, fltap0101.files
+   AddReg          = fltap0101.reg
+   AddReg          = fltap0101.params.reg
+   Characteristics = 0x81
+
+[fltap0101.ndi.Services]
+   AddService = fltap0101,        2, fltap0101.service
+
+[fltap0101.reg]
+   HKR, Ndi,            Service,      0, "fltap0101"
+   HKR, Ndi\Interfaces, UpperRange,   0, "ndis5"
+   HKR, Ndi\Interfaces, LowerRange,   0, "ethernet"
+   HKR, ,               Manufacturer, 0, "%Provider%"
+   HKR, ,               ProductName,  0, "%DeviceDescription%"
+
+[fltap0101.params.reg]
+   HKR, Ndi\params\MTU,                  ParamDesc, 0, "MTU"
+   HKR, Ndi\params\MTU,                  Type,      0, "int"
+   HKR, Ndi\params\MTU,                  Default,   0, "1500"
+   HKR, Ndi\params\MTU,                  Optional,  0, "0"
+   HKR, Ndi\params\MTU,                  Min,       0, "100"
+   HKR, Ndi\params\MTU,                  Max,       0, "1500"
+   HKR, Ndi\params\MTU,                  Step,      0, "1"
+   HKR, Ndi\params\MediaStatus,          ParamDesc, 0, "Media Status"
+   HKR, Ndi\params\MediaStatus,          Type,      0, "enum"
+   HKR, Ndi\params\MediaStatus,          Default,   0, "0"
+   HKR, Ndi\params\MediaStatus,          Optional,  0, "0"
+   HKR, Ndi\params\MediaStatus\enum,     "0",       0, "Application Controlled"
+   HKR, Ndi\params\MediaStatus\enum,     "1",       0, "Always Connected"
+   HKR, Ndi\params\MAC,                  ParamDesc, 0, "MAC Address"
+   HKR, Ndi\params\MAC,                  Type,      0, "edit"
+   HKR, Ndi\params\MAC,                  Optional,  0, "1"
+   HKR, Ndi\params\AllowNonAdmin,        ParamDesc, 0, "Non-Admin Access"
+   HKR, Ndi\params\AllowNonAdmin,        Type,      0, "enum"
+   HKR, Ndi\params\AllowNonAdmin,        Default,   0, "1"
+   HKR, Ndi\params\AllowNonAdmin,        Optional,  0, "0"
+   HKR, Ndi\params\AllowNonAdmin\enum,   "0",       0, "Not Allowed"
+   HKR, Ndi\params\AllowNonAdmin\enum,   "1",       0, "Allowed"
+
+;----------------------------------------------------------------
+;                             Service Section
+;----------------------------------------------------------------
+
+;---------- Service Type -------------
+;    SERVICE_KERNEL_DRIVER     = 0x01
+;    SERVICE_WIN32_OWN_PROCESS = 0x10
+;---------- Service Type -------------
+
+;---------- Start Mode ---------------
+;    SERVICE_BOOT_START   = 0x0
+;    SERVICE_SYSTEM_START = 0x1
+;    SERVICE_AUTO_START   = 0x2
+;    SERVICE_DEMAND_START = 0x3
+;    SERVICE_DISABLED     = 0x4
+;---------- Start Mode ---------------
+
+[fltap0101.service]
+   DisplayName = %DeviceDescription%
+   ServiceType = 1
+   StartType = 3
+   ErrorControl = 1
+   LoadOrderGroup = NDIS
+   ServiceBinary = %12%\fltap0101.sys
+
+;-----------------------------------------------------------------
+;                                File Installation
+;-----------------------------------------------------------------
+
+;----------------- Copy Flags ------------
+;    COPYFLG_NOSKIP = 0x02
+;    COPYFLG_NOVERSIONCHECK = 0x04
+;----------------- Copy Flags ------------
+
+; SourceDisksNames
+; diskid = description[, [tagfile] [, <unused>, subdir]]
+; 1 = "Intel Driver Disk 1",e100bex.sys,,
+
+[SourceDisksNames]
+   1 = %DeviceDescription%, fltap0101.sys
+
+; SourceDisksFiles
+; filename_on_source = diskID[, [subdir][, size]]
+; e100bex.sys = 1,, ; on distribution disk 1
+
+[SourceDisksFiles]
+fltap0101.sys = 1
+
+[DestinationDirs]
+   fltap0101.files  = 11
+   fltap0101.driver = 12
+
+[fltap0101.files]
+;   TapPanel.cpl,,,6   ; COPYFLG_NOSKIP | COPYFLG_NOVERSIONCHECK
+;   cipsrvr.exe,,,6     ; COPYFLG_NOSKIP | COPYFLG_NOVERSIONCHECK
+
+[fltap0101.driver]
+   fltap0101.sys,,,6     ; COPYFLG_NOSKIP | COPYFLG_NOVERSIONCHECK
+
+;---------------------------------------------------------------
+;                                      End
+;---------------------------------------------------------------
