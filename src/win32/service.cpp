@@ -355,17 +355,14 @@ namespace win32
 			configuration_file = execution_root_directory / "config" / "freelan.cfg";
 		}
 
-		if (!fs::exists(configuration_file))
+		fs::basic_ifstream<char> ifs(configuration_file);
+
+		if (!ifs)
 		{
 			throw std::runtime_error("Unable to open the specified configuration file: " + configuration_file.string());
 		}
 
-		fs::basic_ifstream<char> ifs(configuration_file);
-
-		if (ifs)
-		{
-			po::store(po::parse_config_file(ifs, configuration_options, true), vm);
-		}
+		po::store(po::parse_config_file(ifs, configuration_options, true), vm);
 
 		po::notify(vm);
 
