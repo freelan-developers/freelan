@@ -3,7 +3,11 @@ libasiotap
 
 libasiotap provides a portable C++ TAP adapter extension for the Boost::ASIO library.
 
-It is mainly based on [boost::asio](http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio.html).
+It is mainly based on [boost::asio](http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio.html).
+
+The library can deal with any TAP adapter device that has the same interface as OpenVPN's one (commonly called "tap0901").
+
+The source code for such a TAP adapter as well as the source code for a tool to install/remove a TAP adapter is provided.
 
 Licensing
 ---------
