@@ -86,6 +86,22 @@ boost::program_options::options_description get_switch_options();
 void setup_configuration(freelan::configuration& configuration, const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
 
 /**
+ * \brief Get the tap adapter up script.
+ * \param root The root directory for file operations.
+ * \param vm The variables map.
+ * \return The tap adapter up script.
+ */
+boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
+
+/**
+ * \brief Get the tap adapter down script.
+ * \param root The root directory for file operations.
+ * \param vm The variables map.
+ * \return The tap adapter down script.
+ */
+boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
+
+/**
  * \brief Get the certificate validation script.
  * \param root The root directory for file operations.
  * \param vm The variables map.

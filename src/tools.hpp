@@ -54,6 +54,8 @@
 #include <freelan/logger.hpp>
 #include <freelan/core.hpp>
 
+#include <asiotap/tap_adapter.hpp>
+
 #ifndef WINDOWS
 /**
  * \brief Convert the specified log level to its syslog equivalent priority.
@@ -69,6 +71,20 @@ int log_level_to_syslog_priority(freelan::log_level level);
  * \return The string representation of level.
  */
 const char* log_level_to_string(freelan::log_level level);
+
+/**
+ * \brief The tap adapter up function.
+ * \param script The script to call.
+ * \param tap_adapter The tap_adapter instance.
+ */
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter);
+
+/**
+ * \brief The tap adapter down function.
+ * \param script The script to call.
+ * \param tap_adapter The tap_adapter instance.
+ */
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The certificate validation function.

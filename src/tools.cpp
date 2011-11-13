@@ -99,6 +99,16 @@ const char* log_level_to_string(freelan::log_level level)
 	throw std::logic_error("Unsupported enumeration value");
 }
 
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter)
+{
+	execute(script, tap_adapter.name().c_str(), NULL);
+}
+
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter)
+{
+	execute(script, tap_adapter.name().c_str(), NULL);
+}
+
 bool execute_certificate_validation_script(const fs::path& script, fl::core& core, fl::security_configuration::cert_type cert)
 {
 	static unsigned int counter = 0;

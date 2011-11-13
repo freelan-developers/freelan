@@ -161,6 +161,8 @@ po::options_description get_tap_adapter_options()
 	("tap_adapter.dhcp_proxy_enabled", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
 	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
 	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
+	("tap_adapter.up_script", po::value<std::string>()->default_value(""), "The tap adapter up script.")
+	("tap_adapter.down_script", po::value<std::string>()->default_value(""), "The tap adapter down script.")
 	;
 
 	return result;
@@ -241,6 +243,20 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	// Switch options
 	configuration.switch_.routing_method = to_routing_method(vm["switch.routing_method"].as<std::string>());
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
+}
+
+boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
+{
+	fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<std::string>();
+
+	return tap_adapter_up_script_file.empty() ? tap_adapter_up_script_file : fs::absolute(tap_adapter_up_script_file, root);
+}
+
+boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
+{
+	fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<std::string>();
+
+	return tap_adapter_down_script_file.empty() ? tap_adapter_down_script_file : fs::absolute(tap_adapter_down_script_file, root);
 }
 
 boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
