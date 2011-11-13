@@ -57,6 +57,7 @@
 #include <fscp/server.hpp>
 #include <fscp/identity_store.hpp>
 
+#include <asiotap/tap_adapter.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
 
 #include "endpoint.hpp"
@@ -238,6 +239,26 @@ namespace freelan
 		 * \brief The DHCP server IPv6 address.
 		 */
 		boost::optional<ipv6_address_prefix_length_type> dhcp_server_ipv6_address_prefix_length;
+
+		/**
+		 * \brief The up callback type.
+		 */
+		typedef boost::function<void (const asiotap::tap_adapter&)> up_callback_type;
+
+		/**
+		 * \brief The down callback type.
+		 */
+		typedef up_callback_type down_callback_type;
+
+		/**
+		 * \brief The up callback.
+		 */
+		up_callback_type up_callback;
+
+		/**
+		 * \brief The down callback.
+		 */
+		down_callback_type down_callback;
 	};
 
 	/**

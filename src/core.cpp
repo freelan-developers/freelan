@@ -214,6 +214,11 @@ namespace freelan
 			{
 				m_dhcp_proxy.reset();
 			}
+
+			if (m_configuration.tap_adapter.up_callback)
+			{
+				m_configuration.tap_adapter.up_callback(*m_tap_adapter);
+			}
 		}
 
 		m_logger(LL_DEBUG) << "Core opened.";
@@ -250,6 +255,11 @@ namespace freelan
 
 		if (m_tap_adapter)
 		{
+			if (m_configuration.tap_adapter.down_callback)
+			{
+				m_configuration.tap_adapter.down_callback(*m_tap_adapter);
+			}
+
 			m_tap_adapter->cancel();
 			m_tap_adapter->set_connected_state(false);
 

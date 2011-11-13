@@ -73,7 +73,9 @@ namespace freelan
 		arp_proxy_fake_ethernet_address(),
 		dhcp_proxy_enabled(false),
 		dhcp_server_ipv4_address_prefix_length(),
-		dhcp_server_ipv6_address_prefix_length()
+		dhcp_server_ipv6_address_prefix_length(),
+		up_callback(0),
+		down_callback(0)
 	{
 	}
 
