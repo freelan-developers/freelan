@@ -105,7 +105,7 @@ namespace win32
 	fl::logger create_logger(const service_configuration& configuration);
 	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg);
 	fl::configuration get_freelan_configuration(const service_configuration& configuration);
-	DWORD handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
+	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
 	VOID WINAPI service_main(DWORD argc, LPTSTR* argv);
 
 	/* Exposed functions definitions */
@@ -392,7 +392,7 @@ namespace win32
 		return fl_configuration;
 	}
 
-	DWORD handler_ex(DWORD control, DWORD event_type, void* event_data, void* context)
+	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context)
 	{
 		(void)control;
 		(void)event_type;
