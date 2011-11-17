@@ -42,6 +42,9 @@ else:
     if sys.platform.startswith('linux2'):
         libraries.append('rt')
 
+    if sys.platform.startswith('darwin'):
+        libraries.append('crypto')
+
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
 env.Indent(project.files)
