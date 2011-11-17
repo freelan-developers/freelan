@@ -76,7 +76,8 @@ namespace
 
 		const std::string::const_iterator save_begin = begin;
 
-		for (; (begin != end) && is_ip_address_character<IpAddressType>(*begin); ++begin);
+		for (; (begin != end) && is_ip_address_character<IpAddressType>(*begin); ++begin)
+			;
 
 		try
 		{
@@ -107,7 +108,8 @@ namespace
 
 		const std::string::const_iterator save_begin = begin;
 
-		for (; (begin != end) && std::isdigit(*begin); ++begin);
+		for (; (begin != end) && std::isdigit(*begin); ++begin)
+			;
 
 		try
 		{
@@ -183,7 +185,8 @@ namespace
 		// Hostname labels are 63 characters long at most
 		const size_t hostname_label_max_size = 63;
 
-		for (; (begin != end) && is_hostname_label_character(*begin); ++begin);
+		for (; (begin != end) && is_hostname_label_character(*begin); ++begin)
+			;
 
 		if (static_cast<size_t>(std::distance(save_begin, begin)) > hostname_label_max_size)
 		{
@@ -261,7 +264,8 @@ namespace
 
 		const std::string::const_iterator save_begin = begin;
 
-		for (; (begin != end) && std::isalnum(*begin); ++begin);
+		for (; (begin != end) && std::isalnum(*begin); ++begin)
+			;
 
 		val.assign(save_begin, begin);
 
