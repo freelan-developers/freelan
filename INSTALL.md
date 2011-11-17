@@ -55,6 +55,13 @@ This will build and install all Boost static libraries, in both release and debu
 
 Whatever the target platform, you may of course adapt the `--prefix` to whatever you like.
 
+### Mac OS X
+
+Open a terminal and follow all instructions to compile universal libraries
+
+> ./bootstrap.sh
+> sudo ./b2 toolset=darwin threading=multi architecture=combined address-model=32_64 --prefix=/usr/local install
+
 OpenSSL
 -------
 
@@ -118,7 +125,7 @@ To build in static mode.
 
 ### Mac OS X
 
-Open a terminal and follow all instructions to compile a universal libraries (32-bit and 64-bit)
+Open a terminal and follow all instructions to compile universal libraries
 
 > ./Configure darwin-i386-cc --prefix=/usr/local shared
 > make
