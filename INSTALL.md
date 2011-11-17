@@ -116,6 +116,31 @@ To build in shared mode or:
 
 To build in static mode.
 
+### Mac OS X
+
+Open a terminal and follow all instructions to compile a universal libraries (32-bit and 64-bit)
+
+> ./Configure darwin-i386-cc --prefix=/usr/local shared
+> make
+> make install
+
+> mkdir 32
+> cp /usr/local/lib/libssl.* /usr/local/lib/libcrypto.* 32
+
+> make clean && rm *.a *.dylib
+> ./Configure darwin64-x86_64-cc --prefix=/usr/local shared
+> make
+> sudo make install 
+
+> mkdir 64
+> cp /usr/local/lib/libssl.* /usr/local/lib/libcrypto.* 64
+
+> lipo -create 32/libcrypto.a 64/libcrypto.a -output libcrypto.a
+> lipo -create 32/libssl.a 64/libssl.a -output libssl.a
+> lipo -create 32/libcrypto.1.0.0.dylib 64/libcrypto.1.0.0.dylib -output libcrypto.1.0.0.dylib
+> lipo -create 32/libssl.1.0.0.dylib 64/libssl.1.0.0.dylib -output libssl.1.0.0.dylib
+> sudo mv libcrypto.a libssl.a libcrypto.1.0.0.dylib libssl.1.0.0.dylib /usr/local/lib/
+
 libiconv
 --------
 
