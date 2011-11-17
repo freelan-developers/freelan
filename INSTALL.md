@@ -55,6 +55,13 @@ This will build and install all Boost static libraries, in both release and debu
 
 Whatever the target platform, you may of course adapt the `--prefix` to whatever you like.
 
+### Mac OS X
+
+Open a terminal and follow all instructions to compile universal libraries
+
+> ./bootstrap.sh
+> sudo ./b2 toolset=darwin threading=multi architecture=combined address-model=32_64 --prefix=/usr/local install
+
 OpenSSL
 -------
 
@@ -115,6 +122,31 @@ To build in shared mode or:
 > nmake -f ms\nt.mak install
 
 To build in static mode.
+
+### Mac OS X
+
+Open a terminal and follow all instructions to compile universal libraries
+
+> ./Configure darwin-i386-cc --prefix=/usr/local shared
+> make
+> make install
+
+> mkdir 32
+> cp /usr/local/lib/libssl.* /usr/local/lib/libcrypto.* 32
+
+> make clean && rm *.a *.dylib
+> ./Configure darwin64-x86_64-cc --prefix=/usr/local shared
+> make
+> sudo make install 
+
+> mkdir 64
+> cp /usr/local/lib/libssl.* /usr/local/lib/libcrypto.* 64
+
+> lipo -create 32/libcrypto.a 64/libcrypto.a -output libcrypto.a
+> lipo -create 32/libssl.a 64/libssl.a -output libssl.a
+> lipo -create 32/libcrypto.1.0.0.dylib 64/libcrypto.1.0.0.dylib -output libcrypto.1.0.0.dylib
+> lipo -create 32/libssl.1.0.0.dylib 64/libssl.1.0.0.dylib -output libssl.1.0.0.dylib
+> sudo mv libcrypto.a libssl.a libcrypto.1.0.0.dylib libssl.1.0.0.dylib /usr/local/lib/
 
 libiconv
 --------
