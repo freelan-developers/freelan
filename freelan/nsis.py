@@ -22,7 +22,7 @@ def parse_include(line):
 
     pattern = "!include(?:\s+)(?:[\"']?([^\"']*)[\"']?)"
 
-    match = re.match(pattern, line)
+    match = re.match(pattern, line, re.IGNORECASE)
 
     if match:
         return match.group(1)
@@ -32,7 +32,7 @@ def parse_outfile(line):
 
     pattern = "outFile(?:\s+)(?:[\"']?([^\"']*)[\"']?)"
 
-    match = re.match(pattern, line)
+    match = re.match(pattern, line, re.IGNORECASE)
 
     if match:
         return match.group(1)
