@@ -30,6 +30,8 @@ ArchitecturesInstallIn64BitMode=x64
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
 Name: french; MessagesFile: compiler:Languages\French.isl
+Name: spanish; MessagesFile: compiler:Languages\Spanish.isl
+Name: german; MessagesFile: compiler:Languages\German.isl
 
 [Files]
 Source: ..\..\freelan\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion
