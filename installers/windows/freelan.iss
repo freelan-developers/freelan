@@ -36,7 +36,7 @@ Name: {app}\log; Flags: deleteafterinstall; Components: binaries
 
 [Tasks]
 Name: install_service; Description: Register the Windows service.; Flags: checkedonce; Components: binaries; GroupDescription: Windows Service
-Name: install_tap; Description: Install a tap adapter on this system.; Flags: checkedonce; Components: tap_adapter and binaries; GroupDescription: Tap adapter
+Name: install_tap; Description: Install a tap adapter on this system.; Flags: checkedonce; Components: tap_adapter; GroupDescription: Tap adapter
 
 [Components]
 Name: binaries; Description: Install the {#PRODUCT_NAME} binaries.; Types: custom compact full
@@ -48,3 +48,9 @@ Name: {group}\{cm:UninstallProgram,{#PRODUCT_NAME}}; Filename: {uninstallexe}
 
 [UninstallDelete]
 Type: files; Name: {app}\log\freelan.log
+
+[Run]
+Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service
+
+[UninstallRun]
+Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service
