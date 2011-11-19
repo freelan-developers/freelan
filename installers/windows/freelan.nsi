@@ -7,6 +7,18 @@ outFile "${NAME}-${VERSION}-${ARCH}-install.exe"
 showInstDetails show
 showUnInstDetails show
 
+; To enable ${If}-like constructs
+!include "LogicLib.nsh"
+
+Function .onInit
+; To pick the appropriate installation folder
+${If} ${ARCH} == "amd64"
+StrCpy $INSTDIR "$PROGRAMFILES64\FreeLAN"
+${Else}
+StrCpy $INSTDIR "$PROGRAMFILES\FreeLAN"
+${EndIf}
+FunctionEnd
+
 ; Enables Modern User Interface 2
 !include "MUI2.nsh"
 
@@ -61,6 +73,7 @@ setOverwrite ifnewer
 setOutPath $INSTDIR\config
 file ..\..\freelan\config\freelan.cfg
 sectionEnd
+langString DESC_section_Sample_configuration ${LANG_ENGLISH} "A sample configuration file."
 
 section "Uninstall"
 delete $INSTDIR\uninstall.exe
@@ -69,3 +82,9 @@ delete $INSTDIR\bin\freelan.exe
 rmDir $INSTDIR\config
 rmDir $INSTDIR\bin
 sectionEnd
+
+# MUI2 components descriptions
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${section_Binaries} $(DESC_section_Binaries)
+!insertmacro MUI_DESCRIPTION_TEXT ${section_Sample_configuration} $(DESC_section_Sample_configuration)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
