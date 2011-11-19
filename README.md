@@ -1,7 +1,7 @@
 freelan-all
 ===========
 
-A super-project that includes all FreeLAN related projects.
+A super-project that includes all FreeLAN related projects and provides scripts to generate installers.
 
 Libraries
 ---------
@@ -14,6 +14,11 @@ It contains the following projects:
  - [libasiotap](https://github.com/ereOn/libasiotap) - A C++ library to control virtual network interfaces also known as "TAP adapters".
  - [libfreelan](https://github.com/ereOn/libfreelan) - The FreeLAN C++ library.
  - [freelan](https://github.com/ereOn/freelan) - The FreeLAN binary.
+
+Installers
+----------
+
+See the `README.md` file into the `installers` directory.
 
 Does the project have a website ?
 ---------------------------------
