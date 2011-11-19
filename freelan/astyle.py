@@ -15,7 +15,7 @@ def generate(env):
         emitter = astyle_emitter
     )
 
-    env.Append(BUILDERS = { 'AStyle': astyle_builder, })
+    env.Append(BUILDERS = {'AStyle': astyle_builder, })
 
 def exists(env):
     return env.Detect("astyle")
