@@ -50,7 +50,7 @@ Name: {group}\{cm:UninstallProgram,{#PRODUCT_NAME}}; Filename: {uninstallexe}
 Type: files; Name: {app}\log\freelan.log
 
 [Run]
-Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service
+Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service; Flags: runhidden
 
 [UninstallRun]
-Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service
+Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service; Flags: runhidden
