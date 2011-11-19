@@ -31,6 +31,9 @@ Name: german; MessagesFile: compiler:Languages\German.isl
 Source: ..\..\freelan\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
 Source: ..\..\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
 
+[Dirs]
+Name: {app}\log; Flags: deleteafterinstall; Components: binaries
+
 [Tasks]
 Name: install_service; Description: Register the Windows service.; Flags: checkedonce; Components: binaries; GroupDescription: Windows Service
 Name: install_tap; Description: Install a tap adapter on this system.; Flags: checkedonce; Components: tap_adapter and binaries; GroupDescription: Tap adapter
@@ -42,3 +45,6 @@ Name: tap_adapter; Description: Install the tap adapter driver and setup scripts
 
 [Icons]
 Name: {group}\{cm:UninstallProgram,{#PRODUCT_NAME}}; Filename: {uninstallexe}
+
+[UninstallDelete]
+Type: files; Name: {app}\log\freelan.log
