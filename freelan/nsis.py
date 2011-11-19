@@ -47,7 +47,7 @@ def nsis_scanner(node, env, path):
 
         if include:
             for p in (os.getcwd(), ) + path:
-                f = os.path.join(p, include)
+                f = os.path.join(str(p), include)
                 if os.path.isfile(f):
                     include_file = env.File(f)
                     result.append(include_file)
@@ -66,7 +66,7 @@ def nsis_generator(source, target, env, for_signature):
 
     result = '%s %s %s "/XOutFile %s" -- %s' % \
             (
-                env['MAKENSIS'],
+                env['NSIS'],
                 ' '.join(env['NSIS_FLAGS']),
                 ' '.join(['"/D%s=%s"' % (x[0], x[1]) for x in env['NSIS_DEFINES'].items()]),
                 target[0],
@@ -76,7 +76,8 @@ def nsis_generator(source, target, env, for_signature):
     return result
 
 def generate(env):
-    env.Append(MAKENSIS = 'makensis')
+    env.Append(NSIS = 'makensis')
+    env.Append(NSIS_PATH = [])
     env.Append(NSIS_FLAGS = []);
     env.Append(NSIS_DEFINES = {});
 
@@ -84,7 +85,8 @@ def generate(env):
 
     env.Append(SCANNERS = SCons.Scanner.Scanner(
         function = nsis_scanner,
-        skeys = ['.nsi', '.nsh']
+        skeys = ['.nsi', '.nsh'],
+        path_function = lambda env, node, targets, arg: SCons.Scanner.FindPathDirs('NSIS_PATH')(env, node, targets, arg) + (os.path.join(os.path.dirname(env.WhereIs(env['NSIS'])), 'Include'), )
     ))
 
     import SCons.Builder
@@ -99,4 +101,4 @@ def generate(env):
     env.Append(BUILDERS = {'NSIS': nsis_builder})
 
 def exists(env):
-    return env.Detect(env['MAKENSIS'])
+    return env.Detect(env['NSIS'])
