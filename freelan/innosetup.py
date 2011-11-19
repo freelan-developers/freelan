@@ -36,13 +36,50 @@ def get_config(source, env):
 
     return config
 
+def parse_file(line):
+    """Check if the specified line contains an Source: directive"""
+
+    pattern = r'Source(?:\s)*:\s*([^;]+)(?:\s)*(?:;|$)'
+
+    match = re.match(pattern, line, re.IGNORECASE)
+
+    if match:
+        return match.group(1)
+
+def get_sections(lines):
+    """Get all the sections and the lines they contain."""
+
+    result = {}
+    current_section = None
+
+    for line in lines:
+        m = re.match(r'\[(\w+)\]', line)
+        if m:
+            current_section = m.group(1)
+            result[current_section] = []
+        elif current_section:
+            result[current_section].append(line)
+
+    return result
+
+def get_files(source, env):
+    """Get the list of referenced files from the specified source."""
+
+    sections = get_sections(replace_defines(uncomment(source.get_contents()), env['ISCC_DEFINES']).split('\n'))
+
+    result = []
+
+    for line in sections.get('Files', []):
+        f = parse_file(line)
+        if f:
+            result.append(env.File(f))
+
+    return result
+
 def innosetup_scanner(node, env, path):
     """The scanner"""
 
-    config = get_config(node, env)
-
-    result = []
-    return result
+    return get_files(node, env)
 
 def innosetup_emitter(source, target, env):
     """The emitter"""
