@@ -1,6 +1,11 @@
+; General defines
 #define PRODUCT_NAME "FreeLAN"
 #define AUTHOR "Julien Kauffmann"
 #define URL "http://www.freelan.org"
+
+; Tap adapter defines
+#define TAP "tap0901"
+#define TAPINF "OemWin2k"
 
 [Setup]
 AppId={{3AE669E7-36C2-48DF-985B-6037F9AF69A8}
@@ -30,6 +35,10 @@ Name: german; MessagesFile: compiler:Languages\German.isl
 [Files]
 Source: ..\..\freelan\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
 Source: ..\..\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
+Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
+Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
+Source: files\{#ARCH}\{#TAP}.sys; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
+Source: files\{#ARCH}\tap-setup.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: tap_adapter
 
 [Dirs]
 Name: {app}\log; Flags: deleteafterinstall; Components: binaries
@@ -50,7 +59,9 @@ Name: {group}\{cm:UninstallProgram,{#PRODUCT_NAME}}; Filename: {uninstallexe}
 Type: files; Name: {app}\log\freelan.log
 
 [Run]
+Filename: {app}\bin\tap-setup.exe; Parameters "install" "{app}\driver\{#TAPINF}.inf" "{#TAP}"; StatusMsg: "Installing the tap adapter..."; Tasks: install_tap
 Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service; Flags: runhidden
 
 [UninstallRun]
 Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service; Flags: runhidden
+Filename: {app}\bin\tap-setup.exe; Parameters "remove" "{#TAP}"; StatusMsg: "Uninstalling all tap adapters..."; Tasks: install_tap
