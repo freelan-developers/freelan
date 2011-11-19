@@ -49,10 +49,11 @@ def innosetup_generator(source, target, env, for_signature):
         else:
             return '"/d%s"' % item[0]
 
-    result = '%s %s %s "/o%s" "/f%s" %s' % \
+    result = '%s %s %s %s "/o%s" "/f%s" %s' % \
             (
                 env['ISCC'],
                 ' '.join(env['ISCC_FLAGS']),
+                ' '.join('"/i%s"' % x for x in env['ISCC_PATH']),
                 ' '.join([to_define_option(x) for x in env['ISCC_DEFINES'].items()]),
                 os.path.dirname(str(target[0])),
                 os.path.splitext(os.path.basename(str(target[0])))[0],
