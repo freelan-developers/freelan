@@ -12,4 +12,10 @@ from freelan.build_tools import Environment
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-installer = env.NSIS('%s-%s.%s-%s-install.exe' % (name, major, minor, env.arch), 'freelan.nsi')
+defines = {
+    'NAME': name,
+    'VERSION': major + '.' + minor,
+    'ARCH': env.arch
+}
+
+installer = env.NSIS(source = 'freelan.nsi', NSIS_DEFINES = defines)
