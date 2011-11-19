@@ -48,7 +48,6 @@ def nsis_scanner(node, env, path):
         if include:
             for p in (os.getcwd(), ) + path:
                 f = os.path.join(p, include)
-                print 'file: ' + f
                 if os.path.isfile(f):
                     include_file = env.File(f)
                     result.append(include_file)
