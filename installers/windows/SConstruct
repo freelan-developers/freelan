@@ -15,7 +15,6 @@ env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
 defines = {
     'NAME': name,
-    'PRODUCT_NAME': product_name,
     'VERSION': major + '.' + minor,
     'ARCH': env.arch
 }
