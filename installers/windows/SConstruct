@@ -1,6 +1,7 @@
 """The SConstruct file"""
 
 name = 'freelan'
+product_name = 'FreeLAN'
 major = '1'
 minor = '0'
 
@@ -14,8 +15,9 @@ env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
 defines = {
     'NAME': name,
+    'PRODUCT_NAME': product_name,
     'VERSION': major + '.' + minor,
     'ARCH': env.arch
 }
 
-installer = env.NSIS(source = 'freelan.nsi', NSIS_DEFINES = defines)
+installer = env.INNOSetup(source = 'freelan.iss', ISCC_DEFINES = defines)
