@@ -25,10 +25,21 @@ def replace_defines(text, defines):
 
     return text
 
+def get_config(source, env):
+    """Get a configuration from the specified source."""
+
+    import ConfigParser
+    import StringIO
+
+    config = ConfigParser.ConfigParser()
+    config.readfp(StringIO.StringIO(replace_defines(source.get_contents(), env['ISCC_DEFINES'])))
+
+    return config
+
 def innosetup_scanner(node, env, path):
     """The scanner"""
 
-    content = replace_defines(node.get_contents(), env['ISCC_DEFINES'])
+    config = get_config(node, env)
 
     result = []
     return result
@@ -36,7 +47,13 @@ def innosetup_scanner(node, env, path):
 def innosetup_emitter(source, target, env):
     """The emitter"""
 
-    content = replace_defines(source[0].get_contents(), env['ISCC_DEFINES'])
+    config = get_config(source[0], env)
+
+    output_dir = config.get('Setup', 'OutputDir')
+    output_base_filename = config.get('Setup', 'OutputBaseFilename')
+
+    if output_dir and output_base_filename:
+        target = os.path.join(output_dir, output_base_filename + '.exe')
 
     return (target, source)
 
