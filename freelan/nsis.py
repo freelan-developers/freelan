@@ -1,6 +1,7 @@
 """A NSIS builder for SCons"""
 
 import re
+import os
 
 def uncomment(text):
     """Remove all NSIS comments from the specified text"""
@@ -19,7 +20,7 @@ def uncomment(text):
 def parse_include(line):
     """Check if the specified line contains an !include directive"""
 
-    pattern = "!include(?:\s+)(?:[\"']?([\w.]*)[\"']?)"
+    pattern = "!include(?:\s+)(?:[\"']?([\w./\\\\]*)[\"']?)"
 
     match = re.match(pattern, line)
 
@@ -34,7 +35,7 @@ def replace_defines(text, defines):
 
     return text
 
-def nsis_scanner(node, env, path, source_dir = None):
+def nsis_scanner(node, env, path):
     """The scanner"""
 
     content = replace_defines(node.get_contents(), env['NSIS_DEFINES'])
@@ -44,7 +45,15 @@ def nsis_scanner(node, env, path, source_dir = None):
     for line in uncomment(content).split('\n'):
         include = parse_include(line)
 
-        if include: result.append(env.File(include))
+        if include:
+            for p in (os.getcwd(), ) + path:
+                f = os.path.join(p, include)
+                print 'file: ' + f
+                if os.path.isfile(f):
+                    include_file = env.File(f)
+                    result.append(include_file)
+                    result += nsis_scanner(include_file, env, path)
+                    break
 
     return result
 
@@ -56,7 +65,6 @@ def nsis_emitter(source, target, env):
 def nsis_generator(source, target, env, for_signature):
     """The generator"""
 
-    return ''
     result = '%s %s %s "/XOutFile %s" -- %s' % \
             (
                 env['MAKENSIS'],
