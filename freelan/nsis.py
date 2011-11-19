@@ -20,7 +20,17 @@ def uncomment(text):
 def parse_include(line):
     """Check if the specified line contains an !include directive"""
 
-    pattern = "!include(?:\s+)(?:[\"']?([\w./\\\\]*)[\"']?)"
+    pattern = "!include(?:\s+)(?:[\"']?([^\"']*)[\"']?)"
+
+    match = re.match(pattern, line)
+
+    if match:
+        return match.group(1)
+
+def parse_outfile(line):
+    """Check if the specified line contains an outFile directive"""
+
+    pattern = "outFile(?:\s+)(?:[\"']?([^\"']*)[\"']?)"
 
     match = re.match(pattern, line)
 
@@ -58,6 +68,14 @@ def nsis_scanner(node, env, path):
 
 def nsis_emitter(source, target, env):
     """The emitter"""
+
+    content = replace_defines(source[0].get_contents(), env['NSIS_DEFINES'])
+
+    for line in uncomment(content).split('\n'):
+        outfile = parse_outfile(line)
+
+        if outfile:
+            target = [outfile]
 
     return (target, source)
 
