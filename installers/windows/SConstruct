@@ -1,0 +1,15 @@
+"""The SConstruct file"""
+
+name = 'freelan'
+major = '1'
+minor = '0'
+
+# You should not need to modify anything below this line
+
+import os
+
+from freelan.build_tools import Environment
+
+env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
+
+installer = env.NSIS('test', 'freelan.nsi')
