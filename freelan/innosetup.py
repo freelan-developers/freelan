@@ -17,13 +17,35 @@ def uncomment(text):
 
     return re.sub(re.compile(pattern, re.DOTALL | re.MULTILINE), replacer, text)
 
+def parse_define(line):
+    """Check if the specified line contains an #define directive"""
+
+    pattern = r'#(?:\s)*define\s*([\w_]+)(?:\s)*["\']?(.*)["\']'
+
+    match = re.match(pattern, line, re.IGNORECASE)
+
+    if match:
+        return (match.group(1), match.group(2))
+
 def replace_defines(text, defines):
     """Replace defines in the specified text."""
 
-    for define in defines.items():
-        text = text.replace('{#%s}' % define[0], define[1])
+    defines = defines.copy()
+    lines = text.split('\n')
+    result = []
 
-    return text
+    for line in lines:
+        define = parse_define(line)
+
+        if (define):
+            defines.setdefault(define[0], define[1])
+
+        for define in defines.items():
+            line = line.replace('{#%s}' % define[0], define[1])
+
+        result.append(line)
+
+    return '\n'.join(result)
 
 def get_config(source, env):
     """Get a configuration from the specified source."""
