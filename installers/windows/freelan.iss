@@ -59,9 +59,9 @@ Name: {group}\{cm:UninstallProgram,{#PRODUCT_NAME}}; Filename: {uninstallexe}
 Type: files; Name: {app}\log\freelan.log
 
 [Run]
-Filename: {app}\bin\tap-setup.exe; Parameters "install" "{app}\driver\{#TAPINF}.inf" "{#TAP}"; StatusMsg: "Installing the tap adapter..."; Tasks: install_tap
+Filename: {app}\bin\tap-setup.exe; Parameters: "install {app}\driver\{#TAPINF}.inf {#TAP}"; StatusMsg: "Installing the tap adapter..."; Tasks: install_tap
 Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service; Flags: runhidden
 
 [UninstallRun]
 Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service; Flags: runhidden
-Filename: {app}\bin\tap-setup.exe; Parameters "remove" "{#TAP}"; StatusMsg: "Uninstalling all tap adapters..."; Tasks: install_tap
+Filename: {app}\bin\tap-setup.exe; Parameters: "remove {#TAP}"; StatusMsg: "Uninstalling all tap adapters..."; Tasks: install_tap
