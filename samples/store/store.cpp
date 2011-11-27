@@ -74,7 +74,7 @@ int main()
 		using namespace cryptoplus;
 		
 		// Register a new index
-		// In a real application, you probably want to keep this value in
+		// In a real application, you probably want to keep this value in a
 		// highly-accessible context as it is not bound to any particular instance
 		// and will be destroyed when OpenSSL unloads.
 		my_index = x509::store_context::register_index();
