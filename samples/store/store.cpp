@@ -6,6 +6,7 @@
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/x509/certificate_revocation_list.hpp>
 #include <cryptoplus/x509/store.hpp>
 #include <cryptoplus/x509/store_context.hpp>
 #include <cryptoplus/x509/verify_param.hpp>
@@ -84,6 +85,7 @@ int main()
 
 		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("ca.crt")));
 		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("intermediate.crt")));
+		store.add_certificate_revocation_list(x509::certificate_revocation_list::from_certificate_revocation_list(file::open("ca.crl")));
 
 		// Load the certificate to verify
 		x509::certificate cert = x509::certificate::from_certificate(file::open("final.crt"));
