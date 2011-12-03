@@ -147,7 +147,7 @@ namespace cryptoplus
 				 * \brief Add a CRL to the store.
 				 * \param crl The CRL.
 				 */
-				void add_crl(certificate_revocation_list crl);
+				void add_certificate_revocation_list(certificate_revocation_list crl);
 
 			private:
 
@@ -218,7 +218,7 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_STORE_add_cert(raw(), cert.raw()) != 0);
 		}
-		inline void store::add_crl(certificate_revocation_list crl)
+		inline void store::add_certificate_revocation_list(certificate_revocation_list crl)
 		{
 			error::throw_error_if_not(X509_STORE_add_crl(raw(), crl.raw()) != 0);
 		}
