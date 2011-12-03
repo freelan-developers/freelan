@@ -48,6 +48,7 @@
 #include "../pointer_wrapper.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "certificate.hpp"
+#include "certificate_revocation_list.hpp"
 #include "verify_param.hpp"
 
 #include <openssl/x509.h>
@@ -146,7 +147,7 @@ namespace cryptoplus
 				 * \brief Add a CRL to the store.
 				 * \param crl The CRL.
 				 */
-				void add_crl(X509_CRL* crl);
+				void add_crl(certificate_revocation_list crl);
 
 			private:
 
@@ -217,9 +218,9 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_STORE_add_cert(raw(), cert.raw()) != 0);
 		}
-		inline void store::add_crl(X509_CRL* crl)
+		inline void store::add_crl(certificate_revocation_list crl)
 		{
-			error::throw_error_if_not(X509_STORE_add_crl(raw(), crl) != 0);
+			error::throw_error_if_not(X509_STORE_add_crl(raw(), crl.raw()) != 0);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
