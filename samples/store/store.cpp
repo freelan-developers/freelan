@@ -87,6 +87,8 @@ int main()
 		store.add_certificate(x509::certificate::from_trusted_certificate(file::open("intermediate.crt")));
 		store.add_certificate_revocation_list(x509::certificate_revocation_list::from_certificate_revocation_list(file::open("ca.crl")));
 
+		store.set_verification_flags(X509_V_FLAG_CRL_CHECK);
+
 		// Load the certificate to verify
 		x509::certificate cert = x509::certificate::from_certificate(file::open("final.crt"));
 
