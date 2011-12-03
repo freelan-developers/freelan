@@ -1,3 +1,4 @@
 store
 *.lib
 *.exp
+*.old
