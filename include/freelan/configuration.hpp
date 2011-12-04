@@ -129,6 +129,16 @@ namespace freelan
 		};
 
 		/**
+		 * \brief The certificate revocation validation method type.
+		 */
+		enum certificate_revocation_validation_method_type
+		{
+			CRVM_LAST, /**< \brief Only the last certificate of the chain is checked for revocation. */
+			CRVM_ALL, /**< \brief All certificates from the chain are checked for revocation. */
+			CRVM_NONE /**< \brief No certificate is checked for revocation. */
+		};
+
+		/**
 		 * \brief The certificate type.
 		 */
 		typedef fscp::identity_store::cert_type cert_type;
@@ -177,6 +187,11 @@ namespace freelan
 		 * \brief The certificate authorities.
 		 */
 		cert_list_type certificate_authority_list;
+
+		/**
+		 * \brief The certificate revocation validation method.
+		 */
+		certificate_revocation_validation_method_type certificate_revocation_validation_method;
 
 		/**
 		 * \brief The certificate revocation lists.

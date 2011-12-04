@@ -124,6 +124,24 @@ namespace freelan
 			{
 				m_ca_store.add_certificate_revocation_list(crl);
 			}
+
+			switch (m_configuration.security.certificate_revocation_validation_method)
+			{
+				case security_configuration::CRVM_LAST:
+					{
+						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK);
+						break;
+					}
+				case security_configuration::CRVM_ALL:
+					{
+						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
+						break;
+					}
+				case security_configuration::CRVM_NONE:
+					{
+						break;
+					}
+			}
 		}
 
 		do_contact();

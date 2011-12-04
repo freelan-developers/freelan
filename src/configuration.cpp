@@ -62,6 +62,7 @@ namespace freelan
 		certificate_validation_method(CVM_DEFAULT),
 		certificate_validation_callback(0),
 		certificate_authority_list(),
+		certificate_revocation_validation_method(CRVM_NONE),
 		certificate_revocation_list_list()
 	{
 	}
