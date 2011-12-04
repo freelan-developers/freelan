@@ -61,7 +61,8 @@ namespace freelan
 		identity(),
 		certificate_validation_method(CVM_DEFAULT),
 		certificate_validation_callback(0),
-		certificate_authority_list()
+		certificate_authority_list(),
+		certificate_revocation_list_list()
 	{
 	}
 

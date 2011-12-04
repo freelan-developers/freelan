@@ -54,6 +54,8 @@
 #include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <cryptoplus/x509/certificate_revocation_list.hpp>
+
 #include <fscp/server.hpp>
 #include <fscp/identity_store.hpp>
 
@@ -132,9 +134,19 @@ namespace freelan
 		typedef fscp::identity_store::cert_type cert_type;
 
 		/**
+		 * \brief The certificate revocation list type.
+		 */
+		typedef cryptoplus::x509::certificate_revocation_list crl_type;
+
+		/**
 		 * \brief The certificate list type.
 		 */
 		typedef std::vector<cert_type> cert_list_type;
+
+		/**
+		 * \brief The certificate revocation list list type.
+		 */
+		typedef std::vector<crl_type> crl_list_type;
 
 		/**
 		 * \brief The certificate validation callback type.
@@ -165,6 +177,11 @@ namespace freelan
 		 * \brief The certificate authorities.
 		 */
 		cert_list_type certificate_authority_list;
+
+		/**
+		 * \brief The certificate revocation lists.
+		 */
+		crl_list_type certificate_revocation_list_list;
 	};
 
 	/**
