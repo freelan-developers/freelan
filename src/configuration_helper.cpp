@@ -81,6 +81,18 @@ namespace
 		throw std::runtime_error("\"" + str + "\" is not a valid certificate validation method");
 	}
 
+	fl::security_configuration::certificate_revocation_validation_method_type to_certificate_revocation_validation_method(const std::string& str)
+	{
+		if (str == "last")
+			return fl::security_configuration::CRVM_LAST;
+		if (str == "all")
+			return fl::security_configuration::CRVM_ALL;
+		if (str == "none")
+			return fl::security_configuration::CRVM_NONE;
+
+		throw std::runtime_error("\"" + str + "\" is not a valid certificate revocation validation method");
+	}
+
 	boost::posix_time::time_duration to_time_duration(unsigned int msduration)
 	{
 		return boost::posix_time::milliseconds(msduration);
@@ -104,6 +116,11 @@ namespace
 	fl::security_configuration::cert_type load_trusted_certificate(const fs::path& filename)
 	{
 		return fl::security_configuration::cert_type::from_trusted_certificate(load_file(filename));
+	}
+
+	fl::security_configuration::crl_type load_crl(const fs::path& filename)
+	{
+		return fl::security_configuration::crl_type::from_certificate_revocation_list(load_file(filename));
 	}
 
 	fl::switch_configuration::routing_method_type to_routing_method(const std::string& str)
@@ -143,6 +160,8 @@ po::options_description get_security_options()
 	("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
 	("security.certificate_validation_script", po::value<std::string>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
+	("security.certificate_revocation_validation_method", po::value<std::string>()->default_value("none"), "The certificate revocation validation method.")
+	("security.certificate_revocation_list_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "A certificate revocation list file to use.")
 	;
 
 	return result;
@@ -228,6 +247,17 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	BOOST_FOREACH(const std::string& authority_certificate_file, authority_certificate_file_list)
 	{
 		configuration.security.certificate_authority_list.push_back(load_trusted_certificate(fs::absolute(authority_certificate_file, root)));
+	}
+
+	configuration.security.certificate_revocation_validation_method = to_certificate_revocation_validation_method(vm["security.certificate_revocation_validation_method"].as<std::string>());
+
+	const std::vector<std::string> crl_file_list = vm["security.certificate_revocation_list_file"].as<std::vector<std::string> >();
+
+	configuration.security.certificate_revocation_list_list.clear();
+
+	BOOST_FOREACH(const std::string& crl_file, crl_file_list)
+	{
+		configuration.security.certificate_revocation_list_list.push_back(load_crl(fs::absolute(crl_file, root)));
 	}
 
 	// Tap adapter options
