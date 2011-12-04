@@ -119,6 +119,11 @@ namespace freelan
 			{
 				m_ca_store.add_certificate(cert);
 			}
+
+			BOOST_FOREACH(const crl_type& crl, m_configuration.security.certificate_revocation_list_list)
+			{
+				m_ca_store.add_certificate_revocation_list(crl);
+			}
 		}
 
 		do_contact();
