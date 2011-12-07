@@ -132,28 +132,21 @@ namespace
 	}
 }
 
-void validate(boost::any& v, const std::vector<std::string>& values, fl::fscp_configuration::hostname_resolution_protocol_type*, int)
+std::istream& operator>>(std::istream& is, fl::fscp_configuration::hostname_resolution_protocol_type& v)
 {
-	if (values.size() == 0)
-	{
-		throw po::validation_error(po::validation_error::at_least_one_value_required);
-	}
+	std::string value;
 
-	if (values.size() != 1)
-	{
-		throw po::validation_error(po::validation_error::multiple_values_not_allowed);
-	}
-
-	const std::string& value = values[0];
+	is >> value;
 
 	if (value == "system_default")
-		v = boost::any(boost::asio::ip::udp::v4());
+		v = fl::fscp_configuration::HRP_IPV4;
 	else if (value == "ipv4")
-		v = boost::any(boost::asio::ip::udp::v4());
+		v = fl::fscp_configuration::HRP_IPV4;
 	else if (value == "ipv6")
-		v = boost::any(boost::asio::ip::udp::v6());
-	else
-		throw po::validation_error(po::validation_error::invalid_option_value);
+		v = fl::fscp_configuration::HRP_IPV6;
+	else throw boost::bad_lexical_cast();
+
+	return is;
 }
 
 po::options_description get_fscp_options()
@@ -161,7 +154,7 @@ po::options_description get_fscp_options()
 	po::options_description result("FreeLAN Secure Channel Protocol (FSCP) options");
 
 	result.add_options()
-	("fscp.hostname_resolution_protocol", po::value<std::string>()->default_value("system_default"), "The hostname resolution protocol to use.")
+	("fscp.hostname_resolution_protocol", po::value<fl::fscp_configuration::hostname_resolution_protocol_type>()->default_value(fl::fscp_configuration::HRP_IPV4, "system_default"), "The hostname resolution protocol to use.")
 	("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
 	("fscp.hello_timeout", po::value<unsigned int>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
 	("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
