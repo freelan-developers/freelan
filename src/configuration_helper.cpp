@@ -59,18 +59,6 @@ namespace fl = freelan;
 
 namespace
 {
-	fl::fscp_configuration::hostname_resolution_protocol_type parse_network_hostname_resolution_protocol(const std::string& str)
-	{
-		if (str == "system_default")
-			return boost::asio::ip::udp::v4();
-		else if (str == "ipv4")
-			return boost::asio::ip::udp::v4();
-		else if (str == "ipv6")
-			return boost::asio::ip::udp::v6();
-
-		throw std::runtime_error("\"" + str + "\" is not a valid hostname resolution protocol");
-	}
-
 	fl::security_configuration::certificate_validation_method_type to_certificate_validation_method(const std::string& str)
 	{
 		if (str == "default")
@@ -142,6 +130,30 @@ namespace
 
 		throw std::runtime_error("\"" + str + "\" is not a valid routing method");
 	}
+}
+
+void validate(boost::any& v, const std::vector<std::string>& values, fl::fscp_configuration::hostname_resolution_protocol_type*, int)
+{
+	if (values.size() == 0)
+	{
+		throw po::validation_error(po::validation_error::at_least_one_value_required);
+	}
+
+	if (values.size() != 1)
+	{
+		throw po::validation_error(po::validation_error::multiple_values_not_allowed);
+	}
+
+	const std::string& value = values[0];
+
+	if (value == "system_default")
+		v = boost::any(boost::asio::ip::udp::v4());
+	else if (value == "ipv4")
+		v = boost::any(boost::asio::ip::udp::v4());
+	else if (value == "ipv6")
+		v = boost::any(boost::asio::ip::udp::v6());
+	else
+		throw po::validation_error(po::validation_error::invalid_option_value);
 }
 
 po::options_description get_fscp_options()
@@ -216,7 +228,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	typedef cryptoplus::pkey::pkey pkey;
 
 	// FSCP options
-	configuration.fscp.hostname_resolution_protocol = parse_network_hostname_resolution_protocol(vm["fscp.hostname_resolution_protocol"].as<std::string>());
+	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
 	configuration.fscp.listen_on = parse<fl::fscp_configuration::ep_type>(vm["fscp.listen_on"].as<std::string>());
 	configuration.fscp.hello_timeout = to_time_duration(vm["fscp.hello_timeout"].as<unsigned int>());
 
