@@ -119,13 +119,6 @@ namespace freelan
 	};
 
 	/**
-	 * \brief Convert a hostname resolution protocol type into a boost asio udp endpoint type.
-	 * \param value The value to convert.
-	 * \return The boost::asio::ip::udp.
-	 */
-	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value);
-
-	/**
 	 * \brief The security related options type.
 	 */
 	struct security_configuration
@@ -364,6 +357,21 @@ namespace freelan
 		 */
 		configuration();
 	};
+
+	/**
+	 * \brief Convert a hostname resolution protocol type into a boost asio udp endpoint type.
+	 * \param value The value to convert.
+	 * \return The boost::asio::ip::udp.
+	 */
+	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value);
+
+	/**
+	 * \brief Input a hostname resolution protocol.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, fscp_configuration::hostname_resolution_protocol_type& value);
 
 	/**
 	 * \brief Output an Ethernet address to a stream.

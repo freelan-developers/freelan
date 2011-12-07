@@ -59,20 +59,6 @@ namespace freelan
 	{
 	}
 
-	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value)
-	{
-		switch (value)
-		{
-			case fscp_configuration::HRP_IPV4:
-				return boost::asio::ip::udp::v4();
-			case fscp_configuration::HRP_IPV6:
-				return boost::asio::ip::udp::v6();
-		}
-
-		assert(false);
-		throw std::logic_error("Invalid hostname_resolution_protocol_type");
-	}
-
 	security_configuration::security_configuration() :
 		identity(),
 		certificate_validation_method(CVM_DEFAULT),
@@ -109,6 +95,36 @@ namespace freelan
 		tap_adapter(),
 		switch_()
 	{
+	}
+
+	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value)
+	{
+		switch (value)
+		{
+			case fscp_configuration::HRP_IPV4:
+				return boost::asio::ip::udp::v4();
+			case fscp_configuration::HRP_IPV6:
+				return boost::asio::ip::udp::v6();
+		}
+
+		assert(false);
+		throw std::logic_error("Invalid hostname_resolution_protocol_type");
+	}
+
+	std::istream& operator>>(std::istream& is, fscp_configuration::hostname_resolution_protocol_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "ipv4")
+			v = fscp_configuration::HRP_IPV4;
+		else if (value == "ipv6")
+			v = fscp_configuration::HRP_IPV6;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
 	}
 
 	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value)
