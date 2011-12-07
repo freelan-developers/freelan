@@ -100,6 +100,16 @@ namespace
 
 	cryptoplus::file load_file(const fs::path& filename)
 	{
+		if (filename.empty())
+		{
+			throw std::runtime_error("Cannot load file: filename is empty");
+		}
+
+		if (!is_regular_file(filename))
+		{
+			throw std::runtime_error("No such file: " + filename.string());
+		}
+
 		return cryptoplus::file::open(filename.native());
 	}
 
