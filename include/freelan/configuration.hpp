@@ -86,7 +86,11 @@ namespace freelan
 		/**
 		 * \brief The hostname resolution protocol type.
 		 */
-		typedef boost::asio::ip::udp::resolver::query::protocol_type hostname_resolution_protocol_type;
+		enum hostname_resolution_protocol_type
+		{
+			HRP_IPV4 = PF_INET, /**< \brief The IPv4 protocol. */
+			HRP_IPV6 = PF_INET6/**< \brief The IPv6 protocol. */
+		};
 
 		/**
 		 * \brief Create a new FSCP configuration.
@@ -113,6 +117,13 @@ namespace freelan
 		 */
 		boost::posix_time::time_duration hello_timeout;
 	};
+
+	/**
+	 * \brief Convert a hostname resolution protocol type into a boost asio udp endpoint type.
+	 * \param value The value to convert.
+	 * \return The boost::asio::ip::udp.
+	 */
+	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value);
 
 	/**
 	 * \brief The security related options type.

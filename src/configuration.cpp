@@ -46,15 +46,31 @@
 #include "configuration.hpp"
 
 #include <sstream>
+#include <stdexcept>
+#include <cassert>
 
 namespace freelan
 {
 	fscp_configuration::fscp_configuration() :
 		listen_on(),
 		contact_list(),
-		hostname_resolution_protocol(boost::asio::ip::udp::v4()),
+		hostname_resolution_protocol(HRP_IPV4),
 		hello_timeout(boost::posix_time::seconds(3))
 	{
+	}
+
+	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value)
+	{
+		switch (value)
+		{
+			case fscp_configuration::HRP_IPV4:
+				return boost::asio::ip::udp::v4();
+			case fscp_configuration::HRP_IPV6:
+				return boost::asio::ip::udp::v6();
+		}
+
+		assert(false);
+		throw std::logic_error("Invalid hostname_resolution_protocol_type");
 	}
 
 	security_configuration::security_configuration() :

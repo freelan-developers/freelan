@@ -109,7 +109,7 @@ namespace freelan
 		m_logger(LL_DEBUG) << "Core opening...";
 
 		// FSCP
-		m_server.open(m_configuration.fscp.listen_on->resolve(m_resolver, m_configuration.fscp.hostname_resolution_protocol, query::address_configured | query::passive, DEFAULT_SERVICE));
+		m_server.open(m_configuration.fscp.listen_on->resolve(m_resolver, convert(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE));
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -501,7 +501,7 @@ namespace freelan
 
 			ep->async_resolve(
 			    m_resolver,
-			    m_configuration.fscp.hostname_resolution_protocol,
+			    convert(m_configuration.fscp.hostname_resolution_protocol),
 			    query::address_configured,
 			    DEFAULT_SERVICE,
 			    boost::bind(&core::do_greet, this, _1, _2, ep)
