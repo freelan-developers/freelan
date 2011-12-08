@@ -59,16 +59,6 @@ namespace fl = freelan;
 
 namespace
 {
-	fl::security_configuration::certificate_validation_method_type to_certificate_validation_method(const std::string& str)
-	{
-		if (str == "default")
-			return fl::security_configuration::CVM_DEFAULT;
-		if (str == "none")
-			return fl::security_configuration::CVM_NONE;
-
-		throw std::runtime_error("\"" + str + "\" is not a valid certificate validation method");
-	}
-
 	fl::security_configuration::certificate_revocation_validation_method_type to_certificate_revocation_validation_method(const std::string& str)
 	{
 		if (str == "last")
@@ -155,7 +145,7 @@ po::options_description get_security_options()
 	("security.signature_private_key_file", po::value<std::string>()->required(), "The private key file to use for signing.")
 	("security.encryption_certificate_file", po::value<std::string>(), "The certificate file to use for encryption.")
 	("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
-	("security.certificate_validation_method", po::value<std::string>()->default_value("default"), "The certificate validation method.")
+	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT, "default"), "The certificate validation method.")
 	("security.certificate_validation_script", po::value<std::string>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
 	("security.certificate_revocation_validation_method", po::value<std::string>()->default_value("none"), "The certificate revocation validation method.")
@@ -236,7 +226,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
 
-	configuration.security.certificate_validation_method = to_certificate_validation_method(vm["security.certificate_validation_method"].as<std::string>());
+	configuration.security.certificate_validation_method = vm["security.certificate_validation_method"].as<fl::security_configuration::certificate_validation_method_type>();
 
 	const std::vector<std::string> authority_certificate_file_list = vm["security.authority_certificate_file"].as<std::vector<std::string> >();
 
