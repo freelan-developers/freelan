@@ -374,6 +374,14 @@ namespace freelan
 	std::istream& operator>>(std::istream& is, fscp_configuration::hostname_resolution_protocol_type& value);
 
 	/**
+	 * \brief Output an hostname resolution protocol to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, fscp_configuration::hostname_resolution_protocol_type& value);
+
+	/**
 	 * \brief Output an Ethernet address to a stream.
 	 * \param os The output stream.
 	 * \param value The Ethernet address.

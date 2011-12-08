@@ -127,6 +127,20 @@ namespace freelan
 		return is;
 	}
 
+	std::ostream& operator<<(std::ostream& os, fscp_configuration::hostname_resolution_protocol_type& value)
+	{
+		switch (value)
+		{
+			case fscp_configuration::HRP_IPV4:
+				return os << "ipv4";
+			case fscp_configuration::HRP_IPV6:
+				return os << "ipv6";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
+
 	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value)
 	{
 		os<< std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(value[0]);
