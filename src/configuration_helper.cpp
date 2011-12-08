@@ -59,18 +59,6 @@ namespace fl = freelan;
 
 namespace
 {
-	fl::security_configuration::certificate_revocation_validation_method_type to_certificate_revocation_validation_method(const std::string& str)
-	{
-		if (str == "last")
-			return fl::security_configuration::CRVM_LAST;
-		if (str == "all")
-			return fl::security_configuration::CRVM_ALL;
-		if (str == "none")
-			return fl::security_configuration::CRVM_NONE;
-
-		throw std::runtime_error("\"" + str + "\" is not a valid certificate revocation validation method");
-	}
-
 	boost::posix_time::time_duration to_time_duration(unsigned int msduration)
 	{
 		return boost::posix_time::milliseconds(msduration);
@@ -148,7 +136,7 @@ po::options_description get_security_options()
 	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT, "default"), "The certificate validation method.")
 	("security.certificate_validation_script", po::value<std::string>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
-	("security.certificate_revocation_validation_method", po::value<std::string>()->default_value("none"), "The certificate revocation validation method.")
+	("security.certificate_revocation_validation_method", po::value<fl::security_configuration::certificate_revocation_validation_method_type>()->default_value(fl::security_configuration::CRVM_NONE, "none"), "The certificate revocation validation method.")
 	("security.certificate_revocation_list_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "A certificate revocation list file to use.")
 	;
 
@@ -237,7 +225,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		configuration.security.certificate_authority_list.push_back(load_trusted_certificate(fs::absolute(authority_certificate_file, root)));
 	}
 
-	configuration.security.certificate_revocation_validation_method = to_certificate_revocation_validation_method(vm["security.certificate_revocation_validation_method"].as<std::string>());
+	configuration.security.certificate_revocation_validation_method = vm["security.certificate_revocation_validation_method"].as<fl::security_configuration::certificate_revocation_validation_method_type>();
 
 	const std::vector<std::string> crl_file_list = vm["security.certificate_revocation_list_file"].as<std::vector<std::string> >();
 
