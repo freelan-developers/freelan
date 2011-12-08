@@ -171,6 +171,40 @@ namespace freelan
 		throw std::logic_error("Unexpected value");
 	}
 
+	std::istream& operator>>(std::istream& is, security_configuration::certificate_revocation_validation_method_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "last")
+			v = security_configuration::CRVM_LAST;
+		else if (value == "all")
+			v = security_configuration::CRVM_ALL;
+		else if (value == "none")
+			v = security_configuration::CRVM_NONE;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_revocation_validation_method_type& value)
+	{
+		switch (value)
+		{
+			case security_configuration::CRVM_LAST:
+				return os << "last";
+			case security_configuration::CRVM_ALL:
+				return os << "all";
+			case security_configuration::CRVM_NONE:
+				return os << "none";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
+
 	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value)
 	{
 		os<< std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(value[0]);

@@ -398,6 +398,22 @@ namespace freelan
 	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_validation_method_type& value);
 
 	/**
+	 * \brief Input a certificate revocation validation method.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, security_configuration::certificate_revocation_validation_method_type& value);
+
+	/**
+	 * \brief Output a certificate revocation validation method to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_revocation_validation_method_type& value);
+
+	/**
 	 * \brief Output an Ethernet address to a stream.
 	 * \param os The output stream.
 	 * \param value The Ethernet address.
