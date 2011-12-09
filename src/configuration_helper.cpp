@@ -101,9 +101,9 @@ po::options_description get_fscp_options()
 	po::options_description result("FreeLAN Secure Channel Protocol (FSCP) options");
 
 	result.add_options()
-	("fscp.hostname_resolution_protocol", po::value<fl::fscp_configuration::hostname_resolution_protocol_type>()->default_value(fl::fscp_configuration::HRP_IPV4, "ipv4"), "The hostname resolution protocol to use.")
+	("fscp.hostname_resolution_protocol", po::value<fl::fscp_configuration::hostname_resolution_protocol_type>()->default_value(fl::fscp_configuration::HRP_IPV4), "The hostname resolution protocol to use.")
 	("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
-	("fscp.hello_timeout", po::value<millisecond_duration>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
+	("fscp.hello_timeout", po::value<millisecond_duration>()->default_value(3000), "The default timeout for HELLO messages, in milliseconds.")
 	("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
 	;
 
@@ -119,10 +119,10 @@ po::options_description get_security_options()
 	("security.signature_private_key_file", po::value<std::string>()->required(), "The private key file to use for signing.")
 	("security.encryption_certificate_file", po::value<std::string>(), "The certificate file to use for encryption.")
 	("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
-	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT, "default"), "The certificate validation method.")
+	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT), "The certificate validation method.")
 	("security.certificate_validation_script", po::value<std::string>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
-	("security.certificate_revocation_validation_method", po::value<fl::security_configuration::certificate_revocation_validation_method_type>()->default_value(fl::security_configuration::CRVM_NONE, "none"), "The certificate revocation validation method.")
+	("security.certificate_revocation_validation_method", po::value<fl::security_configuration::certificate_revocation_validation_method_type>()->default_value(fl::security_configuration::CRVM_NONE), "The certificate revocation validation method.")
 	("security.certificate_revocation_list_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "A certificate revocation list file to use.")
 	;
 
@@ -154,7 +154,7 @@ po::options_description get_switch_options()
 	po::options_description result("Switch options");
 
 	result.add_options()
-	("switch.routing_method", po::value<fl::switch_configuration::routing_method_type>()->default_value(fl::switch_configuration::RM_SWITCH, "switch"), "The routing method for messages.")
+	("switch.routing_method", po::value<fl::switch_configuration::routing_method_type>()->default_value(fl::switch_configuration::RM_SWITCH), "The routing method for messages.")
 	("switch.relay_mode_enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
 	;
 
