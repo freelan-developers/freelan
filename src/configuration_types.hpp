@@ -51,9 +51,6 @@
 #include <iomanip>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/filesystem.hpp>
-
-#include <cryptoplus/x509/certificate.hpp>
 
 /**
  * \brief A duration in milliseconds.
@@ -101,5 +98,53 @@ class millisecond_duration
 
 inline std::ostream& operator<<(std::ostream& os, const millisecond_duration& value) { return os << std::dec << value.m_ms; }
 inline std::istream& operator>>(std::istream& is, millisecond_duration& value) { return is >> std::dec >> value.m_ms; }
+
+/**
+ * \brief A generic wrapper class.
+ * \tparam Type The type of the object to wrap. Type must be default-constructible.
+ */
+template <typename Type>
+class wrapper
+{
+	public:
+
+		/**
+		 * \brief The wrapped type.
+		 */
+		typedef Type wrapped_type;
+
+		/**
+		 * \brief Create a default wrapper object.
+		 */
+		wrapper() {}
+
+		/**
+		 * \brief Create a new wrapped object.
+		 * \tparam OtherType The other type.
+		 * \param value A value.
+		 */
+		template <typename OtherType>
+		wrapper(OtherType value) : m_object(value) {}
+
+		/**
+		 * \brief Conversion operator.
+		 * \tparam OtherType The other type.
+		 * \return The converted value.
+		 */
+		template <typename OtherType>
+		operator OtherType() const { return m_object; }
+
+	private:
+
+		Type m_object;
+
+		template <typename OtherType> friend std::istream& operator>>(std::istream&, wrapper<OtherType>&);
+		template <typename OtherType> friend std::ostream& operator<<(std::ostream&, const wrapper<OtherType>&);
+};
+
+template <typename Type>
+inline std::istream& operator>>(std::istream& is, wrapper<Type>& value) { return is >> value.m_object; }
+template <typename Type>
+inline std::ostream& operator<<(std::ostream& os, const wrapper<Type>& value) { return os << value.m_object; }
 
 #endif /* CONFIGURATION_TYPES_HPP */

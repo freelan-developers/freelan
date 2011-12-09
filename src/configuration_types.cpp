@@ -45,6 +45,3 @@
  */
 
 #include "configuration_types.hpp"
-
-#include <cryptoplus/file.hpp>
-
