@@ -94,16 +94,6 @@ namespace
 	{
 		return fl::security_configuration::crl_type::from_certificate_revocation_list(load_file(filename));
 	}
-
-	fl::switch_configuration::routing_method_type to_routing_method(const std::string& str)
-	{
-		if (str == "switch")
-			return fl::switch_configuration::RM_SWITCH;
-		if (str == "hub")
-			return fl::switch_configuration::RM_HUB;
-
-		throw std::runtime_error("\"" + str + "\" is not a valid routing method");
-	}
 }
 
 po::options_description get_fscp_options()
@@ -164,7 +154,7 @@ po::options_description get_switch_options()
 	po::options_description result("Switch options");
 
 	result.add_options()
-	("switch.routing_method", po::value<std::string>()->default_value("switch"), "The routing method for messages.")
+	("switch.routing_method", po::value<fl::switch_configuration::routing_method_type>()->default_value(fl::switch_configuration::RM_SWITCH, "switch"), "The routing method for messages.")
 	("switch.relay_mode_enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the relay mode.")
 	;
 
@@ -243,7 +233,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.tap_adapter.dhcp_server_ipv6_address_prefix_length = parse_optional<fl::tap_adapter_configuration::ipv6_address_prefix_length_type>(vm["tap_adapter.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
 
 	// Switch options
-	configuration.switch_.routing_method = to_routing_method(vm["switch.routing_method"].as<std::string>());
+	configuration.switch_.routing_method = vm["switch.routing_method"].as<fl::switch_configuration::routing_method_type>();
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
 }
 
