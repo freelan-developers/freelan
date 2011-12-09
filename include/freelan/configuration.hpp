@@ -437,6 +437,22 @@ namespace freelan
 	 */
 	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv6_address_prefix_length_type value);
 
+	/**
+	 * \brief Input a routing method.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, switch_configuration::routing_method_type& value);
+
+	/**
+	 * \brief Output a routing method to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, switch_configuration::routing_method_type& value);
+
 	inline std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv4_address_prefix_length_type value)
 	{
 		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;

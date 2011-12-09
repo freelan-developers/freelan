@@ -216,4 +216,34 @@ namespace freelan
 
 		return os;
 	}
+
+	std::istream& operator>>(std::istream& is, switch_configuration::routing_method_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "switch")
+			v = switch_configuration::RM_SWITCH;
+		else if (value == "hub")
+			v = switch_configuration::RM_HUB;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, switch_configuration::routing_method_type& value)
+	{
+		switch (value)
+		{
+			case switch_configuration::RM_SWITCH:
+				return os << "switch";
+			case switch_configuration::RM_HUB:
+				return os << "hub";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
 }
