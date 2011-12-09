@@ -48,25 +48,3 @@
 
 #include <cryptoplus/file.hpp>
 
-namespace
-{
-	cryptoplus::file load_file(const boost::filesystem::path& filename)
-	{
-		if (filename.empty())
-		{
-			throw std::runtime_error("Cannot load file: filename is empty");
-		}
-
-		if (!is_regular_file(filename))
-		{
-			throw std::runtime_error("No such file: " + filename.string());
-		}
-
-		return cryptoplus::file::open(filename.native());
-	}
-
-	cryptoplus::x509::certificate load_certificate(const boost::filesystem::path& filename)
-	{
-		return cryptoplus::x509::certificate::from_certificate(load_file(filename));
-	}
-}
