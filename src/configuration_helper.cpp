@@ -115,12 +115,12 @@ po::options_description get_security_options()
 	po::options_description result("Security options");
 
 	result.add_options()
-	("security.signature_certificate_file", po::value<std::string>()->required(), "The certificate file to use for signing.")
-	("security.signature_private_key_file", po::value<std::string>()->required(), "The private key file to use for signing.")
-	("security.encryption_certificate_file", po::value<std::string>(), "The certificate file to use for encryption.")
-	("security.encryption_private_key_file", po::value<std::string>(), "The private key file to use for encryption.")
+	("security.signature_certificate_file", po::value<file_path>()->required(), "The certificate file to use for signing.")
+	("security.signature_private_key_file", po::value<file_path>()->required(), "The private key file to use for signing.")
+	("security.encryption_certificate_file", po::value<file_path>(), "The certificate file to use for encryption.")
+	("security.encryption_private_key_file", po::value<file_path>(), "The private key file to use for encryption.")
 	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT), "The certificate validation method.")
-	("security.certificate_validation_script", po::value<std::string>()->default_value(""), "The certificate validation script to use.")
+	("security.certificate_validation_script", po::value<file_path>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
 	("security.certificate_revocation_validation_method", po::value<fl::security_configuration::certificate_revocation_validation_method_type>()->default_value(fl::security_configuration::CRVM_NONE), "The certificate revocation validation method.")
 	("security.certificate_revocation_list_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "A certificate revocation list file to use.")
@@ -142,8 +142,8 @@ po::options_description get_tap_adapter_options()
 	("tap_adapter.dhcp_proxy_enabled", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
 	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
 	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
-	("tap_adapter.up_script", po::value<std::string>()->default_value(""), "The tap adapter up script.")
-	("tap_adapter.down_script", po::value<std::string>()->default_value(""), "The tap adapter down script.")
+	("tap_adapter.up_script", po::value<file_path>()->default_value(""), "The tap adapter up script.")
+	("tap_adapter.down_script", po::value<file_path>()->default_value(""), "The tap adapter down script.")
 	;
 
 	return result;
@@ -182,20 +182,20 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 
 	// Security options
-	cert_type signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<std::string>(), root));
-	pkey signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<std::string>(), root));
+	cert_type signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<file_path>(), root));
+	pkey signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<file_path>(), root));
 
 	cert_type encryption_certificate;
 	pkey encryption_private_key;
 
 	if (vm.count("security.encryption_certificate_file"))
 	{
-		encryption_certificate = load_certificate(fs::absolute(vm["security.encryption_certificate_file"].as<std::string>(), root));
+		encryption_certificate = load_certificate(fs::absolute(vm["security.encryption_certificate_file"].as<file_path>(), root));
 	}
 
 	if (vm.count("security.encryption_private_key_file"))
 	{
-		encryption_private_key = load_private_key(fs::absolute(vm["security.encryption_private_key_file"].as<std::string>(), root));
+		encryption_private_key = load_private_key(fs::absolute(vm["security.encryption_private_key_file"].as<file_path>(), root));
 	}
 
 	configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
@@ -239,21 +239,21 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<std::string>();
+	fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<file_path>();
 
 	return tap_adapter_up_script_file.empty() ? tap_adapter_up_script_file : fs::absolute(tap_adapter_up_script_file, root);
 }
 
 boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<std::string>();
+	fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<file_path>();
 
 	return tap_adapter_down_script_file.empty() ? tap_adapter_down_script_file : fs::absolute(tap_adapter_down_script_file, root);
 }
 
 boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<std::string>();
+	fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<file_path>();
 
 	return certificate_validation_script_file.empty() ? certificate_validation_script_file : fs::absolute(certificate_validation_script_file, root);
 }

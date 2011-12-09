@@ -51,6 +51,9 @@
 #include <iomanip>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
+
+#include <cryptoplus/x509/certificate.hpp>
 
 /**
  * \brief A duration in milliseconds.
@@ -98,5 +101,41 @@ class millisecond_duration
 
 inline std::ostream& operator<<(std::ostream& os, const millisecond_duration& value) { return os << std::dec << value.m_ms; }
 inline std::istream& operator>>(std::istream& is, millisecond_duration& value) { return is >> std::dec >> value.m_ms; }
+
+/**
+ * \brief A file path class.
+ */
+class file_path
+{
+	public:
+
+		/**
+		 * \brief Create a null certificate file.
+		 */
+		file_path() {}
+
+		/**
+		 * \brief Create a certificate file from a path.
+		 * \param path The path of the file.
+		 */
+		template <typename PathType>
+		file_path(const PathType& path) : m_path(path) {}
+
+		/**
+		 * \brief Conversion operator.
+		 * \return The converted value.
+		 */
+		operator boost::filesystem::path() const { return m_path; }
+
+	private:
+
+		boost::filesystem::path m_path;
+
+		friend std::ostream& operator<<(std::ostream&, const file_path&);
+		friend std::istream& operator>>(std::istream&, file_path&);
+};
+
+inline std::ostream& operator<<(std::ostream& os, const file_path& value) { return os << value.m_path; }
+inline std::istream& operator>>(std::istream& is, file_path& value) { return is >> value.m_path; }
 
 #endif /* CONFIGURATION_TYPES_HPP */
