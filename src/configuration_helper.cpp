@@ -51,6 +51,7 @@
 #include <boost/asio.hpp>
 #include <boost/foreach.hpp>
 
+#include "configuration_types.hpp"
 #include "parsers.hpp"
 
 namespace po = boost::program_options;
@@ -59,11 +60,6 @@ namespace fl = freelan;
 
 namespace
 {
-	boost::posix_time::time_duration to_time_duration(unsigned int msduration)
-	{
-		return boost::posix_time::milliseconds(msduration);
-	}
-
 	cryptoplus::file load_file(const fs::path& filename)
 	{
 		if (filename.empty())
@@ -117,7 +113,7 @@ po::options_description get_fscp_options()
 	result.add_options()
 	("fscp.hostname_resolution_protocol", po::value<fl::fscp_configuration::hostname_resolution_protocol_type>()->default_value(fl::fscp_configuration::HRP_IPV4, "ipv4"), "The hostname resolution protocol to use.")
 	("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
-	("fscp.hello_timeout", po::value<unsigned int>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
+	("fscp.hello_timeout", po::value<millisecond_duration>()->default_value(3000, "3000"), "The default timeout for HELLO messages, in milliseconds.")
 	("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
 	;
 
@@ -184,7 +180,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
 	configuration.fscp.listen_on = parse<fl::fscp_configuration::ep_type>(vm["fscp.listen_on"].as<std::string>());
-	configuration.fscp.hello_timeout = to_time_duration(vm["fscp.hello_timeout"].as<unsigned int>());
+	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>();
 
 	const std::vector<std::string> contact_list = vm["fscp.contact"].as<std::vector<std::string> >();
 
