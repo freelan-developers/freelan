@@ -26,6 +26,12 @@ int main()
 		// Comparison
 		std::cout << "ep1 == ep2: " << (ep1 == ep2) << std::endl;
 		std::cout << "ep1 != ep2: " << (ep1 != ep2) << std::endl;
+
+		// Input
+		std::cout << "ep1: " << std::flush;
+		std::cin >> ep1;
+
+		std::cout << "ep1: " << ep1 << std::endl;
 	}
 	catch (std::exception& ex)
 	{
