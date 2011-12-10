@@ -136,6 +136,22 @@ namespace freelan
 	 * \return is.
 	 */
 	std::istream& operator>>(std::istream& is, hostname_endpoint& value);
+
+	/**
+	 * \brief Compare two endpoints.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two endpoints are equal.
+	 */
+	bool operator==(const hostname_endpoint& lhs, const hostname_endpoint& rhs);
+
+	/**
+	 * \brief Compare two endpoints.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two endpoints are different.
+	 */
+	inline bool operator!=(const hostname_endpoint& lhs, const hostname_endpoint& rhs) { return !(lhs == rhs); }
 }
 
 #endif /* FREELAN_HOSTNAME_ENDPOINT_HPP */

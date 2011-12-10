@@ -114,6 +114,8 @@ namespace freelan
 
 			address_type m_address;
 			boost::optional<uint16_t> m_port;
+
+			template<typename OtherAddressType> friend bool operator==(const ip_endpoint<OtherAddressType>& lhs, const ip_endpoint<OtherAddressType>& rhs);
 	};
 
 	/**
@@ -191,6 +193,27 @@ namespace freelan
 	 */
 	template <typename AddressType>
 	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value);
+
+	/**
+	 * \brief Compare two endpoints.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two endpoints are equal.
+	 */
+	template <typename AddressType>
+	inline bool operator==(const ip_endpoint<AddressType>& lhs, const ip_endpoint<AddressType>& rhs)
+	{
+		return (lhs.address() == rhs.address()) && (lhs.m_port == rhs.m_port);
+	}
+
+	/**
+	 * \brief Compare two endpoints.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two endpoints are different.
+	 */
+	template <typename AddressType>
+	inline bool operator!=(const ip_endpoint<AddressType>& lhs, const ip_endpoint<AddressType>& rhs) { return !(lhs == rhs); }
 
 	/**
 	 * \brief The IPv4 instantiation.
