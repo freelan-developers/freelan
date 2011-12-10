@@ -47,4 +47,11 @@
 
 namespace freelan
 {
+	std::istream& operator>>(std::istream& is, endpoint& value)
+	{
+		//TODO: Implement.
+		(void)value;
+
+		return is;
+	}
 }

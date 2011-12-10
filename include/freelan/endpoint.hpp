@@ -194,35 +194,6 @@ namespace freelan
 	};
 
 	/**
-	 * \brief A visitor that read endpoints from input streams.
-	 */
-	class endpoint_input_visitor : public boost::static_visitor<std::istream&>
-	{
-		public:
-
-			/**
-			 * \brief Create a new endpoint_input_visitor.
-			 * \param is The input stream.
-			 */
-			endpoint_input_visitor(result_type is) : m_is(is) {}
-
-			/**
-			 * \brief Read the specified endpoint.
-			 * \tparam T The type of the endpoint.
-			 * \param ep The endpoint.
-			 */
-			template <typename T>
-			result_type operator()(T& ep) const
-			{
-				return m_is >> ep;
-			}
-
-		private:
-
-			result_type m_is;
-	};
-
-	/**
 	 * \brief Write an endpoint to an output stream.
 	 * \param os The output stream.
 	 * \param value The value.
@@ -239,10 +210,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return is.
 	 */
-	inline std::istream& operator>>(std::istream& is, endpoint& value)
-	{
-		return boost::apply_visitor(endpoint_input_visitor(is), value);
-	}
+	std::istream& operator>>(std::istream& is, endpoint& value);
 }
 
 #endif /* FREELAN_ENDPOINT_HPP */
