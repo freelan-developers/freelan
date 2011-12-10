@@ -120,6 +120,22 @@ namespace freelan
 	 * \param handler The handler.
 	 */
 	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, hostname_endpoint::handler handler);
+
+	/**
+	 * \brief Write an endpoint to an output stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const hostname_endpoint& value);
+
+	/**
+	 * \brief Read an endpoint from an input stream.
+	 * \param is The input stream.
+	 * \param value The value.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, hostname_endpoint& value);
 }
 
 #endif /* FREELAN_HOSTNAME_ENDPOINT_HPP */

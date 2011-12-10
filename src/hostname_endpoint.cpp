@@ -60,4 +60,24 @@ namespace freelan
 
 		resolver.async_resolve(query, handler);
 	}
+
+	std::ostream& operator<<(std::ostream& os, const hostname_endpoint& value)
+	{
+		os << value.hostname();
+
+		if (!value.service().empty())
+		{
+			os << ":" << value.service();
+		}
+
+		return os;
+	}
+
+	std::istream& operator>>(std::istream& is, hostname_endpoint& value)
+	{
+		//TODO: Implement.
+		(void)value;
+
+		return is;
+	}
 }
