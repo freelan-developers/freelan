@@ -4,5 +4,6 @@
 *.os
 *.obj
 *.sobj
+*.exe
 doc/html
 lib/*
