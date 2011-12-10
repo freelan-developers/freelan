@@ -49,8 +49,16 @@ namespace freelan
 {
 	std::istream& operator>>(std::istream& is, endpoint& value)
 	{
-		//TODO: Implement.
-		(void)value;
+		if (is)
+		{
+			hostname_endpoint ep;
+
+			if (is >> ep)
+			{
+				value = ep;
+				return is;
+			}
+		}
 
 		return is;
 	}
