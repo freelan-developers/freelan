@@ -173,6 +173,26 @@ namespace freelan
 	}
 
 	/**
+	 * \brief Write an endpoint to an output stream.
+	 * \tparam AddressType The address type.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	template <typename AddressType>
+	std::ostream& operator<<(std::ostream& os, const ip_endpoint<AddressType>& value);
+
+	/**
+	 * \brief Read an endpoint from an input stream.
+	 * \tparam AddressType The address type.
+	 * \param is The input stream.
+	 * \param value The value.
+	 * \return is.
+	 */
+	template <typename AddressType>
+	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value);
+
+	/**
 	 * \brief The IPv4 instantiation.
 	 */
 	typedef ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;

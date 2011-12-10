@@ -47,4 +47,49 @@
 
 namespace freelan
 {
+	template <>
+	std::ostream& operator<<(std::ostream& os, const ipv4_endpoint& value)
+	{
+		os << value.address().to_string();
+
+		if (value.has_port())
+		{
+			os << ":" << value.port();
+		}
+
+		return os;
+	}
+
+	template <>
+	std::istream& operator>>(std::istream& is, ipv4_endpoint& value)
+	{
+		//TODO: Implement.
+		(void)value;
+
+		return is;
+	}
+
+	template <>
+	std::ostream& operator<<(std::ostream& os, const ipv6_endpoint& value)
+	{
+		if (value.has_port())
+		{
+			os << "[" << value.address().to_string() << "]:" << value.port();
+		}
+		else
+		{
+			os << value.address().to_string();
+		}
+
+		return os;
+	}
+
+	template <>
+	std::istream& operator>>(std::istream& is, ipv6_endpoint& value)
+	{
+		//TODO: Implement.
+		(void)value;
+
+		return is;
+	}
 }
