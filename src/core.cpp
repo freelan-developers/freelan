@@ -109,7 +109,7 @@ namespace freelan
 		m_logger(LL_DEBUG) << "Core opening...";
 
 		// FSCP
-		m_server.open(m_configuration.fscp.listen_on->resolve(m_resolver, convert(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE));
+		m_server.open(boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on));
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -476,7 +476,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::fscp_configuration::ep_type& ep)
+	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::fscp_configuration::endpoint& ep)
 	{
 		if (!ec)
 		{
@@ -489,23 +489,26 @@ namespace freelan
 		}
 		else
 		{
-			m_logger(LL_WARNING) << "Failed to resolve " << *ep << ".";
+			m_logger(LL_WARNING) << "Failed to resolve " << ep << ".";
 		}
 	}
 
 	void core::do_contact()
 	{
-		BOOST_FOREACH(const freelan::fscp_configuration::ep_type& ep, m_configuration.fscp.contact_list)
+		BOOST_FOREACH(const freelan::fscp_configuration::endpoint& ep, m_configuration.fscp.contact_list)
 		{
 			typedef boost::asio::ip::udp::resolver::query query;
 
-			ep->async_resolve(
-			    m_resolver,
-			    convert(m_configuration.fscp.hostname_resolution_protocol),
-			    query::address_configured,
-			    DEFAULT_SERVICE,
-			    boost::bind(&core::do_greet, this, _1, _2, ep)
-			);
+			boost::apply_visitor(
+					endpoint_async_resolve_visitor(
+						m_resolver,
+						to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+						query::address_configured,
+						DEFAULT_SERVICE,
+						boost::bind(&core::do_greet, this, _1, _2, ep)
+						),
+					ep
+					);
 		}
 	}
 

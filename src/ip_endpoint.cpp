@@ -40,7 +40,7 @@
 /**
  * \file ip_endpoint.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An IP endpoint class.
+ * \brief IP endpoint classes.
  */
 
 #include "ip_endpoint.hpp"

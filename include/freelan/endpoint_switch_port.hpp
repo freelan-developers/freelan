@@ -105,9 +105,9 @@ namespace freelan
 	 */
 	bool operator==(const endpoint_switch_port& lhs, const endpoint_switch_port& rhs);
 
-	inline endpoint_switch_port::endpoint_switch_port(fscp::server& server, fscp::server::ep_type endpoint) :
+	inline endpoint_switch_port::endpoint_switch_port(fscp::server& server, fscp::server::ep_type ep) :
 		m_server(server),
-		m_endpoint(endpoint)
+		m_endpoint(ep)
 	{
 	}
 

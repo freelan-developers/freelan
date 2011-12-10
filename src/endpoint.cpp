@@ -40,7 +40,7 @@
 /**
  * \file endpoint.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An endpoint class.
+ * \brief An endpoint type.
  */
 
 #include "endpoint.hpp"

@@ -46,82 +46,80 @@
 #ifndef FREELAN_HOSTNAME_ENDPOINT_HPP
 #define FREELAN_HOSTNAME_ENDPOINT_HPP
 
-#include "endpoint.hpp"
+#include <string>
 
-#include <boost/optional.hpp>
+#include <boost/asio.hpp>
+#include <boost/function.hpp>
 
 namespace freelan
 {
 	/**
 	 * \brief A hostname endpoint class.
 	 */
-	class hostname_endpoint : public endpoint
+	class hostname_endpoint
 	{
 		public:
 
 			/**
-			 * \brief The host type.
+			 * \brief The resolver type.
 			 */
-			typedef std::string hostname_type;
+			typedef boost::asio::ip::udp::resolver resolver;
 
 			/**
-			 * \brief The service type.
+			 * \brief The handler type.
 			 */
-			typedef boost::optional<base_service_type> service_type;
+			typedef boost::function<void (const boost::system::error_code&, resolver::iterator)> handler;
 
 			/**
 			 * \brief Create a hostname endpoint.
-			 * \param host The host component.
-			 * \param service The service component.
+			 * \param _hostname The hostname component.
+			 * \param _service The service component. An empty service indicates that the default service value should be used.
 			 */
-			hostname_endpoint(const hostname_type& address, const service_type& service = service_type());
+			hostname_endpoint(const std::string& _hostname = "", const std::string& _service = "") :
+				m_hostname(_hostname),
+				m_service(_service)
+			{
+			}
 
 			/**
-			 * \brief Perform a host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
+			 * \brief Get the hostname.
+			 * \return The hostname.
 			 */
-			endpoint::ep_type resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service);
+			const std::string& hostname() const { return m_hostname; }
 
 			/**
-			 * \brief Perform an asynchronous host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
-			 * \param handler The handler.
+			 * \brief Get the service.
+			 * \return The service.
 			 */
-			void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, endpoint::handler_type handler);
-
-		protected:
-
-			std::ostream& write(std::ostream&) const;
+			const std::string& service() const { return m_service; }
 
 		private:
 
-			hostname_type m_hostname;
-			service_type m_service;
+			std::string m_hostname;
+			std::string m_service;
 	};
 
-	inline hostname_endpoint::hostname_endpoint(const hostname_type& host, const service_type& service) :
-		m_hostname(host),
-		m_service(service)
-	{
-	}
+	/**
+	 * \brief Perform a host resolution on the endpoint.
+	 * \param ep The endpoint to resolve.
+	 * \param resolver The resolver to use.
+	 * \param protocol The protocol to use.
+	 * \param flags The flags to use for the resolution.
+	 * \param default_service The default service to use.
+	 * \return The endpoint.
+	 */
+	boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service);
 
-	inline std::ostream& hostname_endpoint::write(std::ostream& os) const
-	{
-		if (m_service)
-		{
-			return os << m_hostname << ":" << *m_service;
-		}
-		else
-		{
-			return os << m_hostname << ":<default>";
-		}
-	}
+	/**
+	 * \brief Perform an asynchronous host resolution on the endpoint.
+	 * \param ep The endpoint to resolve.
+	 * \param resolver The resolver to use.
+	 * \param protocol The protocol to use.
+	 * \param flags The flags to use for the resolution.
+	 * \param default_service The default service to use.
+	 * \param handler The handler.
+	 */
+	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, hostname_endpoint::handler handler);
 }
 
 #endif /* FREELAN_HOSTNAME_ENDPOINT_HPP */

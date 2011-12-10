@@ -76,12 +76,12 @@ namespace freelan
 		/**
 		 * \brief The endpoint type.
 		 */
-		typedef boost::shared_ptr<endpoint> ep_type;
+		typedef freelan::endpoint endpoint;
 
 		/**
 		 * \brief The endpoint list type.
 		 */
-		typedef std::vector<ep_type> ep_list_type;
+		typedef std::vector<endpoint> endpoint_list;
 
 		/**
 		 * \brief The hostname resolution protocol type.
@@ -100,12 +100,12 @@ namespace freelan
 		/**
 		 * \brief The endpoint to listen on.
 		 */
-		ep_type listen_on;
+		endpoint listen_on;
 
 		/**
 		 * \brief The contact list.
 		 */
-		ep_list_type contact_list;
+		endpoint_list contact_list;
 
 		/**
 		 * \brief The hostname resolution protocol.
@@ -363,7 +363,7 @@ namespace freelan
 	 * \param value The value to convert.
 	 * \return The boost::asio::ip::udp.
 	 */
-	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value);
+	boost::asio::ip::udp to_protocol(fscp_configuration::hostname_resolution_protocol_type value);
 
 	/**
 	 * \brief Input a hostname resolution protocol.

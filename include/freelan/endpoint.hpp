@@ -40,87 +40,208 @@
 /**
  * \file endpoint.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An endpoint class.
+ * \brief An endpoint type.
  */
 
 #ifndef FREELAN_ENDPOINT_HPP
 #define FREELAN_ENDPOINT_HPP
 
+#include <iostream>
+
 #include <boost/asio.hpp>
+#include <boost/variant.hpp>
 #include <boost/function.hpp>
+
+#include "hostname_endpoint.hpp"
+#include "ip_endpoint.hpp"
 
 namespace freelan
 {
 	/**
-	 * \brief A base endpoint class.
+	 * \brief The endpoint type.
 	 */
-	class endpoint
+	typedef boost::variant<hostname_endpoint, ipv4_endpoint, ipv6_endpoint> endpoint;
+
+	/**
+	 * \brief A visitor that resolves endpoints.
+	 */
+	class endpoint_resolve_visitor : public boost::static_visitor<boost::asio::ip::udp::endpoint>
 	{
 		public:
 
 			/**
-			 * \brief Virtual destructor.
+			 * \brief The resolver type.
 			 */
-			virtual ~endpoint();
+			typedef boost::asio::ip::udp::resolver resolver;
 
 			/**
-			 * \brief The protocol type.
+			 * \brief Create a new endpoint_resolve_visitor.
+			 * \param resolver The resolver to use.
+			 * \param protocol The protocol to use.
+			 * \param flags The flags to use for the resolution.
+			 * \param default_service The default service to use.
 			 */
-			typedef boost::asio::ip::udp::resolver::query::protocol_type protocol_type;
+			endpoint_resolve_visitor(resolver& resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service) :
+				m_resolver(resolver),
+				m_protocol(protocol),
+				m_flags(flags),
+				m_default_service(default_service)
+			{
+			}
+
 
 			/**
-			 * \brief The flags type.
+			 * \brief Resolve the specified endpoint.
+			 * \tparam T The type of the endpoint.
+			 * \param ep The endpoint.
+			 * \return The resolved endpoint.
 			 */
-			typedef boost::asio::ip::udp::resolver::query::flags flags_type;
+			template <typename T>
+			result_type operator()(const T& ep) const
+			{
+				return resolve(ep, m_resolver, m_protocol, m_flags, m_default_service);
+			}
+
+		private:
+
+			resolver& m_resolver;
+			resolver::query::protocol_type m_protocol;
+			resolver::query::flags m_flags;
+			std::string m_default_service;
+	};
+
+	/**
+	 * \brief A visitor that resolves endpoints asynchronously.
+	 */
+	class endpoint_async_resolve_visitor : public boost::static_visitor<>
+	{
+		public:
 
 			/**
-			 * \brief Base service type.
+			 * \brief The resolver type.
 			 */
-			typedef std::string base_service_type;
-
-			/**
-			 * \brief The Boost ASIO endpoint type.
-			 */
-			typedef boost::asio::ip::udp::endpoint ep_type;
+			typedef boost::asio::ip::udp::resolver resolver;
 
 			/**
 			 * \brief The handler type.
 			 */
-			typedef boost::function<void (const boost::system::error_code&, boost::asio::ip::udp::resolver::iterator)> handler_type;
+			typedef boost::function<void (const boost::system::error_code&, resolver::iterator)> handler;
 
 			/**
-			 * \brief Perform a host resolution on the endpoint.
+			 * \brief Create a new endpoint_async_resolve_visitor.
 			 * \param resolver The resolver to use.
 			 * \param protocol The protocol to use.
 			 * \param flags The flags to use for the resolution.
 			 * \param default_service The default service to use.
 			 */
-			virtual ep_type resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service) = 0;
+			endpoint_async_resolve_visitor(resolver& resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service, handler handler) :
+				m_resolver(resolver),
+				m_protocol(protocol),
+				m_flags(flags),
+				m_default_service(default_service),
+				m_handler(handler)
+			{
+			}
 
 			/**
-			 * \brief Perform an asynchronous host resolution on the endpoint.
-			 * \param resolver The resolver to use.
-			 * \param protocol The protocol to use.
-			 * \param flags The flags to use for the resolution.
-			 * \param default_service The default service to use.
-			 * \param handler The handler.
+			 * \brief Resolve the specified endpoint.
+			 * \tparam T The type of the endpoint.
+			 * \param ep The endpoint.
+			 * \return The resolved endpoint.
 			 */
-			virtual void async_resolve(boost::asio::ip::udp::resolver& resolver, protocol_type protocol, flags_type flags, const base_service_type& default_service, handler_type handler) = 0;
+			template <typename T>
+			void operator()(const T& ep) const
+			{
+				return async_resolve(ep, m_resolver, m_protocol, m_flags, m_default_service, m_handler);
+			}
 
-		protected:
+		private:
 
-			virtual std::ostream& write(std::ostream&) const = 0;
-
-			friend std::ostream& operator<<(std::ostream&, const endpoint&);
+			resolver& m_resolver;
+			resolver::query::protocol_type m_protocol;
+			resolver::query::flags m_flags;
+			std::string m_default_service;
+			handler m_handler;
 	};
 
-	std::ostream& operator<<(std::ostream&, const endpoint&);
-
-	inline endpoint::~endpoint() {}
-
-	inline std::ostream& operator<<(std::ostream& os, const endpoint& ep)
+	/**
+	 * \brief A visitor that write endpoints to output streams.
+	 */
+	class endpoint_output_visitor : public boost::static_visitor<std::ostream&>
 	{
-		return ep.write(os);
+		public:
+
+			/**
+			 * \brief Create a new endpoint_output_visitor.
+			 * \param os The output stream.
+			 */
+			endpoint_output_visitor(result_type os) : m_os(os) {}
+
+			/**
+			 * \brief Write the specified endpoint.
+			 * \tparam T The type of the endpoint.
+			 * \param ep The endpoint.
+			 */
+			template <typename T>
+			result_type operator()(const T& ep) const
+			{
+				return m_os << ep;
+			}
+
+		private:
+
+			result_type m_os;
+	};
+
+	/**
+	 * \brief A visitor that read endpoints from input streams.
+	 */
+	class endpoint_input_visitor : public boost::static_visitor<std::istream&>
+	{
+		public:
+
+			/**
+			 * \brief Create a new endpoint_input_visitor.
+			 * \param is The input stream.
+			 */
+			endpoint_input_visitor(result_type is) : m_is(is) {}
+
+			/**
+			 * \brief Read the specified endpoint.
+			 * \tparam T The type of the endpoint.
+			 * \param ep The endpoint.
+			 */
+			template <typename T>
+			result_type operator()(const T& ep) const
+			{
+				return m_is >> ep;
+			}
+
+		private:
+
+			result_type m_is;
+	};
+
+	/**
+	 * \brief Write an endpoint to an output stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	inline std::ostream& operator<<(std::ostream& os, const endpoint& value)
+	{
+		return boost::apply_visitor(endpoint_output_visitor(os), value);
+	}
+
+	/**
+	 * \brief Read an endpoint from an input stream.
+	 * \param is The input stream.
+	 * \param value The value.
+	 * \return is.
+	 */
+	inline std::istream& operator>>(std::istream& is, const endpoint& value)
+	{
+		return boost::apply_visitor(endpoint_input_visitor(is), value);
 	}
 }
 

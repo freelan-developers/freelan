@@ -97,7 +97,7 @@ namespace freelan
 	{
 	}
 
-	boost::asio::ip::udp convert(fscp_configuration::hostname_resolution_protocol_type value)
+	boost::asio::ip::udp to_protocol(fscp_configuration::hostname_resolution_protocol_type value)
 	{
 		switch (value)
 		{
