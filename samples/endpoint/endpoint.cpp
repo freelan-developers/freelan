@@ -14,7 +14,18 @@ int main()
 {
 	try
 	{
-		freelan::hostname_endpoint he;
+		freelan::endpoint ep1 = freelan::hostname_endpoint("localhost", "1234");
+		freelan::endpoint ep2 = freelan::ipv4_endpoint(boost::asio::ip::address_v4::loopback(), 1234);
+		freelan::endpoint ep3 = freelan::ipv6_endpoint(boost::asio::ip::address_v6::loopback(), 1234);
+
+		// Output
+		std::cout << "ep1: " << ep1 << std::endl;
+		std::cout << "ep2: " << ep2 << std::endl;
+		std::cout << "ep3: " << ep3 << std::endl;
+
+		// Comparison
+		std::cout << "ep1 == ep2: " << (ep1 == ep2) << std::endl;
+		std::cout << "ep1 != ep2: " << (ep1 != ep2) << std::endl;
 	}
 	catch (std::exception& ex)
 	{
