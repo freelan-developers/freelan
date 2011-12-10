@@ -194,39 +194,6 @@ namespace freelan
 	};
 
 	/**
-	 * \brief A visitor that compares endpoints.
-	 */
-	class endpoint_differs_visitor : public boost::static_visitor<bool>
-	{
-		public:
-
-			/**
-			 * \brief Compare two endpoints of the same type.
-			 * \tparam T The endpoints type.
-			 * \param lhs The left argument.
-			 * \param rhs The right argument.
-			 * \return true if the two endpoints are different.
-			 */
-			template <typename T>
-			result_type operator()(const T& lhs, const T& rhs) const
-			{
-				return lhs != rhs;
-			}
-
-			/**
-			 * \brief Compare two endpoints of different types.
-			 * \tparam T The first endpoint type.
-			 * \tparam U The second endpoint type.
-			 * \return true, since two endpoints of different types can never be equal.
-			 */
-			template <typename T, typename U>
-			result_type operator()(const T&, const U&) const
-			{
-				return true;
-			}
-	};
-
-	/**
 	 * \brief Write an endpoint to an output stream.
 	 * \param os The output stream.
 	 * \param value The value.
@@ -253,7 +220,7 @@ namespace freelan
 	 */
 	inline bool operator!=(const endpoint& lhs, const endpoint& rhs)
 	{
-		return boost::apply_visitor(endpoint_differs_visitor(), lhs, rhs);
+		return !(lhs == rhs);
 	}
 }
 
