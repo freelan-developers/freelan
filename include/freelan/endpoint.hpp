@@ -212,7 +212,7 @@ namespace freelan
 			 * \param ep The endpoint.
 			 */
 			template <typename T>
-			result_type operator()(const T& ep) const
+			result_type operator()(T& ep) const
 			{
 				return m_is >> ep;
 			}
@@ -239,7 +239,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return is.
 	 */
-	inline std::istream& operator>>(std::istream& is, const endpoint& value)
+	inline std::istream& operator>>(std::istream& is, endpoint& value)
 	{
 		return boost::apply_visitor(endpoint_input_visitor(is), value);
 	}
