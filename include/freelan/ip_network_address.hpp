@@ -79,13 +79,19 @@ namespace freelan
 			 * \brief Get the address.
 			 * \return The address.
 			 */
-			const address_type& address() const { return m_address; }
+			const address_type& address() const
+			{
+				return m_address;
+			}
 
 			/**
 			 * \brief Get the prefix length.
 			 * \return The prefix length.
 			 */
-			unsigned int prefix_length() const { return m_prefix_length; }
+			unsigned int prefix_length() const
+			{
+				return m_prefix_length;
+			}
 
 		private:
 
@@ -134,7 +140,10 @@ namespace freelan
 	 * \return true if the two network addresses are different.
 	 */
 	template <typename AddressType>
-	inline bool operator!=(const ip_network_address<AddressType>& lhs, const ip_network_address<AddressType>& rhs) { return !(lhs == rhs); }
+	inline bool operator!=(const ip_network_address<AddressType>& lhs, const ip_network_address<AddressType>& rhs)
+	{
+		return !(lhs == rhs);
+	}
 
 	/**
 	 * \brief The IPv4 instantiation.

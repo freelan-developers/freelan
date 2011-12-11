@@ -55,32 +55,32 @@ namespace freelan
 	namespace
 	{
 		template <typename AddressType>
-			std::istream& read_ip_address_prefix_length(std::istream& is, std::string& ip_address, std::string& prefix_length)
+		std::istream& read_ip_address_prefix_length(std::istream& is, std::string& ip_address, std::string& prefix_length)
+		{
+			if (is.good())
 			{
-				if (is.good())
+				if (read_ip_address<AddressType>(is, ip_address))
 				{
-					if (read_ip_address<AddressType>(is, ip_address))
+					if (is.good() && (is.peek() == '/'))
 					{
-						if (is.good() && (is.peek() == '/'))
-						{
-							is.ignore();
+						is.ignore();
 
-							if (!read_prefix_length<AddressType>(is, prefix_length))
-							{
-								putback(is, ip_address + '/');
-								is.setstate(std::ios_base::failbit);
-							}
-						}
-						else
+						if (!read_prefix_length<AddressType>(is, prefix_length))
 						{
-							putback(is, ip_address);
+							putback(is, ip_address + '/');
 							is.setstate(std::ios_base::failbit);
 						}
 					}
+					else
+					{
+						putback(is, ip_address);
+						is.setstate(std::ios_base::failbit);
+					}
 				}
-
-				return is;
 			}
+
+			return is;
+		}
 	}
 
 	template <typename AddressType>

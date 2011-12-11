@@ -111,7 +111,7 @@ namespace freelan
 
 		return is;
 	}
-	
+
 	bool operator==(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
 	{
 		return (lhs.hostname() == rhs.hostname()) && (lhs.service() == rhs.service());

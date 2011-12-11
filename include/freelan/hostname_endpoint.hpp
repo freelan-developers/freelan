@@ -85,13 +85,19 @@ namespace freelan
 			 * \brief Get the hostname.
 			 * \return The hostname.
 			 */
-			const std::string& hostname() const { return m_hostname; }
+			const std::string& hostname() const
+			{
+				return m_hostname;
+			}
 
 			/**
 			 * \brief Get the service.
 			 * \return The service.
 			 */
-			const std::string& service() const { return m_service; }
+			const std::string& service() const
+			{
+				return m_service;
+			}
 
 		private:
 
@@ -151,7 +157,10 @@ namespace freelan
 	 * \param rhs The right argument.
 	 * \return true if the two endpoints are different.
 	 */
-	inline bool operator!=(const hostname_endpoint& lhs, const hostname_endpoint& rhs) { return !(lhs == rhs); }
+	inline bool operator!=(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
+	{
+		return !(lhs == rhs);
+	}
 }
 
 #endif /* FREELAN_HOSTNAME_ENDPOINT_HPP */

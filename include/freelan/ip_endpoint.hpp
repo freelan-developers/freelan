@@ -100,20 +100,29 @@ namespace freelan
 			 * \brief Get the address.
 			 * \return The address.
 			 */
-			const address_type& address() const { return m_address; }
+			const address_type& address() const
+			{
+				return m_address;
+			}
 
 			/**
 			 * \brief Check if the ip_endpoint contains a valid port number.
 			 * \return true if the ip_endpoint contains a valid port number.
 			 */
-			bool has_port() const { return m_port; }
+			bool has_port() const
+			{
+				return m_port;
+			}
 
 			/**
 			 * \brief Get the port number.
 			 * \return The port number.
 			 * \warning If has_port() is false, calling port() is undefined behavior.
 			 */
-			uint16_t port() const { return *m_port; }
+			uint16_t port() const
+			{
+				return *m_port;
+			}
 
 		private:
 
@@ -218,7 +227,10 @@ namespace freelan
 	 * \return true if the two endpoints are different.
 	 */
 	template <typename AddressType>
-	inline bool operator!=(const ip_endpoint<AddressType>& lhs, const ip_endpoint<AddressType>& rhs) { return !(lhs == rhs); }
+	inline bool operator!=(const ip_endpoint<AddressType>& lhs, const ip_endpoint<AddressType>& rhs)
+	{
+		return !(lhs == rhs);
+	}
 
 	/**
 	 * \brief The IPv4 instantiation.

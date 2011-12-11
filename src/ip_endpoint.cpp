@@ -52,79 +52,79 @@ namespace freelan
 	namespace
 	{
 		template <typename AddressType>
-			std::istream& read_ip_address_port(std::istream& is, std::string& ip_address, std::string& port);
+		std::istream& read_ip_address_port(std::istream& is, std::string& ip_address, std::string& port);
 
 		template <>
-			std::istream& read_ip_address_port<boost::asio::ip::address_v4>(std::istream& is, std::string& ip_address, std::string& port)
+		std::istream& read_ip_address_port<boost::asio::ip::address_v4>(std::istream& is, std::string& ip_address, std::string& port)
+		{
+			if (is.good())
 			{
-				if (is.good())
+				if (read_ip_address<boost::asio::ip::address_v4>(is, ip_address))
 				{
-					if (read_ip_address<boost::asio::ip::address_v4>(is, ip_address))
-					{
-						if (is.good() && (is.peek() == ':'))
-						{
-							is.ignore();
-
-							if (!read_port(is, port))
-							{
-								putback(is, ip_address + ':');
-								is.setstate(std::ios_base::failbit);
-							}
-						}
-					}
-				}
-
-				return is;
-			}
-
-		template <>
-			std::istream& read_ip_address_port<boost::asio::ip::address_v6>(std::istream& is, std::string& ip_address, std::string& port)
-			{
-				if (is.good())
-				{
-					if (is.peek() == '[')
+					if (is.good() && (is.peek() == ':'))
 					{
 						is.ignore();
 
-						if (!read_ip_address<boost::asio::ip::address_v6>(is, ip_address))
+						if (!read_port(is, port))
 						{
-							is.clear();
-							is.putback('[');
+							putback(is, ip_address + ':');
+							is.setstate(std::ios_base::failbit);
+						}
+					}
+				}
+			}
+
+			return is;
+		}
+
+		template <>
+		std::istream& read_ip_address_port<boost::asio::ip::address_v6>(std::istream& is, std::string& ip_address, std::string& port)
+		{
+			if (is.good())
+			{
+				if (is.peek() == '[')
+				{
+					is.ignore();
+
+					if (!read_ip_address<boost::asio::ip::address_v6>(is, ip_address))
+					{
+						is.clear();
+						is.putback('[');
+						is.setstate(std::ios_base::failbit);
+					}
+					else
+					{
+						if (is.peek() != ']')
+						{
+							// End bracket not found: lets put back everything and fail.
+							putback(is, '[' + ip_address);
 							is.setstate(std::ios_base::failbit);
 						}
 						else
 						{
-							if (is.peek() != ']')
-							{
-								// End bracket not found: lets put back everything and fail.
-								putback(is, '[' + ip_address);
-								is.setstate(std::ios_base::failbit);
-							}
-							else
+							is.ignore();
+
+							if (is.good() && (is.peek() == ':'))
 							{
 								is.ignore();
 
-								if (is.good() && (is.peek() == ':'))
+								if (!read_port(is, port))
 								{
-									is.ignore();
-
-									if (!read_port(is, port))
-									{
-										putback(is, '[' + ip_address + ']' + ':');
-										is.setstate(std::ios_base::failbit);
-									}
+									putback(is, '[' + ip_address + ']' + ':');
+									is.setstate(std::ios_base::failbit);
 								}
 							}
 						}
 					}
-					else
-					{
-						read_ip_address<boost::asio::ip::address_v6>(is, ip_address);
-					}
 				}
-
-				return is;
+				else
+				{
+					read_ip_address<boost::asio::ip::address_v6>(is, ip_address);
+				}
 			}
+
+			return is;
+		}
 	}
 
 	template <typename AddressType>

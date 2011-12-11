@@ -66,62 +66,62 @@ namespace freelan
 	}
 
 	template <typename AddressType>
-		bool is_ip_address_character(char c);
+	bool is_ip_address_character(char c);
 
 	template <>
-		bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
-		{
-			return (std::isdigit(c) || (c == '.'));
-		}
+	bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
+	{
+		return (std::isdigit(c) || (c == '.'));
+	}
 
 	template <>
-		bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
-		{
-			return (std::isxdigit(c) || (c == ':'));
-		}
+	bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
+	{
+		return (std::isxdigit(c) || (c == ':'));
+	}
 
 	template <typename AddressType>
-		std::istream& read_ip_address(std::istream& is, std::string& ip_address)
+	std::istream& read_ip_address(std::istream& is, std::string& ip_address)
+	{
+		if (is.good())
 		{
-			if (is.good())
+			if (!is_ip_address_character<AddressType>(is.peek()))
 			{
-				if (!is_ip_address_character<AddressType>(is.peek()))
+				is.setstate(std::ios_base::failbit);
+			}
+			else
+			{
+				std::ostringstream oss;
+
+				do
 				{
-					is.setstate(std::ios_base::failbit);
+					oss.put(static_cast<char>(is.get()));
 				}
-				else
+				while (is.good() && is_ip_address_character<AddressType>(is.peek()));
+
+				if (is)
 				{
-					std::ostringstream oss;
+					const std::string& result = oss.str();
+					boost::system::error_code ec;
 
-					do
+					AddressType::from_string(result, ec);
+
+					if (ec)
 					{
-						oss.put(static_cast<char>(is.get()));
+						// Unable to parse the IP address: putting back characters.
+						putback(is, result);
+						is.setstate(std::ios_base::failbit);
 					}
-					while (is.good() && is_ip_address_character<AddressType>(is.peek()));
-
-					if (is)
+					else
 					{
-						const std::string& result = oss.str();
-						boost::system::error_code ec;
-
-						AddressType::from_string(result, ec);
-
-						if (ec)
-						{
-							// Unable to parse the IP address: putting back characters.
-							putback(is, result);
-							is.setstate(std::ios_base::failbit);
-						}
-						else
-						{
-							ip_address = result;
-						}
+						ip_address = result;
 					}
 				}
 			}
-
-			return is;
 		}
+
+		return is;
+	}
 
 	template std::istream& read_ip_address<boost::asio::ip::address_v4>(std::istream& is, std::string& ip_address);
 	template std::istream& read_ip_address<boost::asio::ip::address_v6>(std::istream& is, std::string& ip_address);
