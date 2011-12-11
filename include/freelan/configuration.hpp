@@ -63,6 +63,7 @@
 #include <asiotap/osi/arp_proxy.hpp>
 
 #include "endpoint.hpp"
+#include "ip_network_address.hpp"
 
 namespace freelan
 {
@@ -214,24 +215,6 @@ namespace freelan
 		typedef asiotap::osi::proxy<asiotap::osi::arp_frame>::ethernet_address_type ethernet_address_type;
 
 		/**
-		 * \brief The IPv4 address/prefix length pair.
-		 */
-		struct ipv4_address_prefix_length_type
-		{
-			boost::asio::ip::address_v4 address;
-			unsigned int prefix_length;
-		};
-
-		/**
-		 * \brief The IPv6 address/prefix length pair.
-		 */
-		struct ipv6_address_prefix_length_type
-		{
-			boost::asio::ip::address_v6 address;
-			unsigned int prefix_length;
-		};
-
-		/**
 		 * \brief Constructor.
 		 */
 		tap_adapter_configuration();
@@ -244,12 +227,12 @@ namespace freelan
 		/**
 		 * \brief The IPv4 tap adapter address.
 		 */
-		boost::optional<ipv4_address_prefix_length_type> ipv4_address_prefix_length;
+		boost::optional<ipv4_network_address> ipv4_address_prefix_length;
 
 		/**
 		 * \brief The IPv6 tap adapter address.
 		 */
-		boost::optional<ipv6_address_prefix_length_type> ipv6_address_prefix_length;
+		boost::optional<ipv6_network_address> ipv6_address_prefix_length;
 
 		/**
 		 * \brief Whether to enable the ARP proxy.
@@ -269,12 +252,12 @@ namespace freelan
 		/**
 		 * \brief The DHCP server IPv4 address.
 		 */
-		boost::optional<ipv4_address_prefix_length_type> dhcp_server_ipv4_address_prefix_length;
+		boost::optional<ipv4_network_address> dhcp_server_ipv4_address_prefix_length;
 
 		/**
 		 * \brief The DHCP server IPv6 address.
 		 */
-		boost::optional<ipv6_address_prefix_length_type> dhcp_server_ipv6_address_prefix_length;
+		boost::optional<ipv6_network_address> dhcp_server_ipv6_address_prefix_length;
 
 		/**
 		 * \brief The up callback type.
@@ -422,22 +405,6 @@ namespace freelan
 	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value);
 
 	/**
-	 * \brief Output an IPv4 address/prefix length to a stream.
-	 * \param os The output stream.
-	 * \param value The IPv4 address/prefix length.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv4_address_prefix_length_type value);
-
-	/**
-	 * \brief Output an IPv6 address/prefix length to a stream.
-	 * \param os The output stream.
-	 * \param value The IPv6 address/prefix length.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv6_address_prefix_length_type value);
-
-	/**
 	 * \brief Input a routing method.
 	 * \param is The input stream.
 	 * \param value The value to read.
@@ -452,16 +419,6 @@ namespace freelan
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, switch_configuration::routing_method_type& value);
-
-	inline std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv4_address_prefix_length_type value)
-	{
-		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;
-	}
-
-	inline std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ipv6_address_prefix_length_type value)
-	{
-		return os << value.address << "/" << std::dec << std::setw(0) << value.prefix_length;
-	}
 }
 
 #endif /* FREELAN_CONFIGURATION_HPP */
