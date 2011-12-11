@@ -51,6 +51,21 @@ namespace freelan
 {
 	namespace
 	{
+		// Hostname labels are 63 characters long at most
+		const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
+		// Hostnames are at most 255 characters long
+		const size_t HOSTNAME_MAX_SIZE = 255;
+
+		size_t get_size(std::ostringstream& oss)
+		{
+			const std::streampos initial_position = oss.tellp();
+			oss.seekp(0, std::ios::end);
+			const size_t result = oss.tellp();
+			oss.seekp(initial_position);
+
+			return result;
+		}
+
 		bool is_hostname_label_regular_character(char c)
 		{
 			return std::isalnum(c);
@@ -66,7 +81,7 @@ namespace freelan
 			return is_hostname_label_regular_character(c) || is_hostname_label_special_character(c);
 		}
 
-		std::istream& read_hostname_label(std::istream& is, std::string& label)
+		std::istream& read_hostname_label(std::istream& is, std::string& label, size_t max_size = HOSTNAME_LABEL_MAX_SIZE)
 		{
 			// Parse hostname labels according to RFC1123
 
@@ -80,14 +95,11 @@ namespace freelan
 				{
 					std::ostringstream oss;
 
-					// Hostname labels are 63 characters long at most
-					const size_t hostname_label_max_size = 63;
-
 					do
 					{
 						oss.put(static_cast<char>(is.get()));
 					}
-					while (is.good() && (oss.tellp() < static_cast<std::streampos>(hostname_label_max_size)) && is_hostname_label_character(is.peek()));
+					while (is.good() && (get_size(oss) < max_size) && is_hostname_label_character(is.peek()));
 
 					if (is)
 					{
@@ -107,46 +119,35 @@ namespace freelan
 
 			if (read_hostname_label(is, label))
 			{
-				if (is.good())
+				if (is.eof())
 				{
-					// Don't replace this with:
-					// std::ostringstream oss(label);
-					//
-					// Or tellp() will give an incorrect value !
-					std::ostringstream oss;
+					// There is nothing more to read: lets use the content of the first label
+					std::swap(hostname, label);
+				}
+				else
+				{
+					std::ostringstream oss(label);
+					oss.seekp(0, std::ios::end);
 
-					oss << label;
-
-					// Hostnames are at most 255 characters long
-					const size_t hostname_max_size = 255;
-
-					while (is.good() && (oss.tellp() < static_cast<std::streampos>(hostname_max_size - 1)) && (is.peek() == '.'))
+					while (is.good() && (is.peek() == '.') && (get_size(oss) + 1 < HOSTNAME_MAX_SIZE))
 					{
-						oss << static_cast<char>(is.get());
+						is.ignore();
 
-						if (read_hostname_label(is, label))
+						if (!read_hostname_label(is, label, std::min(HOSTNAME_MAX_SIZE - get_size(oss) - 1, HOSTNAME_LABEL_MAX_SIZE)))
 						{
-							if (oss.tellp() > static_cast<std::streampos>(hostname_max_size - label.size()))
-							{
-								size_t cnt = hostname_max_size - oss.tellp();
-								oss << label.substr(0, cnt);
-								is.seekg(-static_cast<std::streamoff>(label.size() - cnt), std::ios_base::cur);
-							}
-							else
-							{
-								oss << label;
-							}
+							is.clear();
+							is.putback('.');
+
+							break;
 						}
+
+						oss << '.' << label;
 					}
 
 					if (is)
 					{
 						hostname = oss.str();
 					}
-				}
-				else
-				{
-					std::swap(hostname, label);
 				}
 			}
 
@@ -185,9 +186,15 @@ namespace freelan
 		{
 			if (read_hostname(is, hostname))
 			{
-				if (is.good() && (is.get() == ':'))
+				if (is.good() && (is.peek() == ':'))
 				{
-					read_service(is, service);
+					is.ignore();
+
+					if (!read_service(is, service))
+					{
+						is.clear();
+						is.putback(':');
+					}
 				}
 			}
 
