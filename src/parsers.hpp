@@ -76,33 +76,6 @@ template <typename Type>
 boost::optional<Type> parse_optional(const std::string& str);
 
 /**
- * \brief Parse an IPv4 address.
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::asio::ip::address_v4& val);
-
-/**
- * \brief Parse an IPv6 address.
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, boost::asio::ip::address_v6& val);
-
-/**
- * \brief Parse a port number.
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, uint16_t& val);
-
-/**
  * \brief Parse a prefix length
  * \param begin The first character to parse.
  * \param end The last character to stop parsing at.
@@ -137,15 +110,6 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv6_address_prefix_length_type& val);
-
-/**
- * \brief Parse an endpoint.
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::fscp_configuration::ep_type& val);
 
 template <typename Type>
 inline Type parse(const std::string& str)

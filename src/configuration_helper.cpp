@@ -102,9 +102,9 @@ po::options_description get_fscp_options()
 
 	result.add_options()
 	("fscp.hostname_resolution_protocol", po::value<fl::fscp_configuration::hostname_resolution_protocol_type>()->default_value(fl::fscp_configuration::HRP_IPV4), "The hostname resolution protocol to use.")
-	("fscp.listen_on", po::value<std::string>()->default_value("0.0.0.0:12000"), "The endpoint to listen on.")
+	("fscp.listen_on", po::value<fl::endpoint>()->default_value(fl::ipv4_endpoint(boost::asio::ip::address_v4::any(), 12000)), "The endpoint to listen on.")
 	("fscp.hello_timeout", po::value<millisecond_duration>()->default_value(3000), "The default timeout for HELLO messages, in milliseconds.")
-	("fscp.contact", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The address of an host to contact.")
+	("fscp.contact", po::value<std::vector<fl::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::endpoint>(), ""), "The address of an host to contact.")
 	;
 
 	return result;
@@ -169,17 +169,10 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
-	configuration.fscp.listen_on = parse<fl::fscp_configuration::ep_type>(vm["fscp.listen_on"].as<std::string>());
+	configuration.fscp.listen_on = vm["fscp.listen_on"].as<fl::endpoint>();
 	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>();
 
-	const std::vector<std::string> contact_list = vm["fscp.contact"].as<std::vector<std::string> >();
-
-	configuration.fscp.contact_list.clear();
-
-	BOOST_FOREACH(const std::string& contact, contact_list)
-	{
-		configuration.fscp.contact_list.push_back(parse<fl::fscp_configuration::ep_type>(contact));
-	}
+	configuration.fscp.contact_list = vm["fscp.contact"].as<std::vector<fl::endpoint> >();
 
 	// Security options
 	cert_type signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<fs::path>(), root));
