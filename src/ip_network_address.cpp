@@ -38,14 +38,15 @@
  */
 
 /**
- * \file hostname_endpoint.cpp
+ * \file ip_network_address.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A hostname endpoint class.
+ * \brief IP network address classes.
  */
 
-#include "hostname_endpoint.hpp"
+#include "ip_network_address.hpp"
 
-#include <cassert>
+#include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "stream_operations.hpp"
 
@@ -53,67 +54,52 @@ namespace freelan
 {
 	namespace
 	{
-		std::istream& read_hostname_service(std::istream& is, std::string& hostname, std::string& service)
-		{
-			if (read_hostname(is, hostname))
+		template <typename AddressType>
+			std::istream& read_ip_address_prefix_length(std::istream& is, std::string& ip_address, std::string& prefix_length)
 			{
-				if (is.good() && (is.peek() == ':'))
+				if (is.good())
 				{
-					is.ignore();
-
-					if (!read_service(is, service))
+					if (read_ip_address<AddressType>(is, ip_address))
 					{
-						putback(is, hostname + ':');
-						is.setstate(std::ios_base::failbit);
+						if (is.good() && (is.peek() == '/'))
+						{
+							is.ignore();
+
+							if (!read_prefix_length<AddressType>(is, prefix_length))
+							{
+								putback(is, ip_address + '/');
+								is.setstate(std::ios_base::failbit);
+							}
+						}
+						else
+						{
+							putback(is, ip_address);
+							is.setstate(std::ios_base::failbit);
+						}
 					}
 				}
+
+				return is;
 			}
-
-			return is;
-		}
 	}
 
-	boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service)
+	template <typename AddressType>
+	std::istream& operator>>(std::istream& is, ip_network_address<AddressType>& value)
 	{
-		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
+		std::string ip_address;
+		std::string prefix_length;
 
-		return *resolver.resolve(query);
-	}
-
-	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, hostname_endpoint::handler handler)
-	{
-		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
-
-		resolver.async_resolve(query, handler);
-	}
-
-	std::ostream& operator<<(std::ostream& os, const hostname_endpoint& value)
-	{
-		os << value.hostname();
-
-		if (!value.service().empty())
+		if (read_ip_address_prefix_length<AddressType>(is, ip_address, prefix_length))
 		{
-			os << ":" << value.service();
-		}
-
-		return os;
-	}
-
-	std::istream& operator>>(std::istream& is, hostname_endpoint& value)
-	{
-		std::string hostname;
-		std::string service;
-
-		if (read_hostname_service(is, hostname, service))
-		{
-			value = hostname_endpoint(hostname, service);
+			value = ip_network_address<AddressType>(AddressType::from_string(ip_address), boost::lexical_cast<unsigned int>(prefix_length));
 		}
 
 		return is;
 	}
-	
-	bool operator==(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
+
+	template <typename AddressType>
+	std::ostream& operator<<(std::ostream& os, const ip_network_address<AddressType>& value)
 	{
-		return (lhs.hostname() == rhs.hostname()) && (lhs.service() == rhs.service());
+		return os << value.address().to_string() << "/" << std::dec << value.prefix_length();
 	}
 }
