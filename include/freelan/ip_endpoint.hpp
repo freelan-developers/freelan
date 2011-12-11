@@ -64,6 +64,12 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief Get a null IP endpoint.
+			 * \return A null IP endpoint.
+			 */
+			static ip_endpoint null() { return ip_endpoint(); }
+
+			/**
 			 * \brief The address type.
 			 */
 			typedef AddressType address_type;
