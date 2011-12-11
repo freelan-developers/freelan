@@ -10,6 +10,8 @@
 #include <csignal>
 #include <iostream>
 
+#include <boost/lexical_cast.hpp>
+
 int main()
 {
 	try
@@ -32,6 +34,11 @@ int main()
 		std::cin >> ep1;
 
 		std::cout << "ep1: " << ep1 << std::endl;
+
+		// Conversions
+		std::cout << boost::lexical_cast<freelan::endpoint>("127.1:45") << std::endl;
+		std::cout << boost::lexical_cast<freelan::endpoint>("[3::4:5ae]:78") << std::endl;
+		std::cout << boost::lexical_cast<freelan::endpoint>("some.host.com:service") << std::endl;
 	}
 	catch (std::exception& ex)
 	{
