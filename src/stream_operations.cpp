@@ -195,6 +195,9 @@ namespace freelan
 		return is;
 	}
 
+	template std::istream& read_prefix_length<boost::asio::ip::address_v4>(std::istream& is, std::string& prefix_length);
+	template std::istream& read_prefix_length<boost::asio::ip::address_v6>(std::istream& is, std::string& prefix_length);
+
 	// Hostname labels are 63 characters long at most
 	const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
 

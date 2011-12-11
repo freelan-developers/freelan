@@ -102,4 +102,9 @@ namespace freelan
 	{
 		return os << value.address().to_string() << "/" << std::dec << value.prefix_length();
 	}
+
+	template std::istream& operator>>(std::istream& is, ipv4_network_address& value);
+	template std::istream& operator>>(std::istream& is, ipv6_network_address& value);
+	template std::ostream& operator<<(std::ostream& is, const ipv4_network_address& value);
+	template std::ostream& operator<<(std::ostream& is, const ipv6_network_address& value);
 }
