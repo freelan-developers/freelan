@@ -149,8 +149,8 @@ namespace freelan
 
 						if (!read_port(is, port))
 						{
-							is.clear();
-							is.putback(':');
+							putback(is, ip_address + ':');
+							is.setstate(std::ios_base::failbit);
 						}
 					}
 				}
@@ -192,8 +192,8 @@ namespace freelan
 
 								if (!read_port(is, port))
 								{
-									is.clear();
-									is.putback(':');
+									putback(is, '[' + ip_address + ']' + ':');
+									is.setstate(std::ios_base::failbit);
 								}
 							}
 						}

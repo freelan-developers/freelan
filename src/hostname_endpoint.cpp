@@ -95,7 +95,7 @@ namespace freelan
 			return is_hostname_label_regular_character(c) || is_hostname_label_special_character(c);
 		}
 
-		std::istream& read_hostname_label(std::istream& is, std::string& label, size_t max_size = HOSTNAME_LABEL_MAX_SIZE)
+		std::istream& read_hostname_label(std::istream& is, std::string& label)
 		{
 			// Parse hostname labels according to RFC1123
 
@@ -113,14 +113,14 @@ namespace freelan
 					{
 						oss.put(static_cast<char>(is.get()));
 					}
-					while (is.good() && (get_size(oss) < max_size) && is_hostname_label_character(is.peek()));
+					while (is.good() && is_hostname_label_character(is.peek()));
 
 					if (is)
 					{
 						const std::string& result = oss.str();
 
-						// Check if the last character is not a regular character or if it contains only digits
-						if ((!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
+						// Check if the label is too long, if the last character is not a regular character or if it contains only digits
+						if ((result.size() > HOSTNAME_LABEL_MAX_SIZE) || (!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
 						{
 							putback(is, result);
 							is.setstate(std::ios_base::failbit);
@@ -154,24 +154,35 @@ namespace freelan
 					std::ostringstream oss(label);
 					oss.seekp(0, std::ios::end);
 
-					while (is.good() && (is.peek() == '.') && (get_size(oss) + 1 < HOSTNAME_MAX_SIZE))
+					while (is.good() && (is.peek() == '.'))
 					{
 						is.ignore();
+						oss.put('.');
 
-						if (!read_hostname_label(is, label, std::min(HOSTNAME_MAX_SIZE - get_size(oss) - 1, HOSTNAME_LABEL_MAX_SIZE)))
+						if (!read_hostname_label(is, label))
 						{
-							is.clear();
-							is.putback('.');
-
-							break;
+							putback(is, oss.str());
+							is.setstate(std::ios_base::failbit);
 						}
-
-						oss << '.' << label;
+						else
+						{
+							oss << label;
+						}
 					}
 
 					if (is)
 					{
-						hostname = oss.str();
+						const std::string& result = oss.str();
+
+						if (result.size() > HOSTNAME_MAX_SIZE)
+						{
+							putback(is, result);
+							is.setstate(std::ios_base::failbit);
+						}
+						else
+						{
+							hostname = result;
+						}
 					}
 				}
 			}
@@ -199,7 +210,28 @@ namespace freelan
 
 					if (is)
 					{
-						service = oss.str();
+						const std::string& result = oss.str();
+
+						// Check if the label is too long, if the last character is not a regular character or if it contains only digits
+						if (result.find_first_not_of("0123456789") == std::string::npos)
+						{
+							std::istringstream iss(result);
+							uint16_t num_service;
+
+							if (iss >> num_service)
+							{
+								service = result;
+							}
+							else
+							{
+								putback(is, result);
+								is.setstate(std::ios_base::failbit);
+							}
+						}
+						else
+						{
+							service = result;
+						}
 					}
 				}
 			}
@@ -217,8 +249,8 @@ namespace freelan
 
 					if (!read_service(is, service))
 					{
-						is.clear();
-						is.putback(':');
+						putback(is, hostname + ':');
+						is.setstate(std::ios_base::failbit);
 					}
 				}
 			}
