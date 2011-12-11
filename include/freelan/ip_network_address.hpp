@@ -59,6 +59,12 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief Get a null network address.
+			 * \return A null network address.
+			 */
+			static ip_network_address null() { return ip_network_address(); }
+
+			/**
 			 * \brief The address type.
 			 */
 			typedef AddressType address_type;
@@ -66,7 +72,7 @@ namespace freelan
 			/**
 			 * \brief Create an IP network address.
 			 */
-			ip_network_address() {};
+			ip_network_address() : m_address(), m_prefix_length(0) {};
 
 			/**
 			 * \brief Create an IP network address.
