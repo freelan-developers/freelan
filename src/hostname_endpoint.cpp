@@ -218,7 +218,7 @@ namespace freelan
 							std::istringstream iss(result);
 							uint16_t num_service;
 
-							if (iss >> num_service)
+							if (iss >> std::dec >> num_service)
 							{
 								service = result;
 							}

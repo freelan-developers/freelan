@@ -125,7 +125,7 @@ namespace freelan
 		{
 			uint16_t num_port;
 
-			if (is >> num_port)
+			if (is >> std::dec >> num_port)
 			{
 				port = boost::lexical_cast<std::string>(num_port);
 			}
