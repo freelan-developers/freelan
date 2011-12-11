@@ -153,7 +153,7 @@ namespace freelan
 			m_tap_adapter->open();
 
 			// IPv4 address
-			if (m_configuration.tap_adapter.ipv4_address_prefix_length)
+			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 			{
 				try
 				{
@@ -165,14 +165,14 @@ namespace freelan
 					if (!m_configuration.tap_adapter.dhcp_proxy_enabled)
 					{
 						m_tap_adapter->add_ip_address_v4(
-						    m_configuration.tap_adapter.ipv4_address_prefix_length->address(),
-						    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length()
+						    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+						    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
 						);
 					}
 #else
 					m_tap_adapter->add_ip_address_v4(
-					    m_configuration.tap_adapter.ipv4_address_prefix_length->address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length()
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
 					);
 #endif
 				}
@@ -183,13 +183,13 @@ namespace freelan
 			}
 
 			// IPv6 address
-			if (m_configuration.tap_adapter.ipv6_address_prefix_length)
+			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
 			{
 				try
 				{
 					m_tap_adapter->add_ip_address_v6(
-					    m_configuration.tap_adapter.ipv6_address_prefix_length->address(),
-					    m_configuration.tap_adapter.ipv6_address_prefix_length->prefix_length()
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
 					);
 				}
 				catch (std::runtime_error& ex)
@@ -219,17 +219,17 @@ namespace freelan
 				m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
 				m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
 
-				if (m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length)
+				if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
 				{
-					m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length->address());
+					m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.address());
 				}
 
-				if (m_configuration.tap_adapter.ipv4_address_prefix_length)
+				if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 				{
 					m_dhcp_proxy->add_entry(
 					    m_tap_adapter->ethernet_address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length->address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length()
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
 					);
 				}
 			}
@@ -287,13 +287,13 @@ namespace freelan
 			m_tap_adapter->set_connected_state(false);
 
 			// IPv6 address
-			if (m_configuration.tap_adapter.ipv6_address_prefix_length)
+			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
 			{
 				try
 				{
 					m_tap_adapter->remove_ip_address_v6(
-					    m_configuration.tap_adapter.ipv6_address_prefix_length->address(),
-					    m_configuration.tap_adapter.ipv6_address_prefix_length->prefix_length()
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
 					);
 				}
 				catch (std::runtime_error& ex)
@@ -303,13 +303,13 @@ namespace freelan
 			}
 
 			// IPv4 address
-			if (m_configuration.tap_adapter.ipv4_address_prefix_length)
+			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 			{
 				try
 				{
 					m_tap_adapter->remove_ip_address_v4(
-					    m_configuration.tap_adapter.ipv4_address_prefix_length->address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length->prefix_length()
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
 					);
 				}
 				catch (std::runtime_error& ex)
@@ -533,9 +533,9 @@ namespace freelan
 
 	bool core::on_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
 	{
-		if (m_configuration.tap_adapter.ipv4_address_prefix_length)
+		if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 		{
-			if (logical_address != m_configuration.tap_adapter.ipv4_address_prefix_length->address())
+			if (logical_address != m_configuration.tap_adapter.ipv4_address_prefix_length.address())
 			{
 				ethernet_address = m_configuration.tap_adapter.arp_proxy_fake_ethernet_address;
 

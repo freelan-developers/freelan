@@ -227,12 +227,12 @@ namespace freelan
 		/**
 		 * \brief The IPv4 tap adapter address.
 		 */
-		boost::optional<ipv4_network_address> ipv4_address_prefix_length;
+		ipv4_network_address ipv4_address_prefix_length;
 
 		/**
 		 * \brief The IPv6 tap adapter address.
 		 */
-		boost::optional<ipv6_network_address> ipv6_address_prefix_length;
+		ipv6_network_address ipv6_address_prefix_length;
 
 		/**
 		 * \brief Whether to enable the ARP proxy.
@@ -252,12 +252,12 @@ namespace freelan
 		/**
 		 * \brief The DHCP server IPv4 address.
 		 */
-		boost::optional<ipv4_network_address> dhcp_server_ipv4_address_prefix_length;
+		ipv4_network_address dhcp_server_ipv4_address_prefix_length;
 
 		/**
 		 * \brief The DHCP server IPv6 address.
 		 */
-		boost::optional<ipv6_network_address> dhcp_server_ipv6_address_prefix_length;
+		ipv6_network_address dhcp_server_ipv6_address_prefix_length;
 
 		/**
 		 * \brief The up callback type.
