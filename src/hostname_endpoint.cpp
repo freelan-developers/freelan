@@ -117,7 +117,18 @@ namespace freelan
 
 					if (is)
 					{
-						label = oss.str();
+						const std::string& result = oss.str();
+
+						// Check if the last character is not a regular character or if it contains only digits
+						if ((!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
+						{
+							putback(is, result);
+							is.setstate(std::ios_base::failbit);
+						}
+						else
+						{
+							label = result;
+						}
 					}
 				}
 			}
