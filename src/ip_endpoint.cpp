@@ -47,6 +47,48 @@
 
 namespace freelan
 {
+	namespace
+	{
+		template <typename AddressType>
+		bool is_ip_address_character(char c);
+
+		template <>
+		bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
+		{
+			return (std::isdigit(c) || (c == '.'));
+		}
+
+		template <>
+		bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
+		{
+			return (std::isxdigit(c) || (c == ':'));
+		}
+
+		template <typename AddressType>
+		std::istream& read_ip_address_port(std::istream& is, AddressType& ip_address, uint16_t& port)
+		{
+			//TODO: Implement.
+			(void)ip_address;
+			(void)port;
+
+			return is;
+		}
+	}
+
+	template <typename AddressType>
+	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value)
+	{
+		typename ip_endpoint<AddressType>::address_type ip_address;
+		uint16_t port;
+
+		if (read_ip_address_port(is, ip_address, port))
+		{
+			value = ip_endpoint<AddressType>(ip_address, port);
+		}
+
+		return is;
+	}
+
 	template <>
 	std::ostream& operator<<(std::ostream& os, const ipv4_endpoint& value)
 	{
@@ -60,14 +102,8 @@ namespace freelan
 		return os;
 	}
 
-	template <>
-	std::istream& operator>>(std::istream& is, ipv4_endpoint& value)
-	{
-		//TODO: Implement.
-		(void)value;
-
-		return is;
-	}
+	template std::istream& operator>>(std::istream& is, ipv4_endpoint& value);
+	template std::istream& operator>>(std::istream& is, ipv6_endpoint& value);
 
 	template <>
 	std::ostream& operator<<(std::ostream& os, const ipv6_endpoint& value)
@@ -82,14 +118,5 @@ namespace freelan
 		}
 
 		return os;
-	}
-
-	template <>
-	std::istream& operator>>(std::istream& is, ipv6_endpoint& value)
-	{
-		//TODO: Implement.
-		(void)value;
-
-		return is;
 	}
 }
