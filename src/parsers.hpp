@@ -64,27 +64,6 @@ template <typename Type>
 Type parse(const std::string& str);
 
 /**
- * \brief Parse an optional string.
- * \param str The string to parse.
- * \return The result of the parsing.
- *
- * If the string contains unparsed characters or if the parsing fails, an exception is thrown.
- *
- * An empty string returns boost::none.
- */
-template <typename Type>
-boost::optional<Type> parse_optional(const std::string& str);
-
-/**
- * \brief Parse a prefix length
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, unsigned int& val);
-
-/**
  * \brief Parse an Ethernet address.
  * \param begin The first character to parse.
  * \param end The last character to stop parsing at.
@@ -92,24 +71,6 @@ bool parse(std::string::const_iterator& begin, std::string::const_iterator end, 
  * \return true if the parsing succeeded. On false, the value of val is undetermined.
  */
 bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ethernet_address_type& val);
-
-/**
- * \brief Parse an IPv4 address and its prefix length.
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv4_address_prefix_length_type& val);
-
-/**
- * \brief Parse an IPv6 address and its prefix length.
- * \param begin The first character to parse.
- * \param end The last character to stop parsing at.
- * \param val The value to put the result into.
- * \return true if the parsing succeeded. On false, the value of val is undetermined.
- */
-bool parse(std::string::const_iterator& begin, std::string::const_iterator end, freelan::tap_adapter_configuration::ipv6_address_prefix_length_type& val);
 
 template <typename Type>
 inline Type parse(const std::string& str)
@@ -129,19 +90,6 @@ inline Type parse(const std::string& str)
 	}
 
 	return val;
-}
-
-template <typename Type>
-boost::optional<Type> parse_optional(const std::string& str)
-{
-	if (str.empty())
-	{
-		return boost::none;
-	}
-	else
-	{
-		return parse<Type>(str);
-	}
 }
 
 #endif /* PARSERS_HPP */

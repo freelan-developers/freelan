@@ -133,15 +133,20 @@ po::options_description get_tap_adapter_options()
 {
 	po::options_description result("Tap adapter options");
 
+	const fl::ipv4_network_address default_ipv4_network_address(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
+	const fl::ipv6_network_address default_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::1"), 10);
+	const fl::ipv4_network_address default_dhcp_ipv4_network_address(boost::asio::ip::address_v4::from_string("9.0.0.0"), 24);
+	const fl::ipv6_network_address default_dhcp_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::"), 10);
+
 	result.add_options()
 	("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
-	("tap_adapter.ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.1/24"), "The tap adapter IPv4 address and prefix length.")
-	("tap_adapter.ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::1/10"), "The tap adapter IPv6 address and prefix length.")
+	("tap_adapter.ipv4_address_prefix_length", po::value<fl::ipv4_network_address>()->default_value(default_ipv4_network_address), "The tap adapter IPv4 address and prefix length.")
+	("tap_adapter.ipv6_address_prefix_length", po::value<fl::ipv6_network_address>()->default_value(default_ipv6_network_address), "The tap adapter IPv6 address and prefix length.")
 	("tap_adapter.arp_proxy_enabled", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
 	("tap_adapter.arp_proxy_fake_ethernet_address", po::value<std::string>()->default_value("00:aa:bb:cc:dd:ee"), "The ARP proxy fake ethernet address.")
 	("tap_adapter.dhcp_proxy_enabled", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
-	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<std::string>()->default_value("9.0.0.0/24"), "The DHCP proxy server IPv4 address and prefix length.")
-	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<std::string>()->default_value("fe80::/10"), "The DHCP proxy server IPv6 address and prefix length.")
+	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<fl::ipv4_network_address>()->default_value(default_dhcp_ipv4_network_address), "The DHCP proxy server IPv4 address and prefix length.")
+	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<fl::ipv6_network_address>()->default_value(default_dhcp_ipv6_network_address), "The DHCP proxy server IPv6 address and prefix length.")
 	("tap_adapter.up_script", po::value<fs::path>()->default_value(""), "The tap adapter up script.")
 	("tap_adapter.down_script", po::value<fs::path>()->default_value(""), "The tap adapter down script.")
 	;
@@ -217,13 +222,13 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// Tap adapter options
 	configuration.tap_adapter.enabled = vm["tap_adapter.enabled"].as<bool>();
-	configuration.tap_adapter.ipv4_address_prefix_length = parse_optional<fl::tap_adapter_configuration::ipv4_address_prefix_length_type>(vm["tap_adapter.ipv4_address_prefix_length"].as<std::string>());
-	configuration.tap_adapter.ipv6_address_prefix_length = parse_optional<fl::tap_adapter_configuration::ipv6_address_prefix_length_type>(vm["tap_adapter.ipv6_address_prefix_length"].as<std::string>());
+	configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<fl::ipv4_network_address>();
+	configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<fl::ipv6_network_address>();
 	configuration.tap_adapter.arp_proxy_enabled = vm["tap_adapter.arp_proxy_enabled"].as<bool>();
 	configuration.tap_adapter.arp_proxy_fake_ethernet_address = parse<fl::tap_adapter_configuration::ethernet_address_type>(vm["tap_adapter.arp_proxy_fake_ethernet_address"].as<std::string>());
 	configuration.tap_adapter.dhcp_proxy_enabled = vm["tap_adapter.dhcp_proxy_enabled"].as<bool>();
-	configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length = parse_optional<fl::tap_adapter_configuration::ipv4_address_prefix_length_type>(vm["tap_adapter.dhcp_server_ipv4_address_prefix_length"].as<std::string>());
-	configuration.tap_adapter.dhcp_server_ipv6_address_prefix_length = parse_optional<fl::tap_adapter_configuration::ipv6_address_prefix_length_type>(vm["tap_adapter.dhcp_server_ipv6_address_prefix_length"].as<std::string>());
+	configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length = vm["tap_adapter.dhcp_server_ipv4_address_prefix_length"].as<fl::ipv4_network_address>();
+	configuration.tap_adapter.dhcp_server_ipv6_address_prefix_length = vm["tap_adapter.dhcp_server_ipv6_address_prefix_length"].as<fl::ipv6_network_address>();
 
 	// Switch options
 	configuration.switch_.routing_method = vm["switch.routing_method"].as<fl::switch_configuration::routing_method_type>();
