@@ -38,6 +38,8 @@ int main()
 		std::cout << boost::lexical_cast<freelan::endpoint>("127.1:45") << std::endl;
 		std::cout << boost::lexical_cast<freelan::endpoint>("[3::4:5ae]:78") << std::endl;
 		std::cout << boost::lexical_cast<freelan::endpoint>("some.host.com:service") << std::endl;
+		std::cout << boost::lexical_cast<freelan::ipv4_network_address>("9.0.0.1/24") << std::endl;
+		std::cout << boost::lexical_cast<freelan::ipv6_network_address>("fe80::1/10") << std::endl;
 	}
 	catch (std::exception& ex)
 	{
