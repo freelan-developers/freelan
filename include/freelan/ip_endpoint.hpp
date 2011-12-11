@@ -94,7 +94,7 @@ namespace freelan
 			 * \param address The address.
 			 * \param port The port number.
 			 */
-			ip_endpoint(const address_type& _address, uint16_t _port) : m_address(_address), m_port(_port) {};
+			ip_endpoint(const address_type& _address, boost::optional<uint16_t> _port) : m_address(_address), m_port(_port) {};
 
 			/**
 			 * \brief Get the address.
@@ -106,7 +106,7 @@ namespace freelan
 			 * \brief Check if the ip_endpoint contains a valid port number.
 			 * \return true if the ip_endpoint contains a valid port number.
 			 */
-			bool has_port() const { return static_cast<bool>(m_port); }
+			bool has_port() const { return m_port; }
 
 			/**
 			 * \brief Get the port number.

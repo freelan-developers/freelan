@@ -65,7 +65,7 @@ namespace freelan
 		}
 
 		template <typename AddressType>
-		std::istream& read_ip_address_port(std::istream& is, AddressType& ip_address, uint16_t& port)
+		std::istream& read_ip_address_port(std::istream& is, AddressType& ip_address, boost::optional<uint16_t>& port)
 		{
 			//TODO: Implement.
 			(void)ip_address;
@@ -79,7 +79,7 @@ namespace freelan
 	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value)
 	{
 		typename ip_endpoint<AddressType>::address_type ip_address;
-		uint16_t port;
+		boost::optional<uint16_t> port;
 
 		if (read_ip_address_port(is, ip_address, port))
 		{
