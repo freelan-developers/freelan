@@ -45,6 +45,8 @@
 
 #include "hostname_endpoint.hpp"
 
+#include <boost/bind.hpp>
+
 #include <cassert>
 
 namespace freelan
@@ -55,6 +57,18 @@ namespace freelan
 		const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
 		// Hostnames are at most 255 characters long
 		const size_t HOSTNAME_MAX_SIZE = 255;
+
+		std::istream& putback(std::istream& is, const std::string& str)
+		{
+			std::ios::iostate state = is.rdstate();
+			is.clear();
+
+			std::for_each(str.rbegin(), str.rend(), boost::bind(&std::istream::putback, boost::ref(is), _1));
+
+			is.setstate(state);
+
+			return is;
+		}
 
 		size_t get_size(std::ostringstream& oss)
 		{
