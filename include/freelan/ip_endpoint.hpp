@@ -80,6 +80,11 @@ namespace freelan
 
 			/**
 			 * \brief Create an IP endpoint.
+			 */
+			ip_endpoint() {};
+
+			/**
+			 * \brief Create an IP endpoint.
 			 * \param address The address.
 			 */
 			ip_endpoint(const address_type& _address) : m_address(_address) {};
