@@ -88,6 +88,12 @@ namespace freelan
 			}
 
 			/**
+			 * \brief Check if the instance is null.
+			 * \return true if the instance is null.
+			 */
+			bool is_null() const;
+
+			/**
 			 * \brief Get the hostname.
 			 * \return The hostname.
 			 */
@@ -166,6 +172,11 @@ namespace freelan
 	inline bool operator!=(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
 	{
 		return !(lhs == rhs);
+	}
+
+	inline bool hostname_endpoint::is_null() const
+	{
+		return (*this == null());
 	}
 }
 

@@ -82,6 +82,12 @@ namespace freelan
 			ip_network_address(const address_type& _address, unsigned int _prefix_length) : m_address(_address), m_prefix_length(_prefix_length) {};
 
 			/**
+			 * \brief Check if the instance is null.
+			 * \return true if the instance is null.
+			 */
+			bool is_null() const { return (*this == null()); }
+
+			/**
 			 * \brief Get the address.
 			 * \return The address.
 			 */

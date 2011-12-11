@@ -103,6 +103,12 @@ namespace freelan
 			ip_endpoint(const address_type& _address, boost::optional<uint16_t> _port) : m_address(_address), m_port(_port) {};
 
 			/**
+			 * \brief Check if the instance is null.
+			 * \return true if the instance is null.
+			 */
+			bool is_null() const { return (*this == null()); }
+
+			/**
 			 * \brief Get the address.
 			 * \return The address.
 			 */
