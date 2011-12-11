@@ -29,12 +29,6 @@ int main()
 		std::cout << "ep1 == ep2: " << (ep1 == ep2) << std::endl;
 		std::cout << "ep1 != ep2: " << (ep1 != ep2) << std::endl;
 
-		// Input
-		std::cout << "ep1: " << std::flush;
-		std::cin >> ep1;
-
-		std::cout << "ep1: " << ep1 << std::endl;
-
 		// Conversions
 		std::cout << boost::lexical_cast<freelan::endpoint>("127.1:45") << std::endl;
 		std::cout << boost::lexical_cast<freelan::endpoint>("[3::4:5ae]:78") << std::endl;
