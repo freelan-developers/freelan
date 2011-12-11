@@ -139,16 +139,16 @@ namespace freelan
 	}
 
 	template <typename AddressType>
-	bool check_prefix_length(uint8_t prefix_length);
+	bool check_prefix_length(unsigned int prefix_length);
 
 	template <>
-	bool check_prefix_length<boost::asio::ip::address_v4>(uint8_t prefix_length)
+	bool check_prefix_length<boost::asio::ip::address_v4>(unsigned int prefix_length)
 	{
 		return (prefix_length < 32);
 	}
 
 	template <>
-	bool check_prefix_length<boost::asio::ip::address_v6>(uint8_t prefix_length)
+	bool check_prefix_length<boost::asio::ip::address_v6>(unsigned int prefix_length)
 	{
 		return (prefix_length < 128);
 	}
@@ -177,7 +177,7 @@ namespace freelan
 					const std::string& result = oss.str();
 
 					std::istringstream iss(result);
-					uint8_t num_prefix_length;
+					unsigned int num_prefix_length = 0;
 
 					if ((iss >> std::dec >> num_prefix_length) && check_prefix_length<AddressType>(num_prefix_length))
 					{
