@@ -51,6 +51,32 @@ namespace freelan
 	{
 		if (is)
 		{
+			ipv6_endpoint ep;
+
+			if (is >> ep)
+			{
+				value = ep;
+				return is;
+			}
+
+			is.clear();
+		}
+
+		if (is)
+		{
+			ipv4_endpoint ep;
+
+			if (is >> ep)
+			{
+				value = ep;
+				return is;
+			}
+
+			is.clear();
+		}
+
+		if (is)
+		{
 			hostname_endpoint ep;
 
 			if (is >> ep)
