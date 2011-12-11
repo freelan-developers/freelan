@@ -45,10 +45,24 @@
 
 #include "ip_endpoint.hpp"
 
+#include <boost/bind.hpp>
+
 namespace freelan
 {
 	namespace
 	{
+		std::istream& putback(std::istream& is, const std::string& str)
+		{
+			std::ios::iostate state = is.rdstate();
+			is.clear();
+
+			std::for_each(str.rbegin(), str.rend(), boost::bind(&std::istream::putback, boost::ref(is), _1));
+
+			is.setstate(state);
+
+			return is;
+		}
+
 		template <typename AddressType>
 		bool is_ip_address_character(char c);
 
@@ -65,11 +79,131 @@ namespace freelan
 		}
 
 		template <typename AddressType>
-		std::istream& read_ip_address_port(std::istream& is, AddressType& ip_address, boost::optional<uint16_t>& port)
+		std::istream& read_ip_address(std::istream& is, std::string& ip_address)
 		{
-			//TODO: Implement.
-			(void)ip_address;
-			(void)port;
+			if (is.good())
+			{
+				if (!is_ip_address_character<AddressType>(is.peek()))
+				{
+					is.setstate(std::ios_base::failbit);
+				}
+				else
+				{
+					std::ostringstream oss;
+
+					do
+					{
+						oss.put(static_cast<char>(is.get()));
+					}
+					while (is.good() && is_ip_address_character<AddressType>(is.peek()));
+
+					if (is)
+					{
+						const std::string& result = oss.str();
+						boost::system::error_code ec;
+
+						AddressType::from_string(result, ec);
+
+						if (ec)
+						{
+							// Unable to parse the IP address: putting back characters.
+							putback(is, result);
+							is.setstate(std::ios_base::failbit);
+						}
+						else
+						{
+							ip_address = result;
+						}
+					}
+				}
+			}
+
+			return is;
+		}
+
+		std::istream& read_port(std::istream& is, std::string& port)
+		{
+			uint16_t num_port;
+
+			if (is >> num_port)
+			{
+				port = boost::lexical_cast<std::string>(num_port);
+			}
+
+			return is;
+		}
+
+		template <typename AddressType>
+		std::istream& read_ip_address_port(std::istream& is, std::string& ip_address, std::string& port);
+
+		template <>
+		std::istream& read_ip_address_port<boost::asio::ip::address_v4>(std::istream& is, std::string& ip_address, std::string& port)
+		{
+			if (is.good())
+			{
+				if (read_ip_address<boost::asio::ip::address_v4>(is, ip_address))
+				{
+					if (is.good() && (is.peek() == ':'))
+					{
+						is.ignore();
+
+						if (!read_port(is, port))
+						{
+							is.clear();
+							is.putback(':');
+						}
+					}
+				}
+			}
+
+			return is;
+		}
+
+		template <>
+		std::istream& read_ip_address_port<boost::asio::ip::address_v6>(std::istream& is, std::string& ip_address, std::string& port)
+		{
+			if (is.good())
+			{
+				if (is.peek() == '[')
+				{
+					is.ignore();
+
+					if (!read_ip_address<boost::asio::ip::address_v6>(is, ip_address))
+					{
+						is.clear();
+						is.putback('[');
+						is.setstate(std::ios_base::failbit);
+					}
+					else
+					{
+						if (is.peek() != ']')
+						{
+							// End bracket not found: lets put back everything and fail.
+							putback(is, '[' + ip_address);
+							is.setstate(std::ios_base::failbit);
+						}
+						else
+						{
+							is.ignore();
+
+							if (is.good() && (is.peek() == ':'))
+							{
+								is.ignore();
+
+								if (!read_port(is, port))
+								{
+									is.clear();
+									is.putback(':');
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					read_ip_address<boost::asio::ip::address_v6>(is, ip_address);
+				}
+			}
 
 			return is;
 		}
@@ -78,12 +212,12 @@ namespace freelan
 	template <typename AddressType>
 	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value)
 	{
-		typename ip_endpoint<AddressType>::address_type ip_address;
-		boost::optional<uint16_t> port;
+		std::string ip_address;
+		std::string port;
 
-		if (read_ip_address_port(is, ip_address, port))
+		if (read_ip_address_port<AddressType>(is, ip_address, port))
 		{
-			value = ip_endpoint<AddressType>(ip_address, port);
+			value = ip_endpoint<AddressType>(AddressType::from_string(ip_address), port.empty() ? boost::none : boost::optional<uint16_t>(boost::lexical_cast<uint16_t>(port)));
 		}
 
 		return is;
