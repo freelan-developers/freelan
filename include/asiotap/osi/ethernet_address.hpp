@@ -61,6 +61,11 @@ namespace asiotap
 			public:
 
 				/**
+				 * \brief The underlying data type.
+				 */
+				typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> data_type;
+
+				/**
 				 * \brief Get a null address.
 				 * \return A null address.
 				 */
@@ -81,10 +86,6 @@ namespace asiotap
 
 					return ethernet_address(data);
 				}
-				/**
-				 * \brief The underlying data type.
-				 */
-				typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> data_type;
 
 				/**
 				 * \brief Creates a default initialized ethernet_address.
@@ -131,6 +132,50 @@ namespace asiotap
 		inline bool operator!=(const ethernet_address& lhs, const ethernet_address& rhs)
 		{
 			return lhs.data() != rhs.data();
+		}
+
+		/**
+		 * \brief Compare two ethernet addresses.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs compare lexicographically smaller to rhs.
+		 */
+		inline bool operator<(const ethernet_address& lhs, const ethernet_address& rhs)
+		{
+			return lhs.data() < rhs.data();
+		}
+
+		/**
+		 * \brief Compare two ethernet addresses.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs compare lexicographically larger to rhs.
+		 */
+		inline bool operator>(const ethernet_address& lhs, const ethernet_address& rhs)
+		{
+			return lhs.data() > rhs.data();
+		}
+
+		/**
+		 * \brief Compare two ethernet addresses.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs compare lexicographically smaller or equal to rhs.
+		 */
+		inline bool operator<=(const ethernet_address& lhs, const ethernet_address& rhs)
+		{
+			return lhs.data() <= rhs.data();
+		}
+
+		/**
+		 * \brief Compare two ethernet addresses.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if lhs compare lexicographically larger or equal to rhs.
+		 */
+		inline bool operator>=(const ethernet_address& lhs, const ethernet_address& rhs)
+		{
+			return lhs.data() >= rhs.data();
 		}
 	}
 }
