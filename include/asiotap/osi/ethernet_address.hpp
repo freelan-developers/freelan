@@ -37,71 +37,28 @@
  */
 
 /**
- * \file arp_proxy.cpp
+ * \file ethernet_address.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An ARP proxy class.
+ * \brief An Ethernet address class.
  */
 
-#include "osi/arp_proxy.hpp"
+#ifndef ASIOTAP_OSI_ETHERNET_ADDRESS_HPP
+#define ASIOTAP_OSI_ETHERNET_ADDRESS_HPP
 
-#include "osi/ethernet_helper.hpp"
-#include "osi/arp_helper.hpp"
+#include "ethernet_frame.hpp"
 
-#include "osi/ethernet_builder.hpp"
-#include "osi/arp_builder.hpp"
+#include <boost/array.hpp>
 
 namespace asiotap
 {
 	namespace osi
 	{
-		void proxy<arp_frame>::do_handle_frame(const_helper<ethernet_frame> ethernet_helper, const_helper<arp_frame> arp_helper)
-		{
-			if (arp_helper.operation() == ARP_REQUEST_OPERATION)
-			{
-				entry_map_type::const_iterator entry_it = m_entry_map.find(arp_helper.target_logical_address());
-
-				ethernet_address_type eth_addr;
-
-				bool should_answer = false;
-
-				if (entry_it != m_entry_map.end())
-				{
-					eth_addr = entry_it->second;
-					should_answer = true;
-				}
-				else
-				{
-					if (m_arp_request_callback)
-					{
-						should_answer = m_arp_request_callback(arp_helper.target_logical_address(), eth_addr);
-					}
-				}
-
-				if (should_answer)
-				{
-					size_t payload_size;
-
-					builder<arp_frame> arp_builder(response_buffer());
-
-					payload_size = arp_builder.write(
-					                   ARP_REPLY_OPERATION,
-					                   boost::asio::buffer(eth_addr),
-					                   arp_helper.target_logical_address(),
-					                   arp_helper.sender_hardware_address(),
-					                   arp_helper.sender_logical_address()
-					               );
-
-					builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
-
-					payload_size = ethernet_builder.write(
-					                   ethernet_helper.sender(),
-					                   ethernet_helper.target(),
-					                   ethernet_helper.protocol()
-					               );
-
-					data_available(get_truncated_response_buffer(payload_size));
-				}
-			}
-		}
+		/**
+		 * \brief An ethernet address type.
+		 */
+		typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> ethernet_address;
 	}
 }
+
+#endif /* ASIOTAP_ETHERNET_ADDRESS_HPP */
+

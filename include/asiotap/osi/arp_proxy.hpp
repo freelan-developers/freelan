@@ -50,8 +50,7 @@
 #include "ethernet_filter.hpp"
 #include "arp_filter.hpp"
 #include "complex_filter.hpp"
-
-#include <boost/array.hpp>
+#include "ethernet_address.hpp"
 
 #include <map>
 
@@ -75,7 +74,7 @@ namespace asiotap
 				/**
 				 * \brief The Ethernet address type.
 				 */
-				typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> ethernet_address_type;
+				typedef ethernet_address ethernet_address_type;
 
 				/**
 				 * \brief The entry type.
