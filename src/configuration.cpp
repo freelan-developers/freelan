@@ -205,18 +205,6 @@ namespace freelan
 		throw std::logic_error("Unexpected value");
 	}
 
-	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value)
-	{
-		os<< std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(value[0]);
-
-		for (size_t i = 1; i < value.size(); ++i)
-		{
-			os << ':' << static_cast<unsigned int>(value[1]);
-		}
-
-		return os;
-	}
-
 	std::istream& operator>>(std::istream& is, switch_configuration::routing_method_type& v)
 	{
 		std::string value;

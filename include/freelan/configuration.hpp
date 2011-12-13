@@ -60,7 +60,7 @@
 #include <fscp/identity_store.hpp>
 
 #include <asiotap/tap_adapter.hpp>
-#include <asiotap/osi/arp_proxy.hpp>
+#include <asiotap/osi/ethernet_address.hpp>
 
 #include "endpoint.hpp"
 #include "ip_network_address.hpp"
@@ -212,7 +212,7 @@ namespace freelan
 		/**
 		 * \brief The ethernet address type.
 		 */
-		typedef asiotap::osi::proxy<asiotap::osi::arp_frame>::ethernet_address_type ethernet_address_type;
+		typedef asiotap::osi::ethernet_address ethernet_address_type;
 
 		/**
 		 * \brief Constructor.
@@ -395,14 +395,6 @@ namespace freelan
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_revocation_validation_method_type& value);
-
-	/**
-	 * \brief Output an Ethernet address to a stream.
-	 * \param os The output stream.
-	 * \param value The Ethernet address.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::ethernet_address_type value);
 
 	/**
 	 * \brief Input a routing method.
