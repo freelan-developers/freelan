@@ -110,6 +110,28 @@ namespace asiotap
 
 				data_type m_data;
 		};
+
+		/**
+		 * \brief Compare two ethernet addresses.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two addresses are equal.
+		 */
+		inline bool operator==(const ethernet_address& lhs, const ethernet_address& rhs)
+		{
+			return lhs.data() == rhs.data();
+		}
+
+		/**
+		 * \brief Compare two ethernet addresses.
+		 * \param lhs The left argument.
+		 * \param rhs The right argument.
+		 * \return true if the two addresses are different.
+		 */
+		inline bool operator!=(const ethernet_address& lhs, const ethernet_address& rhs)
+		{
+			return lhs.data() != rhs.data();
+		}
 	}
 }
 
