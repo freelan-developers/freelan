@@ -80,13 +80,19 @@ class millisecond_duration
 		 * \brief Conversion operator.
 		 * \return The converted value.
 		 */
-		operator unsigned int() const { return m_ms; }
+		operator unsigned int() const
+		{
+			return m_ms;
+		}
 
 		/**
 		 * \brief Conversion operator.
 		 * \return The converted value.
 		 */
-		operator boost::posix_time::time_duration() const { return boost::posix_time::milliseconds(m_ms); }
+		operator boost::posix_time::time_duration() const
+		{
+			return boost::posix_time::milliseconds(m_ms);
+		}
 
 	private:
 
@@ -96,8 +102,14 @@ class millisecond_duration
 		friend std::istream& operator>>(std::istream&, millisecond_duration&);
 };
 
-inline std::ostream& operator<<(std::ostream& os, const millisecond_duration& value) { return os << std::dec << value.m_ms; }
-inline std::istream& operator>>(std::istream& is, millisecond_duration& value) { return is >> std::dec >> value.m_ms; }
+inline std::ostream& operator<<(std::ostream& os, const millisecond_duration& value)
+{
+	return os << std::dec << value.m_ms;
+}
+inline std::istream& operator>>(std::istream& is, millisecond_duration& value)
+{
+	return is >> std::dec >> value.m_ms;
+}
 
 /**
  * \brief A generic wrapper class.
@@ -132,7 +144,10 @@ class wrapper
 		 * \return The converted value.
 		 */
 		template <typename OtherType>
-		operator OtherType() const { return m_object; }
+		operator OtherType() const
+		{
+			return m_object;
+		}
 
 	private:
 
@@ -143,8 +158,14 @@ class wrapper
 };
 
 template <typename Type>
-inline std::istream& operator>>(std::istream& is, wrapper<Type>& value) { return is >> value.m_object; }
+inline std::istream& operator>>(std::istream& is, wrapper<Type>& value)
+{
+	return is >> value.m_object;
+}
 template <typename Type>
-inline std::ostream& operator<<(std::ostream& os, const wrapper<Type>& value) { return os << value.m_object; }
+inline std::ostream& operator<<(std::ostream& os, const wrapper<Type>& value)
+{
+	return os << value.m_object;
+}
 
 #endif /* CONFIGURATION_TYPES_HPP */

@@ -195,7 +195,7 @@ namespace win32
 		{
 			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
 		}
-		
+
 		return result;
 	}
 

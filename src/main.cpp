@@ -290,7 +290,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	if (!configuration_file.empty())
 	{
 		std::cout << "Reading configuration file at: " << configuration_file << std::endl;
-		
+
 		fs::basic_ifstream<char> ifs(configuration_file);
 
 		if (!ifs)
