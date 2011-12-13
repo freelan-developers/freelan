@@ -67,7 +67,10 @@ namespace freelan
 			 * \brief Get a null IP endpoint.
 			 * \return A null IP endpoint.
 			 */
-			static ip_endpoint null() { return ip_endpoint(); }
+			static ip_endpoint null()
+			{
+				return ip_endpoint();
+			}
 
 			/**
 			 * \brief The address type.
@@ -106,7 +109,10 @@ namespace freelan
 			 * \brief Check if the instance is null.
 			 * \return true if the instance is null.
 			 */
-			bool is_null() const { return (*this == null()); }
+			bool is_null() const
+			{
+				return (*this == null());
+			}
 
 			/**
 			 * \brief Get the address.

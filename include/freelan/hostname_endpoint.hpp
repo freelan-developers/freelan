@@ -64,7 +64,10 @@ namespace freelan
 			 * \brief Get a null hostname endpoint.
 			 * \return A null hostname endpoint.
 			 */
-			static hostname_endpoint null() { return hostname_endpoint(); }
+			static hostname_endpoint null()
+			{
+				return hostname_endpoint();
+			}
 
 			/**
 			 * \brief The resolver type.

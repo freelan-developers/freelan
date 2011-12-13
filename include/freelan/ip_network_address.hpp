@@ -62,7 +62,10 @@ namespace freelan
 			 * \brief Get a null network address.
 			 * \return A null network address.
 			 */
-			static ip_network_address null() { return ip_network_address(); }
+			static ip_network_address null()
+			{
+				return ip_network_address();
+			}
 
 			/**
 			 * \brief The address type.
@@ -85,7 +88,10 @@ namespace freelan
 			 * \brief Check if the instance is null.
 			 * \return true if the instance is null.
 			 */
-			bool is_null() const { return (*this == null()); }
+			bool is_null() const
+			{
+				return (*this == null());
+			}
 
 			/**
 			 * \brief Get the address.
