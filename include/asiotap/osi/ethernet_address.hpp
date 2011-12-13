@@ -47,6 +47,8 @@
 
 #include "ethernet_frame.hpp"
 
+#include <iostream>
+
 #include <boost/array.hpp>
 
 namespace asiotap
@@ -177,6 +179,27 @@ namespace asiotap
 		{
 			return lhs.data() >= rhs.data();
 		}
+
+		/**
+		 * \brief Output an ethernet address to a stream.
+		 * \param os The output stream.
+		 * \param value The value.
+		 * \return os.
+		 */
+		std::ostream& operator<<(std::ostream& os, const ethernet_address& value);
+
+		/**
+		 * \brief Input an ethernet address from a stream.
+		 * \param is The output stream.
+		 * \param value The value.
+		 * \return s.
+		 *
+		 * The ethernet address is expected to be in one of the following formats:
+		 *
+		 * - ab:cd:ef:01:23:45
+		 * - ab-cd-ef-01-23-45
+		 */
+		std::istream& operator>>(std::istream& is, ethernet_address& value);
 	}
 }
 
