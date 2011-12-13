@@ -54,9 +54,62 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief An ethernet address type.
+		 * \brief An ethernet address class.
 		 */
-		typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> ethernet_address;
+		class ethernet_address
+		{
+			public:
+
+				/**
+				 * \brief Get a null address.
+				 * \return A null address.
+				 */
+				static ethernet_address null()
+				{
+					const data_type data = { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
+
+					return ethernet_address(data);
+				}
+
+				/**
+				 * \brief Get a broadcast address.
+				 * \return A broadcast address, that is: ff:ff:ff:ff:ff:ff.
+				 */
+				static ethernet_address broadcast()
+				{
+					const data_type data = { { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } };
+
+					return ethernet_address(data);
+				}
+				/**
+				 * \brief The underlying data type.
+				 */
+				typedef boost::array<uint8_t, ETHERNET_ADDRESS_SIZE> data_type;
+
+				/**
+				 * \brief Creates a default initialized ethernet_address.
+				 */
+				ethernet_address() {}
+
+				/**
+				 * \brief Create an address from its bytes.
+				 * \param _data The data.
+				 */
+				ethernet_address(const data_type& _data) : m_data(_data) {}
+
+				/**
+				 * \brief Get the associated data.
+				 * \return The associated data.
+				 */
+				const data_type& data() const
+				{
+					return m_data;
+				}
+
+			private:
+
+				data_type m_data;
+		};
 	}
 }
 

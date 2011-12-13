@@ -85,7 +85,7 @@ namespace asiotap
 
 					payload_size = arp_builder.write(
 					                   ARP_REPLY_OPERATION,
-					                   boost::asio::buffer(eth_addr),
+					                   boost::asio::buffer(eth_addr.data()),
 					                   arp_helper.target_logical_address(),
 					                   arp_helper.sender_hardware_address(),
 					                   arp_helper.sender_logical_address()
