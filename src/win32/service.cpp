@@ -128,7 +128,7 @@ namespace win32
 				case ERROR_FAILED_SERVICE_CONTROLLER_CONNECT:
 					return false;
 				default:
-					throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "StartServiceCtrlDispatcher()");
+					throw boost::system::system_error(last_error, boost::system::system_category(), "StartServiceCtrlDispatcher()");
 			}
 		}
 
@@ -193,7 +193,9 @@ namespace win32
 		}
 		else
 		{
-			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
+			DWORD last_error = ::GetLastError();
+
+			throw boost::system::system_error(last_error, boost::system::system_category(), "OpenSCManager()");
 		}
 
 		return result;
@@ -269,7 +271,9 @@ namespace win32
 		}
 		else
 		{
-			throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "OpenSCManager()");
+			DWORD last_error = ::GetLastError();
+
+			throw boost::system::system_error(last_error, boost::system::system_category(), "OpenSCManager()");
 		}
 
 		return result;
