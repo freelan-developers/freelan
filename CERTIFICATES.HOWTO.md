@@ -42,9 +42,10 @@ Do the same for the `crlnumber` file:
 
     echo '01' > crlnumber
 
-We also create an index file:
+We also create index files:
 
     touch index.txt
+    touch index.txt.attr
 
 We must now create a configuration file for OpenSSL.
 
