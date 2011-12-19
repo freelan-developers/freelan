@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SCRIPT_PATH=`dirname $0`
+SCRIPT_PATH=`readlink -f $0 | xargs dirname`
 
 if [ "$#" -ne 1 ]; then
 	echo "Syntax: $0 <ca_path>" >&2
