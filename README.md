@@ -11,6 +11,13 @@ This software supports the following operating systems:
  - Linux
  - Mac OSX
 
+Configuration
+-------------
+
+A sample self-documented configuration file can be found in the `config` folder.
+
+If you need to generate a certification chain, read the `CERTIFICATES.HOWTO.md` file.
+
 Licensing
 ---------
 
