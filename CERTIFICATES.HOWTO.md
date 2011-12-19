@@ -56,10 +56,12 @@ Copy the template configuration file from `scripts\resources\ca.cnf`:
 
 Edit the copied file and replace all occurences of `{CA_PATH}` by the real path you used. In our example, this would be `/home/ca`.
 
-Create the authority certificate and its private key:
+Congratulations ! You just setup your first certificate authority :)
+
+### Creating the authority certificate and its private key
+
+To create the certificatation authority certificate and its private key, just type:
 
     openssl req -new -x509 -extensions v3_ca -keyout key/ca.key -out crt/ca.crt -config ca.cnf
-
-Congratulations ! You just setup your first certificate authority :)
 
 ### Creating an intermediate certificate authority

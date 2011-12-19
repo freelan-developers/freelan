@@ -36,7 +36,3 @@ if ! $EDITOR ca.cnf; then
 fi
 
 echo "Done."
-
-# CA certificate generation
-echo "Generating CA certificate and private key:"
-openssl req -new -x509 -extensions v3_ca -keyout key/ca.key -out crt/ca.crt -config ca.cnf
