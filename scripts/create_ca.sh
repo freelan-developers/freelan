@@ -22,4 +22,21 @@ mkdir crt key crl
 echo '01' > serial
 echo '01' > crlnumber
 touch index.txt
+
 cp $SCRIPT_PATH/resources/ca.cnf .
+
+echo "Default configuration copied. You may now edit it to your needs."
+echo "Press enter to continue."
+read
+
+if ! $EDITOR ca.cnf; then
+	echo "The configuration edition was aborted."
+	rm -rf "$CA_PATH"
+	exit 3
+fi
+
+echo "Configuration done."
+
+# CA certificate generation
+echo "Generating CA certificate and private key:"
+openssl req -new -x509 -extensions v3_ca -keyout key/ca.key -out crt/ca.crt -config ca.cnf
