@@ -32,7 +32,7 @@ default_ca = CA_freelan  # The default ca section
 
 [ CA_freelan ]
 
-dir = /home/ca  # Where everything is kept
+dir = {CA_PATH}  # Where everything is kept
 certs = $dir/crt  # Where the issued certs are kept
 crl_dir = $dir/crl  # Where the issued crl are kept
 database = $dir/index.txt # database index file.

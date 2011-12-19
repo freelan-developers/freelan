@@ -9,7 +9,7 @@ if [ "$#" -ne 1 ]; then
 	exit 1
 fi
 
-CA_PATH=$1
+CA_PATH=`readlink -f $1`
 
 if [ -d "$CA_PATH" ]; then
 	echo "Error: Directory \"$CA_PATH\" already exists." >&2
@@ -24,6 +24,7 @@ echo '01' > crlnumber
 touch index.txt
 
 cp $SCRIPT_PATH/resources/ca.cnf .
+sed -i "s;{CA_PATH};${CA_PATH};g" ca.cnf
 
 echo "Default configuration copied. You may now edit it to your needs... (Press enter)"
 read
