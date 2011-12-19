@@ -17,4 +17,4 @@ if [ ! -d "$CA_PATH" ]; then
 fi
 
 echo "Generating CA certificate and private key:"
-openssl req -new -x509 -extensions v3_ca -keyout key/ca.key -out crt/ca.crt -config ca.cnf
+openssl req -new -x509 -extensions v3_ca -keyout $CA_PATH/key/ca.key -out $CA_PATH/crt/ca.crt -config $CA_PATH/ca.cnf
