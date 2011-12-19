@@ -16,10 +16,10 @@ if [ ! -d "$CA_PATH" ]; then
 fi
 
 echo "Generating private key:"
-openssl genrsa -des3 -out $NAME.key 4096 -config $CA_PATH/ca.cnf
+openssl genrsa -des3 -out $NAME.key 4096
 
 echo "Generating certificate request:"
-openssl req -new -sha1 -key $NAME.key -out $NAME.csr -config $CA_PATH/ca.cnf
+openssl req -new -sha1 -key $NAME.key -out $NAME.csr
 
 echo "Signing certificate with the CA:"
 openssl ca -out $CA_PATH/crt/$NAME.crt -in $NAME.csr -config $CA_PATH/ca.cnf
