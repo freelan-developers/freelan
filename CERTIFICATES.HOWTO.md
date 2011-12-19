@@ -61,8 +61,52 @@ Congratulations ! You just setup your first certificate authority :)
 
 ### Creating the authority certificate and its private key
 
-To create the certificatation authority certificate and its private key, just type:
+Note: Everything detailed in this section can be done quickly and safely by calling the `generate_ca.sh` script located in the `scripts` directory. The steps here are only provided for completeness.
+
+To create the certification authority certificate and its private key, just type:
 
     openssl req -new -x509 -extensions v3_ca -keyout key/ca.key -out crt/ca.crt -config ca.cnf
 
 ### Creating an intermediate certificate authority
+
+Note: Everything detailed in this section can be done quickly and safely by calling the `generate_intermediate_ca.sh` script located in the `scripts` directory. The steps here are only provided for completeness.
+
+To create an intermediate certification authority, repeat the same steps described in *Setting up the certificate authority* but change the directory. In this example, we consider that we want to create our intermediate certification authority in the `/home/intermediate_ca`.
+
+Create the intermediate certification authority private key file:
+
+    openssl genrsa -des3 -out /key/ca.key 4096 -config $/home/intermediate_ca/ca.cnf
+
+Generate the certificate request:
+
+    openssl req -new -sha1 -key $/home/intermediate_ca/key/ca.key -out $/home/intermediate_ca/crt/ca.csr -config $/home/intermediate_ca/ca.cnf
+
+Sign the certificate request with the root certification authority certificate:
+
+    openssl ca -extensions v3_ca -out $/home/ca/crt/intermediate_ca.crt -in $/home/intermediate_ca/crt/ca.csr -config $/home/ca/ca.cnf
+
+Don't forget to copy the resulting certificate into the intermediate certification authority folder:
+
+    cp $/home/ca/crt/intermediate_ca.crt $/home/intermediate_ca/crt/ca.crt
+
+### Creating a client certificate
+
+Note: Everything detailed in this section can be done quickly and safely by calling the `generate_certificate.sh` script located in the `scripts` directory. The steps here are only provided for completeness.
+
+In this section we will create a certificate signed by the certification authority located at `/home/ca`. You may of course use any certification authority (a root or an intermediate one).
+
+Create the private key file:
+
+    openssl genrsa -des3 -out user.key 4096
+
+Generate the certificate request:
+
+    openssl req -new -sha1 -key user.key -out user.csr
+
+Sign the certificate request wit hthe certification authority certificate:
+
+    openssl ca -out /home/ca/crt/user.crt -in user.csr -config /home/ca/ca.cnf
+
+Don't forget to copy the resulting certificate:
+
+    cp /home/ca/crt/user.crt user.crt
