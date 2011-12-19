@@ -36,7 +36,7 @@ Next, we create a serial number file. This file just contains an ASN1 number ind
 
     echo '01' > serial
 
-Do the same for the crlnumber file:
+Do the same for the `crlnumber` file:
 
     echo '01' > crlnumber
 
@@ -48,7 +48,7 @@ We must now create a configuration file for OpenSSL.
 
 This step is not mandatory since most options can be specified on the OpenSSL command line. However it is really **recommended** that you do not skip it as it simplifies the whole process *a lot*.
 
-Write the configuration file:
+Open or create the configuration file:
 
     vim ca.cnf
 
@@ -356,3 +356,13 @@ And write the following content:
     
     # This really needs to be in place for it to be a proxy certificate.
     proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo
+
+You may of course change some properties so they match your wishes. Just ensure to have consistent values for anything that is related to the filesystem paths.
+
+### Creation of the certification authority certificate
+
+Create the authority certificate and its private key:
+
+    openssl req -new -x509 -extensions v3_ca -keyout key/ca.key -out crt/ca.crt -config ca.cnf
+
+
