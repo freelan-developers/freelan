@@ -76,13 +76,13 @@ namespace freelan
 
 			/**
 			 * \brief Create a new endpoint_resolve_visitor.
-			 * \param resolver The resolver to use.
+			 * \param _resolver The resolver to use.
 			 * \param protocol The protocol to use.
 			 * \param flags The flags to use for the resolution.
 			 * \param default_service The default service to use.
 			 */
-			endpoint_resolve_visitor(resolver& resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service) :
-				m_resolver(resolver),
+			endpoint_resolve_visitor(resolver& _resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service) :
+				m_resolver(_resolver),
 				m_protocol(protocol),
 				m_flags(flags),
 				m_default_service(default_service)
@@ -129,17 +129,17 @@ namespace freelan
 
 			/**
 			 * \brief Create a new endpoint_async_resolve_visitor.
-			 * \param resolver The resolver to use.
+			 * \param _resolver The resolver to use.
 			 * \param protocol The protocol to use.
 			 * \param flags The flags to use for the resolution.
 			 * \param default_service The default service to use.
 			 */
-			endpoint_async_resolve_visitor(resolver& resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service, handler handler) :
-				m_resolver(resolver),
+			endpoint_async_resolve_visitor(resolver& _resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service, handler _handler) :
+				m_resolver(_resolver),
 				m_protocol(protocol),
 				m_flags(flags),
 				m_default_service(default_service),
-				m_handler(handler)
+				m_handler(_handler)
 			{
 			}
 
