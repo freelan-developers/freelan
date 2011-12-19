@@ -11,6 +11,11 @@ fi
 
 CA_PATH=$1
 
+if [ -d "$CA_PATH" ]; then
+	echo "Error: Directory \"$CA_PATH\" already exists." >&2
+	exit 2
+fi
+
 mkdir -p $CA_PATH
 cd $CA_PATH
 mkdir crt key crl
