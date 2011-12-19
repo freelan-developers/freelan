@@ -25,8 +25,7 @@ touch index.txt
 
 cp $SCRIPT_PATH/resources/ca.cnf .
 
-echo "Default configuration copied. You may now edit it to your needs."
-echo "Press enter to continue."
+echo "Default configuration copied. You may now edit it to your needs... (Press enter)"
 read
 
 if ! $EDITOR ca.cnf; then
@@ -35,7 +34,7 @@ if ! $EDITOR ca.cnf; then
 	exit 3
 fi
 
-echo "Configuration done."
+echo "Done."
 
 # CA certificate generation
 echo "Generating CA certificate and private key:"
