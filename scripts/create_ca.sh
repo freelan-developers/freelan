@@ -22,6 +22,7 @@ mkdir crt key crl
 echo '01' > serial
 echo '01' > crlnumber
 touch index.txt
+touch index.txt.attr
 
 cp $SCRIPT_PATH/resources/ca.cnf .
 sed -i "s;{CA_PATH};${CA_PATH};g" ca.cnf
