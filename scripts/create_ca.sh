@@ -17,4 +17,4 @@ mkdir crt key crl
 echo '01' > serial
 echo '01' > crlnumber
 touch index.txt
-cp $SCRIPT_PATH/ca.cnf .
+cp $SCRIPT_PATH/resources/ca.cnf .
