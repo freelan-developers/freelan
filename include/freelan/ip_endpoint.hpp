@@ -94,14 +94,14 @@ namespace freelan
 
 			/**
 			 * \brief Create an IP endpoint.
-			 * \param address The address.
+			 * \param _address The address.
 			 */
 			ip_endpoint(const address_type& _address) : m_address(_address) {};
 
 			/**
 			 * \brief Create an IP endpoint.
-			 * \param address The address.
-			 * \param port The port number.
+			 * \param _address The address.
+			 * \param _port The port number.
 			 */
 			ip_endpoint(const address_type& _address, boost::optional<uint16_t> _port) : m_address(_address), m_port(_port) {};
 

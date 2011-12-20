@@ -92,6 +92,7 @@ namespace freelan
 			/**
 			 * \brief Create a new switch.
 			 * \param configuration The switch configuration.
+			 * \param max_entries maximum entries allowed.
 			 */
 			switch_(const switch_configuration& configuration, const unsigned int max_entries = MAX_ENTRIES_DEFAULT);
 
