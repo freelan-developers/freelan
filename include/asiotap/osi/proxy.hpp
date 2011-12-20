@@ -94,7 +94,7 @@ namespace asiotap
 
 				/**
 				 * \brief Data is available.
-				 * \return buffer The data.
+				 * \param buffer The data.
 				 */
 				void data_available(boost::asio::const_buffer buffer);
 

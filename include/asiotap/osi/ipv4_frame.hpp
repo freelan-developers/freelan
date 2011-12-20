@@ -79,7 +79,7 @@ namespace asiotap
 			uint8_t protocol; /**< Transport protocol (ICMP, TCP, UDP, ...) */
 			uint16_t header_checksum; /**< Checksum of IPv4 header */
 			struct in_addr source; /**< IPv4 source address */
-			struct in_addr destination; /** IPv4 destination address */
+			struct in_addr destination; /**< IPv4 destination address */
 		} PACKED;
 
 #ifdef MSV

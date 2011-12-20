@@ -91,8 +91,8 @@ namespace asiotap
 				 */
 				struct ipv4_address_netmask_type
 				{
-					boost::asio::ip::address_v4 address;
-					unsigned int prefix_length;
+					boost::asio::ip::address_v4 address; /**< The IPv4 address. */
+					unsigned int prefix_length; /**< The IPv4 netmask length. */
 				};
 
 				/**

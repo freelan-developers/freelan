@@ -115,8 +115,23 @@ namespace asiotap
 
 			protected:
 
+				/**
+				 * \brief Do the parsing.
+				 * \param buf buffer to parse.
+				 */
 				void do_parse(boost::asio::const_buffer buf) const;
+				
+				/**
+				 * \brief Check if the frame has to be handled.
+				 * \param helper frame type helper.
+				 * \return true if the frame type belongs to the filter.
+				 */
 				bool filter_frame(const_helper<frame_type>) const;
+
+				/**
+				 * \brief Handle the frame by the filter functions.
+				 * \param helper frame type helper.
+				 */
 				void frame_handled(const_helper<frame_type>) const;
 
 			private:
