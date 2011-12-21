@@ -133,6 +133,7 @@ namespace freelan
 			 * \param protocol The protocol to use.
 			 * \param flags The flags to use for the resolution.
 			 * \param default_service The default service to use.
+			 * \param _handler The handler to use.
 			 */
 			endpoint_async_resolve_visitor(resolver& _resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service, handler _handler) :
 				m_resolver(_resolver),
@@ -181,6 +182,7 @@ namespace freelan
 			 * \brief Write the specified endpoint.
 			 * \tparam T The type of the endpoint.
 			 * \param ep The endpoint.
+			 * \return os.
 			 */
 			template <typename T>
 			result_type operator()(const T& ep) const

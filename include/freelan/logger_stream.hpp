@@ -87,6 +87,7 @@ namespace freelan
 			/**
 			 * \brief Write something to the logger stream.
 			 * \param val The value to write.
+			 * \return logger stream.
 			 */
 			template <typename T>
 			logger_stream& operator<<(const T& val);
@@ -94,12 +95,14 @@ namespace freelan
 			/**
 			 * \brief Execute an ostream manipulator on the logger stream.
 			 * \param manipulator The ostream manipulator to execute.
+			 * \return logger stream.
 			 */
 			logger_stream& operator<<(ostream_manipulator_type manipulator);
 
 			/**
 			 * \brief Execute an manipulator on the logger stream.
 			 * \param manipulator The manipulator to execute.
+			 * \return logger stream.
 			 */
 			logger_stream& operator<<(manipulator_type manipulator);
 
