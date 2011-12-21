@@ -135,11 +135,23 @@ namespace asiotap
 
 			protected:
 
+				/**
+				 * \brief Returns the size of the buffer.
+				 * \return buffer size.
+				 */
 				size_t size() const;
+				
+				/**
+				 * \brief Returns raw data.
+				 * \return raw data.
+				 */
 				const uint8_t* const_data() const;
 
 			private:
 
+				/**
+				 * \brief Buffer type.
+				 */
 				buffer_type m_buf;
 		};
 

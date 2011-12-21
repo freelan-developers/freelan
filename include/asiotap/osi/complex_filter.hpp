@@ -54,13 +54,13 @@ namespace asiotap
 		template <typename A, typename B = void, typename C = void, typename D = void, typename E = void>
 		struct complex_filter
 		{
-			typedef filter<A, typename complex_filter<B, C, D, E>::type> type;
+			typedef filter<A, typename complex_filter<B, C, D, E>::type> type; /**< Filter type. */
 		};
 
 		template <>
 		struct complex_filter<void, void, void, void, void>
 		{
-			typedef void type;
+			typedef void type; /**< Filter type. */
 		};
 	}
 }

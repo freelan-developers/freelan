@@ -162,7 +162,7 @@ namespace asiotap
 					return payload();
 				}
 
-				/*
+				/**
 				 * \brief Get the payload buffer.
 				 * \return The payload.
 				 */
