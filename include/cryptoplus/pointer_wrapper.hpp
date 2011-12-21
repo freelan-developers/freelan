@@ -158,6 +158,9 @@ namespace cryptoplus
 
 		private:
 
+			/**
+			 * \brief The wrapped pointer.
+			 */
 			boost::shared_ptr<value_type> m_pointer;
 
 			friend class nullable<pointer_wrapper<T> >;
