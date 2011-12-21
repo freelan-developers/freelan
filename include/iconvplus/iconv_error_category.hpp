@@ -74,6 +74,7 @@ namespace iconvplus
 			/**
 			 * \brief Get the error message for the specified event.
 			 * \param ev The event.
+			 * \return error message.
 			 */
 			std::string message(int ev) const;
 	};

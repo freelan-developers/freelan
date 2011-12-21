@@ -70,7 +70,7 @@ namespace iconvplus
 	template <>
 	struct input_stream<char>
 	{
-		typedef std::istream type;
+		typedef std::istream type; /**< Input stream type. */
 	};
 
 	/**
@@ -79,7 +79,7 @@ namespace iconvplus
 	template <>
 	struct input_stream<wchar_t>
 	{
-		typedef std::wistream type;
+		typedef std::wistream type; /**< Input stream type. */
 	};
 
 	/**
@@ -94,7 +94,7 @@ namespace iconvplus
 	template <>
 	struct output_stream<char>
 	{
-		typedef std::ostream type;
+		typedef std::ostream type; /**< Output stream type. */
 	};
 
 	/**
@@ -103,7 +103,7 @@ namespace iconvplus
 	template <>
 	struct output_stream<wchar_t>
 	{
-		typedef std::wostream type;
+		typedef std::wostream type; /**< Output stream type. */
 	};
 
 	/**
