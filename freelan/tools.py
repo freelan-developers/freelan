@@ -13,4 +13,4 @@ def is_32_bits_architecture(arch):
 
 def is_64_bits_architecture(arch):
     """Check if the specified architecture is 64 bits."""
-    return arch in ['x64', '64', 'x86_64', 'AMD64']
+    return arch in ['x64', '64', 'x86_64', 'amd64', 'AMD64']
