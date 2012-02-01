@@ -70,7 +70,7 @@ class PosixEnvironment(BaseEnvironment):
         shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **env)
         versioned_shared_library = self.Command(os.path.join(target_dir, 'lib%s.so.%s.%s' % (name, major, minor)), shared_library, SCons.Script.Copy("$TARGET", "$SOURCE"))
 
-        return shared_library + versioned_shared_library
+        return versioned_shared_library + shared_library 
 
     def FreelanStaticLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a static library."""
