@@ -608,14 +608,14 @@ namespace asiotap
 				if (adapter.first == std::string(pi->AdapterName))
 				{
 					m_handle = CreateFileA(
-					               (USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
-					               GENERIC_READ | GENERIC_WRITE,
-					               0,
-					               0,
-					               OPEN_EXISTING,
-					               FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
-					               0
-					           );
+								   (USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
+								   GENERIC_READ | GENERIC_WRITE,
+								   0,
+								   0,
+								   OPEN_EXISTING,
+								   FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
+								   0
+							   );
 
 					if (m_handle == INVALID_HANDLE_VALUE)
 					{
@@ -982,15 +982,18 @@ namespace asiotap
 #ifdef MACINTOSH
 							netifr.ifr_flags |= IFF_UP;
 #else
-			netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+							netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
 #endif
 						}
 						else
 						{
 #ifdef MACINTOSH
-							netifr.ifr_flags &= ~IFF_UP;
+							// Mac OS X: set_connected_state(false) seems to confuse the TAP
+							// so do nothing for the moment
+							::close(ctl_fd);
+							return;
 #else
-			netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+							netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
 #endif
 						}
 

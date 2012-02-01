@@ -53,7 +53,7 @@ namespace asiotap
 	/**
 	 * \brief The tap adapter class.
 	 */
-	typedef basic_tap_adapter<basic_tap_adatper_service<> > tap_adapter;
+	typedef basic_tap_adapter<basic_tap_adapter_service<> > tap_adapter;
 }
 
 #endif /* ASIOTAP_TAP_ADAPTER_HPP */

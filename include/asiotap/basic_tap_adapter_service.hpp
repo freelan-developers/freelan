@@ -55,7 +55,7 @@
 namespace asiotap
 {
 	template <typename TapAdapterImplementation = tap_adapter_impl>
-	class basic_tap_adatper_service : public boost::asio::io_service::service
+	class basic_tap_adapter_service : public boost::asio::io_service::service
 	{
 		public:
 
@@ -79,12 +79,12 @@ namespace asiotap
 			 * \brief The constructor.
 			 * \param io_service The io_service to register to.
 			 */
-			explicit basic_tap_adatper_service(boost::asio::io_service &io_service);
+			explicit basic_tap_adapter_service(boost::asio::io_service &io_service);
 
 			/**
 			 * \brief The destructor.
 			 */
-			~basic_tap_adatper_service();
+			~basic_tap_adapter_service();
 
 			/**
 			 * \brief Construct an implementation.
@@ -191,16 +191,16 @@ namespace asiotap
 	};
 
 	template <typename TapAdapterImplementation>
-	inline std::map<std::string, std::string> basic_tap_adatper_service<TapAdapterImplementation>::enumerate()
+	inline std::map<std::string, std::string> basic_tap_adapter_service<TapAdapterImplementation>::enumerate()
 	{
 		return TapAdapterImplementation::enumerate();
 	}
 
 	template <typename TapAdapterImplementation>
-	boost::asio::io_service::id basic_tap_adatper_service<TapAdapterImplementation>::id;
+	boost::asio::io_service::id basic_tap_adapter_service<TapAdapterImplementation>::id;
 
 	template <typename TapAdapterImplementation>
-	inline basic_tap_adatper_service<TapAdapterImplementation>::basic_tap_adatper_service(boost::asio::io_service &_io_service) :
+	inline basic_tap_adapter_service<TapAdapterImplementation>::basic_tap_adapter_service(boost::asio::io_service &_io_service) :
 		boost::asio::io_service::service(_io_service),
 		m_async_work(new boost::asio::io_service::work(m_async_io_service)),
 		m_async_thread(boost::bind(&boost::asio::io_service::run, &m_async_io_service))
@@ -208,7 +208,7 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	inline basic_tap_adatper_service<TapAdapterImplementation>::~basic_tap_adatper_service()
+	inline basic_tap_adapter_service<TapAdapterImplementation>::~basic_tap_adapter_service()
 	{
 		m_async_work.reset();
 		m_async_io_service.stop();
@@ -216,44 +216,44 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::construct(implementation_type& impl)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::construct(implementation_type& impl)
 	{
 		impl.reset(new TapAdapterImplementation());
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::destroy(implementation_type& impl)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::destroy(implementation_type& impl)
 	{
 		impl->cancel();
 		impl.reset();
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name)
 	{
 		impl->open(name);
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::close(implementation_type& impl)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::close(implementation_type& impl)
 	{
 		impl->close();
 	}
 
 	template<typename TapAdapterImplementation> template<typename ReadHandler>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::async_read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, ReadHandler handler)
 	{
 		this->m_async_io_service.post(read_operation<ReadHandler>(impl, this->get_io_service(), buffer, handler));
 	}
 
 	template<typename TapAdapterImplementation> template<typename WriteHandler>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::async_write(implementation_type& impl, const boost::asio::const_buffer& buffer, WriteHandler handler)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::async_write(implementation_type& impl, const boost::asio::const_buffer& buffer, WriteHandler handler)
 	{
 		this->m_async_io_service.post(write_operation<WriteHandler>(impl, this->get_io_service(), buffer, handler));
 	}
 
 	template<typename TapAdapterImplementation>
-	inline size_t basic_tap_adatper_service<TapAdapterImplementation>::read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec)
+	inline size_t basic_tap_adapter_service<TapAdapterImplementation>::read(implementation_type& impl, const boost::asio::mutable_buffer& buffer, boost::system::error_code& ec)
 	{
 		try
 		{
@@ -272,7 +272,7 @@ namespace asiotap
 	}
 
 	template<typename TapAdapterImplementation>
-	inline size_t basic_tap_adatper_service<TapAdapterImplementation>::write(implementation_type& impl, const boost::asio::const_buffer& buffer, boost::system::error_code& ec)
+	inline size_t basic_tap_adapter_service<TapAdapterImplementation>::write(implementation_type& impl, const boost::asio::const_buffer& buffer, boost::system::error_code& ec)
 	{
 		try
 		{
@@ -292,7 +292,7 @@ namespace asiotap
 
 	template <typename TapAdapterImplementation>
 	template <typename ReadHandler>
-	inline basic_tap_adatper_service<TapAdapterImplementation>::read_operation<ReadHandler>::read_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::mutable_buffer& buffer, ReadHandler handler) :
+	inline basic_tap_adapter_service<TapAdapterImplementation>::read_operation<ReadHandler>::read_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::mutable_buffer& buffer, ReadHandler handler) :
 		m_impl(impl),
 		m_io_service(io_service),
 		m_work(m_io_service),
@@ -303,7 +303,7 @@ namespace asiotap
 
 	template <typename TapAdapterImplementation>
 	template <typename ReadHandler>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::read_operation<ReadHandler>::operator()() const
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::read_operation<ReadHandler>::operator()() const
 	{
 		implementation_type impl = m_impl.lock();
 
@@ -343,7 +343,7 @@ namespace asiotap
 
 	template <typename TapAdapterImplementation>
 	template <typename WriteHandler>
-	inline basic_tap_adatper_service<TapAdapterImplementation>::write_operation<WriteHandler>::write_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::const_buffer& buffer, WriteHandler handler) :
+	inline basic_tap_adapter_service<TapAdapterImplementation>::write_operation<WriteHandler>::write_operation(implementation_type& impl, boost::asio::io_service& io_service, const boost::asio::const_buffer& buffer, WriteHandler handler) :
 		m_impl(impl),
 		m_io_service(io_service),
 		m_work(m_io_service),
@@ -354,7 +354,7 @@ namespace asiotap
 
 	template <typename TapAdapterImplementation>
 	template <typename WriteHandler>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::write_operation<WriteHandler>::operator()() const
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::write_operation<WriteHandler>::operator()() const
 	{
 		implementation_type impl = m_impl.lock();
 
@@ -393,7 +393,7 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adatper_service<TapAdapterImplementation>::shutdown_service()
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::shutdown_service()
 	{
 	}
 }
