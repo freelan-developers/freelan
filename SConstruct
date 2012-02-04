@@ -24,7 +24,14 @@ project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
 env.Indent(project.files)
 
-env.FreelanProject(project)
-
+build = env.FreelanProject(project)
+install = env.FreelanProjectInstall(project)
+documentation = env.FreelanProjectDocumentation(project)
 samples = env.SConscript('samples/SConscript', exports = 'env project')
+
+env.Alias('build', build)
+env.Alias('install', install)
+env.Alias('doc', documentation)
 env.Alias('samples', samples)
+
+env.Default(build)
