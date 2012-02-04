@@ -71,6 +71,12 @@ else:
 
 project = ProgramProject(name, major, minor, libraries, source_files = source_files)
 
-env.Indent(project.files)
+build = env.FreelanProject(project)
+install = env.FreelanProjectInstall(project)
+indent = env.FreelanProjectIndent(project)
 
-env.FreelanProject(project)
+env.Alias('build', build)
+env.Alias('install', install)
+env.Alias('indent', indent)
+
+env.Default(build)
