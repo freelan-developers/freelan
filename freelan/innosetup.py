@@ -103,7 +103,7 @@ def innosetup_scanner(node, env, path):
 
     return get_files(node, env)
 
-def innosetup_emitter(source, target, env):
+def innosetup_emitter(target, source, env):
     """The emitter"""
 
     config = get_config(source[0], env)
@@ -116,7 +116,7 @@ def innosetup_emitter(source, target, env):
 
     return (target, source)
 
-def innosetup_generator(source, target, env, for_signature):
+def innosetup_generator(target, source, env, for_signature):
     """The generator"""
 
     def to_define_option(item):
