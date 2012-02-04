@@ -182,9 +182,6 @@ class SampleProject(Project):
     def __init__(self, parent_project, name, libraries, source_files=None, path=None):
         """Create a new sample project."""
 
-        if not parent_project.name in libraries:
-            libraries.insert(0, parent_project.static_library)
-
         super(SampleProject, self).__init__(name, libraries, path)
 
         self.parent_project = parent_project
@@ -201,10 +198,15 @@ class SampleProject(Project):
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
 
+        if env.link == 'static':
+            parent_library = self.parent_project.static_library
+        else:
+            parent_library = [self.parent_project.name]
+
         _env = {
             'CPPPATH': [self.path, os.path.join(self.parent_project.abspath, 'include')],
             'LIBPATH': [self.path, os.path.join(self.parent_project.abspath, env.libdir)],
-            'LIBS': self.libraries
+            'LIBS': self.libraries + parent_library
         }
 
         sample = env.FreelanProgram(

@@ -114,6 +114,7 @@ Here is the list of the supported variables:
 - `FREELAN_MSVC_INSTALL_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_INSTALL_PREFIX` when Microsoft Visual Studio is used as compiler toolchain.
 - `FREELAN_TOOLSET`, default for the `toolset` option.
 - `FREELAN_LINK`, default for the `link` option.
+- `FREELAN_STATIC_SUFFIX`, default for the `static_suffix` option. This suffix is added to the static library name.
 - `FREELAN_MODE`, default for the `mode` option.
 - `FREELAN_ARCH`, default for the `arch` option.
 - `FREELAN_LIBDIR`, default for the `libdir` option.
