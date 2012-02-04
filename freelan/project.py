@@ -155,19 +155,19 @@ class ProgramProject(Project):
             'LIBS': self.libraries
         }
 
-        program = env.FreelanProgram(
+        self.program = env.FreelanProgram(
             os.path.join(self.path, env.bindir),
             self.name,
             self.source_files,
             **_env
         )
 
-        return program
+        return self.program
 
     def configure_install_environment(self, env):
         """Configure the given environment for installing the current project."""
 
-        return env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.bindir), program)
+        return env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.bindir), self.program)
 
     def __get_files(self):
         """Get the project source files."""
