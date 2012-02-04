@@ -81,12 +81,16 @@ class BaseEnvironment(SConsEnvironment):
 
         return project.configure_documentation_environment(self)
 
+    def FreelanProjectIndent(self, project):
+        """Indent a project source files."""
+
+        return self.Indent(project.files)
+
     def Indent(self, files):
         """Indent source files."""
 
         indentation = self.AStyle(files)
 
         self.AlwaysBuild(indentation)
-        self.Alias('indent', indentation)
 
         return indentation
