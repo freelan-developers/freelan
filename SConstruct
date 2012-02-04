@@ -22,16 +22,16 @@ else:
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
-env.Indent(project.files)
-
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)
 documentation = env.FreelanProjectDocumentation(project)
+indent = env.FreelanProjectIndent(project)
 samples = env.SConscript('samples/SConscript', exports = 'env project')
 
 env.Alias('build', build)
 env.Alias('install', install)
 env.Alias('doc', documentation)
+env.Alias('indent', indent)
 env.Alias('samples', samples)
 
 env.Default(build)
