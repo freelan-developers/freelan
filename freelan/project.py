@@ -61,7 +61,7 @@ class LibraryProject(Project):
             'LIBS': self.libraries
         }
 
-        libraries = env.FreelanLibrary(
+        self.static_library = env.FreelanStaticLibrary(
             os.path.join(self.path, env.libdir),
             self.name,
             self.major,
@@ -70,21 +70,40 @@ class LibraryProject(Project):
             **_env
         )
 
-        libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), libraries)
+        self.shared_library = env.FreelanSharedLibrary(
+            os.path.join(self.path, env.libdir),
+            self.name,
+            self.major,
+            self.minor,
+            self.source_files,
+            **_env
+        )
+
+        if env.link == 'static':
+            return self.static_library
+        else:
+            return self.shared_library
+
+    def configure_install_environment(self, env):
+        """Configure the given environment for installing the current project."""
+
+        if env.link == 'static':
+            libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.static_library)
+        else:
+            libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.shared_library)
 
         for include_file in self.include_files:
             libraries_install += env.Install(os.path.dirname(os.path.join(env['ARGUMENTS']['prefix'], include_file)), include_file)
 
+        return libraries_install
+
+    def configure_documentation_environment(self, env):
+        """Configure the given environment for generating the documentation."""
+
         documentation = env.Doxygen('doxyfile')
-        env.AlwaysBuild(documentation)
+        env.Depends(documentation, self.include_files)
 
-        env.Alias('build', libraries)
-        env.Alias('install', libraries_install)
-        env.Alias('doc', documentation)
-
-        env.Default('build')
-
-        return libraries + libraries_install + documentation
+        return documentation
 
     def Sample(self, libraries=None, path=None):
         """Build a sample project at the given path, or in the current directory if no path is specified."""
@@ -143,14 +162,12 @@ class ProgramProject(Project):
             **_env
         )
 
-        program_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.bindir), program)
+        return program
 
-        env.Alias('build', program)
-        env.Alias('install', program_install)
+    def configure_install_environment(self, env):
+        """Configure the given environment for installing the current project."""
 
-        env.Default('build')
-
-        return program + program_install
+        return env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.bindir), program)
 
     def __get_files(self):
         """Get the project source files."""

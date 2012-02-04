@@ -71,13 +71,15 @@ class BaseEnvironment(SConsEnvironment):
 
         return project.configure_environment(self)
 
-    def FreelanLibrary(self, target_dir, name, major, minor, source_files, **env):
-        """Build a FreeLAN library."""
+    def FreelanProjectInstall(self, project):
+        """Install a FreeLAN project."""
 
-        if self.link == 'static':
-            return self.FreelanStaticLibrary(target_dir, name, major, minor, source_files, **env)
-        elif self.link == 'shared':
-            return self.FreelanSharedLibrary(target_dir, name, major, minor, source_files, **env)
+        return project.configure_install_environment(self)
+
+    def FreelanProjectDocumentation(self, project):
+        """Generate a Freelan project's documentation."""
+
+        return project.configure_documentation_environment(self)
 
     def Indent(self, files):
         """Indent source files."""
