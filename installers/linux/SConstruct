@@ -1,0 +1,7 @@
+"""A SConstruct file to build Debian packages."""
+
+import os
+
+from freelan.build_tools import Environment
+
+env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
