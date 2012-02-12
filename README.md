@@ -65,14 +65,6 @@ Example:
 
 If the option is not specified, `default` is assumed.
 
-#### Specify the link mode
-
-> scons link=static
-
-> scons link=shared
-
-If the option is not specified, `static` is assumed.
-
 #### Specify the release mode
 
 > scons mode=release
@@ -113,7 +105,6 @@ Here is the list of the supported variables:
 - `FREELAN_MINGW_INSTALL_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_INSTALL_PREFIX` when MinGW is used as compiler toolchain.
 - `FREELAN_MSVC_INSTALL_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_INSTALL_PREFIX` when Microsoft Visual Studio is used as compiler toolchain.
 - `FREELAN_TOOLSET`, default for the `toolset` option.
-- `FREELAN_LINK`, default for the `link` option.
 - `FREELAN_STATIC_SUFFIX`, default for the `static_suffix` option. This suffix is added to the static library name.
 - `FREELAN_MODE`, default for the `mode` option.
 - `FREELAN_ARCH`, default for the `arch` option.
