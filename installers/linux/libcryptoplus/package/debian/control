@@ -1,7 +1,7 @@
 Source: libcryptoplus
 Priority: extra
 Maintainer: Julien Kauffmann <julien.kauffmann@freelan.org>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), scons, freelan-build-tools, libssl-dev
 Standards-Version: 3.9.2
 Section: libs
 Homepage: http://www.freelan.org
@@ -11,13 +11,13 @@ Vcs-Browser: https://github.com/ereOn/libcryptoplus
 Package: libcryptoplus-dev
 Section: libdevel
 Architecture: any
-Depends: libcryptoplus1 (= ${binary:Version})
+Depends: libcryptoplus1 (= ${binary:Version}), libssl-dev
 Description: A C++ wrapper around the OpenSSL cryptographic library - development files.
  Development files for the libcryptoplus.
 
 Package: libcryptoplus1
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libssl1.0.0
 Description: A C++ wrapper around the OpenSSL cryptographic library.
  A C++ wrapper around the OpenSSL cryptographic library.
