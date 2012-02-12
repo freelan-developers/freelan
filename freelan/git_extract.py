@@ -3,8 +3,6 @@
 import re
 import os
 
-import SCons
-
 def git_extract_emitter(target, source, env):
     """The emitter"""
 
@@ -13,15 +11,16 @@ def git_extract_emitter(target, source, env):
     elif env['GIT_EXTRACT_FORMAT'] == 'tar':
         suffix = '.tar'
     else:
-        raise RuntimeError('Unsupported extract format (%s)' % repr(env['GIT_EXTRACT_FORMAT']))
+        suffix = None
 
-    if os.path.isdir(str(target[0])):
-        target = [
-            os.path.join(
-                str(target[0]),
-                os.path.basename(str(source[0])) + '-' + env['GIT_EXTRACT_REF'] + suffix
-            )
-        ]
+    if suffix:
+        if os.path.isdir(str(target[0])):
+            target = [
+                os.path.join(
+                    str(target[0]),
+                    os.path.basename(str(source[0])) + '-' + env['GIT_EXTRACT_REF'] + suffix
+                )
+            ]
 
     return target, source
 
@@ -40,6 +39,11 @@ def git_extract_generator(target, source, env, for_signature):
     elif env['GIT_EXTRACT_FORMAT'] == 'tar':
         prefix = os.path.basename(str(target[0])).replace('.tar', '') + '/'
         format_str = '%(git)s archive --remote %(source)s --prefix %(prefix)s %(ref)s --format tar > %(target)s'
+    elif env['GIT_EXTRACT_FORMAT'] == 'folder':
+        prefix = os.path.basename(str(target[0])) + '/'
+        format_str = '%(git)s archive --remote %(source)s --prefix %(prefix)s %(ref)s --format tar > %(target)s.tar && %(tar)s xvf %(target)s.tar && rm %(target)s.tar'
+    else:
+        raise SCons.Errors.BuildError(target, 'Unknown format specified (%s)' % env['GIT_EXTRACT_FORMAT'])
 
     return format_str % \
             {
@@ -49,10 +53,12 @@ def git_extract_generator(target, source, env, for_signature):
                 'ref': env['GIT_EXTRACT_REF'],
                 'zip': env['GIT_EXTRACT_ZIP_TOOL'],
                 'target': str(target[0]),
+                'tar': env['GIT_EXTRACT_TAR_TOOL'],
             }
 
 def generate(env):
     env.Append(GIT_EXTRACT_TOOL = 'git')
+    env.Append(GIT_EXTRACT_TAR_TOOL = 'tar')
     env.Append(GIT_EXTRACT_ZIP_TOOL = 'gzip')
     env.Append(GIT_EXTRACT_REF = 'master')
     env.Append(GIT_EXTRACT_FORMAT = 'gzip')
