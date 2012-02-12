@@ -43,14 +43,10 @@ class BaseEnvironment(SConsEnvironment):
         self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', os.environ.get('FREELAN_MODE', 'release'))
         self.bindir = kw.setdefault('ARGUMENTS', {}).get('bindir', os.environ.get('FREELAN_BINDIR', 'bin'))
         self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', os.environ.get('FREELAN_LIBDIR', 'lib'))
-        self.link = kw.setdefault('ARGUMENTS', {}).get('link', os.environ.get('FREELAN_LINK', 'static'))
         self.static_suffix = kw.setdefault('ARGUMENTS', {}).get('static_suffix', os.environ.get('FREELAN_STATIC_SUFFIX', '_static'))
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
-
-        if not self.link in ['static', 'shared']:
-            raise ValueError('\"link\" can be either \"static\" or \"shared\"')
 
         # Parse environment overloads
         if 'ENV' in kw:

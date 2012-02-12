@@ -79,18 +79,13 @@ class LibraryProject(Project):
             **_env
         )
 
-        if env.link == 'static':
-            return self.static_library
-        else:
-            return self.shared_library
+        return self.static_library + self.shared_library
 
     def configure_install_environment(self, env):
         """Configure the given environment for installing the current project."""
 
-        if env.link == 'static':
-            libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.static_library)
-        else:
-            libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.shared_library)
+        libraries_install = env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.static_library)
+        libraries_install += env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.shared_library)
 
         for include_file in self.include_files:
             libraries_install += env.Install(os.path.dirname(os.path.join(env['ARGUMENTS']['prefix'], include_file)), include_file)
@@ -198,10 +193,7 @@ class SampleProject(Project):
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
 
-        if env.link == 'static':
-            parent_library = self.parent_project.static_library
-        else:
-            parent_library = [self.parent_project.name]
+        parent_library = self.parent_project.static_library
 
         _env = {
             'CPPPATH': [self.path, os.path.join(self.parent_project.abspath, 'include')],
