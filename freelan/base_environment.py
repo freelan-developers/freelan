@@ -21,7 +21,7 @@ class BaseEnvironment(SConsEnvironment):
 
         if _tools is None:
             toolset = kw.setdefault('ARGUMENTS', {}).get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
-            _tools = [toolset, 'astyle', 'doxygen', 'nsis', 'innosetup', 'template']
+            _tools = [toolset, 'astyle', 'doxygen', 'nsis', 'innosetup']
 
         if toolpath is None:
             toolpath = [os.path.abspath(os.path.dirname(__file__))]
