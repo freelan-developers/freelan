@@ -21,11 +21,13 @@ ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz: ${PROJECT_NAME}-${PROJECT_VERSIO
 dh_make: ${PROJECT_NAME}-${PROJECT_VERSION}/ ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
 	cd ${PROJECT_NAME}-${PROJECT_VERSION} && echo | \
 		dh_make -l -e ${MAINTAINER_EMAIL} -c ${LICENCE} -p ${PROJECT_NAME}_${PROJECT_VERSION}
+
+custom_dh_make: dh_make
 	cp -r package/* ${PROJECT_NAME}-${PROJECT_VERSION}/
 	rm ${PROJECT_NAME}-${PROJECT_VERSION}/debian/README.Debian
 	rm ${PROJECT_NAME}-${PROJECT_VERSION}/debian/README.source
 
-create_package: dh_make
+create_package: custom_dh_make
 	cd ${PROJECT_NAME}-${PROJECT_VERSION} && \
 		dpkg-buildpackage
 
