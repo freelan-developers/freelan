@@ -13,7 +13,11 @@ from freelan.build_tools import LibraryProject, Environment
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-libraries.append('cryptoplus')
+if sys.platform.startswith('win32'):
+    libraries.append('cryptoplus_static')
+else:
+    libraries.append('cryptoplus')
+
 libraries.append('boost_system')
 libraries.append('boost_thread')
 
