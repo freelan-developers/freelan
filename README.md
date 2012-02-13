@@ -24,11 +24,9 @@ They also supports several compiler toolchains, especially for Windows when you 
 Install
 -------
 
-To install FreeLAN build tools, you just have to put the project root directory into your PYTHONPATH.
+To install FreeLAN build tools, run the following command (probably as root):
 
-For example on Linux, you may use:
-
-> export PYTHONPATH=\`pwd\`:${PYTHONPATH}
+> ./setup.py install
 
 How to use FreeLAN build tools
 ------------------------------
