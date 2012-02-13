@@ -49,7 +49,7 @@ However, it greatly increases code maintainability by providing a object-oriente
 Using libcryptoplus, you will:
 
  - No longer have to care about your objects lifetime: libcryptoplus heavily relies on **RAII** (Resource Acquisition Is Initialization) and smart pointer mechanisms.
- - Benefit from an exception-oriented environment so can focus on writing efficient code, not on checking return codes for every single line.
+ - Benefit from an exception-oriented environment so you can focus on writing efficient code, not on checking return codes for every single call.
  - Use a consistent and **const-correct** API. All the ugly `const_cast<>` are done for you underneath, and you don't need to care anymore about that.
  - Use modern C++ approaches to deal with your objects: you can now *iterate*  trough the extensions of a X509 certificate or the entries of a X509 name using well-known C++ iterators.
  - Have no performance issues: 99% of libcryptoplus source code is *inline* functions: as a result, any modern compiler with optimizations enabled will likely generate the **exact same machine code** that you would have had using the genuine interface.
