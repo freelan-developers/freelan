@@ -3,8 +3,7 @@ Upstream-Name: libcryptoplus
 Source: <url://example.com>
 
 Files: *
-Copyright: <years> <put author's name and email here>
-           <years> <likewise for another author>
+Copyright: 2012 Julien Kauffmann <julien.kauffmann@freelan.org>
 License: GPL-3.0+
 
 Files: debian/*
@@ -27,6 +26,3 @@ License: GPL-3.0+
  .
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
-
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
