@@ -13,9 +13,15 @@ from freelan.build_tools import LibraryProject, Environment
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-libraries.append('asiotap')
-libraries.append('fscp')
-libraries.append('cryptoplus')
+if sys.platform.startswith('win32'):
+    libraries.append('asiotap_static')
+    libraries.append('fscp_static')
+    libraries.append('cryptoplus_static')
+else:
+    libraries.append('asiotap')
+    libraries.append('fscp')
+    libraries.append('cryptoplus')
+
 libraries.append('boost_system')
 libraries.append('boost_thread')
 
