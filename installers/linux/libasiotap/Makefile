@@ -22,12 +22,12 @@ copy_debian: ${PROJECT_NAME}-${PROJECT_VERSION}/
 
 create_package: copy_debian ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
 	cd ${PROJECT_NAME}-${PROJECT_VERSION} && \
-		dpkg-buildpackage
+	    dpkg-buildpackage
 
 dh_make: ${PROJECT_NAME}-${PROJECT_VERSION}/ ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
 	cd ${PROJECT_NAME}-${PROJECT_VERSION} && \
-		dh_make -l -e ${MAINTAINER_EMAIL} -c ${LICENCE} -p ${PROJECT_NAME}_${PROJECT_VERSION}
-	cp -r debian ../package/
+	    dh_make -l -e ${MAINTAINER_EMAIL} -c ${LICENCE} -p ${PROJECT_NAME}_${PROJECT_VERSION} && \
+	    cp -r debian ../package/
 
 clean:
 	rm -rf ${PROJECT_NAME}-${PROJECT_VERSION}/
