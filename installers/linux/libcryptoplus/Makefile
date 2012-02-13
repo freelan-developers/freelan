@@ -18,18 +18,17 @@ ${PROJECT_NAME}-${PROJECT_VERSION}/: ${PROJECT_NAME}-${PROJECT_VERSION}.tar.gz
 ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz: ${PROJECT_NAME}-${PROJECT_VERSION}.tar.gz
 	cp ${PROJECT_NAME}-${PROJECT_VERSION}.tar.gz ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
 
-dh_make: ${PROJECT_NAME}-${PROJECT_VERSION}/ ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
-	cd ${PROJECT_NAME}-${PROJECT_VERSION} && echo | \
-		dh_make -l -e ${MAINTAINER_EMAIL} -c ${LICENCE} -p ${PROJECT_NAME}_${PROJECT_VERSION}
-
-custom_dh_make: dh_make
+copy_debian:
 	cp -r package/* ${PROJECT_NAME}-${PROJECT_VERSION}/
-	rm ${PROJECT_NAME}-${PROJECT_VERSION}/debian/README.Debian
-	rm ${PROJECT_NAME}-${PROJECT_VERSION}/debian/README.source
 
-create_package: custom_dh_make
+create_package: copy_debian ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
 	cd ${PROJECT_NAME}-${PROJECT_VERSION} && \
 		dpkg-buildpackage
+
+dh_make: ${PROJECT_NAME}-${PROJECT_VERSION}/ ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
+	cd ${PROJECT_NAME}-${PROJECT_VERSION} && \
+		dh_make -l -e ${MAINTAINER_EMAIL} -c ${LICENCE} -p ${PROJECT_NAME}_${PROJECT_VERSION}
+	cp -r debian ../package/
 
 clean:
 	rm -rf ${PROJECT_NAME}-${PROJECT_VERSION}/
