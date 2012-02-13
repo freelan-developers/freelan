@@ -15,10 +15,17 @@ import freelan.file_tools as file_tools
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-libraries.append('freelan')
-libraries.append('asiotap')
-libraries.append('fscp')
-libraries.append('cryptoplus')
+if sys.platform.startswith('win32'):
+    libraries.append('freelan_static')
+    libraries.append('asiotap_static')
+    libraries.append('fscp_static')
+    libraries.append('cryptoplus_static')
+else:
+    libraries.append('freelan')
+    libraries.append('asiotap')
+    libraries.append('fscp')
+    libraries.append('cryptoplus')
+
 libraries.append('boost_system')
 libraries.append('boost_thread')
 libraries.append('boost_program_options')
