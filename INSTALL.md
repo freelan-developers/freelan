@@ -1,7 +1,9 @@
 Installation
 ============
 
-To deploy FreeLAN build tools, you just have to add this directory to your PYTHONPATH.
+To deploy FreeLAN build tools, run the following command:
+
+> ./setup.py install
 
 Libraries
 =========
