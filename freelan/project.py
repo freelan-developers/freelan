@@ -70,14 +70,18 @@ class LibraryProject(Project):
             **_env
         )
 
-        self.shared_library = env.FreelanSharedLibrary(
-            os.path.join(self.path, env.libdir),
-            self.name,
-            self.major,
-            self.minor,
-            self.source_files,
-            **_env
-        )
+        # For now on, we disable shared library generation on NT systems
+        if sys.platform.startswith('win32'):
+            self.shared_library = []
+        else:
+            self.shared_library = env.FreelanSharedLibrary(
+                os.path.join(self.path, env.libdir),
+                self.name,
+                self.major,
+                self.minor,
+                self.source_files,
+                **_env
+            )
 
         return self.static_library + self.shared_library
 
@@ -198,7 +202,7 @@ class SampleProject(Project):
         _env = {
             'CPPPATH': [self.path, os.path.join(self.parent_project.abspath, 'include')],
             'LIBPATH': [self.path, os.path.join(self.parent_project.abspath, env.libdir)],
-            'LIBS': self.libraries + parent_library
+            'LIBS': [self.parent_project.name + env.static_suffix] + self.libraries
         }
 
         sample = env.FreelanProgram(
