@@ -134,7 +134,7 @@ class NtEnvironment(BaseEnvironment):
     def __fix_boost_library(self, lib):
         """Suffix the specified library if it belongs to boost."""
 
-        if lib.startswith('boost_'):
+        if str(lib).startswith('boost_'):
             return '%s%s%s' % (self['BOOST_PREFIX'][self.mode] or '', lib, self['BOOST_SUFFIX'][self.mode] or '')
         else:
             return lib
