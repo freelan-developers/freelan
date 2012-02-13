@@ -18,7 +18,7 @@ ${PROJECT_NAME}-${PROJECT_VERSION}/: ${PROJECT_NAME}-${PROJECT_VERSION}.tar.gz
 ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz: ${PROJECT_NAME}-${PROJECT_VERSION}.tar.gz
 	cp ${PROJECT_NAME}-${PROJECT_VERSION}.tar.gz ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
 
-copy_debian:
+copy_debian: ${PROJECT_NAME}-${PROJECT_VERSION}/
 	cp -r package/* ${PROJECT_NAME}-${PROJECT_VERSION}/
 
 create_package: copy_debian ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
