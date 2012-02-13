@@ -1,7 +1,6 @@
 PROJECT_NAME=libcryptoplus
 PROJECT_VERSION=1.3
-#GIT_TAG=${PROJECT_VERSION}
-GIT_TAG=master
+GIT_TAG=${PROJECT_VERSION}
 MAINTAINER_EMAIL=julien.kauffmann@freelan.org
 LICENCE=gpl3
 
