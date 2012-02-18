@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ $# -lt 2 -o $# -gt 3 ]
+then
+    echo "Syntax is: $0 <project> <version> [dir]" >&2
+    exit 2
+fi
+
+PROJECT_NAME=$1
+PROJECT_VERSION=$2
+
+if [ $# -ne 2 ]
+then
+    DIR=$3
+else
+    DIR=$(pwd)
+fi
+
+ROOT=$(git rev-parse --show-toplevel)
+
+if [ -d "${ROOT}/${PROJECT_NAME}" ]
+then
+    echo "Getting ${PROJECT_NAME} version ${PROJECT_VERSION} in ${DIR}..."
+
+    cd ${DIR}
+    git archive --remote ${ROOT}/${PROJECT_NAME} --format tar --prefix ${PROJECT_NAME}-${PROJECT_VERSION}/ ${PROJECT_VERSION} | gzip > ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
+    tar zxf ${PROJECT_NAME}_${PROJECT_VERSION}.orig.tar.gz
+else
+    echo "No ${PROJECT_NAME} project found in ${ROOT}: ignoring..." >&2
+fi
