@@ -13,5 +13,8 @@ Package: freelan-buildtools
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, scons
 XB-Python-Version: ${python:Versions}
-Description: A set of Python tools to build freelan related libraries and binaries
- A set of Python tools to build freelan related libraries and binaries.
+Description: Provides a set of Python tools to build freelan related libraries and binaries
+ All freelan related libraries and binaries share the same build logic.
+ .
+ The freelan build tools can be used to easily compile and install a library or
+ binary that follows this build logic.
