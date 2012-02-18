@@ -1,2 +1,2 @@
-lib*/*
-!lib*/debian
+*/*
+!*/debian
