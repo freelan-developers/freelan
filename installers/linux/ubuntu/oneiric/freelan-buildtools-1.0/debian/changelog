@@ -1,0 +1,5 @@
+freelan-buildtools (1.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Julien Kauffmann <julien.kauffmann@freelan.org>  Sat, 18 Feb 2012 16:10:11 +0100
