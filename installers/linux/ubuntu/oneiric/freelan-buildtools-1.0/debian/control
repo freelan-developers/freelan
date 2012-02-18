@@ -1,15 +1,17 @@
 Source: freelan-buildtools
-Section: unknown
-Priority: extra
+Section: python
+Priority: optional
 Maintainer: Julien Kauffmann <julien.kauffmann@freelan.org>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), python-support (>= 0.3), python-setuptools
 Standards-Version: 3.9.2
-Homepage: <insert the upstream URL, if relevant>
-#Vcs-Git: git://git.debian.org/collab-maint/freelan-buildtools.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/freelan-buildtools.git;a=summary
+XS-Python-Version: >= 2.7
+Homepage: http://www.freelan.org
+Vcs-Git: git://git@github.com:ereOn/freelan-buildtools.git
+Vcs-Browser: https://github.com/ereOn/freelan-buildtools
 
 Package: freelan-buildtools
 Architecture: all
-Depends: ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Depends: ${python:Depends}, ${misc:Depends}, scons
+XB-Python-Version: ${python:Versions}
+Description: A set of Python tools to build freelan related libraries and binaries
+ A set of Python tools to build freelan related libraries and binaries.
