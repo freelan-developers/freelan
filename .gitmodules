@@ -16,6 +16,3 @@
 [submodule "freelan"]
 	path = freelan
 	url = git@github.com:ereOn/freelan.git
-[submodule "freelan-build_tools"]
-	path = freelan-build_tools
-	url = git@github.com:ereOn/freelan-build_tools.git
