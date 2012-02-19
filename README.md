@@ -15,10 +15,10 @@ It contains the following projects:
  - [libfreelan](https://github.com/ereOn/libfreelan) - The FreeLAN C++ library.
  - [freelan](https://github.com/ereOn/freelan) - The FreeLAN binary.
 
-Installers
+Packaging
 ----------
 
-See the `README.md` file into the `installers` directory.
+See the `README.md` file into the `packaging` directory.
 
 Does the project have a website ?
 ---------------------------------
