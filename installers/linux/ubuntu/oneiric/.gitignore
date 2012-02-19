@@ -1,5 +1,0 @@
-*.dsc
-*.build
-*.changes
-*/*
-!*/debian
