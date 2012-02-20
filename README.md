@@ -1,4 +1,4 @@
-FreeLAN build tools
+Freelan build tools
 ===================
 
 A set of Python scripts to automate builds of FreeLAN related libraries.
@@ -15,7 +15,7 @@ Rationale
 
 Most FreeLAN related projects have the same architecture and are built the same way. That is, instead of having similar build scripts duplicated for each library, we decided it was better to have an unique method for that.
 
-Every time the FreeLAN build tools are improved, every other library can benefit from it.
+Every time the Freelan build tools are improved, every other library can benefit from it.
 
 The tools can build projects for Windows, Linux Mac OSX and probably any other UNIX based operating system.
 
@@ -24,14 +24,14 @@ They also supports several compiler toolchains, especially for Windows when you 
 Install
 -------
 
-To install FreeLAN build tools, run the following command (probably as root):
+To install Freelan build tools, run the following command (probably as root):
 
 > ./setup.py install
 
-How to use FreeLAN build tools
+How to use Freelan build tools
 ------------------------------
 
-FreeLAN build tools are based on SConstruct and thus, building a project is as simple as typing:
+Freelan build tools are based on SConstruct and thus, building a project is as simple as typing:
 
 > scons
 
@@ -117,7 +117,7 @@ Here is the list of the supported variables:
 - `FREELAN_MSVC_RELEASE_BOOST_SUFFIX`, Windows only. The Boost library suffix to use for release builds with Microsoft Visual Studio.
 - `FREELAN_MSVC_DEBUG_BOOST_SUFFIX`, Windows only. The Boost library suffix to use for debug builds with Microsoft Visual Studio. If not specified, `FREELAN_MSVC_RELEASE_BOOST_SUFFIX` is used for both release and debug builds.
 
-The rationale for the prefix/suffix variables is that under Windows, Boost by default decorates its libraries names with the compiler name and the Boost version. We designed the FreeLAN build tools so that they match the defaults of the libraries we depend on.
+The rationale for the prefix/suffix variables is that under Windows, Boost by default decorates its libraries names with the compiler name and the Boost version. We designed the Freelan build tools so that they match the defaults of the libraries we depend on.
 
 You may also define SCons specific environment variables by prefixing them with `FREELAN_ENV_`.
 
@@ -126,7 +126,7 @@ Example: To use `g++44` instead of `g++` as the `CXX` environment variable, defi
 Reusability
 -----------
 
-While FreeLAN build tools are not meant to be used for non FreeLAN related project, you might however use them (as-is, or modified) to build your own projects.
+While Freelan build tools are not meant to be used for non FreeLAN related project, you might however use them (as-is, or modified) to build your own projects.
 
 If you do so and think about an improvement of which we could also benefit, feel free to suggest changes ! The preferred way is to fork the project on GitHub, then to do a pull-request.
 

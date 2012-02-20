@@ -1,7 +1,7 @@
 Installation
 ============
 
-To deploy FreeLAN build tools, run the following command:
+To deploy Freelan build tools, run the following command:
 
 > ./setup.py install
 
