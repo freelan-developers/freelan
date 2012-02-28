@@ -3,12 +3,12 @@
 from distutils.core import setup
 
 setup(
-    name='freelan-build-tools',
+    name='freelan-buildtools',
     version='1.0',
     description='Freelan build tools',
     author='Julien Kauffmann',
     author_email='julien.kauffmann@freelan.org',
-    url='http://github.com/ereOn/freelan-build-tools',
+    url='http://github.com/ereOn/freelan-buildtools',
     packages=['freelan'],
     license='GPLv3',
     classifiers=[

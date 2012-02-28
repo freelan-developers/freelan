@@ -1,4 +1,7 @@
 """A set of tools to ease FreeLAN related libraries."""
 
-from project import LibraryProject, ProgramProject, SampleProject
-from environment import Environment
+# This module is deprecated !
+#
+# Use 'freelan.buildtools' instead.
+
+from buildtools import *
