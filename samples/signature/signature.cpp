@@ -54,7 +54,7 @@ int main()
 		std::cout << "Generating RSA key. This can take some time..." << std::endl;
 
 		cryptoplus::pkey::rsa_key rsa_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
-		cryptoplus::pkey::pkey pkey;
+		cryptoplus::pkey::pkey pkey = cryptoplus::pkey::pkey::create();
 
 		pkey.set_rsa_key(rsa_key);
 
