@@ -1,0 +1,6 @@
+*.dsc
+*.deb
+*.build
+*.changes
+*.tar.gz
+freelan-buildtools.debian

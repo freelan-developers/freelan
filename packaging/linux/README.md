@@ -6,13 +6,7 @@ This how-to explains the guidelines to follow to package freelan libraries on th
 Debian & Ubuntu
 ---------------
 
-All projects contain branches dedicated to Debian and Ubuntu packaging.
-
-To create the package for a specified project, just checkout the required target and type:
-
-> git buildpackage
-
-This requires the `git-buildpackage` package.
+Debian & Ubuntu share the same packaging system. Check `debian/README.md` for instructions.
 
 Red-Hat & Fedora
 ----------------
