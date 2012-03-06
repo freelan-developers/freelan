@@ -3,4 +3,4 @@
 *.build
 *.changes
 *.tar.gz
-freelan-buildtools.debian
+*.debian
