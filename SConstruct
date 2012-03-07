@@ -14,7 +14,6 @@ from freelan.buildtools import LibraryProject, Environment
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
 libraries.append('boost_system')
-libraries.append('boost_thread')
 
 if sys.platform.startswith('win32'):
     libraries.append('ws2_32')
