@@ -9,7 +9,7 @@ libraries = []
 
 import os, sys
 
-from freelan.build_tools import LibraryProject, Environment
+from freelan.buildtools import LibraryProject, Environment
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
