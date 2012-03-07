@@ -19,7 +19,6 @@ else:
     libraries.append('cryptoplus')
 
 libraries.append('boost_system')
-libraries.append('boost_thread')
 
 if sys.platform.startswith('win32'):
 
