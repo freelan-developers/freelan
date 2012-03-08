@@ -10,7 +10,7 @@ libraries = []
 
 import os, sys
 
-from freelan.build_tools import ProgramProject, Environment
+from freelan.buildtools import ProgramProject, Environment
 import freelan.file_tools as file_tools
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
