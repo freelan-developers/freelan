@@ -7,6 +7,13 @@ default:
 
 sync: freelan-buildtools.debian libcryptoplus.debian libasiotap.debian libfscp.debian libfreelan.debian
 
+update: freelan-buildtools.debian libcryptoplus.debian libasiotap.debian libfscp.debian libfreelan.debian
+	cd freelan-buildtools.debian && git pull --all
+	cd libcryptoplus.debian && git pull --all
+	cd libasiotap.debian && git pull --all
+	cd libfscp.debian && git pull --all
+	cd libfreelan.debian && git pull --all
+
 freelan-buildtools.debian:
 	git clone git@github.com:ereOn/freelan-buildtools.debian.git
 	cd freelan-buildtools.debian && git checkout -b upstream origin/upstream && git checkout -b pristine-tar origin/pristine-tar && git checkout master
