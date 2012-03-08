@@ -42,9 +42,6 @@ if sys.platform.startswith('win32'):
 else:
     libraries.append('pthread')
 
-    if sys.platform.startswith('linux2'):
-        libraries.append('rt')
-
     if sys.platform.startswith('darwin'):
         libraries.append('crypto')
 
