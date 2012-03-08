@@ -5,14 +5,15 @@
 default:
 	@echo "Please specify a target."
 
-sync: freelan-buildtools.debian libcryptoplus.debian libasiotap.debian libfscp.debian libfreelan.debian
+sync: freelan-buildtools.debian libcryptoplus.debian libasiotap.debian libfscp.debian libfreelan.debian freelan.debian
 
-update: freelan-buildtools.debian libcryptoplus.debian libasiotap.debian libfscp.debian libfreelan.debian
+update: freelan-buildtools.debian libcryptoplus.debian libasiotap.debian libfscp.debian libfreelan.debian freelan.debian
 	cd freelan-buildtools.debian && git pull --all
 	cd libcryptoplus.debian && git pull --all
 	cd libasiotap.debian && git pull --all
 	cd libfscp.debian && git pull --all
 	cd libfreelan.debian && git pull --all
+	cd freelan.debian && git pull --all
 
 freelan-buildtools.debian:
 	git clone git@github.com:ereOn/freelan-buildtools.debian.git
@@ -33,6 +34,10 @@ libfscp.debian:
 libfreelan.debian:
 	git clone git@github.com:ereOn/libfreelan.debian.git
 	cd libfreelan.debian && git checkout -b upstream origin/upstream && git checkout -b pristine-tar origin/pristine-tar && git checkout master
+
+freelan.debian:
+	git clone git@github.com:ereOn/freelan.debian.git
+	cd freelan.debian && git checkout -b upstream origin/upstream && git checkout -b pristine-tar origin/pristine-tar && git checkout master
 
 clean:
 	rm -f *.dsc
