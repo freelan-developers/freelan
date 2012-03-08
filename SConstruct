@@ -41,9 +41,7 @@ if sys.platform.startswith('win32'):
     libraries.append('iphlpapi')
 else:
     libraries.append('pthread')
-
-    if sys.platform.startswith('darwin'):
-        libraries.append('crypto')
+    libraries.append('crypto')
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
