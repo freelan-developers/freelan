@@ -61,9 +61,7 @@ if sys.platform.startswith('win32'):
     libraries.append('iphlpapi')
 else:
     libraries.append('pthread')
-
-    if sys.platform.startswith('linux2'):
-        libraries.append('rt')
+    libraries.append('crypto')
 
 common_source_files = Glob('src/common/*.cpp')
 env.VariantDir('build/service', 'src')
