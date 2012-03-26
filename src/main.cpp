@@ -132,6 +132,7 @@ struct cli_configuration
 	bool debug;
 #ifndef WINDOWS
 	bool foreground;
+	fs::path pid_file;
 #endif
 };
 
@@ -195,6 +196,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	po::options_description daemon_options("Daemon");
 	daemon_options.add_options()
 	("foreground,f", "Do not run as a daemon.")
+	("pid_file,p", po::value<std::string>(), "A pid file to use.")
 	;
 
 	visible_options.add(daemon_options);
@@ -269,6 +271,20 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 #else
 	configuration.foreground = (vm.count("foreground") > 0);
+
+	if (vm.count("pid_file"))
+	{
+		configuration.pid_file = fs::absolute(vm["pid_file"].as<std::string>());
+	}
+	else
+	{
+		char* val = getenv("FREELAN_PID_FILE");
+
+		if (val)
+		{
+			configuration.pid_file = fs::absolute(std::string(val));
+		}
+	}
 #endif
 
 	fs::path configuration_file;
