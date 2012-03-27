@@ -67,6 +67,7 @@
 #include "win32/service.hpp"
 #else
 #include "posix/daemon.hpp"
+#include "posix/locked_pid_file.hpp"
 #endif
 
 #include "tools.hpp"
@@ -384,6 +385,17 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 void run(const cli_configuration& configuration)
 {
+#ifndef WINDOWS
+	boost::shared_ptr<posix::locked_pid_file> pid_file;
+
+	if (!configuration.pid_file.empty())
+	{
+		std::cout << "Creating PID file at: " << configuration.pid_file << std::endl;
+
+		pid_file.reset(new posix::locked_pid_file(configuration.pid_file));
+	}
+#endif
+
 	boost::function<void (freelan::log_level, const std::string&)> log_func = &do_log;
 
 #ifndef WINDOWS
@@ -392,6 +404,11 @@ void run(const cli_configuration& configuration)
 		posix::daemonize();
 
 		log_func = &posix::syslog;
+	}
+
+	if (pid_file)
+	{
+		pid_file->write_pid();
 	}
 #endif
 
