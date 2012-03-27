@@ -74,7 +74,7 @@ namespace posix
 
 	void pid_file::write_pid() const
 	{
-		const std::string pid = boost::lexical_cast<std::string>(getpid());
+		const std::string pid = boost::lexical_cast<std::string>(getpid()) + '\n';
 
 		::write(m_file_descriptor, pid.c_str(), pid.size());
 	}
