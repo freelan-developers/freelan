@@ -39,7 +39,7 @@
  */
 
 /**
- * \file service.cpp
+ * \file daemon.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief POSIX related daemon functions.
  */
