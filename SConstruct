@@ -33,6 +33,9 @@ libraries.append('crypto')
 
 if sys.platform.startswith('win32'):
 
+    libraries.append('boost_thread')
+    libraries.append('boost_date_time')
+
     if env['CC'] == 'gcc':
         libraries.append('crypto')
         env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
