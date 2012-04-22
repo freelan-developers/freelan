@@ -79,6 +79,89 @@ namespace fl = freelan;
 #define SERVICE_START_NAME NULL
 #endif
 
+namespace
+{
+	class SCManager
+	{
+		public:
+
+			SCManager(DWORD desired_access) :
+				m_handle(::OpenSCManager(NULL, NULL, desired_access))
+			{
+				if (m_handle == NULL)
+				{
+					DWORD last_error = ::GetLastError();
+
+					throw boost::system::system_error(last_error, boost::system::system_category(), "OpenSCManager()");
+				}
+			}
+
+			~SCManager()
+			{
+				::CloseServiceHandle(m_handle);
+			}
+
+			SC_HANDLE handle() const { return m_handle; }
+
+		private:
+
+			SCManager(const SCManager&);
+			SCManager& operator=(const SCManager&);
+
+			SC_HANDLE m_handle;
+	};
+
+	class Service
+	{
+		public:
+
+			Service(const SCManager& manager, LPCTSTR service_name, DWORD desired_access) :
+				m_handle(::OpenService(manager.handle(), service_name, desired_access))
+			{
+				if (m_handle == NULL)
+				{
+					DWORD last_error = ::GetLastError();
+
+					throw boost::system::system_error(last_error, boost::system::system_category(), "OpenService()");
+				}
+			}
+
+			~Service()
+			{
+				::CloseServiceHandle(m_handle);
+			}
+
+			SC_HANDLE handle() const { return m_handle; }
+
+			bool delete_service() const
+			{
+				if (::DeleteService(m_handle))
+				{
+					return true;
+				}
+				else
+				{
+					DWORD last_error = ::GetLastError();
+
+					switch (last_error)
+					{
+						case ERROR_SERVICE_MARKED_FOR_DELETE:
+							return false;
+					}
+
+					throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
+				}
+			}
+
+		private:
+
+			Service(const Service&);
+			Service& operator=(const Service&);
+
+			SC_HANDLE m_handle;
+	};
+}
+
 namespace win32
 {
 	namespace
@@ -139,63 +222,43 @@ namespace win32
 	{
 		bool result = false;
 
-		SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
+		SCManager service_control_manager(SC_MANAGER_CREATE_SERVICE);
 
-		if (service_control_manager)
+		const fs::path path = get_module_filename();
+
+		SC_HANDLE service = ::CreateService(
+				service_control_manager.handle(),
+				SERVICE_NAME,
+				SERVICE_NAME,
+				SERVICE_ALL_ACCESS,
+				SERVICE_WIN32_OWN_PROCESS,
+				SERVICE_AUTO_START,
+				SERVICE_ERROR_NORMAL,
+				path.string<std::basic_string<TCHAR> >().c_str(),
+				NULL,
+				NULL,
+				SERVICE_DEPENDENCIES,
+				SERVICE_START_NAME,
+				NULL
+				);
+
+		if (service)
 		{
-			try
-			{
-				const fs::path path = get_module_filename();
+			result = true;
 
-				SC_HANDLE service = ::CreateService(
-				                        service_control_manager,
-				                        SERVICE_NAME,
-				                        SERVICE_NAME,
-				                        SERVICE_ALL_ACCESS,
-				                        SERVICE_WIN32_OWN_PROCESS,
-				                        SERVICE_AUTO_START,
-				                        SERVICE_ERROR_NORMAL,
-				                        path.string<std::basic_string<TCHAR> >().c_str(),
-				                        NULL,
-				                        NULL,
-				                        SERVICE_DEPENDENCIES,
-				                        SERVICE_START_NAME,
-				                        NULL
-				                    );
-
-				if (service)
-				{
-					result = true;
-
-					::CloseServiceHandle(service);
-				}
-				else
-				{
-					DWORD last_error = ::GetLastError();
-
-					switch (last_error)
-					{
-						case ERROR_SERVICE_EXISTS:
-							break;
-						default:
-							throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
-					}
-				}
-			}
-			catch (...)
-			{
-				::CloseServiceHandle(service_control_manager);
-
-				throw;
-			}
-
-			::CloseServiceHandle(service_control_manager);
+			::CloseServiceHandle(service);
 		}
 		else
 		{
 			DWORD last_error = ::GetLastError();
 
-			throw boost::system::system_error(last_error, boost::system::system_category(), "OpenSCManager()");
+			switch (last_error)
+			{
+				case ERROR_SERVICE_EXISTS:
+					break;
+				default:
+					throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
+			}
 		}
 
 		return result;
@@ -203,80 +266,32 @@ namespace win32
 
 	bool uninstall_service()
 	{
-		bool result = false;
+		SCManager service_control_manager(SC_MANAGER_CONNECT);
 
-		SC_HANDLE service_control_manager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-
-		if (service_control_manager)
+		try
 		{
-			try
+			Service service(
+					service_control_manager,
+					SERVICE_NAME,
+					SERVICE_QUERY_STATUS | DELETE
+					);
+
+			return service.delete_service();
+		}
+		catch (boost::system::system_error& ex)
+		{
+			if (ex.code().category() == boost::system::system_category())
 			{
-				SC_HANDLE service = ::OpenService(
-				                        service_control_manager,
-				                        SERVICE_NAME,
-				                        SERVICE_QUERY_STATUS | DELETE
-				                    );
-
-				if (service)
+				if (ex.code().value() == ERROR_SERVICE_DOES_NOT_EXIST)
 				{
-					try
-					{
-						if (::DeleteService(service))
-						{
-							result = true;
-						}
-						else
-						{
-							DWORD last_error = ::GetLastError();
-
-							switch (last_error)
-							{
-								case ERROR_SERVICE_MARKED_FOR_DELETE:
-									break;
-								default:
-									throw boost::system::system_error(last_error, boost::system::system_category(), "DeleteService()");
-							}
-						}
-					}
-					catch (...)
-					{
-						::CloseServiceHandle(service);
-
-						throw;
-					}
-
-					::CloseServiceHandle(service);
-				}
-				else
-				{
-					DWORD last_error = ::GetLastError();
-
-					switch (last_error)
-					{
-						case ERROR_SERVICE_DOES_NOT_EXIST:
-							break;
-						default:
-							throw boost::system::system_error(last_error, boost::system::system_category(), "OpenService()");
-					}
+					return false;
 				}
 			}
-			catch (...)
-			{
-				::CloseServiceHandle(service_control_manager);
 
-				throw;
-			}
-
-			::CloseServiceHandle(service_control_manager);
-		}
-		else
-		{
-			DWORD last_error = ::GetLastError();
-
-			throw boost::system::system_error(last_error, boost::system::system_category(), "OpenSCManager()");
+			throw;
 		}
 
-		return result;
+		return false;
 	}
 
 	/* Local functions definitions */
