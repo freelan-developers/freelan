@@ -290,8 +290,6 @@ namespace win32
 
 			throw;
 		}
-
-		return false;
 	}
 
 	/* Local functions definitions */
