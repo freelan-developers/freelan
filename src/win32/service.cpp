@@ -220,8 +220,6 @@ namespace win32
 
 	bool install_service()
 	{
-		bool result = false;
-
 		SCManager service_control_manager(SC_MANAGER_CREATE_SERVICE);
 
 		const fs::path path = get_module_filename();
@@ -244,9 +242,9 @@ namespace win32
 
 		if (service)
 		{
-			result = true;
-
 			::CloseServiceHandle(service);
+
+			return true;
 		}
 		else
 		{
@@ -255,13 +253,11 @@ namespace win32
 			switch (last_error)
 			{
 				case ERROR_SERVICE_EXISTS:
-					break;
-				default:
-					throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
+					return false;
 			}
-		}
 
-		return result;
+			throw boost::system::system_error(last_error, boost::system::system_category(), "CreateService()");
+		}
 	}
 
 	bool uninstall_service()
