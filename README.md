@@ -88,6 +88,6 @@ If you are interested in using this project under a different license, please [c
 Does the project have a website ?
 ---------------------------------
 
-Yes, it does. And [here](http://www.freelan.org/index.php?page=libcryptoplus) it is. 
+Yes, it does. And [here](http://www.freelan.org) it is. 
 
-You may also find the [git repository](https://github.com/ereOn/libcryptoplus) on github.
+You may also find the [git repository](https://github.com/freelan-developers/libcryptoplus) on github.
