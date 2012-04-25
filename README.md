@@ -3,6 +3,8 @@ freelan-all
 
 A super-project that includes all FreeLAN related projects and provides scripts to generate installers.
 
+For help regarding the configuration, take a look at the [wiki](https://github.com/ereOn/freelan-all/wiki).
+
 Libraries
 ---------
 
