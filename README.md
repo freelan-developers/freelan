@@ -133,4 +133,4 @@ If you do so and think about an improvement of which we could also benefit, feel
 Does the project have a website ?
 ---------------------------------
 
-You may find the [git repository](https://github.com/ereOn/freelan-buildtools) on github.
+You may find the [git repository](https://github.com/freelan-developers/freelan-buildtools) on github.
