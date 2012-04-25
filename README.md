@@ -3,7 +3,7 @@ freelan
 
 A cross-platform daemon to establish IPv4/IPv6 peer-to-peer networks.
 
-It is based on [libfreelan](https://github.com/ereOn/libfreelan).
+It is based on [libfreelan](https://github.com/freelan-developers/libfreelan).
 
 This software supports the following operating systems:
 
@@ -30,4 +30,4 @@ Does the project have a website ?
 
 Yes, it does. And [here](http://www.freelan.org/index.php) it is. 
 
-You may also find the [git repository](https://github.com/ereOn/freelan) on github.
+You may also find the [git repository](https://github.com/freelan-developers/freelan) on github.
