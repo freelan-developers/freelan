@@ -103,7 +103,7 @@ Generate the certificate request:
 
     openssl req -new -sha1 -key user.key -out user.csr
 
-Sign the certificate request wit hthe certification authority certificate:
+Sign the certificate request with the certification authority certificate:
 
     openssl ca -out /home/ca/crt/user.crt -in user.csr -config /home/ca/ca.cnf
 
