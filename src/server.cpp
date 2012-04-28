@@ -292,7 +292,8 @@ namespace fscp
 			size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request->unique_number());
 
 			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-			if(code.value() != 0)
+
+			if (code)
 			{
 				network_error(code);
 			}
@@ -320,9 +321,9 @@ namespace fscp
 					{
 						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message);
 
-						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender,
-								0, code);
-						if(code.value() != 0)
+						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender, 0, code);
+								
+						if (code)
 						{
 							network_error(code);
 						}
@@ -358,9 +359,9 @@ namespace fscp
 			boost::system::error_code code;
 			size_t size = presentation_message::write(m_send_buffer.data(), m_send_buffer.size(), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
 
-			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target,
-					0, code);
-			if(code.value() != 0)
+			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
+					
+			if (code)
 			{
 				network_error(code);
 			}
@@ -400,9 +401,9 @@ namespace fscp
 
 			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
-			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target,
-					0, code);
-			if(code.value() != 0)
+			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
+					
+			if (code)
 			{
 				network_error(code);
 			}
@@ -454,9 +455,9 @@ namespace fscp
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
-		m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target,
-				0, code);
-		if(code.value() != 0)
+		m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
+				
+		if (code)
 		{
 		 	network_error(code);
 		}
@@ -573,9 +574,9 @@ namespace fscp
 
 					session_pair.remote_session().increment_sequence_number();
 
-					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target,
-							0, code);
-					if(code.value() != 0)
+					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
+							
+					if (code)
 					{
 						network_error(code);
 					}
@@ -671,9 +672,9 @@ namespace fscp
 
 				session_pair.remote_session().increment_sequence_number();
 
-				m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target,
-						0, code);
-				if(code.value() != 0)
+				m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
+						
+				if (code)
 				{
 					network_error(code);
 				}
