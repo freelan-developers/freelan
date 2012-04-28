@@ -85,9 +85,10 @@ namespace fscp
 	void server::open(const ep_type& listen_endpoint)
 	{
 		m_socket.open(listen_endpoint.protocol());
-		// accept both IPv4 and IPv6
+
+		// Accept both IPv4 and IPv6
 		m_socket.set_option(boost::asio::ip::v6_only(false));
-		
+
 		m_socket.bind(listen_endpoint);
 
 		async_receive();
@@ -322,7 +323,7 @@ namespace fscp
 						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message);
 
 						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender, 0, code);
-								
+
 						if (code)
 						{
 							network_error(code);
@@ -360,7 +361,7 @@ namespace fscp
 			size_t size = presentation_message::write(m_send_buffer.data(), m_send_buffer.size(), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
 
 			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-					
+
 			if (code)
 			{
 				network_error(code);
@@ -446,12 +447,12 @@ namespace fscp
 		session.renew_local_session(session_number);
 
 		std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
-																				 session.local_session().session_number(),
-																				 session.local_session().seal_key(),
-																				 session.local_session().seal_key_size(),
-																				 session.local_session().encryption_key(),
-																				 session.local_session().encryption_key_size()
-																		 );
+				session.local_session().session_number(),
+				session.local_session().seal_key(),
+				session.local_session().seal_key_size(),
+				session.local_session().encryption_key(),
+				session.local_session().encryption_key_size()
+				);
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
@@ -500,7 +501,7 @@ namespace fscp
 						_clear_session_message.seal_key_size(),
 						_clear_session_message.encryption_key(),
 						_clear_session_message.encryption_key_size()
-				);
+						);
 
 				session_pair.set_remote_session(_session_store);
 
@@ -560,17 +561,17 @@ namespace fscp
 				for(; !data_store.empty(); data_store.pop())
 				{
 					size_t size = data_message::write(
-														m_send_buffer.data(),
-														m_send_buffer.size(),
-														session_pair.remote_session().session_number(),
-														session_pair.remote_session().sequence_number(),
-														&data_store.front()[0],
-														data_store.front().size(),
-														session_pair.remote_session().seal_key(),
-														session_pair.remote_session().seal_key_size(),
-														session_pair.remote_session().encryption_key(),
-														session_pair.remote_session().encryption_key_size()
-												);
+							m_send_buffer.data(),
+							m_send_buffer.size(),
+							session_pair.remote_session().session_number(),
+							session_pair.remote_session().sequence_number(),
+							&data_store.front()[0],
+							data_store.front().size(),
+							session_pair.remote_session().seal_key(),
+							session_pair.remote_session().seal_key_size(),
+							session_pair.remote_session().encryption_key(),
+							session_pair.remote_session().encryption_key_size()
+							);
 
 					session_pair.remote_session().increment_sequence_number();
 
@@ -598,15 +599,15 @@ namespace fscp
 						m_data_buffer.size(),
 						session_pair.local_session().seal_key(),
 						session_pair.local_session().seal_key_size()
-				);
+						);
 
 				size_t cnt = _data_message.get_cleartext(
-												 m_data_buffer.data(),
-												 m_data_buffer.size(),
-												 session_pair.local_session().session_number(),
-												 session_pair.local_session().encryption_key(),
-												 session_pair.local_session().encryption_key_size()
-										 );
+						m_data_buffer.data(),
+						m_data_buffer.size(),
+						session_pair.local_session().session_number(),
+						session_pair.local_session().encryption_key(),
+						session_pair.local_session().encryption_key_size()
+						);
 
 				session_pair.local_session().set_sequence_number(_data_message.sequence_number());
 
@@ -658,6 +659,7 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				boost::system::error_code code;
+
 				size_t size = data_message::write_keep_alive(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
