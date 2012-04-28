@@ -141,6 +141,12 @@ namespace fscp
 			typedef boost::function<void (const ep_type& host)> session_lost_callback;
 
 			/**
+			 * \brief A network error callback.
+			 * \param code error code. 
+			 */
+			typedef boost::function<void (const boost::system::error_code code)> network_error_callback;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param identity The identity store.
@@ -298,6 +304,12 @@ namespace fscp
 			void set_session_lost_callback(session_lost_callback callback);
 
 			/**
+			 * \brief Set the network error callback.
+			 * \param callback The callback.
+			 */
+			void set_network_error_callback(network_error_callback callback);
+
+			/**
 			 * \brief Check if a session is established with the specified host.
 			 * \param host The host.
 			 * \return true if a session is currently active.
@@ -415,6 +427,11 @@ namespace fscp
 
 		private:
 
+			void network_error(const boost::system::error_code&);
+			network_error_callback m_network_error_callback;
+
+		private:
+
 			void do_check_keep_alive(const boost::system::error_code&);
 			void do_send_keep_alive(const ep_type&);
 
@@ -501,6 +518,11 @@ namespace fscp
 	inline void server::set_session_lost_callback(session_lost_callback callback)
 	{
 		m_session_lost_callback = callback;
+	}
+	
+	inline void server::set_network_error_callback(network_error_callback callback)
+	{
+		m_network_error_callback = callback;
 	}
 
 	template <typename T>
