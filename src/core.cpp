@@ -391,7 +391,16 @@ namespace freelan
 
 	void core::on_session_established(const ep_type& sender)
 	{
-		m_logger(LL_INFORMATION) << "Session established with " << sender << ".";
+		try
+		{
+			cert_type sig_cert = m_server.get_presentation(sender).signature_certificate();
+
+			m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
+		}
+		catch (std::runtime_error& ex)
+		{
+			m_logger(LL_INFORMATION) << "Session established with " << sender << " (Could not get certificate: " << ex.what() << ").";
+		}
 
 		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(boost::ref(m_server), sender);
 		m_endpoint_switch_port_map[sender] = port;
