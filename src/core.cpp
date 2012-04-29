@@ -414,7 +414,16 @@ namespace freelan
 
 	void core::on_session_lost(const ep_type& sender)
 	{
-		m_logger(LL_INFORMATION) << "Session with " << sender << " lost.";
+		try
+		{
+			cert_type sig_cert = m_server.get_presentation(sender).signature_certificate();
+
+			m_logger(LL_INFORMATION) << "Session with " << sender << " lost (" << sig_cert.subject().oneline() << ").";
+		}
+		catch (std::runtime_error& ex)
+		{
+			m_logger(LL_INFORMATION) << "Session with " << sender << " lost (Could not get certificate: " << ex.what() << ").";
+		}
 
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
