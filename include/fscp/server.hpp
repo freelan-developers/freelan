@@ -430,8 +430,6 @@ namespace fscp
 			void network_error(const boost::system::error_code&);
 			network_error_callback m_network_error_callback;
 
-			ep_type normalize_endpoint(const ep_type& endpoint);
-
 		private:
 
 			void do_check_keep_alive(const boost::system::error_code&);

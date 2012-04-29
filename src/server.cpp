@@ -62,6 +62,23 @@ using namespace boost;
 
 namespace fscp
 {
+	namespace
+	{
+		void normalize_endpoint(server::ep_type& ep)
+		{
+			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
+			if (ep.address().is_v6())
+			{
+				boost::asio::ip::address_v6 address = ep.address().to_v6();
+
+				if (address.is_v4_mapped())
+				{
+					ep = server::ep_type(address.to_v4(), ep.port());
+				}
+			}
+		}
+	}
+
 	server::server(asio::io_service& io_service, const identity_store& _identity) :
 		m_data(0),
 		m_socket(io_service),
@@ -94,35 +111,6 @@ namespace fscp
 
 		async_receive();
 		m_keep_alive_timer.async_wait(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error));
-	}
-			
-	server::ep_type server::normalize_endpoint(const ep_type& endpoint)
-	{
-		boost::asio::ip::address ret;
-
-		// if the endpoint is IPv4 mapped address, return an endpoint with
-		// "classic" IPv4 format
-		if(endpoint.address().is_v6())
-		{
-			boost::asio::ip::address_v6::bytes_type bytes = endpoint.address().to_v6().to_bytes();
-
-			if(bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 &&
-					bytes[4] == 0 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0 &&
-					bytes[8] == 0 && bytes[9] == 0 && bytes[10] == 0xff && bytes[11] == 0xff)
-			{
-				boost::asio::ip::address_v4::bytes_type bytesv4;
-
-				bytesv4[0] = bytes[12];
-				bytesv4[1] = bytes[13];
-				bytesv4[2] = bytes[14];
-				bytesv4[3] = bytes[15];
-
-				return ep_type(boost::asio::ip::address(boost::asio::ip::address_v4(bytesv4)),
-							endpoint.port());
-			}
-		}
-	
-		return endpoint;
 	}
 
 	void server::close()
@@ -231,6 +219,8 @@ namespace fscp
 
 	void server::handle_receive_from(const boost::system::error_code& error, size_t bytes_recvd)
 	{
+		normalize_endpoint(m_sender_endpoint);
+
 		if (m_socket.is_open())
 		{
 			if (!error && bytes_recvd > 0)
@@ -336,7 +326,6 @@ namespace fscp
 	void server::handle_hello_message_from(const hello_message& _hello_message, const ep_type& sender)
 	{
 		boost::system::error_code code;
-		ep_type real_sender = normalize_endpoint(sender);
 
 		switch (_hello_message.type())
 		{
@@ -346,14 +335,14 @@ namespace fscp
 
 					if (m_hello_message_callback)
 					{
-						can_reply = m_hello_message_callback(real_sender, m_accept_hello_messages_default);
+						can_reply = m_hello_message_callback(sender, m_accept_hello_messages_default);
 					}
 
 					if (can_reply)
 					{
 						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message);
 
-						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), real_sender, 0, code);
+						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender, 0, code);
 
 						if (code)
 						{
@@ -365,7 +354,7 @@ namespace fscp
 				}
 			case MESSAGE_TYPE_HELLO_RESPONSE:
 				{
-					hello_request_list::iterator _hello_request = find_hello_request(m_hello_request_list, _hello_message.unique_number(), real_sender);
+					hello_request_list::iterator _hello_request = find_hello_request(m_hello_request_list, _hello_message.unique_number(), sender);
 
 					if (_hello_request != m_hello_request_list.end())
 					{
@@ -402,13 +391,11 @@ namespace fscp
 
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
-		ep_type real_sender = normalize_endpoint(sender);
 		bool accept = true;
 
 		if (m_presentation_message_callback)
 		{
-		 
-			if (!m_presentation_message_callback(real_sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate(), m_presentation_map.find(real_sender) == m_presentation_map.end()))
+			if (!m_presentation_message_callback(sender, _presentation_message.signature_certificate(), _presentation_message.encryption_certificate(), m_presentation_map.find(sender) == m_presentation_map.end()))
 			{
 				accept = false;
 			}
@@ -416,7 +403,7 @@ namespace fscp
 
 		if (accept)
 		{
-			m_presentation_map[real_sender] = presentation_store(_presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
+			m_presentation_map[sender] = presentation_store(_presentation_message.signature_certificate(), _presentation_message.encryption_certificate());
 		}
 	}
 
@@ -446,29 +433,27 @@ namespace fscp
 
 	void server::handle_session_request_message_from(const session_request_message& _session_request_message, const ep_type& sender)
 	{
-		ep_type real_sender = normalize_endpoint(sender);
-		_session_request_message.check_signature(m_presentation_map[real_sender].signature_certificate().public_key());
+		_session_request_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
 
 		std::vector<uint8_t> cleartext = _session_request_message.get_cleartext<uint8_t>(m_identity_store.encryption_key());
 
 		clear_session_request_message clear_session_request_message(&cleartext[0], cleartext.size());
 
-		handle_clear_session_request_message_from(clear_session_request_message, real_sender);
+		handle_clear_session_request_message_from(clear_session_request_message, sender);
 	}
 
 	void server::handle_clear_session_request_message_from(const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
 	{
-		ep_type real_sender = normalize_endpoint(sender);
 		bool can_reply = m_accept_session_request_messages_default;
 
 		if (m_session_request_message_callback)
 		{
-			can_reply = m_session_request_message_callback(real_sender, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_callback(sender, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
 		{
-			do_send_session(real_sender, _clear_session_request_message.session_number());
+			do_send_session(sender, _clear_session_request_message.session_number());
 		}
 	}
 
@@ -501,20 +486,18 @@ namespace fscp
 
 	void server::handle_session_message_from(const session_message& _session_message, const ep_type& sender)
 	{
-		ep_type real_sender = normalize_endpoint(sender);
-		_session_message.check_signature(m_presentation_map[real_sender].signature_certificate().public_key());
+		_session_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
 
 		std::vector<uint8_t> cleartext = _session_message.get_cleartext<uint8_t>(m_identity_store.encryption_key());
 
 		clear_session_message clear_session_message(&cleartext[0], cleartext.size());
 
-		handle_clear_session_message_from(clear_session_message, real_sender);
+		handle_clear_session_message_from(clear_session_message, sender);
 	}
 
 	void server::handle_clear_session_message_from(const clear_session_message& _clear_session_message, const ep_type& sender)
 	{
-		ep_type real_sender = normalize_endpoint(sender);
-		session_pair& session_pair = m_session_map[real_sender];
+		session_pair& session_pair = m_session_map[sender];
 
 		// FIXME: Handle the possible overflow for session numbers ! Even if it
 		// will happen in a *very long* time, it can still happen and will result
@@ -525,7 +508,7 @@ namespace fscp
 
 			if (m_session_message_callback)
 			{
-				can_accept = m_session_message_callback(real_sender, m_accept_session_messages_default);
+				can_accept = m_session_message_callback(sender, m_accept_session_messages_default);
 			}
 
 			if (can_accept)
@@ -544,7 +527,7 @@ namespace fscp
 
 				if (session_is_new)
 				{
-					session_established(real_sender);
+					session_established(sender);
 				}
 			}
 		}
@@ -625,8 +608,7 @@ namespace fscp
 
 	void server::handle_data_message_from(const data_message& _data_message, const ep_type& sender)
 	{
-		ep_type real_sender = normalize_endpoint(sender);
-		session_pair& session_pair = m_session_map[real_sender];
+		session_pair& session_pair = m_session_map[sender];
 
 		if (session_pair.has_local_session())
 		{
@@ -651,14 +633,14 @@ namespace fscp
 
 				if (session_pair.local_session().is_old())
 				{
-					do_send_session(real_sender, session_pair.local_session().session_number() + 1);
+					do_send_session(sender, session_pair.local_session().session_number() + 1);
 				}
 
 				session_pair.keep_alive();
 
 				if ((_data_message.type() == MESSAGE_TYPE_DATA) && m_data_message_callback)
 				{
-					m_data_message_callback(real_sender, boost::asio::buffer(m_data_buffer.data(), cnt));
+					m_data_message_callback(sender, boost::asio::buffer(m_data_buffer.data(), cnt));
 				}
 			}
 		}
