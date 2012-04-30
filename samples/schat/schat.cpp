@@ -62,7 +62,7 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static bool on_hello_request(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_hello_request(fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
 {
 	std::cout << "Received HELLO request from " << sender << std::endl;
 
@@ -71,7 +71,7 @@ static bool on_hello_request(fscp::server& server, const boost::asio::ip::udp::e
 	return default_accept;
 }
 
-static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, const boost::posix_time::time_duration& time_duration, bool success)
+static void on_hello_response(fscp::server& server, const fscp::server::ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
 {
 	if (!success)
 	{
@@ -84,7 +84,7 @@ static void on_hello_response(fscp::server& server, const boost::asio::ip::udp::
 	}
 }
 
-static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool is_new)
+static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool is_new)
 {
 	if (is_new)
 	{
@@ -99,31 +99,31 @@ static bool on_presentation(fscp::server& server, const boost::asio::ip::udp::en
   return true;
 }
 
-static bool on_session_request(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_session_request(const fscp::server::ep_type& sender, bool default_accept)
 {
 	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static bool on_session(const boost::asio::ip::udp::endpoint& sender, bool default_accept)
+static bool on_session(const fscp::server::ep_type& sender, bool default_accept)
 {
 	std::cout << "Received SESSION from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static void on_session_established(const boost::asio::ip::udp::endpoint& host)
+static void on_session_established(const fscp::server::ep_type& host)
 {
 	std::cout << "Session established with " << host << std::endl;
 }
 
-static void on_session_lost(const boost::asio::ip::udp::endpoint& host)
+static void on_session_lost(const fscp::server::ep_type& host)
 {
 	std::cout << "Session lost with " << host << std::endl;
 }
 
-static void on_data(fscp::server& server, const boost::asio::ip::udp::endpoint& sender, boost::asio::const_buffer data)
+static void on_data(fscp::server& server, const fscp::server::ep_type& sender, boost::asio::const_buffer data)
 {
 	try
 	{
