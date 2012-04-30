@@ -143,7 +143,7 @@ namespace fscp
 
 	const presentation_store& server::get_presentation(const ep_type& target) const
 	{
-		std::map<ep_type, presentation_store>::const_iterator presentation_it = m_presentation_map.find(target);
+		presentation_store_map::const_iterator presentation_it = m_presentation_map.find(target);
 
 		if (presentation_it != m_presentation_map.end())
 		{
