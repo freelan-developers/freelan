@@ -55,6 +55,8 @@
 
 #include <stdint.h>
 
+#include "normalized_endpoint.hpp"
+
 namespace fscp
 {
 	/**
@@ -65,9 +67,14 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief The underlying endpoint type.
+			 */
+			typedef normalized_endpoint ep_type;
+
+			/**
 			 * \brief A request callback function.
 			 */
-			typedef boost::function<void (const boost::asio::ip::udp::endpoint&, const boost::posix_time::time_duration&, bool)> callback_type;
+			typedef boost::function<void (const ep_type&, const boost::posix_time::time_duration&, bool)> callback_type;
 
 			/**
 			 * \brief Create a new request.
@@ -77,7 +84,7 @@ namespace fscp
 			 * \param callback The callback.
 			 * \param timeout The timeout value.
 			 */
-			hello_request(boost::asio::io_service& io_service, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target, callback_type callback, boost::posix_time::time_duration timeout);
+			hello_request(boost::asio::io_service& io_service, uint32_t unique_number, const ep_type& target, callback_type callback, boost::posix_time::time_duration timeout);
 
 			/**
 			 * \brief Destroy the request.
@@ -96,7 +103,7 @@ namespace fscp
 			 * \brief Get the target.
 			 * \return The target.
 			 */
-			const boost::asio::ip::udp::endpoint& target() const;
+			const ep_type& target() const;
 
 			/**
 			 * \brief Get the callback.
@@ -128,7 +135,7 @@ namespace fscp
 			void trigger();
 
 			uint32_t m_unique_number;
-			boost::asio::ip::udp::endpoint m_target;
+			ep_type m_target;
 			callback_type m_callback;
 			boost::posix_time::ptime m_birthdate;
 			boost::asio::deadline_timer m_timeout_timer;
@@ -148,7 +155,7 @@ namespace fscp
 	 * \param target The target host.
 	 * \return An iterator to the request, if one is found.
 	 */
-	hello_request_list::iterator find_hello_request(hello_request_list& hello_request_list, uint32_t unique_number, const boost::asio::ip::udp::endpoint& target);
+	hello_request_list::iterator find_hello_request(hello_request_list& hello_request_list, uint32_t unique_number, const hello_request::ep_type& target);
 
 	/**
 	 * \brief Erase any expired request from the specified hello_request_list.
@@ -166,7 +173,7 @@ namespace fscp
 		return m_unique_number;
 	}
 
-	inline const boost::asio::ip::udp::endpoint& hello_request::target() const
+	inline const hello_request::ep_type& hello_request::target() const
 	{
 		return m_target;
 	}

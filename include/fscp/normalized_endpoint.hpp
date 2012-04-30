@@ -37,52 +37,59 @@
  */
 
 /**
- * \file hello_request.cpp
+ * \file normalized_endpoint.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A basic hello request class.
+ * \brief A normalized endpoint class.
  */
 
-#include "hello_request.hpp"
+#ifndef FSCP_NORMALIZED_ENDPOINT_HPP
+#define FSCP_NORMALIZED_ENDPOINT_HPP
 
-#include <boost/bind.hpp>
+#include <boost/asio.hpp>
 
 namespace fscp
 {
-	namespace
+	/**
+	 * \brief A normalized endpoint.
+	 */
+	class normalized_endpoint
 	{
-		bool hello_request_match(boost::shared_ptr<hello_request> _hello_request, uint32_t unique_number, const hello_request::ep_type& target)
-		{
-			return (_hello_request->unique_number() == unique_number) && (_hello_request->target() == target);
-		}
-	}
+		public:
 
-	hello_request::hello_request(boost::asio::io_service& io_service, uint32_t _unique_number, const ep_type& _target, callback_type _callback, boost::posix_time::time_duration _timeout) :
-		m_unique_number(_unique_number),
-		m_target(_target),
-		m_callback(_callback),
-		m_birthdate(boost::posix_time::microsec_clock::universal_time()),
-		m_timeout_timer(io_service, _timeout),
-		m_cancel_status(false),
-		m_triggered(false)
-	{
-		m_timeout_timer.async_wait(boost::bind(&hello_request::handle_timeout, this, boost::asio::placeholders::error));
-	}
+			/**
+			 * \brief The underlying endpoint type.
+			 */
+			typedef boost::asio::ip::udp::endpoint ep_type;
 
-	void hello_request::handle_timeout(const boost::system::error_code& error)
-	{
-		if (!error)
-		{
-			trigger();
-		}
-	}
+			/**
+			 * \brief Default constructor.
+			 */
+			normalized_endpoint() {};
 
-	hello_request_list::iterator find_hello_request(hello_request_list& _hello_request_list, uint32_t unique_number, const hello_request::ep_type& target)
-	{
-		return std::find_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request_match, _1, unique_number, target));
-	}
+			/**
+			 * \brief Create a new normalized endpoint.
+			 * \param ep The endpoint to normalize.
+			 */
+			normalized_endpoint(const ep_type& ep);
 
-	void erase_expired_hello_requests(hello_request_list& _hello_request_list)
-	{
-		_hello_request_list.erase(std::remove_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request::expired, _1)), _hello_request_list.end());
-	}
+			/**
+			 * \brief Get the associated endpoint.
+			 * \return The associated endpoint.
+			 */
+			const ep_type& normalized() const { return m_endpoint; }
+
+		private:
+
+			ep_type m_endpoint;
+	};
+
+	inline bool operator<(const normalized_endpoint& lhs, const normalized_endpoint& rhs) { return lhs.normalized() < rhs.normalized(); }
+	inline bool operator<=(const normalized_endpoint& lhs, const normalized_endpoint& rhs) { return lhs.normalized() <= rhs.normalized(); }
+	inline bool operator>(const normalized_endpoint& lhs, const normalized_endpoint& rhs) { return lhs.normalized() > rhs.normalized(); }
+	inline bool operator>=(const normalized_endpoint& lhs, const normalized_endpoint& rhs) { return lhs.normalized() >= rhs.normalized(); }
+	inline bool operator==(const normalized_endpoint& lhs, const normalized_endpoint& rhs) { return lhs.normalized() == rhs.normalized(); }
+	inline bool operator!=(const normalized_endpoint& lhs, const normalized_endpoint& rhs) { return lhs.normalized() != rhs.normalized(); }
+	inline std::ostream& operator<<(std::ostream& os, const normalized_endpoint& ep) { return os << ep.normalized(); }
 }
+
+#endif /* FSCP_NORMALIZED_ENDPOINT_HPP */

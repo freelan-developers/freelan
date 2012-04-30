@@ -37,52 +37,35 @@
  */
 
 /**
- * \file hello_request.cpp
+ * \file normalized_endpoint.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A basic hello request class.
+ * \brief A normalized endpoint class.
  */
 
-#include "hello_request.hpp"
-
-#include <boost/bind.hpp>
+#include "normalized_endpoint.hpp"
 
 namespace fscp
 {
 	namespace
 	{
-		bool hello_request_match(boost::shared_ptr<hello_request> _hello_request, uint32_t unique_number, const hello_request::ep_type& target)
+		void normalize(normalized_endpoint::ep_type& ep)
 		{
-			return (_hello_request->unique_number() == unique_number) && (_hello_request->target() == target);
+			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
+			if (ep.address().is_v6())
+			{
+				boost::asio::ip::address_v6 address = ep.address().to_v6();
+
+				if (address.is_v4_mapped())
+				{
+					ep = normalized_endpoint::ep_type(address.to_v4(), ep.port());
+				}
+			}
 		}
 	}
 
-	hello_request::hello_request(boost::asio::io_service& io_service, uint32_t _unique_number, const ep_type& _target, callback_type _callback, boost::posix_time::time_duration _timeout) :
-		m_unique_number(_unique_number),
-		m_target(_target),
-		m_callback(_callback),
-		m_birthdate(boost::posix_time::microsec_clock::universal_time()),
-		m_timeout_timer(io_service, _timeout),
-		m_cancel_status(false),
-		m_triggered(false)
+	normalized_endpoint::normalized_endpoint(const ep_type& ep) :
+		m_endpoint(ep)
 	{
-		m_timeout_timer.async_wait(boost::bind(&hello_request::handle_timeout, this, boost::asio::placeholders::error));
-	}
-
-	void hello_request::handle_timeout(const boost::system::error_code& error)
-	{
-		if (!error)
-		{
-			trigger();
-		}
-	}
-
-	hello_request_list::iterator find_hello_request(hello_request_list& _hello_request_list, uint32_t unique_number, const hello_request::ep_type& target)
-	{
-		return std::find_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request_match, _1, unique_number, target));
-	}
-
-	void erase_expired_hello_requests(hello_request_list& _hello_request_list)
-	{
-		_hello_request_list.erase(std::remove_if(_hello_request_list.begin(), _hello_request_list.end(), boost::bind(&hello_request::expired, _1)), _hello_request_list.end());
+		normalize(m_endpoint);
 	}
 }

@@ -62,31 +62,6 @@ using namespace boost;
 
 namespace fscp
 {
-	namespace
-	{
-		void normalize(server::ep_type& ep)
-		{
-			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
-			if (ep.address().is_v6())
-			{
-				boost::asio::ip::address_v6 address = ep.address().to_v6();
-
-				if (address.is_v4_mapped())
-				{
-					ep = server::ep_type(address.to_v4(), ep.port());
-				}
-			}
-		}
-	}
-
-	bool server::normalize_and_compare::operator()(server::ep_type lhs, server::ep_type rhs) const
-	{
-		normalize(lhs);
-		normalize(rhs);
-
-		return lhs < rhs;
-	}
-
 	server::server(asio::io_service& io_service, const identity_store& _identity) :
 		m_data(0),
 		m_socket(io_service),
@@ -109,15 +84,15 @@ namespace fscp
 
 	void server::open(const ep_type& listen_endpoint)
 	{
-		m_socket.open(listen_endpoint.protocol());
+		m_socket.open(listen_endpoint.normalized().protocol());
 
-		if (listen_endpoint.address().is_v6())
+		if (listen_endpoint.normalized().address().is_v6())
 		{
 			// We accept both IPv4 and IPv6 addresses
 			m_socket.set_option(boost::asio::ip::v6_only(false));
 		}
 
-		m_socket.bind(listen_endpoint);
+		m_socket.bind(listen_endpoint.normalized());
 
 		async_receive();
 		m_keep_alive_timer.async_wait(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error));
@@ -676,17 +651,17 @@ namespace fscp
 		std::size_t result;
 
 #ifdef WINDOWS
-		if (m_socket.local_endpoint().address().is_v6() && destination.address().is_v4())
+		if (m_socket.local_endpoint().address().is_v6() && destination.normalized().address().is_v4())
 		{
-			ep_type v6_destination(boost::asio::ip::address_v6::v4_mapped(destination.address().to_v4()), destination.port());
+			ep_type::ep_type v6_destination(boost::asio::ip::address_v6::v4_mapped(destination.normalized().address().to_v4()), destination.normalized().port());
 
 			result = m_socket.send_to(buffers, v6_destination, 0, code);
 		} else
 		{
-			result = m_socket.send_to(buffers, destination, 0, code);
+			result = m_socket.send_to(buffers, destination.normalized(), 0, code);
 		}
 #else
-		result = m_socket.send_to(buffers, destination, 0, code);
+		result = m_socket.send_to(buffers, destination.normalized(), 0, code);
 #endif
 
 		if (code)
