@@ -64,7 +64,7 @@ namespace fscp
 {
 	namespace
 	{
-		void normalize_endpoint(server::ep_type& ep)
+		void normalize(server::ep_type& ep)
 		{
 			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
 			if (ep.address().is_v6())
@@ -77,6 +77,14 @@ namespace fscp
 				}
 			}
 		}
+	}
+
+	bool server::normalize_and_compare::operator()(server::ep_type lhs, server::ep_type rhs) const
+	{
+		normalize(lhs);
+		normalize(rhs);
+
+		return lhs < rhs;
 	}
 
 	server::server(asio::io_service& io_service, const identity_store& _identity) :
@@ -221,8 +229,6 @@ namespace fscp
 
 	void server::handle_receive_from(const boost::system::error_code& error, size_t bytes_recvd)
 	{
-		normalize_endpoint(m_sender_endpoint);
-
 		if (m_socket.is_open())
 		{
 			if (!error && bytes_recvd > 0)

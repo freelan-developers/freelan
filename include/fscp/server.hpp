@@ -82,6 +82,15 @@ namespace fscp
 			 */
 			typedef boost::asio::ip::udp::endpoint ep_type;
 
+		private:
+
+			struct normalize_and_compare
+			{
+				bool operator()(ep_type, ep_type) const;
+			};
+
+		public:
+
 			/**
 			 * \brief The certificate type.
 			 */
@@ -380,7 +389,7 @@ namespace fscp
 
 		private:
 
-			typedef std::map<ep_type, presentation_store> presentation_store_map;
+			typedef std::map<ep_type, presentation_store, normalize_and_compare> presentation_store_map;
 
 			void do_introduce_to(const ep_type&);
 			void handle_presentation_message_from(const presentation_message&, const ep_type&);
@@ -390,7 +399,7 @@ namespace fscp
 
 		private:
 
-			typedef std::map<ep_type, session_pair> session_pair_map;
+			typedef std::map<ep_type, session_pair, normalize_and_compare> session_pair_map;
 
 			void do_request_session(const ep_type&);
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
@@ -416,7 +425,7 @@ namespace fscp
 
 		private:
 
-			typedef std::map<ep_type, data_store> data_store_map;
+			typedef std::map<ep_type, data_store, normalize_and_compare> data_store_map;
 
 			void do_send_data(const ep_type&);
 			void handle_data_message_from(const data_message&, const ep_type&);
