@@ -101,11 +101,13 @@ namespace fscp
 
 	void server::open(const ep_type& listen_endpoint)
 	{
-		boost::system::error_code code;
 		m_socket.open(listen_endpoint.protocol());
 
-		// Accept both IPv4 and IPv6
-		m_socket.set_option(boost::asio::ip::v6_only(false), code);
+		if (listen_endpoint.address().is_v6())
+		{
+			// We accept both IPv4 and IPv6 addresses
+			m_socket.set_option(boost::asio::ip::v6_only(false));
+		}
 
 		m_socket.bind(listen_endpoint);
 
