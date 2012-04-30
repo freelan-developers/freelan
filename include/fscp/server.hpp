@@ -445,6 +445,9 @@ namespace fscp
 			void do_send_keep_alive(const ep_type&);
 
 			boost::asio::deadline_timer m_keep_alive_timer;
+
+			template <typename ConstBufferSequence>
+			std::size_t send_to(const ConstBufferSequence&, const ep_type&);
 	};
 
 	inline bool server::is_open() const

@@ -312,7 +312,6 @@ namespace fscp
 		if (m_socket.is_open())
 		{
 			boost::shared_ptr<hello_request> _hello_request(new hello_request(get_io_service(), m_hello_current_unique_number, target, callback, timeout));
-			boost::system::error_code code;
 
 			erase_expired_hello_requests(m_hello_request_list);
 
@@ -320,12 +319,7 @@ namespace fscp
 
 			size_t size = hello_message::write_request(m_send_buffer.data(), m_send_buffer.size(), _hello_request->unique_number());
 
-			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-
-			if (code)
-			{
-				network_error(code);
-			}
+			send_to(asio::buffer(m_send_buffer.data(), size), target);
 
 			m_hello_current_unique_number++;
 		}
@@ -333,8 +327,6 @@ namespace fscp
 
 	void server::handle_hello_message_from(const hello_message& _hello_message, const ep_type& sender)
 	{
-		boost::system::error_code code;
-
 		switch (_hello_message.type())
 		{
 			case MESSAGE_TYPE_HELLO_REQUEST:
@@ -350,12 +342,7 @@ namespace fscp
 					{
 						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message);
 
-						m_socket.send_to(asio::buffer(m_send_buffer.data(), size), sender, 0, code);
-
-						if (code)
-						{
-							network_error(code);
-						}
+						send_to(asio::buffer(m_send_buffer.data(), size), sender);
 					}
 
 					break;
@@ -385,15 +372,9 @@ namespace fscp
 	{
 		if (m_socket.is_open())
 		{
-			boost::system::error_code code;
 			size_t size = presentation_message::write(m_send_buffer.data(), m_send_buffer.size(), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
 
-			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-
-			if (code)
-			{
-				network_error(code);
-			}
+			send_to(asio::buffer(m_send_buffer.data(), size), target);
 		}
 	}
 
@@ -421,7 +402,6 @@ namespace fscp
 	{
 		if (m_socket.is_open())
 		{
-			boost::system::error_code code;
 			session_pair& session = m_session_map[target];
 
 			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
@@ -430,12 +410,7 @@ namespace fscp
 
 			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
-			m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-					
-			if (code)
-			{
-				network_error(code);
-			}
+			send_to(asio::buffer(m_send_buffer.data(), size), target);
 		}
 	}
 
@@ -469,7 +444,6 @@ namespace fscp
 
 	void server::do_send_session(const ep_type& target, session_store::session_number_type session_number)
 	{
-		boost::system::error_code code;
 		session_pair& session = m_session_map[target];
 
 		session.renew_local_session(session_number);
@@ -484,12 +458,7 @@ namespace fscp
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
-		m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-				
-		if (code)
-		{
-		 	network_error(code);
-		}
+		send_to(asio::buffer(m_send_buffer.data(), size), target);
 	}
 
 	void server::handle_session_message_from(const session_message& _session_message, const ep_type& sender)
@@ -583,7 +552,6 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
-				boost::system::error_code code;
 				data_store& data_store = m_data_map[target];
 
 				for(; !data_store.empty(); data_store.pop())
@@ -603,12 +571,7 @@ namespace fscp
 
 					session_pair.remote_session().increment_sequence_number();
 
-					m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-							
-					if (code)
-					{
-						network_error(code);
-					}
+					send_to(asio::buffer(m_send_buffer.data(), size), target);
 				}
 			}
 		}
@@ -686,8 +649,6 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
-				boost::system::error_code code;
-
 				size_t size = data_message::write_keep_alive(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
@@ -702,13 +663,37 @@ namespace fscp
 
 				session_pair.remote_session().increment_sequence_number();
 
-				m_socket.send_to(asio::buffer(m_send_buffer.data(), size), target, 0, code);
-						
-				if (code)
-				{
-					network_error(code);
-				}
+				send_to(asio::buffer(m_send_buffer.data(), size), target);
 			}
 		}
+	}
+
+	template <typename ConstBufferSequence>
+	std::size_t server::send_to(const ConstBufferSequence& buffers, const ep_type& destination)
+	{
+		boost::system::error_code code;
+
+		std::size_t result;
+
+#ifdef WINDOWS
+		if (m_socket.local_endpoint().address().is_v6() && destination.address().is_v4())
+		{
+			ep_type v6_destination(boost::asio::ip::address_v6::v4_mapped(destination.address().to_v4()), destination.port());
+
+			result = m_socket.send_to(buffers, v6_destination, 0, code);
+		} else
+		{
+			result = m_socket.send_to(buffers, destination, 0, code);
+		}
+#else
+		result = m_socket.send_to(buffers, destination, 0, code);
+#endif
+
+		if (code)
+		{
+			network_error(code);
+		}
+
+		return result;
 	}
 }
