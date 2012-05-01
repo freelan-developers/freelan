@@ -403,7 +403,7 @@ Abstract
    seconds, he SHOULD send another SESSION_REQUEST.
 
    If a host receives more than one request SESSION_REQUEST within 3
-   seconds, he MAY only accept the first one and discard the others.
+   seconds, he SHOULD only accept the first one and discard the others.
 
    If a session with the requesting host already exists and is not too
    old (more on that in the next sub-section), the target host MAY
@@ -419,7 +419,12 @@ Abstract
    
    A session is considered old when a host considers too much data
    messages were sent during it. A good value for this "too much" is
-   2^15 messages.
+   2^16 - 2^10 messages.
+
+   Using a value too close from 2^16 may cause an interruption of the
+   communication channel while new keys are being exchanged.
+
+   Using a value too small would cause too many key exchange to occur.
 
    If a host receives a SESSION message with a session_number smaller
    than the last used session_number, it MUST discard the message.
