@@ -144,7 +144,9 @@ Abstract
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
                  |          session_number           |
-                 +-----------------------------------+
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |             challenge             |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
 
    This header is not sent in clear-text. It is first ciphered using the
    public PKE of the target host, then the ciphertext is signed using
@@ -168,6 +170,9 @@ Abstract
 
    The session_number indicates the last known identifier of the
    session. If no previous session is known, session_number MUST be 0.
+
+   The challenge field is 32 bytes long and MUST be random for each
+   SESSION_REQUEST message sent.
 
    The ct_len field indicates the length of the ct field.
    
@@ -194,7 +199,9 @@ Abstract
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
                  |          session_number           |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |             challenge             |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
                  |   seal_key_len  |     seal_key    |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   enc_key_len   |     enc_key     |
@@ -222,6 +229,10 @@ Abstract
 
    The session_number indicates the identifier of the session. Every
    session SHOULD have its own and unique session_number value.
+
+   The challenge field is 32 bytes long and SHOULD be identical to the
+   challenge field in the last SESSION_REQUEST message received from the
+   same host.
 
    The seal_key_len field indicates the size of the seal_key field. In
    the current version of this protocol, this should be 32.
@@ -404,6 +415,10 @@ Abstract
 
    If a host receives more than one request SESSION_REQUEST within 3
    seconds, he SHOULD only accept the first one and discard the others.
+
+   If a host receives a SESSION message whose challenge field does not
+   match the challenge field of the last sent SESSION_REQUEST message,
+   he MUST ignore the message.
 
    If a session with the requesting host already exists and is not too
    old (more on that in the next sub-section), the target host MAY
