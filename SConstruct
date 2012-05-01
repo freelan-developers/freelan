@@ -1,7 +1,7 @@
 """The SConstruct file"""
 
 name = 'fscp'
-major = '1'
+major = '2'
 minor = '0'
 libraries = []
 
