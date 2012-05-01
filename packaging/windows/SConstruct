@@ -3,7 +3,7 @@
 name = 'freelan'
 product_name = 'FreeLAN'
 major = '1'
-minor = '0'
+minor = '1'
 
 # You should not need to modify anything below this line
 

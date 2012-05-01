@@ -39,6 +39,7 @@ Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion
 Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.sys; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\tap-setup.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: tap_adapter
+Source: files\README.txt; DestDir: {app}; Flags: isreadme ignoreversion
 
 [Dirs]
 Name: {app}\log; Flags: deleteafterinstall; Components: binaries
