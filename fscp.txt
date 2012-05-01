@@ -27,8 +27,8 @@ Abstract
    and efficient, and tries to minimize the overhead. It is based over
    UDP [RFC768].
 
-   The protocol supports packet loss but does not deal with packet
-   reordering or duplication.
+   The protocol supports packet loss. Reordered or duplicated packets
+   are treated as lost packets.
 
 1.1. Terminology
 
@@ -53,8 +53,8 @@ Abstract
                  +--------+--------+-----------------+
 
    The version MUST be set to the currently used version of the FreeLAN
-   Secure Channel Protocol. The current version described in this document
-   is 1.
+   Secure Channel Protocol. The current version described in this
+   document is 1.
 
    The type field indicates the type of the message. Its possible values
    are listed in the next sections.
