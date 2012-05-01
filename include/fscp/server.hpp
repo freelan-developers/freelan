@@ -144,7 +144,7 @@ namespace fscp
 			 * \brief A network error callback.
 			 * \param code error code. 
 			 */
-			typedef boost::function<void (const boost::system::error_code code)> network_error_callback;
+			typedef boost::function<void (const boost::system::error_code& code)> network_error_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
