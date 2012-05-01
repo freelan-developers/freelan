@@ -47,7 +47,7 @@
 
 #include "session_store.hpp"
 
-#include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace fscp
@@ -136,8 +136,8 @@ namespace fscp
 
 		private:
 
-			boost::shared_ptr<session_store> m_local_session;
-			boost::shared_ptr<session_store> m_remote_session;
+			boost::optional<session_store> m_local_session;
+			boost::optional<session_store> m_remote_session;
 			boost::posix_time::ptime m_last_sign_of_life;
 	};
 

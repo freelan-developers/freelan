@@ -52,7 +52,7 @@ namespace fscp
 		{
 			if ((session_number > local_session().session_number()) || local_session().is_old())
 			{
-				m_local_session.reset(new session_store(std::max(local_session().session_number() + 1, session_number)));
+				m_local_session = boost::make_optional(session_store(std::max(local_session().session_number() + 1, session_number)));
 
 				return true;
 			}
@@ -63,7 +63,7 @@ namespace fscp
 		}
 		else
 		{
-			m_local_session.reset(new session_store(session_number));
+			m_local_session = boost::make_optional(session_store(session_number));
 
 			return true;
 		}
@@ -75,13 +75,6 @@ namespace fscp
 	{
 		keep_alive();
 
-		if (has_remote_session())
-		{
-			*m_remote_session = session;
-		}
-		else
-		{
-			m_remote_session.reset(new session_store(session));
-		}
+		m_remote_session = session;
 	}
 }
