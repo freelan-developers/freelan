@@ -62,6 +62,25 @@ using namespace boost;
 
 namespace fscp
 {
+	namespace
+	{
+		server::ep_type& normalize(server::ep_type& ep)
+		{
+			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
+			if (ep.address().is_v6())
+			{
+				boost::asio::ip::address_v6 address = ep.address().to_v6();
+
+				if (address.is_v4_mapped())
+				{
+					ep = server::ep_type(address.to_v4(), ep.port());
+				}
+			}
+
+			return ep;
+		}
+	}
+
 	server::server(asio::io_service& io_service, const identity_store& _identity) :
 		m_data(0),
 		m_socket(io_service),
@@ -84,15 +103,15 @@ namespace fscp
 
 	void server::open(const ep_type& listen_endpoint)
 	{
-		m_socket.open(listen_endpoint.normalized().protocol());
+		m_socket.open(listen_endpoint.protocol());
 
-		if (listen_endpoint.normalized().address().is_v6())
+		if (listen_endpoint.address().is_v6())
 		{
 			// We accept both IPv4 and IPv6 addresses
 			m_socket.set_option(boost::asio::ip::v6_only(false));
 		}
 
-		m_socket.bind(listen_endpoint.normalized());
+		m_socket.bind(listen_endpoint);
 
 		async_receive();
 		m_keep_alive_timer.async_wait(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error));
@@ -106,18 +125,20 @@ namespace fscp
 		m_socket.close();
 	}
 
-	void server::async_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
+	void server::async_greet(ep_type target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
-		get_io_service().post(bind(&server::do_greet, this, target, callback, timeout));
+		get_io_service().post(bind(&server::do_greet, this, normalize(target), callback, timeout));
 	}
 
-	void server::async_introduce_to(const ep_type& target)
+	void server::async_introduce_to(ep_type target)
 	{
-		get_io_service().post(bind(&server::do_introduce_to, this, target));
+		get_io_service().post(bind(&server::do_introduce_to, this, normalize(target)));
 	}
 
-	const presentation_store& server::get_presentation(const ep_type& target) const
+	const presentation_store& server::get_presentation(ep_type target) const
 	{
+		normalize(target);
+
 		presentation_store_map::const_iterator presentation_it = m_presentation_map.find(target);
 
 		if (presentation_it != m_presentation_map.end())
@@ -128,9 +149,11 @@ namespace fscp
 		throw std::runtime_error("no such host");
 	}
 
-	void server::set_presentation(const ep_type& target, cert_type sig_cert, cert_type enc_cert)
+	void server::set_presentation(ep_type target, cert_type sig_cert, cert_type enc_cert)
 	{
 		assert(sig_cert);
+
+		normalize(target);
 
 		if (!enc_cert)
 		{
@@ -140,13 +163,24 @@ namespace fscp
 		m_presentation_map[target] = presentation_store(sig_cert, enc_cert);
 	}
 
-	void server::async_request_session(const ep_type& target)
+	void server::clear_presentation(ep_type target)
 	{
+		normalize(target);
+
+		m_presentation_map.erase(target);
+	}
+
+	void server::async_request_session(ep_type target)
+	{
+		normalize(target);
+
 		get_io_service().post(bind(&server::do_request_session, this, target));
 	}
 
-	bool server::has_session(const ep_type& host) const
+	bool server::has_session(ep_type host) const
 	{
+		normalize(host);
+
 		session_pair_map::const_iterator session_pair = m_session_map.find(host);
 
 		if (session_pair != m_session_map.end())
@@ -172,13 +206,17 @@ namespace fscp
 		return result;
 	}
 
-	void server::async_close_session(const ep_type& host)
+	void server::async_close_session(ep_type host)
 	{
+		normalize(host);
+
 		get_io_service().post(bind(&server::do_close_session, this, host));
 	}
 
-	void server::async_send_data(const ep_type& target, boost::asio::const_buffer data)
+	void server::async_send_data(ep_type target, boost::asio::const_buffer data)
 	{
+		normalize(target);
+
 		m_data_map[target].push(data);
 
 		get_io_service().post(bind(&server::do_send_data, this, target));
@@ -204,6 +242,8 @@ namespace fscp
 
 	void server::handle_receive_from(const boost::system::error_code& error, size_t bytes_recvd)
 	{
+		normalize(m_sender_endpoint);
+
 		if (m_socket.is_open())
 		{
 			if (!error && bytes_recvd > 0)
@@ -643,26 +683,27 @@ namespace fscp
 		}
 	}
 
+	server::ep_type server::to_socket_format(const ep_type& ep)
+	{
+#ifdef WINDOWS
+		if (m_socket.local_endpoint().address().is_v6() && ep.address().is_v4())
+		{
+			 return ep_type(boost::asio::ip::address_v6::v4_mapped(ep.address().to_v4()), ep.port());
+		} else
+		{
+			return ep;
+		}
+#else
+		return ep;
+#endif
+	}
+
 	template <typename ConstBufferSequence>
 	std::size_t server::send_to(const ConstBufferSequence& buffers, const ep_type& destination)
 	{
 		boost::system::error_code code;
 
-		std::size_t result;
-
-#ifdef WINDOWS
-		if (m_socket.local_endpoint().address().is_v6() && destination.normalized().address().is_v4())
-		{
-			ep_type::ep_type v6_destination(boost::asio::ip::address_v6::v4_mapped(destination.normalized().address().to_v4()), destination.normalized().port());
-
-			result = m_socket.send_to(buffers, v6_destination, 0, code);
-		} else
-		{
-			result = m_socket.send_to(buffers, destination.normalized(), 0, code);
-		}
-#else
-		result = m_socket.send_to(buffers, destination.normalized(), 0, code);
-#endif
+		std::size_t result = m_socket.send_to(buffers, to_socket_format(destination), 0, code);
 
 		if (code)
 		{

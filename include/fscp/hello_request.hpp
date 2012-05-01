@@ -55,8 +55,6 @@
 
 #include <stdint.h>
 
-#include "normalized_endpoint.hpp"
-
 namespace fscp
 {
 	/**
@@ -69,7 +67,7 @@ namespace fscp
 			/**
 			 * \brief The underlying endpoint type.
 			 */
-			typedef normalized_endpoint ep_type;
+			typedef boost::asio::ip::udp::endpoint ep_type;
 
 			/**
 			 * \brief A request callback function.

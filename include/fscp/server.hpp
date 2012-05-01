@@ -50,7 +50,6 @@
 #include "presentation_store.hpp"
 #include "session_pair.hpp"
 #include "data_store.hpp"
-#include "normalized_endpoint.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -81,7 +80,7 @@ namespace fscp
 			/**
 			 * \brief The endpoint type.
 			 */
-			typedef normalized_endpoint ep_type;
+			typedef boost::asio::ip::udp::endpoint ep_type;
 
 			/**
 			 * \brief The certificate type.
@@ -224,7 +223,7 @@ namespace fscp
 			 * \param callback The callback to call on response.
 			 * \param timeout The maximum time to wait for the response. Default value is 3 seconds.
 			 */
-			void async_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
+			void async_greet(ep_type target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
 			/**
 			 * \brief Set the presentation message callback.
@@ -236,7 +235,7 @@ namespace fscp
 			 * \brief Introduce to a host.
 			 * \param target The target host.
 			 */
-			void async_introduce_to(const ep_type& target);
+			void async_introduce_to(ep_type target);
 
 			/**
 			 * \brief Get the presentation parameters of a specified host.
@@ -244,7 +243,7 @@ namespace fscp
 			 * \return The presentation parameters of the specified host.
 			 * \warning If no presentation parameters exist for the specified host, a std::runtime_error is thrown.
 			 */
-			const presentation_store& get_presentation(const ep_type& target) const;
+			const presentation_store& get_presentation(ep_type target) const;
 
 			/**
 			 * \brief Set the presentation parameters for a given host.
@@ -253,14 +252,14 @@ namespace fscp
 			 * \param enc_cert The encryption certificate. If null, the default, sig_cert is taken.
 			 * \see clear_presentation()
 			 */
-			void set_presentation(const ep_type& target, cert_type sig_cert, cert_type enc_cert = cert_type());
+			void set_presentation(ep_type target, cert_type sig_cert, cert_type enc_cert = cert_type());
 
 			/**
 			 * \brief Clear the presentation parameters for a given host.
 			 * \param target The target host.
 			 * \see set_presentation()
 			 */
-			void clear_presentation(const ep_type& target);
+			void clear_presentation(ep_type target);
 
 			/**
 			 * \brief Set the default behavior when a session request message arrives.
@@ -278,7 +277,7 @@ namespace fscp
 			 * \brief Request a session to a host.
 			 * \param target The target host.
 			 */
-			void async_request_session(const ep_type& target);
+			void async_request_session(ep_type target);
 
 			/**
 			 * \brief Set the default behavior when a session message arrives.
@@ -315,7 +314,7 @@ namespace fscp
 			 * \param host The host.
 			 * \return true if a session is currently active.
 			 */
-			bool has_session(const ep_type& host) const;
+			bool has_session(ep_type host) const;
 
 			/**
 			 * \brief Get the sessions endpoints.
@@ -327,14 +326,14 @@ namespace fscp
 			 * \brief Close any existing session with the specified host.
 			 * \param host The host.
 			 */
-			void async_close_session(const ep_type& host);
+			void async_close_session(ep_type host);
 
 			/**
 			 * \brief Send data to a host.
 			 * \param target The target host.
 			 * \param data The data to send.
 			 */
-			void async_send_data(const ep_type& target, boost::asio::const_buffer data);
+			void async_send_data(ep_type target, boost::asio::const_buffer data);
 
 			/**
 			 * \brief Send data to a list of hosts.
@@ -357,7 +356,7 @@ namespace fscp
 			 */
 			void set_data_message_callback(data_message_callback callback);
 
-		private:
+		private: // Generic network stuff
 
 			void async_receive();
 			void handle_receive_from(const boost::system::error_code&, size_t);
@@ -366,10 +365,10 @@ namespace fscp
 			boost::asio::ip::udp::socket m_socket;
 			boost::array<uint8_t, 65536> m_recv_buffer;
 			boost::array<uint8_t, 65536> m_send_buffer;
-			ep_type::ep_type m_sender_endpoint;
+			ep_type m_sender_endpoint;
 			identity_store m_identity_store;
 
-		private:
+		private: // HELLO messages
 
 			void do_greet(const ep_type& target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout);
 			void handle_hello_message_from(const hello_message&, const ep_type&);
@@ -379,7 +378,7 @@ namespace fscp
 			bool m_accept_hello_messages_default;
 			hello_message_callback m_hello_message_callback;
 
-		private:
+		private: // PRESENTATION messages
 
 			typedef std::map<ep_type, presentation_store> presentation_store_map;
 
@@ -389,7 +388,7 @@ namespace fscp
 			presentation_message_callback m_presentation_message_callback;
 			presentation_store_map m_presentation_map;
 
-		private:
+		private: // SESSION_REQUEST messages
 
 			typedef std::map<ep_type, session_pair> session_pair_map;
 
@@ -401,7 +400,7 @@ namespace fscp
 			bool m_accept_session_request_messages_default;
 			session_request_message_callback m_session_request_message_callback;
 
-		private:
+	 	private: // SESSION messages
 
 			void do_send_session(const ep_type&, session_store::session_number_type);
 			void handle_session_message_from(const session_message&, const ep_type&);
@@ -415,7 +414,7 @@ namespace fscp
 			session_established_callback m_session_established_callback;
 			session_lost_callback m_session_lost_callback;
 
-		private:
+		private: // DATA messages
 
 			typedef std::map<ep_type, data_store> data_store_map;
 
@@ -426,18 +425,17 @@ namespace fscp
 			data_store_map m_data_map;
 			data_message_callback m_data_message_callback;
 
-		private:
+		private: // Error handling and keep alive
 
 			void network_error(const boost::system::error_code&);
 			network_error_callback m_network_error_callback;
-
-		private:
 
 			void do_check_keep_alive(const boost::system::error_code&);
 			void do_send_keep_alive(const ep_type&);
 
 			boost::asio::deadline_timer m_keep_alive_timer;
 
+			ep_type to_socket_format(const ep_type&);
 			template <typename ConstBufferSequence>
 			std::size_t send_to(const ConstBufferSequence&, const ep_type&);
 	};
@@ -487,11 +485,6 @@ namespace fscp
 	inline void server::set_presentation_message_callback(presentation_message_callback callback)
 	{
 		m_presentation_message_callback = callback;
-	}
-
-	inline void server::clear_presentation(const ep_type& target)
-	{
-		m_presentation_map.erase(target);
 	}
 
 	inline void server::set_accept_session_request_messages_default(bool value)
