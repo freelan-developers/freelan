@@ -421,7 +421,7 @@ namespace fscp
 
 			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
 
-			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number);
+			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number, session.generate_local_challenge());
 
 			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
@@ -444,6 +444,10 @@ namespace fscp
 	{
 		bool can_reply = m_accept_session_request_messages_default;
 
+		session_pair& session = m_session_map[sender];
+
+		session.set_remote_challenge(_clear_session_request_message.challenge());
+
 		if (m_session_request_message_callback)
 		{
 			can_reply = m_session_request_message_callback(sender, m_accept_session_request_messages_default);
@@ -465,6 +469,7 @@ namespace fscp
 
 		std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
 				session.local_session().session_number(),
+				session.remote_challenge(),
 				session.local_session().seal_key(),
 				session.local_session().seal_key_size(),
 				session.local_session().encryption_key(),
@@ -494,7 +499,13 @@ namespace fscp
 		// FIXME: Handle the possible overflow for session numbers ! Even if it
 		// will happen in a *very long* time, it can still happen and will result
 		// in a session loss.
-		if (!session_pair.has_remote_session() || session_pair.remote_session().session_number() < _clear_session_message.session_number())
+		if (
+				_clear_session_message.challenge() == session_pair.local_challenge() &&
+				(
+				 !session_pair.has_remote_session() ||
+				 (session_pair.remote_session().session_number() < _clear_session_message.session_number())
+				)
+			 )
 		{
 			bool can_accept = m_accept_session_messages_default;
 

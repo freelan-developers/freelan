@@ -73,17 +73,19 @@ namespace fscp
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
+			 * \param challenge The challenge.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a session message to a buffer.
 			 * \param session_number The session number.
+			 * \param challenge The challenge.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
@@ -91,7 +93,7 @@ namespace fscp
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
@@ -107,6 +109,12 @@ namespace fscp
 			 * \return The session number.
 			 */
 			session_number_type session_number() const;
+
+			/**
+			 * \brief Get the challenge.
+			 * \return The challenge.
+			 */
+			challenge_type challenge() const;
 
 			/**
 			 * \brief Get the seal key.
@@ -137,7 +145,7 @@ namespace fscp
 			/**
 			 * \brief The length of the body.
 			 */
-			static const size_t BODY_LENGTH = sizeof(session_number_type) + 2 * KEY_LENGTH + 2 * sizeof(uint16_t);
+			static const size_t BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size + 2 * KEY_LENGTH + 2 * sizeof(uint16_t);
 
 			/**
 			 * \brief The data.
@@ -151,11 +159,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const challenge_type& _challenge, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		std::vector<T> result(BODY_LENGTH);
 
-		result.resize(write(&result[0], result.size(), _session_number, seal_key, seal_key_len, enc_key, enc_key_len));
+		result.resize(write(&result[0], result.size(), _session_number, _challenge, seal_key, seal_key_len, enc_key, enc_key_len));
 
 		return result;
 	}
@@ -165,24 +173,33 @@ namespace fscp
 		return ntohl(buffer_tools::get<session_number_type>(data(), 0));
 	}
 
+	inline challenge_type clear_session_message::challenge() const
+	{
+		challenge_type result;
+
+		std::copy(data() + sizeof(session_number_type), data() + sizeof(session_number_type) + result.size(), result.begin());
+
+		return result;
+	}
+
 	inline const uint8_t* clear_session_message::seal_key() const
 	{
-		return data() + sizeof(session_number_type) + sizeof(uint16_t);
+		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t);
 	}
 
 	inline size_t clear_session_message::seal_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type)));
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size));
 	}
 
 	inline const uint8_t* clear_session_message::encryption_key() const
 	{
-		return data() + sizeof(session_number_type) + sizeof(uint16_t) + seal_key_size() + sizeof(uint16_t);
+		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + seal_key_size() + sizeof(uint16_t);
 	}
 
 	inline size_t clear_session_message::encryption_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + sizeof(uint16_t) + seal_key_size()));
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + seal_key_size()));
 	}
 
 	inline const uint8_t* clear_session_message::data() const

@@ -134,11 +134,37 @@ namespace fscp
 			 */
 			void keep_alive();
 
+			/**
+			 * \brief Get the local challenge.
+			 * \return The local challenge.
+			 */
+			const challenge_type& local_challenge() const { return m_local_challenge; }
+
+			/**
+			 * \brief Generate a new local challenge.
+			 * \return The local challenge.
+			 */
+			const challenge_type& generate_local_challenge();
+
+			/**
+			 * \brief Get the remote challenge.
+			 * \return The remote challenge.
+			 */
+			const challenge_type& remote_challenge() const { return m_remote_challenge; }
+
+			/**
+			 * \brief Set the remote challenge.
+			 * \param challenge The remote challenge.
+			 */
+			void set_remote_challenge(const challenge_type& challenge) { m_remote_challenge = challenge; }
+
 		private:
 
 			boost::optional<session_store> m_local_session;
 			boost::optional<session_store> m_remote_session;
 			boost::posix_time::ptime m_last_sign_of_life;
+			challenge_type m_local_challenge;
+			challenge_type m_remote_challenge;
 	};
 
 	inline session_pair::session_pair() :

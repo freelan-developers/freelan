@@ -44,6 +44,8 @@
 
 #include "session_pair.hpp"
 
+#include <cryptoplus/random/random.hpp>
+
 namespace fscp
 {
 	bool session_pair::renew_local_session(session_store::session_number_type session_number)
@@ -76,5 +78,12 @@ namespace fscp
 		keep_alive();
 
 		m_remote_session = session;
+	}
+
+	const challenge_type& session_pair::generate_local_challenge()
+	{
+		cryptoplus::random::get_random_bytes(m_local_challenge.c_array(), m_local_challenge.size());
+
+		return m_local_challenge;
 	}
 }

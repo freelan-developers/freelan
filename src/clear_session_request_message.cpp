@@ -51,7 +51,7 @@
 
 namespace fscp
 {
-	size_t clear_session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number)
+	size_t clear_session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const challenge_type& _challenge)
 	{
 		if (buf_len < BODY_LENGTH)
 		{
@@ -59,6 +59,7 @@ namespace fscp
 		}
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
+		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
 
 		return BODY_LENGTH;
 	}

@@ -52,6 +52,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/array.hpp>
 
 namespace fscp
 {
@@ -59,6 +60,11 @@ namespace fscp
 	 * \brief The session number type.
 	 */
 	typedef uint32_t session_number_type;
+
+	/**
+	 * \brief The challenge type.
+	 */
+	typedef boost::array<uint8_t, 32> challenge_type;
 
 	/**
 	 * \brief The sequence number type.
