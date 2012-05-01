@@ -92,6 +92,7 @@ namespace freelan
 		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2));
+		m_server.set_network_error_callback(boost::bind(&core::on_network_error, this, _1));
 
 		if (m_configuration.tap_adapter.enabled)
 		{
@@ -447,6 +448,11 @@ namespace freelan
 		{
 			m_switch.receive_data(port, data);
 		}
+	}
+
+	void core::on_network_error(const boost::system::error_code& ec)
+	{
+		m_logger(LL_WARNING) << "Error while sending message: " << ec;
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
