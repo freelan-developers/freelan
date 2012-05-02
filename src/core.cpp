@@ -91,7 +91,7 @@ namespace freelan
 		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2));
 		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
-		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2));
+		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 		m_server.set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
 
 		if (m_configuration.tap_adapter.enabled)
@@ -440,7 +440,19 @@ namespace freelan
 		}
 	}
 
-	void core::on_data(const ep_type& sender, boost::asio::const_buffer data)
+	void core::on_data(const ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+	{
+		switch (channel_number)
+		{
+			case fscp::CHANNEL_NUMBER_0:
+				on_ethernet_data(sender, data);
+				break;
+			default:
+				break;
+		}
+	}
+
+	void core::on_ethernet_data(const ep_type& sender, boost::asio::const_buffer data)
 	{
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 

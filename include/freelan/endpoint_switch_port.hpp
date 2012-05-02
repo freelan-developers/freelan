@@ -113,7 +113,7 @@ namespace freelan
 
 	inline void endpoint_switch_port::write(boost::asio::const_buffer data)
 	{
-		m_server.async_send_data(m_endpoint, data);
+		m_server.async_send_data(m_endpoint, fscp::CHANNEL_NUMBER_0, data);
 	}
 
 	inline std::ostream& endpoint_switch_port::output(std::ostream& os) const
