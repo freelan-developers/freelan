@@ -123,12 +123,12 @@ static void on_session_lost(const fscp::server::ep_type& host)
 	std::cout << "Session lost with " << host << std::endl;
 }
 
-static void on_data(fscp::server& server, const fscp::server::ep_type& sender, boost::asio::const_buffer data)
+static void on_data(fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
 	try
 	{
 		const std::string sender_name = server.get_presentation(sender).signature_certificate().subject().find(NID_commonName)->data().str();
-		std::cout << sender_name << ": " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
+		std::cout << sender_name << " (" << static_cast<int>(channel_number) << "): " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
 	}
 	catch (std::exception&)
 	{
@@ -173,7 +173,7 @@ void handle_read_line(fscp::server& server, std::string line)
 		}
 	} else
 	{
-		server.async_send_data_to_all(boost::asio::buffer(line));
+		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, boost::asio::buffer(line));
 	}
 }
 
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
 		server.set_session_message_callback(&on_session);
 		server.set_session_established_callback(&on_session_established);
 		server.set_session_lost_callback(&on_session_lost);
-		server.set_data_message_callback(boost::bind(&on_data, boost::ref(server), _1, _2));
+		server.set_data_message_callback(boost::bind(&on_data, boost::ref(server), _1, _2, _3));
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;
 
