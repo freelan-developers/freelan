@@ -281,7 +281,10 @@ Abstract
 
 2.6.1. DATA message type
 
-   A DATA message has a type value of 0x05.
+   Valid type values for DATA messages are 0x70 to 0x7F.
+
+   Every value represent a different channel. Those channels share the
+   same session and thus, the same sequence numbers.
 
 2.6.2. DATA message fields
 
@@ -309,13 +312,17 @@ Abstract
    matches the message. If the HMAC doesn't match, the message MUST be
    ignored.
 
+   The 4 less significant bits of the message type value indicate the
+   channel number. The channel number SHOULD be made available for the
+   upper layers.
+
 2.7. KEEP-ALIVE message format
 
    A KEEP-ALIVE message is similar to a DATA message.
 
 2.7.1. KEEP-ALIVE message type
 
-   A KEEP-ALIVE message has a type value of 0x06.
+   A KEEP-ALIVE message has a type value of 0xFF.
 
 2.7.2. KEEP-ALIVE message fields
 

@@ -44,6 +44,22 @@
 
 #include "constants.hpp"
 
+#include <cassert>
+
 namespace fscp
 {
+	channel_number_type to_channel_number(message_type type)
+	{
+		assert(is_data_message_type(type));
+
+		return static_cast<channel_number_type>(static_cast<uint8_t>(type) & 0x0F);
+	}
+
+	message_type to_data_message_type(channel_number_type channel_number)
+	{
+		assert(channel_number >= CHANNEL_NUMBER_0);
+		assert(channel_number <= CHANNEL_NUMBER_15);
+
+		return static_cast<message_type>(static_cast<uint8_t>(MESSAGE_TYPE_DATA_0) + static_cast<uint8_t>(channel_number));
+	}
 }

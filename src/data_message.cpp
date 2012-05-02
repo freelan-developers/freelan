@@ -52,9 +52,9 @@
 
 namespace fscp
 {
-	size_t data_message::write(void* buf, size_t buf_len, session_number_type _session_number, sequence_number_type _sequence_number, const void* _cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type _session_number, sequence_number_type _sequence_number, const void* _cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
-		return raw_write(buf, buf_len, _session_number, _sequence_number, _cleartext, cleartext_len, seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_DATA);
+		return raw_write(buf, buf_len, _session_number, _sequence_number, _cleartext, cleartext_len, seal_key, seal_key_len, enc_key, enc_key_len, to_data_message_type(channel_number));
 	}
 
 	size_t data_message::write_keep_alive(void* buf, size_t buf_len, session_number_type _session_number, sequence_number_type _sequence_number, size_t random_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)

@@ -64,6 +64,7 @@ namespace fscp
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
+			 * \param channel_number The channel number.
 			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cleartext The cleartext data.
@@ -74,7 +75,7 @@ namespace fscp
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a keep-alive message to a buffer.

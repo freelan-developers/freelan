@@ -86,8 +86,46 @@ namespace fscp
 		MESSAGE_TYPE_PRESENTATION = 0x02,
 		MESSAGE_TYPE_SESSION_REQUEST = 0x03,
 		MESSAGE_TYPE_SESSION = 0x04,
-		MESSAGE_TYPE_DATA = 0x05,
-		MESSAGE_TYPE_KEEP_ALIVE = 0x06
+		MESSAGE_TYPE_DATA_0 = 0x70,
+		MESSAGE_TYPE_DATA_1 = 0x71,
+		MESSAGE_TYPE_DATA_2 = 0x72,
+		MESSAGE_TYPE_DATA_3 = 0x73,
+		MESSAGE_TYPE_DATA_4 = 0x74,
+		MESSAGE_TYPE_DATA_5 = 0x75,
+		MESSAGE_TYPE_DATA_6 = 0x76,
+		MESSAGE_TYPE_DATA_7 = 0x77,
+		MESSAGE_TYPE_DATA_8 = 0x78,
+		MESSAGE_TYPE_DATA_9 = 0x79,
+		MESSAGE_TYPE_DATA_10 = 0x7A,
+		MESSAGE_TYPE_DATA_11 = 0x7B,
+		MESSAGE_TYPE_DATA_12 = 0x7C,
+		MESSAGE_TYPE_DATA_13 = 0x7D,
+		MESSAGE_TYPE_DATA_14 = 0x7E,
+		MESSAGE_TYPE_DATA_15 = 0x7F,
+		MESSAGE_TYPE_KEEP_ALIVE = 0xFF
+	};
+
+	/**
+	 * \brief The different channel numbers.
+	 */
+	enum channel_number_type
+	{
+		CHANNEL_NUMBER_0 = 0,
+		CHANNEL_NUMBER_1 = 1,
+		CHANNEL_NUMBER_2 = 2,
+		CHANNEL_NUMBER_3 = 3,
+		CHANNEL_NUMBER_4 = 4,
+		CHANNEL_NUMBER_5 = 5,
+		CHANNEL_NUMBER_6 = 6,
+		CHANNEL_NUMBER_7 = 7,
+		CHANNEL_NUMBER_8 = 8,
+		CHANNEL_NUMBER_9 = 9,
+		CHANNEL_NUMBER_10 = 10,
+		CHANNEL_NUMBER_11 = 11,
+		CHANNEL_NUMBER_12 = 12,
+		CHANNEL_NUMBER_13 = 13,
+		CHANNEL_NUMBER_14 = 14,
+		CHANNEL_NUMBER_15 = 15
 	};
 
 	/**
@@ -114,6 +152,27 @@ namespace fscp
 	 * \brief The session timeout.
 	 */
 	const boost::posix_time::time_duration SESSION_TIMEOUT = SESSION_KEEP_ALIVE_PERIOD * 3;
+
+	/**
+	 * \brief Check if a message type is a DATA type message.
+	 * \param type The message type.
+	 * \return true if the message type is one from MESSAGE_TYPE_DATA_0 to MESSAGE_TYPE_DATA_15.
+	 */
+	inline bool is_data_message_type(message_type type) { return (type >= MESSAGE_TYPE_DATA_0) && (type <= MESSAGE_TYPE_DATA_15); }
+
+	/**
+	 * \brief Convert a DATA message type to a channel number.
+	 * \param type The message type. Must be one from MESSAGE_TYPE_DATA_0 to MESSAGE_TYPE_DATA_15.
+	 * \return The channel number.
+	 */
+	channel_number_type to_channel_number(message_type type);
+
+	/**
+	 * \brief Convert a channel number to a DATA message type.
+	 * \param channel_number The channel number.
+	 * \return The DATA message type.
+	 */
+	message_type to_data_message_type(channel_number_type channel_number);
 }
 
 #endif /* FSCP_CONSTANTS_HPP */

@@ -213,22 +213,22 @@ namespace fscp
 		get_io_service().post(bind(&server::do_close_session, this, host));
 	}
 
-	void server::async_send_data(ep_type target, boost::asio::const_buffer data)
+	void server::async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data)
 	{
 		normalize(target);
 
 		m_data_map[target].push(data);
 
-		get_io_service().post(bind(&server::do_send_data, this, target));
+		get_io_service().post(bind(&server::do_send_data, this, target, channel_number));
 	}
 
-	void server::async_send_data_to_all(boost::asio::const_buffer data)
+	void server::async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data)
 	{
 		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
 		{
 			if (session_pair->second.has_remote_session())
 			{
-				async_send_data(session_pair->first, data);
+				async_send_data(session_pair->first, channel_number, data);
 			}
 		}
 	}
@@ -254,7 +254,22 @@ namespace fscp
 
 					switch (message.type())
 					{
-						case MESSAGE_TYPE_DATA:
+						case MESSAGE_TYPE_DATA_0:
+						case MESSAGE_TYPE_DATA_1:
+						case MESSAGE_TYPE_DATA_2:
+						case MESSAGE_TYPE_DATA_3:
+						case MESSAGE_TYPE_DATA_4:
+						case MESSAGE_TYPE_DATA_5:
+						case MESSAGE_TYPE_DATA_6:
+						case MESSAGE_TYPE_DATA_7:
+						case MESSAGE_TYPE_DATA_8:
+						case MESSAGE_TYPE_DATA_9:
+						case MESSAGE_TYPE_DATA_10:
+						case MESSAGE_TYPE_DATA_11:
+						case MESSAGE_TYPE_DATA_12:
+						case MESSAGE_TYPE_DATA_13:
+						case MESSAGE_TYPE_DATA_14:
+						case MESSAGE_TYPE_DATA_15:
 						case MESSAGE_TYPE_KEEP_ALIVE:
 							{
 								data_message data_message(message);
@@ -570,7 +585,7 @@ namespace fscp
 
 	/* Data messages */
 
-	void server::do_send_data(const ep_type& target)
+	void server::do_send_data(const ep_type& target, channel_number_type channel_number)
 	{
 		if (m_socket.is_open())
 		{
@@ -585,6 +600,7 @@ namespace fscp
 					size_t size = data_message::write(
 							m_send_buffer.data(),
 							m_send_buffer.size(),
+							channel_number,
 							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
 							&data_store.front()[0],
@@ -635,9 +651,9 @@ namespace fscp
 
 				session_pair.keep_alive();
 
-				if ((_data_message.type() == MESSAGE_TYPE_DATA) && m_data_message_callback)
+				if (is_data_message_type(_data_message.type()) && m_data_message_callback)
 				{
-					m_data_message_callback(sender, boost::asio::buffer(m_data_buffer.data(), cnt));
+					m_data_message_callback(sender, to_channel_number(_data_message.type()), boost::asio::buffer(m_data_buffer.data(), cnt));
 				}
 			}
 		}
