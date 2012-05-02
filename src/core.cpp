@@ -531,21 +531,23 @@ namespace freelan
 
 	void core::do_contact()
 	{
-		BOOST_FOREACH(const freelan::fscp_configuration::endpoint& ep, m_configuration.fscp.contact_list)
-		{
-			typedef boost::asio::ip::udp::resolver::query query;
+		std::for_each(m_configuration.fscp.contact_list.begin(), m_configuration.fscp.contact_list.end(), boost::bind(&core::do_contact, this, _1));
+	}
 
-			boost::apply_visitor(
-			    endpoint_async_resolve_visitor(
-			        m_resolver,
-			        to_protocol(m_configuration.fscp.hostname_resolution_protocol),
-			        query::address_configured,
-			        DEFAULT_SERVICE,
-			        boost::bind(&core::do_greet, this, _1, _2, ep)
-			    ),
-			    ep
-			);
-		}
+	void core::do_contact(const fscp_configuration::endpoint& ep)
+	{
+		typedef boost::asio::ip::udp::resolver::query query;
+
+		boost::apply_visitor(
+				endpoint_async_resolve_visitor(
+					m_resolver,
+					to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+					query::address_configured,
+					DEFAULT_SERVICE,
+					boost::bind(&core::do_greet, this, _1, _2, ep)
+					),
+				ep
+				);
 	}
 
 	void core::do_periodic_contact(const boost::system::error_code& ec)
