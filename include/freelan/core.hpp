@@ -63,6 +63,7 @@
 #include "configuration.hpp"
 #include "switch.hpp"
 #include "logger.hpp"
+#include "dynamic_contact_list.hpp"
 
 namespace freelan
 {
@@ -238,6 +239,7 @@ namespace freelan
 			// Members
 			freelan::configuration m_configuration;
 			freelan::logger m_logger;
+			freelan::dynamic_contact_list m_dynamic_contact_list;
 
 			// FSCP
 			fscp::server m_server;
