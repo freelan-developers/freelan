@@ -412,17 +412,17 @@ namespace freelan
 
 		m_logger(LL_INFORMATION) << "Session with " << sender << " lost (" << sig_cert.subject().oneline() << ").";
 
+		if (m_session_lost_callback)
+		{
+			m_session_lost_callback(sender);
+		}
+
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
 		if (port)
 		{
 			m_switch.unregister_port(port);
 			m_endpoint_switch_port_map.erase(sender);
-		}
-
-		if (m_session_lost_callback)
-		{
-			m_session_lost_callback(sender);
 		}
 	}
 
