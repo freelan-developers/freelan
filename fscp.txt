@@ -54,7 +54,7 @@ Abstract
 
    The version MUST be set to the currently used version of the FreeLAN
    Secure Channel Protocol. The current version described in this
-   document is 1.
+   document is 2.
 
    The type field indicates the type of the message. Its possible values
    are listed in the next sections.

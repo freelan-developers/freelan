@@ -74,7 +74,7 @@ namespace fscp
 	/**
 	 * \brief The current protocol version.
 	 */
-	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
+	const unsigned char CURRENT_PROTOCOL_VERSION = 2;
 
 	/**
 	 * \brief The different message types.
