@@ -223,7 +223,7 @@ namespace freelan
 			void on_session_established(const ep_type&);
 			void on_session_lost(const ep_type&);
 			void on_data(const ep_type&, boost::asio::const_buffer);
-			void on_network_error(const boost::system::error_code&);
+			void on_network_error(const ep_type&, const boost::system::error_code&);
 
 			// Tap adapter methods
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
