@@ -552,11 +552,11 @@ namespace fscp
 		}
 	}
 
-	void server::network_error(const boost::system::error_code& code)
+	void server::network_error(const ep_type& target, const boost::system::error_code& code)
 	{
 		if (m_network_error_callback)
 		{
-			m_network_error_callback(code);
+			m_network_error_callback(target, code);
 		}
 	}
 
@@ -718,7 +718,7 @@ namespace fscp
 
 		if (code)
 		{
-			network_error(code);
+			network_error(destination, code);
 		}
 
 		return result;

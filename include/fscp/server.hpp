@@ -142,9 +142,10 @@ namespace fscp
 
 			/**
 			 * \brief A network error callback.
+			 * \param target The target endpoint.
 			 * \param code error code. 
 			 */
-			typedef boost::function<void (const boost::system::error_code& code)> network_error_callback;
+			typedef boost::function<void (const ep_type& target, const boost::system::error_code& code)> network_error_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -427,7 +428,7 @@ namespace fscp
 
 		private: // Error handling and keep alive
 
-			void network_error(const boost::system::error_code&);
+			void network_error(const ep_type&, const boost::system::error_code&);
 			network_error_callback m_network_error_callback;
 
 			void do_check_keep_alive(const boost::system::error_code&);
