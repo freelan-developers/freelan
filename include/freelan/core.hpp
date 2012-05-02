@@ -232,7 +232,7 @@ namespace freelan
 			// Other methods
 			void do_greet(const boost::system::error_code&, boost::asio::ip::udp::resolver::iterator, const freelan::fscp_configuration::endpoint&);
 			void do_contact();
-			void do_contact(const boost::system::error_code&);
+			void do_periodic_contact(const boost::system::error_code&);
 
 			// Members
 			freelan::configuration m_configuration;
