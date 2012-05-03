@@ -1,0 +1,164 @@
+The FreeLAN Project                                         J. Kauffmann
+Draft:                                                   www.freelan.org
+Category: Informational                                       3 May 2011
+
+               The FreeLAN Dynamic contact exchange protocol
+
+Status of this Memo
+
+   This memo provides information for the Internet community.  It does
+   not specify an Internet standard of any kind.  Distribution of this
+   memo is unlimited.
+
+Abstract
+
+   Freelan hosts require a way of exchanging informations about their
+   contacts and how to reach them.
+   
+1. Introduction
+   
+   Dynamic (Freelan dynamic contact exchange protocol) is designed to
+   work over FSCP, and provides a way for hosts to exchange their contact
+   information.
+
+   Dynamic relies on the fact the reordered messages are dropped by the
+   protocol it is used over (that should be FSCP). That is, it can't be
+   used directly over UDP.
+
+1.1. Terminology
+
+   The keywords MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD,
+   SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL, when they appear in this
+   document, are to be interpreted as described in [RFC2119].
+
+2. Format
+
+   FSCP uses different message formats. The roles of these messages are
+   described in a further section.
+
+   Multi-bytes integer values MUST be written in network byte order.
+
+2.1. Generic message format
+
+   All messages start with a 4 bytes header whose layout is:
+
+                  0      7 8     15 16    23 24    31 
+                 +--------+--------+-----------------+
+                 |version |  type  |      length     |
+                 +--------+--------+-----------------+
+
+   The version MUST be set to the currently used version of the FreeLAN
+   Secure Channel Protocol. The current version described in this
+   document is 1.
+
+   The type field indicates the type of the message. Its possible values
+   are listed in the next sections.
+   
+   The length field indicates the length of the message body.
+
+2.2. CONTACT_REQUEST message format
+
+   A CONTACT_REQUEST message is at least 32 bytes long and has the
+   following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 0              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 1              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |                ...                |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash n              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+ 
+2.2.1. CONTACT_REQUEST message type
+
+   The type value of a CONTACT_REQUEST message is 0x00.
+
+2.2.2. CONTACT_REQUEST message fields
+
+   A CONTACT_REQUEST contains from 1 to n hashes of 32 bytes each that
+   indicate a contact to get information for.
+
+2.3. CONTACT message format
+
+   A CONTACT message has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 0              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 1              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |                ...                |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash n              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+
+2.3.1. CONTACT message type
+
+   A CONTACT message has a type value of 0x02.
+
+2.3.2. CONTACT message fields
+
+   The message is divided into chunks with a similar format.
+
+   hash is the hash of the requested contact.
+
+   ep_type is a 1 byte field that can take the following values:
+   
+   * 0x04: IPv4 endpoint
+
+   In which case, endpoint has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |            IPv4 address           |
+                 +-----------------+-----------------+
+                 |       port      |
+                 +-----------------+
+
+   * 0x06: IPv6 endpoint
+
+   In which case, endpoint has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |            IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address           |
+                 +-----------------+-----------------+
+                 |       port      |
+                 +-----------------+
+
+3. Protocol
+
+3.1. Requesting a contact
+
+   A host CAN request contact information by sending a CONTACT_REQUEST
+   message.
+
+   To request contact information for several contacts, the host might
+   either send several CONTACT_REQUEST or preferably, one request with
+   several hashes in it.
+
+   If the receiving hosts has contact information for the specified
+   contact he MAY answer with a CONTACT message.
+
+   A receiving host MAY pipeline the requests and send back only one
+   CONTACT message with several hashes in it to answer one or more
+   CONTACT_REQUEST messages.
+
+   If the receiving host does not have contact information, he MUST not
+   answer the CONTACT_REQUEST.
