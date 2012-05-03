@@ -70,9 +70,20 @@ namespace freelan
 			typedef fscp::server::cert_type cert_type;
 
 			/**
+			 * \brief Check the existence of a contact.
+			 * \param cert The certificate of the contact.
+			 * \return true if the contact exists, false otherwise.
+			 */
+			bool has_contact(cert_type cert) { return m_contact_map.find(hash(cert)) != m_contact_map.end(); }
+
+			/**
 			 * \brief Get a contact.
 			 * \param cert The certificate of the contact.
 			 * \return The contact.
+			 *
+			 * If the contact doesn't exist, an empty contact will be created.
+			 *
+			 * To check for a contact existence, see has_contact().
 			 */
 			dynamic_contact& get_contact(cert_type cert) { return m_contact_map[hash(cert)]; }
 
