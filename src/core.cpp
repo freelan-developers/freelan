@@ -65,6 +65,7 @@ namespace freelan
 	const int core::ex_data_index = cryptoplus::x509::store_context::register_index();
 
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
+	const boost::posix_time::time_duration core::DYNAMIC_CONTACT_PERIOD = boost::posix_time::seconds(45);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -75,6 +76,7 @@ namespace freelan
 		m_server(io_service, *m_configuration.security.identity),
 		m_resolver(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
+		m_dynamic_contact_timer(io_service, DYNAMIC_CONTACT_PERIOD),
 		m_open_callback(),
 		m_close_callback(),
 		m_session_established_callback(),
@@ -145,8 +147,12 @@ namespace freelan
 			}
 		}
 
+		// We start the contact loop
 		do_contact();
 		m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
+
+		// We start the dynamic contact loop
+		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
 
 		// Tap adapter
 		if (m_tap_adapter)
@@ -551,12 +557,26 @@ namespace freelan
 		{
 			do_contact();
 
-			const std::vector<ep_type> candidate_endpoint_list = m_dynamic_contact_list.get_candidate_endpoint_list();
-
-			std::for_each(candidate_endpoint_list.begin(), candidate_endpoint_list.end(), boost::bind(&core::do_greet, this, _1));
-
 			m_contact_timer.expires_from_now(CONTACT_PERIOD);
 			m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void core::do_dynamic_contact()
+	{
+		const std::vector<ep_type> candidate_endpoint_list = m_dynamic_contact_list.get_candidate_endpoint_list();
+
+		std::for_each(candidate_endpoint_list.begin(), candidate_endpoint_list.end(), boost::bind(&core::do_greet, this, _1));
+	}
+
+	void core::do_periodic_dynamic_contact(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			do_dynamic_contact();
+
+			m_dynamic_contact_timer.expires_from_now(DYNAMIC_CONTACT_PERIOD);
+			m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
 		}
 	}
 
