@@ -74,12 +74,23 @@ namespace freelan
 			 * \brief Set the associated endpoint.
 			 * \param ep The endpoint.
 			 */
-			void set_associated_endpoint(const ep_type& ep) { m_associated_endpoint = ep; }
+			void set_associated_endpoint(const ep_type& ep) { m_associated_endpoint = ep; clear_candidate_endpoint_list(); }
 
 			/**
 			 * \brief Clear the associated endpoint.
 			 */
 			void clear_associated_endpoint() { m_associated_endpoint == boost::none; }
+
+			/**
+			 * \brief Check if the contact has an associated endpoint.
+			 * \return true if the contact has an associated endpoint, false otherwise.
+			 */
+			bool has_associated_endpoint() const { return static_cast<bool>(m_associated_endpoint); }
+
+			/**
+			 * \brief Clear the candidate endpoint list.
+			 */
+			void clear_candidate_endpoint_list() { m_candidate_endpoint_map.clear(); }
 
 			/**
 			 * \brief Add a candidate endpoint.
