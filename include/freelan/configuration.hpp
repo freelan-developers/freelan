@@ -311,6 +311,48 @@ namespace freelan
 	};
 
 	/**
+	 * \brief The dynamic configuration options type.
+	 */
+	struct dynamic_configuration
+	{
+		/**
+		 * \brief The contact method type.
+		 */
+		enum contact_method_type
+		{
+			CM_NONE = 0x00, /**< \brief No dynamic contact method is enabled. */
+			CM_REQUEST_ONLY = 0x01, /**< \brief Only ask other hosts for their contacts but never reply. */
+			CM_RESPONSE_ONLY = 0x02, /**< \brief Answers other hosts requests but never ask. */
+			CM_REQUEST_AND_RESPONSE = 0x03 /**< \brief Ask other hosts for their contacts and reply to requests. */
+		};
+
+		/**
+		 * \brief The certificate type.
+		 */
+		typedef fscp::identity_store::cert_type cert_type;
+
+		/**
+		 * \brief The certificate list type.
+		 */
+		typedef std::vector<cert_type> cert_list_type;
+
+		/**
+		 * \brief Constructor.
+		 */
+		dynamic_configuration();
+
+		/**
+		 * \brief The contact method.
+		 */
+		contact_method_type contact_method;
+
+		/**
+		 * \brief The contact list.
+		 */
+		cert_list_type contact_list;
+	};
+
+	/**
 	 * \brief The configuration structure.
 	 */
 	struct configuration
@@ -334,6 +376,11 @@ namespace freelan
 		 * \brief The switch related options.
 		 */
 		freelan::switch_configuration switch_;
+
+		/**
+		 * \brief The dynamic related options.
+		 */
+		freelan::dynamic_configuration dynamic;
 
 		/**
 		 * \brief The constructor.
@@ -411,6 +458,22 @@ namespace freelan
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, switch_configuration::routing_method_type& value);
+
+	/**
+	 * \brief Input a dynamic contact method.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, dynamic_configuration::contact_method_type& value);
+
+	/**
+	 * \brief Output a dynamic contact method to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, dynamic_configuration::contact_method_type& value);
 }
 
 #endif /* FREELAN_CONFIGURATION_HPP */

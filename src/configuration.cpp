@@ -89,11 +89,17 @@ namespace freelan
 	{
 	}
 
+	dynamic_configuration::dynamic_configuration() :
+		contact_method(CM_REQUEST_AND_RESPONSE)
+	{
+	}
+
 	configuration::configuration() :
 		fscp(),
 		security(),
 		tap_adapter(),
-		switch_()
+		switch_(),
+		dynamic()
 	{
 	}
 
@@ -229,6 +235,44 @@ namespace freelan
 				return os << "switch";
 			case switch_configuration::RM_HUB:
 				return os << "hub";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
+
+	std::istream& operator>>(std::istream& is, dynamic_configuration::contact_method_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "none")
+			v = dynamic_configuration::CM_NONE;
+		else if (value == "request_only")
+			v = dynamic_configuration::CM_REQUEST_ONLY;
+		else if (value == "response_only")
+			v = dynamic_configuration::CM_RESPONSE_ONLY;
+		else if (value == "request_and_response")
+			v = dynamic_configuration::CM_REQUEST_AND_RESPONSE;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, dynamic_configuration::contact_method_type& value)
+	{
+		switch (value)
+		{
+			case dynamic_configuration::CM_NONE:
+				return os << "none";
+			case dynamic_configuration::CM_REQUEST_ONLY:
+				return os << "request_only";
+			case dynamic_configuration::CM_RESPONSE_ONLY:
+				return os << "response_only";
+			case dynamic_configuration::CM_REQUEST_AND_RESPONSE:
+				return os << "request_and_response";
 		}
 
 		assert(false);
