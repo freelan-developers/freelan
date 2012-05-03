@@ -38,70 +38,52 @@
  */
 
 /**
- * \file dynamic_contact_list.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A dynamic contact list class.
+ * \file constants.hpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief The constants.
  */
 
-#ifndef DYNAMIC_CONTACT_LIST_HPP
-#define DYNAMIC_CONTACT_LIST_HPP
+#ifndef FREELAN_CONSTANTS_HPP
+#define FREELAN_CONSTANTS_HPP
 
-#include <boost/array.hpp>
+#include <cryptoplus/cipher/cipher_algorithm.hpp>
+#include <cryptoplus/hash/message_digest_algorithm.hpp>
+
+#include <stdint.h>
+
 #include <boost/asio.hpp>
-
-#include <map>
-
-#include "dynamic_contact.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/array.hpp>
 
 namespace freelan
 {
-	class dynamic_contact_list
+	/**
+	 * \brief The challenge type.
+	 */
+	typedef boost::array<uint8_t, 32> hash_type;
+
+	/**
+	 * \brief The current protocol version.
+	 */
+	const unsigned char CURRENT_PROTOCOL_VERSION = 1;
+
+	/**
+	 * \brief The different message types.
+	 */
+	enum message_type
 	{
-		public:
+		MESSAGE_TYPE_CONTACT_REQUEST = 0x00,
+		MESSAGE_TYPE_CONTACT = 0x01
+	};
 
-			/**
-			 * \brief The endpoint type.
-			 */
-			typedef fscp::server::ep_type ep_type;
-
-			/**
-			 * \brief The certificate type.
-			 */
-			typedef fscp::server::cert_type cert_type;
-
-			/**
-			 * \brief Check the existence of a contact.
-			 * \param cert The certificate of the contact.
-			 * \return true if the contact exists, false otherwise.
-			 */
-			bool has_contact(cert_type cert) { return m_contact_map.find(hash(cert)) != m_contact_map.end(); }
-
-			/**
-			 * \brief Get a contact.
-			 * \param cert The certificate of the contact.
-			 * \return The contact.
-			 *
-			 * If the contact doesn't exist, an empty contact will be created.
-			 *
-			 * To check for a contact existence, see has_contact().
-			 */
-			dynamic_contact& get_contact(cert_type cert) { return m_contact_map[hash(cert)]; }
-
-			/**
-			 * \brief Get the candidate endpoint list.
-			 * \return The candidate endpoint list.
-			 */
-			std::vector<ep_type> get_candidate_endpoint_list();
-
-		private:
-
-			typedef boost::array<char, 32> hash_type;
-			typedef std::map<hash_type, dynamic_contact> contact_map_type;
-
-			static hash_type hash(cert_type cert);
-
-			contact_map_type m_contact_map;
+	/**
+	 * \brief The endpoint family type.
+	 */
+	enum endpoint_family_type
+	{
+		ENDPOINT_FAMILY_IPV4 = 4,
+		ENDPOINT_FAMILY_IPV6 = 6
 	};
 }
 
-#endif /* DYNAMIC_CONTACT_LIST_HPP */
+#endif /* FREELAN_CONSTANTS_HPP */

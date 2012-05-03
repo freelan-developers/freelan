@@ -53,7 +53,7 @@ else:
     if sys.platform.startswith('darwin'):
         libraries.append('crypto')
 
-project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
+project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp') + Glob('src/dynamic/*.cpp'))
 
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)

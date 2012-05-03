@@ -63,7 +63,7 @@
 #include "configuration.hpp"
 #include "switch.hpp"
 #include "logger.hpp"
-#include "dynamic_contact_list.hpp"
+#include "dynamic/server.hpp"
 
 namespace freelan
 {
@@ -103,11 +103,6 @@ namespace freelan
 			 * \brief The contact period.
 			 */
 			static const boost::posix_time::time_duration CONTACT_PERIOD;
-
-			/**
-			 * \brief The contact period.
-			 */
-			static const boost::posix_time::time_duration DYNAMIC_CONTACT_PERIOD;
 
 			/**
 			 * \brief The default service.
@@ -241,19 +236,18 @@ namespace freelan
 			void do_contact();
 			void do_contact(const fscp_configuration::endpoint&);
 			void do_periodic_contact(const boost::system::error_code&);
-			void do_dynamic_contact();
-			void do_periodic_dynamic_contact(const boost::system::error_code&);
 
 			// Members
 			freelan::configuration m_configuration;
 			freelan::logger m_logger;
-			freelan::dynamic_contact_list m_dynamic_contact_list;
 
 			// FSCP
 			fscp::server m_server;
 			boost::asio::ip::udp::resolver m_resolver;
 			boost::asio::deadline_timer m_contact_timer;
-			boost::asio::deadline_timer m_dynamic_contact_timer;
+
+			// Dynamic
+			dynamic::server m_dynamic_server;
 
 			// Tap adapter
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
