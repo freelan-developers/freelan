@@ -74,12 +74,12 @@ namespace freelan
 			 * \brief Set the associated endpoint.
 			 * \param ep The endpoint.
 			 */
-			void reset(const ep_type& ep) { m_associated_endpoint = ep; }
+			void set_associated_endpoint(const ep_type& ep) { m_associated_endpoint = ep; }
 
 			/**
-			 * \brief Reset the associated endpoint.
+			 * \brief Clear the associated endpoint.
 			 */
-			void reset() { m_associated_endpoint == boost::none; }
+			void clear_associated_endpoint() { m_associated_endpoint == boost::none; }
 
 			/**
 			 * \brief Add a candidate endpoint.

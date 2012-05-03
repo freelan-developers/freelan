@@ -400,7 +400,7 @@ namespace freelan
 		m_endpoint_switch_port_map[sender] = port;
 		m_switch.register_port(port, ENDPOINTS_GROUP);
 
-		m_dynamic_contact_list.get_contact(sig_cert).reset(sender);
+		m_dynamic_contact_list.get_contact(sig_cert).set_associated_endpoint(sender);
 
 		if (m_session_established_callback)
 		{
@@ -419,7 +419,7 @@ namespace freelan
 			m_session_lost_callback(sender);
 		}
 
-		m_dynamic_contact_list.get_contact(sig_cert).reset();
+		m_dynamic_contact_list.get_contact(sig_cert).clear_associated_endpoint();
 
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
