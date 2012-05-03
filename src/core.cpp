@@ -402,7 +402,8 @@ namespace freelan
 
 		m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
 
-		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(boost::ref(m_server), sender);
+		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+
 		m_endpoint_switch_port_map[sender] = port;
 		m_switch.register_port(port, ENDPOINTS_GROUP);
 

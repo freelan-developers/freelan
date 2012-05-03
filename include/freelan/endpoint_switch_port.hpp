@@ -60,12 +60,23 @@ namespace freelan
 		public:
 
 			/**
-			 * \brief Create a switch port bound to a specified fscp server and an
-			 * endpoint.
-			 * \param server
-			 * \param endpoint
+			 * \brief The endpoint type.
 			 */
-			endpoint_switch_port(fscp::server& server, fscp::server::ep_type endpoint);
+			typedef fscp::server::ep_type ep_type;
+
+			/**
+			 * \brief The send data callback.
+			 * \param target The target host.
+			 * \param data The data to send.
+			 */
+			typedef boost::function<void (const ep_type& target, boost::asio::const_buffer data)> send_data_callback;
+
+			/**
+			 * \brief Create a switch port bound to a specified endpoint.
+			 * \param endpoint The associated endpoint.
+			 * \param callback The send data callback to use.
+			 */
+			endpoint_switch_port(fscp::server::ep_type endpoint, send_data_callback callback);
 
 		protected:
 
@@ -91,8 +102,8 @@ namespace freelan
 
 		private:
 
-			fscp::server& m_server;
 			fscp::server::ep_type m_endpoint;
+			send_data_callback m_send_data_callback;
 
 			friend bool operator==(const endpoint_switch_port&, const endpoint_switch_port&);
 	};
@@ -105,15 +116,18 @@ namespace freelan
 	 */
 	bool operator==(const endpoint_switch_port& lhs, const endpoint_switch_port& rhs);
 
-	inline endpoint_switch_port::endpoint_switch_port(fscp::server& server, fscp::server::ep_type ep) :
-		m_server(server),
-		m_endpoint(ep)
+	inline endpoint_switch_port::endpoint_switch_port(fscp::server::ep_type ep, send_data_callback callback) :
+		m_endpoint(ep),
+		m_send_data_callback(callback)
 	{
 	}
 
 	inline void endpoint_switch_port::write(boost::asio::const_buffer data)
 	{
-		m_server.async_send_data(m_endpoint, fscp::CHANNEL_NUMBER_0, data);
+		if (m_send_data_callback)
+		{
+			m_send_data_callback(m_endpoint, data);
+		}
 	}
 
 	inline std::ostream& endpoint_switch_port::output(std::ostream& os) const
@@ -123,7 +137,7 @@ namespace freelan
 
 	inline bool operator==(const endpoint_switch_port& lhs, const endpoint_switch_port& rhs)
 	{
-		return (&lhs.m_server == &rhs.m_server) && (lhs.m_endpoint == rhs.m_endpoint);
+		return (lhs.m_endpoint == rhs.m_endpoint);
 	}
 }
 
