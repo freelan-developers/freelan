@@ -90,7 +90,7 @@ namespace freelan
 		enum hostname_resolution_protocol_type
 		{
 			HRP_IPV4 = PF_INET, /**< \brief The IPv4 protocol. */
-			HRP_IPV6 = PF_INET6/**< \brief The IPv6 protocol. */
+			HRP_IPV6 = PF_INET6 /**< \brief The IPv6 protocol. */
 		};
 
 		/**
