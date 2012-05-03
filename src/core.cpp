@@ -502,20 +502,25 @@ namespace freelan
 		}
 	}
 
+	void core::do_greet(const ep_type& ep)
+	{
+		if (!m_server.has_session(ep))
+		{
+			m_logger(LL_DEBUG) << "Sending HELLO_REQUEST to " << ep << "...";
+
+			async_greet(ep);
+		}
+	}
+
 	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::fscp_configuration::endpoint& ep)
 	{
 		if (!ec)
 		{
-			if (!m_server.has_session(*it))
-			{
-				m_logger(LL_DEBUG) << "Sending HELLO_REQUEST to " << ep_type(*it) << "...";
-
-				async_greet(*it);
-			}
+			do_greet(*it);
 		}
 		else
 		{
-			m_logger(LL_WARNING) << "Failed to resolve " << ep << ".";
+			m_logger(LL_WARNING) << "Failed to resolve " << ep << ": " << ec;
 		}
 	}
 
@@ -545,6 +550,10 @@ namespace freelan
 		if (ec != boost::asio::error::operation_aborted)
 		{
 			do_contact();
+
+			const std::vector<ep_type> candidate_endpoint_list = m_dynamic_contact_list.get_candidate_endpoint_list();
+
+			std::for_each(candidate_endpoint_list.begin(), candidate_endpoint_list.end(), boost::bind(&core::do_greet, this, _1));
 
 			m_contact_timer.expires_from_now(CONTACT_PERIOD);
 			m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));

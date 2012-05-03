@@ -60,6 +60,11 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief The endpoint type.
+			 */
+			typedef fscp::server::ep_type ep_type;
+
+			/**
 			 * \brief The certificate type.
 			 */
 			typedef fscp::server::cert_type cert_type;
@@ -70,6 +75,12 @@ namespace freelan
 			 * \return The contact.
 			 */
 			dynamic_contact& get_contact(cert_type cert) { return m_contact_map[hash(cert)]; }
+
+			/**
+			 * \brief Get the candidate endpoint list.
+			 * \return The candidate endpoint list.
+			 */
+			std::vector<ep_type> get_candidate_endpoint_list();
 
 		private:
 

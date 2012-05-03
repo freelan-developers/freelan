@@ -71,4 +71,21 @@ namespace freelan
 
 		return result;
 	}
+
+	std::vector<dynamic_contact_list::ep_type> dynamic_contact_list::get_candidate_endpoint_list()
+	{
+		std::vector<ep_type> result;
+
+		for (contact_map_type::iterator it = m_contact_map.begin(); it != m_contact_map.end(); ++it)
+		{
+			if (!it->second.has_associated_endpoint())
+			{
+				const std::vector<ep_type> v = it->second.get_candidate_endpoint_list();
+
+				result.insert(result.end(), v.begin(), v.end());
+			}
+		}
+
+		return result;
+	}
 }

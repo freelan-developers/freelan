@@ -102,13 +102,12 @@ namespace freelan
 			 * \brief Get the candidate endpoint list.
 			 * \return The candidate endpoint list.
 			 */
-			const std::vector<ep_type>& get_candidate_endpoint_list();
+			std::vector<ep_type> get_candidate_endpoint_list();
 
 		private:
 
 			boost::optional<ep_type> m_associated_endpoint;
 			std::map<ep_type, boost::posix_time::ptime> m_candidate_endpoint_map;
-			std::vector<ep_type> m_candidate_endpoint_list_cache;
 	};
 }
 

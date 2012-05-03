@@ -57,11 +57,11 @@ namespace freelan
 		}
 	}
 
-	const std::vector<dynamic_contact::ep_type>& dynamic_contact::get_candidate_endpoint_list()
+	std::vector<dynamic_contact::ep_type> dynamic_contact::get_candidate_endpoint_list()
 	{
 		const boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
 
-		m_candidate_endpoint_list_cache.clear();
+		std::vector<ep_type> result;
 
 		for (std::map<ep_type, boost::posix_time::ptime>::iterator it = m_candidate_endpoint_map.begin(); it != m_candidate_endpoint_map.end(); )
 		{
@@ -71,12 +71,12 @@ namespace freelan
 			}
 			else
 			{
-				m_candidate_endpoint_list_cache.push_back(it->first);
+				result.push_back(it->first);
 
 				++it;
 			}
 		}
 
-		return m_candidate_endpoint_list_cache;
+		return result;
 	}
 }
