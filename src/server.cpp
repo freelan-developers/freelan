@@ -270,6 +270,8 @@ namespace fscp
 						case MESSAGE_TYPE_DATA_13:
 						case MESSAGE_TYPE_DATA_14:
 						case MESSAGE_TYPE_DATA_15:
+						case MESSAGE_TYPE_CONTACT_REQUEST:
+						case MESSAGE_TYPE_CONTACT:
 						case MESSAGE_TYPE_KEEP_ALIVE:
 							{
 								data_message data_message(message);
@@ -654,6 +656,14 @@ namespace fscp
 				if (is_data_message_type(_data_message.type()) && m_data_message_callback)
 				{
 					m_data_message_callback(sender, to_channel_number(_data_message.type()), boost::asio::buffer(m_data_buffer.data(), cnt));
+				}
+				else if (_data_message.type() == MESSAGE_TYPE_CONTACT_REQUEST)
+				{
+					//TODO: Implement
+				}
+				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)
+				{
+					//TODO: Implement
 				}
 			}
 		}
