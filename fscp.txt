@@ -316,19 +316,130 @@ Abstract
    channel number. The channel number SHOULD be made available for the
    upper layers.
 
-2.7. KEEP-ALIVE message format
+2.7. CONTACT-REQUEST message format
+
+   A CONTACT-REQUEST message is similar to a DATA message.
+
+2.7.1. CONTACT-REQUEST message type
+
+   A CONTACT-REQUEST message has a type value of 0xFD.
+
+2.7.2. CONTACT-REQUEST message fields
+
+   A CONTACT-REQUEST is similar to a DATA message.
+
+   CONTACT-REQUEST and DATA messages share the same sequence counter.
+
+   A host who receives a CONTACT-REQUEST message MUST also first check
+   if the hmac matches the message. If the HMAC doesn't match, the
+   message MUST be ignored.
+
+   The data contained in a CONTACT-REQUEST message has the following
+   format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |               hash 0              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 1              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |                ...                |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash n              |
+                 +-----------------------------------+
+
+   That is, a list of 32 bytes hashes indicating the certificate(s) for
+   which contact addresses are requested.
+
+   hash is 32 bytes long and is the SHA-256 digest of the DER
+   representation of the requested certificate.
+
+2.7. CONTACT message format
+
+   A CONTACT message is similar to a DATA message.
+
+2.7.1. CONTACT message type
+
+   A CONTACT message has a type value of 0xFE.
+
+2.7.2. CONTACT message fields
+
+   A CONTACT is similar to a DATA message.
+
+   CONTACT and DATA messages share the same sequence counter.
+
+   A host who receives a CONTACT message MUST also first check if the
+   hmac matches the message. If the HMAC doesn't match, the message MUST be
+   ignored.
+
+   The data contained in a CONTACT message has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |               hash 0              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 1              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |                ...                |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash n              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+
+   That is a list of (hash, ep_type, endpoint) tuples indicating the
+   contact information for the specified hosts.
+
+   hash is 32 bytes long and is the SHA-256 digest of the DER
+   representation of the requested certificate.
+
+   ep_type is a 1 byte field that can take the following values:
+   
+   * 0x04: IPv4 endpoint
+
+   In which case, endpoint has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |            IPv4 address           |
+                 +-----------------+-----------------+
+                 |       port      |
+                 +-----------------+
+
+   * 0x06: IPv6 endpoint
+
+   In which case, endpoint has the following format:
+
+                  0      7 8     15 16    23 24    31 
+                 +-----------------------------------+
+                 |            IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address           |
+                 +-----------------+-----------------+
+                 |       port      |
+                 +-----------------+
+
+2.9. KEEP-ALIVE message format
 
    A KEEP-ALIVE message is similar to a DATA message.
 
-2.7.1. KEEP-ALIVE message type
+2.9.1. KEEP-ALIVE message type
 
    A KEEP-ALIVE message has a type value of 0xFF.
 
-2.7.2. KEEP-ALIVE message fields
+2.9.2. KEEP-ALIVE message fields
 
    A KEEP-ALIVE is similar to a DATA message.
 
-   KEEP-ALIVE and DATA message share the same sequence counter.
+   KEEP-ALIVE and DATA messages share the same sequence counter.
 
    A host who receives a KEEP-ALIVE message MUST also first check if
    the hmac matches the message. If the HMAC doesn't match, the
@@ -505,7 +616,28 @@ Abstract
    The resulting 16 bytes block is the initialization vector to use to
    (de)cipher the DATA message.
 
-4.5. KEEP-ALIVE messages
+4.5. CONTACT-REQUEST and CONTACT messages
+
+   A host MAY send a CONTACT-REQUEST message for one or several
+   certificates, to one or several hosts. A session MUST be established
+   between the requesting host and the requested host.
+
+   A host SHOULD NOT send a CONTACT-REQUEST message to a host for a
+   certificate that is part of an active session (since a session is
+   active, contact information for the certificate is already know and
+   thus, sending a CONTACT-REQUEST for it is useless).
+
+   A host receiving a CONTACT-REQUEST message CAN reply with one or
+   several CONTACT messages.
+
+   The receiving host SHOULD only reply to requests for which the
+   requested certificate is known and used in an active session.
+
+   If an host receives a request for its own certificate, it SHOULD
+   discard it, but CAN still process other requests contained in the
+   same CONTACT-REQUEST message.
+
+4.6. KEEP-ALIVE messages
 
    If a host does not send any DATA message to another host within 10
    seconds, he SHOULD send a KEEP-ALIVE message to maintain the session
