@@ -47,6 +47,7 @@
 
 #include <cryptoplus/cipher/cipher_algorithm.hpp>
 #include <cryptoplus/hash/message_digest_algorithm.hpp>
+#include <cryptoplus/x509/certificate.hpp>
 
 #include <stdint.h>
 
@@ -102,6 +103,8 @@ namespace fscp
 		MESSAGE_TYPE_DATA_13 = 0x7D,
 		MESSAGE_TYPE_DATA_14 = 0x7E,
 		MESSAGE_TYPE_DATA_15 = 0x7F,
+		MESSAGE_TYPE_CONTACT_REQUEST = 0xFD,
+		MESSAGE_TYPE_CONTACT = 0xFE,
 		MESSAGE_TYPE_KEEP_ALIVE = 0xFF
 	};
 
@@ -144,6 +147,11 @@ namespace fscp
 	const int MESSAGE_DIGEST_ALGORITHM = NID_sha256;
 
 	/**
+	 * \brief The certificate digest algorithm.
+	 */
+	const int CERTIFICATE_DIGEST_ALGORITHM = NID_sha256;
+
+	/**
 	 * \brief The session keep-alive period.
 	 */
 	const boost::posix_time::time_duration SESSION_KEEP_ALIVE_PERIOD = boost::posix_time::seconds(10);
@@ -173,6 +181,14 @@ namespace fscp
 	 * \return The DATA message type.
 	 */
 	message_type to_data_message_type(channel_number_type channel_number);
+
+	/**
+	 * \brief Gives a hash for a certificate.
+	 * \param buf The output buffer.
+	 * \param buflen The output buffer length.
+	 * \param cert The certificate.
+	 */
+	void get_certificate_hash(void* buf, size_t buflen, cryptoplus::x509::certificate cert);
 }
 
 #endif /* FSCP_CONSTANTS_HPP */

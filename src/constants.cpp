@@ -46,6 +46,8 @@
 
 #include <cassert>
 
+#include <cryptoplus/hash/message_digest_context.hpp>
+
 namespace fscp
 {
 	channel_number_type to_channel_number(message_type type)
@@ -61,5 +63,15 @@ namespace fscp
 		assert(channel_number <= CHANNEL_NUMBER_15);
 
 		return static_cast<message_type>(static_cast<uint8_t>(MESSAGE_TYPE_DATA_0) + static_cast<uint8_t>(channel_number));
+	}
+
+	void get_certificate_hash(void* buf, size_t buflen, cryptoplus::x509::certificate cert)
+	{
+		const std::vector<unsigned char> der = cert.write_der();
+
+		cryptoplus::hash::message_digest_context mdctx;
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
+		mdctx.update(&der[0], der.size());
+		mdctx.finalize(buf, buflen);
 	}
 }
