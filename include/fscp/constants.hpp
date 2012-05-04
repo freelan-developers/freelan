@@ -45,15 +45,16 @@
 #ifndef FSCP_CONSTANTS_HPP
 #define FSCP_CONSTANTS_HPP
 
+#include <boost/asio.hpp>
+
 #include <cryptoplus/cipher/cipher_algorithm.hpp>
 #include <cryptoplus/hash/message_digest_algorithm.hpp>
 #include <cryptoplus/x509/certificate.hpp>
 
-#include <stdint.h>
-
-#include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/array.hpp>
+
+#include <stdint.h>
 
 namespace fscp
 {
@@ -134,6 +135,15 @@ namespace fscp
 		CHANNEL_NUMBER_13 = 13,
 		CHANNEL_NUMBER_14 = 14,
 		CHANNEL_NUMBER_15 = 15
+	};
+
+	/**
+	 * \brief The endpoint type type.
+	 */
+	enum endpoint_type_type
+	{
+		ENDPOINT_TYPE_IPV4 = 0x04,
+		ENDPOINT_TYPE_IPV6 = 0x06
 	};
 
 	/**

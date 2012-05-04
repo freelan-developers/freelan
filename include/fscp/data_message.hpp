@@ -104,7 +104,7 @@ namespace fscp
 				const size_t hash_size = certificate_digest_algorithm.result_size();
 				
 				std::vector<uint8_t> cleartext;
-				cleartext.reserve(hash_size * std::distance(cert_begin, cert_end));
+				cleartext.resize(hash_size * std::distance(cert_begin, cert_end));
 
 				for (CertIterator it = cert_begin; it != cert_end; ++it)
 				{

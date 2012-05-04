@@ -64,17 +64,43 @@ namespace fscp
 		return raw_write(buf, buf_len, _session_number, _sequence_number, &random[0], random.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
-	size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		std::vector<uint8_t> cleartext;
-		cleartext.reserve(contact_map.size() * 49);
+		cleartext.resize(contact_map.size() * 49);
+
+		std::vector<uint8_t>::iterator ptr = cleartext.begin();
 
 		for (contact_map_type::const_iterator it = contact_map.begin(); it != contact_map.end(); ++it)
 		{
-			//TODO: Implement
+			// We copy the hash
+			ptr = std::copy(it->first.begin(), it->first.end(), ptr);
+
+			if (it->second.address().is_v4())
+			{
+				*(ptr++) = static_cast<uint8_t>(ENDPOINT_TYPE_IPV4);
+
+				boost::asio::ip::address_v4::bytes_type bytes = it->second.address().to_v4().to_bytes();
+
+				ptr = std::copy(bytes.begin(), bytes.end(), ptr);
+
+				*(ptr + sizeof(uint16_t)) = htons(it->second.port()); ptr += sizeof(uint16_t);
+			}
+			else if (it->second.address().is_v6())
+			{
+				*(ptr++) = static_cast<uint8_t>(ENDPOINT_TYPE_IPV6);
+
+				boost::asio::ip::address_v6::bytes_type bytes = it->second.address().to_v6().to_bytes();
+
+				ptr = std::copy(bytes.begin(), bytes.end(), ptr);
+
+				*(ptr + sizeof(uint16_t)) = htons(it->second.port()); ptr += sizeof(uint16_t);
+			}
 		}
 
-		return raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT);
+		cleartext.resize(std::distance(cleartext.begin(), ptr));
+
+		return raw_write(buf, buf_len, session_number, _sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT);
 	}
 
 	std::vector<hash_type> data_message::parse_hash_list(void* buf, size_t buflen)

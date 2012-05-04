@@ -45,6 +45,8 @@
 #ifndef FSCP_CLEAR_SESSION_MESSAGE_HPP
 #define FSCP_CLEAR_SESSION_MESSAGE_HPP
 
+#include <boost/asio.hpp>
+
 #include "buffer_tools.hpp"
 #include "constants.hpp"
 
@@ -52,7 +54,6 @@
 #include <cstring>
 
 #include <boost/array.hpp>
-#include <boost/asio.hpp>
 
 namespace fscp
 {
