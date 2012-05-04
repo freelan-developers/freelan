@@ -662,6 +662,7 @@ namespace fscp
 					const std::vector<hash_type> hash_list = data_message::parse_hash_list(m_data_buffer.data(), cnt);
 
 					//TODO: Implement
+					//m_presentation_map
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)
 				{
