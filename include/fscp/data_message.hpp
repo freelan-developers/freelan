@@ -108,7 +108,7 @@ namespace fscp
 					get_certificate_hash(&cleartext[dist * hash_size], cleartext.size() - dist * hash_size, *it);
 				}
 
-				return data_message::raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
+				return raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
 			}
 
 			/**
