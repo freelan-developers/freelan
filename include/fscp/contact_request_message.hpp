@@ -47,6 +47,8 @@
 
 #include "data_message.hpp"
 
+#include <vector>
+
 namespace fscp
 {
 	/**
@@ -97,13 +99,22 @@ namespace fscp
 			 *
 			 * If the mapping fails, a std::runtime_error is thrown.
 			 */
-			contact_request_message(const void* buf, size_t buf_len);
+			contact_request_message(const void* buf, size_t buf_len) : data_message(buf, buf_len) {}
 
 			/**
 			 * \brief Create a data_message from a data_message.
-			 * \param data_message The message.
+			 * \param _message The message.
 			 */
-			contact_request_message(const data_message& message);
+			contact_request_message(const data_message& _message) : data_message(_message) {}
+
+			/**
+			 * \brief Get the hash list.
+			 * \param session_number The current session number.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \return The hash list.
+			 */
+			std::vector<hash_type> get_hash_list(session_number_type session_number, const void* enc_key, size_t enc_key_len) const;
 	};
 }
 

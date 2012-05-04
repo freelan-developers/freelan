@@ -52,13 +52,30 @@
 
 namespace fscp
 {
-	contact_request_message::contact_request_message(const void* buf, size_t buf_len) :
-		data_message(buf, buf_len)
+	std::vector<hash_type> contact_request_message::get_hash_list(session_number_type session_number, const void* enc_key, size_t enc_key_len) const
 	{
-	}
+		const std::vector<uint8_t> buf = get_cleartext<uint8_t>(session_number, enc_key, enc_key_len);
 
-	contact_request_message::contact_request_message(const data_message& _message) :
-		data_message(_message)
-	{
+		const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
+
+		const size_t hash_size = certificate_digest_algorithm.result_size();
+
+		if ((buf.size() / hash_size) * hash_size != buf.size())
+		{
+			throw std::runtime_error("Invalid message structure");
+		}
+
+		std::vector<hash_type> result;
+
+		for (std::vector<uint8_t>::const_iterator it = buf.begin(); it != buf.end(); it += hash_size)
+		{
+			hash_type hash;
+
+			std::copy(it, it + hash_size, hash.begin());
+
+			result.push_back(hash);
+		}
+
+		return result;
 	}
 }

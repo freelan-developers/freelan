@@ -74,4 +74,13 @@ namespace fscp
 		mdctx.update(&der[0], der.size());
 		mdctx.finalize(buf, buflen);
 	}
+
+	hash_type get_certificate_hash(cryptoplus::x509::certificate cert)
+	{
+		hash_type result;
+
+		get_certificate_hash(&result[0], result.size(), cert);
+
+		return result;
+	}
 }

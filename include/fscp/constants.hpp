@@ -68,6 +68,11 @@ namespace fscp
 	typedef boost::array<uint8_t, 32> challenge_type;
 
 	/**
+	 * \brief The hash type.
+	 */
+	typedef boost::array<uint8_t, 32> hash_type;
+
+	/**
 	 * \brief The sequence number type.
 	 */
 	typedef uint16_t sequence_number_type;
@@ -189,6 +194,12 @@ namespace fscp
 	 * \param cert The certificate.
 	 */
 	void get_certificate_hash(void* buf, size_t buflen, cryptoplus::x509::certificate cert);
+
+	/**
+	 * \brief Gives a hash for a certificate.
+	 * \param cert The certificate.
+	 */
+	hash_type get_certificate_hash(cryptoplus::x509::certificate cert);
 }
 
 #endif /* FSCP_CONSTANTS_HPP */
