@@ -64,6 +64,31 @@ namespace fscp
 		return raw_write(buf, buf_len, _session_number, _sequence_number, &random[0], random.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
+	std::vector<hash_type> data_message::parse_hash_list(void* buf, size_t buflen)
+	{
+		const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
+
+		const size_t hash_size = certificate_digest_algorithm.result_size();
+
+		if ((buflen / hash_size) * hash_size != buflen)
+		{
+			throw std::runtime_error("Invalid message structure");
+		}
+
+		std::vector<hash_type> result;
+
+		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen; ptr += hash_size)
+		{
+			hash_type hash;
+
+			std::copy(ptr, ptr + hash_size, hash.begin());
+
+			result.push_back(hash);
+		}
+
+		return result;
+	}
+
 	data_message::data_message(const void* buf, size_t buf_len) :
 		message(buf, buf_len)
 	{

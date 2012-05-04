@@ -659,6 +659,8 @@ namespace fscp
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT_REQUEST)
 				{
+					const std::vector<hash_type> hash_list = data_message::parse_hash_list(m_data_buffer.data(), cnt);
+
 					//TODO: Implement
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)

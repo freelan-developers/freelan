@@ -78,6 +78,40 @@ namespace fscp
 			static size_t write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type sequence_number, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
+			 * \brief Write a contact-request message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
+			 * \param sequence_number The sequence number.
+			 * \param cert_begin An iterator to the first certificate to request.
+			 * \param cert_end An iterator past the last certificate to request.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \return The count of bytes written.
+			 */
+			template <typename CertIterator>
+			static size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, CertIterator cert_begin, CertIterator cert_end, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+			{
+				const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
+
+				const size_t hash_size = certificate_digest_algorithm.result_size();
+				
+				std::vector<uint8_t> cleartext;
+				cleartext.reserve(hash_size * std::distance(cert_begin, cert_end));
+
+				for (CertIterator it = cert_begin; it != cert_end; ++it)
+				{
+					ptrdiff_t dist = std::distance(cert_begin, it);
+
+					get_certificate_hash(&cleartext[dist * hash_size], cleartext.size() - dist * hash_size, *it);
+				}
+
+				return data_message::raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
+			}
+
+			/**
 			 * \brief Write a keep-alive message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
@@ -91,6 +125,14 @@ namespace fscp
 			 * \return The count of bytes written.
 			 */
 			static size_t write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, size_t random_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+
+			/**
+			 * \brief Parse the hash list.
+			 * \param buf The buffer to parse.
+			 * \param buflen The length of the buffer to parse.
+			 * \return The hash list.
+			 */
+			static std::vector<hash_type> parse_hash_list(void* buf, size_t buflen);
 
 			/**
 			 * \brief Create a data_message and map it on a buffer.
