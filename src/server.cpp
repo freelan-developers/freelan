@@ -96,6 +96,7 @@ namespace fscp
 		m_session_established_callback(0),
 		m_session_lost_callback(0),
 		m_data_message_callback(0),
+		m_contact_message_callback(0),
 		m_network_error_callback(0),
 		m_keep_alive_timer(io_service, SESSION_KEEP_ALIVE_PERIOD)
 	{
@@ -678,7 +679,15 @@ namespace fscp
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)
 				{
-					//TODO: Implement
+					contact_map_type contact_map = data_message::parse_contact_map(m_data_buffer.data(), cnt);
+
+					if (m_contact_message_callback)
+					{
+						for (contact_map_type::const_iterator contact_it = contact_map.begin(); contact_it != contact_map.end(); ++contact_it)
+						{
+							m_contact_message_callback(contact_it->second);
+						}
+					}
 				}
 			}
 		}

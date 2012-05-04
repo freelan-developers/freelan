@@ -142,6 +142,12 @@ namespace fscp
 			typedef boost::function<void (const ep_type& host)> session_lost_callback;
 
 			/**
+			 * \brief A contact callback.
+			 * \param target The target endpoint.
+			 */
+			typedef boost::function<void (const ep_type& target)> contact_message_callback;
+
+			/**
 			 * \brief A network error callback.
 			 * \param target The target endpoint.
 			 * \param code error code. 
@@ -306,6 +312,18 @@ namespace fscp
 			void set_session_lost_callback(session_lost_callback callback);
 
 			/**
+			 * \brief Set the data message callback.
+			 * \param callback The callback.
+			 */
+			void set_data_message_callback(data_message_callback callback);
+
+			/**
+			 * \brief Set the contact callback.
+			 * \param callback The callback.
+			 */
+			void set_contact_message_callback(contact_message_callback callback);
+
+			/**
 			 * \brief Set the network error callback.
 			 * \param callback The callback.
 			 */
@@ -354,12 +372,6 @@ namespace fscp
 			 * \param data The data to send.
 			 */
 			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data);
-
-			/**
-			 * \brief Set the data message callback.
-			 * \param callback The callback.
-			 */
-			void set_data_message_callback(data_message_callback callback);
 
 		private: // Generic network stuff
 
@@ -438,6 +450,7 @@ namespace fscp
 		private: // CONTACT messages
 
 			void do_send_contact(const ep_type&, const contact_map_type&);
+			contact_message_callback m_contact_message_callback;
 
 		private: // Error handling and keep alive
 
@@ -531,6 +544,16 @@ namespace fscp
 		m_session_lost_callback = callback;
 	}
 	
+	inline void server::set_data_message_callback(data_message_callback callback)
+	{
+		m_data_message_callback = callback;
+	}
+
+	inline void server::set_contact_message_callback(contact_message_callback callback)
+	{
+		m_contact_message_callback = callback;
+	}
+
 	inline void server::set_network_error_callback(network_error_callback callback)
 	{
 		m_network_error_callback = callback;
@@ -543,11 +566,6 @@ namespace fscp
 		{
 			async_send_data(*it, channel_number, data);
 		}
-	}
-
-	inline void server::set_data_message_callback(data_message_callback callback)
-	{
-		m_data_message_callback = callback;
 	}
 }
 
