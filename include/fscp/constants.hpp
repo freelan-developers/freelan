@@ -55,6 +55,7 @@
 #include <boost/array.hpp>
 
 #include <stdint.h>
+#include <map>
 
 namespace fscp
 {
@@ -72,6 +73,11 @@ namespace fscp
 	 * \brief The hash type.
 	 */
 	typedef boost::array<uint8_t, 32> hash_type;
+
+	/**
+	 * \brief The contact map type.
+	 */
+	typedef std::map<hash_type, boost::asio::ip::udp::endpoint> contact_map_type;
 
 	/**
 	 * \brief The sequence number type.

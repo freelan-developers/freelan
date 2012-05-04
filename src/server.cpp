@@ -659,15 +659,83 @@ namespace fscp
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT_REQUEST)
 				{
-					const std::vector<hash_type> hash_list = data_message::parse_hash_list(m_data_buffer.data(), cnt);
+					std::vector<hash_type> hash_list = data_message::parse_hash_list(m_data_buffer.data(), cnt);
 
-					//TODO: Implement
-					//m_presentation_map
+					contact_map_type contact_map;
+
+					for (std::vector<hash_type>::iterator hash_it = hash_list.begin(); hash_it != hash_list.end(); ++hash_it)
+					{
+						for (presentation_store_map::const_iterator it = m_presentation_map.begin(); it != m_presentation_map.end(); ++it)
+						{
+							if (it->second.signature_certificate_hash() == *hash_it)
+							{
+								contact_map[*hash_it] = it->first;
+							}
+						}
+					}
+
+					do_send_contact(sender, contact_map);
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)
 				{
 					//TODO: Implement
 				}
+			}
+		}
+	}
+
+	template <typename CertIterator>
+	void server::do_send_contact_request(const ep_type& target, CertIterator cert_begin, CertIterator cert_end)
+	{
+		if (m_socket.is_open())
+		{
+			session_pair& session_pair = m_session_map[target];
+
+			if (session_pair.has_remote_session())
+			{
+				size_t size = data_message::write_contact_request(
+						m_send_buffer.data(),
+						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
+						session_pair.remote_session().sequence_number(),
+						cert_begin,
+						cert_end,
+						session_pair.remote_session().seal_key(),
+						session_pair.remote_session().seal_key_size(),
+						session_pair.remote_session().encryption_key(),
+						session_pair.remote_session().encryption_key_size()
+						);
+
+				session_pair.remote_session().increment_sequence_number();
+
+				send_to(asio::buffer(m_send_buffer.data(), size), target);
+			}
+		}
+	}
+
+	void server::do_send_contact(const ep_type& target, const contact_map_type& contact_map)
+	{
+		if (m_socket.is_open())
+		{
+			session_pair& session_pair = m_session_map[target];
+
+			if (session_pair.has_remote_session())
+			{
+				size_t size = data_message::write_contact(
+						m_send_buffer.data(),
+						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
+						session_pair.remote_session().sequence_number(),
+						contact_map,
+						session_pair.remote_session().seal_key(),
+						session_pair.remote_session().seal_key_size(),
+						session_pair.remote_session().encryption_key(),
+						session_pair.remote_session().encryption_key_size()
+						);
+
+				session_pair.remote_session().increment_sequence_number();
+
+				send_to(asio::buffer(m_send_buffer.data(), size), target);
 			}
 		}
 	}

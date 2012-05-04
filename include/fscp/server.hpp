@@ -430,6 +430,15 @@ namespace fscp
 			data_store_map m_data_map;
 			data_message_callback m_data_message_callback;
 
+		private: // CONTACT_REQUEST messages
+
+			template <typename CertIterator>
+			void do_send_contact_request(const ep_type&, CertIterator, CertIterator);
+
+		private: // CONTACT messages
+
+			void do_send_contact(const ep_type&, const contact_map_type&);
+
 		private: // Error handling and keep alive
 
 			void network_error(const ep_type&, const boost::system::error_code&);
