@@ -64,6 +64,19 @@ namespace fscp
 		return raw_write(buf, buf_len, _session_number, _sequence_number, &random[0], random.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
+	size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	{
+		std::vector<uint8_t> cleartext;
+		cleartext.reserve(contact_map.size() * 49);
+
+		for (contact_map_type::const_iterator it = contact_map.begin(); it != contact_map.end(); ++it)
+		{
+			//TODO: Implement
+		}
+
+		return raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT);
+	}
+
 	std::vector<hash_type> data_message::parse_hash_list(void* buf, size_t buflen)
 	{
 		const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);

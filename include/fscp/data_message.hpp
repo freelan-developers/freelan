@@ -61,6 +61,11 @@ namespace fscp
 		public:
 
 			/**
+			 * \brief The contact map type.
+			 */
+			typedef std::map<hash_type, boost::asio::ip::udp::endpoint> contact_map_type;
+
+			/**
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
@@ -110,6 +115,21 @@ namespace fscp
 
 				return raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
 			}
+
+			/**
+			 * \brief Write a contact message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
+			 * \param sequence_number The sequence number.
+			 * \param contact_map The contact map.
+			 * \param seal_key The seal key.
+			 * \param seal_key_len The seal key length.
+			 * \param enc_key The encryption key.
+			 * \param enc_key_len The encryption key length.
+			 * \return The count of bytes written.
+			 */
+			size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a keep-alive message to a buffer.
