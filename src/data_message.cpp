@@ -84,7 +84,9 @@ namespace fscp
 
 				ptr = std::copy(bytes.begin(), bytes.end(), ptr);
 
-				*(ptr + sizeof(uint16_t)) = htons(it->second.port()); ptr += sizeof(uint16_t);
+				*(reinterpret_cast<uint16_t*>(&*ptr)) = htons(it->second.port());
+
+				ptr += sizeof(uint16_t);
 			}
 			else if (it->second.address().is_v6())
 			{
@@ -94,7 +96,9 @@ namespace fscp
 
 				ptr = std::copy(bytes.begin(), bytes.end(), ptr);
 
-				*(ptr + sizeof(uint16_t)) = htons(it->second.port()); ptr += sizeof(uint16_t);
+				*(reinterpret_cast<uint16_t*>(&*ptr)) = htons(it->second.port());
+
+				ptr += sizeof(uint16_t);
 			}
 		}
 
@@ -116,13 +120,82 @@ namespace fscp
 
 		std::vector<hash_type> result;
 
-		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen; ptr += hash_size)
+		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen;)
 		{
 			hash_type hash;
 
-			std::copy(ptr, ptr + hash_size, hash.begin());
+			ptr = std::copy(ptr, ptr + hash_size, hash.begin());
 
 			result.push_back(hash);
+		}
+
+		return result;
+	}
+
+	contact_map_type data_message::parse_contact_map(void* buf, size_t buflen)
+	{
+		const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
+
+		const size_t hash_size = certificate_digest_algorithm.result_size();
+
+		contact_map_type result;
+
+		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen;)
+		{
+			hash_type hash;
+
+			if (static_cast<const uint8_t*>(buf) + buflen - ptr < static_cast<ptrdiff_t>(hash_size) + 1)
+			{
+				throw std::runtime_error("Invalid message structure");
+			}
+
+			ptr = std::copy(ptr, ptr + hash_size, hash.begin());
+
+			switch (static_cast<endpoint_type_type>(*ptr))
+			{
+				case ENDPOINT_TYPE_IPV4:
+					{
+						++ptr;
+
+						boost::asio::ip::address_v4::bytes_type bytes;
+
+						if (static_cast<const uint8_t*>(buf) + buflen - ptr < static_cast<ptrdiff_t>(bytes.size()))
+						{
+							throw std::runtime_error("Invalid message structure");
+						}
+
+						ptr = std::copy(ptr, ptr + bytes.size(), bytes.begin());
+
+						result[hash] = boost::asio::ip::udp::endpoint(boost::asio::ip::address_v4(bytes), ntohs(*reinterpret_cast<const uint16_t*>(ptr)));
+
+						ptr += sizeof(uint16_t);
+
+						break;
+					}
+				case ENDPOINT_TYPE_IPV6:
+					{
+						++ptr;
+
+						boost::asio::ip::address_v6::bytes_type bytes;
+
+						if (static_cast<const uint8_t*>(buf) + buflen - ptr < static_cast<ptrdiff_t>(bytes.size()))
+						{
+							throw std::runtime_error("Invalid message structure");
+						}
+
+						ptr = std::copy(ptr, ptr + bytes.size(), bytes.begin());
+
+						result[hash] = boost::asio::ip::udp::endpoint(boost::asio::ip::address_v6(bytes), ntohs(*reinterpret_cast<const uint16_t*>(ptr)));
+
+						ptr += sizeof(uint16_t);
+
+						break;
+					}
+				default:
+					{
+						throw std::runtime_error("Invalid message structure");
+					}
+			}
 		}
 
 		return result;
