@@ -45,6 +45,8 @@
 #ifndef FSCP_PRESENTATION_STORE_HPP
 #define FSCP_PRESENTATION_STORE_HPP
 
+#include "constants.hpp"
+
 #include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/pkey/pkey.hpp>
 
@@ -67,7 +69,7 @@ namespace fscp
 			/**
 			 * \brief Create an empty presentation_store.
 			 */
-			presentation_store();
+			presentation_store() {};
 
 			/**
 			 * \brief Create a new presentation store.
@@ -81,33 +83,26 @@ namespace fscp
 			 * \brief Get the signature certificate.
 			 * \return The signature certificate.
 			 */
-			cert_type signature_certificate() const;
+			cert_type signature_certificate() const { return m_sig_cert; }
 
 			/**
 			 * \brief Get the encryption certificate.
 			 * \return The encryption certificate.
 			 */
-			cert_type encryption_certificate() const;
+			cert_type encryption_certificate() const { return m_enc_cert; }
+
+			/**
+			 * \brief Get the signature certificate hash.
+			 * \return The signature certificate hash.
+			 */
+			const hash_type& signature_certificate_hash() const { return m_sig_hash; }
 
 		private:
 
 			cert_type m_sig_cert;
 			cert_type m_enc_cert;
+			hash_type m_sig_hash;
 	};
-
-	inline presentation_store::presentation_store()
-	{
-	}
-
-	inline presentation_store::cert_type presentation_store::signature_certificate() const
-	{
-		return m_sig_cert;
-	}
-
-	inline presentation_store::cert_type presentation_store::encryption_certificate() const
-	{
-		return m_enc_cert;
-	}
 }
 
 #endif /* FSCP_PRESENTATION_STORE_HPP */
