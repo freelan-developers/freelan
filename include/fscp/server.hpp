@@ -373,6 +373,13 @@ namespace fscp
 			 */
 			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data);
 
+			/**
+			 * \brief Ask a host for a contact.
+			 * \param target The target host.
+			 * \param cert The certificate to ask for.
+			 */
+			void async_contact_request(ep_type target, cert_type cert);
+
 		private: // Generic network stuff
 
 			void async_receive();
@@ -444,8 +451,11 @@ namespace fscp
 
 		private: // CONTACT_REQUEST messages
 
-			template <typename CertIterator>
-			void do_send_contact_request(const ep_type&, CertIterator, CertIterator);
+			typedef std::map<ep_type, std::vector<cert_type> > cert_list_map;
+
+			void do_send_contact_request(const ep_type&);
+
+			cert_list_map m_cert_list_map;
 
 		private: // CONTACT messages
 

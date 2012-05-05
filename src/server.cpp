@@ -234,6 +234,15 @@ namespace fscp
 		}
 	}
 
+	void server::async_contact_request(ep_type target, cert_type cert)
+	{
+		normalize(target);
+
+		m_cert_list_map[target].push_back(cert);
+
+		get_io_service().post(bind(&server::do_send_contact_request, this, target));
+	}
+
 	/* Common */
 
 	void server::async_receive()
@@ -693,8 +702,7 @@ namespace fscp
 		}
 	}
 
-	template <typename CertIterator>
-	void server::do_send_contact_request(const ep_type& target, CertIterator cert_begin, CertIterator cert_end)
+	void server::do_send_contact_request(const ep_type& target)
 	{
 		if (m_socket.is_open())
 		{
@@ -702,22 +710,29 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
-				size_t size = data_message::write_contact_request(
-						m_send_buffer.data(),
-						m_send_buffer.size(),
-						session_pair.remote_session().session_number(),
-						session_pair.remote_session().sequence_number(),
-						cert_begin,
-						cert_end,
-						session_pair.remote_session().seal_key(),
-						session_pair.remote_session().seal_key_size(),
-						session_pair.remote_session().encryption_key(),
-						session_pair.remote_session().encryption_key_size()
-						);
+				std::vector<cert_type>& cert_list = m_cert_list_map[target];
 
-				session_pair.remote_session().increment_sequence_number();
+				if (!cert_list.empty())
+				{
+					size_t size = data_message::write_contact_request(
+							m_send_buffer.data(),
+							m_send_buffer.size(),
+							session_pair.remote_session().session_number(),
+							session_pair.remote_session().sequence_number(),
+							cert_list.begin(),
+							cert_list.end(),
+							session_pair.remote_session().seal_key(),
+							session_pair.remote_session().seal_key_size(),
+							session_pair.remote_session().encryption_key(),
+							session_pair.remote_session().encryption_key_size()
+							);
 
-				send_to(asio::buffer(m_send_buffer.data(), size), target);
+					cert_list.clear();
+
+					session_pair.remote_session().increment_sequence_number();
+
+					send_to(asio::buffer(m_send_buffer.data(), size), target);
+				}
 			}
 		}
 	}
