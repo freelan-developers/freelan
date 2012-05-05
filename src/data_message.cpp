@@ -121,11 +121,11 @@ namespace fscp
 
 		std::vector<hash_type> result;
 
-		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen;)
+		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen; ptr += hash_type::static_size)
 		{
 			hash_type hash;
 
-			ptr = std::copy(ptr, ptr + hash_type::static_size, hash.begin());
+			std::copy(ptr, ptr + hash_type::static_size, hash.begin());
 
 			result.push_back(hash);
 		}
@@ -146,7 +146,9 @@ namespace fscp
 				throw std::runtime_error("Invalid message structure");
 			}
 
-			ptr = std::copy(ptr, ptr + hash_type::static_size, hash.begin());
+			std::copy(ptr, ptr + hash_type::static_size, hash.begin());
+
+			ptr += hash_type::static_size;
 
 			switch (static_cast<endpoint_type_type>(*ptr))
 			{
@@ -161,7 +163,9 @@ namespace fscp
 							throw std::runtime_error("Invalid message structure");
 						}
 
-						ptr = std::copy(ptr, ptr + bytes.size(), bytes.begin());
+						std::copy(ptr, ptr + bytes.size(), bytes.begin());
+
+						ptr += bytes.size();
 
 						result[hash] = boost::asio::ip::udp::endpoint(boost::asio::ip::address_v4(bytes), ntohs(*reinterpret_cast<const uint16_t*>(ptr)));
 
@@ -180,7 +184,9 @@ namespace fscp
 							throw std::runtime_error("Invalid message structure");
 						}
 
-						ptr = std::copy(ptr, ptr + bytes.size(), bytes.begin());
+						std::copy(ptr, ptr + bytes.size(), bytes.begin());
+
+						ptr += bytes.size();
 
 						result[hash] = boost::asio::ip::udp::endpoint(boost::asio::ip::address_v6(bytes), ntohs(*reinterpret_cast<const uint16_t*>(ptr)));
 
