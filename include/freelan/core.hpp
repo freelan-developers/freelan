@@ -242,6 +242,7 @@ namespace freelan
 			void do_contact();
 			void do_contact(const fscp_configuration::endpoint&);
 			void do_dynamic_contact();
+			void do_dynamic_contact(cert_type cert);
 			void do_periodic_contact(const boost::system::error_code&);
 			void do_periodic_dynamic_contact(const boost::system::error_code&);
 

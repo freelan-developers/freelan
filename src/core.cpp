@@ -577,7 +577,12 @@ namespace freelan
 
 	void core::do_dynamic_contact()
 	{
-		std::for_each(m_configuration.fscp.dynamic_contact_list.begin(), m_configuration.fscp.dynamic_contact_list.end(), boost::bind(&fscp::server::async_send_contact_request_to_all, &m_server, _1));
+		std::for_each(m_configuration.fscp.dynamic_contact_list.begin(), m_configuration.fscp.dynamic_contact_list.end(), boost::bind(&core::do_dynamic_contact, this, _1));
+	}
+
+	void core::do_dynamic_contact(cert_type cert)
+	{
+		m_server.async_send_contact_request_to_all(cert);
 	}
 
 	void core::do_periodic_dynamic_contact(const boost::system::error_code& ec)
