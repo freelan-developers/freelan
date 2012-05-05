@@ -94,6 +94,16 @@ namespace freelan
 		};
 
 		/**
+		 * \brief The certificate type.
+		 */
+		typedef fscp::identity_store::cert_type cert_type;
+
+		/**
+		 * \brief The certificate list type.
+		 */
+		typedef std::vector<cert_type> cert_list_type;
+
+		/**
 		 * \brief Create a new FSCP configuration.
 		 */
 		fscp_configuration();
@@ -107,6 +117,16 @@ namespace freelan
 		 * \brief The contact list.
 		 */
 		endpoint_list contact_list;
+
+		/**
+		 * \brief The "answer to CONTACT-REQUEST" flag.
+		 */
+		bool answer_to_contact_requests;
+
+		/**
+		 * \brief The dynamic contact list.
+		 */
+		cert_list_type dynamic_contact_list;
 
 		/**
 		 * \brief The hostname resolution protocol.
