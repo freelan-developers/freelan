@@ -65,6 +65,7 @@ namespace freelan
 	const int core::ex_data_index = cryptoplus::x509::store_context::register_index();
 
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
+	const boost::posix_time::time_duration core::DYNAMIC_CONTACT_PERIOD = boost::posix_time::seconds(45);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -75,6 +76,7 @@ namespace freelan
 		m_server(io_service, *m_configuration.security.identity),
 		m_resolver(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
+		m_dynamic_contact_timer(io_service, DYNAMIC_CONTACT_PERIOD),
 		m_open_callback(),
 		m_close_callback(),
 		m_session_established_callback(),
@@ -150,6 +152,7 @@ namespace freelan
 		// We start the contact loop
 		do_contact();
 		m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
+		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
 
 		// Tap adapter
 		if (m_tap_adapter)
@@ -326,6 +329,7 @@ namespace freelan
 		}
 
 		m_contact_timer.cancel();
+		m_dynamic_contact_timer.cancel();
 
 		m_server.close();
 
@@ -568,6 +572,22 @@ namespace freelan
 
 			m_contact_timer.expires_from_now(CONTACT_PERIOD);
 			m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void core::do_dynamic_contact()
+	{
+		std::for_each(m_configuration.fscp.dynamic_contact_list.begin(), m_configuration.fscp.dynamic_contact_list.end(), boost::bind(&fscp::server::async_send_contact_request_to_all, &m_server, _1));
+	}
+
+	void core::do_periodic_dynamic_contact(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			do_dynamic_contact();
+
+			m_dynamic_contact_timer.expires_from_now(DYNAMIC_CONTACT_PERIOD);
+			m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
 		}
 	}
 
