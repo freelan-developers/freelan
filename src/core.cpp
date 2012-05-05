@@ -92,6 +92,8 @@ namespace freelan
 		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
+		m_server.set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
+		m_server.set_contact_message_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
 		m_server.set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
 
 		if (m_configuration.tap_adapter.enabled)
@@ -439,6 +441,20 @@ namespace freelan
 				m_logger(LL_WARNING) << "Received unhandled " << boost::asio::buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
 				break;
 		}
+	}
+
+	bool core::on_contact_request(const ep_type& sender, cert_type cert, const ep_type& target)
+	{
+		m_logger(LL_INFORMATION) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << target << "): " << (m_configuration.fscp.answer_to_contact_requests ? "replying" : "not replying");
+
+		return m_configuration.fscp.answer_to_contact_requests;
+	}
+
+	void core::on_contact(const ep_type& sender, cert_type cert, const ep_type& target)
+	{
+		m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << cert.subject().oneline() << " is at " << target;
+
+		do_greet(target);
 	}
 
 	void core::on_ethernet_data(const ep_type& sender, boost::asio::const_buffer data)
