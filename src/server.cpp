@@ -234,7 +234,7 @@ namespace fscp
 		}
 	}
 
-	void server::async_contact_request(ep_type target, cert_type cert)
+	void server::async_send_contact_request(ep_type target, cert_type cert)
 	{
 		normalize(target);
 
@@ -244,6 +244,23 @@ namespace fscp
 		m_hash_list_map[target].push_back(hash);
 
 		get_io_service().post(bind(&server::do_send_contact_request, this, target));
+	}
+
+	void server::async_send_contact_request_to_all(cert_type cert)
+	{
+		hash_type hash = get_certificate_hash(cert);
+
+		m_hash_to_cert[hash] = cert;
+
+		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+		{
+			if (session_pair->second.has_remote_session())
+			{
+				m_hash_list_map[session_pair->first].push_back(hash);
+
+				get_io_service().post(bind(&server::do_send_contact_request, this, session_pair->first));
+			}
+		}
 	}
 
 	/* Common */

@@ -380,7 +380,13 @@ namespace fscp
 			 * \param target The target host.
 			 * \param cert The certificate to ask for.
 			 */
-			void async_contact_request(ep_type target, cert_type cert);
+			void async_send_contact_request(ep_type target, cert_type cert);
+
+			/**
+			 * \brief Ask all hosts for a contact.
+			 * \param cert The certificate to ask for.
+			 */
+			void async_send_contact_request_to_all(cert_type cert);
 
 		private: // Generic network stuff
 
