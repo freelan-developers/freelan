@@ -708,7 +708,10 @@ namespace fscp
 						}
 					}
 
-					do_send_contact(sender, contact_map);
+					if (!contact_map.empty())
+					{
+						do_send_contact(sender, contact_map);
+					}
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)
 				{
