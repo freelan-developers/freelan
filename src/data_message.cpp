@@ -114,11 +114,7 @@ namespace fscp
 
 	std::vector<hash_type> data_message::parse_hash_list(void* buf, size_t buflen)
 	{
-		const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
-
-		const size_t hash_size = certificate_digest_algorithm.result_size();
-
-		if ((buflen / hash_size) * hash_size != buflen)
+		if ((buflen / hash_type::static_size) * hash_type::static_size != buflen)
 		{
 			throw std::runtime_error("Invalid message structure");
 		}
@@ -129,7 +125,7 @@ namespace fscp
 		{
 			hash_type hash;
 
-			ptr = std::copy(ptr, ptr + hash_size, hash.begin());
+			ptr = std::copy(ptr, ptr + hash_type::static_size, hash.begin());
 
 			result.push_back(hash);
 		}
@@ -139,22 +135,18 @@ namespace fscp
 
 	contact_map_type data_message::parse_contact_map(void* buf, size_t buflen)
 	{
-		const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
-
-		const size_t hash_size = certificate_digest_algorithm.result_size();
-
 		contact_map_type result;
 
 		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen;)
 		{
 			hash_type hash;
 
-			if (static_cast<const uint8_t*>(buf) + buflen - ptr < static_cast<ptrdiff_t>(hash_size) + 1)
+			if (static_cast<const uint8_t*>(buf) + buflen - ptr < static_cast<ptrdiff_t>(hash_type::static_size) + 1)
 			{
 				throw std::runtime_error("Invalid message structure");
 			}
 
-			ptr = std::copy(ptr, ptr + hash_size, hash.begin());
+			ptr = std::copy(ptr, ptr + hash_type::static_size, hash.begin());
 
 			switch (static_cast<endpoint_type_type>(*ptr))
 			{
