@@ -1,7 +1,7 @@
 """The SConstruct file"""
 
 name = 'freelan'
-major = '1'
+major = '2'
 minor = '0'
 libraries = []
 
@@ -49,11 +49,11 @@ else:
 
     if sys.platform.startswith('linux2'):
         libraries.append('rt')
-    
+
     if sys.platform.startswith('darwin'):
         libraries.append('crypto')
 
-project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp') + Glob('src/dynamic/*.cpp'))
+project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)

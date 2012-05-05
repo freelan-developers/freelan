@@ -75,7 +75,6 @@ namespace freelan
 		m_server(io_service, *m_configuration.security.identity),
 		m_resolver(io_service),
 		m_contact_timer(io_service, CONTACT_PERIOD),
-		m_dynamic_server(m_server),
 		m_open_callback(),
 		m_close_callback(),
 		m_session_established_callback(),
@@ -94,8 +93,6 @@ namespace freelan
 		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 		m_server.set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
-
-		m_dynamic_server.set_send_data_callback(boost::bind(&fscp::server::async_send_data, &m_server, _1, fscp::CHANNEL_NUMBER_1, _2));
 
 		if (m_configuration.tap_adapter.enabled)
 		{
@@ -405,9 +402,6 @@ namespace freelan
 		m_endpoint_switch_port_map[sender] = port;
 		m_switch.register_port(port, ENDPOINTS_GROUP);
 
-		//TODO: Replace the line below
-		//m_dynamic_contact_list.get_contact(sig_cert).set_associated_endpoint(sender);
-
 		if (m_session_established_callback)
 		{
 			m_session_established_callback(sender);
@@ -425,9 +419,6 @@ namespace freelan
 			m_session_lost_callback(sender);
 		}
 
-		//TODO: Replace the line below
-		//m_dynamic_contact_list.get_contact(sig_cert).clear_associated_endpoint();
-
 		const switch_::port_type port = m_endpoint_switch_port_map[sender];
 
 		if (port)
@@ -443,9 +434,6 @@ namespace freelan
 		{
 			case fscp::CHANNEL_NUMBER_0:
 				on_ethernet_data(sender, data);
-				break;
-			case fscp::CHANNEL_NUMBER_1:
-				m_dynamic_server.receive_data(sender, data);
 				break;
 			default:
 				m_logger(LL_WARNING) << "Received unhandled " << boost::asio::buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);

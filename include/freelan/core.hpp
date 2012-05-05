@@ -63,7 +63,6 @@
 #include "configuration.hpp"
 #include "switch.hpp"
 #include "logger.hpp"
-#include "dynamic/server.hpp"
 
 namespace freelan
 {
@@ -245,9 +244,6 @@ namespace freelan
 			fscp::server m_server;
 			boost::asio::ip::udp::resolver m_resolver;
 			boost::asio::deadline_timer m_contact_timer;
-
-			// Dynamic
-			dynamic::server m_dynamic_server;
 
 			// Tap adapter
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
