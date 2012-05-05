@@ -143,9 +143,11 @@ namespace fscp
 
 			/**
 			 * \brief A contact callback.
+			 * \param sender The sender of the information.
+			 * \param cert The certificate.
 			 * \param target The target endpoint.
 			 */
-			typedef boost::function<void (const ep_type& target)> contact_message_callback;
+			typedef boost::function<void (const ep_type& sender, cert_type cert, const ep_type& target)> contact_message_callback;
 
 			/**
 			 * \brief A network error callback.
@@ -451,11 +453,12 @@ namespace fscp
 
 		private: // CONTACT_REQUEST messages
 
-			typedef std::map<ep_type, std::vector<cert_type> > cert_list_map;
+			typedef std::map<ep_type, hash_list_type> hash_list_map;
 
 			void do_send_contact_request(const ep_type&);
 
-			cert_list_map m_cert_list_map;
+			hash_list_map m_hash_list_map;
+			std::map<hash_type, cert_type> m_hash_to_cert;
 
 		private: // CONTACT messages
 

@@ -55,6 +55,7 @@
 #include <boost/array.hpp>
 
 #include <stdint.h>
+#include <vector>
 #include <map>
 
 namespace fscp
@@ -73,6 +74,11 @@ namespace fscp
 	 * \brief The hash type.
 	 */
 	typedef boost::array<uint8_t, 32> hash_type;
+
+	/**
+	 * \brief The hash list type.
+	 */
+	typedef std::vector<hash_type> hash_list_type;
 
 	/**
 	 * \brief The contact map type.

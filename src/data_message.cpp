@@ -64,6 +64,11 @@ namespace fscp
 		return raw_write(buf, buf_len, _session_number, _sequence_number, &random[0], random.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
+	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const hash_list_type& hash_list, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	{
+		return raw_write(buf, buf_len, session_number, sequence_number, reinterpret_cast<const char*>(&hash_list[0]), hash_list.size() * hash_type::static_size, seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
+	}
+
 	size_t data_message::write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
 		std::vector<uint8_t> cleartext;

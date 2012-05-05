@@ -83,33 +83,14 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
-			 * \param cert_begin An iterator to the first certificate to request.
-			 * \param cert_end An iterator past the last certificate to request.
+			 * \param hash_list The hash list.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			template <typename CertIterator>
-			static size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, CertIterator cert_begin, CertIterator cert_end, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
-			{
-				const cryptoplus::hash::message_digest_algorithm certificate_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM);
-
-				const size_t hash_size = certificate_digest_algorithm.result_size();
-				
-				std::vector<uint8_t> cleartext;
-				cleartext.resize(hash_size * std::distance(cert_begin, cert_end));
-
-				for (CertIterator it = cert_begin; it != cert_end; ++it)
-				{
-					ptrdiff_t dist = std::distance(cert_begin, it);
-
-					get_certificate_hash(&cleartext[dist * hash_size], cleartext.size() - dist * hash_size, *it);
-				}
-
-				return raw_write(buf, buf_len, session_number, sequence_number, &cleartext[0], cleartext.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
-			}
+			static size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const hash_list_type& hash_list, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a contact message to a buffer.

@@ -238,7 +238,10 @@ namespace fscp
 	{
 		normalize(target);
 
-		m_cert_list_map[target].push_back(cert);
+		hash_type hash = get_certificate_hash(cert);
+
+		m_hash_to_cert[hash] = cert;
+		m_hash_list_map[target].push_back(hash);
 
 		get_io_service().post(bind(&server::do_send_contact_request, this, target));
 	}
@@ -694,7 +697,10 @@ namespace fscp
 					{
 						for (contact_map_type::const_iterator contact_it = contact_map.begin(); contact_it != contact_map.end(); ++contact_it)
 						{
-							m_contact_message_callback(contact_it->second);
+							if (m_hash_to_cert.find(contact_it->first) != m_hash_to_cert.end())
+							{
+								m_contact_message_callback(sender, m_hash_to_cert[contact_it->first], contact_it->second);
+							}
 						}
 					}
 				}
@@ -710,24 +716,23 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
-				std::vector<cert_type>& cert_list = m_cert_list_map[target];
+				hash_list_type& hash_list = m_hash_list_map[target];
 
-				if (!cert_list.empty())
+				if (!hash_list.empty())
 				{
 					size_t size = data_message::write_contact_request(
 							m_send_buffer.data(),
 							m_send_buffer.size(),
 							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
-							cert_list.begin(),
-							cert_list.end(),
+							hash_list,
 							session_pair.remote_session().seal_key(),
 							session_pair.remote_session().seal_key_size(),
 							session_pair.remote_session().encryption_key(),
 							session_pair.remote_session().encryption_key_size()
 							);
 
-					cert_list.clear();
+					hash_list.clear();
 
 					session_pair.remote_session().increment_sequence_number();
 
