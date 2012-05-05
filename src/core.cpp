@@ -582,7 +582,10 @@ namespace freelan
 
 	void core::do_dynamic_contact(cert_type cert)
 	{
-		m_server.async_send_contact_request_to_all(cert);
+		if (!m_server.has_session(cert))
+		{
+			m_server.async_send_contact_request_to_all(cert);
+		}
 	}
 
 	void core::do_periodic_dynamic_contact(const boost::system::error_code& ec)
