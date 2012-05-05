@@ -715,10 +715,10 @@ namespace fscp
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT)
 				{
-					contact_map_type contact_map = data_message::parse_contact_map(m_data_buffer.data(), cnt);
-
 					if (m_contact_message_callback)
 					{
+						contact_map_type contact_map = data_message::parse_contact_map(m_data_buffer.data(), cnt);
+
 						for (contact_map_type::const_iterator contact_it = contact_map.begin(); contact_it != contact_map.end(); ++contact_it)
 						{
 							if (m_hash_to_cert.find(contact_it->first) != m_hash_to_cert.end())
