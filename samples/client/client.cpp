@@ -63,62 +63,79 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static bool on_hello_request(fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
+static bool on_hello_request(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
 {
-	std::cout << "Received HELLO request from " << sender << std::endl;
+	std::cout << "[" << name << "] Received HELLO request from " << sender << std::endl;
 
   server.async_introduce_to(sender);
 
 	return default_accept;
 }
 
-static void on_hello_response(fscp::server& server, const fscp::server::ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
+static void on_hello_response(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
 {
 	if (!success)
 	{
-		std::cout << "Received no HELLO response from " << sender << " after " << time_duration.total_milliseconds() << " ms" << std::endl;
+		std::cout << "[" << name << "] Received no HELLO response from " << sender << " after " << time_duration.total_milliseconds() << " ms" << std::endl;
 	} else
 	{
-		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
+		std::cout << "[" << name << "] Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
 
 		server.async_introduce_to(sender);
 	}
 }
 
-static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool /*is_new*/)
+static bool on_presentation(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool /*is_new*/)
 {
-	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
+	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
 
 	server.async_request_session(sender);
 
   return true;
 }
 
-static bool on_session_request(fscp::server& /*server*/, const fscp::server::ep_type& sender, bool default_accept)
+static bool on_session_request(const std::string& name, fscp::server& /*server*/, const fscp::server::ep_type& sender, bool default_accept)
 {
-	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
+	std::cout << "[" << name << "] Received SESSION_REQUEST from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static bool on_session(fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
+static bool on_session(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
 {
-	std::cout << "Received SESSION from " << sender << std::endl;
+	std::cout << "[" << name << "] Received SESSION from " << sender << std::endl;
 
 	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello you !")));
 
 	return default_accept;
 }
 
-static void on_data(fscp::server& /*server*/, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+static void on_data(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
-	std::cout << "Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
+	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
+
+	if (name == "alice")
+	{
+		using cryptoplus::file;
+
+		cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
+
+		server.async_send_contact_request(sender, cert);
+	}
 }
 
-static void _stop_function(fscp::server& s1, fscp::server& s2)
+static void on_contact_message(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type cert, const fscp::server::ep_type& target)
+{
+	std::cout << "[" << name << "] Received CONTACT from " << sender << ": " << cert.subject().oneline() << " is at " << target << std::endl;
+
+	server.async_introduce_to(target);
+}
+
+static void _stop_function(fscp::server& s1, fscp::server& s2, fscp::server& s3)
 {
 	s1.close();
 	s2.close();
+	s3.close();
 }
 
 static fscp::identity_store load_identity_store(const std::string& name)
@@ -148,26 +165,40 @@ int main()
 
 		fscp::server alice_server(_io_service, load_identity_store("alice"));
 		fscp::server bob_server(_io_service, load_identity_store("bob"));
+		fscp::server chris_server(_io_service, load_identity_store("chris"));
 
 		alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
 		bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
+		chris_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12002));
 
 		boost::asio::ip::udp::resolver resolver(_io_service);
 		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(bob_server), _1, _2));
-		alice_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(alice_server), _1, _2, _3, _4));
-		bob_server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(bob_server), _1, _2, _3, _4));
-		alice_server.set_session_request_message_callback(boost::bind(&on_session_request, boost::ref(alice_server), _1, _2));
-		bob_server.set_session_request_message_callback(boost::bind(&on_session_request, boost::ref(bob_server), _1, _2));
-		alice_server.set_session_message_callback(boost::bind(&on_session, boost::ref(alice_server), _1, _2));
-		bob_server.set_session_message_callback(boost::bind(&on_session, boost::ref(bob_server), _1, _2));
-		alice_server.set_data_message_callback(boost::bind(&on_data, boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_data_message_callback(boost::bind(&on_data, boost::ref(bob_server), _1, _2, _3));
+		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), _1, _2, _3));
+		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), _1, _2, _3));
 
-		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server));
+		bob_server.set_hello_message_callback(boost::bind(&on_hello_request, " bob ", boost::ref(bob_server), _1, _2));
+
+		alice_server.set_presentation_message_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_presentation_message_callback(boost::bind(&on_presentation, " bob ", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_presentation_message_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
+		alice_server.set_session_request_message_callback(boost::bind(&on_session_request, "alice", boost::ref(alice_server), _1, _2));
+		bob_server.set_session_request_message_callback(boost::bind(&on_session_request, " bob ", boost::ref(bob_server), _1, _2));
+		chris_server.set_session_request_message_callback(boost::bind(&on_session_request, "chris", boost::ref(chris_server), _1, _2));
+
+		alice_server.set_session_message_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2));
+		bob_server.set_session_message_callback(boost::bind(&on_session, " bob ", boost::ref(bob_server), _1, _2));
+		chris_server.set_session_message_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2));
+
+		alice_server.set_data_message_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_data_message_callback(boost::bind(&on_data, " bob ", boost::ref(bob_server), _1, _2, _3));
+		chris_server.set_data_message_callback(boost::bind(&on_data, "chris", boost::ref(chris_server), _1, _2, _3));
+
+		alice_server.set_contact_message_callback(boost::bind(&on_contact_message, "alice", boost::ref(alice_server), _1, _2, _3));
+
+		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server), boost::ref(chris_server));
 
 		_io_service.run();
 
