@@ -142,6 +142,15 @@ namespace fscp
 			typedef boost::function<void (const ep_type& host)> session_lost_callback;
 
 			/**
+			 * \brief A contact request callback.
+			 * \param sender The sender of the request.
+			 * \param cert The certificate.
+			 * \param target The target endpoint.
+			 * \return true to allow the request to be answered.
+			 */
+			typedef boost::function<bool (const ep_type& sender, cert_type cert, const ep_type& target)> contact_request_message_callback;
+
+			/**
 			 * \brief A contact callback.
 			 * \param sender The sender of the information.
 			 * \param cert The certificate.
@@ -320,6 +329,12 @@ namespace fscp
 			void set_data_message_callback(data_message_callback callback);
 
 			/**
+			 * \brief Set the contact request callback.
+			 * \param callback The callback.
+			 */
+			void set_contact_request_message_callback(contact_request_message_callback callback);
+
+			/**
 			 * \brief Set the contact callback.
 			 * \param callback The callback.
 			 */
@@ -465,6 +480,7 @@ namespace fscp
 
 			hash_list_map m_hash_list_map;
 			std::map<hash_type, cert_type> m_hash_to_cert;
+			contact_request_message_callback m_contact_request_message_callback;
 
 		private: // CONTACT messages
 
@@ -566,6 +582,11 @@ namespace fscp
 	inline void server::set_data_message_callback(data_message_callback callback)
 	{
 		m_data_message_callback = callback;
+	}
+
+	inline void server::set_contact_request_message_callback(contact_request_message_callback callback)
+	{
+		m_contact_request_message_callback = callback;
 	}
 
 	inline void server::set_contact_message_callback(contact_message_callback callback)

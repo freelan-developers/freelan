@@ -96,6 +96,7 @@ namespace fscp
 		m_session_established_callback(0),
 		m_session_lost_callback(0),
 		m_data_message_callback(0),
+		m_contact_request_message_callback(0),
 		m_contact_message_callback(0),
 		m_network_error_callback(0),
 		m_keep_alive_timer(io_service, SESSION_KEEP_ALIVE_PERIOD)
@@ -699,7 +700,10 @@ namespace fscp
 						{
 							if (it->second.signature_certificate_hash() == *hash_it)
 							{
-								contact_map[*hash_it] = it->first;
+								if (!m_contact_request_message_callback || m_contact_request_message_callback(sender, it->second.signature_certificate(), it->first))
+								{
+									contact_map[*hash_it] = it->first;
+								}
 							}
 						}
 					}
