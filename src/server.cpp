@@ -193,6 +193,29 @@ namespace fscp
 		return false;
 	}
 
+	bool server::has_session(cert_type cert) const
+	{
+		const hash_type hash = get_certificate_hash(cert);
+
+		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+		{
+			if (session_pair->second.has_remote_session())
+			{
+				presentation_store_map::const_iterator ps = m_presentation_map.find(session_pair->first);
+
+				if (ps != m_presentation_map.end())
+				{
+					if (ps->second.signature_certificate_hash() == hash)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	std::vector<server::ep_type> server::get_session_endpoints() const
 	{
 		std::vector<server::ep_type> result;

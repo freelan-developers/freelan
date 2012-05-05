@@ -354,6 +354,13 @@ namespace fscp
 			bool has_session(ep_type host) const;
 
 			/**
+			 * \brief Check if a session exists with a host that has the specified certificate.
+			 * \param cert The certificate.
+			 * \return true if a session exists, false otherwise.
+			 */
+			bool has_session(cert_type cert) const;
+
+			/**
 			 * \brief Get the sessions endpoints.
 			 * \return A list of all the hosts with which a session is established.
 			 */
