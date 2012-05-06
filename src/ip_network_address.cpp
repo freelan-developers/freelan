@@ -107,4 +107,35 @@ namespace freelan
 	template std::istream& operator>>(std::istream& is, ipv6_network_address& value);
 	template std::ostream& operator<<(std::ostream& is, const ipv4_network_address& value);
 	template std::ostream& operator<<(std::ostream& is, const ipv6_network_address& value);
+
+	std::istream& operator>>(std::istream& is, ip_network_address& value)
+	{
+		if (is)
+		{
+			ipv6_network_address ina;
+
+			if (is >> ina)
+			{
+				value = ina;
+				return is;
+			}
+
+			is.clear();
+		}
+
+		if (is)
+		{
+			ipv4_network_address ina;
+
+			if (is >> ina)
+			{
+				value = ina;
+				return is;
+			}
+
+			is.clear();
+		}
+
+		return is;
+	}
 }

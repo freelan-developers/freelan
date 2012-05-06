@@ -47,6 +47,7 @@
 #define FREELAN_IP_NETWORK_ADDRESS_HPP
 
 #include <boost/asio.hpp>
+#include <boost/variant.hpp>
 
 namespace freelan
 {
@@ -172,6 +173,71 @@ namespace freelan
 	 * \brief The IPv6 instantiation.
 	 */
 	typedef base_ip_network_address<boost::asio::ip::address_v6> ipv6_network_address;
+
+	/**
+	 * \brief The generic IP type.
+	 */
+	typedef boost::variant<ipv4_network_address, ipv6_network_address> ip_network_address;
+
+	/**
+	 * \brief A visitor that writes ip_network_address to output streams.
+	 */
+	class ip_network_address_output_visitor : public boost::static_visitor<std::ostream&>
+	{
+		public:
+
+			/**
+			 * \brief Create a new ip_network_address_output_visitor.
+			 * \param os The output stream.
+			 */
+			ip_network_address_output_visitor(result_type os) : m_os(os) {}
+
+			/**
+			 * \brief Write the specified ip_network_address.
+			 * \tparam T The type of the ip_network_address.
+			 * \param ep The endpoint.
+			 * \return os.
+			 */
+			template <typename T>
+			result_type operator()(const T& ep) const
+			{
+				return m_os << ep;
+			}
+
+		private:
+
+			result_type m_os;
+	};
+
+	/**
+	 * \brief Write an ip_network_address to an output stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	inline std::ostream& operator<<(std::ostream& os, const ip_network_address& value)
+	{
+		return boost::apply_visitor(ip_network_address_output_visitor(os), value);
+	}
+
+	/**
+	 * \brief Read an ip_network_address from an input stream.
+	 * \param is The input stream.
+	 * \param value The value.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, ip_network_address& value);
+
+	/**
+	 * \brief Compare two ip_network_address.
+	 * \param lhs The left argument.
+	 * \param rhs The right argument.
+	 * \return true if the two ip_network_address are different.
+	 */
+	inline bool operator!=(const ip_network_address& lhs, const ip_network_address& rhs)
+	{
+		return !(lhs == rhs);
+	}
 }
 
 #endif /* FREELAN_IP_NETWORK_ADDRESS_HPP */
