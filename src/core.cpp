@@ -449,16 +449,26 @@ namespace freelan
 
 	bool core::on_contact_request(const ep_type& sender, cert_type cert, const ep_type& target)
 	{
-		m_logger(LL_INFORMATION) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << target << "): " << (m_configuration.fscp.answer_to_contact_requests ? "replying" : "not replying");
+		if (m_configuration.fscp.accept_contact_requests)
+		{
+			m_logger(LL_INFORMATION) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << target << ")";
 
-		return m_configuration.fscp.answer_to_contact_requests;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	void core::on_contact(const ep_type& sender, cert_type cert, const ep_type& target)
 	{
-		m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << cert.subject().oneline() << " is at " << target;
+		if (m_configuration.fscp.accept_contacts)
+		{
+			m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << cert.subject().oneline() << " is at " << target;
 
-		do_greet(target);
+			do_greet(target);
+		}
 	}
 
 	void core::on_ethernet_data(const ep_type& sender, boost::asio::const_buffer data)

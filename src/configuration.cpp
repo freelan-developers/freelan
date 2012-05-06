@@ -54,7 +54,8 @@ namespace freelan
 	fscp_configuration::fscp_configuration() :
 		listen_on(),
 		contact_list(),
-		answer_to_contact_requests(true),
+		accept_contact_requests(true),
+		accept_contacts(true),
 		hostname_resolution_protocol(HRP_IPV4),
 		hello_timeout(boost::posix_time::seconds(3))
 	{

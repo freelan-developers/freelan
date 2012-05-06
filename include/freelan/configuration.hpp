@@ -119,9 +119,14 @@ namespace freelan
 		endpoint_list contact_list;
 
 		/**
-		 * \brief The "answer to CONTACT-REQUEST" flag.
+		 * \brief The "accept contact requests" flag.
 		 */
-		bool answer_to_contact_requests;
+		bool accept_contact_requests;
+
+		/**
+		 * \brief The "accept contacts" flag.
+		 */
+		bool accept_contacts;
 
 		/**
 		 * \brief The dynamic contact list.
