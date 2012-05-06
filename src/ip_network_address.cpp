@@ -84,6 +84,40 @@ namespace freelan
 	}
 
 	template <typename AddressType>
+	bool base_ip_network_address<AddressType>::has_address(const AddressType& addr) const
+	{
+		const typename AddressType::bytes_type network_bytes = address().to_bytes();
+		const typename AddressType::bytes_type addr_bytes = addr.to_bytes();
+
+		unsigned int prefix_len = m_prefix_length;
+
+		for (size_t i = 0; i < network_bytes.size(); ++i)
+		{
+			if (prefix_len >= 8)
+			{
+				if (network_bytes[i] != addr_bytes[i])
+					return false;
+
+				prefix_len -= 8;
+			}
+			else
+			{
+				const typename AddressType::bytes_type::value_type mask = (static_cast<unsigned char>(0xFF) >> prefix_len) ^ static_cast<unsigned char>(0xFF);
+
+				if ((network_bytes[i] & mask) != (addr_bytes[i] & mask))
+					return false;
+
+				break;
+			}
+		}
+
+		return true;
+	}
+
+	template bool ipv4_network_address::has_address(const boost::asio::ip::address_v4&) const;
+	template bool ipv6_network_address::has_address(const boost::asio::ip::address_v6&) const;
+
+	template <typename AddressType>
 	std::istream& operator>>(std::istream& is, base_ip_network_address<AddressType>& value)
 	{
 		std::string ip_address;
@@ -97,14 +131,15 @@ namespace freelan
 		return is;
 	}
 
+	template std::istream& operator>>(std::istream& is, ipv4_network_address& value);
+	template std::istream& operator>>(std::istream& is, ipv6_network_address& value);
+
 	template <typename AddressType>
 	std::ostream& operator<<(std::ostream& os, const base_ip_network_address<AddressType>& value)
 	{
 		return os << value.address().to_string() << "/" << std::dec << value.prefix_length();
 	}
 
-	template std::istream& operator>>(std::istream& is, ipv4_network_address& value);
-	template std::istream& operator>>(std::istream& is, ipv6_network_address& value);
 	template std::ostream& operator<<(std::ostream& is, const ipv4_network_address& value);
 	template std::ostream& operator<<(std::ostream& is, const ipv6_network_address& value);
 

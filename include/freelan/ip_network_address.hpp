@@ -112,6 +112,13 @@ namespace freelan
 				return m_prefix_length;
 			}
 
+			/**
+			 * \brief Check if the specified address belongs to the network address.
+			 * \param addr The address to check.
+			 * \return true if addr belongs to the network address, false otherwise.
+			 */
+			bool has_address(const AddressType& addr) const;
+
 		private:
 
 			address_type m_address;
@@ -195,13 +202,13 @@ namespace freelan
 			/**
 			 * \brief Write the specified ip_network_address.
 			 * \tparam T The type of the ip_network_address.
-			 * \param ep The endpoint.
+			 * \param ina The ip_network_address.
 			 * \return os.
 			 */
 			template <typename T>
-			result_type operator()(const T& ep) const
+			result_type operator()(const T& ina) const
 			{
-				return m_os << ep;
+				return m_os << ina;
 			}
 
 		private:
@@ -237,6 +244,68 @@ namespace freelan
 	inline bool operator!=(const ip_network_address& lhs, const ip_network_address& rhs)
 	{
 		return !(lhs == rhs);
+	}
+
+	/**
+	 * \brief A visitor that checks if the ip_network_address contains an address.
+	 */
+	class ip_network_address_has_address_visitor : public boost::static_visitor<bool>
+	{
+		public:
+
+			/**
+			 * \brief Create a new ip_network_address_has_address_visitor.
+			 * \param addr The address.
+			 */
+			ip_network_address_has_address_visitor(const boost::asio::ip::address& addr) : m_addr(addr) {}
+
+			/**
+			 * \brief Check if the ip_network_address contains an address.
+			 * \param ina The ipv4_network_address.
+			 * \return os.
+			 */
+			result_type operator()(const ipv4_network_address& ina) const
+			{
+				return (m_addr.is_v4() && ina.has_address(m_addr.to_v4()));
+			}
+
+			/**
+			 * \brief Check if the ip_network_address contains an address.
+			 * \param ina The ipv6_network_address.
+			 * \return os.
+			 */
+			result_type operator()(const ipv6_network_address& ina) const
+			{
+				return (m_addr.is_v6() && ina.has_address(m_addr.to_v6()));
+			}
+
+		private:
+
+			boost::asio::ip::address m_addr;
+	};
+
+	/**
+	 * \brief Check if an ip_network_address contains an address.
+	 * \param ina The base_ip_network_address.
+	 * \param addr The address.
+	 * \return true if addr is contained in ina.
+	 */
+	template <typename AddressType>
+	bool has_address(const base_ip_network_address<AddressType>& ina, const AddressType& addr)
+	{
+		return ina.has_address(addr);
+	}
+
+	/**
+	 * \brief Check if an ip_network_address contains an address.
+	 * \param ina The ip_network_address.
+	 * \param addr The address.
+	 * \return true if addr is contained in ina.
+	 */
+	template <typename AddressType>
+	bool has_address(const ip_network_address& ina, const AddressType& addr)
+	{
+		return boost::apply_visitor(ip_network_address_has_address_visitor(addr), ina);
 	}
 }
 
