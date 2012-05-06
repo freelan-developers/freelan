@@ -54,7 +54,7 @@ namespace freelan
 	 * \brief A generic IP network address template class.
 	 */
 	template <typename AddressType>
-	class ip_network_address
+	class base_ip_network_address
 	{
 		public:
 
@@ -62,9 +62,9 @@ namespace freelan
 			 * \brief Get a null network address.
 			 * \return A null network address.
 			 */
-			static ip_network_address null()
+			static base_ip_network_address null()
 			{
-				return ip_network_address();
+				return base_ip_network_address();
 			}
 
 			/**
@@ -75,14 +75,14 @@ namespace freelan
 			/**
 			 * \brief Create an IP network address.
 			 */
-			ip_network_address() : m_address(), m_prefix_length(0) {};
+			base_ip_network_address() : m_address(), m_prefix_length(0) {};
 
 			/**
 			 * \brief Create an IP network address.
 			 * \param _address The address.
 			 * \param _prefix_length The prefix length.
 			 */
-			ip_network_address(const address_type& _address, unsigned int _prefix_length) : m_address(_address), m_prefix_length(_prefix_length) {};
+			base_ip_network_address(const address_type& _address, unsigned int _prefix_length) : m_address(_address), m_prefix_length(_prefix_length) {};
 
 			/**
 			 * \brief Check if the instance is null.
@@ -116,7 +116,7 @@ namespace freelan
 			address_type m_address;
 			unsigned int m_prefix_length;
 
-			template<typename OtherAddressType> friend bool operator==(const ip_network_address<OtherAddressType>& lhs, const ip_network_address<OtherAddressType>& rhs);
+			template<typename OtherAddressType> friend bool operator==(const base_ip_network_address<OtherAddressType>& lhs, const base_ip_network_address<OtherAddressType>& rhs);
 	};
 
 	/**
@@ -127,7 +127,7 @@ namespace freelan
 	 * \return os.
 	 */
 	template <typename AddressType>
-	std::ostream& operator<<(std::ostream& os, const ip_network_address<AddressType>& value);
+	std::ostream& operator<<(std::ostream& os, const base_ip_network_address<AddressType>& value);
 
 	/**
 	 * \brief Read a network address from an input stream.
@@ -137,7 +137,7 @@ namespace freelan
 	 * \return is.
 	 */
 	template <typename AddressType>
-	std::istream& operator>>(std::istream& is, ip_network_address<AddressType>& value);
+	std::istream& operator>>(std::istream& is, base_ip_network_address<AddressType>& value);
 
 	/**
 	 * \brief Compare two network addresses.
@@ -146,7 +146,7 @@ namespace freelan
 	 * \return true if the two network addresses are equal.
 	 */
 	template <typename AddressType>
-	inline bool operator==(const ip_network_address<AddressType>& lhs, const ip_network_address<AddressType>& rhs)
+	inline bool operator==(const base_ip_network_address<AddressType>& lhs, const base_ip_network_address<AddressType>& rhs)
 	{
 		return (lhs.address() == rhs.address()) && (lhs.m_prefix_length == rhs.m_prefix_length);
 	}
@@ -158,7 +158,7 @@ namespace freelan
 	 * \return true if the two network addresses are different.
 	 */
 	template <typename AddressType>
-	inline bool operator!=(const ip_network_address<AddressType>& lhs, const ip_network_address<AddressType>& rhs)
+	inline bool operator!=(const base_ip_network_address<AddressType>& lhs, const base_ip_network_address<AddressType>& rhs)
 	{
 		return !(lhs == rhs);
 	}
@@ -166,12 +166,12 @@ namespace freelan
 	/**
 	 * \brief The IPv4 instantiation.
 	 */
-	typedef ip_network_address<boost::asio::ip::address_v4> ipv4_network_address;
+	typedef base_ip_network_address<boost::asio::ip::address_v4> ipv4_network_address;
 
 	/**
 	 * \brief The IPv6 instantiation.
 	 */
-	typedef ip_network_address<boost::asio::ip::address_v6> ipv6_network_address;
+	typedef base_ip_network_address<boost::asio::ip::address_v6> ipv6_network_address;
 }
 
 #endif /* FREELAN_IP_NETWORK_ADDRESS_HPP */

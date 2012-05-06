@@ -84,21 +84,21 @@ namespace freelan
 	}
 
 	template <typename AddressType>
-	std::istream& operator>>(std::istream& is, ip_network_address<AddressType>& value)
+	std::istream& operator>>(std::istream& is, base_ip_network_address<AddressType>& value)
 	{
 		std::string ip_address;
 		std::string prefix_length;
 
 		if (read_ip_address_prefix_length<AddressType>(is, ip_address, prefix_length))
 		{
-			value = ip_network_address<AddressType>(AddressType::from_string(ip_address), boost::lexical_cast<unsigned int>(prefix_length));
+			value = base_ip_network_address<AddressType>(AddressType::from_string(ip_address), boost::lexical_cast<unsigned int>(prefix_length));
 		}
 
 		return is;
 	}
 
 	template <typename AddressType>
-	std::ostream& operator<<(std::ostream& os, const ip_network_address<AddressType>& value)
+	std::ostream& operator<<(std::ostream& os, const base_ip_network_address<AddressType>& value)
 	{
 		return os << value.address().to_string() << "/" << std::dec << value.prefix_length();
 	}
