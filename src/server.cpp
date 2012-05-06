@@ -193,29 +193,6 @@ namespace fscp
 		return false;
 	}
 
-	bool server::has_session(cert_type cert) const
-	{
-		const hash_type hash = get_certificate_hash(cert);
-
-		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
-		{
-			if (session_pair->second.has_remote_session())
-			{
-				presentation_store_map::const_iterator ps = m_presentation_map.find(session_pair->first);
-
-				if (ps != m_presentation_map.end())
-				{
-					if (ps->second.signature_certificate_hash() == hash)
-					{
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-
 	std::vector<server::ep_type> server::get_session_endpoints() const
 	{
 		std::vector<server::ep_type> result;
@@ -260,29 +237,35 @@ namespace fscp
 
 	void server::async_send_contact_request(ep_type target, cert_type cert)
 	{
-		normalize(target);
+		const hash_type hash = get_certificate_hash(cert);
 
-		hash_type hash = get_certificate_hash(cert);
+		if (!has_session(hash))
+		{
+			normalize(target);
 
-		m_hash_to_cert[hash] = cert;
-		m_hash_list_map[target].push_back(hash);
+			m_hash_to_cert[hash] = cert;
+			m_hash_list_map[target].push_back(hash);
 
-		get_io_service().post(bind(&server::do_send_contact_request, this, target));
+			get_io_service().post(bind(&server::do_send_contact_request, this, target));
+		}
 	}
 
 	void server::async_send_contact_request_to_all(cert_type cert)
 	{
-		hash_type hash = get_certificate_hash(cert);
+		const hash_type hash = get_certificate_hash(cert);
 
-		m_hash_to_cert[hash] = cert;
-
-		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+		if (!has_session(hash))
 		{
-			if (session_pair->second.has_remote_session())
-			{
-				m_hash_list_map[session_pair->first].push_back(hash);
+			m_hash_to_cert[hash] = cert;
 
-				get_io_service().post(bind(&server::do_send_contact_request, this, session_pair->first));
+			for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+			{
+				if (session_pair->second.has_remote_session())
+				{
+					m_hash_list_map[session_pair->first].push_back(hash);
+
+					get_io_service().post(bind(&server::do_send_contact_request, this, session_pair->first));
+				}
 			}
 		}
 	}
@@ -753,6 +736,27 @@ namespace fscp
 				}
 			}
 		}
+	}
+
+	bool server::has_session(const hash_type& hash) const
+	{
+		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+		{
+			if (session_pair->second.has_remote_session())
+			{
+				presentation_store_map::const_iterator ps = m_presentation_map.find(session_pair->first);
+
+				if (ps != m_presentation_map.end())
+				{
+					if (ps->second.signature_certificate_hash() == hash)
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	void server::do_send_contact_request(const ep_type& target)

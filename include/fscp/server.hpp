@@ -354,13 +354,6 @@ namespace fscp
 			bool has_session(ep_type host) const;
 
 			/**
-			 * \brief Check if a session exists with a host that has the specified certificate.
-			 * \param cert The certificate.
-			 * \return true if a session exists, false otherwise.
-			 */
-			bool has_session(cert_type cert) const;
-
-			/**
 			 * \brief Get the sessions endpoints.
 			 * \return A list of all the hosts with which a session is established.
 			 */
@@ -483,6 +476,7 @@ namespace fscp
 
 			typedef std::map<ep_type, hash_list_type> hash_list_map;
 
+			bool has_session(const hash_type&) const;
 			void do_send_contact_request(const ep_type&);
 
 			hash_list_map m_hash_list_map;
