@@ -465,9 +465,17 @@ namespace freelan
 	{
 		if (m_configuration.fscp.accept_contacts)
 		{
-			m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << cert.subject().oneline() << " is at " << target;
+			// We check if the contact is one of our forbidden network list.
+			if (has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), target.address()))
+			{
+				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << cert.subject().oneline() << " is at " << target << " but won't be contacted.";
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << cert.subject().oneline() << " is at " << target;
 
-			do_greet(target);
+				do_greet(target);
+			}
 		}
 	}
 

@@ -104,6 +104,11 @@ namespace freelan
 		typedef std::vector<cert_type> cert_list_type;
 
 		/**
+		 * \brief The ip_network_address list type.
+		 */
+		typedef std::vector<ip_network_address> ip_network_address_list_type;
+
+		/**
 		 * \brief Create a new FSCP configuration.
 		 */
 		fscp_configuration();
@@ -132,6 +137,11 @@ namespace freelan
 		 * \brief The dynamic contact list.
 		 */
 		cert_list_type dynamic_contact_list;
+
+		/**
+		 * \brief The never contact list.
+		 */
+		ip_network_address_list_type never_contact_list;
 
 		/**
 		 * \brief The hostname resolution protocol.

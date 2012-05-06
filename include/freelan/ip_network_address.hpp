@@ -307,6 +307,18 @@ namespace freelan
 	{
 		return boost::apply_visitor(ip_network_address_has_address_visitor(addr), ina);
 	}
+
+	template <typename NetworkAddressIterator, typename AddressType>
+	bool has_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
+	{
+		for (; begin != end; ++begin)
+		{
+			if (has_address(*begin, addr))
+				return true;
+		}
+
+		return false;
+	}
 }
 
 #endif /* FREELAN_IP_NETWORK_ADDRESS_HPP */
