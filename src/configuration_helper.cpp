@@ -104,6 +104,10 @@ po::options_description get_fscp_options()
 	("fscp.listen_on", po::value<fl::endpoint>()->default_value(fl::ipv4_endpoint(boost::asio::ip::address_v4::any(), 12000)), "The endpoint to listen on.")
 	("fscp.hello_timeout", po::value<millisecond_duration>()->default_value(3000), "The default timeout for HELLO messages, in milliseconds.")
 	("fscp.contact", po::value<std::vector<fl::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::endpoint>(), ""), "The address of an host to contact.")
+	("fscp.accept_contact_requests", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT-REQUEST messages.")
+	("fscp.accept_contacts", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT messages.")
+	("fscp.dynamic_contact_file", po::value<std::vector<fs::path> >()->multitoken()->zero_tokens()->default_value(std::vector<fs::path>(), ""), "The certificate of an host to dynamically contact.")
+	("fscp.never_contact", po::value<std::vector<fl::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
 	;
 
 	return result;
@@ -177,6 +181,18 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>();
 
 	configuration.fscp.contact_list = vm["fscp.contact"].as<std::vector<fl::endpoint> >();
+	configuration.fscp.accept_contact_requests = vm["fscp.accept_contact_requests"].as<bool>();
+	configuration.fscp.accept_contacts = vm["fscp.accept_contacts"].as<bool>();
+	const std::vector<std::string> dynamic_contact_file_list = vm["fscp.dynamic_contact_file"].as<std::vector<std::string> >();
+
+	configuration.fscp.dynamic_contact_list.clear();
+
+	BOOST_FOREACH(const fs::path& dynamic_contact_file, dynamic_contact_file_list)
+	{
+		configuration.fscp.dynamic_contact_list.push_back(load_certificate(fs::absolute(dynamic_contact_file, root)));
+	}
+
+	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<fl::ip_network_address> >();
 
 	// Security options
 	cert_type signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<fs::path>(), root));
