@@ -106,7 +106,7 @@ po::options_description get_fscp_options()
 	("fscp.contact", po::value<std::vector<fl::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::endpoint>(), ""), "The address of an host to contact.")
 	("fscp.accept_contact_requests", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT-REQUEST messages.")
 	("fscp.accept_contacts", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT messages.")
-	("fscp.dynamic_contact_file", po::value<std::vector<fs::path> >()->multitoken()->zero_tokens()->default_value(std::vector<fs::path>(), ""), "The certificate of an host to dynamically contact.")
+	("fscp.dynamic_contact_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The certificate of an host to dynamically contact.")
 	("fscp.never_contact", po::value<std::vector<fl::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
 	;
 
