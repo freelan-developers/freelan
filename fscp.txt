@@ -174,7 +174,7 @@ Abstract
    The challenge field is 32 bytes long and MUST be random for each
    SESSION_REQUEST message sent.
 
-   The ct_cnt field indicates the count of ciphertexts blocks in the ct
+   The ct_cnt field indicates the count of ciphertext blocks in the ct
    field.
    
    The ct field is the concatenation of 0 to N ciphertexts, generated
@@ -249,7 +249,7 @@ Abstract
    message cipherment. In the next sections, this key will be referred
    as KE.
 
-   The ct_cnt field indicates the count of ciphertexts blocks in the ct
+   The ct_cnt field indicates the count of ciphertext blocks in the ct
    field.
    
    The ct field is the concatenation of 0 to N ciphertexts, generated
