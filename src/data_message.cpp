@@ -262,7 +262,14 @@ namespace fscp
 			size_t cnt = cipher_context.update(buf, buf_len, ciphertext(), ciphertext_size());
 			cnt += cipher_context.finalize(static_cast<uint8_t*>(buf) + cnt, buf_len - cnt);
 
-			cnt = cipher_context.verify_iso_10126_padding(buf, cnt);
+			try
+			{
+				cnt = cipher_context.verify_iso_10126_padding(buf, cnt);
+			}
+			catch (std::logic_error&)
+			{
+				throw std::runtime_error("Incorrect padding in the RSA ciphertext");
+			}
 
 			return cnt;
 		}
