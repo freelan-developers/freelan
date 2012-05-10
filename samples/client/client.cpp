@@ -179,7 +179,7 @@ int main()
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), _1, _2, _3));
 
 		bob_server.set_hello_message_callback(boost::bind(&on_hello_request, " bob ", boost::ref(bob_server), _1, _2));
-		chris_server.set_hello_message_callback(boost::bind(&on_hello_request, " chris ", boost::ref(chris_server), _1, _2));
+		chris_server.set_hello_message_callback(boost::bind(&on_hello_request, "chris", boost::ref(chris_server), _1, _2));
 
 		alice_server.set_presentation_message_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
 		bob_server.set_presentation_message_callback(boost::bind(&on_presentation, " bob ", boost::ref(bob_server), _1, _2, _3, _4));
