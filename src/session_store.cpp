@@ -78,6 +78,6 @@ namespace fscp
 
 	bool session_store::is_old() const
 	{
-		return (m_sequence_number > 64512);
+		return (m_sequence_number > (static_cast<sequence_number_type>(1) << (sizeof(sequence_number_type) * 8 - 1)));
 	}
 }

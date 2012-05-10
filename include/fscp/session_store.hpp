@@ -66,11 +66,6 @@ namespace fscp
 			typedef uint32_t session_number_type;
 
 			/**
-			 * \brief The sequence number type.
-			 */
-			typedef uint16_t sequence_number_type;
-
-			/**
 			 * \brief The key length.
 			 */
 			static const size_t KEY_LENGTH = 32;
@@ -183,7 +178,7 @@ namespace fscp
 		return m_enc_key.size();
 	}
 
-	inline session_store::sequence_number_type session_store::sequence_number() const
+	inline sequence_number_type session_store::sequence_number() const
 	{
 		return m_sequence_number;
 	}

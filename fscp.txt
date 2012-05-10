@@ -274,7 +274,7 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
-                 |      seq_num    |   ct_block_cnt  |
+                 |          sequence_number          |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |             ciphertext            |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -290,13 +290,10 @@ Abstract
 
 2.6.2. DATA message fields
 
-   The seq_num field indicates the sequence number of the current
-   message. Two different DATA messages belonging to the same session
-   MUST have two different sequence numbers. The rules governing the
-   sequence number are explained in a further section.
-
-   The ct_block_cnt field indicates the size of the ciphertext, in
-   blocks. In the current protocol version, a block is 16 bytes long.
+   The sequence_number field indicates the sequence number of the
+   current message. Two different DATA messages belonging to the same
+   session MUST have two different sequence numbers. The rules governing
+   the sequence number are explained in a further section.
 
    The ciphertext field represents the data of the message, ciphered
    using the target host session cipher key. The initialization vector
@@ -604,11 +601,15 @@ Abstract
                   0      7 8     15 16    23 24    31 
                  +-----------------------------------+
                  |          session_number           |
-                 +-----------------+-----------------+
-                 | sequence_number |   must_be_zero  |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 +-----------------------------------+
+                 |          sequence_number          |
+                 +-----------------------------------+
+                 |           must_be_zero            |
+                 +-----------------------------------+
+                 |           must_be_zero            |
+                 +-----------------------------------+
 
-   The must_be_zero field is 10 bytes set to 0x00 so that the whole frame
+   The must_be_zero field is 8 bytes set to 0x00 so that the whole frame
    is 16 bytes long. 
 
    The concatenation buffer, which is globally unique, is then ciphered

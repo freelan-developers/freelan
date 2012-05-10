@@ -160,12 +160,6 @@ namespace fscp
 			sequence_number_type sequence_number() const;
 
 			/**
-			 * \brief Get the ciphertext block count.
-			 * \return The ciphertext block count.
-			 */
-			size_t ciphertext_block_count() const;
-
-			/**
 			 * \brief Get the ciphertext.
 			 * \return The ciphertext.
 			 */
@@ -225,7 +219,7 @@ namespace fscp
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type);
 
 			/**
 			 * \brief Compute and write the initialization vector to a given buffer.
@@ -274,27 +268,22 @@ namespace fscp
 
 	inline sequence_number_type data_message::sequence_number() const
 	{
-		return ntohs(buffer_tools::get<sequence_number_type>(payload(), 0));
-	}
-
-	inline size_t data_message::ciphertext_block_count() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type)));
+		return ntohl(buffer_tools::get<sequence_number_type>(payload(), 0));
 	}
 
 	inline const uint8_t* data_message::ciphertext() const
 	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t);
+		return payload() + sizeof(sequence_number_type);
 	}
 
 	inline size_t data_message::ciphertext_size() const
 	{
-		return ciphertext_block_count() * cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM).block_size();
+		return length() - sizeof(sequence_number_type) - hmac_size();
 	}
 
 	inline const uint8_t* data_message::hmac() const
 	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + ciphertext_size();
+		return payload() + sizeof(sequence_number_type) + ciphertext_size();
 	}
 
 	inline size_t data_message::hmac_size() const

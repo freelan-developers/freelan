@@ -218,12 +218,7 @@ namespace fscp
 
 	void data_message::check_format() const
 	{
-		if (length() < MIN_BODY_LENGTH)
-		{
-			throw std::runtime_error("bad message length");
-		}
-
-		if (length() != MIN_BODY_LENGTH + ciphertext_size() + hmac_size())
+		if (length() < MIN_BODY_LENGTH + hmac_size())
 		{
 			throw std::runtime_error("bad message length");
 		}
@@ -239,7 +234,7 @@ namespace fscp
 		                      seal_key,
 		                      seal_key_len,
 		                      payload(),
-		                      sizeof(sequence_number_type) + sizeof(uint16_t) + ciphertext_size(),
+		                      sizeof(sequence_number_type) + ciphertext_size(),
 		                      cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM)
 		                  );
 
@@ -284,9 +279,9 @@ namespace fscp
 		if (buf)
 		{
 			static const unsigned char null_iv[16] = {};
-			static const char must_be_zero_padding[10] = {};
+			static const char must_be_zero_padding[8] = {};
 			session_number = htonl(session_number);
-			sequence_number = htons(sequence_number);
+			sequence_number = htonl(sequence_number);
 
 			cryptoplus::cipher::cipher_algorithm iv_cipher_algorithm(IV_CIPHER_ALGORITHM);
 
@@ -323,8 +318,8 @@ namespace fscp
 
 		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
 		const size_t payload_len = buf_len - HEADER_LENGTH;
-		uint8_t* const ciphertext = payload + sizeof(sequence_number_type) + sizeof(uint16_t);
-		const size_t ciphertext_len = payload_len - sizeof(sequence_number_type) - sizeof(uint16_t);
+		uint8_t* const ciphertext = payload + sizeof(sequence_number_type);
+		const size_t ciphertext_len = payload_len - sizeof(sequence_number_type);
 
 		const std::vector<uint8_t> iv = compute_initialization_vector<uint8_t>(_session_number, _sequence_number, enc_key, enc_key_len);
 
@@ -337,11 +332,10 @@ namespace fscp
 		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, &cleartext[0], cleartext.size());
 		cnt += cipher_context.finalize(ciphertext + cnt, ciphertext_len - cnt);
 
-		buffer_tools::set<sequence_number_type>(payload, 0, htons(_sequence_number));
-		buffer_tools::set<uint16_t>(payload, sizeof(sequence_number_type), htons(static_cast<uint16_t>(cnt / cipher_algorithm.block_size())));
+		buffer_tools::set<sequence_number_type>(payload, 0, htonl(_sequence_number));
 
 		// The HMAC is cut in half
-		const size_t length = sizeof(sequence_number_type) + sizeof(uint16_t) + cnt + hmac_size / 2;
+		const size_t length = sizeof(sequence_number_type) + cnt + hmac_size / 2;
 
 		uint8_t* hmac = ciphertext + cnt;
 		const size_t hmac_len = hmac_size;

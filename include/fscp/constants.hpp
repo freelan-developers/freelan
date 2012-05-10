@@ -88,7 +88,7 @@ namespace fscp
 	/**
 	 * \brief The sequence number type.
 	 */
-	typedef uint16_t sequence_number_type;
+	typedef uint32_t sequence_number_type;
 
 	/**
 	 * \brief The current protocol version.
