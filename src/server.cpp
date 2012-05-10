@@ -336,7 +336,7 @@ namespace fscp
 							}
 						case MESSAGE_TYPE_SESSION_REQUEST:
 							{
-								session_request_message session_request_message(message);
+								session_request_message session_request_message(message, m_identity_store.encryption_key().size());
 
 								handle_session_request_message_from(session_request_message, m_sender_endpoint);
 
@@ -344,7 +344,7 @@ namespace fscp
 							}
 						case MESSAGE_TYPE_SESSION:
 							{
-								session_message session_message(message);
+								session_message session_message(message, m_identity_store.encryption_key().size());
 
 								handle_session_message_from(session_message, m_sender_endpoint);
 							}

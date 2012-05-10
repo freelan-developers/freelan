@@ -46,8 +46,8 @@
 
 namespace fscp
 {
-	session_request_message::session_request_message(const message& _message) :
-		session_message(_message)
+	session_request_message::session_request_message(const message& _message, size_t pkey_size) :
+		session_message(_message, pkey_size)
 	{
 		check_format();
 	}

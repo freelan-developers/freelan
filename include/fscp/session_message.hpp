@@ -73,8 +73,9 @@ namespace fscp
 			/**
 			 * \brief Create a session_message from a message.
 			 * \param message The message.
+			 * \param pkey_size The private key size.
 			 */
-			session_message(const message& message);
+			session_message(const message& message, size_t pkey_size);
 
 			/**
 			 * \brief Get the ciphertext.
@@ -87,6 +88,12 @@ namespace fscp
 			 * \return The ciphertext size.
 			 */
 			size_t ciphertext_size() const;
+
+			/**
+			 * \brief Get the ciphertext count.
+			 * \return The ciphertext count.
+			 */
+			unsigned int ciphertext_count() const;
 
 			/**
 			 * \brief Get the ciphertext signature.
@@ -132,12 +139,13 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param ciphertext The ciphertext.
 			 * \param ciphertext_len The ciphertext length.
+			 * \param ciphertext_cnt The ciphertext count.
 			 * \param ciphertext_signature The ciphertext signature.
 			 * \param ciphertext_signature_len The ciphertext signature length.
 			 * \param type The message type.
 			 * \return The count of bytes written.
 			 */
-			static size_t _write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type);
+			static size_t _write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, unsigned int ciphertext_cnt, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type);
 
 			/**
 			 * \brief Write a session message to a buffer.
@@ -161,6 +169,10 @@ namespace fscp
 			 * \brief Check that the format of the message matches his type.
 			 */
 			void check_format() const;
+
+		private:
+
+			size_t m_pkey_size;
 	};
 
 	inline size_t session_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
@@ -174,6 +186,11 @@ namespace fscp
 	}
 
 	inline size_t session_message::ciphertext_size() const
+	{
+		return ciphertext_count() * m_pkey_size;
+	}
+
+	inline unsigned int session_message::ciphertext_count() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), 0));
 	}

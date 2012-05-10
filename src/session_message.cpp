@@ -54,8 +54,9 @@
 
 namespace fscp
 {
-	session_message::session_message(const message& _message) :
-		message(_message)
+	session_message::session_message(const message& _message, size_t pkey_size) :
+		message(_message),
+		m_pkey_size(pkey_size)
 	{
 		check_format();
 	}
@@ -98,18 +99,26 @@ namespace fscp
 	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
 	{
 		assert(key);
+		assert(key.size() == m_pkey_size);
 
 		if (buf)
 		{
-			return key.get_rsa_key().private_decrypt(buf, buf_len, ciphertext(), ciphertext_size(), RSA_PKCS1_OAEP_PADDING);
+			size_t result = 0;
+
+			for (unsigned int ciphertext_index = 0; ciphertext_index < ciphertext_count(); ++ciphertext_index)
+			{
+				result += key.get_rsa_key().private_decrypt(static_cast<char*>(buf) + result, buf_len - result, ciphertext() + ciphertext_index * m_pkey_size, m_pkey_size, RSA_PKCS1_OAEP_PADDING);
+			}
+
+			return result;
 		}
 		else
 		{
-			return key.get_rsa_key().size();
+			return key.get_rsa_key().size() * ciphertext_count();
 		}
 	}
 
-	size_t session_message::_write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type)
+	size_t session_message::_write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, unsigned int ciphertext_cnt, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type)
 	{
 		const size_t payload_len = MIN_BODY_LENGTH + ciphertext_len + ciphertext_signature_len;
 
@@ -118,7 +127,7 @@ namespace fscp
 			throw std::runtime_error("buf_len");
 		}
 
-		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH, htons(static_cast<uint16_t>(ciphertext_len)));
+		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH, htons(static_cast<uint16_t>(ciphertext_cnt)));
 		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(uint16_t), ciphertext, ciphertext_len);
 		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(uint16_t) + ciphertext_len, htons(static_cast<uint16_t>(ciphertext_signature_len)));
 		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + 2 * sizeof(uint16_t) + ciphertext_len, ciphertext_signature, ciphertext_signature_len);
@@ -130,9 +139,20 @@ namespace fscp
 
 	size_t session_message::_write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key, message_type type)
 	{
-		std::vector<uint8_t> ciphertext(enc_key.size());
+		const size_t max_cleartext_len = enc_key.size() - cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size() * 2 - 2;
+		const unsigned int packet_count = (cleartext_len + max_cleartext_len - 1) / max_cleartext_len;
 
-		ciphertext.resize(enc_key.get_rsa_key().public_encrypt(&ciphertext[0], ciphertext.size(), cleartext, cleartext_len, RSA_PKCS1_OAEP_PADDING));
+		if (packet_count >= (1 << 16))
+		{
+			throw std::runtime_error("Too many ciphertexts");
+		}
+
+		std::vector<uint8_t> ciphertext(packet_count * enc_key.size());
+
+		for (unsigned int packet_index = 0; packet_index < packet_count; ++packet_index)
+		{
+			enc_key.get_rsa_key().public_encrypt(&ciphertext[0 + packet_index * enc_key.size()], enc_key.size(), static_cast<const char*>(cleartext) + packet_index * max_cleartext_len, max_cleartext_len, RSA_PKCS1_OAEP_PADDING);
+		}
 
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
@@ -145,7 +165,7 @@ namespace fscp
 		std::vector<uint8_t> ciphertext_signature(sig_key.get_rsa_key().size());
 		ciphertext_signature.resize(sig_key.get_rsa_key().private_encrypt(&ciphertext_signature[0], ciphertext_signature.size(), &padded_buf[0], padded_buf.size(), RSA_NO_PADDING));
 
-		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), &ciphertext_signature[0], ciphertext_signature.size(), type);
+		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, &ciphertext_signature[0], ciphertext_signature.size(), type);
 	}
 
 }

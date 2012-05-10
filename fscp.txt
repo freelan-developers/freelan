@@ -157,7 +157,7 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |      ct_len     |        ct       |
+                 |      ct_cnt     |        ct       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    ct_sig_len   |      ct_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -174,10 +174,11 @@ Abstract
    The challenge field is 32 bytes long and MUST be random for each
    SESSION_REQUEST message sent.
 
-   The ct_len field indicates the length of the ct field.
+   The ct_cnt field indicates the count of ciphertexts blocks in the ct
+   field.
    
-   The ct field is the ciphertext, generated using the public encryption
-   key (PKE) of the target host.
+   The ct field is the concatenation of 0 to N ciphertexts, generated
+   using the public encryption key (PKE) of the target host.
 
    The ct_sig_len field indicates the length of the cts field.
 
@@ -216,7 +217,7 @@ Abstract
 
                   0      7 8     15 16    23 24    31 
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |      ct_len     |        ct       |
+                 |      ct_cnt     |        ct       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    ct_sig_len   |      ct_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -248,10 +249,11 @@ Abstract
    message cipherment. In the next sections, this key will be referred
    as KE.
 
-   The ct_len field indicates the length of the ct field.
+   The ct_cnt field indicates the count of ciphertexts blocks in the ct
+   field.
    
-   The ct field is the ciphertext, generated using the public encryption
-   key (PKE) of the target host.
+   The ct field is the concatenation of 0 to N ciphertexts, generated
+   using the public encryption key (PKE) of the target host.
 
    The ct_sig_len field indicates the length of the cts field.
 

@@ -71,8 +71,9 @@ namespace fscp
 			/**
 			 * \brief Create a session_request_message from a message.
 			 * \param message The message.
+			 * \param pkey_size The private key size.
 			 */
-			session_request_message(const message& message);
+			session_request_message(const message& message, size_t pkey_size);
 
 			using session_message::ciphertext;
 			using session_message::ciphertext_size;
