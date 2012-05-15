@@ -19,3 +19,6 @@
 [submodule "freelan-buildtools"]
 	path = freelan-buildtools
 	url = ../freelan-buildtools.git
+[submodule "freelan-server"]
+	path = freelan-server
+	url = ../freelan-server.git
