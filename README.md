@@ -16,6 +16,7 @@ It contains the following projects:
  - [libasiotap](https://github.com/freelan-developers/libasiotap) - A C++ library to control virtual network interfaces also known as "TAP adapters".
  - [libfreelan](https://github.com/freelan-developers/libfreelan) - The FreeLAN C++ library.
  - [freelan](https://github.com/freelan-developers/freelan) - The FreeLAN binary.
+ - [freelan-server](https://github.com/freelan-developers/freelan-server) - The FreeLAN configuration server.
 
 Packaging
 ----------
