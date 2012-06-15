@@ -93,7 +93,7 @@ Then:
 
 > make install
 
-The `make depend` line is only needed on the most recent OpenSSL version if you specified any of the `no-...` option.
+The `make depend` line is only needed on the most recent OpenSSL version if you specified any of the `no-...` options.
 
 Note that this will compile OpenSSL in static mode.
 
