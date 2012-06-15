@@ -88,7 +88,9 @@ For 64 bits:
 Then:
 
 > make
+
 > make depend
+
 > make install
 
 The `make depend` line is only needed on the most recent OpenSSL version if you specified any of the `no-...` option.
