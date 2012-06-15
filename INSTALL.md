@@ -87,9 +87,9 @@ For 64 bits:
 
 Then:
 
-> make
-
 > make depend
+
+> make
 
 > make install
 
