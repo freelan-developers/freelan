@@ -43,7 +43,7 @@ For 64 bits:
 
 #### Microsoft Visual Studio
 
-You must run this command from a "Visual Studio command prompt" (or a "x64 Visual Studio command prompt for x64 systems).
+You must run this command from a "Visual Studio command prompt" (or a "x64 Visual Studio command prompt" for x64 systems).
 
 For 32 bits:
 
