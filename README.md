@@ -14,9 +14,9 @@ This software supports the following operating systems:
 Configuration
 -------------
 
-A sample self-documented configuration file can be found in the `config` folder.
+A sample self-documented configuration file can be found in the [`config`](config) folder.
 
-If you need to generate a certification chain, read the `CERTIFICATES.HOWTO.md` file.
+If you need to generate a certification chain, read the [`CERTIFICATES.HOWTO.md`](CERTIFICATES.HOWTO.md) file.
 
 Licensing
 ---------
