@@ -297,7 +297,7 @@ namespace freelan
 		/**
 		 * \brief The up callback type.
 		 */
-		typedef boost::function<void (const asiotap::tap_adapter&)> up_callback_type;
+		typedef boost::function<void (core&, const asiotap::tap_adapter&)> up_callback_type;
 
 		/**
 		 * \brief The down callback type.

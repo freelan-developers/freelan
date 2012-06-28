@@ -247,7 +247,7 @@ namespace freelan
 
 			if (m_configuration.tap_adapter.up_callback)
 			{
-				m_configuration.tap_adapter.up_callback(*m_tap_adapter);
+				m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
 			}
 		}
 
@@ -287,7 +287,7 @@ namespace freelan
 		{
 			if (m_configuration.tap_adapter.down_callback)
 			{
-				m_configuration.tap_adapter.down_callback(*m_tap_adapter);
+				m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
 			}
 
 			m_tap_adapter->cancel();
