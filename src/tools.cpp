@@ -99,14 +99,24 @@ const char* log_level_to_string(freelan::log_level level)
 	throw std::logic_error("Unsupported enumeration value");
 }
 
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter)
 {
-	execute(script, tap_adapter.name().c_str(), NULL);
+	int exit_status = execute(script, tap_adapter.name().c_str(), NULL);
+
+	if (exit_status != 0)
+	{
+		core.logger()(freelan::LL_WARNING) << "Up script exited with a non-zero exit status: " << exit_status;
+	}
 }
 
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter)
 {
-	execute(script, tap_adapter.name().c_str(), NULL);
+	int exit_status = execute(script, tap_adapter.name().c_str(), NULL);
+
+	if (exit_status != 0)
+	{
+		core.logger()(freelan::LL_WARNING) << "Down script exited with a non-zero exit status: " << exit_status;
+	}
 }
 
 bool execute_certificate_validation_script(const fs::path& script, fl::core& core, fl::security_configuration::cert_type cert)

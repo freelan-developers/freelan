@@ -361,14 +361,14 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	if (!tap_adapter_up_script.empty())
 	{
-		configuration.fl_configuration.tap_adapter.up_callback = boost::bind(&execute_tap_adapter_up_script, tap_adapter_up_script, _1);
+		configuration.fl_configuration.tap_adapter.up_callback = boost::bind(&execute_tap_adapter_up_script, tap_adapter_up_script, _1, _2);
 	}
 
 	const fs::path tap_adapter_down_script = get_tap_adapter_down_script(execution_root_directory, vm);
 
 	if (!tap_adapter_down_script.empty())
 	{
-		configuration.fl_configuration.tap_adapter.down_callback = boost::bind(&execute_tap_adapter_down_script, tap_adapter_down_script, _1);
+		configuration.fl_configuration.tap_adapter.down_callback = boost::bind(&execute_tap_adapter_down_script, tap_adapter_down_script, _1, _2);
 	}
 
 	const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);

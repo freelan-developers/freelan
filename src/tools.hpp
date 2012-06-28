@@ -75,16 +75,18 @@ const char* log_level_to_string(freelan::log_level level);
 /**
  * \brief The tap adapter up function.
  * \param script The script to call.
+ * \param core The core instance.
  * \param tap_adapter The tap_adapter instance.
  */
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter);
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The tap adapter down function.
  * \param script The script to call.
+ * \param core The core instance.
  * \param tap_adapter The tap_adapter instance.
  */
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, const asiotap::tap_adapter& tap_adapter);
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The certificate validation function.
