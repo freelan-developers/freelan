@@ -256,15 +256,21 @@ Extract the archive were you like then go into the extracted folder with a Windo
 For 32 bits:
 
 > setenv /xp /x86 /release
+
 > cd winbuild
+
 > nmake -f Makefile.vc mode=static USE_IDN=no VC=10 WITH_DEVEL=C:\OpenSSL-VC\ WITH_IPV6=yes WITH_SSL=dll
+
 > xcopy /S /I ..\builds\libcurl-release-static-ssl-dll-ipv6-sspi\* C:\cURL-VC
 
 For 64 bits:
 
 > setenv /xp /x64 /release
+
 > cd winbuild
+
 > nmake -f Makefile.vc mode=static USE_IDN=no VC=10 WITH_DEVEL=C:\OpenSSL-VC-x64\ WITH_IPV6=yes WITH_SSL=dll
+
 > xcopy /S /I ..\builds\libcurl-release-static-ssl-dll-ipv6-sspi\* C:\cURL-VC-x64
 
 Change the value of `VC=10` to match your current Visual C++ Compiler version.
