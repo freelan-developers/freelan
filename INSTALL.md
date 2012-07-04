@@ -269,10 +269,12 @@ For 64 bits:
 
 > cd winbuild
 
-> nmake -f Makefile.vc mode=static USE_IDN=no VC=10 WITH_DEVEL=C:\OpenSSL-VC-x64\ WITH_IPV6=yes WITH_SSL=dll
+> nmake -f Makefile.vc mode=static USE_IDN=no VC=10 WITH_DEVEL=C:\OpenSSL-VC-x64\ WITH_IPV6=yes WITH_SSL=dll MACHINE=x64
 
 > xcopy /S /I ..\builds\libcurl-release-static-ssl-dll-ipv6-sspi C:\cURL-VC-x64
 
 Change the value of `VC=10` to match your current Visual C++ Compiler version.
+
+*The `MACHINE=x64` should not be needed but I had troubles without it.*
 
 If your OpenSSL version was built statically, replace `WITH_SSL=dll` with `WITH_SSL=static` and update the `xcopy` command accordingly as the output directory name will change too.
