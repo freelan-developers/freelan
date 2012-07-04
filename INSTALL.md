@@ -221,3 +221,52 @@ Then, generate the `iconv.lib` file, with the following command:
 Or for a x64 version:
 
 > lib /def:lib\iconv.def /out:lib\iconv.lib /machine:x64
+
+libcurl
+-------
+
+Download the latest libcurl source from its [official website](http://curl.haxx.se/download.html).
+
+To build libcurl with SSL support (needed for freelan), you must build OpenSSL first.
+
+### MinGW
+
+We assume here that OpenSSL is built and installed in the `C:\OpenSSL` or `C:\OpenSSL-x64` directories.
+
+Extract the archive were you like then go into the extracted folder with a MSys console.
+
+For 32 bits:
+
+> ./configure --disable-shared --enable-static --enable-ipv6 --with-ssl=/c/OpenSSL --prefix=/c/cURL
+
+For 64 bits:
+
+> ./configure --disable-shared --enable-static --enable-ipv6 --with-ssl=/c/OpenSSL-x64 --prefix=/c/cURL-x64
+
+Then, for both architectures:
+
+> make && make install
+
+### Microsoft Visual Studio
+
+We assume here that OpenSSL is built and installed in the `C:\OpenSSL-VC` or `C:\OpenSSL-VC-x64` directories.
+
+Extract the archive were you like then go into the extracted folder with a Windows SDK console.
+
+For 32 bits:
+
+> setenv /xp /x86 /release
+> cd winbuild
+> nmake -f Makefile.vc mode=static USE_IDN=no VC=10 WITH_DEVEL=C:\OpenSSL-VC\ WITH_IPV6=yes WITH_SSL=dll
+> xcopy /S /I ..\builds\libcurl-release-static-ssl-dll-ipv6-sspi\* C:\cURL-VC
+
+For 64 bits:
+
+> setenv /xp /x64 /release
+> cd winbuild
+> nmake -f Makefile.vc mode=static USE_IDN=no VC=10 WITH_DEVEL=C:\OpenSSL-VC-x64\ WITH_IPV6=yes WITH_SSL=dll
+> xcopy /S /I ..\builds\libcurl-release-static-ssl-dll-ipv6-sspi\* C:\cURL-VC-x64
+
+Change the value of `VC=10` to match your current Visual C++ Compiler version.
+
+If your OpenSSL version was built statically, replace `WITH_SSL=dll` with `WITH_SSL=static` and update the `xcopy` command accordingly as the output directory name will change too.
