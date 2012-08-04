@@ -164,8 +164,16 @@ namespace freelan
 			const asiotap::tap_adapter& tap_adapter() const;
 
 			/**
+			 * \brief Check if the core has a server.
+			 * \return true if the core has a server.
+			 */
+			bool has_server() const;
+
+			/**
 			 * \brief Get the associated server.
 			 * \return The associated server.
+			 *
+			 * \warning Calling this method while has_server() is false is undefined behavior.
 			 */
 			const fscp::server& server() const;
 
@@ -319,6 +327,11 @@ namespace freelan
 	inline const asiotap::tap_adapter& core::tap_adapter() const
 	{
 		return *m_tap_adapter;
+	}
+
+	inline bool core::has_server() const
+	{
+		return static_cast<bool>(m_server);
 	}
 
 	inline const fscp::server& core::server() const
