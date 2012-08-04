@@ -241,7 +241,7 @@ namespace freelan
 
 		if (m_open_callback)
 		{
-			m_server->get_io_service().post(m_open_callback);
+			m_io_service.post(m_open_callback);
 		}
 
 		m_running = true;
@@ -255,10 +255,10 @@ namespace freelan
 
 			if (m_close_callback)
 			{
-				m_server->get_io_service().post(m_close_callback);
+				m_io_service.post(m_close_callback);
 			}
 
-			m_server->get_io_service().post(boost::bind(&core::do_close, this));
+			m_io_service.post(boost::bind(&core::do_close, this));
 		}
 	}
 
