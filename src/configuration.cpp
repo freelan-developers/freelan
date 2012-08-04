@@ -51,6 +51,15 @@
 
 namespace freelan
 {
+	server_configuration::server_configuration() :
+		enabled(false),
+		host(),
+		https_proxy(),
+		username(),
+		password()
+	{
+	}
+
 	fscp_configuration::fscp_configuration() :
 		listen_on(),
 		contact_list(),
@@ -92,6 +101,7 @@ namespace freelan
 	}
 
 	configuration::configuration() :
+		server(),
 		fscp(),
 		security(),
 		tap_adapter(),

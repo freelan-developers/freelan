@@ -46,6 +46,7 @@
 #ifndef FREELAN_CONFIGURATION_HPP
 #define FREELAN_CONFIGURATION_HPP
 
+#include <string>
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -68,6 +69,44 @@
 namespace freelan
 {
 	class core;
+
+	struct server_configuration
+	{
+		/**
+		 * \brief The endpoint type.
+		 */
+		typedef freelan::endpoint endpoint;
+
+		/**
+		 * \brief Create a new server configuration.
+		 */
+		server_configuration();
+
+		/**
+		 * \brief Whether the server mechanism is enabled.
+		 */
+		bool enabled;
+
+		/**
+		 * \brief The server host name.
+		 */
+		endpoint host;
+
+		/**
+		 * \brief The https proxy host name.
+		 */
+		endpoint https_proxy;
+
+		/**
+		 * \brief The username.
+		 */
+		std::string username;
+
+		/**
+		 * \brief The password.
+		 */
+		std::string password;
+	};
 
 	/**
 	 * \brief The FSCP related options type.
@@ -350,6 +389,11 @@ namespace freelan
 	 */
 	struct configuration
 	{
+		/**
+		 * \brief The server related options.
+		 */
+		freelan::server_configuration server;
+
 		/**
 		 * \brief The FSCP related options.
 		 */
