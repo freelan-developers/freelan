@@ -49,6 +49,7 @@
 #include <boost/foreach.hpp>
 
 #include "os.hpp"
+#include "curl.hpp"
 #include "tap_adapter_switch_port.hpp"
 #include "endpoint_switch_port.hpp"
 #include "logger_stream.hpp"
@@ -89,8 +90,6 @@ namespace freelan
 		m_dhcp_filter(m_bootp_filter),
 		m_switch(m_configuration.switch_)
 	{
-		create_server();
-		create_tap_adapter();
 	}
 
 	void core::open()
@@ -98,6 +97,22 @@ namespace freelan
 		typedef boost::asio::ip::udp::resolver::query query;
 
 		m_logger(LL_DEBUG) << "Core opening...";
+
+		if (m_configuration.server.enabled)
+		{
+			m_logger(LL_INFORMATION) << "Server mode enabled.";
+
+			//TODO: Implement configuration request to the freelan server, using curl
+			//functions defined in curl.hpp.
+		}
+
+		if (!m_configuration.security.identity)
+		{
+			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
+		}
+
+		create_server();
+		create_tap_adapter();
 
 		// FSCP
 		m_server->open(boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on));

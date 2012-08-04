@@ -29,6 +29,7 @@ if sys.platform.startswith('win32'):
 
     if env['CC'] == 'gcc':
         libraries.append('crypto')
+        libraries.append('curl')
         env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
@@ -36,6 +37,7 @@ if sys.platform.startswith('win32'):
         libraries.append('libeay32')
         libraries.append('advapi32')
         libraries.append('shell32')
+        libraries.append('libcurl_a')
 
         env['CXXFLAGS'].append('/DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
@@ -46,6 +48,7 @@ if sys.platform.startswith('win32'):
     libraries.append('iphlpapi')
 else:
     libraries.append('pthread')
+    libraries.append('curl')
 
     if sys.platform.startswith('linux2'):
         libraries.append('rt')
