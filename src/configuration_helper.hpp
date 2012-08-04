@@ -53,6 +53,12 @@
 #include <boost/filesystem.hpp>
 
 /**
+ * \brief Get the server options.
+ * \return The server options.
+ */
+boost::program_options::options_description get_server_options();
+
+/**
  * \brief Get the fscp options.
  * \return The fscp options.
  */

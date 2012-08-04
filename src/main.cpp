@@ -175,6 +175,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	all_options.add(generic_options);
 
 	po::options_description configuration_options("Configuration");
+	configuration_options.add(get_server_options());
 	configuration_options.add(get_fscp_options());
 	configuration_options.add(get_security_options());
 	configuration_options.add(get_tap_adapter_options());

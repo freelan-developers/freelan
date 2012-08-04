@@ -95,6 +95,21 @@ namespace
 	}
 }
 
+po::options_description get_server_options()
+{
+	po::options_description result("FreeLAN Server options");
+
+	result.add_options()
+	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
+	("server.host", po::value<fl::endpoint>(), "The server host.")
+	("server.https_proxy", po::value<fl::endpoint>(), "The HTTP proxy host.")
+	("server.username", po::value<std::string>(), "The username.")
+	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
+	;
+
+	return result;
+}
+
 po::options_description get_fscp_options()
 {
 	po::options_description result("FreeLAN Secure Channel Protocol (FSCP) options");
@@ -118,8 +133,8 @@ po::options_description get_security_options()
 	po::options_description result("Security options");
 
 	result.add_options()
-	("security.signature_certificate_file", po::value<fs::path>()->required(), "The certificate file to use for signing.")
-	("security.signature_private_key_file", po::value<fs::path>()->required(), "The private key file to use for signing.")
+	("security.signature_certificate_file", po::value<fs::path>(), "The certificate file to use for signing.")
+	("security.signature_private_key_file", po::value<fs::path>(), "The private key file to use for signing.")
 	("security.encryption_certificate_file", po::value<fs::path>(), "The certificate file to use for encryption.")
 	("security.encryption_private_key_file", po::value<fs::path>(), "The private key file to use for encryption.")
 	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT), "The certificate validation method.")
@@ -175,6 +190,38 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	typedef fl::security_configuration::cert_type cert_type;
 	typedef cryptoplus::pkey::pkey pkey;
 
+	// Server options
+	configuration.server.enabled = vm["server.enabled"].as<bool>();
+
+	if (vm.count("server.host"))
+	{
+		configuration.server.host = vm["server.host"].as<fl::endpoint>();
+	}
+
+	if (vm.count("server.https_proxy"))
+	{
+		configuration.server.https_proxy = vm["server.https_proxy"].as<fl::endpoint>();
+	}
+
+	if (vm.count("server.username"))
+	{
+		configuration.server.username = vm["server.username"].as<std::string>();
+	}
+
+	if (vm.count("server.password"))
+	{
+		configuration.server.password = vm["server.password"].as<std::string>();
+	}
+	else
+	{
+		const char* default_password = getenv("FREELAN_SERVER_PASSWORD");
+
+		if (default_password)
+		{
+			configuration.server.password = default_password;
+		}
+	}
+
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
 	configuration.fscp.listen_on = vm["fscp.listen_on"].as<fl::endpoint>();
@@ -195,11 +242,20 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<fl::ip_network_address> >();
 
 	// Security options
-	cert_type signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<fs::path>(), root));
-	pkey signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<fs::path>(), root));
-
+	cert_type signature_certificate;
+	pkey signature_private_key;
 	cert_type encryption_certificate;
 	pkey encryption_private_key;
+
+	if (vm.count("security.signature_certificate_file"))
+	{
+		signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<fs::path>(), root));
+	}
+
+	if (vm.count("security.signature_private_key_file"))
+	{
+		signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<fs::path>(), root));
+	}
 
 	if (vm.count("security.encryption_certificate_file"))
 	{
@@ -211,7 +267,10 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		encryption_private_key = load_private_key(fs::absolute(vm["security.encryption_private_key_file"].as<fs::path>(), root));
 	}
 
-	configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
+	if (signature_certificate && signature_private_key)
+	{
+		configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
+	}
 
 	configuration.security.certificate_validation_method = vm["security.certificate_validation_method"].as<fl::security_configuration::certificate_validation_method_type>();
 
