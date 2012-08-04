@@ -70,13 +70,14 @@ namespace freelan
 	const std::string core::DEFAULT_SERVICE = "12000";
 
 	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration, const freelan::logger& _logger) :
+		m_io_service(io_service),
 		m_running(false),
 		m_configuration(_configuration),
 		m_logger(_logger),
-		m_server(io_service, *m_configuration.security.identity),
-		m_resolver(io_service),
-		m_contact_timer(io_service, CONTACT_PERIOD),
-		m_dynamic_contact_timer(io_service, DYNAMIC_CONTACT_PERIOD),
+		m_server(),
+		m_resolver(m_io_service),
+		m_contact_timer(m_io_service, CONTACT_PERIOD),
+		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
 		m_open_callback(),
 		m_close_callback(),
 		m_session_established_callback(),
@@ -88,23 +89,8 @@ namespace freelan
 		m_dhcp_filter(m_bootp_filter),
 		m_switch(m_configuration.switch_)
 	{
-		m_server.set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
-		m_server.set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
-		m_server.set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2));
-		m_server.set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
-		m_server.set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
-		m_server.set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
-		m_server.set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
-		m_server.set_contact_message_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
-		m_server.set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
-
-		if (m_configuration.tap_adapter.enabled)
-		{
-			m_tap_adapter.reset(new asiotap::tap_adapter(io_service));
-
-			m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
-			m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
-		}
+		create_server();
+		create_tap_adapter();
 	}
 
 	void core::open()
@@ -114,7 +100,7 @@ namespace freelan
 		m_logger(LL_DEBUG) << "Core opening...";
 
 		// FSCP
-		m_server.open(boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on));
+		m_server->open(boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on));
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -255,7 +241,7 @@ namespace freelan
 
 		if (m_open_callback)
 		{
-			m_server.get_io_service().post(m_open_callback);
+			m_server->get_io_service().post(m_open_callback);
 		}
 
 		m_running = true;
@@ -269,10 +255,10 @@ namespace freelan
 
 			if (m_close_callback)
 			{
-				m_server.get_io_service().post(m_close_callback);
+				m_server->get_io_service().post(m_close_callback);
 			}
 
-			m_server.get_io_service().post(boost::bind(&core::do_close, this));
+			m_server->get_io_service().post(boost::bind(&core::do_close, this));
 		}
 	}
 
@@ -331,14 +317,14 @@ namespace freelan
 		m_contact_timer.cancel();
 		m_dynamic_contact_timer.cancel();
 
-		m_server.close();
+		m_server->close();
 
 		m_logger(LL_DEBUG) << "Core closed.";
 	}
 
 	void core::async_greet(const ep_type& target)
 	{
-		m_server.async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.fscp.hello_timeout);
+		m_server->async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.fscp.hello_timeout);
 	}
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
@@ -347,7 +333,7 @@ namespace freelan
 
 		if (default_accept)
 		{
-			m_server.async_introduce_to(sender);
+			m_server->async_introduce_to(sender);
 
 			return true;
 		}
@@ -361,7 +347,7 @@ namespace freelan
 		{
 			m_logger(LL_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << ".";
 
-			m_server.async_introduce_to(sender);
+			m_server->async_introduce_to(sender);
 		}
 		else
 		{
@@ -378,7 +364,7 @@ namespace freelan
 
 		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
 		{
-			m_server.async_request_session(sender);
+			m_server->async_request_session(sender);
 			return true;
 		}
 
@@ -399,11 +385,11 @@ namespace freelan
 
 	void core::on_session_established(const ep_type& sender)
 	{
-		cert_type sig_cert = m_server.get_presentation(sender).signature_certificate();
+		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
 
 		m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
 
-		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
 
 		m_endpoint_switch_port_map[sender] = port;
 		m_switch.register_port(port, ENDPOINTS_GROUP);
@@ -416,7 +402,7 @@ namespace freelan
 
 	void core::on_session_lost(const ep_type& sender)
 	{
-		cert_type sig_cert = m_server.get_presentation(sender).signature_certificate();
+		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
 
 		m_logger(LL_INFORMATION) << "Session with " << sender << " lost (" << sig_cert.subject().oneline() << ").";
 
@@ -541,7 +527,7 @@ namespace freelan
 
 	void core::do_greet(const ep_type& ep)
 	{
-		if (!m_server.has_session(ep))
+		if (!m_server->has_session(ep))
 		{
 			m_logger(LL_DEBUG) << "Sending HELLO_REQUEST to " << ep << "...";
 
@@ -600,7 +586,7 @@ namespace freelan
 
 	void core::do_dynamic_contact(cert_type cert)
 	{
-		m_server.async_send_contact_request_to_all(cert);
+		m_server->async_send_contact_request_to_all(cert);
 	}
 
 	void core::do_periodic_dynamic_contact(const boost::system::error_code& ec)
@@ -611,6 +597,34 @@ namespace freelan
 
 			m_dynamic_contact_timer.expires_from_now(DYNAMIC_CONTACT_PERIOD);
 			m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void core::create_server()
+	{
+		assert(m_configuration.security.identity);
+
+		m_server.reset(new fscp::server(m_io_service, *m_configuration.security.identity));
+
+		m_server->set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
+		m_server->set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
+		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2));
+		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
+		m_server->set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
+		m_server->set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
+		m_server->set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
+		m_server->set_contact_message_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
+		m_server->set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
+	}
+
+	void core::create_tap_adapter()
+	{
+		if (m_configuration.tap_adapter.enabled)
+		{
+			m_tap_adapter.reset(new asiotap::tap_adapter(m_io_service));
+
+			m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
+			m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
 		}
 	}
 

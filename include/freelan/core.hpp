@@ -215,6 +215,9 @@ namespace freelan
 
 		private:
 
+			// Setting up
+			boost::asio::io_service& m_io_service;
+
 			// The running flag
 			volatile bool m_running;
 			void do_close();
@@ -251,12 +254,14 @@ namespace freelan
 			freelan::logger m_logger;
 
 			// FSCP
-			fscp::server m_server;
+			void create_server();
+			boost::scoped_ptr<fscp::server> m_server;
 			boost::asio::ip::udp::resolver m_resolver;
 			boost::asio::deadline_timer m_contact_timer;
 			boost::asio::deadline_timer m_dynamic_contact_timer;
 
 			// Tap adapter
+			void create_tap_adapter();
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 
@@ -318,7 +323,7 @@ namespace freelan
 
 	inline const fscp::server& core::server() const
 	{
-		return m_server;
+		return *m_server;
 	}
 
 	inline freelan::logger& core::logger()
