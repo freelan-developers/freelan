@@ -37,6 +37,8 @@ if sys.platform.startswith('win32'):
     libraries.append('boost_date_time')
 
     if env['CC'] == 'gcc':
+        libraries.append('curl')
+        libraries.append('ssl')
         libraries.append('crypto')
         env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
@@ -44,6 +46,7 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('-D_WIN32_IE=0x0500')
         env['CXXFLAGS'].append('-DUNICODE')
     else:
+        libraries.remove('libcurl_a')
         libraries.remove('ssl')
         libraries.remove('crypto')
         libraries.append('libeay32')
@@ -61,6 +64,8 @@ if sys.platform.startswith('win32'):
     libraries.append('iphlpapi')
 else:
     libraries.append('pthread')
+    libraries.append('curl')
+    libraries.append('ssl')
     libraries.append('crypto')
 
 common_source_files = Glob('src/common/*.cpp')
