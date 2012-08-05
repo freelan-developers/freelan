@@ -45,21 +45,103 @@
 
 #include "curl.hpp"
 
+#include <cassert>
 #include <stdexcept>
 
 namespace freelan
 {
+	namespace
+	{
+		void throw_if_curl_error(CURLcode errorcode)
+		{
+			if (errorcode != 0)
+			{
+				throw std::runtime_error(curl_easy_strerror(errorcode));
+			}
+		}
+
+		void throw_if_curlm_error(CURLMcode errorcode)
+		{
+			if (errorcode != 0)
+			{
+				throw std::runtime_error(curl_multi_strerror(errorcode));
+			}
+		}
+	}
+
+	curl::curl() :
+		m_curl(curl_easy_init()),
+		m_debug_function()
+	{
+		if (!m_curl)
+		{
+			throw std::runtime_error("Unable to allocate a CURL structure");
+		}
+	}
+
+	curl::~curl()
+	{
+		curl_easy_cleanup(m_curl);
+	}
+
+	void curl::set_option(CURLoption option, void* value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+	}
+	
+	void curl::set_option(CURLoption option, curl_debug_callback value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+	}
+
+	void curl::set_debug_function(debug_function_t func)
+	{
+		m_debug_function = func;
+
+		if (m_debug_function)
+		{
+			set_option(CURLOPT_DEBUGFUNCTION, &curl::debug_function);
+			set_option(CURLOPT_DEBUGDATA, &m_debug_function);
+		}
+		else
+		{
+			set_option(CURLOPT_DEBUGFUNCTION, static_cast<void*>(NULL));
+			set_option(CURLOPT_DEBUGDATA, static_cast<void*>(NULL));
+		}
+	}
+
+	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
+	{
+		assert(context);
+
+		debug_function_t& func = *static_cast<debug_function_t*>(context);
+
+		func(infotype, boost::asio::buffer(data, datalen));
+
+		return 0;
+	}
+
 	curl_multi::curl_multi() :
 		m_curlm(curl_multi_init())
 	{
 		if (!m_curlm)
 		{
-			throw std::runtime_error("Unable to allocate the CURL multi stack");
+			throw std::runtime_error("Unable to allocate a CURLM structure");
 		}
 	}
 
 	curl_multi::~curl_multi()
 	{
 		curl_multi_cleanup(m_curlm);
+	}
+
+	void curl_multi::add_handle(const curl& handle)
+	{
+		throw_if_curlm_error(curl_multi_add_handle(m_curlm, handle.m_curl));
+	}
+
+	void curl_multi::remove_handle(const curl& handle)
+	{
+		throw_if_curlm_error(curl_multi_remove_handle(m_curlm, handle.m_curl));
 	}
 }

@@ -40,7 +40,7 @@
 /**
  * \file curl.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The curl structures and functions.
+ * \brief The cURL structures and functions.
  */
 
 #ifndef FREELAN_CURL_HPP
@@ -48,21 +48,103 @@
 
 #include <curl/curl.h>
 
+#include <boost/asio.hpp>
+#include <boost/function.hpp>
+
 namespace freelan
 {
+	/**
+	 * \brief A CURL wrapper class.
+	 */
+	class curl
+	{
+		public:
+
+			/**
+			 * \brief A debug function type.
+			 */
+			typedef boost::function<void (curl_infotype, boost::asio::mutable_buffer)> debug_function_t;
+
+			/**
+			 * \brief Create a CURL.
+			 */
+			curl();
+
+			/**
+			 * \brief Destroy a CURL.
+			 */
+			~curl();
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLoption option, void* value);
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLoption option, curl_debug_callback value);
+
+			/**
+			 * \brief Set a debug function.
+			 * \param func The debug function.
+			 */
+			void set_debug_function(debug_function_t func);
+
+		private:
+
+			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
+
+			curl(const curl&);
+			curl& operator=(const curl&);
+
+			CURL* m_curl;
+			debug_function_t m_debug_function;
+			
+			friend class curl_multi;
+	};
+
+	/**
+	 * \brief A CURLM wrapper class.
+	 */
 	class curl_multi
 	{
 		public:
 
 			/**
-			 * \brief Create a curl multi.
+			 * \brief Create a CURLM.
 			 */
 			curl_multi();
 
 			/**
-			 * \brief Destroy a curl multi.
+			 * \brief Destroy a CURLM.
 			 */
 			~curl_multi();
+
+			/**
+			 * \brief Add a handle to this CURLM.
+			 * \param handle The handle to add.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void add_handle(const curl& handle);
+
+			/**
+			 * \brief Remove a handle from this CURLM.
+			 * \param handle The handle to remove. Must have been added with
+			 * curl_multi::add_handle() first or the behavior is undefined.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void remove_handle(const curl& handle);
 
 		private:
 

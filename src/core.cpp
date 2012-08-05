@@ -102,6 +102,8 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
+			m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as " << m_configuration.server.username << "...";
+
 			curl_multi curlm;
 
 			//TODO: Implement configuration request to the freelan server, using curl
