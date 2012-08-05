@@ -237,11 +237,11 @@ Extract the archive where you like then go into the extracted folder with a MSys
 
 For 32 bits:
 
-> ./configure --disable-shared --enable-static --enable-ipv6 --with-ssl=/c/OpenSSL --prefix=/c/cURL
+> ./configure --disable-shared --enable-static --enable-ipv6 --disable-ldap --disable-ldaps --with-ssl=/c/OpenSSL --prefix=/c/cURL
 
 For 64 bits:
 
-> ./configure --disable-shared --enable-static --enable-ipv6 --with-ssl=/c/OpenSSL-x64 --prefix=/c/cURL-x64
+> ./configure --disable-shared --enable-static --enable-ipv6 --disable-ldap --disable-ldaps --with-ssl=/c/OpenSSL-x64 --prefix=/c/cURL-x64
 
 Then, for both architectures:
 
