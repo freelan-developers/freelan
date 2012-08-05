@@ -470,6 +470,7 @@ int main(int argc, char** argv)
 		cryptoplus::crypto_initializer crypto_initializer;
 		cryptoplus::algorithms_initializer algorithms_initializer;
 		cryptoplus::error::error_strings_initializer error_strings_initializer;
+		freelan::initializer freelan_initializer;
 
 		cli_configuration configuration;
 
