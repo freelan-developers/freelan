@@ -45,6 +45,22 @@
 
 #include "freelan.hpp"
 
+#include <stdexcept>
+
+#include <curl/curl.h>
+
 namespace freelan
 {
+	initializer::initializer()
+	{
+		if (curl_global_init(CURL_GLOBAL_ALL) != 0)
+		{
+			throw std::runtime_error("Unable to initialize libcurl");
+		}
+	}
+
+	initializer::~initializer()
+	{
+		curl_global_cleanup();
+	}
 }

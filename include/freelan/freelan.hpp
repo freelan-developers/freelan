@@ -50,6 +50,23 @@
 
 namespace freelan
 {
+	/**
+	 * \brief Takes in charge initialization and cleanup of all internally used libraries.
+	 */
+	class initializer
+	{
+		public:
+
+			/**
+			 * \brief Initializes.
+			 */
+			initializer();
+
+			/**
+			 * \brief Cleans up.
+			 */
+			~initializer();
+	};
 }
 
 #endif /* FREELAN_FREELAN_HPP */
