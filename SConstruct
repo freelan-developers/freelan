@@ -33,6 +33,7 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
+        env['CXXFLAGS'].append('-DCURL_STATICLIB')
     else:
         libraries.append('libeay32')
         libraries.append('advapi32')
@@ -42,6 +43,7 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('/DBOOST_THREAD_USE_LIB')
         env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
         env['CXXFLAGS'].append('/D_WIN32_WINNT=0x0501')
+        env['CXXFLAGS'].append('/DCURL_STATICLIB')
 
     libraries.append('ws2_32')
     libraries.append('gdi32')

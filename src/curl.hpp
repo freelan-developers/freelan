@@ -46,8 +46,31 @@
 #ifndef FREELAN_CURL_HPP
 #define FREELAN_CURL_HPP
 
+#include <curl/curl.h>
+
 namespace freelan
 {
+	class curl_multi
+	{
+		public:
+
+			/**
+			 * \brief Create a curl multi.
+			 */
+			curl_multi();
+
+			/**
+			 * \brief Destroy a curl multi.
+			 */
+			~curl_multi();
+
+		private:
+
+			curl_multi(const curl_multi&);
+			curl_multi& operator=(const curl_multi&);
+
+			CURLM* m_curlm;
+	};
 }
 
 #endif /* FREELAN_CURL_HPP */

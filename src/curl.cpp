@@ -45,6 +45,21 @@
 
 #include "curl.hpp"
 
+#include <stdexcept>
+
 namespace freelan
 {
+	curl_multi::curl_multi() :
+		m_curlm(curl_multi_init())
+	{
+		if (!m_curlm)
+		{
+			throw std::runtime_error("Unable to allocate the CURL multi stack");
+		}
+	}
+
+	curl_multi::~curl_multi()
+	{
+		curl_multi_cleanup(m_curlm);
+	}
 }

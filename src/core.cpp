@@ -102,6 +102,8 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
+			curl_multi curlm;
+
 			//TODO: Implement configuration request to the freelan server, using curl
 			//functions defined in curl.hpp.
 		}
