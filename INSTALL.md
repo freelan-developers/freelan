@@ -233,7 +233,7 @@ To build libcurl with SSL support (needed for freelan), you must build OpenSSL f
 
 We assume here that OpenSSL is built and installed in the `C:\OpenSSL` or `C:\OpenSSL-x64` directories.
 
-Extract the archive were you like then go into the extracted folder with a MSys console.
+Extract the archive where you like then go into the extracted folder with a MSys console.
 
 For 32 bits:
 
@@ -251,7 +251,7 @@ Then, for both architectures:
 
 We assume here that OpenSSL is built and installed in the `C:\OpenSSL-VC` or `C:\OpenSSL-VC-x64` directories.
 
-Extract the archive were you like then go into the extracted folder with a Windows SDK console.
+Extract the archive where you like then go into the extracted folder with a Windows SDK console.
 
 For 32 bits:
 
