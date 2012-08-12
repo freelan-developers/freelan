@@ -123,6 +123,24 @@ You may also define SCons specific environment variables by prefixing them with 
 
 Example: To use `g++44` instead of `g++` as the `CXX` environment variable, define `FREELAN_ENV_CXX` to `g++44`.
 
+Sample configuration
+--------------------
+
+Here is a configuration setup I use in my .bashrc (on Linux) to isolate freelan builds from the operating system:
+
+    # WORKSPACE_ROOT is a directory which contains include, lib and bin sub-directories.
+    export WORKSPACE_ROOT="${PROJECTS_ROOT}/workspace"
+    
+    # This allows me to type ldconfig as a non-root user.
+    alias ldconfig="ldconfig -r ${WORKSPACE_ROOT}"
+    
+    export FREELAN_INSTALL_PREFIX="${WORKSPACE_ROOT}"
+    export CPLUS_INCLUDE_PATH="${FREELAN_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
+    export C_INCLUDE_PATH="${FREELAN_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}"
+    export LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
+    export LD_LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
+    export PATH="${FREELAN_INSTALL_PREFIX}/bin:${PATH}"
+
 Reusability
 -----------
 
