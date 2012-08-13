@@ -110,6 +110,11 @@ namespace freelan
 		}
 	}
 
+	void curl::set_user_agent(const std::string& user_agent)
+	{
+		set_option(CURLOPT_USERAGENT, static_cast<const void*>(user_agent.c_str()));
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);

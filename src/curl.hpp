@@ -108,6 +108,12 @@ namespace freelan
 			 */
 			void set_debug_function(debug_function_t func);
 
+			/**
+			 * \brief Set the user agent.
+			 * \param user_agent The user agent to set.
+			 */
+			void set_user_agent(const std::string& user_agent);
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
