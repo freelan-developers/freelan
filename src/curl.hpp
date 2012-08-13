@@ -91,6 +91,15 @@ namespace freelan
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
+			void set_option(CURLoption option, const void* value) { set_option(option, const_cast<void*>(value)); }
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
 			void set_option(CURLoption option, curl_debug_callback value);
 
 			/**
