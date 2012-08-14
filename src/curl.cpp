@@ -140,6 +140,11 @@ namespace freelan
 		set_option(CURLOPT_CAINFO, static_cast<const void*>(cainfo.c_str()));
 	}
 
+	void curl::set_connect_timeout(const boost::posix_time::time_duration& timeout)
+	{
+		set_option(CURLOPT_CONNECTTIMEOUT_MS, timeout.total_milliseconds());
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);

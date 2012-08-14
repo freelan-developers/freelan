@@ -50,6 +50,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace freelan
 {
@@ -146,6 +147,12 @@ namespace freelan
 			 * \param cainfo The cainfo path..
 			 */
 			void set_cainfo(const std::string& cainfo);
+
+			/**
+			 * \brief Set the connect timeout.
+			 * \param timeout The timeout.
+			 */
+			void set_connect_timeout(const boost::posix_time::time_duration& timeout);
 
 		private:
 
