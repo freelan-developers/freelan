@@ -100,6 +100,15 @@ namespace freelan
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
+			void set_option(CURLoption option, long int value);
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
 			void set_option(CURLoption option, curl_debug_callback value);
 
 			/**
@@ -113,6 +122,24 @@ namespace freelan
 			 * \param user_agent The user agent to set.
 			 */
 			void set_user_agent(const std::string& user_agent);
+
+			/**
+			 * \brief Set the url.
+			 * \param url The url.
+			 */
+			void set_url(const std::string& url);
+
+			/**
+			 * \brief Enable or disable the SSL peer verification method.
+			 * \param state The state.
+			 */
+			void set_ssl_peer_verification(bool state);
+
+			/**
+			 * \brief Enable or disable the SSL host verification method.
+			 * \param state The state.
+			 */
+			void set_ssl_host_verification(bool state);
 
 		private:
 

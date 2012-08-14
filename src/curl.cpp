@@ -89,6 +89,11 @@ namespace freelan
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
 	}
 	
+	void curl::set_option(CURLoption option, long int value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+	}
+
 	void curl::set_option(CURLoption option, curl_debug_callback value)
 	{
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
@@ -113,6 +118,21 @@ namespace freelan
 	void curl::set_user_agent(const std::string& user_agent)
 	{
 		set_option(CURLOPT_USERAGENT, static_cast<const void*>(user_agent.c_str()));
+	}
+
+	void curl::set_url(const std::string& url)
+	{
+		set_option(CURLOPT_URL, static_cast<const void*>(url.c_str()));
+	}
+
+	void curl::set_ssl_peer_verification(bool state)
+	{
+		set_option(CURLOPT_SSL_VERIFYPEER, state ? 1L : 0L);
+	}
+
+	void curl::set_ssl_host_verification(bool state)
+	{
+		set_option(CURLOPT_SSL_VERIFYHOST, state ? 1L : 0L);
 	}
 
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
