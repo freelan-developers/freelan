@@ -135,6 +135,11 @@ namespace freelan
 		set_option(CURLOPT_SSL_VERIFYHOST, state ? 1L : 0L);
 	}
 
+	void curl::set_cainfo(const std::string& cainfo)
+	{
+		set_option(CURLOPT_CAINFO, static_cast<const void*>(cainfo.c_str()));
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);

@@ -141,6 +141,12 @@ namespace freelan
 			 */
 			void set_ssl_host_verification(bool state);
 
+			/**
+			 * \brief Set the cainfo path.
+			 * \param cainfo The cainfo path..
+			 */
+			void set_cainfo(const std::string& cainfo);
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
