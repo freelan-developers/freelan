@@ -154,6 +154,20 @@ namespace freelan
 			 */
 			void set_connect_timeout(const boost::posix_time::time_duration& timeout);
 
+			/**
+			 * \brief Escape the specified string using url encoding.
+			 * \param url The url to encode.
+			 * \return The encoded url.
+			 */
+			std::string escape(const std::string& url);
+
+			/**
+			 * \brief Unescape the specified encoded string url encoding.
+			 * \param encoded The encoded string.
+			 * \return The decoded string.
+			 */
+			std::string unescape(const std::string& encoded);
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);

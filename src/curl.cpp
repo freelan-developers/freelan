@@ -145,6 +145,35 @@ namespace freelan
 		set_option(CURLOPT_CONNECTTIMEOUT_MS, timeout.total_milliseconds());
 	}
 
+	std::string curl::escape(const std::string& url)
+	{
+		char* rstr = curl_easy_escape(m_curl, url.c_str(), static_cast<int>(url.size()));
+
+		if (!rstr)
+		{
+			throw std::bad_alloc();
+		}
+
+		boost::shared_ptr<char> str(rstr, curl_free);
+
+		return std::string(str.get());
+	}
+
+	std::string curl::unescape(const std::string& encoded)
+	{
+		int len = 0;
+		char* rstr = curl_easy_unescape(m_curl, encoded.c_str(), encoded.size(), &len);
+
+		if (!rstr)
+		{
+			throw std::bad_alloc();
+		}
+
+		boost::shared_ptr<char> str(rstr, curl_free);
+
+		return std::string(str.get(), static_cast<size_t>(len));
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);
