@@ -54,7 +54,7 @@ namespace freelan
 	{
 		void throw_if_curl_error(CURLcode errorcode)
 		{
-			if (errorcode != 0)
+			if (errorcode != CURLE_OK)
 			{
 				throw std::runtime_error(curl_easy_strerror(errorcode));
 			}
@@ -62,7 +62,7 @@ namespace freelan
 
 		void throw_if_curlm_error(CURLMcode errorcode)
 		{
-			if (errorcode != 0)
+			if (errorcode != CURLM_OK)
 			{
 				throw std::runtime_error(curl_multi_strerror(errorcode));
 			}
