@@ -180,6 +180,11 @@ namespace freelan
 		return std::string(str.get(), static_cast<size_t>(len));
 	}
 
+	void curl::perform()
+	{
+		throw_if_curl_error(curl_easy_perform(m_curl));
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);

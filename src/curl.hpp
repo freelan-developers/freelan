@@ -177,6 +177,13 @@ namespace freelan
 			 */
 			std::string unescape(const std::string& encoded);
 
+			/**
+			 * \brief Perform the cURL request.
+			 *
+			 * On error, an exception is thrown.
+			 */
+			void perform();
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
