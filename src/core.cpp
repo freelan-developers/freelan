@@ -112,7 +112,11 @@ namespace freelan
 			{
 				std::ostringstream url_builder;
 
-				url_builder << "https://" << m_configuration.server.host << "/api/login";
+				//TODO: Add an debug option to disable SSL
+				//const std::string scheme = "https";
+				const std::string scheme = "http";
+
+				url_builder << scheme << "://" << m_configuration.server.host << "/api/login";
 
 				request.set_url(url_builder.str());
 			}
