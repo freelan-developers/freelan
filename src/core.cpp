@@ -126,6 +126,7 @@ namespace freelan
 			//request.set_ssl_peer_verification(false);
 			//request.set_ssl_host_verification(false);
 
+			//TODO: Disable automatic output from libcurl to stdout/stderr
 			request.perform();
 		}
 
