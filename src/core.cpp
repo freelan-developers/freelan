@@ -45,6 +45,8 @@
 
 #include "core.hpp"
 
+#include <sstream>
+
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -104,10 +106,23 @@ namespace freelan
 
 			m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as " << m_configuration.server.username << "...";
 
-			curl_multi curlm;
+			curl request;
 
-			//TODO: Implement configuration request to the freelan server, using curl
-			//functions defined in curl.hpp.
+			// Set the URL.
+			{
+				std::ostringstream url_builder;
+
+				url_builder << "https://" << m_configuration.server.host << "/api/login";
+
+				request.set_url(url_builder.str());
+			}
+
+			//TODO: Add configuration options to disable peer verification and host
+			//verification.
+			//request.set_ssl_peer_verification(false);
+			//request.set_ssl_host_verification(false);
+
+			request.perform();
 		}
 
 		if (!m_configuration.security.identity)
