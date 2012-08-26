@@ -58,6 +58,7 @@ namespace freelan
 		username(),
 		password(),
 		protocol(SP_HTTPS),
+		ca_info(),
 		disable_peer_verification(false),
 		disable_host_verification(false)
 	{

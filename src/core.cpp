@@ -127,6 +127,15 @@ namespace freelan
 
 				request.set_ssl_peer_verification(false);
 			}
+			else
+			{
+				if (!m_configuration.server.ca_info.empty())
+				{
+					m_logger(LL_INFORMATION) << "Setting CA info to \"" << m_configuration.server.ca_info.string() << "\"";
+
+					request.set_ca_info(m_configuration.server.ca_info);
+				}
+			}
 
 			if (m_configuration.server.disable_host_verification)
 			{

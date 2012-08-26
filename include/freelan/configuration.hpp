@@ -54,6 +54,7 @@
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
 
 #include <cryptoplus/x509/certificate_revocation_list.hpp>
 
@@ -120,6 +121,11 @@ namespace freelan
 		 * \brief The protocol to use.
 		 */
 		server_protocol_type protocol;
+
+		/**
+		 * \brief The CA info file.
+		 */
+		boost::filesystem::path ca_info;
 
 		/**
 		 * \brief Disable peer verification.
