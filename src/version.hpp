@@ -60,4 +60,6 @@
 #define FREELAN_VERSION_STRING "<unspecified version>"
 #endif
 
+#define FREELAN_USER_AGENT FREELAN_NAME "/" FREELAN_VERSION_STRING
+
 #endif /* VERSION_HPP */

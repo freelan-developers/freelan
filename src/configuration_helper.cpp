@@ -52,6 +52,7 @@
 #include <boost/foreach.hpp>
 
 #include "configuration_types.hpp"
+#include "version.hpp"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -105,6 +106,7 @@ po::options_description get_server_options()
 	("server.https_proxy", po::value<fl::endpoint>(), "The HTTP proxy host.")
 	("server.username", po::value<std::string>(), "The username.")
 	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
+	("server.user_agent", po::value<std::string>(), "The user agent. If no user agent is specified, \"" FREELAN_USER_AGENT "\" will be used.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
 	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
 	("server.disable_peer_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable peer verification.")
@@ -224,6 +226,15 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		{
 			configuration.server.password = default_password;
 		}
+	}
+
+	if (vm.count("server.user_agent"))
+	{
+		configuration.server.user_agent = vm["server.user_agent"].as<std::string>();
+	}
+	else
+	{
+		configuration.server.user_agent = FREELAN_USER_AGENT;
 	}
 
 	configuration.server.protocol = vm["server.protocol"].as<fl::server_configuration::server_protocol_type>();
