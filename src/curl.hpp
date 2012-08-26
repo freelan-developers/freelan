@@ -155,6 +155,11 @@ namespace freelan
 			void set_connect_timeout(const boost::posix_time::time_duration& timeout);
 
 			/**
+			 * \brief Set the POST method for the request.
+			 */
+			void set_post();
+
+			/**
 			 * \brief Sets the post fields.
 			 * \param buf The buffer containing the data.
 			 *
@@ -162,6 +167,15 @@ namespace freelan
 			 * set_post_fields() gets called again.
 			 */
 			void set_post_fields(boost::asio::const_buffer buf);
+
+			/**
+			 * \brief Sets the post fields.
+			 * \param buf The buffer containing the data.
+			 *
+			 * The specified data is copied by the curl library so it may be modified
+			 * or deleted once the call is complete.
+			 */
+			void set_copy_post_fields(boost::asio::const_buffer buf);
 
 			/**
 			 * \brief Escape the specified string using url encoding.

@@ -145,10 +145,21 @@ namespace freelan
 		set_option(CURLOPT_CONNECTTIMEOUT_MS, timeout.total_milliseconds());
 	}
 
+	void curl::set_post()
+	{
+		set_option(CURLOPT_POST, 1L);
+	}
+
 	void curl::set_post_fields(boost::asio::const_buffer buf)
 	{
-		set_option(CURLOPT_POSTFIELDS, boost::asio::buffer_cast<const void*>(buf));
 		set_option(CURLOPT_POSTFIELDSIZE_LARGE, boost::asio::buffer_size(buf));
+		set_option(CURLOPT_POSTFIELDS, boost::asio::buffer_cast<const void*>(buf));
+	}
+
+	void curl::set_copy_post_fields(boost::asio::const_buffer buf)
+	{
+		set_option(CURLOPT_POSTFIELDSIZE_LARGE, boost::asio::buffer_size(buf));
+		set_option(CURLOPT_COPYPOSTFIELDS, boost::asio::buffer_cast<const void*>(buf));
 	}
 
 	std::string curl::escape(const std::string& url)
