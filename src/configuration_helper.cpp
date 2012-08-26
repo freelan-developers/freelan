@@ -105,6 +105,10 @@ po::options_description get_server_options()
 	("server.https_proxy", po::value<fl::endpoint>(), "The HTTP proxy host.")
 	("server.username", po::value<std::string>(), "The username.")
 	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
+	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
+	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
+	("server.disable_peer_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable peer verification.")
+	("server.disable_host_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable host verification.")
 	;
 
 	return result;
@@ -221,6 +225,12 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 			configuration.server.password = default_password;
 		}
 	}
+
+	configuration.server.protocol = vm["server.protocol"].as<fl::server_configuration::server_protocol_type>();
+	configuration.server.ca_info = vm["server.ca_info_file"].as<fs::path>().empty() ? fs::path() : fs::absolute(vm["server.ca_info_file"].as<fs::path>(), root);
+
+	configuration.server.disable_peer_verification = vm["server.disable_peer_verification"].as<bool>();
+	configuration.server.disable_host_verification = vm["server.disable_host_verification"].as<bool>();
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
