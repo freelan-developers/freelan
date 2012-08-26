@@ -109,6 +109,11 @@ namespace freelan
 		std::string password;
 
 		/**
+		 * \brief The user agent.
+		 */
+		std::string user_agent;
+
+		/**
 		 * \brief The server protocol type.
 		 */
 		enum server_protocol_type

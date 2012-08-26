@@ -117,6 +117,17 @@ namespace freelan
 
 			curl request;
 
+			if (m_configuration.server.user_agent.empty())
+			{
+				m_logger(LL_WARNING) << "Empty user agent specified, taking libcurl's default.";
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\"";
+
+				request.set_user_agent(m_configuration.server.user_agent);
+			}
+
 			const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
 
 			request.set_url(login_url);
