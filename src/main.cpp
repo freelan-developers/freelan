@@ -168,7 +168,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	generic_options.add_options()
 	("help,h", "Produce help message.")
 	("debug,d", "Enables debug output.")
-	("configuration_file,c", po::value<std::string>(), "The configuration file to use")
+	("configuration_file,c", po::value<std::string>(), "The configuration file to use.")
 	;
 
 	visible_options.add(generic_options);
