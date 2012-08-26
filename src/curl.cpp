@@ -132,7 +132,7 @@ namespace freelan
 
 	void curl::set_ssl_host_verification(bool state)
 	{
-		set_option(CURLOPT_SSL_VERIFYHOST, state ? 1L : 0L);
+		set_option(CURLOPT_SSL_VERIFYHOST, state ? 2L : 0L);
 	}
 
 	void curl::set_cainfo(const std::string& cainfo)
