@@ -99,6 +99,11 @@ namespace freelan
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
 	}
 
+	void curl::set_option(CURLoption option, curl_write_callback value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+	}
+
 	void curl::set_debug_function(debug_function_t func)
 	{
 		m_debug_function = func;
@@ -112,6 +117,22 @@ namespace freelan
 		{
 			set_option(CURLOPT_DEBUGFUNCTION, static_cast<void*>(NULL));
 			set_option(CURLOPT_DEBUGDATA, static_cast<void*>(NULL));
+		}
+	}
+
+	void curl::set_write_function(write_function_t func)
+	{
+		m_write_function = func;
+
+		if (m_write_function)
+		{
+			set_option(CURLOPT_WRITEFUNCTION, &curl::write_function);
+			set_option(CURLOPT_WRITEDATA, &m_write_function);
+		}
+		else
+		{
+			set_option(CURLOPT_WRITEFUNCTION, static_cast<void*>(NULL));
+			set_option(CURLOPT_WRITEDATA, static_cast<void*>(NULL));
 		}
 	}
 
@@ -212,6 +233,15 @@ namespace freelan
 		func(infotype, boost::asio::buffer(data, datalen));
 
 		return 0;
+	}
+
+	size_t curl::write_function(char* data, size_t size, size_t nmemb, void* context)
+	{
+		assert(context);
+
+		write_function_t& func = *static_cast<write_function_t*>(context);
+
+		return func(boost::asio::buffer(data, size * nmemb));
 	}
 
 	curl_multi::curl_multi() :

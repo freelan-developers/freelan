@@ -68,6 +68,11 @@ namespace freelan
 			typedef boost::function<void (curl_infotype, boost::asio::mutable_buffer)> debug_function_t;
 
 			/**
+			 * \brief A write function type.
+			 */
+			typedef boost::function<size_t (boost::asio::const_buffer)> write_function_t;
+
+			/**
 			 * \brief Create a CURL.
 			 */
 			curl();
@@ -114,10 +119,25 @@ namespace freelan
 			void set_option(CURLoption option, curl_debug_callback value);
 
 			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLoption option, curl_write_callback value);
+
+			/**
 			 * \brief Set a debug function.
 			 * \param func The debug function.
 			 */
 			void set_debug_function(debug_function_t func);
+
+			/**
+			 * \brief Set the write function.
+			 * \param func The write function.
+			 */
+			void set_write_function(write_function_t func);
 
 			/**
 			 * \brief Set the user agent.
@@ -202,12 +222,14 @@ namespace freelan
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
+			static size_t write_function(char*, size_t, size_t, void*);
 
 			curl(const curl&);
 			curl& operator=(const curl&);
 
 			CURL* m_curl;
 			debug_function_t m_debug_function;
+			write_function_t m_write_function;
 			
 			friend class curl_multi;
 	};
