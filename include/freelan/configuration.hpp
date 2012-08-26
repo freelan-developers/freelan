@@ -106,6 +106,20 @@ namespace freelan
 		 * \brief The password.
 		 */
 		std::string password;
+
+		/**
+		 * \brief The server protocol type.
+		 */
+		enum server_protocol_type
+		{
+			SP_HTTP = 0x00, /**< \brief HTTP. */
+			SP_HTTPS = 0x01 /**< \brief HTTPS. */
+		};
+
+		/**
+		 * \brief The protocol to use.
+		 */
+		server_protocol_type protocol;
 	};
 
 	/**
@@ -419,6 +433,22 @@ namespace freelan
 		 */
 		configuration();
 	};
+
+	/**
+	 * \brief Input a server protocol.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, server_configuration::server_protocol_type& value);
+
+	/**
+	 * \brief Output a server protocol to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, server_configuration::server_protocol_type& value);
 
 	/**
 	 * \brief Convert a hostname resolution protocol type into a boost asio udp endpoint type.

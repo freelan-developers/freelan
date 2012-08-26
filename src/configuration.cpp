@@ -56,7 +56,8 @@ namespace freelan
 		host(),
 		https_proxy(),
 		username(),
-		password()
+		password(),
+		protocol(SP_HTTPS)
 	{
 	}
 
@@ -107,6 +108,36 @@ namespace freelan
 		tap_adapter(),
 		switch_()
 	{
+	}
+
+	std::istream& operator>>(std::istream& is, server_configuration::server_protocol_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "http")
+			v = server_configuration::SP_HTTP;
+		else if (value == "https")
+			v = server_configuration::SP_HTTPS;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, server_configuration::server_protocol_type& value)
+	{
+		switch (value)
+		{
+			case server_configuration::SP_HTTP:
+				return os << "http";
+			case server_configuration::SP_HTTPS:
+				return os << "https";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
 	}
 
 	boost::asio::ip::udp to_protocol(fscp_configuration::hostname_resolution_protocol_type value)

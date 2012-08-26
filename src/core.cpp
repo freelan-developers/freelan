@@ -104,22 +104,22 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
-			m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as " << m_configuration.server.username << "...";
+			const bool secure_mode = (m_configuration.server.protocol != server_configuration::SP_HTTP);
+
+			const std::string scheme = secure_mode ? "https" : "http";
+
+			if (!secure_mode)
+			{
+				m_logger(LL_WARNING) << "Unsecure mode enabled ! DO *NOT* USE THIS CONFIGURATION FOR A PRODUCTION SERVER !";
+			}
+
+			m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as user \"" << m_configuration.server.username << "\" using " << scheme << "...";
 
 			curl request;
 
-			// Set the URL.
-			{
-				std::ostringstream url_builder;
+			const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
 
-				//TODO: Add an debug option to disable SSL
-				//const std::string scheme = "https";
-				const std::string scheme = "http";
-
-				url_builder << scheme << "://" << m_configuration.server.host << "/api/login";
-
-				request.set_url(url_builder.str());
-			}
+			request.set_url(login_url);
 
 			//TODO: Add configuration options to disable peer verification and host
 			//verification.
