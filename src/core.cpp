@@ -131,6 +131,7 @@ namespace freelan
 			const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
 
 			request.set_url(login_url);
+			request.set_post();
 
 			if (m_configuration.server.disable_peer_verification)
 			{
