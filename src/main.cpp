@@ -70,6 +70,7 @@
 #include "posix/locked_pid_file.hpp"
 #endif
 
+#include "version.hpp"
 #include "tools.hpp"
 #include "system.hpp"
 #include "configuration_helper.hpp"
@@ -167,6 +168,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	po::options_description generic_options("Generic options");
 	generic_options.add_options()
 	("help,h", "Produce help message.")
+	("version,v", "Get the program version.")
 	("debug,d", "Enables debug output.")
 	("configuration_file,c", po::value<std::string>(), "The configuration file to use.")
 	;
@@ -211,6 +213,13 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	if (vm.count("help"))
 	{
 		std::cout << visible_options << std::endl;
+
+		return false;
+	}
+
+	if (vm.count("version"))
+	{
+		std::cout << FREELAN_NAME << "-" << FREELAN_VERSION_STRING << std::endl;
 
 		return false;
 	}

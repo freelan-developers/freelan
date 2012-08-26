@@ -3,17 +3,25 @@
 name = 'freelan'
 
 major = '1'
-minor = '0'
+minor = '1'
 libraries = []
 
 # You should not need to modify anything below this line
 
-import os, sys
+import os
+import sys
 
 from freelan.buildtools import ProgramProject, Environment
 import freelan.file_tools as file_tools
 
 env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
+
+if sys.platform.startswith('win32') and env['CC'] != 'gcc':
+    env['CXXFLAGS'].append('/DFREELAN_VERSION_MAJOR=%s' % major)
+    env['CXXFLAGS'].append('/DFREELAN_VERSION_MINOR=%s' % minor)
+else:
+    env['CXXFLAGS'].append('-DFREELAN_VERSION_MAJOR=%s' % major)
+    env['CXXFLAGS'].append('-DFREELAN_VERSION_MINOR=%s' % minor)
 
 if sys.platform.startswith('win32'):
     libraries.append('freelan_static')
