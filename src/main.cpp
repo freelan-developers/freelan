@@ -219,7 +219,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	if (vm.count("version"))
 	{
-		std::cout << FREELAN_NAME << "-" << FREELAN_VERSION_STRING << std::endl;
+		std::cout << FREELAN_NAME << " " << FREELAN_VERSION_STRING << " " << FREELAN_DATE << std::endl;
 
 		return false;
 	}

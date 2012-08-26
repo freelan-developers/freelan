@@ -10,6 +10,7 @@ libraries = []
 
 import os
 import sys
+import datetime
 
 from freelan.buildtools import ProgramProject, Environment
 import freelan.file_tools as file_tools
@@ -19,9 +20,11 @@ env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 if sys.platform.startswith('win32') and env['CC'] != 'gcc':
     env['CXXFLAGS'].append('/DFREELAN_VERSION_MAJOR=%s' % major)
     env['CXXFLAGS'].append('/DFREELAN_VERSION_MINOR=%s' % minor)
+    env['CXXFLAGS'].append(r"/DFREELAN_DATE=\"%s\"" % datetime.date.today().strftime('%a %d %b %Y'))
 else:
     env['CXXFLAGS'].append('-DFREELAN_VERSION_MAJOR=%s' % major)
     env['CXXFLAGS'].append('-DFREELAN_VERSION_MINOR=%s' % minor)
+    env['CXXFLAGS'].append(r"-DFREELAN_DATE=\"%s\"" % datetime.date.today().strftime('%a %d %b %Y'))
 
 if sys.platform.startswith('win32'):
     libraries.append('freelan_static')
