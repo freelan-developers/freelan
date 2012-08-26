@@ -120,6 +120,16 @@ namespace freelan
 		 * \brief The protocol to use.
 		 */
 		server_protocol_type protocol;
+
+		/**
+		 * \brief Disable peer verification.
+		 */
+		bool disable_peer_verification;
+
+		/**
+		 * \brief Disable host verification.
+		 */
+		bool disable_host_verification;
 	};
 
 	/**

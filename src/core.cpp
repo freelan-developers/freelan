@@ -121,10 +121,19 @@ namespace freelan
 
 			request.set_url(login_url);
 
-			//TODO: Add configuration options to disable peer verification and host
-			//verification.
-			//request.set_ssl_peer_verification(false);
-			//request.set_ssl_host_verification(false);
+			if (m_configuration.server.disable_peer_verification)
+			{
+				m_logger(LL_WARNING) << "Peer verification disabled ! Connection will be a LOT LESS SECURE.";
+
+				request.set_ssl_peer_verification(false);
+			}
+
+			if (m_configuration.server.disable_host_verification)
+			{
+				m_logger(LL_WARNING) << "Host verification disabled ! Connection will be less secure.";
+
+				request.set_ssl_host_verification(false);
+			}
 
 			//TODO: Disable automatic output from libcurl to stdout/stderr
 			request.perform();

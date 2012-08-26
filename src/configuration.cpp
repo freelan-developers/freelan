@@ -57,7 +57,9 @@ namespace freelan
 		https_proxy(),
 		username(),
 		password(),
-		protocol(SP_HTTPS)
+		protocol(SP_HTTPS),
+		disable_peer_verification(false),
+		disable_host_verification(false)
 	{
 	}
 
