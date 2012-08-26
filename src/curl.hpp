@@ -51,6 +51,7 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
 
 namespace freelan
 {
@@ -144,9 +145,9 @@ namespace freelan
 
 			/**
 			 * \brief Set the cainfo path.
-			 * \param cainfo The cainfo path..
+			 * \param ca_info The cainfo path..
 			 */
-			void set_cainfo(const std::string& cainfo);
+			void set_ca_info(const boost::filesystem::path& ca_info);
 
 			/**
 			 * \brief Set the connect timeout.

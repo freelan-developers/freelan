@@ -135,9 +135,16 @@ namespace freelan
 		set_option(CURLOPT_SSL_VERIFYHOST, state ? 2L : 0L);
 	}
 
-	void curl::set_cainfo(const std::string& cainfo)
+	void curl::set_ca_info(const boost::filesystem::path& ca_info)
 	{
-		set_option(CURLOPT_CAINFO, static_cast<const void*>(cainfo.c_str()));
+		if (ca_info.empty())
+		{
+			set_option(CURLOPT_CAINFO, static_cast<const void*>(NULL));
+		}
+		else
+		{
+			set_option(CURLOPT_CAINFO, static_cast<const void*>(ca_info.string().c_str()));
+		}
 	}
 
 	void curl::set_connect_timeout(const boost::posix_time::time_duration& timeout)
