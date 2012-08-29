@@ -123,7 +123,7 @@ namespace freelan
 			}
 			else
 			{
-				m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\"";
+				m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\".";
 
 				request.set_user_agent(m_configuration.server.user_agent);
 			}
