@@ -235,6 +235,15 @@ namespace freelan
 	{
 		throw_if_curl_error(curl_easy_perform(m_curl));
 	}
+	
+	long curl::get_response_code()
+	{
+		long response_code = 0;
+
+		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code));
+
+		return response_code;
+	}
 
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{

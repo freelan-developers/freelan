@@ -227,6 +227,12 @@ namespace freelan
 			 */
 			void perform();
 
+			/**
+			 * \brief Get the last response code.
+			 * \return The last response code.
+			 */
+			long get_response_code();
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
