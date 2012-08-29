@@ -96,7 +96,7 @@ namespace freelan
 		/**
 		 * \brief The https proxy host name.
 		 */
-		endpoint https_proxy;
+		boost::optional<endpoint> https_proxy;
 
 		/**
 		 * \brief The username.

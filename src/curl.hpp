@@ -53,6 +53,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
+#include "endpoint.hpp"
+
 namespace freelan
 {
 	/**
@@ -126,6 +128,12 @@ namespace freelan
 			 * On error, a std::runtime_error is raised.
 			 */
 			void set_option(CURLoption option, curl_write_callback value);
+
+			/**
+			 * \brief Set the HTTP(S) proxy to use.
+			 * \param proxy The proxy.
+			 */
+			void set_proxy(const endpoint& proxy);
 
 			/**
 			 * \brief Set a debug function.

@@ -104,6 +104,18 @@ namespace freelan
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
 	}
 
+	void curl::set_proxy(const endpoint& proxy)
+	{
+		if (proxy != hostname_endpoint::null())
+		{
+			set_option(CURLOPT_PROXY, static_cast<const void*>(boost::lexical_cast<std::string>(proxy).c_str()));
+		}
+		else
+		{
+			set_option(CURLOPT_PROXY, static_cast<const void*>(NULL));
+		}
+	}
+
 	void curl::set_debug_function(debug_function_t func)
 	{
 		m_debug_function = func;

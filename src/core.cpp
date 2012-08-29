@@ -128,6 +128,20 @@ namespace freelan
 				request.set_user_agent(m_configuration.server.user_agent);
 			}
 
+			if (m_configuration.server.https_proxy)
+			{
+				if (*m_configuration.server.https_proxy != hostname_endpoint::null())
+				{
+					m_logger(LL_INFORMATION) << "Setting HTTP(S) proxy to \"" << *m_configuration.server.https_proxy << "\".";
+				}
+				else
+				{
+					m_logger(LL_INFORMATION) << "Disabling HTTP(S) proxy.";
+				}
+
+				request.set_proxy(*m_configuration.server.https_proxy);
+			}
+
 			const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
 
 			request.set_url(login_url);
