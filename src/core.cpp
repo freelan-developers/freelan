@@ -52,6 +52,7 @@
 
 #include "os.hpp"
 #include "curl.hpp"
+#include "server_protocol.hpp"
 #include "tap_adapter_switch_port.hpp"
 #include "endpoint_switch_port.hpp"
 #include "logger_stream.hpp"
@@ -170,8 +171,22 @@ namespace freelan
 				request.set_ssl_host_verification(false);
 			}
 
-			//TODO: Disable automatic output from libcurl to stdout/stderr
+			server_protocol_parser parser;
+
+			request.set_write_function(boost::bind(&server_protocol_parser::feed, parser, _1));
+
 			request.perform();
+
+			const long response_code = request.get_response_code();
+
+			if (response_code != 200)
+			{
+				m_logger(LL_ERROR) << "HTTP(S) request failed. Response code was: " << response_code;
+			}
+			else
+			{
+				parser.parse(request.get_content_type());
+			}
 		}
 
 		if (!m_configuration.security.identity)
