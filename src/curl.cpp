@@ -245,6 +245,33 @@ namespace freelan
 		return response_code;
 	}
 
+	ssize_t curl::get_content_length_download()
+	{
+		double content_length = 0.0;
+
+		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length));
+
+		return (content_length >= 0) ? static_cast<ssize_t>(content_length) : -1;
+	}
+
+	ssize_t curl::get_content_length_upload()
+	{
+		double content_length = 0.0;
+
+		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_UPLOAD, &content_length));
+
+		return (content_length >= 0) ? static_cast<ssize_t>(content_length) : -1;
+	}
+
+	std::string curl::get_content_type()
+	{
+		char* content_type = NULL;
+
+		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &content_type));
+
+		return content_type ? content_type : "";
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);

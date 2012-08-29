@@ -233,6 +233,24 @@ namespace freelan
 			 */
 			long get_response_code();
 
+			/**
+			 * \brief Get the content length for downloads.
+			 * \return The content length or -1, if no content length is specified.
+			 */
+			ssize_t get_content_length_download();
+
+			/**
+			 * \brief Get the content length for uploads.
+			 * \return The content length or -1, if no content length is specified.
+			 */
+			ssize_t get_content_length_upload();
+
+			/**
+			 * \brief Get the content type.
+			 * \return The content type or an empty string if no content type is specified.
+			 */
+			std::string get_content_type();
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
