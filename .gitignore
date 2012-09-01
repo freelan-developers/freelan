@@ -7,3 +7,4 @@ variables.cache
 *.sobj
 bin/*
 build
+*.cfg
