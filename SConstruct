@@ -58,6 +58,8 @@ else:
     if sys.platform.startswith('darwin'):
         libraries.append('crypto')
 
+env.Append(CPPPATH=['src/extras/rapidjson/include'])
+
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
 build = env.FreelanProject(project)
