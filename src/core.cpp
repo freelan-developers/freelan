@@ -114,81 +114,7 @@ namespace freelan
 				m_logger(LL_WARNING) << "Unsecure mode enabled ! DO *NOT* USE THIS CONFIGURATION FOR A PRODUCTION SERVER !";
 			}
 
-			m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as user \"" << m_configuration.server.username << "\" using " << scheme << "...";
-
-			curl request;
-
-			if (m_configuration.server.user_agent.empty())
-			{
-				m_logger(LL_WARNING) << "Empty user agent specified, taking libcurl's default.";
-			}
-			else
-			{
-				m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\".";
-
-				request.set_user_agent(m_configuration.server.user_agent);
-			}
-
-			if (m_configuration.server.https_proxy)
-			{
-				if (*m_configuration.server.https_proxy != hostname_endpoint::null())
-				{
-					m_logger(LL_INFORMATION) << "Setting HTTP(S) proxy to \"" << *m_configuration.server.https_proxy << "\".";
-				}
-				else
-				{
-					m_logger(LL_INFORMATION) << "Disabling HTTP(S) proxy.";
-				}
-
-				request.set_proxy(*m_configuration.server.https_proxy);
-			}
-
-			const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
-
-			request.set_url(login_url);
-
-			if (m_configuration.server.disable_peer_verification)
-			{
-				m_logger(LL_WARNING) << "Peer verification disabled ! Connection will be a LOT LESS SECURE.";
-
-				request.set_ssl_peer_verification(false);
-			}
-			else
-			{
-				if (!m_configuration.server.ca_info.empty())
-				{
-					m_logger(LL_INFORMATION) << "Setting CA info to \"" << m_configuration.server.ca_info.string() << "\"";
-
-					request.set_ca_info(m_configuration.server.ca_info);
-				}
-			}
-
-			if (m_configuration.server.disable_host_verification)
-			{
-				m_logger(LL_WARNING) << "Host verification disabled ! Connection will be less secure.";
-
-				request.set_ssl_host_verification(false);
-			}
-
-			server_protocol_parser parser;
-
-			request.set_write_function(boost::bind(&server_protocol_parser::feed, parser, _1));
-
-			request.perform();
-
-			const long response_code = request.get_response_code();
-
-			if (response_code != 200)
-			{
-				m_logger(LL_ERROR) << "HTTP(S) request failed. Response code was: " << response_code;
-			}
-			else
-			{
-				parser.parse(request.get_content_type());
-
-				m_logger(LL_INFORMATION) << "Server name: " << parser.values()["name"];
-				m_logger(LL_INFORMATION) << "Server version: " << parser.values()["version"];
-			}
+			contact_server(scheme);
 		}
 
 		if (!m_configuration.security.identity)
@@ -359,6 +285,98 @@ namespace freelan
 			}
 
 			m_io_service.post(boost::bind(&core::do_close, this));
+		}
+	}
+
+	void core::prepare_request(curl& request)
+	{
+		if (m_configuration.server.user_agent.empty())
+		{
+			m_logger(LL_WARNING) << "Empty user agent specified, taking libcurl's default.";
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\".";
+
+			request.set_user_agent(m_configuration.server.user_agent);
+		}
+
+		if (m_configuration.server.https_proxy)
+		{
+			if (*m_configuration.server.https_proxy != hostname_endpoint::null())
+			{
+				m_logger(LL_INFORMATION) << "Setting HTTP(S) proxy to \"" << *m_configuration.server.https_proxy << "\".";
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "Disabling HTTP(S) proxy.";
+			}
+
+			request.set_proxy(*m_configuration.server.https_proxy);
+		}
+
+		if (m_configuration.server.disable_peer_verification)
+		{
+			m_logger(LL_WARNING) << "Peer verification disabled ! Connection will be a LOT LESS SECURE.";
+
+			request.set_ssl_peer_verification(false);
+		}
+		else
+		{
+			if (!m_configuration.server.ca_info.empty())
+			{
+				m_logger(LL_INFORMATION) << "Setting CA info to \"" << m_configuration.server.ca_info.string() << "\"";
+
+				request.set_ca_info(m_configuration.server.ca_info);
+			}
+		}
+
+		if (m_configuration.server.disable_host_verification)
+		{
+			m_logger(LL_WARNING) << "Host verification disabled ! Connection will be less secure.";
+
+			request.set_ssl_host_verification(false);
+		}
+	}
+
+	void core::contact_server(const std::string& scheme)
+	{
+		m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as user \"" << m_configuration.server.username << "\" using " << scheme << "...";
+
+		curl request;
+		
+		prepare_request(request);
+
+		const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
+
+		request.set_url(login_url);
+
+		server_protocol_parser parser;
+
+		request.set_write_function(boost::bind(&server_protocol_parser::feed, boost::ref(parser), _1));
+
+		request.perform();
+
+		const long response_code = request.get_response_code();
+
+		if (response_code != 200)
+		{
+			m_logger(LL_ERROR) << "HTTP(S) request failed. Response code was: " << response_code;
+
+			m_logger(LL_DEBUG) << "Data follows:";
+			m_logger(LL_DEBUG) << parser.data();
+		}
+		else
+		{
+			m_logger(LL_DEBUG) << "Data follows:";
+			m_logger(LL_DEBUG) << parser.data();
+
+			parser.parse(request.get_content_type());
+
+			server_protocol_parser::values_type values = parser.values();
+
+			m_logger(LL_INFORMATION) << "Server name: " << values["name"];
+			m_logger(LL_INFORMATION) << "Server version: " << values["version"];
 		}
 	}
 

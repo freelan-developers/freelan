@@ -52,10 +52,10 @@ namespace freelan
 {
 	size_t server_protocol_parser::feed(boost::asio::const_buffer buf)
 	{
-		const char* data = boost::asio::buffer_cast<const char*>(buf);
+		const char* _data = boost::asio::buffer_cast<const char*>(buf);
 		size_t data_len = boost::asio::buffer_size(buf);
 
-		m_data.append(data, data_len);
+		m_data.append(_data, data_len);
 
 		return data_len;
 	}

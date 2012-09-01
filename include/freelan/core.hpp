@@ -66,6 +66,8 @@
 
 namespace freelan
 {
+	class curl;
+
 	/**
 	 * \brief The core class.
 	 */
@@ -220,6 +222,11 @@ namespace freelan
 			 * \brief Close the current core instance.
 			 */
 			void close();
+
+		private:
+
+			void prepare_request(curl&);
+			void contact_server(const std::string&);
 
 		private:
 

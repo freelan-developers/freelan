@@ -86,6 +86,11 @@ namespace freelan
 			void parse(const std::string& mime_type);
 
 			/**
+			 * \brief Get the data.
+			 */
+			const std::string& data() const;
+
+			/**
 			 * \brief Get the parsed values.
 			 */
 			const values_type& values() const;
@@ -98,7 +103,12 @@ namespace freelan
 			values_type m_values;
 	};
 	
-	inline const server_protocol_parser::values_type&  server_protocol_parser::values() const
+	inline const std::string& server_protocol_parser::data() const
+	{
+		return m_data;
+	}
+
+	inline const server_protocol_parser::values_type& server_protocol_parser::values() const
 	{
 		return m_values;
 	}
