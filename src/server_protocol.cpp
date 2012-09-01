@@ -48,6 +48,9 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
+
 namespace freelan
 {
 	size_t server_protocol_parser::feed(boost::asio::const_buffer buf)
@@ -80,6 +83,32 @@ namespace freelan
 
 	void server_protocol_parser::parse_json()
 	{
-		// TODO: Implement JSON parsing
+		rapidjson::Document document;
+
+		document.Parse<0>(m_data.c_str());
+
+		if (document.HasParseError())
+		{
+			throw std::runtime_error("JSON syntax parse error.");
+		}
+
+		if (!document.IsObject())
+		{
+			throw std::runtime_error("JSON document parse error: root must be an object.");
+		}
+
+		for (rapidjson::Document::ConstMemberIterator it = document.MemberBegin(); it != document.MemberEnd(); ++it)
+		{
+			const char* name = it->name.GetString();
+
+			if (!it->value.IsString())
+			{
+				throw std::runtime_error("JSON document parse error: values must be strings (" + std::string(name) + ").");
+			}
+
+			const char* value = it->value.GetString();
+
+			m_values[name] = value;
+		}
 	}
 }
