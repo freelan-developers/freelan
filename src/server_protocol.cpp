@@ -62,11 +62,24 @@ namespace freelan
 	
 	void server_protocol_parser::parse(const std::string& mime_type)
 	{
+		m_values.clear();
+
 		if (mime_type.empty())
 		{
 			throw std::runtime_error("Unable to parse: no MIME type specified.");
 		}
+		else if (mime_type == "application/json")
+		{
+			parse_json();
+		}
+		else
+		{
+			throw std::runtime_error("An unsupported MIME type was specified: " + mime_type);
+		}
+	}
 
-		//TODO: Implement parsing
+	void server_protocol_parser::parse_json()
+	{
+		// TODO: Implement JSON parsing
 	}
 }

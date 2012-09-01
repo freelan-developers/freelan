@@ -46,6 +46,9 @@
 #ifndef FREELAN_SERVER_PROTOCOL_HPP
 #define FREELAN_SERVER_PROTOCOL_HPP
 
+#include <string>
+#include <map>
+
 #include <boost/asio.hpp>
 
 namespace freelan
@@ -62,6 +65,11 @@ namespace freelan
 		public:
 
 			/**
+			 * \brief The values dictionary type.
+			 */
+			typedef std::map<std::string, std::string> values_type;
+
+			/**
 			 * \brief Feed some data.
 			 * \param buf The received data.
 			 * \return The count of bytes that were correctly fed.
@@ -72,14 +80,28 @@ namespace freelan
 			 * \brief Parse the content according to the specified MIME type.
 			 * \param mime_type The MIME type.
 			 *
+			 * The resulting values can be accessed by calling values().
 			 * Throws a std::runtime_error on error.
 			 */
 			void parse(const std::string& mime_type);
 
+			/**
+			 * \brief Get the parsed values.
+			 */
+			const values_type& values() const;
+
 		private:
 
+			void parse_json();
+
 			std::string m_data;
+			values_type m_values;
 	};
+	
+	inline const server_protocol_parser::values_type&  server_protocol_parser::values() const
+	{
+		return m_values;
+	}
 }
 
 #endif /* FREELAN_SERVER_PROTOCOL_HPP */
