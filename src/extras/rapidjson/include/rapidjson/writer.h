@@ -42,6 +42,7 @@ public:
 	Writer& Double(double d)		{ Prefix(kNumberType); WriteDouble(d);		return *this; }
 
 	Writer& String(const Ch* str, SizeType length, bool copy = false) {
+		(void)copy;
 		Prefix(kStringType);
 		WriteString(str, length);
 		return *this;
@@ -55,6 +56,7 @@ public:
 	}
 
 	Writer& EndObject(SizeType memberCount = 0) {
+		(void)memberCount;
 		RAPIDJSON_ASSERT(level_stack_.GetSize() >= sizeof(Level));
 		RAPIDJSON_ASSERT(!level_stack_.template Top<Level>()->inArray);
 		level_stack_.template Pop<Level>(1);
@@ -84,7 +86,7 @@ public:
 protected:
 	//! Information for each nested level
 	struct Level {
-		Level(bool inArray) : inArray(inArray), valueCount(0) {}
+		Level(bool _inArray) : inArray(_inArray), valueCount(0) {}
 		bool inArray;		//!< true if in array, otherwise in object
 		size_t valueCount;	//!< number of values in this level
 	};
@@ -177,7 +179,7 @@ protected:
 
 		stream_.Put('\"');
 		for (const Ch* p = str; p != str + length; ++p) {
-			if ((sizeof(Ch) == 1 || *p < 256) && escape[(unsigned char)*p])  {
+			if (escape[(unsigned char)*p])  {
 				stream_.Put('\\');
 				stream_.Put(escape[(unsigned char)*p]);
 				if (escape[(unsigned char)*p] == 'u') {
