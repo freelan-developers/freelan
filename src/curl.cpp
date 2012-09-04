@@ -69,6 +69,41 @@ namespace freelan
 		}
 	}
 
+	curl_list::curl_list() :
+		m_slist(NULL)
+	{
+	}
+
+	curl_list::~curl_list()
+	{
+		reset();
+	}
+
+	void curl_list::append(const std::string& value)
+	{
+		struct curl_slist* const new_slist = curl_slist_append(m_slist, value.c_str());
+
+		if (!new_slist)
+		{
+			throw std::runtime_error("Unable to append a value to the list");
+		}
+
+		m_slist = new_slist;
+	}
+
+	void curl_list::reset()
+	{
+		if (m_slist)
+		{
+			curl_slist_free_all(m_slist);
+		}
+	}
+
+	struct curl_slist* curl_list::raw() const
+	{
+		return m_slist;
+	}
+
 	curl::curl() :
 		m_curl(curl_easy_init()),
 		m_debug_function()

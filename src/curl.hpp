@@ -57,6 +57,50 @@
 
 namespace freelan
 {
+
+	/**
+	 * \brief A CURL slist.
+	 */
+	class curl_list
+	{
+		public:
+
+			/**
+			 * \brief Create a CURL slist.
+			 */
+			curl_list();
+
+			/**
+			 * \brief Destroy a CURL slist.
+			 */
+			~curl_list();
+
+			/**
+			 * \brief Append a value to the list.
+			 */
+			void append(const std::string& value);
+
+			/**
+			 * \brief Reset the list.
+			 */
+			void reset();
+
+			/**
+			 * \brief Get the raw pointer for the slist.
+			 * \return The raw pointer.
+			 */
+			struct curl_slist* raw() const;
+
+		private:
+
+			curl_list(const curl_slist&);
+			curl_list& operator=(const curl_slist&);
+
+			struct curl_slist* m_slist;
+
+			friend class curl;
+	};
+
 	/**
 	 * \brief A CURL wrapper class.
 	 */
