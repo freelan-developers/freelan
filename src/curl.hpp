@@ -228,6 +228,24 @@ namespace freelan
 			void set_connect_timeout(const boost::posix_time::time_duration& timeout);
 
 			/**
+			 * \brief Set a HTTP header.
+			 * \param header The header.
+			 * \param value The value.
+			 */
+			void set_http_header(const std::string& header, const std::string& value = "\"\"");
+
+			/**
+			 * \brief Unset a HTTP header.
+			 * \param header The header.
+			 */
+			void unset_http_header(const std::string& header);
+
+			/**
+			 * \brief Reset all HTTP headers.
+			 */
+			void reset_http_headers();
+
+			/**
 			 * \brief Set the GET method for the request.
 			 */
 			void set_get();
@@ -309,6 +327,7 @@ namespace freelan
 			curl& operator=(const curl&);
 
 			CURL* m_curl;
+			curl_list m_http_headers;
 			debug_function_t m_debug_function;
 			write_function_t m_write_function;
 			

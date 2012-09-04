@@ -220,6 +220,27 @@ namespace freelan
 		set_option(CURLOPT_CONNECTTIMEOUT_MS, timeout.total_milliseconds());
 	}
 
+	void curl::set_http_header(const std::string& header, const std::string& value)
+	{
+		m_http_headers.append(header + ": " + value);
+
+		set_option(CURLOPT_HTTPHEADER, static_cast<const void*>(m_http_headers.raw()));
+	}
+
+	void curl::unset_http_header(const std::string& header)
+	{
+		m_http_headers.append(header + ":");
+
+		set_option(CURLOPT_HTTPHEADER, static_cast<const void*>(m_http_headers.raw()));
+	}
+
+	void curl::reset_http_headers()
+	{
+		m_http_headers = curl_list();
+
+		set_option(CURLOPT_HTTPHEADER, static_cast<const void*>(m_http_headers.raw()));
+	}
+
 	void curl::set_get()
 	{
 		set_option(CURLOPT_HTTPGET, 1L);
