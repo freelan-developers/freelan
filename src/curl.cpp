@@ -185,6 +185,11 @@ namespace freelan
 		set_option(CURLOPT_CONNECTTIMEOUT_MS, timeout.total_milliseconds());
 	}
 
+	void curl::set_get()
+	{
+		set_option(CURLOPT_HTTPGET, 1L);
+	}
+
 	void curl::set_post()
 	{
 		set_option(CURLOPT_POST, 1L);

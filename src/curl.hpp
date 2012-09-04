@@ -184,6 +184,11 @@ namespace freelan
 			void set_connect_timeout(const boost::posix_time::time_duration& timeout);
 
 			/**
+			 * \brief Set the GET method for the request.
+			 */
+			void set_get();
+
+			/**
 			 * \brief Set the POST method for the request.
 			 */
 			void set_post();
