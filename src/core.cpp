@@ -350,33 +350,46 @@ namespace freelan
 		const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
 
 		request.set_url(login_url);
+		request.set_post();
+		request.set_http_header("Content-Type", "application/json");
+		request.set_http_header("Accept", "application/json");
+		request.unset_http_header("Expect");
 
-		server_protocol_parser parser;
+		server_protocol_handler handler;
 
-		request.set_write_function(boost::bind(&server_protocol_parser::feed, boost::ref(parser), _1));
+		handler.set_value("username", m_configuration.server.username);
+		handler.set_value("password", m_configuration.server.password);
+
+		request.set_copy_post_fields(boost::asio::buffer(handler.encode_to_json()));
+
+		request.set_write_function(boost::bind(&server_protocol_handler::feed, boost::ref(handler), _1));
 
 		request.perform();
 
 		const long response_code = request.get_response_code();
+		const std::string content_type = request.get_content_type();
 
-		if (response_code != 200)
+		if (content_type != "application/json")
 		{
-			m_logger(LL_ERROR) << "HTTP(S) request failed. Response code was: " << response_code;
-
-			m_logger(LL_DEBUG) << "Data follows:";
-			m_logger(LL_DEBUG) << parser.data();
+			m_logger(LL_ERROR) << "Unsupported content type received: " << content_type;
 		}
 		else
 		{
-			m_logger(LL_DEBUG) << "Data follows:";
-			m_logger(LL_DEBUG) << parser.data();
+			m_logger(LL_DEBUG) << "Received: " << handler.data();
 
-			parser.parse(request.get_content_type());
+			handler.parse(request.get_content_type());
 
-			server_protocol_parser::values_type values = parser.values();
+			m_logger(LL_DEBUG) << "Server name: " << handler.get_value("name");
+			m_logger(LL_DEBUG) << "Server version: " << handler.get_value("version");
 
-			m_logger(LL_INFORMATION) << "Server name: " << values["name"];
-			m_logger(LL_INFORMATION) << "Server version: " << values["version"];
+			if (response_code != 200)
+			{
+				m_logger(LL_ERROR) << "HTTP(S) request failed. Error: " << handler.get_value("error") << " (" << response_code << ")";
+			}
+			else
+			{
+				//TODO: Implement
+			}
 		}
 	}
 

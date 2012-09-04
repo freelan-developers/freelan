@@ -50,10 +50,45 @@
 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 namespace freelan
 {
-	size_t server_protocol_parser::feed(boost::asio::const_buffer buf)
+	std::string server_protocol_handler::get_value(const std::string& key, const std::string& def) const
+	{
+		values_type::const_iterator it = m_values.find(key);
+
+		if (it != m_values.end())
+		{
+			return it->second;
+		}
+		else
+		{
+			return def;
+		}
+	}
+
+	std::string server_protocol_handler::encode_to_json() const
+	{
+		rapidjson::StringBuffer strbuf;
+
+		rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
+
+		writer.StartObject();
+
+		for (values_type::const_iterator it = m_values.begin(); it != m_values.end(); ++it)
+		{
+			writer.String(it->first.c_str(), it->first.size());
+			writer.String(it->second.c_str(), it->second.size());
+		}
+
+		writer.EndObject();
+
+		return strbuf.GetString();
+	}
+
+	size_t server_protocol_handler::feed(boost::asio::const_buffer buf)
 	{
 		const char* _data = boost::asio::buffer_cast<const char*>(buf);
 		size_t data_len = boost::asio::buffer_size(buf);
@@ -63,9 +98,9 @@ namespace freelan
 		return data_len;
 	}
 	
-	void server_protocol_parser::parse(const std::string& mime_type)
+	void server_protocol_handler::parse(const std::string& mime_type)
 	{
-		m_values.clear();
+		clear_values();
 
 		if (mime_type.empty())
 		{
@@ -81,7 +116,7 @@ namespace freelan
 		}
 	}
 
-	void server_protocol_parser::parse_json()
+	void server_protocol_handler::parse_json()
 	{
 		rapidjson::Document document;
 
@@ -108,7 +143,7 @@ namespace freelan
 
 			const char* value = it->value.GetString();
 
-			m_values[name] = value;
+			set_value(name, value);
 		}
 	}
 }

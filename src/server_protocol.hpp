@@ -54,13 +54,13 @@
 namespace freelan
 {
 	/**
-	 * \brief The server protocol parser class.
+	 * \brief The server protocol handler class.
 	 *
-	 * Helps in parsing the server protocol data.
+	 * Helps in parsing and producing the server protocol data.
 	 *
 	 * Raises events as the data gets parsed.
 	 */
-	class server_protocol_parser
+	class server_protocol_handler
 	{
 		public:
 
@@ -68,6 +68,49 @@ namespace freelan
 			 * \brief The values dictionary type.
 			 */
 			typedef std::map<std::string, std::string> values_type;
+
+			/**
+			 * \brief Check if the handler contains a value.
+			 * \param key The key to check existence for.
+			 * \return true if the key exists, false otherwise.
+			 */
+			bool has_value(const std::string& key) const;
+
+			/**
+			 * \brief Set a value.
+			 * \param key The key.
+			 * \param value The value.
+			 */
+			void set_value(const std::string& key, const std::string& value);
+
+			/**
+			 * \brief Get a value.
+			 * \param key The the key.
+			 * \param def The default value.
+			 * \return The value or def if the key does not exist.
+			 */
+			std::string get_value(const std::string& key, const std::string& def = "") const;
+
+			/**
+			 * \brief Get the data.
+			 */
+			const std::string& data() const;
+
+			/**
+			 * \brief Get the parsed values.
+			 */
+			const values_type& values() const;
+
+			/**
+			 * \brief Clear all the values.
+			 */
+			void clear_values();
+
+			/**
+			 * \brief Encode values to json.
+			 * \return A JSON string.
+			 */
+			std::string encode_to_json() const;
 
 			/**
 			 * \brief Feed some data.
@@ -85,16 +128,6 @@ namespace freelan
 			 */
 			void parse(const std::string& mime_type);
 
-			/**
-			 * \brief Get the data.
-			 */
-			const std::string& data() const;
-
-			/**
-			 * \brief Get the parsed values.
-			 */
-			const values_type& values() const;
-
 		private:
 
 			void parse_json();
@@ -103,12 +136,27 @@ namespace freelan
 			values_type m_values;
 	};
 	
-	inline const std::string& server_protocol_parser::data() const
+	inline bool server_protocol_handler::has_value(const std::string& key) const
+	{
+		return (m_values.find(key) != m_values.end());
+	}
+
+	inline void server_protocol_handler::set_value(const std::string& key, const std::string& value)
+	{
+		m_values[key] = value;
+	}
+
+	inline void server_protocol_handler::clear_values()
+	{
+		m_values.clear();
+	}
+
+	inline const std::string& server_protocol_handler::data() const
 	{
 		return m_data;
 	}
 
-	inline const server_protocol_parser::values_type& server_protocol_parser::values() const
+	inline const server_protocol_handler::values_type& server_protocol_handler::values() const
 	{
 		return m_values;
 	}
