@@ -369,14 +369,14 @@ namespace freelan
 		const long response_code = request.get_response_code();
 		const std::string content_type = request.get_content_type();
 
+		m_logger(LL_DEBUG) << "Received: \n" << handler.data();
+
 		if (content_type != "application/json")
 		{
 			m_logger(LL_ERROR) << "Unsupported content type received: " << content_type;
 		}
 		else
 		{
-			m_logger(LL_DEBUG) << "Received: " << handler.data();
-
 			handler.parse(request.get_content_type());
 
 			m_logger(LL_DEBUG) << "Server name: " << handler.get_value("name");
