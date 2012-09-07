@@ -290,6 +290,8 @@ namespace freelan
 
 	void core::prepare_request(curl& request)
 	{
+		request.set_connect_timeout(boost::posix_time::seconds(5));
+
 		if (m_configuration.server.user_agent.empty())
 		{
 			m_logger(LL_WARNING) << "Empty user agent specified, taking libcurl's default.";
