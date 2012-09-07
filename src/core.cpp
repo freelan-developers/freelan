@@ -51,8 +51,7 @@
 #include <boost/foreach.hpp>
 
 #include "os.hpp"
-#include "curl.hpp"
-#include "server_protocol.hpp"
+#include "client.hpp"
 #include "tap_adapter_switch_port.hpp"
 #include "endpoint_switch_port.hpp"
 #include "logger_stream.hpp"
@@ -105,16 +104,9 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
-			const bool secure_mode = (m_configuration.server.protocol != server_configuration::SP_HTTP);
+			client _client(m_configuration, m_logger);
 
-			const std::string scheme = secure_mode ? "https" : "http";
-
-			if (!secure_mode)
-			{
-				m_logger(LL_WARNING) << "Unsecure mode enabled ! DO *NOT* USE THIS CONFIGURATION FOR A PRODUCTION SERVER !";
-			}
-
-			contact_server(scheme);
+			_client.connect();
 		}
 
 		if (!m_configuration.security.identity)
@@ -285,113 +277,6 @@ namespace freelan
 			}
 
 			m_io_service.post(boost::bind(&core::do_close, this));
-		}
-	}
-
-	void core::prepare_request(curl& request)
-	{
-		request.set_connect_timeout(boost::posix_time::seconds(5));
-
-		if (m_configuration.server.user_agent.empty())
-		{
-			m_logger(LL_WARNING) << "Empty user agent specified, taking libcurl's default.";
-		}
-		else
-		{
-			m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\".";
-
-			request.set_user_agent(m_configuration.server.user_agent);
-		}
-
-		if (m_configuration.server.https_proxy)
-		{
-			if (*m_configuration.server.https_proxy != hostname_endpoint::null())
-			{
-				m_logger(LL_INFORMATION) << "Setting HTTP(S) proxy to \"" << *m_configuration.server.https_proxy << "\".";
-			}
-			else
-			{
-				m_logger(LL_INFORMATION) << "Disabling HTTP(S) proxy.";
-			}
-
-			request.set_proxy(*m_configuration.server.https_proxy);
-		}
-
-		if (m_configuration.server.disable_peer_verification)
-		{
-			m_logger(LL_WARNING) << "Peer verification disabled ! Connection will be a LOT LESS SECURE.";
-
-			request.set_ssl_peer_verification(false);
-		}
-		else
-		{
-			if (!m_configuration.server.ca_info.empty())
-			{
-				m_logger(LL_INFORMATION) << "Setting CA info to \"" << m_configuration.server.ca_info.string() << "\"";
-
-				request.set_ca_info(m_configuration.server.ca_info);
-			}
-		}
-
-		if (m_configuration.server.disable_host_verification)
-		{
-			m_logger(LL_WARNING) << "Host verification disabled ! Connection will be less secure.";
-
-			request.set_ssl_host_verification(false);
-		}
-	}
-
-	void core::contact_server(const std::string& scheme)
-	{
-		m_logger(LL_INFORMATION) << "Contacting " << m_configuration.server.host << " as user \"" << m_configuration.server.username << "\" using " << scheme << "...";
-
-		curl request;
-		
-		prepare_request(request);
-
-		const std::string login_url = scheme + "://" + boost::lexical_cast<std::string>(m_configuration.server.host) + "/api/login";
-
-		request.set_url(login_url);
-		request.set_post();
-		request.set_http_header("Content-Type", "application/json");
-		request.set_http_header("Accept", "application/json");
-		request.unset_http_header("Expect");
-
-		server_protocol_handler handler;
-
-		handler.set_value("username", m_configuration.server.username);
-		handler.set_value("password", m_configuration.server.password);
-
-		request.set_copy_post_fields(boost::asio::buffer(handler.encode_to_json()));
-
-		request.set_write_function(boost::bind(&server_protocol_handler::feed, boost::ref(handler), _1));
-
-		request.perform();
-
-		const long response_code = request.get_response_code();
-		const std::string content_type = request.get_content_type();
-
-		m_logger(LL_DEBUG) << "Received: \n" << handler.data();
-
-		if (content_type != "application/json")
-		{
-			m_logger(LL_ERROR) << "Unsupported content type received: " << content_type;
-		}
-		else
-		{
-			handler.parse(request.get_content_type());
-
-			m_logger(LL_DEBUG) << "Server name: " << handler.get_value("name");
-			m_logger(LL_DEBUG) << "Server version: " << handler.get_value("version");
-
-			if (response_code != 200)
-			{
-				m_logger(LL_ERROR) << "HTTP(S) request failed. Error: " << handler.get_value("error") << " (" << response_code << ")";
-			}
-			else
-			{
-				//TODO: Implement
-			}
 		}
 	}
 
