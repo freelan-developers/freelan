@@ -308,6 +308,13 @@ namespace freelan
 		return boost::apply_visitor(ip_network_address_has_address_visitor(addr), ina);
 	}
 
+	/**
+	 * \brief Look for an address in a list.
+	 * \param begin An iterator to the first element of the list.
+	 * \param end An iterator past the last element of the list.
+	 * \param addr The address to look for.
+	 * \return true if addr was found in the list.
+	 */
 	template <typename NetworkAddressIterator, typename AddressType>
 	bool has_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
 	{

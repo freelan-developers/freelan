@@ -71,6 +71,9 @@ namespace freelan
 {
 	class core;
 
+	/**
+	 * \brief The server configuration.
+	 */
 	struct server_configuration
 	{
 		/**
