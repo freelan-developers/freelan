@@ -52,7 +52,7 @@
 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
 #include "configuration.hpp"
@@ -146,7 +146,7 @@ namespace freelan
 		{
 			rapidjson::StringBuffer strbuf;
 
-			rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
+			rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(strbuf);
 
 			writer.StartObject();
 
@@ -178,8 +178,20 @@ namespace freelan
 		std::string server_name;
 		unsigned int server_version_major;
 		unsigned int server_version_minor;
+		std::string login_url;
 
-		get_server_information(request, server_name, server_version_major, server_version_minor);
+		get_server_information(request, server_name, server_version_major, server_version_minor, login_url);
+
+		if (server_version_major == 1)
+		{
+			v1_authenticate(request, login_url);
+		}
+		else
+		{
+			m_logger(LL_ERROR) << "Unsupported server version.";
+
+			throw std::runtime_error("Server protocol error.");
+		}
 	}
 	
 	void client::configure_request(curl& request)
@@ -254,12 +266,12 @@ namespace freelan
 		const long response_code = request.get_response_code();
 
 		m_logger(LL_DEBUG) << "HTTP response code: " << response_code;
-		m_logger(LL_DEBUG) << "Sent: GET " << url;
 		m_logger(LL_DEBUG) << "Received:\n" << m_data;
 
 		if (response_code != 200)
 		{
 			m_logger(LL_ERROR) << "Unexpected HTTP response code " << response_code << ".";
+			m_logger(LL_ERROR) << "Here is what the server replied:\n" << m_data;
 
 			throw std::runtime_error("HTTP request failed.");
 		}
@@ -286,6 +298,8 @@ namespace freelan
 
 		request.set_http_header("Accept", "application/json");
 
+		m_logger(LL_DEBUG) << "Sent: GET " << url;
+
 		perform_request(request, url, values);
 	}
 
@@ -297,7 +311,11 @@ namespace freelan
 		request.set_http_header("Content-Type", "application/json");
 		request.unset_http_header("Expect");
 
-		request.set_copy_post_fields(boost::asio::buffer(values_to_json(parameters)));
+		const std::string json = values_to_json(parameters);
+
+		request.set_copy_post_fields(boost::asio::buffer(json));
+
+		m_logger(LL_DEBUG) << "Sent: POST " << url << "\n" << json;
 
 		perform_request(request, url, values);
 	}
@@ -306,7 +324,8 @@ namespace freelan
 			curl& request,
 			std::string& server_name,
 			unsigned int& server_version_major,
-			unsigned int& server_version_minor
+			unsigned int& server_version_minor,
+			std::string& login_url
 			)
 	{
 		m_logger(LL_INFORMATION) << "Getting server information from " << m_configuration.server.host << "...";
@@ -322,8 +341,51 @@ namespace freelan
 		assert_has_value(values, "name", server_name);
 		assert_has_value(values, "major", server_version_major);
 		assert_has_value(values, "minor", server_version_minor);
+		assert_has_value(values, "login_url", login_url);
 
 		m_logger(LL_INFORMATION) << "Server version is " << server_name << "/" << server_version_major << "." << server_version_minor;
+	}
+
+	void client::v1_authenticate(curl& request, const std::string& login_url)
+	{
+		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + login_url;
+
+		std::string challenge;
+
+		v1_get_server_login(request, url, challenge);
+		v1_post_server_login(request, url, challenge);
+	}
+
+	void client::v1_get_server_login(curl& request, const std::string& url, std::string& challenge)
+	{
+		request.reset_http_headers();
+
+		values_type values;
+
+		perform_get_request(request, url, values);
+
+		assert_has_value(values, "challenge", challenge);
+
+		m_logger(LL_INFORMATION) << "Login challenge is: " << challenge;
+	}
+
+	void client::v1_post_server_login(curl& request, const std::string& url, const std::string& challenge)
+	{
+		m_logger(LL_INFORMATION) << "Authenticating as " << m_configuration.server.username << "...";
+
+		request.reset_http_headers();
+
+		values_type parameters;
+
+		parameters["challenge"] = challenge;
+		parameters["username"] = m_configuration.server.username;
+		parameters["password"] = m_configuration.server.password;
+
+		values_type values;
+
+		perform_post_request(request, url, parameters, values);
+
+		m_logger(LL_INFORMATION) << "Succesfully authenticated as " << m_configuration.server.username << ".";
 	}
 
 	size_t client::read_data(boost::asio::const_buffer buf)

@@ -90,7 +90,12 @@ namespace freelan
 			void perform_request(curl&, const std::string&, values_type&);
 			void perform_get_request(curl&, const std::string&, values_type&);
 			void perform_post_request(curl&, const std::string&, const values_type&, values_type&);
-			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&);
+			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&, std::string&);
+
+			// Version 1 methods
+			void v1_authenticate(curl&, const std::string&);
+			void v1_get_server_login(curl&, const std::string&, std::string&);
+			void v1_post_server_login(curl&, const std::string&, const std::string&);
 
 			size_t read_data(boost::asio::const_buffer buf);
 
