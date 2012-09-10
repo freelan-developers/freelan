@@ -253,6 +253,9 @@ namespace freelan
 
 		// Set the read callback
 		request.set_write_function(boost::bind(&client::read_data, this, _1));
+
+		// Enable cookie support
+		request.enable_cookie_support();
 	}
 
 	void client::perform_request(curl& request, const std::string& url, values_type& values)
