@@ -81,6 +81,7 @@ namespace freelan
 		m_resolver(m_io_service),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_configuration_update_callback(),
 		m_open_callback(),
 		m_close_callback(),
 		m_session_established_callback(),
@@ -107,6 +108,11 @@ namespace freelan
 			client _client(m_configuration, m_logger);
 
 			_client.connect();
+		}
+
+		if (m_configuration_update_callback)
+		{
+			m_configuration_update_callback(m_configuration);
 		}
 
 		if (!m_configuration.security.identity)

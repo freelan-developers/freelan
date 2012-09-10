@@ -114,6 +114,11 @@ namespace freelan
 			static const std::string DEFAULT_SERVICE;
 
 			/**
+			 * \brief The configuration change callback.
+			 */
+			typedef boost::function<void (const freelan::configuration&)> configuration_update_callback;
+
+			/**
 			 * \brief The open callback.
 			 */
 			typedef boost::function<void ()> open_callback;
@@ -182,6 +187,16 @@ namespace freelan
 			 * \return The associated logger instance.
 			 */
 			freelan::logger& logger();
+
+			/**
+			 * \brief Set the configuration update callback.
+			 * \param callback The callback.
+			 *
+			 * This callback is called when the configuration is updated.
+			 *
+			 * This is a very good time to save the configuration on disk if you need to.
+			 */
+			void set_configuration_update_callback(configuration_update_callback callback);
 
 			/**
 			 * \brief Set the open callback.
@@ -274,6 +289,7 @@ namespace freelan
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 
 			// User callbacks
+			configuration_update_callback m_configuration_update_callback;
 			open_callback m_open_callback;
 			close_callback m_close_callback;
 			session_established_callback m_session_established_callback;
@@ -344,14 +360,21 @@ namespace freelan
 		return m_logger;
 	}
 
+	inline void core::set_configuration_update_callback(configuration_update_callback callback)
+	{
+		m_configuration_update_callback = callback;
+	}
+
 	inline void core::set_open_callback(open_callback callback)
 	{
 		m_open_callback = callback;
 	}
+
 	inline void core::set_close_callback(close_callback callback)
 	{
 		m_close_callback = callback;
 	}
+
 	inline void core::set_session_established_callback(session_established_callback callback)
 	{
 		m_session_established_callback = callback;
