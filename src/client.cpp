@@ -50,6 +50,13 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <cryptoplus/x509/name.hpp>
+#include <cryptoplus/x509/certificate_request.hpp>
+#include <cryptoplus/pkey/rsa_key.hpp>
+#include <cryptoplus/pkey/pkey.hpp>
+#include <cryptoplus/bio/bio_chain.hpp>
+#include <cryptoplus/bio/bio_ptr.hpp>
+
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
@@ -160,6 +167,17 @@ namespace freelan
 
 			return strbuf.GetString();
 		}
+
+		cryptoplus::x509::certificate_request generate_certificate_request(const freelan::configuration& configuration, const cryptoplus::pkey::rsa_key& private_key)
+		{
+			cryptoplus::x509::certificate_request csr = cryptoplus::x509::certificate_request::create();
+
+			csr.set_public_key(cryptoplus::pkey::pkey::from_rsa_key(private_key));
+
+			csr.subject().push_back("CN", MBSTRING_ASC, configuration.server.username.c_str(), configuration.server.username.size());
+
+			return csr;
+		}
 	}
 
 	client::client(freelan::configuration& configuration, freelan::logger& _logger) :
@@ -179,12 +197,31 @@ namespace freelan
 		unsigned int server_version_major;
 		unsigned int server_version_minor;
 		std::string login_url;
+		std::string sign_url;
 
-		get_server_information(request, server_name, server_version_major, server_version_minor, login_url);
+		get_server_information(
+				request,
+				server_name,
+				server_version_major,
+				server_version_minor,
+				login_url,
+				sign_url
+				);
 
 		if (server_version_major == 1)
 		{
 			v1_authenticate(request, login_url);
+
+			if (!m_configuration.security.identity)
+			{
+				m_logger(LL_INFORMATION) << "Client has no private key. Generating one now...";
+
+				cryptoplus::pkey::rsa_key private_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
+
+				cryptoplus::x509::certificate_request csr = generate_certificate_request(m_configuration, private_key);
+
+				v1_sign_certificate_request(request, sign_url, csr);
+			}
 		}
 		else
 		{
@@ -328,7 +365,8 @@ namespace freelan
 			std::string& server_name,
 			unsigned int& server_version_major,
 			unsigned int& server_version_minor,
-			std::string& login_url
+			std::string& login_url,
+			std::string& sign_url
 			)
 	{
 		m_logger(LL_INFORMATION) << "Getting server information from " << m_configuration.server.host << "...";
@@ -345,6 +383,7 @@ namespace freelan
 		assert_has_value(values, "major", server_version_major);
 		assert_has_value(values, "minor", server_version_minor);
 		assert_has_value(values, "login_url", login_url);
+		assert_has_value(values, "sign_url", sign_url);
 
 		m_logger(LL_INFORMATION) << "Server version is " << server_name << "/" << server_version_major << "." << server_version_minor;
 	}
@@ -357,6 +396,36 @@ namespace freelan
 
 		v1_get_server_login(request, url, challenge);
 		v1_post_server_login(request, url, challenge);
+	}
+
+	void client::v1_sign_certificate_request(curl& request, const std::string& sign_url, cryptoplus::x509::certificate_request& csr)
+	{
+		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + sign_url;
+
+		m_logger(LL_INFORMATION) << "Sending certificate request...";
+
+		request.reset_http_headers();
+
+		values_type parameters;
+
+		const std::vector<unsigned char> der_csr = csr.write_der();
+
+		cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
+		bio_chain.first().push(BIO_new(BIO_s_mem()));
+		bio_chain.first().write(&der_csr[0], der_csr.size());
+		bio_chain.first().flush();
+
+		BUF_MEM* b64ptr = bio_chain.first().next().get_mem_buf();
+
+		std::string b64_encoded(b64ptr->data, static_cast<size_t>(b64ptr->length));
+
+		parameters["certificate_request"] = b64_encoded;
+
+		values_type values;
+
+		perform_post_request(request, url, parameters, values);
+
+		m_logger(LL_INFORMATION) << "Certificate request was signed.";
 	}
 
 	void client::v1_get_server_login(curl& request, const std::string& url, std::string& challenge)

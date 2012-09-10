@@ -51,6 +51,14 @@
 
 #include <boost/asio.hpp>
 
+namespace cryptoplus
+{
+	namespace x509
+	{
+		class certificate_request;
+	}
+}
+
 namespace freelan
 {
 	class configuration;
@@ -90,10 +98,13 @@ namespace freelan
 			void perform_request(curl&, const std::string&, values_type&);
 			void perform_get_request(curl&, const std::string&, values_type&);
 			void perform_post_request(curl&, const std::string&, const values_type&, values_type&);
-			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&, std::string&);
+			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&, std::string&, std::string&);
 
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
+			void v1_sign_certificate_request(curl&, const std::string&, cryptoplus::x509::certificate_request& csr);
+
+			// Version 1 sub-methods
 			void v1_get_server_login(curl&, const std::string&, std::string&);
 			void v1_post_server_login(curl&, const std::string&, const std::string&);
 
