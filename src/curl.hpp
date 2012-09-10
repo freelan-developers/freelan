@@ -274,6 +274,17 @@ namespace freelan
 			void set_copy_post_fields(boost::asio::const_buffer buf);
 
 			/**
+			 * \brief Set the cookie file.
+			 * \param file The file.
+			 */
+			void set_cookie_file(const std::string& file);
+
+			/**
+			 * \brief Enable cookies support.
+			 */
+			void enable_cookie_support();
+
+			/**
 			 * \brief Escape the specified string using url encoding.
 			 * \param url The url to encode.
 			 * \return The encoded url.

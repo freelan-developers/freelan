@@ -263,6 +263,16 @@ namespace freelan
 		set_option(CURLOPT_COPYPOSTFIELDS, boost::asio::buffer_cast<const void*>(buf));
 	}
 
+	void curl::set_cookie_file(const std::string& file)
+	{
+		set_option(CURLOPT_COOKIEFILE, file.c_str());
+	}
+
+	void curl::enable_cookie_support()
+	{
+		set_cookie_file("");
+	}
+
 	std::string curl::escape(const std::string& url)
 	{
 		char* rstr = curl_easy_escape(m_curl, url.c_str(), static_cast<int>(url.size()));
