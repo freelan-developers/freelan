@@ -178,6 +178,44 @@ namespace freelan
 
 			return csr;
 		}
+
+		std::string base64_encode(boost::asio::const_buffer buf)
+		{
+			cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
+			bio_chain.first().push(BIO_new(BIO_s_mem()));
+
+			ptrdiff_t cnt = bio_chain.first().write(boost::asio::buffer_cast<const char*>(buf), boost::asio::buffer_size(buf));
+
+			if (cnt <= 0)
+			{
+				throw std::runtime_error("Unable to perform base 64 encoding");
+			}
+
+			bio_chain.first().flush();
+
+			BUF_MEM* b64ptr = bio_chain.first().next().get_mem_buf();
+
+			return std::string(b64ptr->data, static_cast<size_t>(b64ptr->length));
+		}
+
+		std::string base64_decode(const std::string& str)
+		{
+			std::string result(str.size(), '\0');
+
+			cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
+			bio_chain.first().push(BIO_new_mem_buf(const_cast<char*>(str.c_str()), str.size()));
+
+			ptrdiff_t cnt = bio_chain.first().read(&result[0], result.size());
+
+			if (cnt <= 0)
+			{
+				throw std::runtime_error("Unable to perform base 64 decoding");
+			}
+
+			result.resize(static_cast<size_t>(cnt));
+
+			return result;
+		}
 	}
 
 	client::client(freelan::configuration& configuration, freelan::logger& _logger) :
@@ -410,16 +448,9 @@ namespace freelan
 
 		const std::vector<unsigned char> der_csr = csr.write_der();
 
-		cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
-		bio_chain.first().push(BIO_new(BIO_s_mem()));
-		bio_chain.first().write(&der_csr[0], der_csr.size());
-		bio_chain.first().flush();
+		const std::string b64_encoded_csr = base64_encode(boost::asio::buffer(der_csr));
 
-		BUF_MEM* b64ptr = bio_chain.first().next().get_mem_buf();
-
-		std::string b64_encoded(b64ptr->data, static_cast<size_t>(b64ptr->length));
-
-		parameters["certificate_request"] = b64_encoded;
+		parameters["certificate_request"] = b64_encoded_csr;
 
 		values_type values;
 
