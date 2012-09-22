@@ -172,6 +172,8 @@ namespace freelan
 		{
 			cryptoplus::x509::certificate_request csr = cryptoplus::x509::certificate_request::create();
 
+			csr.set_version(2);
+
 			csr.set_public_key(cryptoplus::pkey::pkey::from_rsa_key(private_key));
 
 			csr.subject().push_back("CN", MBSTRING_ASC, configuration.server.username.c_str(), configuration.server.username.size());
