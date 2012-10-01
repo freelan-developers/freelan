@@ -457,6 +457,14 @@ namespace cryptoplus
 				 */
 				BUF_MEM* get_mem_buf();
 
+				/**
+				 * \brief Set the flags on the associated BIO.
+				 * \param flags The flags to set.
+				 *
+				 * Example: bio.set_flags(BIO_FLAGS_BASE64_NO_NL)
+				 */
+				void set_flags(int flags);
+
 			private:
 
 				bool boolean_test() const;
@@ -696,6 +704,10 @@ namespace cryptoplus
 			BIO_get_mem_ptr(m_bio, &mb);
 
 			return mb;
+		}
+		inline void bio_ptr::set_flags(int flags)
+		{
+			BIO_set_flags(m_bio, flags);
 		}
 		inline bool bio_ptr::boolean_test() const
 		{
