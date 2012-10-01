@@ -188,6 +188,7 @@ namespace freelan
 		std::string base64_encode(boost::asio::const_buffer buf)
 		{
 			cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
+			bio_chain.first().set_flags(BIO_FLAGS_BASE64_NO_NL);
 			bio_chain.first().push(BIO_new(BIO_s_mem()));
 
 			ptrdiff_t cnt = bio_chain.first().write(boost::asio::buffer_cast<const char*>(buf), boost::asio::buffer_size(buf));
@@ -207,9 +208,11 @@ namespace freelan
 		std::string base64_decode(const std::string& str)
 		{
 			std::string result(str.size(), '\0');
+			std::string input = str;
 
 			cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
-			bio_chain.first().push(BIO_new_mem_buf(const_cast<char*>(str.c_str()), str.size()));
+			bio_chain.first().set_flags(BIO_FLAGS_BASE64_NO_NL);
+			bio_chain.first().push(BIO_new_mem_buf(&input[0], input.size()));
 
 			ptrdiff_t cnt = bio_chain.first().read(&result[0], result.size());
 
