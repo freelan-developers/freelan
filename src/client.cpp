@@ -54,8 +54,7 @@
 #include <cryptoplus/x509/certificate_request.hpp>
 #include <cryptoplus/pkey/rsa_key.hpp>
 #include <cryptoplus/pkey/pkey.hpp>
-#include <cryptoplus/bio/bio_chain.hpp>
-#include <cryptoplus/bio/bio_ptr.hpp>
+#include <cryptoplus/base64.hpp>
 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
@@ -69,6 +68,9 @@
 
 namespace freelan
 {
+	using cryptoplus::base64_encode;
+	using cryptoplus::base64_decode;
+
 	namespace
 	{
 		std::string server_protocol_to_scheme(const server_configuration::server_protocol_type& protocol)
@@ -183,47 +185,6 @@ namespace freelan
 			csr.sign(pkey::pkey::from_rsa_key(private_key), hash::message_digest_algorithm(NID_sha1));
 
 			return csr;
-		}
-
-		std::string base64_encode(boost::asio::const_buffer buf)
-		{
-			cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
-			bio_chain.first().set_flags(BIO_FLAGS_BASE64_NO_NL);
-			bio_chain.first().push(BIO_new(BIO_s_mem()));
-
-			ptrdiff_t cnt = bio_chain.first().write(boost::asio::buffer_cast<const char*>(buf), boost::asio::buffer_size(buf));
-
-			if (cnt <= 0)
-			{
-				throw std::runtime_error("Unable to perform base 64 encoding");
-			}
-
-			bio_chain.first().flush();
-
-			BUF_MEM* b64ptr = bio_chain.first().next().get_mem_buf();
-
-			return std::string(b64ptr->data, static_cast<size_t>(b64ptr->length));
-		}
-
-		std::string base64_decode(const std::string& str)
-		{
-			std::string result(str.size(), '\0');
-			std::string input = str;
-
-			cryptoplus::bio::bio_chain bio_chain(BIO_f_base64());
-			bio_chain.first().set_flags(BIO_FLAGS_BASE64_NO_NL);
-			bio_chain.first().push(BIO_new_mem_buf(&input[0], input.size()));
-
-			ptrdiff_t cnt = bio_chain.first().read(&result[0], result.size());
-
-			if (cnt <= 0)
-			{
-				throw std::runtime_error("Unable to perform base 64 decoding");
-			}
-
-			result.resize(static_cast<size_t>(cnt));
-
-			return result;
 		}
 	}
 
@@ -460,7 +421,7 @@ namespace freelan
 
 		const std::vector<unsigned char> der_csr = csr.write_der();
 
-		const std::string b64_encoded_csr = base64_encode(boost::asio::buffer(der_csr));
+		const std::string b64_encoded_csr = base64_encode(&der_csr[0], der_csr.size());
 
 		parameters["certificate_request"] = b64_encoded_csr;
 
