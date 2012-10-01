@@ -63,12 +63,21 @@ namespace cryptoplus
 			}
 		}
 
-		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg)
+		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
 		{
 			// Exponent must be odd
 			assert(exponent | 1);
 
-			return take_ownership(RSA_generate_key(num, exponent, callback, callback_arg));
+			RSA* ptr = RSA_generate_key(num, exponent, callback, callback_arg);
+
+			if (must_take_ownership)
+			{
+				return take_ownership(ptr);
+			}
+			else
+			{
+				return ptr;
+			}
 		}
 
 		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)

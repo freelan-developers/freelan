@@ -123,9 +123,10 @@ namespace cryptoplus
 				 * \param exponent The exponent. Must be an odd number: typically 3, 17 or 65537.
 				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of RSA_generate_key(3). callback might be NULL (the default).
 				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \param must_take_ownership If set to true (the default), the resulting RSA key will own the underlying RSA pointer. If set to false, the caller is responsible for handling the lifetime of the underlying RSA pointer. Failing to do so will cause memory leaks.
 				 * \return The rsa_key.
 				 */
-				static rsa_key generate_private_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL);
+				static rsa_key generate_private_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL, bool must_take_ownership = true);
 
 				/**
 				 * \brief Load a private RSA key from a BIO.

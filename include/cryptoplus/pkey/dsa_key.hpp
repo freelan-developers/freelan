@@ -107,9 +107,10 @@ namespace cryptoplus
 				 * \param h_ret The counter for finding a generator. Can be NULL.
 				 * \param callback A callback that will get notified about the key generation, as specified in the documentation of DSA_generate_parameters(3). callback might be NULL (the default).
 				 * \param callback_arg An argument that will be passed to callback, if needed.
+				 * \param must_take_ownership If set to true (the default), the resulting DSA key will own the underlying DSA pointer. If set to false, the caller is responsible for handling the lifetime of the underlying DSA pointer. Failing to do so will cause memory leaks.
 				 * \return The dsa_key.
 				 */
-				static dsa_key generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
+				static dsa_key generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL, bool must_take_ownership = true);
 
 				/**
 				 * \brief Generate a new DSA private key.
