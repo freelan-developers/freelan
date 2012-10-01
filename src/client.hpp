@@ -55,6 +55,7 @@ namespace cryptoplus
 {
 	namespace x509
 	{
+		class certificate;
 		class certificate_request;
 	}
 }
@@ -102,7 +103,7 @@ namespace freelan
 
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
-			void v1_sign_certificate_request(curl&, const std::string&, cryptoplus::x509::certificate_request& csr);
+			void v1_sign_certificate_request(curl&, const std::string&, cryptoplus::x509::certificate_request&, cryptoplus::x509::certificate&);
 
 			// Version 1 sub-methods
 			void v1_get_server_login(curl&, const std::string&, std::string&);

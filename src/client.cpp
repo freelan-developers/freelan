@@ -266,8 +266,11 @@ namespace freelan
 				cryptoplus::pkey::rsa_key private_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
 
 				cryptoplus::x509::certificate_request csr = generate_certificate_request(m_configuration, private_key);
+				cryptoplus::x509::certificate certificate;
 
-				v1_sign_certificate_request(request, sign_url, csr);
+				v1_sign_certificate_request(request, sign_url, csr, certificate);
+
+				m_logger(LL_INFORMATION) << "Using certificate received from the server. (Valid until " << boost::posix_time::to_simple_string(certificate.not_after().to_ptime()) << ")";
 			}
 		}
 		else
@@ -445,7 +448,7 @@ namespace freelan
 		v1_post_server_login(request, url, challenge);
 	}
 
-	void client::v1_sign_certificate_request(curl& request, const std::string& sign_url, cryptoplus::x509::certificate_request& csr)
+	void client::v1_sign_certificate_request(curl& request, const std::string& sign_url, cryptoplus::x509::certificate_request& csr, cryptoplus::x509::certificate& certificate)
 	{
 		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + sign_url;
 
@@ -464,6 +467,14 @@ namespace freelan
 		values_type values;
 
 		perform_post_request(request, url, parameters, values);
+
+		std::string certificate_str;
+
+		assert_has_value(values, "certificate", certificate_str);
+
+		const std::string certificate_der_str = base64_decode(certificate_str);
+
+		certificate = cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
 
 		m_logger(LL_INFORMATION) << "Certificate request was signed.";
 	}
