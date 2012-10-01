@@ -2,7 +2,7 @@
 
 name = 'cryptoplus'
 major = '1'
-minor = '3'
+minor = '4'
 libraries = []
 
 # You should not need to modify anything below this line
