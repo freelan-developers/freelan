@@ -165,38 +165,38 @@ namespace cryptoplus
 				 * \brief Write the certificate_request in DER format to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_der(bio::bio_ptr bio);
+				void write_der(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate_request to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_certificate_request(bio::bio_ptr bio);
+				void write_certificate_request(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate_request in DER format to a file.
 				 * \param file The file.
 				 */
-				void write_der(file file);
+				void write_der(file file) const;
 
 				/**
 				 * \brief Write the certificate_request to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_request(file file);
+				void write_certificate_request(file file) const;
 
 				/**
 				 * \brief Write the certificate_request in DER format to a buffer.
 				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
 				 * \return The size written or to be written.
 				 */
-				size_t write_der(void* buf);
+				size_t write_der(void* buf) const;
 
 				/**
 				 * \brief Write the certificate_request in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der();
+				std::vector<unsigned char> write_der() const;
 
 				/**
 				 * \brief Clone the certificate_request instance.
@@ -208,7 +208,7 @@ namespace cryptoplus
 				 * \brief Print a X509 to a BIO.
 				 * \param bio The BIO.
 				 */
-				void print(bio::bio_ptr bio);
+				void print(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Get the public key.
@@ -331,23 +331,23 @@ namespace cryptoplus
 		inline certificate_request::certificate_request(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void certificate_request::write_der(bio::bio_ptr bio)
+		inline void certificate_request::write_der(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(i2d_X509_REQ_bio(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_request::write_certificate_request(bio::bio_ptr bio)
+		inline void certificate_request::write_certificate_request(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_X509_REQ(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_request::write_der(file _file)
+		inline void certificate_request::write_der(file _file) const
 		{
 			error::throw_error_if_not(i2d_X509_REQ_fp(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_request::write_certificate_request(file _file)
+		inline void certificate_request::write_certificate_request(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_X509_REQ(_file.raw(), ptr().get()) != 0);
 		}
-		inline size_t certificate_request::write_der(void* buf)
+		inline size_t certificate_request::write_der(void* buf) const
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
 			unsigned char** pout = out != NULL ? &out : NULL;
@@ -358,7 +358,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> certificate_request::write_der()
+		inline std::vector<unsigned char> certificate_request::write_der() const
 		{
 			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
 
@@ -370,7 +370,7 @@ namespace cryptoplus
 		{
 			return certificate_request(X509_REQ_dup(ptr().get()));
 		}
-		inline void certificate_request::print(bio::bio_ptr bio)
+		inline void certificate_request::print(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(X509_REQ_print(bio.raw(), ptr().get()) != 0);
 		}
