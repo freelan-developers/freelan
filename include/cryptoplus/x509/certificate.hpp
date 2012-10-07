@@ -540,7 +540,7 @@ namespace cryptoplus
 				 * \brief Get the certificate not before date.
 				 * \return The not before date.
 				 */
-				asn1::utctime not_before();
+				asn1::utctime not_before() const;
 
 				/**
 				 * \brief Set the certificate not before date.
@@ -552,7 +552,7 @@ namespace cryptoplus
 				 * \brief Get the certificate not after date.
 				 * \return The not after date.
 				 */
-				asn1::utctime not_after();
+				asn1::utctime not_after() const;
 
 				/**
 				 * \brief Set the certificate not after date.
@@ -986,7 +986,7 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number.raw()) != 0);
 		}
-		inline asn1::utctime certificate::not_before()
+		inline asn1::utctime certificate::not_before() const
 		{
 			return X509_get_notBefore(ptr().get());
 		}
@@ -994,7 +994,7 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before.raw()) != 0);
 		}
-		inline asn1::utctime certificate::not_after()
+		inline asn1::utctime certificate::not_after() const
 		{
 			return X509_get_notAfter(ptr().get());
 		}
