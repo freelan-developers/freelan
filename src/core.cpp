@@ -62,6 +62,23 @@ namespace freelan
 	{
 		static const switch_::group_type TAP_ADAPTERS_GROUP = 0;
 		static const switch_::group_type ENDPOINTS_GROUP = 1;
+
+		cryptoplus::x509::certificate_request generate_certificate_request(const freelan::configuration& configuration, const cryptoplus::pkey::rsa_key& private_key)
+		{
+			using namespace cryptoplus;
+
+			x509::certificate_request csr = x509::certificate_request::create();
+
+			csr.set_version(2);
+
+			csr.set_public_key(pkey::pkey::from_rsa_key(private_key));
+
+			csr.subject().push_back("CN", MBSTRING_ASC, configuration.server.username.c_str(), configuration.server.username.size());
+
+			csr.sign(pkey::pkey::from_rsa_key(private_key), hash::message_digest_algorithm(NID_sha1));
+
+			return csr;
+		}
 	}
 
 	// Has to be put first, as static variables definition order matters
@@ -91,7 +108,8 @@ namespace freelan
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
-		m_switch(m_configuration.switch_)
+		m_switch(m_configuration.switch_),
+		m_certificate_expiration_timer(m_io_service)
 	{
 	}
 
@@ -103,11 +121,30 @@ namespace freelan
 
 		if (m_configuration.server.enabled)
 		{
+			using namespace cryptoplus::pkey;
+			using namespace cryptoplus::x509;
+
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
-			client _client(m_configuration, m_logger);
+			m_client.reset(new client(m_configuration, m_logger));
 
-			_client.connect();
+			m_client->authenticate();
+
+			if (!m_configuration.security.identity)
+			{
+				m_logger(LL_INFORMATION) << "Client has no private key. Generating one now...";
+
+				// Generate the RSA key without taking ownership of it.
+				pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
+
+				certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
+
+				certificate cert = m_client->renew_certificate(csr);
+
+				m_logger(LL_INFORMATION) << "Using certificate received from the server. (Valid until " << boost::posix_time::to_simple_string(cert.not_after().to_ptime()) << ")";
+
+				m_configuration.security.identity = fscp::identity_store(cert, rsa_key);
+			}
 		}
 
 		if (m_configuration_update_callback)
@@ -338,6 +375,7 @@ namespace freelan
 			m_tap_adapter->close();
 		}
 
+		m_certificate_expiration_timer.cancel();
 		m_contact_timer.cancel();
 		m_dynamic_contact_timer.cancel();
 
@@ -624,6 +662,36 @@ namespace freelan
 		}
 	}
 
+	void core::do_check_certificate_expiration(const boost::system::error_code& ec)
+	{
+		using namespace cryptoplus::pkey;
+		using namespace cryptoplus::x509;
+
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			m_logger(LL_DEBUG) << "Checking certificate expiration...";
+
+			const certificate sig_cert = m_configuration.security.identity->signature_certificate();
+			const boost::posix_time::ptime not_after = sig_cert.not_after().to_ptime();
+			const boost::posix_time::time_duration delay = boost::posix_time::hours(24);
+			const boost::posix_time::time_duration time_left = not_after - boost::posix_time::second_clock::universal_time();
+
+			if (time_left <= delay)
+			{
+				m_logger(LL_INFORMATION) << "Certificate expires in " << time_left << ". Renewing...";
+
+				async_renew_certificate();
+			}
+			else
+			{
+				m_logger(LL_DEBUG) << "Certificate doesn't expire yet. Checking again at " << boost::posix_time::to_simple_string(not_after - delay) << ".";
+
+				m_certificate_expiration_timer.expires_at(not_after - delay);
+				m_certificate_expiration_timer.async_wait(boost::bind(&core::do_check_certificate_expiration, this, boost::asio::placeholders::error));
+			}
+		}
+	}
+
 	void core::create_server()
 	{
 		assert(m_configuration.security.identity);
@@ -741,5 +809,22 @@ namespace freelan
 		}
 
 		return true;
+	}
+
+	void core::async_renew_certificate()
+	{
+		//TODO: Implement
+	}
+
+	void core::renew_certificate_callback(identity_store _identity)
+	{
+		m_configuration.security.identity.reset(_identity);
+
+		if (m_server)
+		{
+			m_server->set_identity(_identity);
+		}
+
+		m_logger(LL_DEBUG) << "Identity was updated.";
 	}
 }

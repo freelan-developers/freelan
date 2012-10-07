@@ -64,7 +64,6 @@
 #include "configuration.hpp"
 #include "logger.hpp"
 #include "logger_stream.hpp"
-#include "curl.hpp"
 
 namespace freelan
 {
@@ -169,86 +168,15 @@ namespace freelan
 
 			return strbuf.GetString();
 		}
-
-		cryptoplus::x509::certificate_request generate_certificate_request(const freelan::configuration& configuration, const cryptoplus::pkey::rsa_key& private_key)
-		{
-			using namespace cryptoplus;
-
-			x509::certificate_request csr = x509::certificate_request::create();
-
-			csr.set_version(2);
-
-			csr.set_public_key(pkey::pkey::from_rsa_key(private_key));
-
-			csr.subject().push_back("CN", MBSTRING_ASC, configuration.server.username.c_str(), configuration.server.username.size());
-
-			csr.sign(pkey::pkey::from_rsa_key(private_key), hash::message_digest_algorithm(NID_sha1));
-
-			return csr;
-		}
 	}
 
-	client::client(freelan::configuration& configuration, freelan::logger& _logger) :
+	client::client(const freelan::configuration& configuration, freelan::logger& _logger) :
 		m_configuration(configuration),
 		m_logger(_logger),
 		m_scheme(server_protocol_to_scheme(m_configuration.server.protocol))
 	{
-	}
-
-	void client::connect()
-	{
-		curl request;
-
-		configure_request(request);
-
-		std::string server_name;
-		unsigned int server_version_major;
-		unsigned int server_version_minor;
-		std::string login_url;
-		std::string sign_url;
-
-		get_server_information(
-				request,
-				server_name,
-				server_version_major,
-				server_version_minor,
-				login_url,
-				sign_url
-				);
-
-		if (server_version_major == 1)
-		{
-			v1_authenticate(request, login_url);
-
-			if (!m_configuration.security.identity)
-			{
-				m_logger(LL_INFORMATION) << "Client has no private key. Generating one now...";
-
-				// Generate the RSA key without taking ownership of it.
-				cryptoplus::pkey::pkey rsa_key = cryptoplus::pkey::pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(1024, 17, NULL, NULL, false));
-
-				cryptoplus::x509::certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
-				cryptoplus::x509::certificate certificate;
-
-				v1_sign_certificate_request(request, sign_url, csr, certificate);
-
-				m_logger(LL_INFORMATION) << "Using certificate received from the server. (Valid until " << boost::posix_time::to_simple_string(certificate.not_after().to_ptime()) << ")";
-
-				m_configuration.security.identity = fscp::identity_store(certificate, rsa_key);
-			}
-		}
-		else
-		{
-			m_logger(LL_ERROR) << "Unsupported server version.";
-
-			throw std::runtime_error("Server protocol error.");
-		}
-	}
-	
-	void client::configure_request(curl& request)
-	{
 		// Set the timeout
-		request.set_connect_timeout(boost::posix_time::seconds(5));
+		m_request.set_connect_timeout(boost::posix_time::seconds(5));
 
 		// Set the user agent
 		if (m_configuration.server.user_agent.empty())
@@ -259,7 +187,7 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "User agent set to \"" << m_configuration.server.user_agent << "\".";
 
-			request.set_user_agent(m_configuration.server.user_agent);
+			m_request.set_user_agent(m_configuration.server.user_agent);
 		}
 
 		// Set the HTTP proxy
@@ -274,7 +202,7 @@ namespace freelan
 				m_logger(LL_INFORMATION) << "Disabling HTTP(S) proxy.";
 			}
 
-			request.set_proxy(*m_configuration.server.https_proxy);
+			m_request.set_proxy(*m_configuration.server.https_proxy);
 		}
 
 		// Disable peer verification if required
@@ -282,7 +210,7 @@ namespace freelan
 		{
 			m_logger(LL_WARNING) << "Peer verification disabled ! Connection will be a LOT LESS SECURE.";
 
-			request.set_ssl_peer_verification(false);
+			m_request.set_ssl_peer_verification(false);
 		}
 		else
 		{
@@ -290,7 +218,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "Setting CA info to \"" << m_configuration.server.ca_info.string() << "\"";
 
-				request.set_ca_info(m_configuration.server.ca_info);
+				m_request.set_ca_info(m_configuration.server.ca_info);
 			}
 		}
 
@@ -299,14 +227,51 @@ namespace freelan
 		{
 			m_logger(LL_WARNING) << "Host verification disabled ! Connection will be less secure.";
 
-			request.set_ssl_host_verification(false);
+			m_request.set_ssl_host_verification(false);
 		}
 
 		// Set the read callback
-		request.set_write_function(boost::bind(&client::read_data, this, _1));
+		m_request.set_write_function(boost::bind(&client::read_data, this, _1));
 
 		// Enable cookie support
-		request.enable_cookie_support();
+		m_request.enable_cookie_support();
+	}
+
+	void client::authenticate()
+	{
+		get_server_information(
+				m_request,
+				m_server_name,
+				m_server_version_major,
+				m_server_version_minor,
+				m_login_url,
+				m_sign_url
+				);
+
+		if (m_server_version_major == 1)
+		{
+			v1_authenticate(m_request, m_login_url);
+		}
+		else
+		{
+			m_logger(LL_ERROR) << "Unsupported server version.";
+
+			throw std::runtime_error("Server protocol error.");
+		}
+	}
+
+	cryptoplus::x509::certificate client::renew_certificate(const cryptoplus::x509::certificate_request& csr)
+	{
+		if (m_server_version_major == 1)
+		{
+			return v1_sign_certificate_request(m_request, m_sign_url, csr);
+		}
+		else
+		{
+			m_logger(LL_ERROR) << "Unsupported server version.";
+
+			throw std::runtime_error("Server protocol error.");
+		}
 	}
 
 	void client::perform_request(curl& request, const std::string& url, values_type& values)
@@ -412,7 +377,7 @@ namespace freelan
 		v1_post_server_login(request, url, challenge);
 	}
 
-	void client::v1_sign_certificate_request(curl& request, const std::string& sign_url, cryptoplus::x509::certificate_request& csr, cryptoplus::x509::certificate& certificate)
+	cryptoplus::x509::certificate client::v1_sign_certificate_request(curl& request, const std::string& sign_url, const cryptoplus::x509::certificate_request& csr)
 	{
 		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + sign_url;
 
@@ -438,9 +403,11 @@ namespace freelan
 
 		const std::string certificate_der_str = base64_decode(certificate_str);
 
-		certificate = cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
+		cryptoplus::x509::certificate certificate = cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
 
 		m_logger(LL_INFORMATION) << "Certificate request was signed.";
+
+		return certificate;
 	}
 
 	void client::v1_get_server_login(curl& request, const std::string& url, std::string& challenge)

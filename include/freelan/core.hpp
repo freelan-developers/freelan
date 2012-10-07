@@ -66,6 +66,8 @@
 
 namespace freelan
 {
+	class client;
+
 	/**
 	 * \brief The core class.
 	 */
@@ -271,6 +273,7 @@ namespace freelan
 			void do_dynamic_contact(cert_type cert);
 			void do_periodic_contact(const boost::system::error_code&);
 			void do_periodic_dynamic_contact(const boost::system::error_code&);
+			void do_check_certificate_expiration(const boost::system::error_code&);
 
 			// Members
 			freelan::configuration m_configuration;
@@ -328,6 +331,12 @@ namespace freelan
 			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
 			bool certificate_is_valid(cert_type cert);
 			cryptoplus::x509::store m_ca_store;
+
+			// Client
+			void async_renew_certificate();
+			void renew_certificate_callback(identity_store);
+			boost::shared_ptr<client> m_client;
+			boost::asio::deadline_timer m_certificate_expiration_timer;
 	};
 
 	inline const freelan::configuration& core::configuration() const

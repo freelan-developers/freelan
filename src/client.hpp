@@ -51,6 +51,8 @@
 
 #include <boost/asio.hpp>
 
+#include "curl.hpp"
+
 namespace cryptoplus
 {
 	namespace x509
@@ -64,7 +66,6 @@ namespace freelan
 {
 	class configuration;
 	class logger;
-	class curl;
 	
 	/**
 	 * \brief A class that handles connection to a freelan server.
@@ -83,19 +84,23 @@ namespace freelan
 			 * \param configuration The configuration to use.
 			 * \param _logger The logger to use.
 			 */
-			client(freelan::configuration& configuration, freelan::logger& _logger);
+			client(const freelan::configuration& configuration, freelan::logger& _logger);
 
 			/**
-			 * \brief Connects to the server and perform an authentication.
+			 * \brief Perform an authentication.
 			 */
-			void connect();
+			void authenticate();
+
+			/**
+			 * \brief Renew the certificate.
+			 */
+			cryptoplus::x509::certificate renew_certificate(const cryptoplus::x509::certificate_request& csr);
 
 		private:
 
 			client(const client&);
 			client& operator=(const client&);
 
-			void configure_request(curl&);
 			void perform_request(curl&, const std::string&, values_type&);
 			void perform_get_request(curl&, const std::string&, values_type&);
 			void perform_post_request(curl&, const std::string&, const values_type&, values_type&);
@@ -103,7 +108,7 @@ namespace freelan
 
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
-			void v1_sign_certificate_request(curl&, const std::string&, cryptoplus::x509::certificate_request&, cryptoplus::x509::certificate&);
+			cryptoplus::x509::certificate v1_sign_certificate_request(curl&, const std::string&, const cryptoplus::x509::certificate_request&);
 
 			// Version 1 sub-methods
 			void v1_get_server_login(curl&, const std::string&, std::string&);
@@ -111,8 +116,14 @@ namespace freelan
 
 			size_t read_data(boost::asio::const_buffer buf);
 
-			configuration& m_configuration;
+			const configuration& m_configuration;
 			logger& m_logger;
+			std::string m_server_name;
+			unsigned int m_server_version_major;
+			unsigned int m_server_version_minor;
+			std::string m_login_url;
+			std::string m_sign_url;
+			curl m_request;
 			const std::string m_scheme;
 			std::string m_data;
 	};
