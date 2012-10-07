@@ -225,16 +225,16 @@ namespace freelan
 				m_logger(LL_INFORMATION) << "Client has no private key. Generating one now...";
 
 				// Generate the RSA key without taking ownership of it.
-				cryptoplus::pkey::rsa_key private_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17, NULL, NULL, false);
+				cryptoplus::pkey::pkey rsa_key = cryptoplus::pkey::pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(1024, 17, NULL, NULL, false));
 
-				cryptoplus::x509::certificate_request csr = generate_certificate_request(m_configuration, private_key);
+				cryptoplus::x509::certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
 				cryptoplus::x509::certificate certificate;
 
 				v1_sign_certificate_request(request, sign_url, csr, certificate);
 
 				m_logger(LL_INFORMATION) << "Using certificate received from the server. (Valid until " << boost::posix_time::to_simple_string(certificate.not_after().to_ptime()) << ")";
 
-				m_configuration.security.identity = fscp::identity_store(certificate, cryptoplus::pkey::pkey::from_rsa_key(private_key));
+				m_configuration.security.identity = fscp::identity_store(certificate, rsa_key);
 			}
 		}
 		else
