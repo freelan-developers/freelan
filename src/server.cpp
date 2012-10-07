@@ -127,6 +127,11 @@ namespace fscp
 		m_socket.close();
 	}
 
+	void server::set_identity(const identity_store& _identity)
+	{
+		get_io_service().post(bind(&server::do_set_identity, this, _identity));
+	}
+
 	void server::async_greet(ep_type target, hello_request::callback_type callback, const boost::posix_time::time_duration& timeout)
 	{
 		get_io_service().post(bind(&server::do_greet, this, normalize(target), callback, timeout));
@@ -267,6 +272,18 @@ namespace fscp
 					get_io_service().post(bind(&server::do_send_contact_request, this, session_pair->first));
 				}
 			}
+		}
+	}
+
+	/* Identity update */
+
+	void server::do_set_identity(identity_store _identity)
+	{
+		m_identity_store = _identity;
+
+		for (presentation_store_map::const_iterator presentation = m_presentation_map.begin(); presentation != m_presentation_map.end(); ++presentation)
+		{
+			do_introduce_to(presentation->first);
 		}
 	}
 

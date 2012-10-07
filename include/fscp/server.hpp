@@ -225,6 +225,12 @@ namespace fscp
 			const identity_store& identity() const;
 
 			/**
+			 * \brief Update the identity store.
+			 * \warning This causes all existing connections to be lost and renegociated.
+			 */
+			void set_identity(const identity_store& identity);
+
+			/**
 			 * \brief Set the default behavior when a hello message arrives.
 			 * \param value If false, hello messages will be ignored. Default is true.
 			 */
@@ -402,6 +408,10 @@ namespace fscp
 			 * \param cert The certificate to ask for.
 			 */
 			void async_send_contact_request_to_all(cert_type cert);
+
+		private: // Identity update
+
+			void do_set_identity(identity_store identity);
 
 		private: // Generic network stuff
 
