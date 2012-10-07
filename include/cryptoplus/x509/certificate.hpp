@@ -300,50 +300,50 @@ namespace cryptoplus
 				 * \brief Write the certificate in DER format to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_der(bio::bio_ptr bio);
+				void write_der(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_certificate(bio::bio_ptr bio);
+				void write_certificate(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the trusted certificate to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_trusted_certificate(bio::bio_ptr bio);
+				void write_trusted_certificate(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate in DER format to a file.
 				 * \param file The file.
 				 */
-				void write_der(file file);
+				void write_der(file file) const;
 
 				/**
 				 * \brief Write the certificate to a file.
 				 * \param file The file.
 				 */
-				void write_certificate(file file);
+				void write_certificate(file file) const;
 
 				/**
 				 * \brief Write the trusted certificate to a file.
 				 * \param file The file.
 				 */
-				void write_trusted_certificate(file file);
+				void write_trusted_certificate(file file) const;
 
 				/**
 				 * \brief Write the certificate in DER format to a buffer.
 				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
 				 * \return The size written or to be written.
 				 */
-				size_t write_der(void* buf);
+				size_t write_der(void* buf) const;
 
 				/**
 				 * \brief Write the certificate in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der();
+				std::vector<unsigned char> write_der() const;
 
 				/**
 				 * \brief Clone the certificate instance.
@@ -355,13 +355,13 @@ namespace cryptoplus
 				 * \brief Print a X509 to a BIO.
 				 * \param bio The BIO.
 				 */
-				void print(bio::bio_ptr bio);
+				void print(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Get the count of entries.
 				 * \return The count of entries.
 				 */
-				int count();
+				int count() const;
 
 				/**
 				 * \brief Get the entry at the specified position.
@@ -806,31 +806,31 @@ namespace cryptoplus
 		inline certificate::certificate(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void certificate::write_der(bio::bio_ptr bio)
+		inline void certificate::write_der(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(i2d_X509_bio(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_certificate(bio::bio_ptr bio)
+		inline void certificate::write_certificate(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_X509(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_trusted_certificate(bio::bio_ptr bio)
+		inline void certificate::write_trusted_certificate(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_der(file _file)
+		inline void certificate::write_der(file _file) const
 		{
 			error::throw_error_if_not(i2d_X509_fp(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_certificate(file _file)
+		inline void certificate::write_certificate(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_X509(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate::write_trusted_certificate(file _file)
+		inline void certificate::write_trusted_certificate(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_X509_AUX(_file.raw(), ptr().get()) != 0);
 		}
-		inline size_t certificate::write_der(void* buf)
+		inline size_t certificate::write_der(void* buf) const
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
 			unsigned char** pout = out != NULL ? &out : NULL;
@@ -841,7 +841,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> certificate::write_der()
+		inline std::vector<unsigned char> certificate::write_der() const
 		{
 			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
 
@@ -853,11 +853,11 @@ namespace cryptoplus
 		{
 			return certificate(X509_dup(ptr().get()));
 		}
-		inline void certificate::print(bio::bio_ptr bio)
+		inline void certificate::print(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(X509_print(bio.raw(), ptr().get()) != 0);
 		}
-		inline int certificate::count()
+		inline int certificate::count() const
 		{
 			return X509_get_ext_count(ptr().get());
 		}
