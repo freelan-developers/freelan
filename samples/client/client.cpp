@@ -122,15 +122,32 @@ static bool on_session(const std::string& name, fscp::server& server, const fscp
 
 static void on_data(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
-	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
+	const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
+
+	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << str_data << std::endl;
 
 	if (name == "alice")
 	{
-		using cryptoplus::file;
+		if (str_data == "Hello ! I'm chris")
+		{
+			const std::string common_name = server.identity().signature_certificate().subject().find(NID_commonName)->data().str();
+			const std::string new_common_name = "denis";
 
-		cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
+			if (common_name != new_common_name)
+			{
+				std::cout << "[" << name << "] My current name is " << common_name << ". Switching to " << new_common_name << "." << std::endl;
 
-		server.async_send_contact_request(sender, cert);
+				server.set_identity(load_identity_store(new_common_name));
+			}
+		}
+		else
+		{
+			using cryptoplus::file;
+
+			cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
+
+			server.async_send_contact_request(sender, cert);
+		}
 	}
 }
 
