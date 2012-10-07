@@ -63,6 +63,16 @@ static bool register_signal_handlers()
 	return true;
 }
 
+static fscp::identity_store load_identity_store(const std::string& name)
+{
+	using cryptoplus::file;
+
+	cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open(name + ".crt", "r"));
+	cryptoplus::pkey::pkey key = cryptoplus::pkey::pkey::from_private_key(file::open(name + ".key", "r"));
+
+	return fscp::identity_store(cert, key);
+}
+
 static bool on_hello_request(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
 {
 	std::cout << "[" << name << "] Received HELLO request from " << sender << std::endl;
@@ -105,7 +115,7 @@ static bool on_session(const std::string& name, fscp::server& server, const fscp
 {
 	std::cout << "[" << name << "] Received SESSION from " << sender << std::endl;
 
-	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello you !")));
+	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello ! I'm " + name)));
 
 	return default_accept;
 }
@@ -124,6 +134,15 @@ static void on_data(const std::string& name, fscp::server& server, const fscp::s
 	}
 }
 
+static bool on_contact_request_message(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type cert, const fscp::server::ep_type& target)
+{
+	(void)server;
+
+	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject().oneline() << " ? (Answer: " << target << ")" << std::endl;
+
+	return true;
+}
+
 static void on_contact_message(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type cert, const fscp::server::ep_type& target)
 {
 	std::cout << "[" << name << "] Received CONTACT from " << sender << ": " << cert.subject().oneline() << " is at " << target << std::endl;
@@ -136,16 +155,6 @@ static void _stop_function(fscp::server& s1, fscp::server& s2, fscp::server& s3)
 	s1.close();
 	s2.close();
 	s3.close();
-}
-
-static fscp::identity_store load_identity_store(const std::string& name)
-{
-	using cryptoplus::file;
-
-	cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open(name + ".crt", "r"));
-	cryptoplus::pkey::pkey key = cryptoplus::pkey::pkey::from_private_key(file::open(name + ".key", "r"));
-
-	return fscp::identity_store(cert, key);
 }
 
 int main()
@@ -178,24 +187,26 @@ int main()
 		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), _1, _2, _3));
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), _1, _2, _3));
 
-		bob_server.set_hello_message_callback(boost::bind(&on_hello_request, " bob ", boost::ref(bob_server), _1, _2));
+		bob_server.set_hello_message_callback(boost::bind(&on_hello_request, "bob", boost::ref(bob_server), _1, _2));
 		chris_server.set_hello_message_callback(boost::bind(&on_hello_request, "chris", boost::ref(chris_server), _1, _2));
 
 		alice_server.set_presentation_message_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
-		bob_server.set_presentation_message_callback(boost::bind(&on_presentation, " bob ", boost::ref(bob_server), _1, _2, _3, _4));
+		bob_server.set_presentation_message_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3, _4));
 		chris_server.set_presentation_message_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		alice_server.set_session_request_message_callback(boost::bind(&on_session_request, "alice", boost::ref(alice_server), _1, _2));
-		bob_server.set_session_request_message_callback(boost::bind(&on_session_request, " bob ", boost::ref(bob_server), _1, _2));
+		bob_server.set_session_request_message_callback(boost::bind(&on_session_request, "bob", boost::ref(bob_server), _1, _2));
 		chris_server.set_session_request_message_callback(boost::bind(&on_session_request, "chris", boost::ref(chris_server), _1, _2));
 
 		alice_server.set_session_message_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2));
-		bob_server.set_session_message_callback(boost::bind(&on_session, " bob ", boost::ref(bob_server), _1, _2));
+		bob_server.set_session_message_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2));
 		chris_server.set_session_message_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2));
 
 		alice_server.set_data_message_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_data_message_callback(boost::bind(&on_data, " bob ", boost::ref(bob_server), _1, _2, _3));
+		bob_server.set_data_message_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3));
 		chris_server.set_data_message_callback(boost::bind(&on_data, "chris", boost::ref(chris_server), _1, _2, _3));
+
+		bob_server.set_contact_request_message_callback(boost::bind(&on_contact_request_message, "bob", boost::ref(bob_server), _1, _2, _3));
 
 		alice_server.set_contact_message_callback(boost::bind(&on_contact_message, "alice", boost::ref(alice_server), _1, _2, _3));
 
