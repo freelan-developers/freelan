@@ -17,6 +17,7 @@ It contains the following projects:
  - [libfreelan](https://github.com/freelan-developers/libfreelan) - The FreeLAN C++ library.
  - [freelan](https://github.com/freelan-developers/freelan) - The FreeLAN binary.
  - [freelan-server](https://github.com/freelan-developers/freelan-server) - The FreeLAN configuration server.
+ - [libkfather](https://github.com/freelan-developers/libkfather) - A C++ JSON parser/producer with a terrible name.
 
 Packaging
 ----------
