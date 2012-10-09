@@ -22,3 +22,6 @@
 [submodule "freelan-server"]
 	path = freelan-server
 	url = ../freelan-server.git
+[submodule "libkfather"]
+	path = libkfather
+	url = ../libkfather.git
