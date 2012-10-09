@@ -44,8 +44,8 @@
 
 #include "base64.hpp"
 
-#include <cryptoplus/bio/bio_chain.hpp>
-#include <cryptoplus/bio/bio_ptr.hpp>
+#include "bio/bio_chain.hpp"
+#include "bio/bio_ptr.hpp"
 
 #include <openssl/buffer.h>
 
