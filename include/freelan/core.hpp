@@ -66,8 +66,6 @@
 
 namespace freelan
 {
-	class client;
-
 	/**
 	 * \brief The core class.
 	 */
@@ -343,9 +341,8 @@ namespace freelan
 			cryptoplus::x509::store m_ca_store;
 
 			// Client
-			void async_renew_certificate();
-			void renew_certificate_callback(identity_store);
-			boost::shared_ptr<client> m_client;
+			void update_server_configuration(bool);
+			void update_server_configuration_callback(identity_store);
 			boost::asio::deadline_timer m_certificate_expiration_timer;
 	};
 

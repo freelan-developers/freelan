@@ -121,30 +121,9 @@ namespace freelan
 
 		if (m_configuration.server.enabled)
 		{
-			using namespace cryptoplus::pkey;
-			using namespace cryptoplus::x509;
-
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
-			m_client.reset(new client(m_configuration, m_logger));
-
-			m_client->authenticate();
-
-			if (!m_configuration.security.identity)
-			{
-				m_logger(LL_INFORMATION) << "Client has no private key. Generating one now...";
-
-				// Generate the RSA key without taking ownership of it.
-				pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
-
-				certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
-
-				certificate cert = m_client->renew_certificate(csr);
-
-				m_logger(LL_INFORMATION) << "Using certificate received from the server. (Valid until " << boost::posix_time::to_simple_string(cert.not_after().to_ptime()) << ")";
-
-				m_configuration.security.identity = fscp::identity_store(cert, rsa_key);
-			}
+			update_server_configuration(false);
 		}
 
 		if (m_configuration_update_callback)
@@ -685,7 +664,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "Certificate expires in " << time_left << ". Renewing...";
 
-				async_renew_certificate();
+				update_server_configuration(true);
 			}
 			else
 			{
@@ -816,12 +795,34 @@ namespace freelan
 		return true;
 	}
 
-	void core::async_renew_certificate()
+	void core::update_server_configuration(bool delayed)
 	{
-		//TODO: Implement
+		using namespace cryptoplus::pkey;
+		using namespace cryptoplus::x509;
+
+		freelan::logger delayed_logger(boost::bind(&core::log, this, _1, _2), m_logger.level());
+
+		client _client(m_configuration, delayed ? delayed_logger : m_logger);
+
+		_client.authenticate();
+
+		pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
+
+		certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
+
+		certificate cert = _client.renew_certificate(csr);
+
+		if (delayed)
+		{
+			m_io_service.post(boost::bind(&core::update_server_configuration_callback, this, fscp::identity_store(cert, rsa_key)));
+		}
+		else
+		{
+			update_server_configuration_callback(fscp::identity_store(cert, rsa_key));
+		}
 	}
 
-	void core::renew_certificate_callback(identity_store _identity)
+	void core::update_server_configuration_callback(identity_store _identity)
 	{
 		m_configuration.security.identity.reset(_identity);
 
