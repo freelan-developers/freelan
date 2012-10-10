@@ -70,6 +70,18 @@ namespace freelan
 		}
 	}
 
+	logger_stream logger::log(log_level _level, const std::string& msg)
+	{
+		if (_level >= m_level)
+		{
+			return logger_stream(*this, _level) << msg;
+		}
+		else
+		{
+			return logger_stream();
+		}
+	}
+
 	void logger::flush(log_level _level)
 	{
 		std::ostringstream& oss = static_cast<std::ostringstream&>(os());

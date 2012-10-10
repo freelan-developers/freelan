@@ -323,6 +323,11 @@ namespace freelan
 		}
 	}
 
+	void core::log(freelan::log_level level, const std::string& msg)
+	{
+		m_io_service.post(boost::bind(&logger::log, m_logger, level, msg));
+	}
+
 	void core::do_close()
 	{
 		m_logger(LL_DEBUG) << "Core closing...";

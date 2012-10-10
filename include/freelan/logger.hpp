@@ -94,6 +94,13 @@ namespace freelan
 			logger_stream operator()(log_level level);
 
 			/**
+			 * \brief Log the specified message.
+			 * \param level The log level.
+			 * \param msg The message to log.
+			 */
+			logger_stream log(log_level level, const std::string& msg);
+
+			/**
 			 * \brief Get the logger's level.
 			 * \return The logger's level.
 			 */

@@ -238,6 +238,16 @@ namespace freelan
 			 */
 			void close();
 
+			/**
+			 * \brief Add a log entry to the attached logger.
+			 * \param level The log level of the entry. If level is inferior to the
+			 * current log level of the attached logger, the call will have no
+			 * effect.
+			 * \param msg The message to log. It will be copied and can be deleted
+			 * safely at any time.
+			 */
+			void log(freelan::log_level level, const std::string& msg);
+
 		private:
 
 			// Setting up
