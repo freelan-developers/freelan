@@ -4,6 +4,7 @@
  * \brief A parsing sample file.
  */
 
+#include <kfather/kfather.hpp>
 #include <kfather/parser.hpp>
 
 #include <cstdlib>
