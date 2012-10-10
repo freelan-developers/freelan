@@ -36,4 +36,10 @@ namespace kfather
 {
 }
 
+#ifndef KFATHER_NO_JSON_NAMESPACE_ALIAS
+
+namespace json = kfather;
+
+#endif /* KFATHER_NO_JSON_NAMESPACE_ALIAS */
+
 #endif /* KFATHER_KFATHER_HPP */
