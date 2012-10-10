@@ -175,6 +175,11 @@ namespace freelan
 		m_logger(_logger),
 		m_scheme(server_protocol_to_scheme(m_configuration.server.protocol))
 	{
+		if (m_configuration.server.protocol == server_configuration::SP_HTTP)
+		{
+			m_logger(LL_WARNING) << "Current server protocol is HTTP. Your password will be sent in cleartext to the server !";
+		}
+
 		// Set the timeout
 		m_request.set_connect_timeout(boost::posix_time::seconds(5));
 
