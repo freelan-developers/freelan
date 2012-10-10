@@ -831,6 +831,6 @@ namespace freelan
 			m_server->set_identity(_identity);
 		}
 
-		m_logger(LL_DEBUG) << "Identity was updated.";
+		m_logger(LL_INFORMATION) << "Local client identity was updated.";
 	}
 }

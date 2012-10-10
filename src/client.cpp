@@ -420,7 +420,7 @@ namespace freelan
 
 		assert_has_value(values, "challenge", challenge);
 
-		m_logger(LL_INFORMATION) << "Login challenge is: " << challenge;
+		m_logger(LL_DEBUG) << "Login challenge is: " << challenge;
 	}
 
 	void client::v1_post_server_login(curl& request, const std::string& url, const std::string& challenge)
