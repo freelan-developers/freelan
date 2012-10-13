@@ -24,6 +24,7 @@ else:
 
 libraries.append('boost_system')
 libraries.append('boost_thread')
+libraries.append('boost_date_time')
 
 if sys.platform.startswith('win32'):
 
