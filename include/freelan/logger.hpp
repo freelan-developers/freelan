@@ -98,7 +98,7 @@ namespace freelan
 			 * \param level The log level.
 			 * \param msg The message to log.
 			 */
-			logger_stream log(log_level level, const std::string& msg);
+			void log(log_level level, const std::string& msg);
 
 			/**
 			 * \brief Get the logger's level.
