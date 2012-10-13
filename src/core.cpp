@@ -62,6 +62,13 @@ namespace freelan
 	{
 		static const switch_::group_type TAP_ADAPTERS_GROUP = 0;
 		static const switch_::group_type ENDPOINTS_GROUP = 1;
+		static const boost::posix_time::time_duration CERTIFICATE_RENEWAL_DELAY = boost::posix_time::hours(6);
+
+		enum ConfigurationItems
+		{
+			CI_CERTIFICATE = 0x01,
+			CI_ALL = CI_CERTIFICATE
+		};
 
 		cryptoplus::x509::certificate_request generate_certificate_request(const freelan::configuration& configuration, const cryptoplus::pkey::rsa_key& private_key)
 		{
@@ -109,7 +116,7 @@ namespace freelan
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
 		m_switch(m_configuration.switch_),
-		m_certificate_expiration_timer(m_io_service)
+		m_check_configuration_timer(m_io_service)
 	{
 	}
 
@@ -123,7 +130,7 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Server mode enabled.";
 
-			update_server_configuration(false);
+			update_server_configuration(CI_ALL);
 		}
 
 		if (m_configuration_update_callback)
@@ -359,7 +366,7 @@ namespace freelan
 			m_tap_adapter->close();
 		}
 
-		m_certificate_expiration_timer.cancel();
+		m_check_configuration_timer.cancel();
 		m_contact_timer.cancel();
 		m_dynamic_contact_timer.cancel();
 
@@ -646,7 +653,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_check_certificate_expiration(const boost::system::error_code& ec)
+	void core::do_check_configuration(const boost::system::error_code& ec)
 	{
 		using namespace cryptoplus::pkey;
 		using namespace cryptoplus::x509;
@@ -657,21 +664,20 @@ namespace freelan
 
 			const certificate sig_cert = m_configuration.security.identity->signature_certificate();
 			const boost::posix_time::ptime not_after = sig_cert.not_after().to_ptime();
-			const boost::posix_time::time_duration delay = boost::posix_time::hours(24);
 			const boost::posix_time::time_duration time_left = not_after - boost::posix_time::second_clock::universal_time();
 
-			if (time_left <= delay)
+			if (time_left <= CERTIFICATE_RENEWAL_DELAY)
 			{
 				m_logger(LL_INFORMATION) << "Certificate expires in " << time_left << ". Renewing...";
 
-				update_server_configuration(true);
+				async_update_server_configuration(CI_CERTIFICATE);
 			}
 			else
 			{
-				m_logger(LL_DEBUG) << "Certificate doesn't expire yet. Checking again at " << boost::posix_time::to_simple_string(not_after - delay) << ".";
+				m_logger(LL_DEBUG) << "Certificate doesn't expire yet. Checking again at " << boost::posix_time::to_simple_string(not_after - CERTIFICATE_RENEWAL_DELAY) << ".";
 
-				m_certificate_expiration_timer.expires_at(not_after - delay);
-				m_certificate_expiration_timer.async_wait(boost::bind(&core::do_check_certificate_expiration, this, boost::asio::placeholders::error));
+				m_check_configuration_timer.expires_at(not_after - CERTIFICATE_RENEWAL_DELAY);
+				m_check_configuration_timer.async_wait(boost::bind(&core::do_check_configuration, this, boost::asio::placeholders::error));
 			}
 		}
 	}
@@ -795,8 +801,20 @@ namespace freelan
 		return true;
 	}
 
-	void core::update_server_configuration(bool delayed)
+	void core::async_update_server_configuration(int items)
 	{
+		boost::thread thread(boost::bind(&core::update_server_configuration, this, items, true));
+
+		thread.detach();
+	}
+
+	void core::update_server_configuration(int items, bool delayed)
+	{
+		// Warning !
+		// This function may be called in another thread than the io_service thread.
+		//
+		// That is, modifiying values should *NOT* be done here.
+
 		using namespace cryptoplus::pkey;
 		using namespace cryptoplus::x509;
 
@@ -806,23 +824,26 @@ namespace freelan
 
 		_client.authenticate();
 
-		pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
-
-		certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
-
-		certificate cert = _client.renew_certificate(csr);
-
-		if (delayed)
+		if (CI_CERTIFICATE & items)
 		{
-			m_io_service.post(boost::bind(&core::update_server_configuration_callback, this, fscp::identity_store(cert, rsa_key)));
-		}
-		else
-		{
-			update_server_configuration_callback(fscp::identity_store(cert, rsa_key));
+			pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
+
+			certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
+
+			certificate cert = _client.renew_certificate(csr);
+
+			if (delayed)
+			{
+				m_io_service.post(boost::bind(&core::set_identity, this, fscp::identity_store(cert, rsa_key)));
+			}
+			else
+			{
+				set_identity(fscp::identity_store(cert, rsa_key));
+			}
 		}
 	}
 
-	void core::update_server_configuration_callback(identity_store _identity)
+	void core::set_identity(identity_store _identity)
 	{
 		m_configuration.security.identity.reset(_identity);
 
@@ -832,5 +853,17 @@ namespace freelan
 		}
 
 		m_logger(LL_INFORMATION) << "Local client identity was updated.";
+
+		using namespace cryptoplus::pkey;
+		using namespace cryptoplus::x509;
+
+		const certificate sig_cert = _identity.signature_certificate();
+		const boost::posix_time::ptime not_after = sig_cert.not_after().to_ptime();
+		const boost::posix_time::ptime renewal_date = not_after - CERTIFICATE_RENEWAL_DELAY;
+
+		m_check_configuration_timer.expires_at(renewal_date);
+		m_check_configuration_timer.async_wait(boost::bind(&core::do_check_configuration, this, boost::asio::placeholders::error));
+
+		m_logger(LL_INFORMATION) << "Checking again configuration at " << boost::posix_time::to_simple_string(renewal_date) << ".";
 	}
 }

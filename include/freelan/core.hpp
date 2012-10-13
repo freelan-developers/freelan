@@ -281,7 +281,7 @@ namespace freelan
 			void do_dynamic_contact(cert_type cert);
 			void do_periodic_contact(const boost::system::error_code&);
 			void do_periodic_dynamic_contact(const boost::system::error_code&);
-			void do_check_certificate_expiration(const boost::system::error_code&);
+			void do_check_configuration(const boost::system::error_code&);
 
 			// Members
 			freelan::configuration m_configuration;
@@ -341,9 +341,10 @@ namespace freelan
 			cryptoplus::x509::store m_ca_store;
 
 			// Client
-			void update_server_configuration(bool);
-			void update_server_configuration_callback(identity_store);
-			boost::asio::deadline_timer m_certificate_expiration_timer;
+			void async_update_server_configuration(int);
+			void update_server_configuration(int, bool delayed = false);
+			void set_identity(identity_store);
+			boost::asio::deadline_timer m_check_configuration_timer;
 	};
 
 	inline const freelan::configuration& core::configuration() const
