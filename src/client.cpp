@@ -250,12 +250,27 @@ namespace freelan
 				m_server_version_major,
 				m_server_version_minor,
 				m_login_url,
+				m_join_network_url,
 				m_sign_url
 				);
 
 		if (m_server_version_major == 1)
 		{
 			v1_authenticate(m_request, m_login_url);
+		}
+		else
+		{
+			m_logger(LL_ERROR) << "Unsupported server version.";
+
+			throw std::runtime_error("Server protocol error.");
+		}
+	}
+
+	cryptoplus::x509::certificate client::join_network(const std::string& network)
+	{
+		if (m_server_version_major == 1)
+		{
+			return v1_join_network(m_request, m_join_network_url, network);
 		}
 		else
 		{
@@ -350,6 +365,7 @@ namespace freelan
 			unsigned int& server_version_major,
 			unsigned int& server_version_minor,
 			std::string& login_url,
+			std::string& join_network_url,
 			std::string& sign_url
 			)
 	{
@@ -367,6 +383,7 @@ namespace freelan
 		assert_has_value(values, "major", server_version_major);
 		assert_has_value(values, "minor", server_version_minor);
 		assert_has_value(values, "login_url", login_url);
+		assert_has_value(values, "join_network_url", join_network_url);
 		assert_has_value(values, "sign_url", sign_url);
 
 		m_logger(LL_INFORMATION) << "Server version is " << server_name << "/" << server_version_major << "." << server_version_minor;
@@ -380,6 +397,35 @@ namespace freelan
 
 		v1_get_server_login(request, url, challenge);
 		v1_post_server_login(request, url, challenge);
+	}
+
+	cryptoplus::x509::certificate client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network)
+	{
+		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + join_network_url;
+
+		m_logger(LL_INFORMATION) << "Joining network \"" << network << "\"...";
+
+		request.reset_http_headers();
+
+		values_type parameters;
+
+		parameters["network"] = network;
+
+		values_type values;
+
+		perform_post_request(request, url, parameters, values);
+
+		std::string authority_certificate_str;
+
+		assert_has_value(values, "authority_certificate", authority_certificate_str);
+
+		const std::string authority_certificate_der_str = base64_decode(authority_certificate_str);
+
+		cryptoplus::x509::certificate authority_certificate = cryptoplus::x509::certificate::from_der(authority_certificate_der_str.c_str(), authority_certificate_der_str.size());
+
+		m_logger(LL_INFORMATION) << "Joined network \"" << network << "\" succesfully.";
+
+		return authority_certificate;
 	}
 
 	cryptoplus::x509::certificate client::v1_sign_certificate_request(curl& request, const std::string& sign_url, const cryptoplus::x509::certificate_request& csr)
