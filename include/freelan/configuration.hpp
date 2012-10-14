@@ -97,11 +97,6 @@ namespace freelan
 		endpoint host;
 
 		/**
-		 * \brief The https proxy host name.
-		 */
-		boost::optional<endpoint> https_proxy;
-
-		/**
 		 * \brief The username.
 		 */
 		std::string username;
@@ -110,6 +105,16 @@ namespace freelan
 		 * \brief The password.
 		 */
 		std::string password;
+
+		/**
+		 * \brief The network.
+		 */
+		std::string network;
+
+		/**
+		 * \brief The https proxy host name.
+		 */
+		boost::optional<endpoint> https_proxy;
 
 		/**
 		 * \brief The user agent.

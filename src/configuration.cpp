@@ -54,9 +54,10 @@ namespace freelan
 	server_configuration::server_configuration() :
 		enabled(false),
 		host(),
-		https_proxy(),
 		username(),
 		password(),
+		network(),
+		https_proxy(),
 		user_agent(),
 		protocol(SP_HTTPS),
 		ca_info(),
