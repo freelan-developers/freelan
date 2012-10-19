@@ -76,8 +76,16 @@ namespace kfather
 
 		private:
 
+			bool parse_char(char c, const char*& ch, const char* end);
 			bool parse_value(const char*& ch, const char* end);
-			bool skip_whitespace(const char*& ch, const char* end);
+			bool parse_object(const char*& ch, const char* end);
+			bool parse_array(const char*& ch, const char* end);
+			bool parse_string(const char*& ch, const char* end);
+			bool parse_number(const char*& ch, const char* end);
+			bool parse_true(const char*& ch, const char* end);
+			bool parse_false(const char*& ch, const char* end);
+			bool parse_null(const char*& ch, const char* end);
+			void skip_whitespace(const char*& ch, const char* end);
 
 			object_start_callback m_object_start_callback;
 	};
