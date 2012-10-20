@@ -32,6 +32,8 @@
 #ifndef KFATHER_PARSER_HPP
 #define KFATHER_PARSER_HPP
 
+#include <iostream>
+
 #include <boost/function.hpp>
 
 namespace kfather
@@ -89,6 +91,20 @@ namespace kfather
 			 */
 			bool parse(const std::string& str, std::string::size_type* error_pos = NULL);
 
+			/**
+			 * \brief Parse the specified input stream.
+			 * \param is The input stream to parse.
+			 * \param error_pos A pointer to a position of the first invalid character.
+			 * \return true if the parsing succeeds, false otherwise.
+			 *
+			 * If the parsing fails, and error_pos is not null, *error_pos is set
+			 * to the position of the first invalid character in is.
+			 *
+			 * If the parsing succeeds, *error_pos is guaranteed not to be
+			 * modified.
+			 */
+			bool parse(std::istream& is, size_t* error_pos = NULL);
+
 		private:
 
 			/**
@@ -104,6 +120,9 @@ namespace kfather
 			 *
 			 * If the parsing fails and error_pos == end, then the end of the range
 			 * was reached before the parsing could be completed.
+			 *
+			 * If the parsing succeeds, *error_pos is guaranteed not to be
+			 * modified.
 			 */
 			template <typename IteratorType>
 			bool parse(IteratorType begin, IteratorType end, IteratorType* error_pos = NULL);

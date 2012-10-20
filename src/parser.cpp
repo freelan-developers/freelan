@@ -33,6 +33,7 @@
 
 #include <string>
 #include <cctype>
+#include <streambuf>
 
 namespace kfather
 {
@@ -58,7 +59,7 @@ namespace kfather
 	{
 		if (error_pos)
 		{
-			std::string::const_iterator error_it = str.begin();
+			std::string::const_iterator error_it;
 
 			if (!parse(str.begin(), str.end(), &error_it))
 			{
@@ -72,6 +73,30 @@ namespace kfather
 		else
 		{
 			 return parse(str.begin(), str.end());
+		}
+	}
+
+	bool parser::parse(std::istream& is, size_t* error_pos)
+	{
+		const std::istreambuf_iterator<char> begin = std::istreambuf_iterator<char>(is);
+		const std::istreambuf_iterator<char> end;
+
+		if (error_pos)
+		{
+			std::istreambuf_iterator<char> error_it;
+
+			if (!parse(begin, end, &error_it))
+			{
+				*error_pos = std::distance(begin, error_it);
+
+				return false;
+			}
+
+			return true;
+		}
+		else
+		{
+			 return parse(begin, end);
 		}
 	}
 
