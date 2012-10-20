@@ -32,8 +32,39 @@
 #ifndef KFATHER_FORMATTER_HPP
 #define KFATHER_FORMATTER_HPP
 
+#include <iostream>
+
 namespace kfather
 {
+	class parser;
+
+	class formatter
+	{
+		public:
+
+			/**
+			 * \brief Create a formatter bound to the specified parser.
+			 * \param parser The parser to bind to.
+			 * \param os The output stream to use.
+			 *
+			 * The binding process may replace some or all of the callbacks of the
+			 * parser instance. That is, you cannot use the same parser with
+			 * different formatters simultaneously.
+			 */
+			formatter(parser& parser, std::ostream& os);
+
+		private:
+
+			void print_object_start();
+			void print_object_colon();
+			void print_object_comma();
+			void print_object_stop();
+			void print_array_start();
+			void print_array_comma();
+			void print_array_stop();
+
+			std::ostream& m_os;
+	};
 }
 
 #endif /* KFATHER_FORMATTER_HPP */

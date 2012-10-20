@@ -33,6 +33,54 @@
 
 #include "parser.hpp"
 
+#include <boost/bind.hpp>
+
 namespace kfather
 {
+	formatter::formatter(parser& parser, std::ostream& os) :
+		m_os(os)
+	{
+		parser.reset_object_start_callback(boost::bind(&formatter::print_object_start, this));
+		parser.reset_object_colon_callback(boost::bind(&formatter::print_object_colon, this));
+		parser.reset_object_comma_callback(boost::bind(&formatter::print_object_comma, this));
+		parser.reset_object_stop_callback(boost::bind(&formatter::print_object_stop, this));
+		parser.reset_array_start_callback(boost::bind(&formatter::print_array_start, this));
+		parser.reset_array_comma_callback(boost::bind(&formatter::print_array_comma, this));
+		parser.reset_array_stop_callback(boost::bind(&formatter::print_array_stop, this));
+	}
+
+	void formatter::print_object_start()
+	{
+		m_os << "{";
+	}
+
+	void formatter::print_object_colon()
+	{
+		m_os << ": ";
+	}
+
+	void formatter::print_object_comma()
+	{
+		m_os << ", ";
+	}
+
+	void formatter::print_object_stop()
+	{
+		m_os << "}";
+	}
+
+	void formatter::print_array_start()
+	{
+		m_os << "[";
+	}
+
+	void formatter::print_array_comma()
+	{
+		m_os << ", ";
+	}
+
+	void formatter::print_array_stop()
+	{
+		m_os << "]";
+	}
 }
