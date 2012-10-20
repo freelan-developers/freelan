@@ -1,0 +1,11 @@
+{"foo":"bar"}
+{"foo" :"bar"}
+{"foo": "bar"}
+{ "foo":"bar"}
+{"foo":"bar" }
+{ "foo" : "bar" }
+{"foo": 1}
+{"foo": ["bar"]}
+{"foo": null}
+{"foo": true}
+{"foo": false}
