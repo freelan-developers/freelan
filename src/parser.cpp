@@ -42,6 +42,8 @@ namespace kfather
 		const char* const end = buf + buflen;
 		const char* ch = buf;
 
+		skip_whitespace(ch, end);
+
 		if (!parse_value(ch, end))
 		{
 			if (error_token)
@@ -104,6 +106,8 @@ namespace kfather
 	bool parser::parse(IteratorType begin, IteratorType end, IteratorType* error_pos)
 	{
 		IteratorType it = begin;
+
+		skip_whitespace(it, end);
 
 		if (!parse_value(it, end))
 		{
