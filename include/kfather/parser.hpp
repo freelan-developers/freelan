@@ -178,6 +178,48 @@ namespace kfather
 			 */
 			bool parse(std::istream& is, size_t* error_pos = NULL);
 
+			/**
+			 * \brief Set or reset the object callback.
+			 * \param cb The callback.
+			 */
+			void reset_object_callback(object_callback cb = object_callback()) { m_object_callback = cb; }
+
+			/**
+			 * \brief Set or reset the array callback.
+			 * \param cb The callback.
+			 */
+			void reset_array_callback(array_callback cb = array_callback()) { m_array_callback = cb; }
+
+			/**
+			 * \brief Set or reset the string callback.
+			 * \param cb The callback.
+			 */
+			void reset_string_callback(string_callback cb = string_callback()) { m_string_callback = cb; }
+
+			/**
+			 * \brief Set or reset the number callback.
+			 * \param cb The callback.
+			 */
+			void reset_number_callback(number_callback cb = number_callback()) { m_number_callback = cb; }
+
+			/**
+			 * \brief Set or reset the true callback.
+			 * \param cb The callback.
+			 */
+			void reset_true_callback(true_callback cb = true_callback()) { m_true_callback = cb; }
+
+			/**
+			 * \brief Set or reset the false callback.
+			 * \param cb The callback.
+			 */
+			void reset_false_callback(false_callback cb = false_callback()) { m_false_callback = cb; }
+
+			/**
+			 * \brief Set or reset the null callback.
+			 * \param cb The callback.
+			 */
+			void reset_null_callback(null_callback cb = null_callback()) { m_null_callback = cb; }
+
 		private:
 
 			/**
