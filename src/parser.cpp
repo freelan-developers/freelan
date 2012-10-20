@@ -56,13 +56,35 @@ namespace kfather
 		
 	bool parser::parse(const std::string& str, std::string::size_type* error_pos)
 	{
-		std::string::const_iterator it = str.begin();
+		if (error_pos)
+		{
+			std::string::const_iterator error_it = str.begin();
 
-		if (!parse_value(it, str.end()))
+			if (!parse(str.begin(), str.end(), &error_it))
+			{
+				*error_pos = std::distance(str.begin(), error_it);
+
+				return false;
+			}
+
+			return true;
+		}
+		else
+		{
+			 return parse(str.begin(), str.end());
+		}
+	}
+
+	template <typename IteratorType>
+	bool parser::parse(IteratorType begin, IteratorType end, IteratorType* error_pos)
+	{
+		IteratorType it = begin;
+
+		if (!parse_value(it, end))
 		{
 			if (error_pos)
 			{
-				*error_pos = std::distance(str.begin(), it);
+				*error_pos = it;
 			}
 
 			return false;

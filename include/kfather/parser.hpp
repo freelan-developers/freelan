@@ -91,6 +91,25 @@ namespace kfather
 
 		private:
 
+			/**
+			 * \brief Parse a range of characters.
+			 * \tparam IteratorType The iterator type.
+			 * \param begin An iterator to the first character to parse.
+			 * \param end An iterator past the last character to parse.
+			 * \param error_pos A pointer to an iterator where the last parsing error occured.
+			 * \return  true if the parsing succeeds, false otherwise.
+			 *
+			 * If the parsing fails, and error_pos is not null, *error_pos is set to
+			 * the position of the first invalid character in [begin, end).
+			 *
+			 * If the parsing fails and error_pos == end, then the end of the range
+			 * was reached before the parsing could be completed.
+			 */
+			template <typename IteratorType>
+			bool parse(IteratorType begin, IteratorType end, IteratorType* error_pos = NULL);
+
+		private:
+
 			template <typename IteratorType>
 			bool parse_char(char c, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
