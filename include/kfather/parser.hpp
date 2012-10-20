@@ -47,6 +47,9 @@ namespace kfather
 	 *
 	 * Note however that modifying a parser instance while parsing has undefined
 	 * behavior.
+	 *
+	 * A parser can be used to validate JSON input, to transform (normalize,
+	 * format) JSON input or to build a JSON value tree.
 	 */
 	class parser
 	{
