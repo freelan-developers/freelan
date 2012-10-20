@@ -91,16 +91,26 @@ namespace kfather
 
 		private:
 
-			bool parse_char(char c, const char*& ch, const char* end);
-			bool parse_value(const char*& ch, const char* end);
-			bool parse_object(const char*& ch, const char* end);
-			bool parse_array(const char*& ch, const char* end);
-			bool parse_string(const char*& ch, const char* end);
-			bool parse_number(const char*& ch, const char* end);
-			bool parse_true(const char*& ch, const char* end);
-			bool parse_false(const char*& ch, const char* end);
-			bool parse_null(const char*& ch, const char* end);
-			void skip_whitespace(const char*& ch, const char* end);
+			template <typename IteratorType>
+			bool parse_char(char c, IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_value(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_object(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_array(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_string(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_number(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_true(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_false(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			bool parse_null(IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
+			void skip_whitespace(IteratorType& ch, IteratorType end);
 
 			object_start_callback m_object_start_callback;
 	};

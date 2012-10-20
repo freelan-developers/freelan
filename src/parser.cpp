@@ -56,15 +56,13 @@ namespace kfather
 		
 	bool parser::parse(const std::string& str, std::string::size_type* error_pos)
 	{
-		const char* buf = str.c_str();
-		const char* const end = buf + str.size();
-		const char* ch = buf;
+		std::string::const_iterator it = str.begin();
 
-		if (!parse_value(ch, end))
+		if (!parse_value(it, str.end()))
 		{
 			if (error_pos)
 			{
-				*error_pos = (ch - buf);
+				*error_pos = std::distance(str.begin(), it);
 			}
 
 			return false;
@@ -73,7 +71,8 @@ namespace kfather
 		return true;
 	}
 
-	bool parser::parse_char(char c, const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_char(char c, IteratorType& ch, IteratorType end)
 	{
 		if ((ch != end) && (*ch == c))
 		{
@@ -85,7 +84,8 @@ namespace kfather
 		return false;
 	}
 
-	bool parser::parse_value(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_value(IteratorType& ch, IteratorType end)
 	{
 		if (ch != end)
 		{
@@ -114,7 +114,8 @@ namespace kfather
 		return false;
 	}
 
-	bool parser::parse_object(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_object(IteratorType& ch, IteratorType end)
 	{
 		if (!parse_char('{', ch, end))
 		{
@@ -183,7 +184,8 @@ namespace kfather
 		return false;
 	}
 
-	bool parser::parse_array(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_array(IteratorType& ch, IteratorType end)
 	{
 		if (!parse_char('[', ch, end))
 		{
@@ -240,7 +242,8 @@ namespace kfather
 		return false;
 	}
 
-	bool parser::parse_string(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_string(IteratorType& ch, IteratorType end)
 	{
 		if (!parse_char('"', ch, end))
 		{
@@ -338,7 +341,8 @@ namespace kfather
 		return false;
 	}
 
-	bool parser::parse_number(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_number(IteratorType& ch, IteratorType end)
 	{
 		// Check if the number is negative
 		if (ch != end)
@@ -431,7 +435,8 @@ namespace kfather
 		return true;
 	}
 
-	bool parser::parse_true(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_true(IteratorType& ch, IteratorType end)
 	{
 		if (!parse_char('t', ch, end))
 		{
@@ -456,7 +461,8 @@ namespace kfather
 		return true;
 	}
 
-	bool parser::parse_false(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_false(IteratorType& ch, IteratorType end)
 	{
 		if (!parse_char('f', ch, end))
 		{
@@ -486,7 +492,8 @@ namespace kfather
 		return true;
 	}
 
-	bool parser::parse_null(const char*& ch, const char* end)
+	template <typename IteratorType>
+	bool parser::parse_null(IteratorType& ch, IteratorType end)
 	{
 		if (!parse_char('n', ch, end))
 		{
@@ -511,7 +518,8 @@ namespace kfather
 		return true;
 	}
 
-	void parser::skip_whitespace(const char*& ch, const char* end)
+	template <typename IteratorType>
+	void parser::skip_whitespace(IteratorType& ch, IteratorType end)
 	{
 		for (; (ch != end) && std::isspace(*ch); ++ch) {}
 	}
