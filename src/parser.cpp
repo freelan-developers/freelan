@@ -37,6 +37,17 @@
 
 namespace kfather
 {
+	parser::parser() :
+		m_object_callback(),
+		m_array_callback(),
+		m_string_callback(),
+		m_number_callback(),
+		m_true_callback(),
+		m_false_callback(),
+		m_null_callback()
+	{
+	}
+
 	bool parser::parse(const char* buf, size_t buflen, const char** error_token)
 	{
 		const char* const end = buf + buflen;

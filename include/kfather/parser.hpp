@@ -53,9 +53,44 @@ namespace kfather
 		public:
 
 			/**
-			 * \brief A JSON object start callback type.
+			 * \brief A JSON object callback type.
 			 */
-			typedef boost::function<void ()> object_start_callback;
+			typedef boost::function<void ()> object_callback;
+
+			/**
+			 * \brief A JSON array callback type.
+			 */
+			typedef boost::function<void ()> array_callback;
+
+			/**
+			 * \brief A JSON string callback type.
+			 */
+			typedef boost::function<void ()> string_callback;
+
+			/**
+			 * \brief A JSON number callback type.
+			 */
+			typedef boost::function<void ()> number_callback;
+
+			/**
+			 * \brief A JSON true callback type.
+			 */
+			typedef boost::function<void ()> true_callback;
+
+			/**
+			 * \brief A JSON false callback type.
+			 */
+			typedef boost::function<void ()> false_callback;
+
+			/**
+			 * \brief A JSON null callback type.
+			 */
+			typedef boost::function<void ()> null_callback;
+
+			/**
+			 * \brief Create a new parser.
+			 */
+			parser();
 
 			/**
 			 * \brief Parse the specified JSON string buffer.
@@ -150,7 +185,13 @@ namespace kfather
 			template <typename IteratorType>
 			void skip_whitespace(IteratorType& ch, IteratorType end);
 
-			object_start_callback m_object_start_callback;
+			object_callback m_object_callback;
+			array_callback m_array_callback;
+			string_callback m_string_callback;
+			number_callback m_number_callback;
+			true_callback m_true_callback;
+			false_callback m_false_callback;
+			null_callback m_null_callback;
 	};
 }
 
