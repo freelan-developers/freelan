@@ -191,15 +191,30 @@ namespace kfather
 			return false;
 		}
 
+		if (m_object_start_callback)
+		{
+			m_object_start_callback();
+		}
+
 		skip_whitespace(ch, end);
 
 		if (ch != end)
 		{
+			// Do we have an empty object ?
 			if (*ch == '}')
 			{
 				++ch;
 
-				// We have an empty object.
+				if (m_object_stop_callback)
+				{
+					m_object_stop_callback();
+				}
+
+				if (m_object_callback)
+				{
+					//TODO: Report an empty object.
+					m_object_callback();
+				}
 
 				return true;
 			}
@@ -218,6 +233,11 @@ namespace kfather
 					return false;
 				}
 
+				if (m_object_colon_callback)
+				{
+					m_object_colon_callback();
+				}
+
 				skip_whitespace(ch, end);
 
 				if (!parse_value(ch, end))
@@ -233,7 +253,16 @@ namespace kfather
 					{
 						++ch;
 
-						// Object is over.
+						if (m_object_stop_callback)
+						{
+							m_object_stop_callback();
+						}
+
+						if (m_object_callback)
+						{
+							//TODO: Report the object.
+							m_object_callback();
+						}
 
 						return true;
 					}
@@ -244,6 +273,11 @@ namespace kfather
 					}
 
 					++ch;
+
+					if (m_object_comma_callback)
+					{
+						m_object_comma_callback();
+					}
 
 					skip_whitespace(ch, end);
 				}
@@ -261,15 +295,30 @@ namespace kfather
 			return false;
 		}
 
+		if (m_array_start_callback)
+		{
+			m_array_start_callback();
+		}
+
 		skip_whitespace(ch, end);
 
 		if (ch != end)
 		{
+			// Do we have an empty array.
 			if (*ch == ']')
 			{
 				++ch;
 
-				// We have an empty array.
+				if (m_array_stop_callback)
+				{
+					m_array_stop_callback();
+				}
+
+				if (m_array_callback)
+				{
+					//TODO: Report an empty array.
+					m_array_callback();
+				}
 
 				return true;
 			}
@@ -291,7 +340,16 @@ namespace kfather
 					{
 						++ch;
 
-						// Array is over.
+						if (m_array_stop_callback)
+						{
+							m_array_stop_callback();
+						}
+
+						if (m_array_callback)
+						{
+							//TODO: Report the array.
+							m_array_callback();
+						}
 
 						return true;
 					}
@@ -302,6 +360,11 @@ namespace kfather
 					}
 
 					++ch;
+
+					if (m_array_comma_callback)
+					{
+						m_array_comma_callback();
+					}
 
 					skip_whitespace(ch, end);
 				}
@@ -332,6 +395,13 @@ namespace kfather
 					{
 						// The string ends.
 						++ch;
+
+						if (m_string_callback)
+						{
+							//TODO: Report the string.
+							m_string_callback();
+						}
+
 						return true;
 					}
 
@@ -501,6 +571,12 @@ namespace kfather
 			}
 		}
 
+		if (m_number_callback)
+		{
+			//TODO: Report the number.
+			m_number_callback();
+		}
+
 		return true;
 	}
 
@@ -525,6 +601,12 @@ namespace kfather
 		if (!parse_char('e', ch, end))
 		{
 			return false;
+		}
+
+		if (m_true_callback)
+		{
+			//TODO: Report true.
+			m_true_callback();
 		}
 
 		return true;
@@ -558,6 +640,12 @@ namespace kfather
 			return false;
 		}
 
+		if (m_false_callback)
+		{
+			//TODO: Report false.
+			m_false_callback();
+		}
+
 		return true;
 	}
 
@@ -582,6 +670,12 @@ namespace kfather
 		if (!parse_char('l', ch, end))
 		{
 			return false;
+		}
+
+		if (m_null_callback)
+		{
+			//TODO: Report null.
+			m_null_callback();
 		}
 
 		return true;
