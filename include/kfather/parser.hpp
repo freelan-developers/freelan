@@ -24,9 +24,9 @@
  */
 
 /**
- * \file kfather.hpp
+ * \file parser.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The global kfather include file.
+ * \brief A JSON parser class.
  */
 
 #ifndef KFATHER_PARSER_HPP
