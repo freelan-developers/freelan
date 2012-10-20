@@ -24,15 +24,16 @@
  */
 
 /**
- * \file formatter.cpp
+ * \file serializer.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Formatter classes.
+ * \brief Serializer classes.
  */
 
-#include "formatter.hpp"
-
-#include "parser.hpp"
+#ifndef KFATHER_SERIALIZER_HPP
+#define KFATHER_SERIALIZER_HPP
 
 namespace kfather
 {
 }
+
+#endif /* KFATHER_SERIALIZER_HPP */

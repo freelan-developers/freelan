@@ -32,8 +32,6 @@
 #ifndef KFATHER_FORMATTER_HPP
 #define KFATHER_FORMATTER_HPP
 
-#include "parser.hpp"
-
 namespace kfather
 {
 }
