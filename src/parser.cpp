@@ -44,7 +44,14 @@ namespace kfather
 		m_number_callback(),
 		m_true_callback(),
 		m_false_callback(),
-		m_null_callback()
+		m_null_callback(),
+		m_object_start_callback(),
+		m_object_colon_callback(),
+		m_object_comma_callback(),
+		m_object_stop_callback(),
+		m_array_start_callback(),
+		m_array_comma_callback(),
+		m_array_stop_callback()
 	{
 	}
 

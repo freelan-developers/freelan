@@ -88,6 +88,41 @@ namespace kfather
 			typedef boost::function<void ()> null_callback;
 
 			/**
+			 * \brief A JSON object start callback type.
+			 */
+			typedef boost::function<void ()> object_start_callback;
+
+			/**
+			 * \brief A JSON object colon callback type.
+			 */
+			typedef boost::function<void ()> object_colon_callback;
+
+			/**
+			 * \brief A JSON object comma callback type.
+			 */
+			typedef boost::function<void ()> object_comma_callback;
+
+			/**
+			 * \brief A JSON object stop callback type.
+			 */
+			typedef boost::function<void ()> object_stop_callback;
+
+			/**
+			 * \brief A JSON array start callback type.
+			 */
+			typedef boost::function<void ()> array_start_callback;
+
+			/**
+			 * \brief A JSON array comma callback type.
+			 */
+			typedef boost::function<void ()> array_comma_callback;
+
+			/**
+			 * \brief A JSON array stop callback type.
+			 */
+			typedef boost::function<void ()> array_stop_callback;
+
+			/**
 			 * \brief Create a new parser.
 			 */
 			parser();
@@ -192,6 +227,14 @@ namespace kfather
 			true_callback m_true_callback;
 			false_callback m_false_callback;
 			null_callback m_null_callback;
+
+			object_start_callback m_object_start_callback;
+			object_colon_callback m_object_colon_callback;
+			object_comma_callback m_object_comma_callback;
+			object_stop_callback m_object_stop_callback;
+			array_start_callback m_array_start_callback;
+			array_comma_callback m_array_comma_callback;
+			array_stop_callback m_array_stop_callback;
 	};
 }
 
