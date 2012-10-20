@@ -177,6 +177,9 @@ namespace kfather
 
 				case 'n':
 					return parse_null(ch, end);
+
+				default:
+					return parse_number(ch, end);
 			}
 		}
 
