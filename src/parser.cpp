@@ -54,6 +54,25 @@ namespace kfather
 		return true;
 	}
 		
+	bool parser::parse(const std::string& str, std::string::size_type* error_pos)
+	{
+		const char* buf = str.c_str();
+		const char* const end = buf + str.size();
+		const char* ch = buf;
+
+		if (!parse_value(ch, end))
+		{
+			if (error_pos)
+			{
+				*error_pos = (ch - buf);
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
 	bool parser::parse_char(char c, const char*& ch, const char* end)
 	{
 		if ((ch != end) && (*ch == c))

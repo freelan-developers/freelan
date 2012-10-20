@@ -74,6 +74,21 @@ namespace kfather
 			 */
 			bool parse(const char* buf, size_t buflen, const char** error_token = NULL);
 
+			/**
+			 * \brief Parse the specified JSON string.
+			 * \param str The JSON string to parse. Must contain a valid JSON string or
+			 * the call will fail.
+			 * \param error_pos A pointer to a position of the first invalid character.
+			 * \return true if the parsing succeeds, false otherwise.
+			 *
+			 * If the parsing fails, and error_pos is not null, *error_pos is set
+			 * to the position of the first invalid character in str.
+			 *
+			 * If the parsing succeeds, *error_pos is guaranteed not to be
+			 * modified.
+			 */
+			bool parse(const std::string& str, std::string::size_type* error_pos = NULL);
+
 		private:
 
 			bool parse_char(char c, const char*& ch, const char* end);
