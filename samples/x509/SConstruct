@@ -1,8 +1,0 @@
-import os
-
-sample_name = os.path.split(os.path.abspath('.'))[1]
-
-SConsignFile('../../.sconsign.dblite')
-SConscript('../../SConstruct')
-
-Default('sample_' + sample_name)
