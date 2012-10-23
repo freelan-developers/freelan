@@ -24,16 +24,16 @@
  */
 
 /**
- * \file serializer.hpp
+ * \file value.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Serializer classes.
+ * \brief Value classes.
  */
 
-#ifndef KFATHER_SERIALIZER_HPP
-#define KFATHER_SERIALIZER_HPP
+#ifndef KFATHER_VALUE_HPP
+#define KFATHER_VALUE_HPP
 
 namespace kfather
 {
 }
 
-#endif /* KFATHER_SERIALIZER_HPP */
+#endif /* KFATHER_VALUE_HPP */

@@ -24,12 +24,12 @@
  */
 
 /**
- * \file serializer.cpp
+ * \file value.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Serializer classes.
+ * \brief Value classes.
  */
 
-#include "serializer.hpp"
+#include "value.hpp"
 
 namespace kfather
 {
