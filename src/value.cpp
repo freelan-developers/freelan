@@ -33,4 +33,8 @@
 
 namespace kfather
 {
+	string_type::string_type(const std::string& val) :
+		m_value(val)
+	{
+	}
 }

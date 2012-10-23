@@ -32,8 +32,52 @@
 #ifndef KFATHER_VALUE_HPP
 #define KFATHER_VALUE_HPP
 
+#include <string>
+
+#include <boost/variant.hpp>
+
 namespace kfather
 {
+	/**
+	 * \brief A string value class.
+	 */
+	class string_type
+	{
+		public:
+
+			/**
+			 * \brief Empty constructor.
+			 */
+			string_type() {};
+
+			/**
+			 * \brief String constructor.
+			 * \param val The value.
+			 */
+			string_type(const std::string& val);
+
+		private:
+
+			std::string m_value;
+	};
+
+	/**
+	 * \brief The generic value type.
+	 */
+	typedef boost::variant<string_type> value_type;
+
+	/**
+	 * \brief The string_type visitor.
+	 */
+	class string_type_visitor : public boost::static_visitor<string_type>
+	{
+		public:
+
+			string_type operator()(const string_type& str) const
+			{
+				return str;
+			}
+	};
 }
 
 #endif /* KFATHER_VALUE_HPP */
