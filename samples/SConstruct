@@ -1,4 +1,0 @@
-SConsignFile('../.sconsign.dblite')
-SConscript('../SConstruct')
-
-Default('samples')
