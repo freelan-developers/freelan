@@ -140,7 +140,7 @@ namespace asiotap
 				 * \return buffer size.
 				 */
 				size_t size() const;
-				
+
 				/**
 				 * \brief Returns raw data.
 				 * \return raw data.

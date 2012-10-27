@@ -120,7 +120,7 @@ namespace asiotap
 				 * \param buf buffer to parse.
 				 */
 				void do_parse(boost::asio::const_buffer buf) const;
-				
+
 				/**
 				 * \brief Check if the frame has to be handled.
 				 * \param helper frame type helper.

@@ -453,9 +453,9 @@ namespace asiotap
 #ifdef LINUX
 				char *argv[] = { (char*) "/sbin/modprobe", (char*) "tun", NULL };
 #elif defined(MACINTOSH)
-		char* argv[] = { (char*) "/sbin/kextload", (char*) "/Library/Extensions/tap.kext", NULL };
+				char* argv[] = { (char*) "/sbin/kextload", (char*) "/Library/Extensions/tap.kext", NULL };
 #else /* FreeBSD */
-		char* argv[] = { (char*) "/sbin/kldload", (char*) "if_tap", NULL };
+				char* argv[] = { (char*) "/sbin/kldload", (char*) "if_tap", NULL };
 #endif
 				char* env[] = { NULL };
 				size_t max = sysconf(_SC_OPEN_MAX);
@@ -608,14 +608,14 @@ namespace asiotap
 				if (adapter.first == std::string(pi->AdapterName))
 				{
 					m_handle = CreateFileA(
-								   (USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
-								   GENERIC_READ | GENERIC_WRITE,
-								   0,
-								   0,
-								   OPEN_EXISTING,
-								   FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
-								   0
-							   );
+					               (USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
+					               GENERIC_READ | GENERIC_WRITE,
+					               0,
+					               0,
+					               OPEN_EXISTING,
+					               FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
+					               0
+					           );
 
 					if (m_handle == INVALID_HANDLE_VALUE)
 					{
@@ -1518,23 +1518,23 @@ namespace asiotap
 
 				if (::ioctl(ctl_fd, SIOCSIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
-			in6_aliasreq iar;
-			std::memset(&iar, 0x00, sizeof(iar));
-			std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-			std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+				in6_aliasreq iar;
+				std::memset(&iar, 0x00, sizeof(iar));
+				std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+				std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+				iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+				iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
 
 #ifdef SIN6_LEN
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
 #endif
 
-			if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
+				if (::ioctl(ctl_fd, SIOCAIFADDR_IN6, &iar) < 0)
 #endif
 				{
 					if (errno == EEXIST)
@@ -1601,23 +1601,23 @@ namespace asiotap
 
 				if (::ioctl(ctl_fd, SIOCDIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
-			in6_aliasreq iar;
-			std::memset(&iar, 0x00, sizeof(iar));
-			std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-			std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
-			std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-			iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-			iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+				in6_aliasreq iar;
+				std::memset(&iar, 0x00, sizeof(iar));
+				std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+				std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+				iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+				iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
 
 #ifdef SIN6_LEN
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-			reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+				reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
 #endif
 
-			if (::ioctl(ctl_fd, SIOCDIFADDR_IN6, &iar) < 0)
+				if (::ioctl(ctl_fd, SIOCDIFADDR_IN6, &iar) < 0)
 #endif
 				{
 					if (errno == EEXIST)
