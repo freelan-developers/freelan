@@ -101,7 +101,10 @@ namespace
 				::CloseServiceHandle(m_handle);
 			}
 
-			SC_HANDLE handle() const { return m_handle; }
+			SC_HANDLE handle() const
+			{
+				return m_handle;
+			}
 
 		private:
 
@@ -131,7 +134,10 @@ namespace
 				::CloseServiceHandle(m_handle);
 			}
 
-			SC_HANDLE handle() const { return m_handle; }
+			SC_HANDLE handle() const
+			{
+				return m_handle;
+			}
 
 			bool delete_service() const
 			{
@@ -225,20 +231,20 @@ namespace win32
 		const fs::path path = get_module_filename();
 
 		SC_HANDLE service = ::CreateService(
-				service_control_manager.handle(),
-				SERVICE_NAME,
-				SERVICE_NAME,
-				SERVICE_ALL_ACCESS,
-				SERVICE_WIN32_OWN_PROCESS,
-				SERVICE_AUTO_START,
-				SERVICE_ERROR_NORMAL,
-				path.string<std::basic_string<TCHAR> >().c_str(),
-				NULL,
-				NULL,
-				SERVICE_DEPENDENCIES,
-				SERVICE_START_NAME,
-				NULL
-				);
+		                        service_control_manager.handle(),
+		                        SERVICE_NAME,
+		                        SERVICE_NAME,
+		                        SERVICE_ALL_ACCESS,
+		                        SERVICE_WIN32_OWN_PROCESS,
+		                        SERVICE_AUTO_START,
+		                        SERVICE_ERROR_NORMAL,
+		                        path.string<std::basic_string<TCHAR> >().c_str(),
+		                        NULL,
+		                        NULL,
+		                        SERVICE_DEPENDENCIES,
+		                        SERVICE_START_NAME,
+		                        NULL
+		                    );
 
 		if (service)
 		{
@@ -267,10 +273,10 @@ namespace win32
 		try
 		{
 			Service service(
-					service_control_manager,
-					SERVICE_NAME,
-					SERVICE_QUERY_STATUS | DELETE
-					);
+			    service_control_manager,
+			    SERVICE_NAME,
+			    SERVICE_QUERY_STATUS | DELETE
+			);
 
 			return service.delete_service();
 		}
