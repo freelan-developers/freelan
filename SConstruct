@@ -1,61 +1,14 @@
 """The SConstruct file"""
 
-name = 'fscp'
-major = '2'
-minor = '1'
-libraries = []
+import os
 
-# You should not need to modify anything below this line
+from freelan.build_tools import Environment
 
-import os, sys
+env = Environment(ENV=os.environ.copy(), ARGUMENTS=ARGUMENTS)
 
-from freelan.buildtools import LibraryProject, Environment
+targets = SConscript('SConscript', exports='env')
 
-env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
+for name, target in targets.items():
+    env.Alias(name, target)
 
-if sys.platform.startswith('win32'):
-    libraries.append('cryptoplus_static')
-else:
-    libraries.append('cryptoplus')
-
-libraries.append('boost_system')
-libraries.append('boost_date_time')
-
-if sys.platform.startswith('win32'):
-
-    if env['CC'] == 'gcc':
-        libraries.append('crypto')
-        env['CXXFLAGS'].append('-DBOOST_THREAD_USE_LIB')
-        env['CXXFLAGS'].append('-DBOOST_USE_WINDOWS_H')
-        env['CXXFLAGS'].append('-D_WIN32_WINNT=0x0501')
-    else:
-        libraries.append('libeay32')
-        libraries.append('advapi32')
-        libraries.append('shell32')
-
-        env['CXXFLAGS'].append('/DBOOST_THREAD_USE_LIB')
-        env['CXXFLAGS'].append('/DBOOST_USE_WINDOWS_H')
-        env['CXXFLAGS'].append('/D_WIN32_WINNT=0x0501')
-
-    libraries.append('ws2_32')
-    libraries.append('gdi32')
-    libraries.append('iphlpapi')
-else:
-    libraries.append('pthread')
-    libraries.append('crypto')
-
-project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
-
-build = env.FreelanProject(project)
-install = env.FreelanProjectInstall(project)
-documentation = env.FreelanProjectDocumentation(project)
-indent = env.FreelanProjectIndent(project)
-samples = env.SConscript('samples/SConscript', exports = 'env project')
-
-env.Alias('build', build)
-env.Alias('install', install)
-env.Alias('doc', documentation)
-env.Alias('indent', indent)
-env.Alias('samples', samples)
-
-env.Default(build)
+env.Default(targets['build'])
