@@ -32,7 +32,11 @@ To do that, just type:
 
 To build everything in the directory (all sub-projects), type instead:
 
-> scons all
+> scons build
+
+To build then install everything from the directory (all sub-projects), type instead:
+
+> scons install
 
 Packaging
 ----------
