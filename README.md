@@ -19,6 +19,21 @@ It contains the following projects:
  - [freelan-server](https://github.com/freelan-developers/freelan-server) - The FreeLAN configuration server.
  - [libkfather](https://github.com/freelan-developers/libkfather) - A C++ JSON parser/producer with a terrible name.
 
+Building
+--------
+
+This directory contains a `SConstruct` file which uses the [FreeLAN builds tools](https://github.com/freelan-developers/freelan-buildtools) to build the contained projects.
+
+The default target (`freelan`) builds and installs all the necessary files for FreeLAN and FreeLAN itself to the environment specified `FREELAN_INSTALL_PREFIX` (or a OS-dependent default prefix if none is specified).
+
+To do that, just type:
+
+> scons
+
+To build everything in the directory (all sub-projects), type instead:
+
+> scons all
+
 Packaging
 ----------
 

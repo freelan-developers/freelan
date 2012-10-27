@@ -3,3 +3,4 @@
 *.dsc
 *.changes
 *.build
+.sconsign.dblite
