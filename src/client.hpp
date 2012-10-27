@@ -92,11 +92,16 @@ namespace freelan
 			void authenticate();
 
 			/**
+			 * \brief Get the authority certificate.
+			 */
+			cryptoplus::x509::certificate get_authority_certificate();
+
+			/**
 			 * \brief Join a network.
 			 * \param network The network name.
 			 * \return The network authority certificate.
 			 */
-			cryptoplus::x509::certificate join_network(const std::string& network);
+			void join_network(const std::string& network);
 
 			/**
 			 * \brief Renew the certificate.
@@ -111,11 +116,12 @@ namespace freelan
 			void perform_request(curl&, const std::string&, values_type&);
 			void perform_get_request(curl&, const std::string&, values_type&);
 			void perform_post_request(curl&, const std::string&, const values_type&, values_type&);
-			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&, std::string&, std::string&, std::string&);
+			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&, std::string&, std::string&, std::string&, std::string&);
 
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
-			cryptoplus::x509::certificate v1_join_network(curl&, const std::string&, const std::string&);
+			cryptoplus::x509::certificate v1_get_authority_certificate(curl&, const std::string&);
+			void v1_join_network(curl&, const std::string&, const std::string&);
 			cryptoplus::x509::certificate v1_sign_certificate_request(curl&, const std::string&, const cryptoplus::x509::certificate_request&);
 
 			// Version 1 sub-methods
@@ -130,6 +136,7 @@ namespace freelan
 			unsigned int m_server_version_major;
 			unsigned int m_server_version_minor;
 			std::string m_login_url;
+			std::string m_get_authority_certificate_url;
 			std::string m_join_network_url;
 			std::string m_sign_url;
 			curl m_request;

@@ -66,8 +66,10 @@ namespace freelan
 
 		enum ConfigurationItems
 		{
-			CI_CERTIFICATE = 0x01,
-			CI_ALL = CI_CERTIFICATE
+			CI_GET_AUTHORITY_CERTIFICATE = 0x01,
+			CI_JOIN_NETWORK = 0x02,
+			CI_SIGN = 0x04,
+			CI_ALL = CI_GET_AUTHORITY_CERTIFICATE | CI_JOIN_NETWORK | CI_SIGN
 		};
 
 		cryptoplus::x509::certificate_request generate_certificate_request(const freelan::configuration& configuration, const cryptoplus::pkey::rsa_key& private_key)
@@ -670,7 +672,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "Certificate expires in " << time_left << ". Renewing...";
 
-				async_update_server_configuration(CI_CERTIFICATE);
+				async_update_server_configuration(CI_SIGN);
 			}
 			else
 			{
@@ -824,7 +826,28 @@ namespace freelan
 
 		_client.authenticate();
 
-		if (CI_CERTIFICATE & items)
+		if (CI_GET_AUTHORITY_CERTIFICATE & items)
+		{
+			certificate ca_cert = _client.get_authority_certificate();
+
+			if (delayed)
+			{
+				m_io_service.post(boost::bind(&core::set_ca_certificate, this, ca_cert));
+			}
+			else
+			{
+				set_ca_certificate(ca_cert);
+			}
+		}
+
+		if (CI_JOIN_NETWORK & items)
+		{
+			_client.join_network(m_configuration.server.network);
+
+			//TODO: Implement
+		}
+
+		if (CI_SIGN & items)
 		{
 			pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
 
@@ -840,6 +863,18 @@ namespace freelan
 			{
 				set_identity(fscp::identity_store(cert, rsa_key));
 			}
+		}
+	}
+
+	void core::set_ca_certificate(cert_type ca_cert)
+	{
+		m_logger(LL_INFORMATION) << "Adding authority certificate to the trusted certificate list.";
+
+		m_configuration.security.certificate_authority_list.push_back(ca_cert);
+
+		if (m_ca_store)
+		{
+			m_ca_store.add_certificate(ca_cert);
 		}
 	}
 

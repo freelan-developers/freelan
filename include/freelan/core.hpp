@@ -343,6 +343,7 @@ namespace freelan
 			// Client
 			void async_update_server_configuration(int);
 			void update_server_configuration(int, bool delayed = false);
+			void set_ca_certificate(cert_type);
 			void set_identity(identity_store);
 			boost::asio::deadline_timer m_check_configuration_timer;
 	};
