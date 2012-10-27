@@ -193,7 +193,10 @@ namespace fscp
 	 * \param type The message type.
 	 * \return true if the message type is one from MESSAGE_TYPE_DATA_0 to MESSAGE_TYPE_DATA_15.
 	 */
-	inline bool is_data_message_type(message_type type) { return (type >= MESSAGE_TYPE_DATA_0) && (type <= MESSAGE_TYPE_DATA_15); }
+	inline bool is_data_message_type(message_type type)
+	{
+		return (type >= MESSAGE_TYPE_DATA_0) && (type <= MESSAGE_TYPE_DATA_15);
+	}
 
 	/**
 	 * \brief Convert a DATA message type to a channel number.

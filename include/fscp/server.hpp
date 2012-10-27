@@ -161,7 +161,7 @@ namespace fscp
 			/**
 			 * \brief A network error callback.
 			 * \param target The target endpoint.
-			 * \param code error code. 
+			 * \param code error code.
 			 */
 			typedef boost::function<void (const ep_type& target, const boost::system::error_code& code)> network_error_callback;
 
@@ -457,7 +457,7 @@ namespace fscp
 			bool m_accept_session_request_messages_default;
 			session_request_message_callback m_session_request_message_callback;
 
-	 	private: // SESSION messages
+		private: // SESSION messages
 
 			void do_send_session(const ep_type&, session_store::session_number_type);
 			void handle_session_message_from(const session_message&, const ep_type&);
@@ -589,7 +589,7 @@ namespace fscp
 	{
 		m_session_lost_callback = callback;
 	}
-	
+
 	inline void server::set_data_message_callback(data_message_callback callback)
 	{
 		m_data_message_callback = callback;

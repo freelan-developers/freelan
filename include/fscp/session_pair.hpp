@@ -138,7 +138,10 @@ namespace fscp
 			 * \brief Get the local challenge.
 			 * \return The local challenge.
 			 */
-			const challenge_type& local_challenge() const { return m_local_challenge; }
+			const challenge_type& local_challenge() const
+			{
+				return m_local_challenge;
+			}
 
 			/**
 			 * \brief Generate a new local challenge.
@@ -150,13 +153,19 @@ namespace fscp
 			 * \brief Get the remote challenge.
 			 * \return The remote challenge.
 			 */
-			const challenge_type& remote_challenge() const { return m_remote_challenge; }
+			const challenge_type& remote_challenge() const
+			{
+				return m_remote_challenge;
+			}
 
 			/**
 			 * \brief Set the remote challenge.
 			 * \param challenge The remote challenge.
 			 */
-			void set_remote_challenge(const challenge_type& challenge) { m_remote_challenge = challenge; }
+			void set_remote_challenge(const challenge_type& challenge)
+			{
+				m_remote_challenge = challenge;
+			}
 
 		private:
 

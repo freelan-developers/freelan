@@ -83,19 +83,28 @@ namespace fscp
 			 * \brief Get the signature certificate.
 			 * \return The signature certificate.
 			 */
-			cert_type signature_certificate() const { return m_sig_cert; }
+			cert_type signature_certificate() const
+			{
+				return m_sig_cert;
+			}
 
 			/**
 			 * \brief Get the encryption certificate.
 			 * \return The encryption certificate.
 			 */
-			cert_type encryption_certificate() const { return m_enc_cert; }
+			cert_type encryption_certificate() const
+			{
+				return m_enc_cert;
+			}
 
 			/**
 			 * \brief Get the signature certificate hash.
 			 * \return The signature certificate hash.
 			 */
-			const hash_type& signature_certificate_hash() const { return m_sig_hash; }
+			const hash_type& signature_certificate_hash() const
+			{
+				return m_sig_hash;
+			}
 
 		private:
 
