@@ -72,7 +72,10 @@ namespace posix
 			 * \brief Get the associated file descriptor.
 			 * \return The associated file descriptor.
 			 */
-			int file_descriptor() const { return m_file_descriptor; }
+			int file_descriptor() const
+			{
+				return m_file_descriptor;
+			}
 
 			/**
 			 * \brief Write the PID to the PID file.
