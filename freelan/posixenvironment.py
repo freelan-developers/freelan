@@ -56,6 +56,9 @@ class PosixEnvironment(BaseEnvironment):
 
         self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', '/usr/local'))
 
+        self.Append(CPPPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'include')])
+        self.Append(LIBPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'lib')])
+
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
 

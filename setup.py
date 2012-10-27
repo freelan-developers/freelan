@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='freelan-buildtools',
-    version='1.0',
+    version='1.1',
     description='Freelan build tools',
     author='Julien Kauffmann',
     author_email='julien.kauffmann@freelan.org',
