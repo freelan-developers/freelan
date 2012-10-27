@@ -74,7 +74,7 @@ namespace kfather
 
 		return true;
 	}
-		
+
 	bool parser::parse(const std::string& str, std::string::size_type* error_pos)
 	{
 		if (error_pos)
@@ -92,7 +92,7 @@ namespace kfather
 		}
 		else
 		{
-			 return parse(str.begin(), str.end());
+			return parse(str.begin(), str.end());
 		}
 	}
 
@@ -116,7 +116,7 @@ namespace kfather
 		}
 		else
 		{
-			 return parse(begin, end);
+			return parse(begin, end);
 		}
 	}
 

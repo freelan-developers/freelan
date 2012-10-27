@@ -182,85 +182,127 @@ namespace kfather
 			 * \brief Set or reset the object callback.
 			 * \param cb The callback.
 			 */
-			void reset_object_callback(object_callback cb = object_callback()) { m_object_callback = cb; }
+			void reset_object_callback(object_callback cb = object_callback())
+			{
+				m_object_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the array callback.
 			 * \param cb The callback.
 			 */
-			void reset_array_callback(array_callback cb = array_callback()) { m_array_callback = cb; }
+			void reset_array_callback(array_callback cb = array_callback())
+			{
+				m_array_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the string callback.
 			 * \param cb The callback.
 			 */
-			void reset_string_callback(string_callback cb = string_callback()) { m_string_callback = cb; }
+			void reset_string_callback(string_callback cb = string_callback())
+			{
+				m_string_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the number callback.
 			 * \param cb The callback.
 			 */
-			void reset_number_callback(number_callback cb = number_callback()) { m_number_callback = cb; }
+			void reset_number_callback(number_callback cb = number_callback())
+			{
+				m_number_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the true callback.
 			 * \param cb The callback.
 			 */
-			void reset_true_callback(true_callback cb = true_callback()) { m_true_callback = cb; }
+			void reset_true_callback(true_callback cb = true_callback())
+			{
+				m_true_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the false callback.
 			 * \param cb The callback.
 			 */
-			void reset_false_callback(false_callback cb = false_callback()) { m_false_callback = cb; }
+			void reset_false_callback(false_callback cb = false_callback())
+			{
+				m_false_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the null callback.
 			 * \param cb The callback.
 			 */
-			void reset_null_callback(null_callback cb = null_callback()) { m_null_callback = cb; }
+			void reset_null_callback(null_callback cb = null_callback())
+			{
+				m_null_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the object_start callback.
 			 * \param cb The callback.
 			 */
-			void reset_object_start_callback(object_start_callback cb = object_start_callback()) { m_object_start_callback = cb; }
+			void reset_object_start_callback(object_start_callback cb = object_start_callback())
+			{
+				m_object_start_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the object_colon callback.
 			 * \param cb The callback.
 			 */
-			void reset_object_colon_callback(object_colon_callback cb = object_colon_callback()) { m_object_colon_callback = cb; }
+			void reset_object_colon_callback(object_colon_callback cb = object_colon_callback())
+			{
+				m_object_colon_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the object_comma callback.
 			 * \param cb The callback.
 			 */
-			void reset_object_comma_callback(object_comma_callback cb = object_comma_callback()) { m_object_comma_callback = cb; }
+			void reset_object_comma_callback(object_comma_callback cb = object_comma_callback())
+			{
+				m_object_comma_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the object_stop callback.
 			 * \param cb The callback.
 			 */
-			void reset_object_stop_callback(object_stop_callback cb = object_stop_callback()) { m_object_stop_callback = cb; }
+			void reset_object_stop_callback(object_stop_callback cb = object_stop_callback())
+			{
+				m_object_stop_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the array_start callback.
 			 * \param cb The callback.
 			 */
-			void reset_array_start_callback(array_start_callback cb = array_start_callback()) { m_array_start_callback = cb; }
+			void reset_array_start_callback(array_start_callback cb = array_start_callback())
+			{
+				m_array_start_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the array_comma callback.
 			 * \param cb The callback.
 			 */
-			void reset_array_comma_callback(array_comma_callback cb = array_comma_callback()) { m_array_comma_callback = cb; }
+			void reset_array_comma_callback(array_comma_callback cb = array_comma_callback())
+			{
+				m_array_comma_callback = cb;
+			}
 
 			/**
 			 * \brief Set or reset the array_stop callback.
 			 * \param cb The callback.
 			 */
-			void reset_array_stop_callback(array_stop_callback cb = array_stop_callback()) { m_array_stop_callback = cb; }
+			void reset_array_stop_callback(array_stop_callback cb = array_stop_callback())
+			{
+				m_array_stop_callback = cb;
+			}
 
 		private:
 
