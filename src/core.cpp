@@ -610,15 +610,15 @@ namespace freelan
 		typedef boost::asio::ip::udp::resolver::query query;
 
 		boost::apply_visitor(
-				endpoint_async_resolve_visitor(
-					m_resolver,
-					to_protocol(m_configuration.fscp.hostname_resolution_protocol),
-					query::address_configured,
-					DEFAULT_SERVICE,
-					boost::bind(&core::do_greet, this, _1, _2, ep)
-					),
-				ep
-				);
+		    endpoint_async_resolve_visitor(
+		        m_resolver,
+		        to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+		        query::address_configured,
+		        DEFAULT_SERVICE,
+		        boost::bind(&core::do_greet, this, _1, _2, ep)
+		    ),
+		    ep
+		);
 	}
 
 	void core::do_periodic_contact(const boost::system::error_code& ec)

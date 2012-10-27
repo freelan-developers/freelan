@@ -88,7 +88,7 @@ namespace freelan
 		bool has_value(const client::values_type& values, const std::string& key, std::string& value)
 		{
 			client::values_type::const_iterator it = values.find(key);
-		 
+
 			if (it!= values.end())
 			{
 				value = it->second;
@@ -245,14 +245,14 @@ namespace freelan
 	void client::authenticate()
 	{
 		get_server_information(
-				m_request,
-				m_server_name,
-				m_server_version_major,
-				m_server_version_minor,
-				m_login_url,
-				m_join_network_url,
-				m_sign_url
-				);
+		    m_request,
+		    m_server_name,
+		    m_server_version_major,
+		    m_server_version_minor,
+		    m_login_url,
+		    m_join_network_url,
+		    m_sign_url
+		);
 
 		if (m_server_version_major == 1)
 		{
@@ -360,14 +360,14 @@ namespace freelan
 	}
 
 	void client::get_server_information(
-			curl& request,
-			std::string& server_name,
-			unsigned int& server_version_major,
-			unsigned int& server_version_minor,
-			std::string& login_url,
-			std::string& join_network_url,
-			std::string& sign_url
-			)
+	    curl& request,
+	    std::string& server_name,
+	    unsigned int& server_version_major,
+	    unsigned int& server_version_minor,
+	    std::string& login_url,
+	    std::string& join_network_url,
+	    std::string& sign_url
+	)
 	{
 		m_logger(LL_INFORMATION) << "Getting server information from " << m_configuration.server.host << "...";
 

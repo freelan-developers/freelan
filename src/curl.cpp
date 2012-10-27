@@ -123,7 +123,7 @@ namespace freelan
 	{
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
 	}
-	
+
 	void curl::set_option(CURLoption option, long int value)
 	{
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
@@ -306,7 +306,7 @@ namespace freelan
 	{
 		throw_if_curl_error(curl_easy_perform(m_curl));
 	}
-	
+
 	long curl::get_response_code()
 	{
 		long response_code = 0;
