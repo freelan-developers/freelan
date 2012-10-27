@@ -106,6 +106,7 @@ po::options_description get_server_options()
 	("server.https_proxy", po::value<fl::endpoint>(), "The HTTP proxy host.")
 	("server.username", po::value<std::string>(), "The username.")
 	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
+	("server.network", po::value<std::string>(), "The network. If no network is specified, it will be taken from the FREELAN_SERVER_NETWORK environment variable.")
 	("server.user_agent", po::value<std::string>(), "The user agent. If no user agent is specified, \"" FREELAN_USER_AGENT "\" will be used.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
 	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
@@ -225,6 +226,20 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		if (default_password)
 		{
 			configuration.server.password = default_password;
+		}
+	}
+
+	if (vm.count("server.network"))
+	{
+		configuration.server.network= vm["server.network"].as<std::string>();
+	}
+	else
+	{
+		const char* default_network = getenv("FREELAN_SERVER_NETWORK");
+
+		if (default_network)
+		{
+			configuration.server.network = default_network;
 		}
 	}
 
