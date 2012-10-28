@@ -39,27 +39,11 @@
 namespace kfather
 {
 	/**
-	 * \brief A string value class.
+	 * \brief The string type.
+	 *
+	 * Content must be UTF-8 encoded.
 	 */
-	class string_type
-	{
-		public:
-
-			/**
-			 * \brief Empty constructor.
-			 */
-			string_type() {};
-
-			/**
-			 * \brief String constructor.
-			 * \param val The value.
-			 */
-			string_type(const std::string& val);
-
-		private:
-
-			std::string m_value;
-	};
+	typedef std::string string_type;
 
 	/**
 	 * \brief The generic value type.
@@ -73,7 +57,7 @@ namespace kfather
 	{
 		public:
 
-			string_type operator()(const string_type& str) const
+			const string_type& operator()(const string_type& str) const
 			{
 				return str;
 			}

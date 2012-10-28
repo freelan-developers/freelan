@@ -33,10 +33,39 @@
 
 #include <string>
 #include <cctype>
+#include <cassert>
 #include <streambuf>
 
 namespace kfather
 {
+	namespace
+	{
+		int xdigit_to_int(char c)
+		{
+			static const int digit_map[256] =
+			{
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+			};
+
+			return digit_map[static_cast<uint8_t>(c)];
+		}
+	}
+
 	parser::parser() :
 		m_object_callback(),
 		m_array_callback(),
@@ -57,12 +86,16 @@ namespace kfather
 
 	bool parser::parse(const char* buf, size_t buflen, const char** error_token)
 	{
+		assert(buf);
+
 		const char* const end = buf + buflen;
 		const char* ch = buf;
 
-		skip_whitespace(ch, end);
+		context ctx;
 
-		if (!parse_value(ch, end))
+		skip_whitespace(ctx, ch, end);
+
+		if (!parse_value(ctx, ch, end))
 		{
 			if (error_token)
 			{
@@ -125,9 +158,11 @@ namespace kfather
 	{
 		IteratorType it = begin;
 
-		skip_whitespace(it, end);
+		context ctx;
 
-		if (!parse_value(it, end))
+		skip_whitespace(ctx, it, end);
+
+		if (!parse_value(ctx, it, end))
 		{
 			if (error_pos)
 			{
@@ -141,7 +176,7 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_char(char c, IteratorType& ch, IteratorType end)
+	bool parser::parse_char(context&, char c, IteratorType& ch, IteratorType end)
 	{
 		if ((ch != end) && (*ch == c))
 		{
@@ -154,32 +189,32 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_value(IteratorType& ch, IteratorType end)
+	bool parser::parse_value(context& ctx, IteratorType& ch, IteratorType end)
 	{
 		if (ch != end)
 		{
 			switch (*ch)
 			{
 				case '{':
-					return parse_object(ch, end);
+					return parse_object(ctx, ch, end);
 
 				case '[':
-					return parse_array(ch, end);
+					return parse_array(ctx, ch, end);
 
 				case '"':
-					return parse_string(ch, end);
+					return parse_string(ctx, ch, end);
 
 				case 't':
-					return parse_true(ch, end);
+					return parse_true(ctx, ch, end);
 
 				case 'f':
-					return parse_false(ch, end);
+					return parse_false(ctx, ch, end);
 
 				case 'n':
-					return parse_null(ch, end);
+					return parse_null(ctx, ch, end);
 
 				default:
-					return parse_number(ch, end);
+					return parse_number(ctx, ch, end);
 			}
 		}
 
@@ -187,9 +222,9 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_object(IteratorType& ch, IteratorType end)
+	bool parser::parse_object(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char('{', ch, end))
+		if (!parse_char(ctx, '{', ch, end))
 		{
 			return false;
 		}
@@ -199,7 +234,7 @@ namespace kfather
 			m_object_start_callback();
 		}
 
-		skip_whitespace(ch, end);
+		skip_whitespace(ctx, ch, end);
 
 		if (ch != end)
 		{
@@ -224,14 +259,14 @@ namespace kfather
 
 			while (ch != end)
 			{
-				if (!parse_string(ch, end))
+				if (!parse_string(ctx, ch, end))
 				{
 					return false;
 				}
 
-				skip_whitespace(ch, end);
+				skip_whitespace(ctx, ch, end);
 
-				if (!parse_char(':', ch, end))
+				if (!parse_char(ctx, ':', ch, end))
 				{
 					return false;
 				}
@@ -241,14 +276,14 @@ namespace kfather
 					m_object_colon_callback();
 				}
 
-				skip_whitespace(ch, end);
+				skip_whitespace(ctx, ch, end);
 
-				if (!parse_value(ch, end))
+				if (!parse_value(ctx, ch, end))
 				{
 					return false;
 				}
 
-				skip_whitespace(ch, end);
+				skip_whitespace(ctx, ch, end);
 
 				if (ch != end)
 				{
@@ -282,7 +317,7 @@ namespace kfather
 						m_object_comma_callback();
 					}
 
-					skip_whitespace(ch, end);
+					skip_whitespace(ctx, ch, end);
 				}
 			}
 		}
@@ -291,9 +326,9 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_array(IteratorType& ch, IteratorType end)
+	bool parser::parse_array(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char('[', ch, end))
+		if (!parse_char(ctx, '[', ch, end))
 		{
 			return false;
 		}
@@ -303,7 +338,7 @@ namespace kfather
 			m_array_start_callback();
 		}
 
-		skip_whitespace(ch, end);
+		skip_whitespace(ctx, ch, end);
 
 		if (ch != end)
 		{
@@ -328,14 +363,14 @@ namespace kfather
 
 			while (ch != end)
 			{
-				skip_whitespace(ch, end);
+				skip_whitespace(ctx, ch, end);
 
-				if (!parse_value(ch, end))
+				if (!parse_value(ctx, ch, end))
 				{
 					return false;
 				}
 
-				skip_whitespace(ch, end);
+				skip_whitespace(ctx, ch, end);
 
 				if (ch != end)
 				{
@@ -369,7 +404,7 @@ namespace kfather
 						m_array_comma_callback();
 					}
 
-					skip_whitespace(ch, end);
+					skip_whitespace(ctx, ch, end);
 				}
 			}
 		}
@@ -378,9 +413,11 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_string(IteratorType& ch, IteratorType end)
+	bool parser::parse_string(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char('"', ch, end))
+		ctx.clear();
+
+		if (!parse_char(ctx, '"', ch, end))
 		{
 			return false;
 		}
@@ -401,8 +438,7 @@ namespace kfather
 
 						if (m_string_callback)
 						{
-							//TODO: Report the string.
-							m_string_callback();
+							m_string_callback(ctx.str());
 						}
 
 						return true;
@@ -421,31 +457,51 @@ namespace kfather
 						switch (*ch)
 						{
 							case '"':
+								ctx.push_char('"');
+								++ch;
 								break;
 
 							case '\\':
+								ctx.push_char('\\');
+								++ch;
 								break;
 
 							case '/':
+								ctx.push_char('/');
+								++ch;
 								break;
 
 							case 'b':
+								ctx.push_char('\b');
+								++ch;
 								break;
 
 							case 'n':
+								ctx.push_char('\n');
+								++ch;
 								break;
 
 							case 'f':
+								ctx.push_char('\f');
+								++ch;
 								break;
 
 							case 'r':
+								ctx.push_char('\r');
+								++ch;
 								break;
 
 							case 't':
+								ctx.push_char('\t');
+								++ch;
 								break;
 
 							case 'u':
 								{
+									++ch;
+
+									uint16_t codepoint = 0x0000;
+
 									for (size_t i = 0; i < 4; ++i)
 									{
 										if (ch == end)
@@ -458,8 +514,13 @@ namespace kfather
 											return false;
 										}
 
+										codepoint *= 16;
+										codepoint += xdigit_to_int(*ch);
+
 										++ch;
 									}
+
+									ctx.push_codepoint(codepoint);
 
 									break;
 								}
@@ -468,13 +529,13 @@ namespace kfather
 								return false;
 						}
 
-						++ch;
-
 						break;
 					}
 
 				default:
 					{
+						ctx.push_char(*ch);
+
 						++ch;
 					}
 			}
@@ -484,7 +545,7 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_number(IteratorType& ch, IteratorType end)
+	bool parser::parse_number(context&, IteratorType& ch, IteratorType end)
 	{
 		// Check if the number is negative
 		if (ch != end)
@@ -584,24 +645,24 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_true(IteratorType& ch, IteratorType end)
+	bool parser::parse_true(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char('t', ch, end))
+		if (!parse_char(ctx, 't', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('r', ch, end))
+		if (!parse_char(ctx, 'r', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('u', ch, end))
+		if (!parse_char(ctx, 'u', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('e', ch, end))
+		if (!parse_char(ctx, 'e', ch, end))
 		{
 			return false;
 		}
@@ -616,29 +677,29 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_false(IteratorType& ch, IteratorType end)
+	bool parser::parse_false(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char('f', ch, end))
+		if (!parse_char(ctx, 'f', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('a', ch, end))
+		if (!parse_char(ctx, 'a', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('l', ch, end))
+		if (!parse_char(ctx, 'l', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('s', ch, end))
+		if (!parse_char(ctx, 's', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('e', ch, end))
+		if (!parse_char(ctx, 'e', ch, end))
 		{
 			return false;
 		}
@@ -653,24 +714,24 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_null(IteratorType& ch, IteratorType end)
+	bool parser::parse_null(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char('n', ch, end))
+		if (!parse_char(ctx, 'n', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('u', ch, end))
+		if (!parse_char(ctx, 'u', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('l', ch, end))
+		if (!parse_char(ctx, 'l', ch, end))
 		{
 			return false;
 		}
 
-		if (!parse_char('l', ch, end))
+		if (!parse_char(ctx, 'l', ch, end))
 		{
 			return false;
 		}
@@ -685,8 +746,56 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	void parser::skip_whitespace(IteratorType& ch, IteratorType end)
+	void parser::skip_whitespace(context&, IteratorType& ch, IteratorType end)
 	{
 		for (; (ch != end) && std::isspace(*ch); ++ch) {}
+	}
+
+	parser::context::context() :
+		m_iconv("utf-8", "utf-16be")
+	{
+	}
+	
+	void parser::context::clear()
+	{
+		m_str.clear();
+		m_utf16.clear();
+	}
+
+	void parser::context::push_char(char c)
+	{
+		end_codepoints();
+
+		m_str.push_back(c);
+	}
+
+	void parser::context::push_codepoint(uint16_t cp)
+	{
+		m_utf16.push_back(static_cast<char>(cp / 256));
+		m_utf16.push_back(static_cast<char>(cp % 256));
+	}
+
+	const std::string& parser::context::str()
+	{
+		end_codepoints();
+
+		return m_str;
+	}
+
+	void parser::context::end_codepoints()
+	{
+		if (!m_utf16.empty())
+		{
+			const size_t initial_size = m_str.size();
+
+			// This is enough to hold all possible UTF-8 encoded characters.
+			m_str.resize(m_str.size() + m_utf16.size() * 2);
+
+			size_t wrote_cnt = m_iconv.convert_all(m_utf16.c_str(), m_utf16.size(), &m_str[initial_size], m_str.size() - initial_size);
+
+			m_str.resize(initial_size + wrote_cnt);
+
+			m_utf16.clear();
+		}
 	}
 }

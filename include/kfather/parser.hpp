@@ -36,6 +36,10 @@
 
 #include <boost/function.hpp>
 
+#include <iconvplus/iconv_instance.hpp>
+
+#include "value.hpp"
+
 namespace kfather
 {
 	/**
@@ -68,7 +72,7 @@ namespace kfather
 			/**
 			 * \brief A JSON string callback type.
 			 */
-			typedef boost::function<void ()> string_callback;
+			typedef boost::function<void (const string_type&)> string_callback;
 
 			/**
 			 * \brief A JSON number callback type.
@@ -133,7 +137,8 @@ namespace kfather
 			/**
 			 * \brief Parse the specified JSON string buffer.
 			 * \param buf The buffer to parse. Must contain a valid JSON string or
-			 * the call will fail.
+			 * the call will fail. The string must be UTF-8 encoded. buf cannot be
+			 * null.
 			 * \param buflen The length of buf.
 			 * \param error_token A pointer to a pointer to the first invalid
 			 * character of buf, in case the parsing fails.
@@ -152,7 +157,7 @@ namespace kfather
 			/**
 			 * \brief Parse the specified JSON string.
 			 * \param str The JSON string to parse. Must contain a valid JSON string or
-			 * the call will fail.
+			 * the call will fail. The string must be UTF-8 encoded.
 			 * \param error_pos A pointer to a position of the first invalid character.
 			 * \return true if the parsing succeeds, false otherwise.
 			 *
@@ -166,7 +171,7 @@ namespace kfather
 
 			/**
 			 * \brief Parse the specified input stream.
-			 * \param is The input stream to parse.
+			 * \param is The input stream to parse. The stream must be UTF-8 encoded.
 			 * \param error_pos A pointer to a position of the first invalid character.
 			 * \return true if the parsing succeeds, false otherwise.
 			 *
@@ -328,26 +333,45 @@ namespace kfather
 
 		private:
 
+			class context
+			{
+				public:
+
+					context();
+					void clear();
+					void push_char(char c);
+					void push_codepoint(uint16_t cp);
+					const std::string& str();
+
+				private:
+
+					void end_codepoints();
+
+					iconvplus::iconv_instance m_iconv;
+					std::string m_utf16;
+					string_type m_str;
+			};
+
 			template <typename IteratorType>
-			bool parse_char(char c, IteratorType& ch, IteratorType end);
+			bool parse_char(context& ctx, char c, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_value(IteratorType& ch, IteratorType end);
+			bool parse_value(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_object(IteratorType& ch, IteratorType end);
+			bool parse_object(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_array(IteratorType& ch, IteratorType end);
+			bool parse_array(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_string(IteratorType& ch, IteratorType end);
+			bool parse_string(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_number(IteratorType& ch, IteratorType end);
+			bool parse_number(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_true(IteratorType& ch, IteratorType end);
+			bool parse_true(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_false(IteratorType& ch, IteratorType end);
+			bool parse_false(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_null(IteratorType& ch, IteratorType end);
+			bool parse_null(context& ctx, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			void skip_whitespace(IteratorType& ch, IteratorType end);
+			void skip_whitespace(context& ctx, IteratorType& ch, IteratorType end);
 
 			object_callback m_object_callback;
 			array_callback m_array_callback;

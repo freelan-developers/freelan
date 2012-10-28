@@ -40,6 +40,7 @@ namespace kfather
 	formatter::formatter(parser& parser, std::ostream& os) :
 		m_os(os)
 	{
+		parser.reset_string_callback(boost::bind(&formatter::print_string, this, _1));
 		parser.reset_object_start_callback(boost::bind(&formatter::print_object_start, this));
 		parser.reset_object_colon_callback(boost::bind(&formatter::print_object_colon, this));
 		parser.reset_object_comma_callback(boost::bind(&formatter::print_object_comma, this));
@@ -47,6 +48,54 @@ namespace kfather
 		parser.reset_array_start_callback(boost::bind(&formatter::print_array_start, this));
 		parser.reset_array_comma_callback(boost::bind(&formatter::print_array_comma, this));
 		parser.reset_array_stop_callback(boost::bind(&formatter::print_array_stop, this));
+	}
+
+	void formatter::print_string(const string_type& str)
+	{
+		m_os << '"';
+
+		for (string_type::const_iterator it = str.begin(); it != str.end(); ++it)
+		{
+			switch (*it)
+			{
+				case '"':
+					m_os << "\\\"";
+					break;
+
+				case '\\':
+					m_os << "\\\\";
+					break;
+
+				case '/':
+					m_os << "\\/";
+					break;
+
+				case '\b':
+					m_os << "\\b";
+					break;
+
+				case '\n':
+					m_os << "\\n";
+					break;
+
+				case '\f':
+					m_os << "\\f";
+					break;
+
+				case '\r':
+					m_os << "\\r";
+					break;
+
+				case '\t':
+					m_os << "\\t";
+					break;
+
+				default:
+					m_os << *it;
+			}
+		}
+
+		m_os << '"';
 	}
 
 	void formatter::print_object_start()

@@ -7,7 +7,6 @@
 #include <kfather/kfather.hpp>
 #include <kfather/parser.hpp>
 #include <kfather/formatter.hpp>
-#include <kfather/serializer.hpp>
 
 #include <cstdlib>
 #include <iostream>

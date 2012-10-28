@@ -7,7 +7,7 @@
 "\t"
 "\r"
 "\t"
-"\u00a0"
 "some string"
 "some \"quoted\" string !"
 "some accèntuéd string !"
+"a string containing a nice unicode escaped character: \ud834\udd1e"

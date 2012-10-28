@@ -34,6 +34,8 @@
 
 #include <iostream>
 
+#include "value.hpp"
+
 namespace kfather
 {
 	class parser;
@@ -55,6 +57,7 @@ namespace kfather
 
 		private:
 
+			void print_string(const string_type&);
 			void print_object_start();
 			void print_object_colon();
 			void print_object_comma();

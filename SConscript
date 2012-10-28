@@ -14,8 +14,18 @@ Import('env')
 env = env.Clone()
 
 import os
+import sys
 
 from freelan.build_tools import LibraryProject
+
+if sys.platform.startswith('win32'):
+    libraries.append('iconvplus_static')
+
+else:
+    libraries.append('iconvplus')
+
+libraries.append('boost_system')
+libraries.append('iconv')
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
