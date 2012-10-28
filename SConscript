@@ -20,12 +20,12 @@ from freelan.build_tools import LibraryProject
 
 if sys.platform.startswith('win32'):
     libraries.append('iconvplus_static')
+    libraries.append('iconv')
 
 else:
     libraries.append('iconvplus')
 
 libraries.append('boost_system')
-libraries.append('iconv')
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 
