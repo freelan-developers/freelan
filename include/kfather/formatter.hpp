@@ -58,6 +58,7 @@ namespace kfather
 		private:
 
 			void print_string(const string_type&);
+			void print_number(const number_type&);
 			void print_boolean(const boolean_type&);
 			void print_null(const null_type&);
 			void print_object_start();

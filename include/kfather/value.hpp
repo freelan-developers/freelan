@@ -33,6 +33,7 @@
 #define KFATHER_VALUE_HPP
 
 #include <string>
+#include <sstream>
 
 #include <boost/variant.hpp>
 
@@ -44,6 +45,11 @@ namespace kfather
 	 * Content must be UTF-8 encoded.
 	 */
 	typedef std::string string_type;
+
+	/**
+	 * \brief The number type.
+	 */
+	typedef double number_type;
 
 	/**
 	 * \brief The boolean type.
@@ -58,7 +64,7 @@ namespace kfather
 	/**
 	 * \brief The generic value type.
 	 */
-	typedef boost::variant<string_type, boolean_type, null_type> value_type;
+	typedef boost::variant<string_type, number_type, boolean_type, null_type> value_type;
 
 	/**
 	 * \brief The string_type visitor.
@@ -70,6 +76,15 @@ namespace kfather
 			const string_type& operator()(const string_type& str) const
 			{
 				return str;
+			}
+
+			string_type operator()(const number_type& nb) const
+			{
+				std::ostringstream oss;
+
+				oss << nb;
+
+				return oss.str();
 			}
 
 			string_type operator()(const boolean_type& bt) const

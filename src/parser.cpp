@@ -34,6 +34,7 @@
 #include <string>
 #include <cctype>
 #include <cassert>
+#include <sstream>
 #include <streambuf>
 
 namespace kfather
@@ -544,8 +545,10 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_number(context&, IteratorType& ch, IteratorType end)
+	bool parser::parse_number(context& ctx, IteratorType& ch, IteratorType end)
 	{
+		const IteratorType start = ch;
+
 		// Check if the number is negative
 		if (ch != end)
 		{
@@ -636,8 +639,11 @@ namespace kfather
 
 		if (m_number_callback)
 		{
-			//TODO: Report the number.
-			m_number_callback();
+			number_type value = 0.0;
+
+			ctx.parse_number(start, ch, value);
+
+			m_number_callback(value);
 		}
 
 		return true;
@@ -776,6 +782,14 @@ namespace kfather
 		end_codepoints();
 
 		return m_str;
+	}
+
+	template <typename IteratorType>
+	bool parser::context::parse_number(IteratorType begin, IteratorType end, double& value)
+	{
+		std::istringstream iss(std::string(begin, end));
+
+		return iss >> value;
 	}
 
 	void parser::context::end_codepoints()

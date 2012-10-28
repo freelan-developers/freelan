@@ -41,6 +41,7 @@ namespace kfather
 		m_os(os)
 	{
 		parser.reset_string_callback(boost::bind(&formatter::print_string, this, _1));
+		parser.reset_number_callback(boost::bind(&formatter::print_number, this, _1));
 		parser.reset_boolean_callback(boost::bind(&formatter::print_boolean, this, _1));
 		parser.reset_null_callback(boost::bind(&formatter::print_null, this, _1));
 		parser.reset_object_start_callback(boost::bind(&formatter::print_object_start, this));
@@ -98,6 +99,11 @@ namespace kfather
 		}
 
 		m_os << '"';
+	}
+
+	void formatter::print_number(const number_type& nb)
+	{
+		m_os << nb;
 	}
 
 	void formatter::print_boolean(const boolean_type& bt)
