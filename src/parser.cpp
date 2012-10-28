@@ -71,8 +71,7 @@ namespace kfather
 		m_array_callback(),
 		m_string_callback(),
 		m_number_callback(),
-		m_true_callback(),
-		m_false_callback(),
+		m_boolean_callback(),
 		m_null_callback(),
 		m_object_start_callback(),
 		m_object_colon_callback(),
@@ -667,10 +666,9 @@ namespace kfather
 			return false;
 		}
 
-		if (m_true_callback)
+		if (m_boolean_callback)
 		{
-			//TODO: Report true.
-			m_true_callback();
+			m_boolean_callback(true);
 		}
 
 		return true;
@@ -704,10 +702,9 @@ namespace kfather
 			return false;
 		}
 
-		if (m_false_callback)
+		if (m_boolean_callback)
 		{
-			//TODO: Report false.
-			m_false_callback();
+			m_boolean_callback(false);
 		}
 
 		return true;
@@ -738,8 +735,7 @@ namespace kfather
 
 		if (m_null_callback)
 		{
-			//TODO: Report null.
-			m_null_callback();
+			m_null_callback(null_type());
 		}
 
 		return true;

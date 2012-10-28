@@ -80,19 +80,14 @@ namespace kfather
 			typedef boost::function<void ()> number_callback;
 
 			/**
-			 * \brief A JSON true callback type.
+			 * \brief A JSON boolean callback type.
 			 */
-			typedef boost::function<void ()> true_callback;
-
-			/**
-			 * \brief A JSON false callback type.
-			 */
-			typedef boost::function<void ()> false_callback;
+			typedef boost::function<void (const boolean_type&)> boolean_callback;
 
 			/**
 			 * \brief A JSON null callback type.
 			 */
-			typedef boost::function<void ()> null_callback;
+			typedef boost::function<void (const null_type&)> null_callback;
 
 			/**
 			 * \brief A JSON object start callback type.
@@ -223,18 +218,9 @@ namespace kfather
 			 * \brief Set or reset the true callback.
 			 * \param cb The callback.
 			 */
-			void reset_true_callback(true_callback cb = true_callback())
+			void reset_boolean_callback(boolean_callback cb = boolean_callback())
 			{
-				m_true_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the false callback.
-			 * \param cb The callback.
-			 */
-			void reset_false_callback(false_callback cb = false_callback())
-			{
-				m_false_callback = cb;
+				m_boolean_callback = cb;
 			}
 
 			/**
@@ -377,8 +363,7 @@ namespace kfather
 			array_callback m_array_callback;
 			string_callback m_string_callback;
 			number_callback m_number_callback;
-			true_callback m_true_callback;
-			false_callback m_false_callback;
+			boolean_callback m_boolean_callback;
 			null_callback m_null_callback;
 
 			object_start_callback m_object_start_callback;

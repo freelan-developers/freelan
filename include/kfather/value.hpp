@@ -46,9 +46,19 @@ namespace kfather
 	typedef std::string string_type;
 
 	/**
+	 * \brief The boolean type.
+	 */
+	typedef bool boolean_type;
+
+	/**
+	 * \brief The false type.
+	 */
+	class null_type {};
+
+	/**
 	 * \brief The generic value type.
 	 */
-	typedef boost::variant<string_type> value_type;
+	typedef boost::variant<string_type, boolean_type, null_type> value_type;
 
 	/**
 	 * \brief The string_type visitor.
@@ -60,6 +70,23 @@ namespace kfather
 			const string_type& operator()(const string_type& str) const
 			{
 				return str;
+			}
+
+			string_type operator()(const boolean_type& bt) const
+			{
+				if (bt)
+				{
+					return "true";
+				}
+				else
+				{
+					return "false";
+				}
+			}
+
+			string_type operator()(const null_type&) const
+			{
+				return "null";
 			}
 	};
 }
