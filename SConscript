@@ -44,12 +44,12 @@ else:
 libraries.append('boost_system')
 libraries.append('boost_program_options')
 libraries.append('boost_filesystem')
+libraries.append('boost_date_time')
 libraries.append('crypto')
 
 if sys.platform.startswith('win32'):
 
     libraries.append('boost_thread')
-    libraries.append('boost_date_time')
 
     if env['CC'] == 'gcc':
         libraries.append('curl')
