@@ -167,6 +167,20 @@ namespace iconvplus
 			 * \param in_len The length of in, in bytes.
 			 * \param out The output buffer. Cannot be NULL.
 			 * \param out_len The length of out, in bytes.
+			 * \param ec The error code, if an error occurs.
+			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
+			 * \return The count of bytes written to out. In case of error, a boost::system::system_error is thrown.
+			 *
+			 * A reset() and a write_initial_state() are performed inside the call, before the conversion takes place.
+			 */
+			size_t convert_all(const void* in, size_t in_len, void* out, size_t out_len, boost::system::error_code& ec, size_t* non_reversible_conversions = NULL) const;
+
+			/**
+			 * \brief Convert some data using the specified iconv instance.
+			 * \param in The input buffer. Cannot be NULL.
+			 * \param in_len The length of in, in bytes.
+			 * \param out The output buffer. Cannot be NULL.
+			 * \param out_len The length of out, in bytes.
 			 * \param non_reversible_conversions If not NULL, *non_reversible_conversions will be updated to indicate the count of non-reversible conversions performed during the call.
 			 * \return The count of bytes written to out. In case of error, a boost::system::system_error is thrown.
 			 *

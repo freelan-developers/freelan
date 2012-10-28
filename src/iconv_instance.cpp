@@ -80,7 +80,7 @@ namespace iconvplus
 		return result;
 	}
 
-	size_t iconv_instance::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions) const
+	size_t iconv_instance::convert_all(const void* in, size_t in_len, void* out, size_t out_len, boost::system::error_code& ec, size_t* non_reversible_conversions) const
 	{
 		assert(in);
 		assert(out);
@@ -90,12 +90,34 @@ namespace iconvplus
 		const char* inbuf = static_cast<const char*>(in);
 		char* outbuf = static_cast<char*>(out);
 
-		write_initial_state(&outbuf, &out_len);
+		if (!write_initial_state(&outbuf, &out_len, ec))
+		{
+			return ERROR_VALUE;
+		}
 
-		size_t result = convert(&inbuf, &in_len, &outbuf, &out_len);
+		size_t result = convert(&inbuf, &in_len, &outbuf, &out_len, ec);
+
+		if (result == ERROR_VALUE)
+		{
+			return result;
+		}
 
 		if (non_reversible_conversions) *non_reversible_conversions = result;
 
 		return (outbuf - static_cast<char*>(out));
+	}
+
+	size_t iconv_instance::convert_all(const void* in, size_t in_len, void* out, size_t out_len, size_t* non_reversible_conversions) const
+	{
+		boost::system::error_code ec;
+
+		size_t result = convert_all(in, in_len, out, out_len, ec, non_reversible_conversions);
+
+		if (result == ERROR_VALUE)
+		{
+			throw boost::system::system_error(ec);
+		}
+
+		return result;
 	}
 }
