@@ -32,9 +32,9 @@
 #include "parser.hpp"
 
 #include <string>
+#include <sstream>
 #include <cctype>
 #include <cassert>
-#include <sstream>
 #include <streambuf>
 
 namespace kfather
@@ -547,13 +547,14 @@ namespace kfather
 	template <typename IteratorType>
 	bool parser::parse_number(context& ctx, IteratorType& ch, IteratorType end)
 	{
-		const IteratorType start = ch;
+		ctx.clear();
 
 		// Check if the number is negative
 		if (ch != end)
 		{
 			if (*ch == '-')
 			{
+				ctx.push_char(*ch);
 				++ch;
 			}
 		}
@@ -566,6 +567,7 @@ namespace kfather
 		switch (*ch)
 		{
 			case '0':
+				ctx.push_char(*ch);
 				++ch;
 				break;
 
@@ -578,10 +580,12 @@ namespace kfather
 			case '7':
 			case '8':
 			case '9':
+				ctx.push_char(*ch);
 				++ch;
 
 				while ((ch != end) && std::isdigit(*ch))
 				{
+					ctx.push_char(*ch);
 					++ch;
 				}
 
@@ -593,10 +597,12 @@ namespace kfather
 		{
 			if (*ch == '.')
 			{
+				ctx.push_char(*ch);
 				++ch;
 
 				while ((ch != end) && std::isdigit(*ch))
 				{
+					ctx.push_char(*ch);
 					++ch;
 				}
 			}
@@ -607,6 +613,7 @@ namespace kfather
 		{
 			if ((*ch == 'e') || (*ch == 'E'))
 			{
+				ctx.push_char(*ch);
 				++ch;
 
 				if (ch == end)
@@ -617,10 +624,12 @@ namespace kfather
 				switch (*ch)
 				{
 					case '-':
+						ctx.push_char(*ch);
 						++ch;
 						break;
 
 					case '+':
+						ctx.push_char(*ch);
 						++ch;
 						break;
 				}
@@ -632,6 +641,7 @@ namespace kfather
 
 				while ((ch != end) && std::isdigit(*ch))
 				{
+					ctx.push_char(*ch);
 					++ch;
 				}
 			}
@@ -641,7 +651,10 @@ namespace kfather
 		{
 			number_type value = 0.0;
 
-			ctx.parse_number(start, ch, value);
+			if (!ctx.get_number(value))
+			{
+				return false;
+			}
 
 			m_number_callback(value);
 		}
@@ -784,10 +797,11 @@ namespace kfather
 		return m_str;
 	}
 
-	template <typename IteratorType>
-	bool parser::context::parse_number(IteratorType begin, IteratorType end, double& value)
+	bool parser::context::get_number(number_type& value)
 	{
-		std::istringstream iss(std::string(begin, end));
+		std::istringstream iss(m_str);
+
+		m_str.clear();
 
 		return iss >> value;
 	}

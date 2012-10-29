@@ -328,8 +328,7 @@ namespace kfather
 					void push_char(char c);
 					void push_codepoint(uint16_t cp);
 					const std::string& str();
-					template <typename IteratorType>
-					bool parse_number(IteratorType, IteratorType, number_type&);
+					bool get_number(number_type&);
 
 				private:
 
