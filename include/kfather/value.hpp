@@ -168,6 +168,35 @@ namespace kfather
 				return 0;
 			}
 	};
+
+	/**
+	 * \brief The boolean_type visitor.
+	 */
+	template <>
+	class visitor<boolean_type> : public boost::static_visitor<boolean_type>
+	{
+		public:
+
+			const boolean_type& operator()(const boolean_type& bt) const
+			{
+				return bt;
+			}
+
+			boolean_type operator()(const string_type& str) const
+			{
+				return !str.empty();
+			}
+
+			boolean_type operator()(const number_type& nb) const
+			{
+				return (nb != 0);
+			}
+
+			number_type operator()(const null_type&) const
+			{
+				return false;
+			}
+	};
 }
 
 #endif /* KFATHER_VALUE_HPP */
