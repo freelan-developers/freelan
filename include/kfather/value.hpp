@@ -38,6 +38,7 @@
 #include <vector>
 
 #include <boost/variant.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace kfather
 {
@@ -130,19 +131,41 @@ namespace kfather
 
 			string_type operator()(const boolean_type& bt) const
 			{
-				if (bt)
-				{
-					return "true";
-				}
-				else
-				{
-					return "false";
-				}
+				return bt ? "true" : "false";
 			}
 
 			string_type operator()(const null_type&) const
 			{
 				return "null";
+			}
+	};
+
+	/**
+	 * \brief The number_type visitor.
+	 */
+	template <>
+	class visitor<number_type> : public boost::static_visitor<number_type>
+	{
+		public:
+
+			const number_type& operator()(const number_type& nb) const
+			{
+				return nb;
+			}
+
+			number_type operator()(const string_type& str) const
+			{
+				return boost::lexical_cast<number_type>(str);
+			}
+
+			number_type operator()(const boolean_type& bt) const
+			{
+				return bt ? 1 : 0;
+			}
+
+			number_type operator()(const null_type&) const
+			{
+				return 0;
 			}
 	};
 }
