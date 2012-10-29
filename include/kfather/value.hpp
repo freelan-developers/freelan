@@ -34,42 +34,83 @@
 
 #include <string>
 #include <sstream>
+#include <map>
+#include <vector>
 
 #include <boost/variant.hpp>
 
 namespace kfather
 {
+	class object_type;
+	class array_type;
+
 	/**
 	 * \brief The string type.
 	 *
-	 * Content must be UTF-8 encoded.
+	 * Assumed to be UTF-8 encoded.
 	 */
 	typedef std::string string_type;
 
 	/**
-	 * \brief The number type.
+	 * \brief A number.
 	 */
 	typedef double number_type;
 
 	/**
-	 * \brief The boolean type.
+	 * \brief A boolean value.
 	 */
 	typedef bool boolean_type;
 
 	/**
-	 * \brief The false type.
+	 * \brief The null type.
 	 */
 	class null_type {};
 
 	/**
 	 * \brief The generic value type.
 	 */
-	typedef boost::variant<string_type, number_type, boolean_type, null_type> value_type;
+	typedef boost::variant<null_type, boolean_type, number_type, string_type, array_type, object_type> value_type;
+
+	/**
+	 * \brief The object type.
+	 */
+	class object_type
+	{
+		public:
+
+			typedef std::map<string_type, value_type> dict_type;
+
+		private:
+
+			dict_type m_dict;
+	};
+
+	/**
+	 * \brief The array type.
+	 */
+	class array_type
+	{
+		public:
+
+			typedef std::vector<value_type> list_type;
+
+		private:
+
+			list_type m_list;
+	};
+
+	/**
+	 * \brief The generic visitor type.
+	 * \tparam Type The visitor type.
+	 */
+	template <typename Type>
+	class visitor;
 
 	/**
 	 * \brief The string_type visitor.
 	 */
-	class string_type_visitor : public boost::static_visitor<string_type>
+	template <>
+	class visitor<string_type> : public boost::static_visitor<string_type>
 	{
 		public:
 
