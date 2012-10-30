@@ -60,77 +60,8 @@ namespace kfather
 		public:
 
 			/**
-			 * \brief A JSON object callback type.
-			 */
-			typedef boost::function<void ()> object_callback;
-
-			/**
-			 * \brief A JSON array callback type.
-			 */
-			typedef boost::function<void ()> array_callback;
-
-			/**
-			 * \brief A JSON string callback type.
-			 */
-			typedef boost::function<void (const string_type&)> string_callback;
-
-			/**
-			 * \brief A JSON number callback type.
-			 */
-			typedef boost::function<void (const number_type&)> number_callback;
-
-			/**
-			 * \brief A JSON boolean callback type.
-			 */
-			typedef boost::function<void (const boolean_type&)> boolean_callback;
-
-			/**
-			 * \brief A JSON null callback type.
-			 */
-			typedef boost::function<void (const null_type&)> null_callback;
-
-			/**
-			 * \brief A JSON object start callback type.
-			 */
-			typedef boost::function<void ()> object_start_callback;
-
-			/**
-			 * \brief A JSON object colon callback type.
-			 */
-			typedef boost::function<void ()> object_colon_callback;
-
-			/**
-			 * \brief A JSON object comma callback type.
-			 */
-			typedef boost::function<void ()> object_comma_callback;
-
-			/**
-			 * \brief A JSON object stop callback type.
-			 */
-			typedef boost::function<void ()> object_stop_callback;
-
-			/**
-			 * \brief A JSON array start callback type.
-			 */
-			typedef boost::function<void ()> array_start_callback;
-
-			/**
-			 * \brief A JSON array comma callback type.
-			 */
-			typedef boost::function<void ()> array_comma_callback;
-
-			/**
-			 * \brief A JSON array stop callback type.
-			 */
-			typedef boost::function<void ()> array_stop_callback;
-
-			/**
-			 * \brief Create a new parser.
-			 */
-			parser();
-
-			/**
 			 * \brief Parse the specified JSON string buffer.
+			 * \param value The resulting value, if the parsing succeeds.
 			 * \param buf The buffer to parse. Must contain a valid JSON string or
 			 * the call will fail. The string must be UTF-8 encoded. buf cannot be
 			 * null.
@@ -147,10 +78,11 @@ namespace kfather
 			 * If the parsing succeeds, *error_token is guaranteed not to be
 			 * modified.
 			 */
-			bool parse(const char* buf, size_t buflen, const char** error_token = NULL);
+			bool parse(value_type& value, const char* buf, size_t buflen, const char** error_token = NULL);
 
 			/**
 			 * \brief Parse the specified JSON string.
+			 * \param value The resulting value, if the parsing succeeds.
 			 * \param str The JSON string to parse. Must contain a valid JSON string or
 			 * the call will fail. The string must be UTF-8 encoded.
 			 * \param error_pos A pointer to a position of the first invalid character.
@@ -162,10 +94,11 @@ namespace kfather
 			 * If the parsing succeeds, *error_pos is guaranteed not to be
 			 * modified.
 			 */
-			bool parse(const std::string& str, std::string::size_type* error_pos = NULL);
+			bool parse(value_type& value, const std::string& str, std::string::size_type* error_pos = NULL);
 
 			/**
 			 * \brief Parse the specified input stream.
+			 * \param value The resulting value, if the parsing succeeds.
 			 * \param is The input stream to parse. The stream must be UTF-8 encoded.
 			 * \param error_pos A pointer to a position of the first invalid character.
 			 * \return true if the parsing succeeds, false otherwise.
@@ -176,130 +109,14 @@ namespace kfather
 			 * If the parsing succeeds, *error_pos is guaranteed not to be
 			 * modified.
 			 */
-			bool parse(std::istream& is, size_t* error_pos = NULL);
-
-			/**
-			 * \brief Set or reset the object callback.
-			 * \param cb The callback.
-			 */
-			void reset_object_callback(object_callback cb = object_callback())
-			{
-				m_object_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the array callback.
-			 * \param cb The callback.
-			 */
-			void reset_array_callback(array_callback cb = array_callback())
-			{
-				m_array_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the string callback.
-			 * \param cb The callback.
-			 */
-			void reset_string_callback(string_callback cb = string_callback())
-			{
-				m_string_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the number callback.
-			 * \param cb The callback.
-			 */
-			void reset_number_callback(number_callback cb = number_callback())
-			{
-				m_number_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the true callback.
-			 * \param cb The callback.
-			 */
-			void reset_boolean_callback(boolean_callback cb = boolean_callback())
-			{
-				m_boolean_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the null callback.
-			 * \param cb The callback.
-			 */
-			void reset_null_callback(null_callback cb = null_callback())
-			{
-				m_null_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the object_start callback.
-			 * \param cb The callback.
-			 */
-			void reset_object_start_callback(object_start_callback cb = object_start_callback())
-			{
-				m_object_start_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the object_colon callback.
-			 * \param cb The callback.
-			 */
-			void reset_object_colon_callback(object_colon_callback cb = object_colon_callback())
-			{
-				m_object_colon_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the object_comma callback.
-			 * \param cb The callback.
-			 */
-			void reset_object_comma_callback(object_comma_callback cb = object_comma_callback())
-			{
-				m_object_comma_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the object_stop callback.
-			 * \param cb The callback.
-			 */
-			void reset_object_stop_callback(object_stop_callback cb = object_stop_callback())
-			{
-				m_object_stop_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the array_start callback.
-			 * \param cb The callback.
-			 */
-			void reset_array_start_callback(array_start_callback cb = array_start_callback())
-			{
-				m_array_start_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the array_comma callback.
-			 * \param cb The callback.
-			 */
-			void reset_array_comma_callback(array_comma_callback cb = array_comma_callback())
-			{
-				m_array_comma_callback = cb;
-			}
-
-			/**
-			 * \brief Set or reset the array_stop callback.
-			 * \param cb The callback.
-			 */
-			void reset_array_stop_callback(array_stop_callback cb = array_stop_callback())
-			{
-				m_array_stop_callback = cb;
-			}
+			bool parse(value_type& value, std::istream& is, size_t* error_pos = NULL);
 
 		private:
 
 			/**
 			 * \brief Parse a range of characters.
 			 * \tparam IteratorType The iterator type.
+			 * \param value The resulting value, if the parsing succeeds.
 			 * \param begin An iterator to the first character to parse.
 			 * \param end An iterator past the last character to parse.
 			 * \param error_pos A pointer to an iterator where the last parsing error occured.
@@ -315,7 +132,7 @@ namespace kfather
 			 * modified.
 			 */
 			template <typename IteratorType>
-			bool parse(IteratorType begin, IteratorType end, IteratorType* error_pos = NULL);
+			bool parse(value_type& value, IteratorType begin, IteratorType end, IteratorType* error_pos = NULL);
 
 		private:
 
@@ -340,40 +157,23 @@ namespace kfather
 			};
 
 			template <typename IteratorType>
-			bool parse_char(context& ctx, char c, IteratorType& ch, IteratorType end);
+			bool parse_value(context& ctx, value_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_value(context& ctx, IteratorType& ch, IteratorType end);
+			bool parse_object(context& ctx, object_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_object(context& ctx, IteratorType& ch, IteratorType end);
+			bool parse_array(context& ctx, array_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_array(context& ctx, IteratorType& ch, IteratorType end);
+			bool parse_string(context& ctx, string_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_string(context& ctx, IteratorType& ch, IteratorType end);
+			bool parse_number(context& ctx, number_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_number(context& ctx, IteratorType& ch, IteratorType end);
+			bool parse_boolean(context& ctx, boolean_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_true(context& ctx, IteratorType& ch, IteratorType end);
+			bool parse_null(context& ctx, null_type& value, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
-			bool parse_false(context& ctx, IteratorType& ch, IteratorType end);
-			template <typename IteratorType>
-			bool parse_null(context& ctx, IteratorType& ch, IteratorType end);
+			bool check_char(context& ctx, char c, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
 			void skip_whitespace(context& ctx, IteratorType& ch, IteratorType end);
-
-			object_callback m_object_callback;
-			array_callback m_array_callback;
-			string_callback m_string_callback;
-			number_callback m_number_callback;
-			boolean_callback m_boolean_callback;
-			null_callback m_null_callback;
-
-			object_start_callback m_object_start_callback;
-			object_colon_callback m_object_colon_callback;
-			object_comma_callback m_object_comma_callback;
-			object_stop_callback m_object_stop_callback;
-			array_start_callback m_array_start_callback;
-			array_comma_callback m_array_comma_callback;
-			array_stop_callback m_array_stop_callback;
 	};
 }
 

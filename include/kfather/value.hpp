@@ -33,7 +33,6 @@
 #define KFATHER_VALUE_HPP
 
 #include <string>
-#include <iostream>
 #include <sstream>
 #include <map>
 #include <vector>
@@ -95,38 +94,19 @@ namespace kfather
 			 *
 			 * Creates an empty array.
 			 */
-			array_type();
+			array_type() {};
 
 			/**
 			 * \brief Creates an array from a list of values.
 			 * \param _items The items.
 			 */
-			array_type(const items_type& _items) : m_items(_items) {}
+			array_type(const items_type& _items) : items(_items) {}
 
 			/**
-			 * \brief Get the associated items.
-			 * \return The associated items.
+			 * \brief The items.
 			 */
-			items_type& items() { return m_items; }
-
-			/**
-			 * \brief Get the associated items.
-			 * \return The associated items.
-			 */
-			const items_type& items() const { return m_items; }
-
-		private:
-
-			items_type m_items;
+			items_type items;
 	};
-
-	/**
-	 * \brief Output the array_type to a stream.
-	 * \param os The output stream.
-	 * \param ar The array.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, const array_type& ar);
 
 	/**
 	 * \brief The object type.
@@ -155,38 +135,19 @@ namespace kfather
 			 *
 			 * Creates an empty object.
 			 */
-			object_type();
+			object_type() {};
 
 			/**
 			 * \brief Creates an object for a list of couples.
 			 * \param _items The items.
 			 */
-			object_type(const items_type& _items) : m_items(_items) {}
+			object_type(const items_type& _items) : items(_items) {}
 
 			/**
-			 * \brief Get the associated items.
-			 * \return The associated items.
+			 * \brief The items.
 			 */
-			items_type& items() { return m_items; }
-
-			/**
-			 * \brief Get the associated items.
-			 * \return The associated items.
-			 */
-			const items_type& items() const { return m_items; }
-
-		private:
-
-			items_type m_items;
+			items_type items;
 	};
-
-	/**
-	 * \brief Output the object_type to a stream.
-	 * \param os The output stream.
-	 * \param obj The object.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, const object_type& obj);
 
 	/**
 	 * \brief The generic visitor type.

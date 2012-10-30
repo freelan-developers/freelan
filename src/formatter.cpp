@@ -37,124 +37,244 @@
 
 namespace kfather
 {
-	formatter::formatter(parser& parser, std::ostream& os) :
-		m_os(os)
+	std::ostream& base_formatter_visitor::operator()(const null_type&) const
 	{
-		parser.reset_string_callback(boost::bind(&formatter::print_string, this, _1));
-		parser.reset_number_callback(boost::bind(&formatter::print_number, this, _1));
-		parser.reset_boolean_callback(boost::bind(&formatter::print_boolean, this, _1));
-		parser.reset_null_callback(boost::bind(&formatter::print_null, this, _1));
-		parser.reset_object_start_callback(boost::bind(&formatter::print_object_start, this));
-		parser.reset_object_colon_callback(boost::bind(&formatter::print_object_colon, this));
-		parser.reset_object_comma_callback(boost::bind(&formatter::print_object_comma, this));
-		parser.reset_object_stop_callback(boost::bind(&formatter::print_object_stop, this));
-		parser.reset_array_start_callback(boost::bind(&formatter::print_array_start, this));
-		parser.reset_array_comma_callback(boost::bind(&formatter::print_array_comma, this));
-		parser.reset_array_stop_callback(boost::bind(&formatter::print_array_stop, this));
+		return os() << "null";
 	}
 
-	void formatter::print_string(const string_type& str)
+	std::ostream& base_formatter_visitor::operator()(const boolean_type& bt) const
 	{
-		m_os << '"';
+		return os() << (bt ? "true" : "false");
+	}
+
+	std::ostream& base_formatter_visitor::operator()(const number_type& nb) const
+	{
+		return os() << nb;
+	}
+
+	std::ostream& base_formatter_visitor::operator()(const string_type& str) const
+	{
+		os() << '"';
 
 		for (string_type::const_iterator it = str.begin(); it != str.end(); ++it)
 		{
 			switch (*it)
 			{
 				case '"':
-					m_os << "\\\"";
+					os() << "\\\"";
 					break;
 
 				case '\\':
-					m_os << "\\\\";
+					os() << "\\\\";
 					break;
 
 				case '/':
-					m_os << "\\/";
+					os() << "\\/";
 					break;
 
 				case '\b':
-					m_os << "\\b";
+					os() << "\\b";
 					break;
 
 				case '\n':
-					m_os << "\\n";
+					os() << "\\n";
 					break;
 
 				case '\f':
-					m_os << "\\f";
+					os() << "\\f";
 					break;
 
 				case '\r':
-					m_os << "\\r";
+					os() << "\\r";
 					break;
 
 				case '\t':
-					m_os << "\\t";
+					os() << "\\t";
 					break;
 
 				default:
-					m_os << *it;
+					os() << *it;
 			}
 		}
 
-		m_os << '"';
+		return os() << '"';
 	}
 
-	void formatter::print_number(const number_type& nb)
+	std::ostream& compact_formatter_visitor::operator()(const array_type& ar) const
 	{
-		m_os << nb;
-	}
+		os() << "[";
 
-	void formatter::print_boolean(const boolean_type& bt)
-	{
-		if (bt)
+		if (!ar.items.empty())
 		{
-			m_os << "true";
+			boost::apply_visitor(*this, ar.items.front());
+
+			for (array_type::items_type::const_iterator it = ar.items.begin() + 1; it != ar.items.end(); ++it)
+			{
+				os() << ",";
+
+				boost::apply_visitor(*this, *it);
+			}
 		}
-		else
+
+		return os() << "]";
+	}
+
+	std::ostream& compact_formatter_visitor::operator()(const object_type& obj) const
+	{
+		os() << "{";
+
+		if (!obj.items.empty())
 		{
-			m_os << "false";
+			object_type::items_type::const_iterator it = obj.items.begin();
+
+			(*this)(it->first);
+
+			os() << ":";
+
+			boost::apply_visitor(*this, it->second);
+
+			++it;
+
+			for (; it != obj.items.end(); ++it)
+			{
+				os() << ",";
+
+				(*this)(it->first);
+
+				os() << ":";
+
+				boost::apply_visitor(*this, it->second);
+			}
 		}
+
+		return os() << "}";
 	}
 
-	void formatter::print_null(const null_type&)
+	std::ostream& inline_formatter_visitor::operator()(const array_type& ar) const
 	{
-		m_os << "null";
+		os() << "[";
+
+		if (!ar.items.empty())
+		{
+			boost::apply_visitor(*this, ar.items.front());
+
+			for (array_type::items_type::const_iterator it = ar.items.begin() + 1; it != ar.items.end(); ++it)
+			{
+				os() << ", ";
+
+				boost::apply_visitor(*this, *it);
+			}
+		}
+
+		return os() << "]";
 	}
 
-	void formatter::print_object_start()
+	std::ostream& inline_formatter_visitor::operator()(const object_type& obj) const
 	{
-		m_os << "{";
+		os() << "{";
+
+		if (!obj.items.empty())
+		{
+			object_type::items_type::const_iterator it = obj.items.begin();
+
+			(*this)(it->first);
+
+			os() << ": ";
+
+			boost::apply_visitor(*this, it->second);
+
+			++it;
+
+			for (; it != obj.items.end(); ++it)
+			{
+				os() << ", ";
+
+				(*this)(it->first);
+
+				os() << ": ";
+
+				boost::apply_visitor(*this, it->second);
+			}
+		}
+
+		return os() << "}";
 	}
 
-	void formatter::print_object_colon()
+	std::ostream& pretty_print_formatter_visitor::operator()(const array_type& ar) const
 	{
-		m_os << ": ";
+		os() << "[";
+
+		if (!ar.items.empty())
+		{
+			os() << "\n";
+			m_indent_level++;
+			indent();
+
+			boost::apply_visitor(*this, ar.items.front());
+
+			for (array_type::items_type::const_iterator it = ar.items.begin() + 1; it != ar.items.end(); ++it)
+			{
+				os() << ",\n";
+				indent();
+
+				boost::apply_visitor(*this, *it);
+			}
+
+			os() << "\n";
+			m_indent_level--;
+			indent();
+		}
+
+		return os() << "]";
 	}
 
-	void formatter::print_object_comma()
+	std::ostream& pretty_print_formatter_visitor::operator()(const object_type& obj) const
 	{
-		m_os << ", ";
+		os() << "{";
+
+		if (!obj.items.empty())
+		{
+			os() << "\n";
+			m_indent_level++;
+			indent();
+
+			object_type::items_type::const_iterator it = obj.items.begin();
+
+			(*this)(it->first);
+
+			os() << ": ";
+
+			boost::apply_visitor(*this, it->second);
+
+			++it;
+
+			for (; it != obj.items.end(); ++it)
+			{
+				os() << ",\n";
+				indent();
+
+				(*this)(it->first);
+
+				os() << ": ";
+
+				boost::apply_visitor(*this, it->second);
+			}
+
+			os() << "\n";
+			m_indent_level--;
+			indent();
+		}
+
+		return os() << "}";
 	}
 
-	void formatter::print_object_stop()
+	std::ostream& pretty_print_formatter_visitor::indent() const
 	{
-		m_os << "}";
-	}
+		for (unsigned int i = 0; i < m_indent_level; ++i)
+		{
+			os() << "  ";
+		}
 
-	void formatter::print_array_start()
-	{
-		m_os << "[";
-	}
-
-	void formatter::print_array_comma()
-	{
-		m_os << ", ";
-	}
-
-	void formatter::print_array_stop()
-	{
-		m_os << "]";
+		return os();
 	}
 }

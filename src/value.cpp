@@ -33,17 +33,4 @@
 
 namespace kfather
 {
-	std::ostream& operator<<(std::ostream& os, const array_type& ar)
-	{
-		(void)ar;
-		//TODO: Implement
-		return os;
-	}
-
-	std::ostream& operator<<(std::ostream& os, const object_type& obj)
-	{
-		(void)obj;
-		//TODO: Implement
-		return os;
-	}
 }

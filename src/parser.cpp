@@ -67,24 +67,7 @@ namespace kfather
 		}
 	}
 
-	parser::parser() :
-		m_object_callback(),
-		m_array_callback(),
-		m_string_callback(),
-		m_number_callback(),
-		m_boolean_callback(),
-		m_null_callback(),
-		m_object_start_callback(),
-		m_object_colon_callback(),
-		m_object_comma_callback(),
-		m_object_stop_callback(),
-		m_array_start_callback(),
-		m_array_comma_callback(),
-		m_array_stop_callback()
-	{
-	}
-
-	bool parser::parse(const char* buf, size_t buflen, const char** error_token)
+	bool parser::parse(value_type& value, const char* buf, size_t buflen, const char** error_token)
 	{
 		assert(buf);
 
@@ -95,7 +78,7 @@ namespace kfather
 
 		skip_whitespace(ctx, ch, end);
 
-		if (!parse_value(ctx, ch, end))
+		if (!parse_value(ctx, value, ch, end))
 		{
 			if (error_token)
 			{
@@ -108,13 +91,13 @@ namespace kfather
 		return true;
 	}
 
-	bool parser::parse(const std::string& str, std::string::size_type* error_pos)
+	bool parser::parse(value_type& value, const std::string& str, std::string::size_type* error_pos)
 	{
 		if (error_pos)
 		{
 			std::string::const_iterator error_it;
 
-			if (!parse(str.begin(), str.end(), &error_it))
+			if (!parse(value, str.begin(), str.end(), &error_it))
 			{
 				*error_pos = std::distance(str.begin(), error_it);
 
@@ -125,11 +108,11 @@ namespace kfather
 		}
 		else
 		{
-			return parse(str.begin(), str.end());
+			return parse(value, str.begin(), str.end());
 		}
 	}
 
-	bool parser::parse(std::istream& is, size_t* error_pos)
+	bool parser::parse(value_type& value, std::istream& is, size_t* error_pos)
 	{
 		const std::istreambuf_iterator<char> begin = std::istreambuf_iterator<char>(is);
 		const std::istreambuf_iterator<char> end;
@@ -138,7 +121,7 @@ namespace kfather
 		{
 			std::istreambuf_iterator<char> error_it;
 
-			if (!parse(begin, end, &error_it))
+			if (!parse(value, begin, end, &error_it))
 			{
 				*error_pos = std::distance(begin, error_it);
 
@@ -149,12 +132,12 @@ namespace kfather
 		}
 		else
 		{
-			return parse(begin, end);
+			return parse(value, begin, end);
 		}
 	}
 
 	template <typename IteratorType>
-	bool parser::parse(IteratorType begin, IteratorType end, IteratorType* error_pos)
+	bool parser::parse(value_type& value, IteratorType begin, IteratorType end, IteratorType* error_pos)
 	{
 		IteratorType it = begin;
 
@@ -162,7 +145,7 @@ namespace kfather
 
 		skip_whitespace(ctx, it, end);
 
-		if (!parse_value(ctx, it, end))
+		if (!parse_value(ctx, value, it, end))
 		{
 			if (error_pos)
 			{
@@ -176,109 +159,130 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_char(context&, char c, IteratorType& ch, IteratorType end)
+	bool parser::parse_value(context& ctx, value_type& value, IteratorType& ch, IteratorType end)
 	{
-		if ((ch != end) && (*ch == c))
-		{
-			++ch;
+		bool result = false;
 
-			return true;
-		}
-
-		return false;
-	}
-
-	template <typename IteratorType>
-	bool parser::parse_value(context& ctx, IteratorType& ch, IteratorType end)
-	{
 		if (ch != end)
 		{
 			switch (*ch)
 			{
 				case '{':
-					return parse_object(ctx, ch, end);
+					{
+						object_type object;
+
+						result = parse_object(ctx, object, ch, end);
+
+						if (result) { value = object; }
+
+						break;
+					}
 
 				case '[':
-					return parse_array(ctx, ch, end);
+					{
+						array_type array;
+
+						result = parse_array(ctx, array, ch, end);
+
+						if (result) { value = array; }
+
+						break;
+					}
 
 				case '"':
-					return parse_string(ctx, ch, end);
+					{
+						string_type str;
+
+						result = parse_string(ctx, str, ch, end);
+
+						if (result) { value = str; }
+
+						break;
+					}
 
 				case 't':
-					return parse_true(ctx, ch, end);
-
 				case 'f':
-					return parse_false(ctx, ch, end);
+					{
+
+						boolean_type bt;
+
+						result = parse_boolean(ctx, bt, ch, end);
+
+						if (result) { value = bt; }
+
+						break;
+					}
 
 				case 'n':
-					return parse_null(ctx, ch, end);
+					{
+						null_type nt;
+
+						result = parse_null(ctx, nt, ch, end);
+
+						if (result) { value = nt; }
+
+						break;
+					}
 
 				default:
-					return parse_number(ctx, ch, end);
+					{
+						number_type nb;
+
+						result = parse_number(ctx, nb, ch, end);
+
+						if (result) { value = nb; }
+
+						break;
+					}
 			}
 		}
 
-		return false;
+		return result;
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_object(context& ctx, IteratorType& ch, IteratorType end)
+	bool parser::parse_object(context& ctx, object_type& value, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char(ctx, '{', ch, end))
+		if (!check_char(ctx, '{', ch, end))
 		{
 			return false;
-		}
-
-		if (m_object_start_callback)
-		{
-			m_object_start_callback();
 		}
 
 		skip_whitespace(ctx, ch, end);
 
 		if (ch != end)
 		{
+			object_type object;
+
 			// Do we have an empty object ?
 			if (*ch == '}')
 			{
 				++ch;
 
-				if (m_object_stop_callback)
-				{
-					m_object_stop_callback();
-				}
-
-				if (m_object_callback)
-				{
-					//TODO: Report an empty object.
-					m_object_callback();
-				}
+				value = object;
 
 				return true;
 			}
 
 			while (ch != end)
 			{
-				if (!parse_string(ctx, ch, end))
+				string_type key;
+
+				if (!parse_string(ctx, key, ch, end))
 				{
 					return false;
 				}
 
 				skip_whitespace(ctx, ch, end);
 
-				if (!parse_char(ctx, ':', ch, end))
+				if (!check_char(ctx, ':', ch, end))
 				{
 					return false;
 				}
 
-				if (m_object_colon_callback)
-				{
-					m_object_colon_callback();
-				}
-
 				skip_whitespace(ctx, ch, end);
 
-				if (!parse_value(ctx, ch, end))
+				if (!parse_value(ctx, object.items[key], ch, end))
 				{
 					return false;
 				}
@@ -291,16 +295,7 @@ namespace kfather
 					{
 						++ch;
 
-						if (m_object_stop_callback)
-						{
-							m_object_stop_callback();
-						}
-
-						if (m_object_callback)
-						{
-							//TODO: Report the object.
-							m_object_callback();
-						}
+						value = object;
 
 						return true;
 					}
@@ -312,11 +307,6 @@ namespace kfather
 
 					++ch;
 
-					if (m_object_comma_callback)
-					{
-						m_object_comma_callback();
-					}
-
 					skip_whitespace(ctx, ch, end);
 				}
 			}
@@ -326,37 +316,25 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_array(context& ctx, IteratorType& ch, IteratorType end)
+	bool parser::parse_array(context& ctx, array_type& value, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char(ctx, '[', ch, end))
+		if (!check_char(ctx, '[', ch, end))
 		{
 			return false;
-		}
-
-		if (m_array_start_callback)
-		{
-			m_array_start_callback();
 		}
 
 		skip_whitespace(ctx, ch, end);
 
 		if (ch != end)
 		{
+			array_type array;
+
 			// Do we have an empty array.
 			if (*ch == ']')
 			{
 				++ch;
 
-				if (m_array_stop_callback)
-				{
-					m_array_stop_callback();
-				}
-
-				if (m_array_callback)
-				{
-					//TODO: Report an empty array.
-					m_array_callback();
-				}
+				value = array;
 
 				return true;
 			}
@@ -365,7 +343,9 @@ namespace kfather
 			{
 				skip_whitespace(ctx, ch, end);
 
-				if (!parse_value(ctx, ch, end))
+				array.items.resize(array.items.size() + 1);
+
+				if (!parse_value(ctx, array.items[array.items.size() - 1], ch, end))
 				{
 					return false;
 				}
@@ -378,16 +358,7 @@ namespace kfather
 					{
 						++ch;
 
-						if (m_array_stop_callback)
-						{
-							m_array_stop_callback();
-						}
-
-						if (m_array_callback)
-						{
-							//TODO: Report the array.
-							m_array_callback();
-						}
+						value = array;
 
 						return true;
 					}
@@ -399,11 +370,6 @@ namespace kfather
 
 					++ch;
 
-					if (m_array_comma_callback)
-					{
-						m_array_comma_callback();
-					}
-
 					skip_whitespace(ctx, ch, end);
 				}
 			}
@@ -413,11 +379,11 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_string(context& ctx, IteratorType& ch, IteratorType end)
+	bool parser::parse_string(context& ctx, string_type& value, IteratorType& ch, IteratorType end)
 	{
 		ctx.clear();
 
-		if (!parse_char(ctx, '"', ch, end))
+		if (!check_char(ctx, '"', ch, end))
 		{
 			return false;
 		}
@@ -436,10 +402,7 @@ namespace kfather
 						// The string ends.
 						++ch;
 
-						if (m_string_callback)
-						{
-							m_string_callback(ctx.str());
-						}
+						value = ctx.str();
 
 						return true;
 					}
@@ -545,7 +508,7 @@ namespace kfather
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_number(context& ctx, IteratorType& ch, IteratorType end)
+	bool parser::parse_number(context& ctx, number_type& value, IteratorType& ch, IteratorType end)
 	{
 		ctx.clear();
 
@@ -647,117 +610,88 @@ namespace kfather
 			}
 		}
 
-		if (m_number_callback)
+		if (!ctx.get_number(value))
 		{
-			number_type value = 0.0;
+			return false;
+		}
 
-			if (!ctx.get_number(value))
+		return true;
+	}
+
+	template <typename IteratorType>
+	bool parser::parse_boolean(context& ctx, boolean_type& value, IteratorType& ch, IteratorType end)
+	{
+		if (check_char(ctx, 't', ch, end))
+		{
+			if (check_char(ctx, 'r', ch, end))
 			{
-				return false;
+				if (check_char(ctx, 'u', ch, end))
+				{
+					if (check_char(ctx, 'e', ch, end))
+					{
+						value = true;
+
+						return true;
+					}
+				}
 			}
-
-			m_number_callback(value);
 		}
 
-		return true;
+		if (check_char(ctx, 'f', ch, end))
+		{
+			if (check_char(ctx, 'a', ch, end))
+			{
+				if (check_char(ctx, 'l', ch, end))
+				{
+					if (check_char(ctx, 's', ch, end))
+					{
+						if (check_char(ctx, 'e', ch, end))
+						{
+							value = false;
+
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_true(context& ctx, IteratorType& ch, IteratorType end)
+	bool parser::parse_null(context& ctx, null_type& value, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char(ctx, 't', ch, end))
+		if (check_char(ctx, 'n', ch, end))
 		{
-			return false;
+			if (check_char(ctx, 'u', ch, end))
+			{
+				if (check_char(ctx, 'l', ch, end))
+				{
+					if (check_char(ctx, 'l', ch, end))
+					{
+						value = null_type();
+
+						return true;
+					}
+				}
+			}
 		}
 
-		if (!parse_char(ctx, 'r', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'u', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'e', ch, end))
-		{
-			return false;
-		}
-
-		if (m_boolean_callback)
-		{
-			m_boolean_callback(true);
-		}
-
-		return true;
+		return false;
 	}
 
 	template <typename IteratorType>
-	bool parser::parse_false(context& ctx, IteratorType& ch, IteratorType end)
+	bool parser::check_char(context&, char c, IteratorType& ch, IteratorType end)
 	{
-		if (!parse_char(ctx, 'f', ch, end))
+		if ((ch != end) && (*ch == c))
 		{
-			return false;
+			++ch;
+
+			return true;
 		}
 
-		if (!parse_char(ctx, 'a', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'l', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 's', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'e', ch, end))
-		{
-			return false;
-		}
-
-		if (m_boolean_callback)
-		{
-			m_boolean_callback(false);
-		}
-
-		return true;
-	}
-
-	template <typename IteratorType>
-	bool parser::parse_null(context& ctx, IteratorType& ch, IteratorType end)
-	{
-		if (!parse_char(ctx, 'n', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'u', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'l', ch, end))
-		{
-			return false;
-		}
-
-		if (!parse_char(ctx, 'l', ch, end))
-		{
-			return false;
-		}
-
-		if (m_null_callback)
-		{
-			m_null_callback(null_type());
-		}
-
-		return true;
+		return false;
 	}
 
 	template <typename IteratorType>

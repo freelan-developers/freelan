@@ -33,6 +33,7 @@
 #define KFATHER_FORMATTER_HPP
 
 #include <iostream>
+#include <sstream>
 
 #include "value.hpp"
 
@@ -40,37 +41,193 @@ namespace kfather
 {
 	class parser;
 
-	class formatter
+	/**
+	 * \brief A base formatter class.
+	 */
+	template <typename FormatterVisitorType>
+	class generic_formatter
 	{
 		public:
 
 			/**
-			 * \brief Create a formatter bound to the specified parser.
-			 * \param parser The parser to bind to.
-			 * \param os The output stream to use.
-			 *
-			 * The binding process may replace some or all of the callbacks of the
-			 * parser instance. That is, you cannot use the same parser with
-			 * different formatters simultaneously.
+			 * \brief Format the specified value to the specified stream.
+			 * \param os The stream to format the value to.
+			 * \param value The value to format.
+			 * \return os.
 			 */
-			formatter(parser& parser, std::ostream& os);
+			std::ostream& format(std::ostream& os, const value_type& value)
+			{
+				return boost::apply_visitor(FormatterVisitorType(os), value);
+			}
+
+			/**
+			 * \brief Format a value to a string.
+			 * \param value The value to format.
+			 * \return The formatted string.
+			 *
+			 * If your intent is to print a value to an output stream, use the first
+			 * format() overload instead as it will be far more efficient.
+			 */
+			std::string format(const value_type& value)
+			{
+				return format(std::ostringstream(), value).str();
+			}
+	};
+
+	/**
+	 * \brief The base formatter visitor class.
+	 */
+	class base_formatter_visitor : public boost::static_visitor<std::ostream&>
+	{
+		public:
+
+			/**
+			 * \brief Prints a null value.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const null_type&) const;
+
+			/**
+			 * \brief Prints a boolean value.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const boolean_type&) const;
+
+			/**
+			 * \brief Prints a number.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const number_type&) const;
+
+			/**
+			 * \brief Prints a string.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const string_type&) const;
+
+		protected:
+
+			/**
+			 * \brief Construct a formatter visitor.
+			 * \param _os The output stream to hold a reference to.
+			 */
+			base_formatter_visitor(std::ostream& _os) : m_os(_os) {}
+
+			/**
+			 * \brief Get the referenced output stream.
+			 * \return The referenced output stream instance.
+			 */
+			std::ostream& os() const { return m_os; }
 
 		private:
 
-			void print_string(const string_type&);
-			void print_number(const number_type&);
-			void print_boolean(const boolean_type&);
-			void print_null(const null_type&);
-			void print_object_start();
-			void print_object_colon();
-			void print_object_comma();
-			void print_object_stop();
-			void print_array_start();
-			void print_array_comma();
-			void print_array_stop();
-
 			std::ostream& m_os;
 	};
+
+	/**
+	 * \brief A formatter visitor that compact its values.
+	 */
+	class compact_formatter_visitor : public base_formatter_visitor
+	{
+		public:
+
+			/**
+			 * \brief Construct a formatter visitor.
+			 * \param _os The output stream to hold a reference to.
+			 */
+			compact_formatter_visitor(std::ostream& _os) : base_formatter_visitor(_os) {}
+
+			/**
+			 * \brief Prints an array.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const array_type&) const;
+
+			/**
+			 * \brief Prints an object.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const object_type&) const;
+
+			using base_formatter_visitor::operator();
+	};
+
+	/**
+	 * \brief A formatter visitor that inlines its values.
+	 */
+	class inline_formatter_visitor : public base_formatter_visitor
+	{
+		public:
+
+			/**
+			 * \brief Construct a formatter visitor.
+			 * \param _os The output stream to hold a reference to.
+			 */
+			inline_formatter_visitor(std::ostream& _os) : base_formatter_visitor(_os) {}
+
+			/**
+			 * \brief Prints an array.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const array_type&) const;
+
+			/**
+			 * \brief Prints an object.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const object_type&) const;
+
+			using base_formatter_visitor::operator();
+	};
+
+	/**
+	 * \brief A formatter visitor that pretty prints its values.
+	 */
+	class pretty_print_formatter_visitor : public base_formatter_visitor
+	{
+		public:
+
+			/**
+			 * \brief Construct a formatter visitor.
+			 * \param _os The output stream to hold a reference to.
+			 */
+			pretty_print_formatter_visitor(std::ostream& _os) : base_formatter_visitor(_os), m_indent_level(0) {}
+
+			/**
+			 * \brief Prints an array.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const array_type&) const;
+
+			/**
+			 * \brief Prints an object.
+			 * \return The referenced output stream.
+			 */
+			std::ostream& operator()(const object_type&) const;
+
+			using base_formatter_visitor::operator();
+
+		private:
+
+			std::ostream& indent() const;
+
+			mutable unsigned int m_indent_level;
+	};
+
+	/**
+	 * \brief A compact formatter class.
+	 */
+	typedef generic_formatter<compact_formatter_visitor> compact_formatter;
+
+	/**
+	 * \brief An inline formatter class.
+	 */
+	typedef generic_formatter<inline_formatter_visitor> inline_formatter;
+
+	/**
+	 * \brief A pretty-print formatter class.
+	 */
+	typedef generic_formatter<pretty_print_formatter_visitor> pretty_print_formatter;
 }
 
 #endif /* KFATHER_FORMATTER_HPP */
