@@ -33,6 +33,7 @@
 #define KFATHER_VALUE_HPP
 
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <map>
 #include <vector>
@@ -73,6 +74,28 @@ namespace kfather
 	typedef boost::variant<null_type, boolean_type, number_type, string_type, array_type, object_type> value_type;
 
 	/**
+	 * \brief The array type.
+	 */
+	class array_type
+	{
+		public:
+
+			typedef std::vector<value_type> list_type;
+
+		private:
+
+			list_type m_list;
+	};
+
+	/**
+	 * \brief Output the array_type to a stream.
+	 * \param os The output stream.
+	 * \param ar The array.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const array_type& ar);
+
+	/**
 	 * \brief The object type.
 	 */
 	class object_type
@@ -87,18 +110,12 @@ namespace kfather
 	};
 
 	/**
-	 * \brief The array type.
+	 * \brief Output the object_type to a stream.
+	 * \param os The output stream.
+	 * \param obj The object.
+	 * \return os.
 	 */
-	class array_type
-	{
-		public:
-
-			typedef std::vector<value_type> list_type;
-
-		private:
-
-			list_type m_list;
-	};
+	std::ostream& operator<<(std::ostream& os, const object_type& obj);
 
 	/**
 	 * \brief The generic visitor type.
@@ -115,9 +132,14 @@ namespace kfather
 	{
 		public:
 
-			const string_type& operator()(const string_type& str) const
+			string_type operator()(const null_type&) const
 			{
-				return str;
+				return "null";
+			}
+
+			string_type operator()(const boolean_type& bt) const
+			{
+				return bt ? "true" : "false";
 			}
 
 			string_type operator()(const number_type& nb) const
@@ -129,14 +151,19 @@ namespace kfather
 				return oss.str();
 			}
 
-			string_type operator()(const boolean_type& bt) const
+			const string_type& operator()(const string_type& str) const
 			{
-				return bt ? "true" : "false";
+				return str;
 			}
 
-			string_type operator()(const null_type&) const
+			string_type operator()(const array_type&) const
 			{
-				return "null";
+				return "";
+			}
+
+			string_type operator()(const object_type&) const
+			{
+				return "[object Object]";
 			}
 	};
 
@@ -148,14 +175,9 @@ namespace kfather
 	{
 		public:
 
-			const number_type& operator()(const number_type& nb) const
+			number_type operator()(const null_type&) const
 			{
-				return nb;
-			}
-
-			number_type operator()(const string_type& str) const
-			{
-				return boost::lexical_cast<number_type>(str);
+				return 0;
 			}
 
 			number_type operator()(const boolean_type& bt) const
@@ -163,9 +185,31 @@ namespace kfather
 				return bt ? 1 : 0;
 			}
 
-			number_type operator()(const null_type&) const
+			number_type operator()(const number_type& nb) const
+			{
+				return nb;
+			}
+
+			number_type operator()(const string_type& str) const
+			{
+				try
+				{
+					return boost::lexical_cast<number_type>(str);
+				}
+				catch (boost::bad_lexical_cast&)
+				{
+					return std::numeric_limits<number_type>::quiet_NaN();
+				}
+			}
+
+			number_type operator()(const array_type&) const
 			{
 				return 0;
+			}
+
+			number_type operator()(const object_type&) const
+			{
+				return std::numeric_limits<number_type>::quiet_NaN();
 			}
 	};
 
@@ -177,9 +221,19 @@ namespace kfather
 	{
 		public:
 
-			const boolean_type& operator()(const boolean_type& bt) const
+			number_type operator()(const null_type&) const
+			{
+				return false;
+			}
+
+			boolean_type operator()(const boolean_type& bt) const
 			{
 				return bt;
+			}
+
+			boolean_type operator()(const number_type& nb) const
+			{
+				return (nb != 0) && (nb != std::numeric_limits<number_type>::quiet_NaN());
 			}
 
 			boolean_type operator()(const string_type& str) const
@@ -187,16 +241,26 @@ namespace kfather
 				return !str.empty();
 			}
 
-			boolean_type operator()(const number_type& nb) const
+			boolean_type operator()(const array_type&) const
 			{
-				return (nb != 0);
+				return true;
 			}
 
-			number_type operator()(const null_type&) const
+			boolean_type operator()(const object_type&) const
 			{
-				return false;
+				return true;
 			}
 	};
+
+	/**
+	 * \brief Checks if a specified value is a falsy value.
+	 * \param v The value.
+	 * \return true if the value is falsy, according to the Javascript rules.
+	 */
+	inline bool is_falsy(const value_type& v)
+	{
+		return !boost::apply_visitor(visitor<boolean_type>(), v);
+	}
 }
 
 #endif /* KFATHER_VALUE_HPP */
