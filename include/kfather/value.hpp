@@ -80,11 +80,44 @@ namespace kfather
 	{
 		public:
 
-			typedef std::vector<value_type> list_type;
+			/**
+			 * \brief The item type.
+			 */
+			typedef value_type item_type;
+
+			/**
+			 * \brief The list type.
+			 */
+			typedef std::vector<item_type> items_type;
+
+			/**
+			 * \brief Default constructor.
+			 *
+			 * Creates an empty array.
+			 */
+			array_type();
+
+			/**
+			 * \brief Creates an array from a list of values.
+			 * \param _items The items.
+			 */
+			array_type(const items_type& _items) : m_items(_items) {}
+
+			/**
+			 * \brief Get the associated items.
+			 * \return The associated items.
+			 */
+			items_type& items() { return m_items; }
+
+			/**
+			 * \brief Get the associated items.
+			 * \return The associated items.
+			 */
+			const items_type& items() const { return m_items; }
 
 		private:
 
-			list_type m_list;
+			items_type m_items;
 	};
 
 	/**
@@ -102,11 +135,49 @@ namespace kfather
 	{
 		public:
 
-			typedef std::map<string_type, value_type> dict_type;
+			/**
+			 * \brief The key type.
+			 */
+			typedef string_type key_type;
+
+			/**
+			 * \brief The item type.
+			 */
+			typedef value_type item_type;
+
+			/**
+			 * \brief The items type.
+			 */
+			typedef std::map<key_type, item_type> items_type;
+
+			/**
+			 * \brief Default constructor.
+			 *
+			 * Creates an empty object.
+			 */
+			object_type();
+
+			/**
+			 * \brief Creates an object for a list of couples.
+			 * \param _items The items.
+			 */
+			object_type(const items_type& _items) : m_items(_items) {}
+
+			/**
+			 * \brief Get the associated items.
+			 * \return The associated items.
+			 */
+			items_type& items() { return m_items; }
+
+			/**
+			 * \brief Get the associated items.
+			 * \return The associated items.
+			 */
+			const items_type& items() const { return m_items; }
 
 		private:
 
-			dict_type m_dict;
+			items_type m_items;
 	};
 
 	/**
