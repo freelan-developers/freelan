@@ -166,47 +166,6 @@ namespace freelan
 	};
 
 	/**
-	 * \brief A visitor that write endpoints to output streams.
-	 */
-	class endpoint_output_visitor : public boost::static_visitor<std::ostream&>
-	{
-		public:
-
-			/**
-			 * \brief Create a new endpoint_output_visitor.
-			 * \param os The output stream.
-			 */
-			endpoint_output_visitor(result_type os) : m_os(os) {}
-
-			/**
-			 * \brief Write the specified endpoint.
-			 * \tparam T The type of the endpoint.
-			 * \param ep The endpoint.
-			 * \return os.
-			 */
-			template <typename T>
-			result_type operator()(const T& ep) const
-			{
-				return m_os << ep;
-			}
-
-		private:
-
-			result_type m_os;
-	};
-
-	/**
-	 * \brief Write an endpoint to an output stream.
-	 * \param os The output stream.
-	 * \param value The value.
-	 * \return os.
-	 */
-	inline std::ostream& operator<<(std::ostream& os, const endpoint& value)
-	{
-		return boost::apply_visitor(endpoint_output_visitor(os), value);
-	}
-
-	/**
 	 * \brief Read an endpoint from an input stream.
 	 * \param is The input stream.
 	 * \param value The value.
