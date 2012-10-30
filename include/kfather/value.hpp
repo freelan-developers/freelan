@@ -253,13 +253,95 @@ namespace kfather
 	};
 
 	/**
+	 * \brief The boolean_type visitor.
+	 */
+	template <>
+	class visitor<null_type> : public boost::static_visitor<null_type>
+	{
+		public:
+
+			const null_type& operator()(const null_type& nt) const
+			{
+				return nt;
+			}
+
+			template <typename Type>
+			null_type operator()(const Type&) const
+			{
+				return null_type();
+			}
+	};
+
+	/**
+	 * \brief The array_type visitor.
+	 */
+	template <>
+	class visitor<array_type> : public boost::static_visitor<array_type>
+	{
+		public:
+
+			const array_type& operator()(const array_type& ar) const
+			{
+				return ar;
+			}
+
+			template <typename Type>
+			array_type operator()(const Type&) const
+			{
+				return array_type();
+			}
+	};
+
+	/**
+	 * \brief The object_type visitor.
+	 */
+	template <>
+	class visitor<object_type> : public boost::static_visitor<object_type>
+	{
+		public:
+
+			const object_type& operator()(const object_type& obj) const
+			{
+				return obj;
+			}
+
+			template <typename Type>
+			object_type operator()(const Type&) const
+			{
+				return object_type();
+			}
+	};
+
+	/**
+	 * \brief Casts a value to the specified type.
+	 * \tparam Type The type of the destination value.
+	 * \param value The value to cast.
+	 * \return The casted value.
+	 */
+	template <typename Type>
+	inline Type value_cast(const value_type& value)
+	{
+		return boost::apply_visitor(visitor<Type>(), value);
+	}
+
+	/**
+	 * \brief Checks if a specified value is a truthy value.
+	 * \param value The value.
+	 * \return true if the value is truthy, according to the Javascript rules.
+	 */
+	inline bool is_truthy(const value_type& value)
+	{
+		return value_cast<boolean_type>(value);
+	}
+
+	/**
 	 * \brief Checks if a specified value is a falsy value.
-	 * \param v The value.
+	 * \param value The value.
 	 * \return true if the value is falsy, according to the Javascript rules.
 	 */
-	inline bool is_falsy(const value_type& v)
+	inline bool is_falsy(const value_type& value)
 	{
-		return !boost::apply_visitor(visitor<boolean_type>(), v);
+		return !value_cast<boolean_type>(value);
 	}
 }
 
