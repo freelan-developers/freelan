@@ -56,10 +56,8 @@
 #include <cryptoplus/pkey/pkey.hpp>
 #include <cryptoplus/base64.hpp>
 
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/document.h"
-#include "rapidjson/prettywriter.h"
-#include "rapidjson/stringbuffer.h"
+#include <kfather/parser.hpp>
+#include <kfather/formatter.hpp>
 
 #include "configuration.hpp"
 #include "logger.hpp"
@@ -85,11 +83,11 @@ namespace freelan
 			throw std::runtime_error("Unsupported server protocol.");
 		}
 
-		bool has_value(const client::values_type& values, const std::string& key, std::string& value)
+		bool has_value(const client::values_type& values, const std::string& key, json::value_type& value)
 		{
-			client::values_type::const_iterator it = values.find(key);
+			client::values_type::items_type::const_iterator it = values.items.find(key);
 
-			if (it!= values.end())
+			if (it != values.items.end())
 			{
 				value = it->second;
 
@@ -99,7 +97,7 @@ namespace freelan
 			return false;
 		}
 
-		void assert_has_value(const client::values_type& values, const std::string& key, std::string& value)
+		void assert_has_value(const client::values_type& values, const std::string& key, json::value_type& value)
 		{
 			if (!has_value(values, key, value))
 			{
@@ -110,63 +108,11 @@ namespace freelan
 		template <typename T>
 		void assert_has_value(const client::values_type& values, const std::string& key, T& value)
 		{
-			std::string str_value;
+			json::value_type _val;
 
-			assert_has_value(values, key, str_value);
+			assert_has_value(values, key, _val);
 
-			value = boost::lexical_cast<T>(str_value);
-		}
-
-		void json_to_values(const std::string& json, client::values_type& values)
-		{
-			values.clear();
-
-			rapidjson::Document document;
-
-			document.Parse<0>(json.c_str());
-
-			if (document.HasParseError())
-			{
-				throw std::runtime_error("JSON syntax parse error.");
-			}
-
-			if (!document.IsObject())
-			{
-				throw std::runtime_error("JSON document parse error: root must be an object.");
-			}
-
-			for (rapidjson::Document::ConstMemberIterator it = document.MemberBegin(); it != document.MemberEnd(); ++it)
-			{
-				const char* name = it->name.GetString();
-
-				if (!it->value.IsString())
-				{
-					throw std::runtime_error("JSON document parse error: values must be strings (" + std::string(name) + ").");
-				}
-
-				const char* value = it->value.GetString();
-
-				values[name] = value;
-			}
-		}
-
-		std::string values_to_json(const client::values_type& values)
-		{
-			rapidjson::StringBuffer strbuf;
-
-			rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(strbuf);
-
-			writer.StartObject();
-
-			for (client::values_type::const_iterator it = values.begin(); it != values.end(); ++it)
-			{
-				writer.String(it->first.c_str(), it->first.size());
-				writer.String(it->second.c_str(), it->second.size());
-			}
-
-			writer.EndObject();
-
-			return strbuf.GetString();
+			value = json::value_cast<T>(_val);
 		}
 	}
 
@@ -341,7 +287,25 @@ namespace freelan
 			}
 			else
 			{
-				json_to_values(m_data, values);
+				json::parser parser;
+
+				json::value_type value;
+
+				if (!parser.parse(value, m_data))
+				{
+					throw std::runtime_error("JSON parsing failed.");
+				}
+				else
+				{
+					if (!json::is<values_type>(value))
+					{
+						throw std::runtime_error("Expected a JSON object.");
+					}
+					else
+					{
+						values = json::value_cast<values_type>(value);
+					}
+				}
 			}
 		}
 	}
@@ -365,7 +329,8 @@ namespace freelan
 		request.set_http_header("Content-Type", "application/json");
 		request.unset_http_header("Expect");
 
-		const std::string json = values_to_json(parameters);
+		json::pretty_print_formatter formatter;
+		const std::string json = formatter.format(parameters);
 
 		request.set_copy_post_fields(boost::asio::buffer(json));
 
@@ -451,7 +416,7 @@ namespace freelan
 
 		values_type parameters;
 
-		parameters["network"] = network;
+		parameters.items["network"] = network;
 
 		values_type values;
 
@@ -474,7 +439,7 @@ namespace freelan
 
 		const std::string b64_encoded_csr = base64_encode(&der_csr[0], der_csr.size());
 
-		parameters["certificate_request"] = b64_encoded_csr;
+		parameters.items["certificate_request"] = b64_encoded_csr;
 
 		values_type values;
 
@@ -514,9 +479,9 @@ namespace freelan
 
 		values_type parameters;
 
-		parameters["challenge"] = challenge;
-		parameters["username"] = m_configuration.server.username;
-		parameters["password"] = m_configuration.server.password;
+		parameters.items["challenge"] = challenge;
+		parameters.items["username"] = m_configuration.server.username;
+		parameters.items["password"] = m_configuration.server.password;
 
 		values_type values;
 

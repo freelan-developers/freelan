@@ -21,10 +21,14 @@ if sys.platform.startswith('win32'):
     libraries.append('asiotap_static')
     libraries.append('fscp_static')
     libraries.append('cryptoplus_static')
+    libraries.append('kfather_static')
+    libraries.append('iconvplus_static')
 else:
     libraries.append('asiotap')
     libraries.append('fscp')
     libraries.append('cryptoplus')
+    libraries.append('kfather')
+    libraries.append('iconvplus')
 
 libraries.append('boost_system')
 libraries.append('boost_thread')
@@ -62,8 +66,6 @@ else:
 
     if sys.platform.startswith('darwin'):
         libraries.append('crypto')
-
-env.Append(CPPPATH=['src/extras/rapidjson/include'])
 
 project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
 

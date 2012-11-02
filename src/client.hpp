@@ -51,6 +51,9 @@
 
 #include <boost/asio.hpp>
 
+#include <kfather/kfather.hpp>
+#include <kfather/value.hpp>
+
 #include "curl.hpp"
 
 namespace cryptoplus
@@ -77,7 +80,7 @@ namespace freelan
 			/**
 			 * \brief A values type.
 			 */
-			typedef std::map<std::string, std::string> values_type;
+			typedef json::object_type values_type;
 
 			/**
 			 * \brief Create a client instance.
