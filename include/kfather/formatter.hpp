@@ -43,6 +43,9 @@ namespace kfather
 
 	/**
 	 * \brief A base formatter class.
+	 *
+	 * The same formatter can be used to format JSON values in a thread-safe and
+	 * reentrant manner.
 	 */
 	template <typename FormatterVisitorType>
 	class generic_formatter
@@ -55,7 +58,7 @@ namespace kfather
 			 * \param value The value to format.
 			 * \return os.
 			 */
-			std::ostream& format(std::ostream& os, const value_type& value)
+			std::ostream& format(std::ostream& os, const value_type& value) const
 			{
 				return boost::apply_visitor(FormatterVisitorType(os), value);
 			}
@@ -68,9 +71,13 @@ namespace kfather
 			 * If your intent is to print a value to an output stream, use the first
 			 * format() overload instead as it will be far more efficient.
 			 */
-			std::string format(const value_type& value)
+			std::string format(const value_type& value) const
 			{
-				return format(std::ostringstream(), value).str();
+				std::ostringstream oss;
+
+				format(oss, value);
+
+				return oss.str();
 			}
 	};
 
