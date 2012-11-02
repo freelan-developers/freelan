@@ -114,6 +114,20 @@ namespace freelan
 
 			value = json::value_cast<T>(_val);
 		}
+
+		cryptoplus::x509::certificate string_to_certificate(const std::string& str)
+		{
+			const std::string certificate_der_str = base64_decode(str);
+
+			return cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
+		}
+
+		std::string certificate_request_to_string(const cryptoplus::x509::certificate_request& csr)
+		{
+			const std::vector<unsigned char> der_csr = csr.write_der();
+
+			return base64_encode(&der_csr[0], der_csr.size());
+		}
 	}
 
 	client::client(const freelan::configuration& configuration, freelan::logger& _logger) :
@@ -397,9 +411,7 @@ namespace freelan
 
 		assert_has_value(values, "authority_certificate", authority_certificate_str);
 
-		const std::string authority_certificate_der_str = base64_decode(authority_certificate_str);
-
-		cryptoplus::x509::certificate authority_certificate = cryptoplus::x509::certificate::from_der(authority_certificate_der_str.c_str(), authority_certificate_der_str.size());
+		cryptoplus::x509::certificate authority_certificate = string_to_certificate(authority_certificate_str);
 
 		m_logger(LL_INFORMATION) << "Authority certificate received from server.";
 
@@ -435,11 +447,7 @@ namespace freelan
 
 		values_type parameters;
 
-		const std::vector<unsigned char> der_csr = csr.write_der();
-
-		const std::string b64_encoded_csr = base64_encode(&der_csr[0], der_csr.size());
-
-		parameters.items["certificate_request"] = b64_encoded_csr;
+		parameters.items["certificate_request"] = certificate_request_to_string(csr);
 
 		values_type values;
 
@@ -449,9 +457,7 @@ namespace freelan
 
 		assert_has_value(values, "certificate", certificate_str);
 
-		const std::string certificate_der_str = base64_decode(certificate_str);
-
-		cryptoplus::x509::certificate certificate = cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
+		cryptoplus::x509::certificate certificate = string_to_certificate(certificate_str);
 
 		m_logger(LL_INFORMATION) << "Certificate request was signed.";
 
