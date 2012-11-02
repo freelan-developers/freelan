@@ -345,6 +345,27 @@ namespace kfather
 	};
 
 	/**
+	 * \brief A visitor that checks if the variant has the specified type.
+	 * \tparam Type The type.
+	 */
+	template <typename Type>
+	class check_type_visitor : public boost::static_visitor<bool>
+	{
+		public:
+
+			bool operator()(const Type&) const
+			{
+				return true;
+			}
+
+			template <typename OtherType>
+			bool operator()(const OtherType&) const
+			{
+				return false;
+			}
+	};
+
+	/**
 	 * \brief Casts a value to the specified type.
 	 * \tparam Type The type of the destination value.
 	 * \param value The value to cast.
@@ -374,6 +395,18 @@ namespace kfather
 	inline bool is_falsy(const value_type& value)
 	{
 		return !value_cast<boolean_type>(value);
+	}
+
+	/**
+	 * \brief Check if the value has the specified type.
+	 * \tparam Type The type.
+	 * \param value The value.
+	 * \return true if value has the specified type.
+	 */
+	template <typename Type>
+	inline bool is(const value_type& value)
+	{
+		return boost::apply_visitor(check_type_visitor<Type>(), value);
 	}
 }
 
