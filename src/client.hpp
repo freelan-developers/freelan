@@ -54,6 +54,7 @@
 #include <kfather/kfather.hpp>
 #include <kfather/value.hpp>
 
+#include "ip_network_address.hpp"
 #include "curl.hpp"
 
 namespace cryptoplus
@@ -82,6 +83,13 @@ namespace freelan
 			 */
 			typedef json::object_type values_type;
 
+			struct network_info
+			{
+				ipv4_network_address ipv4_address_prefix_length;
+				ipv6_network_address ipv6_address_prefix_length;
+				std::vector<cryptoplus::x509::certificate> users_certificates;
+			};
+
 			/**
 			 * \brief Create a client instance.
 			 * \param configuration The configuration to use.
@@ -104,7 +112,7 @@ namespace freelan
 			 * \param network The network name.
 			 * \return The network authority certificate.
 			 */
-			void join_network(const std::string& network);
+			network_info join_network(const std::string& network);
 
 			/**
 			 * \brief Renew the certificate.
@@ -124,7 +132,7 @@ namespace freelan
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
 			cryptoplus::x509::certificate v1_get_authority_certificate(curl&, const std::string&);
-			void v1_join_network(curl&, const std::string&, const std::string&);
+			network_info v1_join_network(curl&, const std::string&, const std::string&);
 			cryptoplus::x509::certificate v1_sign_certificate_request(curl&, const std::string&, const cryptoplus::x509::certificate_request&);
 
 			// Version 1 sub-methods

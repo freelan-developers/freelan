@@ -137,6 +137,24 @@ namespace freelan
 
 			cert = string_to_certificate(cert_str);
 		}
+
+		void assert_has_value(const client::values_type& values, const std::string& key, ipv4_network_address& ep)
+		{
+			std::string str;
+
+			assert_has_value(values, key, str);
+
+			ep = boost::lexical_cast<ipv4_network_address>(str);
+		}
+
+		void assert_has_value(const client::values_type& values, const std::string& key, ipv6_network_address& ep)
+		{
+			std::string str;
+
+			assert_has_value(values, key, str);
+
+			ep = boost::lexical_cast<ipv6_network_address>(str);
+		}
 	}
 
 	client::client(const freelan::configuration& configuration, freelan::logger& _logger) :
@@ -250,11 +268,11 @@ namespace freelan
 		}
 	}
 
-	void client::join_network(const std::string& network)
+	client::network_info client::join_network(const std::string& network)
 	{
 		if (m_server_version_major == 1)
 		{
-			v1_join_network(m_request, m_join_network_url, network);
+			return v1_join_network(m_request, m_join_network_url, network);
 		}
 		else
 		{
@@ -425,7 +443,7 @@ namespace freelan
 		return authority_certificate;
 	}
 
-	void client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network)
+	client::network_info client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network)
 	{
 		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + join_network_url;
 
@@ -441,7 +459,32 @@ namespace freelan
 
 		perform_post_request(request, url, parameters, values);
 
+		network_info ninfo;
+
+		json::array_type users_certificates_array;
+
+		assert_has_value(values, "ipv4_address_prefix_length", ninfo.ipv4_address_prefix_length);
+		assert_has_value(values, "ipv6_address_prefix_length", ninfo.ipv6_address_prefix_length);
+		assert_has_value(values, "users_certificates", users_certificates_array);
+
+		for (json::array_type::items_type::const_iterator it = users_certificates_array.items.begin(); it != users_certificates_array.items.end(); ++it)
+		{
+			ninfo.users_certificates.push_back(string_to_certificate(json::value_cast<json::string_type>(*it)));
+		}
+
+		if (!ninfo.ipv4_address_prefix_length.is_null())
+		{
+			m_logger(LL_INFORMATION) << "IPv4 address is " << ninfo.ipv4_address_prefix_length << ".";
+		}
+
+		if (!ninfo.ipv6_address_prefix_length.is_null())
+		{
+			m_logger(LL_INFORMATION) << "IPv6 address is " << ninfo.ipv6_address_prefix_length << ".";
+		}
+
 		m_logger(LL_INFORMATION) << "Joined network \"" << network << "\" succesfully.";
+
+		return ninfo;
 	}
 
 	cryptoplus::x509::certificate client::v1_sign_certificate_request(curl& request, const std::string& sign_url, const cryptoplus::x509::certificate_request& csr)
