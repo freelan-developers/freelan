@@ -35,11 +35,16 @@ if sys.platform.startswith('win32'):
     libraries.append('asiotap_static')
     libraries.append('fscp_static')
     libraries.append('cryptoplus_static')
+    libraries.append('kfather_static')
+    libraries.append('iconvplus_static')
+    libraries.append('iconv')
 else:
     libraries.append('freelan')
     libraries.append('asiotap')
     libraries.append('fscp')
     libraries.append('cryptoplus')
+    libraries.append('kfather')
+    libraries.append('iconvplus')
 
 libraries.append('boost_system')
 libraries.append('boost_program_options')
