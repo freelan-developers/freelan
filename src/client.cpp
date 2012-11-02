@@ -83,6 +83,20 @@ namespace freelan
 			throw std::runtime_error("Unsupported server protocol.");
 		}
 
+		cryptoplus::x509::certificate string_to_certificate(const std::string& str)
+		{
+			const std::string certificate_der_str = base64_decode(str);
+
+			return cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
+		}
+
+		std::string certificate_request_to_string(const cryptoplus::x509::certificate_request& csr)
+		{
+			const std::vector<unsigned char> der_csr = csr.write_der();
+
+			return base64_encode(&der_csr[0], der_csr.size());
+		}
+
 		bool has_value(const client::values_type& values, const std::string& key, json::value_type& value)
 		{
 			client::values_type::items_type::const_iterator it = values.items.find(key);
@@ -115,18 +129,13 @@ namespace freelan
 			value = json::value_cast<T>(_val);
 		}
 
-		cryptoplus::x509::certificate string_to_certificate(const std::string& str)
+		void assert_has_value(const client::values_type& values, const std::string& key, cryptoplus::x509::certificate& cert)
 		{
-			const std::string certificate_der_str = base64_decode(str);
+			std::string cert_str;
 
-			return cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
-		}
+			assert_has_value(values, key, cert_str);
 
-		std::string certificate_request_to_string(const cryptoplus::x509::certificate_request& csr)
-		{
-			const std::vector<unsigned char> der_csr = csr.write_der();
-
-			return base64_encode(&der_csr[0], der_csr.size());
+			cert = string_to_certificate(cert_str);
 		}
 	}
 
@@ -407,11 +416,9 @@ namespace freelan
 
 		perform_get_request(request, url, values);
 
-		std::string authority_certificate_str;
+		cryptoplus::x509::certificate authority_certificate;
 
-		assert_has_value(values, "authority_certificate", authority_certificate_str);
-
-		cryptoplus::x509::certificate authority_certificate = string_to_certificate(authority_certificate_str);
+		assert_has_value(values, "authority_certificate", authority_certificate);
 
 		m_logger(LL_INFORMATION) << "Authority certificate received from server.";
 
@@ -453,11 +460,9 @@ namespace freelan
 
 		perform_post_request(request, url, parameters, values);
 
-		std::string certificate_str;
+		cryptoplus::x509::certificate certificate;
 
-		assert_has_value(values, "certificate", certificate_str);
-
-		cryptoplus::x509::certificate certificate = string_to_certificate(certificate_str);
+		assert_has_value(values, "certificate", certificate);
 
 		m_logger(LL_INFORMATION) << "Certificate request was signed.";
 
