@@ -39,6 +39,9 @@
 
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/type_traits.hpp>
 
 namespace kfather
 {
@@ -154,7 +157,22 @@ namespace kfather
 	 * \tparam Type The visitor type.
 	 */
 	template <typename Type>
-	class visitor;
+	class visitor : public boost::static_visitor<Type>
+	{
+		public:
+
+			/**
+			 * \brief This handle the conversion for all arithmetic types.
+			 * \tparam AnyType Any type.
+			 * \param val The value to convert.
+			 * \return The numeric value.
+			 */
+			template <typename AnyType>
+			typename boost::enable_if<boost::is_arithmetic<Type>, Type>::type operator()(const AnyType& val) const
+			{
+				return boost::numeric_cast<Type>(visitor<number_type>()(val));
+			}
+	};
 
 	/**
 	 * \brief The string_type visitor.
