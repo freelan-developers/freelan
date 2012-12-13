@@ -26,7 +26,7 @@
  * You must obey the GNU General Public License in all respects
  * for all of the code used other than OpenSSL.  If you modify
  * file(s) with this exception, you may extend this exception to your
- * version of the file(s), but you are not obligated to do so.  If you
+ * version of the file(s), but you are not obligated to do so.	If you
  * do not wish to do so, delete this exception statement from your
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
@@ -343,7 +343,7 @@ namespace cryptoplus
 				 * \brief Write the certificate in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der() const;
+				std::string write_der() const;
 
 				/**
 				 * \brief Clone the certificate instance.
@@ -841,9 +841,9 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> certificate::write_der() const
+		inline std::string certificate::write_der() const
 		{
-			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+			std::string result(write_der(static_cast<void*>(NULL)), char());
 
 			write_der(&result[0]);
 

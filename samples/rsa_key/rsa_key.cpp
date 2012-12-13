@@ -159,13 +159,13 @@ int main()
 		cryptoplus::hash::message_digest_context context;
 		context.initialize(algorithm);
 		context.update(str.c_str(), str.size());
-		std::vector<unsigned char> str_hash = context.finalize<unsigned char>();
+        std::string str_hash = context.finalize();
 
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Generating RSA signature..." << std::endl;
 
-		std::vector<unsigned char> str_sign = rsa_key.sign<unsigned char>(&str_hash[0], str_hash.size(), algorithm.type());
+        std::string str_sign = rsa_key.sign(&str_hash[0], str_hash.size(), algorithm.type());
 
 		std::cout << "Done." << std::endl;
 

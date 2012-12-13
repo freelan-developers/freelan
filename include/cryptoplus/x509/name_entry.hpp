@@ -183,7 +183,7 @@ namespace cryptoplus
 				 * \brief Write the name entry in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der();
+				std::string write_der();
 
 				/**
 				 * \brief Clone the name_entry instance.
@@ -285,9 +285,9 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> name_entry::write_der()
+		inline std::string name_entry::write_der()
 		{
-			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+			std::string result(write_der(static_cast<void*>(NULL)), char());
 
 			write_der(&result[0]);
 

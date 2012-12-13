@@ -53,6 +53,7 @@
 #include <boost/noncopyable.hpp>
 
 #include <vector>
+#include <string>
 #include <cstring>
 
 namespace cryptoplus
@@ -128,7 +129,7 @@ namespace cryptoplus
 				 * \see seal_finalize
 				 */
 				template <typename T>
-				std::vector<std::vector<unsigned char> > seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
+				std::vector<std::string > seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope sealing.
@@ -140,7 +141,7 @@ namespace cryptoplus
 				 * \see seal_update
 				 * \see seal_finalize
 				 */
-				std::vector<unsigned char> seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, pkey::pkey pkey);
+				std::string seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, pkey::pkey pkey);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope opening.
@@ -186,8 +187,7 @@ namespace cryptoplus
 				 * \param buf_len The length of buf.
 				 * \return The resulting buffer.
 				 */
-				template <typename T>
-				std::vector<T> get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const;
+				std::string get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const;
 
 				/**
 				 * \brief Verify the given buffer and check if it matches ISO 10126 padding.
@@ -318,7 +318,7 @@ namespace cryptoplus
 		}
 
 		template <typename T>
-		inline std::vector<std::vector<unsigned char> > cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
+		inline std::vector<std::string > cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
 		{
 			if (iv && (iv_len != _algorithm.iv_length()))
 			{
@@ -327,7 +327,7 @@ namespace cryptoplus
 
 			size_t pkeys_count = std::distance(pkeys_begin, pkeys_end);
 
-			std::vector<std::vector<unsigned char> > result;
+			std::vector<std::string > result;
 			std::vector<unsigned char*> ek;
 			std::vector<int> ekl(pkeys_count);
 			std::vector<EVP_PKEY*> pubk;
@@ -348,7 +348,7 @@ namespace cryptoplus
 
 				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
 				{
-					result.push_back(std::vector<unsigned char>(*p, *p + ekl[std::distance(ek.begin(), p)]));
+					result.push_back(std::string(*p, *p + ekl[std::distance(ek.begin(), p)]));
 				}
 			}
 			catch (...)
@@ -380,10 +380,9 @@ namespace cryptoplus
 			return ((len / algorithm().block_size()) + 1) * algorithm().block_size();
 		}
 
-		template <typename T>
-		inline std::vector<T> cipher_context::get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const
+		inline std::string cipher_context::get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const
 		{
-			std::vector<T> result(get_iso_10126_padding_size(buf_len));
+			std::string result(get_iso_10126_padding_size(buf_len), char());
 			std::memcpy(&result[0], buf, buf_len);
 			result.resize(add_iso_10126_padding(&result[0], buf_len, result.size()));
 

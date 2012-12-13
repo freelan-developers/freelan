@@ -50,7 +50,7 @@
 
 #include <openssl/bn.h>
 
-#include <vector>
+#include <string>
 #include <string>
 
 namespace cryptoplus
@@ -178,8 +178,7 @@ namespace cryptoplus
 				 * \brief Get the binary representation of the BIGNUM.
 				 * \return The binary representation.
 				 */
-				template <typename T>
-				std::vector<T> to_bin() const;
+				std::string to_bin() const;
 
 				/**
 				 * \brief Get the hexadecimal representation of the BIGNUM.
@@ -302,12 +301,11 @@ namespace cryptoplus
 		{
 			return BN_num_bytes(ptr().get());
 		}
-		template <typename T>
-		inline std::vector<T> bignum::to_bin() const
+		inline std::string bignum::to_bin() const
 		{
-			std::vector<T> result(size());
+			std::string result(size(), char());
 
-			result.resize(to_bin(&result[0], result.size()));
+			result.resize(to_bin(&result[0], result.size())); //XXX: check that this call isn't overwriting memory out of bounds.
 
 			return result;
 		}

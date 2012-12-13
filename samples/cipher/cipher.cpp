@@ -42,9 +42,9 @@ void cipher(const std::string& name)
 	{
 		cryptoplus::cipher::cipher_algorithm algorithm(name);
 
-		std::vector<unsigned char> data(algorithm.block_size());
-		std::vector<unsigned char> key(algorithm.key_length());
-		std::vector<unsigned char> iv(algorithm.iv_length());
+		std::string data(algorithm.block_size(), 'd');
+		std::string key(algorithm.key_length(), 'k');
+		std::string iv(algorithm.iv_length(), 'i');
 
 		std::cout << "Cipher: " << name << " (block size: " << algorithm.block_size() << ")" << std::endl;
 		std::cout << "Data: " << to_hex(data.begin(), data.end()) << std::endl;
@@ -53,9 +53,9 @@ void cipher(const std::string& name)
 
 		cryptoplus::cipher::cipher_stream stream(data.size() + algorithm.block_size());
 
-		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, &key[0], key.size(), &iv[0], iv.size());
+		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, key.data(), key.size(), iv.data(), iv.size());
 		stream.set_padding(false);
-		stream.append(&data[0], data.size());
+		stream.append(data.data(), data.size());
 		stream.finalize();
 
 		std::cout << "Result: " << to_hex(stream.result().begin(), stream.result().end()) << std::endl;

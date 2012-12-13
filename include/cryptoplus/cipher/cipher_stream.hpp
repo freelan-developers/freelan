@@ -47,7 +47,7 @@
 
 #include "cipher_context.hpp"
 
-#include <vector>
+#include <string>
 #include <cstring>
 
 namespace cryptoplus
@@ -131,14 +131,14 @@ namespace cryptoplus
 				 * \warning Be sure to call finalize() before calling this method.
 				 * \see finalize()
 				 */
-				const std::vector<unsigned char>& result() const;
+				const std::string& result() const;
 
 			private:
 
 				using cipher_context::update;
 				using cipher_context::finalize;
 
-				std::vector<unsigned char> m_buffer;
+				std::string m_buffer;
 				size_t m_offset;
 		};
 
@@ -152,7 +152,7 @@ namespace cryptoplus
 		cipher_stream& operator<<(cipher_stream& cs, const T& value);
 
 		inline cipher_stream::cipher_stream(size_t alloc) :
-			m_buffer(alloc), m_offset(0)
+			m_buffer(alloc, ' '), m_offset(0)
 		{
 		}
 
@@ -171,7 +171,7 @@ namespace cryptoplus
 			m_buffer.resize(alloc);
 		}
 
-		inline const std::vector<unsigned char>& cipher_stream::result() const
+		inline const std::string& cipher_stream::result() const
 		{
 			return m_buffer;
 		}

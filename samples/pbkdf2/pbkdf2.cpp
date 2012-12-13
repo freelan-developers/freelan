@@ -42,7 +42,7 @@ void pbkdf2(const std::string& name, const std::string& password, const std::str
 	{
 		cryptoplus::hash::message_digest_algorithm algorithm(name);
 
-		std::vector<unsigned char> key = cryptoplus::hash::pbkdf2<unsigned char>(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
+		std::string key = cryptoplus::hash::pbkdf2(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
 		std::cout << name << ": " << to_hex(key.begin(), key.end()) << std::endl;
 	}
 	catch (cryptoplus::error::cryptographic_exception& ex)

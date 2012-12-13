@@ -301,7 +301,7 @@ namespace cryptoplus
 				 * \brief Write the certificate_revocation_list in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der();
+				std::string write_der();
 
 				/**
 				 * \brief Clone the certificate_revocation_list instance.
@@ -700,9 +700,9 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> certificate_revocation_list::write_der()
+		inline std::string certificate_revocation_list::write_der()
 		{
-			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+			std::string result(write_der(static_cast<void*>(NULL)), char());
 
 			write_der(&result[0]);
 

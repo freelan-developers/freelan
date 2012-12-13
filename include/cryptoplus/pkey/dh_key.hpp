@@ -55,7 +55,7 @@
 #include <openssl/pem.h>
 #include <openssl/engine.h>
 
-#include <vector>
+#include <string>
 
 namespace cryptoplus
 {
@@ -212,8 +212,7 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				template <typename T>
-				std::vector<T> compute_key(bn::bignum pub_key);
+                std::string compute_key(bn::bignum pub_key);
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
@@ -302,10 +301,9 @@ namespace cryptoplus
 
 			return *this;
 		}
-		template <typename T>
-		inline std::vector<T> dh_key::compute_key(bn::bignum pub_key)
+		inline std::string dh_key::compute_key(bn::bignum pub_key)
 		{
-			std::vector<T> result(size());
+			std::string result(size(), char());
 
 			result.resize(compute_key(&result[0], result.size(), pub_key.raw()));
 

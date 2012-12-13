@@ -111,7 +111,7 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
 		}
 
-		std::vector<unsigned char> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, pkey::pkey pkey)
+		std::string cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, pkey::pkey pkey)
 		{
 			return seal_initialize(_algorithm, iv, iv_len, &pkey, &pkey + sizeof(&pkey))[0];
 		}

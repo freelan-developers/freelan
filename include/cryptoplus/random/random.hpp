@@ -50,7 +50,7 @@
 
 #include <openssl/rand.h>
 
-#include <vector>
+#include <string>
 
 #include <cstddef>
 
@@ -84,8 +84,7 @@ namespace cryptoplus
 		 *
 		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
 		 */
-		template <typename T>
-		std::vector<T> get_random_bytes(size_t cnt);
+		std::string get_random_bytes(size_t cnt);
 
 		/**
 		 * \brief Get pseudo random bytes.
@@ -110,8 +109,7 @@ namespace cryptoplus
 		 *
 		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
 		 */
-		template <typename T>
-		std::vector<T> get_pseudo_random_bytes(size_t cnt);
+		std::string get_pseudo_random_bytes(size_t cnt);
 
 		/**
 		 * \brief Mix some bytes into the PRNG state.
@@ -218,10 +216,9 @@ namespace cryptoplus
 			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
 		}
 
-		template <typename T>
-		inline std::vector<T> get_random_bytes(size_t cnt)
+		inline std::string get_random_bytes(size_t cnt)
 		{
-			std::vector<T> result(cnt);
+			std::string result(cnt, char());
 
 			get_random_bytes(&result[0], result.size());
 
@@ -237,10 +234,9 @@ namespace cryptoplus
 			return (result == 1);
 		}
 
-		template <typename T>
-		inline std::vector<T> get_pseudo_random_bytes(size_t cnt)
+		inline std::string get_pseudo_random_bytes(size_t cnt)
 		{
-			std::vector<T> result(cnt);
+			std::string result(cnt, char());
 
 			get_pseudo_random_bytes(&result[0], result.size());
 

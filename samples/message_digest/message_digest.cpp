@@ -46,7 +46,7 @@ void message_digest(const std::string& name, const std::string& data)
 
 		ctx.initialize(algorithm);
 		ctx.update(data.c_str(), data.size());
-		std::vector<unsigned char> message_digest = ctx.finalize<unsigned char>();
+        std::string message_digest = ctx.finalize();
 		std::cout << name << ": " << to_hex(message_digest.begin(), message_digest.end()) << std::endl;
 	}
 	catch (cryptoplus::error::cryptographic_exception& ex)

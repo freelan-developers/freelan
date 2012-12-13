@@ -51,7 +51,7 @@
 
 #include <openssl/evp.h>
 
-#include <vector>
+#include <string>
 
 namespace cryptoplus
 {
@@ -91,13 +91,11 @@ namespace cryptoplus
 		 *
 		 * Some versions of OpenSSL only provide SHA1 as a hash method. In this case, pbkdf2() will throw an std::invalid_argument exception.
 		 */
-		template <typename T>
-		std::vector<T> pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter = 1000);
+		std::string pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter = 1000);
 
-		template <typename T>
-		inline std::vector<T> pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter)
+		inline std::string pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter)
 		{
-			std::vector<T> result(algorithm.result_size());
+			std::string result(algorithm.result_size(), char());
 
 			pbkdf2(password, passwordlen, salt, saltlen, &result[0], result.size(), algorithm, iter);
 

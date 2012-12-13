@@ -49,7 +49,7 @@
 
 #include <openssl/hmac.h>
 
-#include <vector>
+#include <string>
 
 namespace cryptoplus
 {
@@ -79,13 +79,11 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The hmac.
 		 */
-		template <typename T>
-		std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+		std::string hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
-		template <typename T>
-		inline std::vector<T> hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
+		inline std::string hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
-			std::vector<T> result(algorithm.result_size());
+			std::string result(algorithm.result_size(), char());
 
 			hmac(&result[0], result.size(), key, key_len, data, len, algorithm, impl);
 

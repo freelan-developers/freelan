@@ -53,7 +53,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <vector>
+#include <string>
 
 namespace cryptoplus
 {
@@ -148,8 +148,7 @@ namespace cryptoplus
 				 *
 				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
-				template <typename T>
-				std::vector<T> finalize();
+				std::string finalize();
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting signature.
@@ -169,8 +168,7 @@ namespace cryptoplus
 				 *
 				 * After a call to sign_finalize() no more call to sign_update() can be made unless sign_initialize() is called again first.
 				 */
-				template <typename T>
-				std::vector<T> sign_finalize(pkey::pkey& pkey);
+				std::string sign_finalize(pkey::pkey& pkey);
 
 				/**
 				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
@@ -249,20 +247,18 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
 		}
 
-		template <typename T>
-		inline std::vector<T> message_digest_context::finalize()
+		inline std::string message_digest_context::finalize()
 		{
-			std::vector<T> result(algorithm().result_size());
+            std::string result(algorithm().result_size(), char());
 
 			finalize(&result[0], result.size());
 
 			return result;
 		}
 
-		template <typename T>
-		inline std::vector<T> message_digest_context::sign_finalize(pkey::pkey& pkey)
+		inline std::string message_digest_context::sign_finalize(pkey::pkey& pkey)
 		{
-			std::vector<T> result(pkey.size());
+            std::string result(pkey.size(), char());
 
 			sign_finalize(&result[0], result.size(), pkey);
 

@@ -167,7 +167,7 @@ namespace cryptoplus
 				 * \brief Get the content as an UTF-8 string.
 				 * \return The UTF-8 content.
 				 */
-				std::vector<unsigned char> to_utf8();
+				std::string to_utf8();
 
 			private:
 

@@ -151,13 +151,13 @@ int main()
 
 		std::cout << "Computing key A..." << std::endl;
 
-		std::vector<unsigned char> key_a = dh_key.compute_key<unsigned char>(dh_key2.public_key());
+		std::string key_a = dh_key.compute_key(dh_key2.public_key());
 		
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Computing key B..." << std::endl;
 
-		std::vector<unsigned char> key_b = dh_key2.compute_key<unsigned char>(dh_key.public_key());
+		std::string key_b = dh_key2.compute_key(dh_key.public_key());
 		
 		std::cout << "Done." << std::endl;
 

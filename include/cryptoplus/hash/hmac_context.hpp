@@ -53,7 +53,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <vector>
+#include <string>
 
 namespace cryptoplus
 {
@@ -116,8 +116,7 @@ namespace cryptoplus
 				 * \brief Finalize the hmac_context and get the resulting buffer.
 				 * \return The resulting buffer.
 				 */
-				template <typename T>
-				std::vector<T> finalize();
+                std::string finalize();
 
 				/**
 				 * \brief Get the underlying context.
@@ -156,10 +155,9 @@ namespace cryptoplus
 #endif
 		}
 
-		template <typename T>
-		inline std::vector<T> hmac_context::finalize()
+		inline std::string hmac_context::finalize()
 		{
-			std::vector<T> result(algorithm().result_size());
+			std::string result(algorithm().result_size(), char());
 
 			finalize(&result[0], result.size());
 

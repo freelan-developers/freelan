@@ -46,7 +46,7 @@ void hmac(const std::string& name, const std::string& key, const std::string& da
 
 		ctx.initialize(key.c_str(), key.size(), &algorithm);
 		ctx.update(data.c_str(), data.size());
-		std::vector<unsigned char> hmac = ctx.finalize<unsigned char>();
+        std::string hmac = ctx.finalize();
 		std::cout << name << ": " << to_hex(hmac.begin(), hmac.end()) << std::endl;
 	}
 	catch (cryptoplus::error::cryptographic_exception& ex)

@@ -63,7 +63,7 @@ namespace cryptoplus
 			}
 		}
 
-		std::vector<unsigned char> string::to_utf8()
+		std::string string::to_utf8()
 		{
 			unsigned char* out = NULL;
 
@@ -73,7 +73,7 @@ namespace cryptoplus
 
 			boost::shared_ptr<unsigned char> pout(out, _OPENSSL_free);
 
-			return std::vector<unsigned char>(out, out + _size);
+			return std::string(out, out + _size);
 		}
 	}
 }

@@ -145,7 +145,7 @@ namespace cryptoplus
 				 * \brief Write the extension in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der();
+				std::string write_der();
 
 				/**
 				 * \brief Clone the extension instance.
@@ -259,9 +259,9 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> extension::write_der()
+		inline std::string extension::write_der()
 		{
-			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+			std::string result(write_der(static_cast<void*>(NULL)), char());
 
 			write_der(&result[0]);
 

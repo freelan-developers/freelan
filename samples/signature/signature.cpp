@@ -66,7 +66,7 @@ int main()
 
 		ctx.sign_initialize(algorithm);
 		ctx.sign_update(data.c_str(), data.size());
-		std::vector<unsigned char> signature = ctx.sign_finalize<unsigned char>(pkey);
+		std::string signature = ctx.sign_finalize(pkey);
 
 		std::cout << "Signature: " << to_hex(signature.begin(), signature.end()) << std::endl;
 

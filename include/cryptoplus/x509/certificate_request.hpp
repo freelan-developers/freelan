@@ -196,7 +196,7 @@ namespace cryptoplus
 				 * \brief Write the certificate_request in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::vector<unsigned char> write_der() const;
+				std::string write_der() const;
 
 				/**
 				 * \brief Clone the certificate_request instance.
@@ -358,9 +358,9 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::vector<unsigned char> certificate_request::write_der() const
+		inline std::string certificate_request::write_der() const
 		{
-			std::vector<unsigned char> result(write_der(static_cast<void*>(NULL)));
+			std::string result(write_der(static_cast<void*>(NULL)), char());
 
 			write_der(&result[0]);
 
