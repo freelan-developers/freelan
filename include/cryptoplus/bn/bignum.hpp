@@ -51,7 +51,6 @@
 #include <openssl/bn.h>
 
 #include <string>
-#include <string>
 
 namespace cryptoplus
 {
