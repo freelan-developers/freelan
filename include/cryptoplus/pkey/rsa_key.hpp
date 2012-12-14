@@ -450,7 +450,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-                std::string sign(const void* buf, size_t buf_len, int type);
+				std::string sign(const void* buf, size_t buf_len, int type);
 
 				/**
 				 * \brief Verify a message digest signature, as specified by PCKS #1 v2.0.
@@ -605,7 +605,7 @@ namespace cryptoplus
 		}
 		inline std::string rsa_key::sign(const void* buf, size_t buf_len, int type)
 		{
-            std::string result(size(), char());
+			std::string result(size(), char());
 
 			result.resize(sign(&result[0], result.size(), buf, buf_len, type));
 

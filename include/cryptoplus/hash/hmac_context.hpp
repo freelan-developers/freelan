@@ -116,7 +116,7 @@ namespace cryptoplus
 				 * \brief Finalize the hmac_context and get the resulting buffer.
 				 * \return The resulting buffer.
 				 */
-                std::string finalize();
+				std::string finalize();
 
 				/**
 				 * \brief Get the underlying context.

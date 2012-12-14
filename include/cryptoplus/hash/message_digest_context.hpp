@@ -249,7 +249,7 @@ namespace cryptoplus
 
 		inline std::string message_digest_context::finalize()
 		{
-            std::string result(algorithm().result_size(), char());
+			std::string result(algorithm().result_size(), char());
 
 			finalize(&result[0], result.size());
 
@@ -258,7 +258,7 @@ namespace cryptoplus
 
 		inline std::string message_digest_context::sign_finalize(pkey::pkey& pkey)
 		{
-            std::string result(pkey.size(), char());
+			std::string result(pkey.size(), char());
 
 			sign_finalize(&result[0], result.size(), pkey);
 

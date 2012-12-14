@@ -212,7 +212,7 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-                std::string compute_key(bn::bignum pub_key);
+				std::string compute_key(bn::bignum pub_key);
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
