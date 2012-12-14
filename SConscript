@@ -3,8 +3,8 @@ The main SConscript file.
 """
 
 name = 'cryptoplus'
-major = '1'
-minor = '4'
+major = '2'
+minor = '0'
 libraries = []
 
 # You should not need to modify anything below this line
