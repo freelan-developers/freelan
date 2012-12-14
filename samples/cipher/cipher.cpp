@@ -25,15 +25,10 @@ std::string to_hex(const T& begin, const T& end)
 
 	for (T i = begin; i != end; ++i)
 	{
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(*i);
+		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(static_cast<unsigned char>(*i));
 	}
 
 	return oss.str();
-}
-
-std::string to_hex(const void* buf, size_t buf_len)
-{
-	return to_hex(static_cast<const unsigned char*>(buf), static_cast<const unsigned char*>(buf) + buf_len);
 }
 
 void cipher(const std::string& name)

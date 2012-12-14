@@ -25,15 +25,10 @@ std::string to_hex(const T& begin, const T& end)
 
 	for (T i = begin; i != end; ++i)
 	{
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(*i);
+		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(static_cast<unsigned char>(*i));
 	}
 
 	return oss.str();
-}
-
-std::string to_hex(const void* buf, size_t buf_len)
-{
-	return to_hex(static_cast<const unsigned char*>(buf), static_cast<const unsigned char*>(buf) + buf_len);
 }
 
 void pbkdf2(const std::string& name, const std::string& password, const std::string& salt, unsigned int iterations)
@@ -44,6 +39,10 @@ void pbkdf2(const std::string& name, const std::string& password, const std::str
 
 		std::string key = cryptoplus::hash::pbkdf2(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
 		std::cout << name << ": " << to_hex(key.begin(), key.end()) << std::endl;
+	}
+	catch (std::invalid_argument&)
+	{
+		std::cerr << name << ": " << "Unsupported algorithm" << std::endl;
 	}
 	catch (cryptoplus::error::cryptographic_exception& ex)
 	{
