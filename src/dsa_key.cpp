@@ -98,7 +98,7 @@ namespace cryptoplus
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
 
-		dsa_key dsa_key::to_public_key()
+		dsa_key dsa_key::to_public_key() const
 		{
 			bio::bio_chain bio_chain(BIO_s_mem());
 
@@ -107,7 +107,7 @@ namespace cryptoplus
 			return from_certificate_public_key(bio_chain.first());
 		}
 
-		size_t dsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type)
+		size_t dsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type) const
 		{
 			unsigned int _out_len = static_cast<unsigned int>(out_len);
 

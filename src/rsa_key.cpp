@@ -101,7 +101,7 @@ namespace cryptoplus
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
 
-		rsa_key rsa_key::to_public_key()
+		rsa_key rsa_key::to_public_key() const
 		{
 			bio::bio_chain bio_chain(BIO_s_mem());
 
@@ -109,7 +109,7 @@ namespace cryptoplus
 			return from_public_key(bio_chain.first());
 		}
 
-		void rsa_key::padding_add_PKCS1_PSS(void* out, size_t out_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len)
+		void rsa_key::padding_add_PKCS1_PSS(void* out, size_t out_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len) const
 		{
 			assert(out_len >= algorithm.result_size());
 			assert(buf_len >= algorithm.result_size());
@@ -127,7 +127,7 @@ namespace cryptoplus
 			error::throw_error_if_not(RSA_padding_add_PKCS1_PSS(ptr().get(), static_cast<unsigned char*>(out), static_cast<const unsigned char*>(buf), algorithm.raw(), salt_len) != 0);
 		}
 
-		void rsa_key::verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t /*buf_len*/, hash::message_digest_algorithm algorithm, int salt_len)
+		void rsa_key::verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t /*buf_len*/, hash::message_digest_algorithm algorithm, int salt_len) const
 		{
 			assert(digest_len >= algorithm.result_size());
 
@@ -141,7 +141,7 @@ namespace cryptoplus
 			error::throw_error_if_not(RSA_verify_PKCS1_PSS(ptr().get(), static_cast<const unsigned char*>(digest), algorithm.raw(), static_cast<const unsigned char*>(buf), salt_len) != 0);
 		}
 
-		size_t rsa_key::private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		size_t rsa_key::private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const
 		{
 			assert(out_len >= size());
 
@@ -157,7 +157,7 @@ namespace cryptoplus
 			return result;
 		}
 
-		size_t rsa_key::public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		size_t rsa_key::public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const
 		{
 			assert(out_len >= size() - 11);
 
@@ -173,7 +173,7 @@ namespace cryptoplus
 			return result;
 		}
 
-		size_t rsa_key::public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		size_t rsa_key::public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const
 		{
 			assert(out_len >= size());
 
@@ -189,7 +189,7 @@ namespace cryptoplus
 			return result;
 		}
 
-		size_t rsa_key::private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding)
+		size_t rsa_key::private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const
 		{
 			assert(out_len >= size() - 41);
 
@@ -205,7 +205,7 @@ namespace cryptoplus
 			return result;
 		}
 
-		size_t rsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type)
+		size_t rsa_key::sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type) const
 		{
 			unsigned int _out_len = static_cast<unsigned int>(out_len);
 
@@ -214,7 +214,7 @@ namespace cryptoplus
 			return _out_len;
 		}
 
-		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type)
+		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type) const
 		{
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
 			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), static_cast<unsigned int>(buf_len), static_cast<const unsigned char*>(_sign), static_cast<unsigned int>(sign_len), ptr().get()) != 0);

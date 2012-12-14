@@ -236,7 +236,7 @@ namespace cryptoplus
 				 * \param index The index, as returned by register_index().
 				 * \return The data.
 				 */
-				void* get_external_data(int index);
+				void* get_external_data(int index) const;
 
 				/**
 				 * \brief Write the private RSA key to a BIO.
@@ -245,7 +245,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private RSA key to a BIO.
@@ -254,19 +254,19 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the public RSA key to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_public_key(bio::bio_ptr bio);
+				void write_public_key(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate public RSA key to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_certificate_public_key(bio::bio_ptr bio);
+				void write_certificate_public_key(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the private RSA key to a file.
@@ -275,7 +275,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private RSA key to a file.
@@ -284,19 +284,19 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the public RSA key to a file.
 				 * \param file The file.
 				 */
-				void write_public_key(file file);
+				void write_public_key(file file) const;
 
 				/**
 				 * \brief Write the certificate public RSA key to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_public_key(file file);
+				void write_certificate_public_key(file file) const;
 
 				/**
 				 * \brief Enable blinding of the rsa_key to prevent timing attacks.
@@ -304,13 +304,13 @@ namespace cryptoplus
 				 * \warning The PRNG must be seeded prior to calling enable_blinding().
 				 * \see disable_blinding
 				 */
-				void enable_blinding(BN_CTX* ctx = NULL);
+				void enable_blinding(BN_CTX* ctx = NULL) const;
 
 				/**
 				 * \brief Disable blinding on the rsa_key after a previous call to enable_blinding().
 				 * \see enable_blinding
 				 */
-				void disable_blinding();
+				void disable_blinding() const;
 
 				/**
 				 * \brief Return the RSA modulus size in bytes.
@@ -324,27 +324,27 @@ namespace cryptoplus
 				 *
 				 * If the rsa_key is not valid, an exception is thrown.
 				 */
-				void check();
+				void check() const;
 
 				/**
 				 * \brief Print the RSA key in a human-readable hexadecimal form to a specified BIO.
 				 * \param bio The BIO to use.
 				 * \param offset The number of offset spaces to output.
 				 */
-				void print(bio::bio_ptr bio, int offset = 0);
+				void print(bio::bio_ptr bio, int offset = 0) const;
 
 				/**
 				 * \brief Print the RSA key in a human-readable hexadecimal form to a specified file.
 				 * \param file The file.
 				 * \param offset The number of offset spaces to output.
 				 */
-				void print(file file, int offset = 0);
+				void print(file file, int offset = 0) const;
 
 				/**
 				 * \brief Extract a public RSA key from a private RSA key.
 				 * \return A public RSA key.
 				 */
-				rsa_key to_public_key();
+				rsa_key to_public_key() const;
 
 				/**
 				 * \brief Add a PKCS#1 V2.0 PSS padding.
@@ -357,7 +357,7 @@ namespace cryptoplus
 				 *
 				 * The result out buffer should then be encrypted using private_encrypt().
 				 */
-				void padding_add_PKCS1_PSS(void* out, size_t out_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len);
+				void padding_add_PKCS1_PSS(void* out, size_t out_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len) const;
 
 				/**
 				 * \brief Verify a PKCS#1 V2.0 PSS padding.
@@ -368,7 +368,7 @@ namespace cryptoplus
 				 * \param algorithm The message digest algorithm to use.
 				 * \param salt_len The salt_len. Should be -1 or -2.
 				 */
-				void verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len);
+				void verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len) const;
 
 				/**
 				 * \brief Encrypt data bytes using the private key information.
@@ -382,7 +382,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				size_t private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+				size_t private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
 				/**
 				 * \brief Decrypt data bytes using the public key information.
@@ -396,7 +396,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				size_t public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+				size_t public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
 				/**
 				 * \brief Encrypt data bytes using the public key information.
@@ -410,7 +410,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				size_t public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+				size_t public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
 				/**
 				 * \brief Decrypt data bytes using the public key information.
@@ -424,7 +424,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				size_t private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding);
+				size_t private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
 				/**
 				 * \brief Sign a message digest, as specified by PCKS #1 v2.0.
@@ -438,7 +438,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				size_t sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type);
+				size_t sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type) const;
 
 				/**
 				 * \brief Sign a message digest, as specified by PCKS #1 v2.0.
@@ -450,7 +450,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				std::string sign(const void* buf, size_t buf_len, int type);
+				std::string sign(const void* buf, size_t buf_len, int type) const;
 
 				/**
 				 * \brief Verify a message digest signature, as specified by PCKS #1 v2.0.
@@ -463,7 +463,7 @@ namespace cryptoplus
 				 *
 				 * In case of failure, a cryptographic_exception is thrown.
 				 */
-				void verify(const void* sign, size_t sign_len, const void* buf, size_t buf_len, int type);
+				void verify(const void* sign, size_t sign_len, const void* buf, size_t buf_len, int type) const;
 
 			private:
 
@@ -542,48 +542,48 @@ namespace cryptoplus
 		{
 			error::throw_error_if(RSA_set_ex_data(raw(), index, data) == 0);
 		}
-		inline void* rsa_key::get_external_data(int index)
+		inline void* rsa_key::get_external_data(int index) const
 		{
 			// This call can fail but we cannot know for sure when it happens since NULL as a return value could also be a valid value...
 			return RSA_get_ex_data(raw(), index);
 		}
-		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void rsa_key::write_public_key(bio::bio_ptr bio)
+		inline void rsa_key::write_public_key(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_RSAPublicKey(bio.raw(), ptr().get()) != 0);
 		}
-		inline void rsa_key::write_certificate_public_key(bio::bio_ptr bio)
+		inline void rsa_key::write_certificate_public_key(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
-		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void rsa_key::write_public_key(file _file)
+		inline void rsa_key::write_public_key(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_RSAPublicKey(_file.raw(), ptr().get()) != 0);
 		}
-		inline void rsa_key::write_certificate_public_key(file _file)
+		inline void rsa_key::write_certificate_public_key(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_RSA_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}
-		inline void rsa_key::enable_blinding(BN_CTX* ctx)
+		inline void rsa_key::enable_blinding(BN_CTX* ctx) const
 		{
 			error::throw_error_if_not(RSA_blinding_on(ptr().get(), ctx) != 0);
 		}
-		inline void rsa_key::disable_blinding()
+		inline void rsa_key::disable_blinding() const
 		{
 			RSA_blinding_off(ptr().get());
 		}
@@ -591,19 +591,19 @@ namespace cryptoplus
 		{
 			return RSA_size(ptr().get());
 		}
-		inline void rsa_key::check()
+		inline void rsa_key::check() const
 		{
 			error::throw_error_if_not(RSA_check_key(ptr().get()) > 0);
 		}
-		inline void rsa_key::print(bio::bio_ptr bio, int offset)
+		inline void rsa_key::print(bio::bio_ptr bio, int offset) const
 		{
 			error::throw_error_if_not(RSA_print(bio.raw(), ptr().get(), offset) != 0);
 		}
-		inline void rsa_key::print(file _file, int offset)
+		inline void rsa_key::print(file _file, int offset) const
 		{
 			error::throw_error_if_not(RSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
 		}
-		inline std::string rsa_key::sign(const void* buf, size_t buf_len, int type)
+		inline std::string rsa_key::sign(const void* buf, size_t buf_len, int type) const
 		{
 			std::string result(size(), char());
 

@@ -186,58 +186,58 @@ namespace cryptoplus
 				 * \brief Set the associated RSA key.
 				 * \param rsa The RSA key.
 				 */
-				void set_rsa_key(rsa_key rsa);
+				void set_rsa_key(rsa_key rsa) const;
 
 				/**
 				 * \brief Get the associated RSA key.
 				 * \return The RSA key.
 				 * \warning If no key was set, a cryptographic_exception is thrown.
 				 */
-				rsa_key get_rsa_key();
+				rsa_key get_rsa_key() const;
 
 				/**
 				 * \brief Take ownership of a RSA key.
 				 * \param rsa The RSA key.
 				 */
-				void assign_rsa_key(RSA* rsa);
+				void assign_rsa_key(RSA* rsa) const;
 
 				/**
 				 * \brief Set the associated DSA key.
 				 * \param dsa The DSA key.
 				 */
-				void set_dsa_key(dsa_key dsa);
+				void set_dsa_key(dsa_key dsa) const;
 
 				/**
 				 * \brief Get the associated DSA key.
 				 * \return The DSA key.
 				 * \warning If no key was set, a cryptographic_exception is thrown.
 				 */
-				dsa_key get_dsa_key();
+				dsa_key get_dsa_key() const;
 
 				/**
 				 * \brief Take ownership of a DSA key.
 				 * \param dsa The DSA key.
 				 */
-				void assign_dsa_key(DSA* dsa);
+				void assign_dsa_key(DSA* dsa) const;
 
 				/**
 				 * \brief Set the associated DH key.
 				 * \param dh The DH key.
 				 */
-				void set_dh_key(dh_key dh);
+				void set_dh_key(dh_key dh) const;
 
 				/**
 				 * \brief Get the associated DH key.
 				 * \return The DH key.
 				 * \warning If no key was set, a cryptographic_exception is thrown.
 				 */
-				dh_key get_dh_key();
+				dh_key get_dh_key() const;
 
 				/**
 				 * \brief Take ownership of a DH key.
 				 * \param dh The DH key.
 				 */
-				void assign_dh_key(DH* dh);
+				void assign_dh_key(DH* dh) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a BIO.
@@ -246,7 +246,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a BIO.
@@ -255,7 +255,7 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a BIO according to PKCS8.
@@ -264,7 +264,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a BIO according to PKCS8.
@@ -273,7 +273,7 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a BIO according to PKCS8, but use PKCS5 or PKCS12 as an encryption algorithm.
@@ -282,7 +282,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len);
+				void write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a BIO according to PKCS8, but use PKCS5 or PKCS12 as an encryption algorithm.
@@ -291,13 +291,13 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the certificate public EVP_PKEY key to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_certificate_public_key(bio::bio_ptr bio);
+				void write_certificate_public_key(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a file.
@@ -306,7 +306,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a file.
@@ -315,7 +315,7 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a file according to PKCS8.
@@ -324,7 +324,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key_pkcs8(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len);
+				void write_private_key_pkcs8(file file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a file according to PKCS8.
@@ -333,7 +333,7 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key_pkcs8(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key_pkcs8(file file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a file according to PKCS8, but use PKCS5 or PKCS12 as an encryption algorithm.
@@ -342,7 +342,7 @@ namespace cryptoplus
 				 * \param passphrase The passphrase to use.
 				 * \param passphrase_len The length of passphrase.
 				 */
-				void write_private_key_pkcs8_nid(file file, int nid, const void* passphrase, size_t passphrase_len);
+				void write_private_key_pkcs8_nid(file file, int nid, const void* passphrase, size_t passphrase_len) const;
 
 				/**
 				 * \brief Write the private EVP_PKEY key to a file according to PKCS8, but use PKCS5 or PKCS12 as an encryption algorithm.
@@ -351,13 +351,13 @@ namespace cryptoplus
 				 * \param callback A callback that will get called whenever a passphrase is needed. Can be NULL, in such case no passphrase is used.
 				 * \param callback_arg An argument that will be passed to callback, if needed.
 				 */
-				void write_private_key_pkcs8_nid(file file, int nid, pem_passphrase_callback_type callback, void* callback_arg = NULL);
+				void write_private_key_pkcs8_nid(file file, int nid, pem_passphrase_callback_type callback, void* callback_arg = NULL) const;
 
 				/**
 				 * \brief Write the certificate public EVP_PKEY key to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_public_key(file file);
+				void write_certificate_public_key(file file) const;
 
 				/**
 				 * \brief Get the maximum size of a signature.
@@ -463,95 +463,95 @@ namespace cryptoplus
 		inline pkey::pkey(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void pkey::set_rsa_key(rsa_key rsa)
+		inline void pkey::set_rsa_key(rsa_key rsa) const
 		{
 			error::throw_error_if_not(EVP_PKEY_set1_RSA(ptr().get(), rsa.raw()) != 0);
 		}
-		inline rsa_key pkey::get_rsa_key()
+		inline rsa_key pkey::get_rsa_key() const
 		{
 			return rsa_key::take_ownership(EVP_PKEY_get1_RSA(ptr().get()));
 		}
-		inline void pkey::assign_rsa_key(RSA* rsa)
+		inline void pkey::assign_rsa_key(RSA* rsa) const
 		{
 			error::throw_error_if_not(EVP_PKEY_assign_RSA(ptr().get(), rsa) != 0);
 		}
-		inline void pkey::set_dsa_key(dsa_key dsa)
+		inline void pkey::set_dsa_key(dsa_key dsa) const
 		{
 			error::throw_error_if_not(EVP_PKEY_set1_DSA(ptr().get(), dsa.raw()) != 0);
 		}
-		inline dsa_key pkey::get_dsa_key()
+		inline dsa_key pkey::get_dsa_key() const
 		{
 			return dsa_key::take_ownership(EVP_PKEY_get1_DSA(ptr().get()));
 		}
-		inline void pkey::assign_dsa_key(DSA* dsa)
+		inline void pkey::assign_dsa_key(DSA* dsa) const
 		{
 			error::throw_error_if_not(EVP_PKEY_assign_DSA(ptr().get(), dsa) != 0);
 		}
-		inline void pkey::set_dh_key(dh_key dh)
+		inline void pkey::set_dh_key(dh_key dh) const
 		{
 			error::throw_error_if_not(EVP_PKEY_set1_DH(ptr().get(), dh.raw()) != 0);
 		}
-		inline dh_key pkey::get_dh_key()
+		inline dh_key pkey::get_dh_key() const
 		{
 			return dh_key::take_ownership(EVP_PKEY_get1_DH(ptr().get()));
 		}
-		inline void pkey::assign_dh_key(DH* dh)
+		inline void pkey::assign_dh_key(DH* dh) const
 		{
 			error::throw_error_if_not(EVP_PKEY_assign_DH(ptr().get(), dh) != 0);
 		}
-		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len)
+		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void pkey::write_certificate_public_key(bio::bio_ptr bio)
+		inline void pkey::write_certificate_public_key(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
-		inline void pkey::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void pkey::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void pkey::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void pkey::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len)
+		inline void pkey::write_private_key_pkcs8(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void pkey::write_private_key_pkcs8(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8_nid(file _file, int nid, const void* passphrase, size_t passphrase_len)
+		inline void pkey::write_private_key_pkcs8_nid(file _file, int nid, const void* passphrase, size_t passphrase_len) const
 		{
 			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(_file.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
-		inline void pkey::write_private_key_pkcs8_nid(file _file, int nid, pem_passphrase_callback_type callback, void* callback_arg)
+		inline void pkey::write_private_key_pkcs8_nid(file _file, int nid, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
 			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(_file.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg) != 0);
 		}
-		inline void pkey::write_certificate_public_key(file _file)
+		inline void pkey::write_certificate_public_key(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}

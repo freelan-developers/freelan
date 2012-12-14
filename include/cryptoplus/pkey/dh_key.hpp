@@ -152,13 +152,13 @@ namespace cryptoplus
 				 * \brief Write the DH parameters to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_parameters(bio::bio_ptr bio);
+				void write_parameters(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the DH parameters to a file.
 				 * \param file The file.
 				 */
-				void write_parameters(file file);
+				void write_parameters(file file) const;
 
 				/**
 				 * \brief Get the private key component.
@@ -184,7 +184,7 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				void check(int& codes);
+				void check(int& codes) const;
 
 				/**
 				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
@@ -195,6 +195,14 @@ namespace cryptoplus
 				dh_key& generate_key();
 
 				/**
+				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
+				 * \return *this
+				 *
+				 * On failure, a cryptographic_exception is thrown.
+				 */
+				const dh_key& generate_key() const;
+
+				/**
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
 				 * \param out The buffer to which the shared secret is written. Must be at least size() bytes long.
 				 * \param out_len The length of out.
@@ -203,7 +211,7 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				size_t compute_key(void* out, size_t out_len, bn::bignum pub_key);
+				size_t compute_key(void* out, size_t out_len, bn::bignum pub_key) const;
 
 				/**
 				 * \brief Compute the shared secret from the private DH value in the instance and other party's public value.
@@ -212,19 +220,19 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				std::string compute_key(bn::bignum pub_key);
+				std::string compute_key(bn::bignum pub_key) const;
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
 				 * \param bio The BIO to use.
 				 */
-				void print_parameters(bio::bio_ptr bio);
+				void print_parameters(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified file.
 				 * \param file The file.
 				 */
-				void print_parameters(file file);
+				void print_parameters(file file) const;
 
 			private:
 
@@ -271,11 +279,11 @@ namespace cryptoplus
 		inline dh_key::dh_key(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void dh_key::write_parameters(bio::bio_ptr bio)
+		inline void dh_key::write_parameters(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()) != 0);
 		}
-		inline void dh_key::write_parameters(file _file)
+		inline void dh_key::write_parameters(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
 		}
@@ -291,7 +299,7 @@ namespace cryptoplus
 		{
 			return DH_size(ptr().get());
 		}
-		inline void dh_key::check(int& codes)
+		inline void dh_key::check(int& codes) const
 		{
 			error::throw_error_if_not(DH_check(ptr().get(), &codes) != 0);
 		}
@@ -301,7 +309,13 @@ namespace cryptoplus
 
 			return *this;
 		}
-		inline std::string dh_key::compute_key(bn::bignum pub_key)
+		inline const dh_key& dh_key::generate_key() const
+		{
+			error::throw_error_if_not(DH_generate_key(ptr().get()) != 0);
+
+			return *this;
+		}
+		inline std::string dh_key::compute_key(bn::bignum pub_key) const
 		{
 			std::string result(size(), char());
 
@@ -309,11 +323,11 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline void dh_key::print_parameters(bio::bio_ptr bio)
+		inline void dh_key::print_parameters(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(DHparams_print(bio.raw(), ptr().get()) != 0);
 		}
-		inline void dh_key::print_parameters(file _file)
+		inline void dh_key::print_parameters(file _file) const
 		{
 			error::throw_error_if_not(DHparams_print_fp(_file.raw(), ptr().get()) != 0);
 		}
