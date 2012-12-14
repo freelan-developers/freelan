@@ -304,7 +304,7 @@ namespace cryptoplus
 		{
 			std::string result(size(), char());
 
-			result.resize(to_bin(&result[0], result.size())); //XXX: check that this call isn't overwriting memory out of bounds.
+			result.resize(to_bin(&result[0], result.size()));
 
 			return result;
 		}
