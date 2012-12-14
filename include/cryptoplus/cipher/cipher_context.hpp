@@ -129,7 +129,7 @@ namespace cryptoplus
 				 * \see seal_finalize
 				 */
 				template <typename T>
-				std::vector<std::string > seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
+				std::vector<std::string> seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope sealing.
@@ -318,7 +318,7 @@ namespace cryptoplus
 		}
 
 		template <typename T>
-		inline std::vector<std::string > cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
+		inline std::vector<std::string> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
 		{
 			if (iv && (iv_len != _algorithm.iv_length()))
 			{
@@ -327,7 +327,7 @@ namespace cryptoplus
 
 			size_t pkeys_count = std::distance(pkeys_begin, pkeys_end);
 
-			std::vector<std::string > result;
+			std::vector<std::string> result;
 			std::vector<unsigned char*> ek;
 			std::vector<int> ekl(pkeys_count);
 			std::vector<EVP_PKEY*> pubk;
