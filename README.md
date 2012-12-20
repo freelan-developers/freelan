@@ -19,8 +19,21 @@ It contains the following projects:
  - [freelan-server](https://github.com/freelan-developers/freelan-server) - The FreeLAN configuration server.
  - [libkfather](https://github.com/freelan-developers/libkfather) - A C++ JSON parser/producer with a terrible name.
 
+To fetch those from their respective repositories, issue the following commands:
+
+> git submodule init
+> git submodule update
+
+And, to get the last revision for each repository:
+
+> git submodule foreach git checkout master
+
 Building
 --------
+
+You may setup quickly a building environment by calling the appropriate script at `tools/<your operating system>/setup-environment`.
+
+If no script exists for your operating system, read the instructions in `freelan-buildtools/README.md`.
 
 This directory contains a `SConstruct` file which uses the [FreeLAN builds tools](https://github.com/freelan-developers/freelan-buildtools) to build the contained projects.
 
