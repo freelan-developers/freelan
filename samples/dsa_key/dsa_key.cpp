@@ -5,6 +5,7 @@
  */
 
 #include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/buffer.hpp>
 #include <cryptoplus/bio/bio_chain.hpp>
 #include <cryptoplus/pkey/dsa_key.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
@@ -23,6 +24,8 @@
 #ifdef MSV
 #include <openssl/applink.c>
 #endif
+
+using cryptoplus::buffer;
 
 namespace
 {
@@ -159,19 +162,19 @@ int main()
 		cryptoplus::hash::message_digest_context context;
 		context.initialize(algorithm);
 		context.update(str.c_str(), str.size());
-        std::string str_hash = context.finalize();
+    const buffer str_hash = context.finalize();
 
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Generating DSA signature..." << std::endl;
 
-        std::string str_sign = dsa_key.sign(&str_hash[0], str_hash.size(), algorithm.type());
+    const buffer str_sign = dsa_key.sign(str_hash, algorithm.type());
 
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Verifying DSA signature..." << std::endl;
 
-		dsa_key.verify(&str_sign[0], str_sign.size(), &str_hash[0], str_hash.size(), algorithm.type());
+		dsa_key.verify(str_sign, str_hash, algorithm.type());
 
 		std::cout << "Done." << std::endl;
 	}

@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_X509_CERTIFICATE_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
@@ -343,7 +344,7 @@ namespace cryptoplus
 				 * \brief Write the certificate in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::string write_der() const;
+				buffer write_der() const;
 
 				/**
 				 * \brief Clone the certificate instance.
@@ -841,11 +842,11 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::string certificate::write_der() const
+		inline buffer certificate::write_der() const
 		{
-			std::string result(write_der(static_cast<void*>(NULL)), char());
+			buffer result(write_der(static_cast<void*>(NULL)));
 
-			write_der(&result[0]);
+			write_der(buffer_cast<uint8_t>(result));
 
 			return result;
 		}

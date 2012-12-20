@@ -45,13 +45,12 @@
 #ifndef CRYPTOPLUS_HASH_PBKDF2_HPP
 #define CRYPTOPLUS_HASH_PBKDF2_HPP
 
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "message_digest.hpp"
 #include "message_digest_algorithm.hpp"
 
 #include <openssl/evp.h>
-
-#include <string>
 
 namespace cryptoplus
 {
@@ -91,13 +90,13 @@ namespace cryptoplus
 		 *
 		 * Some versions of OpenSSL only provide SHA1 as a hash method. In this case, pbkdf2() will throw an std::invalid_argument exception.
 		 */
-		std::string pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter = 1000);
+		buffer pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter = 1000);
 
-		inline std::string pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter)
+		inline buffer pbkdf2(const void* password, size_t passwordlen, const void* salt, size_t saltlen, const message_digest_algorithm& algorithm, unsigned int iter)
 		{
-			std::string result(algorithm.result_size(), char());
+			buffer result(algorithm.result_size());
 
-			pbkdf2(password, passwordlen, salt, saltlen, &result[0], result.size(), algorithm, iter);
+			pbkdf2(password, passwordlen, salt, saltlen, buffer_cast<uint8_t>(result), buffer_size(result), algorithm, iter);
 
 			return result;
 		}

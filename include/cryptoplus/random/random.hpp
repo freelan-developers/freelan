@@ -45,14 +45,14 @@
 #ifndef CRYPTOPLUS_RANDOM_RANDOM_HPP
 #define CRYPTOPLUS_RANDOM_RANDOM_HPP
 
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../os.hpp"
 
 #include <openssl/rand.h>
 
-#include <string>
-
 #include <cstddef>
+#include <string>
 
 namespace cryptoplus
 {
@@ -84,7 +84,7 @@ namespace cryptoplus
 		 *
 		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
 		 */
-		std::string get_random_bytes(size_t cnt);
+		buffer get_random_bytes(size_t cnt);
 
 		/**
 		 * \brief Get pseudo random bytes.
@@ -109,7 +109,7 @@ namespace cryptoplus
 		 *
 		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
 		 */
-		std::string get_pseudo_random_bytes(size_t cnt);
+		buffer get_pseudo_random_bytes(size_t cnt);
 
 		/**
 		 * \brief Mix some bytes into the PRNG state.
@@ -216,11 +216,11 @@ namespace cryptoplus
 			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
 		}
 
-		inline std::string get_random_bytes(size_t cnt)
+		inline buffer get_random_bytes(size_t cnt)
 		{
-			std::string result(cnt, char());
+			buffer result(cnt);
 
-			get_random_bytes(&result[0], result.size());
+			get_random_bytes(buffer_cast<uint8_t>(result), buffer_size(result));
 
 			return result;
 		}
@@ -234,11 +234,11 @@ namespace cryptoplus
 			return (result == 1);
 		}
 
-		inline std::string get_pseudo_random_bytes(size_t cnt)
+		inline buffer get_pseudo_random_bytes(size_t cnt)
 		{
-			std::string result(cnt, char());
+			buffer result(cnt);
 
-			get_pseudo_random_bytes(&result[0], result.size());
+			get_pseudo_random_bytes(buffer_cast<uint8_t>(result), buffer_size(result));
 
 			return result;
 		}

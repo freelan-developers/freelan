@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_X509_CRL_CERTIFICATE_REVOCATION_LIST_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
@@ -301,7 +302,7 @@ namespace cryptoplus
 				 * \brief Write the certificate_revocation_list in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::string write_der();
+				buffer write_der();
 
 				/**
 				 * \brief Clone the certificate_revocation_list instance.
@@ -700,11 +701,11 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::string certificate_revocation_list::write_der()
+		inline buffer certificate_revocation_list::write_der()
 		{
-			std::string result(write_der(static_cast<void*>(NULL)), char());
+			buffer result(write_der(static_cast<void*>(NULL)));
 
-			write_der(&result[0]);
+			write_der(buffer_cast<uint8_t>(result));
 
 			return result;
 		}

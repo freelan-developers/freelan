@@ -5,6 +5,7 @@
  */
 
 #include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/buffer.hpp>
 #include <cryptoplus/pkey/dh_key.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -18,6 +19,8 @@
 #ifdef MSV
 #include <openssl/applink.c>
 #endif
+
+using cryptoplus::buffer;
 
 namespace
 {
@@ -151,13 +154,13 @@ int main()
 
 		std::cout << "Computing key A..." << std::endl;
 
-		std::string key_a = dh_key.compute_key(dh_key2.public_key());
+		buffer key_a = dh_key.compute_key(dh_key2.public_key());
 		
 		std::cout << "Done." << std::endl;
 
 		std::cout << "Computing key B..." << std::endl;
 
-		std::string key_b = dh_key2.compute_key(dh_key.public_key());
+		buffer key_b = dh_key2.compute_key(dh_key.public_key());
 		
 		std::cout << "Done." << std::endl;
 

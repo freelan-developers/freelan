@@ -45,11 +45,10 @@
 #ifndef CRYPTOPLUS_HASH_MESSAGE_DIGEST_HPP
 #define CRYPTOPLUS_HASH_MESSAGE_DIGEST_HPP
 
+#include "../buffer.hpp"
 #include "message_digest_algorithm.hpp"
 
 #include <openssl/evp.h>
-
-#include <string>
 
 namespace cryptoplus
 {
@@ -75,7 +74,7 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The message digest.
 		 */
-		std::string message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+		buffer message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		/**
 		 * \brief Compute a message digest for the given buffer, using the given digest method.
@@ -84,20 +83,20 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The message digest.
 		 */
-		std::string message_digest(const std::string& buf, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+		buffer message_digest(const buffer& buf, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
-		inline std::string message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
+		inline buffer message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
-			std::string result(algorithm.result_size(), char());
+			buffer result(algorithm.result_size());
 
-			message_digest(&result[0], result.size(), data, len, algorithm, impl);
+			message_digest(buffer_cast<uint8_t>(result), buffer_size(result), data, len, algorithm, impl);
 
 			return result;
 		}
 
-		inline std::string message_digest(const std::string& buf, const message_digest_algorithm& algorithm, ENGINE* impl)
+		inline buffer message_digest(const buffer& buf, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
-			return message_digest(buf.c_str(), buf.size(), algorithm, impl);
+			return message_digest(buffer_cast<uint8_t>(buf), buffer_size(buf), algorithm, impl);
 		}
 	}
 }

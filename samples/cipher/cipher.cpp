@@ -5,6 +5,7 @@
  */
 
 #include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/buffer.hpp>
 #include <cryptoplus/cipher/cipher_stream.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -18,18 +19,9 @@
 #include <openssl/applink.c>
 #endif
 
-template <typename T>
-std::string to_hex(const T& begin, const T& end)
-{
-	std::ostringstream oss;
-
-	for (T i = begin; i != end; ++i)
-	{
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(static_cast<unsigned char>(*i));
-	}
-
-	return oss.str();
-}
+using cryptoplus::buffer;
+using cryptoplus::buffer_cast;
+using cryptoplus::buffer_size;
 
 void cipher(const std::string& name)
 {
@@ -37,23 +29,23 @@ void cipher(const std::string& name)
 	{
 		cryptoplus::cipher::cipher_algorithm algorithm(name);
 
-		std::string data(algorithm.block_size(), 'd');
-		std::string key(algorithm.key_length(), 'k');
-		std::string iv(algorithm.iv_length(), 'i');
+		buffer data(buffer::storage_type(algorithm.block_size(), 'd'));
+		buffer key(buffer::storage_type(algorithm.key_length(), 'k'));
+		buffer iv(buffer::storage_type(algorithm.iv_length(), 'i'));
 
 		std::cout << "Cipher: " << name << " (block size: " << algorithm.block_size() << ")" << std::endl;
-		std::cout << "Data: " << to_hex(data.begin(), data.end()) << std::endl;
-		std::cout << "Key: " << to_hex(key.begin(), key.end()) << std::endl;
-		std::cout << "IV: " << to_hex(iv.begin(), iv.end()) << std::endl;
+		std::cout << "Data: " << data << std::endl;
+		std::cout << "Key: " << key << std::endl;
+		std::cout << "IV: " << iv << std::endl;
 
-		cryptoplus::cipher::cipher_stream stream(data.size() + algorithm.block_size());
+		cryptoplus::cipher::cipher_stream stream(buffer_size(data) + algorithm.block_size());
 
-		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, key.data(), key.size(), iv.data(), iv.size());
+		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, buffer_cast<uint8_t>(key), buffer_size(key), buffer_cast<uint8_t>(iv), buffer_size(iv));
 		stream.set_padding(false);
-		stream.append(data.data(), data.size());
+		stream.append(data);
 		stream.finalize();
 
-		std::cout << "Result: " << to_hex(stream.result().begin(), stream.result().end()) << std::endl;
+		std::cout << "Result: " << stream.result() << std::endl;
 	}
 	catch (cryptoplus::error::cryptographic_exception& ex)
 	{

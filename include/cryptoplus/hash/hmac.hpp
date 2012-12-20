@@ -45,11 +45,10 @@
 #ifndef CRYPTOPLUS_HASH_HMAC_HPP
 #define CRYPTOPLUS_HASH_HMAC_HPP
 
+#include "../buffer.hpp"
 #include "message_digest_algorithm.hpp"
 
 #include <openssl/hmac.h>
-
-#include <string>
 
 namespace cryptoplus
 {
@@ -79,13 +78,13 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The hmac.
 		 */
-		std::string hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+		buffer hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
-		inline std::string hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
+		inline buffer hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
-			std::string result(algorithm.result_size(), char());
+			buffer result(algorithm.result_size());
 
-			hmac(&result[0], result.size(), key, key_len, data, len, algorithm, impl);
+			hmac(buffer_cast<uint8_t>(result), buffer_size(result), key, key_len, data, len, algorithm, impl);
 
 			return result;
 		}

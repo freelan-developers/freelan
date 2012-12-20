@@ -45,9 +45,10 @@
 #ifndef CRYPTOPLUS_CIPHER_CIPHER_STREAM_HPP
 #define CRYPTOPLUS_CIPHER_CIPHER_STREAM_HPP
 
+#include "../buffer.hpp"
+
 #include "cipher_context.hpp"
 
-#include <string>
 #include <cstring>
 
 namespace cryptoplus
@@ -99,6 +100,13 @@ namespace cryptoplus
 				cipher_stream& append(const void* buf, size_t buf_len);
 
 				/**
+				 * \brief Append data to the stream.
+				 * \param buf The data to append to the stream.
+				 * \return The cipher stream.
+				 */
+				cipher_stream& append(const buffer& buf);
+
+				/**
 				 * \brief Append a C-string to the stream.
 				 * \param cstr The C-string to add. No terminal null-characater is appended.
 				 * \return The cipher stream.
@@ -131,14 +139,14 @@ namespace cryptoplus
 				 * \warning Be sure to call finalize() before calling this method.
 				 * \see finalize()
 				 */
-				const std::string& result() const;
+				const buffer& result() const;
 
 			private:
 
 				using cipher_context::update;
 				using cipher_context::finalize;
 
-				std::string m_buffer;
+				buffer m_buffer;
 				size_t m_offset;
 		};
 
@@ -152,8 +160,13 @@ namespace cryptoplus
 		cipher_stream& operator<<(cipher_stream& cs, const T& value);
 
 		inline cipher_stream::cipher_stream(size_t alloc) :
-			m_buffer(alloc, ' '), m_offset(0)
+			m_buffer(alloc), m_offset(0)
 		{
+		}
+
+		inline cipher_stream& cipher_stream::append(const buffer& buf)
+		{
+			return append(buffer_cast<uint8_t>(buf), buffer_size(buf));
 		}
 
 		inline cipher_stream& cipher_stream::append(const char* cstr)
@@ -168,10 +181,10 @@ namespace cryptoplus
 
 		inline void cipher_stream::reallocate(size_t alloc)
 		{
-			m_buffer.resize(alloc);
+			m_buffer.data().resize(alloc);
 		}
 
-		inline const std::string& cipher_stream::result() const
+		inline const buffer& cipher_stream::result() const
 		{
 			return m_buffer;
 		}

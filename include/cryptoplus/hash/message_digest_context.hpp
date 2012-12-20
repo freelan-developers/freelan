@@ -53,8 +53,6 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <string>
-
 namespace cryptoplus
 {
 	namespace hash
@@ -136,19 +134,19 @@ namespace cryptoplus
 				 * \brief Update the message_digest_context with some data.
 				 * \param buf The data buffer.
 				 */
-				void update(const std::string& buf);
+				void update(const buffer& buf);
 
 				/**
 				 * \brief Update the message_digest_context with some data.
 				 * \param buf The data buffer.
 				 */
-				void sign_update(const std::string& buf);
+				void sign_update(const buffer& buf);
 
 				/**
 				 * \brief Update the message_digest_context with some data.
 				 * \param buf The data buffer.
 				 */
-				void verify_update(const std::string& buf);
+				void verify_update(const buffer& buf);
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
@@ -166,7 +164,7 @@ namespace cryptoplus
 				 *
 				 * After a call to finalize() no more call to update() can be made unless initialize() is called again first.
 				 */
-				std::string finalize();
+				buffer finalize();
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting signature.
@@ -186,7 +184,7 @@ namespace cryptoplus
 				 *
 				 * After a call to sign_finalize() no more call to sign_update() can be made unless sign_initialize() is called again first.
 				 */
-				std::string sign_finalize(pkey::pkey& pkey);
+				buffer sign_finalize(pkey::pkey& pkey);
 
 				/**
 				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
@@ -198,6 +196,16 @@ namespace cryptoplus
 				 * After a call to verify_finalize() no more call to verify_update() can be made unless verify_initialize() is called again first.
 				 */
 				bool verify_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey);
+
+				/**
+				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
+				 * \param sig The signature to compare to.
+				 * \param pkey The public pkey to use to verify the signature.
+				 * \return true if the signature matches, false otherwise.
+				 *
+				 * After a call to verify_finalize() no more call to verify_update() can be made unless verify_initialize() is called again first.
+				 */
+				bool verify_finalize(const buffer& sig, pkey::pkey& pkey);
 
 				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
@@ -265,37 +273,42 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
 		}
 
-		inline void message_digest_context::update(const std::string& buf)
+		inline void message_digest_context::update(const buffer& buf)
 		{
-			update(buf.c_str(), buf.size());
+			update(buffer_cast<uint8_t>(buf), buffer_size(buf));
 		}
 
-		inline void message_digest_context::sign_update(const std::string& buf)
+		inline void message_digest_context::sign_update(const buffer& buf)
 		{
-			sign_update(buf.c_str(), buf.size());
+			sign_update(buffer_cast<uint8_t>(buf), buffer_size(buf));
 		}
 
-		inline void message_digest_context::verify_update(const std::string& buf)
+		inline void message_digest_context::verify_update(const buffer& buf)
 		{
-			verify_update(buf.c_str(), buf.size());
+			verify_update(buffer_cast<uint8_t>(buf), buffer_size(buf));
 		}
 
-		inline std::string message_digest_context::finalize()
+		inline buffer message_digest_context::finalize()
 		{
-			std::string result(algorithm().result_size(), char());
+			buffer result(algorithm().result_size());
 
-			finalize(&result[0], result.size());
+			finalize(buffer_cast<uint8_t>(result), buffer_size(result));
 
 			return result;
 		}
 
-		inline std::string message_digest_context::sign_finalize(pkey::pkey& pkey)
+		inline buffer message_digest_context::sign_finalize(pkey::pkey& pkey)
 		{
-			std::string result(pkey.size(), char());
+			buffer result(pkey.size());
 
-			sign_finalize(&result[0], result.size(), pkey);
+			sign_finalize(buffer_cast<uint8_t>(result), buffer_size(result), pkey);
 
 			return result;
+		}
+
+		inline bool message_digest_context::verify_finalize(const buffer& sig, pkey::pkey& pkey)
+		{
+			return verify_finalize(buffer_cast<uint8_t>(sig), buffer_size(sig), pkey);
 		}
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)

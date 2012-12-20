@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_ASN1_STRING_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 
 #include <openssl/crypto.h>
@@ -95,6 +96,13 @@ namespace cryptoplus
 				static string from_data(const void* buf, size_t buf_len);
 
 				/**
+				 * \brief Create an ASN1 string from some data.
+				 * \param buf The data buffer.
+				 * \return The ASN1 string.
+				 */
+				static string from_data(const buffer& buf);
+
+				/**
 				 * \brief Create an ASN1 string from a C-string.
 				 * \param str The string.
 				 * \return The ASN1 string.
@@ -138,6 +146,12 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 */
 				void set_data(const void* data, size_t data_len);
+
+				/**
+				 * \brief Set the internal data.
+				 * \param data The data.
+				 */
+				void set_data(const buffer& data);
 
 				/**
 				 * \brief Set the internal data.
@@ -215,6 +229,13 @@ namespace cryptoplus
 
 			return result;
 		}
+		inline string string::from_data(const buffer& buf)
+		{
+			string result = create();
+			result.set_data(buf);
+
+			return result;
+		}
 		inline string string::from_string(const char* str)
 		{
 			string result = create();
@@ -246,6 +267,10 @@ namespace cryptoplus
 		inline void string::set_data(const void* _data, size_t data_len)
 		{
 			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, static_cast<int>(data_len)) != 0);
+		}
+		inline void string::set_data(const buffer& _data)
+		{
+			set_data(buffer_cast<uint8_t>(_data), buffer_size(_data));
 		}
 		inline void string::set_data(const char* _data)
 		{

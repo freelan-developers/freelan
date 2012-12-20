@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_BN_bignum_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 
 #include <openssl/bn.h>
@@ -177,7 +178,7 @@ namespace cryptoplus
 				 * \brief Get the binary representation of the BIGNUM.
 				 * \return The binary representation.
 				 */
-				std::string to_bin() const;
+				buffer to_bin() const;
 
 				/**
 				 * \brief Get the hexadecimal representation of the BIGNUM.
@@ -300,11 +301,11 @@ namespace cryptoplus
 		{
 			return BN_num_bytes(ptr().get());
 		}
-		inline std::string bignum::to_bin() const
+		inline buffer bignum::to_bin() const
 		{
-			std::string result(size(), char());
+			buffer result(size());
 
-			result.resize(to_bin(&result[0], result.size()));
+			result.data().resize(to_bin(buffer_cast<uint8_t>(result), buffer_size(result)));
 
 			return result;
 		}

@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_X509_EXTENSION_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../asn1/object.hpp"
 #include "../asn1/string.hpp"
@@ -145,7 +146,7 @@ namespace cryptoplus
 				 * \brief Write the extension in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::string write_der();
+				buffer write_der();
 
 				/**
 				 * \brief Clone the extension instance.
@@ -259,11 +260,11 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::string extension::write_der()
+		inline buffer extension::write_der()
 		{
-			std::string result(write_der(static_cast<void*>(NULL)), char());
+			buffer result(write_der(static_cast<void*>(NULL)));
 
-			write_der(&result[0]);
+			write_der(buffer_cast<uint8_t>(result));
 
 			return result;
 		}

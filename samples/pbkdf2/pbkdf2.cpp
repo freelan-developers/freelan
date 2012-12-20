@@ -5,6 +5,7 @@
  */
 
 #include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/buffer.hpp>
 #include <cryptoplus/hash/pbkdf2.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 
@@ -18,18 +19,7 @@
 #include <openssl/applink.c>
 #endif
 
-template <typename T>
-std::string to_hex(const T& begin, const T& end)
-{
-	std::ostringstream oss;
-
-	for (T i = begin; i != end; ++i)
-	{
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(static_cast<unsigned char>(*i));
-	}
-
-	return oss.str();
-}
+using cryptoplus::buffer;
 
 void pbkdf2(const std::string& name, const std::string& password, const std::string& salt, unsigned int iterations)
 {
@@ -37,8 +27,8 @@ void pbkdf2(const std::string& name, const std::string& password, const std::str
 	{
 		cryptoplus::hash::message_digest_algorithm algorithm(name);
 
-		std::string key = cryptoplus::hash::pbkdf2(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
-		std::cout << name << ": " << to_hex(key.begin(), key.end()) << std::endl;
+		const buffer key = cryptoplus::hash::pbkdf2(password.c_str(), password.size(), salt.c_str(), salt.size(), algorithm, iterations);
+		std::cout << name << ": " << key << std::endl;
 	}
 	catch (std::invalid_argument&)
 	{

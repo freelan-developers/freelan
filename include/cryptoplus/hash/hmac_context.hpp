@@ -45,6 +45,7 @@
 #ifndef CRYPTOPLUS_HASH_HMAC_CONTEXT_HPP
 #define CRYPTOPLUS_HASH_HMAC_CONTEXT_HPP
 
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "message_digest_algorithm.hpp"
 
@@ -52,8 +53,6 @@
 #include <openssl/hmac.h>
 
 #include <boost/noncopyable.hpp>
-
-#include <string>
 
 namespace cryptoplus
 {
@@ -116,7 +115,7 @@ namespace cryptoplus
 				 * \brief Finalize the hmac_context and get the resulting buffer.
 				 * \return The resulting buffer.
 				 */
-				std::string finalize();
+				buffer finalize();
 
 				/**
 				 * \brief Get the underlying context.
@@ -155,11 +154,11 @@ namespace cryptoplus
 #endif
 		}
 
-		inline std::string hmac_context::finalize()
+		inline buffer hmac_context::finalize()
 		{
-			std::string result(algorithm().result_size(), char());
+			buffer result(algorithm().result_size());
 
-			finalize(&result[0], result.size());
+			finalize(buffer_cast<uint8_t>(result), buffer_size(result));
 
 			return result;
 		}

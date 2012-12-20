@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_PKEY_DH_KEY_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../bn/bignum.hpp"
@@ -54,8 +55,6 @@
 #include <openssl/dh.h>
 #include <openssl/pem.h>
 #include <openssl/engine.h>
-
-#include <string>
 
 namespace cryptoplus
 {
@@ -220,7 +219,7 @@ namespace cryptoplus
 				 *
 				 * On failure, a cryptographic_exception is thrown.
 				 */
-				std::string compute_key(bn::bignum pub_key) const;
+				buffer compute_key(bn::bignum pub_key) const;
 
 				/**
 				 * \brief Print the DH parameters in a human-readable hexadecimal form to a specified BIO.
@@ -315,11 +314,11 @@ namespace cryptoplus
 
 			return *this;
 		}
-		inline std::string dh_key::compute_key(bn::bignum pub_key) const
+		inline buffer dh_key::compute_key(bn::bignum pub_key) const
 		{
-			std::string result(size(), char());
+			buffer result(size());
 
-			result.resize(compute_key(&result[0], result.size(), pub_key.raw()));
+			result.data().resize(compute_key(buffer_cast<uint8_t>(result), buffer_size(result), pub_key.raw()));
 
 			return result;
 		}

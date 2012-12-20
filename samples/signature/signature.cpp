@@ -5,6 +5,7 @@
  */
 
 #include <cryptoplus/cryptoplus.hpp>
+#include <cryptoplus/buffer.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 #include <cryptoplus/pkey/pkey.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -19,18 +20,7 @@
 #include <openssl/applink.c>
 #endif
 
-template <typename T>
-std::string to_hex(const T& begin, const T& end)
-{
-	std::ostringstream oss;
-
-	for (T i = begin; i != end; ++i)
-	{
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(static_cast<unsigned char>(*i));
-	}
-
-	return oss.str();
-}
+using cryptoplus::buffer;
 
 int main()
 {
@@ -61,14 +51,14 @@ int main()
 
 		ctx.sign_initialize(algorithm);
 		ctx.sign_update(data.c_str(), data.size());
-		std::string signature = ctx.sign_finalize(pkey);
+		buffer signature = ctx.sign_finalize(pkey);
 
-		std::cout << "Signature: " << to_hex(signature.begin(), signature.end()) << std::endl;
+		std::cout << "Signature: " << signature << std::endl;
 
 		cryptoplus::hash::message_digest_context ctx2;
 		ctx2.verify_initialize(algorithm);
 		ctx2.verify_update(data.c_str(), data.size());
-		bool verification = ctx2.verify_finalize(&signature[0], signature.size(), pkey);
+		bool verification = ctx2.verify_finalize(signature, pkey);
 
 		std::cout << "Verification: " << (verification ? "OK" : "FAILED") << std::endl;
 	}

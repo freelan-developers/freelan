@@ -46,6 +46,7 @@
 #define CRYPTOPLUS_X509_NAME_HPP
 
 #include "../pointer_wrapper.hpp"
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "name_entry.hpp"
@@ -229,7 +230,7 @@ namespace cryptoplus
 				 * \brief Write the name in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				std::string write_der();
+				buffer write_der();
 
 				/**
 				 * \brief Clone the name instance.
@@ -650,11 +651,11 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline std::string name::write_der()
+		inline buffer name::write_der()
 		{
-			std::string result(write_der(static_cast<void*>(NULL)), char());
+			buffer result(write_der(static_cast<void*>(NULL)));
 
-			write_der(&result[0]);
+			write_der(buffer_cast<uint8_t>(result));
 
 			return result;
 		}

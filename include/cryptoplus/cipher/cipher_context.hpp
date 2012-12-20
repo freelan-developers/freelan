@@ -45,6 +45,7 @@
 #ifndef CRYPTOPLUS_CIPHER_CIPHER_CONTEXT_HPP
 #define CRYPTOPLUS_CIPHER_CIPHER_CONTEXT_HPP
 
+#include "../buffer.hpp"
 #include "../error/cryptographic_exception.hpp"
 #include "cipher_algorithm.hpp"
 
@@ -129,7 +130,7 @@ namespace cryptoplus
 				 * \see seal_finalize
 				 */
 				template <typename T>
-				std::vector<std::string> seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
+				std::vector<buffer> seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope sealing.
@@ -141,7 +142,7 @@ namespace cryptoplus
 				 * \see seal_update
 				 * \see seal_finalize
 				 */
-				std::string seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, pkey::pkey pkey);
+				buffer seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, pkey::pkey pkey);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope opening.
@@ -187,7 +188,7 @@ namespace cryptoplus
 				 * \param buf_len The length of buf.
 				 * \return The resulting buffer.
 				 */
-				std::string get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const;
+				buffer get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const;
 
 				/**
 				 * \brief Verify the given buffer and check if it matches ISO 10126 padding.
@@ -266,7 +267,7 @@ namespace cryptoplus
 				 * \param in The input buffer.
 				 * \return The count of bytes written.
 				 */
-				size_t update(void* out, size_t out_len, const std::string& in);
+				size_t update(void* out, size_t out_len, const buffer& in);
 
 				/**
 				 * \brief Update the cipher_context with some data.
@@ -275,7 +276,7 @@ namespace cryptoplus
 				 * \param in The input buffer.
 				 * \return The count of bytes written.
 				 */
-				size_t seal_update(void* out, size_t out_len, const std::string& in);
+				size_t seal_update(void* out, size_t out_len, const buffer& in);
 
 				/**
 				 * \brief Update the cipher_context with some data.
@@ -284,7 +285,7 @@ namespace cryptoplus
 				 * \param in The input buffer.
 				 * \return The count of bytes written.
 				 */
-				size_t open_update(void* out, size_t out_len, const std::string& in);
+				size_t open_update(void* out, size_t out_len, const buffer& in);
 
 				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
@@ -345,7 +346,7 @@ namespace cryptoplus
 		}
 
 		template <typename T>
-		inline std::vector<std::string> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
+		inline std::vector<buffer> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
 		{
 			if (iv && (iv_len != _algorithm.iv_length()))
 			{
@@ -354,7 +355,7 @@ namespace cryptoplus
 
 			size_t pkeys_count = std::distance(pkeys_begin, pkeys_end);
 
-			std::vector<std::string> result;
+			std::vector<buffer> result;
 			std::vector<unsigned char*> ek;
 			std::vector<int> ekl(pkeys_count);
 			std::vector<EVP_PKEY*> pubk;
@@ -375,7 +376,7 @@ namespace cryptoplus
 
 				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
 				{
-					result.push_back(std::string(*p, *p + ekl[std::distance(ek.begin(), p)]));
+					result.push_back(buffer(*p, *p + ekl[std::distance(ek.begin(), p)]));
 				}
 			}
 			catch (...)
@@ -407,11 +408,11 @@ namespace cryptoplus
 			return ((len / algorithm().block_size()) + 1) * algorithm().block_size();
 		}
 
-		inline std::string cipher_context::get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const
+		inline buffer cipher_context::get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const
 		{
-			std::string result(get_iso_10126_padding_size(buf_len), char());
-			std::memcpy(&result[0], buf, buf_len);
-			result.resize(add_iso_10126_padding(&result[0], buf_len, result.size()));
+			buffer result(get_iso_10126_padding_size(buf_len));
+			std::memcpy(buffer_cast<uint8_t>(result), buf, buf_len);
+			result.data().resize(add_iso_10126_padding(buffer_cast<uint8_t>(result), buf_len, buffer_size(result)));
 
 			return result;
 		}
@@ -437,19 +438,19 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL) != 0);
 		}
 
-		inline size_t cipher_context::update(void* out, size_t out_len, const std::string& in)
+		inline size_t cipher_context::update(void* out, size_t out_len, const buffer& in)
 		{
-			return update(out, out_len, in.c_str(), in.size());
+			return update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
 		}
 
-		inline size_t cipher_context::seal_update(void* out, size_t out_len, const std::string& in)
+		inline size_t cipher_context::seal_update(void* out, size_t out_len, const buffer& in)
 		{
-			return seal_update(out, out_len, in.c_str(), in.size());
+			return seal_update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
 		}
 
-		inline size_t cipher_context::open_update(void* out, size_t out_len, const std::string& in)
+		inline size_t cipher_context::open_update(void* out, size_t out_len, const buffer& in)
 		{
-			return open_update(out, out_len, in.c_str(), in.size());
+			return open_update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
 		}
 
 		inline EVP_CIPHER_CTX& cipher_context::raw()

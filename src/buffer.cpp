@@ -37,48 +37,55 @@
  */
 
 /**
- * \file cipher_stream.cpp
+ * \file buffer.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A cipher stream class.
+ * \brief A buffer class.
  */
 
-#include "cipher/cipher_stream.hpp"
+#include "buffer.hpp"
 
-#include <cassert>
+#include <sstream>
+#include <cstring>
+#include <iomanip>
 
 namespace cryptoplus
 {
-	namespace cipher
+	buffer::buffer(const void* _data, size_t data_len) :
+		m_data(static_cast<const uint8_t*>(_data), static_cast<const uint8_t*>(_data) + data_len)
 	{
-		cipher_stream& cipher_stream::append(const void* buf, size_t buf_len)
+	}
+
+	buffer::buffer(const char* str) :
+		m_data(static_cast<const uint8_t*>(static_cast<const void*>(str)), static_cast<const uint8_t*>(static_cast<const void*>(str)) + strlen(str))
+	{
+	}
+
+	buffer::buffer(const std::string& str) :
+		m_data(str.begin(), str.end())
+	{
+	}
+
+	buffer::buffer(const storage_type& _data) :
+		m_data(_data)
+	{
+	}
+
+	std::ostream& operator<<(std::ostream& os, const buffer& buf)
+	{
+		for (buffer::storage_type::const_iterator i = buf.data().begin(); i != buf.data().end(); ++i)
 		{
-			size_t out_len = buffer_size(m_buffer) - m_offset;
-
-			if (out_len < algorithm().block_size() + buf_len)
-			{
-				m_buffer.data().resize(buffer_size(m_buffer) + algorithm().block_size() + buf_len - out_len);
-				out_len = algorithm().block_size() + buf_len;
-			}
-
-			m_offset += update(buffer_cast<uint8_t>(m_buffer) + m_offset, out_len, buf, buf_len);
-
-			return *this;
+			os << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(*i);
 		}
 
-		void cipher_stream::finalize()
-		{
-			size_t out_len = buffer_size(m_buffer) - m_offset;
+		return os;
+	}
 
-			if (out_len < algorithm().block_size())
-			{
-				m_buffer.data().resize(buffer_size(m_buffer) + algorithm().block_size() - out_len);
-				out_len = algorithm().block_size();
-			}
+	std::string hex(const buffer& buf)
+	{
+		std::ostringstream oss;
 
-			m_buffer.data().resize(m_offset + finalize(buffer_cast<uint8_t>(m_buffer) + m_offset, out_len));
+		oss << buf;
 
-			m_offset = 0;
-		}
+		return oss.str();
 	}
 }
-
