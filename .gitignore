@@ -1,6 +1,11 @@
+# General
 *.tar.gz
 *.deb
 *.dsc
 *.changes
 *.build
 .sconsign.dblite
+
+# Build environment
+/.bash_history
+/build/
