@@ -59,9 +59,9 @@ namespace fscp
 
 	size_t data_message::write_keep_alive(void* buf, size_t buf_len, session_number_type _session_number, sequence_number_type _sequence_number, size_t random_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
-		std::vector<unsigned char> random = cryptoplus::random::get_random_bytes<unsigned char>(random_len);
+		std::string random = cryptoplus::random::get_random_bytes(random_len);
 
-		return raw_write(buf, buf_len, _session_number, _sequence_number, &random[0], random.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
+		return raw_write(buf, buf_len, _session_number, _sequence_number, random.c_str(), random.size(), seal_key, seal_key_len, enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
 	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, const hash_list_type& hash_list, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
@@ -334,9 +334,9 @@ namespace fscp
 		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM), cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, &iv[0], iv.size());
 		cipher_context.set_padding(false);
 
-		std::vector<uint8_t> cleartext = cipher_context.get_iso_10126_padded_buffer<uint8_t>(_cleartext, cleartext_len);
+		std::string cleartext = cipher_context.get_iso_10126_padded_buffer(_cleartext, cleartext_len);
 
-		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, &cleartext[0], cleartext.size());
+		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, cleartext);
 		cnt += cipher_context.finalize(ciphertext + cnt, ciphertext_len - cnt);
 
 		buffer_tools::set<sequence_number_type>(payload, 0, htonl(_sequence_number));

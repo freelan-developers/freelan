@@ -67,11 +67,11 @@ namespace fscp
 
 	void get_certificate_hash(void* buf, size_t buflen, cryptoplus::x509::certificate cert)
 	{
-		const std::vector<unsigned char> der = cert.write_der();
+		const std::string der = cert.write_der();
 
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
-		mdctx.update(&der[0], der.size());
+		mdctx.update(der);
 		mdctx.finalize(buf, buflen);
 	}
 

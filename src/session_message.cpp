@@ -87,9 +87,9 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
 		mdctx.update(ciphertext(), ciphertext_size());
-		std::vector<uint8_t> digest = mdctx.finalize<uint8_t>();
+		std::string digest = mdctx.finalize();
 
-		std::vector<uint8_t> padded_buf(key.get_rsa_key().size());
+		std::string padded_buf(key.get_rsa_key().size(), '\0');
 
 		padded_buf.resize(key.get_rsa_key().public_decrypt(&padded_buf[0], padded_buf.size(), ciphertext_signature(), ciphertext_signature_size(), RSA_NO_PADDING));
 
@@ -157,15 +157,15 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
 		mdctx.update(&ciphertext[0], ciphertext.size());
-		std::vector<uint8_t> digest = mdctx.finalize<uint8_t>();
+		std::string digest = mdctx.finalize();
 
-		std::vector<uint8_t> padded_buf(sig_key.get_rsa_key().size());
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(&padded_buf[0], padded_buf.size(), &digest[0], digest.size(), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
+		std::string padded_buf(sig_key.get_rsa_key().size(), '\0');
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(&padded_buf[0], padded_buf.size(), digest.c_str(), digest.size(), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
 
-		std::vector<uint8_t> ciphertext_signature(sig_key.get_rsa_key().size());
-		ciphertext_signature.resize(sig_key.get_rsa_key().private_encrypt(&ciphertext_signature[0], ciphertext_signature.size(), &padded_buf[0], padded_buf.size(), RSA_NO_PADDING));
+		std::string ciphertext_signature(sig_key.get_rsa_key().size(), '\0');
+		ciphertext_signature.resize(sig_key.get_rsa_key().private_encrypt(&ciphertext_signature[0], ciphertext_signature.size(), padded_buf.c_str(), padded_buf.size(), RSA_NO_PADDING));
 
-		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, &ciphertext_signature[0], ciphertext_signature.size(), type);
+		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, ciphertext_signature.c_str(), ciphertext_signature.size(), type);
 	}
 
 }
