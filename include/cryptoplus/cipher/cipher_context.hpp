@@ -260,6 +260,33 @@ namespace cryptoplus
 				size_t open_update(void* out, size_t out_len, const void* in, size_t in_len);
 
 				/**
+				 * \brief Update the cipher_context with some data.
+				 * \param out The output buffer. Should be at least in_len + algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer.
+				 * \param in The input buffer.
+				 * \return The count of bytes written.
+				 */
+				size_t update(void* out, size_t out_len, const std::string& in);
+
+				/**
+				 * \brief Update the cipher_context with some data.
+				 * \param out The output buffer. Should be at least in_len + algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \param in The input buffer.
+				 * \return The count of bytes written.
+				 */
+				size_t seal_update(void* out, size_t out_len, const std::string& in);
+
+				/**
+				 * \brief Update the cipher_context with some data.
+				 * \param out The output buffer. Should be at least in_len + algorithm().block_size() bytes long. Cannot be NULL.
+				 * \param out_len The length of the out buffer. Will be updated to indicate the written bytes count.
+				 * \param in The input buffer.
+				 * \return The count of bytes written.
+				 */
+				size_t open_update(void* out, size_t out_len, const std::string& in);
+
+				/**
 				 * \brief Finalize the cipher_context and get the resulting buffer.
 				 * \param out The output buffer. Should be at least algorithm().block_size() bytes long. Cannot be NULL.
 				 * \param out_len The length of the out buffer.
@@ -408,6 +435,21 @@ namespace cryptoplus
 		inline void cipher_context::ctrl_set(int type, int value)
 		{
 			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL) != 0);
+		}
+
+		inline size_t cipher_context::update(void* out, size_t out_len, const std::string& in)
+		{
+			return update(out, out_len, in.c_str(), in.size());
+		}
+
+		inline size_t cipher_context::seal_update(void* out, size_t out_len, const std::string& in)
+		{
+			return seal_update(out, out_len, in.c_str(), in.size());
+		}
+
+		inline size_t cipher_context::open_update(void* out, size_t out_len, const std::string& in)
+		{
+			return open_update(out, out_len, in.c_str(), in.size());
 		}
 
 		inline EVP_CIPHER_CTX& cipher_context::raw()
