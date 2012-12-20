@@ -87,13 +87,11 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
 		mdctx.update(ciphertext(), ciphertext_size());
-		std::vector<uint8_t> digest = mdctx.finalize<uint8_t>();
 
-		std::vector<uint8_t> padded_buf(key.get_rsa_key().size());
+		const cryptoplus::buffer digest = mdctx.finalize();
+		const cryptoplus::buffer padded_buf = key.get_rsa_key().public_decrypt(ciphertext_signature(), ciphertext_signature_size(), RSA_NO_PADDING);
 
-		padded_buf.resize(key.get_rsa_key().public_decrypt(&padded_buf[0], padded_buf.size(), ciphertext_signature(), ciphertext_signature_size(), RSA_NO_PADDING));
-
-		key.get_rsa_key().verify_PKCS1_PSS(&digest[0], digest.size(), &padded_buf[0], padded_buf.size(), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
+		key.get_rsa_key().verify_PKCS1_PSS(digest, padded_buf, cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
 	}
 
 	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
@@ -157,15 +155,14 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
 		mdctx.update(&ciphertext[0], ciphertext.size());
-		std::vector<uint8_t> digest = mdctx.finalize<uint8_t>();
+		const cryptoplus::buffer digest = mdctx.finalize();
 
-		std::vector<uint8_t> padded_buf(sig_key.get_rsa_key().size());
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(&padded_buf[0], padded_buf.size(), &digest[0], digest.size(), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
+		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(cryptoplus::buffer_cast<uint8_t>(padded_buf), cryptoplus::buffer_size(padded_buf), cryptoplus::buffer_cast<uint8_t>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
 
-		std::vector<uint8_t> ciphertext_signature(sig_key.get_rsa_key().size());
-		ciphertext_signature.resize(sig_key.get_rsa_key().private_encrypt(&ciphertext_signature[0], ciphertext_signature.size(), &padded_buf[0], padded_buf.size(), RSA_NO_PADDING));
+		const cryptoplus::buffer ciphertext_signature = sig_key.get_rsa_key().private_encrypt(padded_buf, RSA_NO_PADDING);
 
-		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, &ciphertext_signature[0], ciphertext_signature.size(), type);
+		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, cryptoplus::buffer_cast<uint8_t>(ciphertext_signature), cryptoplus::buffer_size(ciphertext_signature), type);
 	}
 
 }
