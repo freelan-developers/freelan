@@ -133,6 +133,24 @@ namespace cryptoplus
 				void verify_update(const void* data, size_t len);
 
 				/**
+				 * \brief Update the message_digest_context with some data.
+				 * \param buf The data buffer.
+				 */
+				void update(const std::string& buf);
+
+				/**
+				 * \brief Update the message_digest_context with some data.
+				 * \param buf The data buffer.
+				 */
+				void sign_update(const std::string& buf);
+
+				/**
+				 * \brief Update the message_digest_context with some data.
+				 * \param buf The data buffer.
+				 */
+				void verify_update(const std::string& buf);
+
+				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
 				 * \param md The resulting buffer. Cannot be NULL.
 				 * \param md_len The length of md.
@@ -245,6 +263,21 @@ namespace cryptoplus
 		inline void message_digest_context::verify_update(const void* data, size_t len)
 		{
 			error::throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
+		}
+
+		inline void message_digest_context::update(const std::string& buf)
+		{
+			update(buf.c_str(), buf.size());
+		}
+
+		inline void message_digest_context::sign_update(const std::string& buf)
+		{
+			sign_update(buf.c_str(), buf.size());
+		}
+
+		inline void message_digest_context::verify_update(const std::string& buf)
+		{
+			verify_update(buf.c_str(), buf.size());
 		}
 
 		inline std::string message_digest_context::finalize()

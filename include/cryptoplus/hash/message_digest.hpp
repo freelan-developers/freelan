@@ -77,6 +77,15 @@ namespace cryptoplus
 		 */
 		std::string message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
+		/**
+		 * \brief Compute a message digest for the given buffer, using the given digest method.
+		 * \param buf The buffer.
+		 * \param algorithm The message digest algorithm to use.
+		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
+		 * \return The message digest.
+		 */
+		std::string message_digest(const std::string& buf, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+
 		inline std::string message_digest(const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
 			std::string result(algorithm.result_size(), char());
@@ -84,6 +93,11 @@ namespace cryptoplus
 			message_digest(&result[0], result.size(), data, len, algorithm, impl);
 
 			return result;
+		}
+
+		inline std::string message_digest(const std::string& buf, const message_digest_algorithm& algorithm, ENGINE* impl)
+		{
+			return message_digest(buf.c_str(), buf.size(), algorithm, impl);
 		}
 	}
 }
