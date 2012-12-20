@@ -92,9 +92,7 @@ namespace freelan
 
 		std::string certificate_request_to_string(const cryptoplus::x509::certificate_request& csr)
 		{
-			const std::vector<unsigned char> der_csr = csr.write_der();
-
-			return base64_encode(&der_csr[0], der_csr.size());
+			return base64_encode(csr.write_der());
 		}
 
 		bool has_value(const client::values_type& values, const std::string& key, json::value_type& value)
