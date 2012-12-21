@@ -372,6 +372,15 @@ namespace cryptoplus
 				void verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t buf_len, hash::message_digest_algorithm algorithm, int salt_len) const;
 
 				/**
+				 * \brief Verify a PKCS#1 V2.0 PSS padding.
+				 * \param digest The message digest.
+				 * \param buf The decrypted signature, obtained from public_decrypt().
+				 * \param algorithm The message digest algorithm to use.
+				 * \param salt_len The salt_len. Should be -1 or -2.
+				 */
+				void verify_PKCS1_PSS(const buffer& digest, const buffer& buf, hash::message_digest_algorithm algorithm, int salt_len) const;
+
+				/**
 				 * \brief Encrypt data bytes using the private key information.
 				 * \param out The buffer to write the result to. Must be at least size() bytes long.
 				 * \param out_len The length of out.
@@ -625,6 +634,10 @@ namespace cryptoplus
 		inline void rsa_key::print(file _file, int offset) const
 		{
 			error::throw_error_if_not(RSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
+		}
+		inline void rsa_key::verify_PKCS1_PSS(const buffer& digest, const buffer& buf, hash::message_digest_algorithm algorithm, int salt_len) const
+		{
+			verify_PKCS1_PSS(buffer_cast<uint8_t>(digest), buffer_size(digest), buffer_cast<uint8_t>(buf), buffer_size(buf), algorithm, salt_len);
 		}
 		inline buffer rsa_key::sign(const void* buf, size_t buf_len, int type) const
 		{
