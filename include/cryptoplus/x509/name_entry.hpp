@@ -98,6 +98,13 @@ namespace cryptoplus
 				static name_entry from_der(const void* buf, size_t buf_len);
 
 				/**
+				 * \brief Load a X509 name entry in DER format.
+				 * \param buf The buffer.
+				 * \return The name.
+				 */
+				static name_entry from_der(const buffer& buf);
+
+				/**
 				 * \brief Create a X509 name entry from an ASN1 object.
 				 * \param object The object.
 				 * \param type The type of the data. A common value is MBSTRING_UTF8, in which case data points to an UTF8 encoded string.
@@ -232,6 +239,10 @@ namespace cryptoplus
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
 
 			return take_ownership(d2i_X509_NAME_ENTRY(NULL, &pbuf, static_cast<long>(buf_len)));
+		}
+		inline name_entry name_entry::from_der(const buffer& buf)
+		{
+			return from_der(buffer_cast<uint8_t>(buf), buffer_size(buf));
 		}
 		inline name_entry name_entry::from_nid(int _nid, int _type, const void* _data, size_t data_len)
 		{

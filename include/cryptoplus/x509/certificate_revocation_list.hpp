@@ -246,6 +246,13 @@ namespace cryptoplus
 				static certificate_revocation_list from_der(const void* buf, size_t buf_len);
 
 				/**
+				 * \brief Load a X509_CRL certificate_revocation_list in DER format.
+				 * \param buf The buffer.
+				 * \return The certificate_revocation_list.
+				 */
+				static certificate_revocation_list from_der(const buffer& buf);
+
+				/**
 				 * \brief Load a X509_CRL certificate_revocation_list from a buffer.
 				 * \param buf The buffer.
 				 * \param buf_len The length of buf.
@@ -667,6 +674,10 @@ namespace cryptoplus
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
 
 			return take_ownership(d2i_X509_CRL(NULL, &pbuf, static_cast<long>(buf_len)));
+		}
+		inline certificate_revocation_list certificate_revocation_list::from_der(const buffer& buf)
+		{
+			return from_der(buffer_cast<uint8_t>(buf), buffer_size(buf));
 		}
 		inline certificate_revocation_list::certificate_revocation_list()
 		{
