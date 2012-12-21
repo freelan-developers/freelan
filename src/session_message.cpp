@@ -155,7 +155,6 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
 		mdctx.update(&ciphertext[0], ciphertext.size());
-<<<<<<< HEAD
 		const cryptoplus::buffer digest = mdctx.finalize();
 
 		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
@@ -164,17 +163,6 @@ namespace fscp
 		const cryptoplus::buffer ciphertext_signature = sig_key.get_rsa_key().private_encrypt(padded_buf, RSA_NO_PADDING);
 
 		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, cryptoplus::buffer_cast<uint8_t>(ciphertext_signature), cryptoplus::buffer_size(ciphertext_signature), type);
-=======
-		std::string digest = mdctx.finalize();
-
-		std::string padded_buf(sig_key.get_rsa_key().size(), '\0');
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(&padded_buf[0], padded_buf.size(), digest.c_str(), digest.size(), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
-
-		std::string ciphertext_signature(sig_key.get_rsa_key().size(), '\0');
-		ciphertext_signature.resize(sig_key.get_rsa_key().private_encrypt(&ciphertext_signature[0], ciphertext_signature.size(), padded_buf.c_str(), padded_buf.size(), RSA_NO_PADDING));
-
-		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, ciphertext_signature.c_str(), ciphertext_signature.size(), type);
->>>>>>> 72dbe4c63094f377983a2a87ab6326ef12635438
 	}
 
 }
