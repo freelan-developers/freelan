@@ -439,6 +439,54 @@ namespace cryptoplus
 				/**
 				 * \brief Encrypt data bytes using the private key information.
 				 * \param buf The data to encrypt. Must be smaller than size() - 11.
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_private_encrypt(3).
+				 * \return The result.
+				 * \see public_decrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				buffer private_encrypt(const void* buf, size_t buf_len, int padding) const;
+
+				/**
+				 * \brief Decrypt data bytes using the public key information.
+				 * \param buf The data to decrypt.
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_private_encrypt(3).
+				 * \return The result.
+				 * \see private_encrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				buffer public_decrypt(const void* buf, size_t buf_len, int padding) const;
+
+				/**
+				 * \brief Encrypt data bytes using the public key information.
+				 * \param buf The data to encrypt. Depending on the padding mode, buf must be either smaller than size() - 11, size() - 41 or size(). For additional information, take a look at RSA_public_encrypt(3).
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_public_encrypt(3).
+				 * \return The result.
+				 * \see public_decrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				buffer public_encrypt(const void* buf, size_t buf_len, int padding) const;
+
+				/**
+				 * \brief Decrypt data bytes using the public key information.
+				 * \param buf The data to decrypt.
+				 * \param buf_len The length of buf.
+				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_public_encrypt(3).
+				 * \return The result.
+				 * \see private_encrypt
+				 *
+				 * In case of failure, a cryptographic_exception is thrown.
+				 */
+				buffer private_decrypt(const void* buf, size_t buf_len, int padding) const;
+
+				/**
+				 * \brief Encrypt data bytes using the private key information.
+				 * \param buf The data to encrypt. Must be smaller than size() - 11.
 				 * \param padding The padding mode to use. The list of available padding mode can be found in the man page of RSA_private_encrypt(3).
 				 * \return The result.
 				 * \see public_decrypt
@@ -682,6 +730,38 @@ namespace cryptoplus
 		inline void rsa_key::verify_PKCS1_PSS(const buffer& digest, const buffer& buf, hash::message_digest_algorithm algorithm, int salt_len) const
 		{
 			verify_PKCS1_PSS(buffer_cast<uint8_t>(digest), buffer_size(digest), buffer_cast<uint8_t>(buf), buffer_size(buf), algorithm, salt_len);
+		}
+		inline buffer rsa_key::private_encrypt(const void* buf, size_t buf_len, int padding) const
+		{
+			buffer result(size());
+
+			result.data().resize(private_encrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+
+			return result;
+		}
+		inline buffer rsa_key::public_decrypt(const void* buf, size_t buf_len, int padding) const
+		{
+			buffer result(size());
+
+			result.data().resize(public_decrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+
+			return result;
+		}
+		inline buffer rsa_key::public_encrypt(const void* buf, size_t buf_len, int padding) const
+		{
+			buffer result(size());
+
+			result.data().resize(public_encrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+
+			return result;
+		}
+		inline buffer rsa_key::private_decrypt(const void* buf, size_t buf_len, int padding) const
+		{
+			buffer result(size());
+
+			result.data().resize(private_decrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+
+			return result;
 		}
 		inline buffer rsa_key::private_encrypt(const buffer& buf, int padding) const
 		{
