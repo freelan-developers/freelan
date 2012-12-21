@@ -45,6 +45,8 @@
 #ifndef CRYPTOPLUS_BASE64_HPP
 #define CRYPTOPLUS_BASE64_HPP
 
+#include "buffer.hpp"
+
 #include <string>
 
 namespace cryptoplus
@@ -71,10 +73,10 @@ namespace cryptoplus
 
 	/**
 	 * \brief base64 encode a given string.
-	 * \param str The string to encode.
+	 * \param buf The buffer to encode.
 	 * \return The base64 encoded string.
 	 */
-	std::string base64_encode(const std::string& str);
+	std::string base64_encode(const buffer& buf);
 
 	/**
 	 * \brief base64 decode a given string.
@@ -94,14 +96,14 @@ namespace cryptoplus
 	 * \param inputlen The length of input.
 	 * \return The base64 decoded string.
 	 */
-	std::string base64_decode(const void* input, size_t inputlen);
+	buffer base64_decode(const void* input, size_t inputlen);
 
 	/**
 	 * \brief base64 decode a given string.
 	 * \param str The base64 encoded string to decode.
 	 * \return The decoded string.
 	 */
-	std::string base64_decode(const std::string& str);
+	buffer base64_decode(const std::string& str);
 
 	inline std::string base64_encode(const void* input, size_t inputlen)
 	{
@@ -112,21 +114,21 @@ namespace cryptoplus
 		return result;
 	}
 
-	inline std::string base64_encode(const std::string& str)
+	inline std::string base64_encode(const buffer& buf)
 	{
-		return base64_encode(str.c_str(), str.size());
+		return base64_encode(buffer_cast<uint8_t>(buf), buffer_size(buf));
 	}
 
-	inline std::string base64_decode(const void* input, size_t inputlen)
+	inline buffer base64_decode(const void* input, size_t inputlen)
 	{
-		std::string result((inputlen * 3) / 4, '\0');
+		buffer result((inputlen * 3) / 4);
 
-		result.resize(base64_decode(&result[0], result.size(), input, inputlen));
+		result.data().resize(base64_decode(buffer_cast<uint8_t>(result), buffer_size(result), input, inputlen));
 
 		return result;
 	}
 
-	inline std::string base64_decode(const std::string& str)
+	inline buffer base64_decode(const std::string& str)
 	{
 		return base64_decode(str.c_str(), str.size());
 	}
