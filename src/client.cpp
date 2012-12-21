@@ -85,9 +85,7 @@ namespace freelan
 
 		cryptoplus::x509::certificate string_to_certificate(const std::string& str)
 		{
-			const std::string certificate_der_str = base64_decode(str);
-
-			return cryptoplus::x509::certificate::from_der(certificate_der_str.c_str(), certificate_der_str.size());
+			return cryptoplus::x509::certificate::from_der(base64_decode(str));
 		}
 
 		std::string certificate_request_to_string(const cryptoplus::x509::certificate_request& csr)
