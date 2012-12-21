@@ -334,11 +334,7 @@ namespace fscp
 		cipher_context.initialize(cryptoplus::cipher::cipher_algorithm(CIPHER_ALGORITHM), cryptoplus::cipher::cipher_context::encrypt, enc_key, enc_key_len, &iv[0], iv.size());
 		cipher_context.set_padding(false);
 
-<<<<<<< HEAD
 		const cryptoplus::buffer cleartext = cipher_context.get_iso_10126_padded_buffer(_cleartext, cleartext_len);
-=======
-		std::string cleartext = cipher_context.get_iso_10126_padded_buffer(_cleartext, cleartext_len);
->>>>>>> 72dbe4c63094f377983a2a87ab6326ef12635438
 
 		size_t cnt = cipher_context.update(ciphertext, ciphertext_len, cleartext);
 		cnt += cipher_context.finalize(ciphertext + cnt, ciphertext_len - cnt);
