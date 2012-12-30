@@ -140,7 +140,7 @@ namespace cryptoplus
 				 * \brief Get the ASN1 object associated to this name_entry.
 				 * \return The object.
 				 */
-				asn1::object object();
+				asn1::object object() const;
 
 				/**
 				 * \brief Set the ASN1 object associated to this name_entry.
@@ -152,7 +152,7 @@ namespace cryptoplus
 				 * \brief Get the data associated to this name_entry.
 				 * \return The data, as an ASN1 string.
 				 */
-				asn1::string data();
+				asn1::string data() const;
 
 				/**
 				 * \brief Set the data associated to this name_entry.
@@ -166,32 +166,32 @@ namespace cryptoplus
 				 * \brief Get the nid associated to this name_entry.
 				 * \return The nid.
 				 */
-				int nid();
+				int nid() const;
 
 				/**
 				 * \brief Get the name associated to this name_entry.
 				 * \return The name.
 				 */
-				std::string name();
+				std::string name() const;
 
 				/**
 				 * \brief Get the long name associated to this name_entry.
 				 * \return The long name.
 				 */
-				std::string long_name();
+				std::string long_name() const;
 
 				/**
 				 * \brief Write the name entry in DER format to a buffer.
 				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
 				 * \return The size written or to be written.
 				 */
-				size_t write_der(void* buf);
+				size_t write_der(void* buf) const;
 
 				/**
 				 * \brief Write the name entry in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				buffer write_der();
+				buffer write_der() const;
 
 				/**
 				 * \brief Clone the name_entry instance.
@@ -258,7 +258,7 @@ namespace cryptoplus
 		inline name_entry::name_entry(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline asn1::object name_entry::object()
+		inline asn1::object name_entry::object() const
 		{
 			return X509_NAME_ENTRY_get_object(ptr().get());
 		}
@@ -266,7 +266,7 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()) != 0);
 		}
-		inline asn1::string name_entry::data()
+		inline asn1::string name_entry::data() const
 		{
 			return X509_NAME_ENTRY_get_data(ptr().get());
 		}
@@ -274,19 +274,19 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), static_cast<int>(data_len)) != 0);
 		}
-		inline int name_entry::nid()
+		inline int name_entry::nid() const
 		{
 			return object().to_nid();
 		}
-		inline std::string name_entry::name()
+		inline std::string name_entry::name() const
 		{
 			return OBJ_nid2sn(nid());
 		}
-		inline std::string name_entry::long_name()
+		inline std::string name_entry::long_name() const
 		{
 			return OBJ_nid2ln(nid());
 		}
-		inline size_t name_entry::write_der(void* buf)
+		inline size_t name_entry::write_der(void* buf) const
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
 			unsigned char** pout = out != NULL ? &out : NULL;
@@ -297,7 +297,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline buffer name_entry::write_der()
+		inline buffer name_entry::write_der() const
 		{
 			buffer result(write_der(static_cast<void*>(NULL)));
 

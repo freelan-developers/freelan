@@ -147,13 +147,13 @@ namespace cryptoplus
 				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
 				 * \return The size written or to be written.
 				 */
-				size_t write_der(void* buf);
+				size_t write_der(void* buf) const;
 
 				/**
 				 * \brief Write the extension in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				buffer write_der();
+				buffer write_der() const;
 
 				/**
 				 * \brief Clone the extension instance.
@@ -165,37 +165,37 @@ namespace cryptoplus
 				 * \brief Get the object.
 				 * \return The ASN1 object.
 				 */
-				asn1::object object();
+				asn1::object object() const;
 
 				/**
 				 * \brief Set the object.
 				 * \param obj The ASN1 object.
 				 */
-				void set_object(asn1::object obj);
+				void set_object(asn1::object obj) const;
 
 				/**
 				 * \brief Get the critical flag.
 				 * \return The critical flag.
 				 */
-				bool critical();
+				bool critical() const;
 
 				/**
 				 * \brief Set the critical flag.
 				 * \param critical The critical flag.
 				 */
-				void set_critical(bool critical);
+				void set_critical(bool critical) const;
 
 				/**
 				 * \brief Get the data.
 				 * \return The data.
 				 */
-				asn1::string data();
+				asn1::string data() const;
 
 				/**
 				 * \brief Set the data.
 				 * \param data The data.
 				 */
-				void set_data(asn1::string data);
+				void set_data(asn1::string data) const;
 
 			private:
 
@@ -260,7 +260,7 @@ namespace cryptoplus
 		inline extension::extension(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline size_t extension::write_der(void* buf)
+		inline size_t extension::write_der(void* buf) const
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
 			unsigned char** pout = out != NULL ? &out : NULL;
@@ -271,7 +271,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline buffer extension::write_der()
+		inline buffer extension::write_der() const
 		{
 			buffer result(write_der(static_cast<void*>(NULL)));
 
@@ -283,27 +283,27 @@ namespace cryptoplus
 		{
 			return extension(X509_EXTENSION_dup(ptr().get()));
 		}
-		inline asn1::object extension::object()
+		inline asn1::object extension::object() const
 		{
 			return X509_EXTENSION_get_object(ptr().get());
 		}
-		inline void extension::set_object(asn1::object obj)
+		inline void extension::set_object(asn1::object obj) const
 		{
 			error::throw_error_if_not(X509_EXTENSION_set_object(ptr().get(), obj.raw()) != 0);
 		}
-		inline bool extension::critical()
+		inline bool extension::critical() const
 		{
 			return (X509_EXTENSION_get_critical(ptr().get()) != 0);
 		}
-		inline void extension::set_critical(bool _critical)
+		inline void extension::set_critical(bool _critical) const
 		{
 			error::throw_error_if_not(X509_EXTENSION_set_critical(ptr().get(), _critical ? 1 : 0) != 0);
 		}
-		inline asn1::string extension::data()
+		inline asn1::string extension::data() const
 		{
 			return X509_EXTENSION_get_data(ptr().get());
 		}
-		inline void extension::set_data(asn1::string _data)
+		inline void extension::set_data(asn1::string _data) const
 		{
 			error::throw_error_if_not(X509_EXTENSION_set_data(ptr().get(), _data.raw()) != 0);
 		}

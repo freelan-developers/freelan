@@ -91,98 +91,125 @@ namespace cryptoplus
 				/**
 				 * \brief An iterator class.
 				 */
-				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
+				template <typename IteratorValueType>
+				class base_iterator : public std::iterator<std::random_access_iterator_tag, typename IteratorValueType::wrapped_value_type>
 				{
 					public:
 
 						/**
 						 * \brief Create an empty iterator.
 						 */
-						iterator();
+						base_iterator();
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						reference operator*();
+						typename base_iterator::reference operator*() const;
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						pointer operator->();
+						typename base_iterator::pointer operator->() const;
 
 						/**
 						 * \brief Dereference operator.
 						 * \param index The index to add or substract.
 						 * \return An iterator.
 						 */
-						reference operator[](int index);
+						typename base_iterator::reference operator[](int index) const;
 
 						/**
 						 * \brief Increment the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator++();
+						base_iterator& operator++();
 
 						/**
 						 * \brief Increment the iterator.
 						 * \return The old value.
 						 */
-						iterator operator++(int);
+						base_iterator operator++(int);
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator--();
+						base_iterator& operator--();
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \return The old value.
 						 */
-						iterator operator--(int);
+						base_iterator operator--(int);
 
 						/**
 						 * \brief Increment the iterator.
 						 * \param cnt The number to add to the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator+=(int cnt);
+						base_iterator& operator+=(int cnt);
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \param cnt The number to substract from the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator-=(int cnt);
+						base_iterator& operator-=(int cnt);
 
 					private:
 
-						iterator(name*, int);
+						base_iterator(IteratorValueType*, int);
 
-						name* m_owner;
+						IteratorValueType* m_owner;
 						int m_index;
-						value_type m_cache;
+						mutable typename IteratorValueType::wrapped_value_type m_cache;
 
 						friend class name;
-						friend bool operator==(const name::iterator& lhs, const name::iterator& rhs);
-						friend bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
-						friend bool operator<(const name::iterator& lhs, const name::iterator& rhs);
-						friend bool operator<=(const name::iterator& lhs, const name::iterator& rhs);
-						friend bool operator>(const name::iterator& lhs, const name::iterator& rhs);
-						friend bool operator>=(const name::iterator& lhs, const name::iterator& rhs);
-						friend name::iterator operator+(const name::iterator& lhs, int rhs);
-						friend name::iterator operator+(int lhs, const name::iterator& rhs);
-						friend name::iterator operator-(const name::iterator& lhs, int rhs);
-						friend name::iterator operator-(int lhs, const name::iterator& rhs);
-						friend name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator==(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator!=(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator<(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator<=(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator>(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator>=(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend name::base_iterator<_IteratorValueType> operator+(const name::base_iterator<_IteratorValueType>& lhs, int rhs);
+						template <typename _IteratorValueType>
+						friend name::base_iterator<_IteratorValueType> operator+(int lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend name::base_iterator<_IteratorValueType> operator-(const name::base_iterator<_IteratorValueType>& lhs, int rhs);
+						template <typename _IteratorValueType>
+						friend name::base_iterator<_IteratorValueType> operator-(int lhs, const name::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend typename name::base_iterator<IteratorValueType>::difference_type operator-(const name::base_iterator<_IteratorValueType>& lhs, const name::base_iterator<_IteratorValueType>& rhs);
 				};
+
+				/**
+				 * \brief The iterator type.
+				 */
+				typedef base_iterator<name> iterator;
+
+				/**
+				 * \brief The iterator type.
+				 */
+				typedef base_iterator<const name> const_iterator;
 
 				/**
 				* \brief Reverse iterator type.
 				*/
 				typedef std::reverse_iterator<iterator> reverse_iterator;
+
+				/**
+				* \brief Const reverse iterator type.
+				*/
+				typedef std::reverse_iterator<const_iterator> reverse_const_iterator;
 
 				/**
 				 * \brief Create a new name.
@@ -231,13 +258,13 @@ namespace cryptoplus
 				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
 				 * \return The size written or to be written.
 				 */
-				size_t write_der(void* buf);
+				size_t write_der(void* buf) const;
 
 				/**
 				 * \brief Write the name in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				buffer write_der();
+				buffer write_der() const;
 
 				/**
 				 * \brief Clone the name instance.
@@ -249,7 +276,7 @@ namespace cryptoplus
 				 * \brief Get the hash of the name.
 				 * \return The hash.
 				 */
-				unsigned int hash();
+				unsigned int hash() const;
 
 				/**
 				 * \brief Get a one-line human readable representation of the X509 name.
@@ -263,13 +290,13 @@ namespace cryptoplus
 				 * \param bio The BIO.
 				 * \param obase An undocumented parameter. Defaulted to 0.
 				 */
-				void print(bio::bio_ptr bio, int obase = 0);
+				void print(bio::bio_ptr bio, int obase = 0) const;
 
 				/**
 				 * \brief Get the count of entries.
 				 * \return The count of entries.
 				 */
-				int count();
+				int count() const;
 
 				/**
 				 * \brief Get the entry at the specified position.
@@ -277,7 +304,13 @@ namespace cryptoplus
 				 * \return The name entry.
 				 * \see count().
 				 */
-				wrapped_value_type operator[](int index);
+				wrapped_value_type operator[](int index) const;
+
+				/**
+				 * \brief Get the begin iterator.
+				 * \return The begin iterator.
+				 */
+				const_iterator begin() const;
 
 				/**
 				 * \brief Get the begin iterator.
@@ -289,7 +322,19 @@ namespace cryptoplus
 				 * \brief Get the end iterator.
 				 * \return The end iterator.
 				 */
+				const_iterator end() const;
+
+				/**
+				 * \brief Get the end iterator.
+				 * \return The end iterator.
+				 */
 				iterator end();
+
+				/**
+				 * \brief Get the reverse begin iterator.
+				 * \return The reverse begin iterator.
+				 */
+				reverse_const_iterator rbegin() const;
 
 				/**
 				 * \brief Get the reverse begin iterator.
@@ -301,7 +346,20 @@ namespace cryptoplus
 				 * \brief Get the reverse end iterator.
 				 * \return The reverse end iterator.
 				 */
+				reverse_const_iterator rend() const;
+
+				/**
+				 * \brief Get the reverse end iterator.
+				 * \return The reverse end iterator.
+				 */
 				reverse_iterator rend();
+
+				/**
+				 * \brief Erase the given entry.
+				 * \param it An iterator to the entry to erase.
+				 * \return The next iterator.
+				 */
+				const_iterator erase(const_iterator it) const;
 
 				/**
 				 * \brief Erase the given entry.
@@ -316,7 +374,22 @@ namespace cryptoplus
 				 * \param last The last iterator.
 				 * \return last.
 				 */
+				const_iterator erase(const_iterator first, const_iterator last) const;
+
+				/**
+				 * \brief Erase the given entries.
+				 * \param first The first iterator.
+				 * \param last The last iterator.
+				 * \return last.
+				 */
 				iterator erase(iterator first, iterator last);
+
+				/**
+				 * \brief Find an entry by its NID.
+				 * \param nid The nid.
+				 * \return An iterator to the first entry that matches, or end() if none is found.
+				 */
+				const_iterator find(int nid) const;
 
 				/**
 				 * \brief Find an entry by its NID.
@@ -331,7 +404,22 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an entry that matches, or end() if none is found.
 				 */
+				const_iterator find(int nid, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an entry by its NID.
+				 * \param nid The nid.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an entry that matches, or end() if none is found.
+				 */
 				iterator find(int nid, iterator lastpos);
+
+				/**
+				 * \brief Find an entry by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \return An iterator to the first entry that matches, or end() if none is found.
+				 */
+				const_iterator find(asn1::object object) const;
 
 				/**
 				 * \brief Find an entry by its ASN1 object.
@@ -346,18 +434,26 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an entry that matches, or end() if none is found.
 				 */
+				const_iterator find(asn1::object object, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an entry by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an entry that matches, or end() if none is found.
+				 */
 				iterator find(asn1::object object, iterator lastpos);
 
 				/**
 				 * \brief Clear all entries.
 				 */
-				void clear();
+				void clear() const;
 
 				/**
 				 * \brief Push a copy of the specified name_entry at the end of the entry table.
 				 * \param entry The name entry.
 				 */
-				void push_back(wrapped_value_type entry);
+				void push_back(wrapped_value_type entry) const;
 
 				/**
 				 * \brief Push a new entry at the end of the entry table.
@@ -367,7 +463,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
-				void push_back(const std::string& field, int type, const void* data, size_t data_len, int set = 0);
+				void push_back(const std::string& field, int type, const void* data, size_t data_len, int set = 0) const;
 
 				/**
 				 * \brief Push a new entry at the end of the entry table.
@@ -377,7 +473,7 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
-				void push_back(asn1::object object, int type, const void* data, size_t data_len, int set = 0);
+				void push_back(asn1::object object, int type, const void* data, size_t data_len, int set = 0) const;
 
 				/**
 				 * \brief Push a new entry at the end of the entry table.
@@ -387,7 +483,15 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
-				void push_back(int nid, int type, const void* data, size_t data_len, int set = 0);
+				void push_back(int nid, int type, const void* data, size_t data_len, int set = 0) const;
+
+				/**
+				 * \brief Insert a copy of the specified name_entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param entry The name entry.
+				 * \return An iterator to the entry that was added.
+				 */
+				const_iterator insert(const_iterator position, wrapped_value_type entry) const;
 
 				/**
 				 * \brief Insert a copy of the specified name_entry in the entry table.
@@ -403,7 +507,26 @@ namespace cryptoplus
 				 * \param entry The name entry.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the call is equivalent to insert(position, entry) without a return value.
 				 */
+				void insert(const_iterator position, wrapped_value_type entry, int set) const;
+
+				/**
+				 * \brief Insert a copy of the specified name_entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param entry The name entry.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the call is equivalent to insert(position, entry) without a return value.
+				 */
 				void insert(iterator position, wrapped_value_type entry, int set);
+
+				/**
+				 * \brief Insert a new entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param field The field.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
+				void insert(const_iterator position, const std::string& field, int type, const void* data, size_t data_len, int set = 0) const;
 
 				/**
 				 * \brief Insert a new entry in the entry table.
@@ -425,6 +548,17 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
+				void insert(const_iterator position, asn1::object object, int type, const void* data, size_t data_len, int set = 0) const;
+
+				/**
+				 * \brief Insert a new entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param object The ASN1 object.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
 				void insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set = 0);
 
 				/**
@@ -436,7 +570,26 @@ namespace cryptoplus
 				 * \param data_len The length of data.
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
+				void insert(const_iterator position, int nid, int type, const void* data, size_t data_len, int set = 0) const;
+
+				/**
+				 * \brief Insert a new entry in the entry table.
+				 * \param position The position to insert the entry at.
+				 * \param nid The NID.
+				 * \param type The type.
+				 * \param data The data.
+				 * \param data_len The length of data.
+				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				 */
 				void insert(iterator position, int nid, int type, const void* data, size_t data_len, int set = 0);
+
+				/**
+				 * \brief Insert a copy of the specified name entries in the entry table.
+				 * \param position The position to insert the first entry at.
+				 * \param first An iterator to the first entry to insert.
+				 * \param last An iterator past the last entry to insert.
+				 */
+				void insert(const_iterator position, const_iterator first, const_iterator last) const;
 
 				/**
 				 * \brief Insert a copy of the specified name entries in the entry table.
@@ -457,7 +610,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if the two name::iterator instances point to the same element.
 		 */
-		bool operator==(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator==(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two name::iterator instances.
@@ -465,7 +619,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if the two name::iterator instances do not point to the same element.
 		 */
-		bool operator!=(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator!=(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two name::iterator instances.
@@ -473,7 +628,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is smaller than rhs.
 		 */
-		bool operator<(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator<(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two name::iterator instances.
@@ -481,7 +637,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is smaller than or equal to rhs.
 		 */
-		bool operator<=(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator<=(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two name::iterator instances.
@@ -489,7 +646,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is greater than rhs.
 		 */
-		bool operator>(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator>(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two name::iterator instances.
@@ -497,7 +655,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is greater than or equal to rhs.
 		 */
-		bool operator>=(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator>=(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -505,7 +664,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		name::iterator operator+(const name::iterator& lhs, int rhs);
+		template <typename IteratorValueType>
+		name::base_iterator<IteratorValueType> operator+(const name::base_iterator<IteratorValueType>& lhs, int rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -513,7 +673,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		name::iterator operator+(int lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		name::base_iterator<IteratorValueType> operator+(int lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Substract an integer value from an iterator.
@@ -521,7 +682,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		name::iterator operator-(const name::iterator& lhs, int rhs);
+		template <typename IteratorValueType>
+		name::base_iterator<IteratorValueType> operator-(const name::base_iterator<IteratorValueType>& lhs, int rhs);
 
 		/**
 		 * \brief Substract an integer value from an iterator.
@@ -529,7 +691,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		name::iterator operator-(int lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		name::base_iterator<IteratorValueType> operator-(int lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Substract a iterator from another iterator and gets the index distance.
@@ -537,7 +700,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The distance.
 		 */
-		name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs);
+		template <typename IteratorValueType>
+		typename name::base_iterator<IteratorValueType>::difference_type operator-(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two name instances.
@@ -563,62 +727,73 @@ namespace cryptoplus
 		 */
 		int compare(const name& lhs, const name& rhs);
 
-		inline name::iterator::iterator() : m_owner(NULL), m_index(0)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType>::base_iterator() : m_owner(NULL), m_index(0)
 		{
 		}
-		inline name::iterator::reference name::iterator::operator*()
+		template <typename IteratorValueType>
+		inline typename name::base_iterator<IteratorValueType>::reference name::base_iterator<IteratorValueType>::operator*() const
 		{
 			return (m_cache = (*m_owner)[m_index]);
 		}
-		inline name::iterator::pointer name::iterator::operator->()
+		template <typename IteratorValueType>
+		inline typename name::base_iterator<IteratorValueType>::pointer name::base_iterator<IteratorValueType>::operator->() const
 		{
 			return &operator*();
 		}
-		inline name::iterator::reference name::iterator::operator[](int index)
+		template <typename IteratorValueType>
+		inline typename name::base_iterator<IteratorValueType>::reference name::base_iterator<IteratorValueType>::operator[](int index) const
 		{
 			return *iterator(m_owner, m_index + index);
 		}
-		inline name::iterator& name::iterator::operator++()
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType>& name::base_iterator<IteratorValueType>::operator++()
 		{
 			++m_index;
 
 			return *this;
 		}
-		inline name::iterator name::iterator::operator++(int)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType> name::base_iterator<IteratorValueType>::operator++(int)
 		{
-			iterator old = *this;
+			base_iterator<IteratorValueType> old = *this;
 
 			++m_index;
 
 			return old;
 		}
-		inline name::iterator& name::iterator::operator--()
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType>& name::base_iterator<IteratorValueType>::operator--()
 		{
 			--m_index;
 
 			return *this;
 		}
-		inline name::iterator name::iterator::operator--(int)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType> name::base_iterator<IteratorValueType>::operator--(int)
 		{
-			iterator old = *this;
+			base_iterator<IteratorValueType> old = *this;
 
 			--m_index;
 
 			return old;
 		}
-		inline name::iterator& name::iterator::operator+=(int cnt)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType>& name::base_iterator<IteratorValueType>::operator+=(int cnt)
 		{
 			m_index += cnt;
 
 			return *this;
 		}
-		inline name::iterator& name::iterator::operator-=(int cnt)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType>& name::base_iterator<IteratorValueType>::operator-=(int cnt)
 		{
 			m_index -= cnt;
 
 			return *this;
 		}
-		inline name::iterator::iterator(name* _name, int index) : m_owner(_name), m_index(index)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType>::base_iterator(IteratorValueType* _name, int index) : m_owner(_name), m_index(index)
 		{
 		}
 		inline name name::create()
@@ -651,7 +826,7 @@ namespace cryptoplus
 		inline name::name(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline size_t name::write_der(void* buf)
+		inline size_t name::write_der(void* buf) const
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
 			unsigned char** pout = out != NULL ? &out : NULL;
@@ -662,7 +837,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline buffer name::write_der()
+		inline buffer name::write_der() const
 		{
 			buffer result(write_der(static_cast<void*>(NULL)));
 
@@ -674,7 +849,7 @@ namespace cryptoplus
 		{
 			return name(X509_NAME_dup(ptr().get()));
 		}
-		inline unsigned int name::hash()
+		inline unsigned int name::hash() const
 		{
 			return X509_NAME_hash(ptr().get());
 		}
@@ -690,39 +865,68 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline void name::print(bio::bio_ptr bio, int obase)
+		inline void name::print(bio::bio_ptr bio, int obase) const
 		{
 			error::throw_error_if_not(X509_NAME_print(bio.raw(), ptr().get(), obase) != 0);
 		}
-		inline int name::count()
+		inline int name::count() const
 		{
 			return X509_NAME_entry_count(ptr().get());
 		}
-		inline name::wrapped_value_type name::operator[](int index)
+		inline name::wrapped_value_type name::operator[](int index) const
 		{
 			return wrapped_value_type(X509_NAME_get_entry(ptr().get(), index));
+		}
+		inline name::const_iterator name::begin() const
+		{
+			return const_iterator(this, 0);
 		}
 		inline name::iterator name::begin()
 		{
 			return iterator(this, 0);
 		}
+		inline name::const_iterator name::end() const
+		{
+			return const_iterator(this, count());
+		}
 		inline name::iterator name::end()
 		{
 			return iterator(this, count());
+		}
+		inline name::reverse_const_iterator name::rbegin() const
+		{
+			return reverse_const_iterator(end());
 		}
 		inline name::reverse_iterator name::rbegin()
 		{
 			return reverse_iterator(end());
 		}
+		inline name::reverse_const_iterator name::rend() const
+		{
+			return reverse_const_iterator(begin());
+		}
 		inline name::reverse_iterator name::rend()
 		{
 			return reverse_iterator(begin());
+		}
+		inline name::const_iterator name::erase(const_iterator it) const
+		{
+			wrapped_value_type::take_ownership(X509_NAME_delete_entry(it.m_owner->ptr().get(), it.m_index));
+
+			return it;
 		}
 		inline name::iterator name::erase(iterator it)
 		{
 			wrapped_value_type::take_ownership(X509_NAME_delete_entry(it.m_owner->ptr().get(), it.m_index));
 
 			return it;
+		}
+		inline name::const_iterator name::erase(const_iterator first, const_iterator last) const
+		{
+			while (first != last)
+				first = erase(first);
+
+			return first;
 		}
 		inline name::iterator name::erase(iterator first, iterator last)
 		{
@@ -731,11 +935,23 @@ namespace cryptoplus
 
 			return first;
 		}
+		inline name::const_iterator name::find(int nid) const
+		{
+			int index = X509_NAME_get_index_by_NID(ptr().get(), nid, -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline name::iterator name::find(int nid)
 		{
 			int index = X509_NAME_get_index_by_NID(ptr().get(), nid, -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline name::const_iterator name::find(int nid, const_iterator lastpos) const
+		{
+			int index = X509_NAME_get_index_by_NID(ptr().get(), nid, lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline name::iterator name::find(int nid, iterator lastpos)
 		{
@@ -743,11 +959,23 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
+		inline name::const_iterator name::find(asn1::object object) const
+		{
+			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline name::iterator name::find(asn1::object object)
 		{
 			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline name::const_iterator name::find(asn1::object object, const_iterator lastpos) const
+		{
+			int index = X509_NAME_get_index_by_OBJ(ptr().get(), object.raw(), lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline name::iterator name::find(asn1::object object, iterator lastpos)
 		{
@@ -755,25 +983,33 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
-		inline void name::clear()
+		inline void name::clear() const
 		{
 			erase(begin(), end());
 		}
-		inline void name::push_back(wrapped_value_type entry)
+		inline void name::push_back(wrapped_value_type entry) const
 		{
 			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), -1, 0) != 0);
 		}
-		inline void name::push_back(const std::string& field, int type, const void* data, size_t data_len, int set)
+		inline void name::push_back(const std::string& field, int type, const void* data, size_t data_len, int set) const
 		{
 			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), static_cast<int>(data_len), -1, set) != 0);
 		}
-		inline void name::push_back(asn1::object object, int type, const void* data, size_t data_len, int set)
+		inline void name::push_back(asn1::object object, int type, const void* data, size_t data_len, int set) const
 		{
 			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), -1, set) != 0);
 		}
-		inline void name::push_back(int nid, int type, const void* data, size_t data_len, int set)
+		inline void name::push_back(int nid, int type, const void* data, size_t data_len, int set) const
 		{
 			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(), nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), -1, set) != 0);
+		}
+		inline name::const_iterator name::insert(const_iterator position, wrapped_value_type entry) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, 0) != 0);
+
+			return position;
 		}
 		inline name::iterator name::insert(iterator position, wrapped_value_type entry)
 		{
@@ -783,11 +1019,23 @@ namespace cryptoplus
 
 			return position;
 		}
+		inline void name::insert(const_iterator position, wrapped_value_type entry, int set) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, set) != 0);
+		}
 		inline void name::insert(iterator position, wrapped_value_type entry, int set)
 		{
 			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry(ptr().get(), entry.raw(), position.m_index, set) != 0);
+		}
+		inline void name::insert(const_iterator position, const std::string& field, int type, const void* data, size_t data_len, int set) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), static_cast<int>(data_len), position.m_index, set) != 0);
 		}
 		inline void name::insert(iterator position, const std::string& field, int type, const void* data, size_t data_len, int set)
 		{
@@ -795,17 +1043,39 @@ namespace cryptoplus
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_txt(ptr().get(), field.c_str(), type, static_cast<const unsigned char*>(data), static_cast<int>(data_len), position.m_index, set) != 0);
 		}
+		inline void name::insert(const_iterator position, asn1::object object, int type, const void* data, size_t data_len, int set) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), position.m_index, set) != 0);
+		}
 		inline void name::insert(iterator position, asn1::object object, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_OBJ(ptr().get(), object.raw(), type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), position.m_index, set) != 0);
 		}
+		inline void name::insert(const_iterator position, int nid, int type, const void* data, size_t data_len, int set) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), position.m_index, set) != 0);
+		}
 		inline void name::insert(iterator position, int nid, int type, const void* data, size_t data_len, int set)
 		{
 			assert(position.m_owner == this);
 
 			error::throw_error_if_not(X509_NAME_add_entry_by_NID(ptr().get(),nid, type, static_cast<unsigned char*>(const_cast<void*>(data)), static_cast<int>(data_len), position.m_index, set) != 0);
+		}
+		inline void name::insert(const_iterator position, const_iterator first, const_iterator last) const
+		{
+			assert(position.m_owner == this);
+			assert(first.m_owner == last.m_owner);
+
+			for(; first != last; ++first)
+			{
+				position = insert(position, *first) + 1;
+			}
 		}
 		inline void name::insert(iterator position, iterator first, iterator last)
 		{
@@ -820,59 +1090,70 @@ namespace cryptoplus
 		inline name::name(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
-		inline bool operator==(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline bool operator==(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index == rhs.m_index);
 		}
-		inline bool operator!=(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline bool operator!=(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index != rhs.m_index);
 		}
-		inline bool operator<(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline bool operator<(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index < rhs.m_index);
 		}
-		inline bool operator<=(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline bool operator<=(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index <= rhs.m_index);
 		}
-		inline bool operator>(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline bool operator>(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index > rhs.m_index);
 		}
-		inline bool operator>=(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline bool operator>=(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index >= rhs.m_index);
 		}
-		inline name::iterator operator+(const name::iterator& lhs, int rhs)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType> operator+(const name::base_iterator<IteratorValueType>& lhs, int rhs)
 		{
-			return name::iterator(lhs.m_owner, lhs.m_index + rhs);
+			return name::base_iterator<IteratorValueType>(lhs.m_owner, lhs.m_index + rhs);
 		}
-		inline name::iterator operator+(int lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType> operator+(int lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
-			return name::iterator(rhs.m_owner, rhs.m_index + lhs);
+			return name::base_iterator<IteratorValueType>(rhs.m_owner, rhs.m_index + lhs);
 		}
-		inline name::iterator operator-(const name::iterator& lhs, int rhs)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType> operator-(const name::base_iterator<IteratorValueType>& lhs, int rhs)
 		{
-			return name::iterator(lhs.m_owner, lhs.m_index - rhs);
+			return name::base_iterator<IteratorValueType>(lhs.m_owner, lhs.m_index - rhs);
 		}
-		inline name::iterator operator-(int lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline name::base_iterator<IteratorValueType> operator-(int lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
-			return name::iterator(rhs.m_owner, rhs.m_index - lhs);
+			return name::base_iterator<IteratorValueType>(rhs.m_owner, rhs.m_index - lhs);
 		}
-		inline name::iterator::difference_type operator-(const name::iterator& lhs, const name::iterator& rhs)
+		template <typename IteratorValueType>
+		inline typename name::base_iterator<IteratorValueType>::difference_type operator-(const name::base_iterator<IteratorValueType>& lhs, const name::base_iterator<IteratorValueType>& rhs)
 		{
 			return lhs.m_index - rhs.m_index;
 		}
