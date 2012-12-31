@@ -88,98 +88,125 @@ namespace cryptoplus
 				/**
 				 * \brief An iterator class.
 				 */
-				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
+				template <typename IteratorValueType>
+				class base_iterator : public std::iterator<std::random_access_iterator_tag, typename IteratorValueType::wrapped_value_type>
 				{
 					public:
 
 						/**
 						 * \brief Create an empty iterator.
 						 */
-						iterator();
+						base_iterator();
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						reference operator*();
+						typename base_iterator::reference operator*() const;
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						pointer operator->();
+						typename base_iterator::pointer operator->() const;
 
 						/**
 						 * \brief Dereference operator.
 						 * \param index The index to add or substract.
 						 * \return An iterator.
 						 */
-						reference operator[](int index);
+						typename base_iterator::reference operator[](int index) const;
 
 						/**
 						 * \brief Increment the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator++();
+						base_iterator& operator++();
 
 						/**
 						 * \brief Increment the iterator.
 						 * \return The old value.
 						 */
-						iterator operator++(int);
+						base_iterator operator++(int);
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator--();
+						base_iterator& operator--();
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \return The old value.
 						 */
-						iterator operator--(int);
+						base_iterator operator--(int);
 
 						/**
 						 * \brief Increment the iterator.
 						 * \param cnt The number to add to the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator+=(int cnt);
+						base_iterator& operator+=(int cnt);
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \param cnt The number to substract from the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator-=(int cnt);
+						base_iterator& operator-=(int cnt);
 
 					private:
 
-						iterator(certificate_revocation_list*, int);
+						base_iterator(IteratorValueType*, int);
 
-						certificate_revocation_list* m_owner;
+						IteratorValueType* m_owner;
 						int m_index;
-						value_type m_cache;
+						typename IteratorValueType::wrapped_value_type m_cache;
 
 						friend class certificate_revocation_list;
-						friend bool operator==(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
-						friend bool operator!=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
-						friend bool operator<(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
-						friend bool operator<=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
-						friend bool operator>(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
-						friend bool operator>=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
-						friend certificate_revocation_list::iterator operator+(const certificate_revocation_list::iterator& lhs, int rhs);
-						friend certificate_revocation_list::iterator operator+(int lhs, const certificate_revocation_list::iterator& rhs);
-						friend certificate_revocation_list::iterator operator-(const certificate_revocation_list::iterator& lhs, int rhs);
-						friend certificate_revocation_list::iterator operator-(int lhs, const certificate_revocation_list::iterator& rhs);
-						friend certificate_revocation_list::iterator::difference_type operator-(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator==(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator!=(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator<(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator<=(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator>(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator>=(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend certificate_revocation_list::base_iterator<_IteratorValueType> operator+(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, int rhs);
+						template <typename _IteratorValueType>
+						friend certificate_revocation_list::base_iterator<_IteratorValueType> operator+(int lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend certificate_revocation_list::base_iterator<_IteratorValueType> operator-(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, int rhs);
+						template <typename _IteratorValueType>
+						friend certificate_revocation_list::base_iterator<_IteratorValueType> operator-(int lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend typename certificate_revocation_list::base_iterator<_IteratorValueType>::difference_type operator-(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs);
 				};
+
+				/**
+				 * \brief The iterator type.
+				 */
+				typedef base_iterator<certificate_revocation_list> iterator;
+
+				/**
+				 * \brief The iterator type.
+				 */
+				typedef base_iterator<const certificate_revocation_list> const_iterator;
 
 				/**
 				* \brief Reverse iterator type.
 				*/
 				typedef std::reverse_iterator<iterator> reverse_iterator;
+
+				/**
+				* \brief Const reverse iterator type.
+				*/
+				typedef std::reverse_iterator<const_iterator> reverse_const_iterator;
 
 				/**
 				 * \brief A PEM passphrase callback type.
@@ -278,38 +305,38 @@ namespace cryptoplus
 				 * \brief Write the certificate_revocation_list in DER format to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_der(bio::bio_ptr bio);
+				void write_der(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate_revocation_list to a BIO.
 				 * \param bio The BIO.
 				 */
-				void write_certificate_revocation_list(bio::bio_ptr bio);
+				void write_certificate_revocation_list(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Write the certificate_revocation_list in DER format to a file.
 				 * \param file The file.
 				 */
-				void write_der(file file);
+				void write_der(file file) const;
 
 				/**
 				 * \brief Write the certificate_revocation_list to a file.
 				 * \param file The file.
 				 */
-				void write_certificate_revocation_list(file file);
+				void write_certificate_revocation_list(file file) const;
 
 				/**
 				 * \brief Write the certificate_revocation_list in DER format to a buffer.
 				 * \param buf The buffer to write too. If NULL is specified, only the needed size is returned.
 				 * \return The size written or to be written.
 				 */
-				size_t write_der(void* buf);
+				size_t write_der(void* buf) const;
 
 				/**
 				 * \brief Write the certificate_revocation_list in DER format to a buffer.
 				 * \return The buffer.
 				 */
-				buffer write_der();
+				buffer write_der() const;
 
 				/**
 				 * \brief Clone the certificate_revocation_list instance.
@@ -321,13 +348,13 @@ namespace cryptoplus
 				 * \brief Print a X509_CRL to a BIO.
 				 * \param bio The BIO.
 				 */
-				void print(bio::bio_ptr bio);
+				void print(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Get the count of entries.
 				 * \return The count of entries.
 				 */
-				int count();
+				int count() const;
 
 				/**
 				 * \brief Get the entry at the specified position.
@@ -335,7 +362,13 @@ namespace cryptoplus
 				 * \return The name entry.
 				 * \see count().
 				 */
-				wrapped_value_type operator[](int index);
+				wrapped_value_type operator[](int index) const;
+
+				/**
+				 * \brief Get the begin iterator.
+				 * \return The begin iterator.
+				 */
+				const_iterator begin() const;
 
 				/**
 				 * \brief Get the begin iterator.
@@ -347,7 +380,19 @@ namespace cryptoplus
 				 * \brief Get the end iterator.
 				 * \return The end iterator.
 				 */
+				const_iterator end() const;
+
+				/**
+				 * \brief Get the end iterator.
+				 * \return The end iterator.
+				 */
 				iterator end();
+
+				/**
+				 * \brief Get the reverse begin iterator.
+				 * \return The reverse begin iterator.
+				 */
+				reverse_const_iterator rbegin() const;
 
 				/**
 				 * \brief Get the reverse begin iterator.
@@ -359,7 +404,20 @@ namespace cryptoplus
 				 * \brief Get the reverse end iterator.
 				 * \return The reverse end iterator.
 				 */
+				reverse_const_iterator rend() const;
+
+				/**
+				 * \brief Get the reverse end iterator.
+				 * \return The reverse end iterator.
+				 */
 				reverse_iterator rend();
+
+				/**
+				 * \brief Erase the given entry.
+				 * \param it An iterator to the entry to erase.
+				 * \return The next iterator.
+				 */
+				const_iterator erase(const_iterator it) const;
 
 				/**
 				 * \brief Erase the given entry.
@@ -374,7 +432,22 @@ namespace cryptoplus
 				 * \param last The last iterator.
 				 * \return last.
 				 */
+				const_iterator erase(const_iterator first, const_iterator last) const;
+
+				/**
+				 * \brief Erase the given entries.
+				 * \param first The first iterator.
+				 * \param last The last iterator.
+				 * \return last.
+				 */
 				iterator erase(iterator first, iterator last);
+
+				/**
+				 * \brief Find an extension by its NID.
+				 * \param nid The nid.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				const_iterator find(int nid) const;
 
 				/**
 				 * \brief Find an extension by its NID.
@@ -389,7 +462,22 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an extension that matches, or end() if none is found.
 				 */
+				const_iterator find(int nid, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an extension by its NID.
+				 * \param nid The nid.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
 				iterator find(int nid, iterator lastpos);
+
+				/**
+				 * \brief Find an extension by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				const_iterator find(asn1::object object) const;
 
 				/**
 				 * \brief Find an extension by its ASN1 object.
@@ -404,7 +492,22 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an extension that matches, or end() if none is found.
 				 */
+				const_iterator find(asn1::object object, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an extension by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
 				iterator find(asn1::object object, iterator lastpos);
+
+				/**
+				 * \brief Find an extension by its critical flag.
+				 * \param critical The critical flag.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				const_iterator find_by_critical(bool critical) const;
 
 				/**
 				 * \brief Find an extension by its critical flag.
@@ -419,18 +522,34 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an extension that matches, or end() if none is found.
 				 */
+				const_iterator find_by_critical(bool critical, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an extension by its critical flag.
+				 * \param critical The critical flag.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
 				iterator find_by_critical(bool critical, iterator lastpos);
 
 				/**
 				 * \brief Clear all extensions.
 				 */
-				void clear();
+				void clear() const;
 
 				/**
 				 * \brief Push a copy of the specified extension at the end of the extension table.
 				 * \param ext The extension
 				 */
-				void push_back(wrapped_value_type ext);
+				void push_back(wrapped_value_type ext) const;
+
+				/**
+				 * \brief Insert a copy of the specified extension in the extension table.
+				 * \param position The position to insert the extension at.
+				 * \param ext The extension.
+				 * \return An iterator to the extension that was added.
+				 */
+				const_iterator insert(const_iterator position, wrapped_value_type ext) const;
 
 				/**
 				 * \brief Insert a copy of the specified extension in the extension table.
@@ -444,33 +563,33 @@ namespace cryptoplus
 				 * \brief Set the issuer name.
 				 * \param aname The issuer name that will be copied.
 				 */
-				void set_issuer(name aname);
+				void set_issuer(name aname) const;
 
 				/**
 				 * \brief Get the certificate_revocation_list version.
 				 * \return The version.
 				 */
-				long version();
+				long version() const;
 
 				/**
 				 * \brief Set the certificate_revocation_list version.
 				 * \param version The version.
 				 */
-				void set_version(long version);
+				void set_version(long version) const;
 
 				/**
 				 * \brief Verify the certificate_revocation_list against a specified public key.
 				 * \param pkey The public pkey.
 				 * \return true if the verification succeeds.
 				 */
-				bool verify_public_key(pkey::pkey pkey);
+				bool verify_public_key(pkey::pkey pkey) const;
 
 				/**
 				 * \brief Sign the certificate_revocation_list.
 				 * \param pkey The private key.
 				 * \param algorithm The message digest to use.
 				 */
-				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
+				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const;
 
 			private:
 
@@ -483,7 +602,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if the two certificate_revocation_list::iterator instances point to the same element.
 		 */
-		bool operator==(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator==(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate_revocation_list::iterator instances.
@@ -491,7 +611,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if the two certificate_revocation_list::iterator instances do not point to the same element.
 		 */
-		bool operator!=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator!=(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate_revocation_list::iterator instances.
@@ -499,7 +620,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is smaller than rhs.
 		 */
-		bool operator<(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator<(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate_revocation_list::iterator instances.
@@ -507,7 +629,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is smaller than or equal to rhs.
 		 */
-		bool operator<=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator<=(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate_revocation_list::iterator instances.
@@ -515,7 +638,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is greater than rhs.
 		 */
-		bool operator>(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator>(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate_revocation_list::iterator instances.
@@ -523,7 +647,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is greater than or equal to rhs.
 		 */
-		bool operator>=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator>=(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -531,7 +656,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate_revocation_list::iterator operator+(const certificate_revocation_list::iterator& lhs, int rhs);
+		template <typename IteratorValueType>
+		certificate_revocation_list::base_iterator<IteratorValueType> operator+(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, int rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -539,7 +665,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate_revocation_list::iterator operator+(int lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		certificate_revocation_list::base_iterator<IteratorValueType> operator+(int lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Substract an integer value from an iterator.
@@ -547,7 +674,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate_revocation_list::iterator operator-(const certificate_revocation_list::iterator& lhs, int rhs);
+		template <typename IteratorValueType>
+		certificate_revocation_list::base_iterator<IteratorValueType> operator-(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, int rhs);
 
 		/**
 		 * \brief Substract an integer value from an iterator.
@@ -555,7 +683,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate_revocation_list::iterator operator-(int lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		certificate_revocation_list::base_iterator<IteratorValueType> operator-(int lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Substract a iterator from another iterator and gets the index distance.
@@ -563,7 +692,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The distance.
 		 */
-		certificate_revocation_list::iterator::difference_type operator-(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs);
+		template <typename IteratorValueType>
+		typename certificate_revocation_list::base_iterator<IteratorValueType>::difference_type operator-(const certificate_revocation_list::base_iterator<IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate_revocation_list instances.
@@ -581,28 +711,34 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate_revocation_list& lhs, const certificate_revocation_list& rhs);
 
-		inline certificate_revocation_list::iterator::iterator() : m_owner(NULL), m_index(0)
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType>::base_iterator() : m_owner(NULL), m_index(0)
 		{
 		}
-		inline certificate_revocation_list::iterator::reference certificate_revocation_list::iterator::operator*()
+		template <typename IteratorValueType>
+		inline typename certificate_revocation_list::base_iterator<IteratorValueType>::reference certificate_revocation_list::base_iterator<IteratorValueType>::operator*() const
 		{
 			return (m_cache = (*m_owner)[m_index]);
 		}
-		inline certificate_revocation_list::iterator::pointer certificate_revocation_list::iterator::operator->()
+		template <typename IteratorValueType>
+		inline typename certificate_revocation_list::base_iterator<IteratorValueType>::pointer certificate_revocation_list::base_iterator<IteratorValueType>::operator->() const
 		{
 			return &operator*();
 		}
-		inline certificate_revocation_list::iterator::reference certificate_revocation_list::iterator::operator[](int index)
+		template <typename IteratorValueType>
+		inline typename certificate_revocation_list::base_iterator<IteratorValueType>::reference certificate_revocation_list::base_iterator<IteratorValueType>::operator[](int index) const
 		{
 			return *iterator(m_owner, m_index + index);
 		}
-		inline certificate_revocation_list::iterator& certificate_revocation_list::iterator::operator++()
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType>& certificate_revocation_list::base_iterator<IteratorValueType>::operator++()
 		{
 			++m_index;
 
 			return *this;
 		}
-		inline certificate_revocation_list::iterator certificate_revocation_list::iterator::operator++(int)
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType> certificate_revocation_list::base_iterator<IteratorValueType>::operator++(int)
 		{
 			iterator old = *this;
 
@@ -610,13 +746,15 @@ namespace cryptoplus
 
 			return old;
 		}
-		inline certificate_revocation_list::iterator& certificate_revocation_list::iterator::operator--()
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType>& certificate_revocation_list::base_iterator<IteratorValueType>::operator--()
 		{
 			--m_index;
 
 			return *this;
 		}
-		inline certificate_revocation_list::iterator certificate_revocation_list::iterator::operator--(int)
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType> certificate_revocation_list::base_iterator<IteratorValueType>::operator--(int)
 		{
 			iterator old = *this;
 
@@ -624,19 +762,22 @@ namespace cryptoplus
 
 			return old;
 		}
-		inline certificate_revocation_list::iterator& certificate_revocation_list::iterator::operator+=(int cnt)
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType>& certificate_revocation_list::base_iterator<IteratorValueType>::operator+=(int cnt)
 		{
 			m_index += cnt;
 
 			return *this;
 		}
-		inline certificate_revocation_list::iterator& certificate_revocation_list::iterator::operator-=(int cnt)
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType>& certificate_revocation_list::base_iterator<IteratorValueType>::operator-=(int cnt)
 		{
 			m_index -= cnt;
 
 			return *this;
 		}
-		inline certificate_revocation_list::iterator::iterator(certificate_revocation_list* _certificate_revocation_list, int index) : m_owner(_certificate_revocation_list), m_index(index)
+		template <typename IteratorValueType>
+		inline certificate_revocation_list::base_iterator<IteratorValueType>::base_iterator(IteratorValueType* _certificate_revocation_list, int index) : m_owner(_certificate_revocation_list), m_index(index)
 		{
 		}
 		inline certificate_revocation_list certificate_revocation_list::create()
@@ -685,23 +826,23 @@ namespace cryptoplus
 		inline certificate_revocation_list::certificate_revocation_list(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void certificate_revocation_list::write_der(bio::bio_ptr bio)
+		inline void certificate_revocation_list::write_der(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(i2d_X509_CRL_bio(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_revocation_list::write_certificate_revocation_list(bio::bio_ptr bio)
+		inline void certificate_revocation_list::write_certificate_revocation_list(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(PEM_write_bio_X509_CRL(bio.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_revocation_list::write_der(file _file)
+		inline void certificate_revocation_list::write_der(file _file) const
 		{
 			error::throw_error_if_not(i2d_X509_CRL_fp(_file.raw(), ptr().get()) != 0);
 		}
-		inline void certificate_revocation_list::write_certificate_revocation_list(file _file)
+		inline void certificate_revocation_list::write_certificate_revocation_list(file _file) const
 		{
 			error::throw_error_if_not(PEM_write_X509_CRL(_file.raw(), ptr().get()) != 0);
 		}
-		inline size_t certificate_revocation_list::write_der(void* buf)
+		inline size_t certificate_revocation_list::write_der(void* buf) const
 		{
 			unsigned char* out = static_cast<unsigned char*>(buf);
 			unsigned char** pout = out != NULL ? &out : NULL;
@@ -712,7 +853,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline buffer certificate_revocation_list::write_der()
+		inline buffer certificate_revocation_list::write_der() const
 		{
 			buffer result(write_der(static_cast<void*>(NULL)));
 
@@ -724,39 +865,68 @@ namespace cryptoplus
 		{
 			return certificate_revocation_list(X509_CRL_dup(ptr().get()));
 		}
-		inline void certificate_revocation_list::print(bio::bio_ptr bio)
+		inline void certificate_revocation_list::print(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(X509_CRL_print(bio.raw(), ptr().get()) != 0);
 		}
-		inline int certificate_revocation_list::count()
+		inline int certificate_revocation_list::count() const
 		{
 			return X509_CRL_get_ext_count(ptr().get());
 		}
-		inline certificate_revocation_list::wrapped_value_type certificate_revocation_list::operator[](int index)
+		inline certificate_revocation_list::wrapped_value_type certificate_revocation_list::operator[](int index) const
 		{
 			return wrapped_value_type(X509_CRL_get_ext(ptr().get(), index));
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::begin() const
+		{
+			return const_iterator(this, 0);
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::begin()
 		{
 			return iterator(this, 0);
 		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::end() const
+		{
+			return const_iterator(this, count());
+		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::end()
 		{
 			return iterator(this, count());
+		}
+		inline certificate_revocation_list::reverse_const_iterator certificate_revocation_list::rbegin() const
+		{
+			return reverse_const_iterator(end());
 		}
 		inline certificate_revocation_list::reverse_iterator certificate_revocation_list::rbegin()
 		{
 			return reverse_iterator(end());
 		}
+		inline certificate_revocation_list::reverse_const_iterator certificate_revocation_list::rend() const
+		{
+			return reverse_const_iterator(begin());
+		}
 		inline certificate_revocation_list::reverse_iterator certificate_revocation_list::rend()
 		{
 			return reverse_iterator(begin());
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::erase(const_iterator it) const
+		{
+			wrapped_value_type::take_ownership(X509_CRL_delete_ext(it.m_owner->ptr().get(), it.m_index));
+
+			return it;
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::erase(iterator it)
 		{
 			wrapped_value_type::take_ownership(X509_CRL_delete_ext(it.m_owner->ptr().get(), it.m_index));
 
 			return it;
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::erase(const_iterator first, const_iterator last) const
+		{
+			while (first != last)
+				first = erase(first);
+
+			return first;
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::erase(iterator first, iterator last)
 		{
@@ -765,11 +935,23 @@ namespace cryptoplus
 
 			return first;
 		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::find(int nid) const
+		{
+			int index = X509_CRL_get_ext_by_NID(ptr().get(), nid, -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::find(int nid)
 		{
 			int index = X509_CRL_get_ext_by_NID(ptr().get(), nid, -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::find(int nid, const_iterator lastpos) const
+		{
+			int index = X509_CRL_get_ext_by_NID(ptr().get(), nid, lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::find(int nid, iterator lastpos)
 		{
@@ -777,11 +959,23 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::find(asn1::object object) const
+		{
+			int index = X509_CRL_get_ext_by_OBJ(ptr().get(), object.raw(), -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::find(asn1::object object)
 		{
 			int index = X509_CRL_get_ext_by_OBJ(ptr().get(), object.raw(), -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::find(asn1::object object, const_iterator lastpos) const
+		{
+			int index = X509_CRL_get_ext_by_OBJ(ptr().get(), object.raw(), lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::find(asn1::object object, iterator lastpos)
 		{
@@ -789,11 +983,23 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::find_by_critical(bool critical) const
+		{
+			int index = X509_CRL_get_ext_by_critical(ptr().get(), critical ? 1 : 0, -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::find_by_critical(bool critical)
 		{
 			int index = X509_CRL_get_ext_by_critical(ptr().get(), critical ? 1 : 0, -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::find_by_critical(bool critical, const_iterator lastpos) const
+		{
+			int index = X509_CRL_get_ext_by_critical(ptr().get(), critical ? 1 : 0, lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::find_by_critical(bool critical, iterator lastpos)
 		{
@@ -801,13 +1007,21 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
-		inline void certificate_revocation_list::clear()
+		inline void certificate_revocation_list::clear() const
 		{
 			erase(begin(), end());
 		}
-		inline void certificate_revocation_list::push_back(wrapped_value_type ext)
+		inline void certificate_revocation_list::push_back(wrapped_value_type ext) const
 		{
 			error::throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), -1) != 0);
+		}
+		inline certificate_revocation_list::const_iterator certificate_revocation_list::insert(const_iterator position, wrapped_value_type ext) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
+
+			return position;
 		}
 		inline certificate_revocation_list::iterator certificate_revocation_list::insert(iterator position, wrapped_value_type ext)
 		{
@@ -817,82 +1031,93 @@ namespace cryptoplus
 
 			return position;
 		}
-		inline void certificate_revocation_list::set_issuer(name _name)
+		inline void certificate_revocation_list::set_issuer(name _name) const
 		{
 			error::throw_error_if_not(X509_CRL_set_issuer_name(ptr().get(), _name.raw()) != 0);
 		}
-		inline long certificate_revocation_list::version()
+		inline long certificate_revocation_list::version() const
 		{
 			return X509_CRL_get_version(ptr().get());
 		}
-		inline void certificate_revocation_list::set_version(long _version)
+		inline void certificate_revocation_list::set_version(long _version) const
 		{
 			error::throw_error_if_not(X509_CRL_set_version(ptr().get(), _version) != 0);
 		}
-		inline bool certificate_revocation_list::verify_public_key(pkey::pkey pkey)
+		inline bool certificate_revocation_list::verify_public_key(pkey::pkey pkey) const
 		{
 			return X509_CRL_verify(ptr().get(), pkey.raw()) == 1;
 		}
-		inline void certificate_revocation_list::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
+		inline void certificate_revocation_list::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const
 		{
 			error::throw_error_if_not(X509_CRL_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
 		}
 		inline certificate_revocation_list::certificate_revocation_list(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
-		inline bool operator==(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator==(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index == rhs.m_index);
 		}
-		inline bool operator!=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator!=(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index != rhs.m_index);
 		}
-		inline bool operator<(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator<(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index < rhs.m_index);
 		}
-		inline bool operator<=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator<=(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index <= rhs.m_index);
 		}
-		inline bool operator>(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator>(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index > rhs.m_index);
 		}
-		inline bool operator>=(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator>=(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index >= rhs.m_index);
 		}
-		inline certificate_revocation_list::iterator operator+(const certificate_revocation_list::iterator& lhs, int rhs)
+		template <typename _IteratorValueType>
+		inline certificate_revocation_list::base_iterator<_IteratorValueType> operator+(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, int rhs)
 		{
-			return certificate_revocation_list::iterator(lhs.m_owner, lhs.m_index + rhs);
+			return certificate_revocation_list::base_iterator<_IteratorValueType>(lhs.m_owner, lhs.m_index + rhs);
 		}
-		inline certificate_revocation_list::iterator operator+(int lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline certificate_revocation_list::base_iterator<_IteratorValueType> operator+(int lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
-			return certificate_revocation_list::iterator(rhs.m_owner, rhs.m_index + lhs);
+			return certificate_revocation_list::base_iterator<_IteratorValueType>(rhs.m_owner, rhs.m_index + lhs);
 		}
-		inline certificate_revocation_list::iterator operator-(const certificate_revocation_list::iterator& lhs, int rhs)
+		template <typename _IteratorValueType>
+		inline certificate_revocation_list::base_iterator<_IteratorValueType> operator-(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, int rhs)
 		{
-			return certificate_revocation_list::iterator(lhs.m_owner, lhs.m_index - rhs);
+			return certificate_revocation_list::base_iterator<_IteratorValueType>(lhs.m_owner, lhs.m_index - rhs);
 		}
-		inline certificate_revocation_list::iterator operator-(int lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline certificate_revocation_list::base_iterator<_IteratorValueType> operator-(int lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
-			return certificate_revocation_list::iterator(rhs.m_owner, rhs.m_index - lhs);
+			return certificate_revocation_list::base_iterator<_IteratorValueType>(rhs.m_owner, rhs.m_index - lhs);
 		}
-		inline certificate_revocation_list::iterator::difference_type operator-(const certificate_revocation_list::iterator& lhs, const certificate_revocation_list::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline typename certificate_revocation_list::base_iterator<_IteratorValueType>::difference_type operator-(const certificate_revocation_list::base_iterator<_IteratorValueType>& lhs, const certificate_revocation_list::base_iterator<_IteratorValueType>& rhs)
 		{
 			return lhs.m_index - rhs.m_index;
 		}
@@ -908,4 +1133,3 @@ namespace cryptoplus
 }
 
 #endif /* CRYPTOPLUS_X509_CRL_CERTIFICATE_REVOCATION_LIST_HPP */
-
