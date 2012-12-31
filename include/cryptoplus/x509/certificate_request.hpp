@@ -222,59 +222,59 @@ namespace cryptoplus
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
-				pkey::pkey public_key();
+				pkey::pkey public_key() const;
 
 				/**
 				 * \brief Set the public key.
 				 * \param pkey The public key.
 				 */
-				void set_public_key(pkey::pkey pkey);
+				void set_public_key(pkey::pkey pkey) const;
 
 				/**
 				 * \brief Get the subject name.
 				 * \return The subject name.
 				 * \warning The returned name depends on the certificate_request instance and will be invalidated as soon as the underlying pointer is changed (or freed).
 				 */
-				name subject();
+				name subject() const;
 
 				/**
 				 * \brief Set the subject name.
 				 * \param aname The subject name that will be copied.
 				 */
-				void set_subject(name aname);
+				void set_subject(name aname) const;
 
 				/**
 				 * \brief Get the certificate_request version.
 				 * \return The version.
 				 */
-				long version();
+				long version() const;
 
 				/**
 				 * \brief Set the certificate_request version.
 				 * \param version The version.
 				 */
-				void set_version(long version);
+				void set_version(long version) const;
 
 				/**
 				 * \brief Verify the certificate_request against a specified public key.
 				 * \param pkey The public pkey.
 				 * \return true if the verification succeeds.
 				 */
-				bool verify_public_key(pkey::pkey pkey);
+				bool verify_public_key(pkey::pkey pkey) const;
 
 				/**
 				 * \brief Sign the certificate_request.
 				 * \param pkey The private key.
 				 * \param algorithm The message digest to use.
 				 */
-				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
+				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const;
 
 				/**
 				 * \brief Verify the certificate_request against a specified private key.
 				 * \param pkey The private pkey.
 				 * \return true if the verification succeeds.
 				 */
-				bool verify_private_key(pkey::pkey pkey);
+				bool verify_private_key(pkey::pkey pkey) const;
 
 			private:
 
@@ -386,39 +386,39 @@ namespace cryptoplus
 		{
 			error::throw_error_if_not(X509_REQ_print(bio.raw(), ptr().get()) != 0);
 		}
-		inline pkey::pkey certificate_request::public_key()
+		inline pkey::pkey certificate_request::public_key() const
 		{
 			return pkey::pkey(X509_REQ_get_pubkey(ptr().get()));
 		}
-		inline void certificate_request::set_public_key(pkey::pkey pkey)
+		inline void certificate_request::set_public_key(pkey::pkey pkey) const
 		{
 			error::throw_error_if_not(X509_REQ_set_pubkey(ptr().get(), pkey.raw()) != 0);
 		}
-		inline name certificate_request::subject()
+		inline name certificate_request::subject() const
 		{
 			return X509_REQ_get_subject_name(ptr().get());
 		}
-		inline void certificate_request::set_subject(name _name)
+		inline void certificate_request::set_subject(name _name) const
 		{
 			error::throw_error_if_not(X509_REQ_set_subject_name(ptr().get(), _name.raw()) != 0);
 		}
-		inline long certificate_request::version()
+		inline long certificate_request::version() const
 		{
 			return X509_REQ_get_version(ptr().get());
 		}
-		inline void certificate_request::set_version(long _version)
+		inline void certificate_request::set_version(long _version) const
 		{
 			error::throw_error_if_not(X509_REQ_set_version(ptr().get(), _version) != 0);
 		}
-		inline bool certificate_request::verify_public_key(pkey::pkey pkey)
+		inline bool certificate_request::verify_public_key(pkey::pkey pkey) const
 		{
 			return X509_REQ_verify(ptr().get(), pkey.raw()) == 1;
 		}
-		inline void certificate_request::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
+		inline void certificate_request::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const
 		{
 			error::throw_error_if_not(X509_REQ_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
 		}
-		inline bool certificate_request::verify_private_key(pkey::pkey pkey)
+		inline bool certificate_request::verify_private_key(pkey::pkey pkey) const
 		{
 			return X509_REQ_check_private_key(ptr().get(), pkey.raw()) == 1;
 		}
