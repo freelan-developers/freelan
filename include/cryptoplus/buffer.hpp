@@ -107,19 +107,28 @@ namespace cryptoplus
 			 * \brief Get the underlying data.
 			 * \return The underlying data.
 			 */
-			storage_type& data() { return m_data; }
+			storage_type& data()
+			{
+				return m_data;
+			}
 
 			/**
 			 * \brief Get the underlying data.
 			 * \return The underlying data.
 			 */
-			const storage_type& data() const { return m_data; }
+			const storage_type& data() const
+			{
+				return m_data;
+			}
 
 			/**
 			 * \brief Get the buffer as a string.
 			 * \return The buffer as a string.
 			 */
-			std::string to_string() const { return std::string(m_data.begin(), m_data.end()); }
+			std::string to_string() const
+			{
+				return std::string(m_data.begin(), m_data.end());
+			}
 
 		private:
 
