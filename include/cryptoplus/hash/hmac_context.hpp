@@ -122,6 +122,13 @@ namespace cryptoplus
 				 * \return The underlying context.
 				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
 				 */
+				const HMAC_CTX& raw() const;
+
+				/**
+				 * \brief Get the underlying context.
+				 * \return The underlying context.
+				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
+				 */
 				HMAC_CTX& raw();
 
 				/**
@@ -161,6 +168,11 @@ namespace cryptoplus
 			finalize(buffer_cast<uint8_t>(result), buffer_size(result));
 
 			return result;
+		}
+
+		inline const HMAC_CTX& hmac_context::raw() const
+		{
+			return m_ctx;
 		}
 
 		inline HMAC_CTX& hmac_context::raw()

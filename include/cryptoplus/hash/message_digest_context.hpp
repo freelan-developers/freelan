@@ -220,6 +220,13 @@ namespace cryptoplus
 				 * \return The underlying context.
 				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
 				 */
+				const EVP_MD_CTX& raw() const;
+
+				/**
+				 * \brief Get the underlying context.
+				 * \return The underlying context.
+				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
+				 */
 				EVP_MD_CTX& raw();
 
 				/**
@@ -314,6 +321,11 @@ namespace cryptoplus
 		inline void message_digest_context::copy(const message_digest_context& ctx)
 		{
 			error::throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx) != 0);
+		}
+
+		inline const EVP_MD_CTX& message_digest_context::raw() const
+		{
+			return m_ctx;
 		}
 
 		inline EVP_MD_CTX& message_digest_context::raw()
