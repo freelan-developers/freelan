@@ -145,7 +145,21 @@ namespace cryptoplus
 				 * \param bn The bignum.
 				 * \return *this.
 				 */
+				const bignum& operator+=(const bignum& bn) const;
+
+				/**
+				 * \brief Append another bignum to the current instance.
+				 * \param bn The bignum.
+				 * \return *this.
+				 */
 				bignum& operator+=(const bignum& bn);
+
+				/**
+				 * \brief Substract another bignum from the current instance.
+				 * \param bn The bignum.
+				 * \return *this.
+				 */
+				const bignum& operator-=(const bignum& bn) const;
 
 				/**
 				 * \brief Substract another bignum from the current instance.
@@ -202,7 +216,7 @@ namespace cryptoplus
 				 * \brief Get the value as a long.
 				 * \return A long or 0xFFFFFFFFL if the value cannot be represented as an unsigned long.
 				 */
-				unsigned long to_long();
+				unsigned long to_long() const;
 
 				/**
 				 * \brief Clone the BIGNUM.
@@ -214,7 +228,7 @@ namespace cryptoplus
 				 * \brief Set the value of the BIGNUM.
 				 * \param ul The unsigned long value.
 				 */
-				void set_value(unsigned long ul);
+				void set_value(unsigned long ul) const;
 
 			private:
 
@@ -281,9 +295,21 @@ namespace cryptoplus
 		inline bignum::bignum(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
+		inline const bignum& bignum::operator+=(const bignum& bn) const
+		{
+			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
+
+			return *this;
+		}
 		inline bignum& bignum::operator+=(const bignum& bn)
 		{
 			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
+
+			return *this;
+		}
+		inline const bignum& bignum::operator-=(const bignum& bn) const
+		{
+			error::throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
@@ -309,7 +335,7 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline unsigned long bignum::to_long()
+		inline unsigned long bignum::to_long() const
 		{
 			return static_cast<unsigned long>(BN_get_word(ptr().get()));
 		}
@@ -317,7 +343,7 @@ namespace cryptoplus
 		{
 			return take_ownership(BN_dup(ptr().get()));
 		}
-		inline void bignum::set_value(unsigned long ul)
+		inline void bignum::set_value(unsigned long ul) const
 		{
 			error::throw_error_if_not(BN_set_word(ptr().get(), ul) != 0);
 		}
@@ -352,4 +378,3 @@ namespace cryptoplus
 }
 
 #endif /* CRYPTOPLUS_BN_bignum_HPP */
-
