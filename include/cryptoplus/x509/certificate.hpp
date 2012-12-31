@@ -90,98 +90,125 @@ namespace cryptoplus
 				/**
 				 * \brief An iterator class.
 				 */
-				class iterator : public std::iterator<std::random_access_iterator_tag, wrapped_value_type>
+				template <typename IteratorValueType>
+				class base_iterator : public std::iterator<std::random_access_iterator_tag, typename IteratorValueType::wrapped_value_type>
 				{
 					public:
 
 						/**
 						 * \brief Create an empty iterator.
 						 */
-						iterator();
+						base_iterator();
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						reference operator*();
+						typename base_iterator::reference operator*() const;
 
 						/**
 						 * \brief Dereference operator.
 						 * \return The value.
 						 */
-						pointer operator->();
+						typename base_iterator::pointer operator->() const;
 
 						/**
 						 * \brief Dereference operator.
 						 * \param index The index to add or substract.
 						 * \return An iterator.
 						 */
-						reference operator[](int index);
+						typename base_iterator::reference operator[](int index) const;
 
 						/**
 						 * \brief Increment the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator++();
+						base_iterator& operator++();
 
 						/**
 						 * \brief Increment the iterator.
 						 * \return The old value.
 						 */
-						iterator operator++(int);
+						base_iterator operator++(int);
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator--();
+						base_iterator& operator--();
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \return The old value.
 						 */
-						iterator operator--(int);
+						base_iterator operator--(int);
 
 						/**
 						 * \brief Increment the iterator.
 						 * \param cnt The number to add to the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator+=(int cnt);
+						base_iterator& operator+=(int cnt);
 
 						/**
 						 * \brief Decrement the iterator.
 						 * \param cnt The number to substract from the iterator.
 						 * \return A reference to this.
 						 */
-						iterator& operator-=(int cnt);
+						base_iterator& operator-=(int cnt);
 
 					private:
 
-						iterator(certificate*, int);
+						base_iterator(IteratorValueType*, int);
 
-						certificate* m_owner;
+						IteratorValueType* m_owner;
 						int m_index;
-						value_type m_cache;
+						typename IteratorValueType::wrapped_value_type m_cache;
 
 						friend class certificate;
-						friend bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs);
-						friend bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs);
-						friend bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs);
-						friend bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs);
-						friend bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs);
-						friend bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs);
-						friend certificate::iterator operator+(const certificate::iterator& lhs, int rhs);
-						friend certificate::iterator operator+(int lhs, const certificate::iterator& rhs);
-						friend certificate::iterator operator-(const certificate::iterator& lhs, int rhs);
-						friend certificate::iterator operator-(int lhs, const certificate::iterator& rhs);
-						friend certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator==(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator!=(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator<(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator<=(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator>(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend bool operator>=(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend certificate::base_iterator<_IteratorValueType> operator+(const certificate::base_iterator<_IteratorValueType>& lhs, int rhs);
+						template <typename _IteratorValueType>
+						friend certificate::base_iterator<_IteratorValueType> operator+(int lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend certificate::base_iterator<_IteratorValueType> operator-(const certificate::base_iterator<_IteratorValueType>& lhs, int rhs);
+						template <typename _IteratorValueType>
+						friend certificate::base_iterator<_IteratorValueType> operator-(int lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
+						template <typename _IteratorValueType>
+						friend typename certificate::base_iterator<_IteratorValueType>::difference_type operator-(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs);
 				};
+
+				/**
+				 * \brief The iterator type.
+				 */
+				typedef base_iterator<certificate> iterator;
+
+				/**
+				 * \brief The iterator type.
+				 */
+				typedef base_iterator<const certificate> const_iterator;
 
 				/**
 				* \brief Reverse iterator type.
 				*/
 				typedef std::reverse_iterator<iterator> reverse_iterator;
+
+				/**
+				* \brief Const reverse iterator type.
+				*/
+				typedef std::reverse_iterator<const_iterator> reverse_const_iterator;
 
 				/**
 				 * \brief A PEM passphrase callback type.
@@ -377,7 +404,13 @@ namespace cryptoplus
 				 * \return The name entry.
 				 * \see count().
 				 */
-				wrapped_value_type operator[](int index);
+				wrapped_value_type operator[](int index) const;
+
+				/**
+				 * \brief Get the begin iterator.
+				 * \return The begin iterator.
+				 */
+				const_iterator begin() const;
 
 				/**
 				 * \brief Get the begin iterator.
@@ -389,7 +422,19 @@ namespace cryptoplus
 				 * \brief Get the end iterator.
 				 * \return The end iterator.
 				 */
+				const_iterator end() const;
+
+				/**
+				 * \brief Get the end iterator.
+				 * \return The end iterator.
+				 */
 				iterator end();
+
+				/**
+				 * \brief Get the reverse begin iterator.
+				 * \return The reverse begin iterator.
+				 */
+				reverse_const_iterator rbegin() const;
 
 				/**
 				 * \brief Get the reverse begin iterator.
@@ -401,7 +446,20 @@ namespace cryptoplus
 				 * \brief Get the reverse end iterator.
 				 * \return The reverse end iterator.
 				 */
+				reverse_const_iterator rend() const;
+
+				/**
+				 * \brief Get the reverse end iterator.
+				 * \return The reverse end iterator.
+				 */
 				reverse_iterator rend();
+
+				/**
+				 * \brief Erase the given entry.
+				 * \param it An iterator to the entry to erase.
+				 * \return The next iterator.
+				 */
+				const_iterator erase(const_iterator it) const;
 
 				/**
 				 * \brief Erase the given entry.
@@ -416,7 +474,22 @@ namespace cryptoplus
 				 * \param last The last iterator.
 				 * \return last.
 				 */
+				const_iterator erase(const_iterator first, const_iterator last) const;
+
+				/**
+				 * \brief Erase the given entries.
+				 * \param first The first iterator.
+				 * \param last The last iterator.
+				 * \return last.
+				 */
 				iterator erase(iterator first, iterator last);
+
+				/**
+				 * \brief Find an extension by its NID.
+				 * \param nid The nid.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				const_iterator find(int nid) const;
 
 				/**
 				 * \brief Find an extension by its NID.
@@ -431,7 +504,22 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an extension that matches, or end() if none is found.
 				 */
+				const_iterator find(int nid, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an extension by its NID.
+				 * \param nid The nid.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
 				iterator find(int nid, iterator lastpos);
+
+				/**
+				 * \brief Find an extension by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				const_iterator find(asn1::object object) const;
 
 				/**
 				 * \brief Find an extension by its ASN1 object.
@@ -446,7 +534,22 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an extension that matches, or end() if none is found.
 				 */
+				const_iterator find(asn1::object object, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an extension by its ASN1 object.
+				 * \param object The ASN1 object.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
 				iterator find(asn1::object object, iterator lastpos);
+
+				/**
+				 * \brief Find an extension by its critical flag.
+				 * \param critical The critical flag.
+				 * \return An iterator to the first extension that matches, or end() if none is found.
+				 */
+				const_iterator find_by_critical(bool critical) const;
 
 				/**
 				 * \brief Find an extension by its critical flag.
@@ -461,18 +564,34 @@ namespace cryptoplus
 				 * \param lastpos The iterator to start the search after.
 				 * \return An iterator to an extension that matches, or end() if none is found.
 				 */
+				const_iterator find_by_critical(bool critical, const_iterator lastpos) const;
+
+				/**
+				 * \brief Find an extension by its critical flag.
+				 * \param critical The critical flag.
+				 * \param lastpos The iterator to start the search after.
+				 * \return An iterator to an extension that matches, or end() if none is found.
+				 */
 				iterator find_by_critical(bool critical, iterator lastpos);
 
 				/**
 				 * \brief Clear all extensions.
 				 */
-				void clear();
+				void clear() const;
 
 				/**
 				 * \brief Push a copy of the specified extension at the end of the extension table.
 				 * \param ext The extension
 				 */
-				void push_back(wrapped_value_type ext);
+				void push_back(wrapped_value_type ext) const;
+
+				/**
+				 * \brief Insert a copy of the specified extension in the extension table.
+				 * \param position The position to insert the extension at.
+				 * \param ext The extension.
+				 * \return An iterator to the extension that was added.
+				 */
+				const_iterator insert(const_iterator position, wrapped_value_type ext) const;
 
 				/**
 				 * \brief Insert a copy of the specified extension in the extension table.
@@ -486,63 +605,63 @@ namespace cryptoplus
 				 * \brief Get the public key.
 				 * \return The public key.
 				 */
-				pkey::pkey public_key();
+				pkey::pkey public_key() const;
 
 				/**
 				 * \brief Set the public key.
 				 * \param pkey The public key.
 				 */
-				void set_public_key(pkey::pkey pkey);
+				void set_public_key(pkey::pkey pkey) const;
 
 				/**
 				 * \brief Get the subject name.
 				 * \return The subject name.
 				 * \warning The returned name depends on the certificate instance and will be invalidated as soon as the underlying pointer is changed (or freed).
 				 */
-				name subject();
+				name subject() const;
 
 				/**
 				 * \brief Set the subject name.
 				 * \param aname The subject name that will be copied.
 				 */
-				void set_subject(name aname);
+				void set_subject(name aname) const;
 
 				/**
 				 * \brief Get the issuer name.
 				 * \return The issuer name.
 				 * \warning The returned name depends on the certificate instance and will be invalidated as soon as the underlying pointer is changed (or freed).
 				 */
-				name issuer();
+				name issuer() const;
 
 				/**
 				 * \brief Set the issuer name.
 				 * \param aname The issuer name that will be copied.
 				 */
-				void set_issuer(name aname);
+				void set_issuer(name aname) const;
 
 				/**
 				 * \brief Get the certificate version.
 				 * \return The version.
 				 */
-				long version();
+				long version() const;
 
 				/**
 				 * \brief Set the certificate version.
 				 * \param version The version.
 				 */
-				void set_version(long version);
+				void set_version(long version) const;
 
 				/**
 				 * \brief Get the certificate serial number.
 				 * \return The serial number.
 				 */
-				asn1::integer serial_number();
+				asn1::integer serial_number() const;
 
 				/**
 				 * \brief Set the certificate serial number.
 				 * \param serial_number The serial number.
 				 */
-				void set_serial_number(asn1::integer serial_number);
+				void set_serial_number(asn1::integer serial_number) const;
 
 				/**
 				 * \brief Get the certificate not before date.
@@ -554,7 +673,7 @@ namespace cryptoplus
 				 * \brief Set the certificate not before date.
 				 * \param not_before The not before date.
 				 */
-				void set_not_before(asn1::utctime not_before);
+				void set_not_before(asn1::utctime not_before) const;
 
 				/**
 				 * \brief Get the certificate not after date.
@@ -566,28 +685,28 @@ namespace cryptoplus
 				 * \brief Set the certificate not after date.
 				 * \param not_after The not after date.
 				 */
-				void set_not_after(asn1::utctime not_after);
+				void set_not_after(asn1::utctime not_after) const;
 
 				/**
 				 * \brief Verify the certificate against a specified public key.
 				 * \param pkey The public pkey.
 				 * \return true if the verification succeeds.
 				 */
-				bool verify_public_key(pkey::pkey pkey);
+				bool verify_public_key(pkey::pkey pkey) const;
 
 				/**
 				 * \brief Sign the certificate.
 				 * \param pkey The private key.
 				 * \param algorithm The message digest to use.
 				 */
-				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
+				void sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const;
 
 				/**
 				 * \brief Verify the certificate against a specified private key.
 				 * \param pkey The private pkey.
 				 * \return true if the verification succeeds.
 				 */
-				bool verify_private_key(pkey::pkey pkey);
+				bool verify_private_key(pkey::pkey pkey) const;
 
 				/**
 				 * \brief Generate a X509 certificate request from this certificate.
@@ -595,7 +714,7 @@ namespace cryptoplus
 				 * \param algorithm The message digest algorithm to use to sign the request.
 				 * \return The certificate request.
 				 */
-				certificate_request to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm);
+				certificate_request to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const;
 
 			private:
 
@@ -608,7 +727,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if the two certificate::iterator instances point to the same element.
 		 */
-		bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator==(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate::iterator instances.
@@ -616,7 +736,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if the two certificate::iterator instances do not point to the same element.
 		 */
-		bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator!=(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate::iterator instances.
@@ -624,7 +745,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is smaller than rhs.
 		 */
-		bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator<(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate::iterator instances.
@@ -632,7 +754,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is smaller than or equal to rhs.
 		 */
-		bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator<=(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate::iterator instances.
@@ -640,7 +763,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is greater than rhs.
 		 */
-		bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator>(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate::iterator instances.
@@ -648,7 +772,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return true if lhs is greater than or equal to rhs.
 		 */
-		bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		bool operator>=(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -656,7 +781,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate::iterator operator+(const certificate::iterator& lhs, int rhs);
+		template <typename IteratorValueType>
+		certificate::base_iterator<IteratorValueType> operator+(const certificate::base_iterator<IteratorValueType>& lhs, int rhs);
 
 		/**
 		 * \brief Add an integer value to an iterator.
@@ -664,7 +790,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate::iterator operator+(int lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		certificate::base_iterator<IteratorValueType> operator+(int lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Substract an integer value from an iterator.
@@ -672,7 +799,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate::iterator operator-(const certificate::iterator& lhs, int rhs);
+		template <typename IteratorValueType>
+		certificate::base_iterator<IteratorValueType> operator-(const certificate::base_iterator<IteratorValueType>& lhs, int rhs);
 
 		/**
 		 * \brief Substract an integer value from an iterator.
@@ -680,7 +808,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The new iterator.
 		 */
-		certificate::iterator operator-(int lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		certificate::base_iterator<IteratorValueType> operator-(int lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Substract a iterator from another iterator and gets the index distance.
@@ -688,7 +817,8 @@ namespace cryptoplus
 		 * \param rhs The right argument.
 		 * \return The distance.
 		 */
-		certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs);
+		template <typename IteratorValueType>
+		typename certificate::base_iterator<IteratorValueType>::difference_type operator-(const certificate::base_iterator<IteratorValueType>& lhs, const certificate::base_iterator<IteratorValueType>& rhs);
 
 		/**
 		 * \brief Compare two certificate instances.
@@ -706,62 +836,73 @@ namespace cryptoplus
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
 
-		inline certificate::iterator::iterator() : m_owner(NULL), m_index(0)
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType>::base_iterator() : m_owner(NULL), m_index(0)
 		{
 		}
-		inline certificate::iterator::reference certificate::iterator::operator*()
+		template <typename IteratorValueType>
+		inline typename certificate::base_iterator<IteratorValueType>::reference certificate::base_iterator<IteratorValueType>::operator*() const
 		{
 			return (m_cache = (*m_owner)[m_index]);
 		}
-		inline certificate::iterator::pointer certificate::iterator::operator->()
+		template <typename IteratorValueType>
+		inline typename certificate::base_iterator<IteratorValueType>::pointer certificate::base_iterator<IteratorValueType>::operator->() const
 		{
 			return &operator*();
 		}
-		inline certificate::iterator::reference certificate::iterator::operator[](int index)
+		template <typename IteratorValueType>
+		inline typename certificate::base_iterator<IteratorValueType>::reference certificate::base_iterator<IteratorValueType>::operator[](int index) const
 		{
 			return *iterator(m_owner, m_index + index);
 		}
-		inline certificate::iterator& certificate::iterator::operator++()
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType>& certificate::base_iterator<IteratorValueType>::operator++()
 		{
 			++m_index;
 
 			return *this;
 		}
-		inline certificate::iterator certificate::iterator::operator++(int)
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType> certificate::base_iterator<IteratorValueType>::operator++(int)
 		{
-			iterator old = *this;
+			const base_iterator<IteratorValueType> old = *this;
 
 			++m_index;
 
 			return old;
 		}
-		inline certificate::iterator& certificate::iterator::operator--()
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType>& certificate::base_iterator<IteratorValueType>::operator--()
 		{
 			--m_index;
 
 			return *this;
 		}
-		inline certificate::iterator certificate::iterator::operator--(int)
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType> certificate::base_iterator<IteratorValueType>::operator--(int)
 		{
-			iterator old = *this;
+			const base_iterator<IteratorValueType> old = *this;
 
 			--m_index;
 
 			return old;
 		}
-		inline certificate::iterator& certificate::iterator::operator+=(int cnt)
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType>& certificate::base_iterator<IteratorValueType>::operator+=(int cnt)
 		{
 			m_index += cnt;
 
 			return *this;
 		}
-		inline certificate::iterator& certificate::iterator::operator-=(int cnt)
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType>& certificate::base_iterator<IteratorValueType>::operator-=(int cnt)
 		{
 			m_index -= cnt;
 
 			return *this;
 		}
-		inline certificate::iterator::iterator(certificate* _certificate, int index) : m_owner(_certificate), m_index(index)
+		template <typename IteratorValueType>
+		inline certificate::base_iterator<IteratorValueType>::base_iterator(IteratorValueType* _certificate, int index) : m_owner(_certificate), m_index(index)
 		{
 		}
 		inline certificate certificate::create()
@@ -873,31 +1014,60 @@ namespace cryptoplus
 		{
 			return X509_get_ext_count(ptr().get());
 		}
-		inline certificate::wrapped_value_type certificate::operator[](int index)
+		inline certificate::wrapped_value_type certificate::operator[](int index) const
 		{
 			return wrapped_value_type(X509_get_ext(ptr().get(), index));
+		}
+		inline certificate::const_iterator certificate::begin() const
+		{
+			return const_iterator(this, 0);
 		}
 		inline certificate::iterator certificate::begin()
 		{
 			return iterator(this, 0);
 		}
+		inline certificate::const_iterator certificate::end() const
+		{
+			return const_iterator(this, count());
+		}
 		inline certificate::iterator certificate::end()
 		{
 			return iterator(this, count());
+		}
+		inline certificate::reverse_const_iterator certificate::rbegin() const
+		{
+			return reverse_const_iterator(end());
 		}
 		inline certificate::reverse_iterator certificate::rbegin()
 		{
 			return reverse_iterator(end());
 		}
+		inline certificate::reverse_const_iterator certificate::rend() const
+		{
+			return reverse_const_iterator(begin());
+		}
 		inline certificate::reverse_iterator certificate::rend()
 		{
 			return reverse_iterator(begin());
+		}
+		inline certificate::const_iterator certificate::erase(const_iterator it) const
+		{
+			wrapped_value_type::take_ownership(X509_delete_ext(it.m_owner->ptr().get(), it.m_index));
+
+			return it;
 		}
 		inline certificate::iterator certificate::erase(iterator it)
 		{
 			wrapped_value_type::take_ownership(X509_delete_ext(it.m_owner->ptr().get(), it.m_index));
 
 			return it;
+		}
+		inline certificate::const_iterator certificate::erase(const_iterator first, const_iterator last) const
+		{
+			while (first != last)
+				first = erase(first);
+
+			return first;
 		}
 		inline certificate::iterator certificate::erase(iterator first, iterator last)
 		{
@@ -906,11 +1076,23 @@ namespace cryptoplus
 
 			return first;
 		}
+		inline certificate::const_iterator certificate::find(int nid) const
+		{
+			int index = X509_get_ext_by_NID(ptr().get(), nid, -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline certificate::iterator certificate::find(int nid)
 		{
 			int index = X509_get_ext_by_NID(ptr().get(), nid, -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::const_iterator certificate::find(int nid, const_iterator lastpos) const
+		{
+			int index = X509_get_ext_by_NID(ptr().get(), nid, lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline certificate::iterator certificate::find(int nid, iterator lastpos)
 		{
@@ -918,11 +1100,23 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
+		inline certificate::const_iterator certificate::find(asn1::object object) const
+		{
+			int index = X509_get_ext_by_OBJ(ptr().get(), object.raw(), -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline certificate::iterator certificate::find(asn1::object object)
 		{
 			int index = X509_get_ext_by_OBJ(ptr().get(), object.raw(), -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::const_iterator certificate::find(asn1::object object, const_iterator lastpos) const
+		{
+			int index = X509_get_ext_by_OBJ(ptr().get(), object.raw(), lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline certificate::iterator certificate::find(asn1::object object, iterator lastpos)
 		{
@@ -930,11 +1124,23 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
+		inline certificate::const_iterator certificate::find_by_critical(bool critical) const
+		{
+			int index = X509_get_ext_by_critical(ptr().get(), critical ? 1 : 0, -1);
+
+			return (index < 0) ? end() : const_iterator(this, index);
+		}
 		inline certificate::iterator certificate::find_by_critical(bool critical)
 		{
 			int index = X509_get_ext_by_critical(ptr().get(), critical ? 1 : 0, -1);
 
 			return (index < 0) ? end() : iterator(this, index);
+		}
+		inline certificate::const_iterator certificate::find_by_critical(bool critical, const_iterator lastpos) const
+		{
+			int index = X509_get_ext_by_critical(ptr().get(), critical ? 1 : 0, lastpos.m_index);
+
+			return (index < 0) ? end() : const_iterator(this, index);
 		}
 		inline certificate::iterator certificate::find_by_critical(bool critical, iterator lastpos)
 		{
@@ -942,13 +1148,21 @@ namespace cryptoplus
 
 			return (index < 0) ? end() : iterator(this, index);
 		}
-		inline void certificate::clear()
+		inline void certificate::clear() const
 		{
 			erase(begin(), end());
 		}
-		inline void certificate::push_back(wrapped_value_type ext)
+		inline void certificate::push_back(wrapped_value_type ext) const
 		{
 			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), -1) != 0);
+		}
+		inline certificate::const_iterator certificate::insert(const_iterator position, wrapped_value_type ext) const
+		{
+			assert(position.m_owner == this);
+
+			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
+
+			return position;
 		}
 		inline certificate::iterator certificate::insert(iterator position, wrapped_value_type ext)
 		{
@@ -958,43 +1172,43 @@ namespace cryptoplus
 
 			return position;
 		}
-		inline pkey::pkey certificate::public_key()
+		inline pkey::pkey certificate::public_key() const
 		{
 			return pkey::pkey::take_ownership(X509_get_pubkey(ptr().get()));
 		}
-		inline void certificate::set_public_key(pkey::pkey pkey)
+		inline void certificate::set_public_key(pkey::pkey pkey) const
 		{
 			error::throw_error_if_not(X509_set_pubkey(ptr().get(), pkey.raw()) != 0);
 		}
-		inline name certificate::subject()
+		inline name certificate::subject() const
 		{
 			return X509_get_subject_name(ptr().get());
 		}
-		inline void certificate::set_subject(name _name)
+		inline void certificate::set_subject(name _name) const
 		{
 			error::throw_error_if_not(X509_set_subject_name(ptr().get(), _name.raw()) != 0);
 		}
-		inline name certificate::issuer()
+		inline name certificate::issuer() const
 		{
 			return X509_get_issuer_name(ptr().get());
 		}
-		inline void certificate::set_issuer(name _name)
+		inline void certificate::set_issuer(name _name) const
 		{
 			error::throw_error_if_not(X509_set_issuer_name(ptr().get(), _name.raw()) != 0);
 		}
-		inline long certificate::version()
+		inline long certificate::version() const
 		{
 			return X509_get_version(ptr().get());
 		}
-		inline void certificate::set_version(long _version)
+		inline void certificate::set_version(long _version) const
 		{
 			error::throw_error_if_not(X509_set_version(ptr().get(), _version) != 0);
 		}
-		inline asn1::integer certificate::serial_number()
+		inline asn1::integer certificate::serial_number() const
 		{
 			return X509_get_serialNumber(ptr().get());
 		}
-		inline void certificate::set_serial_number(asn1::integer _serial_number)
+		inline void certificate::set_serial_number(asn1::integer _serial_number) const
 		{
 			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number.raw()) != 0);
 		}
@@ -1002,7 +1216,7 @@ namespace cryptoplus
 		{
 			return X509_get_notBefore(ptr().get());
 		}
-		inline void certificate::set_not_before(asn1::utctime _not_before)
+		inline void certificate::set_not_before(asn1::utctime _not_before) const
 		{
 			error::throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before.raw()) != 0);
 		}
@@ -1010,82 +1224,93 @@ namespace cryptoplus
 		{
 			return X509_get_notAfter(ptr().get());
 		}
-		inline void certificate::set_not_after(asn1::utctime _not_after)
+		inline void certificate::set_not_after(asn1::utctime _not_after) const
 		{
 			error::throw_error_if_not(X509_set_notAfter(ptr().get(), _not_after.raw()) != 0);
 		}
-		inline bool certificate::verify_public_key(pkey::pkey pkey)
+		inline bool certificate::verify_public_key(pkey::pkey pkey) const
 		{
 			return X509_verify(ptr().get(), pkey.raw()) == 1;
 		}
-		inline void certificate::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
+		inline void certificate::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const
 		{
 			error::throw_error_if_not(X509_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
 		}
-		inline bool certificate::verify_private_key(pkey::pkey pkey)
+		inline bool certificate::verify_private_key(pkey::pkey pkey) const
 		{
 			return X509_check_private_key(ptr().get(), pkey.raw()) == 1;
 		}
-		inline certificate_request certificate::to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm)
+		inline certificate_request certificate::to_certificate_request(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const
 		{
 			return certificate_request::take_ownership(X509_to_X509_REQ(ptr().get(), pkey.raw(), algorithm.raw()));
 		}
 		inline certificate::certificate(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}
-		inline bool operator==(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator==(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index == rhs.m_index);
 		}
-		inline bool operator!=(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator!=(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index != rhs.m_index);
 		}
-		inline bool operator<(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator<(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index < rhs.m_index);
 		}
-		inline bool operator<=(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator<=(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index <= rhs.m_index);
 		}
-		inline bool operator>(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator>(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index > rhs.m_index);
 		}
-		inline bool operator>=(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline bool operator>=(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			assert(lhs.m_owner == rhs.m_owner);
 
 			return (lhs.m_index >= rhs.m_index);
 		}
-		inline certificate::iterator operator+(const certificate::iterator& lhs, int rhs)
+		template <typename _IteratorValueType>
+		inline certificate::base_iterator<_IteratorValueType> operator+(const certificate::base_iterator<_IteratorValueType>& lhs, int rhs)
 		{
-			return certificate::iterator(lhs.m_owner, lhs.m_index + rhs);
+			return certificate::base_iterator<_IteratorValueType>(lhs.m_owner, lhs.m_index + rhs);
 		}
-		inline certificate::iterator operator+(int lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline certificate::base_iterator<_IteratorValueType> operator+(int lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
-			return certificate::iterator(rhs.m_owner, rhs.m_index + lhs);
+			return certificate::base_iterator<_IteratorValueType>(rhs.m_owner, rhs.m_index + lhs);
 		}
-		inline certificate::iterator operator-(const certificate::iterator& lhs, int rhs)
+		template <typename _IteratorValueType>
+		inline certificate::base_iterator<_IteratorValueType> operator-(const certificate::base_iterator<_IteratorValueType>& lhs, int rhs)
 		{
-			return certificate::iterator(lhs.m_owner, lhs.m_index - rhs);
+			return certificate::base_iterator<_IteratorValueType>(lhs.m_owner, lhs.m_index - rhs);
 		}
-		inline certificate::iterator operator-(int lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline certificate::base_iterator<_IteratorValueType> operator-(int lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
-			return certificate::iterator(rhs.m_owner, rhs.m_index - lhs);
+			return certificate::base_iterator<_IteratorValueType>(rhs.m_owner, rhs.m_index - lhs);
 		}
-		inline certificate::iterator::difference_type operator-(const certificate::iterator& lhs, const certificate::iterator& rhs)
+		template <typename _IteratorValueType>
+		inline typename certificate::base_iterator<_IteratorValueType>::difference_type operator-(const certificate::base_iterator<_IteratorValueType>& lhs, const certificate::base_iterator<_IteratorValueType>& rhs)
 		{
 			return lhs.m_index - rhs.m_index;
 		}
