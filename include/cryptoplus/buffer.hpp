@@ -115,6 +115,12 @@ namespace cryptoplus
 			 */
 			const storage_type& data() const { return m_data; }
 
+			/**
+			 * \brief Get the buffer as a string.
+			 * \return The buffer as a string.
+			 */
+			std::string to_string() const { return std::string(m_data.begin(), m_data.end()); }
+
 		private:
 
 			std::vector<uint8_t> m_data;

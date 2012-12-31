@@ -31,8 +31,8 @@ int main()
 	std::cout << std::endl;
 
 	const std::string original_string = "libcryptoplus is great !";
-	const std::string encoded_string = cryptoplus::base64_encode(original_string);
-	const std::string decoded_string = cryptoplus::base64_decode(encoded_string);
+	const std::string encoded_string = cryptoplus::base64_encode(cryptoplus::buffer(original_string));
+	const std::string decoded_string = cryptoplus::base64_decode(encoded_string).to_string();
 
 	std::cout << "Original string: " << original_string << std::endl;
 	std::cout << "Base64 encoded string: " << encoded_string << std::endl;
