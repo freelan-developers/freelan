@@ -99,6 +99,9 @@ Most parameters and options defaults can also be changed using environment varia
 
 Here is the list of the supported variables:
 
+- `FREELAN_BUILD_PREFIX`, default for the `--build-prefix` parameter.
+- `FREELAN_MINGW_BUILD_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_BUILD_PREFIX` when MinGW is used as compiler toolchain.
+- `FREELAN_MSVC_BUILD_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_BUILD_PREFIX` when Microsoft Visual Studio is used as compiler toolchain.
 - `FREELAN_INSTALL_PREFIX`, default for the `--prefix` parameter.
 - `FREELAN_MINGW_INSTALL_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_INSTALL_PREFIX` when MinGW is used as compiler toolchain.
 - `FREELAN_MSVC_INSTALL_PREFIX`, Windows only. A default that, if defined, superseeds `FREELAN_INSTALL_PREFIX` when Microsoft Visual Studio is used as compiler toolchain.

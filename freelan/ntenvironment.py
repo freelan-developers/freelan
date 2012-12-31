@@ -59,6 +59,7 @@ class NtEnvironment(BaseEnvironment):
             self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX')
             self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
 
+            self['ARGUMENTS'].setdefault('build-prefix', os.environ.get('FREELAN_MINGW_BUILD_PREFIX', os.environ.get('FREELAN_BUILD_PREFIX', self.Dir('#').abspath)))
             self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_MINGW_INSTALL_PREFIX', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\FreeLAN')))
 
         else:
@@ -76,6 +77,7 @@ class NtEnvironment(BaseEnvironment):
             self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MSVC_RELEASE_BOOST_SUFFIX')
             self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MSVC_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
 
+            self['ARGUMENTS'].setdefault('build-prefix', os.environ.get('FREELAN_MSVC_BUILD_PREFIX', os.environ.get('FREELAN_BUILD_PREFIX', self.Dir('#').abspath)))
             self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_MSVC_INSTALL_PREFIX', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\FreeLAN-VC')))
 
         self.Append(CPPPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'include')])

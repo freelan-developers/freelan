@@ -54,6 +54,7 @@ class PosixEnvironment(BaseEnvironment):
             self['CXXFLAGS'].append('-m64')
             self['LINKFLAGS'].append('-m64')
 
+        self['ARGUMENTS'].setdefault('build-prefix', os.environ.get('FREELAN_BUILD_PREFIX', self.Dir('#').abspath))
         self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', '/usr/local'))
 
         self.Append(CPPPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'include')])
