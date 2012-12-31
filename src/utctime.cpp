@@ -64,12 +64,12 @@ namespace cryptoplus
 		utctime::deleter_type pointer_wrapper<utctime::value_type>::deleter = ASN1_UTCTIME_free;
 #endif
 
-		void utctime::set_time(const boost::posix_time::ptime& time)
+		void utctime::set_time(const boost::posix_time::ptime& time) const
 		{
 			set_time(static_cast<time_t>((time - epoch).total_seconds()));
 		}
 
-		boost::posix_time::ptime utctime::to_ptime()
+		boost::posix_time::ptime utctime::to_ptime() const
 		{
 			using boost::lexical_cast;
 
@@ -93,23 +93,23 @@ namespace cryptoplus
 				year += 1900;
 			}
 
-			int month = lexical_cast<int>(str.substr(2, 2));
-			int day = lexical_cast<int>(str.substr(4, 2));
+			const int month = lexical_cast<int>(str.substr(2, 2));
+			const int day = lexical_cast<int>(str.substr(4, 2));
 
 			boost::gregorian::date date(year, month, day);
 
-			int hour = lexical_cast<int>(str.substr(6, 2));
-			int minute = lexical_cast<int>(str.substr(8, 2));
-			int second = lexical_cast<int>(str.substr(10, 2));
+			const int hour = lexical_cast<int>(str.substr(6, 2));
+			const int minute = lexical_cast<int>(str.substr(8, 2));
+			const int second = lexical_cast<int>(str.substr(10, 2));
 
 			boost::posix_time::time_duration time_duration(hour, minute, second);
 
-			char separator = str[12];
+			const char separator = str[12];
 
 			if ((separator == '+') || (separator == '-'))
 			{
-				//int offset_hour = lexical_cast<int>(str.substr(13, 2));
-				//int offset_minute = lexical_cast<int>(str.substr(16, 2));
+				//const int offset_hour = lexical_cast<int>(str.substr(13, 2));
+				//const int offset_minute = lexical_cast<int>(str.substr(16, 2));
 			}
 
 			//TODO: Use the separator and offset information

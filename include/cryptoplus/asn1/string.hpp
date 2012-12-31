@@ -132,56 +132,56 @@ namespace cryptoplus
 				 * \brief Get the size of the string.
 				 * \return The size of the string.
 				 */
-				size_t size();
+				size_t size() const;
 
 				/**
 				 * \brief Get the string data.
 				 * \return The string data.
 				 */
-				const unsigned char* data();
+				const unsigned char* data() const;
 
 				/**
 				 * \brief Set the internal data.
 				 * \param data The data.
 				 * \param data_len The length of data.
 				 */
-				void set_data(const void* data, size_t data_len);
+				void set_data(const void* data, size_t data_len) const;
 
 				/**
 				 * \brief Set the internal data.
 				 * \param data The data.
 				 */
-				void set_data(const buffer& data);
+				void set_data(const buffer& data) const;
 
 				/**
 				 * \brief Set the internal data.
 				 * \param data The data, as a null terminated ASCII C-string.
 				 */
-				void set_data(const char* data);
+				void set_data(const char* data) const;
 
 				/**
 				 * \brief Set the internal data.
 				 * \param data The data, as an ASCII string.
 				 */
-				void set_data(const std::string& data);
+				void set_data(const std::string& data) const;
 
 				/**
 				 * \brief Get the type of the string.
 				 * \return The type.
 				 */
-				int type();
+				int type() const;
 
 				/**
 				 * \brief Build a string from data() and size().
 				 * \return A string built from data() and that will be size() bytes long.
 				 */
-				std::string str();
+				std::string str() const;
 
 				/**
 				 * \brief Get the content as an UTF-8 string.
 				 * \return The UTF-8 content.
 				 */
-				std::string to_utf8();
+				std::string to_utf8() const;
 
 			private:
 
@@ -256,35 +256,35 @@ namespace cryptoplus
 		inline string::string(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline size_t string::size()
+		inline size_t string::size() const
 		{
 			return ASN1_STRING_length(ptr().get());
 		}
-		inline const unsigned char* string::data()
+		inline const unsigned char* string::data() const
 		{
 			return ASN1_STRING_data(ptr().get());
 		}
-		inline void string::set_data(const void* _data, size_t data_len)
+		inline void string::set_data(const void* _data, size_t data_len) const
 		{
 			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, static_cast<int>(data_len)) != 0);
 		}
-		inline void string::set_data(const buffer& _data)
+		inline void string::set_data(const buffer& _data) const
 		{
 			set_data(buffer_cast<uint8_t>(_data), buffer_size(_data));
 		}
-		inline void string::set_data(const char* _data)
+		inline void string::set_data(const char* _data) const
 		{
 			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, -1) != 0);
 		}
-		inline void string::set_data(const std::string& _data)
+		inline void string::set_data(const std::string& _data) const
 		{
 			set_data(_data.c_str());
 		}
-		inline int string::type()
+		inline int string::type() const
 		{
 			return ASN1_STRING_type(ptr().get());
 		}
-		inline std::string string::str()
+		inline std::string string::str() const
 		{
 			return std::string(reinterpret_cast<const char*>(data()), size());
 		}
@@ -311,4 +311,3 @@ namespace cryptoplus
 }
 
 #endif /* CRYPTOPLUS_ASN1_STRING_HPP */
-

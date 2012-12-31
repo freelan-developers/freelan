@@ -63,15 +63,15 @@ namespace cryptoplus
 			}
 		}
 
-		std::string string::to_utf8()
+		std::string string::to_utf8() const
 		{
 			unsigned char* out = NULL;
 
-			int _size = ASN1_STRING_to_UTF8(&out, ptr().get());
+			const int _size = ASN1_STRING_to_UTF8(&out, ptr().get());
 
 			error::throw_error_if(_size < 0);
 
-			boost::shared_ptr<unsigned char> pout(out, _OPENSSL_free);
+			const boost::shared_ptr<unsigned char> pout(out, _OPENSSL_free);
 
 			return std::string(out, out + _size);
 		}

@@ -119,32 +119,32 @@ namespace cryptoplus
 				 * \brief Set the value.
 				 * \param l The long.
 				 */
-				void set_value(long l);
+				void set_value(long l) const;
 
 				/**
 				 * \brief Set the value from a BIGNUM.
 				 * \param bn The BIGNUM.
 				 */
-				void set_value(bn::bignum bn);
+				void set_value(bn::bignum bn) const;
 
 				/**
 				 * \brief Get a long from the ASN1_INTEGER.
 				 * \return A long if the integer is not too big, 0xFFFFFFFFL otherwise.
 				 */
-				long to_long();
+				long to_long() const;
 
 				/**
 				 * \brief Get a BIGNUM from this integer.
 				 * \return A BIGNUM.
 				 */
-				bn::bignum to_bignum();
+				bn::bignum to_bignum() const;
 
 				/**
 				 * \brief Write the integer to a BIO.
 				 * \param bio The bio to write to.
 				 * \return The count of bytes written.
 				 */
-				size_t write(bio::bio_ptr bio);
+				size_t write(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Read the integer from a BIO.
@@ -152,16 +152,17 @@ namespace cryptoplus
 				 *
 				 * This method uses an internal buffer of size 1024. If you need or want to use your own supplied buffer, see the other read() overloads.
 				 */
-				void read(bio::bio_ptr bio);
+				void read(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Read the integer from a BIO.
+				 * \tparam size The size of the internal buffer to be allocated on the stack.
 				 * \param bio The bio to read from.
 				 *
 				 * This method uses an internal buffer. If you need or want to use your own supplied buffer, see the other read() overloads.
 				 */
 				template <size_t size>
-				void read(bio::bio_ptr bio);
+				void read(bio::bio_ptr bio) const;
 
 				/**
 				 * \brief Read the integer from a BIO.
@@ -169,7 +170,7 @@ namespace cryptoplus
 				 * \param buf A buffer to use for the read operation.
 				 * \param buf_len The size of buf.
 				 */
-				void read(bio::bio_ptr bio, const void* buf, size_t buf_len);
+				void read(bio::bio_ptr bio, const void* buf, size_t buf_len) const;
 
 			private:
 
@@ -228,23 +229,23 @@ namespace cryptoplus
 		inline integer::integer(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void integer::set_value(long l)
+		inline void integer::set_value(long l) const
 		{
 			error::throw_error_if_not(ASN1_INTEGER_set(ptr().get(), l) != 0);
 		}
-		inline void integer::set_value(bn::bignum bn)
+		inline void integer::set_value(bn::bignum bn) const
 		{
 			error::throw_error_if_not(BN_to_ASN1_INTEGER(bn.raw(), ptr().get()) != 0);
 		}
-		inline long integer::to_long()
+		inline long integer::to_long() const
 		{
 			return ASN1_INTEGER_get(ptr().get());
 		}
-		inline bn::bignum integer::to_bignum()
+		inline bn::bignum integer::to_bignum() const
 		{
 			return bn::bignum::from_integer(*this);
 		}
-		inline size_t integer::write(bio::bio_ptr bio)
+		inline size_t integer::write(bio::bio_ptr bio) const
 		{
 			int result = i2a_ASN1_INTEGER(bio.raw(), ptr().get());
 
@@ -252,18 +253,18 @@ namespace cryptoplus
 
 			return result;
 		}
-		inline void integer::read(bio::bio_ptr bio)
+		inline void integer::read(bio::bio_ptr bio) const
 		{
 			read<1024>(bio);
 		}
 		template <size_t size>
-		inline void integer::read(bio::bio_ptr bio)
+		inline void integer::read(bio::bio_ptr bio) const
 		{
 			char buf[size];
 
 			read(bio, buf, size);
 		}
-		inline void integer::read(bio::bio_ptr bio, const void* buf, size_t buf_len)
+		inline void integer::read(bio::bio_ptr bio, const void* buf, size_t buf_len) const
 		{
 			error::throw_error_if_not(a2i_ASN1_INTEGER(bio.raw(), ptr().get(), static_cast<char*>(const_cast<void*>(buf)), static_cast<int>(buf_len)) != 0);
 		}
@@ -290,4 +291,3 @@ namespace cryptoplus
 }
 
 #endif /* CRYPTOPLUS_ASN1_INTEGER_HPP */
-

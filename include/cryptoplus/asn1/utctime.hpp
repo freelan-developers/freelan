@@ -132,7 +132,7 @@ namespace cryptoplus
 				 * \brief Set the time.
 				 * \param time The time to set.
 				 */
-				void set_time(time_t time);
+				void set_time(time_t time) const;
 
 				/**
 				 * \brief Set the time from a string.
@@ -144,31 +144,31 @@ namespace cryptoplus
 				 * hh' is the absolute value of the offset from GMT in hours.
 				 * mm' is the absolute value of the offset from GMT in minutes.
 				 */
-				void set_time(const std::string& str);
+				void set_time(const std::string& str) const;
 
 				/**
 				 * \brief Set the time from a ptime structure.
 				 * \param time The time.
 				 */
-				void set_time(const boost::posix_time::ptime& time);
+				void set_time(const boost::posix_time::ptime& time) const;
 
 				/**
 				 * \brief Get a ptime from the ASN1_UTCTIME.
 				 * \return A ptime if check() returns true, boost::posix_time::not_a_date_time otherwise.
 				 */
-				boost::posix_time::ptime to_ptime();
+				boost::posix_time::ptime to_ptime() const;
 
 				/**
 				 * \brief Check if the structure is valid.
 				 * \return true if the structure is valid, false otherwise.
 				 */
-				bool check();
+				bool check() const;
 
 				/**
 				 * \brief Print a ASN1_UTCTIME to a BIO.
 				 * \param bio The BIO.
 				 */
-				void print(bio::bio_ptr bio);
+				void print(bio::bio_ptr bio) const;
 
 			private:
 
@@ -231,19 +231,19 @@ namespace cryptoplus
 		inline utctime::utctime(pointer _ptr) : pointer_wrapper<value_type>(_ptr, null_deleter)
 		{
 		}
-		inline void utctime::set_time(time_t time)
+		inline void utctime::set_time(time_t time) const
 		{
 			error::throw_error_if_not(ASN1_UTCTIME_set(ptr().get(), time));
 		}
-		inline void utctime::set_time(const std::string& str)
+		inline void utctime::set_time(const std::string& str) const
 		{
 			error::throw_error_if_not(ASN1_UTCTIME_set_string(ptr().get(), str.c_str()) != 0);
 		}
-		inline bool utctime::check()
+		inline bool utctime::check() const
 		{
 			return (ASN1_UTCTIME_check(ptr().get()) != 0);
 		}
-		inline void utctime::print(bio::bio_ptr bio)
+		inline void utctime::print(bio::bio_ptr bio) const
 		{
 			error::throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), ptr().get()) != 0);
 		}
@@ -262,4 +262,3 @@ namespace cryptoplus
 }
 
 #endif /* CRYPTOPLUS_ASN1_UTCTIME_HPP */
-
