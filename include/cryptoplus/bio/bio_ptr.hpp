@@ -93,21 +93,21 @@ namespace cryptoplus
 				 * \brief Get the raw BIO pointer.
 				 * \return The raw BIO pointer.
 				 */
-				BIO* raw();
+				BIO* raw() const;
 
 				/**
 				 * \brief Set the method of the BIO.
 				 * \param type The type.
 				 * \return true on success.
 				 */
-				bool set_method(BIO_METHOD* type);
+				bool set_method(BIO_METHOD* type) const;
 
 				/**
 				 * \brief Push a bio_ptr at the bottom of the BIO chain.
 				 * \param bio The bio to append to the BIO chain.
 				 * \returns The current bio_ptr.
 				 */
-				bio_ptr push(bio_ptr bio);
+				bio_ptr push(bio_ptr bio) const;
 
 				/**
 				 * \brief Remove the bio_ptr from its BIO chain.
@@ -115,20 +115,20 @@ namespace cryptoplus
 				 *
 				 * Once it is removed from its chain, the bio_ptr can be either deleted or added to another chain.
 				 */
-				bio_ptr pop();
+				bio_ptr pop() const;
 
 				/**
 				 * \brief Find a BIO in the BIO chain by its type.
 				 * \param type The type of the bio_ptr.
 				 * \return The first bio_ptr to match or an empty one if none is found that match the specified type.
 				 */
-				bio_ptr find_by_type(int type);
+				bio_ptr find_by_type(int type) const;
 
 				/**
 				 * \brief Get the next bio_ptr in the chain.
 				 * \return The next bio_ptr in the chain.
 				 */
-				bio_ptr next();
+				bio_ptr next() const;
 
 				/**
 				 * \brief Get the type of the bio.
@@ -136,37 +136,37 @@ namespace cryptoplus
 				 *
 				 * The list of possible types is available on the man page for BIO_find_type(3).
 				 */
-				int type();
+				int type() const;
 
 				/**
 				 * \brief Determine if the last operation on the BIO should be retried.
 				 * \return true if the last operation should be retried.
 				 */
-				bool should_retry();
+				bool should_retry() const;
 
 				/**
 				 * \brief Determine if the BIO should be read.
 				 * \return true if the BIO should be read.
 				 */
-				bool should_read();
+				bool should_read() const;
 
 				/**
 				 * \brief Determine if the BIO should be written.
 				 * \return true if the BIO should be written.
 				 */
-				bool should_write();
+				bool should_write() const;
 
 				/**
 				 * \brief Determine if the cause of the last failure was due to a special IO event.
 				 * \return true if the cause of the last failure was due to a special IO event.
 				 */
-				bool should_io_special();
+				bool should_io_special() const;
 
 				/**
 				 * \brief Get the retry type.
 				 * \return The retry type, as specified on the man page of BIO_should_retry(3).
 				 */
-				int retry_type();
+				int retry_type() const;
 
 				/**
 				 * \brief Determine the precise reason for the special condition and returns the BIO that caused it.
@@ -174,14 +174,14 @@ namespace cryptoplus
 				 * \return The BIO that caused the special condition.
 				 * \see get_retry_reason
 				 */
-				bio_ptr get_retry_bio(int* reason = NULL);
+				bio_ptr get_retry_bio(int* reason = NULL) const;
 
 				/**
 				 * \brief Get the reason for a special condition.
 				 * \return The reason code.
 				 * \see get_retry_bio
 				 */
-				int get_retry_reason();
+				int get_retry_reason() const;
 
 				/**
 				 * \brief Read some data from the BIO.
@@ -189,7 +189,7 @@ namespace cryptoplus
 				 * \param buf_len The length of buf.
 				 * \return The amount of data successfully read. If the return value is 0 or -1, no data could be read. If it is -2, then the operation is not available for the specific BIO type.
 				 */
-				ptrdiff_t read(void* buf, size_t buf_len);
+				ptrdiff_t read(void* buf, size_t buf_len) const;
 
 				/**
 				 * \brief Read a line of data from the BIO.
@@ -197,7 +197,7 @@ namespace cryptoplus
 				 * \param buf_len The length of buf.
 				 * \return The amount of data successfully read. If the return value is 0 or -1, no data could be read. If it is -2, then the operation is not available for the specific BIO type.
 				 */
-				ptrdiff_t gets(char* buf, size_t buf_len);
+				ptrdiff_t gets(char* buf, size_t buf_len) const;
 
 				/**
 				 * \brief Write some data to the BIO.
@@ -205,21 +205,21 @@ namespace cryptoplus
 				 * \param buf_len The length of buf.
 				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
 				 */
-				ptrdiff_t write(const void* buf, size_t buf_len);
+				ptrdiff_t write(const void* buf, size_t buf_len) const;
 
 				/**
 				 * \brief Write a line of data to the BIO.
 				 * \param buf The buffer to write the data from.
 				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
 				 */
-				ptrdiff_t puts(const char* buf);
+				ptrdiff_t puts(const char* buf) const;
 
 				/**
 				 * \brief Write a line of data to the BIO.
 				 * \param str The string.
 				 * \return The amount of data successfully written. If the return value is 0 or -1, no data could be written. If it is -2, then the operation is not available for the specific BIO type.
 				 */
-				ptrdiff_t puts(const std::string& str);
+				ptrdiff_t puts(const std::string& str) const;
 
 				/**
 				 * \brief Reset the BIO to its initial state.
@@ -227,7 +227,7 @@ namespace cryptoplus
 				 *
 				 * Please don't blame me for the inconsistent return values: take a look at BIO_ctrl(3) for the reason.
 				 */
-				int reset();
+				int reset() const;
 
 				/**
 				 * \brief Set the file position pointer.
@@ -236,49 +236,49 @@ namespace cryptoplus
 				 *
 				 * Please don't blame me for the inconsistent return values: take a look at BIO_ctrl(3) for the reason.
 				 */
-				ptrdiff_t seek(ptrdiff_t offset);
+				ptrdiff_t seek(ptrdiff_t offset) const;
 
 				/**
 				 * \brief Get the current file position.
 				 * \return The current file position on success, and -1 for failure except file BIOs which for seek() returns 0 for success and -1 for failure.
 				 */
-				ptrdiff_t tell();
+				ptrdiff_t tell() const;
 
 				/**
 				 * \brief Write out any internally buffered data.
 				 * \return 1 for success and 0 or -1 for failure.
 				 */
-				int flush();
+				int flush() const;
 
 				/**
 				 * \brief Determine if the BIO has reached EOF.
 				 * \return true if the BIO has reached EOF.
 				 */
-				bool eof();
+				bool eof() const;
 
 				/**
 				 * \brief Set the BIO close flag.
 				 * \param close The close flag. Can be either BIO_CLOSE or BIO_NOCLOSE.
 				 */
-				void set_close(long close);
+				void set_close(long close) const;
 
 				/**
 				 * \brief Get the BIO close flag.
 				 * \return The BIO close flag.
 				 */
-				long get_close();
+				long get_close() const;
 
 				/**
 				 * \brief Return the number of pending read characters.
 				 * \return The number of pending read characters.
 				 */
-				size_t pending_read();
+				size_t pending_read() const;
 
 				/**
 				 * \brief Return the number of pending write characters.
 				 * \return The number of pending write characters.
 				 */
-				size_t pending_write();
+				size_t pending_write() const;
 
 				// BIO_f_buffer() specific methods
 
@@ -288,7 +288,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
 				 */
-				unsigned int get_buffer_num_lines();
+				unsigned int get_buffer_num_lines() const;
 
 				/**
 				 * \brief Set the read buffer size.
@@ -297,7 +297,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
 				 */
-				bool set_read_buffer_size(size_t size);
+				bool set_read_buffer_size(size_t size) const;
 
 				/**
 				 * \brief Set the write buffer size.
@@ -306,7 +306,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
 				 */
-				bool set_write_buffer_size(size_t size);
+				bool set_write_buffer_size(size_t size) const;
 
 				/**
 				 * \brief Set both read and write buffer sizes.
@@ -315,7 +315,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
 				 */
-				bool set_buffer_size(size_t size);
+				bool set_buffer_size(size_t size) const;
 
 				/**
 				 * \brief Set the buffer read data.
@@ -325,7 +325,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_buffer()".
 				 */
-				bool set_buffer_read_data(const void* buf, size_t buf_len);
+				bool set_buffer_read_data(const void* buf, size_t buf_len) const;
 
 				// BIO_f_cipher() specific methods
 
@@ -338,7 +338,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_cipher()".
 				 */
-				void set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction);
+				void set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction) const;
 
 				/**
 				 * \brief Determine whether the decryption operation was successful.
@@ -346,7 +346,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_cipher()".
 				 */
-				bool get_cipher_status();
+				bool get_cipher_status() const;
 
 				/**
 				 * \brief Get the associated cipher context.
@@ -354,7 +354,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_cipher()".
 				 */
-				EVP_CIPHER_CTX* get_cipher_context();
+				EVP_CIPHER_CTX* get_cipher_context() const;
 
 				// BIO_f_md() specific methods
 
@@ -365,7 +365,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_md()".
 				 */
-				bool set_message_digest(hash::message_digest_algorithm algorithm);
+				bool set_message_digest(hash::message_digest_algorithm algorithm) const;
 
 				/**
 				 * \brief Get the message digest algorithm.
@@ -373,7 +373,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_md()".
 				 */
-				hash::message_digest_algorithm get_message_digest();
+				hash::message_digest_algorithm get_message_digest() const;
 
 				/**
 				 * \brief Get the message digest context.
@@ -381,7 +381,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_f_md()".
 				 */
-				EVP_MD_CTX* get_message_digest_context();
+				EVP_MD_CTX* get_message_digest_context() const;
 
 				// BIO_s_fd() specific methods
 
@@ -392,7 +392,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_fd()".
 				 */
-				void set_file_descriptor(int fd, long close);
+				void set_file_descriptor(int fd, long close) const;
 
 				/**
 				 * \brief Get the file descriptor.
@@ -400,7 +400,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_fd()".
 				 */
-				int get_file_descriptor();
+				int get_file_descriptor() const;
 
 				// BIO_s_file specific methods
 
@@ -411,7 +411,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_file()".
 				 */
-				void set_file_pointer(FILE* fp, long close);
+				void set_file_pointer(FILE* fp, long close) const;
 
 				/**
 				 * \brief Get the file pointer.
@@ -419,7 +419,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_file()".
 				 */
-				FILE* get_file_pointer();
+				FILE* get_file_pointer() const;
 
 				// BIO_s_mem specific methods
 
@@ -429,7 +429,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_mem()".
 				 */
-				void set_mem_eof_return(int v);
+				void set_mem_eof_return(int v) const;
 
 				/**
 				 * \brief Get the BIO memory data pointer.
@@ -438,7 +438,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_mem()".
 				 */
-				size_t get_mem_data(char*& buf);
+				size_t get_mem_data(char*& buf) const;
 
 				/**
 				 * \brief Set the internal memory buffer.
@@ -447,7 +447,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_mem()".
 				 */
-				void set_mem_buf(BUF_MEM* mb, long close);
+				void set_mem_buf(BUF_MEM* mb, long close) const;
 
 				/**
 				 * \brief Get the internal memory buffer.
@@ -455,7 +455,7 @@ namespace cryptoplus
 				 *
 				 * This method only makes sense for BIOs of type "BIO_s_mem()".
 				 */
-				BUF_MEM* get_mem_buf();
+				BUF_MEM* get_mem_buf() const;
 
 				/**
 				 * \brief Set the flags on the associated BIO.
@@ -463,7 +463,7 @@ namespace cryptoplus
 				 *
 				 * Example: bio.set_flags(BIO_FLAGS_BASE64_NO_NL)
 				 */
-				void set_flags(int flags);
+				void set_flags(int flags) const;
 
 			private:
 
@@ -497,147 +497,147 @@ namespace cryptoplus
 		{
 			m_bio = _bio;
 		}
-		inline BIO* bio_ptr::raw()
+		inline BIO* bio_ptr::raw() const
 		{
 			return m_bio;
 		}
-		inline bool bio_ptr::set_method(BIO_METHOD* _type)
+		inline bool bio_ptr::set_method(BIO_METHOD* _type) const
 		{
 			return BIO_set(m_bio, _type) != 0;
 		}
-		inline bio_ptr bio_ptr::push(bio_ptr bio)
+		inline bio_ptr bio_ptr::push(bio_ptr bio) const
 		{
 			return bio_ptr(BIO_push(m_bio, bio.raw()));
 		}
-		inline bio_ptr bio_ptr::pop()
+		inline bio_ptr bio_ptr::pop() const
 		{
 			return bio_ptr(BIO_pop(m_bio));
 		}
-		inline bio_ptr bio_ptr::find_by_type(int _type)
+		inline bio_ptr bio_ptr::find_by_type(int _type) const
 		{
 			return bio_ptr(BIO_find_type(m_bio, _type));
 		}
-		inline bio_ptr bio_ptr::next()
+		inline bio_ptr bio_ptr::next() const
 		{
 			return bio_ptr(BIO_next(m_bio));
 		}
-		inline int bio_ptr::type()
+		inline int bio_ptr::type() const
 		{
 			return BIO_method_type(m_bio);
 		}
-		inline bool bio_ptr::should_retry()
+		inline bool bio_ptr::should_retry() const
 		{
 			return BIO_should_retry(m_bio) != 0;
 		}
-		inline bool bio_ptr::should_read()
+		inline bool bio_ptr::should_read() const
 		{
 			return BIO_should_read(m_bio) != 0;
 		}
-		inline bool bio_ptr::should_write()
+		inline bool bio_ptr::should_write() const
 		{
 			return BIO_should_write(m_bio) != 0;
 		}
-		inline bool bio_ptr::should_io_special()
+		inline bool bio_ptr::should_io_special() const
 		{
 			return BIO_should_io_special(m_bio) != 0;
 		}
-		inline int bio_ptr::retry_type()
+		inline int bio_ptr::retry_type() const
 		{
 			return BIO_retry_type(m_bio);
 		}
-		inline bio_ptr bio_ptr::get_retry_bio(int* reason)
+		inline bio_ptr bio_ptr::get_retry_bio(int* reason) const
 		{
 			return bio_ptr(BIO_get_retry_BIO(m_bio, reason));
 		}
-		inline int bio_ptr::get_retry_reason()
+		inline int bio_ptr::get_retry_reason() const
 		{
 			return BIO_get_retry_reason(m_bio);
 		}
-		inline ptrdiff_t bio_ptr::read(void* buf, size_t buf_len)
+		inline ptrdiff_t bio_ptr::read(void* buf, size_t buf_len) const
 		{
 			return BIO_read(m_bio, buf, static_cast<int>(buf_len));
 		}
-		inline ptrdiff_t bio_ptr::gets(char* buf, size_t buf_len)
+		inline ptrdiff_t bio_ptr::gets(char* buf, size_t buf_len) const
 		{
 			return BIO_gets(m_bio, buf, static_cast<int>(buf_len));
 		}
-		inline ptrdiff_t bio_ptr::write(const void* buf, size_t buf_len)
+		inline ptrdiff_t bio_ptr::write(const void* buf, size_t buf_len) const
 		{
 			return BIO_write(m_bio, buf, static_cast<int>(buf_len));
 		}
-		inline ptrdiff_t bio_ptr::puts(const char* buf)
+		inline ptrdiff_t bio_ptr::puts(const char* buf) const
 		{
 			return BIO_puts(m_bio, buf);
 		}
-		inline ptrdiff_t bio_ptr::puts(const std::string& str)
+		inline ptrdiff_t bio_ptr::puts(const std::string& str) const
 		{
 			return puts(str.c_str());
 		}
-		inline int bio_ptr::reset()
+		inline int bio_ptr::reset() const
 		{
 			return BIO_reset(m_bio);
 		}
-		inline ptrdiff_t bio_ptr::seek(ptrdiff_t offset)
+		inline ptrdiff_t bio_ptr::seek(ptrdiff_t offset) const
 		{
 			return BIO_seek(m_bio, static_cast<int>(offset));
 		}
-		inline ptrdiff_t bio_ptr::tell()
+		inline ptrdiff_t bio_ptr::tell() const
 		{
 			return BIO_tell(m_bio);
 		}
-		inline int bio_ptr::flush()
+		inline int bio_ptr::flush() const
 		{
 			return BIO_flush(m_bio);
 		}
-		inline bool bio_ptr::eof()
+		inline bool bio_ptr::eof() const
 		{
 			return BIO_eof(m_bio) != 0;
 		}
-		inline void bio_ptr::set_close(long _close)
+		inline void bio_ptr::set_close(long _close) const
 		{
 			(void)BIO_set_close(m_bio, _close);
 		}
-		inline long bio_ptr::get_close()
+		inline long bio_ptr::get_close() const
 		{
 			return BIO_get_close(m_bio);
 		}
-		inline size_t bio_ptr::pending_read()
+		inline size_t bio_ptr::pending_read() const
 		{
 			return BIO_ctrl_pending(m_bio);
 		}
-		inline size_t bio_ptr::pending_write()
+		inline size_t bio_ptr::pending_write() const
 		{
 			return BIO_ctrl_wpending(m_bio);
 		}
-		inline unsigned int bio_ptr::get_buffer_num_lines()
+		inline unsigned int bio_ptr::get_buffer_num_lines() const
 		{
 			return BIO_get_buffer_num_lines(m_bio);
 		}
-		inline bool bio_ptr::set_read_buffer_size(size_t size)
+		inline bool bio_ptr::set_read_buffer_size(size_t size) const
 		{
 			return BIO_set_read_buffer_size(m_bio, static_cast<long>(size)) > 0;
 		}
-		inline bool bio_ptr::set_write_buffer_size(size_t size)
+		inline bool bio_ptr::set_write_buffer_size(size_t size) const
 		{
 			return BIO_set_write_buffer_size(m_bio, static_cast<long>(size)) > 0;
 		}
-		inline bool bio_ptr::set_buffer_size(size_t size)
+		inline bool bio_ptr::set_buffer_size(size_t size) const
 		{
 			return BIO_set_buffer_size(m_bio, static_cast<long>(size)) > 0;
 		}
-		inline bool bio_ptr::set_buffer_read_data(const void* buf, size_t buf_len)
+		inline bool bio_ptr::set_buffer_read_data(const void* buf, size_t buf_len) const
 		{
 			return BIO_set_buffer_read_data(m_bio, const_cast<void*>(buf), static_cast<long>(buf_len)) > 0;
 		}
-		inline void bio_ptr::set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction)
+		inline void bio_ptr::set_cipher(cipher::cipher_algorithm algorithm, const void* key, const void* iv, cipher::cipher_context::cipher_direction direction) const
 		{
 			BIO_set_cipher(m_bio, algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction));
 		}
-		inline bool bio_ptr::get_cipher_status()
+		inline bool bio_ptr::get_cipher_status() const
 		{
 			return BIO_get_cipher_status(m_bio) != 0;
 		}
-		inline EVP_CIPHER_CTX* bio_ptr::get_cipher_context()
+		inline EVP_CIPHER_CTX* bio_ptr::get_cipher_context() const
 		{
 			EVP_CIPHER_CTX* ctx = NULL;
 
@@ -645,11 +645,11 @@ namespace cryptoplus
 
 			return ctx;
 		}
-		inline bool bio_ptr::set_message_digest(hash::message_digest_algorithm algorithm)
+		inline bool bio_ptr::set_message_digest(hash::message_digest_algorithm algorithm) const
 		{
 			return BIO_set_md(m_bio, algorithm.raw()) != 0;
 		}
-		inline hash::message_digest_algorithm bio_ptr::get_message_digest()
+		inline hash::message_digest_algorithm bio_ptr::get_message_digest() const
 		{
 			const EVP_MD* md;
 
@@ -657,7 +657,7 @@ namespace cryptoplus
 
 			return hash::message_digest_algorithm(md);
 		}
-		inline EVP_MD_CTX* bio_ptr::get_message_digest_context()
+		inline EVP_MD_CTX* bio_ptr::get_message_digest_context() const
 		{
 			EVP_MD_CTX* ctx;
 
@@ -665,19 +665,19 @@ namespace cryptoplus
 
 			return ctx;
 		}
-		inline void bio_ptr::set_file_descriptor(int fd, long close)
+		inline void bio_ptr::set_file_descriptor(int fd, long close) const
 		{
 			BIO_set_fd(m_bio, fd, close);
 		}
-		inline int bio_ptr::get_file_descriptor()
+		inline int bio_ptr::get_file_descriptor() const
 		{
 			return BIO_get_fd(m_bio, NULL);
 		}
-		inline void bio_ptr::set_file_pointer(FILE* fp, long close)
+		inline void bio_ptr::set_file_pointer(FILE* fp, long close) const
 		{
 			BIO_set_fp(m_bio, fp, close);
 		}
-		inline FILE* bio_ptr::get_file_pointer()
+		inline FILE* bio_ptr::get_file_pointer() const
 		{
 			FILE* fp = NULL;
 
@@ -685,19 +685,19 @@ namespace cryptoplus
 
 			return fp;
 		}
-		inline void bio_ptr::set_mem_eof_return(int v)
+		inline void bio_ptr::set_mem_eof_return(int v) const
 		{
 			BIO_set_mem_eof_return(m_bio, v);
 		}
-		inline size_t bio_ptr::get_mem_data(char*& buf)
+		inline size_t bio_ptr::get_mem_data(char*& buf) const
 		{
 			return BIO_get_mem_data(m_bio, &buf);
 		}
-		inline void bio_ptr::set_mem_buf(BUF_MEM* mb, long close)
+		inline void bio_ptr::set_mem_buf(BUF_MEM* mb, long close) const
 		{
 			BIO_set_mem_buf(m_bio, mb, close);
 		}
-		inline BUF_MEM* bio_ptr::get_mem_buf()
+		inline BUF_MEM* bio_ptr::get_mem_buf() const
 		{
 			BUF_MEM* mb = NULL;
 
@@ -705,7 +705,7 @@ namespace cryptoplus
 
 			return mb;
 		}
-		inline void bio_ptr::set_flags(int flags)
+		inline void bio_ptr::set_flags(int flags) const
 		{
 			BIO_set_flags(m_bio, flags);
 		}
@@ -725,4 +725,3 @@ namespace cryptoplus
 }
 
 #endif /* CRYPTOPLUS_BIO_BIO_PTR_HPP */
-
