@@ -11,16 +11,20 @@ export FREELAN_ALL_ROOT=$(readlink -f `dirname $0`/../..)
 # BUILD_ROOT is a directory which contains include, lib and bin sub-directories.
 export FREELAN_BUILD_ROOT="${FREELAN_ALL_ROOT}/build"
 
+# INSTALL_ROOT is a directory which contains include, lib and bin sub-directories.
+export FREELAN_INSTALL_ROOT="${FREELAN_ALL_ROOT}/install"
+
 # Create the subdirectories
 for SUBDIR in include lib etc bin; do
 	mkdir -p ${FREELAN_BUILD_ROOT}/${SUBDIR}
+	mkdir -p ${FREELAN_INSTALL_ROOT}/${SUBDIR}
 done
 
 # This allows me to type ldconfig as a non-root user.
-alias ldconfig="ldconfig -r ${FREELAN_BUILD_ROOT}"
+alias ldconfig="ldconfig -r ${FREELAN_INSTALL_ROOT}"
 
 # Freelan default installation goes into the build root
-export FREELAN_INSTALL_PREFIX="${FREELAN_BUILD_ROOT}"
+export FREELAN_INSTALL_PREFIX="${FREELAN_INSTALL_ROOT}"
 
 export CPLUS_INCLUDE_PATH="${FREELAN_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
 export C_INCLUDE_PATH="${FREELAN_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}"
@@ -43,6 +47,7 @@ echo "Setting-up freelan build environment"
 echo
 echo "Root is: ${FREELAN_ALL_ROOT}"
 echo "Build root is: ${FREELAN_BUILD_ROOT}"
+echo "Install root is: ${FREELAN_INSTALL_ROOT}"
 echo
 echo "Type Ctrl+D or exit to leave the build environment."
 

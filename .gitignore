@@ -9,3 +9,4 @@
 # Build environment
 /.bash_history
 /build/
+/install/
