@@ -221,7 +221,7 @@ namespace cryptoplus
 				 * \param value The value to get.
 				 */
 				template <typename T>
-				void ctrl_get(int type, T& value);
+				void ctrl_get(int type, T& value) const;
 
 				/**
 				 * \brief Set cipher specific parameters.
@@ -316,6 +316,13 @@ namespace cryptoplus
 				 * After a call to open_finalize() no more call to open_update() can be made unless open_initialize() is called again first.
 				 */
 				size_t open_finalize(void* out, size_t out_len);
+
+				/**
+				 * \brief Get the underlying context.
+				 * \return The underlying context.
+				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
+				 */
+				const EVP_CIPHER_CTX& raw() const;
 
 				/**
 				 * \brief Get the underlying context.
@@ -428,7 +435,7 @@ namespace cryptoplus
 		}
 
 		template <typename T>
-		inline void cipher_context::ctrl_get(int type, T& value)
+		inline void cipher_context::ctrl_get(int type, T& value) const
 		{
 			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value) != 0);
 		}
@@ -451,6 +458,11 @@ namespace cryptoplus
 		inline size_t cipher_context::open_update(void* out, size_t out_len, const buffer& in)
 		{
 			return open_update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
+		}
+
+		inline const EVP_CIPHER_CTX& cipher_context::raw() const
+		{
+			return m_ctx;
 		}
 
 		inline EVP_CIPHER_CTX& cipher_context::raw()
