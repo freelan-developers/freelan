@@ -99,7 +99,7 @@ if sys.platform.startswith('win32'):
 else:
     source_files = source_files + Glob('src/posix/*.cpp')
 
-project = ProgramProject(name, major, minor, libraries, source_files = source_files)
+project = ProgramProject(Dir('.'), name, major, minor, libraries, source_files = source_files)
 
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)
