@@ -22,7 +22,7 @@ if sys.platform.startswith('win32') or sys.platform.startswith('darwin'):
 
 libraries.append('boost_system')
 
-project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
+project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
 
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)
