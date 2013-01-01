@@ -6,7 +6,7 @@ Import('env project')
 
 import os
 
-samples_dirs = os.walk('.').next()[1]
+samples_dirs = os.walk(Dir('.').srcnode().abspath).next()[1]
 
 samples = env.SConscript(dirs = samples_dirs, exports = 'env project')
 

@@ -6,7 +6,7 @@ Import('env project')
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
-sample_project = project.Sample()
+sample_project = project.Sample(Dir('.'))
 sample_project.libraries.append('boost_thread')
 sample = env.FreelanProject(sample_project)
 
