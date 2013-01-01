@@ -24,7 +24,7 @@ if env['CC'] == 'gcc':
 else:
     libraries.append('libeay32')
 
-project = LibraryProject(name, major, minor, libraries, Glob('src/*.cpp'))
+project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
 
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)

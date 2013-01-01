@@ -6,7 +6,7 @@ Import('env project')
 
 ### YOU SHOULD NEVER CHANGE ANYTHING BELOW THIS LINE ###
 
-sample_project = project.Sample()
+sample_project = project.Sample(Dir('.'))
 sample = env.FreelanProject(sample_project)
 
 env.Alias('sample_' + sample_project.name, sample)
