@@ -10,40 +10,29 @@ import tools
 class Project(object):
     """A class to handle projects."""
 
-    def __init__(self, name, libraries, path=None):
+    def __init__(self, path, name, libraries):
         """Create a new Project reading from the specified path."""
 
         super(Project, self).__init__()
 
+        self.path = path
         self.name = name
         self.libraries = libraries
-
-        if path is None:
-            self.abspath = os.getcwd()
-        else:
-            self.abspath = os.path.normpath(os.path.join(os.getcwd(), path))
-
-        if not hasattr(os, 'related'):
-            if not self.abspath.startswith(os.getcwd()):
-                raise ValueError('Invalid path: ' + self.abspath)
-            self.path = self.abspath[len(os.getcwd()):] or '.'
-        else:
-            self.path = os.path.relpath(self.abspath)
 
 class LibraryProject(Project):
     """A class to handle library projects."""
 
-    def __init__(self, name, major, minor, libraries, source_files, include_path=None, path=None):
+    def __init__(self, path, name, major, minor, libraries, source_files, include_path=None):
         """Create a new LibraryProject reading from the specified path."""
 
-        super(LibraryProject, self).__init__(name, libraries, path)
+        super(LibraryProject, self).__init__(path, name, libraries)
 
         self.major = major
         self.minor = minor
         self.source_files = source_files
 
         if include_path is None:
-            self.include_path = os.path.join(self.path, 'include', self.name)
+            self.include_path = os.path.join(self.path.srcnode().abspath, 'include', self.name)
         else:
             self.include_path = include_path
 
@@ -62,7 +51,7 @@ class LibraryProject(Project):
         }
 
         self.static_library = env.FreelanStaticLibrary(
-            os.path.join(self.path, env.libdir),
+            os.path.join(self.path.abspath, env.libdir),
             self.name,
             self.major,
             self.minor,
@@ -75,7 +64,7 @@ class LibraryProject(Project):
             self.shared_library = []
         else:
             self.shared_library = env.FreelanSharedLibrary(
-                os.path.join(self.path, env.libdir),
+                os.path.join(self.path.abspath, env.libdir),
                 self.name,
                 self.major,
                 self.minor,
@@ -92,7 +81,9 @@ class LibraryProject(Project):
         libraries_install += env.Install(os.path.join(env['ARGUMENTS']['prefix'], env.libdir), self.shared_library)
 
         for include_file in self.include_files:
-            libraries_install += env.Install(os.path.dirname(os.path.join(env['ARGUMENTS']['prefix'], include_file)), include_file)
+            include_file = os.path.relpath(include_file, self.path.srcnode().abspath)
+            install_include_file = env.Install(os.path.dirname(os.path.join(env['ARGUMENTS']['prefix'], include_file)), include_file)
+            libraries_install.extend(install_include_file)
 
         return libraries_install
 
@@ -104,18 +95,15 @@ class LibraryProject(Project):
 
         return documentation
 
-    def Sample(self, libraries=None, path=None):
+    def Sample(self, path, libraries=None):
         """Build a sample project at the given path, or in the current directory if no path is specified."""
 
         if libraries is None:
             libraries = self.libraries[:]
 
-        if path is None:
-            name = os.path.basename(os.path.abspath(os.getcwd()))
-        else:
-            name = os.path.basename(os.path.abspath(path))
+        name = os.path.basename(os.path.abspath(path.abspath))
 
-        return SampleProject(self, name, libraries, None, path)
+        return SampleProject(path, self, name, libraries, None)
 
     def __get_files(self):
         """Get the project source files."""
@@ -127,17 +115,17 @@ class LibraryProject(Project):
 class ProgramProject(Project):
     "A class to handle program projects."""
 
-    def __init__(self, name, major, minor, libraries, source_files, include_path=None, path=None):
+    def __init__(self, path, name, major, minor, libraries, source_files, include_path=None):
         """Create a new ProgramProject reading from the specified path."""
 
-        super(ProgramProject, self).__init__(name, libraries, path)
+        super(ProgramProject, self).__init__(path, name, libraries)
 
         self.major = major
         self.minor = minor
         self.source_files = source_files
 
         if include_path is None:
-            self.include_path = os.path.join(self.path, 'src')
+            self.include_path = os.path.join(self.path.srcnode().abspath, 'src')
         else:
             self.include_path = include_path
 
@@ -145,7 +133,7 @@ class ProgramProject(Project):
         self.include_files = []
 
         for root, directories, files in os.walk(self.include_path):
-            self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
+            self.include_files.extend(file_tools.filter(files, ['*.h', '*.hpp']))
 
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
@@ -155,11 +143,14 @@ class ProgramProject(Project):
         }
 
         self.program = env.FreelanProgram(
-            os.path.join(self.path, env.bindir),
+            os.path.join(self.path.abspath, env.bindir),
             self.name,
             self.source_files,
             **_env
         )
+
+        if self.path.variant_dirs:
+            self.program = env.Install(os.path.join(self.path.srcnode().abspath, env.bindir), self.program)
 
         return self.program
 
@@ -178,10 +169,10 @@ class ProgramProject(Project):
 class SampleProject(Project):
     """A class to handle samples."""
 
-    def __init__(self, parent_project, name, libraries, source_files=None, path=None):
+    def __init__(self, path, parent_project, name, libraries, source_files=None):
         """Create a new sample project."""
 
-        super(SampleProject, self).__init__(name, libraries, path)
+        super(SampleProject, self).__init__(path, name, libraries)
 
         self.parent_project = parent_project
 
@@ -189,8 +180,8 @@ class SampleProject(Project):
         if source_files is None:
             self.source_files = []
 
-            for root, directories, files in os.walk(self.path):
-                self.source_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.c', '*.cpp'])]
+            for root, directories, files in os.walk(self.path.srcnode().abspath):
+                self.source_files.extend(file_tools.filter(files, ['*.c', '*.cpp']))
         else:
             self.source_files = source_files
 
@@ -200,17 +191,19 @@ class SampleProject(Project):
         parent_library = self.parent_project.static_library
 
         _env = {
-            'CPPPATH': [self.path, os.path.join(self.parent_project.abspath, 'include')],
-            'LIBPATH': [self.path, os.path.join(self.parent_project.abspath, env.libdir)],
+            'CPPPATH': [self.path.abspath, os.path.join(self.parent_project.path.abspath, 'include')],
+            'LIBPATH': [self.path.abspath, os.path.join(self.parent_project.path.abspath, env.libdir)],
             'LIBS': [self.parent_project.name + env.static_suffix] + self.libraries
         }
 
         sample = env.FreelanProgram(
-            self.path,
+            self.path.abspath,
             self.name,
             self.source_files,
             **_env
         )
 
-        return sample
+        if self.path.variant_dirs:
+            sample = env.Install(self.path.srcnode().abspath, sample)
 
+        return sample

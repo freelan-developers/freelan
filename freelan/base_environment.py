@@ -63,6 +63,16 @@ class BaseEnvironment(SConsEnvironment):
         if not 'SHLINKFLAGS' in self:
             self['SHLINKFLAGS'] = []
 
+    def get_variant_dir(self, suffix_dir=None):
+        """Get the variant dir."""
+
+        build_prefix = self['ARGUMENTS'].get('build-prefix')
+
+        if build_prefix and suffix_dir:
+            build_prefix = os.path.join(build_prefix, os.path.basename(suffix_dir.srcnode().abspath))
+
+        return build_prefix
+
     def FreelanProject(self, project):
         """Build a FreeLAN project."""
 
