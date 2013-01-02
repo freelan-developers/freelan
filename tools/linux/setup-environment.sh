@@ -24,6 +24,7 @@ done
 alias ldconfig="ldconfig -r ${FREELAN_INSTALL_ROOT}"
 
 # Freelan default installation goes into the build root
+export FREELAN_BUILD_PREFIX="${FREELAN_BUILD_ROOT}"
 export FREELAN_INSTALL_PREFIX="${FREELAN_INSTALL_ROOT}"
 
 export CPLUS_INCLUDE_PATH="${FREELAN_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
