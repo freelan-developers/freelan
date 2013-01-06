@@ -449,7 +449,12 @@ namespace freelan
 
 		values_type parameters;
 
+		//TODO: Implement this properly
+		json::array_type endpoints;
+		endpoints.items.push_back(json::string_type("0.0.0.0:12000"));
+
 		parameters.items["network"] = network;
+		parameters.items["endpoints"] = endpoints;
 
 		values_type values;
 
