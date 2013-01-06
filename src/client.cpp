@@ -264,7 +264,7 @@ namespace freelan
 		}
 	}
 
-	client::network_info client::join_network(const std::string& network)
+	network_info client::join_network(const std::string& network)
 	{
 		if (m_server_version_major == 1)
 		{
@@ -439,7 +439,7 @@ namespace freelan
 		return authority_certificate;
 	}
 
-	client::network_info client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network)
+	network_info_v1 client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network)
 	{
 		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + join_network_url;
 
@@ -455,7 +455,7 @@ namespace freelan
 
 		perform_post_request(request, url, parameters, values);
 
-		network_info ninfo;
+		network_info_v1 ninfo;
 
 		json::array_type users_certificates_array;
 

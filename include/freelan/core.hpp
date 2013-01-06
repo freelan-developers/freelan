@@ -66,6 +66,8 @@
 
 namespace freelan
 {
+	struct network_info;
+
 	/**
 	 * \brief The core class.
 	 */
@@ -344,6 +346,7 @@ namespace freelan
 			void async_update_server_configuration(int);
 			void update_server_configuration(int, bool delayed = false);
 			void set_ca_certificate(cert_type);
+			void set_network_information(const network_info& ninfo);
 			void set_identity(identity_store);
 			boost::asio::deadline_timer m_check_configuration_timer;
 	};

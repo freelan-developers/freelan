@@ -842,9 +842,16 @@ namespace freelan
 
 		if (CI_JOIN_NETWORK & items)
 		{
-			_client.join_network(m_configuration.server.network);
+			const network_info ninfo = _client.join_network(m_configuration.server.network);
 
-			//TODO: Implement
+			if (delayed)
+			{
+				m_io_service.post(boost::bind(&core::set_network_information, this, ninfo));
+			}
+			else
+			{
+				set_network_information(ninfo);
+			}
 		}
 
 		if (CI_SIGN & items)
@@ -876,6 +883,18 @@ namespace freelan
 		{
 			m_ca_store.add_certificate(ca_cert);
 		}
+	}
+
+	void core::set_network_information(const network_info& ninfo)
+	{
+		m_configuration.tap_adapter.ipv4_address_prefix_length = ninfo.ipv4_address_prefix_length;
+		m_logger(LL_INFORMATION) << "IPv4 address set to " << m_configuration.tap_adapter.ipv4_address_prefix_length;
+
+		m_configuration.tap_adapter.ipv6_address_prefix_length = ninfo.ipv6_address_prefix_length;
+		m_logger(LL_INFORMATION) << "IPv6 address set to " << m_configuration.tap_adapter.ipv6_address_prefix_length;
+
+		m_configuration.fscp.dynamic_contact_list.insert(m_configuration.fscp.dynamic_contact_list.end(), ninfo.users_certificates.begin(), ninfo.users_certificates.end());
+		m_logger(LL_INFORMATION) << "Added " << ninfo.users_certificates.size() << " dynamic contact(s)";
 	}
 
 	void core::set_identity(identity_store _identity)
