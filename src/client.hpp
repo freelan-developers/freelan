@@ -79,6 +79,7 @@ namespace freelan
 		ipv4_network_address ipv4_address_prefix_length;
 		ipv6_network_address ipv6_address_prefix_length;
 		std::vector<cryptoplus::x509::certificate> users_certificates;
+		std::vector<endpoint> users_endpoints;
 	};
 
 	/**

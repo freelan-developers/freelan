@@ -458,24 +458,39 @@ namespace freelan
 		network_info_v1 ninfo;
 
 		json::array_type users_certificates_array;
+		json::array_type users_endpoints_array;
 
 		assert_has_value(values, "ipv4_address_prefix_length", ninfo.ipv4_address_prefix_length);
 		assert_has_value(values, "ipv6_address_prefix_length", ninfo.ipv6_address_prefix_length);
 		assert_has_value(values, "users_certificates", users_certificates_array);
-
-		for (json::array_type::items_type::const_iterator it = users_certificates_array.items.begin(); it != users_certificates_array.items.end(); ++it)
-		{
-			ninfo.users_certificates.push_back(string_to_certificate(json::value_cast<json::string_type>(*it)));
-		}
+		assert_has_value(values, "users_endpoints", users_endpoints_array);
 
 		if (!ninfo.ipv4_address_prefix_length.is_null())
 		{
-			m_logger(LL_INFORMATION) << "IPv4 address is " << ninfo.ipv4_address_prefix_length << ".";
+			m_logger(LL_DEBUG) << "IPv4 address is " << ninfo.ipv4_address_prefix_length << ".";
 		}
 
 		if (!ninfo.ipv6_address_prefix_length.is_null())
 		{
-			m_logger(LL_INFORMATION) << "IPv6 address is " << ninfo.ipv6_address_prefix_length << ".";
+			m_logger(LL_DEBUG) << "IPv6 address is " << ninfo.ipv6_address_prefix_length << ".";
+		}
+
+		for (json::array_type::items_type::const_iterator it = users_certificates_array.items.begin(); it != users_certificates_array.items.end(); ++it)
+		{
+			const std::string cert_str = json::value_cast<json::string_type>(*it);
+
+			m_logger(LL_DEBUG) << "Adding " << cert_str << " to the users certificates list.";
+
+			ninfo.users_certificates.push_back(string_to_certificate(cert_str));
+		}
+
+		for (json::array_type::items_type::const_iterator it = users_endpoints_array.items.begin(); it != users_endpoints_array.items.end(); ++it)
+		{
+			const std::string ep = json::value_cast<json::string_type>(*it);
+
+			m_logger(LL_DEBUG) << "Adding " << ep << " to the users endpoints list.";
+
+			ninfo.users_endpoints.push_back(boost::lexical_cast<endpoint>(ep));
 		}
 
 		m_logger(LL_INFORMATION) << "Joined network \"" << network << "\" succesfully.";

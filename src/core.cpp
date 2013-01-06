@@ -893,8 +893,11 @@ namespace freelan
 		m_configuration.tap_adapter.ipv6_address_prefix_length = ninfo.ipv6_address_prefix_length;
 		m_logger(LL_INFORMATION) << "IPv6 address set to " << m_configuration.tap_adapter.ipv6_address_prefix_length;
 
+		//TODO: Detail the log below
 		m_configuration.fscp.dynamic_contact_list.insert(m_configuration.fscp.dynamic_contact_list.end(), ninfo.users_certificates.begin(), ninfo.users_certificates.end());
 		m_logger(LL_INFORMATION) << "Added " << ninfo.users_certificates.size() << " dynamic contact(s)";
+
+		//TODO: Remove old contacts received that way and add the new ones to the m_configuration.fscp.contact_list list.
 	}
 
 	void core::set_identity(identity_store _identity)
