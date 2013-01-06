@@ -918,6 +918,6 @@ namespace freelan
 		m_check_configuration_timer.expires_at(renewal_date);
 		m_check_configuration_timer.async_wait(boost::bind(&core::do_check_configuration, this, boost::asio::placeholders::error));
 
-		m_logger(LL_INFORMATION) << "Checking again configuration at " << boost::posix_time::to_simple_string(renewal_date) << ".";
+		m_logger(LL_INFORMATION) << "Checking again configuration on " << boost::posix_time::to_simple_string(renewal_date) << ".";
 	}
 }
