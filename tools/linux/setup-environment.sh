@@ -33,6 +33,9 @@ export LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
 export LD_LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
 export PATH="${FREELAN_INSTALL_PREFIX}/bin:${PATH}"
 
+# Freelan server
+export FREELAN_SERVER_CONFIGURATION_FILE=${FREELAN_ALL_ROOT}/tools/linux/freelan-server.cfg
+
 # Adds freelan-buildtools to the PYTHONPATH
 export PYTHONPATH="${FREELAN_ALL_ROOT}/freelan-buildtools:$PYTHONPATH"
 
