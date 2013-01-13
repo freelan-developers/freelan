@@ -82,6 +82,11 @@ namespace freelan
 		typedef freelan::endpoint endpoint;
 
 		/**
+		 * \brief The endpoint list type.
+		 */
+		typedef std::vector<endpoint> endpoint_list;
+
+		/**
 		 * \brief Create a new server configuration.
 		 */
 		server_configuration();
@@ -110,6 +115,11 @@ namespace freelan
 		 * \brief The network.
 		 */
 		std::string network;
+
+		/**
+		 * \brief The public endpoint list.
+		 */
+		endpoint_list public_endpoint_list;
 
 		/**
 		 * \brief The https proxy host name.
