@@ -49,6 +49,7 @@
 #include <stdexcept>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
 
 #include <cryptoplus/x509/name.hpp>
 #include <cryptoplus/x509/certificate_request.hpp>
@@ -264,11 +265,11 @@ namespace freelan
 		}
 	}
 
-	network_info client::join_network(const std::string& network)
+	network_info client::join_network(const std::string& network, const std::vector<endpoint>& endpoints)
 	{
 		if (m_server_version_major == 1)
 		{
-			return v1_join_network(m_request, m_join_network_url, network);
+			return v1_join_network(m_request, m_join_network_url, network, endpoints);
 		}
 		else
 		{
@@ -439,7 +440,7 @@ namespace freelan
 		return authority_certificate;
 	}
 
-	network_info_v1 client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network)
+	network_info_v1 client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network, const std::vector<endpoint>& endpoints)
 	{
 		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + join_network_url;
 
@@ -449,12 +450,15 @@ namespace freelan
 
 		values_type parameters;
 
-		//TODO: Implement this properly
-		json::array_type endpoints;
-		endpoints.items.push_back(json::string_type("0.0.0.0:12000"));
+		json::array_type _endpoints;
+
+		BOOST_FOREACH(const endpoint& ep, endpoints)
+		{
+			_endpoints.items.push_back(boost::lexical_cast<std::string>(ep));
+		}
 
 		parameters.items["network"] = network;
-		parameters.items["endpoints"] = endpoints;
+		parameters.items["endpoints"] = _endpoints;
 
 		values_type values;
 

@@ -842,7 +842,7 @@ namespace freelan
 
 		if (CI_JOIN_NETWORK & items)
 		{
-			const network_info ninfo = _client.join_network(m_configuration.server.network);
+			const network_info ninfo = _client.join_network(m_configuration.server.network, m_configuration.server.public_endpoint_list);
 
 			if (delayed)
 			{

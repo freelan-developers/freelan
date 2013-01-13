@@ -119,9 +119,10 @@ namespace freelan
 			/**
 			 * \brief Join a network.
 			 * \param network The network name.
+			 * \param endpoints The endpoints to publish.
 			 * \return The network authority certificate.
 			 */
-			network_info join_network(const std::string& network);
+			network_info join_network(const std::string& network, const std::vector<endpoint>& endpoints);
 
 			/**
 			 * \brief Renew the certificate.
@@ -141,7 +142,7 @@ namespace freelan
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
 			cryptoplus::x509::certificate v1_get_authority_certificate(curl&, const std::string&);
-			network_info_v1 v1_join_network(curl&, const std::string&, const std::string&);
+			network_info_v1 v1_join_network(curl&, const std::string&, const std::string&, const std::vector<endpoint>&);
 			cryptoplus::x509::certificate v1_sign_certificate_request(curl&, const std::string&, const cryptoplus::x509::certificate_request&);
 
 			// Version 1 sub-methods
