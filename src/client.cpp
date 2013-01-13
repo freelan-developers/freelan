@@ -497,9 +497,16 @@ namespace freelan
 		{
 			const std::string ep = json::value_cast<json::string_type>(*it);
 
-			m_logger(LL_DEBUG) << "Adding " << ep << " to the users endpoints list.";
+			try
+			{
+				m_logger(LL_DEBUG) << "Adding " << ep << " to the users endpoints list.";
 
-			ninfo.users_endpoints.push_back(boost::lexical_cast<endpoint>(ep));
+				ninfo.users_endpoints.push_back(boost::lexical_cast<endpoint>(ep));
+			}
+			catch (boost::bad_lexical_cast& ex)
+			{
+				m_logger(LL_WARNING) << "Unable to add " << ep << " to the users endpoints list: " << ex.what();
+			}
 		}
 
 		m_logger(LL_INFORMATION) << "Joined network \"" << network << "\" succesfully.";
