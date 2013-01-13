@@ -89,7 +89,6 @@ namespace freelan
 			{
 			}
 
-
 			/**
 			 * \brief Resolve the specified endpoint.
 			 * \tparam T The type of the endpoint.
@@ -166,6 +165,63 @@ namespace freelan
 	};
 
 	/**
+	 * \brief A visitor that adds a default port number to a endpoint that doesn't have one.
+	 */
+	class default_port_endpoint_visitor : public boost::static_visitor<endpoint>
+	{
+		public:
+
+			/**
+			 * \brief Create the visitor with a default port number.
+			 * \param default_port
+			 */
+			default_port_endpoint_visitor(uint16_t default_port) :
+				m_default_port(default_port)
+			{
+			}
+
+			/**
+			 * \brief Get the endpoint with a default endpoint if needed.
+			 * \tparam AddressType The address type.
+			 * \param ep The endpoint.
+			 * \return The new endpoint.
+			 */
+			template <typename AddressType>
+			result_type operator()(const ip_endpoint<AddressType>& ep) const
+			{
+				if (ep.has_port())
+				{
+					return ep;
+				}
+				else
+				{
+					return ip_endpoint<AddressType>(ep.address(), m_default_port);
+				}
+			}
+
+			/**
+			 * \brief Get the endpoint with a default endpoint if needed.
+			 * \param ep The endpoint.
+			 * \return The new endpoint.
+			 */
+			result_type operator()(const hostname_endpoint& ep) const
+			{
+				if (!ep.service().empty())
+				{
+					return ep;
+				}
+				else
+				{
+					return hostname_endpoint(ep.hostname(), boost::lexical_cast<std::string>(m_default_port));
+				}
+			}
+
+		private:
+
+			uint16_t m_default_port;
+	};
+
+	/**
 	 * \brief Read an endpoint from an input stream.
 	 * \param is The input stream.
 	 * \param value The value.
@@ -183,7 +239,17 @@ namespace freelan
 	{
 		return !(lhs == rhs);
 	}
+
+	/**
+	 * \brief Get an endpoint with a default port.
+	 * \param ep The endpoint.
+	 * \param default_port The default port.
+	 * \return The endpoint with the specified default port if it hadn't one yet.
+	 */
+	inline endpoint get_default_port_endpoint(const endpoint& ep, uint16_t default_port)
+	{
+		return boost::apply_visitor(default_port_endpoint_visitor(default_port), ep);
+	}
 }
 
 #endif /* FREELAN_ENDPOINT_HPP */
-
