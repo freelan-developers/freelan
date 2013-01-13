@@ -126,7 +126,9 @@ namespace freelan
 	{
 		typedef boost::asio::ip::udp::resolver::query query;
 
-		m_logger(LL_DEBUG) << "Core opening...";
+		m_listen_endpoint = boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on);
+
+		m_logger(LL_DEBUG) << "Core opening on " << *m_listen_endpoint << "...";
 
 		if (m_configuration.server.enabled)
 		{
@@ -149,7 +151,7 @@ namespace freelan
 		create_tap_adapter();
 
 		// FSCP
-		m_server->open(boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on));
+		m_server->open(*m_listen_endpoint);
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -373,6 +375,7 @@ namespace freelan
 		m_dynamic_contact_timer.cancel();
 
 		m_server->close();
+		m_listen_endpoint = boost::none;
 
 		m_logger(LL_DEBUG) << "Core closed.";
 	}
@@ -842,7 +845,18 @@ namespace freelan
 
 		if (CI_JOIN_NETWORK & items)
 		{
-			const network_info ninfo = _client.join_network(m_configuration.server.network, m_configuration.server.public_endpoint_list);
+			server_configuration::endpoint_list public_endpoint_list(m_configuration.server.public_endpoint_list.size());
+
+			const uint16_t default_port = m_server ? m_server->socket().local_endpoint().port() : m_listen_endpoint->port();
+
+			std::transform(
+					m_configuration.server.public_endpoint_list.begin(),
+					m_configuration.server.public_endpoint_list.end(),
+					public_endpoint_list.begin(),
+					boost::bind(get_default_port_endpoint, _1, default_port)
+					);
+
+			const network_info ninfo = _client.join_network(m_configuration.server.network, public_endpoint_list);
 
 			if (delayed)
 			{

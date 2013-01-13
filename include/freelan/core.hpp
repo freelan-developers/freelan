@@ -291,6 +291,7 @@ namespace freelan
 
 			// FSCP
 			void create_server();
+			boost::optional<ep_type> m_listen_endpoint;
 			boost::scoped_ptr<fscp::server> m_server;
 			boost::asio::ip::udp::resolver m_resolver;
 			boost::asio::deadline_timer m_contact_timer;
