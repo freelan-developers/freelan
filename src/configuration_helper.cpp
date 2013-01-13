@@ -107,6 +107,7 @@ po::options_description get_server_options()
 	("server.username", po::value<std::string>(), "The username.")
 	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
 	("server.network", po::value<std::string>(), "The network. If no network is specified, it will be taken from the FREELAN_SERVER_NETWORK environment variable.")
+	("server.public_endpoint", po::value<std::vector<fl::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::endpoint>(), ""), "A public endpoint to publish to others hosts.")
 	("server.user_agent", po::value<std::string>(), "The user agent. If no user agent is specified, \"" FREELAN_USER_AGENT "\" will be used.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
 	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
@@ -242,6 +243,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 			configuration.server.network = default_network;
 		}
 	}
+
+	configuration.server.public_endpoint_list = vm["server.public_endpoint"].as<std::vector<fl::endpoint> >();
 
 	if (vm.count("server.user_agent"))
 	{
