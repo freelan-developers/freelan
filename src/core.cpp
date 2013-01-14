@@ -916,16 +916,20 @@ namespace freelan
 
 			if (it != dcl.end())
 			{
+				m_logger(LL_INFORMATION) << "Removing " << user_cert.subject().oneline() << " from the dynamic list.";
+
 				dcl.erase(it, dcl.end());
 			}
 		}
 
 		m_last_dynamic_contact_list_from_server = ninfo.users_certificates;
 
-		dcl.insert(dcl.end(), m_last_dynamic_contact_list_from_server.begin(), m_last_dynamic_contact_list_from_server.end());
+		BOOST_FOREACH(cert_type& user_cert, m_last_dynamic_contact_list_from_server)
+		{
+			m_logger(LL_INFORMATION) << "Adding " << user_cert.subject().oneline() << " to the dynamic list.";
 
-		//TODO: Detail the log below
-		m_logger(LL_INFORMATION) << "Added " << m_last_dynamic_contact_list_from_server.size() << " dynamic contact(s)";
+			dcl.push_back(user_cert);
+		}
 	}
 
 	void core::set_identity(identity_store _identity)
