@@ -488,9 +488,11 @@ namespace freelan
 		{
 			const std::string cert_str = json::value_cast<json::string_type>(*it);
 
-			m_logger(LL_DEBUG) << "Adding " << cert_str << " to the users certificates list.";
+			const cryptoplus::x509::certificate user_cert = string_to_certificate(cert_str);
 
-			ninfo.users_certificates.push_back(string_to_certificate(cert_str));
+			m_logger(LL_DEBUG) << "Adding " << user_cert.subject().oneline() << " to the users certificates list.";
+
+			ninfo.users_certificates.push_back(user_cert);
 		}
 
 		for (json::array_type::items_type::const_iterator it = users_endpoints_array.items.begin(); it != users_endpoints_array.items.end(); ++it)
