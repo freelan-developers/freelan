@@ -22,6 +22,7 @@ It contains the following projects:
 To fetch those from their respective repositories, issue the following commands:
 
 > git submodule init
+
 > git submodule update
 
 And, to get the last revision for each repository:
