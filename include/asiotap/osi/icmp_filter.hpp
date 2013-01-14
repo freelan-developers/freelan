@@ -120,7 +120,7 @@ namespace asiotap
 		template <typename ParentFilterType>
 		inline void filter<icmp_frame, ParentFilterType>::add_checksum_filter()
 		{
-			add_filter(checksum_filter);
+			this->add_filter(checksum_filter);
 		}
 
 		template <>

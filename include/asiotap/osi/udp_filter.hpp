@@ -121,7 +121,7 @@ namespace asiotap
 		template <typename ParentFilterType>
 		inline void filter<udp_frame, ParentFilterType>::add_checksum_bridge_filter()
 		{
-			add_bridge_filter(checksum_bridge_filter);
+			this->add_bridge_filter(checksum_bridge_filter);
 		}
 
 		template <>
