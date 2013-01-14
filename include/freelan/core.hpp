@@ -91,6 +91,11 @@ namespace freelan
 			typedef fscp::server::cert_type cert_type;
 
 			/**
+			 * \brief The certificate list type.
+			 */
+			typedef std::vector<cert_type> cert_list_type;
+
+			/**
 			 * \brief The certificate revocation list type.
 			 */
 			typedef security_configuration::crl_type crl_type;
@@ -288,6 +293,7 @@ namespace freelan
 			// Members
 			freelan::configuration m_configuration;
 			freelan::logger m_logger;
+			cert_list_type m_last_dynamic_contact_list_from_server;
 
 			// FSCP
 			void create_server();

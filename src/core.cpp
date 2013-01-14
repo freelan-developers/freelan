@@ -907,11 +907,25 @@ namespace freelan
 		m_configuration.tap_adapter.ipv6_address_prefix_length = ninfo.ipv6_address_prefix_length;
 		m_logger(LL_INFORMATION) << "IPv6 address set to " << m_configuration.tap_adapter.ipv6_address_prefix_length;
 
-		//TODO: Detail the log below
-		m_configuration.fscp.dynamic_contact_list.insert(m_configuration.fscp.dynamic_contact_list.end(), ninfo.users_certificates.begin(), ninfo.users_certificates.end());
-		m_logger(LL_INFORMATION) << "Added " << ninfo.users_certificates.size() << " dynamic contact(s)";
+		// This eases writting
+		cert_list_type& dcl = m_configuration.fscp.dynamic_contact_list;
 
-		//TODO: Remove old contacts received that way and add the new ones to the m_configuration.fscp.contact_list list.
+		BOOST_FOREACH(cert_type& user_cert, m_last_dynamic_contact_list_from_server)
+		{
+			const cert_list_type::iterator it = std::remove(dcl.begin(), dcl.end(), user_cert);
+
+			if (it != dcl.end())
+			{
+				dcl.erase(it, dcl.end());
+			}
+		}
+
+		m_last_dynamic_contact_list_from_server = ninfo.users_certificates;
+
+		dcl.insert(dcl.end(), m_last_dynamic_contact_list_from_server.begin(), m_last_dynamic_contact_list_from_server.end());
+
+		//TODO: Detail the log below
+		m_logger(LL_INFORMATION) << "Added " << m_last_dynamic_contact_list_from_server.size() << " dynamic contact(s)";
 	}
 
 	void core::set_identity(identity_store _identity)
