@@ -52,6 +52,13 @@ To build then install everything from the directory (all sub-projects), type ins
 
 > scons install
 
+Graphical User Interface
+------------------------
+
+A graphical user interface exists (or will exist soon enough :D) and is available here:
+
+ - [freelan-gui](https://github.com/freelan-developers/freelan-gui) - A Graphical User Interface for FreeLAN.
+
 Packaging
 ----------
 
