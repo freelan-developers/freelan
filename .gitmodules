@@ -25,3 +25,6 @@
 [submodule "libkfather"]
 	path = libkfather
 	url = ../libkfather.git
+[submodule "freelan-gui"]
+	path = freelan-gui
+	url = ../freelan-gui
