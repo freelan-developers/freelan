@@ -101,3 +101,18 @@ class BaseEnvironment(SConsEnvironment):
         self.AlwaysBuild(indentation)
 
         return indentation
+
+    def FixBoostLibraries(self, env):
+        """Suffix the boost libraries found in the specified environment."""
+
+        if self['BOOST_SUFFIX'][self.mode]:
+            if 'LIBS' in env:
+                env['LIBS'] = [self.FixBoostLibrary(lib) for lib in env['LIBS']]
+
+    def FixBoostLibrary(self, lib):
+        """Suffix the specified library if it belongs to boost."""
+
+        if str(lib).startswith('boost_'):
+            return '%s%s%s' % (self['BOOST_PREFIX'][self.mode] or '', lib, self['BOOST_SUFFIX'][self.mode] or '')
+        else:
+            return lib

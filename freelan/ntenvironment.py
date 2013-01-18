@@ -96,7 +96,7 @@ class NtEnvironment(BaseEnvironment):
                 if key in self:
                     env[key] += self[key]
 
-        self.__fix_boost_libraries(env)
+        self.FixBoostLibraries(env)
 
         shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **env)
 
@@ -123,23 +123,8 @@ class NtEnvironment(BaseEnvironment):
                 if key in self:
                     env[key] += self[key]
 
-        self.__fix_boost_libraries(env)
+        self.FixBoostLibraries(env)
 
         program = self.Program(os.path.join(target_dir, name), source_files, **env)
 
         return program
-
-    def __fix_boost_libraries(self, env):
-        """Suffix the boost libraries found in the specified environment."""
-
-        if self['BOOST_SUFFIX'][self.mode]:
-            if 'LIBS' in env:
-                env['LIBS'] = [self.__fix_boost_library(lib) for lib in env['LIBS']]
-
-    def __fix_boost_library(self, lib):
-        """Suffix the specified library if it belongs to boost."""
-
-        if str(lib).startswith('boost_'):
-            return '%s%s%s' % (self['BOOST_PREFIX'][self.mode] or '', lib, self['BOOST_SUFFIX'][self.mode] or '')
-        else:
-            return lib
