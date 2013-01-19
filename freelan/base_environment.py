@@ -63,6 +63,13 @@ class BaseEnvironment(SConsEnvironment):
         if not 'SHLINKFLAGS' in self:
             self['SHLINKFLAGS'] = []
 
+        self['BOOST_PREFIX'] = {}
+        self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_PREFIX')
+        self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
+        self['BOOST_SUFFIX'] = {}
+        self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX')
+        self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
+
     def get_variant_dir(self, suffix_dir=None):
         """Get the variant dir."""
 

@@ -60,6 +60,13 @@ class PosixEnvironment(BaseEnvironment):
         self.Append(CPPPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'include')])
         self.Append(LIBPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'lib')])
 
+        self['BOOST_PREFIX'] = {}
+        self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_RELEASE_BOOST_PREFIX')
+        self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
+        self['BOOST_SUFFIX'] = {}
+        self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_RELEASE_BOOST_SUFFIX')
+        self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
+
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
 
@@ -70,6 +77,8 @@ class PosixEnvironment(BaseEnvironment):
             if isinstance(value, list):
                 if key in self:
                     env[key] += self[key]
+
+        self.FixBoostLibraries(env)
 
         shared_library = self.SharedLibrary(os.path.join(target_dir, name), source_files, **env)
         versioned_shared_library = self.Command(os.path.join(target_dir, 'lib%s.so.%s.%s' % (name, major, minor)), shared_library, SCons.Script.Copy("$TARGET", "$SOURCE"))
@@ -85,6 +94,8 @@ class PosixEnvironment(BaseEnvironment):
                 if key in self:
                     env[key] += self[key]
 
+        self.FixBoostLibraries(env)
+
         static_library = self.StaticLibrary(os.path.join(target_dir, name + self.static_suffix), source_files, **env)
 
         return static_library
@@ -97,6 +108,8 @@ class PosixEnvironment(BaseEnvironment):
             if isinstance(value, list):
                 if key in self:
                     env[key] += self[key]
+
+        self.FixBoostLibraries(env)
 
         program = self.Program(os.path.join(target_dir, name), source_files, **env)
 

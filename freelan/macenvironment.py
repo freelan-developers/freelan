@@ -48,13 +48,6 @@ class MacEnvironment(PosixEnvironment):
         self['LINKFLAGS'].append('-arch')
         self['LINKFLAGS'].append('x86_64')
 
-        self['BOOST_PREFIX'] = {}
-        self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_RELEASE_BOOST_PREFIX')
-        self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
-        self['BOOST_SUFFIX'] = {}
-        self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_RELEASE_BOOST_SUFFIX')
-        self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
-
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
 
