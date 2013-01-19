@@ -16,7 +16,7 @@ export FREELAN_SERVER_CA_CERTIFICATE=${FREELAN_SERVER_CONFIG_ROOT}/ca.crt
 openssl genrsa -out ${FREELAN_SERVER_CA_KEY} 2048
 
 # Generate the certificate request
-openssl req -new -subj '/CN=Certificate Authority/O=freelan/C=FR' -key ${FREELAN_SERVER_CA_KEY} -out ${FREELAN_SERVER_CA_CERTIFICATE_REQUEST}
+openssl req -config ${FREELAN_SERVER_OPENSSL_CONFIG_FILE} -new -subj '/CN=Certificate Authority/O=freelan/C=FR' -key ${FREELAN_SERVER_CA_KEY} -out ${FREELAN_SERVER_CA_CERTIFICATE_REQUEST}
 
 # Generate the certificate
 openssl x509 -req -days 3650 -in ${FREELAN_SERVER_CA_CERTIFICATE_REQUEST} -signkey ${FREELAN_SERVER_CA_KEY} -out ${FREELAN_SERVER_CA_CERTIFICATE}
