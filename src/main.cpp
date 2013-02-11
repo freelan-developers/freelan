@@ -345,6 +345,8 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 				configuration_file = fs::absolute(conf);
 
+				configuration_read = true;
+
 				break;
 			}
 		}
