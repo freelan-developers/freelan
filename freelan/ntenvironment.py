@@ -32,53 +32,61 @@ class NtEnvironment(BaseEnvironment):
         )
 
         if self['CC'] == 'gcc':
-            self['CXXFLAGS'].append('-Wall')
-            self['CXXFLAGS'].append('-Wextra')
-            self['CXXFLAGS'].append('-Werror')
-            self['CXXFLAGS'].append('-pedantic')
-            self['CXXFLAGS'].append('-Wshadow')
-            self['CXXFLAGS'].append('-Wno-long-long')
-            self['CXXFLAGS'].append('-Wno-uninitialized')
+            if not 'CXXFLAGS' in self.environ:
+                self.Append(CXXFLAGS='-Wall')
+                self.Append(CXXFLAGS='-Wextra')
+                self.Append(CXXFLAGS='-Werror')
+                self.Append(CXXFLAGS='-pedantic')
+                self.Append(CXXFLAGS='-Wshadow')
+                self.Append(CXXFLAGS='-Wno-long-long')
+                self.Append(CXXFLAGS='-Wno-uninitialized')
 
-            if self.mode == 'debug':
-                self['CXXFLAGS'].append('-g')
-            else:
-                self['CXXFLAGS'].append('-O3')
+                if self.mode == 'debug':
+                    self.Append(CXXFLAGS='-g')
+                else:
+                    self.Append(CXXFLAGS='-O3')
 
-            if tools.is_32_bits_architecture(self.arch):
-                self['CXXFLAGS'].append('-m32')
-                self['LINKFLAGS'].append('-m32')
-            elif tools.is_64_bits_architecture(self.arch):
-                self['CXXFLAGS'].append('-m64')
-                self['LINKFLAGS'].append('-m64')
+                if tools.is_32_bits_architecture(self.arch):
+                    self.Append(CXXFLAGS='-m32')
+                elif tools.is_64_bits_architecture(self.arch):
+                    self.Append(CXXFLAGS='-m64')
+
+            if not 'LINKFLAGS' in self.environ:
+
+                if tools.is_32_bits_architecture(self.arch):
+                    self.Append(LINKFLAGS='-m32')
+                elif tools.is_64_bits_architecture(self.arch):
+                    self.Append(LINKFLAGS='-m64')
 
             self['BOOST_PREFIX'] = {}
-            self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_PREFIX', os.environ.get('FREELAN_RELEASE_BOOST_PREFIX'))
-            self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_PREFIX', os.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release']))
+            self['BOOST_PREFIX']['release'] = self.environ.get('FREELAN_MINGW_RELEASE_BOOST_PREFIX', self.environ.get('FREELAN_RELEASE_BOOST_PREFIX'))
+            self['BOOST_PREFIX']['debug'] = self.environ.get('FREELAN_MINGW_DEBUG_BOOST_PREFIX', self.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release']))
             self['BOOST_SUFFIX'] = {}
-            self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX', os.environ.get('FREELAN_RELEASE_BOOST_SUFFIX'))
-            self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', os.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release']))
+            self['BOOST_SUFFIX']['release'] = self.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX', self.environ.get('FREELAN_RELEASE_BOOST_SUFFIX'))
+            self['BOOST_SUFFIX']['debug'] = self.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release']))
 
-            self['ARGUMENTS'].setdefault('build-prefix', os.environ.get('FREELAN_MINGW_BUILD_PREFIX', os.environ.get('FREELAN_BUILD_PREFIX', None)))
-            self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_MINGW_INSTALL_PREFIX', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\FreeLAN')))
+            self['ARGUMENTS'].setdefault('build-prefix', self.environ.get('FREELAN_MINGW_BUILD_PREFIX', self.environ.get('FREELAN_BUILD_PREFIX', None)))
+            self['ARGUMENTS'].setdefault('prefix', self.environ.get('FREELAN_MINGW_INSTALL_PREFIX', self.environ.get('FREELAN_INSTALL_PREFIX', r'C:\FreeLAN')))
 
         else:
-            if self.mode != 'debug':
-                self['CXXFLAGS'].append('/O2')
+            if not 'CXXFLAGS' in self.environ:
 
-            self['CXXFLAGS'].append('/MD')
-            self['CXXFLAGS'].append('/EHsc')
-            self['CXXFLAGS'].append('/DBOOST_ALL_NO_LIB')
+                if self.mode != 'debug':
+                    self.Append(CXXFLAGS='/O2')
+
+                self.Append(CXXFLAGS='/MD')
+                self.Append(CXXFLAGS='/EHsc')
+                self.Append(CXXFLAGS='/DBOOST_ALL_NO_LIB')
 
             self['BOOST_PREFIX'] = {}
-            self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_MSVC_RELEASE_BOOST_PREFIX', os.environ.get('FREELAN_RELEASE_BOOST_PREFIX'))
-            self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_MSVC_DEBUG_BOOST_PREFIX', os.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release']))
+            self['BOOST_PREFIX']['release'] = self.environ.get('FREELAN_MSVC_RELEASE_BOOST_PREFIX', self.environ.get('FREELAN_RELEASE_BOOST_PREFIX'))
+            self['BOOST_PREFIX']['debug'] = self.environ.get('FREELAN_MSVC_DEBUG_BOOST_PREFIX', self.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release']))
             self['BOOST_SUFFIX'] = {}
-            self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MSVC_RELEASE_BOOST_SUFFIX', os.environ.get('FREELAN_RELEASE_BOOST_SUFFIX'))
-            self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MSVC_DEBUG_BOOST_SUFFIX', os.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release']))
+            self['BOOST_SUFFIX']['release'] = self.environ.get('FREELAN_MSVC_RELEASE_BOOST_SUFFIX', self.environ.get('FREELAN_RELEASE_BOOST_SUFFIX'))
+            self['BOOST_SUFFIX']['debug'] = self.environ.get('FREELAN_MSVC_DEBUG_BOOST_SUFFIX', self.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release']))
 
-            self['ARGUMENTS'].setdefault('build-prefix', os.environ.get('FREELAN_MSVC_BUILD_PREFIX', os.environ.get('FREELAN_BUILD_PREFIX', None)))
-            self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_MSVC_INSTALL_PREFIX', os.environ.get('FREELAN_INSTALL_PREFIX', r'C:\FreeLAN-VC')))
+            self['ARGUMENTS'].setdefault('build-prefix', self.environ.get('FREELAN_MSVC_BUILD_PREFIX', self.environ.get('FREELAN_BUILD_PREFIX', None)))
+            self['ARGUMENTS'].setdefault('prefix', self.environ.get('FREELAN_MSVC_INSTALL_PREFIX', self.environ.get('FREELAN_INSTALL_PREFIX', r'C:\FreeLAN-VC')))
 
         self.Append(CPPPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'include')])
         self.Append(LIBPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'lib')])

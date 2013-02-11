@@ -33,20 +33,25 @@ class MacEnvironment(PosixEnvironment):
             **kw
         )
 
-        if any("-m64" in s for s in self['CXXFLAGS']):
-            self['CXXFLAGS'].remove('-m64')
-            self['LINKFLAGS'].remove('-m64')
-        if any("-m32" in s for s in self['CXXFLAGS']):
-            self['CXXFLAGS'].remove('-m32')
-            self['LINKFLAGS'].remove('-m32')
+        if not 'CXXFLAGS' in self.environ:
+            for flag in ['-m64', '-m32']:
+                if flag in self['CXXFLAGS']:
+                    self['CXXFLAGS'].remove(flag)
 
-        self['CXXFLAGS'].append('-arch')
-        self['CXXFLAGS'].append('x86_64')
+            self.Append(CXXFLAGS='-arch')
+            self.Append(CXXFLAGS='x86_64')
 
-        # if compiled from sources, additionnal libs are in /usr/local/lib       
-        self['LINKFLAGS'].append('-L/usr/local/lib')
-        self['LINKFLAGS'].append('-arch')
-        self['LINKFLAGS'].append('x86_64')
+        if not 'LINKFLAGS' in self.environ:
+            for flag in ['-m64', '-m32']:
+                if flag in self['LINKFLAGS']:
+                    self['LINKFLAGS'].remove(flag)
+
+            self.Append(LINKFLAGS='-arch')
+            self.Append(LINKFLAGS='x86_64')
+
+        if not 'LIBPATH' in self.environ:
+            # If compiled from sources, additionnal libraries are in /usr/local/lib
+            self.Append(LIBPATH='/usr/local/lib')
 
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""

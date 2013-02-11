@@ -19,14 +19,16 @@ class BaseEnvironment(SConsEnvironment):
     ):
         """Create a new BaseEnvironment instance."""
 
+        environ = kw.get('ENV', {})
+
         if _tools is None:
-            toolset = kw.setdefault('ARGUMENTS', {}).get('toolset', os.environ.get('FREELAN_TOOLSET', 'default'))
+            toolset = kw.setdefault('ARGUMENTS', {}).get('toolset', environ.get('FREELAN_TOOLSET', 'default'))
             _tools = [toolset, 'astyle', 'doxygen', 'nsis', 'innosetup']
 
         if toolpath is None:
             toolpath = [os.path.abspath(os.path.dirname(__file__))]
 
-        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', os.environ.get('FREELAN_ARCH', platform.machine()))
+        self.arch = kw.setdefault('ARGUMENTS', {}).get('arch', environ.get('FREELAN_ARCH', platform.machine()))
 
         kw.setdefault('TARGET_ARCH', self.arch)
 
@@ -40,35 +42,33 @@ class BaseEnvironment(SConsEnvironment):
             **kw
         )
 
-        self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', os.environ.get('FREELAN_MODE', 'release'))
-        self.bindir = kw.setdefault('ARGUMENTS', {}).get('bindir', os.environ.get('FREELAN_BINDIR', 'bin'))
-        self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', os.environ.get('FREELAN_LIBDIR', 'lib'))
-        self.static_suffix = kw.setdefault('ARGUMENTS', {}).get('static_suffix', os.environ.get('FREELAN_STATIC_SUFFIX', '_static'))
+        for flag in [
+            'CFLAGS',
+            'CXXFLAGS',
+            'LINKFLAGS',
+            'SHLINKFLAGS',
+        ]:
+            if flag in self.environ:
+                self.Append(**{flag: self.environ[flag]})
+
+        self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', self.environ.get('FREELAN_MODE', 'release'))
+        self.bindir = kw.setdefault('ARGUMENTS', {}).get('bindir', self.environ.get('FREELAN_BINDIR', 'bin'))
+        self.libdir = kw.setdefault('ARGUMENTS', {}).get('libdir', self.environ.get('FREELAN_LIBDIR', 'lib'))
+        self.static_suffix = kw.setdefault('ARGUMENTS', {}).get('static_suffix', self.environ.get('FREELAN_STATIC_SUFFIX', '_static'))
 
         if not self.mode in ['release', 'debug']:
             raise ValueError('\"mode\" can be either \"release\" or \"debug\"')
 
-        # Parse environment overloads
-        if 'ENV' in kw:
-            for key, value in kw['ENV'].items():
-                if key.startswith('FREELAN_ENV_'):
-                    self[key[len('FREELAN_ENV_'):]] = value
-
-        if not 'CXXFLAGS' in self:
-            self['CXXFLAGS'] = []
-
-        if not 'LINKFLAGS' in self:
-            self['LINKFLAGS'] = []
-
-        if not 'SHLINKFLAGS' in self:
-            self['SHLINKFLAGS'] = []
-
         self['BOOST_PREFIX'] = {}
-        self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_PREFIX')
-        self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
+        self['BOOST_PREFIX']['release'] = self.environ.get('FREELAN_MINGW_RELEASE_BOOST_PREFIX')
+        self['BOOST_PREFIX']['debug'] = self.environ.get('FREELAN_MINGW_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
         self['BOOST_SUFFIX'] = {}
-        self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX')
-        self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
+        self['BOOST_SUFFIX']['release'] = self.environ.get('FREELAN_MINGW_RELEASE_BOOST_SUFFIX')
+        self['BOOST_SUFFIX']['debug'] = self.environ.get('FREELAN_MINGW_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
+
+    @property
+    def environ(self):
+        return self['ENV'] if 'ENV' in self else {}
 
     def get_variant_dir(self, suffix_dir=None):
         """Get the variant dir."""

@@ -33,39 +33,45 @@ class PosixEnvironment(BaseEnvironment):
             **kw
         )
 
-        self['CXXFLAGS'].append('-Wall')
-        self['CXXFLAGS'].append('-Wextra')
-        self['CXXFLAGS'].append('-Werror')
-        self['CXXFLAGS'].append('-pedantic')
-        self['CXXFLAGS'].append('-Wshadow')
-        self['CXXFLAGS'].append('-Wno-long-long')
-        self['CXXFLAGS'].append('-Wno-uninitialized')
-        self['CXXFLAGS'].append('-Wno-strict-aliasing')
+        if not 'CXXFLAGS' in self.environ:
+            self.Append(CXXFLAGS='-Wall')
+            self.Append(CXXFLAGS='-Wextra')
+            self.Append(CXXFLAGS='-Werror')
+            self.Append(CXXFLAGS='-pedantic')
+            self.Append(CXXFLAGS='-Wshadow')
+            self.Append(CXXFLAGS='-Wno-long-long')
+            self.Append(CXXFLAGS='-Wno-uninitialized')
+            self.Append(CXXFLAGS='-Wno-strict-aliasing')
 
-        if self.mode == 'debug':
-            self['CXXFLAGS'].append('-g')
-        else:
-            self['CXXFLAGS'].append('-O3')
+            if self.mode == 'debug':
+                self.Append(CXXFLAGS='-g')
+            else:
+                self.Append(CXXFLAGS='-O3')
 
-        if tools.is_32_bits_architecture(self.arch):
-            self['CXXFLAGS'].append('-m32')
-            self['LINKFLAGS'].append('-m32')
-        elif tools.is_64_bits_architecture(self.arch):
-            self['CXXFLAGS'].append('-m64')
-            self['LINKFLAGS'].append('-m64')
+            if tools.is_32_bits_architecture(self.arch):
+                self.Append(CXXFLAGS='-m32')
+            elif tools.is_64_bits_architecture(self.arch):
+                self.Append(CXXFLAGS='-m64')
 
-        self['ARGUMENTS'].setdefault('build-prefix', os.environ.get('FREELAN_BUILD_PREFIX', None))
-        self['ARGUMENTS'].setdefault('prefix', os.environ.get('FREELAN_INSTALL_PREFIX', '/usr/local'))
+        if not 'LINKFLAGS' in self.environ:
+
+            if tools.is_32_bits_architecture(self.arch):
+                self.Append(LINKFLAGS='-m32')
+            elif tools.is_64_bits_architecture(self.arch):
+                self.Append(LINKFLAGS='-m64')
+
+        self['ARGUMENTS'].setdefault('build-prefix', self.environ.get('FREELAN_BUILD_PREFIX', None))
+        self['ARGUMENTS'].setdefault('prefix', self.environ.get('FREELAN_INSTALL_PREFIX', '/usr/local'))
 
         self.Append(CPPPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'include')])
         self.Append(LIBPATH=[os.path.join(self['ARGUMENTS']['prefix'], 'lib')])
 
         self['BOOST_PREFIX'] = {}
-        self['BOOST_PREFIX']['release'] = os.environ.get('FREELAN_RELEASE_BOOST_PREFIX')
-        self['BOOST_PREFIX']['debug'] = os.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
+        self['BOOST_PREFIX']['release'] = self.environ.get('FREELAN_RELEASE_BOOST_PREFIX')
+        self['BOOST_PREFIX']['debug'] = self.environ.get('FREELAN_DEBUG_BOOST_PREFIX', self['BOOST_PREFIX']['release'])
         self['BOOST_SUFFIX'] = {}
-        self['BOOST_SUFFIX']['release'] = os.environ.get('FREELAN_RELEASE_BOOST_SUFFIX')
-        self['BOOST_SUFFIX']['debug'] = os.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
+        self['BOOST_SUFFIX']['release'] = self.environ.get('FREELAN_RELEASE_BOOST_SUFFIX')
+        self['BOOST_SUFFIX']['debug'] = self.environ.get('FREELAN_DEBUG_BOOST_SUFFIX', self['BOOST_SUFFIX']['release'])
 
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
