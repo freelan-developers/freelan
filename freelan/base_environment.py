@@ -43,13 +43,26 @@ class BaseEnvironment(SConsEnvironment):
         )
 
         for flag in [
+            'ARFLAGS',
             'CFLAGS',
             'CXXFLAGS',
+            'RANLIBFLAGS',
             'LINKFLAGS',
             'SHLINKFLAGS',
         ]:
             if flag in self.environ:
                 self.Append(**{flag: self.environ[flag]})
+
+        for flag in [
+            'AR',
+            'CC',
+            'CXX',
+            'LINK',
+            'SHLINK',
+            'RANLIB',
+        ]:
+            if flag in self.environ:
+                self[flag] = self.environ[flag]
 
         self.mode = kw.setdefault('ARGUMENTS', {}).get('mode', self.environ.get('FREELAN_MODE', 'release'))
         self.bindir = kw.setdefault('ARGUMENTS', {}).get('bindir', self.environ.get('FREELAN_BINDIR', 'bin'))

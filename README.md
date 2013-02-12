@@ -122,9 +122,25 @@ Here is the list of the supported variables:
 
 The rationale for the prefix/suffix variables is that under Windows, Boost by default decorates its libraries names with the compiler name and the Boost version. We designed the Freelan build tools so that they match the defaults of the libraries we depend on.
 
-You may also define SCons specific environment variables by prefixing them with `FREELAN_ENV_`.
+Cross compilation
+-----------------
 
-Example: To use `g++44` instead of `g++` as the `CXX` environment variable, define `FREELAN_ENV_CXX` to `g++44`.
+The freelan build tools also handle some specific variables to allow cross-compilation:
+
+- `AR`, the ar tool.
+- `ARFLAGS`, the ar flags.
+- `CC`, the C compiler.
+- `CFLAGS`, the C compiler flags.
+- `CXX`, the C++ compiler.
+- `CXXFLAGS`, the C++ compiler flags.
+- `LINK`, the linker.
+- `LINKFLAGS`, the linker flags.
+- `SHLINK`, the shared library linker.
+- `SHLINKFLAGS`, the shared library linker flags.
+- `RANLIB`, the ranlib tool.
+- `RANLIBFLAGS`, the ranlib flags.
+
+Example: To use `g++44` instead of `g++`, define the `CXX` environment variable to `g++44`.
 
 Sample configuration
 --------------------
