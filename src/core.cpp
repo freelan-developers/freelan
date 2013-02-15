@@ -901,11 +901,25 @@ namespace freelan
 
 	void core::set_network_information(const network_info& ninfo)
 	{
-		m_configuration.tap_adapter.ipv4_address_prefix_length = ninfo.ipv4_address_prefix_length;
-		m_logger(LL_INFORMATION) << "IPv4 address set to " << m_configuration.tap_adapter.ipv4_address_prefix_length;
+		if (!ninfo.ipv4_address_prefix_length.is_null())
+		{
+			m_configuration.tap_adapter.ipv4_address_prefix_length = ninfo.ipv4_address_prefix_length;
+			m_logger(LL_INFORMATION) << "IPv4 address set to " << m_configuration.tap_adapter.ipv4_address_prefix_length;
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << "No IPv4 address set.";
+		}
 
-		m_configuration.tap_adapter.ipv6_address_prefix_length = ninfo.ipv6_address_prefix_length;
-		m_logger(LL_INFORMATION) << "IPv6 address set to " << m_configuration.tap_adapter.ipv6_address_prefix_length;
+		if (!ninfo.ipv6_address_prefix_length.is_null())
+		{
+			m_configuration.tap_adapter.ipv6_address_prefix_length = ninfo.ipv6_address_prefix_length;
+			m_logger(LL_INFORMATION) << "IPv6 address set to " << m_configuration.tap_adapter.ipv6_address_prefix_length;
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << "No IPv6 address set.";
+		}
 
 		// This eases writting
 		cert_list_type& dcl = m_configuration.fscp.dynamic_contact_list;

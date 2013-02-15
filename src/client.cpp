@@ -126,6 +126,23 @@ namespace freelan
 			value = json::value_cast<T>(_val);
 		}
 
+		template <typename T>
+		void assert_has_value(const client::values_type& values, const std::string& key, boost::optional<T>& value)
+		{
+			json::value_type _val;
+
+			assert_has_value(values, key, _val);
+
+			if (json::is<json::null_type>(_val))
+			{
+				value = boost::none;
+			}
+			else
+			{
+				value = json::value_cast<T>(_val);
+			}
+		}
+
 		void assert_has_value(const client::values_type& values, const std::string& key, cryptoplus::x509::certificate& cert)
 		{
 			std::string cert_str;
@@ -137,20 +154,34 @@ namespace freelan
 
 		void assert_has_value(const client::values_type& values, const std::string& key, ipv4_network_address& ep)
 		{
-			std::string str;
+			boost::optional<std::string> str;
 
 			assert_has_value(values, key, str);
 
-			ep = boost::lexical_cast<ipv4_network_address>(str);
+			if (str)
+			{
+				ep = boost::lexical_cast<ipv4_network_address>(*str);
+			}
+			else
+			{
+				ep = ipv4_network_address::null();
+			}
 		}
 
 		void assert_has_value(const client::values_type& values, const std::string& key, ipv6_network_address& ep)
 		{
-			std::string str;
+			boost::optional<std::string> str;
 
 			assert_has_value(values, key, str);
 
-			ep = boost::lexical_cast<ipv6_network_address>(str);
+			if (str)
+			{
+				ep = boost::lexical_cast<ipv6_network_address>(*str);
+			}
+			else
+			{
+				ep = ipv6_network_address::null();
+			}
 		}
 	}
 
@@ -478,10 +509,18 @@ namespace freelan
 		{
 			m_logger(LL_DEBUG) << "IPv4 address is " << ninfo.ipv4_address_prefix_length << ".";
 		}
+		else
+		{
+			m_logger(LL_DEBUG) << "No IPv4 address specified.";
+		}
 
 		if (!ninfo.ipv6_address_prefix_length.is_null())
 		{
 			m_logger(LL_DEBUG) << "IPv6 address is " << ninfo.ipv6_address_prefix_length << ".";
+		}
+		else
+		{
+			m_logger(LL_DEBUG) << "No IPv6 address specified.";
 		}
 
 		for (json::array_type::items_type::const_iterator it = users_certificates_array.items.begin(); it != users_certificates_array.items.end(); ++it)
