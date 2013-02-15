@@ -916,7 +916,7 @@ namespace freelan
 
 			if (it != dcl.end())
 			{
-				m_logger(LL_INFORMATION) << "Removing " << user_cert.subject().oneline() << " from the dynamic list.";
+				m_logger(LL_INFORMATION) << "Removing " << user_cert.subject().oneline() << " from the dynamic contact list.";
 
 				dcl.erase(it, dcl.end());
 			}
@@ -926,9 +926,33 @@ namespace freelan
 
 		BOOST_FOREACH(cert_type& user_cert, m_last_dynamic_contact_list_from_server)
 		{
-			m_logger(LL_INFORMATION) << "Adding " << user_cert.subject().oneline() << " to the dynamic list.";
+			m_logger(LL_INFORMATION) << "Adding " << user_cert.subject().oneline() << " to the dynamic contact list.";
 
 			dcl.push_back(user_cert);
+		}
+
+		// This eases writting
+		endpoint_list& el = m_configuration.fscp.contact_list;
+
+		BOOST_FOREACH(endpoint& ep, m_last_contact_list_from_server)
+		{
+			const endpoint_list::iterator it = std::remove(el.begin(), el.end(), ep);
+
+			if (it != el.end())
+			{
+				m_logger(LL_INFORMATION) << "Removing " << ep << " from the contact list.";
+
+				el.erase(it, el.end());
+			}
+		}
+
+		m_last_contact_list_from_server = ninfo.users_endpoints;
+
+		BOOST_FOREACH(endpoint& ep, m_last_contact_list_from_server)
+		{
+			m_logger(LL_INFORMATION) << "Adding " << ep << " to the contact list.";
+
+			el.push_back(ep);
 		}
 	}
 

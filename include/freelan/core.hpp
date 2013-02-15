@@ -91,6 +91,11 @@ namespace freelan
 			typedef fscp::server::cert_type cert_type;
 
 			/**
+			 * \brief The endpoint list type.
+			 */
+			typedef std::vector<endpoint> endpoint_list;
+
+			/**
 			 * \brief The certificate list type.
 			 */
 			typedef std::vector<cert_type> cert_list_type;
@@ -293,6 +298,7 @@ namespace freelan
 			// Members
 			freelan::configuration m_configuration;
 			freelan::logger m_logger;
+			endpoint_list m_last_contact_list_from_server;
 			cert_list_type m_last_dynamic_contact_list_from_server;
 
 			// FSCP
