@@ -119,6 +119,7 @@ Here is the list of the supported variables:
 - `FREELAN_MSVC_DEBUG_BOOST_PREFIX`, Windows only. The Boost library prefix to use for debug builds with Microsoft Visual Studio. If not specified, `FREELAN_MSVC_RELEASE_BOOST_PREFIX` is used for both release and debug builds.
 - `FREELAN_MSVC_RELEASE_BOOST_SUFFIX`, Windows only. The Boost library suffix to use for release builds with Microsoft Visual Studio.
 - `FREELAN_MSVC_DEBUG_BOOST_SUFFIX`, Windows only. The Boost library suffix to use for debug builds with Microsoft Visual Studio. If not specified, `FREELAN_MSVC_RELEASE_BOOST_SUFFIX` is used for both release and debug builds.
+- `FREELAN_FAKE_LDCONFIG`, POSIX operating systems only. Tell the build tools to simulate ldconfig by generating `libfoo.so.major` files as well as the regular `libfoo.so` and `libfoo.so.major.minor` files.
 
 The rationale for the prefix/suffix variables is that under Windows, Boost by default decorates its libraries names with the compiler name and the Boost version. We designed the Freelan build tools so that they match the defaults of the libraries we depend on.
 
