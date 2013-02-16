@@ -4,7 +4,7 @@ The main SConscript file.
 
 name = 'iconvplus'
 major = '1'
-minor = '0'
+minor = '1'
 libraries = []
 
 # You should not need to modify anything below this line
