@@ -15,7 +15,7 @@ env = env.Clone()
 
 import os, sys
 
-from freelan.build_tools import LibraryProject
+from freelan.buildtools import LibraryProject
 
 if sys.platform.startswith('win32') or sys.platform.startswith('darwin'):
     libraries.append('iconv')
