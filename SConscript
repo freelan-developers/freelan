@@ -15,7 +15,7 @@ env = env.Clone()
 
 import os
 
-from freelan.build_tools import LibraryProject
+from freelan.buildtools import LibraryProject
 
 if env['CC'] == 'gcc':
     libraries.append('crypto')
