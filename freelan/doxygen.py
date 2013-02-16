@@ -18,12 +18,10 @@ def DoxyfileParse(file_contents):
     lex.whitespace = lex.whitespace.replace("\n", "")
     lex.escape = ""
 
-    lineno = lex.lineno
     token = lex.get_token()
     key = token    # the first token should be a key
     last_token = ""
     key_token = False
-    next_key = False
     new_data = True
 
     def append_data(data, key, new_data, token):
@@ -118,7 +116,8 @@ def DoxySourceScan(node, env, path):
                 for pattern in file_patterns:
                     sources.extend(glob.glob("/".join([node, pattern])))
 
-    sources = map( lambda path: env.File(path), sources )
+    sources = map(env.File, sources)
+
     return sources
 
 
@@ -190,4 +189,3 @@ def exists(env):
     Make sure doxygen exists.
     """
     return env.Detect("doxygen")
-

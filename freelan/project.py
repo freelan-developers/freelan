@@ -4,8 +4,7 @@ import os
 import sys
 import fnmatch
 
-import file_tools
-import tools
+import freelan.file_tools
 
 class Project(object):
     """A class to handle projects."""
@@ -40,7 +39,7 @@ class LibraryProject(Project):
         self.include_files = []
 
         for root, directories, files in os.walk(self.include_path):
-            self.include_files += [os.path.join(root, file) for file in file_tools.filter(files, ['*.h', '*.hpp'])]
+            self.include_files += [os.path.join(root, file) for file in freelan.file_tools.filter(files, ['*.h', '*.hpp'])]
 
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
@@ -133,7 +132,7 @@ class ProgramProject(Project):
         self.include_files = []
 
         for root, directories, files in os.walk(self.include_path):
-            self.include_files.extend(file_tools.filter(files, ['*.h', '*.hpp']))
+            self.include_files.extend(freelan.file_tools.filter(files, ['*.h', '*.hpp']))
 
     def configure_environment(self, env):
         """Configure the given environment for building the current project."""
@@ -181,7 +180,7 @@ class SampleProject(Project):
             self.source_files = []
 
             for root, directories, files in os.walk(self.path.srcnode().abspath):
-                self.source_files.extend(file_tools.filter(files, ['*.c', '*.cpp']))
+                self.source_files.extend(freelan.file_tools.filter(files, ['*.c', '*.cpp']))
         else:
             self.source_files = source_files
 

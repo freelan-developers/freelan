@@ -1,13 +1,8 @@
 """A Mac OS X based system specialized environment class."""
 
-from posixenvironment import PosixEnvironment
+from freelan.posixenvironment import PosixEnvironment
 
 import os
-import platform
-
-import SCons
-
-import tools
 
 class MacEnvironment(PosixEnvironment):
     """An Mac OS X environment class."""

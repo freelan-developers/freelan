@@ -1,6 +1,7 @@
 """A set of tools functions."""
 
 def unique(seq):
+    """A generator that only yields element once."""
     seen = set()
     for item in seq:
         if item not in seen:

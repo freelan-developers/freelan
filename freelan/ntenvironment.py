@@ -1,11 +1,10 @@
 """A NT based system specialized environment class."""
 
-from base_environment import BaseEnvironment
+from freelan.base_environment import BaseEnvironment
 
 import os
-import platform
 
-import tools
+import freelan.tools
 
 class NtEnvironment(BaseEnvironment):
     """An environment class."""
@@ -46,16 +45,16 @@ class NtEnvironment(BaseEnvironment):
                 else:
                     self.Append(CXXFLAGS='-O3')
 
-                if tools.is_32_bits_architecture(self.arch):
+                if freelan.tools.is_32_bits_architecture(self.arch):
                     self.Append(CXXFLAGS='-m32')
-                elif tools.is_64_bits_architecture(self.arch):
+                elif freelan.tools.is_64_bits_architecture(self.arch):
                     self.Append(CXXFLAGS='-m64')
 
             if not 'LINKFLAGS' in self.environ:
 
-                if tools.is_32_bits_architecture(self.arch):
+                if freelan.tools.is_32_bits_architecture(self.arch):
                     self.Append(LINKFLAGS='-m32')
-                elif tools.is_64_bits_architecture(self.arch):
+                elif freelan.tools.is_64_bits_architecture(self.arch):
                     self.Append(LINKFLAGS='-m64')
 
             self['BOOST_PREFIX'] = {}
