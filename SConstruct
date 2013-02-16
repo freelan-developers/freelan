@@ -2,7 +2,7 @@
 
 import os
 
-from freelan.build_tools import Environment
+from freelan.buildtools import Environment
 
 env = Environment(ENV=os.environ.copy(), ARGUMENTS=ARGUMENTS)
 
