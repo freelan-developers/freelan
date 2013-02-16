@@ -16,7 +16,7 @@ env = env.Clone()
 import os
 import sys
 
-from freelan.build_tools import LibraryProject
+from freelan.buildtools import LibraryProject
 
 if sys.platform.startswith('win32'):
     libraries.append('iconvplus_static')
