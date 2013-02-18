@@ -61,7 +61,8 @@ namespace kfather
 
 			/**
 			 * \brief Parse the specified JSON string buffer.
-			 * \param value The resulting value, if the parsing succeeds.
+			 * \param value The resulting value, if the parsing succeeds. If the
+			 * parsing fails, value is guaranteed not to be modified.
 			 * \param buf The buffer to parse. Must contain a valid JSON string or
 			 * the call will fail. The string must be UTF-8 encoded. buf cannot be
 			 * null.
@@ -82,7 +83,8 @@ namespace kfather
 
 			/**
 			 * \brief Parse the specified JSON string.
-			 * \param value The resulting value, if the parsing succeeds.
+			 * \param value The resulting value, if the parsing succeeds. If the
+			 * parsing fails, value is guaranteed not to be modified.
 			 * \param str The JSON string to parse. Must contain a valid JSON string or
 			 * the call will fail. The string must be UTF-8 encoded.
 			 * \param error_pos A pointer to a position of the first invalid character.
@@ -98,7 +100,8 @@ namespace kfather
 
 			/**
 			 * \brief Parse the specified input stream.
-			 * \param value The resulting value, if the parsing succeeds.
+			 * \param value The resulting value, if the parsing succeeds. If the
+			 * parsing fails, value is guaranteed not to be modified.
 			 * \param is The input stream to parse. The stream must be UTF-8 encoded.
 			 * \param error_pos A pointer to a position of the first invalid character.
 			 * \return true if the parsing succeeds, false otherwise.
@@ -116,7 +119,8 @@ namespace kfather
 			/**
 			 * \brief Parse a range of characters.
 			 * \tparam IteratorType The iterator type.
-			 * \param value The resulting value, if the parsing succeeds.
+			 * \param value The resulting value, if the parsing succeeds. If the
+			 * parsing fails, value is guaranteed not to be modified.
 			 * \param begin An iterator to the first character to parse.
 			 * \param end An iterator past the last character to parse.
 			 * \param error_pos A pointer to an iterator where the last parsing error occured.
