@@ -177,6 +177,8 @@ namespace kfather
 			template <typename IteratorType>
 			bool check_char(context& ctx, char c, IteratorType& ch, IteratorType end);
 			template <typename IteratorType>
+			bool check_chars(context& ctx, const char* str, IteratorType& ch, IteratorType end);
+			template <typename IteratorType>
 			void skip_whitespace(context& ctx, IteratorType& ch, IteratorType end);
 	};
 }

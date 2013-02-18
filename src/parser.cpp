@@ -621,39 +621,18 @@ namespace kfather
 	template <typename IteratorType>
 	bool parser::parse_boolean(context& ctx, boolean_type& value, IteratorType& ch, IteratorType end)
 	{
-		if (check_char(ctx, 't', ch, end))
+		if (check_chars(ctx, "true", ch, end))
 		{
-			if (check_char(ctx, 'r', ch, end))
-			{
-				if (check_char(ctx, 'u', ch, end))
-				{
-					if (check_char(ctx, 'e', ch, end))
-					{
-						value = true;
+			value = true;
 
-						return true;
-					}
-				}
-			}
+			return true;
 		}
 
-		if (check_char(ctx, 'f', ch, end))
+		if (check_chars(ctx, "false", ch, end))
 		{
-			if (check_char(ctx, 'a', ch, end))
-			{
-				if (check_char(ctx, 'l', ch, end))
-				{
-					if (check_char(ctx, 's', ch, end))
-					{
-						if (check_char(ctx, 'e', ch, end))
-						{
-							value = false;
+			value = false;
 
-							return true;
-						}
-					}
-				}
-			}
+			return true;
 		}
 
 		return false;
@@ -662,20 +641,11 @@ namespace kfather
 	template <typename IteratorType>
 	bool parser::parse_null(context& ctx, null_type& value, IteratorType& ch, IteratorType end)
 	{
-		if (check_char(ctx, 'n', ch, end))
+		if (check_chars(ctx, "null", ch, end))
 		{
-			if (check_char(ctx, 'u', ch, end))
-			{
-				if (check_char(ctx, 'l', ch, end))
-				{
-					if (check_char(ctx, 'l', ch, end))
-					{
-						value = null_type();
+			value = null_type();
 
-						return true;
-					}
-				}
-			}
+			return true;
 		}
 
 		return false;
@@ -694,6 +664,21 @@ namespace kfather
 		return false;
 	}
 
+	template <typename IteratorType>
+	bool parser::check_chars(context&, const char* str, IteratorType& ch, IteratorType end)
+	{
+		assert(str);
+
+		for (const char* c = str; *c != '\0'; ++c, ++ch)
+		{
+			if ((ch == end) || (*ch != *c))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 	template <typename IteratorType>
 	void parser::skip_whitespace(context&, IteratorType& ch, IteratorType end)
 	{
