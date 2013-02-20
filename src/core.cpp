@@ -194,7 +194,7 @@ namespace freelan
 		// Tap adapter
 		if (m_tap_adapter)
 		{
-			m_tap_adapter->open();
+			m_tap_adapter->open(m_configuration.tap_adapter.name);
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())

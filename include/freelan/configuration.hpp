@@ -352,6 +352,11 @@ namespace freelan
 		bool enabled;
 
 		/**
+		 * \brief The tap adapter's name.
+		 */
+		std::string name;
+
+		/**
 		 * \brief The IPv4 tap adapter address.
 		 */
 		ipv4_network_address ipv4_address_prefix_length;
