@@ -166,6 +166,7 @@ po::options_description get_tap_adapter_options()
 
 	result.add_options()
 	("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
+	("tap_adapter.name", po::value<std::string>(), "The name of the tap adapter to use or create.")
 	("tap_adapter.ipv4_address_prefix_length", po::value<fl::ipv4_network_address>()->default_value(default_ipv4_network_address), "The tap adapter IPv4 address and prefix length.")
 	("tap_adapter.ipv6_address_prefix_length", po::value<fl::ipv6_network_address>()->default_value(default_ipv6_network_address), "The tap adapter IPv6 address and prefix length.")
 	("tap_adapter.arp_proxy_enabled", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
@@ -335,6 +336,12 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// Tap adapter options
 	configuration.tap_adapter.enabled = vm["tap_adapter.enabled"].as<bool>();
+
+	if (vm.count("tap_adapter.name"))
+	{
+		configuration.tap_adapter.name = vm["tap_adapter.name"].as<std::string>();
+	}
+
 	configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<fl::ipv4_network_address>();
 	configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<fl::ipv6_network_address>();
 	configuration.tap_adapter.arp_proxy_enabled = vm["tap_adapter.arp_proxy_enabled"].as<bool>();
