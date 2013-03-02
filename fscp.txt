@@ -1,6 +1,6 @@
 The FreeLAN Project                                         J. Kauffmann
 Draft:                                                   www.freelan.org
-Category: Informational                                    14 April 2011
+Category: Informational                                    03 March 2011
 
                     The FreeLAN Secure Channel Protocol
 
