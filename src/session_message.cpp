@@ -85,13 +85,13 @@ namespace fscp
 		assert(key.get_rsa_key());
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
 		mdctx.update(ciphertext(), ciphertext_size());
 
 		const cryptoplus::buffer digest = mdctx.finalize();
 		const cryptoplus::buffer padded_buf = key.get_rsa_key().public_decrypt(ciphertext_signature(), ciphertext_signature_size(), RSA_NO_PADDING);
 
-		key.get_rsa_key().verify_PKCS1_PSS(digest, padded_buf, cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
+		key.get_rsa_key().verify_PKCS1_PSS(digest, padded_buf, cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
 	}
 
 	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
@@ -137,7 +137,7 @@ namespace fscp
 
 	size_t session_message::_write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key, message_type type)
 	{
-		const size_t max_cleartext_len = enc_key.size() - cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM).result_size() * 2 - 2;
+		const size_t max_cleartext_len = enc_key.size() - cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM).result_size() * 2 - 2;
 		const unsigned int packet_count = (cleartext_len + max_cleartext_len - 1) / max_cleartext_len;
 
 		if (packet_count >= (1 << 16))
@@ -159,12 +159,12 @@ namespace fscp
 		}
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM));
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
 		mdctx.update(&ciphertext[0], ciphertext.size());
 		const cryptoplus::buffer digest = mdctx.finalize();
 
 		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(cryptoplus::buffer_cast<uint8_t>(padded_buf), cryptoplus::buffer_size(padded_buf), cryptoplus::buffer_cast<uint8_t>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM), -1);
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(cryptoplus::buffer_cast<uint8_t>(padded_buf), cryptoplus::buffer_size(padded_buf), cryptoplus::buffer_cast<uint8_t>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
 
 		const cryptoplus::buffer ciphertext_signature = sig_key.get_rsa_key().private_encrypt(padded_buf, RSA_NO_PADDING);
 

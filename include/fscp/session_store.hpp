@@ -47,7 +47,9 @@
 
 #include "constants.hpp"
 
-#include <boost/array.hpp>
+#include <vector>
+
+#include <boost/optional.hpp>
 
 #include <stdint.h>
 
@@ -66,31 +68,50 @@ namespace fscp
 			typedef uint32_t session_number_type;
 
 			/**
-			 * \brief The key length.
-			 */
-			static const size_t KEY_LENGTH = 32;
-
-			/**
 			 * \brief Create a new random session store.
-				 * \param session_number The session number.
+			 * \param session_number The session number.
+			 * \param cipher_algorithm The cipher algorithm.
+			 * \param message_digest_algorithm The message digest algorithm, if any.
+			 * \param message_digest_algorithm_hmac_size The HMAC size.
 			 */
-			explicit session_store(session_number_type session_number);
+			session_store(session_number_type session_number, const cryptoplus::cipher::cipher_algorithm& cipher_algorithm, boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm, size_t message_digest_algorithm_hmac_size);
 
 			/**
 			 * \brief Create a new session store.
 			 * \param session_number The session number.
+			 * \param cipher_algorithm The cipher algorithm.
+			 * \param message_digest_algorithm The message digest algorithm, if any.
+			 * \param message_digest_algorithm_hmac_size The HMAC size.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 */
-			session_store(session_number_type session_number, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			session_store(session_number_type session_number, const cryptoplus::cipher::cipher_algorithm& cipher_algorithm, boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Get the session number.
 			 * \return The session number.
 			 */
 			session_number_type session_number() const;
+
+			/**
+			 * \brief Get the cipher algorithm.
+			 * \return The cipher algorithm.
+			 */
+			const cryptoplus::cipher::cipher_algorithm& cipher_algorithm() const;
+
+			/**
+			 * \brief Get the message digest algorithm.
+			 * \return The message digest algorithm.
+			 */
+			boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm() const;
+
+			/**
+			 * \brief Get the message digest algorithm HMAC size.
+			 * \return The message digest algorithm HMAC size.
+			 */
+			size_t message_digest_algorithm_hmac_size() const;
 
 			/**
 			 * \brief Get the seal key.
@@ -145,9 +166,12 @@ namespace fscp
 			/**
 			 * \brief The key type.
 			 */
-			typedef boost::array<uint8_t, KEY_LENGTH> key_type;
+			typedef std::vector<uint8_t> key_type;
 
 			session_number_type m_session_number;
+			cryptoplus::cipher::cipher_algorithm m_cipher_algorithm;
+			boost::optional<cryptoplus::hash::message_digest_algorithm> m_message_digest_algorithm;
+			size_t m_message_digest_algorithm_hmac_size;
 			key_type m_seal_key;
 			key_type m_enc_key;
 			sequence_number_type m_sequence_number;
@@ -158,9 +182,24 @@ namespace fscp
 		return m_session_number;
 	}
 
+	inline const cryptoplus::cipher::cipher_algorithm& session_store::cipher_algorithm() const
+	{
+		return m_cipher_algorithm;
+	}
+
+	inline boost::optional<cryptoplus::hash::message_digest_algorithm> session_store::message_digest_algorithm() const
+	{
+		return m_message_digest_algorithm;
+	}
+
+	inline size_t session_store::message_digest_algorithm_hmac_size() const
+	{
+		return m_message_digest_algorithm_hmac_size;
+	}
+
 	inline const uint8_t* session_store::seal_key() const
 	{
-		return m_seal_key.data();
+		return &m_seal_key[0];
 	}
 
 	inline size_t session_store::seal_key_size() const
@@ -170,7 +209,7 @@ namespace fscp
 
 	inline const uint8_t* session_store::encryption_key() const
 	{
-		return m_enc_key.data();
+		return &m_enc_key[0];
 	}
 
 	inline size_t session_store::encryption_key_size() const

@@ -107,7 +107,7 @@ namespace fscp
 			/**
 			 * \brief Renew the local session, if it is old or if the renewal is forced.
 			 * \param session_number The requested session number. Set it to a higher value than the current session number to force the change.
-			 * \return true if the session was effectively renewed. Should be true if force is set to true.
+			 * \return true if the session was effectively renewed. Should be true if session_number is higher than the actual session number.
 			 */
 			bool renew_local_session(session_store::session_number_type session_number);
 
@@ -167,6 +167,42 @@ namespace fscp
 				m_remote_challenge = challenge;
 			}
 
+			/**
+			 * \brief Get the local cipher algorithm.
+			 * \return The local cipher algorithm.
+			 */
+			cipher_algorithm_type local_cipher_algorithm() const
+			{
+				return m_local_cipher_algorithm;
+			}
+
+			/**
+			 * \brief Set the local cipher algorithm.
+			 * \param cipher_algorithm The cipher algorithm.
+			 */
+			void set_local_cipher_algorithm(cipher_algorithm_type cipher_algorithm)
+			{
+				m_local_cipher_algorithm = cipher_algorithm;
+			}
+
+			/**
+			 * \brief Get the local message digest algorithm.
+			 * \return The local message digest algorithm.
+			 */
+			message_digest_algorithm_type local_message_digest_algorithm() const
+			{
+				return m_local_message_digest_algorithm;
+			}
+
+			/**
+			 * \brief Set the local message digest algorithm.
+			 * \param message_digest_algorithm The message digest algorithm.
+			 */
+			void set_local_message_digest_algorithm(message_digest_algorithm_type message_digest_algorithm)
+			{
+				m_local_message_digest_algorithm = message_digest_algorithm;
+			}
+
 		private:
 
 			boost::optional<session_store> m_local_session;
@@ -174,10 +210,14 @@ namespace fscp
 			boost::posix_time::ptime m_last_sign_of_life;
 			challenge_type m_local_challenge;
 			challenge_type m_remote_challenge;
+			cipher_algorithm_type m_local_cipher_algorithm;
+			message_digest_algorithm_type m_local_message_digest_algorithm;
 	};
 
 	inline session_pair::session_pair() :
-		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
+		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time()),
+		m_local_cipher_algorithm(CIPHER_ALGORITHM_UNSUPPORTED),
+		m_local_message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED)
 	{
 	}
 

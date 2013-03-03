@@ -99,21 +99,21 @@ static bool on_presentation(fscp::server& server, const fscp::server::ep_type& s
   return true;
 }
 
-static bool on_session_request(const fscp::server::ep_type& sender, bool default_accept)
+static bool on_session_request(const fscp::server::ep_type& sender, const fscp::cipher_algorithm_list_type&, const fscp::message_digest_algorithm_list_type&, bool default_accept)
 {
 	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static bool on_session(const fscp::server::ep_type& sender, bool default_accept)
+static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_algorithm_type, fscp::message_digest_algorithm_type, bool default_accept)
 {
 	std::cout << "Received SESSION from " << sender << std::endl;
 
 	return default_accept;
 }
 
-static void on_session_established(const fscp::server::ep_type& host)
+static void on_session_established(const fscp::server::ep_type& host, fscp::cipher_algorithm_type, fscp::message_digest_algorithm_type)
 {
 	std::cout << "Session established with " << host << std::endl;
 }

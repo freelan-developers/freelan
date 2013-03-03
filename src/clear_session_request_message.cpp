@@ -51,25 +51,69 @@
 
 namespace fscp
 {
-	size_t clear_session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const challenge_type& _challenge)
+	size_t clear_session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const challenge_type& _challenge, const cipher_algorithm_list_type& _cipher_capabilities, const message_digest_algorithm_list_type& _message_digest_capabilities)
 	{
-		if (buf_len < BODY_LENGTH)
+		const size_t result_size = MIN_BODY_LENGTH + _cipher_capabilities.size() + _message_digest_capabilities.size();
+
+		if (buf_len < result_size)
 		{
 			throw std::runtime_error("buf_len");
 		}
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
+		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size, htons(static_cast<uint16_t>(_cipher_capabilities.size())));
+		std::transform(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t), &from_cipher_algorithm_type);
+		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size(), htons(static_cast<uint16_t>(_message_digest_capabilities.size())));
+		std::transform(_message_digest_capabilities.begin(), _message_digest_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size() + sizeof(uint16_t), &from_message_digest_algorithm_type);
 
-		return BODY_LENGTH;
+		return result_size;
 	}
 
 	clear_session_request_message::clear_session_request_message(const void* buf, size_t buf_len) :
 		m_data(buf)
 	{
-		if (buf_len < BODY_LENGTH)
+		if (buf_len < MIN_BODY_LENGTH)
 		{
 			throw std::runtime_error("buf_len");
 		}
+
+		if (buf_len < MIN_BODY_LENGTH + cipher_capabilities_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (buf_len < MIN_BODY_LENGTH + cipher_capabilities_size() + message_digest_capabilities_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+	}
+
+	cipher_algorithm_list_type clear_session_request_message::cipher_capabilities() const
+	{
+		cipher_algorithm_list_type result(cipher_capabilities_size());
+
+		std::transform(
+				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t),
+				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size(),
+				result.begin(),
+				&to_cipher_algorithm_type
+				);
+
+		return result;
+	}
+
+	message_digest_algorithm_list_type clear_session_request_message::message_digest_capabilities() const
+	{
+		message_digest_algorithm_list_type result(message_digest_capabilities_size());
+
+		std::transform(
+				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size() + sizeof(uint16_t),
+				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size() + sizeof(uint16_t) + message_digest_capabilities_size(),
+				result.begin(),
+				&to_message_digest_algorithm_type
+				);
+
+		return result;
 	}
 }

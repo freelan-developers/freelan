@@ -50,11 +50,20 @@ namespace fscp
 {
 	bool session_pair::renew_local_session(session_store::session_number_type session_number)
 	{
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = to_cipher_algorithm(local_cipher_algorithm());
+		const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = to_message_digest_algorithm(local_message_digest_algorithm());
+		const size_t message_digest_algorithm_hmac_size = get_message_digest_algorithm_hmac_size(local_message_digest_algorithm());
+
 		if (has_local_session())
 		{
 			if ((session_number > local_session().session_number()) || local_session().is_old())
 			{
-				m_local_session = boost::make_optional(session_store(std::max(local_session().session_number() + 1, session_number)));
+				m_local_session = boost::make_optional(session_store(
+							std::max(local_session().session_number() + 1, session_number),
+							cipher_algorithm,
+							message_digest_algorithm,
+							message_digest_algorithm_hmac_size
+							));
 
 				return true;
 			}
@@ -65,7 +74,12 @@ namespace fscp
 		}
 		else
 		{
-			m_local_session = boost::make_optional(session_store(session_number));
+			m_local_session = boost::make_optional(session_store(
+						session_number,
+						cipher_algorithm,
+						message_digest_algorithm,
+						message_digest_algorithm_hmac_size
+						));
 
 			return true;
 		}

@@ -65,28 +65,27 @@ namespace fscp
 		public:
 
 			/**
-			 * \brief The key length.
-			 */
-			static const size_t KEY_LENGTH = 32;
-
-			/**
 			 * \brief Write a session message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
 			 * \param challenge The challenge.
+			 * \param calg The cipher algorithm type.
+			 * \param mdalg The message digest algorithm type.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge, cipher_algorithm_type calg, message_digest_algorithm_type mdalg, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a session message to a buffer.
 			 * \param session_number The session number.
 			 * \param challenge The challenge.
+			 * \param calg The cipher algorithm type.
+			 * \param mdalg The message digest algorithm type.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
@@ -94,7 +93,7 @@ namespace fscp
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge, cipher_algorithm_type calg, message_digest_algorithm_type mdalg, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
@@ -116,6 +115,18 @@ namespace fscp
 			 * \return The challenge.
 			 */
 			challenge_type challenge() const;
+
+			/**
+			 * \brief Get the cipher algorithm.
+			 * \return The cipher algorithm.
+			 */
+			cipher_algorithm_type cipher_algorithm() const;
+
+			/**
+			 * \brief Get the message digest algorithm.
+			 * \return The message digest algorithm.
+			 */
+			message_digest_algorithm_type message_digest_algorithm() const;
 
 			/**
 			 * \brief Get the seal key.
@@ -144,9 +155,9 @@ namespace fscp
 		protected:
 
 			/**
-			 * \brief The length of the body.
+			 * \brief The min length of the body.
 			 */
-			static const size_t BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size + 2 * KEY_LENGTH + 2 * sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size + 2 * sizeof(uint8_t) + 2 + 2 * sizeof(uint16_t);
 
 			/**
 			 * \brief The data.
@@ -160,11 +171,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const challenge_type& _challenge, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const challenge_type& _challenge, cipher_algorithm_type calg, message_digest_algorithm_type mdalg, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
 	{
-		std::vector<T> result(BODY_LENGTH);
+		std::vector<T> result(MIN_BODY_LENGTH + seal_key_len + enc_key_len);
 
-		result.resize(write(&result[0], result.size(), _session_number, _challenge, seal_key, seal_key_len, enc_key, enc_key_len));
+		result.resize(write(&result[0], result.size(), _session_number, _challenge, calg, mdalg, seal_key, seal_key_len, enc_key, enc_key_len));
 
 		return result;
 	}
@@ -183,24 +194,34 @@ namespace fscp
 		return result;
 	}
 
+	inline cipher_algorithm_type clear_session_message::cipher_algorithm() const
+	{
+		return to_cipher_algorithm_type(buffer_tools::get<uint8_t>(data(), sizeof(session_number_type) + challenge_type::static_size));
+	}
+
+	inline message_digest_algorithm_type clear_session_message::message_digest_algorithm() const
+	{
+		return to_message_digest_algorithm_type(buffer_tools::get<uint8_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t)));
+	}
+
 	inline const uint8_t* clear_session_message::seal_key() const
 	{
-		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t);
+		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t);
 	}
 
 	inline size_t clear_session_message::seal_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size));
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2));
 	}
 
 	inline const uint8_t* clear_session_message::encryption_key() const
 	{
-		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + seal_key_size() + sizeof(uint16_t);
+		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + seal_key_size() + sizeof(uint16_t);
 	}
 
 	inline size_t clear_session_message::encryption_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + seal_key_size()));
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + seal_key_size()));
 	}
 
 	inline const uint8_t* clear_session_message::data() const

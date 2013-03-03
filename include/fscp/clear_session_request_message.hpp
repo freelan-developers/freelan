@@ -68,18 +68,22 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
 			 * \param challenge The challenge.
+			 * \param cipher_capabilities The cipher algorithm capabilities.
+			 * \param message_digest_capabilities The message digest algorithm capabilities.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge, const cipher_algorithm_list_type& cipher_capabilities, const message_digest_algorithm_list_type& message_digest_capabilities);
 
 			/**
 			 * \brief Write a session request message to a buffer.
 			 * \param session_number The session number.
 			 * \param challenge The challenge.
+			 * \param cipher_capabilities The cipher algorithm capabilities.
+			 * \param message_digest_capabilities The message digest algorithm capabilities.
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge);
+			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge, const cipher_algorithm_list_type& cipher_capabilities, const message_digest_algorithm_list_type& message_digest_capabilities);
 
 			/**
 			 * \brief Create a clear_session_request_message and map it on a buffer.
@@ -102,12 +106,36 @@ namespace fscp
 			 */
 			challenge_type challenge() const;
 
+			/**
+			 * \brief Get the cipher capabilities.
+			 * \return The cipher capabilities.
+			 */
+			cipher_algorithm_list_type cipher_capabilities() const;
+
+			/**
+			 * \brief Get the cipher capabilities size.
+			 * \return The cipher capabilities size.
+			 */
+			size_t cipher_capabilities_size() const;
+
+			/**
+			 * \brief Get the message digest capabilities.
+			 * \return The message digest capabilities.
+			 */
+			message_digest_algorithm_list_type message_digest_capabilities() const;
+
+			/**
+			 * \brief Get the message digest capabilities size.
+			 * \return The message digest capabilities size.
+			 */
+			size_t message_digest_capabilities_size() const;
+
 		protected:
 
 			/**
-			 * \brief The length of the body.
+			 * \brief The min length of the body.
 			 */
-			static const size_t BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size;
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + sizeof(uint16_t);
 
 			/**
 			 * \brief The data.
@@ -121,11 +149,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_request_message::write(session_number_type _session_number, const challenge_type& _challenge)
+	inline std::vector<T> clear_session_request_message::write(session_number_type _session_number, const challenge_type& _challenge, const cipher_algorithm_list_type& _cipher_capabilities, const message_digest_algorithm_list_type& _message_digest_capabilities)
 	{
-		std::vector<T> result(BODY_LENGTH);
+		std::vector<T> result(MIN_BODY_LENGTH + _cipher_capabilities.size() + _message_digest_capabilities.size());
 
-		result.resize(write(&result[0], result.size(), _session_number, _challenge));
+		result.resize(write(&result[0], result.size(), _session_number, _challenge, _cipher_capabilities, _message_digest_capabilities));
 
 		return result;
 	}
@@ -142,6 +170,16 @@ namespace fscp
 		std::copy(data() + sizeof(session_number_type), data() + sizeof(session_number_type) + result.size(), result.begin());
 
 		return result;
+	}
+
+	inline size_t clear_session_request_message::cipher_capabilities_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size));
+	}
+
+	inline size_t clear_session_request_message::message_digest_capabilities_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size()));
 	}
 
 	inline const uint8_t* clear_session_request_message::data() const

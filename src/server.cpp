@@ -79,6 +79,20 @@ namespace fscp
 
 			return ep;
 		}
+
+		template <typename ElementType, typename ListType>
+		ElementType get_first_element(const ListType& first, const ListType& second, ElementType default_value)
+		{
+			for (typename ListType::const_iterator it = first.begin(); it != first.end(); ++it)
+			{
+				if (std::find(second.begin(), second.end(), *it) != second.end())
+				{
+					return *it;
+				}
+			}
+
+			return default_value;
+		}
 	}
 
 	server::server(asio::io_service& io_service, const identity_store& _identity) :
@@ -89,6 +103,8 @@ namespace fscp
 		m_accept_hello_messages_default(true),
 		m_hello_message_callback(0),
 		m_presentation_message_callback(0),
+		m_cipher_capabilities(get_default_cipher_capabilities()),
+		m_message_digest_capabilities(get_default_message_digest_capabilities()),
 		m_accept_session_request_messages_default(true),
 		m_session_request_message_callback(0),
 		m_accept_session_messages_default(true),
@@ -492,7 +508,7 @@ namespace fscp
 
 			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
 
-			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number, session.generate_local_challenge());
+			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number, session.generate_local_challenge(), m_cipher_capabilities, m_message_digest_capabilities);
 
 			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
@@ -517,17 +533,35 @@ namespace fscp
 
 		session_pair& session = m_session_map[sender];
 
-		session.set_remote_challenge(_clear_session_request_message.challenge());
+		const cipher_algorithm_list_type cipher_capabilities = _clear_session_request_message.cipher_capabilities();
+		const message_digest_algorithm_list_type& message_digest_capabilities = _clear_session_request_message.message_digest_capabilities();
+
+		const cipher_algorithm_type calg = get_first_supported_cipher_algorithm(cipher_capabilities);
+		const message_digest_algorithm_type mdalg = get_first_supported_message_digest_algorithm(message_digest_capabilities);
 
 		if (m_session_request_message_callback)
 		{
-			can_reply = m_session_request_message_callback(sender, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_callback(sender, cipher_capabilities, message_digest_capabilities, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
 		{
+			session.set_remote_challenge(_clear_session_request_message.challenge());
+			session.set_local_cipher_algorithm(calg);
+			session.set_local_message_digest_algorithm(mdalg);
+
 			do_send_session(sender, _clear_session_request_message.session_number());
 		}
+	}
+
+	cipher_algorithm_type server::get_first_supported_cipher_algorithm(const cipher_algorithm_list_type& cipher_capabilities) const
+	{
+		return get_first_element(m_cipher_capabilities, cipher_capabilities, CIPHER_ALGORITHM_UNSUPPORTED);
+	}
+
+	message_digest_algorithm_type server::get_first_supported_message_digest_algorithm(const message_digest_algorithm_list_type& message_digest_capabilities) const
+	{
+		return get_first_element(m_message_digest_capabilities, message_digest_capabilities, MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED);
 	}
 
 	/* Session messages */
@@ -539,13 +573,15 @@ namespace fscp
 		session.renew_local_session(session_number);
 
 		std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
-		                                     session.local_session().session_number(),
-		                                     session.remote_challenge(),
-		                                     session.local_session().seal_key(),
-		                                     session.local_session().seal_key_size(),
-		                                     session.local_session().encryption_key(),
-		                                     session.local_session().encryption_key_size()
-		                                 );
+				session.local_session().session_number(),
+				session.remote_challenge(),
+				session.local_cipher_algorithm(),
+				session.local_message_digest_algorithm(),
+				session.local_session().seal_key(),
+				session.local_session().seal_key_size(),
+				session.local_session().encryption_key(),
+				session.local_session().encryption_key_size()
+				);
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
@@ -582,36 +618,43 @@ namespace fscp
 
 			if (m_session_message_callback)
 			{
-				can_accept = m_session_message_callback(sender, m_accept_session_messages_default);
+				can_accept = m_session_message_callback(sender, _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm(), m_accept_session_messages_default);
 			}
 
 			if (can_accept)
 			{
 				bool session_is_new = !session_pair.has_remote_session();
 
+				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = to_cipher_algorithm(_clear_session_message.cipher_algorithm());
+				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = to_message_digest_algorithm(_clear_session_message.message_digest_algorithm());
+				const size_t message_digest_algorithm_hmac_size = get_message_digest_algorithm_hmac_size(_clear_session_message.message_digest_algorithm());
+
 				session_store _session_store(
-				    _clear_session_message.session_number(),
-				    _clear_session_message.seal_key(),
-				    _clear_session_message.seal_key_size(),
-				    _clear_session_message.encryption_key(),
-				    _clear_session_message.encryption_key_size()
-				);
+						_clear_session_message.session_number(),
+						cipher_algorithm,
+						message_digest_algorithm,
+						message_digest_algorithm_hmac_size,
+						_clear_session_message.seal_key(),
+						_clear_session_message.seal_key_size(),
+						_clear_session_message.encryption_key(),
+						_clear_session_message.encryption_key_size()
+						);
 
 				session_pair.set_remote_session(_session_store);
 
 				if (session_is_new)
 				{
-					session_established(sender);
+					session_established(sender, _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm());
 				}
 			}
 		}
 	}
 
-	void server::session_established(const ep_type& host)
+	void server::session_established(const ep_type& host, cipher_algorithm_type calg, message_digest_algorithm_type mdalg)
 	{
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(host);
+			m_session_established_callback(host, calg, mdalg);
 		}
 	}
 
@@ -654,18 +697,21 @@ namespace fscp
 				for(; !data_store.empty(); data_store.pop())
 				{
 					size_t size = data_message::write(
-					                  m_send_buffer.data(),
-					                  m_send_buffer.size(),
-					                  channel_number,
-					                  session_pair.remote_session().session_number(),
-					                  session_pair.remote_session().sequence_number(),
-					                  &data_store.front()[0],
-					                  data_store.front().size(),
-					                  session_pair.remote_session().seal_key(),
-					                  session_pair.remote_session().seal_key_size(),
-					                  session_pair.remote_session().encryption_key(),
-					                  session_pair.remote_session().encryption_key_size()
-					              );
+							m_send_buffer.data(),
+							m_send_buffer.size(),
+							channel_number,
+							session_pair.remote_session().session_number(),
+							session_pair.remote_session().sequence_number(),
+							session_pair.remote_session().cipher_algorithm(),
+							session_pair.remote_session().message_digest_algorithm(),
+							session_pair.remote_session().message_digest_algorithm_hmac_size(),
+							&data_store.front()[0],
+							data_store.front().size(),
+							session_pair.remote_session().seal_key(),
+							session_pair.remote_session().seal_key_size(),
+							session_pair.remote_session().encryption_key(),
+							session_pair.remote_session().encryption_key_size()
+							);
 
 					session_pair.remote_session().increment_sequence_number();
 
@@ -684,19 +730,22 @@ namespace fscp
 			if (_data_message.sequence_number() > session_pair.local_session().sequence_number())
 			{
 				_data_message.check_seal(
-				    m_data_buffer.data(),
-				    m_data_buffer.size(),
-				    session_pair.local_session().seal_key(),
-				    session_pair.local_session().seal_key_size()
-				);
+						m_data_buffer.data(),
+						m_data_buffer.size(),
+						session_pair.local_session().message_digest_algorithm(),
+						session_pair.local_session().message_digest_algorithm_hmac_size(),
+						session_pair.local_session().seal_key(),
+						session_pair.local_session().seal_key_size()
+						);
 
 				size_t cnt = _data_message.get_cleartext(
-				                 m_data_buffer.data(),
-				                 m_data_buffer.size(),
-				                 session_pair.local_session().session_number(),
-				                 session_pair.local_session().encryption_key(),
-				                 session_pair.local_session().encryption_key_size()
-				             );
+						m_data_buffer.data(),
+						m_data_buffer.size(),
+						session_pair.local_session().session_number(),
+						session_pair.local_session().cipher_algorithm(),
+						session_pair.local_session().encryption_key(),
+						session_pair.local_session().encryption_key_size()
+						);
 
 				session_pair.local_session().set_sequence_number(_data_message.sequence_number());
 
@@ -789,16 +838,19 @@ namespace fscp
 				if (!hash_list.empty())
 				{
 					size_t size = data_message::write_contact_request(
-					                  m_send_buffer.data(),
-					                  m_send_buffer.size(),
-					                  session_pair.remote_session().session_number(),
-					                  session_pair.remote_session().sequence_number(),
-					                  hash_list,
-					                  session_pair.remote_session().seal_key(),
-					                  session_pair.remote_session().seal_key_size(),
-					                  session_pair.remote_session().encryption_key(),
-					                  session_pair.remote_session().encryption_key_size()
-					              );
+							m_send_buffer.data(),
+							m_send_buffer.size(),
+							session_pair.remote_session().session_number(),
+							session_pair.remote_session().sequence_number(),
+							session_pair.remote_session().cipher_algorithm(),
+							session_pair.remote_session().message_digest_algorithm(),
+							session_pair.remote_session().message_digest_algorithm_hmac_size(),
+							hash_list,
+							session_pair.remote_session().seal_key(),
+							session_pair.remote_session().seal_key_size(),
+							session_pair.remote_session().encryption_key(),
+							session_pair.remote_session().encryption_key_size()
+							);
 
 					hash_list.clear();
 
@@ -819,16 +871,19 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				size_t size = data_message::write_contact(
-				                  m_send_buffer.data(),
-				                  m_send_buffer.size(),
-				                  session_pair.remote_session().session_number(),
-				                  session_pair.remote_session().sequence_number(),
-				                  contact_map,
-				                  session_pair.remote_session().seal_key(),
-				                  session_pair.remote_session().seal_key_size(),
-				                  session_pair.remote_session().encryption_key(),
-				                  session_pair.remote_session().encryption_key_size()
-				              );
+						m_send_buffer.data(),
+						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
+						session_pair.remote_session().sequence_number(),
+						session_pair.remote_session().cipher_algorithm(),
+						session_pair.remote_session().message_digest_algorithm(),
+						session_pair.remote_session().message_digest_algorithm_hmac_size(),
+						contact_map,
+						session_pair.remote_session().seal_key(),
+						session_pair.remote_session().seal_key_size(),
+						session_pair.remote_session().encryption_key(),
+						session_pair.remote_session().encryption_key_size()
+						);
 
 				session_pair.remote_session().increment_sequence_number();
 
@@ -870,16 +925,19 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				size_t size = data_message::write_keep_alive(
-				                  m_send_buffer.data(),
-				                  m_send_buffer.size(),
-				                  session_pair.remote_session().session_number(),
-				                  session_pair.remote_session().sequence_number(),
-				                  session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
-				                  session_pair.remote_session().seal_key(),
-				                  session_pair.remote_session().seal_key_size(),
-				                  session_pair.remote_session().encryption_key(),
-				                  session_pair.remote_session().encryption_key_size()
-				              );
+						m_send_buffer.data(),
+						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
+						session_pair.remote_session().sequence_number(),
+						session_pair.remote_session().cipher_algorithm(),
+						session_pair.remote_session().message_digest_algorithm(),
+						session_pair.remote_session().message_digest_algorithm_hmac_size(),
+						session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
+						session_pair.remote_session().seal_key(),
+						session_pair.remote_session().seal_key_size(),
+						session_pair.remote_session().encryption_key(),
+						session_pair.remote_session().encryption_key_size()
+						);
 
 				session_pair.remote_session().increment_sequence_number();
 

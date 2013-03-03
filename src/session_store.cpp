@@ -50,30 +50,35 @@
 
 namespace fscp
 {
-	session_store::session_store(session_number_type _session_number) :
+	session_store::session_store(session_number_type _session_number, const cryptoplus::cipher::cipher_algorithm& _cipher_algorithm, boost::optional<cryptoplus::hash::message_digest_algorithm> _message_digest_algorithm, size_t _message_digest_algorithm_hmac_size) :
 		m_session_number(_session_number),
+		m_cipher_algorithm(_cipher_algorithm),
+		m_message_digest_algorithm(_message_digest_algorithm),
+		m_message_digest_algorithm_hmac_size(_message_digest_algorithm_hmac_size),
+		m_seal_key(cryptoplus::random::get_random_bytes(m_cipher_algorithm.key_length()).data()),
+		m_enc_key(cryptoplus::random::get_random_bytes(m_cipher_algorithm.key_length()).data()),
 		m_sequence_number(0)
 	{
-		cryptoplus::random::get_random_bytes(m_seal_key.data(), m_seal_key.size());
-		cryptoplus::random::get_random_bytes(m_enc_key.data(), m_enc_key.size());
 	}
 
-	session_store::session_store(session_number_type _session_number, const void* _seal_key, size_t _seal_key_len, const void* _enc_key, size_t _enc_key_len) :
+	session_store::session_store(session_number_type _session_number, const cryptoplus::cipher::cipher_algorithm& _cipher_algorithm, boost::optional<cryptoplus::hash::message_digest_algorithm> _message_digest_algorithm, size_t _message_digest_algorithm_hmac_size, const void* _seal_key, size_t _seal_key_len, const void* _enc_key, size_t _enc_key_len) :
 		m_session_number(_session_number),
+		m_cipher_algorithm(_cipher_algorithm),
+		m_message_digest_algorithm(_message_digest_algorithm),
+		m_message_digest_algorithm_hmac_size(_message_digest_algorithm_hmac_size),
+		m_seal_key(static_cast<const uint8_t*>(_seal_key), static_cast<const uint8_t*>(_seal_key) + _seal_key_len),
+		m_enc_key(static_cast<const uint8_t*>(_enc_key), static_cast<const uint8_t*>(_enc_key) + _enc_key_len),
 		m_sequence_number(1)
 	{
-		if (_seal_key_len != m_seal_key.size())
+		if (_seal_key_len != m_cipher_algorithm.key_length())
 		{
 			throw std::runtime_error("seal_key_len");
 		}
 
-		if (_enc_key_len != m_enc_key.size())
+		if (_enc_key_len != m_cipher_algorithm.key_length())
 		{
 			throw std::runtime_error("enc_key_len");
 		}
-
-		std::memcpy(m_seal_key.c_array(), _seal_key, _seal_key_len);
-		std::memcpy(m_enc_key.c_array(), _enc_key, _enc_key_len);
 	}
 
 	bool session_store::is_old() const
