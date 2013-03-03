@@ -14,15 +14,15 @@ Abstract
 
    The FreeLAN peer-to-peer virtual private network specification
    requires a fast and secure communication channel.
-   
+
    The protocol is specialized into peer-to-peer applications and
    supports some well-known NAT traversal techniques.
-   
+
 1. Introduction
-   
+
    The FreeLAN peer-to-peer virtual private network specification
    requires a fast and secure communication channel.
-   
+
    The FSCP (FreeLAN Secure Channel Protocol) is designed to be secure
    and efficient, and tries to minimize the overhead. It is based over
    UDP [RFC768].
@@ -47,7 +47,7 @@ Abstract
 
    All messages start with a 4 bytes header whose layout is:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +--------+--------+-----------------+
                  |version |  type  |      length     |
                  +--------+--------+-----------------+
@@ -58,22 +58,22 @@ Abstract
 
    The type field indicates the type of the message. Its possible values
    are listed in the next sections.
-   
+
    The length field indicates the length of the message body.
 
 2.2. HELLO message format
 
    A HELLO message is 4 bytes long and has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |           unique_number           |
                  +-----------------------------------+
- 
+
 2.2.1. HELLO message type
 
    The type value of a HELLO message can be either:
-   
+
      0x00: For a request HELLO message
      0x01: For a response HELLO message
 
@@ -86,7 +86,7 @@ Abstract
 
    A PRESENTATION message has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |  sig_cert_len   |     sig_cert    |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -141,7 +141,7 @@ Abstract
 
    A SESSION_REQUEST message has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |          session_number           |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -155,7 +155,7 @@ Abstract
    That is, a SESSION_REQUEST message sent over the wire has the
    following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |      ct_cnt     |        ct       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -176,7 +176,7 @@ Abstract
 
    The ct_cnt field indicates the count of ciphertext blocks in the ct
    field.
-   
+
    The ct field is the concatenation of 0 to N ciphertexts, generated
    using the public encryption key (PKE) of the target host.
 
@@ -197,7 +197,7 @@ Abstract
 
    A SESSION message has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |          session_number           |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -215,7 +215,7 @@ Abstract
    That is, a SESSION message sent over the wire has the following
    format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |      ct_cnt     |        ct       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -251,7 +251,7 @@ Abstract
 
    The ct_cnt field indicates the count of ciphertext blocks in the ct
    field.
-   
+
    The ct field is the concatenation of 0 to N ciphertexts, generated
    using the public encryption key (PKE) of the target host.
 
@@ -269,10 +269,10 @@ Abstract
    the decipherment fails, the message MUST be ignored.
 
 2.6. DATA message format
-   
+
    A DATA message format has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |          sequence_number          |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -336,7 +336,7 @@ Abstract
    The data contained in a CONTACT-REQUEST message has the following
    format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |               hash 0              |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -373,7 +373,7 @@ Abstract
 
    The data contained in a CONTACT message has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |               hash 0              |
                  +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
@@ -397,12 +397,12 @@ Abstract
    representation of the requested certificate.
 
    ep_type is a 1 byte field that can take the following values:
-   
+
    * 0x04: IPv4 endpoint
 
    In which case, endpoint has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |            IPv4 address           |
                  +-----------------+-----------------+
@@ -413,7 +413,7 @@ Abstract
 
    In which case, endpoint has the following format:
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |            IPv6 address...        :
                  +-----------------+-----------------+
@@ -548,7 +548,7 @@ Abstract
 
    Every session has a limited lifespan. One host may send a maximum of
    2^16 data messages during a session.
-   
+
    A session is considered old when a host considers too much data
    messages were sent during it. A good value for this "too much" is
    2^16 - 2^10 messages.
@@ -569,12 +569,12 @@ Abstract
 
 4.3.2. Session timeout
 
-   If an host does not receive any DATA or KEEP-ALIVE message from 
+   If an host does not receive any DATA or KEEP-ALIVE message from
    another host during 30 seconds, he SHOULD consider the session lost.
 
    After a session is lost, the hosts MUST renegotiate session keys
    before sending any DATA message.
-   
+
 4.4. DATA messages
 
    Once a host has the session parameters for a target host, he can
@@ -593,12 +593,12 @@ Abstract
 
    Each DATA message relies on the session keys and on an initialization
    vector. This initialization vector MUST be unpredictable.
-   
+
    That is, it is computed for each DATA message using a concatenation
    of the current session and sequence numbers. The concatenation MUST
    have the following layout (numbers are in network byte order):
 
-                  0      7 8     15 16    23 24    31 
+                  0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |          session_number           |
                  +-----------------------------------+
@@ -645,7 +645,7 @@ Abstract
    If a host does not send any DATA message to another host within 10
    seconds, he SHOULD send a KEEP-ALIVE message to maintain the session
    alive.
-   
+
 5. Thanks
 
    Thanks to N.Caritey for his precious help regarding the security
