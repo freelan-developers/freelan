@@ -147,9 +147,15 @@ namespace fscp
 
 		std::vector<uint8_t> ciphertext(packet_count * enc_key.size());
 
+		size_t remaining_cleartext_len = cleartext_len;
+
 		for (unsigned int packet_index = 0; packet_index < packet_count; ++packet_index)
 		{
-			enc_key.get_rsa_key().public_encrypt(&ciphertext[0 + packet_index * enc_key.size()], enc_key.size(), static_cast<const char*>(cleartext) + packet_index * max_cleartext_len, max_cleartext_len, RSA_PKCS1_OAEP_PADDING);
+			size_t len = std::min(max_cleartext_len, remaining_cleartext_len);
+
+			enc_key.get_rsa_key().public_encrypt(&ciphertext[0 + packet_index * enc_key.size()], enc_key.size(), static_cast<const char*>(cleartext) + packet_index * max_cleartext_len, len, RSA_PKCS1_OAEP_PADDING);
+
+			remaining_cleartext_len -= len;
 		}
 
 		cryptoplus::hash::message_digest_context mdctx;
