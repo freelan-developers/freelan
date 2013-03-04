@@ -60,8 +60,8 @@ namespace fscp
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
-		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size, from_cipher_algorithm_type(calg));
-		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t), from_message_digest_algorithm_type(mdalg));
+		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size, calg);
+		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t), mdalg);
 		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2, htons(0x0000));
 		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2, htons(static_cast<uint16_t>(seal_key_len)));
 		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t), seal_key, seal_key_len);

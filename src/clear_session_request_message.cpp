@@ -51,6 +51,21 @@
 
 namespace fscp
 {
+	namespace
+	{
+		template <typename Type>
+		uint8_t to_byte(const Type& value)
+		{
+			return static_cast<uint8_t>(value);
+		}
+
+		template <typename Type>
+		Type from_byte(uint8_t value)
+		{
+			return value;
+		}
+	}
+
 	size_t clear_session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const challenge_type& _challenge, const cipher_algorithm_list_type& _cipher_capabilities, const message_digest_algorithm_list_type& _message_digest_capabilities)
 	{
 		const size_t result_size = MIN_BODY_LENGTH + _cipher_capabilities.size() + _message_digest_capabilities.size();
@@ -63,9 +78,9 @@ namespace fscp
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
 		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size, htons(static_cast<uint16_t>(_cipher_capabilities.size())));
-		std::transform(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t), &from_cipher_algorithm_type);
+		std::transform(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t), &to_byte<cipher_algorithm_type>);
 		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size(), htons(static_cast<uint16_t>(_message_digest_capabilities.size())));
-		std::transform(_message_digest_capabilities.begin(), _message_digest_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size() + sizeof(uint16_t), &from_message_digest_algorithm_type);
+		std::transform(_message_digest_capabilities.begin(), _message_digest_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size() + sizeof(uint16_t), &to_byte<message_digest_algorithm_type>);
 
 		return result_size;
 	}
@@ -97,7 +112,7 @@ namespace fscp
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t),
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size(),
 				result.begin(),
-				&to_cipher_algorithm_type
+				&from_byte<cipher_algorithm_type>
 				);
 
 		return result;
@@ -111,7 +126,7 @@ namespace fscp
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size() + sizeof(uint16_t),
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size() + sizeof(uint16_t) + message_digest_capabilities_size(),
 				result.begin(),
-				&to_message_digest_algorithm_type
+				&from_byte<message_digest_algorithm_type>
 				);
 
 		return result;

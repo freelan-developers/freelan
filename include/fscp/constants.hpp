@@ -55,10 +55,13 @@
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/utility/enable_if.hpp>
 
 #include <stdint.h>
 #include <vector>
 #include <map>
+
+#include "enumerations.hpp"
 
 namespace fscp
 {
@@ -163,12 +166,10 @@ namespace fscp
 	/**
 	 * \brief The cipher algorithm type.
 	 */
-	enum cipher_algorithm_type
-	{
-		CIPHER_ALGORITHM_UNSUPPORTED = 0x00,
-		CIPHER_ALGORITHM_AES256_CBC = 0x01
-	};
-
+	DECLARE_VALUE_TYPE(cipher_algorithm_type);
+	DECLARE_VALUE(cipher_algorithm_type, 0x00, CIPHER_ALGORITHM_UNSUPPORTED, "Unsupported cipher algorithm");
+	DECLARE_VALUE(cipher_algorithm_type, 0x01, CIPHER_ALGORITHM_AES256_CBC, "aes256-cbc");
+	
 	/**
 	 * \brief The cipher algorithm list type.
 	 */
@@ -190,15 +191,13 @@ namespace fscp
 	/**
 	 * \brief The message digest algorithm type.
 	 */
-	enum message_digest_algorithm_type
-	{
-		MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED = 0x00,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256 = 0x01,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256_128 = 0x02,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1 = 0x03,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1_96 = 0x04,
-		MESSAGE_DIGEST_ALGORITHM_NONE = 0xFF
-	};
+	DECLARE_VALUE_TYPE(message_digest_algorithm_type);
+	DECLARE_VALUE(message_digest_algorithm_type, 0x00, MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED, "Unsupported message digest algorithm");
+	DECLARE_VALUE(message_digest_algorithm_type, 0x01, MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256, "sha256");
+	DECLARE_VALUE(message_digest_algorithm_type, 0x02, MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256_128, "sha256-128");
+	DECLARE_VALUE(message_digest_algorithm_type, 0x03, MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1, "sha1");
+	DECLARE_VALUE(message_digest_algorithm_type, 0x04, MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1_96, "sha1-96");
+	DECLARE_VALUE(message_digest_algorithm_type, 0x05, MESSAGE_DIGEST_ALGORITHM_NONE, "disabled");
 
 	/**
 	 * \brief The message digest algorithm list type.
@@ -295,46 +294,6 @@ namespace fscp
 		}
 
 		throw std::runtime_error("Unknown message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(message_digest_algorithm)));
-	}
-
-	/**
-	 * \brief Convert an uint8_t to a cipher_algorithm value.
-	 * \param value The value.
-	 * \return The cipher_algorithm_type.
-	 */
-	inline cipher_algorithm_type to_cipher_algorithm_type(uint8_t value)
-	{
-		return static_cast<cipher_algorithm_type>(value);
-	}
-
-	/**
-	 * \brief Convert a cipher_algorithm_type to an uint8_t value.
-	 * \param value The value.
-	 * \return The uint8_t.
-	 */
-	inline uint8_t from_cipher_algorithm_type(cipher_algorithm_type value)
-	{
-		return static_cast<uint8_t>(value);
-	}
-
-	/**
-	 * \brief Convert an uint8_t to a message_digest_algorithm value.
-	 * \param value The value.
-	 * \return The message_digest_algorithm_type.
-	 */
-	inline message_digest_algorithm_type to_message_digest_algorithm_type(uint8_t value)
-	{
-		return static_cast<message_digest_algorithm_type>(value);
-	}
-
-	/**
-	 * \brief Convert a message_digest_algorithm_type to an uint8_t value.
-	 * \param value The value.
-	 * \return The uint8_t.
-	 */
-	inline uint8_t from_message_digest_algorithm_type(message_digest_algorithm_type value)
-	{
-		return static_cast<uint8_t>(value);
 	}
 
 	/**
