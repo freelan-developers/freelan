@@ -55,6 +55,7 @@
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/utility/enable_if.hpp>
 
 #include <stdint.h>
 #include <vector>
@@ -62,6 +63,54 @@
 
 namespace fscp
 {
+	class enumeration_type
+	{
+		public:
+
+			typedef uint8_t value_type;
+
+			enumeration_type() : m_value(value_type()) {}
+			enumeration_type(value_type _value) : m_value(_value) {}
+
+			value_type value() const { return m_value; }
+			operator value_type() const { return m_value; }
+
+		private:
+
+			value_type m_value;
+	};
+
+	inline bool operator==(const enumeration_type& lhs, const enumeration_type& rhs)
+	{
+		return (lhs.value() == rhs.value());
+	}
+
+	inline bool operator!=(const enumeration_type& lhs, const enumeration_type& rhs)
+	{
+		return (lhs.value() != rhs.value());
+	}
+
+	template<typename Type> struct is_enumeration_type : boost::is_base_of<enumeration_type, Type> {};
+
+	template <typename Type>
+	inline typename boost::enable_if<is_enumeration_type<Type>, std::ostream&>::type operator<<(std::ostream& os, const Type& value)
+	{
+		return os << value.to_string();
+	}
+
+	template <typename Type>
+	inline typename boost::enable_if<is_enumeration_type<Type>, std::istream&>::type operator>>(std::istream& is, Type& value)
+	{
+		std::string str;
+
+		if (is >> str)
+		{
+			value = Type::from_string(value);
+		}
+
+		return is;
+	}
+
 	/**
 	 * \brief The session number type.
 	 */
@@ -163,10 +212,88 @@ namespace fscp
 	/**
 	 * \brief The cipher algorithm type.
 	 */
-	enum cipher_algorithm_type
+	class cipher_algorithm_type : public enumeration_type
 	{
-		CIPHER_ALGORITHM_UNSUPPORTED = 0x00,
-		CIPHER_ALGORITHM_AES256_CBC = 0x01
+		public:
+
+			static const value_type unsupported = 0x00;
+			static const value_type aes256_cbc = 0x01;
+
+			cipher_algorithm_type() {}
+			cipher_algorithm_type(value_type _value) : enumeration_type(_value) {}
+
+			/**
+			 * \brief Check whether the instance is a valid cipher algorithm.
+			 * \return true if the cipher algorithm is valid.
+			 */
+			bool is_valid() const
+			{
+				switch (value())
+				{
+					case unsupported:
+					case aes256_cbc:
+						return true;
+				}
+
+				return false;
+			}
+
+			/**
+			 * \brief Get a string representation of the cipher algorithm.
+			 * \return A string representation.
+			 */
+			std::string to_string() const
+			{
+				switch (value())
+				{
+					case unsupported:
+						throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					case aes256_cbc:
+						return aes256_cbc_string;
+				}
+
+				throw std::runtime_error("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+			/**
+			 * \brief Get a cipher algorithm from its string representation.
+			 * \param str The string representation.
+			 * \return The cipher algorithm.
+			 *
+			 * If str does not match any known cipher algorithm
+			 */
+			static cipher_algorithm_type from_string(const std::string& str)
+			{
+				if (str == aes256_cbc_string)
+				{
+					return aes256_cbc;
+				}
+
+				throw std::runtime_error("Invalid cipher algorithm string representation: " + str);
+			}
+
+			/**
+			 * \brief Get the cipher algorithm associated with the instance:.
+			 * \return The associated cipher algorithm.
+			 *
+			 * If the instance is not supported, a std::runtime_error is thrown.
+			 */
+			cryptoplus::cipher::cipher_algorithm to_cipher_algorithm() const
+			{
+				switch (value())
+				{
+					case unsupported:
+						throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					case aes256_cbc:
+						return cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc);
+				}
+
+				throw std::runtime_error("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+		private:
+
+			static const std::string aes256_cbc_string;
 	};
 
 	/**
@@ -175,167 +302,168 @@ namespace fscp
 	typedef std::vector<cipher_algorithm_type> cipher_algorithm_list_type;
 
 	/**
-	 * \brief Get the default cipher capabilities.
-	 * \return The default cipher capabilities.
-	 */
-	inline cipher_algorithm_list_type get_default_cipher_capabilities()
-	{
-		cipher_algorithm_list_type result;
-
-		result.push_back(CIPHER_ALGORITHM_AES256_CBC);
-
-		return result;
-	}
-
-	/**
 	 * \brief The message digest algorithm type.
 	 */
-	enum message_digest_algorithm_type
+	class message_digest_algorithm_type : public enumeration_type
 	{
-		MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED = 0x00,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256 = 0x01,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256_128 = 0x02,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1 = 0x03,
-		MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1_96 = 0x04,
-		MESSAGE_DIGEST_ALGORITHM_NONE = 0xFF
-	};
+		public:
 
+			static const value_type unsupported = 0x00;
+			static const value_type hmac_sha256 = 0x01;
+			static const value_type hmac_sha256_128 = 0x02;
+			static const value_type hmac_sha1 = 0x03;
+			static const value_type hmac_sha1_96 = 0x04;
+			static const value_type none = 0xFF;
+
+			message_digest_algorithm_type() {}
+			message_digest_algorithm_type(value_type _value) : enumeration_type(_value) {}
+
+			/**
+			 * \brief Check whether the instance is a valid message digest algorithm.
+			 * \return true if the message digest algorithm is valid.
+			 */
+			bool is_valid() const
+			{
+				switch (value())
+				{
+					case unsupported:
+					case hmac_sha256:
+					case hmac_sha256_128:
+					case hmac_sha1:
+					case hmac_sha1_96:
+					case none:
+						return true;
+				}
+
+				return false;
+			}
+
+			/**
+			 * \brief Get a string representation of the message digest algorithm.
+			 * \return A string representation.
+			 */
+			std::string to_string() const
+			{
+				switch (value())
+				{
+					case unsupported:
+						throw std::runtime_error("Unsupported message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					case hmac_sha256:
+						return hmac_sha256_string;
+					case hmac_sha256_128:
+						return hmac_sha256_128_string;
+					case hmac_sha1:
+						return hmac_sha1_string;
+					case hmac_sha1_96:
+						return hmac_sha1_96_string;
+					case none:
+						return none_string;
+				}
+
+				throw std::runtime_error("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+			/**
+			 * \brief Get a message digest algorithm from its string representation.
+			 * \param str The string representation.
+			 * \return The message digest algorithm.
+			 *
+			 * If str does not match any known message digest algorithm
+			 */
+			static message_digest_algorithm_type from_string(const std::string& str)
+			{
+				if (str == hmac_sha256_string)
+				{
+					return hmac_sha256;
+				}
+
+				if (str == hmac_sha256_128_string)
+				{
+					return hmac_sha256_128;
+				}
+
+				if (str == hmac_sha1_string)
+				{
+					return hmac_sha1;
+				}
+
+				if (str == hmac_sha1_96_string)
+				{
+					return hmac_sha1_96;
+				}
+
+				if (str == none_string)
+				{
+					return none;
+				}
+
+				throw std::runtime_error("Invalid message digest algorithm string representation: " + str);
+			}
+
+			/**
+			 * \brief Get the message digest algorithm associated with the instance:.
+			 * \return The associated message digest algorithm.
+			 *
+			 * If the instance is not supported, a std::runtime_error is thrown.
+			 */
+			boost::optional<cryptoplus::hash::message_digest_algorithm> to_message_digest_algorithm() const
+			{
+				switch (value())
+				{
+					case unsupported:
+						throw std::runtime_error("Unsupported message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					case hmac_sha256:
+					case hmac_sha256_128:
+						return cryptoplus::hash::message_digest_algorithm(NID_sha256);
+					case hmac_sha1:
+					case hmac_sha1_96:
+						return cryptoplus::hash::message_digest_algorithm(NID_sha1);
+					case none:
+						return boost::none;
+				}
+
+				throw std::runtime_error("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+			/**
+			 * \brief Get the HMAC size associated with the instance.
+			 * \return The associated HMAC size.
+			 *
+			 * If the instance is not supported, a std::runtime_error is thrown.
+			 */
+			size_t to_hmac_size() const
+			{
+				switch (value())
+				{
+					case unsupported:
+						throw std::runtime_error("Unsupported message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					case hmac_sha256:
+						return 32;
+					case hmac_sha256_128:
+						return 16;
+					case hmac_sha1:
+						return 20;
+					case hmac_sha1_96:
+						return 12;
+					case none:
+						return 0;
+				}
+
+				throw std::runtime_error("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+		private:
+
+			static const std::string hmac_sha256_string;
+			static const std::string hmac_sha256_128_string;
+			static const std::string hmac_sha1_string;
+			static const std::string hmac_sha1_96_string;
+			static const std::string none_string;
+	};
 	/**
 	 * \brief The message digest algorithm list type.
 	 */
 	typedef std::vector<message_digest_algorithm_type> message_digest_algorithm_list_type;
-
-	/**
-	 * \brief Get the default message digest capabilities.
-	 * \return The default message digest capabilities.
-	 */
-	inline message_digest_algorithm_list_type get_default_message_digest_capabilities()
-	{
-		message_digest_algorithm_list_type result;
-
-		result.push_back(MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1_96);
-		result.push_back(MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1);
-		result.push_back(MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256_128);
-		result.push_back(MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256);
-
-		return result;
-	}
-
-	/**
-	 * \brief Get the cipher algorithm associated with the specified integral value.
-	 * \param cipher_algorithm The cipher algorithm.
-	 * \return The associated cipher algorithm.
-	 *
-	 * If cipher_algorithm is not supported, a std::runtime_error is thrown.
-	 */
-	inline cryptoplus::cipher::cipher_algorithm to_cipher_algorithm(cipher_algorithm_type cipher_algorithm)
-	{
-		switch (cipher_algorithm)
-		{
-			case CIPHER_ALGORITHM_UNSUPPORTED:
-				throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(cipher_algorithm)));
-			case CIPHER_ALGORITHM_AES256_CBC:
-				return cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc);
-		}
-
-		throw std::runtime_error("Unknown cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(cipher_algorithm)));
-	}
-
-	/**
-	 * \brief Get the message digest algorithm associated with the specified integral value.
-	 * \param message_digest_algorithm The message digest algorithm.
-	 * \return The associated message digest algorithm.
-	 *
-	 * If message_digest_algorithm is not supported, a std::runtime_error is thrown.
-	 *
-	 * If message_digest_algorithm is MESSAGE_DIGEST_ALGORITHM_NONE, a std::runtime_error is thrown.
-	 */
-	inline boost::optional<cryptoplus::hash::message_digest_algorithm> to_message_digest_algorithm(message_digest_algorithm_type message_digest_algorithm)
-	{
-		switch (message_digest_algorithm)
-		{
-			case MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED:
-				throw std::runtime_error("Unsupported message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(message_digest_algorithm)));
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256:
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256_128:
-				return cryptoplus::hash::message_digest_algorithm(NID_sha256);
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1:
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1_96:
-				return cryptoplus::hash::message_digest_algorithm(NID_sha1);
-			case MESSAGE_DIGEST_ALGORITHM_NONE:
-				return boost::none;
-		}
-
-		throw std::runtime_error("Unknown message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(message_digest_algorithm)));
-	}
-
-	/**
-	 * \brief Get the size of the HMAC for the specified message digest algorithm.
-	 * \param message_digest_algorithm The message digest algorithm.
-	 * \return The size of the HMAC for the specified message digest algorithm.
-	 *
-	 * If message_digest_algorithm is not supported, a std::runtime_error is thrown.
-	 */
-	inline size_t get_message_digest_algorithm_hmac_size(message_digest_algorithm_type message_digest_algorithm)
-	{
-		switch (message_digest_algorithm)
-		{
-			case MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED:
-				throw std::runtime_error("Unsupported message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(message_digest_algorithm)));
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256:
-				return 32;
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA256_128:
-				return 16;
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1:
-				return 20;
-			case MESSAGE_DIGEST_ALGORITHM_HMAC_SHA1_96:
-				return 12;
-			case MESSAGE_DIGEST_ALGORITHM_NONE:
-				return 0;
-		}
-
-		throw std::runtime_error("Unknown message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(message_digest_algorithm)));
-	}
-
-	/**
-	 * \brief Convert an uint8_t to a cipher_algorithm value.
-	 * \param value The value.
-	 * \return The cipher_algorithm_type.
-	 */
-	inline cipher_algorithm_type to_cipher_algorithm_type(uint8_t value)
-	{
-		return static_cast<cipher_algorithm_type>(value);
-	}
-
-	/**
-	 * \brief Convert a cipher_algorithm_type to an uint8_t value.
-	 * \param value The value.
-	 * \return The uint8_t.
-	 */
-	inline uint8_t from_cipher_algorithm_type(cipher_algorithm_type value)
-	{
-		return static_cast<uint8_t>(value);
-	}
-
-	/**
-	 * \brief Convert an uint8_t to a message_digest_algorithm value.
-	 * \param value The value.
-	 * \return The message_digest_algorithm_type.
-	 */
-	inline message_digest_algorithm_type to_message_digest_algorithm_type(uint8_t value)
-	{
-		return static_cast<message_digest_algorithm_type>(value);
-	}
-
-	/**
-	 * \brief Convert a message_digest_algorithm_type to an uint8_t value.
-	 * \param value The value.
-	 * \return The uint8_t.
-	 */
-	inline uint8_t from_message_digest_algorithm_type(message_digest_algorithm_type value)
-	{
-		return static_cast<uint8_t>(value);
-	}
 
 	/**
 	 * \brief The certificate digest algorithm.

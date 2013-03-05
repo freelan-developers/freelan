@@ -81,17 +81,38 @@ namespace fscp
 		}
 
 		template <typename ElementType, typename ListType>
-		ElementType get_first_element(const ListType& first, const ListType& second, ElementType default_value)
-		{
-			for (typename ListType::const_iterator it = first.begin(); it != first.end(); ++it)
+			ElementType get_first_element(const ListType& first, const ListType& second, ElementType default_value)
 			{
-				if (std::find(second.begin(), second.end(), *it) != second.end())
+				for (typename ListType::const_iterator it = first.begin(); it != first.end(); ++it)
 				{
-					return *it;
+					if (std::find(second.begin(), second.end(), *it) != second.end())
+					{
+						return *it;
+					}
 				}
+
+				return default_value;
 			}
 
-			return default_value;
+		cipher_algorithm_list_type get_default_cipher_capabilities()
+		{
+			cipher_algorithm_list_type result;
+
+			result.push_back(cipher_algorithm_type::aes256_cbc);
+
+			return result;
+		}
+
+		message_digest_algorithm_list_type get_default_message_digest_capabilities()
+		{
+			message_digest_algorithm_list_type result;
+
+			result.push_back(message_digest_algorithm_type::hmac_sha1_96);
+			result.push_back(message_digest_algorithm_type::hmac_sha1);
+			result.push_back(message_digest_algorithm_type::hmac_sha256_128);
+			result.push_back(message_digest_algorithm_type::hmac_sha256);
+
+			return result;
 		}
 	}
 
@@ -556,12 +577,12 @@ namespace fscp
 
 	cipher_algorithm_type server::get_first_supported_cipher_algorithm(const cipher_algorithm_list_type& cipher_capabilities) const
 	{
-		return get_first_element(m_cipher_capabilities, cipher_capabilities, CIPHER_ALGORITHM_UNSUPPORTED);
+		return get_first_element(m_cipher_capabilities, cipher_capabilities, cipher_algorithm_type::unsupported);
 	}
 
 	message_digest_algorithm_type server::get_first_supported_message_digest_algorithm(const message_digest_algorithm_list_type& message_digest_capabilities) const
 	{
-		return get_first_element(m_message_digest_capabilities, message_digest_capabilities, MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED);
+		return get_first_element(m_message_digest_capabilities, message_digest_capabilities, message_digest_algorithm_type::unsupported);
 	}
 
 	/* Session messages */
@@ -625,9 +646,9 @@ namespace fscp
 			{
 				bool session_is_new = !session_pair.has_remote_session();
 
-				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = to_cipher_algorithm(_clear_session_message.cipher_algorithm());
-				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = to_message_digest_algorithm(_clear_session_message.message_digest_algorithm());
-				const size_t message_digest_algorithm_hmac_size = get_message_digest_algorithm_hmac_size(_clear_session_message.message_digest_algorithm());
+				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = _clear_session_message.cipher_algorithm().to_cipher_algorithm();
+				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = _clear_session_message.message_digest_algorithm().to_message_digest_algorithm();
+				const size_t message_digest_algorithm_hmac_size = _clear_session_message.message_digest_algorithm().to_hmac_size();
 
 				session_store _session_store(
 						_clear_session_message.session_number(),

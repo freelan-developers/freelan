@@ -215,9 +215,7 @@ namespace fscp
 	};
 
 	inline session_pair::session_pair() :
-		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time()),
-		m_local_cipher_algorithm(CIPHER_ALGORITHM_UNSUPPORTED),
-		m_local_message_digest_algorithm(MESSAGE_DIGEST_ALGORITHM_UNSUPPORTED)
+		m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
 	{
 	}
 

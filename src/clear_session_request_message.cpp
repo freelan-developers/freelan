@@ -63,9 +63,9 @@ namespace fscp
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
 		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size, htons(static_cast<uint16_t>(_cipher_capabilities.size())));
-		std::transform(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t), &from_cipher_algorithm_type);
+		std::copy(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t));
 		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size(), htons(static_cast<uint16_t>(_message_digest_capabilities.size())));
-		std::transform(_message_digest_capabilities.begin(), _message_digest_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size() + sizeof(uint16_t), &from_message_digest_algorithm_type);
+		std::copy(_message_digest_capabilities.begin(), _message_digest_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t) + _cipher_capabilities.size() + sizeof(uint16_t));
 
 		return result_size;
 	}
@@ -93,11 +93,10 @@ namespace fscp
 	{
 		cipher_algorithm_list_type result(cipher_capabilities_size());
 
-		std::transform(
+		std::copy(
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t),
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size(),
-				result.begin(),
-				&to_cipher_algorithm_type
+				result.begin()
 				);
 
 		return result;
@@ -107,11 +106,10 @@ namespace fscp
 	{
 		message_digest_algorithm_list_type result(message_digest_capabilities_size());
 
-		std::transform(
+		std::copy(
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size() + sizeof(uint16_t),
 				data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint16_t) + cipher_capabilities_size() + sizeof(uint16_t) + message_digest_capabilities_size(),
-				result.begin(),
-				&to_message_digest_algorithm_type
+				result.begin()
 				);
 
 		return result;
