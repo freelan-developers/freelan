@@ -429,7 +429,7 @@ namespace freelan
 		return false;
 	}
 
-	bool core::on_session_request(const ep_type& sender, bool default_accept)
+	bool core::on_session_request(const ep_type& sender, const fscp::cipher_algorithm_list_type&, const fscp::message_digest_algorithm_list_type&, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << ".";
 
@@ -441,11 +441,13 @@ namespace freelan
 		return false;
 	}
 
-	void core::on_session_established(const ep_type& sender)
+	void core::on_session_established(const ep_type& sender, fscp::cipher_algorithm_type calg, fscp::message_digest_algorithm_type mdalg)
 	{
 		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
 
 		m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
+		m_logger(LL_INFORMATION) << "Cipher algorithm: " << calg;
+		m_logger(LL_INFORMATION) << "Message digest algorithm: " << mdalg;
 
 		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
 
@@ -454,7 +456,7 @@ namespace freelan
 
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(sender);
+			m_session_established_callback(sender, calg, mdalg);
 		}
 	}
 
@@ -695,8 +697,8 @@ namespace freelan
 
 		m_server->set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
 		m_server->set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
-		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2));
-		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1));
+		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3, _4));
+		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2, _3));
 		m_server->set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server->set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 		m_server->set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
