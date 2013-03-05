@@ -533,12 +533,18 @@ Abstract
    - 0x04: HMAC-SHA1-96 (HMAC is 12 bytes long)
    - 0xFF: No HMAC (HMAC is 0 bytes long)
 
+   If an unknown message digest algorithm code is met, it must be ignored
+   to account for implementation specific codes.
+
 3.2. Symmetric cipherment algorithm
 
    The available cipher algorithms used in the symmetric cipherment are:
 
    - 0x01: AES256-CBC with ISO 10126 padding (key size is 32 bytes, IV
      size is 16 bytes).
+
+   If an unknown cipher algorithm code is met, it must be ignored to
+   account for implementation specific codes.
 
 3.3. Asymmetric cipherment and signature algorithms
 
