@@ -33,6 +33,9 @@ export LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
 export LD_LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
 export PATH="${FREELAN_INSTALL_PREFIX}/bin:${PATH}"
 
+# Fake ldconfig
+export FREELAN_FAKE_LDCONFIG=1
+
 # Freelan server
 export FREELAN_SERVER_CONFIGURATION_FILE=${FREELAN_ALL_ROOT}/tools/server/freelan-server.cfg
 
