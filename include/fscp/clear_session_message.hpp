@@ -196,12 +196,12 @@ namespace fscp
 
 	inline cipher_algorithm_type clear_session_message::cipher_algorithm() const
 	{
-		return buffer_tools::get<uint8_t>(data(), sizeof(session_number_type) + challenge_type::static_size);
+		return to_cipher_algorithm_type(buffer_tools::get<uint8_t>(data(), sizeof(session_number_type) + challenge_type::static_size));
 	}
 
 	inline message_digest_algorithm_type clear_session_message::message_digest_algorithm() const
 	{
-		return buffer_tools::get<uint8_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t));
+		return to_message_digest_algorithm_type(buffer_tools::get<uint8_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t)));
 	}
 
 	inline const uint8_t* clear_session_message::seal_key() const
