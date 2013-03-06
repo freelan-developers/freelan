@@ -429,9 +429,30 @@ namespace freelan
 		return false;
 	}
 
-	bool core::on_session_request(const ep_type& sender, const fscp::cipher_algorithm_list_type&, const fscp::message_digest_algorithm_list_type&, bool default_accept)
+	bool core::on_session_request(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_cap, const fscp::message_digest_algorithm_list_type& mdalg_cap, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << ".";
+
+		if (m_logger.level() <= LL_DEBUG)
+		{
+			std::ostringstream oss;
+
+			BOOST_FOREACH(const fscp::cipher_algorithm_type& calg, calg_cap)
+			{
+				oss << " " << calg;
+			}
+
+			m_logger(LL_DEBUG) << "Cipher algorithm capabilities:" << oss.str();
+
+			oss.str("");
+
+			BOOST_FOREACH(const fscp::message_digest_algorithm_type& mdalg, mdalg_cap)
+			{
+				oss << " " << mdalg;
+			}
+
+			m_logger(LL_DEBUG) << "Message digest algorithm capabilities:" << oss.str();
+		}
 
 		if (default_accept)
 		{
