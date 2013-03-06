@@ -105,7 +105,7 @@ namespace fscp
 
 		if (is >> str)
 		{
-			value = Type::from_string(value);
+			value = Type::from_string(str);
 		}
 
 		return is;
