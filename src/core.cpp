@@ -716,6 +716,9 @@ namespace freelan
 
 		m_server.reset(new fscp::server(m_io_service, *m_configuration.security.identity));
 
+		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
+		m_server->set_message_digest_capabilities(m_configuration.fscp.message_digest_capabilities);
+
 		m_server->set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
 		m_server->set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
 		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3, _4));
