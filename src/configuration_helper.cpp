@@ -131,6 +131,8 @@ po::options_description get_fscp_options()
 	("fscp.accept_contacts", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT messages.")
 	("fscp.dynamic_contact_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The certificate of an host to dynamically contact.")
 	("fscp.never_contact", po::value<std::vector<fl::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
+	("fscp.cipher_capability", po::value<std::vector<fscp::cipher_algorithm_type> >()->multitoken()->zero_tokens()->default_value(std::vector<fscp::cipher_algorithm_type>(), ""), "A cipher algorithm to allow.")
+	("fscp.message_digest_capability", po::value<std::vector<fscp::message_digest_algorithm_type> >()->multitoken()->zero_tokens()->default_value(std::vector<fscp::message_digest_algorithm_type>(), ""), "A message digest algorithm to allow.")
 	;
 
 	return result;
@@ -280,6 +282,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 
 	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<fl::ip_network_address> >();
+	configuration.fscp.cipher_capabilities = vm["fscp.cipher_capability"].as<std::vector<fscp::cipher_algorithm_type> >();
+	configuration.fscp.message_digest_capabilities = vm["fscp.message_digest_capability"].as<std::vector<fscp::message_digest_algorithm_type> >();
 
 	// Security options
 	cert_type signature_certificate;
