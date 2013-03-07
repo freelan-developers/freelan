@@ -143,10 +143,10 @@ namespace freelan
 			/**
 			 * \brief A session established callback.
 			 * \param host The host with which a session is established.
-			 * \param calg The cipher algorithm used for the session.
-			 * \param mdalg The message digest algorithm used for the session.
+			 * \param local The local algorithms.
+			 * \param remote The remote algorithms.
 			 */
-			typedef boost::function<void (const ep_type& host, fscp::cipher_algorithm_type calg, fscp::message_digest_algorithm_type mdalg)> session_established_callback;
+			typedef boost::function<void (const ep_type& host, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_callback;
 
 			/**
 			 * \brief A session lost callback.
@@ -275,7 +275,7 @@ namespace freelan
 			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
 			bool on_presentation(const ep_type&, cert_type, cert_type, bool);
 			bool on_session_request(const ep_type&, const fscp::cipher_algorithm_list_type&, const fscp::message_digest_algorithm_list_type&, bool);
-			void on_session_established(const ep_type&, fscp::cipher_algorithm_type, fscp::message_digest_algorithm_type);
+			void on_session_established(const ep_type&, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void on_session_lost(const ep_type&);
 			void on_data(const ep_type&, fscp::channel_number_type, boost::asio::const_buffer);
 			bool on_contact_request(const ep_type&, cert_type, const ep_type&);

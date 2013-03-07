@@ -462,13 +462,13 @@ namespace freelan
 		return false;
 	}
 
-	void core::on_session_established(const ep_type& sender, fscp::cipher_algorithm_type calg, fscp::message_digest_algorithm_type mdalg)
+	void core::on_session_established(const ep_type& sender, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 	{
 		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
 
 		m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
-		m_logger(LL_INFORMATION) << "Cipher algorithm: " << calg;
-		m_logger(LL_INFORMATION) << "Message digest algorithm: " << mdalg;
+		m_logger(LL_INFORMATION) << "Local algorithms: " << local;
+		m_logger(LL_INFORMATION) << "Remote algorithms: " << remote;
 
 		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
 
@@ -477,7 +477,7 @@ namespace freelan
 
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(sender, calg, mdalg);
+			m_session_established_callback(sender, local, remote);
 		}
 	}
 
