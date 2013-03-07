@@ -1,0 +1,10 @@
+language: cpp
+compiler: gcc
+script: ./tools/linux/setup-environment.sh -c scons install samples
+branches:
+    only:
+        - master
+notifications:
+    email:
+        on_success: change
+        on_failure: always
