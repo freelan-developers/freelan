@@ -1,7 +1,7 @@
 freelan-all
 ===========
 
-Last build status: [![Build Status](https://travis-ci.org/freelan-developers/freelan-all.png)](https://travis-ci.org/freelan-developers/freelan-all)
+[![Build Status](https://travis-ci.org/freelan-developers/freelan-all.png)](https://travis-ci.org/freelan-developers/freelan-all)
 
 A super-project that includes all FreeLAN related projects and provides scripts to generate installers.
 
