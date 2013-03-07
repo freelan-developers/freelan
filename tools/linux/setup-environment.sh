@@ -58,4 +58,4 @@ echo "Install root is: ${FREELAN_INSTALL_ROOT}"
 echo
 echo "Type Ctrl+D or exit to leave the build environment."
 
-$SHELL
+$SHELL $"$@"
