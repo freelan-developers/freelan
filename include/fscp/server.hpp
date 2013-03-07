@@ -135,11 +135,10 @@ namespace fscp
 
 			/**
 			 * \brief A session established callback.
-			 * \param host The host with which a session is established.
-			 * \param calg The cipher algorithm used for the session.
-			 * \param mdalg The message digest algorithm to use for the session.
+			 * \param local The local algorithm info.
+			 * \param remote The remote algorithm info.
 			 */
-			typedef boost::function<void (const ep_type& host, cipher_algorithm_type calg, message_digest_algorithm_type mdalg)> session_established_callback;
+			typedef boost::function<void (const ep_type& host, const algorithm_info_type& local, const algorithm_info_type& remote)> session_established_callback;
 
 			/**
 			 * \brief A session lost callback.
@@ -496,7 +495,7 @@ namespace fscp
 			void do_send_session(const ep_type&, session_store::session_number_type);
 			void handle_session_message_from(const session_message&, const ep_type&);
 			void handle_clear_session_message_from(const clear_session_message&, const ep_type&);
-			void session_established(const ep_type&, cipher_algorithm_type, message_digest_algorithm_type);
+			void session_established(const ep_type&, const algorithm_info_type&, const algorithm_info_type&);
 			void session_lost(const ep_type&);
 			void do_close_session(const ep_type&);
 

@@ -665,17 +665,19 @@ namespace fscp
 
 				if (session_is_new)
 				{
-					session_established(sender, _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm());
+					algorithm_info_type local = { session_pair.local_cipher_algorithm(), session_pair.local_message_digest_algorithm() };
+					algorithm_info_type remote = { _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm() };
+					session_established(sender, local, remote);
 				}
 			}
 		}
 	}
 
-	void server::session_established(const ep_type& host, cipher_algorithm_type calg, message_digest_algorithm_type mdalg)
+	void server::session_established(const ep_type& host, const algorithm_info_type& local, const algorithm_info_type& remote)
 	{
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(host, calg, mdalg);
+			m_session_established_callback(host, local, remote);
 		}
 	}
 

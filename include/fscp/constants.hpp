@@ -460,10 +460,25 @@ namespace fscp
 			static const std::string hmac_sha1_96_string;
 			static const std::string none_string;
 	};
+
 	/**
 	 * \brief The message digest algorithm list type.
 	 */
 	typedef std::vector<message_digest_algorithm_type> message_digest_algorithm_list_type;
+
+	/**
+	 * \brief An algorithm info type.
+	 */
+	struct algorithm_info_type
+	{
+		cipher_algorithm_type cipher_algorithm;
+		message_digest_algorithm_type message_digest_algorithm;
+	};
+
+	inline std::ostream& operator<<(std::ostream& os, const algorithm_info_type& ai)
+	{
+		return os << ai.cipher_algorithm << "/" << ai.message_digest_algorithm;
+	}
 
 	/**
 	 * \brief The certificate digest algorithm.
