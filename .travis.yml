@@ -4,6 +4,9 @@ script: ./tools/linux/setup-environment.sh -c scons install samples
 branches:
     only:
         - master
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install libboost-dev libssl-dev libcurl4-openssl-dev
 notifications:
     email:
         on_success: change
