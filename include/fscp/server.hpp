@@ -134,7 +134,17 @@ namespace fscp
 			typedef boost::function<void (const ep_type& sender, channel_number_type channel_number, boost::asio::const_buffer data)> data_message_callback;
 
 			/**
+			 * \brief A session failed callback.
+			 * \param host The host with which the session failed.
+			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
+			 * \param local The local algorithm info.
+			 * \param remote The remote algorithm info.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)> session_failed_callback;
+
+			/**
 			 * \brief A session established callback.
+			 * \param host The host with which the session was established.
 			 * \param local The local algorithm info.
 			 * \param remote The remote algorithm info.
 			 */
@@ -346,6 +356,12 @@ namespace fscp
 			void set_session_message_callback(session_message_callback callback);
 
 			/**
+			 * \brief Set the session failed callback.
+			 * \param callback The callback.
+			 */
+			void set_session_failed_callback(session_failed_callback callback);
+
+			/**
 			 * \brief Set the session established callback.
 			 * \param callback The callback.
 			 */
@@ -495,12 +511,14 @@ namespace fscp
 			void do_send_session(const ep_type&, session_store::session_number_type);
 			void handle_session_message_from(const session_message&, const ep_type&);
 			void handle_clear_session_message_from(const clear_session_message&, const ep_type&);
+			void session_failed(const ep_type&, bool, const algorithm_info_type&, const algorithm_info_type&);
 			void session_established(const ep_type&, const algorithm_info_type&, const algorithm_info_type&);
 			void session_lost(const ep_type&);
 			void do_close_session(const ep_type&);
 
 			bool m_accept_session_messages_default;
 			session_message_callback m_session_message_callback;
+			session_failed_callback m_session_failed_callback;
 			session_established_callback m_session_established_callback;
 			session_lost_callback m_session_lost_callback;
 
@@ -631,6 +649,11 @@ namespace fscp
 	inline void server::set_session_message_callback(session_message_callback callback)
 	{
 		m_session_message_callback = callback;
+	}
+
+	inline void server::set_session_failed_callback(session_failed_callback callback)
+	{
+		m_session_failed_callback = callback;
 	}
 
 	inline void server::set_session_established_callback(session_established_callback callback)

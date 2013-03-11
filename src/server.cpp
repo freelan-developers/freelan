@@ -130,6 +130,7 @@ namespace fscp
 		m_session_request_message_callback(0),
 		m_accept_session_messages_default(true),
 		m_session_message_callback(0),
+		m_session_failed_callback(0),
 		m_session_established_callback(0),
 		m_session_lost_callback(0),
 		m_data_message_callback(0),
@@ -644,32 +645,51 @@ namespace fscp
 
 			if (can_accept)
 			{
-				bool session_is_new = !session_pair.has_remote_session();
+				const bool session_is_new = !session_pair.has_remote_session();
 
-				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = _clear_session_message.cipher_algorithm().to_cipher_algorithm();
-				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = _clear_session_message.message_digest_algorithm().to_message_digest_algorithm();
-				const size_t message_digest_algorithm_hmac_size = _clear_session_message.message_digest_algorithm().to_hmac_size();
+				const algorithm_info_type local = { session_pair.local_cipher_algorithm(), session_pair.local_message_digest_algorithm() };
+				const algorithm_info_type remote = { _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm() };
 
-				session_store _session_store(
-						_clear_session_message.session_number(),
-						cipher_algorithm,
-						message_digest_algorithm,
-						message_digest_algorithm_hmac_size,
-						_clear_session_message.seal_key(),
-						_clear_session_message.seal_key_size(),
-						_clear_session_message.encryption_key(),
-						_clear_session_message.encryption_key_size()
-						);
-
-				session_pair.set_remote_session(_session_store);
-
-				if (session_is_new)
+				if (
+						(_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported) ||
+						(_clear_session_message.message_digest_algorithm() == message_digest_algorithm_type::unsupported)
+					 )
 				{
-					algorithm_info_type local = { session_pair.local_cipher_algorithm(), session_pair.local_message_digest_algorithm() };
-					algorithm_info_type remote = { _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm() };
-					session_established(sender, local, remote);
+					session_failed(sender, session_is_new, local, remote);
+				}
+				else
+				{
+					const cryptoplus::cipher::cipher_algorithm cipher_algorithm = _clear_session_message.cipher_algorithm().to_cipher_algorithm();
+					const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = _clear_session_message.message_digest_algorithm().to_message_digest_algorithm();
+					const size_t message_digest_algorithm_hmac_size = _clear_session_message.message_digest_algorithm().to_hmac_size();
+
+					session_store _session_store(
+							_clear_session_message.session_number(),
+							cipher_algorithm,
+							message_digest_algorithm,
+							message_digest_algorithm_hmac_size,
+							_clear_session_message.seal_key(),
+							_clear_session_message.seal_key_size(),
+							_clear_session_message.encryption_key(),
+							_clear_session_message.encryption_key_size()
+							);
+
+					session_pair.set_remote_session(_session_store);
+
+					if (session_is_new)
+					{
+						session_established(sender, local, remote);
+					}
 				}
 			}
+		}
+	}
+
+	void server::session_failed(const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)
+	{
+		if (m_session_failed_callback)
+		{
+			m_session_failed_callback(host, is_new, local, remote);
 		}
 	}
 
