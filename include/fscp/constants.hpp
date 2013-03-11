@@ -85,9 +85,33 @@ namespace fscp
 		return (lhs.value() == rhs.value());
 	}
 
+	// This overload is needed to accomodate with the ambiguity raised by the implicit conversion to value_type
+	inline bool operator==(const enumeration_type& lhs, const enumeration_type::value_type& rhs)
+	{
+		return (lhs.value() == rhs);
+	}
+
+	// This overload is needed to accomodate with the ambiguity raised by the implicit conversion to value_type
+	inline bool operator==(const enumeration_type::value_type& lhs, const enumeration_type& rhs)
+	{
+		return (lhs == rhs.value());
+	}
+
 	inline bool operator!=(const enumeration_type& lhs, const enumeration_type& rhs)
 	{
 		return (lhs.value() != rhs.value());
+	}
+
+	// This overload is needed to accomodate with the ambiguity raised by the implicit conversion to value_type
+	inline bool operator!=(const enumeration_type& lhs, const enumeration_type::value_type& rhs)
+	{
+		return (lhs.value() != rhs);
+	}
+
+	// This overload is needed to accomodate with the ambiguity raised by the implicit conversion to value_type
+	inline bool operator!=(const enumeration_type::value_type& lhs, const enumeration_type& rhs)
+	{
+		return (lhs != rhs.value());
 	}
 
 	template<typename Type> struct is_enumeration_type : boost::is_base_of<enumeration_type, Type> {};
