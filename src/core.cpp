@@ -110,6 +110,7 @@ namespace freelan
 		m_configuration_update_callback(),
 		m_open_callback(),
 		m_close_callback(),
+		m_session_failed_callback(),
 		m_session_established_callback(),
 		m_session_lost_callback(),
 		m_arp_filter(m_ethernet_filter),
@@ -462,22 +463,55 @@ namespace freelan
 		return false;
 	}
 
-	void core::on_session_established(const ep_type& sender, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+	void core::on_session_failed(const ep_type& sender, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 	{
 		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
 
-		m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
+		if (is_new)
+		{
+			m_logger(LL_WARNING) << "Session establishment with " << sender << " (" << sig_cert.subject().oneline() << ") failed.";
+		}
+		else
+		{
+			m_logger(LL_WARNING) << "Session renewal with " << sender << " (" << sig_cert.subject().oneline() << ") failed.";
+		}
+
+		m_logger(LL_WARNING) << "Local algorithms: " << local;
+		m_logger(LL_WARNING) << "Remote algorithms: " << remote;
+
+		if (m_session_failed_callback)
+		{
+			m_session_failed_callback(sender, is_new, local, remote);
+		}
+	}
+
+	void core::on_session_established(const ep_type& sender, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+	{
+		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
+
+		if (is_new)
+		{
+			m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << "Session renewed with " << sender << " (" << sig_cert.subject().oneline() << ").";
+		}
+
 		m_logger(LL_INFORMATION) << "Local algorithms: " << local;
 		m_logger(LL_INFORMATION) << "Remote algorithms: " << remote;
 
-		const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+		if (is_new)
+		{
+			const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
 
-		m_endpoint_switch_port_map[sender] = port;
-		m_switch.register_port(port, ENDPOINTS_GROUP);
+			m_endpoint_switch_port_map[sender] = port;
+			m_switch.register_port(port, ENDPOINTS_GROUP);
+		}
 
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(sender, local, remote);
+			m_session_established_callback(sender, is_new, local, remote);
 		}
 	}
 
@@ -722,7 +756,8 @@ namespace freelan
 		m_server->set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
 		m_server->set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
 		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3, _4));
-		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2, _3));
+		m_server->set_session_failed_callback(boost::bind(&core::on_session_failed, this, _1, _2, _3, _4));
+		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
 		m_server->set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
 		m_server->set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));

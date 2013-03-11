@@ -141,12 +141,22 @@ namespace freelan
 			typedef boost::function<void ()> close_callback;
 
 			/**
-			 * \brief A session established callback.
+			 * \brief A session failed callback.
 			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
 			 * \param local The local algorithms.
 			 * \param remote The remote algorithms.
 			 */
-			typedef boost::function<void (const ep_type& host, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_callback;
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_failed_callback;
+
+			/**
+			 * \brief A session established callback.
+			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
+			 * \param local The local algorithms.
+			 * \param remote The remote algorithms.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_callback;
 
 			/**
 			 * \brief A session lost callback.
@@ -229,6 +239,12 @@ namespace freelan
 			void set_close_callback(close_callback callback);
 
 			/**
+			 * \brief Set the session failed callback.
+			 * \param callback The callback.
+			 */
+			void set_session_failed_callback(session_failed_callback callback);
+
+			/**
 			 * \brief Set the session established callback.
 			 * \param callback The callback.
 			 */
@@ -275,7 +291,8 @@ namespace freelan
 			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
 			bool on_presentation(const ep_type&, cert_type, cert_type, bool);
 			bool on_session_request(const ep_type&, const fscp::cipher_algorithm_list_type&, const fscp::message_digest_algorithm_list_type&, bool);
-			void on_session_established(const ep_type&, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
+			void on_session_failed(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
+			void on_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void on_session_lost(const ep_type&);
 			void on_data(const ep_type&, fscp::channel_number_type, boost::asio::const_buffer);
 			bool on_contact_request(const ep_type&, cert_type, const ep_type&);
@@ -320,6 +337,7 @@ namespace freelan
 			configuration_update_callback m_configuration_update_callback;
 			open_callback m_open_callback;
 			close_callback m_close_callback;
+			session_failed_callback m_session_failed_callback;
 			session_established_callback m_session_established_callback;
 			session_lost_callback m_session_lost_callback;
 
@@ -409,6 +427,11 @@ namespace freelan
 	inline void core::set_close_callback(close_callback callback)
 	{
 		m_close_callback = callback;
+	}
+
+	inline void core::set_session_failed_callback(session_failed_callback callback)
+	{
+		m_session_failed_callback = callback;
 	}
 
 	inline void core::set_session_established_callback(session_established_callback callback)
