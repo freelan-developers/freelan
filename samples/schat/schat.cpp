@@ -113,9 +113,11 @@ static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_algorit
 	return default_accept;
 }
 
-static void on_session_established(const fscp::server::ep_type& host, fscp::cipher_algorithm_type, fscp::message_digest_algorithm_type)
+static void on_session_established(const fscp::server::ep_type& host, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 {
 	std::cout << "Session established with " << host << std::endl;
+	std::cout << "Local algorithms: " << local << std::endl;
+	std::cout << "Remote algorithms: " << remote << std::endl;
 }
 
 static void on_session_lost(const fscp::server::ep_type& host)
