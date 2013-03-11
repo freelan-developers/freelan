@@ -276,7 +276,7 @@ namespace fscp
 						return aes256_cbc_string;
 				}
 
-				throw std::runtime_error("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 			/**
@@ -293,7 +293,7 @@ namespace fscp
 					return aes256_cbc;
 				}
 
-				throw std::runtime_error("Invalid cipher algorithm string representation: " + str);
+				throw std::invalid_argument("Invalid cipher algorithm string representation: " + str);
 			}
 
 			/**
@@ -312,7 +312,7 @@ namespace fscp
 						return cryptoplus::cipher::cipher_algorithm(NID_aes_256_cbc);
 				}
 
-				throw std::runtime_error("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 		private:
@@ -384,7 +384,7 @@ namespace fscp
 						return none_string;
 				}
 
-				throw std::runtime_error("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 			/**
@@ -421,7 +421,7 @@ namespace fscp
 					return none;
 				}
 
-				throw std::runtime_error("Invalid message digest algorithm string representation: " + str);
+				throw std::invalid_argument("Invalid message digest algorithm string representation: " + str);
 			}
 
 			/**
@@ -446,7 +446,7 @@ namespace fscp
 						return boost::none;
 				}
 
-				throw std::runtime_error("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 			/**
@@ -473,7 +473,7 @@ namespace fscp
 						return 0;
 				}
 
-				throw std::runtime_error("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid message digest algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 		private:

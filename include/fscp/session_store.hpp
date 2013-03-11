@@ -71,23 +71,21 @@ namespace fscp
 			 * \brief Create a new random session store.
 			 * \param session_number The session number.
 			 * \param cipher_algorithm The cipher algorithm.
-			 * \param message_digest_algorithm The message digest algorithm, if any.
-			 * \param message_digest_algorithm_hmac_size The HMAC size.
+			 * \param message_digest_algorithm The message digest algorithm.
 			 */
-			session_store(session_number_type session_number, const cryptoplus::cipher::cipher_algorithm& cipher_algorithm, boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm, size_t message_digest_algorithm_hmac_size);
+			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const message_digest_algorithm_type& message_digest_algorithm);
 
 			/**
 			 * \brief Create a new session store.
 			 * \param session_number The session number.
 			 * \param cipher_algorithm The cipher algorithm.
-			 * \param message_digest_algorithm The message digest algorithm, if any.
-			 * \param message_digest_algorithm_hmac_size The HMAC size.
+			 * \param message_digest_algorithm The message digest algorithm.
 			 * \param seal_key The seal key.
 			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 */
-			session_store(session_number_type session_number, const cryptoplus::cipher::cipher_algorithm& cipher_algorithm, boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const message_digest_algorithm_type& message_digest_algorithm, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Get the session number.
@@ -99,19 +97,13 @@ namespace fscp
 			 * \brief Get the cipher algorithm.
 			 * \return The cipher algorithm.
 			 */
-			const cryptoplus::cipher::cipher_algorithm& cipher_algorithm() const;
+			const cipher_algorithm_type& cipher_algorithm() const;
 
 			/**
 			 * \brief Get the message digest algorithm.
 			 * \return The message digest algorithm.
 			 */
-			boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm() const;
-
-			/**
-			 * \brief Get the message digest algorithm HMAC size.
-			 * \return The message digest algorithm HMAC size.
-			 */
-			size_t message_digest_algorithm_hmac_size() const;
+			const message_digest_algorithm_type& message_digest_algorithm() const;
 
 			/**
 			 * \brief Get the seal key.
@@ -169,9 +161,8 @@ namespace fscp
 			typedef std::vector<uint8_t> key_type;
 
 			session_number_type m_session_number;
-			cryptoplus::cipher::cipher_algorithm m_cipher_algorithm;
-			boost::optional<cryptoplus::hash::message_digest_algorithm> m_message_digest_algorithm;
-			size_t m_message_digest_algorithm_hmac_size;
+			cipher_algorithm_type m_cipher_algorithm;
+			message_digest_algorithm_type m_message_digest_algorithm;
 			key_type m_seal_key;
 			key_type m_enc_key;
 			sequence_number_type m_sequence_number;
@@ -182,19 +173,14 @@ namespace fscp
 		return m_session_number;
 	}
 
-	inline const cryptoplus::cipher::cipher_algorithm& session_store::cipher_algorithm() const
+	inline const cipher_algorithm_type& session_store::cipher_algorithm() const
 	{
 		return m_cipher_algorithm;
 	}
 
-	inline boost::optional<cryptoplus::hash::message_digest_algorithm> session_store::message_digest_algorithm() const
+	inline const message_digest_algorithm_type& session_store::message_digest_algorithm() const
 	{
 		return m_message_digest_algorithm;
-	}
-
-	inline size_t session_store::message_digest_algorithm_hmac_size() const
-	{
-		return m_message_digest_algorithm_hmac_size;
 	}
 
 	inline const uint8_t* session_store::seal_key() const

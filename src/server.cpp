@@ -659,15 +659,10 @@ namespace fscp
 				}
 				else
 				{
-					const cryptoplus::cipher::cipher_algorithm cipher_algorithm = _clear_session_message.cipher_algorithm().to_cipher_algorithm();
-					const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = _clear_session_message.message_digest_algorithm().to_message_digest_algorithm();
-					const size_t message_digest_algorithm_hmac_size = _clear_session_message.message_digest_algorithm().to_hmac_size();
-
 					session_store _session_store(
 							_clear_session_message.session_number(),
-							cipher_algorithm,
-							message_digest_algorithm,
-							message_digest_algorithm_hmac_size,
+							_clear_session_message.cipher_algorithm(),
+							_clear_session_message.message_digest_algorithm(),
 							_clear_session_message.seal_key(),
 							_clear_session_message.seal_key_size(),
 							_clear_session_message.encryption_key(),
@@ -732,6 +727,10 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
+				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
+				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
+
 				data_store& data_store = m_data_map[target];
 
 				for(; !data_store.empty(); data_store.pop())
@@ -742,9 +741,9 @@ namespace fscp
 							channel_number,
 							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
-							session_pair.remote_session().cipher_algorithm(),
-							session_pair.remote_session().message_digest_algorithm(),
-							session_pair.remote_session().message_digest_algorithm_hmac_size(),
+							cipher_algorithm,
+							message_digest_algorithm,
+							message_digest_algorithm_hmac_size,
 							&data_store.front()[0],
 							data_store.front().size(),
 							session_pair.remote_session().seal_key(),
@@ -767,13 +766,17 @@ namespace fscp
 
 		if (session_pair.has_local_session())
 		{
+			const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.local_session().cipher_algorithm().to_cipher_algorithm();
+			const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.local_session().message_digest_algorithm().to_message_digest_algorithm();
+			const size_t message_digest_algorithm_hmac_size = session_pair.local_session().message_digest_algorithm().to_hmac_size();
+
 			if (_data_message.sequence_number() > session_pair.local_session().sequence_number())
 			{
 				_data_message.check_seal(
 						m_data_buffer.data(),
 						m_data_buffer.size(),
-						session_pair.local_session().message_digest_algorithm(),
-						session_pair.local_session().message_digest_algorithm_hmac_size(),
+						message_digest_algorithm,
+						message_digest_algorithm_hmac_size,
 						session_pair.local_session().seal_key(),
 						session_pair.local_session().seal_key_size()
 						);
@@ -782,7 +785,7 @@ namespace fscp
 						m_data_buffer.data(),
 						m_data_buffer.size(),
 						session_pair.local_session().session_number(),
-						session_pair.local_session().cipher_algorithm(),
+						cipher_algorithm,
 						session_pair.local_session().encryption_key(),
 						session_pair.local_session().encryption_key_size()
 						);
@@ -873,6 +876,10 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
+				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
+				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
+
 				hash_list_type& hash_list = m_hash_list_map[target];
 
 				if (!hash_list.empty())
@@ -882,9 +889,9 @@ namespace fscp
 							m_send_buffer.size(),
 							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
-							session_pair.remote_session().cipher_algorithm(),
-							session_pair.remote_session().message_digest_algorithm(),
-							session_pair.remote_session().message_digest_algorithm_hmac_size(),
+							cipher_algorithm,
+							message_digest_algorithm,
+							message_digest_algorithm_hmac_size,
 							hash_list,
 							session_pair.remote_session().seal_key(),
 							session_pair.remote_session().seal_key_size(),
@@ -910,14 +917,18 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
+				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
+				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
+
 				size_t size = data_message::write_contact(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
 						session_pair.remote_session().session_number(),
 						session_pair.remote_session().sequence_number(),
-						session_pair.remote_session().cipher_algorithm(),
-						session_pair.remote_session().message_digest_algorithm(),
-						session_pair.remote_session().message_digest_algorithm_hmac_size(),
+						cipher_algorithm,
+						message_digest_algorithm,
+						message_digest_algorithm_hmac_size,
 						contact_map,
 						session_pair.remote_session().seal_key(),
 						session_pair.remote_session().seal_key_size(),
@@ -964,14 +975,18 @@ namespace fscp
 
 			if (session_pair.has_remote_session())
 			{
+				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
+				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
+
 				size_t size = data_message::write_keep_alive(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
 						session_pair.remote_session().session_number(),
 						session_pair.remote_session().sequence_number(),
-						session_pair.remote_session().cipher_algorithm(),
-						session_pair.remote_session().message_digest_algorithm(),
-						session_pair.remote_session().message_digest_algorithm_hmac_size(),
+						cipher_algorithm,
+						message_digest_algorithm,
+						message_digest_algorithm_hmac_size,
 						session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
 						session_pair.remote_session().seal_key(),
 						session_pair.remote_session().seal_key_size(),
