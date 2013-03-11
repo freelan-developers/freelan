@@ -676,10 +676,7 @@ namespace fscp
 
 					session_pair.set_remote_session(_session_store);
 
-					if (session_is_new)
-					{
-						session_established(sender, local, remote);
-					}
+					session_established(sender, session_is_new, local, remote);
 				}
 			}
 		}
@@ -693,11 +690,11 @@ namespace fscp
 		}
 	}
 
-	void server::session_established(const ep_type& host, const algorithm_info_type& local, const algorithm_info_type& remote)
+	void server::session_established(const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)
 	{
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(host, local, remote);
+			m_session_established_callback(host, is_new, local, remote);
 		}
 	}
 

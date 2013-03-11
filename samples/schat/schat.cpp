@@ -113,9 +113,18 @@ static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_algorit
 	return default_accept;
 }
 
-static void on_session_established(const fscp::server::ep_type& host, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+static void on_session_failed(const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+{
+	std::cout << "Session failed with " << host << std::endl;
+	std::cout << "New session: " << is_new << std::endl;
+	std::cout << "Local algorithms: " << local << std::endl;
+	std::cout << "Remote algorithms: " << remote << std::endl;
+}
+
+static void on_session_established(const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 {
 	std::cout << "Session established with " << host << std::endl;
+	std::cout << "New session: " << is_new << std::endl;
 	std::cout << "Local algorithms: " << local << std::endl;
 	std::cout << "Remote algorithms: " << remote << std::endl;
 }
@@ -241,6 +250,7 @@ int main(int argc, char** argv)
 		server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(server), _1, _2, _3, _4));
 		server.set_session_request_message_callback(&on_session_request);
 		server.set_session_message_callback(&on_session);
+		server.set_session_failed_callback(&on_session_failed);
 		server.set_session_established_callback(&on_session_established);
 		server.set_session_lost_callback(&on_session_lost);
 		server.set_data_message_callback(boost::bind(&on_data, boost::ref(server), _1, _2, _3));

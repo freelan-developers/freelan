@@ -145,10 +145,11 @@ namespace fscp
 			/**
 			 * \brief A session established callback.
 			 * \param host The host with which the session was established.
+			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
 			 * \param local The local algorithm info.
 			 * \param remote The remote algorithm info.
 			 */
-			typedef boost::function<void (const ep_type& host, const algorithm_info_type& local, const algorithm_info_type& remote)> session_established_callback;
+			typedef boost::function<void (const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)> session_established_callback;
 
 			/**
 			 * \brief A session lost callback.
@@ -512,7 +513,7 @@ namespace fscp
 			void handle_session_message_from(const session_message&, const ep_type&);
 			void handle_clear_session_message_from(const clear_session_message&, const ep_type&);
 			void session_failed(const ep_type&, bool, const algorithm_info_type&, const algorithm_info_type&);
-			void session_established(const ep_type&, const algorithm_info_type&, const algorithm_info_type&);
+			void session_established(const ep_type&, bool, const algorithm_info_type&, const algorithm_info_type&);
 			void session_lost(const ep_type&);
 			void do_close_session(const ep_type&);
 

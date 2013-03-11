@@ -120,6 +120,22 @@ static bool on_session(const std::string& name, fscp::server& server, const fscp
 	return default_accept;
 }
 
+static void on_session_failed(const std::string& name, fscp::server&, const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+{
+	std::cout << "[" << name << "] Session failed with " << host << std::endl;
+	std::cout << "New session: " << is_new << std::endl;
+	std::cout << "Local algorithms: " << local << std::endl;
+	std::cout << "Remote algorithms: " << remote << std::endl;
+}
+
+static void on_session_established(const std::string& name, fscp::server&, const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+{
+	std::cout << "[" << name << "] Session established with " << host << std::endl;
+	std::cout << "New session: " << is_new << std::endl;
+	std::cout << "Local algorithms: " << local << std::endl;
+	std::cout << "Remote algorithms: " << remote << std::endl;
+}
+
 static void on_data(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
 	const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
@@ -218,6 +234,14 @@ int main()
 		alice_server.set_session_message_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2));
 		bob_server.set_session_message_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2));
 		chris_server.set_session_message_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2));
+
+		alice_server.set_session_failed_callback(boost::bind(&on_session_failed, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_failed_callback(boost::bind(&on_session_failed, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_failed_callback(boost::bind(&on_session_failed, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
+		alice_server.set_session_established_callback(boost::bind(&on_session_established, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_established_callback(boost::bind(&on_session_established, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_established_callback(boost::bind(&on_session_established, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		alice_server.set_data_message_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3));
 		bob_server.set_data_message_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3));
