@@ -501,7 +501,10 @@ namespace fscp
 
 	inline std::ostream& operator<<(std::ostream& os, const algorithm_info_type& ai)
 	{
-		return os << ai.cipher_algorithm << "/" << ai.message_digest_algorithm;
+		const std::string cipher_algorithm = (ai.cipher_algorithm != cipher_algorithm_type::unsupported) ? boost::lexical_cast<std::string>(ai.cipher_algorithm) : "<unsupported>";
+		const std::string message_digest_algorithm = (ai.message_digest_algorithm != message_digest_algorithm_type::unsupported) ? boost::lexical_cast<std::string>(ai.message_digest_algorithm) : "<unsupported>";
+
+		return os << cipher_algorithm << "/" << message_digest_algorithm;
 	}
 
 	/**
