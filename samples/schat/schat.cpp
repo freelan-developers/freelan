@@ -216,9 +216,9 @@ int main(int argc, char** argv)
 
 	try
 	{
-		if (argc != 5)
+		if (argc != 7)
 		{
-			std::cerr << "Usage: schat <certificate> <private_key> <listen_host> <listen_port>" << std::endl;
+			std::cerr << "Usage: schat <certificate> <private_key> <listen_host> <listen_port> <calg> <mdalg>" << std::endl;
 
 			return EXIT_FAILURE;
 		}
@@ -227,6 +227,8 @@ int main(int argc, char** argv)
 		const std::string private_key_filename(argv[2]);
 		const std::string listen_host(argv[3]);
 		const std::string listen_port(argv[4]);
+		const fscp::cipher_algorithm_type calg = boost::lexical_cast<fscp::cipher_algorithm_type>(argv[5]);
+		const fscp::message_digest_algorithm_type mdalg = boost::lexical_cast<fscp::message_digest_algorithm_type>(argv[6]);
 
 		cryptoplus::crypto_initializer crypto_initializer;
 		cryptoplus::algorithms_initializer algorithms_initializer;
@@ -244,6 +246,13 @@ int main(int argc, char** argv)
 		const std::string local_name = certificate.subject().find(NID_commonName)->data().str();
 
 		fscp::server server(io_service, fscp::identity_store(certificate, private_key));
+
+		const fscp::cipher_algorithm_list_type calg_capabilities(1, calg);
+		const fscp::message_digest_algorithm_list_type mdalg_capabilities(1, mdalg);
+
+		server.set_cipher_capabilities(calg_capabilities);
+		server.set_message_digest_capabilities(mdalg_capabilities);
+
 		server.open(listen_ep);
 
 		server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(server), _1, _2));
