@@ -440,11 +440,7 @@ void run(const cli_configuration& configuration)
 
 	logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
 
-	if (core.has_tap_adapter())
-	{
-		logger(fl::LL_INFORMATION) << "Using tap adapter: " << core.tap_adapter().name();
-	}
-	else
+	if (!core.has_tap_adapter())
 	{
 		logger(fl::LL_INFORMATION) << "Configured not to use any tap adapter.";
 	}
