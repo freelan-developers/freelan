@@ -66,6 +66,7 @@
 
 #include "endpoint.hpp"
 #include "ip_network_address.hpp"
+#include "mtu.hpp"
 
 namespace freelan
 {
@@ -365,6 +366,11 @@ namespace freelan
 		 * \brief The tap adapter's name.
 		 */
 		std::string name;
+
+		/**
+		 * \brief The tap adapter's MTU.
+		 */
+		mtu_type mtu;
 
 		/**
 		 * \brief The IPv4 tap adapter address.

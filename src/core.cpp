@@ -195,7 +195,11 @@ namespace freelan
 		// Tap adapter
 		if (m_tap_adapter)
 		{
-			m_tap_adapter->open(m_configuration.tap_adapter.name);
+			m_logger(LL_DEBUG) << "Opening tap adapter \"" << m_configuration.tap_adapter.name << "\" with a desired MTU set to: " << m_configuration.tap_adapter.mtu;
+
+			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()));
+
+			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened with a MTU set to: " << m_tap_adapter->mtu();
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
@@ -774,6 +778,23 @@ namespace freelan
 			m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
 			m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
 		}
+	}
+
+	unsigned int core::get_auto_mtu_value() const
+	{
+		assert(m_server);
+
+		const unsigned int default_mtu_value = 1500;
+		const size_t static_payload_size = 20 + 8 + 4 + 8; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
+
+		size_t max_payload_size = static_payload_size;
+
+		BOOST_FOREACH(fscp::message_digest_algorithm_type mdalg, m_server->get_message_digest_capabilities())
+		{
+			max_payload_size = std::max(max_payload_size, static_payload_size + mdalg.to_hmac_size());
+		}
+
+		return default_mtu_value - max_payload_size;
 	}
 
 	void core::on_proxy_data(boost::asio::const_buffer data)

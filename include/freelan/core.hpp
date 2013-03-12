@@ -330,6 +330,7 @@ namespace freelan
 
 			// Tap adapter
 			void create_tap_adapter();
+			unsigned int get_auto_mtu_value() const;
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
 			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
 
