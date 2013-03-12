@@ -87,8 +87,9 @@ namespace asiotap
 			/**
 			 * \brief Open the tap adapter.
 			 * \param name The name of the tap adapter to open. On Windows a GUID is expected. If name is NULL, a device is selected/created automatically.
+			 * \param mtu The mtu of the device. Specify 0 to get an automatic value.
 			 */
-			void open(const std::string& name = "");
+			void open(const std::string& name = "", unsigned int mtu = 0);
 
 			/**
 			 * \brief Close the tap adapter.
@@ -271,9 +272,9 @@ namespace asiotap
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::open(const std::string& _name)
+	inline void basic_tap_adapter<Service>::open(const std::string& _name, unsigned int _mtu)
 	{
-		this->service.open(this->implementation, _name);
+		this->service.open(this->implementation, _name, _mtu);
 	}
 
 	template <typename Service>

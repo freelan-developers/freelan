@@ -552,7 +552,7 @@ namespace asiotap
 #endif
 	}
 
-	void tap_adapter_impl::open(const std::string& _name)
+	void tap_adapter_impl::open(const std::string& _name, unsigned _mtu)
 	{
 		close();
 
@@ -566,7 +566,7 @@ namespace asiotap
 			{
 				try
 				{
-					open(tap_adapter->first);
+					open(tap_adapter->first, _mtu);
 				}
 				catch (const std::exception&)
 				{
@@ -710,8 +710,6 @@ namespace asiotap
 					throw_last_system_error();
 				}
 
-				m_mtu = 1391; // Same as Windows driver
-
 				int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
 
 				if (ctl_fd >= 0)
@@ -734,12 +732,20 @@ namespace asiotap
 						std::memset(&netifr, 0x00, sizeof(struct ifreq));
 						std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 
-						netifr.ifr_mtu = m_mtu;
-
-						if (::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr) < 0)
+						if (_mtu > 0)
 						{
-							::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr);
+							netifr.ifr_mtu = _mtu;
+
+							::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr);
+						}
+
+						if (::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr) >= 0)
+						{
 							m_mtu = netifr.ifr_mtu;
+						}
+						else
+						{
+							throw_last_system_error();
 						}
 
 						std::memset(&netifr, 0x00, sizeof(struct ifreq));
@@ -854,19 +860,20 @@ namespace asiotap
 				memset(&netifr, 0x00, sizeof(struct ifreq));
 				strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
 
-				m_mtu = 1391;
-				netifr.ifr_mtu = m_mtu;
-
-				if (::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr) < 0)
+				if (_mtu > 0)
 				{
-					if (::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr) >= 0)
-					{
-						m_mtu = netifr.ifr_mtu;
-					}
-					else
-					{
-						throw_last_system_error();
-					}
+					netifr.ifr_mtu = _mtu;
+
+					::ioctl(ctl_fd, SIOCSIFMTU, (void*)&netifr);
+				}
+
+				if (::ioctl(ctl_fd, SIOCGIFMTU, (void*)&netifr) >= 0)
+				{
+					m_mtu = netifr.ifr_mtu;
+				}
+				else
+				{
+					throw_last_system_error();
 				}
 
 				memset(&netifr, 0x00, sizeof(struct ifreq));

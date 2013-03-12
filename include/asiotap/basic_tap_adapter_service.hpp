@@ -102,8 +102,9 @@ namespace asiotap
 			 * \brief Open the specified implementation.
 			 * \param impl The implementation that must be opened.
 			 * \param name The name of the device to open.
+			 * \param mtu The mtu of the device. Specify 0 to get an automatic value.
 			 */
-			void open(implementation_type& impl, const std::string& name);
+			void open(implementation_type& impl, const std::string& name, unsigned int mtu);
 
 			/**
 			 * \brief Close the specified implementation.
@@ -229,9 +230,9 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name, unsigned int mtu)
 	{
-		impl->open(name);
+		impl->open(name, mtu);
 	}
 
 	template <typename TapAdapterImplementation>

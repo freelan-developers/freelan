@@ -102,10 +102,11 @@ namespace asiotap
 			/**
 			 * \brief Open the tap adapter.
 			 * \param name The name of the tap adapter device. On Windows, a GUID is expected.
+			 * \param mtu The mtu of the device. Specify 0 to get an automatic value.
 			 *
 			 * If the tap adapter was already opened, it will be closed first.
 			 */
-			void open(const std::string& name);
+			void open(const std::string& name, unsigned int mtu);
 
 			/**
 			 * \brief Close the tap adapter.
