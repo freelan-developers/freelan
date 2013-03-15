@@ -75,7 +75,6 @@ namespace fscp
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param channel_number The channel number.
-			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param message_digest_algorithm The message digest algorithm to
@@ -90,13 +89,12 @@ namespace fscp
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, channel_number_type channel_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a contact-request message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param message_digest_algorithm The message digest algorithm to
@@ -110,13 +108,12 @@ namespace fscp
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const hash_list_type& hash_list, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write_contact_request(void* buf, size_t buf_len, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const hash_list_type& hash_list, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a contact message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param message_digest_algorithm The message digest algorithm to
@@ -130,13 +127,12 @@ namespace fscp
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write_contact(void* buf, size_t buf_len, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const contact_map_type& contact_map, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Write a keep-alive message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param message_digest_algorithm The message digest algorithm to
@@ -150,7 +146,7 @@ namespace fscp
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, size_t random_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			static size_t write_keep_alive(void* buf, size_t buf_len, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, size_t random_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
 
 			/**
 			 * \brief Parse the hash list.
@@ -188,6 +184,18 @@ namespace fscp
 			 * \return The sequence number.
 			 */
 			sequence_number_type sequence_number() const;
+
+			/**
+			 * \brief Get the iv.
+			 * \return The iv.
+			 */
+			const uint8_t* iv() const;
+
+			/**
+			 * \brief Get the iv size.
+			 * \return The iv size.
+			 */
+			size_t iv_size() const;
 
 			/**
 			 * \brief Get the ciphertext.
@@ -232,24 +240,22 @@ namespace fscp
 			 * \brief Get the clear text data, using a given encryption key.
 			 * \param buf The buffer that must receive the data. If buf is NULL, the function returns the expected size of buf.
 			 * \param buf_len The length of buf.
-			 * \param session_number The session number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The count of bytes deciphered.
 			 */
-			size_t get_cleartext(void* buf, size_t buf_len, const session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const;
+			size_t get_cleartext(void* buf, size_t buf_len, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.
-			 * \param session_number The session number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
 			 * \return The clear text data.
 			 */
 			template <typename T>
-			std::vector<T> get_cleartext(session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const;
+			std::vector<T> get_cleartext(data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const;
 
 		protected:
 
@@ -259,35 +265,9 @@ namespace fscp
 			static const size_t MIN_BODY_LENGTH = sizeof(sequence_number_type) + sizeof(uint16_t) * 2;
 
 			/**
-			 * \brief Compute and write the initialization vector to a given buffer.
-			 * \param buf The buffer the must receive the initialization vector. If buf is NULL, the function returns the expected size of buf.
-			 * \param buf_len The length of buf.
-			 * \param session_number The session number.
-			 * \param sequence_number The sequence number.
-			 * \param cipher_algorithm The cipher algorithm to use.
-			 * \param enc_key The encryption key.
-			 * \param enc_key_len The encryption key length.
-			 * \return The count of bytes written.
-			 */
-			static size_t compute_initialization_vector(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len);
-
-			/**
-			 * \brief Compute and write the initialization vector to a buffer.
-			 * \param session_number The session number.
-			 * \param sequence_number The sequence number.
-			 * \param cipher_algorithm The cipher algorithm to use.
-			 * \param enc_key The encryption key.
-			 * \param enc_key_len The encryption key length.
-			 * \return The initialization vector.
-			 */
-			template <typename T>
-			static std::vector<T> compute_initialization_vector(session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len);
-
-			/**
 			 * \brief Write a data message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param session_number The session number.
 			 * \param sequence_number The sequence number.
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param message_digest_algorithm The message digest algorithm to
@@ -303,7 +283,7 @@ namespace fscp
 			 * \param type The message type.
 			 * \return The count of bytes written.
 			 */
-			static size_t raw_write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len, message_type type);
+			static size_t raw_write(void* buf, size_t buf_len, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, boost::optional<data_message::mdalg_t> message_digest_algorithm, size_t message_digest_algorithm_hmac_size, const void* cleartext, size_t cleartext_len, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len, message_type type);
 
 		private:
 
@@ -315,42 +295,42 @@ namespace fscp
 		return ntohl(buffer_tools::get<sequence_number_type>(payload(), 0));
 	}
 
-	inline const uint8_t* data_message::ciphertext() const
+	inline const uint8_t* data_message::iv() const
 	{
 		return payload() + sizeof(uint16_t) + sizeof(sequence_number_type);
 	}
 
-	inline size_t data_message::ciphertext_size() const
+	inline size_t data_message::iv_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type)));
 	}
 
+	inline const uint8_t* data_message::ciphertext() const
+	{
+		return payload() + sizeof(uint16_t) + sizeof(sequence_number_type) + iv_size() + sizeof(uint16_t);
+	}
+
+	inline size_t data_message::ciphertext_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type) + sizeof(uint16_t) + iv_size()));
+	}
+
 	inline const uint8_t* data_message::hmac() const
 	{
-		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + ciphertext_size() + sizeof(uint16_t);
+		return payload() + sizeof(sequence_number_type) + sizeof(uint16_t) + iv_size() + sizeof(uint16_t) + ciphertext_size() + sizeof(uint16_t);
 	}
 
 	inline size_t data_message::hmac_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type) + sizeof(uint16_t) + ciphertext_size()));
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(sequence_number_type) + sizeof(uint16_t) + iv_size() + sizeof(uint16_t) + ciphertext_size()));
 	}
 
 	template <typename T>
-	inline std::vector<T> data_message::get_cleartext(session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const
+	inline std::vector<T> data_message::get_cleartext(data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const
 	{
-		std::vector<T> result(get_cleartext(NULL, 0, session_number, cipher_algorithm, enc_key, enc_key_len));
+		std::vector<T> result(get_cleartext(NULL, 0, cipher_algorithm, enc_key, enc_key_len));
 
-		result.resize(get_cleartext(&result[0], result.size(), session_number, cipher_algorithm, enc_key, enc_key_len));
-
-		return result;
-	}
-
-	template <typename T>
-	inline std::vector<T> data_message::compute_initialization_vector(session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len)
-	{
-		std::vector<T> result(compute_initialization_vector(NULL, 0, session_number, sequence_number, cipher_algorithm, enc_key, enc_key_len));
-
-		result.resize(compute_initialization_vector(&result[0], result.size(), session_number, sequence_number, cipher_algorithm, enc_key, enc_key_len));
+		result.resize(get_cleartext(&result[0], result.size(), cipher_algorithm, enc_key, enc_key_len));
 
 		return result;
 	}

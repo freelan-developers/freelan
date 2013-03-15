@@ -739,7 +739,6 @@ namespace fscp
 							m_send_buffer.data(),
 							m_send_buffer.size(),
 							channel_number,
-							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
 							cipher_algorithm,
 							message_digest_algorithm,
@@ -784,7 +783,6 @@ namespace fscp
 				size_t cnt = _data_message.get_cleartext(
 						m_data_buffer.data(),
 						m_data_buffer.size(),
-						session_pair.local_session().session_number(),
 						cipher_algorithm,
 						session_pair.local_session().encryption_key(),
 						session_pair.local_session().encryption_key_size()
@@ -887,7 +885,6 @@ namespace fscp
 					size_t size = data_message::write_contact_request(
 							m_send_buffer.data(),
 							m_send_buffer.size(),
-							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
 							cipher_algorithm,
 							message_digest_algorithm,
@@ -924,7 +921,6 @@ namespace fscp
 				size_t size = data_message::write_contact(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
-						session_pair.remote_session().session_number(),
 						session_pair.remote_session().sequence_number(),
 						cipher_algorithm,
 						message_digest_algorithm,
@@ -982,7 +978,6 @@ namespace fscp
 				size_t size = data_message::write_keep_alive(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
-						session_pair.remote_session().session_number(),
 						session_pair.remote_session().sequence_number(),
 						cipher_algorithm,
 						message_digest_algorithm,
