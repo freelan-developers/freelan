@@ -785,16 +785,23 @@ namespace freelan
 		assert(m_server);
 
 		const unsigned int default_mtu_value = 1500;
-		const size_t static_payload_size = 20 + 8 + 4 + 8; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
+		const size_t static_payload_size = 20 + 8 + 4 + 10; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
 
-		size_t max_payload_size = static_payload_size;
+		size_t max_iv_size = 0;
+
+		BOOST_FOREACH(fscp::cipher_algorithm_type calg, m_server->get_cipher_capabilities())
+		{
+			max_iv_size = std::max(max_iv_size, calg.to_cipher_algorithm().iv_length());
+		}
+
+		size_t max_hmac_size = 0;
 
 		BOOST_FOREACH(fscp::message_digest_algorithm_type mdalg, m_server->get_message_digest_capabilities())
 		{
-			max_payload_size = std::max(max_payload_size, static_payload_size + mdalg.to_hmac_size());
+			max_hmac_size = std::max(max_hmac_size, mdalg.to_hmac_size());
 		}
 
-		return default_mtu_value - max_payload_size;
+		return default_mtu_value - static_payload_size - max_iv_size - max_hmac_size;
 	}
 
 	void core::on_proxy_data(boost::asio::const_buffer data)
