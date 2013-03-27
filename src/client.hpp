@@ -68,7 +68,7 @@ namespace cryptoplus
 
 namespace freelan
 {
-	class configuration;
+	struct configuration;
 	class logger;
 	
 	/**
