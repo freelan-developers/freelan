@@ -158,27 +158,19 @@ namespace cryptoplus
 
 	/**
 	 * \brief Compare two nullables, in a boolean context.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
 	 * \return false, always.
 	 */
-	template <typename T, typename U> void operator==(const nullable<T>& lhs,const nullable<U>& rhs)
+	template <typename T, typename U> inline bool operator==(const nullable<T>&, const nullable<U>&)
 	{
-		lhs.this_type_does_not_support_comparisons();
-
 		return false;
 	}
 
 	/**
 	 * \brief Compare two nullables, in a boolean context.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
 	 * \return false, always.
 	 */
-	template <typename T, typename U> void operator!=(const nullable<T>& lhs,const nullable<U>& rhs)
+	template <typename T, typename U> bool operator!=(const nullable<T>&, const nullable<U>&)
 	{
-		lhs.this_type_does_not_support_comparisons();
-
 		return false;
 	}
 }
