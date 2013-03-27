@@ -45,10 +45,6 @@ export PYTHONPATH="${FREELAN_ALL_ROOT}/freelan-buildtools:$PYTHONPATH"
 # Make the environment history local
 export HISTFILE="${FREELAN_ALL_ROOT}/.bash_history"
 
-# Boost suffix
-export FREELAN_RELEASE_BOOST_SUFFIX=-mt
-export FREELAN_DEBUG_BOOST_SUFFIX=-mt
-
 # This adds a prefix to the PS1
 # To enable the feature, modify your PS1 so that it starts with ${PS1_PREFIX}.
 export PS1_PREFIX="[freelan] "
