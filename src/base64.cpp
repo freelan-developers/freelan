@@ -68,7 +68,7 @@ namespace cryptoplus
 
 		BUF_MEM* b64ptr = bio_chain.first().next().get_mem_buf();
 
-		const size_t min_size = std::min(b64ptr->length, outputlen);
+		const size_t min_size = std::min(static_cast<size_t>(b64ptr->length), outputlen);
 
 		std::copy(static_cast<const char*>(b64ptr->data), static_cast<const char*>(b64ptr->data) + min_size, static_cast<char*>(output));
 
