@@ -102,7 +102,7 @@ namespace cryptoplus
 			 */
 			operator bool_type() const
 			{
-				return (static_cast<const T*>(this))->boolean_test() ? &nullable_base::this_type_does_not_support_comparisons : 0;
+				return (static_cast<const T*>(this))->boolean_test() ? &nullable<T>::this_type_does_not_support_comparisons : 0;
 			}
 
 			/**
