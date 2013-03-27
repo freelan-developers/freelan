@@ -114,8 +114,8 @@ namespace freelan
 		return true;
 	}
 
-	template bool ipv4_network_address::has_address(const boost::asio::ip::address_v4&) const;
-	template bool ipv6_network_address::has_address(const boost::asio::ip::address_v6&) const;
+	template bool base_ip_network_address<boost::asio::ip::address_v4>::has_address(const boost::asio::ip::address_v4&) const;
+	template bool base_ip_network_address<boost::asio::ip::address_v6>::has_address(const boost::asio::ip::address_v6&) const;
 
 	template <typename AddressType>
 	std::istream& operator>>(std::istream& is, base_ip_network_address<AddressType>& value)
