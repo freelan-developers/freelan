@@ -444,50 +444,6 @@ namespace asiotap
 			throw_system_error(errno);
 		}
 
-		bool load_kernel_module()
-		{
-			pid_t pid = fork();
-
-			if (pid == 0) /* son */
-			{
-#ifdef LINUX
-				char *argv[] = { (char*) "/sbin/modprobe", (char*) "tun", NULL };
-#elif defined(MACINTOSH)
-				char* argv[] = { (char*) "/sbin/kextload", (char*) "/Library/Extensions/tap.kext", NULL };
-#else /* FreeBSD */
-				char* argv[] = { (char*) "/sbin/kldload", (char*) "if_tap", NULL };
-#endif
-				char* env[] = { NULL };
-				size_t max = sysconf(_SC_OPEN_MAX);
-
-				for (size_t i = STDIN_FILENO + 1 ; i < max ; i++)
-				{
-					::close(i);
-				}
-
-				/* exec the modprobe image */
-				::execve(argv[0], argv, env);
-
-				::exit(EXIT_FAILURE);
-			}
-			else if (pid) /* father */
-			{
-				int pid_status = 0;
-
-				/* wait and read the return code of the child */
-				waitpid(pid, &pid_status, 0);
-
-				/* if we modprobe two times the same module, it will return EXIT_SUCCESS */
-				return (WIFEXITED(pid_status) && WEXITSTATUS(pid_status) == EXIT_SUCCESS);
-			}
-			else
-			{
-				throw_last_system_error();
-
-				return false;
-			}
-		}
-
 		timespec time_duration_to_timespec(const boost::posix_time::time_duration& duration)
 		{
 			timespec result = { 0, 0 };
