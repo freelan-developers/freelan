@@ -168,10 +168,7 @@ namespace kfather
 			 * \return The numeric value.
 			 */
 			template <typename AnyType>
-			typename boost::enable_if<boost::is_arithmetic<Type>, Type>::type operator()(const AnyType& val) const
-			{
-				return boost::numeric_cast<Type>(visitor<number_type>()(val));
-			}
+			typename boost::enable_if<boost::is_arithmetic<Type>, Type>::type operator()(const AnyType& val) const;
 	};
 
 	/**
@@ -382,6 +379,13 @@ namespace kfather
 				return false;
 			}
 	};
+
+	template <typename Type>
+	template <typename AnyType>
+	inline typename boost::enable_if<boost::is_arithmetic<Type>, Type>::type visitor<Type>::operator()(const AnyType& val) const
+	{
+		return boost::numeric_cast<Type>(visitor<number_type>()(val));
+	}
 
 	/**
 	 * \brief Casts a value to the specified type.
