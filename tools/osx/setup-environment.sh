@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# A script sets up a build environment for freelan.
+# A script that sets up a build environment for freelan.
 #
 # This file is versioned so you probably should copy it first before modifying
 # it if you intend to.
@@ -33,6 +33,9 @@ export LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
 export LD_LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
 export PATH="${FREELAN_INSTALL_PREFIX}/bin:${PATH}"
 
+# Fake ldconfig
+export FREELAN_FAKE_LDCONFIG=1
+
 # Freelan server
 export FREELAN_SERVER_CONFIGURATION_FILE=${FREELAN_ALL_ROOT}/tools/server/freelan-server.cfg
 
@@ -59,4 +62,4 @@ echo "Install root is: ${FREELAN_INSTALL_ROOT}"
 echo
 echo "Type Ctrl+D or exit to leave the build environment."
 
-$SHELL
+$SHELL $"$@"
