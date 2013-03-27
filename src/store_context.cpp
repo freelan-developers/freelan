@@ -53,6 +53,12 @@ namespace cryptoplus
 
 	namespace x509
 	{
+		store_context store_context::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return store_context(_ptr, deleter);
+		}
 	}
 }
 

@@ -69,6 +69,13 @@ namespace cryptoplus
 
 			return from_certificate_request(bio_chain.first(), callback, callback_arg);
 		}
+
+		certificate_request certificate_request::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return certificate_request(_ptr, deleter);
+		}
 	}
 }
 

@@ -626,12 +626,6 @@ namespace cryptoplus
 		{
 			return take_ownership(RSA_new());
 		}
-		inline rsa_key rsa_key::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return rsa_key(_ptr, deleter);
-		}
 		inline rsa_key rsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_bio_RSAPrivateKey(bio.raw(), NULL, callback, callback_arg));

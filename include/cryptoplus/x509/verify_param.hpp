@@ -185,12 +185,6 @@ namespace cryptoplus
 
 			return take_ownership(_ptr);
 		}
-		inline verify_param verify_param::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return verify_param(_ptr, deleter);
-		}
 		inline verify_param::verify_param()
 		{
 		}

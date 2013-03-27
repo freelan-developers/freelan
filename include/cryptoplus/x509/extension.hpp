@@ -226,12 +226,6 @@ namespace cryptoplus
 
 			return take_ownership(_ptr);
 		}
-		inline extension extension::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return extension(_ptr, deleter);
-		}
 		inline extension extension::from_der(const void* buf, size_t buf_len)
 		{
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);

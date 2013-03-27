@@ -67,6 +67,13 @@ namespace cryptoplus
 			}
 		}
 
+		bignum bignum::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return bignum(_ptr, deleter);
+		}
+
 		bignum bignum::from_hex(const std::string& str)
 		{
 			BIGNUM* bn = NULL;

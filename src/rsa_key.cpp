@@ -101,6 +101,13 @@ namespace cryptoplus
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
 
+		rsa_key rsa_key::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return rsa_key(_ptr, deleter);
+		}
+
 		rsa_key rsa_key::to_public_key() const
 		{
 			bio::bio_chain bio_chain(BIO_s_mem());

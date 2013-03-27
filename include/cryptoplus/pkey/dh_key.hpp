@@ -258,12 +258,6 @@ namespace cryptoplus
 		{
 			return take_ownership(DH_new());
 		}
-		inline dh_key dh_key::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return dh_key(_ptr, deleter);
-		}
 		inline dh_key dh_key::from_parameters(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_bio_DHparams(bio.raw(), NULL, callback, callback_arg));

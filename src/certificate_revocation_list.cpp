@@ -69,6 +69,13 @@ namespace cryptoplus
 
 			return from_certificate_revocation_list(bio_chain.first(), callback, callback_arg);
 		}
+
+		certificate_revocation_list certificate_revocation_list::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return certificate_revocation_list(_ptr, deleter);
+		}
 	}
 }
 

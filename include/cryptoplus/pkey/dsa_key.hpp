@@ -428,12 +428,6 @@ namespace cryptoplus
 		{
 			return take_ownership(DSA_new());
 		}
-		inline dsa_key dsa_key::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return dsa_key(_ptr, deleter);
-		}
 		inline dsa_key dsa_key::generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
 		{
 			return generate_parameters(bits, seed, seed_len, counter_ret, h_ret, callback, callback_arg).generate();

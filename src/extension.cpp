@@ -53,6 +53,12 @@ namespace cryptoplus
 
 	namespace x509
 	{
+		extension extension::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return extension(_ptr, deleter);
+		}
 	}
 }
 

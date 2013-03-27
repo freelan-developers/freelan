@@ -55,6 +55,12 @@ namespace cryptoplus
 
 	namespace asn1
 	{
+		object object::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return object(_ptr, deleter);
+		}
 	}
 }
 

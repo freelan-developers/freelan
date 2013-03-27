@@ -271,12 +271,6 @@ namespace cryptoplus
 		{
 			return take_ownership(BN_new());
 		}
-		inline bignum bignum::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return bignum(_ptr, deleter);
-		}
 		inline bignum bignum::from_bin(const void* buf, size_t buf_len)
 		{
 			return take_ownership(BN_bin2bn(static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), NULL));

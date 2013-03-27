@@ -63,6 +63,13 @@ namespace cryptoplus
 			}
 		}
 
+		string string::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return string(_ptr, deleter);
+		}
+
 		std::string string::to_utf8() const
 		{
 			unsigned char* out = NULL;

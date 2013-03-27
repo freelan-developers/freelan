@@ -61,6 +61,13 @@ namespace cryptoplus
 		template <>
 		integer::deleter_type pointer_wrapper<integer::value_type>::deleter = ASN1_INTEGER_free;
 #endif
+
+		integer integer::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return integer(_ptr, deleter);
+		}
 	}
 }
 

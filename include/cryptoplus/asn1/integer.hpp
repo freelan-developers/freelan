@@ -205,12 +205,6 @@ namespace cryptoplus
 		{
 			return take_ownership(ASN1_INTEGER_new());
 		}
-		inline integer integer::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return integer(_ptr, deleter);
-		}
 		inline integer integer::from_long(long l)
 		{
 			integer result = create();

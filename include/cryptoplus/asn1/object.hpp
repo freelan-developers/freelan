@@ -143,12 +143,6 @@ namespace cryptoplus
 		{
 			return take_ownership(ASN1_OBJECT_new());
 		}
-		inline object object::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return object(_ptr, deleter);
-		}
 		inline object object::from_nid(int nid)
 		{
 			return OBJ_nid2obj(nid);

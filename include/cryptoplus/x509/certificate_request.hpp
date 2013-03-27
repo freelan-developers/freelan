@@ -305,12 +305,6 @@ namespace cryptoplus
 
 			return take_ownership(_ptr);
 		}
-		inline certificate_request certificate_request::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return certificate_request(_ptr, deleter);
-		}
 		inline certificate_request certificate_request::from_der(bio::bio_ptr bio)
 		{
 			return take_ownership(d2i_X509_REQ_bio(bio.raw(), NULL));

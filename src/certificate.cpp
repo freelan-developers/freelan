@@ -76,6 +76,13 @@ namespace cryptoplus
 
 			return from_trusted_certificate(bio_chain.first(), callback, callback_arg);
 		}
+
+		certificate certificate::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return certificate(_ptr, deleter);
+		}
 	}
 }
 

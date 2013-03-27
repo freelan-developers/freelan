@@ -76,6 +76,13 @@ namespace cryptoplus
 
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
+
+		pkey pkey::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return pkey(_ptr, deleter);
+		}
 	}
 }
 

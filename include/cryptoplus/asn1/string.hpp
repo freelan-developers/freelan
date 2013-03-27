@@ -216,12 +216,6 @@ namespace cryptoplus
 		{
 			return take_ownership(ASN1_STRING_new());
 		}
-		inline string string::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return string(_ptr, deleter);
-		}
 		inline string string::from_data(const void* buf, size_t buf_len)
 		{
 			string result = create();

@@ -195,12 +195,6 @@ namespace cryptoplus
 		{
 			return take_ownership(ASN1_UTCTIME_new());
 		}
-		inline utctime utctime::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return utctime(_ptr, deleter);
-		}
 		inline utctime utctime::from_time_t(time_t time)
 		{
 			utctime result = create();

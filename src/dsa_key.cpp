@@ -98,6 +98,13 @@ namespace cryptoplus
 			return from_certificate_public_key(bio_chain.first(), callback, callback_arg);
 		}
 
+		dsa_key dsa_key::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return dsa_key(_ptr, deleter);
+		}
+
 		dsa_key dsa_key::to_public_key() const
 		{
 			bio::bio_chain bio_chain(BIO_s_mem());

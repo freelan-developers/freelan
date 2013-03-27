@@ -414,12 +414,6 @@ namespace cryptoplus
 		{
 			return take_ownership(EVP_PKEY_new());
 		}
-		inline pkey pkey::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return pkey(_ptr, deleter);
-		}
 		inline pkey pkey::from_rsa_key(rsa_key key)
 		{
 			pkey result = create();

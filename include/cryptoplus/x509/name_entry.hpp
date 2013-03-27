@@ -228,12 +228,6 @@ namespace cryptoplus
 
 			return take_ownership(_ptr);
 		}
-		inline name_entry name_entry::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return name_entry(_ptr, deleter);
-		}
 		inline name_entry name_entry::from_der(const void* buf, size_t buf_len)
 		{
 			const unsigned char* pbuf = static_cast<const unsigned char*>(buf);

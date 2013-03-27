@@ -75,6 +75,13 @@ namespace cryptoplus
 			return from_parameters(bio_chain.first(), callback, callback_arg);
 		}
 
+		dh_key dh_key::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return dh_key(_ptr, deleter);
+		}
+
 		size_t dh_key::compute_key(void* out, size_t out_len, bn::bignum pub_key) const
 		{
 			assert(out_len >= size());

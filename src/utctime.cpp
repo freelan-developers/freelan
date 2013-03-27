@@ -64,6 +64,13 @@ namespace cryptoplus
 		utctime::deleter_type pointer_wrapper<utctime::value_type>::deleter = ASN1_UTCTIME_free;
 #endif
 
+		utctime utctime::take_ownership(pointer _ptr)
+		{
+			error::throw_error_if_not(_ptr);
+
+			return utctime(_ptr, deleter);
+		}
+
 		void utctime::set_time(const boost::posix_time::ptime& time) const
 		{
 			set_time(static_cast<time_t>((time - epoch).total_seconds()));

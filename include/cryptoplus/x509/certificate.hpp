@@ -913,12 +913,6 @@ namespace cryptoplus
 
 			return take_ownership(_ptr);
 		}
-		inline certificate certificate::take_ownership(pointer _ptr)
-		{
-			error::throw_error_if_not(_ptr);
-
-			return certificate(_ptr, deleter);
-		}
 		inline certificate certificate::from_der(bio::bio_ptr bio)
 		{
 			return take_ownership(d2i_X509_bio(bio.raw(), NULL));
