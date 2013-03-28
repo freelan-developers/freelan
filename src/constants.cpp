@@ -50,7 +50,16 @@
 
 namespace fscp
 {
+	const cipher_algorithm_type::value_type cipher_algorithm_type::unsupported;
+	const cipher_algorithm_type::value_type cipher_algorithm_type::aes256_cbc;
 	const std::string cipher_algorithm_type::aes256_cbc_string("aes256-cbc");
+
+	const message_digest_algorithm_type::value_type message_digest_algorithm_type::unsupported;
+	const message_digest_algorithm_type::value_type message_digest_algorithm_type::hmac_sha256;
+	const message_digest_algorithm_type::value_type message_digest_algorithm_type::hmac_sha256_128;
+	const message_digest_algorithm_type::value_type message_digest_algorithm_type::hmac_sha1;
+	const message_digest_algorithm_type::value_type message_digest_algorithm_type::hmac_sha1_96;
+	const message_digest_algorithm_type::value_type message_digest_algorithm_type::none;
 	const std::string message_digest_algorithm_type::hmac_sha256_string("hmac-sha256");
 	const std::string message_digest_algorithm_type::hmac_sha256_128_string("hmac-sha256-128");
 	const std::string message_digest_algorithm_type::hmac_sha1_string("hmac-sha1");
