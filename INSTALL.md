@@ -135,7 +135,7 @@ Open a terminal and follow all instructions to compile universal libraries
 
 > ./Configure darwin-i386-cc --prefix=/usr/local shared
 > make
-> make install
+> sudo make install
 
 > mkdir 32
 > cp /usr/local/lib/libssl.* /usr/local/lib/libcrypto.* 32
