@@ -17,12 +17,13 @@ import os
 
 from freelan.buildtools import LibraryProject
 
-if env['CC'] == 'gcc':
+if os.path.basename(env['CC']) in ('gcc', 'clang'):
     libraries.append('crypto')
     if os.name == 'nt':
         libraries.append('gdi32')
 else:
-    libraries.append('libeay32')
+    if os.name == 'nt':
+        libraries.append('libeay32')
 
 project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
 
