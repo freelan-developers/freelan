@@ -96,7 +96,7 @@ namespace cryptoplus
 
 		void cipher_context::initialize(const cipher_algorithm& _algorithm, cipher_context::cipher_direction direction, const void* key, size_t key_len, const void* iv, ENGINE* impl)
 		{
-			if (key)
+			if (key && _algorithm)
 			{
 				if (key_len != _algorithm.key_length())
 				{
@@ -116,7 +116,7 @@ namespace cryptoplus
 
 		void cipher_context::open_initialize(const cipher_algorithm& _algorithm, const void* key, size_t key_len, const void* iv, pkey::pkey pkey)
 		{
-			if (key)
+			if (key && _algorithm)
 			{
 				if (key_len != _algorithm.key_length())
 				{

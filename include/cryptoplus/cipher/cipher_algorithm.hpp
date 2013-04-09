@@ -45,9 +45,12 @@
 #ifndef CRYPTOPLUS_CIPHER_CIPHER_ALGORITHM_HPP
 #define CRYPTOPLUS_CIPHER_CIPHER_ALGORITHM_HPP
 
+#include "../nullable.hpp"
+
 #include <openssl/evp.h>
 
 #include <string>
+#include <cassert>
 
 namespace cryptoplus
 {
@@ -56,7 +59,7 @@ namespace cryptoplus
 		/**
 		 * \brief A cipher algorithm.
 		 */
-		class cipher_algorithm
+		class cipher_algorithm : public nullable<cipher_algorithm>
 		{
 			public:
 
@@ -72,9 +75,9 @@ namespace cryptoplus
 
 				/**
 				 * \brief Create a new cipher_algorithm from a const EVP_CIPHER pointer.
-				 * \param cipher The raw const EVP_CIPHER pointer. If cipher is NULL, the behavior is undefined.
+				 * \param cipher The raw const EVP_CIPHER pointer. If cipher is NULL, the cipher_algorithm is a null object on which no methods except raw() should be called.
 				 */
-				cipher_algorithm(const EVP_CIPHER* cipher);
+				cipher_algorithm(const EVP_CIPHER* cipher = NULL);
 
 				/**
 				 * \brief Create a new cipher_algorithm from its type (NID).
@@ -138,6 +141,18 @@ namespace cryptoplus
 				 */
 				unsigned long mode() const;
 
+				/**
+				 * \brief Check that the cipher_algorithm is null.
+				 * \return true if the cipher_algorithm is null.
+				 */
+				bool operator!() const;
+
+				/**
+				 * \brief Check that the cipher_algorithm is not null.
+				 * \return true if the cipher_algorithm is not null.
+				 */
+				bool boolean_test() const;
+
 			private:
 
 				const EVP_CIPHER* m_cipher;
@@ -155,6 +170,8 @@ namespace cryptoplus
 
 		inline int cipher_algorithm::type() const
 		{
+			assert(m_cipher);
+
 			return EVP_CIPHER_nid(m_cipher);
 		}
 
@@ -165,27 +182,47 @@ namespace cryptoplus
 
 		inline size_t cipher_algorithm::block_size() const
 		{
+			assert(m_cipher);
+
 			return EVP_CIPHER_block_size(m_cipher);
 		}
 
 		inline size_t cipher_algorithm::key_length() const
 		{
+			assert(m_cipher);
+
 			return EVP_CIPHER_key_length(m_cipher);
 		}
 
 		inline size_t cipher_algorithm::iv_length() const
 		{
+			assert(m_cipher);
+
 			return EVP_CIPHER_iv_length(m_cipher);
 		}
 
 		inline unsigned long cipher_algorithm::flags() const
 		{
+			assert(m_cipher);
+
 			return EVP_CIPHER_flags(m_cipher);
 		}
 
 		inline unsigned long cipher_algorithm::mode() const
 		{
+			assert(m_cipher);
+
 			return EVP_CIPHER_mode(m_cipher);
+		}
+
+		inline bool cipher_algorithm::operator!() const
+		{
+			return !boolean_test();
+		}
+
+		inline bool cipher_algorithm::boolean_test() const
+		{
+			return static_cast<bool>(m_cipher);
 		}
 	}
 }
