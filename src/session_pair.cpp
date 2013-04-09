@@ -56,8 +56,7 @@ namespace fscp
 			{
 				m_local_session = boost::make_optional(session_store(
 							std::max(local_session().session_number() + 1, session_number),
-							local_cipher_algorithm(),
-							local_message_digest_algorithm()
+							local_cipher_algorithm()
 							));
 
 				return true;
@@ -71,8 +70,7 @@ namespace fscp
 		{
 			m_local_session = boost::make_optional(session_store(
 						session_number,
-						local_cipher_algorithm(),
-						local_message_digest_algorithm()
+						local_cipher_algorithm()
 						));
 
 			return true;

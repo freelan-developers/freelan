@@ -185,24 +185,6 @@ namespace fscp
 				m_local_cipher_algorithm = cipher_algorithm;
 			}
 
-			/**
-			 * \brief Get the local message digest algorithm.
-			 * \return The local message digest algorithm.
-			 */
-			message_digest_algorithm_type local_message_digest_algorithm() const
-			{
-				return m_local_message_digest_algorithm;
-			}
-
-			/**
-			 * \brief Set the local message digest algorithm.
-			 * \param message_digest_algorithm The message digest algorithm.
-			 */
-			void set_local_message_digest_algorithm(message_digest_algorithm_type message_digest_algorithm)
-			{
-				m_local_message_digest_algorithm = message_digest_algorithm;
-			}
-
 		private:
 
 			boost::optional<session_store> m_local_session;
@@ -211,7 +193,6 @@ namespace fscp
 			challenge_type m_local_challenge;
 			challenge_type m_remote_challenge;
 			cipher_algorithm_type m_local_cipher_algorithm;
-			message_digest_algorithm_type m_local_message_digest_algorithm;
 	};
 
 	inline session_pair::session_pair() :

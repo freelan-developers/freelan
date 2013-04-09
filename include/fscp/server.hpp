@@ -109,21 +109,19 @@ namespace fscp
 			 * \brief Session request message callback type.
 			 * \param sender The endpoint that sent the session request message.
 			 * \param calg_capabilities The cipher algorithm capabilities of the remote host.
-			 * \param mdalg_capabilities The message digest algorithm capabilities of the remote host.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session request.
 			 */
-			typedef boost::function<bool (const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, const message_digest_algorithm_list_type& mdalg_capabilities, bool default_accept)> session_request_message_callback;
+			typedef boost::function<bool (const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, bool default_accept)> session_request_message_callback;
 
 			/**
 			 * \brief Session message callback type.
 			 * \param sender The endpoint that sent the session message.
 			 * \param calg The cipher algorithm used for the session.
-			 * \param mdalg The message digest algorithm to use for the session.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cipher_algorithm_type calg, message_digest_algorithm_type mdalg, bool default_accept)> session_message_callback;
+			typedef boost::function<bool (const ep_type& sender, cipher_algorithm_type calg, bool default_accept)> session_message_callback;
 
 			/**
 			 * \brief Data message callback type.
@@ -315,18 +313,6 @@ namespace fscp
 			void set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities);
 
 			/**
-			 * \brief Get the message digest capabilities.
-			 * \return The message digest capabilities.
-			 */
-			const message_digest_algorithm_list_type& get_message_digest_capabilities() const;
-
-			/**
-			 * \brief Set the message digest capabilities.
-			 * \param message digest capabilities The message digest capabilities.
-			 */
-			void set_message_digest_capabilities(const message_digest_algorithm_list_type& message_digest_capabilities);
-
-			/**
 			 * \brief Set the default behavior when a session request message arrives.
 			 * \param value If false, session request messages will be ignored. Default is true.
 			 */
@@ -499,11 +485,9 @@ namespace fscp
 			void handle_session_request_message_from(const session_request_message&, const ep_type&);
 			void handle_clear_session_request_message_from(const clear_session_request_message&, const ep_type&);
 			cipher_algorithm_type get_first_supported_cipher_algorithm(const cipher_algorithm_list_type& cipher_capabilities) const;
-			message_digest_algorithm_type get_first_supported_message_digest_algorithm(const message_digest_algorithm_list_type& message_digest_capabilities) const;
 
 			session_pair_map m_session_map;
 			cipher_algorithm_list_type m_cipher_capabilities;
-			message_digest_algorithm_list_type m_message_digest_capabilities;
 			bool m_accept_session_request_messages_default;
 			session_request_message_callback m_session_request_message_callback;
 
@@ -620,16 +604,6 @@ namespace fscp
 	inline void server::set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities)
 	{
 		m_cipher_capabilities = cipher_capabilities;
-	}
-
-	inline const message_digest_algorithm_list_type& server::get_message_digest_capabilities() const
-	{
-		return m_message_digest_capabilities;
-	}
-
-	inline void server::set_message_digest_capabilities(const message_digest_algorithm_list_type& message_digest_capabilities)
-	{
-		m_message_digest_capabilities = message_digest_capabilities;
 	}
 
 	inline void server::set_accept_session_request_messages_default(bool value)

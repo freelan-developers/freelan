@@ -98,19 +98,7 @@ namespace fscp
 		{
 			cipher_algorithm_list_type result;
 
-			result.push_back(cipher_algorithm_type::aes256_cbc);
-
-			return result;
-		}
-
-		message_digest_algorithm_list_type get_default_message_digest_capabilities()
-		{
-			message_digest_algorithm_list_type result;
-
-			result.push_back(message_digest_algorithm_type::hmac_sha1_96);
-			result.push_back(message_digest_algorithm_type::hmac_sha1);
-			result.push_back(message_digest_algorithm_type::hmac_sha256_128);
-			result.push_back(message_digest_algorithm_type::hmac_sha256);
+			result.push_back(cipher_algorithm_type::aes256_gcm);
 
 			return result;
 		}
@@ -125,7 +113,6 @@ namespace fscp
 		m_hello_message_callback(0),
 		m_presentation_message_callback(0),
 		m_cipher_capabilities(get_default_cipher_capabilities()),
-		m_message_digest_capabilities(get_default_message_digest_capabilities()),
 		m_accept_session_request_messages_default(true),
 		m_session_request_message_callback(0),
 		m_accept_session_messages_default(true),
@@ -530,7 +517,7 @@ namespace fscp
 
 			session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
 
-			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number, session.generate_local_challenge(), m_cipher_capabilities, m_message_digest_capabilities);
+			std::vector<uint8_t> cleartext = clear_session_request_message::write<uint8_t>(session_number, session.generate_local_challenge(), m_cipher_capabilities);
 
 			size_t size = session_request_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
 
@@ -556,21 +543,18 @@ namespace fscp
 		session_pair& session = m_session_map[sender];
 
 		const cipher_algorithm_list_type cipher_capabilities = _clear_session_request_message.cipher_capabilities();
-		const message_digest_algorithm_list_type& message_digest_capabilities = _clear_session_request_message.message_digest_capabilities();
 
 		const cipher_algorithm_type calg = get_first_supported_cipher_algorithm(cipher_capabilities);
-		const message_digest_algorithm_type mdalg = get_first_supported_message_digest_algorithm(message_digest_capabilities);
 
 		if (m_session_request_message_callback)
 		{
-			can_reply = m_session_request_message_callback(sender, cipher_capabilities, message_digest_capabilities, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_callback(sender, cipher_capabilities, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
 		{
 			session.set_remote_challenge(_clear_session_request_message.challenge());
 			session.set_local_cipher_algorithm(calg);
-			session.set_local_message_digest_algorithm(mdalg);
 
 			do_send_session(sender, _clear_session_request_message.session_number());
 		}
@@ -579,11 +563,6 @@ namespace fscp
 	cipher_algorithm_type server::get_first_supported_cipher_algorithm(const cipher_algorithm_list_type& cipher_capabilities) const
 	{
 		return get_first_element(m_cipher_capabilities, cipher_capabilities, cipher_algorithm_type::unsupported);
-	}
-
-	message_digest_algorithm_type server::get_first_supported_message_digest_algorithm(const message_digest_algorithm_list_type& message_digest_capabilities) const
-	{
-		return get_first_element(m_message_digest_capabilities, message_digest_capabilities, message_digest_algorithm_type::unsupported);
 	}
 
 	/* Session messages */
@@ -598,9 +577,6 @@ namespace fscp
 				session.local_session().session_number(),
 				session.remote_challenge(),
 				session.local_cipher_algorithm(),
-				session.local_message_digest_algorithm(),
-				session.local_session().seal_key(),
-				session.local_session().seal_key_size(),
 				session.local_session().encryption_key(),
 				session.local_session().encryption_key_size()
 				);
@@ -640,20 +616,17 @@ namespace fscp
 
 			if (m_session_message_callback)
 			{
-				can_accept = m_session_message_callback(sender, _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm(), m_accept_session_messages_default);
+				can_accept = m_session_message_callback(sender, _clear_session_message.cipher_algorithm(), m_accept_session_messages_default);
 			}
 
 			if (can_accept)
 			{
 				const bool session_is_new = !session_pair.has_remote_session();
 
-				const algorithm_info_type local = { session_pair.local_cipher_algorithm(), session_pair.local_message_digest_algorithm() };
-				const algorithm_info_type remote = { _clear_session_message.cipher_algorithm(), _clear_session_message.message_digest_algorithm() };
+				const algorithm_info_type local = { session_pair.local_cipher_algorithm() };
+				const algorithm_info_type remote = { _clear_session_message.cipher_algorithm() };
 
-				if (
-						(_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported) ||
-						(_clear_session_message.message_digest_algorithm() == message_digest_algorithm_type::unsupported)
-					 )
+				if (_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported)
 				{
 					session_failed(sender, session_is_new, local, remote);
 				}
@@ -662,9 +635,6 @@ namespace fscp
 					session_store _session_store(
 							_clear_session_message.session_number(),
 							_clear_session_message.cipher_algorithm(),
-							_clear_session_message.message_digest_algorithm(),
-							_clear_session_message.seal_key(),
-							_clear_session_message.seal_key_size(),
 							_clear_session_message.encryption_key(),
 							_clear_session_message.encryption_key_size()
 							);
@@ -728,8 +698,6 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
-				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
-				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
 
 				data_store& data_store = m_data_map[target];
 
@@ -739,14 +707,11 @@ namespace fscp
 							m_send_buffer.data(),
 							m_send_buffer.size(),
 							channel_number,
+							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
 							cipher_algorithm,
-							message_digest_algorithm,
-							message_digest_algorithm_hmac_size,
 							&data_store.front()[0],
 							data_store.front().size(),
-							session_pair.remote_session().seal_key(),
-							session_pair.remote_session().seal_key_size(),
 							session_pair.remote_session().encryption_key(),
 							session_pair.remote_session().encryption_key_size()
 							);
@@ -766,23 +731,13 @@ namespace fscp
 		if (session_pair.has_local_session())
 		{
 			const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.local_session().cipher_algorithm().to_cipher_algorithm();
-			const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.local_session().message_digest_algorithm().to_message_digest_algorithm();
-			const size_t message_digest_algorithm_hmac_size = session_pair.local_session().message_digest_algorithm().to_hmac_size();
 
 			if (_data_message.sequence_number() > session_pair.local_session().sequence_number())
 			{
-				_data_message.check_seal(
-						m_data_buffer.data(),
-						m_data_buffer.size(),
-						message_digest_algorithm,
-						message_digest_algorithm_hmac_size,
-						session_pair.local_session().seal_key(),
-						session_pair.local_session().seal_key_size()
-						);
-
 				size_t cnt = _data_message.get_cleartext(
 						m_data_buffer.data(),
 						m_data_buffer.size(),
+						session_pair.local_session().session_number(),
 						cipher_algorithm,
 						session_pair.local_session().encryption_key(),
 						session_pair.local_session().encryption_key_size()
@@ -875,8 +830,6 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
-				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
-				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
 
 				hash_list_type& hash_list = m_hash_list_map[target];
 
@@ -885,13 +838,10 @@ namespace fscp
 					size_t size = data_message::write_contact_request(
 							m_send_buffer.data(),
 							m_send_buffer.size(),
+							session_pair.remote_session().session_number(),
 							session_pair.remote_session().sequence_number(),
 							cipher_algorithm,
-							message_digest_algorithm,
-							message_digest_algorithm_hmac_size,
 							hash_list,
-							session_pair.remote_session().seal_key(),
-							session_pair.remote_session().seal_key_size(),
 							session_pair.remote_session().encryption_key(),
 							session_pair.remote_session().encryption_key_size()
 							);
@@ -915,19 +865,14 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
-				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
-				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
 
 				size_t size = data_message::write_contact(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
 						session_pair.remote_session().sequence_number(),
 						cipher_algorithm,
-						message_digest_algorithm,
-						message_digest_algorithm_hmac_size,
 						contact_map,
-						session_pair.remote_session().seal_key(),
-						session_pair.remote_session().seal_key_size(),
 						session_pair.remote_session().encryption_key(),
 						session_pair.remote_session().encryption_key_size()
 						);
@@ -972,19 +917,14 @@ namespace fscp
 			if (session_pair.has_remote_session())
 			{
 				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
-				const boost::optional<cryptoplus::hash::message_digest_algorithm> message_digest_algorithm = session_pair.remote_session().message_digest_algorithm().to_message_digest_algorithm();
-				const size_t message_digest_algorithm_hmac_size = session_pair.remote_session().message_digest_algorithm().to_hmac_size();
 
 				size_t size = data_message::write_keep_alive(
 						m_send_buffer.data(),
 						m_send_buffer.size(),
+						session_pair.remote_session().session_number(),
 						session_pair.remote_session().sequence_number(),
 						cipher_algorithm,
-						message_digest_algorithm,
-						message_digest_algorithm_hmac_size,
 						session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
-						session_pair.remote_session().seal_key(),
-						session_pair.remote_session().seal_key_size(),
 						session_pair.remote_session().encryption_key(),
 						session_pair.remote_session().encryption_key_size()
 						);

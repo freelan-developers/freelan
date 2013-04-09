@@ -65,29 +65,20 @@ namespace fscp
 		}
 	}
 
-	session_store::session_store(session_number_type _session_number, const cipher_algorithm_type& _cipher_algorithm, const message_digest_algorithm_type& _message_digest_algorithm) :
+	session_store::session_store(session_number_type _session_number, const cipher_algorithm_type& _cipher_algorithm) :
 		m_session_number(_session_number),
 		m_cipher_algorithm(_cipher_algorithm),
-		m_message_digest_algorithm(_message_digest_algorithm),
-		m_seal_key(cryptoplus::random::get_random_bytes(get_key_length(m_cipher_algorithm)).data()),
 		m_enc_key(cryptoplus::random::get_random_bytes(get_key_length(m_cipher_algorithm)).data()),
 		m_sequence_number(0)
 	{
 	}
 
-	session_store::session_store(session_number_type _session_number, const cipher_algorithm_type& _cipher_algorithm, const message_digest_algorithm_type& _message_digest_algorithm, const void* _seal_key, size_t _seal_key_len, const void* _enc_key, size_t _enc_key_len) :
+	session_store::session_store(session_number_type _session_number, const cipher_algorithm_type& _cipher_algorithm, const void* _enc_key, size_t _enc_key_len) :
 		m_session_number(_session_number),
 		m_cipher_algorithm(_cipher_algorithm),
-		m_message_digest_algorithm(_message_digest_algorithm),
-		m_seal_key(static_cast<const uint8_t*>(_seal_key), static_cast<const uint8_t*>(_seal_key) + _seal_key_len),
 		m_enc_key(static_cast<const uint8_t*>(_enc_key), static_cast<const uint8_t*>(_enc_key) + _enc_key_len),
 		m_sequence_number(1)
 	{
-		if (_seal_key_len != get_key_length(m_cipher_algorithm))
-		{
-			throw std::runtime_error("seal_key_len");
-		}
-
 		if (_enc_key_len != get_key_length(m_cipher_algorithm))
 		{
 			throw std::runtime_error("enc_key_len");
