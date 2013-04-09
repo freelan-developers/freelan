@@ -212,12 +212,19 @@ namespace cryptoplus
 				void set_key_length(size_t len);
 
 				/**
+				 * \brief Control cipher specific parameters.
+				 * \param type The type.
+				 * \param set_value The first value.
+				 * \param get_value The second value.
+				 */
+				void ctrl(int type, int set_value, void* get_value);
+				/**
 				 * \brief Get cipher specific parameters.
 				 * \param type The type.
 				 * \param value The value to get.
 				 */
 				template <typename T>
-				void ctrl_get(int type, T& value) const;
+				void ctrl_get(int type, T& value);
 
 				/**
 				 * \brief Set cipher specific parameters.
@@ -425,8 +432,13 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_CIPHER_CTX_set_key_length(&m_ctx, static_cast<int>(len)) != 0);
 		}
 
+		inline void cipher_context::ctrl(int type, int set_value, void* get_value)
+		{
+			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, set_value, get_value) != 0);
+		}
+
 		template <typename T>
-		inline void cipher_context::ctrl_get(int type, T& value) const
+		inline void cipher_context::ctrl_get(int type, T& value)
 		{
 			error::throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value) != 0);
 		}
