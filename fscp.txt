@@ -149,8 +149,6 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  | cipher_cap_len  |    cipher_cap   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |    md_cap_len   |      md_cap     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is not sent in clear-text. It is first ciphered using the
    public PKE of the target host, then the ciphertext is signed using
@@ -186,14 +184,6 @@ Abstract
    A list of the ciphers codes is available in a further section of this
    document.
 
-   The md_cap_len field indicates the length of the md_cap field.
-
-   The md_cap field is a list of the message digest algorithms supported
-   by the client, in order of preference.
-
-   A list of the message digest codes is available in a further section
-   of this document.
-
    The ct_cnt field indicates the count of ciphertext blocks in the ct
    field.
 
@@ -223,9 +213,7 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |             challenge             |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |  calg  | mdalg  |    <reserved>   |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |   seal_key_len  |     seal_key    |
+                 |  calg  |        <reserved>        |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   enc_key_len   |     enc_key     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -271,29 +259,8 @@ Abstract
    In this case, the remaining fields SHOULD be empty and ignored by the
    remote peer.
 
-   The mdalg field is the code of the chosen message digest algorithm. It
-   SHOULD be the message digest code of the first supported message
-   digest algorithm specified in the associated SESSION_REQUEST.
-
-   A list of the message digest codes is available in a further section
-   of this document.
-
-   If there is no such message digest algorithm, this value MUST be 0 to
-   indicate to the peer that no session can be established with the
-   requested parameters.
-
-   In this case, the remaining fields SHOULD be empty and ignored by the
-   remote peer.
-
    The <reserved> field is reserved for future uses and MUST be zero in
    the current implementation.
-
-   The seal_key_len field indicates the size of the seal_key field. It
-   depends on the chosen cipher algorithm.
-
-   The seal_key field is a seal_key_len bytes long sealing key used for
-   message sealing. In the next sections, this key will be referred to as
-   KS.
 
    The enc_key_len field indicates the size of the enc_key field. It
    depends on the chosen cipher algorithm.
@@ -321,9 +288,9 @@ Abstract
    decipher the ct field, using its own private decryption key (PKD). If
    the decipherment fails, the message MUST be ignored.
 
-   If an host receives a SESSION message whose calg or mdalg are null, it
-   SHOULD indicate to the upper layer that no session could be
-   established with the requested parameters.
+   If an host receives a SESSION message whose calg is null, it SHOULD
+   indicate to the upper layer that no session could be established with
+   the requested parameters.
 
 2.6. DATA message format
 
@@ -332,12 +299,16 @@ Abstract
                   0      7 8     15 16    23 24    31
                  +-----------------------------------+
                  |          sequence_number          |
-                 +~----------------+~~~~~~~~~~~~~~~~~+
-                 |      iv_len     |       iv        |
+                 +-----------------------------------+
+                 |              tag...               |
+                 +-----------------------------------+
+                 |                ...                |
+                 +-----------------------------------+
+                 |                ...                |
+                 +-----------------------------------+
+                 |                ...                |
                  +~----------------+~~~~~~~~~~~~~~~~~+
                  |  ciphertext_len |    ciphertext   |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     hmac_len    |      hmac       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.6.1. DATA message type
@@ -354,39 +325,19 @@ Abstract
    session MUST have two different sequence numbers. The rules governing
    the sequence number are explained in a further section.
 
-   The iv_len field is the length of the iv field.
-
-   The iv field is the initialization vector used to generate the
-   ciphertext (and that thus must be used for the deciphering process).
-
-   It MUST be generated using a cryptographically secure pseudo-random
-   number generator.
+   The tag field is 16 bytes long and contains the GCM tag associated to
+   ciphertext.
 
    The ciphertext_len field is the length of the ciphertext field.
 
    The ciphertext field represents the data of the message, ciphered
    using the target host session cipher key.
 
-   The hmac_len field is the length of the hmac field. This field may be
-   0 if no HMAC is to be used.
+   The nonce used for the generation of the ciphertext is a
+   8 bytes concatenation of the session_number and the sequence_number.
 
-   The hmac field contains the HMAC of the whole DATA message header,
-   excluding the hmac_size field and the field itself, using the remote
-   host session sealing key.
-
-   This field MUST be omitted if the session is configured not to use a
-   HMAC.
-
-   The exact algorithm and the size of the hmac field depends on the
-   chosen message digest algorithm.
-
-   A host who receives a DATA message MUST first check if the hmac
-   matches the message. If the HMAC doesn't match, the message MUST be
+   If the decipherment of the ciphertext fails, the message MUST be
    ignored.
-
-   If the session is configured not to use a HMAC, this check MUST be
-   skipped. This improves greatly the performances of the protocol, but
-   weakens the overall security.
 
    The 4 less significant bits of the message type value indicate the
    channel number. The channel number SHOULD be made available for the
@@ -529,31 +480,16 @@ Abstract
 
 3. Algorithms
 
-3.1. Sealing
-
-   The available message digest algorithm used in the HMAC sealing
-   process are:
-
-   - 0x01: HMAC-SHA256 (HMAC is 32 bytes long)
-   - 0x02: HMAC-SHA256-128 (HMAC is 16 bytes long)
-   - 0x03: HMAC-SHA1 (HMAC is 20 bytes long)
-   - 0x04: HMAC-SHA1-96 (HMAC is 12 bytes long)
-   - 0xFF: No HMAC (HMAC is 0 bytes long)
-
-   If an unknown message digest algorithm code is met, it must be ignored
-   to account for implementation specific codes.
-
-3.2. Symmetric cipherment algorithm
+3.1. Symmetric cipherment algorithm
 
    The available cipher algorithms used in the symmetric cipherment are:
 
-   - 0x01: AES256-CBC with ISO 10126 padding (key size is 32 bytes, IV
-     size is 16 bytes).
+   - 0x01: AES256-GCM.
 
    If an unknown cipher algorithm code is met, it must be ignored to
    account for implementation specific codes.
 
-3.3. Asymmetric cipherment and signature algorithms
+3.2. Asymmetric cipherment and signature algorithms
 
    The used signature algorithm is RSA with a PKCS#1 v2.1 PSS padding
    (RSASSA_PSS).
