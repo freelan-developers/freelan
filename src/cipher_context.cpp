@@ -94,7 +94,7 @@ namespace cryptoplus
 			}
 		}
 
-		void cipher_context::initialize(const cipher_algorithm& _algorithm, cipher_context::cipher_direction direction, const void* key, size_t key_len, const void* iv, size_t iv_len, ENGINE* impl)
+		void cipher_context::initialize(const cipher_algorithm& _algorithm, cipher_context::cipher_direction direction, const void* key, size_t key_len, const void* iv, ENGINE* impl)
 		{
 			if (key)
 			{
@@ -104,23 +104,17 @@ namespace cryptoplus
 				}
 			}
 
-			if (iv)
-			{
-				if (iv_len != _algorithm.iv_length())
-				{
-					throw std::runtime_error("iv_len");
-				}
-			}
+			// Doing the same test on the IV is wrong because for some algorithms, the IV size is dynamic.
 
 			error::throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
 		}
 
-		buffer cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, pkey::pkey pkey)
+		buffer cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, pkey::pkey pkey)
 		{
-			return seal_initialize(_algorithm, iv, iv_len, &pkey, &pkey + sizeof(&pkey))[0];
+			return seal_initialize(_algorithm, iv, &pkey, &pkey + sizeof(&pkey))[0];
 		}
 
-		void cipher_context::open_initialize(const cipher_algorithm& _algorithm, const void* key, size_t key_len, const void* iv, size_t iv_len, pkey::pkey pkey)
+		void cipher_context::open_initialize(const cipher_algorithm& _algorithm, const void* key, size_t key_len, const void* iv, pkey::pkey pkey)
 		{
 			if (key)
 			{
@@ -130,13 +124,7 @@ namespace cryptoplus
 				}
 			}
 
-			if (iv)
-			{
-				if (iv_len != _algorithm.iv_length())
-				{
-					throw std::runtime_error("iv_len");
-				}
-			}
+			// Doing the same test on the IV is wrong because for some algorithms, the IV size is dynamic.
 
 			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
 		}

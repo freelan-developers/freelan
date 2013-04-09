@@ -108,7 +108,6 @@ namespace cryptoplus
 				 * \param key The key to use. Cannot be NULL.
 				 * \param key_len The length of key. Must match algorithm.key_length() or a std::runtime_error is thrown.
 				 * \param iv The iv to use (if one is needed for the specified algorithm, NULL otherwise).
-				 * \param iv_len The length of iv. Must match algorithm.iv_length() or a std::runtime_error is thrown.
 				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
 				 * \see set_padding
 				 *
@@ -116,13 +115,12 @@ namespace cryptoplus
 				 *
 				 * Once the cipher_context is initialized, you may enable or disable PKCS padding by calling set_padding(). By default, PKCS padding is enabled.
 				 */
-				void initialize(const cipher_algorithm& algorithm, cipher_direction direction, const void* key, size_t key_len, const void* iv, size_t iv_len, ENGINE* impl = NULL);
+				void initialize(const cipher_algorithm& algorithm, cipher_direction direction, const void* key, size_t key_len, const void* iv, ENGINE* impl = NULL);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope sealing.
 				 * \param algorithm The cipher algorithm to use.
 				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise).
-				 * \param iv_len The length of iv. Must match algorithm.iv_length() or a std::runtime_error is thrown.
 				 * \param pkeys_begin A pointer to the first public pkey to use.
 				 * \param pkeys_end A pointer past the last public pkey to use.
 				 * \return The public encrypted shared secret keys array.
@@ -130,19 +128,18 @@ namespace cryptoplus
 				 * \see seal_finalize
 				 */
 				template <typename T>
-				std::vector<buffer> seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end);
+				std::vector<buffer> seal_initialize(const cipher_algorithm& algorithm, void* iv, T pkeys_begin, T pkeys_end);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope sealing.
 				 * \param algorithm The cipher algorithm to use.
 				 * \param iv The iv that was generated (if one is needed for the specified algorithm, NULL otherwise).
-				 * \param iv_len The length of iv. Must match algorithm.iv_length() or a std::runtime_error is thrown.
 				 * \param pkey The public pkey to use.
 				 * \return The public encrypted shared secret key.
 				 * \see seal_update
 				 * \see seal_finalize
 				 */
-				buffer seal_initialize(const cipher_algorithm& algorithm, void* iv, size_t iv_len, pkey::pkey pkey);
+				buffer seal_initialize(const cipher_algorithm& algorithm, void* iv, pkey::pkey pkey);
 
 				/**
 				 * \brief Initialize the cipher_context for envelope opening.
@@ -150,12 +147,11 @@ namespace cryptoplus
 				 * \param key The encrypted shared secret key.
 				 * \param key_len The length of key. Must match algorithm.key_length() or a std::runtime_error is thrown.
 				 * \param iv The iv to use (if one is needed for the specified algorithm, NULL otherwise).
-				 * \param iv_len The length of iv. Must match algorithm.iv_length() or a std::runtime_error is thrown.
 				 * \param pkey The private pkey to use.
 				 * \see open_update
 				 * \see open_finalize
 				 */
-				void open_initialize(const cipher_algorithm& algorithm, const void* key, size_t key_len, const void* iv, size_t iv_len, pkey::pkey pkey);
+				void open_initialize(const cipher_algorithm& algorithm, const void* key, size_t key_len, const void* iv, pkey::pkey pkey);
 
 				/**
 				 * \brief Set PKCS padding state.
@@ -353,13 +349,8 @@ namespace cryptoplus
 		}
 
 		template <typename T>
-		inline std::vector<buffer> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, size_t iv_len, T pkeys_begin, T pkeys_end)
+		inline std::vector<buffer> cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, T pkeys_begin, T pkeys_end)
 		{
-			if (iv && (iv_len != _algorithm.iv_length()))
-			{
-				throw std::runtime_error("iv_len");
-			}
-
 			size_t pkeys_count = std::distance(pkeys_begin, pkeys_end);
 
 			std::vector<buffer> result;
