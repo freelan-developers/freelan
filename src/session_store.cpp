@@ -69,14 +69,16 @@ namespace fscp
 		m_session_number(_session_number),
 		m_cipher_algorithm(_cipher_algorithm),
 		m_enc_key(cryptoplus::random::get_random_bytes(get_key_length(m_cipher_algorithm)).data()),
+		m_nonce_prefix(cryptoplus::random::get_random_bytes(DEFAULT_NONCE_PREFIX_SIZE).data()),
 		m_sequence_number(0)
 	{
 	}
 
-	session_store::session_store(session_number_type _session_number, const cipher_algorithm_type& _cipher_algorithm, const void* _enc_key, size_t _enc_key_len) :
+	session_store::session_store(session_number_type _session_number, const cipher_algorithm_type& _cipher_algorithm, const void* _enc_key, size_t _enc_key_len, const void* _nonce_prefix, size_t _nonce_prefix_len) :
 		m_session_number(_session_number),
 		m_cipher_algorithm(_cipher_algorithm),
 		m_enc_key(static_cast<const uint8_t*>(_enc_key), static_cast<const uint8_t*>(_enc_key) + _enc_key_len),
+		m_nonce_prefix(static_cast<const uint8_t*>(_nonce_prefix), static_cast<const uint8_t*>(_nonce_prefix) + _nonce_prefix_len),
 		m_sequence_number(1)
 	{
 		if (_enc_key_len != get_key_length(m_cipher_algorithm))

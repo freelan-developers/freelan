@@ -573,12 +573,14 @@ namespace fscp
 
 		session.renew_local_session(session_number);
 
-		std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
+		const std::vector<uint8_t> cleartext = clear_session_message::write<uint8_t>(
 				session.local_session().session_number(),
 				session.remote_challenge(),
 				session.local_cipher_algorithm(),
 				session.local_session().encryption_key(),
-				session.local_session().encryption_key_size()
+				session.local_session().encryption_key_size(),
+				session.local_session().nonce_prefix(),
+				session.local_session().nonce_prefix_size()
 				);
 
 		size_t size = session_message::write(m_send_buffer.data(), m_send_buffer.size(), &cleartext[0], cleartext.size(), m_presentation_map[target].encryption_certificate().public_key(), m_identity_store.signature_key());
@@ -590,7 +592,7 @@ namespace fscp
 	{
 		_session_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
 
-		std::vector<uint8_t> cleartext = _session_message.get_cleartext<uint8_t>(m_identity_store.encryption_key());
+		const std::vector<uint8_t> cleartext = _session_message.get_cleartext<uint8_t>(m_identity_store.encryption_key());
 
 		clear_session_message clear_session_message(&cleartext[0], cleartext.size());
 
@@ -636,7 +638,9 @@ namespace fscp
 							_clear_session_message.session_number(),
 							_clear_session_message.cipher_algorithm(),
 							_clear_session_message.encryption_key(),
-							_clear_session_message.encryption_key_size()
+							_clear_session_message.encryption_key_size(),
+							_clear_session_message.nonce_prefix(),
+							_clear_session_message.nonce_prefix_size()
 							);
 
 					session_pair.set_remote_session(_session_store);
@@ -713,7 +717,9 @@ namespace fscp
 							&data_store.front()[0],
 							data_store.front().size(),
 							session_pair.remote_session().encryption_key(),
-							session_pair.remote_session().encryption_key_size()
+							session_pair.remote_session().encryption_key_size(),
+							session_pair.remote_session().nonce_prefix(),
+							session_pair.remote_session().nonce_prefix_size()
 							);
 
 					session_pair.remote_session().increment_sequence_number();
@@ -740,7 +746,9 @@ namespace fscp
 						session_pair.local_session().session_number(),
 						cipher_algorithm,
 						session_pair.local_session().encryption_key(),
-						session_pair.local_session().encryption_key_size()
+						session_pair.local_session().encryption_key_size(),
+						session_pair.local_session().nonce_prefix(),
+						session_pair.local_session().nonce_prefix_size()
 						);
 
 				session_pair.local_session().set_sequence_number(_data_message.sequence_number());
@@ -843,7 +851,9 @@ namespace fscp
 							cipher_algorithm,
 							hash_list,
 							session_pair.remote_session().encryption_key(),
-							session_pair.remote_session().encryption_key_size()
+							session_pair.remote_session().encryption_key_size(),
+							session_pair.remote_session().nonce_prefix(),
+							session_pair.remote_session().nonce_prefix_size()
 							);
 
 					hash_list.clear();
@@ -874,7 +884,9 @@ namespace fscp
 						cipher_algorithm,
 						contact_map,
 						session_pair.remote_session().encryption_key(),
-						session_pair.remote_session().encryption_key_size()
+						session_pair.remote_session().encryption_key_size(),
+						session_pair.remote_session().nonce_prefix(),
+						session_pair.remote_session().nonce_prefix_size()
 						);
 
 				session_pair.remote_session().increment_sequence_number();
@@ -926,7 +938,9 @@ namespace fscp
 						cipher_algorithm,
 						session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
 						session_pair.remote_session().encryption_key(),
-						session_pair.remote_session().encryption_key_size()
+						session_pair.remote_session().encryption_key_size(),
+						session_pair.remote_session().nonce_prefix(),
+						session_pair.remote_session().nonce_prefix_size()
 						);
 
 				session_pair.remote_session().increment_sequence_number();

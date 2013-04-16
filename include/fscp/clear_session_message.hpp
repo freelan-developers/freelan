@@ -73,9 +73,11 @@ namespace fscp
 			 * \param calg The cipher algorithm type.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const challenge_type& challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Write a session message to a buffer.
@@ -84,10 +86,12 @@ namespace fscp
 			 * \param calg The cipher algorithm type.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The buffer.
 			 */
 			template <typename T>
-			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len);
+			static std::vector<T> write(session_number_type session_number, const challenge_type& challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Create a clear_session_message and map it on a buffer.
@@ -128,12 +132,24 @@ namespace fscp
 			 */
 			size_t encryption_key_size() const;
 
+			/**
+			 * \brief Get the nonce prefix.
+			 * \return The nonce prefix.
+			 */
+			const uint8_t* nonce_prefix() const;
+
+			/**
+			 * \brief Get the nonce prefix size.
+			 * \return The nonce prefix size.
+			 */
+			size_t nonce_prefix_size() const;
+
 		protected:
 
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + sizeof(uint16_t);
 
 			/**
 			 * \brief The data.
@@ -147,11 +163,11 @@ namespace fscp
 	};
 
 	template <typename T>
-	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const challenge_type& _challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len)
+	inline std::vector<T> clear_session_message::write(session_number_type _session_number, const challenge_type& _challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
-		std::vector<T> result(MIN_BODY_LENGTH + enc_key_len);
+		std::vector<T> result(MIN_BODY_LENGTH + enc_key_len + nonce_prefix_len);
 
-		result.resize(write(&result[0], result.size(), _session_number, _challenge, calg, enc_key, enc_key_len));
+		result.resize(write(&result[0], result.size(), _session_number, _challenge, calg, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len));
 
 		return result;
 	}
@@ -183,6 +199,16 @@ namespace fscp
 	inline size_t clear_session_message::encryption_key_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3));
+	}
+
+	inline const uint8_t* clear_session_message::nonce_prefix() const
+	{
+		return data() + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + encryption_key_size() + sizeof(uint16_t);
+	}
+
+	inline size_t clear_session_message::nonce_prefix_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(data(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + encryption_key_size()));
 	}
 
 	inline const uint8_t* clear_session_message::data() const

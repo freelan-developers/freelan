@@ -77,9 +77,11 @@ namespace fscp
 			 * \param cleartext_len The data length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len);
+			static size_t write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Write a contact-request message to a buffer.
@@ -91,9 +93,11 @@ namespace fscp
 			 * \param hash_list The hash list.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const hash_list_type& hash_list, const void* enc_key, size_t enc_key_len);
+			static size_t write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const hash_list_type& hash_list, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Write a contact message to a buffer.
@@ -105,9 +109,11 @@ namespace fscp
 			 * \param contact_map The contact map.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const contact_map_type& contact_map, const void* enc_key, size_t enc_key_len);
+			static size_t write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const contact_map_type& contact_map, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Write a keep-alive message to a buffer.
@@ -119,9 +125,11 @@ namespace fscp
 			 * \param random_len The length of the random content to send.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, size_t random_len, const void* enc_key, size_t enc_key_len);
+			static size_t write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, size_t random_len, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Parse the hash list.
@@ -192,9 +200,11 @@ namespace fscp
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The count of bytes deciphered.
 			 */
-			size_t get_cleartext(void* buf, size_t buf_len, session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const;
+			size_t get_cleartext(void* buf, size_t buf_len, session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len) const;
 
 			/**
 			 * \brief Get the clear text data, using a given encryption key.
@@ -202,10 +212,12 @@ namespace fscp
 			 * \param cipher_algorithm The cipher algorithm to use.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \return The clear text data.
 			 */
 			template <typename T>
-			std::vector<T> get_cleartext(session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const;
+			std::vector<T> get_cleartext(session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len) const;
 
 		protected:
 
@@ -225,10 +237,12 @@ namespace fscp
 			 * \param cleartext_len The data length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \param type The message type.
 			 * \return The count of bytes written.
 			 */
-			static size_t raw_write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len, message_type type);
+			static size_t raw_write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const void* cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len, message_type type);
 
 		private:
 
@@ -261,11 +275,11 @@ namespace fscp
 	}
 
 	template <typename T>
-	inline std::vector<T> data_message::get_cleartext(session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const
+	inline std::vector<T> data_message::get_cleartext(session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len) const
 	{
-		std::vector<T> result(get_cleartext(NULL, 0, session_number, cipher_algorithm, enc_key, enc_key_len));
+		std::vector<T> result(get_cleartext(NULL, 0, session_number, cipher_algorithm, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len));
 
-		result.resize(get_cleartext(&result[0], result.size(), session_number, cipher_algorithm, enc_key, enc_key_len));
+		result.resize(get_cleartext(&result[0], result.size(), session_number, cipher_algorithm, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len));
 
 		return result;
 	}

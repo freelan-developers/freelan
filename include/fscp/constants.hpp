@@ -175,6 +175,11 @@ namespace fscp
 	const size_t GCM_TAG_LENGTH = 16;
 
 	/**
+	 * \brief The default nonce prefix size.
+	 */
+	const size_t DEFAULT_NONCE_PREFIX_SIZE = 8;
+
+	/**
 	 * \brief The different message types.
 	 */
 	enum message_type

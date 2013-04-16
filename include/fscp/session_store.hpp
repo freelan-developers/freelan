@@ -80,8 +80,10 @@ namespace fscp
 			 * \param cipher_algorithm The cipher algorithm.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 */
-			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const void* enc_key, size_t enc_key_len);
+			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Get the session number.
@@ -106,6 +108,18 @@ namespace fscp
 			 * \return The encryption key size.
 			 */
 			size_t encryption_key_size() const;
+
+			/**
+			 * \brief Get the nonce prefix.
+			 * \return The nonce prefix.
+			 */
+			const uint8_t* nonce_prefix() const;
+
+			/**
+			 * \brief Get the nonce prefix size.
+			 * \return The nonce prefix size.
+			 */
+			size_t nonce_prefix_size() const;
 
 			/**
 			 * \brief Get the sequence number.
@@ -138,9 +152,15 @@ namespace fscp
 			 */
 			typedef std::vector<uint8_t> key_type;
 
+			/**
+			 * \brief The nonce prefix type.
+			 */
+			typedef std::vector<uint8_t> nonce_prefix_type;
+
 			session_number_type m_session_number;
 			cipher_algorithm_type m_cipher_algorithm;
 			key_type m_enc_key;
+			nonce_prefix_type m_nonce_prefix;
 			sequence_number_type m_sequence_number;
 	};
 
@@ -162,6 +182,16 @@ namespace fscp
 	inline size_t session_store::encryption_key_size() const
 	{
 		return m_enc_key.size();
+	}
+
+	inline const uint8_t* session_store::nonce_prefix() const
+	{
+		return &m_nonce_prefix[0];
+	}
+
+	inline size_t session_store::nonce_prefix_size() const
+	{
+		return m_nonce_prefix.size();
 	}
 
 	inline sequence_number_type session_store::sequence_number() const

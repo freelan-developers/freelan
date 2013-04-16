@@ -54,37 +54,38 @@ namespace fscp
 {
 	namespace
 	{
-		typedef boost::array<uint8_t, sizeof(session_number_type) + sizeof(sequence_number_type)> iv_type;
+		typedef std::vector<uint8_t> iv_type;
 
-		iv_type compute_iv(session_number_type session_number, sequence_number_type sequence_number)
+		iv_type compute_iv(const void* nonce_prefix, size_t nonce_prefix_len, session_number_type session_number, sequence_number_type sequence_number)
 		{
-			iv_type result = {};
+			iv_type result(nonce_prefix_len + sizeof(session_number_type) + sizeof(sequence_number_type));
 
-			buffer_tools::set<session_number_type>(result.data(), 0, htonl(session_number));
-			buffer_tools::set<sequence_number_type>(result.data(), sizeof(session_number_type), htonl(sequence_number));
+			std::copy(static_cast<const uint8_t*>(nonce_prefix), static_cast<const uint8_t*>(nonce_prefix) + nonce_prefix_len, result.begin());
+			buffer_tools::set<session_number_type>(result.data(), nonce_prefix_len, htonl(session_number));
+			buffer_tools::set<sequence_number_type>(result.data(), nonce_prefix_len + sizeof(session_number_type), htonl(sequence_number));
 
 			return result;
 		}
 	}
 
-	size_t data_message::write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const void* _cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write(void* buf, size_t buf_len, channel_number_type channel_number, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const void* _cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
-		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, _cleartext, cleartext_len, enc_key, enc_key_len, to_data_message_type(channel_number));
+		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, _cleartext, cleartext_len, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, to_data_message_type(channel_number));
 	}
 
-	size_t data_message::write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, size_t random_len, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write_keep_alive(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, size_t random_len, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
 		const cryptoplus::buffer random = cryptoplus::random::get_random_bytes(random_len);
 
-		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, cryptoplus::buffer_cast<uint8_t>(random), cryptoplus::buffer_size(random), enc_key, enc_key_len, MESSAGE_TYPE_KEEP_ALIVE);
+		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, cryptoplus::buffer_cast<uint8_t>(random), cryptoplus::buffer_size(random), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
-	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const hash_list_type& hash_list, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const hash_list_type& hash_list, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
-		return raw_write(buf, buf_len, session_number, sequence_number, cipher_algorithm, reinterpret_cast<const char*>(&hash_list[0]), hash_list.size() * hash_type::static_size, enc_key, enc_key_len, MESSAGE_TYPE_CONTACT_REQUEST);
+		return raw_write(buf, buf_len, session_number, sequence_number, cipher_algorithm, reinterpret_cast<const char*>(&hash_list[0]), hash_list.size() * hash_type::static_size, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT_REQUEST);
 	}
 
-	size_t data_message::write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const contact_map_type& contact_map, const void* enc_key, size_t enc_key_len)
+	size_t data_message::write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const contact_map_type& contact_map, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
 		std::vector<uint8_t> cleartext;
 		cleartext.resize(contact_map.size() * 49);
@@ -124,7 +125,7 @@ namespace fscp
 
 		cleartext.resize(std::distance(cleartext.begin(), ptr));
 
-		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, &cleartext[0], cleartext.size(), enc_key, enc_key_len, MESSAGE_TYPE_CONTACT);
+		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, &cleartext[0], cleartext.size(), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT);
 	}
 
 	std::vector<hash_type> data_message::parse_hash_list(void* buf, size_t buflen)
@@ -244,13 +245,13 @@ namespace fscp
 		}
 	}
 
-	size_t data_message::get_cleartext(void* buf, size_t buf_len, session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len) const
+	size_t data_message::get_cleartext(void* buf, size_t buf_len, session_number_type session_number, data_message::calg_t cipher_algorithm, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len) const
 	{
 		assert(enc_key);
 
 		if (buf)
 		{
-			const iv_type iv = compute_iv(session_number, sequence_number());
+			const iv_type iv = compute_iv(nonce_prefix, nonce_prefix_len, session_number, sequence_number());
 
 			cryptoplus::cipher::cipher_context cipher_context;
 
@@ -273,11 +274,11 @@ namespace fscp
 		}
 	}
 
-	size_t data_message::raw_write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const void* _cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len, message_type type)
+	size_t data_message::raw_write(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const void* _cleartext, size_t cleartext_len, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len, message_type type)
 	{
 		assert(enc_key);
 
-		const iv_type iv = compute_iv(session_number, _sequence_number);
+		const iv_type iv = compute_iv(nonce_prefix, nonce_prefix_len, session_number, _sequence_number);
 
 		if (buf_len < HEADER_LENGTH + sizeof(sequence_number_type) + GCM_TAG_LENGTH + sizeof(uint16_t) + (cleartext_len + cipher_algorithm.block_size()))
 		{
