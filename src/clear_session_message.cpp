@@ -49,9 +49,9 @@
 
 namespace fscp
 {
-	size_t clear_session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const challenge_type& _challenge, cipher_algorithm_type calg, message_digest_algorithm_type mdalg, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len)
+	size_t clear_session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const challenge_type& _challenge, cipher_algorithm_type calg, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
-		const size_t result_size = MIN_BODY_LENGTH + seal_key_len + enc_key_len;
+		const size_t result_size = MIN_BODY_LENGTH + enc_key_len + nonce_prefix_len;
 
 		if (buf_len < result_size)
 		{
@@ -61,12 +61,12 @@ namespace fscp
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
 		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size, calg);
-		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t), mdalg);
+		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t), 0x00);
 		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2, htons(0x0000));
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2, htons(static_cast<uint16_t>(seal_key_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t), seal_key, seal_key_len);
-		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + seal_key_len, htons(static_cast<uint16_t>(enc_key_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + seal_key_len + sizeof(uint16_t), enc_key, enc_key_len);
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2, htons(static_cast<uint16_t>(enc_key_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t), enc_key, enc_key_len);
+		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + enc_key_len, htons(static_cast<uint16_t>(nonce_prefix_len)));
+		std::memcpy(static_cast<uint8_t*>(buf) + sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + enc_key_len + sizeof(uint16_t), nonce_prefix, nonce_prefix_len);
 
 		return result_size;
 	}
@@ -79,12 +79,12 @@ namespace fscp
 			throw std::runtime_error("buf_len");
 		}
 
-		if (buf_len < MIN_BODY_LENGTH + seal_key_size())
+		if (buf_len < MIN_BODY_LENGTH + encryption_key_size())
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		if (buf_len < MIN_BODY_LENGTH + seal_key_size() + encryption_key_size())
+		if (buf_len < MIN_BODY_LENGTH + encryption_key_size() + nonce_prefix_size())
 		{
 			throw std::runtime_error("buf_len");
 		}

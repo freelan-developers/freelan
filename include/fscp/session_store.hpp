@@ -71,21 +71,19 @@ namespace fscp
 			 * \brief Create a new random session store.
 			 * \param session_number The session number.
 			 * \param cipher_algorithm The cipher algorithm.
-			 * \param message_digest_algorithm The message digest algorithm.
 			 */
-			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const message_digest_algorithm_type& message_digest_algorithm);
+			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm);
 
 			/**
 			 * \brief Create a new session store.
 			 * \param session_number The session number.
 			 * \param cipher_algorithm The cipher algorithm.
-			 * \param message_digest_algorithm The message digest algorithm.
-			 * \param seal_key The seal key.
-			 * \param seal_key_len The seal key length.
 			 * \param enc_key The encryption key.
 			 * \param enc_key_len The encryption key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 */
-			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const message_digest_algorithm_type& message_digest_algorithm, const void* seal_key, size_t seal_key_len, const void* enc_key, size_t enc_key_len);
+			session_store(session_number_type session_number, const cipher_algorithm_type& cipher_algorithm, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len);
 
 			/**
 			 * \brief Get the session number.
@@ -100,24 +98,6 @@ namespace fscp
 			const cipher_algorithm_type& cipher_algorithm() const;
 
 			/**
-			 * \brief Get the message digest algorithm.
-			 * \return The message digest algorithm.
-			 */
-			const message_digest_algorithm_type& message_digest_algorithm() const;
-
-			/**
-			 * \brief Get the seal key.
-			 * \return The seal key.
-			 */
-			const uint8_t* seal_key() const;
-
-			/**
-			 * \brief Get the seal key size.
-			 * \return The seal key size.
-			 */
-			size_t seal_key_size() const;
-
-			/**
 			 * \brief Get the encryption key.
 			 * \return The encryption key.
 			 */
@@ -128,6 +108,18 @@ namespace fscp
 			 * \return The encryption key size.
 			 */
 			size_t encryption_key_size() const;
+
+			/**
+			 * \brief Get the nonce prefix.
+			 * \return The nonce prefix.
+			 */
+			const uint8_t* nonce_prefix() const;
+
+			/**
+			 * \brief Get the nonce prefix size.
+			 * \return The nonce prefix size.
+			 */
+			size_t nonce_prefix_size() const;
 
 			/**
 			 * \brief Get the sequence number.
@@ -160,11 +152,15 @@ namespace fscp
 			 */
 			typedef std::vector<uint8_t> key_type;
 
+			/**
+			 * \brief The nonce prefix type.
+			 */
+			typedef std::vector<uint8_t> nonce_prefix_type;
+
 			session_number_type m_session_number;
 			cipher_algorithm_type m_cipher_algorithm;
-			message_digest_algorithm_type m_message_digest_algorithm;
-			key_type m_seal_key;
 			key_type m_enc_key;
+			nonce_prefix_type m_nonce_prefix;
 			sequence_number_type m_sequence_number;
 	};
 
@@ -178,21 +174,6 @@ namespace fscp
 		return m_cipher_algorithm;
 	}
 
-	inline const message_digest_algorithm_type& session_store::message_digest_algorithm() const
-	{
-		return m_message_digest_algorithm;
-	}
-
-	inline const uint8_t* session_store::seal_key() const
-	{
-		return &m_seal_key[0];
-	}
-
-	inline size_t session_store::seal_key_size() const
-	{
-		return m_seal_key.size();
-	}
-
 	inline const uint8_t* session_store::encryption_key() const
 	{
 		return &m_enc_key[0];
@@ -201,6 +182,16 @@ namespace fscp
 	inline size_t session_store::encryption_key_size() const
 	{
 		return m_enc_key.size();
+	}
+
+	inline const uint8_t* session_store::nonce_prefix() const
+	{
+		return &m_nonce_prefix[0];
+	}
+
+	inline size_t session_store::nonce_prefix_size() const
+	{
+		return m_nonce_prefix.size();
 	}
 
 	inline sequence_number_type session_store::sequence_number() const
