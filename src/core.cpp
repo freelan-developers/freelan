@@ -434,7 +434,7 @@ namespace freelan
 		return false;
 	}
 
-	bool core::on_session_request(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_cap, const fscp::message_digest_algorithm_list_type& mdalg_cap, bool default_accept)
+	bool core::on_session_request(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_cap, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << ".";
 
@@ -448,15 +448,6 @@ namespace freelan
 			}
 
 			m_logger(LL_DEBUG) << "Cipher algorithm capabilities:" << oss.str();
-
-			oss.str("");
-
-			BOOST_FOREACH(const fscp::message_digest_algorithm_type& mdalg, mdalg_cap)
-			{
-				oss << " " << mdalg;
-			}
-
-			m_logger(LL_DEBUG) << "Message digest algorithm capabilities:" << oss.str();
 		}
 
 		if (default_accept)
@@ -755,11 +746,10 @@ namespace freelan
 		m_server.reset(new fscp::server(m_io_service, *m_configuration.security.identity));
 
 		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
-		m_server->set_message_digest_capabilities(m_configuration.fscp.message_digest_capabilities);
 
 		m_server->set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
 		m_server->set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
-		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3, _4));
+		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3));
 		m_server->set_session_failed_callback(boost::bind(&core::on_session_failed, this, _1, _2, _3, _4));
 		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
@@ -785,23 +775,9 @@ namespace freelan
 		assert(m_server);
 
 		const unsigned int default_mtu_value = 1500;
-		const size_t static_payload_size = 20 + 8 + 4 + 10; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
+		const size_t static_payload_size = 20 + 8 + 4 + 22; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
 
-		size_t max_iv_size = 0;
-
-		BOOST_FOREACH(fscp::cipher_algorithm_type calg, m_server->get_cipher_capabilities())
-		{
-			max_iv_size = std::max(max_iv_size, calg.to_cipher_algorithm().iv_length());
-		}
-
-		size_t max_hmac_size = 0;
-
-		BOOST_FOREACH(fscp::message_digest_algorithm_type mdalg, m_server->get_message_digest_capabilities())
-		{
-			max_hmac_size = std::max(max_hmac_size, mdalg.to_hmac_size());
-		}
-
-		return default_mtu_value - static_payload_size - max_iv_size - max_hmac_size;
+		return default_mtu_value - static_payload_size;
 	}
 
 	void core::on_proxy_data(boost::asio::const_buffer data)

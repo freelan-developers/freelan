@@ -250,11 +250,6 @@ namespace freelan
 		 * \brief The list of allowed cipher algorithms.
 		 */
 		fscp::cipher_algorithm_list_type cipher_capabilities;
-
-		/**
-		 * \brief The list of allowed message digest algorithms.
-		 */
-		fscp::message_digest_algorithm_list_type message_digest_capabilities;
 	};
 
 	/**

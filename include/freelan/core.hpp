@@ -290,7 +290,7 @@ namespace freelan
 			bool on_hello_request(const ep_type&, bool);
 			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
 			bool on_presentation(const ep_type&, cert_type, cert_type, bool);
-			bool on_session_request(const ep_type&, const fscp::cipher_algorithm_list_type&, const fscp::message_digest_algorithm_list_type&, bool);
+			bool on_session_request(const ep_type&, const fscp::cipher_algorithm_list_type&, bool);
 			void on_session_failed(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void on_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void on_session_lost(const ep_type&);
