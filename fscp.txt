@@ -217,6 +217,8 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   enc_key_len   |     enc_key     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
+                 |nonce_prefix_len |  nonce_prefix   |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is not sent in clear-text. It is first ciphered using the
    public PKE of the target host, then the ciphertext is signed using
@@ -268,6 +270,12 @@ Abstract
    The enc_key field is a enc_key_len bytes long encryption key used for
    message cipherment. In the next sections, this key will be referred
    as KE.
+
+   The nonce_prefix_len indicates the size of the nonce_prefix field. It
+   can be anything, but a value of 8 bytes is recommended.
+
+   The nonce_prefix field is a random value that will be prepended to
+   the session and sequence number when generating the nonce.
 
    The ct_cnt field indicates the count of ciphertext blocks in the ct
    field.
@@ -334,7 +342,8 @@ Abstract
    using the target host session cipher key.
 
    The nonce used for the generation of the ciphertext is a
-   8 bytes concatenation of the session_number and the sequence_number.
+   concatenation of the session nonce_prefix, the session_number and the
+   sequence_number.
 
    If the decipherment of the ciphertext fails, the message MUST be
    ignored.
