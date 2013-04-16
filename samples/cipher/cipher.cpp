@@ -40,7 +40,7 @@ void cipher(const std::string& name)
 
 		cryptoplus::cipher::cipher_stream stream(buffer_size(data) + algorithm.block_size());
 
-		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, buffer_cast<uint8_t>(key), buffer_size(key), buffer_cast<uint8_t>(iv), buffer_size(iv));
+		stream.initialize(algorithm, cryptoplus::cipher::cipher_stream::encrypt, buffer_cast<uint8_t>(key), buffer_size(key), buffer_cast<uint8_t>(iv));
 		stream.set_padding(false);
 		stream.append(data);
 		stream.finalize();
