@@ -45,10 +45,6 @@ class MacEnvironment(PosixEnvironment):
             self.Append(LINKFLAGS='-arch')
             self.Append(LINKFLAGS='x86_64')
 
-        if not 'LIBPATH' in self.environ:
-            # If compiled from sources, additionnal libraries are in /usr/local/lib
-            self.Append(LIBPATH='/usr/local/lib')
-
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
 
