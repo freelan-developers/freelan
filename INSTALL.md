@@ -81,6 +81,10 @@ For 32 bits:
 
 > perl Configure mingw no-shared no-asm --prefix=/c/OpenSSL
 
+If you are using MingW64 to build the 32 bits version of OpenSSL, also set the following environment variable:
+
+> export CC="gcc -m32"
+
 For 64 bits:
 
 > perl Configure mingw64 no-shared no-asm --prefix=/C/OpenSSL-x64
