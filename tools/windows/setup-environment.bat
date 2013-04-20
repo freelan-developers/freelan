@@ -2,9 +2,9 @@
 
 rem General settings (you may want to adapt this)
 rem MinGW
-set MINGW_X86_ROOT=C:\MinGW32
-set MINGW_X64_ROOT=C:\MinGW
-set MINGW_VERSION=mgw46
+set MINGW_X86_ROOT=C:\MinGW64
+set MINGW_X64_ROOT=C:\MinGW64
+set MINGW_VERSION=mgw47
 
 rem MSVC
 set MSVC_VERSION=vc100
@@ -14,7 +14,7 @@ set BOOST_MINGW_X86_ROOT=C:\Boost
 set BOOST_MINGW_X64_ROOT=C:\Boost-x64
 set BOOST_MSVC_X86_ROOT=C:\Boost-VC
 set BOOST_MSVC_X64_ROOT=C:\Boost-VC-x64
-set BOOST_VERSION=1_49
+set BOOST_VERSION=1_53
 
 rem OpenSSL
 set OPENSSL_MINGW_X86_ROOT=C:\OpenSSL
