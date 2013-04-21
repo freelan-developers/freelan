@@ -369,6 +369,9 @@ namespace freelan
 
 			switch_::port_type m_tap_adapter_switch_port;
 
+			// Checks
+			bool is_banned(const boost::asio::ip::address& address) const;
+
 			// Certificate validation
 			static const int ex_data_index;
 			static int certificate_validation_callback(int, X509_STORE_CTX*);

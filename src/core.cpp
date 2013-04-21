@@ -187,6 +187,11 @@ namespace freelan
 			}
 		}
 
+		BOOST_FOREACH(const ip_network_address& network_address, m_configuration.fscp.never_contact_list)
+		{
+			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
+		}
+
 		// We start the contact loop
 		do_contact();
 		m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
@@ -394,6 +399,13 @@ namespace freelan
 	{
 		m_logger(LL_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
 
+		if (is_banned(sender.address()))
+		{
+			m_logger(LL_WARNING) << "Ignoring HELLO_REQUEST from " << sender << " as it is a banned host.";
+
+			return false;
+		}
+
 		if (default_accept)
 		{
 			m_server->async_introduce_to(sender);
@@ -423,6 +435,13 @@ namespace freelan
 		if (m_logger.level() <= LL_DEBUG)
 		{
 			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << ".";
+		}
+
+		if (is_banned(sender.address()))
+		{
+			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as it is a banned host.";
+
+			return false;
 		}
 
 		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
@@ -562,7 +581,7 @@ namespace freelan
 		if (m_configuration.fscp.accept_contacts)
 		{
 			// We check if the contact is one of our forbidden network list.
-			if (has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), target.address()))
+			if (is_banned(target.address()))
 			{
 				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << cert.subject().oneline() << " is at " << target << " but won't be contacted.";
 			}
@@ -801,6 +820,11 @@ namespace freelan
 		}
 
 		return false;
+	}
+
+	bool core::is_banned(const boost::asio::ip::address& address) const
+	{
+		return has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), address);
 	}
 
 	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
