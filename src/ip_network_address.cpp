@@ -61,20 +61,32 @@ namespace freelan
 			{
 				if (read_ip_address<AddressType>(is, ip_address))
 				{
-					if (is.good() && (is.peek() == '/'))
+					if (is.good())
 					{
-						is.ignore();
-
-						if (!read_prefix_length<AddressType>(is, prefix_length))
+						if (is.peek() == '/')
 						{
-							putback(is, ip_address + '/');
+							is.ignore();
+
+							if (!read_prefix_length<AddressType>(is, prefix_length))
+							{
+								putback(is, ip_address + '/');
+								is.setstate(std::ios_base::failbit);
+							}
+						}
+						else
+						{
+							putback(is, ip_address);
 							is.setstate(std::ios_base::failbit);
 						}
 					}
+					else if (is.eof())
+					{
+						prefix_length.clear();
+					}
 					else
 					{
-						putback(is, ip_address);
-						is.setstate(std::ios_base::failbit);
+							putback(is, ip_address);
+							is.setstate(std::ios_base::failbit);
 					}
 				}
 			}
@@ -125,7 +137,14 @@ namespace freelan
 
 		if (read_ip_address_prefix_length<AddressType>(is, ip_address, prefix_length))
 		{
-			value = base_ip_network_address<AddressType>(AddressType::from_string(ip_address), boost::lexical_cast<unsigned int>(prefix_length));
+			if (prefix_length.empty())
+			{
+				value = base_ip_network_address<AddressType>(AddressType::from_string(ip_address));
+			}
+			else
+			{
+				value = base_ip_network_address<AddressType>(AddressType::from_string(ip_address), boost::lexical_cast<unsigned int>(prefix_length));
+			}
 		}
 
 		return is;

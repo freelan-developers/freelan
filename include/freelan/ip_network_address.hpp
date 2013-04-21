@@ -74,9 +74,20 @@ namespace freelan
 			typedef AddressType address_type;
 
 			/**
+			 * \brief The single address prefix length.
+			 */
+			static const size_t single_address_prefix_length = address_type::bytes_type::static_size * 8;
+
+			/**
 			 * \brief Create an IP network address.
 			 */
-			base_ip_network_address() : m_address(), m_prefix_length(0) {};
+			base_ip_network_address() : m_address(), m_prefix_length(single_address_prefix_length) {};
+
+			/**
+			 * \brief Create an IP network address.
+			 * \param _address The address.
+			 */
+			base_ip_network_address(const address_type& _address) : m_address(_address), m_prefix_length(single_address_prefix_length) {};
 
 			/**
 			 * \brief Create an IP network address.
@@ -329,4 +340,3 @@ namespace freelan
 }
 
 #endif /* FREELAN_IP_NETWORK_ADDRESS_HPP */
-
