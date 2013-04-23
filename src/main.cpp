@@ -54,8 +54,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/function.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
 
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/error/error_strings.hpp>
@@ -77,56 +75,6 @@
 
 namespace fs = boost::filesystem;
 namespace fl = freelan;
-
-static boost::mutex stop_function_mutex;
-static boost::function<void ()> stop_function = 0;
-
-static void signal_handler(int code)
-{
-	switch (code)
-	{
-		case SIGTERM:
-		case SIGINT:
-		case SIGABRT:
-			{
-				boost::lock_guard<boost::mutex> lock(stop_function_mutex);
-
-				if (stop_function)
-				{
-					std::cerr << "Signal caught: stopping..." << std::endl;
-
-					stop_function();
-					stop_function = 0;
-				}
-				break;
-			}
-		default:
-			break;
-	}
-}
-
-static bool register_signal_handlers()
-{
-	if (signal(SIGTERM, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGTERM signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGINT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGINT signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGABRT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGABRT signals." << std::endl;
-		return false;
-	}
-
-	return true;
-}
 
 struct cli_configuration
 {
@@ -156,6 +104,18 @@ std::vector<fs::path> get_configuration_files()
 void do_log(freelan::log_level level, const std::string& msg)
 {
 	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+}
+
+void signal_handler(const boost::system::error_code& error, int signal_number, fl::core& core, int& exit_signal)
+{
+	if (!error)
+	{
+		do_log(fl::LL_WARNING, "Signal caught (" + boost::lexical_cast<std::string>(signal_number) + "): exiting...");
+
+		core.close();
+
+		exit_signal = signal_number;
+	}
 }
 
 bool parse_options(int argc, char** argv, cli_configuration& configuration)
@@ -395,7 +355,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	return true;
 }
 
-void run(const cli_configuration& configuration)
+void run(const cli_configuration& configuration, int& exit_signal)
 {
 #ifndef WINDOWS
 	boost::shared_ptr<posix::locked_pid_file> pid_file;
@@ -426,17 +386,15 @@ void run(const cli_configuration& configuration)
 
 	boost::asio::io_service io_service;
 
+	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
+
 	fl::logger logger(log_func, configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
 
 	fl::core core(io_service, configuration.fl_configuration, logger);
 
 	core.open();
 
-	boost::unique_lock<boost::mutex> lock(stop_function_mutex);
-
-	stop_function = boost::bind(&freelan::core::close, boost::ref(core));
-
-	lock.unlock();
+	signals.async_wait(boost::bind(signal_handler, _1, _2, boost::ref(core), boost::ref(exit_signal)));
 
 	logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
 
@@ -450,12 +408,6 @@ void run(const cli_configuration& configuration)
 	io_service.run();
 
 	logger(fl::LL_INFORMATION) << "Execution stopped." << std::endl;
-
-	lock.lock();
-
-	stop_function = 0;
-
-	lock.unlock();
 }
 
 int main(int argc, char** argv)
@@ -467,10 +419,7 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	if (!register_signal_handlers())
-	{
-		return EXIT_FAILURE;
-	}
+	int exit_signal = 0;
 
 	try
 	{
@@ -483,7 +432,7 @@ int main(int argc, char** argv)
 
 		if (parse_options(argc, argv, configuration))
 		{
-			run(configuration);
+			run(configuration, exit_signal);
 		}
 	}
 	catch (std::exception& ex)
@@ -492,6 +441,18 @@ int main(int argc, char** argv)
 
 		return EXIT_FAILURE;
 	}
+
+#ifndef WINDOWS
+	if (exit_signal != 0)
+	{
+		do_log(fl::LL_ERROR, "Execution aborted because of a signal (" + boost::lexical_cast<std::string>(exit_signal) + ").");
+
+		// We kill ourselves with the signal to ensure the process exits with the proprer state.
+		//
+		// This ensures that the calling process knows about this process being killed.
+		kill(getpid(), exit_signal);
+	}
+#endif
 
 	return EXIT_SUCCESS;
 }
