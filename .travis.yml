@@ -1,5 +1,7 @@
 language: cpp
-compiler: gcc
+compiler:
+    - clang
+    - gcc
 script: ./tools/linux/setup-environment.sh -c scons install samples
 branches:
     only:
