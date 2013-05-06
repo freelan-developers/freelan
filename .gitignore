@@ -5,6 +5,7 @@
 *.changes
 *.build
 .sconsign.dblite
+*.pyc
 
 # Build environment
 /.bash_history
