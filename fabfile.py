@@ -11,7 +11,7 @@ ARCHIVES_OUTPUT_DIR = 'archives'
 
 from fabric.api import *
 
-def archive():
+def archives():
     """
     Make archives of the git repositories.
     """
