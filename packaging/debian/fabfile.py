@@ -21,12 +21,12 @@ def archives():
     Make archives of the git repositories.
     """
 
-    archives_path = os.path.abspath(os.path.join(ARCHIVES_OUTPUT_DIR))
+    archives_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), ARCHIVES_OUTPUT_DIR))
 
     local('mkdir -p %s' % archives_path)
 
     for repository, attributes in REPOSITORIES.items():
-        repository_path = os.path.abspath(os.path.join('..', '..', repository))
+        repository_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), '..', '..', repository))
 
         for tag in attributes.get('tags', []):
             with lcd(repository_path):
@@ -41,7 +41,7 @@ def sources(override=False):
     Generate the source packages.
     """
 
-    sources_path = os.path.abspath(os.path.join(SOURCES_DIR))
+    sources_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), SOURCES_DIR))
     vcs_uri_pattern = 'git@github.com:freelan-developers/%(repository)s.debian.git'
 
     local('mkdir -p %s' % sources_path)
