@@ -12,6 +12,15 @@ REPOSITORIES = {
             '1.2',
         ],
     },
+    'libcryptoplus' : {
+        'tags': [
+            '1.0',
+            '1.1',
+            '1.2',
+            '1.3',
+            '2.0',
+        ],
+    },
     'libkfather': {
         'tags': [
             '1.0',
