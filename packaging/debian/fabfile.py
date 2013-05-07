@@ -5,6 +5,13 @@ The Fabric file.
 import os
 
 REPOSITORIES = {
+    'freelan-buildtools' : {
+        'tags': [
+            '1.0',
+            '1.1',
+            '1.2',
+        ],
+    },
     'libkfather': {
         'tags': [
             '1.0',
