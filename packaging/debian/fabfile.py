@@ -3,6 +3,7 @@ The Fabric file.
 """
 
 import os
+import copy
 
 REPOSITORIES = {
     'freelan-buildtools' : {
@@ -11,6 +12,7 @@ REPOSITORIES = {
             '1.1',
             '1.2',
         ],
+        'depends': [],
     },
     'libcryptoplus' : {
         'tags': [
@@ -20,15 +22,51 @@ REPOSITORIES = {
             '1.3',
             '2.0',
         ],
+        'depends': [
+            'freelan-buildtools',
+        ],
     },
     'libkfather': {
         'tags': [
             '1.0',
         ],
+        'depends': [
+            'freelan-buildtools',
+        ],
     },
 }
+
 ARCHIVES_OUTPUT_DIR = 'archives'
 SOURCES_DIR = 'sources'
+
+def get_ordered_repositories():
+    """
+    Get a list of the repositories ordered by dependencies.
+
+    The less dependent repositories go first.
+    """
+
+    result = []
+    repositories = dict((repository, copy.deepcopy(attributes.get('depends', []))) for repository, attributes in REPOSITORIES.items())
+
+    while repositories:
+        extracted = [repository for repository, depends in repositories.items() if not depends]
+
+        if not extracted:
+            raise RuntimeError('Cyclic dependency')
+
+        for x in extracted:
+            del repositories[x]
+
+        result.extend(extracted)
+
+        for depends in repositories.values():
+            depends[:] = [depend for depend in depends if depend not in extracted]
+
+    print result
+    return result
+
+# Below are the fabric commands
 
 from fabric.api import *
 
