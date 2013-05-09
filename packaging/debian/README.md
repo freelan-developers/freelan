@@ -3,7 +3,10 @@ Debian packaging
 
 This directory contains scripts to proceed to Debian packaging.
 
-`git-buildpackage` is used for this task.
+The tools used for this task are:
+
+* `git-buildpackage` and `pristine-tar` to generate and build Debian source and binary packages.
+* `mini-dinstall` and `dput` to update the local Debian repository (necessary for inter-package dependencies).
 
 Configuration
 -------------

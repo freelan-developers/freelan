@@ -2,3 +2,5 @@ sources/
 archives/
 chroots/
 build/
+repository/
+incoming/

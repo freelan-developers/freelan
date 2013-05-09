@@ -5,6 +5,14 @@ The Fabric file.
 import os
 import copy
 
+CONFIGURATION_DIR = 'configuration'
+ARCHIVES_DIR = 'archives'
+SOURCES_DIR = 'sources'
+CHROOTS_DIR = 'chroots'
+BUILD_DIR = 'build'
+REPOSITORY_DIR = 'repository'
+INCOMING_DIR = 'incoming'
+
 REPOSITORIES = {
     'freelan-buildtools' : {
         'tags': [
@@ -36,13 +44,15 @@ REPOSITORIES = {
     },
 }
 
-ARCHIVES_OUTPUT_DIR = 'archives'
-SOURCES_DIR = 'sources'
-CHROOTS_DIR = 'chroots'
-
 DISTRIBUTIONS = [
     'sid',
 ]
+
+CONFIGURATION_FILES = {
+    'gbp.conf': '.gbp.conf',
+    'mini-dinstall.conf': '.mini-dinstall.conf',
+    'dput.cf': '.dput.cf',
+}
 
 def get_ordered_repositories():
     """
@@ -71,6 +81,26 @@ def get_ordered_repositories():
     print result
     return result
 
+def get_options():
+    """
+    Get a dictionary of all the sensible paths.
+    """
+
+    paths_aliases = {
+        'configuration_path': CONFIGURATION_DIR,
+        'archives_path': ARCHIVES_DIR,
+        'sources_path': SOURCES_DIR,
+        'chroots_path': CHROOTS_DIR,
+        'build_path': BUILD_DIR,
+        'repository_path': REPOSITORY_DIR,
+        'incoming_path': INCOMING_DIR,
+    }
+
+    def get_dir_path(_dir):
+        return os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), _dir))
+
+    return dict(map(lambda x: (x[0], get_dir_path(x[1])), paths_aliases.items()))
+
 # Below are the fabric commands
 
 from fabric.api import *
@@ -80,7 +110,9 @@ def archives():
     Make archives of the git repositories.
     """
 
-    archives_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), ARCHIVES_OUTPUT_DIR))
+    options = get_options()
+
+    archives_path = options['archives_path']
 
     local('mkdir -p %s' % archives_path)
 
@@ -100,7 +132,9 @@ def sources(override=False):
     Generate the source packages.
     """
 
-    sources_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), SOURCES_DIR))
+    options = get_options()
+
+    sources_path = options['sources_path']
     vcs_uri_pattern = 'git@github.com:freelan-developers/%(repository)s.debian.git'
 
     local('mkdir -p %s' % sources_path)
@@ -125,7 +159,9 @@ def chroots(override=False):
     Create chroots.
     """
 
-    chroots_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), CHROOTS_DIR))
+    options = get_options()
+
+    chroots_path = options['chroots_path']
 
     local('mkdir -p %s' % chroots_path)
 
@@ -141,3 +177,44 @@ def chroots(override=False):
             local('[ -d %(distribution)s ] || cowbuilder --update --basepath %(distribution)s' % {
                 'distribution': distribution,
             })
+
+def configure():
+    """
+    Copy and populate the configuration file.
+    """
+
+    options = get_options()
+
+    configuration_path = options['configuration_path']
+    home_path = os.path.expanduser('~')
+
+    for source, target in CONFIGURATION_FILES.items():
+        source_path = os.path.join(configuration_path, source)
+        target_path = os.path.join(home_path, target)
+
+        print('Copying %s to %s ...' % (source_path, target_path))
+
+        with open(source_path) as original_file:
+            content = original_file.read()
+
+        for option, value in options.items():
+            content = content.replace('%%%s%%' % option, value)
+
+        with open(target_path, 'w') as target_file:
+            target_file.write(content)
+
+def repository():
+    """
+    Create and/or update the repository.
+    """
+
+    options = get_options()
+
+    incoming_path = options['incoming_path']
+    repository_path = options['repository_path']
+
+    local('mkdir -p %s' % incoming_path)
+
+    local('[ -d %(repository)s ] || mini-dinstall -b %(repository)s' % {
+        'repository': repository_path,
+    })
