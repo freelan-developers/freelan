@@ -38,6 +38,11 @@ REPOSITORIES = {
 
 ARCHIVES_OUTPUT_DIR = 'archives'
 SOURCES_DIR = 'sources'
+CHROOTS_DIR = 'chroots'
+
+DISTRIBUTIONS = [
+    'sid',
+]
 
 def get_ordered_repositories():
     """
@@ -113,4 +118,26 @@ def sources(override=False):
             local('[ -d %(repository)s.debian ] || git clone %(uri)s' % {
                 'uri': vcs_uri,
                 'repository': repository,
+            })
+
+def chroots(override=False):
+    """
+    Create chroots.
+    """
+
+    chroots_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), CHROOTS_DIR))
+
+    local('mkdir -p %s' % chroots_path)
+
+    for distribution in DISTRIBUTIONS:
+        with lcd(chroots_path):
+            if override:
+                local('rm -rf %s' % distribution)
+
+            local('[ -d %(distribution)s ] || cowbuilder --create --basepath %(distribution)s' % {
+                'distribution': distribution,
+            })
+
+            local('[ -d %(distribution)s ] || cowbuilder --update --basepath %(distribution)s' % {
+                'distribution': distribution,
             })
