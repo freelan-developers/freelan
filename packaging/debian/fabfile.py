@@ -15,29 +15,17 @@ INCOMING_DIR = 'incoming'
 
 REPOSITORIES = {
     'freelan-buildtools' : {
-        'tags': [
-            '1.0',
-            '1.1',
-            '1.2',
-        ],
+        'tag': '1.2',
         'depends': [],
     },
     'libcryptoplus' : {
-        'tags': [
-            '1.0',
-            '1.1',
-            '1.2',
-            '1.3',
-            '2.0',
-        ],
+        'tag': '2.0',
         'depends': [
             'freelan-buildtools',
         ],
     },
     'libkfather': {
-        'tags': [
-            '1.0',
-        ],
+        'tag': '1.0',
         'depends': [
             'freelan-buildtools',
         ],
@@ -119,7 +107,9 @@ def archives():
     for repository, attributes in REPOSITORIES.items():
         repository_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), '..', '..', repository))
 
-        for tag in attributes.get('tags', []):
+        tag = attributes.get('tag')
+
+        if tag:
             with lcd(repository_path):
                 local('git archive %(tag)s | gzip > %(output_dir)s/%(repository)s_%(tag)s.orig.tar.gz' % {
                     'repository': repository,
