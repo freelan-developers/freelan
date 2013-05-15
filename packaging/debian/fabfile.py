@@ -11,7 +11,6 @@ SOURCES_DIR = 'sources'
 CHROOTS_DIR = 'chroots'
 BUILD_DIR = 'build'
 REPOSITORY_DIR = 'repository'
-INCOMING_DIR = 'incoming'
 
 REPOSITORIES = {
     'freelan-buildtools' : {
@@ -35,12 +34,6 @@ REPOSITORIES = {
 DISTRIBUTIONS = [
     'sid',
 ]
-
-CONFIGURATION_FILES = {
-    'gbp.conf': '.gbp.conf',
-    'mini-dinstall.conf': '.mini-dinstall.conf',
-    'dput.cf': '.dput.cf',
-}
 
 def get_ordered_repositories():
     """
@@ -81,13 +74,35 @@ def get_options():
         'chroots_path': CHROOTS_DIR,
         'build_path': BUILD_DIR,
         'repository_path': REPOSITORY_DIR,
-        'incoming_path': INCOMING_DIR,
     }
 
     def get_dir_path(_dir):
         return os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), _dir))
 
     return dict(map(lambda x: (x[0], get_dir_path(x[1])), paths_aliases.items()))
+
+def copy_configuration(source, target):
+    """
+    Copy a configuration file from source to target, replacing content with options if needed.
+    """
+
+    options = get_options()
+
+    target = os.path.expanduser(target)
+
+    for option, value in options.items():
+        target = target.replace('%%%s%%' % option, value)
+
+    print('Copying %s to %s ...' % (source, target))
+
+    with open(source) as original_file:
+        content = original_file.read()
+
+    for option, value in options.items():
+        content = content.replace('%%%s%%' % option, value)
+
+    with open(target, 'w') as target_file:
+        target_file.write(content)
 
 # Below are the fabric commands
 
@@ -168,43 +183,20 @@ def chroots(override=False):
                 'distribution': distribution,
             })
 
-def configure():
-    """
-    Copy and populate the configuration file.
-    """
-
-    options = get_options()
-
-    configuration_path = options['configuration_path']
-    home_path = os.path.expanduser('~')
-
-    for source, target in CONFIGURATION_FILES.items():
-        source_path = os.path.join(configuration_path, source)
-        target_path = os.path.join(home_path, target)
-
-        print('Copying %s to %s ...' % (source_path, target_path))
-
-        with open(source_path) as original_file:
-            content = original_file.read()
-
-        for option, value in options.items():
-            content = content.replace('%%%s%%' % option, value)
-
-        with open(target_path, 'w') as target_file:
-            target_file.write(content)
-
-def repository():
+def repository(override=False):
     """
     Create and/or update the repository.
     """
 
     options = get_options()
 
-    incoming_path = options['incoming_path']
     repository_path = options['repository_path']
+    configuration_path = options['configuration_path']
 
-    local('mkdir -p %s' % incoming_path)
+    if override:
+        local('rm -rf %s' % repository_path)
 
-    local('[ -d %(repository)s ] || mini-dinstall -b %(repository)s' % {
-        'repository': repository_path,
-    })
+    local('mkdir -p %s' % repository_path)
+    local('mkdir -p %s/conf' % repository_path)
+    local('mkdir -p %s/incoming' % repository_path)
+    local('cp %s/distributions %s/conf/' % (configuration_path, repository_path))

@@ -1,0 +1,8 @@
+Origin: freelan packaging repository
+Label: freelan packaging repository
+Suite: unstable
+Codename: unstable
+Version: all
+Architectures: i386 amd64 source
+Components: main
+Description: freelan packaging repository

@@ -6,7 +6,6 @@ This directory contains scripts to proceed to Debian packaging.
 The tools used for this task are:
 
 * `git-buildpackage` and `pristine-tar` to generate and build Debian source and binary packages.
-* `mini-dinstall` and `dput` to update the local Debian repository (necessary for inter-package dependencies).
 
 Configuration
 -------------
@@ -23,3 +22,7 @@ While you may find all this information in the man pages, here are some useful o
 Just use the `-uc` and `-us` options, like so:
 
     git buildpackage -us -uc
+
+To generate only source packages (recommended if you intend to use cowbuilder/pbuilder):
+
+    git buildpackage -S
