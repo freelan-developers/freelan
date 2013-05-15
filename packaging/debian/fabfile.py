@@ -91,6 +91,7 @@ def copy_configuration(source, target):
     target = os.path.expanduser(target)
 
     for option, value in options.items():
+        source = source.replace('%%%s%%' % option, value)
         target = target.replace('%%%s%%' % option, value)
 
     print('Copying %s to %s ...' % (source, target))
@@ -158,6 +159,13 @@ def sources(override=False):
                 'uri': vcs_uri,
                 'repository': repository,
             })
+
+def configure():
+    """
+    Copy and fill the configuration files were appropriate.
+    """
+
+    copy_configuration('%configuration_path%/gbp.conf', '~/.gbp.conf')
 
 def chroots(override=False):
     """
