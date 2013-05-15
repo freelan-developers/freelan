@@ -1,0 +1,2 @@
+BINDMOUNTS="%repository_path%"
+OTHERMIRROR="deb file:%repository_path% unstable main"

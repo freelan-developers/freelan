@@ -8,7 +8,6 @@ import copy
 CONFIGURATION_DIR = 'configuration'
 ARCHIVES_DIR = 'archives'
 SOURCES_DIR = 'sources'
-CHROOTS_DIR = 'chroots'
 BUILD_DIR = 'build'
 REPOSITORY_DIR = 'repository'
 
@@ -30,10 +29,6 @@ REPOSITORIES = {
         ],
     },
 }
-
-DISTRIBUTIONS = [
-    'sid',
-]
 
 def get_ordered_repositories():
     """
@@ -71,7 +66,6 @@ def get_options():
         'configuration_path': CONFIGURATION_DIR,
         'archives_path': ARCHIVES_DIR,
         'sources_path': SOURCES_DIR,
-        'chroots_path': CHROOTS_DIR,
         'build_path': BUILD_DIR,
         'repository_path': REPOSITORY_DIR,
     }
@@ -81,9 +75,9 @@ def get_options():
 
     return dict(map(lambda x: (x[0], get_dir_path(x[1])), paths_aliases.items()))
 
-def copy_configuration(source, target):
+def copy_file(source, target):
     """
-    Copy a configuration file from source to target, replacing content with options if needed.
+    Copy a file from source to target, replacing content with options if needed.
     """
 
     options = get_options()
@@ -165,28 +159,16 @@ def configure():
     Copy and fill the configuration files were appropriate.
     """
 
-    copy_configuration('%configuration_path%/gbp.conf', '~/.gbp.conf')
+    copy_file('%configuration_path%/gbp.conf', '~/.gbp.conf')
+    copy_file('%configuration_path%/pbuilderrc', '~/.pbuilderrc')
 
-def chroots(override=False):
+def cowbuilder(override=False):
     """
-    Create chroots.
+    Create the cowbuilder environment.
     """
 
-    options = get_options()
+    if override:
+        local('rm -rf /var/cache/pbuilder/base.cow')
 
-    chroots_path = options['chroots_path']
+    local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --update --config ~/.pbuilderrc || sudo cowbuilder --create --config ~/.pbuilderrc ')
 
-    local('mkdir -p %s' % chroots_path)
-
-    for distribution in DISTRIBUTIONS:
-        with lcd(chroots_path):
-            if override:
-                local('rm -rf %s' % distribution)
-
-            local('[ -d %(distribution)s ] || cowbuilder --create --basepath %(distribution)s' % {
-                'distribution': distribution,
-            })
-
-            local('[ -d %(distribution)s ] || cowbuilder --update --basepath %(distribution)s' % {
-                'distribution': distribution,
-            })
