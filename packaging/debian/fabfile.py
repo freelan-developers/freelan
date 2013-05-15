@@ -182,21 +182,3 @@ def chroots(override=False):
             local('[ -d %(distribution)s ] || cowbuilder --update --basepath %(distribution)s' % {
                 'distribution': distribution,
             })
-
-def repository(override=False):
-    """
-    Create and/or update the repository.
-    """
-
-    options = get_options()
-
-    repository_path = options['repository_path']
-    configuration_path = options['configuration_path']
-
-    if override:
-        local('rm -rf %s' % repository_path)
-
-    local('mkdir -p %s' % repository_path)
-    local('mkdir -p %s/conf' % repository_path)
-    local('mkdir -p %s/incoming' % repository_path)
-    local('cp %s/distributions %s/conf/' % (configuration_path, repository_path))

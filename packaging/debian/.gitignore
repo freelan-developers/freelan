@@ -1,6 +1,5 @@
 sources/
 archives/
-chroots/
 build/
-repository/
-incoming/
+repository/db/
+repository/dists/
