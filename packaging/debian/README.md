@@ -30,6 +30,12 @@ To generate only source packages (recommended if you intend to use cowbuilder/pb
 Using GPG
 ---------
 
-Ensure your GPG keys were imported, and that you specified your key in your `.bashrc` file, like so:
+Ensure your GPG keys were imported, and that you specified your key in your `.bashrc` file (replace the key id as appropriate):
 
     export GPGKEY=6198217D
+
+Also you probably should set those environment variables in your `.bashrc` as well (replace the values as appropriate):
+
+    export DEBEMAIL="julien.kauffmann@freelan.org"
+    export DEBFULLNAME="Julien Kauffmann"
+    export DEBSIGN_KEYID=${GPGKEY}
