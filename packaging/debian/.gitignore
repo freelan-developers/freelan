@@ -1,5 +1,4 @@
-sources/
-archives/
-build/
-repository/db/
-repository/dists/
+/sources/
+/archives/
+/repository/db/
+/repository/dists/
