@@ -4,6 +4,7 @@ The Fabric file.
 
 import os
 import copy
+from glob import glob
 
 CONFIGURATION_DIR = 'configuration'
 ARCHIVES_DIR = 'archives'
@@ -102,6 +103,8 @@ def copy_file(source, target):
 # Below are the fabric commands
 
 from fabric.api import *
+from fabric.utils import *
+from fabric.operations import *
 
 def archives():
     """
@@ -202,3 +205,38 @@ def buildpackage(unsigned=False):
         local('git buildpackage -S -uc -us')
     else:
         local('git buildpackage -S')
+
+def binary(unsigned=False):
+    """
+    Build binary packages.
+    """
+
+    options = __get_options()
+
+    build_path = options['build_path']
+    source_build_path = os.path.join(build_path, 'sources')
+    source_packages = glob(os.path.join(source_build_path, '*.dsc'))
+
+    if not source_packages:
+        warn('No source packages (*.dsc) found in "%s". Did you forget to call `fab buildpackage` ?' % source_build_path)
+
+    else:
+        if len(source_packages) > 1:
+            puts('Which package do you want to build ?')
+
+            for item in enumerate(source_packages):
+                puts(indent('[%s] %s' % item, 2))
+
+            choice = prompt('Your choice: ', validate=lambda x: int(x))
+            source_package = source_packages[choice]
+
+        else:
+            source_package = source_packages[0]
+
+            if not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
+                puts('Aborting.')
+                source_package = None
+
+        if source_package:
+            puts('Building %s...' % source_package)
+            local('sudo cowbuilder --configfile ~/.pbuilderrc --build %s' % source_package)
