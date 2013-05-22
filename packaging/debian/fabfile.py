@@ -186,3 +186,19 @@ def repository(override=False):
             local('git clean -f -x -d')
 
         local('reprepro -b . export')
+
+def buildpackage(unsigned=False):
+    """
+    Build a package.
+    """
+
+    options = __get_options()
+
+    build_path = options['build_path']
+
+    local('mkdir -p %s' % build_path)
+
+    if unsigned:
+        local('git buildpackage -S -uc -us')
+    else:
+        local('git buildpackage -S')
