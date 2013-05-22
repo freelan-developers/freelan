@@ -171,7 +171,7 @@ def cowbuilder(override=False):
     """
 
     if override:
-        local('rm -rf /var/cache/pbuilder/base.cow')
+        local('sudo rm -rf /var/cache/pbuilder/base.cow')
 
     local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --update --config ~/.pbuilderrc || sudo cowbuilder --create --config ~/.pbuilderrc ')
 
