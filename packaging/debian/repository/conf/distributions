@@ -6,3 +6,4 @@ Version: all
 Architectures: i386 amd64 source
 Components: main
 Description: freelan packaging repository
+SignWith: 5EC3F6D9

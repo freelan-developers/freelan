@@ -39,3 +39,13 @@ Also you probably should set those environment variables in your `.bashrc` as we
     export DEBEMAIL="julien.kauffmann@freelan.org"
     export DEBFULLNAME="Julien Kauffmann"
     export DEBSIGN_KEYID=${GPGKEY}
+
+### The test Debian repository
+
+The test Debian repository is configured to use a GPG key located at: `repository/gpg.key`
+
+The passphrase for this key is: `freelan`
+
+To properly use it, you must first import it to your local GPG store using the following command:
+
+    gpg --import repository/gpg.key
