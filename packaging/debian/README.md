@@ -26,3 +26,10 @@ Just use the `-uc` and `-us` options, like so:
 To generate only source packages (recommended if you intend to use cowbuilder/pbuilder):
 
     git buildpackage -S
+
+Using GPG
+---------
+
+Ensure your GPG keys were imported, and that you specified your key in your `.bashrc` file, like so:
+
+    export GPGKEY=6198217D
