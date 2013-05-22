@@ -214,11 +214,13 @@ def binary(unsigned=False):
     options = __get_options()
 
     build_path = options['build_path']
-    source_build_path = os.path.join(build_path, 'sources')
-    source_packages = glob(os.path.join(source_build_path, '*.dsc'))
+    sources_build_path = os.path.join(build_path, 'sources')
+    binaries_build_path = os.path.join(build_path, 'binaries')
+    source_packages = glob(os.path.join(sources_build_path, '*.dsc'))
+    repository_path = options['repository_path']
 
     if not source_packages:
-        warn('No source packages (*.dsc) found in "%s". Did you forget to call `fab buildpackage` ?' % source_build_path)
+        warn('No source packages (*.dsc) found in "%s". Did you forget to call `fab buildpackage` ?' % sources_build_path)
 
     else:
         if len(source_packages) > 1:
@@ -238,5 +240,14 @@ def binary(unsigned=False):
                 source_package = None
 
         if source_package:
+            package_name = os.path.splitext(os.path.basename(source_package))[0]
+            architecture = local('dpkg --print-architecture', capture=True)
+            target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
+
             puts('Building %s...' % source_package)
-            local('sudo cowbuilder --configfile ~/.pbuilderrc --build %s' % source_package)
+            local('sudo cowbuilder --configfile ~/.pbuilderrc --build %(source_package)s && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
+                'source_package': source_package,
+                'repository_path': repository_path,
+                'distribution': 'unstable',
+                'target_changes_file': target_changes_file,
+            })
