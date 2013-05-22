@@ -30,7 +30,7 @@ REPOSITORIES = {
     },
 }
 
-def get_ordered_repositories():
+def __get_ordered_repositories():
     """
     Get a list of the repositories ordered by dependencies.
 
@@ -57,7 +57,7 @@ def get_ordered_repositories():
     print result
     return result
 
-def get_options():
+def __get_options():
     """
     Get a dictionary of all the sensible paths.
     """
@@ -80,7 +80,7 @@ def copy_file(source, target):
     Copy a file from source to target, replacing content with options if needed.
     """
 
-    options = get_options()
+    options = __get_options()
 
     target = os.path.expanduser(target)
 
@@ -108,7 +108,7 @@ def archives():
     Make archives of the git repositories.
     """
 
-    options = get_options()
+    options = __get_options()
 
     archives_path = options['archives_path']
 
@@ -132,7 +132,7 @@ def sources(override=False):
     Generate the source packages.
     """
 
-    options = get_options()
+    options = __get_options()
 
     sources_path = options['sources_path']
     vcs_uri_pattern = 'git@github.com:freelan-developers/%(repository)s.debian.git'
