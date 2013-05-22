@@ -172,3 +172,17 @@ def cowbuilder(override=False):
 
     local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --update --config ~/.pbuilderrc || sudo cowbuilder --create --config ~/.pbuilderrc ')
 
+def repository(override=False):
+    """
+    Initializes the Debian repository.
+    """
+
+    options = __get_options()
+
+    repository_path = options['repository_path']
+
+    with lcd(repository_path):
+        if override:
+            local('git clean -f -x -d')
+
+        local('reprepro -b . export')
