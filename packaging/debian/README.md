@@ -10,7 +10,7 @@ The tools used for this task are:
 Configuration
 -------------
 
-You may file configuration sample files in the `configuration` directory.
+You can find sample configuration files in the `configuration` directory.
 
 Special usage
 -------------
