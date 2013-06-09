@@ -23,10 +23,17 @@ REPOSITORIES = {
             'freelan-buildtools',
         ],
     },
+    'libiconvplus' : {
+        'tag': '1.0',
+        'depends': [
+            'freelan-buildtools',
+        ],
+    },
     'libkfather': {
         'tag': '1.0',
         'depends': [
             'freelan-buildtools',
+            'libiconvplus',
         ],
     },
 }
