@@ -25,7 +25,7 @@ Just use the `-uc` and `-us` options, like so:
 
 To generate only source packages (recommended if you intend to use cowbuilder/pbuilder):
 
-    git buildpackage -S
+    git buildpackage -S -sa
 
 Using GPG
 ---------
