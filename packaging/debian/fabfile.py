@@ -37,7 +37,7 @@ REPOSITORIES = {
         ],
     },
     'libfscp': {
-        'tag': '2.0',
+        'tag': '2.1',
         'depends': [
             'freelan-buildtools',
             'libkfather',
