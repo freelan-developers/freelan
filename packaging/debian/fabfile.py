@@ -36,6 +36,14 @@ REPOSITORIES = {
             'libiconvplus',
         ],
     },
+    'libfscp': {
+        'tag': '2.0',
+        'depends': [
+            'freelan-buildtools',
+            'libkfather',
+            'libcryptoplus',
+        ],
+    }
 }
 
 def __get_ordered_repositories():
