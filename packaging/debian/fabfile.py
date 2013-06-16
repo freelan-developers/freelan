@@ -50,6 +50,14 @@ REPOSITORIES = {
             'freelan-buildtools',
         ],
     },
+    'libfreelan': {
+        'tag': '2.0',
+        'depends': [
+            'freelan-buildtools',
+            'libfscp',
+            'libasiotap',
+        ],
+    },
 }
 
 def __get_ordered_repositories():
