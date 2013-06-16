@@ -252,7 +252,7 @@ def binary(unsigned=False):
             target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
 
             puts('Building %s...' % source_package)
-            local('sudo cowbuilder --configfile ~/.pbuilderrc --build %(source_package)s && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
+            local('sudo cowbuilder --configfile ~/.pbuilderrc --build %(source_package)s --debbuildopts "-sa" && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
                 'source_package': source_package,
                 'repository_path': repository_path,
                 'distribution': 'unstable',
