@@ -43,7 +43,13 @@ REPOSITORIES = {
             'libkfather',
             'libcryptoplus',
         ],
-    }
+    },
+    'libasiotap': {
+        'tag': '2.0',
+        'depends': [
+            'freelan-buildtools',
+        ],
+    },
 }
 
 def __get_ordered_repositories():
