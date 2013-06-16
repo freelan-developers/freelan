@@ -24,7 +24,7 @@ REPOSITORIES = {
         ],
     },
     'libiconvplus' : {
-        'tag': '1.0',
+        'tag': '1.1',
         'depends': [
             'freelan-buildtools',
         ],
