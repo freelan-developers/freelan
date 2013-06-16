@@ -28,7 +28,9 @@ else:
     libraries.append('fscp')
     libraries.append('cryptoplus')
     libraries.append('kfather')
-    libraries.append('iconvplus')
+
+    if not sys.platform.startswith('linux2'):
+        libraries.append('iconvplus')
 
 libraries.append('boost_system')
 libraries.append('boost_thread')
