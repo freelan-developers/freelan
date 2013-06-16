@@ -4,7 +4,7 @@ The main SConscript file.
 
 name = 'fscp'
 major = '2'
-minor = '1'
+minor = '0'
 libraries = []
 
 # You should not need to modify anything below this line
