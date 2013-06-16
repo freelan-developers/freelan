@@ -3,7 +3,7 @@ The main SConscript file.
 """
 
 name = 'asiotap'
-major = '1'
+major = '2'
 minor = '0'
 libraries = []
 
