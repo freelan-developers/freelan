@@ -135,6 +135,11 @@ REPOSITORIES = {
         'tag': '0.3.0',
         'provider': github(user='zzzsochi'),
     },
+    'flask-wtf': {
+        'tag': '0.8.4',
+        'upstream_tag': 'v0.8.4',
+        'provider': github(user='ajford'),
+    },
     'freelan-server': {
         'tag': '1.0',
         'depends': [
@@ -142,6 +147,7 @@ REPOSITORIES = {
             'flask-login',
             'flask-kvsession',
             'flask-gravatar',
+            'flask-wtf',
         ],
     },
 }
@@ -246,6 +252,7 @@ def archives(override=False):
     for repository, attributes in REPOSITORIES.items():
         provider = attributes.get('provider', LocalProvider())
         tag = attributes.get('tag')
+        upstream_tag = attributes.get('upstream_tag', tag)
         target = '%(output_dir)s/%(repository)s_%(tag)s.orig.tar.gz' % {
             'repository': repository,
             'tag': tag,
@@ -253,7 +260,7 @@ def archives(override=False):
         }
 
         if not os.path.isfile(target) or override:
-            provider(repository=repository, tag=tag, target=target)
+            provider(repository=repository, tag=upstream_tag, target=target)
         else:
             print 'Not downloading already existing archive: %s' % target
 
