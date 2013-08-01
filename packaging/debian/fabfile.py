@@ -152,6 +152,18 @@ REPOSITORIES = {
     },
 }
 
+def __get_dependencies(repository):
+    """
+    Get all the dependencies for the given repository, as a tree.
+    """
+
+    tree = {repository: {}}
+
+    for dependency in REPOSITORIES[repository].get('depends', []):
+        tree[repository].update(__get_dependencies(dependency))
+
+    return tree
+
 def __get_ordered_repositories():
     """
     Get a list of the repositories ordered by dependencies.
@@ -356,7 +368,14 @@ def buildpackage(unsigned=False):
     else:
         local('git buildpackage -S')
 
-def binary(unsigned=False):
+def depbinary(unsigned=False,repository=None):
+    """
+    Build binary packages with their dependencies.
+    """
+
+    return binary(unsigned=unsigned, with_dependencies=True, repository=repository)
+
+def binary(unsigned=False,with_dependencies=False,repository=None):
     """
     Build binary packages.
     """
@@ -369,15 +388,27 @@ def binary(unsigned=False):
     binaries_build_path = os.path.join(build_path, 'binaries')
     source_packages = glob(os.path.join(sources_build_path, '*.dsc'))
     repository_path = options['repository_path']
-    current_dir = os.path.abspath(os.getcwd())
 
     if not source_packages:
         warn('No source packages (*.dsc) found in "%s". Did you forget to call `fab buildpackage` ?' % sources_build_path)
 
     else:
-        if current_dir in (os.path.join(sources_path, '%s.debian') % x for x in REPOSITORIES):
-            current_repository = os.path.splitext(os.path.basename(current_dir))[0]
+        if repository:
+            current_repository = repository
+        else:
+            current_dir = os.path.abspath(os.getcwd())
+
+            if current_dir in (os.path.join(sources_path, '%s.debian') % x for x in REPOSITORIES):
+                current_repository = os.path.splitext(os.path.basename(current_dir))[0]
+
+        if current_repository:
             source_packages = filter(lambda x: os.path.basename(x).startswith(current_repository + '_'), source_packages)
+
+            if with_dependencies:
+
+                for dependency in __get_dependencies(current_repository)[current_repository]:
+                    print 'First building `%s` for `%s`...' % (dependency, current_repository)
+                    binary(unsigned=unsigned, with_dependencies=with_dependencies, repository=dependency)
 
         if len(source_packages) > 1:
             puts('Which package do you want to build ?')
@@ -385,7 +416,7 @@ def binary(unsigned=False):
             for item in enumerate(source_packages):
                 puts(indent('[%s] %s' % item, 2))
 
-            choice = prompt('Your choice: ', validate=lambda x: int(x))
+            choice = prompt('Your choice or `n` to quit: ', validate=lambda x: x if (x.lower() == 'n') else int(x))
             source_package = source_packages[choice]
 
         else:
