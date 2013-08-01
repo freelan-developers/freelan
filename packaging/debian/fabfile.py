@@ -232,7 +232,7 @@ def download(url, target):
         'target': target,
     })
 
-def archives():
+def archives(override=False):
     """
     Make archives of the git repositories.
     """
@@ -252,7 +252,10 @@ def archives():
             'output_dir': archives_path,
         }
 
-        provider(repository=repository, tag=tag, target=target)
+        if not os.path.isfile(target) or override:
+            provider(repository=repository, tag=tag, target=target)
+        else:
+            print 'Not downloading already existing archive: %s' % target
 
 def sources(override=False):
     """
