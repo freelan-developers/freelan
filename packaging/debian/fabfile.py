@@ -58,6 +58,10 @@ REPOSITORIES = {
             'libasiotap',
         ],
     },
+    'freelan-server': {
+        'tag': '1.0',
+        'depends': [],
+    },
 }
 
 def __get_ordered_repositories():
