@@ -386,7 +386,7 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
     build_path = options['build_path']
     sources_build_path = os.path.join(build_path, 'sources')
     binaries_build_path = os.path.join(build_path, 'binaries')
-    source_packages = list(sorted(glob(os.path.join(sources_build_path, '*.dsc'))))
+    source_packages = list(reversed(sorted(glob(os.path.join(sources_build_path, '*.dsc')))))
     repository_path = options['repository_path']
 
     if not source_packages:
