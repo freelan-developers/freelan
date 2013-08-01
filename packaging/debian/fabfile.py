@@ -112,9 +112,30 @@ REPOSITORIES = {
             'libasiotap',
         ],
     },
+    'flask-sqlalchemy': {
+        'tag': '1.0',
+        'provider': github(user='mitsuhiko'),
+    },
+    'flask-login': {
+        'tag': '0.2.6',
+        'provider': github(user='maxcountryman'),
+    },
+    'flask-kvsession': {
+        'tag': '0.4',
+        'provider': github(user='mbr'),
+    },
+    'flask-gravatar': {
+        'tag': '0.3.0',
+        'provider': github(user='zzzsochi'),
+    },
     'freelan-server': {
         'tag': '1.0',
-        'depends': [],
+        'depends': [
+            'flask-sqlalchemy',
+            'flask-login',
+            'flask-kvsession',
+            'flask-gravatar',
+        ],
     },
 }
 
