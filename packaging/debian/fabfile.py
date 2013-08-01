@@ -120,8 +120,15 @@ REPOSITORIES = {
         'tag': '0.2.6',
         'provider': github(user='maxcountryman'),
     },
+    'simplekv': {
+        'tag': '0.5',
+        'provider': github(user='mbr'),
+    },
     'flask-kvsession': {
         'tag': '0.4',
+        'depends': [
+            'simplekv',
+        ],
         'provider': github(user='mbr'),
     },
     'flask-gravatar': {
