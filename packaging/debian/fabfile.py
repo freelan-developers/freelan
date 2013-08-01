@@ -217,6 +217,13 @@ def cowbuilder(override=False):
 
     local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --update --config ~/.pbuilderrc || sudo cowbuilder --create --config ~/.pbuilderrc ')
 
+def cowshell():
+    """
+    Login into the cowbuilder environment.
+    """
+
+    local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --login --config ~/.pbuilderrc || echo "No cowbuilder environment found. Please create one with \'fab cowbuilder\' first."')
+
 def repository(override=False):
     """
     Initializes the Debian repository.
