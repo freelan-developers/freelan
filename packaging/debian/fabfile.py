@@ -363,16 +363,22 @@ def binary(unsigned=False):
 
     options = __get_options()
 
+    sources_path = options['sources_path']
     build_path = options['build_path']
     sources_build_path = os.path.join(build_path, 'sources')
     binaries_build_path = os.path.join(build_path, 'binaries')
     source_packages = glob(os.path.join(sources_build_path, '*.dsc'))
     repository_path = options['repository_path']
+    current_dir = os.path.abspath(os.getcwd())
 
     if not source_packages:
         warn('No source packages (*.dsc) found in "%s". Did you forget to call `fab buildpackage` ?' % sources_build_path)
 
     else:
+        if current_dir in (os.path.join(sources_path, '%s.debian') % x for x in REPOSITORIES):
+            current_repository = os.path.splitext(os.path.basename(current_dir))[0]
+            source_packages = filter(lambda x: os.path.basename(x).startswith(current_repository + '_'), source_packages)
+
         if len(source_packages) > 1:
             puts('Which package do you want to build ?')
 
