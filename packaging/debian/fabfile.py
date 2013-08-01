@@ -112,6 +112,13 @@ REPOSITORIES = {
             'libasiotap',
         ],
     },
+    'freelan': {
+        'tag': '1.1',
+        'depends': [
+            'freelan-buildtools',
+            'libfreelan',
+        ],
+    },
     'flask-sqlalchemy': {
         'tag': '1.0',
         'provider': github(user='mitsuhiko'),
