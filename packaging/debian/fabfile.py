@@ -185,7 +185,16 @@ def sources(override=False):
             if override:
                 local('rm -rf %s.debian' % repository)
 
-            local('[ -d %(repository)s.debian ] || git clone %(uri)s' % {
+            local(' || '.join([
+                '[ -d %(repository)s.debian ]',
+                '(%s)' % ' && '.join([
+                    'git clone %(uri)s',
+                    'cd %(repository)s.debian',
+                    'git checkout upstream',
+                    'git checkout pristine-tar',
+                    'git checkout master',
+                ]),
+            ]) % {
                 'uri': vcs_uri,
                 'repository': repository,
             })
