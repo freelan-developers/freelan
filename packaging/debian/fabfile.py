@@ -4,6 +4,7 @@ The Fabric file.
 
 import os
 import copy
+import urlparse
 from glob import glob
 
 CONFIGURATION_DIR = 'configuration'
@@ -12,10 +13,63 @@ SOURCES_DIR = 'sources'
 BUILD_DIR = 'build'
 REPOSITORY_DIR = 'repository'
 
+class LocalProvider(object):
+
+    """
+    The local provider.
+    """
+
+    def __call__(self, repository, tag, target):
+
+        """
+        Get the archive from a local repository.
+        """
+
+        repository_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), '..', '..', repository))
+
+        if tag:
+            with lcd(repository_path):
+                local('git archive %(tag)s | gzip > %(target)s' % {
+                    'tag': tag,
+                    'target': target,
+                })
+
+class GithubProvider(object):
+
+    """
+    A Github provider.
+    """
+
+    def __init__(self, user):
+
+        self.user = user
+
+    def __call__(self, repository, tag, target):
+
+        """
+        Download the archive from github.
+        """
+
+        url = urlparse.urlunparse([
+            'https',
+            'github.com',
+            '%(user)s/%(repository)s/archive/%(tag)s.tar.gz' % {
+                'user': self.user,
+                'repository': repository,
+                'tag': tag,
+            },
+            '',
+            '',
+            '',
+        ])
+
+        download(url=url, target=target)
+
+github = GithubProvider
+
 REPOSITORIES = {
     'freelan-buildtools' : {
         'tag': '1.2',
-        'depends': [],
     },
     'libcryptoplus' : {
         'tag': '2.0',
@@ -139,6 +193,17 @@ from fabric.api import *
 from fabric.utils import *
 from fabric.operations import *
 
+def download(url, target):
+
+    """
+    Download stuff from the web.
+    """
+
+    local('wget -O %(target)s %(url)s' % {
+        'url': url,
+        'target': target,
+    })
+
 def archives():
     """
     Make archives of the git repositories.
@@ -151,17 +216,15 @@ def archives():
     local('mkdir -p %s' % archives_path)
 
     for repository, attributes in REPOSITORIES.items():
-        repository_path = os.path.abspath(os.path.join(os.path.dirname(env.real_fabfile), '..', '..', repository))
-
+        provider = attributes.get('provider', LocalProvider())
         tag = attributes.get('tag')
+        target = '%(output_dir)s/%(repository)s_%(tag)s.orig.tar.gz' % {
+            'repository': repository,
+            'tag': tag,
+            'output_dir': archives_path,
+        }
 
-        if tag:
-            with lcd(repository_path):
-                local('git archive %(tag)s | gzip > %(output_dir)s/%(repository)s_%(tag)s.orig.tar.gz' % {
-                    'repository': repository,
-                    'tag': tag,
-                    'output_dir': archives_path,
-                })
+        provider(repository=repository, tag=tag, target=target)
 
 def sources(override=False):
     """
