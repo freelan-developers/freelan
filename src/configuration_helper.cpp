@@ -197,7 +197,6 @@ po::options_description get_switch_options()
 
 void setup_configuration(fl::configuration& configuration, const boost::filesystem::path& root, const po::variables_map& vm)
 {
-	typedef boost::asio::ip::udp::resolver::query query;
 	typedef fl::security_configuration::cert_type cert_type;
 	typedef cryptoplus::pkey::pkey pkey;
 
