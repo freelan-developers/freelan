@@ -413,6 +413,9 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
 
             if with_dependencies:
 
+                print 'First upgrading the cowbuilder environment...'
+                cowbuilder()
+
                 for dependency in __get_dependencies(current_repository)[current_repository]:
                     print 'First building `%s` for `%s`...' % (dependency, current_repository)
                     binary(unsigned=unsigned, with_dependencies=with_dependencies, repository=dependency)
