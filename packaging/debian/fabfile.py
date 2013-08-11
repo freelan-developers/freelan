@@ -372,21 +372,29 @@ def repository(override=False):
 
         local('reprepro -b . export')
 
-def buildpackage(unsigned=False):
+def buildpackage(unsigned=False, build_all=False):
     """
     Build a package.
     """
 
     options = __get_options()
 
-    build_path = options['build_path']
+    if build_all:
+        sources_path = options['sources_path']
 
-    local('mkdir -p %s' % build_path)
+        for repository in REPOSITORIES:
 
-    if unsigned:
-        local('git buildpackage -S -uc -us')
+            with lcd(os.path.join(sources_path, repository + '.debian')):
+                 buildpackage(unsigned=unsigned)
     else:
-        local('git buildpackage -S')
+        build_path = options['build_path']
+
+        local('mkdir -p %s' % build_path)
+
+        if unsigned:
+            local('git buildpackage -S -uc -us')
+        else:
+            local('git buildpackage -S')
 
 def depbinary(unsigned=False,repository=None):
     """
