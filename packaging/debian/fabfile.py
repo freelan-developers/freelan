@@ -164,6 +164,9 @@ def __get_dependencies(repository, flat=False):
     Get all the dependencies for the given repository, as a tree.
     """
 
+    if not repository in REPOSITORIES:
+        return
+
     tree = {repository: {}}
 
     for dependency in REPOSITORIES[repository].get('depends', []):
@@ -432,7 +435,7 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
         else:
             repositories = [repository]
 
-        print 'About to build %s repository/ies...' % len(repositories)
+        print 'About to build: %s' % ' '.join(repositories)
 
         for repository in repositories:
             print 'Upgrading the cowbuilder environment...'
