@@ -431,7 +431,7 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
                 repository = os.path.splitext(os.path.basename(current_dir))[0]
 
         if with_dependencies:
-            repositories = __get_dependencies(repository)
+            repositories = __get_dependencies(repository, flat=True)
         else:
             repositories = [repository]
 
