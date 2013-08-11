@@ -441,19 +441,19 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
             print 'Upgrading the cowbuilder environment...'
             cowbuilder()
 
-            source_packages = filter(lambda x: os.path.basename(x).startswith(repository + '_'), source_packages)
+            repo_source_packages = filter(lambda x: os.path.basename(x).startswith(repository + '_'), source_packages)
 
-            if len(source_packages) > 1:
+            if len(repo_source_packages) > 1:
                 puts('Which package do you want to build ?')
 
-                for item in enumerate(source_packages):
+                for item in enumerate(repo_source_packages):
                     puts(indent('[%s] %s' % item, 2))
 
                 choice = prompt('Your choice or `n` to quit: ', validate=lambda x: x if (x.lower() == 'n') else int(x))
-                source_package = source_packages[choice]
+                source_package = repo_source_packages[choice]
 
             else:
-                source_package = source_packages[0]
+                source_package = repo_source_packages[0]
 
                 if not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
                     puts('Aborting.')
