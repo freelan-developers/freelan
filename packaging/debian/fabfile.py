@@ -159,7 +159,7 @@ REPOSITORIES = {
     },
 }
 
-def __get_dependencies(repository):
+def __get_dependencies(repository, flat=False):
     """
     Get all the dependencies for the given repository, as a tree.
     """
@@ -168,6 +168,19 @@ def __get_dependencies(repository):
 
     for dependency in REPOSITORIES[repository].get('depends', []):
         tree[repository].update(__get_dependencies(dependency))
+
+    if flat:
+
+        def flatten(node, list_tree=[]):
+            for key, value in node.items():
+                flatten(value)
+
+                if not key in list_tree:
+                    list_tree.append(key)
+
+            return list_tree
+
+        return flatten(tree)
 
     return tree
 
@@ -400,51 +413,50 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
         warn('No source packages (*.dsc) found in "%s". Did you forget to call `fab buildpackage` ?' % sources_build_path)
 
     else:
-        if repository:
-            current_repository = repository
-        else:
+        if not repository:
             current_dir = os.path.abspath(os.getcwd())
 
             if current_dir in (os.path.join(sources_path, '%s.debian') % x for x in REPOSITORIES):
-                current_repository = os.path.splitext(os.path.basename(current_dir))[0]
+                repository = os.path.splitext(os.path.basename(current_dir))[0]
 
-        if current_repository:
-            source_packages = filter(lambda x: os.path.basename(x).startswith(current_repository + '_'), source_packages)
-
-            if with_dependencies:
-
-                print 'First upgrading the cowbuilder environment...'
-                cowbuilder()
-
-                for dependency in __get_dependencies(current_repository)[current_repository]:
-                    print 'First building `%s` for `%s`...' % (dependency, current_repository)
-                    binary(unsigned=unsigned, with_dependencies=with_dependencies, repository=dependency)
-
-        if len(source_packages) > 1:
-            puts('Which package do you want to build ?')
-
-            for item in enumerate(source_packages):
-                puts(indent('[%s] %s' % item, 2))
-
-            choice = prompt('Your choice or `n` to quit: ', validate=lambda x: x if (x.lower() == 'n') else int(x))
-            source_package = source_packages[choice]
-
+        if with_dependencies:
+            repositories = __get_dependencies(repository)
         else:
-            source_package = source_packages[0]
+            repositories = [repository]
 
-            if not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
-                puts('Aborting.')
-                source_package = None
+        print 'About to build %s repository/ies...' % len(repositories)
 
-        if source_package:
-            package_name = os.path.splitext(os.path.basename(source_package))[0]
-            architecture = local('dpkg --print-architecture', capture=True)
-            target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
+        for repository in repositories:
+            print 'Upgrading the cowbuilder environment...'
+            cowbuilder()
 
-            puts('Building %s...' % source_package)
-            local('sudo cowbuilder --configfile ~/.pbuilderrc --build %(source_package)s --debbuildopts "-sa" && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
-                'source_package': source_package,
-                'repository_path': repository_path,
-                'distribution': 'unstable',
-                'target_changes_file': target_changes_file,
-            })
+            source_packages = filter(lambda x: os.path.basename(x).startswith(repository + '_'), source_packages)
+
+            if len(source_packages) > 1:
+                puts('Which package do you want to build ?')
+
+                for item in enumerate(source_packages):
+                    puts(indent('[%s] %s' % item, 2))
+
+                choice = prompt('Your choice or `n` to quit: ', validate=lambda x: x if (x.lower() == 'n') else int(x))
+                source_package = source_packages[choice]
+
+            else:
+                source_package = source_packages[0]
+
+                if not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
+                    puts('Aborting.')
+                    source_package = None
+
+            if source_package:
+                package_name = os.path.splitext(os.path.basename(source_package))[0]
+                architecture = local('dpkg --print-architecture', capture=True)
+                target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
+
+                puts('Building %s...' % source_package)
+                local('sudo cowbuilder --configfile ~/.pbuilderrc --build %(source_package)s --debbuildopts "-sa" && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
+                    'source_package': source_package,
+                    'repository_path': repository_path,
+                    'distribution': 'unstable',
+                    'target_changes_file': target_changes_file,
+                })
