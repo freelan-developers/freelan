@@ -35,6 +35,7 @@ export PATH="${FREELAN_INSTALL_PREFIX}/bin:${PATH}"
 
 # Add home-brew boost installation
 BOOST_INSTALL_PREFIX=/usr/local/opt/boost
+#BOOST_INSTALL_PREFIX=/opt/boxen/homebrew/opt/boost/
 export CPLUS_INCLUDE_PATH="${BOOST_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
 export C_INCLUDE_PATH="${BOOST_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}"
 export LIBRARY_PATH="${BOOST_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
@@ -43,6 +44,7 @@ export PATH="${BOOST_INSTALL_PREFIX}/bin:${PATH}"
 
 # Add home-brew openssl installation
 OPENSSL_INSTALL_PREFIX=/usr/local/opt/openssl
+#OPENSSL_INSTALL_PREFIX=/opt/boxen/homebrew/opt/openssl
 export CPLUS_INCLUDE_PATH="${OPENSSL_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
 export C_INCLUDE_PATH="${OPENSSL_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}"
 export LIBRARY_PATH="${OPENSSL_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
