@@ -33,7 +33,7 @@ Name: spanish; MessagesFile: compiler:Languages\Spanish.isl
 Name: german; MessagesFile: compiler:Languages\German.isl
 
 [Files]
-Source: ..\..\freelan\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
+Source: ..\..\install\mingw\{#XARCH}\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
 Source: ..\..\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
 Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
