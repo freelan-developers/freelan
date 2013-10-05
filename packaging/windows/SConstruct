@@ -16,7 +16,8 @@ env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 defines = {
     'NAME': name,
     'VERSION': major + '.' + minor,
-    'ARCH': env.arch
+    'ARCH': env.arch,
+    'XARCH': 'x64' if env.arch == 'amd64' else 'x86',
 }
 
 installer = env.INNOSetup(source = 'freelan.iss', ISCC_DEFINES = defines)
