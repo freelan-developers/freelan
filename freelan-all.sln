@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.20827.3
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libkfather", "libkfather\libkfather.vcxproj", "{C86FB8A0-2171-48F6-B97E-425869A82293}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C86FB8A0-2171-48F6-B97E-425869A82293}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C86FB8A0-2171-48F6-B97E-425869A82293}.Debug|Win32.Build.0 = Debug|Win32
+		{C86FB8A0-2171-48F6-B97E-425869A82293}.Release|Win32.ActiveCfg = Release|Win32
+		{C86FB8A0-2171-48F6-B97E-425869A82293}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

@@ -11,6 +11,9 @@
 /.bash_history
 /build/
 /install/
+/third-party/
 
 # Visual Studio
 *.suo
+*.sdf
+*.opensdf
