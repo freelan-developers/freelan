@@ -11,3 +11,6 @@
 /.bash_history
 /build/
 /install/
+
+# Visual Studio
+*.suo
