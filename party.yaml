@@ -1,0 +1,25 @@
+# Party file for freelan-all
+attendees:
+  boost:
+    filters: msvc
+    source:
+      location: http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.zip/download
+      type: application/zip
+    builders:
+      msvc-x86:
+        tags: x86
+        filters: msvc
+        commands:
+          - 'bootstrap.bat'
+          - 'b2 --prefix={{prefix}}\x86\ --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install'
+      msvc-x64:
+        tags: x64
+        filters: msvc
+        commands:
+          - 'bootstrap.bat'
+          - 'b2 --prefix={{prefix}}\x64\ --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install'
+
+# Path settings
+build_path: third-party/build
+cache_path: third-party/cache
+prefix: third-party/install
