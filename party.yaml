@@ -1,7 +1,34 @@
 # Party file for freelan-all
 attendees:
+  libiconv:
+    filters: msvc
+    source:
+      location: third-party/source/libiconv-msvc.zip
+      type: application/zip
+    builders:
+      msvc-x86:
+        tags: x86
+        filters: msvc
+        prefix: x86
+        commands:
+          - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="Win32"'
+          - 'md {{prefix}}\lib || echo'
+          - 'md {{prefix}}\include || echo'
+          - 'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
+          - 'xcopy include\* {{prefix}}\include\ /S'
+      msvc-x64:
+        tags: x64
+        filters: msvc
+        prefix: x64
+        commands:
+          - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="x64"'
+          - 'md {{prefix}}\lib'
+          - 'md {{prefix}}\include'
+          - 'xcopy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
+          - 'xcopy include\* {{prefix}}\include\'
   boost:
     filters: msvc
+    depends: ['libiconv']
     source:
       location: http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.zip/download
       type: application/zip
@@ -9,15 +36,17 @@ attendees:
       msvc-x86:
         tags: x86
         filters: msvc
+        prefix: x86
         commands:
           - 'bootstrap.bat'
-          - 'b2 --prefix={{prefix}}\x86\ --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install'
+          - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install'
       msvc-x64:
         tags: x64
         filters: msvc
+        prefix: x64
         commands:
           - 'bootstrap.bat'
-          - 'b2 --prefix={{prefix}}\x64\ --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install'
+          - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install'
 
 # Path settings
 build_path: third-party/build
