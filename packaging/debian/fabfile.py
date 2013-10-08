@@ -399,14 +399,14 @@ def buildpackage(unsigned=False, build_all=False):
         else:
             local('git buildpackage -S')
 
-def depbinary(unsigned=False,repository=None):
+def depbinary(unsigned=False, repository=None, no_prompt=False):
     """
     Build binary packages with their dependencies.
     """
 
-    return binary(unsigned=unsigned, with_dependencies=True, repository=repository)
+    return binary(unsigned=unsigned, with_dependencies=True, repository=repository, no_prompt=no_prompt)
 
-def binary(unsigned=False,with_dependencies=False,repository=None):
+def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=False):
     """
     Build binary packages.
     """
@@ -455,7 +455,7 @@ def binary(unsigned=False,with_dependencies=False,repository=None):
             else:
                 source_package = repo_source_packages[0]
 
-                if not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
+                if not no_prompt and not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
                     puts('Aborting.')
                     source_package = None
 
