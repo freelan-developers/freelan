@@ -7,3 +7,13 @@ Architectures: i386 amd64 source
 Components: main
 Description: freelan packaging repository
 SignWith: 5EC3F6D9
+
+Origin: freelan packaging repository
+Label: freelan packaging repository
+Suite: stable
+Codename: stable
+Version: all
+Architectures: i386 amd64 source
+Components: main
+Description: freelan packaging repository
+SignWith: 5EC3F6D9

@@ -6,6 +6,7 @@ import os
 import copy
 import urlparse
 from glob import glob
+from debian.deb822 import Deb822
 
 CONFIGURATION_DIR = 'configuration'
 ARCHIVES_DIR = 'archives'
@@ -211,7 +212,6 @@ def __get_ordered_repositories():
         for depends in repositories.values():
             depends[:] = [depend for depend in depends if depend not in extracted]
 
-    print result
     return result
 
 def __get_options():
@@ -341,24 +341,32 @@ def configure():
     """
 
     copy_file('%configuration_path%/gbp.conf', '~/.gbp.conf')
-    copy_file('%configuration_path%/pbuilderrc', '~/.pbuilderrc')
 
-def cowbuilder(override=False):
+    for architecture in ['i386', 'amd64']:
+        for distribution in ['stable', 'unstable']:
+            copy_file('%configuration_path%' + '/pbuilderrc-%s-%s' % (distribution, architecture), '~/.pbuilderrc-%s-%s' % (distribution, architecture))
+
+def cowbuilder(override=False, distributions=None, architectures=None):
     """
     Create the cowbuilder environment.
     """
 
-    if override:
-        local('sudo rm -rf /var/cache/pbuilder/base.cow')
+    for architecture in architectures or ['i386', 'amd64']:
+        for distribution in distributions or ['stable', 'unstable']:
+            basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
 
-    local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --update --config ~/.pbuilderrc || sudo cowbuilder --create --config ~/.pbuilderrc ')
+            if override:
+                local('sudo rm -rf %s' % basepath)
 
-def cowshell():
+            local('[ -d %(basepath)s ] && sudo cowbuilder --update --config ~/.pbuilderrc-%(distribution)s-%(architecture)s --basepath %(basepath)s || sudo cowbuilder --create --config ~/.pbuilderrc-%(distribution)s-%(architecture)s --basepath %(basepath)s' % { 'basepath': basepath, 'distribution': distribution, 'architecture': architecture })
+
+def cowshell(distribution='unstable', architecture='amd64'):
     """
     Login into the cowbuilder environment.
     """
 
-    local('[ -d /var/cache/pbuilder/base.cow ] && sudo cowbuilder --login --config ~/.pbuilderrc || echo "No cowbuilder environment found. Please create one with \'fab cowbuilder\' first."')
+    basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
+    local('[ -d %(basepath)s ] && sudo cowbuilder --login --config ~/.pbuilderrc-%(distribution)s-%(architecture)s --basepath %(basepath)s || echo "No cowbuilder environment found. Please create one with \'fab cowbuilder\' first."' % { 'basepath': basepath, 'distribution': distribution, 'architecture': architecture })
 
 def repository(override=False):
     """
@@ -388,18 +396,27 @@ def buildpackage(unsigned=False, build_all=False):
         for repository in REPOSITORIES:
 
             with lcd(os.path.join(sources_path, repository + '.debian')):
-                 buildpackage(unsigned=unsigned)
+                has_stable_branch = bool(int(local('git show-ref --verify --quiet refs/heads/stable && echo 1 || echo 0', capture=True).strip()))
+
+                local('git checkout master')
+                buildpackage(unsigned=unsigned)
+
+                if has_stable_branch:
+                    local('git checkout stable')
+                    buildpackage(unsigned=unsigned)
     else:
         build_path = options['build_path']
 
         local('mkdir -p %s' % build_path)
 
-        if unsigned:
-            local('git buildpackage -S -uc -us')
-        else:
-            local('git buildpackage -S')
+        current_branch = local('git rev-parse --abbrev-ref HEAD', capture=True).strip()
 
-def depbinary(unsigned=False, repository=None, no_prompt=False):
+        if unsigned:
+            local('git buildpackage -S -uc -us --git-debian-branch=%s' % current_branch)
+        else:
+            local('git buildpackage -S --git-debian-branch=%s' % current_branch)
+
+def depbinary(unsigned=False, repository=None, no_prompt=True):
     """
     Build binary packages with their dependencies.
     """
@@ -417,7 +434,13 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
     build_path = options['build_path']
     sources_build_path = os.path.join(build_path, 'sources')
     binaries_build_path = os.path.join(build_path, 'binaries')
-    source_packages = list(reversed(sorted(glob(os.path.join(sources_build_path, '*.dsc')))))
+    source_packages = []
+
+    for source_package_path in reversed(sorted(glob(os.path.join(sources_build_path, '*.dsc')))):
+        source_package = Deb822(open(source_package_path))
+        source_package.path = source_package_path
+        source_packages.append(source_package)
+
     repository_path = options['repository_path']
 
     if not source_packages:
@@ -435,39 +458,65 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
         else:
             repositories = [repository]
 
-        print 'About to build: %s' % ' '.join(repositories)
+        print 'About to build: %s' % ', '.join(repositories)
 
         for repository in repositories:
-            print 'Upgrading the cowbuilder environment...'
+            print 'Upgrading the cowbuilder environments...'
             cowbuilder()
 
-            repo_source_packages = filter(lambda x: os.path.basename(x).startswith(repository + '_'), source_packages)
+            repo_source_packages = [package for package in source_packages if package.get('Source') == repository]
 
             if len(repo_source_packages) > 1:
-                puts('Which package do you want to build ?')
+                if not no_prompt:
+                    puts('Which package do you want to build ?')
 
-                for item in enumerate(repo_source_packages):
-                    puts(indent('[%s] %s' % item, 2))
+                    for index, package in enumerate(repo_source_packages):
+                        puts(indent('[%s]' % index + ' %(Source)s (%(Version)s)' % package, 2))
 
-                choice = prompt('Your choice or `n` to quit: ', validate=lambda x: x if (x.lower() == 'n') else int(x))
-                source_package = repo_source_packages[choice]
+                    choice = prompt('Your choice or `n` to quit: ', validate=lambda x: x if (x.lower() == 'n') else int(x))
+                    selected_source_packages = [repo_source_packages[choice]]
+                else:
+                    selected_source_packages = repo_source_packages
 
             else:
-                source_package = repo_source_packages[0]
+                selected_source_packages = repo_source_packages
 
-                if not no_prompt and not prompt('You are about to build the only available source package: %s\n\nDo you want to proceed ? [y/N]: ' % source_package, validate=lambda x: x.lower() in ['y']):
+                if not no_prompt and not prompt('You are about to build the only available source package: %(Source)s (%(Version)s)\n\nDo you want to proceed ? [y/N]: ' % selected_source_packages[0], validate=lambda x: x.lower() in ['y']):
                     puts('Aborting.')
-                    source_package = None
+                    selected_source_packages = []
 
-            if source_package:
-                package_name = os.path.splitext(os.path.basename(source_package))[0]
-                architecture = local('dpkg --print-architecture', capture=True)
-                target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
+            for source_package in selected_source_packages:
+                package_name = '%(Source)s_%(Version)s' % source_package
 
-                puts('Building %s...' % source_package)
-                local('sudo cowbuilder --configfile ~/.pbuilderrc --build %(source_package)s --debbuildopts "-sa" && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
-                    'source_package': source_package,
-                    'repository_path': repository_path,
-                    'distribution': 'unstable',
-                    'target_changes_file': target_changes_file,
-                })
+                local_architecture = local('dpkg --print-architecture', capture=True)
+
+                source_architecture = source_package.get('Architecture')
+
+                if source_architecture == 'all':
+                    architectures = [local_architecture]
+                elif source_architecture == 'any':
+                    architectures = ['i386', 'amd64']
+                else:
+                    architectures = [source_architecture]
+
+                if '~stable' in source_package.get('Version'):
+                    distribution = 'stable'
+                else:
+                    distribution = 'unstable'
+
+                for architecture in architectures:
+                    target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
+
+                    launcher = 'linux32' if (architecture == 'i386') else 'linux64'
+
+                    basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
+                    puts('Building %(Source)s (%(Version)s)...' % source_package)
+                    local('sudo %(launcher)s cowbuilder --configfile ~/.pbuilderrc-%(distribution)s-%(architecture)s --build %(source_package_path)s --debbuildopts "-sa" --basepath %(basepath)s && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
+                        'launcher': launcher,
+                        'source_package_path': source_package.path,
+                        'repository_path': repository_path,
+                        'basepath': basepath,
+                        'distribution': distribution,
+                        'architecture': architecture,
+                        'target_changes_file': target_changes_file,
+                    })
