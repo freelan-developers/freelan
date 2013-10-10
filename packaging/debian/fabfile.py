@@ -343,7 +343,7 @@ def configure():
     copy_file('%configuration_path%/gbp.conf', '~/.gbp.conf')
 
     for architecture in ['i386', 'amd64']:
-        for distribution in ['stable', 'unstable']:
+        for distribution in ['wheezy-backports', 'unstable']:
             copy_file('%configuration_path%' + '/pbuilderrc-%s-%s' % (distribution, architecture), '~/.pbuilderrc-%s-%s' % (distribution, architecture))
 
 def cowbuilder(override=False, distributions=None, architectures=None):
@@ -352,7 +352,7 @@ def cowbuilder(override=False, distributions=None, architectures=None):
     """
 
     for architecture in architectures or ['i386', 'amd64']:
-        for distribution in distributions or ['stable', 'unstable']:
+        for distribution in distributions or ['wheezy-backports', 'unstable']:
             basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
 
             if override:
@@ -396,13 +396,13 @@ def buildpackage(unsigned=False, build_all=False):
         for repository in REPOSITORIES:
 
             with lcd(os.path.join(sources_path, repository + '.debian')):
-                has_stable_branch = bool(int(local('git show-ref --verify --quiet refs/heads/stable && echo 1 || echo 0', capture=True).strip()))
+                has_backports_branch = bool(int(local('git show-ref --verify --quiet refs/heads/wheezy-backports && echo 1 || echo 0', capture=True).strip()))
 
                 local('git checkout master')
                 buildpackage(unsigned=unsigned)
 
-                if has_stable_branch:
-                    local('git checkout stable')
+                if has_backports_branch:
+                    local('git checkout wheezy-backports')
                     buildpackage(unsigned=unsigned)
     else:
         build_path = options['build_path']
@@ -499,8 +499,8 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                 else:
                     architectures = [source_architecture]
 
-                if '~stable' in source_package.get('Version'):
-                    distribution = 'stable'
+                if '~' in source_package.get('Version'):
+                    distribution = 'wheezy-backports'
                 else:
                     distribution = 'unstable'
 

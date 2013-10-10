@@ -1,5 +1,5 @@
 BINDMOUNTS="%repository_path%"
-OTHERMIRROR="deb file:%repository_path% stable main"
+OTHERMIRROR="deb file:%repository_path% wheezy-backports main"
 BUILDRESULT="%build_path%/binaries"
 APTKEYRINGS=(%repository_path%/key.gpg)
 ARCHITECTURE="i386"

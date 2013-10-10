@@ -1,19 +1,19 @@
-Origin: freelan packaging repository
-Label: freelan packaging repository
+Origin: debian.freelan.org
+Label: Freelan Debian repository
 Suite: unstable
-Codename: unstable
+Codename: sid
 Version: all
 Architectures: i386 amd64 source
 Components: main
-Description: freelan packaging repository
+Description: Contains the packages for the unstable branch of Debian.
 SignWith: 5EC3F6D9
 
-Origin: freelan packaging repository
-Label: freelan packaging repository
-Suite: stable
-Codename: stable
+Origin: debian.freelan.org
+Label: Freelan Debian repository
+Suite: stable-backports
+Codename: wheezy-backports
 Version: all
 Architectures: i386 amd64 source
 Components: main
-Description: freelan packaging repository
+Description: Contains the backports packages for the stable branch of Debian.
 SignWith: 5EC3F6D9
