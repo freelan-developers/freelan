@@ -4,9 +4,10 @@ The Fabric file.
 
 import os
 import copy
+import fnmatch
 import urlparse
 from glob import glob
-from debian.deb822 import Deb822
+from debian.deb822 import Deb822, Changes
 from fabric.api import settings
 
 CONFIGURATION_DIR = 'configuration'
@@ -14,6 +15,7 @@ ARCHIVES_DIR = 'archives'
 SOURCES_DIR = 'sources'
 BUILD_DIR = 'build'
 REPOSITORY_DIR = 'repository'
+OFFICIAL_REPOSITORY_DIR = 'repository.official'
 
 class LocalProvider(object):
 
@@ -226,6 +228,7 @@ def __get_options():
         'sources_path': SOURCES_DIR,
         'build_path': BUILD_DIR,
         'repository_path': REPOSITORY_DIR,
+        'official_repository_path': OFFICIAL_REPOSITORY_DIR,
     }
 
     def get_dir_path(_dir):
@@ -538,3 +541,70 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                                     'target_changes_file': target_changes_file,
                                 }
                             )
+
+def get_official_repository():
+    """
+    Download the official repository.
+    """
+
+    options = __get_options()
+
+    official_repository_path = options['official_repository_path']
+
+    env.user = 'freelan'
+    env.host_string = 'ftp.freelan.org'
+
+    get('debian/*', official_repository_path)
+
+def update_official_repository():
+    """
+    Update the official repository.
+    """
+
+    options = __get_options()
+
+    official_repository_path = options['official_repository_path']
+    build_path = options['build_path']
+    binaries_build_path = os.path.join(build_path, 'binaries')
+
+    changes_files = []
+
+    for root, dirs, files in os.walk(binaries_build_path):
+        changes_files.extend(os.path.join(root, _file) for _file in fnmatch.filter(files, '*.changes'))
+
+    with lcd(official_repository_path):
+        with settings(warn_only=True):
+
+            for changes_file in changes_files:
+                changes = Changes(open(changes_file))
+                distribution = changes['Distribution']
+
+                local(
+                    'reprepro -b . include %(distribution)s %(changes_file)s' % {
+                        'distribution': distribution,
+                        'changes_file': changes_file,
+                    }
+                )
+
+        local('reprepro -b . createsymlinks')
+
+def put_official_repository():
+    """
+    Upload to the official repository.
+    """
+
+    options = __get_options()
+
+    official_repository_path = options['official_repository_path']
+
+    env.user = 'freelan'
+    env.host_string = 'ftp.freelan.org'
+
+    local('cp -r %s debian' % official_repository_path)
+    local('tar zcvf debian.tar.gz debian/')
+    local('rm -rf debian')
+    put('debian.tar.gz')
+    local('rm debian.tar.gz')
+    run('rm -rf debian')
+    run('tar zxvf debian.tar.gz')
+    run('rm -f debian.tar.gz')
