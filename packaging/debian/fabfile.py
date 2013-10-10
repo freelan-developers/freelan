@@ -416,14 +416,14 @@ def buildpackage(unsigned=False, build_all=False):
         else:
             local('git buildpackage -S --git-debian-branch=%s' % current_branch)
 
-def depbinary(unsigned=False, repository=None, no_prompt=True):
+def depbinary(unsigned=False, repository=None, no_prompt=True, force=False):
     """
     Build binary packages with their dependencies.
     """
 
-    return binary(unsigned=unsigned, with_dependencies=True, repository=repository, no_prompt=no_prompt)
+    return binary(unsigned=unsigned, with_dependencies=True, repository=repository, no_prompt=no_prompt, force=force)
 
-def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=False):
+def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=False, force=False):
     """
     Build binary packages.
     """
@@ -506,17 +506,22 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
 
                 for architecture in architectures:
                     target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
+                    deb_file = os.path.join(binaries_build_path, '%s_%s.deb' % (package_name, architecture))
 
-                    launcher = 'linux32' if (architecture == 'i386') else 'linux64'
+                    if not force and os.path.isfile(deb_file):
+                        puts('Not building %(Source)s (%(Version)s) as it was already built and the "force" option wasn\'t specified.' % source_package)
+                    else:
+                        puts('Building %(Source)s (%(Version)s)...' % source_package)
 
-                    basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
-                    puts('Building %(Source)s (%(Version)s)...' % source_package)
-                    local('sudo %(launcher)s cowbuilder --configfile ~/.pbuilderrc-%(distribution)s-%(architecture)s --build %(source_package_path)s --debbuildopts "-sa" --basepath %(basepath)s && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
-                        'launcher': launcher,
-                        'source_package_path': source_package.path,
-                        'repository_path': repository_path,
-                        'basepath': basepath,
-                        'distribution': distribution,
-                        'architecture': architecture,
-                        'target_changes_file': target_changes_file,
-                    })
+                        launcher = 'linux32' if (architecture == 'i386') else 'linux64'
+
+                        basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
+                        local('sudo %(launcher)s cowbuilder --configfile ~/.pbuilderrc-%(distribution)s-%(architecture)s --build %(source_package_path)s --debbuildopts "-sa" --basepath %(basepath)s && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
+                            'launcher': launcher,
+                            'source_package_path': source_package.path,
+                            'repository_path': repository_path,
+                            'basepath': basepath,
+                            'distribution': distribution,
+                            'architecture': architecture,
+                            'target_changes_file': target_changes_file,
+                        })
