@@ -7,6 +7,7 @@ import copy
 import urlparse
 from glob import glob
 from debian.deb822 import Deb822
+from fabric.api import settings
 
 CONFIGURATION_DIR = 'configuration'
 ARCHIVES_DIR = 'archives'
@@ -509,6 +510,8 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                     target_changes_file = os.path.join(binaries_build_path, '%s_%s.changes' % (package_name, architecture))
                     deb_file = os.path.join(binaries_build_path, '%s_%s.deb' % (package_name, architecture))
 
+                    puts('Checking for %s existence...' % deb_file)
+
                     if not force and os.path.isfile(deb_file):
                         puts('Not building %(Source)s (%(Version)s) as it was already built and the "force" option wasn\'t specified.' % source_package)
                     else:
@@ -517,12 +520,21 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                         launcher = 'linux32' if (architecture == 'i386') else 'linux64'
 
                         basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
-                        local('sudo %(launcher)s cowbuilder --configfile ~/.pbuilderrc-%(distribution)s-%(architecture)s --build %(source_package_path)s --debbuildopts "-sa" --basepath %(basepath)s && reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s ' % {
-                            'launcher': launcher,
-                            'source_package_path': source_package.path,
-                            'repository_path': repository_path,
-                            'basepath': basepath,
-                            'distribution': distribution,
-                            'architecture': architecture,
-                            'target_changes_file': target_changes_file,
-                        })
+                        local(
+                            'sudo %(launcher)s cowbuilder --configfile ~/.pbuilderrc-%(distribution)s-%(architecture)s --build %(source_package_path)s --debbuildopts "-sa" --basepath %(basepath)s' % {
+                                'launcher': launcher,
+                                'source_package_path': source_package.path,
+                                'basepath': basepath,
+                                'distribution': distribution,
+                                'architecture': architecture,
+                            }
+                        )
+
+                        with settings(warn_only=True):
+                            local(
+                                'reprepro -b %(repository_path)s include %(distribution)s %(target_changes_file)s' % {
+                                    'repository_path': repository_path,
+                                    'distribution': distribution,
+                                    'target_changes_file': target_changes_file,
+                                }
+                            )
