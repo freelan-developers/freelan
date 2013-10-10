@@ -382,6 +382,7 @@ def repository(override=False):
             local('git clean -f -x -d')
 
         local('reprepro -b . export')
+        local('reprepro -b . createsymlinks')
 
 def buildpackage(unsigned=False, build_all=False):
     """
