@@ -2,13 +2,11 @@
 attendees:
   libiconv:
     filters: msvc
-    source:
-      location: third-party/source/libiconv-msvc.zip
-      type: application/zip
+    source: third-party/source/libiconv-msvc
     builders:
       msvc-x86:
         tags: x86
-        filters: msvc
+        filters: msvc-x86
         prefix: x86
         commands:
           - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="Win32"'
@@ -18,7 +16,7 @@ attendees:
           - 'xcopy include\* {{prefix}}\include\ /S'
       msvc-x64:
         tags: x64
-        filters: msvc
+        filters: msvc-x64
         prefix: x64
         commands:
           - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="x64"'
@@ -35,14 +33,14 @@ attendees:
     builders:
       msvc-x86:
         tags: x86
-        filters: msvc
+        filters: msvc-x86
         prefix: x86
         commands:
           - 'bootstrap.bat'
           - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install'
       msvc-x64:
         tags: x64
-        filters: msvc
+        filters: msvc-x64
         prefix: x64
         commands:
           - 'bootstrap.bat'
