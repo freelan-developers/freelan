@@ -13,22 +13,21 @@ attendees:
           - 'md {{prefix}}\lib || echo'
           - 'md {{prefix}}\include || echo'
           - 'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
-          - 'xcopy include\* {{prefix}}\include\ /S'
+          - 'xcopy include\* {{prefix}}\include\ /S /Y'
       msvc-x64:
         tags: x64
         filters: msvc-x64
         prefix: x64
         commands:
           - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="x64"'
-          - 'md {{prefix}}\lib'
-          - 'md {{prefix}}\include'
-          - 'xcopy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
-          - 'xcopy include\* {{prefix}}\include\'
+          - 'md {{prefix}}\lib || echo'
+          - 'md {{prefix}}\include || echo'
+          - 'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
+          - 'xcopy include\* {{prefix}}\include\ /S /Y'
   boost:
     filters: msvc
-    depends: ['libiconv']
     source:
-      location: http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.zip/download
+      location: http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.zip/download
       type: application/zip
     builders:
       msvc-x86:
@@ -45,6 +44,28 @@ attendees:
         commands:
           - 'bootstrap.bat'
           - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install'
+  openssl:
+    filters: msvc
+    source: http://www.openssl.org/source/openssl-1.0.1e.tar.gz
+    builders:
+      msvc-x86:
+        tags: x86
+        filters: msvc-x86
+        prefix: x86
+        commands:
+          - 'perl Configure VC-WIN32 no-asm --prefix={{prefix}}'
+          - 'ms\do_ms'
+          - 'nmake -f ms\nt.mak'
+          - 'nmake -f ms\nt.mak install'
+      msvc-x64:
+        tags: x64
+        filters: msvc-x64
+        prefix: x64
+        commands:
+          - 'perl Configure VC-WIN64A no-asm --prefix={{prefix}}'
+          - 'ms\do_win64a'
+          - 'nmake -f ms\nt.mak'
+          - 'nmake -f ms\nt.mak install'
 
 # Path settings
 build_path: third-party/build
