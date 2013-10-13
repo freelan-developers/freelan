@@ -66,6 +66,28 @@ attendees:
           - 'ms\do_win64a'
           - 'nmake -f ms\nt.mak'
           - 'nmake -f ms\nt.mak install'
+  curl:
+    depends:
+      - openssl
+    filters: msvc
+    source: http://curl.haxx.se/download/curl-7.32.0.zip
+    builders:
+      msvc-x86:
+        tags: x86
+        filters: msvc-x86
+        prefix: x86
+        directory: 'winbuild'
+        commands:
+          - 'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x86'
+          - 'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y'
+      msvc-x64:
+        tags: x64
+        filters: msvc-x64
+        prefix: x64
+        directory: 'winbuild'
+        commands:
+          - 'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64'
+          - 'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y'
 
 # Path settings
 build_path: third-party/build
