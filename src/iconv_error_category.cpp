@@ -62,7 +62,15 @@ namespace iconvplus
 			case EINVAL:
 				return "An incomplete multibyte sequence has been encountered in the input";
 			default:
+#ifdef _MSC_VER
+				char error_buf[256] = {};
+				strerror_s(error_buf, ev);
+				const std::string error_string(error_buf, strnlen_s(error_buf, sizeof(error_buf)));
+
+				return "Unknown error " + boost::lexical_cast<std::string>(ev) + ": " + error_string;
+#else
 				return "Unknown error " + boost::lexical_cast<std::string>(ev) + ": " + strerror(ev);
+#endif
 		}
 	}
 

@@ -79,12 +79,12 @@ namespace iconvplus
 
 			if (is.good() || is.eof())
 			{
-				itmp_size += is.gcount() * sizeof(input_char_type);
+				itmp_size += static_cast<size_t>(is.gcount()) * sizeof(input_char_type);
 				inbuf = reinterpret_cast<const char*>(&m_input_buffer[0]);
 
 				do
 				{
-					otmp_size = m_output_buffer.size() * sizeof(output_char_type);
+					otmp_size = static_cast<size_t>(m_output_buffer.size()) * sizeof(output_char_type);
 					outbuf = reinterpret_cast<char*>(&m_output_buffer[0]);
 
 					result = m_iconv_instance->convert(&inbuf, &itmp_size, &outbuf, &otmp_size, ec);
