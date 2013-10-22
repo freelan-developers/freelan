@@ -346,7 +346,7 @@ def configure():
 
     copy_file('%configuration_path%/gbp.conf', '~/.gbp.conf')
 
-    for architecture in ['i386', 'amd64']:
+    for architecture in ['i386', 'amd64', 'armhf']:
         for distribution in ['wheezy-backports', 'unstable']:
             copy_file('%configuration_path%' + '/pbuilderrc-%s-%s' % (distribution, architecture), '~/.pbuilderrc-%s-%s' % (distribution, architecture))
 
@@ -355,7 +355,10 @@ def cowbuilder(override=False, distributions=None, architectures=None):
     Create the cowbuilder environment.
     """
 
-    for architecture in architectures or ['i386', 'amd64']:
+    if isinstance(architectures, basestring):
+        architectures = [architectures]
+
+    for architecture in architectures or ['i386', 'amd64', 'armhf']:
         for distribution in distributions or ['wheezy-backports', 'unstable']:
             basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
 
@@ -500,7 +503,7 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                 if source_architecture == 'all':
                     architectures = [local_architecture]
                 elif source_architecture == 'any':
-                    architectures = ['i386', 'amd64']
+                    architectures = ['i386', 'amd64', 'armhf']
                 else:
                     architectures = [source_architecture]
 
@@ -520,7 +523,7 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                     else:
                         puts('Building %(Source)s (%(Version)s)...' % source_package)
 
-                        launcher = 'linux32' if (architecture == 'i386') else 'linux64'
+                        launcher = 'linux64' if (architecture == 'amd64') else 'linux32'
 
                         basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
                         local(
