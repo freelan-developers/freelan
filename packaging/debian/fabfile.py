@@ -123,13 +123,23 @@ REPOSITORIES = {
             'libfreelan',
         ],
     },
+    'flask': {
+        'tag': '0.10.1',
+        'provider': github(user='mitsuhiko'),
+    },
     'flask-sqlalchemy': {
         'tag': '1.0',
         'provider': github(user='mitsuhiko'),
+        'depends': [
+            'flask',
+        ],
     },
     'flask-login': {
         'tag': '0.2.6',
         'provider': github(user='maxcountryman'),
+        'depends': [
+            'flask',
+        ],
     },
     'simplekv': {
         'tag': '0.5',
@@ -143,6 +153,7 @@ REPOSITORIES = {
     'flask-kvsession': {
         'tag': '0.4',
         'depends': [
+            'flask',
             'simplekv',
             'itsdangerous',
         ],
@@ -151,11 +162,17 @@ REPOSITORIES = {
     'flask-gravatar': {
         'tag': '0.3.0',
         'provider': github(user='zzzsochi'),
+        'depends': [
+            'flask',
+        ],
     },
     'flask-wtf': {
         'tag': '0.8.4',
         'upstream_tag': 'v0.8.4',
         'provider': github(user='ajford'),
+        'depends': [
+            'flask',
+        ],
     },
     'freelan-server': {
         'tag': '1.0',
