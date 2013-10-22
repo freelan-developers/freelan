@@ -568,19 +568,16 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                                 }
                             )
 
-def get_official_repository():
+def mount_official_repository():
     """
-    Download the official repository.
+    Mount the official repository.
     """
 
     options = __get_options()
 
     official_repository_path = options['official_repository_path']
 
-    env.user = 'freelan'
-    env.host_string = 'ftp.freelan.org'
-
-    get('debian/*', official_repository_path)
+    local('mkdir -p %(path)s && sshfs -o idmap=user freelan@ftp.freelan.org:debian %(path)s' % { 'path': official_repository_path })
 
 def update_official_repository():
     """
@@ -613,24 +610,3 @@ def update_official_repository():
                 )
 
         local('reprepro -b . createsymlinks')
-
-def put_official_repository():
-    """
-    Upload to the official repository.
-    """
-
-    options = __get_options()
-
-    official_repository_path = options['official_repository_path']
-
-    env.user = 'freelan'
-    env.host_string = 'ftp.freelan.org'
-
-    local('cp -r %s debian' % official_repository_path)
-    local('tar zcvf debian.tar.gz debian/')
-    local('rm -rf debian')
-    put('debian.tar.gz')
-    local('rm debian.tar.gz')
-    run('rm -rf debian')
-    run('tar zxvf debian.tar.gz')
-    run('rm -f debian.tar.gz')
