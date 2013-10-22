@@ -135,10 +135,16 @@ REPOSITORIES = {
         'tag': '0.5',
         'provider': github(user='mbr'),
     },
+    'itsdangerous': {
+        'tag': '0.23',
+        'depends': [],
+        'provider': github(user='mitsuhiko'),
+    },
     'flask-kvsession': {
         'tag': '0.4',
         'depends': [
             'simplekv',
+            'itsdangerous',
         ],
         'provider': github(user='mbr'),
     },
