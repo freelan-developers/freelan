@@ -123,7 +123,7 @@ namespace kfather
 
 			if (!parse(value, begin, end, &error_it))
 			{
-				*error_pos = std::distance(begin, error_it);
+				*error_pos = static_cast<size_t>(std::distance(begin, error_it));
 
 				return false;
 			}
@@ -722,7 +722,9 @@ namespace kfather
 
 		m_str.clear();
 
-		return iss >> value;
+		iss >> value;
+
+		return !iss.fail();
 	}
 
 	void parser::context::end_codepoints()
