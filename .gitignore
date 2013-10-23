@@ -8,3 +8,11 @@
 variables.cache
 doc/html
 lib/*
+
+# Microsoft Visual Studio (tm) files
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.user
+/build/
+/install/
