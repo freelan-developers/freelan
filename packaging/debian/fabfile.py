@@ -123,33 +123,56 @@ REPOSITORIES = {
             'libfreelan',
         ],
     },
+    'flask': {
+        'tag': '0.10.1',
+        'provider': github(user='mitsuhiko'),
+    },
     'flask-sqlalchemy': {
         'tag': '1.0',
         'provider': github(user='mitsuhiko'),
+        'depends': [
+            'flask',
+        ],
     },
     'flask-login': {
         'tag': '0.2.6',
         'provider': github(user='maxcountryman'),
+        'depends': [
+            'flask',
+        ],
     },
     'simplekv': {
         'tag': '0.5',
         'provider': github(user='mbr'),
     },
+    'itsdangerous': {
+        'tag': '0.23',
+        'depends': [],
+        'provider': github(user='mitsuhiko'),
+    },
     'flask-kvsession': {
         'tag': '0.4',
         'depends': [
+            'flask',
             'simplekv',
+            'itsdangerous',
         ],
         'provider': github(user='mbr'),
     },
     'flask-gravatar': {
         'tag': '0.3.0',
         'provider': github(user='zzzsochi'),
+        'depends': [
+            'flask',
+        ],
     },
     'flask-wtf': {
         'tag': '0.8.4',
         'upstream_tag': 'v0.8.4',
         'provider': github(user='ajford'),
+        'depends': [
+            'flask',
+        ],
     },
     'freelan-server': {
         'tag': '1.0',
@@ -346,7 +369,7 @@ def configure():
 
     copy_file('%configuration_path%/gbp.conf', '~/.gbp.conf')
 
-    for architecture in ['i386', 'amd64']:
+    for architecture in ['i386', 'amd64', 'armhf']:
         for distribution in ['wheezy-backports', 'unstable']:
             copy_file('%configuration_path%' + '/pbuilderrc-%s-%s' % (distribution, architecture), '~/.pbuilderrc-%s-%s' % (distribution, architecture))
 
@@ -355,7 +378,10 @@ def cowbuilder(override=False, distributions=None, architectures=None):
     Create the cowbuilder environment.
     """
 
-    for architecture in architectures or ['i386', 'amd64']:
+    if isinstance(architectures, basestring):
+        architectures = [architectures]
+
+    for architecture in architectures or ['i386', 'amd64', 'armhf']:
         for distribution in distributions or ['wheezy-backports', 'unstable']:
             basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
 
@@ -500,7 +526,7 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                 if source_architecture == 'all':
                     architectures = [local_architecture]
                 elif source_architecture == 'any':
-                    architectures = ['i386', 'amd64']
+                    architectures = ['i386', 'amd64', 'armhf']
                 else:
                     architectures = [source_architecture]
 
@@ -520,7 +546,7 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                     else:
                         puts('Building %(Source)s (%(Version)s)...' % source_package)
 
-                        launcher = 'linux32' if (architecture == 'i386') else 'linux64'
+                        launcher = 'linux64' if (architecture == 'amd64') else 'linux32'
 
                         basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
                         local(
@@ -542,19 +568,16 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                                 }
                             )
 
-def get_official_repository():
+def mount_official_repository():
     """
-    Download the official repository.
+    Mount the official repository.
     """
 
     options = __get_options()
 
     official_repository_path = options['official_repository_path']
 
-    env.user = 'freelan'
-    env.host_string = 'ftp.freelan.org'
-
-    get('debian/*', official_repository_path)
+    local('mkdir -p %(path)s && sshfs -o idmap=user freelan@ftp.freelan.org:debian %(path)s' % { 'path': official_repository_path })
 
 def update_official_repository():
     """
@@ -587,24 +610,3 @@ def update_official_repository():
                 )
 
         local('reprepro -b . createsymlinks')
-
-def put_official_repository():
-    """
-    Upload to the official repository.
-    """
-
-    options = __get_options()
-
-    official_repository_path = options['official_repository_path']
-
-    env.user = 'freelan'
-    env.host_string = 'ftp.freelan.org'
-
-    local('cp -r %s debian' % official_repository_path)
-    local('tar zcvf debian.tar.gz debian/')
-    local('rm -rf debian')
-    put('debian.tar.gz')
-    local('rm debian.tar.gz')
-    run('rm -rf debian')
-    run('tar zxvf debian.tar.gz')
-    run('rm -f debian.tar.gz')
