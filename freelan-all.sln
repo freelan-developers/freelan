@@ -1,20 +1,47 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.20827.3
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libkfather", "libkfather\libkfather.vcxproj", "{C86FB8A0-2171-48F6-B97E-425869A82293}"
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libiconvplus", "libiconvplus\libiconvplus.vcxproj", "{ACD7B910-1594-4192-9AE1-E805B2F5DB59}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libkfather", "libkfather\libkfather.vcxproj", "{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59} = {ACD7B910-1594-4192-9AE1-E805B2F5DB59}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libasiotap", "libasiotap\libasiotap.vcxproj", "{9173624C-FFF7-4431-BB4A-FC30B13AD742}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C86FB8A0-2171-48F6-B97E-425869A82293}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C86FB8A0-2171-48F6-B97E-425869A82293}.Debug|Win32.Build.0 = Debug|Win32
-		{C86FB8A0-2171-48F6-B97E-425869A82293}.Release|Win32.ActiveCfg = Release|Win32
-		{C86FB8A0-2171-48F6-B97E-425869A82293}.Release|Win32.Build.0 = Release|Win32
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Debug|x64.ActiveCfg = Debug|x64
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Debug|x64.Build.0 = Debug|x64
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Debug|x86.ActiveCfg = Debug|Win32
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Debug|x86.Build.0 = Debug|Win32
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Release|x64.ActiveCfg = Release|x64
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Release|x64.Build.0 = Release|x64
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Release|x86.ActiveCfg = Release|Win32
+		{ACD7B910-1594-4192-9AE1-E805B2F5DB59}.Release|x86.Build.0 = Release|Win32
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Debug|x64.ActiveCfg = Debug|x64
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Debug|x64.Build.0 = Debug|x64
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Debug|x86.ActiveCfg = Debug|Win32
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Debug|x86.Build.0 = Debug|Win32
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Release|x64.ActiveCfg = Release|x64
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Release|x64.Build.0 = Release|x64
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Release|x86.ActiveCfg = Release|Win32
+		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}.Release|x86.Build.0 = Release|Win32
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Debug|x64.ActiveCfg = Debug|x64
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Debug|x64.Build.0 = Debug|x64
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Debug|x86.ActiveCfg = Debug|Win32
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Debug|x86.Build.0 = Debug|Win32
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Release|x64.ActiveCfg = Release|x64
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Release|x64.Build.0 = Release|x64
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Release|x86.ActiveCfg = Release|Win32
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
