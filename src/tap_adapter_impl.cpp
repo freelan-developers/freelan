@@ -1021,7 +1021,7 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
+			DWORD _timeout = timeout.is_special() ? INFINITE : static_cast<DWORD>(timeout.total_milliseconds());
 
 			if (WaitForSingleObject(m_read_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
 			{
@@ -1119,7 +1119,7 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			DWORD _timeout = timeout.is_special() ? INFINITE : timeout.total_milliseconds();
+			DWORD _timeout = timeout.is_special() ? INFINITE : static_cast<DWORD>(timeout.total_milliseconds());
 
 			if (WaitForSingleObject(m_write_overlapped.hEvent, _timeout) == WAIT_OBJECT_0)
 			{
