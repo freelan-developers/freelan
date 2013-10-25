@@ -59,7 +59,7 @@ namespace asiotap
 
 			helper.set_source(source);
 			helper.set_destination(destination);
-			helper.set_length(sizeof(frame_type) + boost::asio::buffer_size(payload()));
+			helper.set_length(static_cast<uint16_t>(sizeof(frame_type) + boost::asio::buffer_size(payload())));
 
 			return helper.length();
 		}

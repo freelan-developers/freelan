@@ -375,7 +375,7 @@ namespace asiotap
 
 		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_total_length(size_t _total_length) const
 		{
-			this->frame().total_length = htons(_total_length);
+			this->frame().total_length = htons(static_cast<u_short>(_total_length));
 		}
 
 		inline void _helper_impl<mutable_helper_tag, ipv4_frame>::set_identification(uint16_t _identification) const

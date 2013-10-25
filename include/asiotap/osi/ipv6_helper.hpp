@@ -284,7 +284,7 @@ namespace asiotap
 
 		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_payload_length(size_t _payload_length) const
 		{
-			this->frame().payload_length = htons(_payload_length);
+			this->frame().payload_length = htons(static_cast<u_short>(_payload_length));
 		}
 
 		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_next_header(uint8_t _next_header) const
