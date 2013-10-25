@@ -217,7 +217,7 @@ namespace freelan
 
 	void curl::set_connect_timeout(const boost::posix_time::time_duration& timeout)
 	{
-		set_option(CURLOPT_CONNECTTIMEOUT_MS, timeout.total_milliseconds());
+		set_option(CURLOPT_CONNECTTIMEOUT_MS, static_cast<long>(timeout.total_milliseconds()));
 	}
 
 	void curl::set_http_header(const std::string& header, const std::string& value)
@@ -253,13 +253,13 @@ namespace freelan
 
 	void curl::set_post_fields(boost::asio::const_buffer buf)
 	{
-		set_option(CURLOPT_POSTFIELDSIZE_LARGE, boost::asio::buffer_size(buf));
+		set_option(CURLOPT_POSTFIELDSIZE_LARGE, static_cast<long>(boost::asio::buffer_size(buf)));
 		set_option(CURLOPT_POSTFIELDS, boost::asio::buffer_cast<const void*>(buf));
 	}
 
 	void curl::set_copy_post_fields(boost::asio::const_buffer buf)
 	{
-		set_option(CURLOPT_POSTFIELDSIZE_LARGE, boost::asio::buffer_size(buf));
+		set_option(CURLOPT_POSTFIELDSIZE_LARGE, static_cast<long>(boost::asio::buffer_size(buf)));
 		set_option(CURLOPT_COPYPOSTFIELDS, boost::asio::buffer_cast<const void*>(buf));
 	}
 
@@ -290,7 +290,7 @@ namespace freelan
 	std::string curl::unescape(const std::string& encoded)
 	{
 		int len = 0;
-		char* rstr = curl_easy_unescape(m_curl, encoded.c_str(), encoded.size(), &len);
+		char* rstr = curl_easy_unescape(m_curl, encoded.c_str(), static_cast<int>(encoded.size()), &len);
 
 		if (!rstr)
 		{
@@ -316,22 +316,22 @@ namespace freelan
 		return response_code;
 	}
 
-	ssize_t curl::get_content_length_download()
+	ptrdiff_t curl::get_content_length_download()
 	{
 		double content_length = 0.0;
 
 		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length));
 
-		return (content_length >= 0) ? static_cast<ssize_t>(content_length) : -1;
+		return (content_length >= 0) ? static_cast<ptrdiff_t>(content_length) : -1;
 	}
 
-	ssize_t curl::get_content_length_upload()
+	ptrdiff_t curl::get_content_length_upload()
 	{
 		double content_length = 0.0;
 
 		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_UPLOAD, &content_length));
 
-		return (content_length >= 0) ? static_cast<ssize_t>(content_length) : -1;
+		return (content_length >= 0) ? static_cast<ptrdiff_t>(content_length) : -1;
 	}
 
 	std::string curl::get_content_type()

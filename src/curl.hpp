@@ -315,13 +315,13 @@ namespace freelan
 			 * \brief Get the content length for downloads.
 			 * \return The content length or -1, if no content length is specified.
 			 */
-			ssize_t get_content_length_download();
+			ptrdiff_t get_content_length_download();
 
 			/**
 			 * \brief Get the content length for uploads.
 			 * \return The content length or -1, if no content length is specified.
 			 */
-			ssize_t get_content_length_upload();
+			ptrdiff_t get_content_length_upload();
 
 			/**
 			 * \brief Get the content type.

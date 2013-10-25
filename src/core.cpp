@@ -982,7 +982,7 @@ namespace freelan
 
 		m_configuration.security.certificate_authority_list.push_back(ca_cert);
 
-		if (m_ca_store)
+		if (!!m_ca_store)
 		{
 			m_ca_store.add_certificate(ca_cert);
 		}
