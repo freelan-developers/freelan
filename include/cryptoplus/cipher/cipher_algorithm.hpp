@@ -222,7 +222,7 @@ namespace cryptoplus
 
 		inline bool cipher_algorithm::boolean_test() const
 		{
-			return static_cast<bool>(m_cipher);
+			return (m_cipher != NULL);
 		}
 	}
 }

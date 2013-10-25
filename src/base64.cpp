@@ -79,7 +79,7 @@ namespace cryptoplus
 	{
 		bio::bio_chain bio_chain(BIO_f_base64());
 		bio_chain.first().set_flags(BIO_FLAGS_BASE64_NO_NL);
-		bio_chain.first().push(BIO_new_mem_buf(const_cast<void*>(input), inputlen));
+		bio_chain.first().push(BIO_new_mem_buf(const_cast<void*>(input), static_cast<int>(inputlen)));
 
 		ptrdiff_t cnt = bio_chain.first().read(output, outputlen);
 
