@@ -257,8 +257,8 @@ namespace fscp
 
 			// First initialization - required to set GCM specific attributes
 			cipher_context.initialize(cipher_algorithm, cryptoplus::cipher::cipher_context::decrypt, NULL, 0, NULL);
-			cipher_context.ctrl_set(EVP_CTRL_GCM_SET_IVLEN, iv.size());
-			cipher_context.ctrl(EVP_CTRL_GCM_SET_TAG, tag_size(), const_cast<uint8_t*>(tag()));
+			cipher_context.ctrl_set(EVP_CTRL_GCM_SET_IVLEN, static_cast<int>(iv.size()));
+			cipher_context.ctrl(EVP_CTRL_GCM_SET_TAG, static_cast<int>(tag_size()), const_cast<uint8_t*>(tag()));
 
 			cipher_context.initialize(data_message::calg_t(), cryptoplus::cipher::cipher_context::unchanged, enc_key, enc_key_len, iv.data());
 
@@ -295,7 +295,7 @@ namespace fscp
 
 		// First initialization - required to set GCM specific attributes
 		cipher_context.initialize(cipher_algorithm, cryptoplus::cipher::cipher_context::encrypt, NULL, 0, NULL);
-		cipher_context.ctrl_set(EVP_CTRL_GCM_SET_IVLEN, iv.size());
+		cipher_context.ctrl_set(EVP_CTRL_GCM_SET_IVLEN, static_cast<int>(iv.size()));
 
 		cipher_context.initialize(data_message::calg_t(), cryptoplus::cipher::cipher_context::unchanged, enc_key, enc_key_len, iv.data());
 

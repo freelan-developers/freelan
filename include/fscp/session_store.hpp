@@ -211,7 +211,7 @@ namespace fscp
 			throw std::runtime_error("sequence_number overflow");
 		}
 
-		m_sequence_number += cnt;
+		m_sequence_number += static_cast<fscp::sequence_number_type>(cnt);
 	}
 }
 

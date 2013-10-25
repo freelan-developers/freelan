@@ -138,7 +138,7 @@ namespace fscp
 	size_t session_message::_write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key, message_type type)
 	{
 		const size_t max_cleartext_len = enc_key.size() - cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM).result_size() * 2 - 2;
-		const unsigned int packet_count = (cleartext_len + max_cleartext_len - 1) / max_cleartext_len;
+		const unsigned int packet_count = static_cast<unsigned int>((cleartext_len + max_cleartext_len - 1) / max_cleartext_len);
 
 		if (packet_count >= (1 << 16))
 		{
