@@ -266,7 +266,21 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 	else
 	{
-		char* val = getenv("FREELAN_CONFIGURATION_FILE");
+#ifdef _MSC_VER
+		std::string value(4096, '\0');
+
+		DWORD value_size = GetEnvironmentVariable("FREELAN_CONFIGURATION_FILE", &value[0], value.size());
+
+		const char* val = NULL;
+
+		if (value_size > 0)
+		{
+			value.resize(value_size);
+			val = value.c_str();
+		}
+#else
+		const char* val = getenv("FREELAN_CONFIGURATION_FILE");
+#endif
 
 		if (val)
 		{
@@ -350,7 +364,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 		configuration.fl_configuration.security.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
 	}
 
-	configuration.debug = vm.count("debug");
+	configuration.debug = vm.count("debug") > 0;
 
 	return true;
 }

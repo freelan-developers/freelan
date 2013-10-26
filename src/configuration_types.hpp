@@ -74,7 +74,7 @@ class millisecond_duration
 		 * \brief Create a millisecond duration.
 		 * \param duration The duration.
 		 */
-		millisecond_duration(const boost::posix_time::time_duration& duration) : m_ms(duration.total_milliseconds()) {}
+		millisecond_duration(const boost::posix_time::time_duration& duration) : m_ms(static_cast<unsigned int>(duration.total_milliseconds())) {}
 
 		/**
 		 * \brief Conversion operator.

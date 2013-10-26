@@ -224,7 +224,21 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 	else
 	{
+#ifdef _MSC_VER
+		std::string value(256, '\0');
+
+		DWORD value_size = GetEnvironmentVariable("FREELAN_SERVER_PASSWORD", &value[0], value.size());
+
+		const char* default_password = NULL;
+
+		if (value_size > 0)
+		{
+			value.resize(value_size);
+			default_password = value.c_str();
+		}
+#else
 		const char* default_password = getenv("FREELAN_SERVER_PASSWORD");
+#endif
 
 		if (default_password)
 		{
@@ -238,7 +252,21 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 	else
 	{
+#ifdef _MSC_VER
+		std::string value(256, '\0');
+
+		DWORD value_size = GetEnvironmentVariable("FREELAN_SERVER_NETWORK", &value[0], value.size());
+
+		const char* default_network = NULL;
+
+		if (value_size > 0)
+		{
+			value.resize(value_size);
+			default_network = value.c_str();
+		}
+#else
 		const char* default_network = getenv("FREELAN_SERVER_NETWORK");
+#endif
 
 		if (default_network)
 		{
@@ -309,7 +337,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		encryption_private_key = load_private_key(fs::absolute(vm["security.encryption_private_key_file"].as<fs::path>(), root));
 	}
 
-	if (signature_certificate && signature_private_key)
+	if (!!signature_certificate && !!signature_private_key)
 	{
 		configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
 	}
