@@ -8,3 +8,11 @@ variables.cache
 bin/*
 build
 *.cfg
+
+# Microsoft Visual Studio (tm) files
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.user
+/build/
+/install/
