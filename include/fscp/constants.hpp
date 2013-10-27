@@ -249,8 +249,8 @@ namespace fscp
 	{
 		public:
 
-			static const value_type unsupported = 0x00;
-			static const value_type aes256_gcm = 0x01;
+			static const value_type unsupported;
+			static const value_type aes256_gcm;
 
 			cipher_algorithm_type() {}
 			cipher_algorithm_type(value_type _value) : enumeration_type(_value) {}
@@ -261,11 +261,9 @@ namespace fscp
 			 */
 			bool is_valid() const
 			{
-				switch (value())
+				if ((value() == unsupported) || (value() == aes256_gcm))
 				{
-					case unsupported:
-					case aes256_gcm:
-						return true;
+					return true;
 				}
 
 				return false;
@@ -277,12 +275,13 @@ namespace fscp
 			 */
 			std::string to_string() const
 			{
-				switch (value())
+				if (value() == unsupported)
 				{
-					case unsupported:
-						throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-					case aes256_gcm:
-						return aes256_gcm_string;
+					throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == aes256_gcm)
+				{
+					return aes256_gcm_string;
 				}
 
 				throw std::invalid_argument("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
@@ -313,12 +312,13 @@ namespace fscp
 			 */
 			cryptoplus::cipher::cipher_algorithm to_cipher_algorithm() const
 			{
-				switch (value())
+				if (value() == unsupported)
 				{
-					case unsupported:
-						throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-					case aes256_gcm:
-						return cryptoplus::cipher::cipher_algorithm(NID_aes_256_gcm);
+					throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == aes256_gcm)
+				{
+					return cryptoplus::cipher::cipher_algorithm(NID_aes_256_gcm);
 				}
 
 				throw std::invalid_argument("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));

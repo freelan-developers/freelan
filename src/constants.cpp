@@ -50,8 +50,8 @@
 
 namespace fscp
 {
-	const cipher_algorithm_type::value_type cipher_algorithm_type::unsupported;
-	const cipher_algorithm_type::value_type cipher_algorithm_type::aes256_gcm;
+	const cipher_algorithm_type::value_type cipher_algorithm_type::unsupported = 0x00;
+	const cipher_algorithm_type::value_type cipher_algorithm_type::aes256_gcm = 0x01;
 	const std::string cipher_algorithm_type::aes256_gcm_string("aes256-gcm");
 
 	channel_number_type to_channel_number(message_type type)
