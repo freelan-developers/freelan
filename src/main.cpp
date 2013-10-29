@@ -269,7 +269,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 #ifdef _MSC_VER
 		std::string value(4096, '\0');
 
-		DWORD value_size = GetEnvironmentVariable("FREELAN_CONFIGURATION_FILE", &value[0], value.size());
+		DWORD value_size = GetEnvironmentVariable("FREELAN_CONFIGURATION_FILE", &value[0], static_cast<DWORD>(value.size()));
 
 		const char* val = NULL;
 

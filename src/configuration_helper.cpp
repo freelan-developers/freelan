@@ -227,7 +227,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 #ifdef _MSC_VER
 		std::string value(256, '\0');
 
-		DWORD value_size = GetEnvironmentVariable("FREELAN_SERVER_PASSWORD", &value[0], value.size());
+		DWORD value_size = GetEnvironmentVariable("FREELAN_SERVER_PASSWORD", &value[0], static_cast<DWORD>(value.size()));
 
 		const char* default_password = NULL;
 
@@ -255,7 +255,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 #ifdef _MSC_VER
 		std::string value(256, '\0');
 
-		DWORD value_size = GetEnvironmentVariable("FREELAN_SERVER_NETWORK", &value[0], value.size());
+		DWORD value_size = GetEnvironmentVariable("FREELAN_SERVER_NETWORK", &value[0], static_cast<DWORD>(value.size()));
 
 		const char* default_network = NULL;
 
