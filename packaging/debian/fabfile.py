@@ -369,7 +369,7 @@ def configure():
 
     copy_file('%configuration_path%/gbp.conf', '~/.gbp.conf')
 
-    for architecture in ['i386', 'amd64', 'armhf']:
+    for architecture in ['i386', 'amd64']:
         for distribution in ['wheezy-backports', 'unstable']:
             copy_file('%configuration_path%' + '/pbuilderrc-%s-%s' % (distribution, architecture), '~/.pbuilderrc-%s-%s' % (distribution, architecture))
 
@@ -381,7 +381,7 @@ def cowbuilder(override=False, distributions=None, architectures=None):
     if isinstance(architectures, basestring):
         architectures = [architectures]
 
-    for architecture in architectures or ['i386', 'amd64', 'armhf']:
+    for architecture in architectures or ['i386', 'amd64']:
         for distribution in distributions or ['wheezy-backports', 'unstable']:
             basepath = '/var/cache/pbuilder/base-%s-%s.cow' % (distribution, architecture)
 
@@ -526,7 +526,7 @@ def binary(unsigned=False, with_dependencies=False, repository=None, no_prompt=F
                 if source_architecture == 'all':
                     architectures = [local_architecture]
                 elif source_architecture == 'any':
-                    architectures = ['i386', 'amd64', 'armhf']
+                    architectures = ['i386', 'amd64']
                 else:
                     architectures = [source_architecture]
 
