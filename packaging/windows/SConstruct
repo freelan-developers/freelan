@@ -8,6 +8,9 @@ minor = '1'
 # You should not need to modify anything below this line
 
 import os
+import sys
+
+sys.path.insert(0, os.path.abspath('../../freelan-buildtools'))
 
 from freelan.buildtools import Environment
 
@@ -16,8 +19,8 @@ env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 defines = {
     'NAME': name,
     'VERSION': major + '.' + minor,
-    'ARCH': env.arch,
-    'XARCH': 'x64' if env.arch == 'amd64' else 'x86',
+    'ARCH': env.arch.lower(),
+    'XARCH': 'x64' if env.arch.lower() == 'amd64' else 'x86',
 }
 
 installer = env.INNOSetup(source = 'freelan.iss', ISCC_DEFINES = defines)
