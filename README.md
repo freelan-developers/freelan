@@ -54,15 +54,19 @@ To build then install everything from the directory (all sub-projects), type ins
 
 > scons install
 
+### Windows
+
+You will need Microsoft Visual Studio 2012 to compile freelan. All projects come with a `.vcxproj` file for all the targets (debug/release and x86/x64).
+
+The root directory also contains a solution file (`.sln`) that references all the sub-projects.
+
 Graphical User Interface
 ------------------------
 
-A graphical user interface exists (or will exist soon enough :D) and is available here:
-
- - [freelan-gui](https://github.com/freelan-developers/freelan-gui) - A Graphical User Interface for FreeLAN.
+A graphical user interface is planned but nothing is made public yet. You will just have to be patient :)
 
 Packaging
-----------
+---------
 
 See the `README.md` file into the `packaging` directory.
 
