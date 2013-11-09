@@ -14,6 +14,9 @@ export FREELAN_BUILD_ROOT="${FREELAN_ALL_ROOT}/build"
 # INSTALL_ROOT is a directory which contains include, lib and bin sub-directories.
 export FREELAN_INSTALL_ROOT="${FREELAN_ALL_ROOT}/install"
 
+# THIRD_PARTY_ROOT contains the compiled third-party libraries.
+export FREELAN_THIRD_PARTY_ROOT="${FREELAN_ALL_ROOT}/third-party/install"
+
 # Create the subdirectories
 for SUBDIR in include lib etc bin; do
 	mkdir -p ${FREELAN_BUILD_ROOT}/${SUBDIR}
@@ -33,23 +36,12 @@ export LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
 export LD_LIBRARY_PATH="${FREELAN_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
 export PATH="${FREELAN_INSTALL_PREFIX}/bin:${PATH}"
 
-# Add home-brew boost installation
-BOOST_INSTALL_PREFIX=/usr/local/opt/boost
-#BOOST_INSTALL_PREFIX=/opt/boxen/homebrew/opt/boost/
-export CPLUS_INCLUDE_PATH="${BOOST_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
-export C_INCLUDE_PATH="${BOOST_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}"
-export LIBRARY_PATH="${BOOST_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
-export LD_LIBRARY_PATH="${BOOST_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
-export PATH="${BOOST_INSTALL_PREFIX}/bin:${PATH}"
-
-# Add home-brew openssl installation
-OPENSSL_INSTALL_PREFIX=/usr/local/opt/openssl
-#OPENSSL_INSTALL_PREFIX=/opt/boxen/homebrew/opt/openssl
-export CPLUS_INCLUDE_PATH="${OPENSSL_INSTALL_PREFIX}/include:${CPLUS_INCLUDE_PATH}"
-export C_INCLUDE_PATH="${OPENSSL_INSTALL_PREFIX}/include:${C_INCLUDE_PATH}"
-export LIBRARY_PATH="${OPENSSL_INSTALL_PREFIX}/lib:${LIBRARY_PATH}"
-export LD_LIBRARY_PATH="${OPENSSL_INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH}"
-export PATH="${OPENSSL_INSTALL_PREFIX}/bin:${PATH}"
+# Add third-party installation
+export CPLUS_INCLUDE_PATH="${FREELAN_THIRD_PARTY_ROOT}/include:${CPLUS_INCLUDE_PATH}"
+export C_INCLUDE_PATH="${FREELAN_THIRD_PARTY_ROOT}/include:${C_INCLUDE_PATH}"
+export LIBRARY_PATH="${FREELAN_THIRD_PARTY_ROOT}/lib:${LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${FREELAN_THIRD_PARTY_ROOT}/lib:${LD_LIBRARY_PATH}"
+export PATH="${FREELAN_THIRD_PARTY_ROOT}/bin:${PATH}"
 
 # Fake ldconfig
 export FREELAN_FAKE_LDCONFIG=1
@@ -62,10 +54,6 @@ export PYTHONPATH="${FREELAN_ALL_ROOT}/freelan-buildtools:$PYTHONPATH"
 
 # Make the environment history local
 export HISTFILE="${FREELAN_ALL_ROOT}/.bash_history"
-
-# Boost suffix
-export FREELAN_RELEASE_BOOST_SUFFIX=-mt
-export FREELAN_DEBUG_BOOST_SUFFIX=-mt
 
 # This adds a prefix to the PS1
 # To enable the feature, modify your PS1 so that it starts with ${PS1_PREFIX}.
