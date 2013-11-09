@@ -38,13 +38,25 @@ if sys.platform.startswith('win32'):
     libraries.append('kfather_static')
     libraries.append('iconvplus_static')
     libraries.append('iconv')
-else:
+elif sys.platform.startswith('linux2'):
     libraries.append('freelan')
     libraries.append('asiotap')
     libraries.append('fscp')
     libraries.append('cryptoplus')
     libraries.append('kfather')
     libraries.append('iconvplus')
+else:
+    libraries.append('freelan_static')
+    libraries.append('asiotap_static')
+    libraries.append('fscp_static')
+    libraries.append('cryptoplus_static')
+    libraries.append('kfather_static')
+    libraries.append('iconvplus_static')
+    libraries.append('iconv')
+    libraries.append('boost_thread')
+    libraries.append('ldap')
+    libraries.append('ssl')
+    libraries.append('z')
 
 libraries.append('boost_system')
 libraries.append('boost_program_options')
