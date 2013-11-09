@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+	<title>freelan 1.1</title>
+	<organization>org.freelan</organization>
+	<domains enable_localSystem="true"/>
+	<options customize="never" require-scripts="true" rootVolumeOnly="true" />
+
+	<!-- Define documents displayed at various steps -->
+	<license    file="license.html"    mime-type="text/html" />
+	<conclusion file="conclusion.html" mime-type="text/html" />
+
+	<!-- List all component packages -->
+	<pkg-ref id="org.freelan.freelan" version="1" auth="root">org.freelan.freelan.pkg</pkg-ref>
+
+	<!-- List them again here. They can now be organized as a hierarchy if you want. -->
+	<choices-outline>
+		<line choice="org.freelan.freelan"/>
+	</choices-outline>
+
+	<!-- Define each choice above -->
+	<choice id="org.freelan.freelan" visible="false" title="freelan" description="The freelan daemon" start_selected="true">
+		<pkg-ref id="org.freelan.freelan"/>
+	</choice>
+</installer-gui-script>
