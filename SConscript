@@ -65,6 +65,9 @@ else:
 
     if sys.platform.startswith('darwin'):
         libraries.append('crypto')
+        libraries.append('ssl')
+        libraries.append('z')
+        libraries.append('ldap')
 
 project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
 
