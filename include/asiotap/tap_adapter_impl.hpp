@@ -68,6 +68,15 @@ namespace asiotap
 		public:
 
 			/**
+			 * \brief The adapter type.
+			 */
+			enum adapter_type
+			{
+				AT_TAP_ADAPTER = 0x00,
+				AT_TUN_ADAPTER = 0x01
+			};
+
+			/**
 			 * \brief The Ethernet address size.
 			 */
 			static const size_t ethernet_address_size = 6;
@@ -103,10 +112,11 @@ namespace asiotap
 			 * \brief Open the tap adapter.
 			 * \param name The name of the tap adapter device. On Windows, a GUID is expected.
 			 * \param mtu The mtu of the device. Specify 0 to get an automatic value.
+			 * \param type The type of the adapter.
 			 *
 			 * If the tap adapter was already opened, it will be closed first.
 			 */
-			void open(const std::string& name, unsigned int mtu);
+			void open(const std::string& name, unsigned int mtu, adapter_type type);
 
 			/**
 			 * \brief Close the tap adapter.
@@ -135,6 +145,13 @@ namespace asiotap
 			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			unsigned int mtu() const;
+
+			/**
+			 * \brief The type of the adapter.
+			 * \return The adapter type.
+			 * \warning The device must be opened or the returned value is unspecified.
+			 */
+			adapter_type type() const;
 
 			/**
 			 * \brief Get the Ethernet address.
@@ -269,6 +286,7 @@ namespace asiotap
 
 			std::string m_name;
 			unsigned int m_mtu;
+			adapter_type m_type;
 			ethernet_address_type m_ethernet_address;
 #ifdef WINDOWS
 			HANDLE m_handle;
@@ -296,6 +314,11 @@ namespace asiotap
 	inline unsigned int tap_adapter_impl::mtu() const
 	{
 		return m_mtu;
+	}
+
+	inline tap_adapter_impl::adapter_type tap_adapter_impl::type() const
+	{
+		return m_type;
 	}
 
 	inline const tap_adapter_impl::ethernet_address_type& tap_adapter_impl::ethernet_address() const

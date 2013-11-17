@@ -508,11 +508,15 @@ namespace asiotap
 #endif
 	}
 
-	void tap_adapter_impl::open(const std::string& _name, unsigned _mtu)
+	void tap_adapter_impl::open(const std::string& _name, unsigned _mtu, tap_adapter_impl::adapter_type _type)
 	{
 		close();
 
+		m_type = _type;
+
 #ifdef WINDOWS
+
+		/* TODO: Implement TUN logic for Windows. */
 
 		if (_name.empty())
 		{
@@ -618,7 +622,7 @@ namespace asiotap
 		struct ifreq ifr;
 		std::memset(&ifr, 0x00, sizeof(struct ifreq));
 
-		const std::string dev_name = "/dev/net/tap";
+		const std::string dev_name = (m_type == AT_TAP_ADAPTER) ? "/dev/net/tap" : "/dev/net/tun";
 
 		ifr.ifr_flags = IFF_NO_PI;
 
@@ -626,7 +630,14 @@ namespace asiotap
 		ifr.ifr_flags |= IFF_ONE_QUEUE;
 #endif
 
-		ifr.ifr_flags |= IFF_TAP;
+		if (m_type == AT_TAP_ADAPTER)
+		{
+			ifr.ifr_flags |= IFF_TAP;
+		}
+		else
+		{
+			ifr.ifr_flags |= IFF_TUN;
+		}
 
 		{
 			if (::access(dev_name.c_str(), F_OK) == -1)
@@ -741,7 +752,9 @@ namespace asiotap
 
 #else /* *BSD and Mac OS X */
 
-		const std::string dev_name = "/dev/tap";
+		/* TODO: Implement tun logic for BSD/Mac OS X */
+
+		const std::string dev_name = (m_type == AT_TAP_ADAPTER) ? "/dev/tap" : "/dev/tun";
 		std::string dev = "/dev/";
 
 		if (!_name.empty())
@@ -761,7 +774,14 @@ namespace asiotap
 					{
 						for (unsigned int i = 0 ; m_device < 0; ++i)
 						{
-							dev = "/dev/tap" + boost::lexical_cast<std::string>(i);
+							if (m_type == AT_TAP_ADAPTER)
+							{
+								dev = "/dev/tap" + boost::lexical_cast<std::string>(i);
+							}
+							else
+							{
+								dev = "/dev/tun" + boost::lexical_cast<std::string>(i);
+							}
 
 							m_device = ::open(dev.c_str(), O_RDWR);
 

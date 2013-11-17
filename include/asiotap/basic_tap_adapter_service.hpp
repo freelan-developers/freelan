@@ -60,9 +60,19 @@ namespace asiotap
 		public:
 
 			/**
+			 * \brief The implementation type.
+			 */
+			typedef TapAdapterImplementation raw_implementation_type;
+
+			/**
+			 * \brief The adapter type.
+			 */
+			typedef typename raw_implementation_type::adapter_type adapter_type;
+
+			/**
 			 * \brief The implementation pointer type.
 			 */
-			typedef boost::shared_ptr<TapAdapterImplementation> implementation_type;
+			typedef typename boost::shared_ptr<raw_implementation_type> implementation_type;
 
 			/**
 			 * \brief Enumerate the available tap adapter on the system.
@@ -103,8 +113,9 @@ namespace asiotap
 			 * \param impl The implementation that must be opened.
 			 * \param name The name of the device to open.
 			 * \param mtu The mtu of the device. Specify 0 to get an automatic value.
+			 * \param type The adapter type.
 			 */
-			void open(implementation_type& impl, const std::string& name, unsigned int mtu);
+			void open(implementation_type& impl, const std::string& name, unsigned int mtu, adapter_type type);
 
 			/**
 			 * \brief Close the specified implementation.
@@ -160,7 +171,7 @@ namespace asiotap
 
 				private:
 
-					boost::weak_ptr<TapAdapterImplementation> m_impl;
+					typename boost::weak_ptr<raw_implementation_type> m_impl;
 					boost::asio::io_service& m_io_service;
 					boost::asio::io_service::work m_work;
 					boost::asio::mutable_buffer m_buffer;
@@ -177,7 +188,7 @@ namespace asiotap
 
 				private:
 
-					boost::weak_ptr<TapAdapterImplementation> m_impl;
+					typename boost::weak_ptr<raw_implementation_type> m_impl;
 					boost::asio::io_service& m_io_service;
 					boost::asio::io_service::work m_work;
 					boost::asio::const_buffer m_buffer;
@@ -230,9 +241,9 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name, unsigned int mtu)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name, unsigned int mtu, basic_tap_adapter_service<TapAdapterImplementation>::adapter_type type)
 	{
-		impl->open(name, mtu);
+		impl->open(name, mtu, type);
 	}
 
 	template <typename TapAdapterImplementation>

@@ -62,6 +62,15 @@ namespace asiotap
 		public:
 
 			/**
+			 * \brief The adapter type.
+			 */
+			enum adapter_type
+			{
+				AT_TAP_ADAPTER = Service::raw_implementation_type::AT_TAP_ADAPTER,
+				AT_TUN_ADAPTER = Service::raw_implementation_type::AT_TUN_ADAPTER
+			};
+
+			/**
 			 * \brief The ethernet address type.
 			 */
 			typedef typename Service::implementation_type::element_type::ethernet_address_type ethernet_address_type;
@@ -88,8 +97,9 @@ namespace asiotap
 			 * \brief Open the tap adapter.
 			 * \param name The name of the tap adapter to open. On Windows a GUID is expected. If name is NULL, a device is selected/created automatically.
 			 * \param mtu The mtu of the device. Specify 0 to get an automatic value.
+			 * \param type The adapter type.
 			 */
-			void open(const std::string& name = "", unsigned int mtu = 0);
+			void open(const std::string& name = "", unsigned int mtu = 0, adapter_type type = AT_TAP_ADAPTER);
 
 			/**
 			 * \brief Close the tap adapter.
@@ -118,6 +128,13 @@ namespace asiotap
 			 * \warning The device must be opened or the returned value is unspecified.
 			 */
 			unsigned int mtu() const;
+
+			/**
+			 * \brief Get the adapter type.
+			 * \return The adapter type.
+			 * \warning The device must be opened or the returned value is unspecified.
+			 */
+			adapter_type type() const;
 
 			/**
 			 * \brief Get the Ethernet address.
@@ -272,9 +289,9 @@ namespace asiotap
 	}
 
 	template <typename Service>
-	inline void basic_tap_adapter<Service>::open(const std::string& _name, unsigned int _mtu)
+	inline void basic_tap_adapter<Service>::open(const std::string& _name, unsigned int _mtu, adapter_type _type)
 	{
-		this->service.open(this->implementation, _name, _mtu);
+		this->service.open(this->implementation, _name, _mtu, static_cast<typename Service::raw_implementation_type::adapter_type>(_type));
 	}
 
 	template <typename Service>
@@ -299,6 +316,12 @@ namespace asiotap
 	inline unsigned int basic_tap_adapter<Service>::mtu() const
 	{
 		return this->implementation->mtu();
+	}
+
+	template <typename Service>
+	inline typename basic_tap_adapter<Service>::adapter_type basic_tap_adapter<Service>::type() const
+	{
+		return static_cast<typename basic_tap_adapter<Service>::adapter_type>(this->implementation->type());
 	}
 
 	template <typename Service>
