@@ -56,7 +56,15 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The IPv6 filter.
+		 * \brief The IPv6 filter.
+		 */
+		template <>
+		class filter<ipv6_frame> : public _filter<ipv6_frame>
+		{
+		};
+
+		/**
+		 * \brief The IPv6 filter, depending on an Ethernet parent frame.
 		 */
 		template <typename ParentFilterType>
 		class filter<ipv6_frame, ParentFilterType> : public _filter<ipv6_frame, ParentFilterType>

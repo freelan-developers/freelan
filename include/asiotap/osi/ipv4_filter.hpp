@@ -56,19 +56,33 @@ namespace asiotap
 	namespace osi
 	{
 		/**
-		 * \brief The IPv4 filter.
+		 * \brief An IPv4 checksum filter.
+		 * \param helper The current frame.
+		 * \return true if the IP checksum is correct.
+		 */
+		bool check_ipv4_checksum(const_helper<ipv4_frame> helper);
+
+		/**
+		 * \brief The IPv4 filter.
+		 */
+		template <>
+		class filter<ipv4_frame> : public _filter<ipv4_frame>
+		{
+			public:
+
+				/**
+				 * \brief Add the checksum filter.
+				 */
+				void add_checksum_filter();
+		};
+
+		/**
+		 * \brief The IPv4 filter, depending on an Ethernet parent frame.
 		 */
 		template <typename ParentFilterType>
 		class filter<ipv4_frame, ParentFilterType> : public _filter<ipv4_frame, ParentFilterType>
 		{
 			public:
-
-				/**
-				 * \brief An IPv4 checksum filter.
-				 * \param helper The current frame.
-				 * \return true if the IP checksum is correct.
-				 */
-				static bool checksum_filter(const_helper<ipv4_frame> helper);
 
 				/**
 				 * \brief Constructor.
@@ -97,10 +111,14 @@ namespace asiotap
 		 */
 		bool check_frame(const_helper<ipv4_frame> frame);
 
-		template <typename ParentFilterType>
-		inline bool filter<ipv4_frame, ParentFilterType>::checksum_filter(const_helper<ipv4_frame> helper)
+		inline bool check_ipv4_checksum(const_helper<ipv4_frame> helper)
 		{
 			return helper.verify_checksum();
+		}
+
+		inline void filter<ipv4_frame>::add_checksum_filter()
+		{
+			this->add_filter(check_ipv4_checksum);
 		}
 
 		template <typename ParentFilterType>
@@ -111,7 +129,7 @@ namespace asiotap
 		template <typename ParentFilterType>
 		inline void filter<ipv4_frame, ParentFilterType>::add_checksum_filter()
 		{
-			this->add_filter(checksum_filter);
+			this->add_filter(check_ipv4_checksum);
 		}
 
 		template <>
