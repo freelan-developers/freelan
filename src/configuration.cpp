@@ -88,6 +88,7 @@ namespace freelan
 
 	tap_adapter_configuration::tap_adapter_configuration() :
 		enabled(true),
+		type(TAT_TAP),
 		ipv4_address_prefix_length(),
 		ipv6_address_prefix_length(),
 		arp_proxy_enabled(false),
@@ -247,6 +248,36 @@ namespace freelan
 				return os << "all";
 			case security_configuration::CRVM_NONE:
 				return os << "none";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
+
+	std::istream& operator>>(std::istream& is, tap_adapter_configuration::tap_adapter_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "tap")
+			v = tap_adapter_configuration::TAT_TAP;
+		else if (value == "tun")
+			v = tap_adapter_configuration::TAT_TUN;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::tap_adapter_type& value)
+	{
+		switch (value)
+		{
+			case tap_adapter_configuration::TAT_TAP:
+				return os << "tap";
+			case tap_adapter_configuration::TAT_TUN:
+				return os << "tun";
 		}
 
 		assert(false);

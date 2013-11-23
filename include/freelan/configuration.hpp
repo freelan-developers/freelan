@@ -348,6 +348,15 @@ namespace freelan
 		typedef asiotap::osi::ethernet_address ethernet_address_type;
 
 		/**
+		 * \brief The tap adapter type.
+		 */
+		enum tap_adapter_type
+		{
+			TAT_TAP = 0,
+			TAT_TUN = 1
+		};
+
+		/**
 		 * \brief Constructor.
 		 */
 		tap_adapter_configuration();
@@ -356,6 +365,11 @@ namespace freelan
 		 * \brief Whether the tap adapter is enabled.
 		 */
 		bool enabled;
+
+		/**
+		 * \brief The tap adapter type.
+		 */
+		tap_adapter_type type;
 
 		/**
 		 * \brief The tap adapter's name.
@@ -401,6 +415,11 @@ namespace freelan
 		 * \brief The DHCP server IPv6 address.
 		 */
 		ipv6_network_address dhcp_server_ipv6_address_prefix_length;
+
+		/**
+		 * \brief The remote IPv4 address.
+		 */
+		boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
 
 		/**
 		 * \brief The up callback type.
@@ -559,6 +578,22 @@ namespace freelan
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_revocation_validation_method_type& value);
+
+	/**
+	 * \brief Input a tap adapter type.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, tap_adapter_configuration::tap_adapter_type& value);
+
+	/**
+	 * \brief Output a tap adapter type to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::tap_adapter_type& value);
 
 	/**
 	 * \brief Input a routing method.

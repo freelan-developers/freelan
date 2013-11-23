@@ -200,11 +200,13 @@ namespace freelan
 		// Tap adapter
 		if (m_tap_adapter)
 		{
-			m_logger(LL_DEBUG) << "Opening tap adapter \"" << m_configuration.tap_adapter.name << "\" with a desired MTU set to: " << m_configuration.tap_adapter.mtu;
+			m_logger(LL_DEBUG) << "Opening tap adapter \"" << m_configuration.tap_adapter.name << "\" in mode " << m_configuration.tap_adapter.type << " with a desired MTU set to: " << m_configuration.tap_adapter.mtu;
 
-			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()));
+			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
 
-			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened with a MTU set to: " << m_tap_adapter->mtu();
+			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
+
+			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
@@ -216,7 +218,7 @@ namespace freelan
 					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
 					// We disable direct setting if DHCP is enabled.
 
-					if (!m_configuration.tap_adapter.dhcp_proxy_enabled)
+					if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
 					{
 						m_tap_adapter->add_ip_address_v4(
 						    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
@@ -252,43 +254,59 @@ namespace freelan
 				}
 			}
 
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TUN)
+			{
+				if (m_configuration.tap_adapter.remote_ipv4_address)
+				{
+					m_tap_adapter->set_remote_ip_address_v4(*m_configuration.tap_adapter.remote_ipv4_address);
+				}
+			}
+
 			m_tap_adapter->set_connected_state(true);
 
 			m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
 
-			// The ARP proxy
-			if (m_configuration.tap_adapter.arp_proxy_enabled)
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
-				m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
-				m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
+				// The ARP proxy
+				if (m_configuration.tap_adapter.arp_proxy_enabled)
+				{
+					m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
+					m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
+				}
+				else
+				{
+					m_arp_proxy.reset();
+				}
+
+				// The DHCP proxy
+				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
+				{
+					m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
+					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
+
+					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
+					{
+						m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.address());
+					}
+
+					if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+					{
+						m_dhcp_proxy->add_entry(
+								m_tap_adapter->ethernet_address(),
+								m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+								m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+						);
+					}
+				}
+				else
+				{
+					m_dhcp_proxy.reset();
+				}
 			}
 			else
 			{
 				m_arp_proxy.reset();
-			}
-
-			// The DHCP proxy
-			if (m_configuration.tap_adapter.dhcp_proxy_enabled)
-			{
-				m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
-				m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
-
-				if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
-				{
-					m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.address());
-				}
-
-				if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
-				{
-					m_dhcp_proxy->add_entry(
-					    m_tap_adapter->ethernet_address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-					);
-				}
-			}
-			else
-			{
 				m_dhcp_proxy.reset();
 			}
 
