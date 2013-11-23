@@ -206,6 +206,7 @@ int main()
 		tap_adapter.open("", 0, asiotap::tap_adapter::AT_TUN_ADAPTER);
 		tap_adapter.add_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
 		tap_adapter.add_ip_address_v6(boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64);
+		tap_adapter.set_remote_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.0"));
 		tap_adapter.set_connected_state(true);
 
 		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));

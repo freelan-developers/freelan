@@ -1630,4 +1630,63 @@ namespace asiotap
 			return false;
 		}
 	}
+
+	bool tap_adapter_impl::set_remote_ip_address_v4(const boost::asio::ip::address_v4& address)
+	{
+		if (is_open())
+		{
+#ifdef WINDOWS
+			//TODO: Implement
+#else
+			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+			if (ctl_fd < 0)
+			{
+				throw_last_system_error();
+			}
+
+			bool result = true;
+
+			try
+			{
+				ifreq ifr_d;
+
+				std::memset(&ifr_d, 0x00, sizeof(ifr_d));
+				std::strncpy(ifr_d.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+				sockaddr_in* ifr_dst_addr = reinterpret_cast<sockaddr_in*>(&ifr_d.ifr_dstaddr);
+				ifr_dst_addr->sin_family = AF_INET;
+#ifdef BSD
+				ifr_dst_addr->sin_len = sizeof(sockaddr_in);
+#endif
+				std::memcpy(&ifr_dst_addr->sin_addr.s_addr, address.to_bytes().c_array(), address.to_bytes().size());
+
+				if (::ioctl(ctl_fd, SIOCSIFDSTADDR, &ifr_d) < 0)
+				{
+					if (errno == EEXIST)
+					{
+						result = false;
+					}
+					else
+					{
+						throw_last_system_error();
+					}
+				}
+			}
+			catch (...)
+			{
+				::close(ctl_fd);
+
+				throw;
+			}
+
+			::close(ctl_fd);
+
+			return result;
+#endif
+		}
+		else
+		{
+			return false;
+		}
+	}
 }
