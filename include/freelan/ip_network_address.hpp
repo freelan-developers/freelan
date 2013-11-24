@@ -46,6 +46,9 @@
 #ifndef FREELAN_IP_NETWORK_ADDRESS_HPP
 #define FREELAN_IP_NETWORK_ADDRESS_HPP
 
+#include <vector>
+#include <set>
+
 #include <boost/asio.hpp>
 #include <boost/variant.hpp>
 
@@ -202,6 +205,56 @@ namespace freelan
 	typedef boost::variant<ipv4_network_address, ipv6_network_address> ip_network_address;
 
 	/**
+	 * \brief Convert an IP address into a network address.
+	 * \param addr The address.
+	 * \return The network address.
+	 */
+	inline ip_network_address to_network_address(const boost::asio::ip::address& addr)
+	{
+		if (addr.is_v4())
+		{
+			return addr.to_v4();
+		}
+		else
+		{
+			return addr.to_v6();
+		}
+	}
+
+	/**
+	 * \brief Convert an IP address into a network address.
+	 * \param addr The address.
+	 * \param prefix_len The prefix length.
+	 * \return The network address.
+	 */
+	inline ip_network_address to_network_address(const boost::asio::ip::address& addr, unsigned int prefix_len)
+	{
+		if (addr.is_v4())
+		{
+			return ipv4_network_address(addr.to_v4(), prefix_len);
+		}
+		else
+		{
+			return ipv6_network_address(addr.to_v6(), prefix_len);
+		}
+	}
+
+	/**
+	 * \brief An IPv4 network list type.
+	 */
+	typedef std::vector<ipv4_network_address> ipv4_network_address_list;
+
+	/**
+	 * \brief An IPv6 network list type.
+	 */
+	typedef std::vector<ipv6_network_address> ipv6_network_address_list;
+
+	/**
+	 * \brief A generic IP network list type.
+	 */
+	typedef std::vector<ip_network_address> ip_network_address_list;
+
+	/**
 	 * \brief A visitor that writes ip_network_address to output streams.
 	 */
 	class ip_network_address_output_visitor : public boost::static_visitor<std::ostream&>
@@ -328,19 +381,89 @@ namespace freelan
 	 * \param begin An iterator to the first element of the list.
 	 * \param end An iterator past the last element of the list.
 	 * \param addr The address to look for.
-	 * \return true if addr was found in the list.
+	 * \return An iterator to the entry that has the address, or end if no such element exists.
 	 */
 	template <typename NetworkAddressIterator, typename AddressType>
-	bool has_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
+	NetworkAddressIterator find_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
 	{
 		for (; begin != end; ++begin)
 		{
 			if (has_address(*begin, addr))
-				return true;
+			{
+				break;
+			}
 		}
 
-		return false;
+		return begin;
 	}
+
+	/**
+	 * \brief Look for an address in a list.
+	 * \param begin An iterator to the first element of the list.
+	 * \param end An iterator past the last element of the list.
+	 * \param addr The address to look for.
+	 * \return true if the address was found in the list.
+	 */
+	template <typename NetworkAddressIterator, typename AddressType>
+	bool has_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
+	{
+		return (find_address(begin, end, addr) != end);
+	}
+
+	/**
+	 * \brief A visitor that gets the prefix length.
+	 */
+	class ip_network_address_prefix_len_visitor : public boost::static_visitor<unsigned int>
+	{
+		public:
+
+			/**
+			 * \brief Get the prefix length of the specified ip_network_address.
+			 * \tparam T The type of the ip_network_address.
+			 * \param ina The ip_network_address.
+			 * \return The prefix length.
+			 */
+			template <typename T>
+			result_type operator()(const T& ina) const
+			{
+				return ina.prefix_length();
+			}
+	};
+
+	/**
+	 * \brief Get the prefix length of a given network address.
+	 * \param ina the ip_network_address.
+	 * \return The network address prefix length.
+	 */
+	inline unsigned int prefix_length(const ip_network_address& ina)
+	{
+		return boost::apply_visitor(ip_network_address_prefix_len_visitor(), ina);
+	}
+
+	/**
+	 * \brief A route comparison class.
+	 */
+	class routes_compare
+	{
+		public:
+
+		/**
+		 * \brief Compare two routes.
+		 * \param lhs The first route.
+		 * \param rhs The second route.
+		 * \return true if lhs has a more specific prefix length.
+		 */
+		bool operator()(const ip_network_address& lhs, const ip_network_address& rhs)
+		{
+			return prefix_length(lhs) > prefix_length(rhs);
+		}
+	};
+
+	/**
+	 * \brief A generic routes list.
+	 */
+	typedef std::set<ip_network_address, routes_compare> routes_type;
+
 }
 
 #endif /* FREELAN_IP_NETWORK_ADDRESS_HPP */

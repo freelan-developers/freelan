@@ -54,6 +54,8 @@
 #include "client.hpp"
 #include "tap_adapter_switch_port.hpp"
 #include "endpoint_switch_port.hpp"
+#include "tap_adapter_router_port.hpp"
+#include "endpoint_router_port.hpp"
 #include "logger_stream.hpp"
 
 namespace freelan
@@ -119,6 +121,7 @@ namespace freelan
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
 		m_switch(m_configuration.switch_),
+		m_router(m_configuration.router),
 		m_check_configuration_timer(m_io_service)
 	{
 	}
@@ -148,173 +151,11 @@ namespace freelan
 			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
 		}
 
+		// Create the FSCP server
 		create_server();
+
+		// Create the TAP/TUN adapter.
 		create_tap_adapter();
-
-		// FSCP
-		m_server->open(*m_listen_endpoint);
-
-		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
-		{
-			m_ca_store = cryptoplus::x509::store::create();
-
-			BOOST_FOREACH(const cert_type& cert, m_configuration.security.certificate_authority_list)
-			{
-				m_ca_store.add_certificate(cert);
-			}
-
-			BOOST_FOREACH(const crl_type& crl, m_configuration.security.certificate_revocation_list_list)
-			{
-				m_ca_store.add_certificate_revocation_list(crl);
-			}
-
-			switch (m_configuration.security.certificate_revocation_validation_method)
-			{
-				case security_configuration::CRVM_LAST:
-					{
-						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK);
-						break;
-					}
-				case security_configuration::CRVM_ALL:
-					{
-						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
-						break;
-					}
-				case security_configuration::CRVM_NONE:
-					{
-						break;
-					}
-			}
-		}
-
-		BOOST_FOREACH(const ip_network_address& network_address, m_configuration.fscp.never_contact_list)
-		{
-			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
-		}
-
-		// We start the contact loop
-		do_contact();
-		m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
-		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
-
-		// Tap adapter
-		if (m_tap_adapter)
-		{
-			m_logger(LL_DEBUG) << "Opening tap adapter \"" << m_configuration.tap_adapter.name << "\" in mode " << m_configuration.tap_adapter.type << " with a desired MTU set to: " << m_configuration.tap_adapter.mtu;
-
-			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
-
-			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
-
-			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
-
-			// IPv4 address
-			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
-			{
-				try
-				{
-#ifdef WINDOWS
-					// Quick fix for Windows:
-					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
-					// We disable direct setting if DHCP is enabled.
-
-					if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
-					{
-						m_tap_adapter->add_ip_address_v4(
-						    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-						    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-						);
-					}
-#else
-					m_tap_adapter->add_ip_address_v4(
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-					);
-#endif
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot set IPv4 address: " << ex.what();
-				}
-			}
-
-			// IPv6 address
-			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
-			{
-				try
-				{
-					m_tap_adapter->add_ip_address_v6(
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
-					);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot set IPv6 address: " << ex.what();
-				}
-			}
-
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TUN)
-			{
-				if (m_configuration.tap_adapter.remote_ipv4_address)
-				{
-					m_tap_adapter->set_remote_ip_address_v4(*m_configuration.tap_adapter.remote_ipv4_address);
-				}
-			}
-
-			m_tap_adapter->set_connected_state(true);
-
-			m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
-
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
-			{
-				// The ARP proxy
-				if (m_configuration.tap_adapter.arp_proxy_enabled)
-				{
-					m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
-					m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
-				}
-				else
-				{
-					m_arp_proxy.reset();
-				}
-
-				// The DHCP proxy
-				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
-				{
-					m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
-					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
-
-					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
-					{
-						m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.address());
-					}
-
-					if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
-					{
-						m_dhcp_proxy->add_entry(
-								m_tap_adapter->ethernet_address(),
-								m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-								m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-						);
-					}
-				}
-				else
-				{
-					m_dhcp_proxy.reset();
-				}
-			}
-			else
-			{
-				m_arp_proxy.reset();
-				m_dhcp_proxy.reset();
-			}
-
-			if (m_configuration.tap_adapter.up_callback)
-			{
-				m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
-			}
-		}
 
 		m_logger(LL_DEBUG) << "Core opened.";
 
@@ -535,10 +376,23 @@ namespace freelan
 
 		if (is_new)
 		{
-			const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+			{
+				const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
 
-			m_endpoint_switch_port_map[sender] = port;
-			m_switch.register_port(port, ENDPOINTS_GROUP);
+				m_endpoint_switch_port_map[sender] = port;
+				m_switch.register_port(port, ENDPOINTS_GROUP);
+			}
+			else
+			{
+				//TODO: Get the routes somewhere...
+				routes_type local_routes;
+
+				const router::port_type port = boost::make_shared<endpoint_router_port>(sender, local_routes, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+
+				m_endpoint_router_port_map[sender] = port;
+				m_router.register_port(port, ENDPOINTS_GROUP);
+			}
 		}
 
 		if (m_session_established_callback)
@@ -558,12 +412,25 @@ namespace freelan
 			m_session_lost_callback(sender);
 		}
 
-		const switch_::port_type port = m_endpoint_switch_port_map[sender];
-
-		if (port)
+		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 		{
-			m_switch.unregister_port(port);
-			m_endpoint_switch_port_map.erase(sender);
+			const switch_::port_type port = m_endpoint_switch_port_map[sender];
+
+			if (port)
+			{
+				m_switch.unregister_port(port);
+				m_endpoint_switch_port_map.erase(sender);
+			}
+		}
+		else
+		{
+			const router::port_type port = m_endpoint_router_port_map[sender];
+
+			if (port)
+			{
+				m_router.unregister_port(port);
+				m_endpoint_router_port_map.erase(sender);
+			}
 		}
 	}
 
@@ -572,7 +439,15 @@ namespace freelan
 		switch (channel_number)
 		{
 			case fscp::CHANNEL_NUMBER_0:
-				on_ethernet_data(sender, data);
+				if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+				{
+					on_ethernet_data(sender, data);
+				}
+				else
+				{
+					on_ip_data(sender, data);
+				}
+
 				break;
 			default:
 				m_logger(LL_WARNING) << "Received unhandled " << boost::asio::buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
@@ -622,6 +497,16 @@ namespace freelan
 		}
 	}
 
+	void core::on_ip_data(const ep_type& sender, boost::asio::const_buffer data)
+	{
+		const router::port_type port = m_endpoint_router_port_map[sender];
+
+		if (port)
+		{
+			m_router.receive_data(port, data);
+		}
+	}
+
 	void core::on_network_error(const ep_type& target, const boost::system::error_code& ec)
 	{
 		m_logger(LL_WARNING) << "Error while sending message to" << target << ": " << ec;
@@ -633,28 +518,36 @@ namespace freelan
 		{
 			boost::asio::const_buffer data = boost::asio::buffer(m_tap_adapter_buffer, cnt);
 
-			bool handled = false;
-
-			if (m_arp_proxy || m_dhcp_proxy)
+			if (m_tap_adapter->type() == asiotap::tap_adapter::AT_TAP_ADAPTER)
 			{
-				m_ethernet_filter.parse(data);
+				bool handled = false;
 
-				if (m_arp_proxy && m_arp_filter.get_last_helper())
+				if (m_arp_proxy || m_dhcp_proxy)
 				{
-					handled = true;
-					m_arp_filter.clear_last_helper();
+					m_ethernet_filter.parse(data);
+
+					if (m_arp_proxy && m_arp_filter.get_last_helper())
+					{
+						handled = true;
+						m_arp_filter.clear_last_helper();
+					}
+
+					if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
+					{
+						handled = true;
+						m_dhcp_filter.clear_last_helper();
+					}
 				}
 
-				if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
+				if (!handled)
 				{
-					handled = true;
-					m_dhcp_filter.clear_last_helper();
+					m_switch.receive_data(m_tap_adapter_switch_port, data);
 				}
 			}
-
-			if (!handled)
+			else
 			{
-				m_switch.receive_data(m_tap_adapter_switch_port, data);
+				// This is a TUN interface. We receive either IPv4 or IPv6 frames.
+				m_router.receive_data(m_tap_adapter_router_port, data);
 			}
 
 			// Start another read
@@ -794,16 +687,195 @@ namespace freelan
 		m_server->set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
 		m_server->set_contact_message_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
 		m_server->set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
+
+		m_server->open(*m_listen_endpoint);
+
+		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
+		{
+			m_ca_store = cryptoplus::x509::store::create();
+
+			BOOST_FOREACH(const cert_type& cert, m_configuration.security.certificate_authority_list)
+			{
+				m_ca_store.add_certificate(cert);
+			}
+
+			BOOST_FOREACH(const crl_type& crl, m_configuration.security.certificate_revocation_list_list)
+			{
+				m_ca_store.add_certificate_revocation_list(crl);
+			}
+
+			switch (m_configuration.security.certificate_revocation_validation_method)
+			{
+				case security_configuration::CRVM_LAST:
+					{
+						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK);
+						break;
+					}
+				case security_configuration::CRVM_ALL:
+					{
+						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
+						break;
+					}
+				case security_configuration::CRVM_NONE:
+					{
+						break;
+					}
+			}
+		}
+
+		BOOST_FOREACH(const ip_network_address& network_address, m_configuration.fscp.never_contact_list)
+		{
+			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
+		}
+
+		// We start the contact loop
+		do_contact();
+		m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
+		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+
 	}
 
 	void core::create_tap_adapter()
 	{
 		if (m_configuration.tap_adapter.enabled)
 		{
+			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
+
 			m_tap_adapter.reset(new asiotap::tap_adapter(m_io_service));
 
-			m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
-			m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
+			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
+			{
+				// Registers the switch port.
+				m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
+				m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
+			}
+			else
+			{
+				// Registers the router port.
+				//
+				//TODO: Get the routes somewhere...
+				routes_type local_routes;
+
+				m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
+				m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
+			}
+
+			m_logger(LL_DEBUG) << "Opening tap adapter \"" << m_configuration.tap_adapter.name << "\" in mode " << m_configuration.tap_adapter.type << " with a desired MTU set to: " << m_configuration.tap_adapter.mtu;
+
+			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
+
+			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
+
+			// IPv4 address
+			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+			{
+				try
+				{
+#ifdef WINDOWS
+					// Quick fix for Windows:
+					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
+					// We disable direct setting if DHCP is enabled.
+
+					if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
+					{
+						m_tap_adapter->add_ip_address_v4(
+						    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+						    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+						);
+					}
+#else
+					m_tap_adapter->add_ip_address_v4(
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+					);
+#endif
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot set IPv4 address: " << ex.what();
+				}
+			}
+
+			// IPv6 address
+			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
+			{
+				try
+				{
+					m_tap_adapter->add_ip_address_v6(
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
+					);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot set IPv6 address: " << ex.what();
+				}
+			}
+
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TUN)
+			{
+				if (m_configuration.tap_adapter.remote_ipv4_address)
+				{
+					m_tap_adapter->set_remote_ip_address_v4(*m_configuration.tap_adapter.remote_ipv4_address);
+				}
+			}
+
+			m_tap_adapter->set_connected_state(true);
+
+			m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
+
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+			{
+				// The ARP proxy
+				if (m_configuration.tap_adapter.arp_proxy_enabled)
+				{
+					m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
+					m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
+				}
+				else
+				{
+					m_arp_proxy.reset();
+				}
+
+				// The DHCP proxy
+				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
+				{
+					m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
+					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
+
+					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
+					{
+						m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.address());
+					}
+
+					if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+					{
+						m_dhcp_proxy->add_entry(
+								m_tap_adapter->ethernet_address(),
+								m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+								m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+						);
+					}
+				}
+				else
+				{
+					m_dhcp_proxy.reset();
+				}
+			}
+			else
+			{
+				m_arp_proxy.reset();
+				m_dhcp_proxy.reset();
+			}
+
+			if (m_configuration.tap_adapter.up_callback)
+			{
+				m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
+			}
+		}
+		else
+		{
+			m_tap_adapter.reset();
 		}
 	}
 

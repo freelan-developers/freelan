@@ -107,12 +107,18 @@ namespace freelan
 	{
 	}
 
+	router_configuration::router_configuration() :
+		client_routing_enabled(false)
+	{
+	}
+
 	configuration::configuration() :
 		server(),
 		fscp(),
 		security(),
 		tap_adapter(),
-		switch_()
+		switch_(),
+		router()
 	{
 	}
 

@@ -62,6 +62,7 @@
 
 #include "configuration.hpp"
 #include "switch.hpp"
+#include "router.hpp"
 #include "logger.hpp"
 
 namespace freelan
@@ -298,6 +299,7 @@ namespace freelan
 			bool on_contact_request(const ep_type&, cert_type, const ep_type&);
 			void on_contact(const ep_type&, cert_type, const ep_type&);
 			void on_ethernet_data(const ep_type&, boost::asio::const_buffer);
+			void on_ip_data(const ep_type&, boost::asio::const_buffer);
 			void on_network_error(const ep_type&, const boost::system::error_code&);
 
 			// Tap adapter methods
@@ -368,6 +370,14 @@ namespace freelan
 			endpoint_switch_port_map_type m_endpoint_switch_port_map;
 
 			switch_::port_type m_tap_adapter_switch_port;
+
+			// Router
+			router m_router;
+
+			typedef std::map<ep_type, router::port_type> endpoint_router_port_map_type;
+			endpoint_router_port_map_type m_endpoint_router_port_map;
+
+			router::port_type m_tap_adapter_router_port;
 
 			// Checks
 			bool is_banned(const boost::asio::ip::address& address) const;
