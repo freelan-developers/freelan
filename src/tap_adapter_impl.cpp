@@ -1425,6 +1425,29 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
+			// in TUN mode, we need to perform an ioctl with some IPv4 parameters
+			if(m_type == AT_TUN_ADAPTER)
+			{
+				uint8_t param[12];
+				DWORD len = 0;
+
+				boost::asio::ip::address_v4::bytes_type addr = address.to_bytes();
+				uint32_t netmask = htonl((0xFFFFFFFF >> (32 - prefix_len)) << (32 - prefix_len));
+				uint32_t network = htonl(address.to_ulong()) & netmask;
+
+				// address
+				std::memcpy(param, addr.c_array(), addr.size());
+				// network
+				std::memcpy(param + 4, &network, sizeof(uint32_t));
+				// netmask
+				std::memcpy(param + 8, &netmask, sizeof(uint32_t));
+
+				if (!DeviceIoControl(m_handle, TAP_IOCTL_CONFIG_TUN, param, sizeof(param), NULL, 0, &len, NULL))
+				{
+					throw_last_system_error();
+				}
+			}
+
 			return (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) == 0);
 #else
 			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
