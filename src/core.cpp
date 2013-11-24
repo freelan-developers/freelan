@@ -752,9 +752,7 @@ namespace freelan
 			else
 			{
 				// Registers the router port.
-				//
-				//TODO: Get the routes somewhere...
-				routes_type local_routes;
+				const routes_type& local_routes = m_configuration.tap_adapter.local_ip_routes;
 
 				m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
 				m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
