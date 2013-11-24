@@ -60,6 +60,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 namespace asiotap
 {
@@ -85,6 +86,20 @@ namespace asiotap
 			 * \brief The Ethernet address type.
 			 */
 			typedef boost::array<unsigned char, ethernet_address_size> ethernet_address_type;
+
+			/**
+			 * \brief An IP address.
+			 */
+			struct ip_address
+			{
+				boost::asio::ip::address address;
+				unsigned int prefix_length;
+			};
+
+			/**
+			 * \brief A list of IP addresses.
+			 */
+			typedef std::vector<ip_address> ip_address_list;
 
 			/**
 			 * \brief Enumerate the available tap adapter on the system.
@@ -245,6 +260,12 @@ namespace asiotap
 			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 */
 			bool remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Get the list of set IP addresses and prefix lengths.
+			 * \return The list of set IP addresses and prefix lengths.
+			 */
+			ip_address_list get_ip_addresses() const;
 
 			/**
 			 * \brief Add an IPv4 address to the tap adapter.

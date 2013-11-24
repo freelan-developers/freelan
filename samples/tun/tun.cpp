@@ -17,6 +17,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/foreach.hpp>
 
 #include <cstdlib>
 #include <csignal>
@@ -210,6 +211,15 @@ int main()
 		tap_adapter.set_connected_state(true);
 
 		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+
+		const asiotap::tap_adapter::ip_address_list addresses = tap_adapter.get_ip_addresses();
+
+		std::cout << "Current IP addresses for the interface:" << std::endl;
+
+		BOOST_FOREACH(const asiotap::tap_adapter::ip_address& address, addresses)
+		{
+			std::cout << address.address << "/" << address.prefix_length << std::endl;
+		}
 
 		_io_service.run();
 	}

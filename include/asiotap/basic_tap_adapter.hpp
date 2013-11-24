@@ -50,6 +50,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 namespace asiotap
 {
@@ -74,6 +75,16 @@ namespace asiotap
 			 * \brief The ethernet address type.
 			 */
 			typedef typename Service::implementation_type::element_type::ethernet_address_type ethernet_address_type;
+
+			/**
+			 * \brief An IP address.
+			 */
+			typedef typename Service::implementation_type::element_type::ip_address ip_address;
+
+			/**
+			 * \brief A list of IP addresses.
+			 */
+			typedef typename Service::implementation_type::element_type::ip_address_list ip_address_list;
 
 			/**
 			 * \brief Enumerate the available tap adapter on the system.
@@ -228,6 +239,12 @@ namespace asiotap
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
 			bool remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Get the list of set IP addresses and prefix lengths.
+			 * \return The list of set IP addresses and prefix lengths.
+			 */
+			ip_address_list get_ip_addresses() const;
 
 			/**
 			 * \brief Add an IPv4 address to the tap adapter.
@@ -424,6 +441,12 @@ namespace asiotap
 	inline bool basic_tap_adapter<Service>::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{
 		return this->implementation->remove_ip_address(address, prefix_len);
+	}
+
+	template <typename Service>
+	inline typename basic_tap_adapter<Service>::ip_address_list basic_tap_adapter<Service>::get_ip_addresses() const
+	{
+		return this->implementation->get_ip_addresses();
 	}
 
 	template <typename Service>

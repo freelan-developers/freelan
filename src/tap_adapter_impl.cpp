@@ -421,6 +421,37 @@ namespace asiotap
 #else
 #ifndef AIO_RESOLUTION
 #define AIO_RESOLUTION 500
+
+		unsigned int netmask_to_prefix_len(in_addr netmask)
+		{
+			uint32_t bits = ~ntohl(netmask.s_addr);
+
+			unsigned int result = 0;
+
+			while (bits > 0) {
+				bits >>=1;
+				++result;
+			}
+
+			return (sizeof(in_addr) * 8) - result;
+		}
+
+		unsigned int netmask_to_prefix_len(in6_addr netmask)
+		{
+			unsigned int result = 0;
+
+			for (size_t i = 0; i < sizeof(netmask.s6_addr); ++i)
+			{
+				uint8_t bits = ~netmask.s6_addr[i];
+
+				while (bits > 0) {
+					bits >>=1;
+					++result;
+				}
+			}
+
+			return (sizeof(in6_addr) * 8) - result;
+		}
 #endif
 
 		const boost::posix_time::time_duration AIO_RESOLUTION_DURATION = boost::posix_time::milliseconds(AIO_RESOLUTION);
@@ -473,7 +504,7 @@ namespace asiotap
 			{
 				const std::string name(ifa->ifa_name);
 
-				if (name.substr(0, 3) == "tap")
+				if ((name.substr(0, 3) == "tap") || (name.substr(0, 3) == "tun"))
 				{
 					result[name] = name;
 				}
@@ -752,7 +783,7 @@ namespace asiotap
 
 #else /* *BSD and Mac OS X */
 
-		/* TODO: Implement tun logic for BSD/Mac OS X */
+		/* TODO: Implement TUN logic for BSD/Mac OS X */
 
 		const std::string dev_name = (m_type == AT_TAP_ADAPTER) ? "/dev/tap" : "/dev/tun";
 		std::string dev = "/dev/";
@@ -860,6 +891,8 @@ namespace asiotap
 				/* find the hardware address of tap inteface */
 				if (getifaddrs(&addrs) != -1)
 				{
+					boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+
 					for(struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next)
 					{
 						if ((ifa->ifa_addr->sa_family == AF_LINK) && !std::memcmp(ifa->ifa_name, m_name.c_str(), m_name.length()))
@@ -874,8 +907,6 @@ namespace asiotap
 							}
 						}
 					}
-
-					freeifaddrs(addrs);
 				}
 			}
 			catch (...)
@@ -1314,6 +1345,79 @@ namespace asiotap
 		}
 	}
 
+	tap_adapter_impl::ip_address_list tap_adapter_impl::get_ip_addresses() const
+	{
+		ip_address_list result;
+
+#ifdef WINDOWS
+		//TODO: Implement get_ip_addresses() for Windows.
+#else
+		struct ifaddrs* addrs = NULL;
+
+		if (getifaddrs(&addrs) != -1)
+		{
+			boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+
+			for (struct ifaddrs* ifa = paddrs.get(); ifa != NULL ; ifa = ifa->ifa_next)
+			{
+				const std::string ifname(ifa->ifa_name);
+
+				if ((ifa->ifa_addr) && (ifname == name()))
+				{
+					if (ifa->ifa_addr->sa_family == AF_INET)
+					{
+						struct sockaddr_in* sai = (struct sockaddr_in*)ifa->ifa_addr;
+
+						boost::asio::ip::address_v4::bytes_type bytes;
+						memcpy(bytes.c_array(), &sai->sin_addr, bytes.size());
+
+						boost::asio::ip::address_v4 address(bytes);
+
+						unsigned int prefix_len = sizeof(in_addr) * 8;
+
+						if (ifa->ifa_netmask)
+						{
+							struct sockaddr_in* sain = (struct sockaddr_in*)ifa->ifa_netmask;
+
+							prefix_len = netmask_to_prefix_len(sain->sin_addr);
+						}
+
+						ip_address item = { address, prefix_len };
+
+						result.push_back(item);
+					}
+					else if (ifa->ifa_addr->sa_family == AF_INET6)
+					{
+						struct sockaddr_in6* sai = (struct sockaddr_in6*)ifa->ifa_addr;
+
+						boost::asio::ip::address_v6::bytes_type bytes;
+						memcpy(bytes.c_array(), &sai->sin6_addr, bytes.size());
+
+						boost::asio::ip::address_v6 address(bytes);
+
+						unsigned int prefix_len = sizeof(in6_addr) * 8;
+
+						if (ifa->ifa_netmask)
+						{
+							struct sockaddr_in6* sain = (struct sockaddr_in6*)ifa->ifa_netmask;
+
+							prefix_len = netmask_to_prefix_len(sain->sin6_addr);
+						}
+
+						ip_address item = { address, prefix_len };
+
+						result.push_back(item);
+					}
+				}
+			}
+		}
+
+		return result;
+#endif
+
+		return result;
+	}
+
 	bool tap_adapter_impl::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		assert(prefix_len < 32);
@@ -1636,7 +1740,7 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			//TODO: Implement
+			//TODO: Implement set_remote_ip_address_v4() for Windows
 #else
 			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
 
