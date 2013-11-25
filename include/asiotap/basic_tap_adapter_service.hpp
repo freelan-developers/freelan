@@ -236,7 +236,7 @@ namespace asiotap
 	template <typename TapAdapterImplementation>
 	inline void basic_tap_adapter_service<TapAdapterImplementation>::destroy(implementation_type& impl)
 	{
-		impl->cancel();
+		impl->close();
 		impl.reset();
 	}
 
@@ -324,6 +324,20 @@ namespace asiotap
 			unsigned char* data = boost::asio::buffer_cast<unsigned char*>(m_buffer);
 			size_t data_len = boost::asio::buffer_size(m_buffer);
 
+#ifdef MACINTOSH
+			try
+			{
+				const size_t cnt = impl->read(data, data_len);
+
+				boost::system::error_code ec;
+
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
+			}
+			catch (boost::system::system_error& ex)
+			{
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
+			}
+#else
 			impl->begin_read(data, data_len);
 
 			try
@@ -346,6 +360,7 @@ namespace asiotap
 			{
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
+#endif
 		}
 		else
 		{
@@ -375,6 +390,20 @@ namespace asiotap
 			const unsigned char* data = boost::asio::buffer_cast<const unsigned char*>(m_buffer);
 			size_t data_len = boost::asio::buffer_size(m_buffer);
 
+#ifdef MACINTOSH
+			try
+			{
+				const size_t cnt = impl->write(data, data_len);
+
+				boost::system::error_code ec;
+
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ec, cnt));
+			}
+			catch (boost::system::system_error& ex)
+			{
+				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
+			}
+#else
 			impl->begin_write(data, data_len);
 
 			try
@@ -397,6 +426,7 @@ namespace asiotap
 			{
 				this->m_io_service.post(boost::asio::detail::bind_handler(m_handler, ex.code(), 0));
 			}
+#endif
 		}
 		else
 		{

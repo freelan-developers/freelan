@@ -175,6 +175,8 @@ namespace asiotap
 			 */
 			const ethernet_address_type& ethernet_address() const;
 
+#if (!defined(MACINTOSH))
+
 			/**
 			 * \brief Start a read.
 			 * \param buf The buffer to read the data to.
@@ -208,6 +210,8 @@ namespace asiotap
 			 * If the call fails without throwing, you may retry the call or cancel the write operation using cancel_write().
 			 */
 			bool end_write(size_t& cnt, const boost::posix_time::time_duration& timeout = boost::posix_time::time_duration(boost::posix_time::not_a_date_time));
+
+#endif
 
 			/**
 			 * \brief Cancel any pending read operation.
@@ -359,9 +363,14 @@ namespace asiotap
 
 	inline void tap_adapter_impl::cancel()
 	{
+#ifndef MACINTOSH
 		cancel_read();
 		cancel_write();
+#else
+		throw std::runtime_error("Cancelling an I/O operation is not supported on OSX");
+#endif
 	}
+
 
 	inline bool tap_adapter_impl::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
 	{

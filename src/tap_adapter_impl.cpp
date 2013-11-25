@@ -475,6 +475,7 @@ namespace asiotap
 			throw_system_error(errno);
 		}
 
+#ifndef MACINTOSH
 		timespec time_duration_to_timespec(const boost::posix_time::time_duration& duration)
 		{
 			timespec result = { 0, 0 };
@@ -484,6 +485,8 @@ namespace asiotap
 
 			return result;
 		}
+#endif /* MACINTOSH */
+
 #endif
 	}
 
@@ -1034,6 +1037,8 @@ namespace asiotap
 		}
 	}
 
+#if (!defined(MACINTOSH))
+
 	void tap_adapter_impl::begin_read(void* buf, size_t buf_len)
 	{
 		assert(buf);
@@ -1228,9 +1233,13 @@ namespace asiotap
 			return false;
 		}
 	}
+#endif
 
 	void tap_adapter_impl::cancel_read()
 	{
+#ifdef MACINTOSH
+		throw std::runtime_error("Cancelling an I/O operation is not supported on OSX");
+#else
 		if (is_open())
 		{
 #ifdef WINDOWS
@@ -1254,10 +1263,14 @@ namespace asiotap
 			}
 #endif
 		}
+#endif
 	}
 
 	void tap_adapter_impl::cancel_write()
 	{
+#ifdef MACINTOSH
+		throw std::runtime_error("Cancelling an I/O operation is not supported on OSX");
+#else
 		if (is_open())
 		{
 #ifdef WINDOWS
@@ -1281,6 +1294,7 @@ namespace asiotap
 			}
 #endif
 		}
+#endif
 	}
 
 	size_t tap_adapter_impl::read(void* buf, size_t buf_len)
