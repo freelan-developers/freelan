@@ -786,8 +786,6 @@ namespace asiotap
 
 #else /* *BSD and Mac OS X */
 
-		/* TODO: Implement TUN logic for BSD/Mac OS X */
-
 		const std::string dev_name = (m_type == AT_TAP_ADAPTER) ? "/dev/tap" : "/dev/tun";
 		std::string dev = "/dev/";
 
