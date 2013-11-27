@@ -428,6 +428,7 @@ namespace asiotap
 			oss << "int " << address_family << " add address " << interface_index << " " << address;
 
 			OSVERSIONINFO os_version;
+			os_version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 			GetVersionEx(&os_version);
 
 			// The /prefix parameter is only supported after Windows XP
