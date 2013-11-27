@@ -560,7 +560,7 @@ namespace asiotap
 			{
 				try
 				{
-					open(tap_adapter->first, _mtu);
+					open(tap_adapter->first, _mtu, _type);
 				}
 				catch (const std::exception&)
 				{
@@ -1362,7 +1362,109 @@ namespace asiotap
 		ip_address_list result;
 
 #ifdef WINDOWS
-		//TODO: Implement get_ip_addresses() for Windows.
+		IP_ADAPTER_ADDRESSES* allAdapters = NULL;
+		IP_ADAPTER_ADDRESSES* adapter = NULL;
+		ULONG size = 16384;
+		DWORD ret = 0;
+
+		do
+		{
+			/* we should loop only if host has more than
+			 * (size / sizeof(IP_ADAPTER_ADDRESSES)) interfaces
+			 */
+			allAdapters = (IP_ADAPTER_ADDRESSES*)malloc(size);
+
+			if(!allAdapters)
+			{
+				/* out of memory */
+				throw_last_system_error();
+			}
+
+			/* get the list of host addresses and try to find
+			 * the index
+			 */
+			ret = GetAdaptersAddresses(AF_UNSPEC,
+					GAA_FLAG_INCLUDE_ALL_INTERFACES | GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_DNS_SERVER |
+					GAA_FLAG_SKIP_FRIENDLY_NAME | GAA_FLAG_SKIP_MULTICAST,
+					NULL, /* reserved */
+					allAdapters,
+					&size);
+
+			if(ret == ERROR_BUFFER_OVERFLOW)
+			{
+				/* free memory as the loop will allocate again with
+				 * proper size
+				 */
+				free(allAdapters);
+			}
+		}while(ret == ERROR_BUFFER_OVERFLOW);
+
+		if(ret != ERROR_SUCCESS)
+		{
+			free(allAdapters);
+			return result;
+		}
+
+		adapter = allAdapters;
+
+		while(adapter)
+		{
+			const std::string ifname(adapter->AdapterName);
+
+			if(ifname == name())
+			{
+				IP_ADAPTER_UNICAST_ADDRESS* unicast = adapter->FirstUnicastAddress;
+				IP_ADAPTER_PREFIX* prefix = adapter->FirstPrefix;
+
+				if(unicast != NULL)
+				{
+					if(unicast->Address.lpSockaddr->sa_family == AF_INET)
+					{
+						struct sockaddr_in* sai = (struct sockaddr_in*)unicast->Address.lpSockaddr;
+						boost::asio::ip::address_v4::bytes_type bytes;
+						unsigned int prefix_len = sizeof(in_addr) * 8;
+
+						std::memcpy(bytes.data(), &sai->sin_addr, bytes.size());
+						boost::asio::ip::address_v4 address(bytes);
+
+						/* since Vista we can use unicast->OnLinkPrefixLength */
+						if (prefix != NULL)
+						{
+							prefix_len = prefix->PrefixLength;
+						}
+
+
+						ip_address item = { address, prefix_len };
+
+						result.push_back(item);
+					}
+					else
+					{
+						struct sockaddr_in6* sai = (struct sockaddr_in6*)unicast->Address.lpSockaddr;
+						boost::asio::ip::address_v6::bytes_type bytes;
+						unsigned int prefix_len = sizeof(in6_addr) * 8;
+
+						memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
+						boost::asio::ip::address_v6 address(bytes);
+
+						/* since Vista we can use unicast->OnLinkPrefixLength */
+						if (prefix != NULL)
+						{
+							prefix_len = prefix->PrefixLength;
+						}
+
+						ip_address item = { address, prefix_len };
+
+						result.push_back(item);
+					}
+				}
+			}
+
+			adapter = adapter->Next;
+		}
+
+		/* cleanup */
+		free(allAdapters);
 #else
 		struct ifaddrs* addrs = NULL;
 
@@ -1424,7 +1526,6 @@ namespace asiotap
 			}
 		}
 
-		return result;
 #endif
 
 		return result;
@@ -1448,7 +1549,7 @@ namespace asiotap
 				uint32_t network = htonl(address.to_ulong()) & netmask;
 
 				// address
-				std::memcpy(param, addr.c_array(), addr.size());
+				std::memcpy(param, addr.data(), addr.size());
 				// network
 				std::memcpy(param + 4, &network, sizeof(uint32_t));
 				// netmask

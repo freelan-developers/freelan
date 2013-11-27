@@ -241,7 +241,7 @@ namespace asiotap
 	}
 
 	template <typename TapAdapterImplementation>
-	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name, unsigned int mtu, basic_tap_adapter_service<TapAdapterImplementation>::adapter_type type)
+	inline void basic_tap_adapter_service<TapAdapterImplementation>::open(implementation_type& impl, const std::string& name, unsigned int mtu, typename basic_tap_adapter_service<TapAdapterImplementation>::adapter_type type)
 	{
 		impl->open(name, mtu, type);
 	}
