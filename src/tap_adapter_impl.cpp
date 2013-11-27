@@ -1415,7 +1415,6 @@ namespace asiotap
 			if(ifname == name())
 			{
 				IP_ADAPTER_UNICAST_ADDRESS* unicast = adapter->FirstUnicastAddress;
-				IP_ADAPTER_PREFIX* prefix = adapter->FirstPrefix;
 
 				while(unicast)
 				{
@@ -1450,7 +1449,6 @@ namespace asiotap
 
 					/* next address/prefix */
 					unicast = unicast->Next;
-					prefix = prefix != NULL ? prefix->Next : NULL;
 				}
 			}
 
@@ -1867,10 +1865,45 @@ namespace asiotap
 
 	bool tap_adapter_impl::set_remote_ip_address_v4(const boost::asio::ip::address_v4& address)
 	{
+		if (m_type != AT_TUN_ADAPTER)
+		{
+			return false;
+		}
+
 		if (is_open())
 		{
 #ifdef WINDOWS
-			//TODO: Implement set_remote_ip_address_v4() for Windows
+			ip_address_list addresses = get_ip_addresses();
+			bool result = false;
+
+			// XXX case where interface has multiple IPv4 addresses
+			BOOST_FOREACH(const ip_address& addr, addresses)
+			{
+				if (addr.address.is_v4())
+				{
+					uint8_t param[8];
+					DWORD len = 0;
+
+					boost::asio::ip::address_v4::bytes_type v4addr = addr.address.to_v4().to_bytes();
+					boost::asio::ip::address_v4::bytes_type v4network = address.to_bytes();
+
+					// address
+					std::memcpy(param, v4addr.data(), v4addr.size());
+					// network
+					std::memcpy(param + 4, v4network.data(), v4network.size());
+
+					if (!DeviceIoControl(m_handle, TAP_IOCTL_CONFIG_POINT_TO_POINT, param, sizeof(param), NULL, 0, &len, NULL))
+					{
+						throw_last_system_error();
+					}
+
+					// quit once we have a valid configuration.
+					result = true;
+					break;
+				}
+			}
+
+			return result;
 #else
 			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
 
