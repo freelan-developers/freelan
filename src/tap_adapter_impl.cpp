@@ -98,6 +98,37 @@ namespace asiotap
 {
 	namespace
 	{
+		unsigned int netmask_to_prefix_len(in_addr netmask)
+		{
+			uint32_t bits = ~ntohl(netmask.s_addr);
+
+			unsigned int result = 0;
+
+			while (bits > 0) {
+				bits >>= 1;
+				++result;
+			}
+
+			return (sizeof(in_addr)* 8) - result;
+		}
+
+		unsigned int netmask_to_prefix_len(in6_addr netmask)
+		{
+			unsigned int result = 0;
+
+			for (size_t i = 0; i < sizeof(netmask.s6_addr); ++i)
+			{
+				uint8_t bits = ~netmask.s6_addr[i];
+
+				while (bits > 0) {
+					bits >>= 1;
+					++result;
+				}
+			}
+
+			return (sizeof(in6_addr)* 8) - result;
+		}
+
 #ifdef WINDOWS
 		typedef std::vector<std::string> guid_array_type;
 		typedef std::map<std::string, std::string> guid_map_type;
@@ -421,37 +452,6 @@ namespace asiotap
 #else
 #ifndef AIO_RESOLUTION
 #define AIO_RESOLUTION 500
-
-		unsigned int netmask_to_prefix_len(in_addr netmask)
-		{
-			uint32_t bits = ~ntohl(netmask.s_addr);
-
-			unsigned int result = 0;
-
-			while (bits > 0) {
-				bits >>=1;
-				++result;
-			}
-
-			return (sizeof(in_addr) * 8) - result;
-		}
-
-		unsigned int netmask_to_prefix_len(in6_addr netmask)
-		{
-			unsigned int result = 0;
-
-			for (size_t i = 0; i < sizeof(netmask.s6_addr); ++i)
-			{
-				uint8_t bits = ~netmask.s6_addr[i];
-
-				while (bits > 0) {
-					bits >>=1;
-					++result;
-				}
-			}
-
-			return (sizeof(in6_addr) * 8) - result;
-		}
 #endif
 
 		const boost::posix_time::time_duration AIO_RESOLUTION_DURATION = boost::posix_time::milliseconds(AIO_RESOLUTION);
@@ -1416,7 +1416,7 @@ namespace asiotap
 				IP_ADAPTER_UNICAST_ADDRESS* unicast = adapter->FirstUnicastAddress;
 				IP_ADAPTER_PREFIX* prefix = adapter->FirstPrefix;
 
-				if(unicast != NULL)
+				while(unicast)
 				{
 					if(unicast->Address.lpSockaddr->sa_family == AF_INET)
 					{
@@ -1427,12 +1427,10 @@ namespace asiotap
 						std::memcpy(bytes.data(), &sai->sin_addr, bytes.size());
 						boost::asio::ip::address_v4 address(bytes);
 
-						/* since Vista we can use unicast->OnLinkPrefixLength */
-						if (prefix != NULL)
+						if (prefix)
 						{
 							prefix_len = prefix->PrefixLength;
 						}
-
 
 						ip_address item = { address, prefix_len };
 
@@ -1447,8 +1445,7 @@ namespace asiotap
 						memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
 						boost::asio::ip::address_v6 address(bytes);
 
-						/* since Vista we can use unicast->OnLinkPrefixLength */
-						if (prefix != NULL)
+						if (prefix)
 						{
 							prefix_len = prefix->PrefixLength;
 						}
@@ -1457,6 +1454,10 @@ namespace asiotap
 
 						result.push_back(item);
 					}
+
+					/* next address/prefix */
+					unicast = unicast->Next;
+					prefix = prefix != NULL ? prefix->Next : NULL;
 				}
 			}
 
