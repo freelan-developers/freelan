@@ -95,7 +95,7 @@ namespace cryptoplus
 
 		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
 		{
-			error::throw_error_if_not(m_bio);
+			error::throw_error_if_not(m_bio != NULL);
 		}
 		inline bio_chain::bio_chain(BIO* bio) : m_bio(bio, BIO_free_all)
 		{
