@@ -1427,11 +1427,7 @@ namespace asiotap
 
 						std::memcpy(bytes.data(), &sai->sin_addr, bytes.size());
 						boost::asio::ip::address_v4 address(bytes);
-
-						if (prefix)
-						{
-							prefix_len = prefix->PrefixLength;
-						}
+						prefix_len = unicast->OnLinkPrefixLength;
 
 						ip_address item = { address, prefix_len };
 
@@ -1445,11 +1441,7 @@ namespace asiotap
 
 						memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
 						boost::asio::ip::address_v6 address(bytes);
-
-						if (prefix)
-						{
-							prefix_len = prefix->PrefixLength;
-						}
+						prefix_len = unicast->OnLinkPrefixLength;
 
 						ip_address item = { address, prefix_len };
 
