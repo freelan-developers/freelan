@@ -453,7 +453,7 @@ namespace freelan
 		 * \param rhs The second route.
 		 * \return true if lhs has a more specific prefix length.
 		 */
-		bool operator()(const ip_network_address& lhs, const ip_network_address& rhs)
+		bool operator()(const ip_network_address& lhs, const ip_network_address& rhs) const
 		{
 			return prefix_length(lhs) > prefix_length(rhs);
 		}
