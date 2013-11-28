@@ -24,6 +24,7 @@
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\curl.cpp" />
     <ClCompile Include="src\endpoint.cpp" />
+    <ClCompile Include="src\endpoint_router_port.cpp" />
     <ClCompile Include="src\endpoint_switch_port.cpp" />
     <ClCompile Include="src\freelan.cpp" />
     <ClCompile Include="src\hostname_endpoint.cpp" />
@@ -32,15 +33,19 @@
     <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\logger_stream.cpp" />
     <ClCompile Include="src\mtu.cpp" />
+    <ClCompile Include="src\router.cpp" />
+    <ClCompile Include="src\router_port.cpp" />
     <ClCompile Include="src\stream_operations.cpp" />
     <ClCompile Include="src\switch.cpp" />
     <ClCompile Include="src\switch_port.cpp" />
+    <ClCompile Include="src\tap_adapter_router_port.cpp" />
     <ClCompile Include="src\tap_adapter_switch_port.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\freelan\configuration.hpp" />
     <ClInclude Include="include\freelan\core.hpp" />
     <ClInclude Include="include\freelan\endpoint.hpp" />
+    <ClInclude Include="include\freelan\endpoint_router_port.hpp" />
     <ClInclude Include="include\freelan\endpoint_switch_port.hpp" />
     <ClInclude Include="include\freelan\freelan.hpp" />
     <ClInclude Include="include\freelan\hostname_endpoint.hpp" />
@@ -50,8 +55,11 @@
     <ClInclude Include="include\freelan\logger_stream.hpp" />
     <ClInclude Include="include\freelan\mtu.hpp" />
     <ClInclude Include="include\freelan\os.hpp" />
+    <ClInclude Include="include\freelan\router.hpp" />
+    <ClInclude Include="include\freelan\router_port.hpp" />
     <ClInclude Include="include\freelan\switch.hpp" />
     <ClInclude Include="include\freelan\switch_port.hpp" />
+    <ClInclude Include="include\freelan\tap_adapter_router_port.hpp" />
     <ClInclude Include="include\freelan\tap_adapter_switch_port.hpp" />
     <ClInclude Include="src\client.hpp" />
     <ClInclude Include="src\curl.hpp" />
