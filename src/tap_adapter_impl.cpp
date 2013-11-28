@@ -1863,7 +1863,7 @@ namespace asiotap
 		}
 	}
 
-	bool tap_adapter_impl::set_remote_ip_address_v4(const boost::asio::ip::address_v4& address)
+	bool tap_adapter_impl::set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote)
 	{
 		if (m_type != AT_TUN_ADAPTER)
 		{
@@ -1874,38 +1874,29 @@ namespace asiotap
 		{
 #ifdef WINDOWS
 			ip_address_list addresses = get_ip_addresses();
-			bool result = false;
+			bool result = true;
 
-			// XXX case where interface has multiple IPv4 addresses
-			BOOST_FOREACH(const ip_address& addr, addresses)
+			uint8_t param[8];
+			DWORD len = 0;
+
+			boost::asio::ip::address_v4::bytes_type v4addr = local.to_bytes();
+			boost::asio::ip::address_v4::bytes_type v4network = remote.to_bytes();
+
+			// address
+			std::memcpy(param, v4addr.data(), v4addr.size());
+			// network
+			std::memcpy(param + 4, v4network.data(), v4network.size());
+
+			if (!DeviceIoControl(m_handle, TAP_IOCTL_CONFIG_POINT_TO_POINT, param, sizeof(param), NULL, 0, &len, NULL))
 			{
-				if (addr.address.is_v4())
-				{
-					uint8_t param[8];
-					DWORD len = 0;
-
-					boost::asio::ip::address_v4::bytes_type v4addr = addr.address.to_v4().to_bytes();
-					boost::asio::ip::address_v4::bytes_type v4network = address.to_bytes();
-
-					// address
-					std::memcpy(param, v4addr.data(), v4addr.size());
-					// network
-					std::memcpy(param + 4, v4network.data(), v4network.size());
-
-					if (!DeviceIoControl(m_handle, TAP_IOCTL_CONFIG_POINT_TO_POINT, param, sizeof(param), NULL, 0, &len, NULL))
-					{
-						throw_last_system_error();
-					}
-
-					// quit once we have a valid configuration.
-					result = true;
-					break;
-				}
+				throw_last_system_error();
 			}
 
 			return result;
 #else
 			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+
+			(void)local;
 
 			if (ctl_fd < 0)
 			{
@@ -1925,7 +1916,7 @@ namespace asiotap
 #ifdef BSD
 				ifr_dst_addr->sin_len = sizeof(sockaddr_in);
 #endif
-				std::memcpy(&ifr_dst_addr->sin_addr.s_addr, address.to_bytes().c_array(), address.to_bytes().size());
+				std::memcpy(&ifr_dst_addr->sin_addr.s_addr, remote.to_bytes().c_array(), remote.to_bytes().size());
 
 				if (::ioctl(ctl_fd, SIOCSIFDSTADDR, &ifr_d) < 0)
 				{

@@ -309,13 +309,14 @@ namespace asiotap
 
 			/**
 			 * \brief Set the point-to-point address on the tap adaper.
-			 * \param address The address.
+			 * \param local The local address.
+			 * \param remote The remote address.
 			 * \return true if the operation succeeded.
 			 * \warning Performing this operation on a device that is not in TUN mode has undefined behavior.
 			 * \warning Regardless of the return status, if a serious error occurs, an exception will still be thrown.
 			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
 			 */
-			bool set_remote_ip_address_v4(const boost::asio::ip::address_v4& address);
+			bool set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote);
 
 		private:
 
