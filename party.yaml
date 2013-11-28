@@ -27,7 +27,7 @@ attendees:
   boost:
     source:
       -
-        location: http://sourceforge.net/projects/boost/files/boost/1.49.0/boost_1_49_0.tar.bz2/download
+        location: http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
         type: application/x-bzip2
         filters: darwin
       -
