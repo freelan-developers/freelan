@@ -201,6 +201,7 @@ po::options_description get_router_options()
 	po::options_description result("Router options");
 
 	result.add_options()
+	("router.local_ip_route", po::value<std::vector<fl::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::ip_network_address>(), ""), "A route to advertise to the other peers.")
 	("router.client_routing_enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable client routing.")
 	;
 
@@ -399,6 +400,9 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
 
 	// Router
+	const std::vector<fl::ip_network_address> local_ip_routes = vm["router.local_ip_route"].as<std::vector<fl::ip_network_address> >();
+	configuration.router.local_ip_routes.insert(local_ip_routes.begin(), local_ip_routes.end());
+
 	configuration.router.client_routing_enabled = vm["router.client_routing_enabled"].as<bool>();
 }
 
