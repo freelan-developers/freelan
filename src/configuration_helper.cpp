@@ -196,6 +196,17 @@ po::options_description get_switch_options()
 	return result;
 }
 
+po::options_description get_router_options()
+{
+	po::options_description result("Router options");
+
+	result.add_options()
+	("router.client_routing_enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable client routing.")
+	;
+
+	return result;
+}
+
 void setup_configuration(fl::configuration& configuration, const boost::filesystem::path& root, const po::variables_map& vm)
 {
 	typedef fl::security_configuration::cert_type cert_type;
@@ -386,6 +397,9 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	// Switch options
 	configuration.switch_.routing_method = vm["switch.routing_method"].as<fl::switch_configuration::routing_method_type>();
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
+
+	// Router
+	configuration.router.client_routing_enabled = vm["router.client_routing_enabled"].as<bool>();
 }
 
 boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)

@@ -142,6 +142,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	configuration_options.add(get_security_options());
 	configuration_options.add(get_tap_adapter_options());
 	configuration_options.add(get_switch_options());
+	configuration_options.add(get_router_options());
 
 	visible_options.add(configuration_options);
 	all_options.add(configuration_options);

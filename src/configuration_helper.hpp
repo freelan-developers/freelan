@@ -78,9 +78,15 @@ boost::program_options::options_description get_tap_adapter_options();
 
 /**
  * \brief Get the switch options.
- * \return The swtich options.
+ * \return The switch options.
  */
 boost::program_options::options_description get_switch_options();
+
+/**
+ * \brief Get the router options.
+ * \return The router options.
+ */
+boost::program_options::options_description get_router_options();
 
 /**
  * \brief Setup a freelan configuration from a variables map.
