@@ -814,7 +814,7 @@ namespace freelan
 			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
-					m_tap_adapter->set_remote_ip_address_v4(*m_configuration.tap_adapter.remote_ipv4_address);
+					m_tap_adapter->set_remote_ip_address_v4(m_configuration.tap_adapter.ipv4_address_prefix_length.address(), *m_configuration.tap_adapter.remote_ipv4_address);
 				}
 			}
 
