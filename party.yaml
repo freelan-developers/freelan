@@ -31,7 +31,7 @@ attendees:
         type: application/x-bzip2
         filters: darwin
       -
-        location: http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.zip/download
+        location: http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.zip/download
         type: application/zip
         filters: windows
     builders:
