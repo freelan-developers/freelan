@@ -72,7 +72,6 @@ namespace fscp
 			enumeration_type(value_type _value) : m_value(_value) {}
 
 			value_type value() const { return m_value; }
-			operator value_type() const { return m_value; }
 
 		private:
 

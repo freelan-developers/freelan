@@ -60,7 +60,7 @@ namespace fscp
 
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
-		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size, calg);
+		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size, calg.value());
 		buffer_tools::set<uint8_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t), 0x00);
 		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2, htons(0x0000));
 		buffer_tools::set<uint16_t>(buf, sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 2 + 2, htons(static_cast<uint16_t>(enc_key_len)));

@@ -111,9 +111,9 @@ static bool on_session_request(const std::string& name, fscp::server& /*server*/
 	return default_accept;
 }
 
-static bool on_session(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
+static bool on_session(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::cipher_algorithm_type calg, bool default_accept)
 {
-	std::cout << "[" << name << "] Received SESSION from " << sender << std::endl;
+	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher: " << calg << ")" << std::endl;
 
 	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello ! I'm " + name)));
 
@@ -231,9 +231,9 @@ int main()
 		bob_server.set_session_request_message_callback(boost::bind(&on_session_request, "bob", boost::ref(bob_server), _1, _2, _3));
 		chris_server.set_session_request_message_callback(boost::bind(&on_session_request, "chris", boost::ref(chris_server), _1, _2, _3));
 
-		alice_server.set_session_message_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2));
-		bob_server.set_session_message_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2));
-		chris_server.set_session_message_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2));
+		alice_server.set_session_message_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_session_message_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2, _3));
+		chris_server.set_session_message_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2, _3));
 
 		alice_server.set_session_failed_callback(boost::bind(&on_session_failed, "alice", boost::ref(alice_server), _1, _2, _3, _4));
 		bob_server.set_session_failed_callback(boost::bind(&on_session_failed, "bob", boost::ref(bob_server), _1, _2, _3, _4));

@@ -63,7 +63,7 @@ namespace fscp
 		buffer_tools::set<session_number_type>(buf, 0, htonl(_session_number));
 		std::copy(_challenge.begin(), _challenge.end(), static_cast<char*>(buf) + sizeof(_session_number));
 		buffer_tools::set<uint16_t>(buf, sizeof(_session_number) + challenge_type::static_size, htons(static_cast<uint16_t>(_cipher_capabilities.size())));
-		std::copy(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<uint8_t*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t));
+		std::copy(_cipher_capabilities.begin(), _cipher_capabilities.end(), static_cast<cipher_algorithm_type*>(buf) + sizeof(_session_number) + challenge_type::static_size + sizeof(uint16_t));
 
 		return result_size;
 	}

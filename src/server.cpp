@@ -87,7 +87,7 @@ namespace fscp
 				{
 					if (std::find(second.begin(), second.end(), *it) != second.end())
 					{
-						return *it;
+						return it->value();
 					}
 				}
 
