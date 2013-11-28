@@ -97,7 +97,7 @@ namespace freelan
 #if BOOST_VERSION >= 104700
 							boost::random::mt19937 gen;
 
-							std::advance(entry, boost::random::uniform_int_distribution<>(0, m_ethernet_address_map.size() - 1)(gen));
+							std::advance(entry, boost::random::uniform_int_distribution<>(0, static_cast<int>(m_ethernet_address_map.size()) - 1)(gen));
 #else
 							boost::mt19937 gen;
 
