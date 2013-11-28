@@ -422,13 +422,6 @@ namespace freelan
 		boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
 
 		/**
-		 * \brief The local IP routes.
-		 *
-		 * These routes are sent to the other hosts for VPN routing.
-		 */
-		routes_type local_ip_routes;
-
-		/**
 		 * \brief The up callback type.
 		 */
 		typedef boost::function<void (core&, const asiotap::tap_adapter&)> up_callback_type;
@@ -488,6 +481,13 @@ namespace freelan
 		 * \brief Constructor.
 		 */
 		router_configuration();
+
+		/**
+		 * \brief The local IP routes.
+		 *
+		 * These routes are sent to the other hosts for VPN routing.
+		 */
+		routes_type local_ip_routes;
 
 		/**
 		 * \brief Whether to enable client routing.
