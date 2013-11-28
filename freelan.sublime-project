@@ -27,6 +27,8 @@
 				"doxyfile",
 				".gitignore",
 				".gitattributes",
+				"*.conf",
+				"*.cfg"
 			]
 		}
 	],
