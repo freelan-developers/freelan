@@ -294,7 +294,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
 	configuration.fscp.listen_on = vm["fscp.listen_on"].as<fl::endpoint>();
-	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>();
+	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>().to_time_duration();
 
 	configuration.fscp.contact_list = vm["fscp.contact"].as<std::vector<fl::endpoint> >();
 	configuration.fscp.accept_contact_requests = vm["fscp.accept_contact_requests"].as<bool>();

@@ -80,7 +80,7 @@ class millisecond_duration
 		 * \brief Conversion operator.
 		 * \return The converted value.
 		 */
-		operator unsigned int() const
+		unsigned int to_int() const
 		{
 			return m_ms;
 		}
@@ -89,7 +89,7 @@ class millisecond_duration
 		 * \brief Conversion operator.
 		 * \return The converted value.
 		 */
-		operator boost::posix_time::time_duration() const
+		boost::posix_time::time_duration to_time_duration() const
 		{
 			return boost::posix_time::milliseconds(m_ms);
 		}
