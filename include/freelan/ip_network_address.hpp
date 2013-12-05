@@ -464,6 +464,13 @@ namespace freelan
 	 */
 	typedef std::set<ip_network_address, routes_compare> routes_type;
 
+	/**
+	 * \brief Output the routes to a stream.
+	 * \param os The output stream.
+	 * \param routes The routes to output.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const routes_type& routes);
 }
 
 #endif /* FREELAN_IP_NETWORK_ADDRESS_HPP */

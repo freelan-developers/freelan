@@ -254,6 +254,32 @@ namespace freelan
 		m_server->async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.fscp.hello_timeout);
 	}
 
+	void core::async_request_routes(const ep_type& target)
+	{
+		messenger_type& messenger = m_messengers[target];
+
+		const routes_request_message::sequence_type sequence = messenger.get_next_request_sequence();
+
+		messenger_type::transmission_type& request = messenger.requests[sequence];
+
+		const size_t count = routes_request_message::write(request.buffer.data(), request.buffer.size(), sequence);
+
+		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(request.buffer.data(), count));
+	}
+
+	void core::async_send_routes(const ep_type& target, const routes_request_message& rr_msg, const routes_type& routes)
+	{
+		messenger_type& messenger = m_messengers[target];
+
+		const routes_request_message::sequence_type sequence = rr_msg.sequence();
+
+		messenger_type::transmission_type& response = messenger.responses[sequence];
+
+		const size_t count = routes_message::write(response.buffer.data(), response.buffer.size(), sequence, routes);
+
+		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(response.buffer.data(), count));
+	}
+
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
@@ -438,6 +464,7 @@ namespace freelan
 	{
 		switch (channel_number)
 		{
+			// Channel 0 contains ethernet/ip frames
 			case fscp::CHANNEL_NUMBER_0:
 				if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 				{
@@ -446,6 +473,20 @@ namespace freelan
 				else
 				{
 					on_ip_data(sender, data);
+				}
+
+				break;
+			// Channel 1 contains messages
+			case fscp::CHANNEL_NUMBER_1:
+				try
+				{
+					const message msg(boost::asio::buffer_cast<const uint8_t*>(data), boost::asio::buffer_size(data));
+
+					on_message(sender, msg);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Received incorrectly formatted message from " << sender << ". Error was: " << ex.what();
 				}
 
 				break;
@@ -510,6 +551,55 @@ namespace freelan
 	void core::on_network_error(const ep_type& target, const boost::system::error_code& ec)
 	{
 		m_logger(LL_WARNING) << "Error while sending message to" << target << ": " << ec;
+	}
+
+	void core::on_message(const ep_type& sender, const message& msg)
+	{
+		// Get or create the messenger associated with the peer.
+		messenger_type& messenger = m_messengers[sender];
+		messenger.clean();
+
+		switch (msg.type())
+		{
+			case message::MT_ROUTES_REQUEST:
+				{
+					routes_request_message rr_msg(msg);
+
+					on_routes_requested(sender, rr_msg);
+
+					break;
+				}
+			case message::MT_ROUTES:
+				{
+					routes_message r_msg(msg);
+
+					on_routes_received(sender, r_msg);
+
+					break;
+				}
+			default:
+				m_logger(LL_WARNING) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
+				break;
+		}
+	}
+
+	void core::on_routes_requested(const ep_type& sender, const routes_request_message& msg)
+	{
+		if (!m_configuration.router.accept_routes_requests)
+		{
+			m_logger(LL_DEBUG) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
+		}
+		else
+		{
+			m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with: " << m_configuration.router.local_ip_routes;
+
+			async_send_routes(sender, msg, m_configuration.router.local_ip_routes);
+		}
+	}
+
+	void core::on_routes_received(const ep_type& sender, const routes_message& msg)
+	{
+		m_logger(LL_INFORMATION) << "Received routes from " << sender << ": " << msg.routes();
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
@@ -1169,5 +1259,41 @@ namespace freelan
 		m_check_configuration_timer.async_wait(boost::bind(&core::do_check_configuration, this, boost::asio::placeholders::error));
 
 		m_logger(LL_INFORMATION) << "Checking again configuration on " << boost::posix_time::to_simple_string(renewal_date) << ".";
+	}
+
+	core::messenger_type::transmission_type::transmission_type() : timestamp(boost::posix_time::second_clock::universal_time()) {}
+	bool core::messenger_type::transmission_type::is_outdated() const { return ((boost::posix_time::second_clock::universal_time() - timestamp) > CONTACT_PERIOD); }
+
+	message::sequence_type core::messenger_type::get_next_request_sequence() const
+	{
+		message::sequence_type result = 0;
+
+		for (transmissions_type::const_iterator request = requests.begin(); request != requests.end(); ++request)
+		{
+			result = std::max(result, request->first + 1);
+		}
+
+		return result;
+	}
+
+	void core::messenger_type::clean()
+	{
+		//TODO: Have a better way of creating the responses/requests.
+		// Currently a race condition can occur because we always delete the transmission even if they were not written yet.
+		for (transmissions_type::iterator request = requests.begin(); request != requests.end(); ++request)
+		{
+			if (request->second.is_outdated())
+			{
+				requests.erase(request);
+			}
+		}
+
+		for (transmissions_type::iterator response = responses.begin(); response != responses.end(); ++response)
+		{
+			if (response->second.is_outdated())
+			{
+				responses.erase(response);
+			}
+		}
 	}
 }

@@ -493,6 +493,11 @@ namespace freelan
 		 * \brief Whether to enable client routing.
 		 */
 		bool client_routing_enabled;
+
+		/**
+		 * \brief Whether the client accepts routes requests from other peers.
+		 */
+		bool accept_routes_requests;
 	};
 
 	/**

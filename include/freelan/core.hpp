@@ -64,6 +64,7 @@
 #include "switch.hpp"
 #include "router.hpp"
 #include "logger.hpp"
+#include "message.hpp"
 
 namespace freelan
 {
@@ -288,6 +289,8 @@ namespace freelan
 
 			// FSCP methods
 			void async_greet(const ep_type&);
+			void async_request_routes(const ep_type&);
+			void async_send_routes(const ep_type&, const routes_request_message&, const routes_type&);
 			bool on_hello_request(const ep_type&, bool);
 			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
 			bool on_presentation(const ep_type&, cert_type, cert_type, bool);
@@ -301,6 +304,9 @@ namespace freelan
 			void on_ethernet_data(const ep_type&, boost::asio::const_buffer);
 			void on_ip_data(const ep_type&, boost::asio::const_buffer);
 			void on_network_error(const ep_type&, const boost::system::error_code&);
+			void on_message(const ep_type&, const message&);
+			void on_routes_requested(const ep_type&, const routes_request_message&);
+			void on_routes_received(const ep_type&, const routes_message&);
 
 			// Tap adapter methods
 			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
@@ -388,6 +394,30 @@ namespace freelan
 			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
 			bool certificate_is_valid(cert_type cert);
 			cryptoplus::x509::store m_ca_store;
+
+			// Messages
+			// TODO: Move this class into its one files.
+			struct messenger_type
+			{
+				struct transmission_type
+				{
+					transmission_type();
+					bool is_outdated() const;
+
+					boost::posix_time::ptime timestamp;
+					boost::array<unsigned char, 4096> buffer;
+				};
+
+				typedef std::map<message::sequence_type, transmission_type> transmissions_type;
+
+				message::sequence_type get_next_request_sequence() const;
+				void clean();
+
+				transmissions_type requests;
+				transmissions_type responses;
+			};
+
+			std::map<ep_type, messenger_type> m_messengers;
 
 			// Client
 			void async_update_server_configuration(int);

@@ -192,4 +192,21 @@ namespace freelan
 
 		return is;
 	}
+
+	std::ostream& operator<<(std::ostream& os, const routes_type& routes)
+	{
+		if (routes.size() > 0)
+		{
+			routes_type::const_iterator route = routes.begin();
+
+			os << *route;
+
+			for (++route; route != routes.end(); ++route)
+			{
+				os << ", " << *route;
+			}
+		}
+
+		return os;
+	}
 }
