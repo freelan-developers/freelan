@@ -38,42 +38,63 @@
  */
 
 /**
- * \file message.cpp
+ * \file routes_message.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The messages exchanged by the peers.
+ * \brief The routes messages exchanged by the peers.
  */
 
-#include "message.hpp"
+#ifndef FREELAN_ROUTES_MESSAGE_HPP
+#define FREELAN_ROUTES_MESSAGE_HPP
 
-#include <cassert>
+#include <boost/optional.hpp>
+
+#include "ip_network_address.hpp"
+#include "message.hpp"
 
 namespace freelan
 {
-	size_t message::write(void* buf, size_t buf_len, message_type _type, sequence_type _sequence, size_t _length)
+	/**
+	 * \brief A routes message.
+	 */
+	class routes_message : public message
 	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
+		public:
 
-		fscp::buffer_tools::set<uint8_t>(buf, 0, static_cast<uint8_t>(_type));
-		fscp::buffer_tools::set<uint32_t>(buf, 1, htons(static_cast<uint16_t>(_sequence)));
-		fscp::buffer_tools::set<uint16_t>(buf, 5, htons(static_cast<uint16_t>(_length)));
+			/**
+			 * \brief Write a routes message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param sequence The sequence number.
+			 * \param routes The routes.
+			 * \return The count of bytes written.
+			 */
+			static size_t write(void* buf, size_t buf_len, sequence_type sequence, const routes_type& routes);
 
-		return HEADER_LENGTH;
-	}
+			/**
+			 * \brief Get the routes.
+			 * \return The routes.
+			 */
+			const routes_type& routes() const;
 
-	message::message(const void* buf, size_t buf_len) :
-		m_data(buf)
-	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
+			/**
+			 * \brief Create a routes_message and map it on a buffer.
+			 * \param buf The buffer.
+			 * \param buf_len The buffer length.
+			 *
+			 * If the mapping fails, a std::runtime_error is thrown.
+			 */
+			routes_message(const void* buf, size_t buf_len);
 
-		if (buf_len < HEADER_LENGTH + length())
-		{
-			throw std::runtime_error("buf_len");
-		}
-	}
+			/**
+			 * \brief Create a routes_message from a message.
+			 * \param message The message.
+			 */
+			routes_message(const message& message);
+
+		private:
+
+			mutable boost::optional<routes_type> m_routes_cache;
+	};
 }
+
+#endif /* FREELAN_ROUTES_MESSAGE_HPP */

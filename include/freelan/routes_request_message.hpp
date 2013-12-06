@@ -38,42 +38,49 @@
  */
 
 /**
- * \file message.cpp
+ * \file routes_request_message.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The messages exchanged by the peers.
+ * \brief The routes request messages exchanged by the peers.
  */
+
+#ifndef FREELAN_ROUTES_REQUEST_MESSAGE_HPP
+#define FREELAN_ROUTES_REQUEST_MESSAGE_HPP
 
 #include "message.hpp"
 
-#include <cassert>
-
 namespace freelan
 {
-	size_t message::write(void* buf, size_t buf_len, message_type _type, sequence_type _sequence, size_t _length)
+	/**
+	 * \brief A routes request message.
+	 */
+	class routes_request_message : public message
 	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
+		public:
 
-		fscp::buffer_tools::set<uint8_t>(buf, 0, static_cast<uint8_t>(_type));
-		fscp::buffer_tools::set<uint32_t>(buf, 1, htons(static_cast<uint16_t>(_sequence)));
-		fscp::buffer_tools::set<uint16_t>(buf, 5, htons(static_cast<uint16_t>(_length)));
+			/**
+			 * \brief Write a routes request message to a buffer.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param sequence The sequence number.
+			 * \return The count of bytes written.
+			 */
+			static size_t write(void* buf, size_t buf_len, sequence_type sequence);
 
-		return HEADER_LENGTH;
-	}
+			/**
+			 * \brief Create a routes_request_message and map it on a buffer.
+			 * \param buf The buffer.
+			 * \param buf_len The buffer length.
+			 *
+			 * If the mapping fails, a std::runtime_error is thrown.
+			 */
+			routes_request_message(const void* buf, size_t buf_len);
 
-	message::message(const void* buf, size_t buf_len) :
-		m_data(buf)
-	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		if (buf_len < HEADER_LENGTH + length())
-		{
-			throw std::runtime_error("buf_len");
-		}
-	}
+			/**
+			 * \brief Create a routes_request_message from a message.
+			 * \param message The message.
+			 */
+			routes_request_message(const message& message);
+	};
 }
+
+#endif /* FREELAN_ROUTES_REQUEST_MESSAGE_HPP */

@@ -65,6 +65,8 @@
 #include "router.hpp"
 #include "logger.hpp"
 #include "message.hpp"
+#include "routes_request_message.hpp"
+#include "routes_message.hpp"
 
 namespace freelan
 {

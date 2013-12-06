@@ -38,42 +38,37 @@
  */
 
 /**
- * \file message.cpp
+ * \file routes_request_message.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The messages exchanged by the peers.
+ * \brief The routes request messages exchanged by the peers.
  */
 
-#include "message.hpp"
+#include "routes_request_message.hpp"
 
 #include <cassert>
 
 namespace freelan
 {
-	size_t message::write(void* buf, size_t buf_len, message_type _type, sequence_type _sequence, size_t _length)
+	size_t routes_request_message::write(void* buf, size_t buf_len, sequence_type sequence)
 	{
-		if (buf_len < HEADER_LENGTH)
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		fscp::buffer_tools::set<uint8_t>(buf, 0, static_cast<uint8_t>(_type));
-		fscp::buffer_tools::set<uint32_t>(buf, 1, htons(static_cast<uint16_t>(_sequence)));
-		fscp::buffer_tools::set<uint16_t>(buf, 5, htons(static_cast<uint16_t>(_length)));
-
-		return HEADER_LENGTH;
+		return message::write(buf, buf_len, MT_ROUTES_REQUEST, sequence, 0);
 	}
 
-	message::message(const void* buf, size_t buf_len) :
-		m_data(buf)
+	routes_request_message::routes_request_message(const void* buf, size_t buf_len) :
+		message(buf, buf_len)
 	{
-		if (buf_len < HEADER_LENGTH)
+		if (length() != 0)
 		{
-			throw std::runtime_error("buf_len");
+			throw std::runtime_error("bad message length");
 		}
+	}
 
-		if (buf_len < HEADER_LENGTH + length())
+	routes_request_message::routes_request_message(const message& _message) :
+		message(_message)
+	{
+		if (length() != 0)
 		{
-			throw std::runtime_error("buf_len");
+			throw std::runtime_error("bad message length");
 		}
 	}
 }
