@@ -134,6 +134,13 @@ static void on_session_lost(const fscp::server::ep_type& host)
 	std::cout << "Session lost with " << host << std::endl;
 }
 
+static void on_data_sent(fscp::server& server, const fscp::server::ep_type& sender, const boost::system::error_code& code)
+{
+	static_cast<void>(server);
+
+	std::cout << "Data sent from " << sender << ": " << code << std::endl;
+}
+
 static void on_data(fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
 	try
@@ -184,7 +191,7 @@ void handle_read_line(fscp::server& server, std::string line)
 		}
 	} else
 	{
-		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, boost::asio::buffer(line));
+		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, boost::asio::buffer(line), boost::bind(&on_data_sent, boost::ref(server), _1, _2));
 	}
 }
 

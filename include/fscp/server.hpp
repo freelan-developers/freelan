@@ -49,7 +49,6 @@
 #include "identity_store.hpp"
 #include "presentation_store.hpp"
 #include "session_pair.hpp"
-#include "data_store.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
@@ -178,6 +177,12 @@ namespace fscp
 			 * \param code error code.
 			 */
 			typedef boost::function<void (const ep_type& target, const boost::system::error_code& code)> network_error_callback;
+
+			/**
+			 * \brief A callback for when data was sent.
+			 * \param code error code.
+			 */
+			typedef boost::function<void (const ep_type& target, const boost::system::error_code& code)> write_callback;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -408,8 +413,9 @@ namespace fscp
 			 * \param target The target host.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent.
 			 */
-			void async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data);
+			void async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler);
 
 			/**
 			 * \brief Send data to a list of hosts.
@@ -417,16 +423,18 @@ namespace fscp
 			 * \param end An iterator past the last target.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent.
 			 */
 			template <typename T>
-			void async_send_data_to_list(const T& begin, const T& end, channel_number_type channel_number, boost::asio::const_buffer data);
+			void async_send_data_to_list(const T& begin, const T& end, channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler);
 
 			/**
 			 * \brief Send data to all the hosts.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent.
 			 */
-			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data);
+			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler);
 
 			/**
 			 * \brief Ask a host for a contact.
@@ -509,13 +517,10 @@ namespace fscp
 
 		private: // DATA messages
 
-			typedef std::map<ep_type, data_store> data_store_map;
-
-			void do_send_data(const ep_type&, channel_number_type);
+			void do_send_data(const ep_type&, channel_number_type, boost::asio::const_buffer, write_callback handler);
 			void handle_data_message_from(const data_message&, const ep_type&);
 
 			boost::array<uint8_t, 65536> m_data_buffer;
-			data_store_map m_data_map;
 			data_message_callback m_data_message_callback;
 
 		private: // CONTACT_REQUEST messages
@@ -546,7 +551,7 @@ namespace fscp
 
 			ep_type to_socket_format(const ep_type&);
 			template <typename ConstBufferSequence>
-			std::size_t send_to(const ConstBufferSequence&, const ep_type&);
+			std::size_t send_to(const ConstBufferSequence&, const ep_type&, write_callback handler = 0);
 	};
 
 	inline bool server::is_open() const
@@ -662,11 +667,11 @@ namespace fscp
 	}
 
 	template <typename T>
-	inline void server::async_send_data_to_list(const T& begin, const T& end, channel_number_type channel_number, boost::asio::const_buffer data)
+	inline void server::async_send_data_to_list(const T& begin, const T& end, channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler)
 	{
 		for (T it = begin; it != end; ++it)
 		{
-			async_send_data(*it, channel_number, data);
+			async_send_data(*it, channel_number, data, handler);
 		}
 	}
 }

@@ -111,11 +111,18 @@ static bool on_session_request(const std::string& name, fscp::server& /*server*/
 	return default_accept;
 }
 
+static void on_data_sent(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, const boost::system::error_code& code)
+{
+	static_cast<void>(server);
+
+	std::cout << "[" << name << "] Data sent from " << sender << ": " << code << std::endl;
+}
+
 static bool on_session(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::cipher_algorithm_type calg, bool default_accept)
 {
 	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher: " << calg << ")" << std::endl;
 
-	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello ! I'm " + name)));
+	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello ! I'm " + name)), boost::bind(&on_data_sent, name, boost::ref(server), _1, _2));
 
 	return default_accept;
 }

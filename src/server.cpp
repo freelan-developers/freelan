@@ -245,22 +245,20 @@ namespace fscp
 		get_io_service().post(bind(&server::do_close_session, this, host));
 	}
 
-	void server::async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data)
+	void server::async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler)
 	{
 		normalize(target);
 
-		m_data_map[target].push(data);
-
-		get_io_service().post(bind(&server::do_send_data, this, target, channel_number));
+		get_io_service().post(bind(&server::do_send_data, this, target, channel_number, data, handler));
 	}
 
-	void server::async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data)
+	void server::async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler)
 	{
 		for (session_pair_map::const_iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
 		{
 			if (session_pair->second.has_remote_session())
 			{
-				async_send_data(session_pair->first, channel_number, data);
+				async_send_data(session_pair->first, channel_number, data, handler);
 			}
 		}
 	}
@@ -607,11 +605,11 @@ namespace fscp
 		// will happen in a *very long* time, it can still happen and will result
 		// in a session loss.
 		if (
-		    _clear_session_message.challenge() == session_pair.local_challenge() &&
-		    (
-		        !session_pair.has_remote_session() ||
-		        (session_pair.remote_session().session_number() < _clear_session_message.session_number())
-		    )
+			_clear_session_message.challenge() == session_pair.local_challenge() &&
+			(
+				!session_pair.has_remote_session() ||
+				(session_pair.remote_session().session_number() < _clear_session_message.session_number())
+			)
 		)
 		{
 			bool can_accept = m_accept_session_messages_default;
@@ -677,7 +675,7 @@ namespace fscp
 
 	void server::network_error(const ep_type& target, const boost::system::error_code& code)
 	{
-		if (m_network_error_callback)
+		if (code && m_network_error_callback)
 		{
 			m_network_error_callback(target, code);
 		}
@@ -693,7 +691,7 @@ namespace fscp
 
 	/* Data messages */
 
-	void server::do_send_data(const ep_type& target, channel_number_type channel_number)
+	void server::do_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, write_callback handler)
 	{
 		if (m_socket.is_open())
 		{
@@ -703,29 +701,24 @@ namespace fscp
 			{
 				const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
-				data_store& data_store = m_data_map[target];
+				size_t size = data_message::write(
+					m_send_buffer.data(),
+					m_send_buffer.size(),
+					channel_number,
+					session_pair.remote_session().session_number(),
+					session_pair.remote_session().sequence_number(),
+					cipher_algorithm,
+					boost::asio::buffer_cast<const unsigned char*>(data),
+					boost::asio::buffer_size(data),
+					session_pair.remote_session().encryption_key(),
+					session_pair.remote_session().encryption_key_size(),
+					session_pair.remote_session().nonce_prefix(),
+					session_pair.remote_session().nonce_prefix_size()
+				);
 
-				for(; !data_store.empty(); data_store.pop())
-				{
-					size_t size = data_message::write(
-							m_send_buffer.data(),
-							m_send_buffer.size(),
-							channel_number,
-							session_pair.remote_session().session_number(),
-							session_pair.remote_session().sequence_number(),
-							cipher_algorithm,
-							&data_store.front()[0],
-							data_store.front().size(),
-							session_pair.remote_session().encryption_key(),
-							session_pair.remote_session().encryption_key_size(),
-							session_pair.remote_session().nonce_prefix(),
-							session_pair.remote_session().nonce_prefix_size()
-							);
+				session_pair.remote_session().increment_sequence_number();
 
-					session_pair.remote_session().increment_sequence_number();
-
-					send_to(asio::buffer(m_send_buffer.data(), size), target);
-				}
+				send_to(asio::buffer(m_send_buffer.data(), size), target, handler);
 			}
 		}
 	}
@@ -967,13 +960,17 @@ namespace fscp
 	}
 
 	template <typename ConstBufferSequence>
-	std::size_t server::send_to(const ConstBufferSequence& buffers, const ep_type& destination)
+	std::size_t server::send_to(const ConstBufferSequence& buffers, const ep_type& destination, write_callback handler)
 	{
 		boost::system::error_code code;
 
 		std::size_t result = m_socket.send_to(buffers, to_socket_format(destination), 0, code);
 
-		if (code)
+		if (handler)
+		{
+			handler(destination, code);
+		}
+		else
 		{
 			network_error(destination, code);
 		}
