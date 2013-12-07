@@ -264,7 +264,8 @@ namespace freelan
 
 		const size_t count = routes_request_message::write(request.buffer.data(), request.buffer.size(), sequence);
 
-		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(request.buffer.data(), count));
+		//TODO: Use a real handler in the async_send_data call
+		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(request.buffer.data(), count), fscp::server::write_callback());
 	}
 
 	void core::async_send_routes(const ep_type& target, const routes_request_message& rr_msg, const routes_type& routes)
@@ -277,7 +278,8 @@ namespace freelan
 
 		const size_t count = routes_message::write(response.buffer.data(), response.buffer.size(), sequence, routes);
 
-		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(response.buffer.data(), count));
+		//TODO: Use a real handler in the async_send_data call
+		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(response.buffer.data(), count), fscp::server::write_callback());
 	}
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
@@ -404,7 +406,8 @@ namespace freelan
 		{
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
-				const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+				//TODO: Make sure the buffer remains available and unmodified until the callback (which must be changed) gets called.
+				const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2, fscp::server::write_callback()));
 
 				m_endpoint_switch_port_map[sender] = port;
 				m_switch.register_port(port, ENDPOINTS_GROUP);
@@ -414,7 +417,8 @@ namespace freelan
 				//TODO: Get the routes somewhere...
 				routes_type local_routes;
 
-				const router::port_type port = boost::make_shared<endpoint_router_port>(sender, local_routes, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2));
+				//TODO: Make sure the buffer remains available and unmodified until the callback (which must be changed) gets called.
+				const router::port_type port = boost::make_shared<endpoint_router_port>(sender, local_routes, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2, fscp::server::write_callback()));
 
 				m_endpoint_router_port_map[sender] = port;
 				m_router.register_port(port, ENDPOINTS_GROUP);
