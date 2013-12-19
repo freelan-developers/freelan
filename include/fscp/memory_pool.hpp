@@ -56,6 +56,13 @@
 
 namespace fscp
 {
+	/**
+	 * @brief A memory pool.
+	 *
+	 * Preallocates a pool of memory and handles allocation/deallocation with heap fallback mechanism.
+	 *
+	 * memory_pool is optimized for the allocation of buffers of similar sizes.
+	 */
 	class memory_pool : public boost::noncopyable
 	{
 		public:
