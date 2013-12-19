@@ -90,23 +90,23 @@ namespace fscp
 
 					friend class memory_pool;
 
-					friend buffer_type buffer(const scoped_buffer_type& _buffer)
+					friend inline buffer_type buffer(const scoped_buffer_type& _buffer)
 					{
 						return boost::asio::buffer(_buffer.m_buffer);
 					}
 
-					friend buffer_type buffer(const scoped_buffer_type& _buffer, size_t size)
+					friend inline buffer_type buffer(const scoped_buffer_type& _buffer, size_t size)
 					{
 						return boost::asio::buffer(_buffer.m_buffer, size);
 					}
 
 					template <typename Type>
-					friend Type buffer_cast(const scoped_buffer_type& _buffer)
+					friend inline Type buffer_cast(const scoped_buffer_type& _buffer)
 					{
 						return boost::asio::buffer_cast<Type>(buffer(_buffer));
 					}
 
-					friend size_t buffer_size(const scoped_buffer_type& _buffer)
+					friend inline size_t buffer_size(const scoped_buffer_type& _buffer)
 					{
 						return boost::asio::buffer_size(buffer(_buffer));
 					}
@@ -210,23 +210,23 @@ namespace fscp
 			boost::mutex m_pool_mutex;
 	};
 
-	memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
+	inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
 	{
 		return buffer(*_buffer);
 	}
 
-	memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
+	inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
 	{
 		return buffer(*_buffer, size);
 	}
 
 	template <typename Type>
-	Type buffer_cast(memory_pool::shared_buffer_type _buffer)
+	inline Type buffer_cast(memory_pool::shared_buffer_type _buffer)
 	{
 		return buffer_cast<Type>(*_buffer);
 	}
 
-	size_t buffer_size(memory_pool::shared_buffer_type _buffer)
+	inline size_t buffer_size(memory_pool::shared_buffer_type _buffer)
 	{
 		return buffer_size(*_buffer);
 	}

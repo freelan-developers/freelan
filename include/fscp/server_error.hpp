@@ -76,7 +76,7 @@ namespace fscp
 		 * @param error The error.
 		 * @return The error_code instance.
 		 */
-		boost::system::error_code make_error_code(server_error_t error)
+		inline boost::system::error_code make_error_code(server_error_t error)
 		{
 			return boost::system::error_code(static_cast<int>(error), server_category());
 		}
@@ -86,7 +86,7 @@ namespace fscp
 		 * @param error The error.
 		 * @return The error_condition instance.
 		 */
-		boost::system::error_condition make_error_condition(server_error_t error)
+		inline boost::system::error_condition make_error_condition(server_error_t error)
 		{
 			return boost::system::error_condition(static_cast<int>(error), server_category());
 		}
