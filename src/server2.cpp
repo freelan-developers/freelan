@@ -59,22 +59,27 @@ namespace fscp
 
 	namespace
 	{
-		server2::ep_type to_socket_format(const boost::asio::ip::udp::socket& socket, const server2::ep_type& ep)
+		server::ep_type& normalize(server::ep_type& ep)
 		{
-#ifdef WINDOWS
-			if (socket.local_endpoint().address().is_v6() && ep.address().is_v4())
+			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
+			if (ep.address().is_v6())
 			{
-				return server2::ep_type(boost::asio::ip::address_v6::v4_mapped(ep.address().to_v4()), ep.port());
+				boost::asio::ip::address_v6 address = ep.address().to_v6();
+
+				if (address.is_v4_mapped())
+				{
+					ep = server::ep_type(address.to_v4(), ep.port());
+				}
 			}
-			else
-			{
-				return ep;
-			}
-#else
-			static_cast<void>(socket);
 
 			return ep;
-#endif
+		}
+
+		server::ep_type normalize(const server::ep_type& ep)
+		{
+			server::ep_type result = ep;
+
+			return normalize(result);
 		}
 
 		template <typename Handler>
@@ -142,6 +147,29 @@ namespace fscp
 		m_greet_strand.post(boost::bind(&ep_hello_context_map::clear, &m_ep_hello_contexts));
 
 		m_socket.close();
+	}
+
+	void server2::async_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout)
+	{
+		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
+	}
+
+	server2::ep_type server2::to_socket_format(const server2::ep_type& ep)
+	{
+#ifdef WINDOWS
+		if (m_socket.local_endpoint().address().is_v6() && ep.address().is_v4())
+		{
+			return server2::ep_type(boost::asio::ip::address_v6::v4_mapped(ep.address().to_v4()), ep.port());
+		}
+		else
+		{
+			return ep;
+		}
+#else
+		static_cast<void>(socket);
+
+		return ep;
+#endif
 	}
 
 	uint32_t server2::ep_hello_context_type::generate_unique_number()
@@ -215,10 +243,8 @@ namespace fscp
 			return;
 		}
 
-		const ep_type formatted_target = to_socket_format(m_socket, target);
-
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
-		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[formatted_target];
+		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
 
 		const uint32_t hello_unique_number = ep_hello_context.next_hello_unique_number();
 
@@ -226,7 +252,7 @@ namespace fscp
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
-		async_send_to(buffer(send_buffer, size), formatted_target, m_greet_strand.wrap(make_shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, formatted_target, hello_unique_number, handler, timeout, _1, _2))));
+		async_send_to(buffer(send_buffer, size), target, m_greet_strand.wrap(make_shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, target, hello_unique_number, handler, timeout, _1, _2))));
 	}
 
 	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)

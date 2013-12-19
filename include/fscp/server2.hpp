@@ -113,10 +113,7 @@ namespace fscp
 			 * \param handler The handler to call when a reply was received, an error occured or the request timed out.
 			 * \param timeout The maximum time to wait for a reply.
 			 */
-			void async_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3))
-			{
-				m_greet_strand.post(boost::bind(&server2::do_greet, this, target, handler, timeout));
-			}
+			void async_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
 		private:
 
@@ -126,10 +123,12 @@ namespace fscp
 				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_receive_from<MutableBufferSequence, ReadHandler>, &m_socket, data, boost::ref(sender), 0, handler));
 			}
 
+			ep_type to_socket_format(const server2::ep_type& ep);
+
 			template <typename ConstBufferSequence, typename WriteHandler>
 			void async_send_to(const ConstBufferSequence& data, const ep_type& target, WriteHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, target, 0, handler));
+				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, to_socket_format(target), 0, handler));
 			}
 
 			identity_store m_identity_store;
