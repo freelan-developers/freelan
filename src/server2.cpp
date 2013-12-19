@@ -151,7 +151,7 @@ namespace fscp
 		m_socket.close();
 	}
 
-	void server2::async_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout)
+	void server2::async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{
 		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
 	}
@@ -224,7 +224,7 @@ namespace fscp
 	{
 		pending_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
 
-		assert(request != m_pending_requests.end())
+		assert(request != m_pending_requests.end());
 
 		const bool result = request->second.success;
 
