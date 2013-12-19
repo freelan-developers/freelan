@@ -125,7 +125,7 @@ namespace fscp
 			/**
 			 * @brief The default block count.
 			 */
-			static const size_t DEFAULT_BLOCK_COUNT = 16;
+			static const size_t DEFAULT_BLOCK_COUNT = 32;
 
 			/**
 			 * @brief The default block count.
