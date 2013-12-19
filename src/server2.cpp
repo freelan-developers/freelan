@@ -84,12 +84,12 @@ namespace fscp
 			return normalize(result);
 		}
 
-		template <typename Handler>
+		template <typename MemoryPoolType, typename Handler>
 		class shared_buffer_handler
 		{
 			public:
 
-				shared_buffer_handler(memory_pool::shared_buffer_type _buffer, Handler _handler) :
+				shared_buffer_handler(typename MemoryPoolType::shared_buffer_type _buffer, Handler _handler) :
 					m_buffer(_buffer),
 					m_handler(_handler)
 				{}
@@ -108,14 +108,14 @@ namespace fscp
 
 			private:
 
-				memory_pool::shared_buffer_type m_buffer;
+				typename MemoryPoolType::shared_buffer_type m_buffer;
 				Handler m_handler;
 		};
 
-		template <typename Handler>
-		inline shared_buffer_handler<Handler> make_shared_buffer_handler(memory_pool::shared_buffer_type _buffer, Handler _handler)
+		template <typename MemoryPoolType, typename Handler>
+		inline shared_buffer_handler<MemoryPoolType, Handler> make_shared_buffer_handler(typename MemoryPoolType::shared_buffer_type _buffer, Handler _handler)
 		{
-			return shared_buffer_handler<Handler>(_buffer, _handler);
+			return shared_buffer_handler<MemoryPoolType, Handler>(_buffer, _handler);
 		}
 	}
 
@@ -249,7 +249,7 @@ namespace fscp
 
 		const uint32_t hello_unique_number = ep_hello_context.next_hello_unique_number();
 
-		memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
+		greet_memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 

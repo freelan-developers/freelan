@@ -168,7 +168,7 @@ namespace fscp
 			 */
 			buffer_type allocate_buffer(bool use_heap_as_fallback = true)
 			{
-				return boost::asio::buffer(allocate(use_heap_as_fallback), m_block_size);
+				return boost::asio::buffer(allocate(use_heap_as_fallback), block_size);
 			}
 
 			/**
@@ -273,6 +273,27 @@ namespace fscp
 				}
 			}
 
+			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
+			{
+				return buffer(*_buffer);
+			}
+
+			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
+			{
+				return buffer(*_buffer, size);
+			}
+
+			template <typename Type>
+			friend inline Type buffer_cast(memory_pool::shared_buffer_type _buffer)
+			{
+				return buffer_cast<Type>(*_buffer);
+			}
+
+			friend inline size_t buffer_size(memory_pool::shared_buffer_type _buffer)
+			{
+				return buffer_size(*_buffer);
+			}
+
 		private:
 			typedef std::vector<uint8_t> pool_type;
 			typedef std::set<unsigned int> pool_allocations_type;
@@ -282,31 +303,6 @@ namespace fscp
 			pool_allocations_type m_pool_allocations;
 			boost::mutex m_pool_mutex;
 	};
-
-	template <size_t BlockSize, unsigned int BlockCount>
-	inline memory_pool<BlockSize, BlockCount>::buffer_type buffer(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer)
-	{
-		return buffer(*_buffer);
-	}
-
-	template <size_t BlockSize, unsigned int BlockCount>
-	inline memory_pool<BlockSize, BlockCount>::buffer_type buffer(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer, size_t size)
-	{
-		return buffer(*_buffer, size);
-	}
-
-	template <size_t BlockSize, unsigned int BlockCount>
-	template <typename Type>
-	inline Type buffer_cast(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer)
-	{
-		return buffer_cast<Type>(*_buffer);
-	}
-
-	template <size_t BlockSize, unsigned int BlockCount>
-	inline size_t buffer_size(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer)
-	{
-		return buffer_size(*_buffer);
-	}
 }
 
 #endif /* MEMORY_POOL_HPP */

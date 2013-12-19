@@ -220,6 +220,7 @@ namespace fscp
 					pending_requests_map m_pending_requests;
 			};
 
+			typedef memory_pool<16> greet_memory_pool;
 			typedef std::map<ep_type, ep_hello_context_type> ep_hello_context_map;
 
 			void do_greet(const ep_type&, duration_handler_type, const boost::posix_time::time_duration&);
@@ -228,7 +229,7 @@ namespace fscp
 
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;
-			memory_pool<16> m_greet_memory_pool;
+			greet_memory_pool m_greet_memory_pool;
 	};
 }
 
