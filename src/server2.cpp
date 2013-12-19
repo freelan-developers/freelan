@@ -61,7 +61,7 @@ namespace fscp
 
 	namespace
 	{
-		server::ep_type& normalize(server::ep_type& ep)
+		server2::ep_type& normalize(server2::ep_type& ep)
 		{
 			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
 			if (ep.address().is_v6())
@@ -70,16 +70,16 @@ namespace fscp
 
 				if (address.is_v4_mapped())
 				{
-					ep = server::ep_type(address.to_v4(), ep.port());
+					ep = server2::ep_type(address.to_v4(), ep.port());
 				}
 			}
 
 			return ep;
 		}
 
-		server::ep_type normalize(const server::ep_type& ep)
+		server2::ep_type normalize(const server2::ep_type& ep)
 		{
-			server::ep_type result = ep;
+			server2::ep_type result = ep;
 
 			return normalize(result);
 		}
