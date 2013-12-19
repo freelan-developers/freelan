@@ -49,7 +49,7 @@
 #include <map>
 
 #include <boost/noncopyable.hpp>
-#include <boost/thread/locks.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
 
 #include <stdint.h>
@@ -77,13 +77,15 @@ namespace fscp
 			 * @brief Allocate a buffer.
 			 * @param size The size of the buffer to allocate.
 			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
+			 * @tparam MutableBufferType The buffer type.
 			 * @return The allocated buffer.
 			 *
 			 * This method is thread-safe.
 			 *
 			 * The return buffer must be deallocated by passing it to deallocate() to avoid memory leaks.
 			 */
-			boost::asio::buffer allocate_buffer(size_t size, bool use_heap_as_fallback = true)
+			template <typename MutableBufferType>
+			MutableBufferType allocate_buffer(size_t size, bool use_heap_as_fallback = true)
 			{
 				return boost::asio::buffer(allocate(size, use_heap_as_fallback), size);
 			}

@@ -81,7 +81,9 @@ namespace fscp
 			}
 		}
 
-		if (std::distance(result, end) < size)
+		assert(result <= end);
+
+		if (static_cast<size_t>(std::distance(result, end)) < size)
 		{
 			// We can release the lock sooner since we won't modify the allocation table.
 			guard.unlock();
