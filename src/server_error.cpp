@@ -70,6 +70,10 @@ namespace fscp
 			{
 				return "The FSCP server is offline";
 			}
+			case server_error::hello_request_timed_out:
+			{
+				return "No HELLO response received"
+			}
 			default:
 			{
 				return "Unknown FSCP error";

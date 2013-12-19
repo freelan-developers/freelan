@@ -167,25 +167,40 @@ namespace fscp
 	{
 		const boost::shared_ptr<boost::asio::deadline_timer> timer = boost::make_shared<boost::asio::deadline_timer>(boost::ref(io_service), timeout);
 
-		m_pending_hello_requests[hello_unique_number] = timer;
+		m_pending_requests[hello_unique_number] = timer;
 
 		timer->async_wait(handler);
 	}
 
-	bool server2::ep_hello_context_type::cancel_reply_wait(uint32_t hello_unique_number)
+	bool server2::ep_hello_context_type::cancel_reply_wait(uint32_t hello_unique_number, bool success)
+	{
+		pending_hello_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
+
+		if (request != m_pending_requests.end())
+		{
+			if (request->second.timer->cancel() > 0)
+			{
+				// At least one handler was cancelled which means we can set the success flag.
+				request->second.success = success;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool server2::ep_hello_context_type::remove_reply_wait(uint32_t hello_unique_number)
 	{
 		bool result = false;
 
-		pending_hello_requests_map::iterator timer = m_pending_hello_requests.find(hello_unique_number);
+		pending_hello_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
 
-		if (timer != m_pending_hello_requests.end())
+		if (request != m_pending_requests.end())
 		{
-			if (timer->second->cancel() > 0)
-			{
-				result = true;
-			}
+			result = request->second->success;
 
-			m_pending_hello_requests.erase(timer);
+			m_pending_requests.erase(request);
 		}
 
 		return result;
@@ -237,8 +252,26 @@ namespace fscp
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
 
-		// This should return false, always.
-		ep_hello_context.cancel_reply_wait(hello_unique_number);
+		const bool success = ep_hello_context.remove_reply_wait(hello_unique_number);
+
+		if (ec == boost::asio::error::operation_aborted)
+		{
+			// The timer was aborted, which means we received a reply or the server was shut down.
+			if (success)
+			{
+				// The success flag is set: the timer was cancelled due to a reply.
+				handler(server_error::no_error);
+
+				return;
+			}
+		}
+		else if (!ec)
+		{
+			// The timer timed out: replacing the error code.
+			handler(server_error::hello_request_timed_out);
+
+			return;
+		}
 
 		handler(ec);
 	}

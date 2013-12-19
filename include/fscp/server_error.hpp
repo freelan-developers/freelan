@@ -68,7 +68,8 @@ namespace fscp
 		enum server_error_t
 		{
 			no_error = 0,
-			server_offline
+			server_offline,
+			hello_request_timed_out,
 		};
 
 		/**

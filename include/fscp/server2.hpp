@@ -176,18 +176,35 @@ namespace fscp
 					void async_wait_reply(boost::asio::io_service& io_service, uint32_t hello_unique_number, const boost::posix_time::time_duration& timeout, WaitHandler handler);
 
 					/**
-					 * @brief Cancel a hello reply wait timer and frees its memory.
+					 * @brief Cancel a hello reply wait timer.
 					 * @param hello_unique_number The hello reply number.
+					 * @param success Whether the cancel is the result of a received reply.
 					 * @return true if the timer was cancelled or false if it was too late to do so.
 					 */
-					bool cancel_reply_wait(uint32_t hello_unique_number);
+					bool cancel_reply_wait(uint32_t hello_unique_number, bool success);
+
+					/**
+					 * @brief Remove a hello reply wait from the pending list.
+					 * @return The success status of the request.
+					 */
+					bool remove_reply_wait(uint32_t hello_unique_number);
 
 				private:
 
-					typedef std::map<uint32_t, boost::shared_ptr<boost::asio::deadline_timer> > pending_hello_requests_map;
+					struct pending_request_status
+					{
+						pending_request_status() :
+							success(false)
+						{}
+
+						boost::shared_ptr<boost::asio::deadline_timer> timer;
+						bool success;
+					};
+
+					typedef std::map<uint32_t, pending_request_status> pending_requests_map;
 
 					uint32_t m_current_hello_unique_number;
-					pending_hello_requests_map m_pending_hello_requests;
+					pending_requests_map m_pending_requests;
 			};
 
 			typedef std::map<ep_type, ep_hello_context_type> ep_hello_context_map;
