@@ -76,6 +76,34 @@ namespace fscp
 			return ep;
 #endif
 		}
+
+		template <typename Handler>
+		class shared_buffer_handler
+		{
+			public:
+
+				shared_buffer_handler(memory_pool::shared_buffer_type _buffer, Handler handler) :
+					m_buffer(_buffer),
+					m_handler(handler)
+				{}
+
+				template <typename Arg1>
+				void operator()(Arg1 arg1)
+				{
+					m_handler(arg1);
+				}
+
+				template <typename Arg1, typename Arg2>
+				void operator()(Arg1 arg1, Arg2 arg2)
+				{
+					m_handler(arg1, arg2);
+				}
+
+			private:
+
+				memory_pool::shared_buffer_type m_buffer;
+				Handler handler;
+		};
 	}
 
 	server2::server2(boost::asio::io_service& io_service, const identity_store& identity) :
@@ -177,7 +205,7 @@ namespace fscp
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
-		async_send_to(buffer(send_buffer, size), formatted_target, m_greet_strand.wrap(boost::bind(&server2::do_greet_handler, this, formatted_target, hello_unique_number, handler, timeout, _1, _2)));
+		async_send_to(buffer(send_buffer, size), formatted_target, m_greet_strand.wrap(shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, formatted_target, hello_unique_number, handler, timeout, _1, _2))));
 	}
 
 	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
