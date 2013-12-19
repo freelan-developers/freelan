@@ -78,12 +78,12 @@ static void on_hello_response(const std::string& name, fscp::server2& server, co
 {
 	static_cast<void>(server);
 
-	if (!ec)
+	if (ec)
 	{
-		std::cout << "[" << name << "] Received no HELLO response from " << sender << ". Error was: " << ec << std::endl;
+		std::cout << "[" << name << "] Received no HELLO response from " << sender << ". Error is: " << ec << std::endl;
 	} else
 	{
-		std::cout << "[" << name << "] Received HELLO response from " << sender << "." << std::endl;
+		std::cout << "[" << name << "] Received HELLO response from " << sender << ". Result is: " << ec << std::endl;
 	}
 }
 
