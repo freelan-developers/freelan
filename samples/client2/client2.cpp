@@ -122,8 +122,11 @@ int main()
 		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1));
-		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1));
+		for (std::size_t i = 0; i < 25; ++i)
+		{
+			alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1));
+			chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1));
+		}
 
 		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server), boost::ref(chris_server));
 
