@@ -82,9 +82,9 @@ namespace fscp
 		{
 			public:
 
-				shared_buffer_handler(memory_pool::shared_buffer_type _buffer, Handler handler) :
+				shared_buffer_handler(memory_pool::shared_buffer_type _buffer, Handler _handler) :
 					m_buffer(_buffer),
-					m_handler(handler)
+					m_handler(_handler)
 				{}
 
 				template <typename Arg1>
@@ -102,8 +102,14 @@ namespace fscp
 			private:
 
 				memory_pool::shared_buffer_type m_buffer;
-				Handler handler;
+				Handler m_handler;
 		};
+
+		template <typename Handler>
+		inline shared_buffer_handler<Handler> make_shared_buffer_handler(memory_pool::shared_buffer_type _buffer, Handler _handler)
+		{
+			return shared_buffer_handler<Handler>(_buffer, _handler);
+		}
 	}
 
 	server2::server2(boost::asio::io_service& io_service, const identity_store& identity) :
@@ -194,7 +200,7 @@ namespace fscp
 			return;
 		}
 
-		const ep_type formatted_target = to_socket_format(target);
+		const ep_type formatted_target = to_socket_format(m_socket, target);
 
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[formatted_target];
@@ -205,7 +211,7 @@ namespace fscp
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
-		async_send_to(buffer(send_buffer, size), formatted_target, m_greet_strand.wrap(shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, formatted_target, hello_unique_number, handler, timeout, _1, _2))));
+		async_send_to(buffer(send_buffer, size), formatted_target, m_greet_strand.wrap(make_shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, formatted_target, hello_unique_number, handler, timeout, _1, _2))));
 	}
 
 	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
