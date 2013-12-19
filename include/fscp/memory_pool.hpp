@@ -164,6 +164,11 @@ namespace fscp
 			 */
 			buffer_type allocate_buffer(size_t size = 0, bool use_heap_as_fallback = true)
 			{
+				if (size == 0)
+				{
+					size = m_block_size;
+				}
+
 				return boost::asio::buffer(allocate(size, use_heap_as_fallback), size);
 			}
 
