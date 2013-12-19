@@ -219,7 +219,7 @@ namespace fscp
 		// We don't care what the bytes_transferred value is: if an incomplete frame was sent, it is exactly the same as a network loss and we just wait for the timer expiration silently.
 		static_cast<void>(bytes_transferred);
 
-		if (!ec)
+		if (ec)
 		{
 			handler(ec);
 
