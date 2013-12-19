@@ -166,8 +166,10 @@ namespace fscp
 			return;
 		}
 
+		const ep_type formatted_target = to_socket_format(target);
+
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
-		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
+		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[formatted_target];
 
 		const uint32_t hello_unique_number = ep_hello_context.next_hello_unique_number();
 
@@ -175,7 +177,7 @@ namespace fscp
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
-		async_send_to(buffer(send_buffer, size), target, m_greet_strand.wrap(boost::bind(&server2::do_greet_handler, this, target, hello_unique_number, handler, timeout, _1, _2)));
+		async_send_to(buffer(send_buffer, size), formatted_target, m_greet_strand.wrap(boost::bind(&server2::do_greet_handler, this, formatted_target, hello_unique_number, handler, timeout, _1, _2)));
 	}
 
 	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
