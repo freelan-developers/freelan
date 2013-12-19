@@ -57,7 +57,7 @@ namespace fscp
 	}
 
 	memory_pool::memory_pool(size_t block_size, unsigned int block_count) :
-		m_block_size(block_size)
+		m_block_size(block_size),
 		m_block_count(block_count),
 		m_pool(m_block_size * m_block_count)
 	{
