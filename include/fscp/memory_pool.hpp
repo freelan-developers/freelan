@@ -90,23 +90,23 @@ namespace fscp
 
 					friend class memory_pool;
 
-					friend buffer_type buffer(scoped_buffer_type _buffer)
+					friend buffer_type buffer(const scoped_buffer_type& _buffer)
 					{
 						return boost::asio::buffer(_buffer.m_buffer);
 					}
 
-					friend buffer_type buffer(scoped_buffer_type _buffer, size_t size)
+					friend buffer_type buffer(const scoped_buffer_type& _buffer, size_t size)
 					{
 						return boost::asio::buffer(_buffer.m_buffer, size);
 					}
 
 					template <typename Type>
-					friend Type buffer_cast(scoped_buffer_type _buffer)
+					friend Type buffer_cast(const scoped_buffer_type& _buffer)
 					{
 						return boost::asio::buffer_cast<Type>(buffer(_buffer));
 					}
 
-					friend size_t buffer_size(scoped_buffer_type _buffer)
+					friend size_t buffer_size(const scoped_buffer_type& _buffer)
 					{
 						return boost::asio::buffer_size(buffer(_buffer));
 					}
@@ -120,17 +120,17 @@ namespace fscp
 			/**
 			 * @brief The default block size.
 			 */
-			static size_t DEFAULT_BLOCK_SIZE = 65536;
+			static const size_t DEFAULT_BLOCK_SIZE = 65536;
 
 			/**
 			 * @brief The default block count.
 			 */
-			static size_t DEFAULT_BLOCK_COUNT = 16;
+			static const size_t DEFAULT_BLOCK_COUNT = 16;
 
 			/**
 			 * @brief The default block count.
 			 */
-			static size_t DEFAULT_SIZE = DEFAULT_BLOCK_SIZE * DEFAULT_BLOCK_COUNT;
+			static const size_t DEFAULT_SIZE = DEFAULT_BLOCK_SIZE * DEFAULT_BLOCK_COUNT;
 
 			/**
 			 * @brief Create a memory pool instance.
@@ -149,7 +149,7 @@ namespace fscp
 			 */
 			shared_buffer_type allocate_shared_buffer(size_t size = 0, bool use_heap_as_fallback = true)
 			{
-				return boost::make_shared<scoped_buffer_type>(*this, allocate_buffer(size, use_heap_as_fallback));
+				return shared_buffer_type(new scoped_buffer_type(*this, allocate_buffer(size, use_heap_as_fallback)));
 			}
 
 			/**

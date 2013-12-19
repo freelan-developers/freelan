@@ -56,7 +56,7 @@ namespace fscp
 		m_memory_pool.deallocate_buffer(m_buffer);
 	}
 
-	memory_pool::memory_pool(size_t size size_t block_size) :
+	memory_pool::memory_pool(size_t size, size_t block_size) :
 		m_pool(size),
 		m_block_size(block_size)
 	{

@@ -48,6 +48,8 @@
 #include "hello_message.hpp"
 
 #include <boost/random.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
 
 namespace fscp
 {
@@ -84,7 +86,7 @@ namespace fscp
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
-		ep_context_type::generate_unique_number();
+		ep_hello_context_type::generate_unique_number();
 	}
 
 	void server2::open(const ep_type& listen_endpoint)
@@ -108,6 +110,14 @@ namespace fscp
 		m_socket.close();
 	}
 
+	uint32_t server2::ep_hello_context_type::generate_unique_number()
+	{
+		// The first call to this function is *NOT* thread-safe in C++03 !
+		static boost::mt19937 rng(time(0));
+
+		return rng();
+	}
+
 	server2::ep_hello_context_type::ep_hello_context_type() :
 		m_current_hello_unique_number(generate_unique_number())
 	{
@@ -121,14 +131,14 @@ namespace fscp
 	template <typename WaitHandler>
 	void server2::ep_hello_context_type::async_wait_reply(boost::asio::io_service& io_service, uint32_t hello_unique_number, const boost::posix_time::time_duration& timeout, WaitHandler handler)
 	{
-		const boost::shared_ptr<boost::asio::deadline_timer> timer = boost::make_shared<boost::asio::deadline_timer>(io_service, timeout);
+		const boost::shared_ptr<boost::asio::deadline_timer> timer = boost::make_shared<boost::asio::deadline_timer>(boost::ref(io_service), timeout);
 
 		m_pending_hello_requests[hello_unique_number] = timer;
 
 		timer->async_wait(handler);
 	}
 
-	bool server2::ep_hello_context_type::cancel_reply_wait(uint32_t hello_unique_number, const boost::system::error_code& ec = boost::asio::error::operation_aborted)
+	bool server2::ep_hello_context_type::cancel_reply_wait(uint32_t hello_unique_number)
 	{
 		bool result = false;
 
@@ -136,7 +146,7 @@ namespace fscp
 
 		if (timer != m_pending_hello_requests.end())
 		{
-			if (timer->cancel(ec) > 0)
+			if (timer->second->cancel() > 0)
 			{
 				result = true;
 			}
@@ -147,17 +157,9 @@ namespace fscp
 		return result;
 	}
 
-	uint32_t server2::ep_hello_context_type::generate_unique_number()
+	void server2::do_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{
-		// The first call to this function is *NOT* thread-safe in C++03 !
-		static boost::mt19937 rng(time(0));
-
-		return rng();
-	}
-
-	void server2::do_greet(const ep_type& target, simple_handler_type handler)
-	{
-		if (!m_socket.open())
+		if (!m_socket.is_open())
 		{
 			handler(server_error::server_offline);
 
@@ -173,10 +175,10 @@ namespace fscp
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
-		async_send_to(buffer(send_buffer, size), target, m_greet_strand.wrap(boost::bind(&do_greet_handler, this, target, hello_unique_number, handler, _1, _2)));
+		async_send_to(buffer(send_buffer, size), target, m_greet_strand.wrap(boost::bind(&server2::do_greet_handler, this, target, hello_unique_number, handler, timeout, _1, _2)));
 	}
 
-	void do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
+	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
 	{
 		// We don't care what the bytes_transferred value is: if an incomplete frame was sent, it is exactly the same as a network loss and we just wait for the timer expiration silently.
 		static_cast<void>(bytes_transferred);
@@ -191,10 +193,10 @@ namespace fscp
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
 
-		ep_hello_context.async_wait_reply(get_io_service(), hello_unique_number, timeout, m_greet_strand.wrap(boost::bind(&do_greet_timeout, this, target, hello_unique_number, handler, _1)));
+		ep_hello_context.async_wait_reply(get_io_service(), hello_unique_number, timeout, m_greet_strand.wrap(boost::bind(&server2::do_greet_timeout, this, target, hello_unique_number, handler, _1)));
 	}
 
-	void do_greet_timeout(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::system::error_code& ec)
+	void server2::do_greet_timeout(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::system::error_code& ec)
 	{
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];

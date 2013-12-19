@@ -149,6 +149,12 @@ namespace fscp
 				public:
 
 					/**
+					 * @brief Generate an unique number.
+					 * @warning The first invocation of this function is *NOT* thread-safe in C++03.
+					 */
+					static uint32_t generate_unique_number();
+
+					/**
 					 * @brief Create a new context.
 					 */
 					ep_hello_context_type();
@@ -172,16 +178,13 @@ namespace fscp
 					/**
 					 * @brief Cancel a hello reply wait timer and frees its memory.
 					 * @param hello_unique_number The hello reply number.
-					 * @param ec The error to use when calling cancel on the timer.
 					 * @return true if the timer was cancelled or false if it was too late to do so.
 					 */
-					bool cancel_reply_wait(uint32_t hello_unique_number, const boost::system::error_code& ec);
+					bool cancel_reply_wait(uint32_t hello_unique_number);
 
 				private:
 
 					typedef std::map<uint32_t, boost::shared_ptr<boost::asio::deadline_timer> > pending_hello_requests_map;
-
-					static uint32_t generate_unique_number();
 
 					uint32_t m_current_hello_unique_number;
 					pending_hello_requests_map m_pending_hello_requests;
