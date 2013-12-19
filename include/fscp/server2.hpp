@@ -46,6 +46,7 @@
 #define FSCP_SERVER_HPP_2
 
 #include "identity_store.hpp"
+#include "memory_pool.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -109,39 +110,91 @@ namespace fscp
 			/**
 			 * \brief Greet an host.
 			 * \param target The target to greet.
-			 * \param handler The handler to call when the request was sent or an error occured.
+			 * \param handler The handler to call when a reply was received, an error occured or the request timed out.
+			 * \param timeout The maximum time to wait for a reply.
 			 */
-			void async_greet(const ep_type& target, simple_handler_type handler)
+			void async_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3))
 			{
-				get_io_service().post(boost::bind(&server2::do_greet, this, target, handler));
+				m_greet_strand.post(boost::bind(&server2::do_greet, this, target, handler, timeout));
 			}
 
 		private:
 
-			void do_greet(const ep_type&, simple_handler_type);
-
 			template <typename MutableBufferSequence, typename ReadHandler>
 			void async_receive_from(const MutableBufferSequence& data, ep_type& sender, ReadHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&do_async_receive_from<MutableBufferSequence, ReadHandler>, this, data, boost::ref(sender), handler));
+				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_receive_from<MutableBufferSequence, ReadHandler>, &m_socket, data, boost::ref(sender), 0, handler));
 			}
 
 			template <typename ConstBufferSequence, typename WriteHandler>
 			void async_send_to(const ConstBufferSequence& data, const ep_type& target, WriteHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&do_async_send_to<ConstBufferSequence, WriteHandler>, this, data, target, handler));
+				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, target, 0, handler));
 			}
 
-			template <typename MutableBufferSequence, typename ReadHandler>
-			void do_async_receive_from(const MutableBufferSequence&, ep_type&, ReadHandler);
+			identity_store m_identity_store;
 
-			template <typename ConstBufferSequence, typename WriteHandler>
-			void do_async_send_to(const ConstBufferSequence&, const ep_type&, WriteHandler);
+			memory_pool m_memory_pool;
 
 			boost::asio::ip::udp::socket m_socket;
 			boost::asio::strand m_socket_strand;
-			ep_type m_sender;
-			identity_store m_identity_store;
+
+		private:
+
+			/**
+			 * @brief Represents a context for an endpoint.
+			 */
+			class ep_hello_context_type
+			{
+				public:
+
+					/**
+					 * @brief Create a new context.
+					 */
+					ep_hello_context_type();
+
+					/**
+					 * @brief Returns the current hello unique number and generates a new one.
+					 * @return The current hello unique number.
+					 */
+					uint32_t next_hello_unique_number();
+
+					/**
+					 * @brief Asynchronously waits for a hello reply.
+					 * @param io_service The io_service instance to use for the wait.
+					 * @param hello_unique_number The unique hello number.
+					 * @param timeout The time to wait for the reply.
+					 * @param handler The handler to call upon timeout or cancellation.
+					 */
+					template <typename WaitHandler>
+					void async_wait_reply(boost::asio::io_service& io_service, uint32_t hello_unique_number, const boost::posix_time::time_duration& timeout, WaitHandler handler);
+
+					/**
+					 * @brief Cancel a hello reply wait timer and frees its memory.
+					 * @param hello_unique_number The hello reply number.
+					 * @param ec The error to use when calling cancel on the timer.
+					 * @return true if the timer was cancelled or false if it was too late to do so.
+					 */
+					bool cancel_reply_wait(uint32_t hello_unique_number, const boost::system::error_code& ec);
+
+				private:
+
+					typedef std::map<uint32_t, boost::shared_ptr<boost::asio::deadline_timer> > pending_hello_requests_map;
+
+					static uint32_t generate_unique_number();
+
+					uint32_t m_current_hello_unique_number;
+					pending_hello_requests_map m_pending_hello_requests;
+			};
+
+			typedef std::map<ep_type, ep_hello_context_type> ep_hello_context_map;
+
+			void do_greet(const ep_type&, simple_handler_type, const boost::posix_time::time_duration&);
+			void do_greet_handler(const ep_type&, uint32_t, simple_handler_type, const boost::posix_time::time_duration&, const boost::system::error_code&, size_t);
+			void do_greet_timeout(const ep_type&, uint32_t, simple_handler_type, const boost::system::error_code&);
+
+			ep_hello_context_map m_ep_hello_contexts;
+			boost::asio::strand m_greet_strand;
 	};
 }
 

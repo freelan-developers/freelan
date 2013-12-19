@@ -51,13 +51,24 @@
 
 namespace fscp
 {
-	memory_pool::memory_pool(size_t size) :
-		m_pool(size)
+	memory_pool::scoped_buffer_type::~scoped_buffer_type()
+	{
+		m_memory_pool.deallocate_buffer(m_buffer);
+	}
+
+	memory_pool::memory_pool(size_t size size_t block_size) :
+		m_pool(size),
+		m_block_size(block_size)
 	{
 	}
 
 	uint8_t* memory_pool::allocate(size_t size, bool use_heap_as_fallback)
 	{
+		if (size == 0)
+		{
+			size = m_block_size;
+		}
+
 		boost::unique_lock<boost::mutex> guard(m_pool_mutex);
 
 		const pool_type::iterator begin = m_pool.begin();
