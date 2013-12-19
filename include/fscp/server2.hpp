@@ -123,7 +123,7 @@ namespace fscp
 			template <typename MutableBufferSequence, typename ReadHandler>
 			void async_receive_from(const MutableBufferSequence& data, ep_type& sender, ReadHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&do_async_receive_from<BufferSequence, ReadHandler>, this, data, boost::ref(sender), handler));
+				m_socket_strand.post(boost::bind(&do_async_receive_from<MutableBufferSequence, ReadHandler>, this, data, boost::ref(sender), handler));
 			}
 
 			template <typename ConstBufferSequence, typename WriteHandler>
