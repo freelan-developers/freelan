@@ -45,13 +45,16 @@
 #ifndef MEMORY_POOL_HPP
 #define MEMORY_POOL_HPP
 
-#include <vector>
-#include <set>
-
+#include <boost/thread/lock_guard.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <vector>
+#include <set>
+#include <new>
+#include <cassert>
 
 #include <stdint.h>
 
@@ -64,6 +67,7 @@ namespace fscp
 	 *
 	 * memory_pool is optimized for the allocation of buffers of similar sizes.
 	 */
+	template <size_t BlockSize = 65536, unsigned int BlockCount = 32>
 	class memory_pool : public boost::noncopyable
 	{
 		public:
@@ -79,7 +83,10 @@ namespace fscp
 			class scoped_buffer_type : public boost::noncopyable
 			{
 				public:
-					~scoped_buffer_type();
+					~scoped_buffer_type()
+					{
+						m_memory_pool.deallocate_buffer(m_buffer);
+					}
 
 				private:
 
@@ -120,21 +127,23 @@ namespace fscp
 			/**
 			 * @brief The default block size.
 			 */
-			static const size_t DEFAULT_BLOCK_SIZE = 65536;
+			static const size_t block_size = BlockSize;
 
 			/**
 			 * @brief The default block count.
 			 */
-			static const unsigned int DEFAULT_BLOCK_COUNT = 16;
+			static const unsigned int block_count = BlockCount;
 
 			/**
 			 * @brief Create a memory pool instance.
-			 * @param block_size The size of a block.
-			 * @param block_count The count of blocks.
 			 *
 			 * The internal memory pool occupies exactly block_size * block_count bytes.
 			 */
-			explicit memory_pool(size_t block_size = DEFAULT_BLOCK_SIZE, unsigned int block_count = DEFAULT_BLOCK_COUNT);
+			memory_pool() :
+				m_next_available_block(0),
+				m_pool(BlockSize * BlockCount)
+			{
+			}
 
 			/**
 			 * @brief Allocate a shared buffer.
@@ -184,7 +193,58 @@ namespace fscp
 			 *
 			 * The return buffer must be deallocated by passing it to deallocate() to avoid memory leaks.
 			 */
-			uint8_t* allocate(bool use_heap_as_fallback = true);
+			uint8_t* allocate(bool use_heap_as_fallback = true)
+			{
+				boost::unique_lock<boost::mutex> guard(m_pool_mutex);
+
+				unsigned int block = 0;
+
+				if (m_pool_allocations.size() >= block_count)
+				{
+					block = block_count;
+				}
+				else if (m_next_available_block >= block_count)
+				{
+					for (pool_allocations_type::const_iterator allocation = m_pool_allocations.begin(); allocation != m_pool_allocations.end(); ++allocation)
+					{
+						if (block < *allocation)
+						{
+							break;
+						}
+						else
+						{
+							block = *allocation + 1;
+						}
+					}
+				}
+				else
+				{
+					block = m_next_available_block;
+					m_next_available_block = block_count;
+				}
+
+				if (block >= block_count)
+				{
+					// We can release the lock sooner since we won't modify the allocation table.
+					guard.unlock();
+
+					// There is no more room for this allocation: trying heap allocation if permitted.
+					if (use_heap_as_fallback)
+					{
+						return new uint8_t[block_size];
+					}
+					else
+					{
+						throw std::bad_alloc();
+					}
+				}
+				else
+				{
+					m_pool_allocations.insert(block);
+
+					return (&m_pool[0] + block_size * block);
+				}
+			}
 
 			/**
 			 * @brief Deallocate a buffer.
@@ -192,37 +252,58 @@ namespace fscp
 			 *
 			 * This method is thread-safe.
 			 */
-			void deallocate(uint8_t* buffer);
+			void deallocate(uint8_t* buffer)
+			{
+				if ((buffer < &m_pool[0]) || (buffer >= &m_pool[0] + m_pool.size()))
+				{
+					// The buffer was heap allocated: we don't need to lock.
+					delete[] buffer;
+				}
+				else
+				{
+					boost::lock_guard<boost::mutex> guard(m_pool_mutex);
+
+					const unsigned int block = static_cast<unsigned int>(std::distance(&m_pool[0], buffer) / block_size);
+
+					// This should never happen (or we have a programming error).
+					assert(&m_pool[0] + block * block_size == buffer);
+
+					m_pool_allocations.erase(block);
+					m_next_available_block = block;
+				}
+			}
 
 		private:
 			typedef std::vector<uint8_t> pool_type;
 			typedef std::set<unsigned int> pool_allocations_type;
 
-			const size_t m_block_size;
-			const unsigned int m_block_count;
 			unsigned int m_next_available_block;
 			pool_type m_pool;
 			pool_allocations_type m_pool_allocations;
 			boost::mutex m_pool_mutex;
 	};
 
-	inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
+	template <size_t BlockSize, unsigned int BlockCount>
+	inline memory_pool<BlockSize, BlockCount>::buffer_type buffer(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer)
 	{
 		return buffer(*_buffer);
 	}
 
-	inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
+	template <size_t BlockSize, unsigned int BlockCount>
+	inline memory_pool<BlockSize, BlockCount>::buffer_type buffer(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer, size_t size)
 	{
 		return buffer(*_buffer, size);
 	}
 
+	template <size_t BlockSize, unsigned int BlockCount>
 	template <typename Type>
-	inline Type buffer_cast(memory_pool::shared_buffer_type _buffer)
+	inline Type buffer_cast(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer)
 	{
 		return buffer_cast<Type>(*_buffer);
 	}
 
-	inline size_t buffer_size(memory_pool::shared_buffer_type _buffer)
+	template <size_t BlockSize, unsigned int BlockCount>
+	inline size_t buffer_size(memory_pool<BlockSize, BlockCount>::shared_buffer_type _buffer)
 	{
 		return buffer_size(*_buffer);
 	}

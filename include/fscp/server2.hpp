@@ -138,8 +138,6 @@ namespace fscp
 
 			identity_store m_identity_store;
 
-			memory_pool m_memory_pool;
-
 			boost::asio::ip::udp::socket m_socket;
 			boost::asio::strand m_socket_strand;
 
@@ -230,6 +228,7 @@ namespace fscp
 
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;
+			memory_pool<16> m_greet_memory_pool;
 	};
 }
 
