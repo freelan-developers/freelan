@@ -1,63 +1,83 @@
 {
-	"folders":
-	[
-		{
-			"path": ".",
-			"folder_exclude_patterns":
-			[
-				"build",
-				"install",
-				"third-party"
-			],
-			"file_include_patterns":
-			[
-				"*.yaml",
-				"*.c",
-				"*.cpp",
-				"*.h",
-				"*.hpp",
-				"*.py",
-				"SConstruct",
-				"SConscript",
-				"*.iss",
-				"*.md",
-				"*.txt",
-				"*.vcxproj",
-				"*.sln",
-				"doxyfile",
-				".gitignore",
-				".gitattributes",
-				"*.conf",
-				"*.cfg"
-			]
-		}
-	],
-	"build_systems":
-	[
-		{
-			"name": "Visual Studio - MSBuild",
-			"file_regex": "^ (.+)\\(([0-9]+)\\): (.*)$",
-			"working_dir": "${project_path:${folder:${file_path}}}",
-			"shell": true,
-			"variants":
-			[
-				{
-					"name": "Build - Release",
-					"cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Release", "/t:Build"]
-				},
-				{
-					"name": "Build - Debug",
-					"cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Debug", "/t:Build"]
-				},
-				{
-					"name": "Clean - Release",
-					"cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Release", "/t:Clean"]
-				},
-				{
-					"name": "Clean - Debug",
-					"cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Debug", "/t:Clean"]
-				}
-			]
-		}
-	]
+  "folders":
+  [
+    {
+      "path": ".",
+      "folder_exclude_patterns":
+      [
+        "build",
+        "install",
+        "third-party"
+      ],
+      "file_include_patterns":
+      [
+        "*.yaml",
+        "*.c",
+        "*.cpp",
+        "*.h",
+        "*.hpp",
+        "*.py",
+        "SConstruct",
+        "SConscript",
+        "*.iss",
+        "*.md",
+        "*.txt",
+        "*.vcxproj",
+        "*.sln",
+        "doxyfile",
+        ".gitignore",
+        ".gitattributes",
+        "*.conf",
+        "*.cfg"
+      ]
+    }
+  ],
+  "build_systems":
+  [
+    {
+      "name": "Visual Studio - MSBuild",
+      "file_regex": "^ (.+)\\(([0-9]+)\\): (.*)$",
+      "working_dir": "${project_path:${folder:${file_path}}}",
+      "shell": true,
+      "variants":
+      [
+        {
+          "name": "Build - Release",
+          "cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Release", "/t:Build"]
+        },
+        {
+          "name": "Build - Debug",
+          "cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Debug", "/t:Build"]
+        },
+        {
+          "name": "Clean - Release",
+          "cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Release", "/t:Clean"]
+        },
+        {
+          "name": "Clean - Debug",
+          "cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Debug", "/t:Clean"]
+        }
+      ]
+    }
+  ],
+  "settings":
+  {
+    "AStyleFormatter":
+    {
+      "options_default":
+      {
+        "indent": "tab",
+        "indent-spaces": 4,
+        "indent-classes": true,
+        "indent-switches": true,
+        "indent-namespaces": true,
+        "unpad-paren": false,
+        "align-pointer": "type",
+        "align-reference": "type",
+        "add-brackets": true,
+        "keep-one-line-statements": false,
+        "add-one-line-brackets": true
+      }
+    }
+  }
 }
