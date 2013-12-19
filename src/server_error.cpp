@@ -37,81 +37,43 @@
  */
 
 /**
- * \file server.cpp
+ * \file server_error.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The server class.
+ * \brief The server errors.
  */
-
-#include "server2.hpp"
 
 #include "server_error.hpp"
 
-using namespace boost;
-
 namespace fscp
 {
-	namespace
+	const char* server_category::name() const
 	{
-		server2::ep_type to_socket_format(const boost::asio::ip::udp::socket& socket, const server2::ep_type& ep)
-		{
-#ifdef WINDOWS
-			if (socket.local_endpoint().address().is_v6() && ep.address().is_v4())
-			{
-				return server2::ep_type(boost::asio::ip::address_v6::v4_mapped(ep.address().to_v4()), ep.port());
-			}
-			else
-			{
-				return ep;
-			}
-#else
-			static_cast<void>(socket);
+		return "fscp::server";
+	}
 
-			return ep;
-#endif
+	std::string server_category::message(int ev) const
+	{
+		switch (ev)
+		{
+			case server_error::no_error:
+			{
+				return "No error";
+			}
+			case server_error::server_offline:
+			{
+				return "The FSCP server is offline";
+			}
+			default:
+			{
+				return "Unknown FSCP error";
+			}
 		}
 	}
 
-	server2::server2(boost::asio::io_service& io_service, const identity_store& identity) :
-		m_socket(io_service),
-		m_socket_strand(io_service),
-		m_identity_store(identity)
+	const boost::system::error_category& server_category()
 	{
-		// This call is needed in C++03 to ensure that the server_category() function first call is done in a single thread.
-		server_category();
-	}
+		static server_category_impl instance;
 
-	void server2::open(const ep_type& listen_endpoint)
-	{
-		m_socket.open(listen_endpoint.protocol());
-
-		if (listen_endpoint.address().is_v6())
-		{
-			// We accept both IPv4 and IPv6 addresses
-			m_socket.set_option(boost::asio::ip::v6_only(false));
-		}
-
-		m_socket.bind(listen_endpoint);
-	}
-
-	void server2::close()
-	{
-		m_socket.close();
-	}
-
-	void server2::do_greet(const ep_type&, simple_handler_type)
-	{
-		//TODO: Implement
-	}
-
-	template <typename MutableBufferSequence, typename ReadHandler>
-	void server2::do_async_receive_from(const MutableBufferSequence& buffers, ep_type& sender, ReadHandler handler)
-	{
-		m_socket.async_receive_from(buffers, sender, 0, handler);
-	}
-
-	template <typename ConstBufferSequence, typename WriteHandler>
-	void server2::do_async_send_to(const ConstBufferSequence& buffers, const ep_type& target, WriteHandler handler)
-	{
-		m_socket.async_send_to(buffers, to_socket_format(m_socket, target), 0, handler);
+		return instance;
 	}
 }

@@ -37,81 +37,88 @@
  */
 
 /**
- * \file server.cpp
+ * \file server_error.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The server class.
+ * \brief The server errors.
  */
 
-#include "server2.hpp"
+#ifndef FSCP_SERVER_ERROR_HPP
+#define FSCP_SERVER_ERROR_HPP
 
-#include "server_error.hpp"
+#include <boost/system/error_code.hpp>
 
-using namespace boost;
+#include <string>
 
 namespace fscp
 {
-	namespace
+	namespace server_error
 	{
-		server2::ep_type to_socket_format(const boost::asio::ip::udp::socket& socket, const server2::ep_type& ep)
+		/**
+		 * The list of server errors.
+		 */
+		enum server_error_t
 		{
-#ifdef WINDOWS
-			if (socket.local_endpoint().address().is_v6() && ep.address().is_v4())
-			{
-				return server2::ep_type(boost::asio::ip::address_v6::v4_mapped(ep.address().to_v4()), ep.port());
-			}
-			else
-			{
-				return ep;
-			}
-#else
-			static_cast<void>(socket);
-
-			return ep;
-#endif
-		}
+			no_error = 0,
+			server_offline
+		};
 	}
 
-	server2::server2(boost::asio::io_service& io_service, const identity_store& identity) :
-		m_socket(io_service),
-		m_socket_strand(io_service),
-		m_identity_store(identity)
+	/**
+	 * @brief A server error category.
+	 */
+	class server_category_impl : public boost::system::error_category
 	{
-		// This call is needed in C++03 to ensure that the server_category() function first call is done in a single thread.
-		server_category();
+		public:
+			/**
+			 * @brief Get the name of the category.
+			 * @return The name of the category.
+			 */
+			virtual const char* name() const;
+
+			/**
+			 * @brief Get the error message for a given error.
+			 * @param ev The error numeric value.
+			 * @return The message associated to the error.
+			 */
+			virtual std::string message(int ev) const;
+	};
+
+	/**
+	 * @brief Get the default server error category.
+	 * @return The default server error category instance.
+	 *
+	 * @warning The first call to this function is thread-safe only starting with C++11.
+	 */
+	const boost::system::error_category& server_category();
+
+	/**
+	 * @brief Create an error_code instance for the given error.
+	 * @param error The error.
+	 * @return The error_code instance.
+	 */
+	boost::system::error_code make_error_code(server_error_t error)
+	{
+		return boost::system::error_code(static_cast<int>(error), server_category());
 	}
 
-	void server2::open(const ep_type& listen_endpoint)
+	/**
+	 * @brief Create an error_condition instance for the given error.
+	 * @param error The error.
+	 * @return The error_condition instance.
+	 */
+	boost::system::error_condition make_error_condition(server_error_t error)
 	{
-		m_socket.open(listen_endpoint.protocol());
-
-		if (listen_endpoint.address().is_v6())
-		{
-			// We accept both IPv4 and IPv6 addresses
-			m_socket.set_option(boost::asio::ip::v6_only(false));
-		}
-
-		m_socket.bind(listen_endpoint);
-	}
-
-	void server2::close()
-	{
-		m_socket.close();
-	}
-
-	void server2::do_greet(const ep_type&, simple_handler_type)
-	{
-		//TODO: Implement
-	}
-
-	template <typename MutableBufferSequence, typename ReadHandler>
-	void server2::do_async_receive_from(const MutableBufferSequence& buffers, ep_type& sender, ReadHandler handler)
-	{
-		m_socket.async_receive_from(buffers, sender, 0, handler);
-	}
-
-	template <typename ConstBufferSequence, typename WriteHandler>
-	void server2::do_async_send_to(const ConstBufferSequence& buffers, const ep_type& target, WriteHandler handler)
-	{
-		m_socket.async_send_to(buffers, to_socket_format(m_socket, target), 0, handler);
+		return boost::system::error_condition(static_cast<int>(error), server_category());
 	}
 }
+
+namespace boost
+{
+	namespace system
+	{
+		template <>
+		struct is_error_code_enum(::fscp::server_error::server_error_t) : public boost::true_type {};
+	}
+}
+
+#endif /* FSCP_SERVER_ERROR_HPP */

@@ -73,9 +73,9 @@ namespace fscp
 			typedef cryptoplus::x509::certificate cert_type;
 
 			/**
-			 * \brief A resultless operation handler.
+			 * \brief A simple operation handler.
 			 */
-			typedef boost::function<void (const boost::system::error_code&)> resultless_handler_type;
+			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -111,25 +111,25 @@ namespace fscp
 			 * \param target The target to greet.
 			 * \param handler The handler to call when the request was sent or an error occured.
 			 */
-			void async_greet(const ep_type& target, resultless_handler_type handler)
+			void async_greet(const ep_type& target, simple_handler_type handler)
 			{
 				get_io_service().post(boost::bind(&server2::do_greet, this, target, handler));
 			}
 
 		private:
 
-			void do_greet(const ep_type&, resultless_handler_type);
+			void do_greet(const ep_type&, simple_handler_type);
 
 			template <typename MutableBufferSequence, typename ReadHandler>
 			void async_receive_from(const MutableBufferSequence& data, ep_type& sender, ReadHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&do_async_receive_from<BufferSequence, ReadHandler>, this, data, boost::ref(sender), handler)); 
+				m_socket_strand.post(boost::bind(&do_async_receive_from<BufferSequence, ReadHandler>, this, data, boost::ref(sender), handler));
 			}
 
 			template <typename ConstBufferSequence, typename WriteHandler>
 			void async_send_to(const ConstBufferSequence& data, const ep_type& target, WriteHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&do_async_send_to<ConstBufferSequence, WriteHandler>, this, data, target, handler)); 
+				m_socket_strand.post(boost::bind(&do_async_send_to<ConstBufferSequence, WriteHandler>, this, data, target, handler));
 			}
 
 			template <typename MutableBufferSequence, typename ReadHandler>
