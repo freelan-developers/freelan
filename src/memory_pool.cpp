@@ -56,45 +56,34 @@ namespace fscp
 		m_memory_pool.deallocate_buffer(m_buffer);
 	}
 
-	memory_pool::memory_pool(size_t size, size_t block_size) :
-		m_pool(size),
+	memory_pool::memory_pool(size_t block_size, unsigned int block_count) :
 		m_block_size(block_size)
+		m_block_count(block_count),
+		m_pool(m_block_size * m_block_count)
 	{
 	}
 
-	uint8_t* memory_pool::allocate(size_t size, bool use_heap_as_fallback)
+	uint8_t* memory_pool::allocate(bool use_heap_as_fallback)
 	{
-		if (size == 0)
-		{
-			size = m_block_size;
-		}
+		const size_t size = m_block_size;
 
 		boost::unique_lock<boost::mutex> guard(m_pool_mutex);
 
-		const pool_type::iterator begin = m_pool.begin();
-		const pool_type::iterator end = m_pool.end();
-
-		pool_type::iterator result = begin;
+		unsigned int block = 0;
 
 		for (pool_allocations_type::const_iterator allocation = m_pool_allocations.begin(); allocation != m_pool_allocations.end(); ++allocation)
 		{
-			const pool_type::iterator start = allocation->first;
-			const pool_type::iterator stop = start + allocation->second;
-
-			if ((result + size <= start) || (result >= stop))
+			if (block < *allocation)
 			{
-				// The segment is on the left or on the right.
 				break;
 			}
 			else
 			{
-				result = stop;
+				block = *allocation + 1;
 			}
 		}
 
-		assert(result <= end);
-
-		if (static_cast<size_t>(std::distance(result, end)) < size)
+		if (block >= m_block_count)
 		{
 			// We can release the lock sooner since we won't modify the allocation table.
 			guard.unlock();
@@ -111,9 +100,9 @@ namespace fscp
 		}
 		else
 		{
-			m_pool_allocations[result] = size;
+			m_pool_allocations.insert(block);
 
-			return &*result;
+			return (&m_pool[0] + m_block_size * block);
 		}
 	}
 
@@ -128,14 +117,12 @@ namespace fscp
 		{
 			boost::lock_guard<boost::mutex> guard(m_pool_mutex);
 
-			const pool_type::iterator start = m_pool.begin() + (buffer - &m_pool[0]);
-
-			const pool_allocations_type::iterator allocation = m_pool_allocations.find(start);
+			const unsigned int block = static_cast<unsigned int>(std::distance(&m_pool[0], buffer) / m_block_size);
 
 			// This should never happen (or we have a programming error).
-			assert(allocation != m_pool_allocations.end());
+			assert(&m_pool[0] + block * m_block_size == buffer);
 
-			m_pool_allocations.erase(allocation);
+			m_pool_allocations.erase(block);
 		}
 	}
 }

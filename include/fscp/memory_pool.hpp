@@ -46,7 +46,7 @@
 #define MEMORY_POOL_HPP
 
 #include <vector>
-#include <map>
+#include <set>
 
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
@@ -125,36 +125,31 @@ namespace fscp
 			/**
 			 * @brief The default block count.
 			 */
-			static const size_t DEFAULT_BLOCK_COUNT = 32;
-
-			/**
-			 * @brief The default block count.
-			 */
-			static const size_t DEFAULT_SIZE = DEFAULT_BLOCK_SIZE * DEFAULT_BLOCK_COUNT;
+			static const unsigned int DEFAULT_BLOCK_COUNT = 16;
 
 			/**
 			 * @brief Create a memory pool instance.
-			 * @param size The size of the internal memory.
-			 * @param block_size The default size for blocks.
+			 * @param block_size The size of a block.
+			 * @param block_count The count of blocks.
+			 *
+			 * The internal memory pool occupies exactly block_size * block_count bytes.
 			 */
-			explicit memory_pool(size_t size = DEFAULT_SIZE, size_t block_size = DEFAULT_BLOCK_SIZE);
+			explicit memory_pool(size_t block_size = DEFAULT_BLOCK_SIZE, unsigned int block_count = DEFAULT_BLOCK_COUNT);
 
 			/**
 			 * @brief Allocate a shared buffer.
-			 * @param size The size of the buffer to allocate. If 0, the default size is assumed.
 			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
 			 * @return The allocated shared buffer.
 			 *
 			 * This method is thread-safe.
 			 */
-			shared_buffer_type allocate_shared_buffer(size_t size = 0, bool use_heap_as_fallback = true)
+			shared_buffer_type allocate_shared_buffer(bool use_heap_as_fallback = true)
 			{
-				return shared_buffer_type(new scoped_buffer_type(*this, allocate_buffer(size, use_heap_as_fallback)));
+				return shared_buffer_type(new scoped_buffer_type(*this, allocate_buffer(use_heap_as_fallback)));
 			}
 
 			/**
 			 * @brief Allocate a buffer.
-			 * @param size The size of the buffer to allocate. If 0, the default size is assumed.
 			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
 			 * @return The allocated buffer.
 			 *
@@ -162,14 +157,9 @@ namespace fscp
 			 *
 			 * The return buffer must be deallocated by passing it to deallocate() to avoid memory leaks.
 			 */
-			buffer_type allocate_buffer(size_t size = 0, bool use_heap_as_fallback = true)
+			buffer_type allocate_buffer(bool use_heap_as_fallback = true)
 			{
-				if (size == 0)
-				{
-					size = m_block_size;
-				}
-
-				return boost::asio::buffer(allocate(size, use_heap_as_fallback), size);
+				return boost::asio::buffer(allocate(use_heap_as_fallback), m_block_size);
 			}
 
 			/**
@@ -187,7 +177,6 @@ namespace fscp
 
 			/**
 			 * @brief Allocate some memory.
-			 * @param size The amount of bytes to allocate. If 0, the default size is assumed.
 			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
 			 * @return A pointer to the allocated memory.
 			 *
@@ -195,7 +184,7 @@ namespace fscp
 			 *
 			 * The return buffer must be deallocated by passing it to deallocate() to avoid memory leaks.
 			 */
-			uint8_t* allocate(size_t size = 0, bool use_heap_as_fallback = true);
+			uint8_t* allocate(bool use_heap_as_fallback = true);
 
 			/**
 			 * @brief Deallocate a buffer.
@@ -207,10 +196,11 @@ namespace fscp
 
 		private:
 			typedef std::vector<uint8_t> pool_type;
-			typedef std::map<pool_type::iterator, size_t> pool_allocations_type;
+			typedef std::set<unsigned int> pool_allocations_type;
 
-			pool_type m_pool;
 			const size_t m_block_size;
+			const size_t m_block_count;
+			pool_type m_pool;
 			pool_allocations_type m_pool_allocations;
 			boost::mutex m_pool_mutex;
 	};
