@@ -79,6 +79,11 @@ namespace fscp
 			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
 
 			/**
+			 * \brief A duration operation handler.
+			 */
+			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
+
+			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
 			 * \param identity The identity store.
@@ -113,7 +118,7 @@ namespace fscp
 			 * \param handler The handler to call when a reply was received, an error occured or the request timed out.
 			 * \param timeout The maximum time to wait for a reply.
 			 */
-			void async_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
+			void async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
 		private:
 
@@ -184,9 +189,11 @@ namespace fscp
 
 					/**
 					 * @brief Remove a hello reply wait from the pending list.
+					 * @param hello_unique_number The hello reply number.
+					 * @param duration A variable whose value after the call will be the time elapsed since the creation of the request.
 					 * @return The success status of the request.
 					 */
-					bool remove_reply_wait(uint32_t hello_unique_number);
+					bool remove_reply_wait(uint32_t hello_unique_number, boost::posix_time::time_duration& duration);
 
 				private:
 
@@ -194,15 +201,18 @@ namespace fscp
 					{
 						pending_request_status() :
 							timer(),
+							start_date(boost::posix_time::microsec_clock::universal_time()),
 							success(false)
 						{}
 
 						pending_request_status(boost::shared_ptr<boost::asio::deadline_timer> _timer) :
 							timer(_timer),
+							start_date(boost::posix_time::microsec_clock::universal_time()),
 							success(false)
 						{}
 
 						boost::shared_ptr<boost::asio::deadline_timer> timer;
+						boost::posix_time::ptime start_date;
 						bool success;
 					};
 
@@ -214,9 +224,9 @@ namespace fscp
 
 			typedef std::map<ep_type, ep_hello_context_type> ep_hello_context_map;
 
-			void do_greet(const ep_type&, simple_handler_type, const boost::posix_time::time_duration&);
-			void do_greet_handler(const ep_type&, uint32_t, simple_handler_type, const boost::posix_time::time_duration&, const boost::system::error_code&, size_t);
-			void do_greet_timeout(const ep_type&, uint32_t, simple_handler_type, const boost::system::error_code&);
+			void do_greet(const ep_type&, duration_handler_type, const boost::posix_time::time_duration&);
+			void do_greet_handler(const ep_type&, uint32_t, duration_handler_type, const boost::posix_time::time_duration&, const boost::system::error_code&, size_t);
+			void do_greet_timeout(const ep_type&, uint32_t, duration_handler_type, const boost::system::error_code&);
 
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;

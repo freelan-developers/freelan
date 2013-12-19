@@ -51,6 +51,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
 
+#include <cassert>
+
 namespace fscp
 {
 	using boost::asio::buffer;
@@ -218,27 +220,26 @@ namespace fscp
 		return false;
 	}
 
-	bool server2::ep_hello_context_type::remove_reply_wait(uint32_t hello_unique_number)
+	bool server2::ep_hello_context_type::remove_reply_wait(uint32_t hello_unique_number, boost::posix_time::time_duration& duration)
 	{
-		bool result = false;
-
 		pending_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
 
-		if (request != m_pending_requests.end())
-		{
-			result = request->second.success;
+		assert(request != m_pending_requests.end())
 
-			m_pending_requests.erase(request);
-		}
+		const bool result = request->second.success;
+
+		duration = boost::posix_time::microsec_clock::universal_time() - request->second.start_date;
+
+		m_pending_requests.erase(request);
 
 		return result;
 	}
 
-	void server2::do_greet(const ep_type& target, simple_handler_type handler, const boost::posix_time::time_duration& timeout)
+	void server2::do_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{
 		if (!m_socket.is_open())
 		{
-			handler(server_error::server_offline);
+			handler(server_error::server_offline, boost::posix_time::time_duration());
 
 			return;
 		}
@@ -255,14 +256,14 @@ namespace fscp
 		async_send_to(buffer(send_buffer, size), target, m_greet_strand.wrap(make_shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, target, hello_unique_number, handler, timeout, _1, _2))));
 	}
 
-	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
+	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, duration_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
 	{
 		// We don't care what the bytes_transferred value is: if an incomplete frame was sent, it is exactly the same as a network loss and we just wait for the timer expiration silently.
 		static_cast<void>(bytes_transferred);
 
 		if (ec)
 		{
-			handler(ec);
+			handler(ec, boost::posix_time::time_duration());
 
 			return;
 		}
@@ -273,12 +274,14 @@ namespace fscp
 		ep_hello_context.async_wait_reply(get_io_service(), hello_unique_number, timeout, m_greet_strand.wrap(boost::bind(&server2::do_greet_timeout, this, target, hello_unique_number, handler, _1)));
 	}
 
-	void server2::do_greet_timeout(const ep_type& target, uint32_t hello_unique_number, simple_handler_type handler, const boost::system::error_code& ec)
+	void server2::do_greet_timeout(const ep_type& target, uint32_t hello_unique_number, duration_handler_type handler, const boost::system::error_code& ec)
 	{
 		// All do_greet() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
 
-		const bool success = ep_hello_context.remove_reply_wait(hello_unique_number);
+		boost::posix_time::time_duration duration;
+
+		const bool success = ep_hello_context.remove_reply_wait(hello_unique_number, duration);
 
 		if (ec == boost::asio::error::operation_aborted)
 		{
@@ -286,7 +289,7 @@ namespace fscp
 			if (success)
 			{
 				// The success flag is set: the timer was cancelled due to a reply.
-				handler(server_error::no_error);
+				handler(server_error::no_error, duration);
 
 				return;
 			}
@@ -294,11 +297,11 @@ namespace fscp
 		else if (!ec)
 		{
 			// The timer timed out: replacing the error code.
-			handler(server_error::hello_request_timed_out);
+			handler(server_error::hello_request_timed_out, duration);
 
 			return;
 		}
 
-		handler(ec);
+		handler(ec, duration);
 	}
 }

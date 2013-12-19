@@ -75,16 +75,16 @@ static fscp::identity_store load_identity_store(const std::string& name)
 	return fscp::identity_store(cert, key);
 }
 
-static void on_hello_response(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, const boost::system::error_code& ec)
+static void on_hello_response(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
 {
 	static_cast<void>(server);
 
 	if (ec)
 	{
-		std::cout << "[" << name << "] Received no HELLO response from " << sender << ". Error is: " << ec.message() << std::endl;
+		std::cout << "[" << name << "] Received no HELLO response from " << sender << " after " << duration << ". Error is: " << ec.message() << std::endl;
 	} else
 	{
-		std::cout << "[" << name << "] Received HELLO response from " << sender << ". Result is: " << ec.message() << std::endl;
+		std::cout << "[" << name << "] Received HELLO response from " << sender << " after " << duration << ". Result is: " << ec.message() << std::endl;
 	}
 }
 
