@@ -14,6 +14,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/thread.hpp>
 
 #include <cstdlib>
 #include <csignal>
@@ -80,10 +81,10 @@ static void on_hello_response(const std::string& name, fscp::server2& server, co
 
 	if (ec)
 	{
-		std::cout << "[" << name << "] Received no HELLO response from " << sender << ". Error is: " << ec << std::endl;
+		std::cout << "[" << name << "] Received no HELLO response from " << sender << ". Error is: " << ec.message() << std::endl;
 	} else
 	{
-		std::cout << "[" << name << "] Received HELLO response from " << sender << ". Result is: " << ec << std::endl;
+		std::cout << "[" << name << "] Received HELLO response from " << sender << ". Result is: " << ec.message() << std::endl;
 	}
 }
 
@@ -126,7 +127,14 @@ int main()
 
 		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server), boost::ref(chris_server));
 
-		_io_service.run();
+		boost::thread_group threads;
+
+		for (std::size_t i = 0; i < 10; ++i)
+		{
+			threads.create_thread(boost::bind(&boost::asio::io_service::run, &_io_service));
+		}
+
+		threads.join_all();
 
 		stop_function = 0;
 	} catch (std::exception& ex)
