@@ -69,7 +69,7 @@ namespace fscp
 		{
 			no_error = 0,
 			server_offline,
-			hello_request_timed_out,
+			hello_request_timed_out
 		};
 
 		/**

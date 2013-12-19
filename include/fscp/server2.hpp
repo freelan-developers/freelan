@@ -194,6 +194,12 @@ namespace fscp
 					struct pending_request_status
 					{
 						pending_request_status() :
+							timer(),
+							success(false)
+						{}
+
+						pending_request_status(boost::shared_ptr<boost::asio::deadline_timer> _timer) :
+							timer(_timer),
 							success(false)
 						{}
 

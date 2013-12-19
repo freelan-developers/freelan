@@ -72,7 +72,7 @@ namespace fscp
 			}
 			case server_error::hello_request_timed_out:
 			{
-				return "No HELLO response received"
+				return "No HELLO response received";
 			}
 			default:
 			{

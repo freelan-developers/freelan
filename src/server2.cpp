@@ -167,14 +167,14 @@ namespace fscp
 	{
 		const boost::shared_ptr<boost::asio::deadline_timer> timer = boost::make_shared<boost::asio::deadline_timer>(boost::ref(io_service), timeout);
 
-		m_pending_requests[hello_unique_number] = timer;
+		m_pending_requests[hello_unique_number] = pending_request_status(timer);
 
 		timer->async_wait(handler);
 	}
 
 	bool server2::ep_hello_context_type::cancel_reply_wait(uint32_t hello_unique_number, bool success)
 	{
-		pending_hello_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
+		pending_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
 
 		if (request != m_pending_requests.end())
 		{
@@ -194,11 +194,11 @@ namespace fscp
 	{
 		bool result = false;
 
-		pending_hello_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
+		pending_requests_map::iterator request = m_pending_requests.find(hello_unique_number);
 
 		if (request != m_pending_requests.end())
 		{
-			result = request->second->success;
+			result = request->second.success;
 
 			m_pending_requests.erase(request);
 		}
