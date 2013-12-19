@@ -199,7 +199,8 @@ namespace fscp
 			typedef std::set<unsigned int> pool_allocations_type;
 
 			const size_t m_block_size;
-			const size_t m_block_count;
+			const unsigned int m_block_count;
+			unsigned int m_next_available_block;
 			pool_type m_pool;
 			pool_allocations_type m_pool_allocations;
 			boost::mutex m_pool_mutex;

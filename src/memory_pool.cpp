@@ -59,7 +59,8 @@ namespace fscp
 	memory_pool::memory_pool(size_t block_size, unsigned int block_count) :
 		m_block_size(block_size),
 		m_block_count(block_count),
-		m_pool(m_block_size * m_block_count)
+		m_next_available_block(0),
+		m_pool(m_block_size* m_block_count)
 	{
 	}
 
@@ -71,16 +72,28 @@ namespace fscp
 
 		unsigned int block = 0;
 
-		for (pool_allocations_type::const_iterator allocation = m_pool_allocations.begin(); allocation != m_pool_allocations.end(); ++allocation)
+		if (m_pool_allocations.size() >= m_block_count)
 		{
-			if (block < *allocation)
+			block = m_block_count;
+		}
+		else if (m_next_available_block >= m_block_count)
+		{
+			for (pool_allocations_type::const_iterator allocation = m_pool_allocations.begin(); allocation != m_pool_allocations.end(); ++allocation)
 			{
-				break;
+				if (block < *allocation)
+				{
+					break;
+				}
+				else
+				{
+					block = *allocation + 1;
+				}
 			}
-			else
-			{
-				block = *allocation + 1;
-			}
+		}
+		else
+		{
+			block = m_next_available_block;
+			m_next_available_block = m_block_count;
 		}
 
 		if (block >= m_block_count)
@@ -123,6 +136,7 @@ namespace fscp
 			assert(&m_pool[0] + block * m_block_size == buffer);
 
 			m_pool_allocations.erase(block);
+			m_next_available_block = block;
 		}
 	}
 }
