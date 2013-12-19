@@ -46,12 +46,19 @@
 
 namespace fscp
 {
-	const char* server_category::name() const
+	const boost::system::error_category& server_category()
+	{
+		static server_category_impl instance;
+
+		return instance;
+	}
+
+	const char* server_category_impl::name() const
 	{
 		return "fscp::server";
 	}
 
-	std::string server_category::message(int ev) const
+	std::string server_category_impl::message(int ev) const
 	{
 		switch (ev)
 		{
@@ -68,12 +75,5 @@ namespace fscp
 				return "Unknown FSCP error";
 			}
 		}
-	}
-
-	const boost::system::error_category& server_category()
-	{
-		static server_category_impl instance;
-
-		return instance;
 	}
 }

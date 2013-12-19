@@ -46,11 +46,20 @@
 #define FSCP_SERVER_ERROR_HPP
 
 #include <boost/system/error_code.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 
 #include <string>
 
 namespace fscp
 {
+	/**
+	 * @brief Get the default server error category.
+	 * @return The default server error category instance.
+	 *
+	 * @warning The first call to this function is thread-safe only starting with C++11.
+	 */
+	const boost::system::error_category& server_category();
+
 	namespace server_error
 	{
 		/**
@@ -61,6 +70,26 @@ namespace fscp
 			no_error = 0,
 			server_offline
 		};
+
+		/**
+		 * @brief Create an error_code instance for the given error.
+		 * @param error The error.
+		 * @return The error_code instance.
+		 */
+		boost::system::error_code make_error_code(server_error_t error)
+		{
+			return boost::system::error_code(static_cast<int>(error), server_category());
+		}
+
+		/**
+		 * @brief Create an error_condition instance for the given error.
+		 * @param error The error.
+		 * @return The error_condition instance.
+		 */
+		boost::system::error_condition make_error_condition(server_error_t error)
+		{
+			return boost::system::error_condition(static_cast<int>(error), server_category());
+		}
 	}
 
 	/**
@@ -82,34 +111,6 @@ namespace fscp
 			 */
 			virtual std::string message(int ev) const;
 	};
-
-	/**
-	 * @brief Get the default server error category.
-	 * @return The default server error category instance.
-	 *
-	 * @warning The first call to this function is thread-safe only starting with C++11.
-	 */
-	const boost::system::error_category& server_category();
-
-	/**
-	 * @brief Create an error_code instance for the given error.
-	 * @param error The error.
-	 * @return The error_code instance.
-	 */
-	boost::system::error_code make_error_code(server_error_t error)
-	{
-		return boost::system::error_code(static_cast<int>(error), server_category());
-	}
-
-	/**
-	 * @brief Create an error_condition instance for the given error.
-	 * @param error The error.
-	 * @return The error_condition instance.
-	 */
-	boost::system::error_condition make_error_condition(server_error_t error)
-	{
-		return boost::system::error_condition(static_cast<int>(error), server_category());
-	}
 }
 
 namespace boost
@@ -117,7 +118,7 @@ namespace boost
 	namespace system
 	{
 		template <>
-		struct is_error_code_enum(::fscp::server_error::server_error_t) : public boost::true_type {};
+		struct is_error_code_enum< ::fscp::server_error::server_error_t> : public boost::true_type {};
 	}
 }
 
