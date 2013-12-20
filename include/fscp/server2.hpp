@@ -198,6 +198,7 @@ namespace fscp
 			 * \brief Send a presentation message to the specified target.
 			 * \param target The target host.
 			 * \return An error_code.
+			 * \warning If the io_service is not being run, a call to introduce_to() will block undefinitely.
 			 */
 			boost::system::error_code introduce_to(const ep_type& target);
 
