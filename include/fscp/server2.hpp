@@ -141,14 +141,12 @@ namespace fscp
 
 			typedef memory_pool<65536, 32> socket_memory_pool;
 
-			void async_receive_from();
-
-			template <typename MutableBufferSequence, typename ReadHandler>
-			void async_receive_from(const MutableBufferSequence& data, ep_type& sender, ReadHandler handler)
+			void async_receive_from()
 			{
-				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_receive_from<MutableBufferSequence, ReadHandler>, &m_socket, data, boost::ref(sender), 0, handler));
+				m_socket_strand.post(boost::bind(&server2::do_async_receive_from, this));
 			}
 
+			void do_async_receive_from();
 			void handle_receive_from(boost::shared_ptr<ep_type>, socket_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
 
 			ep_type to_socket_format(const server2::ep_type& ep);

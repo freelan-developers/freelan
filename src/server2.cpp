@@ -174,16 +174,17 @@ namespace fscp
 
 	// Private methods
 
-	void server2::async_receive_from()
+	void server2::do_async_receive_from()
 	{
 		boost::shared_ptr<ep_type> sender = boost::make_shared<ep_type>();
 
 		socket_memory_pool::shared_buffer_type receive_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		async_receive_from(
+		// do_async_receive_from() is executed within the socket strand so this is safe.
+		m_socket.async_receive_from(
 			buffer(receive_buffer),
 			*sender,
-			bind(
+			boost::bind(
 				&server2::handle_receive_from,
 				this,
 				sender,
