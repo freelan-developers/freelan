@@ -145,8 +145,7 @@ namespace fscp
 
 	void server2::close()
 	{
-		// We clear all pending hello requests.
-		m_greet_strand.post(boost::bind(&ep_hello_context_map::clear, &m_ep_hello_contexts));
+		cancel_all_greetings();
 
 		m_socket.close();
 	}
@@ -154,6 +153,11 @@ namespace fscp
 	void server2::async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{
 		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
+	}
+
+	void server2::cancel_all_greetings()
+	{
+		m_greet_strand.post(boost::bind(&server2::do_cancel_all_greetings, this));
 	}
 
 	server2::ep_type server2::to_socket_format(const server2::ep_type& ep)
@@ -218,6 +222,18 @@ namespace fscp
 		}
 
 		return false;
+	}
+
+	void server2::ep_hello_context_type::cancel_all_reply_wait()
+	{
+		for (pending_requests_map::iterator request = m_pending_requests.begin(); request != m_pending_requests.end(); ++request)
+		{
+			if (request->second.timer->cancel() > 0)
+			{
+				// At least one handler was cancelled which means we can set the success flag.
+				request->second.success = false;
+			}
+		}
 	}
 
 	bool server2::ep_hello_context_type::remove_reply_wait(uint32_t hello_unique_number, boost::posix_time::time_duration& duration)
@@ -303,5 +319,14 @@ namespace fscp
 		}
 
 		handler(ec, duration);
+	}
+
+	void server2::do_cancel_all_greetings()
+	{
+		// All do_greet() calls are done in the same strand so the following is thread-safe.
+		for (ep_hello_context_map::iterator hello_context = m_ep_hello_contexts.begin(); hello_context != m_ep_hello_contexts.end(); ++hello_context)
+		{
+			hello_context->second.cancel_all_reply_wait();
+		}
 	}
 }

@@ -120,6 +120,11 @@ namespace fscp
 			 */
 			void async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
 
+			/**
+			 * \brief Cancel all pending greetings.
+			 */
+			void cancel_all_greetings();
+
 		private:
 
 			template <typename MutableBufferSequence, typename ReadHandler>
@@ -186,6 +191,13 @@ namespace fscp
 					bool cancel_reply_wait(uint32_t hello_unique_number, bool success);
 
 					/**
+					 * @brief Cancel all pending hello request wait timers.
+					 *
+					 * This call is similar to calling cancel_reply_wait(<num>, false) for all hello unique numbers.
+					 */
+					void cancel_all_reply_wait();
+
+					/**
 					 * @brief Remove a hello reply wait from the pending list.
 					 * @param hello_unique_number The hello reply number.
 					 * @param duration A variable whose value after the call will be the time elapsed since the creation of the request.
@@ -226,6 +238,7 @@ namespace fscp
 			void do_greet(const ep_type&, duration_handler_type, const boost::posix_time::time_duration&);
 			void do_greet_handler(const ep_type&, uint32_t, duration_handler_type, const boost::posix_time::time_duration&, const boost::system::error_code&, size_t);
 			void do_greet_timeout(const ep_type&, uint32_t, duration_handler_type, const boost::system::error_code&);
+			void do_cancel_all_greetings();
 
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;
