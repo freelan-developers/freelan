@@ -45,7 +45,15 @@
 #include "server2.hpp"
 
 #include "server_error.hpp"
+
+#include "message.hpp"
 #include "hello_message.hpp"
+#include "presentation_message.hpp"
+#include "session_request_message.hpp"
+#include "clear_session_request_message.hpp"
+#include "session_message.hpp"
+#include "clear_session_message.hpp"
+#include "data_message.hpp"
 
 #include <boost/random.hpp>
 #include <boost/make_shared.hpp>
