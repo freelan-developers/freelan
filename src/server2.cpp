@@ -128,9 +128,10 @@ namespace fscp
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
 
-		void simple_synchronous_handler(boost::system::error_code& result, boost::condition_variable& condition, const boost::system::error_code& ec)
+		void simple_synchronous_handler(boost::system::error_code& result, bool& result_ready, boost::condition_variable& condition, const boost::system::error_code& ec)
 		{
 			result = ec;
+			result_ready = true;
 
 			condition.notify_all();
 		}
@@ -189,12 +190,16 @@ namespace fscp
 		boost::mutex mutex;
 		boost::unique_lock<boost::mutex> lock(mutex);
 		boost::condition_variable condition;
+		bool result_ready = false;
 
 		boost::system::error_code result;
 
-		async_introduce_to(target, boost::bind(&simple_synchronous_handler, boost::ref(result), boost::ref(condition), _1));
+		async_introduce_to(target, boost::bind(&simple_synchronous_handler, boost::ref(result), boost::ref(result_ready), boost::ref(condition), _1));
 
-		condition.wait(lock);
+		while (!result_ready)
+		{
+			condition.wait(lock);
+		}
 
 		return result;
 	}
