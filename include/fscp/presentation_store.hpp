@@ -75,7 +75,6 @@ namespace fscp
 			 * \brief Create a new presentation store.
 			 * \param sig_cert The signature certificate. Cannot be null.
 			 * \param enc_cert The encryption certificate. If enc_cert is null, sig_cert is taken instead.
-			 * \warning Both certificate must have the same subject and issuer names or a std::runtime_error is thrown.
 			 */
 			presentation_store(cert_type sig_cert, cert_type enc_cert = cert_type());
 
