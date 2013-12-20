@@ -134,7 +134,8 @@ namespace fscp
 		m_socket(io_service),
 		m_socket_strand(io_service),
 		m_greet_strand(io_service),
-		m_accept_hello_messages_default(true)
+		m_accept_hello_messages_default(true),
+		m_hello_message_received_handler()
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
@@ -182,16 +183,16 @@ namespace fscp
 
 		// do_async_receive_from() is executed within the socket strand so this is safe.
 		m_socket.async_receive_from(
-			buffer(receive_buffer),
-			*sender,
-			boost::bind(
-				&server2::handle_receive_from,
-				this,
-				sender,
-				receive_buffer,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred
-			)
+		    buffer(receive_buffer),
+		    *sender,
+		    boost::bind(
+		        &server2::handle_receive_from,
+		        this,
+		        sender,
+		        receive_buffer,
+		        boost::asio::placeholders::error,
+		        boost::asio::placeholders::bytes_transferred
+		    )
 		);
 	}
 
@@ -404,23 +405,23 @@ namespace fscp
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			m_greet_strand.wrap(
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						&server2::do_greet_handler,
-						this,
-						target,
-						hello_unique_number,
-						handler,
-						timeout,
-						boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred
-					)
-				)
-			)
+		    buffer(send_buffer, size),
+		    target,
+		    m_greet_strand.wrap(
+		        make_shared_buffer_handler(
+		            send_buffer,
+		            boost::bind(
+		                &server2::do_greet_handler,
+		                this,
+		                target,
+		                hello_unique_number,
+		                handler,
+		                timeout,
+		                boost::asio::placeholders::error,
+		                boost::asio::placeholders::bytes_transferred
+		            )
+		        )
+		    )
 		);
 	}
 
@@ -488,36 +489,8 @@ namespace fscp
 		{
 			case MESSAGE_TYPE_HELLO_REQUEST:
 			{
-				bool can_reply = m_accept_hello_messages_default;
-
-				//TODO: Add callbacks back
-				/*
-				if (m_hello_message_callback)
-				{
-					can_reply = m_hello_message_callback(sender, m_accept_hello_messages_default);
-				}
-				*/
-
-				if (can_reply)
-				{
-					greet_memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
-
-					const size_t size = hello_message::write_response(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), _hello_message);
-
-					async_send_to(
-						buffer(send_buffer, size),
-						sender,
-						make_shared_buffer_handler(
-							send_buffer,
-							boost::bind(
-								&server2::handle_send_to,
-								this,
-								boost::asio::placeholders::error,
-								boost::asio::placeholders::bytes_transferred
-							)
-						)
-					);
-				}
+				// We need to handle the response in the proper strand to avoid race conditions.
+				m_greet_strand.post(boost::bind(&server2::do_handle_hello_request, this, sender, _hello_message.unique_number()));
 
 				break;
 			}
@@ -538,11 +511,54 @@ namespace fscp
 		}
 	}
 
+	void server2::do_handle_hello_request(const ep_type& sender, uint32_t hello_unique_number)
+	{
+		// All do_handle_hello_request() calls are done in the same strand so the following is thread-safe.
+		bool can_reply = m_accept_hello_messages_default;
+
+		if (m_hello_message_received_handler)
+		{
+			can_reply = m_hello_message_received_handler(sender, can_reply);
+		}
+
+		if (can_reply)
+		{
+			greet_memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
+
+			const size_t size = hello_message::write_response(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
+
+			async_send_to(
+			    buffer(send_buffer, size),
+			    sender,
+			    make_shared_buffer_handler(
+			        send_buffer,
+			        boost::bind(
+			            &server2::handle_send_to,
+			            this,
+			            boost::asio::placeholders::error,
+			            boost::asio::placeholders::bytes_transferred
+			        )
+			    )
+			);
+		}
+	}
+
 	void server2::do_handle_hello_response(const ep_type& sender, uint32_t hello_unique_number)
 	{
 		// All do_handle_hello_response() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[sender];
 
 		ep_hello_context.cancel_reply_wait(hello_unique_number, true);
+	}
+
+	void server2::do_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler)
+	{
+		// All do_handle_hello_response() calls are done in the same strand so the following is thread-safe.
+		m_hello_message_received_handler = callback;
+
+		if (handler)
+		{
+			handler();
+		}
 	}
 }

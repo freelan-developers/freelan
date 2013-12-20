@@ -63,14 +63,14 @@ namespace fscp
 		return HEADER_LENGTH + BODY_LENGTH;
 	}
 
-	size_t hello_message::write_response(void* buf, size_t buf_len, const hello_message& request)
+	size_t hello_message::write_response(void* buf, size_t buf_len, uint32_t _unique_number)
 	{
 		if (buf_len < HEADER_LENGTH + BODY_LENGTH)
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		buffer_tools::set<uint32_t>(buf, HEADER_LENGTH, htonl(request.unique_number()));
+		buffer_tools::set<uint32_t>(buf, HEADER_LENGTH, htonl(_unique_number));
 
 		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_HELLO_RESPONSE, BODY_LENGTH);
 

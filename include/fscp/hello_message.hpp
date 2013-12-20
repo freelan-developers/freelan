@@ -69,10 +69,10 @@ namespace fscp
 			 * \brief Write a hello response message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param request The hello request message.
+			 * \param unique_number The unique number to write.
 			 * \return The count of bytes written.
 			 */
-			static size_t write_response(void* buf, size_t buf_len, const hello_message& request);
+			static size_t write_response(void* buf, size_t buf_len, uint32_t unique_number);
 
 			/**
 			 * \brief Create a hello_message and map it on a buffer.

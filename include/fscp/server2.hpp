@@ -66,6 +66,8 @@ namespace fscp
 
 	/**
 	 * \brief A FSCP server.
+	 *
+	 * All the public methods are thread-safe.
 	 */
 	class server2
 	{
@@ -82,6 +84,11 @@ namespace fscp
 			typedef cryptoplus::x509::certificate cert_type;
 
 			/**
+			 * \brief A void operation handler.
+			 */
+			typedef boost::function<void ()> void_handler_type;
+
+			/**
 			 * \brief A simple operation handler.
 			 */
 			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
@@ -90,6 +97,14 @@ namespace fscp
 			 * \brief A duration operation handler.
 			 */
 			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
+
+			/**
+			 * \brief A handler for when hello requests are received.
+			 * \param sender The endpoint that sent the hello message.
+			 * \param default_accept The default return value.
+			 * \return true to reply to the hello message, false to ignore it.
+			 */
+			typedef boost::function<bool (const ep_type& sender, bool default_accept)> hello_message_received_handler_type;
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -132,6 +147,16 @@ namespace fscp
 			 * \brief Cancel all pending greetings.
 			 */
 			void cancel_all_greetings();
+
+			/**
+			 * \brief Set the hello message received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_greet_strand.post(boost::bind(&server2::do_set_hello_message_received_callback, this, callback, handler));
+			}
 
 		private:
 
@@ -258,13 +283,17 @@ namespace fscp
 			void do_cancel_all_greetings();
 
 			void handle_hello_message_from(const hello_message&, const ep_type&);
+			void do_handle_hello_request(const ep_type&, uint32_t);
 			void do_handle_hello_response(const ep_type&, uint32_t);
+
+			void do_set_hello_message_received_callback(hello_message_received_handler_type, void_handler_type);
 
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;
 			greet_memory_pool m_greet_memory_pool;
 
 			bool m_accept_hello_messages_default;
+			hello_message_received_handler_type m_hello_message_received_handler;
 
 		private: //DATA messages
 

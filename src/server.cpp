@@ -449,7 +449,7 @@ namespace fscp
 
 					if (can_reply)
 					{
-						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message);
+						size_t size = hello_message::write_response(m_send_buffer.data(), m_send_buffer.size(), _hello_message.unique_number());
 
 						send_to(asio::buffer(m_send_buffer.data(), size), sender);
 					}
