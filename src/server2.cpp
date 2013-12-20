@@ -527,6 +527,13 @@ namespace fscp
 
 				break;
 			}
+			default:
+			{
+				// This should never happen.
+				assert(false);
+
+				break;
+			}
 		}
 	}
 
