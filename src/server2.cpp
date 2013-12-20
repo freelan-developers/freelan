@@ -119,15 +119,17 @@ namespace fscp
 		}
 	}
 
+	// Public methods
+
 	server2::server2(boost::asio::io_service& io_service, const identity_store& identity) :
 		m_identity_store(identity),
 		m_socket(io_service),
 		m_socket_strand(io_service),
-		m_greet_strand(io_service)
+		m_greet_strand(io_service),
+		m_accept_hello_messages_default(true)
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
-		ep_hello_context_type::generate_unique_number();
 	}
 
 	void server2::open(const ep_type& listen_endpoint)
@@ -141,6 +143,8 @@ namespace fscp
 		}
 
 		m_socket.bind(listen_endpoint);
+
+		async_receive_from();
 	}
 
 	void server2::close()
@@ -158,6 +162,127 @@ namespace fscp
 	void server2::cancel_all_greetings()
 	{
 		m_greet_strand.post(boost::bind(&server2::do_cancel_all_greetings, this));
+	}
+
+	// Private methods
+
+	void server2::async_receive_from()
+	{
+		boost::shared_ptr<ep_type> sender = boost::make_shared<ep_type>();
+
+		socket_memory_pool::shared_buffer_type receive_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		async_receive_from(
+			buffer(receive_buffer),
+			*sender,
+			bind(
+				&server2::handle_receive_from,
+				this,
+				sender,
+				receive_buffer,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred
+			)
+		);
+	}
+
+	void server2::handle_receive_from(boost::shared_ptr<ep_type> sender, socket_memory_pool::shared_buffer_type data, const boost::system::error_code& ec, size_t bytes_received)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			// Let's read again !
+			async_receive_from();
+
+			normalize(*sender);
+
+			if (!ec)
+			{
+				try
+				{
+					message message(buffer_cast<const uint8_t*>(data), bytes_received);
+
+					switch (message.type())
+					{
+						case MESSAGE_TYPE_DATA_0:
+						case MESSAGE_TYPE_DATA_1:
+						case MESSAGE_TYPE_DATA_2:
+						case MESSAGE_TYPE_DATA_3:
+						case MESSAGE_TYPE_DATA_4:
+						case MESSAGE_TYPE_DATA_5:
+						case MESSAGE_TYPE_DATA_6:
+						case MESSAGE_TYPE_DATA_7:
+						case MESSAGE_TYPE_DATA_8:
+						case MESSAGE_TYPE_DATA_9:
+						case MESSAGE_TYPE_DATA_10:
+						case MESSAGE_TYPE_DATA_11:
+						case MESSAGE_TYPE_DATA_12:
+						case MESSAGE_TYPE_DATA_13:
+						case MESSAGE_TYPE_DATA_14:
+						case MESSAGE_TYPE_DATA_15:
+						case MESSAGE_TYPE_CONTACT_REQUEST:
+						case MESSAGE_TYPE_CONTACT:
+						case MESSAGE_TYPE_KEEP_ALIVE:
+						{
+							data_message data_message(message);
+
+							//TODO: Implement
+							//handle_data_message_from(data_message, *sender);
+
+							break;
+						}
+						case MESSAGE_TYPE_HELLO_REQUEST:
+						case MESSAGE_TYPE_HELLO_RESPONSE:
+						{
+							hello_message hello_message(message);
+
+							handle_hello_message_from(hello_message, *sender);
+
+							break;
+						}
+						case MESSAGE_TYPE_PRESENTATION:
+						{
+							presentation_message presentation_message(message);
+
+							//TODO: Implement
+							//handle_presentation_message_from(presentation_message, *sender);
+
+							break;
+						}
+						case MESSAGE_TYPE_SESSION_REQUEST:
+						{
+							session_request_message session_request_message(message, m_identity_store.encryption_key().size());
+
+							//TODO: Implement
+							//handle_session_request_message_from(session_request_message, *sender);
+
+							break;
+						}
+						case MESSAGE_TYPE_SESSION:
+						{
+							session_message session_message(message, m_identity_store.encryption_key().size());
+
+							//TODO: Implement
+							//handle_session_message_from(session_message, *sender);
+						}
+						default:
+						{
+							break;
+						}
+					}
+				}
+				catch (std::runtime_error&)
+				{
+					// These errors can happen in normal situations (for instance when a crypto operation fails due to invalid input).
+				}
+			}
+			else if (ec == boost::asio::error::connection_refused)
+			{
+				// The host refused the connection, meaning it closed its socket so we can force-terminate the session.
+				//do_close_session(*sender);
+
+				//TODO: Double check this: do_close_session perhaps should be called through a strand
+			}
+		}
 	}
 
 	server2::ep_type server2::to_socket_format(const server2::ep_type& ep)
@@ -269,7 +394,25 @@ namespace fscp
 
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
-		async_send_to(buffer(send_buffer, size), target, m_greet_strand.wrap(make_shared_buffer_handler(send_buffer, boost::bind(&server2::do_greet_handler, this, target, hello_unique_number, handler, timeout, _1, _2))));
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			m_greet_strand.wrap(
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						&server2::do_greet_handler,
+						this,
+						target,
+						hello_unique_number,
+						handler,
+						timeout,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred
+					)
+				)
+			)
+		);
 	}
 
 	void server2::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, duration_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
@@ -292,7 +435,7 @@ namespace fscp
 
 	void server2::do_greet_timeout(const ep_type& target, uint32_t hello_unique_number, duration_handler_type handler, const boost::system::error_code& ec)
 	{
-		// All do_greet() calls are done in the same strand so the following is thread-safe.
+		// All do_greet_timeout() calls are done in the same strand so the following is thread-safe.
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
 
 		boost::posix_time::time_duration duration;
@@ -323,10 +466,67 @@ namespace fscp
 
 	void server2::do_cancel_all_greetings()
 	{
-		// All do_greet() calls are done in the same strand so the following is thread-safe.
+		// All do_cancel_all_greetings() calls are done in the same strand so the following is thread-safe.
 		for (ep_hello_context_map::iterator hello_context = m_ep_hello_contexts.begin(); hello_context != m_ep_hello_contexts.end(); ++hello_context)
 		{
 			hello_context->second.cancel_all_reply_wait();
 		}
+	}
+
+	void server2::handle_hello_message_from(const hello_message& _hello_message, const ep_type& sender)
+	{
+		switch (_hello_message.type())
+		{
+			case MESSAGE_TYPE_HELLO_REQUEST:
+			{
+				bool can_reply = m_accept_hello_messages_default;
+
+				//TODO: Add callbacks back
+				/*
+				if (m_hello_message_callback)
+				{
+					can_reply = m_hello_message_callback(sender, m_accept_hello_messages_default);
+				}
+				*/
+
+				if (can_reply)
+				{
+					greet_memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
+
+					const size_t size = hello_message::write_response(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), _hello_message);
+
+					async_send_to(
+						buffer(send_buffer, size),
+						sender,
+						make_shared_buffer_handler(
+							send_buffer,
+							boost::bind(
+								&server2::handle_send_to,
+								this,
+								boost::asio::placeholders::error,
+								boost::asio::placeholders::bytes_transferred
+							)
+						)
+					);
+				}
+
+				break;
+			}
+			case MESSAGE_TYPE_HELLO_RESPONSE:
+			{
+				// We need to handle the response in the proper strand to avoid race conditions.
+				m_greet_strand.post(boost::bind(&server2::do_handle_hello_response, this, sender, _hello_message.unique_number()));
+
+				break;
+			}
+		}
+	}
+
+	void server2::do_handle_hello_response(const ep_type& sender, uint32_t hello_unique_number)
+	{
+		// All do_handle_hello_response() calls are done in the same strand so the following is thread-safe.
+		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[sender];
+
+		ep_hello_context.cancel_reply_wait(hello_unique_number, true);
 	}
 }

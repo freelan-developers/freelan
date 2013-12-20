@@ -56,6 +56,14 @@
 
 namespace fscp
 {
+	class hello_message;
+	class presentation_message;
+	class session_request_message;
+	class clear_session_request_message;
+	class session_message;
+	class clear_session_message;
+	class data_message;
+
 	/**
 	 * \brief A FSCP server.
 	 */
@@ -127,11 +135,21 @@ namespace fscp
 
 		private:
 
+			const identity_store m_identity_store;
+
+		private:
+
+			typedef memory_pool<65536, 32> socket_memory_pool;
+
+			void async_receive_from();
+
 			template <typename MutableBufferSequence, typename ReadHandler>
 			void async_receive_from(const MutableBufferSequence& data, ep_type& sender, ReadHandler handler)
 			{
 				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_receive_from<MutableBufferSequence, ReadHandler>, &m_socket, data, boost::ref(sender), 0, handler));
 			}
+
+			void handle_receive_from(boost::shared_ptr<ep_type>, socket_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
 
 			ep_type to_socket_format(const server2::ep_type& ep);
 
@@ -141,12 +159,13 @@ namespace fscp
 				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, to_socket_format(target), 0, handler));
 			}
 
-			identity_store m_identity_store;
+			void handle_send_to(const boost::system::error_code&, size_t) {};
 
 			boost::asio::ip::udp::socket m_socket;
 			boost::asio::strand m_socket_strand;
+			socket_memory_pool m_socket_memory_pool;
 
-		private:
+		private: // HELLO messages
 
 			/**
 			 * @brief Represents a context for an endpoint.
@@ -240,9 +259,18 @@ namespace fscp
 			void do_greet_timeout(const ep_type&, uint32_t, duration_handler_type, const boost::system::error_code&);
 			void do_cancel_all_greetings();
 
+			void handle_hello_message_from(const hello_message&, const ep_type&);
+			void do_handle_hello_response(const ep_type&, uint32_t);
+
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;
 			greet_memory_pool m_greet_memory_pool;
+
+			bool m_accept_hello_messages_default;
+
+		private: //DATA messages
+
+			void handle_data_message_from(const data_message&, const ep_type&);
 	};
 }
 
