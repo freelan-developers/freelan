@@ -195,6 +195,13 @@ namespace fscp
 			void async_introduce_to(const ep_type& target, simple_handler_type handler);
 
 			/**
+			 * \brief Send a presentation message to the specified target.
+			 * \param target The target host.
+			 * \return An error_code.
+			 */
+			boost::system::error_code introduce_to(const ep_type& target);
+
+			/**
 			 * \brief Get the presentation store associated to a target.
 			 * \param target The target host.
 			 * \param handler The handler to call with the presentation store instance.

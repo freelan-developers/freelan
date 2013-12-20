@@ -58,6 +58,8 @@
 #include <boost/random.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
+#include <boost/thread/condition_variable.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <cassert>
 
@@ -125,6 +127,13 @@ namespace fscp
 		{
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
+
+		void simple_synchronous_handler(boost::system::error_code& result, boost::condition_variable& condition, const boost::system::error_code& ec)
+		{
+			result = ec;
+
+			condition.notify_all();
+		}
 	}
 
 	// Public methods
@@ -173,6 +182,21 @@ namespace fscp
 	void server2::async_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
 		get_io_service().post(boost::bind(&server2::do_introduce_to, this, normalize(target), handler));
+	}
+
+	boost::system::error_code server2::introduce_to(const ep_type& target)
+	{
+		boost::mutex mutex;
+		boost::unique_lock<boost::mutex> lock(mutex);
+		boost::condition_variable condition;
+
+		boost::system::error_code result;
+
+		async_introduce_to(target, boost::bind(&simple_synchronous_handler, boost::ref(result), boost::ref(condition), _1));
+
+		condition.wait(lock);
+
+		return result;
 	}
 
 	void server2::async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)

@@ -77,15 +77,27 @@ static fscp::identity_store load_identity_store(const std::string& name)
 
 static void on_hello_response(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
 {
-	static_cast<void>(server);
-
 	if (ec)
 	{
 		std::cout << "[" << name << "] Received no HELLO response from " << sender << " after " << duration << ". Error is: " << ec.message() << std::endl;
-	} else
+	}
+	else
 	{
 		std::cout << "[" << name << "] Received HELLO response from " << sender << " after " << duration << ". Result is: " << ec.message() << std::endl;
+
+		const boost::system::error_code introduce_to_ec = server.introduce_to(sender);
+
+		std::cout << "[" << name << "] Sending a presentation message to " << sender << ": " << introduce_to_ec << std::endl;
 	}
+}
+
+static bool on_presentation(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, fscp::server2::cert_type sig_cert, fscp::server2::cert_type /*enc_cert*/, bool is_new)
+{
+	static_cast<void>(server);
+
+	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << (is_new ? "new" : "existing") << std::endl;
+
+	return true;
 }
 
 static void _stop_function(fscp::server2& s1, fscp::server2& s2, fscp::server2& s3)
@@ -122,11 +134,12 @@ int main()
 		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-		for (std::size_t i = 0; i < 25; ++i)
-		{
-			alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
-			chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
-		}
+		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
+		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
+
+		alice_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server), boost::ref(chris_server));
 
@@ -140,7 +153,8 @@ int main()
 		threads.join_all();
 
 		stop_function = 0;
-	} catch (std::exception& ex)
+	}
+	catch (std::exception& ex)
 	{
 		std::cerr << "Error: " << ex.what() << std::endl;
 
