@@ -60,6 +60,34 @@
 
 namespace fscp
 {
+	// We declare those functions since they are defined as class friend functions and so only available via ADL otherwise.
+	template <size_t BlockSize, unsigned int BlockCount>
+	class memory_pool;
+
+	template <size_t BlockSize, unsigned int BlockCount>
+	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&);
+
+	template <size_t BlockSize, unsigned int BlockCount>
+	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&, size_t);
+
+	template <typename Type, size_t BlockSize, unsigned int BlockCount>
+	Type buffer_cast(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&);
+
+	template <size_t BlockSize, unsigned int BlockCount>
+	size_t buffer_size(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&);
+
+	template <size_t BlockSize, unsigned int BlockCount>
+	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type);
+
+	template <size_t BlockSize, unsigned int BlockCount>
+	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type, size_t);
+
+	template <typename Type, size_t BlockSize, unsigned int BlockCount>
+	Type buffer_cast(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type);
+
+	template <size_t BlockSize, unsigned int BlockCount>
+	size_t buffer_size(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type);
+
 	/**
 	 * @brief A memory pool.
 	 *
