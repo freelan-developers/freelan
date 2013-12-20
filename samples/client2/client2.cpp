@@ -15,12 +15,16 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <cstdlib>
 #include <csignal>
 #include <iostream>
 
 static boost::function<void ()> stop_function = 0;
+static boost::mutex output_mutex;
+
+using boost::mutex;
 
 static void signal_handler(int code)
 {
@@ -77,22 +81,26 @@ static fscp::identity_store load_identity_store(const std::string& name)
 
 static void on_hello_response(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	if (ec)
 	{
-		std::cout << "[" << name << "] Received no HELLO response from " << sender << " after " << duration << ". Error is: " << ec.message() << std::endl;
+		std::cout << "[" << name << "] Received no HELLO response from " << sender << " after " << duration << ": " << ec.message() << std::endl;
 	}
 	else
 	{
-		std::cout << "[" << name << "] Received HELLO response from " << sender << " after " << duration << ". Result is: " << ec.message() << std::endl;
+		std::cout << "[" << name << "] Received HELLO response from " << sender << " after " << duration << ": " << ec.message() << std::endl;
 
 		const boost::system::error_code introduce_to_ec = server.introduce_to(sender);
 
-		std::cout << "[" << name << "] Sending a presentation message to " << sender << ": " << introduce_to_ec << std::endl;
+		std::cout << "[" << name << "] Sending a presentation message to " << sender << ": " << introduce_to_ec.message() << std::endl;
 	}
 }
 
 static bool on_presentation(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, fscp::server2::cert_type sig_cert, fscp::server2::cert_type /*enc_cert*/, bool is_new)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	static_cast<void>(server);
 
 	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << (is_new ? "new" : "existing") << std::endl;

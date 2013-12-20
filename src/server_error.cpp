@@ -62,9 +62,9 @@ namespace fscp
 	{
 		switch (ev)
 		{
-			case server_error::no_error:
+			case server_error::success:
 			{
-				return "No error";
+				return "Success";
 			}
 			case server_error::server_offline:
 			{

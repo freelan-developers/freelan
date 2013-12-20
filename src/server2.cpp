@@ -498,7 +498,7 @@ namespace fscp
 			if (success)
 			{
 				// The success flag is set: the timer was cancelled due to a reply.
-				handler(server_error::no_error, duration);
+				handler(server_error::success, duration);
 
 				return;
 			}
