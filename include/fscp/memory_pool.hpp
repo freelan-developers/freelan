@@ -50,6 +50,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/iterator/counting_iterator.hpp>
 
 #include <vector>
 #include <set>
@@ -61,32 +62,32 @@
 namespace fscp
 {
 	// We declare those functions since they are defined as class friend functions and so only available via ADL otherwise.
-	template <size_t BlockSize, unsigned int BlockCount>
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
 	class memory_pool;
 
-	template <size_t BlockSize, unsigned int BlockCount>
-	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&);
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::buffer_type buffer(const typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::scoped_buffer_type&);
 
-	template <size_t BlockSize, unsigned int BlockCount>
-	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&, size_t);
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::buffer_type buffer(const typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::scoped_buffer_type&, size_t);
 
-	template <typename Type, size_t BlockSize, unsigned int BlockCount>
-	Type buffer_cast(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&);
+	template <typename Type, size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	Type buffer_cast(const typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::scoped_buffer_type&);
 
-	template <size_t BlockSize, unsigned int BlockCount>
-	size_t buffer_size(const typename memory_pool<BlockSize, BlockCount>::scoped_buffer_type&);
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	size_t buffer_size(const typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::scoped_buffer_type&);
 
-	template <size_t BlockSize, unsigned int BlockCount>
-	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type);
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::buffer_type buffer(typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::shared_buffer_type);
 
-	template <size_t BlockSize, unsigned int BlockCount>
-	typename memory_pool<BlockSize, BlockCount>::buffer_type buffer(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type, size_t);
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::buffer_type buffer(typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::shared_buffer_type, size_t);
 
-	template <typename Type, size_t BlockSize, unsigned int BlockCount>
-	Type buffer_cast(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type);
+	template <typename Type, size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	Type buffer_cast(typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::shared_buffer_type);
 
-	template <size_t BlockSize, unsigned int BlockCount>
-	size_t buffer_size(typename memory_pool<BlockSize, BlockCount>::shared_buffer_type);
+	template <size_t BlockSize, unsigned int BlockCount, bool UseHeapFallback>
+	size_t buffer_size(typename memory_pool<BlockSize, BlockCount, UseHeapFallback>::shared_buffer_type);
 
 	/**
 	 * @brief A memory pool.
@@ -95,10 +96,25 @@ namespace fscp
 	 *
 	 * memory_pool is optimized for the allocation of buffers of similar sizes.
 	 */
-	template <size_t BlockSize = 65536, unsigned int BlockCount = 32>
+	template <size_t BlockSize = 65536, unsigned int BlockCount = 32, bool UseHeapFallback = true>
 	class memory_pool : public boost::noncopyable
 	{
 		public:
+
+			/**
+			 * @brief The default block size.
+			 */
+			static const size_t block_size = BlockSize;
+
+			/**
+			 * @brief The default block count.
+			 */
+			static const unsigned int block_count = BlockCount;
+
+			/**
+			 * @brief The heap fallback policy.
+			 */
+			static const bool use_heap_fallback = UseHeapFallback;
 
 			/**
 			 * @brief A mutable buffer type.
@@ -152,15 +168,26 @@ namespace fscp
 			 */
 			typedef boost::shared_ptr<scoped_buffer_type> shared_buffer_type;
 
-			/**
-			 * @brief The default block size.
-			 */
-			static const size_t block_size = BlockSize;
+			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
+			{
+				return buffer(*_buffer);
+			}
 
-			/**
-			 * @brief The default block count.
-			 */
-			static const unsigned int block_count = BlockCount;
+			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
+			{
+				return buffer(*_buffer, size);
+			}
+
+			template <typename Type>
+			friend inline Type buffer_cast(memory_pool::shared_buffer_type _buffer)
+			{
+				return buffer_cast<Type>(*_buffer);
+			}
+
+			friend inline size_t buffer_size(memory_pool::shared_buffer_type _buffer)
+			{
+				return buffer_size(*_buffer);
+			}
 
 			/**
 			 * @brief Create a memory pool instance.
@@ -168,35 +195,33 @@ namespace fscp
 			 * The internal memory pool occupies exactly block_size * block_count bytes.
 			 */
 			memory_pool() :
-				m_next_available_block(0),
-				m_pool(BlockSize * BlockCount)
+				m_pool(BlockSize * BlockCount),
+				m_available_blocks(boost::counting_iterator<unsigned int>(0), boost::counting_iterator<unsigned int>(BlockCount))
 			{
 			}
 
 			/**
 			 * @brief Allocate a shared buffer.
-			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
 			 * @return The allocated shared buffer.
 			 *
 			 * This method is thread-safe.
 			 */
-			shared_buffer_type allocate_shared_buffer(bool use_heap_as_fallback = true)
+			shared_buffer_type allocate_shared_buffer()
 			{
-				return shared_buffer_type(new scoped_buffer_type(*this, allocate_buffer(use_heap_as_fallback)));
+				return shared_buffer_type(new scoped_buffer_type(*this, allocate_buffer()));
 			}
 
 			/**
 			 * @brief Allocate a buffer.
-			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
 			 * @return The allocated buffer.
 			 *
 			 * This method is thread-safe.
 			 *
 			 * The return buffer must be deallocated by passing it to deallocate() to avoid memory leaks.
 			 */
-			buffer_type allocate_buffer(bool use_heap_as_fallback = true)
+			buffer_type allocate_buffer()
 			{
-				return boost::asio::buffer(allocate(use_heap_as_fallback), block_size);
+				return boost::asio::buffer(allocate(), block_size);
 			}
 
 			/**
@@ -214,50 +239,23 @@ namespace fscp
 
 			/**
 			 * @brief Allocate some memory.
-			 * @param use_heap_as_fallback If true and no internal memory is available, an heap allocation is made instead. If false and no internal memory is available, a std::bad_alloc is thrown.
 			 * @return A pointer to the allocated memory.
 			 *
 			 * This method is thread-safe.
 			 *
 			 * The return buffer must be deallocated by passing it to deallocate() to avoid memory leaks.
 			 */
-			uint8_t* allocate(bool use_heap_as_fallback = true)
+			uint8_t* allocate()
 			{
 				boost::unique_lock<boost::mutex> guard(m_pool_mutex);
 
-				unsigned int block = 0;
-
-				if (m_pool_allocations.size() >= block_count)
-				{
-					block = block_count;
-				}
-				else if (m_next_available_block >= block_count)
-				{
-					for (pool_allocations_type::const_iterator allocation = m_pool_allocations.begin(); allocation != m_pool_allocations.end(); ++allocation)
-					{
-						if (block < *allocation)
-						{
-							break;
-						}
-						else
-						{
-							block = *allocation + 1;
-						}
-					}
-				}
-				else
-				{
-					block = m_next_available_block;
-					m_next_available_block = block_count;
-				}
-
-				if (block >= block_count)
+				if (m_available_blocks.empty())
 				{
 					// We can release the lock sooner since we won't modify the allocation table.
 					guard.unlock();
 
 					// There is no more room for this allocation: trying heap allocation if permitted.
-					if (use_heap_as_fallback)
+					if (use_heap_fallback)
 					{
 						return new uint8_t[block_size];
 					}
@@ -268,7 +266,9 @@ namespace fscp
 				}
 				else
 				{
-					m_pool_allocations.insert(block);
+					const unsigned int block = *m_available_blocks.begin();
+
+					m_available_blocks.erase(m_available_blocks.begin());
 
 					return (&m_pool[0] + block_size * block);
 				}
@@ -296,39 +296,16 @@ namespace fscp
 					// This should never happen (or we have a programming error).
 					assert(&m_pool[0] + block * block_size == buffer);
 
-					m_pool_allocations.erase(block);
-					m_next_available_block = block;
+					m_available_blocks.insert(block);
 				}
-			}
-
-			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
-			{
-				return buffer(*_buffer);
-			}
-
-			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
-			{
-				return buffer(*_buffer, size);
-			}
-
-			template <typename Type>
-			friend inline Type buffer_cast(memory_pool::shared_buffer_type _buffer)
-			{
-				return buffer_cast<Type>(*_buffer);
-			}
-
-			friend inline size_t buffer_size(memory_pool::shared_buffer_type _buffer)
-			{
-				return buffer_size(*_buffer);
 			}
 
 		private:
 			typedef std::vector<uint8_t> pool_type;
-			typedef std::set<unsigned int> pool_allocations_type;
+			typedef std::set<unsigned int> available_blocks_type;
 
-			unsigned int m_next_available_block;
 			pool_type m_pool;
-			pool_allocations_type m_pool_allocations;
+			available_blocks_type m_available_blocks;
 			boost::mutex m_pool_mutex;
 	};
 }
