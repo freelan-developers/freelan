@@ -135,7 +135,9 @@ namespace fscp
 		m_socket_strand(io_service),
 		m_greet_strand(io_service),
 		m_accept_hello_messages_default(true),
-		m_hello_message_received_handler()
+		m_hello_message_received_handler(),
+		m_presentation_strand(io_service),
+		m_presentation_message_received_handler()
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
@@ -168,9 +170,24 @@ namespace fscp
 		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
 	}
 
-	void server2::cancel_all_greetings()
+	void server2::async_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
-		m_greet_strand.post(boost::bind(&server2::do_cancel_all_greetings, this));
+		get_io_service().post(boost::bind(&server2::do_introduce_to, this, normalize(target), handler));
+	}
+
+	void server2::async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
+	{
+		m_presentation_strand.post(boost::bind(&server2::do_get_presentation, this, normalize(target), handler));
+	}
+
+	void server2::async_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
+	{
+		m_presentation_strand.post(boost::bind(&server2::do_set_presentation, this, normalize(target), signature_certificate, encryption_certificate, handler));
+	}
+
+	void server2::async_clear_presentation(const ep_type& target, void_handler_type handler)
+	{
+		m_presentation_strand.post(boost::bind(&server2::do_clear_presentation, this, normalize(target), handler));
 	}
 
 	// Private methods
@@ -253,8 +270,7 @@ namespace fscp
 						{
 							presentation_message presentation_message(message);
 
-							//TODO: Implement
-							//handle_presentation_message_from(presentation_message, *sender);
+							handle_presentation_message_from(presentation_message, *sender);
 
 							break;
 						}
@@ -553,8 +569,111 @@ namespace fscp
 
 	void server2::do_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler)
 	{
-		// All do_handle_hello_response() calls are done in the same strand so the following is thread-safe.
+		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
 		m_hello_message_received_handler = callback;
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::do_introduce_to(const ep_type& target, simple_handler_type handler)
+	{
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		const presentation_memory_pool::shared_buffer_type send_buffer = m_presentation_memory_pool.allocate_shared_buffer();
+
+		const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
+
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					handler,
+					_1
+				)
+			)
+		);
+	}
+
+	void server2::do_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
+	{
+		// All do_get_presentation() calls are done in the same strand so the following is thread-safe.
+		const presentation_store_map::const_iterator item = m_presentation_store_map.find(target);
+
+		if (item != m_presentation_store_map.end())
+		{
+			handler(boost::make_optional<presentation_store>(item->second));
+		}
+		else
+		{
+			handler(boost::optional<presentation_store>());
+		}
+	}
+
+	void server2::do_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
+	{
+		// All do_set_presentation() calls are done in the same strand so the following is thread-safe.
+		m_presentation_store_map[target] = presentation_store(signature_certificate, encryption_certificate);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::do_clear_presentation(const ep_type& target, void_handler_type handler)
+	{
+		// All do_set_presentation() calls are done in the same strand so the following is thread-safe.
+		m_presentation_store_map.erase(target);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
+	{
+		m_presentation_strand.post(
+		    boost::bind(
+		        &server2::do_handle_presentation,
+		        this,
+		        sender,
+		        _presentation_message.signature_certificate(),
+		        _presentation_message.encryption_certificate()
+		    )
+		);
+	}
+
+	void server2::do_handle_presentation(const ep_type& sender, cert_type signature_certificate, cert_type encryption_certificate)
+	{
+		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
+		const bool is_new = (m_presentation_store_map.find(sender) == m_presentation_store_map.end());
+
+		if (m_presentation_message_received_handler)
+		{
+			if (!m_presentation_message_received_handler(sender, signature_certificate, encryption_certificate, is_new))
+			{
+				return;
+			}
+		}
+
+		m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
+	}
+
+	void server2::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)
+	{
+		// All do_set_presentation_message_received_callback() calls are done in the same strand so the following is thread-safe.
+		m_presentation_message_received_handler = callback;
 
 		if (handler)
 		{

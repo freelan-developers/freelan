@@ -47,10 +47,13 @@
 
 #include "identity_store.hpp"
 #include "memory_pool.hpp"
+#include "presentation_store.hpp"
+#include "session_pair.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 
 #include <stdint.h>
 
@@ -73,6 +76,8 @@ namespace fscp
 	{
 		public:
 
+			// General purpose type definitions
+
 			/**
 			 * \brief The endpoint type.
 			 */
@@ -82,6 +87,8 @@ namespace fscp
 			 * \brief The certificate type.
 			 */
 			typedef cryptoplus::x509::certificate cert_type;
+
+			// Handlers
 
 			/**
 			 * \brief A void operation handler.
@@ -99,12 +106,31 @@ namespace fscp
 			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
 
 			/**
+			 * \brief An optional presentation store handler.
+			 */
+			typedef boost::function<void (const boost::optional<presentation_store>&)> optional_presentation_store_handler_type;
+
+			// Callbacks
+
+			/**
 			 * \brief A handler for when hello requests are received.
 			 * \param sender The endpoint that sent the hello message.
 			 * \param default_accept The default return value.
 			 * \return true to reply to the hello message, false to ignore it.
 			 */
 			typedef boost::function<bool (const ep_type& sender, bool default_accept)> hello_message_received_handler_type;
+
+			/**
+			 * \brief A handler for when presentation requests are received.
+			 * \param sender The endpoint that sent the presentation message.
+			 * \param sig_cert The signature certificate.
+			 * \param enc_cert The encryption certificate.
+			 * \param is_new True if the presentation is new.
+			 * \return true to accept the presentation message for the originating host.
+			 */
+			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)> presentation_message_received_handler_type;
+
+			// Public methods
 
 			/**
 			 * \brief Create a new FSCP server.
@@ -146,7 +172,10 @@ namespace fscp
 			/**
 			 * \brief Cancel all pending greetings.
 			 */
-			void cancel_all_greetings();
+			void cancel_all_greetings()
+			{
+				m_greet_strand.post(boost::bind(&server2::do_cancel_all_greetings, this));
+			}
 
 			/**
 			 * \brief Set the hello message received callback.
@@ -156,6 +185,46 @@ namespace fscp
 			void async_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler = void_handler_type())
 			{
 				m_greet_strand.post(boost::bind(&server2::do_set_hello_message_received_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Send a presentation message to the specified target.
+			 * \param target The target host.
+			 * \param handler The handler to call when then presentation message is sent or an error occured.
+			 */
+			void async_introduce_to(const ep_type& target, simple_handler_type handler);
+
+			/**
+			 * \brief Get the presentation store associated to a target.
+			 * \param target The target host.
+			 * \param handler The handler to call with the presentation store instance.
+			 */
+			void async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler);
+
+			/**
+			 * \brief Set the presentation for the given host.
+			 * \param target The host to set the presentation for.
+			 * \param signature_certificate The signature certificate.
+			 * \param encryption_certificate The encryption certificate to use, if different from the signature certificate.
+			 * \param handler The handler to call when the presentation was set for the given host.
+			 */
+			void async_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate = cert_type(), void_handler_type handler = void_handler_type());
+
+			/**
+			 * \brief Clear the presentation for the given host.
+			 * \param target The host to set the presentation for.
+			 * \param handler The handler to call when the presentation was cleared for the given host.
+			 */
+			void async_clear_presentation(const ep_type& target, void_handler_type handler = void_handler_type());
+
+			/**
+			 * \brief Set the presentation message received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_presentation_strand.post(boost::bind(&server2::do_set_presentation_message_received_callback, this, callback, handler));
 			}
 
 		private:
@@ -295,7 +364,29 @@ namespace fscp
 			bool m_accept_hello_messages_default;
 			hello_message_received_handler_type m_hello_message_received_handler;
 
-		private: //DATA messages
+		private: // PRESENTATION messages
+
+			typedef memory_pool<4096, 4> presentation_memory_pool;
+			typedef std::map<ep_type, presentation_store> presentation_store_map;
+
+			void do_introduce_to(const ep_type&, simple_handler_type);
+			void do_get_presentation(const ep_type&, optional_presentation_store_handler_type);
+			void do_set_presentation(const ep_type&, cert_type, cert_type, void_handler_type);
+			void do_clear_presentation(const ep_type&, void_handler_type);
+			void handle_presentation_message_from(const presentation_message&, const ep_type&);
+			void do_handle_presentation(const ep_type&, cert_type, cert_type);
+
+			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
+
+			boost::asio::strand m_presentation_strand;
+			presentation_memory_pool m_presentation_memory_pool;
+
+			presentation_store_map m_presentation_store_map;
+
+			bool m_accept_presentation_messages_default;
+			presentation_message_received_handler_type m_presentation_message_received_handler;
+
+		private: // DATA messages
 
 			void handle_data_message_from(const data_message&, const ep_type&);
 	};
