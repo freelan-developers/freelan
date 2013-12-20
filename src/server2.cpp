@@ -84,12 +84,12 @@ namespace fscp
 			return normalize(result);
 		}
 
-		template <typename MemoryPoolType, typename Handler>
+		template <typename SharedBufferType, typename Handler>
 		class shared_buffer_handler
 		{
 			public:
 
-				shared_buffer_handler(typename MemoryPoolType::shared_buffer_type _buffer, Handler _handler) :
+				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
 					m_buffer(_buffer),
 					m_handler(_handler)
 				{}
@@ -108,14 +108,14 @@ namespace fscp
 
 			private:
 
-				typename MemoryPoolType::shared_buffer_type m_buffer;
+				SharedBufferType m_buffer;
 				Handler m_handler;
 		};
 
-		template <typename MemoryPoolType, typename Handler>
-		inline shared_buffer_handler<MemoryPoolType, Handler> make_shared_buffer_handler(typename MemoryPoolType::shared_buffer_type _buffer, Handler _handler)
+		template <typename SharedBufferType, typename Handler>
+		inline shared_buffer_handler<SharedBufferType, Handler> make_shared_buffer_handler(SharedBufferType _buffer, Handler _handler)
 		{
-			return shared_buffer_handler<MemoryPoolType, Handler>(_buffer, _handler);
+			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
 	}
 
