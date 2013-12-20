@@ -94,7 +94,9 @@ namespace fscp
 	 *
 	 * Preallocates a pool of memory and handles allocation/deallocation with heap fallback mechanism.
 	 *
-	 * memory_pool is optimized for the allocation of buffers of similar sizes.
+	 * memory_pool is optimized for blocks allocation.
+	 *
+	 * allocation has a constant cost; deallocation has a logarithmic cost.
 	 */
 	template <size_t BlockSize = 65536, unsigned int BlockCount = 32, bool UseHeapFallback = true>
 	class memory_pool : public boost::noncopyable
