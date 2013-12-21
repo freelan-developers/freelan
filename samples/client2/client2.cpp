@@ -79,6 +79,17 @@ static fscp::identity_store load_identity_store(const std::string& name)
 	return fscp::identity_store(cert, key);
 }
 
+static bool on_hello(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, bool default_accept)
+{
+	static_cast<void>(server);
+
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Received HELLO request from " << sender << " (default accept is: " << default_accept << ")" << std::endl;
+
+	return default_accept;
+}
+
 static void on_hello_response(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
 {
 	mutex::scoped_lock lock(output_mutex);
@@ -142,12 +153,16 @@ int main()
 		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
 
-		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
-		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
+		alice_server.async_set_hello_message_received_callback(boost::bind(&on_hello, "alice", boost::ref(alice_server), _1, _2));
+		bob_server.async_set_hello_message_received_callback(boost::bind(&on_hello, "bob", boost::ref(bob_server), _1, _2));
+		chris_server.async_set_hello_message_received_callback(boost::bind(&on_hello, "chris", boost::ref(chris_server), _1, _2));
 
 		alice_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
 		bob_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3, _4));
 		chris_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
+		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
+		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
 
 		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server), boost::ref(chris_server));
 
