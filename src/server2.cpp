@@ -60,6 +60,7 @@
 #include <boost/ref.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/atomic.hpp>
 
 #include <cassert>
 
@@ -128,13 +129,78 @@ namespace fscp
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
 
-		void simple_synchronous_handler(boost::system::error_code& result, bool& result_ready, boost::condition_variable& condition, const boost::system::error_code& ec)
+		class synchronizer_base
 		{
-			result = ec;
-			result_ready = true;
+			protected:
 
-			condition.notify_all();
-		}
+				synchronizer_base() :
+					m_has_result(false),
+					m_lock(m_mutex)
+				{
+				}
+
+				void wait()
+				{
+					while (!m_has_result)
+					{
+						m_condition.wait(m_lock);
+					}
+				}
+
+				void notify_result()
+				{
+					m_has_result = true;
+
+					m_condition.notify_all();
+				}
+
+			private:
+
+				boost::atomic<bool> m_has_result;
+				boost::mutex m_mutex;
+				boost::unique_lock<boost::mutex> m_lock;
+				boost::condition_variable m_condition;
+		};
+
+		template <typename ResultType = void>
+		class synchronizer : public synchronizer_base
+		{
+			public:
+
+				void operator()(const ResultType& result)
+				{
+					m_result = result;
+
+					notify_result();
+				}
+
+				ResultType wait_result()
+				{
+					wait();
+
+					return m_result;
+				}
+
+			private:
+
+				ResultType m_result;
+		};
+
+		template <>
+		class synchronizer<void> : public synchronizer_base
+		{
+			public:
+
+				void operator()()
+				{
+					notify_result();
+				}
+
+				void wait_result()
+				{
+					wait();
+				}
+		};
 	}
 
 	// Public methods
@@ -187,21 +253,11 @@ namespace fscp
 
 	boost::system::error_code server2::introduce_to(const ep_type& target)
 	{
-		boost::mutex mutex;
-		boost::unique_lock<boost::mutex> lock(mutex);
-		boost::condition_variable condition;
-		bool result_ready = false;
+		synchronizer<boost::system::error_code> sync;
 
-		boost::system::error_code result;
+		async_introduce_to(target, boost::ref(sync));
 
-		async_introduce_to(target, boost::bind(&simple_synchronous_handler, boost::ref(result), boost::ref(result_ready), boost::ref(condition), _1));
-
-		while (!result_ready)
-		{
-			condition.wait(lock);
-		}
-
-		return result;
+		return sync.wait_result();
 	}
 
 	void server2::async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
@@ -621,15 +677,15 @@ namespace fscp
 		const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
 
 		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					handler,
-					_1
-				)
-			)
+		    buffer(send_buffer, size),
+		    target,
+		    make_shared_buffer_handler(
+		        send_buffer,
+		        boost::bind(
+		            handler,
+		            _1
+		        )
+		    )
 		);
 	}
 
