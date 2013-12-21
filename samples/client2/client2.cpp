@@ -79,6 +79,13 @@ static fscp::identity_store load_identity_store(const std::string& name)
 	return fscp::identity_store(cert, key);
 }
 
+static void simple_handler(const std::string& name, const std::string& msg, const boost::system::error_code& ec)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] " << msg << ": " << ec.message() << std::endl;
+}
+
 static bool on_hello(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, bool default_accept)
 {
 	static_cast<void>(server);
@@ -102,9 +109,9 @@ static void on_hello_response(const std::string& name, fscp::server2& server, co
 	{
 		std::cout << "[" << name << "] Received HELLO response from " << sender << " after " << duration << ": " << ec.message() << std::endl;
 
-		const boost::system::error_code introduce_to_ec = server.introduce_to(sender);
+		server.async_introduce_to(sender, boost::bind(&simple_handler, name, "async_introduce_to()", _1));
 
-		std::cout << "[" << name << "] Sending a presentation message to " << sender << ": " << introduce_to_ec.message() << std::endl;
+		std::cout << "[" << name << "] Sending a presentation message to " << sender << std::endl;
 	}
 }
 

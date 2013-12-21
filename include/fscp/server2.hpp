@@ -199,6 +199,7 @@ namespace fscp
 			 * \param target The target host.
 			 * \return An error_code.
 			 * \warning If the io_service is not being run, a call to introduce_to() will block undefinitely.
+			 * \warning Calling this function from inside a handler has undefined behavior !
 			 */
 			boost::system::error_code introduce_to(const ep_type& target);
 
