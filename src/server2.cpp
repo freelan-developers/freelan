@@ -58,9 +58,7 @@
 #include <boost/random.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/atomic.hpp>
+#include <boost/thread/future.hpp>
 
 #include <cassert>
 
@@ -128,79 +126,6 @@ namespace fscp
 		{
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
-
-		class synchronizer_base
-		{
-			protected:
-
-				synchronizer_base() :
-					m_has_result(false),
-					m_lock(m_mutex)
-				{
-				}
-
-				void wait()
-				{
-					while (!m_has_result)
-					{
-						m_condition.wait(m_lock);
-					}
-				}
-
-				void notify_result()
-				{
-					m_has_result = true;
-
-					m_condition.notify_all();
-				}
-
-			private:
-
-				boost::atomic<bool> m_has_result;
-				boost::mutex m_mutex;
-				boost::unique_lock<boost::mutex> m_lock;
-				boost::condition_variable m_condition;
-		};
-
-		template <typename ResultType = void>
-		class synchronizer : public synchronizer_base
-		{
-			public:
-
-				void operator()(const ResultType& result)
-				{
-					m_result = result;
-
-					notify_result();
-				}
-
-				ResultType wait_result()
-				{
-					wait();
-
-					return m_result;
-				}
-
-			private:
-
-				ResultType m_result;
-		};
-
-		template <>
-		class synchronizer<void> : public synchronizer_base
-		{
-			public:
-
-				void operator()()
-				{
-					notify_result();
-				}
-
-				void wait_result()
-				{
-					wait();
-				}
-		};
 	}
 
 	// Public methods
@@ -253,11 +178,14 @@ namespace fscp
 
 	boost::system::error_code server2::introduce_to(const ep_type& target)
 	{
-		synchronizer<boost::system::error_code> sync;
+		typedef boost::promise<boost::system::error_code> promise_type;
+		promise_type promise;
 
-		async_introduce_to(target, boost::ref(sync));
+		void (promise_type::*setter)(const boost::system::error_code&) = &promise_type::set_value;
 
-		return sync.wait_result();
+		async_introduce_to(target, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
 	}
 
 	void server2::async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
