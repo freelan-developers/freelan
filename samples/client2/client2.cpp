@@ -152,6 +152,14 @@ int main()
 		fscp::server2 bob_server(_io_service, load_identity_store("bob"));
 		fscp::server2 chris_server(_io_service, load_identity_store("chris"));
 
+		alice_server.set_hello_message_received_callback(boost::bind(&on_hello, "alice", boost::ref(alice_server), _1, _2));
+		bob_server.set_hello_message_received_callback(boost::bind(&on_hello, "bob", boost::ref(bob_server), _1, _2));
+		chris_server.set_hello_message_received_callback(boost::bind(&on_hello, "chris", boost::ref(chris_server), _1, _2));
+
+		alice_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
 		alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
 		bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
 		chris_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12002));
@@ -159,14 +167,6 @@ int main()
 		boost::asio::ip::udp::resolver resolver(_io_service);
 		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
 		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
-
-		alice_server.async_set_hello_message_received_callback(boost::bind(&on_hello, "alice", boost::ref(alice_server), _1, _2));
-		bob_server.async_set_hello_message_received_callback(boost::bind(&on_hello, "bob", boost::ref(bob_server), _1, _2));
-		chris_server.async_set_hello_message_received_callback(boost::bind(&on_hello, "chris", boost::ref(chris_server), _1, _2));
-
-		alice_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
-		bob_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3, _4));
-		chris_server.async_set_presentation_message_received_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
