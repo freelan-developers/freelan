@@ -70,7 +70,10 @@ namespace fscp
 	/**
 	 * \brief A FSCP server.
 	 *
-	 * All the public methods are thread-safe.
+	 * All the public methods are thread-safe, unless otherwise specified.
+	 *
+	 * async_* methods are designed to be run from inside handlers (or callbacks).
+	 * sync_* methods are designed to be run outside of the server running threads while the server is running.
 	 */
 	class server2
 	{
@@ -180,6 +183,16 @@ namespace fscp
 			/**
 			 * \brief Set the hello message received callback.
 			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_hello_message_received_callback(hello_message_received_handler_type callback)
+			{
+				m_hello_message_received_handler = callback;
+			}
+
+			/**
+			 * \brief Set the hello message received callback.
+			 * \param callback The callback.
 			 * \param handler The handler to call when the change was made effective.
 			 */
 			void async_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler = void_handler_type())
@@ -193,7 +206,7 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			void set_hello_message_received_callback(hello_message_received_handler_type callback);
+			void sync_set_hello_message_received_callback(hello_message_received_handler_type callback);
 
 			/**
 			 * \brief Send a presentation message to the specified target.
@@ -209,7 +222,15 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			boost::system::error_code introduce_to(const ep_type& target);
+			boost::system::error_code sync_introduce_to(const ep_type& target);
+
+			/**
+			 * \brief Get the presentation store associated to a target.
+			 * \param target The target host.
+			 * \return The presentation for the given host.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			boost::optional<presentation_store> get_presentation(const ep_type& target);
 
 			/**
 			 * \brief Get the presentation store associated to a target.
@@ -225,7 +246,16 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			boost::optional<presentation_store> get_presentation(const ep_type& target);
+			boost::optional<presentation_store> sync_get_presentation(const ep_type& target);
+
+			/**
+			 * \brief Set the presentation for the given host.
+			 * \param target The host to set the presentation for.
+			 * \param signature_certificate The signature certificate.
+			 * \param encryption_certificate The encryption certificate to use, if different from the signature certificate.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate = cert_type());
 
 			/**
 			 * \brief Set the presentation for the given host.
@@ -244,7 +274,14 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			void set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate = cert_type());
+			void sync_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate = cert_type());
+
+			/**
+			 * \brief Clear the presentation for the given host.
+			 * \param target The host to set the presentation for.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void clear_presentation(const ep_type& target);
 
 			/**
 			 * \brief Clear the presentation for the given host.
@@ -259,7 +296,17 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			void clear_presentation(const ep_type& target);
+			void sync_clear_presentation(const ep_type& target);
+
+			/**
+			 * \brief Set the presentation message received callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_presentation_message_received_callback(presentation_message_received_handler_type callback)
+			{
+				m_presentation_message_received_handler = callback;
+			}
 
 			/**
 			 * \brief Set the presentation message received callback.
@@ -277,7 +324,7 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			void set_presentation_message_received_callback(presentation_message_received_handler_type callback);
+			void sync_set_presentation_message_received_callback(presentation_message_received_handler_type callback);
 
 		private:
 

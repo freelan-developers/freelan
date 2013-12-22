@@ -171,7 +171,7 @@ namespace fscp
 		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
 	}
 
-	void server2::set_hello_message_received_callback(hello_message_received_handler_type callback)
+	void server2::sync_set_hello_message_received_callback(hello_message_received_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
@@ -186,7 +186,7 @@ namespace fscp
 		get_io_service().post(boost::bind(&server2::do_introduce_to, this, normalize(target), handler));
 	}
 
-	boost::system::error_code server2::introduce_to(const ep_type& target)
+	boost::system::error_code server2::sync_introduce_to(const ep_type& target)
 	{
 		typedef boost::promise<boost::system::error_code> promise_type;
 		promise_type promise;
@@ -198,12 +198,26 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
+	boost::optional<presentation_store> server2::get_presentation(const ep_type& target)
+	{
+		const presentation_store_map::const_iterator item = m_presentation_store_map.find(target);
+
+		if (item != m_presentation_store_map.end())
+		{
+			return boost::make_optional<presentation_store>(item->second);
+		}
+		else
+		{
+			return boost::optional<presentation_store>();
+		}
+	}
+
 	void server2::async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
 	{
 		m_presentation_strand.post(boost::bind(&server2::do_get_presentation, this, normalize(target), handler));
 	}
 
-	boost::optional<presentation_store> server2::get_presentation(const ep_type& target)
+	boost::optional<presentation_store> server2::sync_get_presentation(const ep_type& target)
 	{
 		typedef boost::promise<boost::optional<presentation_store> > promise_type;
 		promise_type promise;
@@ -215,12 +229,17 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
+	void server2::set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate)
+	{
+		m_presentation_store_map[target] = presentation_store(signature_certificate, encryption_certificate);
+	}
+
 	void server2::async_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
 	{
 		m_presentation_strand.post(boost::bind(&server2::do_set_presentation, this, normalize(target), signature_certificate, encryption_certificate, handler));
 	}
 
-	void server2::set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate)
+	void server2::sync_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
@@ -230,12 +249,17 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+	void server2::clear_presentation(const ep_type& target)
+	{
+		m_presentation_store_map.erase(target);
+	}
+
 	void server2::async_clear_presentation(const ep_type& target, void_handler_type handler)
 	{
 		m_presentation_strand.post(boost::bind(&server2::do_clear_presentation, this, normalize(target), handler));
 	}
 
-	void server2::clear_presentation(const ep_type& target)
+	void server2::sync_clear_presentation(const ep_type& target)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
@@ -245,7 +269,7 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
-	void server2::set_presentation_message_received_callback(presentation_message_received_handler_type callback)
+	void server2::sync_set_presentation_message_received_callback(presentation_message_received_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
@@ -635,7 +659,7 @@ namespace fscp
 	void server2::do_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler)
 	{
 		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
-		m_hello_message_received_handler = callback;
+		set_hello_message_received_callback(callback);
 
 		if (handler)
 		{
@@ -672,22 +696,13 @@ namespace fscp
 	void server2::do_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
 	{
 		// All do_get_presentation() calls are done in the same strand so the following is thread-safe.
-		const presentation_store_map::const_iterator item = m_presentation_store_map.find(target);
-
-		if (item != m_presentation_store_map.end())
-		{
-			handler(boost::make_optional<presentation_store>(item->second));
-		}
-		else
-		{
-			handler(boost::optional<presentation_store>());
-		}
+		handler(get_presentation(target));
 	}
 
 	void server2::do_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
 	{
 		// All do_set_presentation() calls are done in the same strand so the following is thread-safe.
-		m_presentation_store_map[target] = presentation_store(signature_certificate, encryption_certificate);
+		set_presentation(target, signature_certificate, encryption_certificate);
 
 		if (handler)
 		{
@@ -698,7 +713,7 @@ namespace fscp
 	void server2::do_clear_presentation(const ep_type& target, void_handler_type handler)
 	{
 		// All do_set_presentation() calls are done in the same strand so the following is thread-safe.
-		m_presentation_store_map.erase(target);
+		clear_presentation(target);
 
 		if (handler)
 		{
@@ -738,7 +753,7 @@ namespace fscp
 	void server2::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)
 	{
 		// All do_set_presentation_message_received_callback() calls are done in the same strand so the following is thread-safe.
-		m_presentation_message_received_handler = callback;
+		set_presentation_message_received_callback(callback);
 
 		if (handler)
 		{
