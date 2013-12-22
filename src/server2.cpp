@@ -171,6 +171,16 @@ namespace fscp
 		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
 	}
 
+	void server2::set_hello_message_received_callback(hello_message_received_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_hello_message_received_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	void server2::async_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
 		get_io_service().post(boost::bind(&server2::do_introduce_to, this, normalize(target), handler));
@@ -193,14 +203,56 @@ namespace fscp
 		m_presentation_strand.post(boost::bind(&server2::do_get_presentation, this, normalize(target), handler));
 	}
 
+	boost::optional<presentation_store> server2::get_presentation(const ep_type& target)
+	{
+		typedef boost::promise<boost::optional<presentation_store> > promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const boost::optional<presentation_store>&) = &promise_type::set_value;
+
+		async_get_presentation(target, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
 	void server2::async_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
 	{
 		m_presentation_strand.post(boost::bind(&server2::do_set_presentation, this, normalize(target), signature_certificate, encryption_certificate, handler));
 	}
 
+	void server2::set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_presentation(target, signature_certificate, encryption_certificate, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	void server2::async_clear_presentation(const ep_type& target, void_handler_type handler)
 	{
 		m_presentation_strand.post(boost::bind(&server2::do_clear_presentation, this, normalize(target), handler));
+	}
+
+	void server2::clear_presentation(const ep_type& target)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_clear_presentation(target, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
+	void server2::set_presentation_message_received_callback(presentation_message_received_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_presentation_message_received_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
 	}
 
 	// Private methods

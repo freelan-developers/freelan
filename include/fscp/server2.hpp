@@ -188,6 +188,14 @@ namespace fscp
 			}
 
 			/**
+			 * \brief Set the hello message received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void set_hello_message_received_callback(hello_message_received_handler_type callback);
+
+			/**
 			 * \brief Send a presentation message to the specified target.
 			 * \param target The target host.
 			 * \param handler The handler to call when then presentation message is sent or an error occured.
@@ -198,8 +206,8 @@ namespace fscp
 			 * \brief Send a presentation message to the specified target.
 			 * \param target The target host.
 			 * \return An error_code.
-			 * \warning If the io_service is not being run, a call to introduce_to() will block undefinitely.
-			 * \warning Calling this function from inside a handler has undefined behavior !
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			boost::system::error_code introduce_to(const ep_type& target);
 
@@ -211,6 +219,15 @@ namespace fscp
 			void async_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler);
 
 			/**
+			 * \brief Get the presentation store associated to a target.
+			 * \param target The target host.
+			 * \return The presentation for the given host.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			boost::optional<presentation_store> get_presentation(const ep_type& target);
+
+			/**
 			 * \brief Set the presentation for the given host.
 			 * \param target The host to set the presentation for.
 			 * \param signature_certificate The signature certificate.
@@ -220,11 +237,29 @@ namespace fscp
 			void async_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate = cert_type(), void_handler_type handler = void_handler_type());
 
 			/**
+			 * \brief Set the presentation for the given host.
+			 * \param target The host to set the presentation for.
+			 * \param signature_certificate The signature certificate.
+			 * \param encryption_certificate The encryption certificate to use, if different from the signature certificate.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate = cert_type());
+
+			/**
 			 * \brief Clear the presentation for the given host.
 			 * \param target The host to set the presentation for.
 			 * \param handler The handler to call when the presentation was cleared for the given host.
 			 */
 			void async_clear_presentation(const ep_type& target, void_handler_type handler = void_handler_type());
+
+			/**
+			 * \brief Clear the presentation for the given host.
+			 * \param target The host to set the presentation for.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void clear_presentation(const ep_type& target);
 
 			/**
 			 * \brief Set the presentation message received callback.
@@ -235,6 +270,14 @@ namespace fscp
 			{
 				m_presentation_strand.post(boost::bind(&server2::do_set_presentation_message_received_callback, this, callback, handler));
 			}
+
+			/**
+			 * \brief Set the presentation message received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void set_presentation_message_received_callback(presentation_message_received_handler_type callback);
 
 		private:
 
