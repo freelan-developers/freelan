@@ -23,6 +23,7 @@ else:
     libraries.append('cryptoplus')
 
 libraries.append('boost_system')
+libraries.append('boost_thread')
 
 if not sys.platform.startswith('linux2'):
     libraries.append('boost_date_time')
