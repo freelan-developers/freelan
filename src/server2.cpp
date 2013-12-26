@@ -139,6 +139,7 @@ namespace fscp
 		m_hello_message_received_handler(),
 		m_presentation_strand(io_service),
 		m_presentation_message_received_handler(),
+		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
 		m_session_request_message_received_handler()
 	{
@@ -774,14 +775,14 @@ namespace fscp
 		            boost::ref(_session_request_message),
 		            sender
 		        )
-		    );
+		    )
 		);
 	}
 
 	void server2::do_handle_session_request(const ep_type& sender, const session_request_message& _session_request_message)
 	{
 		// All do_handle_session_request() calls are done in the same strand so the following is thread-safe.
-		_session_request_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
+		_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
