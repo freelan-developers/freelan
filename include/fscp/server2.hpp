@@ -133,6 +133,15 @@ namespace fscp
 			 */
 			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)> presentation_message_received_handler_type;
 
+			/**
+			 * \brief A handler for when session requests are received.
+			 * \param sender The endpoint that sent the session request message.
+			 * \param calg_capabilities The cipher algorithm capabilities of the remote host.
+			 * \param default_accept The default return value.
+			 * \return true to accept the session request.
+			 */
+			typedef boost::function<bool (const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, bool default_accept)> session_request_received_handler_type;
+
 			// Public methods
 
 			/**
@@ -484,6 +493,23 @@ namespace fscp
 
 			bool m_accept_presentation_messages_default;
 			presentation_message_received_handler_type m_presentation_message_received_handler;
+
+		private: // SESSION_REQUEST messages
+
+			typedef std::map<ep_type, session_pair> session_pair_map;
+
+			void handle_session_request_message_from(socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
+			void do_handle_session_request(const ep_type&, const session_request_message&);
+			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
+			void do_handle_clear_session_request(const clear_session_request_message&, const ep_type&);
+
+			boost::asio::strand m_session_strand;
+
+			session_pair_map m_session_map;
+
+			bool m_accept_session_request_messages_default;
+			cipher_algorithm_list_type m_cipher_capabilities;
+			session_request_received_handler_type m_session_request_message_received_handler;
 
 		private: // DATA messages
 

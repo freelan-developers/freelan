@@ -138,7 +138,9 @@ namespace fscp
 		m_accept_hello_messages_default(true),
 		m_hello_message_received_handler(),
 		m_presentation_strand(io_service),
-		m_presentation_message_received_handler()
+		m_presentation_message_received_handler(),
+		m_accept_session_request_messages_default(true),
+		m_session_request_message_received_handler()
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
@@ -367,8 +369,7 @@ namespace fscp
 						{
 							session_request_message session_request_message(message, m_identity_store.encryption_key().size());
 
-							//TODO: Implement
-							//handle_session_request_message_from(session_request_message, *sender);
+							handle_session_request_message_from(data, session_request_message, *sender);
 
 							break;
 						}
@@ -758,6 +759,79 @@ namespace fscp
 		if (handler)
 		{
 			handler();
+		}
+	}
+
+	void server2::handle_session_request_message_from(socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)
+	{
+		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
+		m_presentation_strand.post(
+		    make_shared_buffer_handler(
+		        data,
+		        boost::bind(
+		            &server2::do_handle_session_request,
+		            this,
+		            boost::ref(_session_request_message),
+		            sender
+		        )
+		    );
+		);
+	}
+
+	void server2::do_handle_session_request(const ep_type& sender, const session_request_message& _session_request_message)
+	{
+		// All do_handle_session_request() calls are done in the same strand so the following is thread-safe.
+		_session_request_message.check_signature(m_presentation_map[sender].signature_certificate().public_key());
+
+		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t cleartext_len = _session_request_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), m_identity_store.encryption_key());
+
+		clear_session_request_message clear_session_request_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
+
+		handle_clear_session_request_message_from(cleartext_buffer, clear_session_request_message, sender);
+	}
+
+	void server2::handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type data, const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
+	{
+		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
+		m_session_strand.post(
+		    make_shared_buffer_handler(
+		        data,
+		        boost::bind(
+		            &server2::do_handle_clear_session_request,
+		            this,
+		            boost::ref(_clear_session_request_message),
+		            sender
+		        )
+		    )
+		);
+	}
+
+	void server2::do_handle_clear_session_request(const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
+	{
+		// All do_handle_clear_session_request() calls are done in the same strand so the following is thread-safe.
+		bool can_reply = m_accept_session_request_messages_default;
+
+		// Get the associated session, creating one if none exists.
+		session_pair& session = m_session_map[sender];
+
+		const cipher_algorithm_list_type cipher_capabilities = _clear_session_request_message.cipher_capabilities();
+
+		const cipher_algorithm_type calg = get_first_supported_cipher_algorithm(cipher_capabilities);
+
+		if (m_session_request_message_received_handler)
+		{
+			can_reply = m_session_request_message_received_handler(sender, cipher_capabilities, m_accept_session_request_messages_default);
+		}
+
+		if (can_reply)
+		{
+			session.set_remote_challenge(_clear_session_request_message.challenge());
+			session.set_local_cipher_algorithm(calg);
+
+			//TODO: Implement the call below
+			//do_send_session(sender, _clear_session_request_message.session_number());
 		}
 	}
 }
