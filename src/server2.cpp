@@ -103,6 +103,11 @@ namespace fscp
 					m_handler(_handler)
 				{}
 
+				void operator()()
+				{
+					m_handler();
+				}
+
 				template <typename Arg1>
 				void operator()(Arg1 arg1)
 				{
