@@ -498,6 +498,8 @@ namespace fscp
 
 			typedef std::map<ep_type, session_pair> session_pair_map;
 
+			static cipher_algorithm_type get_first_common_supported_cipher_algorithm(const cipher_algorithm_list_type&, const cipher_algorithm_list_type&, cipher_algorithm_type);
+
 			void handle_session_request_message_from(socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
 			void do_handle_session_request(const ep_type&, const session_request_message&);
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);

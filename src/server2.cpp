@@ -768,6 +768,19 @@ namespace fscp
 		}
 	}
 
+	cipher_algorithm_type server2::get_first_common_supported_cipher_algorithm(const cipher_algorithm_list_type& reference, const cipher_algorithm_list_type& capabilities, cipher_algorithm_type default_value = cipher_algorithm_type::unsupported)
+	{
+		for (cipher_algorithm_list_type::const_iterator it = reference.begin(); it != reference.end(); ++it)
+		{
+			if (std::find(capabilities.begin(), capabilities.end(), *it) != capabilities.end())
+			{
+				return it->value();
+			}
+		}
+
+		return default_value;
+	}
+
 	void server2::handle_session_request_message_from(socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
@@ -824,7 +837,7 @@ namespace fscp
 
 		const cipher_algorithm_list_type cipher_capabilities = _clear_session_request_message.cipher_capabilities();
 
-		const cipher_algorithm_type calg = get_first_supported_cipher_algorithm(cipher_capabilities);
+		const cipher_algorithm_type calg = get_first_common_supported_cipher_algorithm(m_cipher_capabilities, cipher_capabilities);
 
 		if (m_session_request_message_received_handler)
 		{
