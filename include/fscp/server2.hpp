@@ -142,6 +142,10 @@ namespace fscp
 			 */
 			typedef boost::function<bool (const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, bool default_accept)> session_request_received_handler_type;
 
+			// Static variables
+
+			static const cipher_algorithm_list_type DEFAULT_CIPHER_CAPABILITIES;
+
 			// Public methods
 
 			/**

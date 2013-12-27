@@ -131,9 +131,20 @@ namespace fscp
 		{
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
+
+		cipher_algorithm_list_type get_default_cipher_capabilities()
+		{
+			cipher_algorithm_list_type result;
+
+			result.push_back(cipher_algorithm_type::aes256_gcm);
+
+			return result;
+		}
 	}
 
 	// Public methods
+
+	const cipher_algorithm_list_type server2::DEFAULT_CIPHER_CAPABILITIES = get_default_cipher_capabilities();
 
 	server2::server2(boost::asio::io_service& io_service, const identity_store& identity) :
 		m_identity_store(identity),
@@ -146,6 +157,7 @@ namespace fscp
 		m_presentation_message_received_handler(),
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
+		m_cipher_capabilities(DEFAULT_CIPHER_CAPABILITIES),
 		m_session_request_message_received_handler()
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
