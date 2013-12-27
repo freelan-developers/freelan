@@ -70,7 +70,8 @@ namespace fscp
 			success = 0,
 			server_offline,
 			hello_request_timed_out,
-			no_presentation_for_host
+			no_presentation_for_host,
+			no_session_for_host
 		};
 
 		/**

@@ -389,6 +389,20 @@ namespace fscp
 			boost::system::error_code sync_request_session(const ep_type& target);
 
 			/**
+			 * \brief Close an established session.
+			 * \param target The remote host corresponding to the session to close.
+			 * \param handler The handler to call when the session has been closed.
+			 */
+			void async_close_session(const ep_type& target, simple_handler_type handler);
+
+			/**
+			 * \brief Close an established session.
+			 * \param target The remote host corresponding to the session to close.
+			 * \return An error code indicating the result of the operation.
+			 */
+			boost::system::error_code sync_close_session(const ep_type& target);
+
+			/**
 			 * \brief Get a list of endpoints to which the server has an active session.
 			 * \param handler The handler to call with the endpoints list.
 			 */
@@ -658,6 +672,7 @@ namespace fscp
 
 			void do_request_clear_session(const ep_type&, simple_handler_type);
 			void do_request_session(const ep_type&, simple_handler_type, boost::asio::const_buffer);
+			void do_close_session(const ep_type&, simple_handler_type);
 			void handle_session_request_message_from(socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
 			void do_handle_session_request(const ep_type&, const session_request_message&);
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);

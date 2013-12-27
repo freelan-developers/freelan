@@ -70,6 +70,10 @@ namespace fscp
 
 	namespace
 	{
+		void null_simple_handler(const boost::system::error_code&)
+		{
+		}
+
 		server2::ep_type& normalize(server2::ep_type& ep)
 		{
 			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
@@ -314,6 +318,23 @@ namespace fscp
 		m_session_strand.post(boost::bind(&server2::do_request_clear_session, this, normalize(target), handler));
 	}
 
+	void server2::async_close_session(const ep_type& target, simple_handler_type handler)
+	{
+		m_session_strand.post(boost::bind(&server2::do_close_session, this, normalize(target), handler));
+	}
+
+	boost::system::error_code server2::sync_close_session(const ep_type& target)
+	{
+		typedef boost::promise<boost::system::error_code> promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const boost::system::error_code&) = &promise_type::set_value;
+
+		async_close_session(target, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
 	std::vector<server2::ep_type> server2::sync_get_session_endpoints()
 	{
 		typedef boost::promise<std::vector<ep_type> > promise_type;
@@ -481,9 +502,7 @@ namespace fscp
 			else if (ec == boost::asio::error::connection_refused)
 			{
 				// The host refused the connection, meaning it closed its socket so we can force-terminate the session.
-				//do_close_session(*sender);
-
-				//TODO: Double check this: do_close_session perhaps should be called through a strand
+				async_close_session(*sender, &null_simple_handler);
 			}
 		}
 	}
@@ -967,6 +986,22 @@ namespace fscp
 				)
 			)
 		);
+	}
+
+	void server2::do_close_session(const ep_type& target, simple_handler_type handler)
+	{
+		// All do_close_session() calls are done in the same strand so the following is thread-safe.
+
+		if (m_session_map[target].clear_remote_session())
+		{
+			handler(server_error::success);
+
+			//TODO: Callback that the session was lost.
+		}
+		else
+		{
+			handler(server_error::no_session_for_host);
+		}
 	}
 
 	void server2::handle_session_request_message_from(socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)
