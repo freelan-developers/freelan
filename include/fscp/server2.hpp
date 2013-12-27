@@ -339,6 +339,22 @@ namespace fscp
 			 */
 			void sync_set_presentation_message_received_callback(presentation_message_received_handler_type callback);
 
+			/**
+			 * \brief Sends a session request to an host.
+			 * \param target The target to greet.
+			 * \param handler The handler to call when the request was sent or an error occured.
+			 */
+			void async_request_session(const ep_type& target, simple_handler_type handler);
+
+			/**
+			 * \brief Sends a session request to an host.
+			 * \param target The target host.
+			 * \return An error_code.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			boost::system::error_code sync_request_session(const ep_type& target);
+
 		private:
 
 			const identity_store m_identity_store;
@@ -505,6 +521,8 @@ namespace fscp
 
 			static cipher_algorithm_type get_first_common_supported_cipher_algorithm(const cipher_algorithm_list_type&, const cipher_algorithm_list_type&, cipher_algorithm_type);
 
+			void do_request_clear_session(const ep_type&, simple_handler_type);
+			void do_request_session(const ep_type&, simple_handler_type, boost::asio::const_buffer);
 			void handle_session_request_message_from(socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
 			void do_handle_session_request(const ep_type&, const session_request_message&);
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);

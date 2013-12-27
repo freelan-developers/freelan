@@ -299,6 +299,23 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+	void server2::async_request_session(const ep_type& target, simple_handler_type handler)
+	{
+		m_session_strand.post(boost::bind(&server2::do_request_clear_session, this, normalize(target), handler));
+	}
+
+	boost::system::error_code server2::sync_request_session(const ep_type& target)
+	{
+		typedef boost::promise<boost::system::error_code> promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const boost::system::error_code&) = &promise_type::set_value;
+
+		async_request_session(target, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
 	// Private methods
 
 	void server2::do_async_receive_from()
@@ -804,6 +821,89 @@ namespace fscp
 		}
 
 		return default_value;
+	}
+
+	void server2::do_request_clear_session(const ep_type& target, simple_handler_type handler)
+	{
+		// All do_request_clear_session() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		session_pair& session = m_session_map[target];
+
+		const session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
+
+		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = clear_session_request_message::write(
+			buffer_cast<uint8_t*>(cleartext_buffer),
+			buffer_size(cleartext_buffer),
+			session_number,
+			session.generate_local_challenge(),
+			m_cipher_capabilities
+		);
+
+		m_presentation_strand.post(
+			make_shared_buffer_handler(
+				cleartext_buffer,
+				boost::bind(
+					&server2::do_request_session,
+					this,
+					target,
+					handler,
+					buffer(cleartext_buffer, size)
+				)
+			)
+		);
+	}
+
+	void server2::do_request_session(const ep_type& target, simple_handler_type handler, boost::asio::const_buffer cleartext)
+	{
+		// All do_request_session() calls are done in the same strand so the following is thread-safe.
+
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		if (!has_presentation_store_for(target))
+		{
+			// We don't have any presentation_store for the specified target.
+			// Doing nothing.
+
+			handler(server_error::no_presentation_for_host);
+
+			return;
+		}
+
+		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = session_request_message::write(
+			buffer_cast<uint8_t*>(send_buffer),
+			buffer_size(send_buffer),
+			buffer_cast<const uint8_t*>(cleartext),
+			buffer_size(cleartext),
+			m_presentation_store_map[target].encryption_certificate().public_key(),
+			m_identity_store.signature_key()
+		);
+
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					handler,
+					boost::asio::placeholders::error
+				)
+			)
+		);
 	}
 
 	void server2::handle_session_request_message_from(socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)

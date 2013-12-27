@@ -74,6 +74,10 @@ namespace fscp
 			{
 				return "No HELLO response received";
 			}
+			case server_error::no_presentation_for_host:
+			{
+				return "No presentation is available for the specified host";
+			}
 			default:
 			{
 				return "Unknown FSCP error";
