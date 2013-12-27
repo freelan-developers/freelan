@@ -309,16 +309,16 @@ namespace fscp
 
 		// do_async_receive_from() is executed within the socket strand so this is safe.
 		m_socket.async_receive_from(
-		    buffer(receive_buffer),
-		    *sender,
-		    boost::bind(
-		        &server2::handle_receive_from,
-		        this,
-		        sender,
-		        receive_buffer,
-		        boost::asio::placeholders::error,
-		        boost::asio::placeholders::bytes_transferred
-		    )
+			buffer(receive_buffer),
+			*sender,
+			boost::bind(
+				&server2::handle_receive_from,
+				this,
+				sender,
+				receive_buffer,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred
+			)
 		);
 	}
 
@@ -529,23 +529,23 @@ namespace fscp
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 		async_send_to(
-		    buffer(send_buffer, size),
-		    target,
-		    m_greet_strand.wrap(
-		        make_shared_buffer_handler(
-		            send_buffer,
-		            boost::bind(
-		                &server2::do_greet_handler,
-		                this,
-		                target,
-		                hello_unique_number,
-		                handler,
-		                timeout,
-		                boost::asio::placeholders::error,
-		                boost::asio::placeholders::bytes_transferred
-		            )
-		        )
-		    )
+			buffer(send_buffer, size),
+			target,
+			m_greet_strand.wrap(
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						&server2::do_greet_handler,
+						this,
+						target,
+						hello_unique_number,
+						handler,
+						timeout,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred
+					)
+				)
+			)
 		);
 	}
 
@@ -652,17 +652,17 @@ namespace fscp
 			const size_t size = hello_message::write_response(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 			async_send_to(
-			    buffer(send_buffer, size),
-			    sender,
-			    make_shared_buffer_handler(
-			        send_buffer,
-			        boost::bind(
-			            &server2::handle_send_to,
-			            this,
-			            boost::asio::placeholders::error,
-			            boost::asio::placeholders::bytes_transferred
-			        )
-			    )
+				buffer(send_buffer, size),
+				sender,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						&server2::handle_send_to,
+						this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred
+					)
+				)
 			);
 		}
 	}
@@ -713,15 +713,15 @@ namespace fscp
 		const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
 
 		async_send_to(
-		    buffer(send_buffer, size),
-		    target,
-		    make_shared_buffer_handler(
-		        send_buffer,
-		        boost::bind(
-		            handler,
-		            _1
-		        )
-		    )
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					handler,
+					_1
+				)
+			)
 		);
 	}
 
@@ -756,13 +756,13 @@ namespace fscp
 	void server2::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
 		m_presentation_strand.post(
-		    boost::bind(
-		        &server2::do_handle_presentation,
-		        this,
-		        sender,
-		        _presentation_message.signature_certificate(),
-		        _presentation_message.encryption_certificate()
-		    )
+			boost::bind(
+				&server2::do_handle_presentation,
+				this,
+				sender,
+				_presentation_message.signature_certificate(),
+				_presentation_message.encryption_certificate()
+			)
 		);
 	}
 
@@ -810,15 +810,15 @@ namespace fscp
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_presentation_strand.post(
-		    make_shared_buffer_handler(
-		        data,
-		        boost::bind(
-		            &server2::do_handle_session_request,
-		            this,
-		            sender,
-		            boost::ref(_session_request_message)
-		        )
-		    )
+			make_shared_buffer_handler(
+				data,
+				boost::bind(
+					&server2::do_handle_session_request,
+					this,
+					sender,
+					boost::ref(_session_request_message)
+				)
+			)
 		);
 	}
 
@@ -848,15 +848,15 @@ namespace fscp
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_session_strand.post(
-		    make_shared_buffer_handler(
-		        data,
-		        boost::bind(
-		            &server2::do_handle_clear_session_request,
-		            this,
-		            sender,
-		            boost::ref(_clear_session_request_message)
-		        )
-		    )
+			make_shared_buffer_handler(
+				data,
+				boost::bind(
+					&server2::do_handle_clear_session_request,
+					this,
+					sender,
+					boost::ref(_clear_session_request_message)
+				)
+			)
 		);
 	}
 
@@ -908,15 +908,15 @@ namespace fscp
 		);
 
 		m_presentation_strand.post(
-		    make_shared_buffer_handler(
-		        cleartext_buffer,
-		        boost::bind(
-		            &server2::do_send_session,
-		            this,
-		            target,
-		            buffer(cleartext_buffer, size)
-		        )
-		    )
+			make_shared_buffer_handler(
+				cleartext_buffer,
+				boost::bind(
+					&server2::do_send_session,
+					this,
+					target,
+					buffer(cleartext_buffer, size)
+				)
+			)
 		);
 	}
 
@@ -943,17 +943,17 @@ namespace fscp
 		);
 
 		async_send_to(
-		    buffer(send_buffer, size),
-		    target,
-		    make_shared_buffer_handler(
-		        send_buffer,
-		        boost::bind(
-								&server2::handle_send_to,
-								this,
-								boost::asio::placeholders::error,
-								boost::asio::placeholders::bytes_transferred
-		        )
-		    )
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					&server2::handle_send_to,
+					this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred
+				)
+			)
 		);
 	}
 }
