@@ -316,6 +316,26 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
+	void server2::sync_set_accept_session_request_messages_default(bool value)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_accept_session_request_messages_default(value, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
+	void server2::sync_set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_cipher_capabilities(cipher_capabilities, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	void server2::sync_set_session_request_message_received_callback(session_request_received_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
@@ -993,6 +1013,28 @@ namespace fscp
 			session.set_local_cipher_algorithm(calg);
 
 			do_send_clear_session(sender, _clear_session_request_message.session_number());
+		}
+	}
+
+	void server2::do_set_accept_session_request_messages_default(bool value, void_handler_type handler)
+	{
+		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
+		set_accept_session_request_messages_default(value);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::do_set_cipher_capabilities(cipher_algorithm_list_type cipher_capabilities, void_handler_type handler)
+	{
+		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
+		set_cipher_capabilities(cipher_capabilities);
+
+		if (handler)
+		{
+			handler();
 		}
 	}
 
