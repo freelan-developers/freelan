@@ -790,8 +790,8 @@ namespace fscp
 		        boost::bind(
 		            &server2::do_handle_session_request,
 		            this,
-		            boost::ref(_session_request_message),
-		            sender
+		            sender,
+		            boost::ref(_session_request_message)
 		        )
 		    )
 		);
@@ -820,14 +820,14 @@ namespace fscp
 		        boost::bind(
 		            &server2::do_handle_clear_session_request,
 		            this,
-		            boost::ref(_clear_session_request_message),
-		            sender
+		            sender,
+		            boost::ref(_clear_session_request_message)
 		        )
 		    )
 		);
 	}
 
-	void server2::do_handle_clear_session_request(const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
+	void server2::do_handle_clear_session_request(const ep_type& sender, const clear_session_request_message& _clear_session_request_message)
 	{
 		// All do_handle_clear_session_request() calls are done in the same strand so the following is thread-safe.
 		bool can_reply = m_accept_session_request_messages_default;

@@ -503,7 +503,7 @@ namespace fscp
 			void handle_session_request_message_from(socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
 			void do_handle_session_request(const ep_type&, const session_request_message&);
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
-			void do_handle_clear_session_request(const clear_session_request_message&, const ep_type&);
+			void do_handle_clear_session_request(const ep_type&, const clear_session_request_message&);
 
 			boost::asio::strand m_session_strand;
 
