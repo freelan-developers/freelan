@@ -191,6 +191,16 @@ namespace fscp
 		m_greet_strand.post(boost::bind(&server2::do_greet, this, normalize(target), handler, timeout));
 	}
 
+	void server2::sync_set_accept_hello_messages_default(bool value)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_accept_hello_messages_default(value, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	void server2::sync_set_hello_message_received_callback(hello_message_received_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
@@ -720,6 +730,17 @@ namespace fscp
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[sender];
 
 		ep_hello_context.cancel_reply_wait(hello_unique_number, true);
+	}
+
+	void server2::do_set_accept_hello_messages_default(bool value, void_handler_type handler)
+	{
+		// All do_set_accept_hello_messages_default() calls are done in the same strand so the following is thread-safe.
+		set_accept_hello_messages_default(value);
+
+		if (handler)
+		{
+			handler();
+		}
 	}
 
 	void server2::do_set_hello_message_received_callback(hello_message_received_handler_type callback, void_handler_type handler)

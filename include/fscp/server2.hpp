@@ -194,6 +194,34 @@ namespace fscp
 			}
 
 			/**
+			 * \brief Set the default acceptance behavior of incoming hello messages.
+			 * \param value The default value.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_accept_hello_messages_default(bool value)
+			{
+				m_accept_hello_messages_default = value;
+			}
+
+			/**
+			 * \brief Set the default acceptance behavior of incoming hello messages.
+			 * \param value The default value.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_accept_hello_messages_default(bool value, void_handler_type handler = void_handler_type())
+			{
+				m_greet_strand.post(boost::bind(&server2::do_set_accept_hello_messages_default, this, value, handler));
+			}
+
+			/**
+			 * \brief Set the default acceptance behavior of incoming hello messages.
+			 * \param value The default value.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_accept_hello_messages_default(bool value);
+
+			/**
 			 * \brief Set the hello message received callback.
 			 * \param callback The callback.
 			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
@@ -567,6 +595,7 @@ namespace fscp
 			void do_handle_hello_request(const ep_type&, uint32_t);
 			void do_handle_hello_response(const ep_type&, uint32_t);
 
+			void do_set_accept_hello_messages_default(bool, void_handler_type);
 			void do_set_hello_message_received_callback(hello_message_received_handler_type, void_handler_type);
 
 			ep_hello_context_map m_ep_hello_contexts;
