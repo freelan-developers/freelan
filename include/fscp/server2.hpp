@@ -355,6 +355,34 @@ namespace fscp
 			 */
 			boost::system::error_code sync_request_session(const ep_type& target);
 
+			/**
+			 * \brief Set the session request message received callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_session_request_message_received_callback(session_request_received_handler_type callback)
+			{
+				m_session_request_message_received_handler = callback;
+			}
+
+			/**
+			 * \brief Set the session request message received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_session_request_message_received_callback(session_request_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server2::do_set_session_request_message_received_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the session request message received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_session_request_message_received_callback(session_request_received_handler_type callback);
+
 		private:
 
 			const identity_store m_identity_store;
@@ -527,6 +555,8 @@ namespace fscp
 			void do_handle_session_request(const ep_type&, const session_request_message&);
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
 			void do_handle_clear_session_request(const ep_type&, const clear_session_request_message&);
+
+			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
 			boost::asio::strand m_session_strand;
 
