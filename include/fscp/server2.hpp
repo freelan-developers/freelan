@@ -113,6 +113,11 @@ namespace fscp
 			 */
 			typedef boost::function<void (const boost::optional<presentation_store>&)> optional_presentation_store_handler_type;
 
+			/**
+			 * \brief An endpoints handler.
+			 */
+			typedef boost::function<void (const std::vector<ep_type>&)> endpoints_handler_type;
+
 			// Callbacks
 
 			/**
@@ -384,6 +389,23 @@ namespace fscp
 			boost::system::error_code sync_request_session(const ep_type& target);
 
 			/**
+			 * \brief Get a list of endpoints to which the server has an active session.
+			 * \param handler The handler to call with the endpoints list.
+			 */
+			void async_get_session_endpoints(endpoints_handler_type handler)
+			{
+				m_session_strand.post(boost::bind(&server2::do_get_session_endpoints, this, handler));
+			}
+
+			/**
+			 * \brief Get a list of endpoints to which the server has an active session.
+			 * \return The list of endpoints.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			std::vector<ep_type> sync_get_session_endpoints();
+
+			/**
 			 * \brief Set the default acceptance behavior of incoming session requests.
 			 * \param value The default value.
 			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
@@ -641,6 +663,7 @@ namespace fscp
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
 			void do_handle_clear_session_request(const ep_type&, const clear_session_request_message&);
 
+			void do_get_session_endpoints(endpoints_handler_type);
 			void do_set_accept_session_request_messages_default(bool, void_handler_type);
 			void do_set_cipher_capabilities(cipher_algorithm_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);

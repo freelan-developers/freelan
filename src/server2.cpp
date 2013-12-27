@@ -314,6 +314,18 @@ namespace fscp
 		m_session_strand.post(boost::bind(&server2::do_request_clear_session, this, normalize(target), handler));
 	}
 
+	std::vector<server2::ep_type> server2::sync_get_session_endpoints()
+	{
+		typedef boost::promise<std::vector<ep_type> > promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const std::vector<ep_type>&) = &promise_type::set_value;
+
+		async_get_session_endpoints(boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
 	boost::system::error_code server2::sync_request_session(const ep_type& target)
 	{
 		typedef boost::promise<boost::system::error_code> promise_type;
@@ -1035,6 +1047,25 @@ namespace fscp
 
 			do_send_clear_session(sender, _clear_session_request_message.session_number());
 		}
+	}
+
+	void server2::do_get_session_endpoints(endpoints_handler_type handler)
+	{
+		// All do_get_session_endpoints() calls are done in the same strand so the following is thread-safe.
+
+		std::vector<ep_type> result;
+
+		result.reserve(m_session_map.size());
+
+		for (session_pair_map::const_iterator pair = m_session_map.begin(); pair != m_session_map.end(); ++pair)
+		{
+			if ((pair->second.has_local_session()) && (pair->second.has_remote_session()))
+			{
+				result.push_back(pair->first);
+			}
+		}
+
+		handler(result);
 	}
 
 	void server2::do_set_accept_session_request_messages_default(bool value, void_handler_type handler)
