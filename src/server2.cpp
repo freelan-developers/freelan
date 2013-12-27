@@ -686,6 +686,19 @@ namespace fscp
 		}
 	}
 
+	bool server2::has_presentation_store_for(const ep_type& ep) const
+	{
+		// This method should only be called from within the presentation strand.
+		presentation_store_map::const_iterator presentation_store = m_presentation_store_map.find(ep);
+
+		if (presentation_store != m_presentation_store_map.end())
+		{
+			return !(presentation_store->second.empty());
+		}
+
+		return false;
+	}
+
 	void server2::do_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
 		if (!m_socket.is_open())
@@ -756,7 +769,7 @@ namespace fscp
 	void server2::do_handle_presentation(const ep_type& sender, cert_type signature_certificate, cert_type encryption_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
-		const bool is_new = (m_presentation_store_map.find(sender) == m_presentation_store_map.end());
+		const bool is_new = !has_presentation_store_for(sender);
 
 		if (m_presentation_message_received_handler)
 		{
@@ -811,6 +824,14 @@ namespace fscp
 
 	void server2::do_handle_session_request(const ep_type& sender, const session_request_message& _session_request_message)
 	{
+		if (!has_presentation_store_for(sender))
+		{
+			// No presentation_store for the given host.
+			// We do nothing.
+
+			return;
+		}
+
 		// All do_handle_session_request() calls are done in the same strand so the following is thread-safe.
 		_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
 
@@ -861,8 +882,78 @@ namespace fscp
 			session.set_remote_challenge(_clear_session_request_message.challenge());
 			session.set_local_cipher_algorithm(calg);
 
-			//TODO: Implement the call below
-			//do_send_session(sender, _clear_session_request_message.session_number());
+			do_send_clear_session(sender, _clear_session_request_message.session_number());
 		}
+	}
+
+	void server2::do_send_clear_session(const ep_type& target, session_store::session_number_type session_number)
+	{
+		// All do_send_clear_session() calls are done in the same strand so the following is thread-safe.
+		session_pair& session = m_session_map[target];
+
+		session.renew_local_session(session_number);
+
+		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = clear_session_message::write(
+			buffer_cast<uint8_t*>(cleartext_buffer),
+			buffer_size(cleartext_buffer),
+			session.local_session().session_number(),
+			session.remote_challenge(),
+			session.local_cipher_algorithm(),
+			session.local_session().encryption_key(),
+			session.local_session().encryption_key_size(),
+			session.local_session().nonce_prefix(),
+			session.local_session().nonce_prefix_size()
+		);
+
+		m_presentation_strand.post(
+		    make_shared_buffer_handler(
+		        cleartext_buffer,
+		        boost::bind(
+		            &server2::do_send_session,
+		            this,
+		            target,
+		            buffer(cleartext_buffer, size)
+		        )
+		    )
+		);
+	}
+
+	void server2::do_send_session(const ep_type& target, boost::asio::const_buffer cleartext)
+	{
+		if (!has_presentation_store_for(target))
+		{
+			// We don't have any presentation_store for the specified target.
+			// Doing nothing.
+
+			return;
+		}
+
+		// All do_send_session() calls are done in the same strand so the following is thread-safe.
+		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = session_message::write(
+			buffer_cast<uint8_t*>(send_buffer),
+			buffer_size(send_buffer),
+			buffer_cast<const uint8_t*>(cleartext),
+			buffer_size(cleartext),
+			m_presentation_store_map[target].encryption_certificate().public_key(),
+			m_identity_store.signature_key()
+		);
+
+		async_send_to(
+		    buffer(send_buffer, size),
+		    target,
+		    make_shared_buffer_handler(
+		        send_buffer,
+		        boost::bind(
+								&server2::handle_send_to,
+								this,
+								boost::asio::placeholders::error,
+								boost::asio::placeholders::bytes_transferred
+		        )
+		    )
+		);
 	}
 }

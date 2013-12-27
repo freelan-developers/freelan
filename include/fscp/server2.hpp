@@ -481,6 +481,7 @@ namespace fscp
 			typedef memory_pool<4096, 4> presentation_memory_pool;
 			typedef std::map<ep_type, presentation_store> presentation_store_map;
 
+			bool has_presentation_store_for(const ep_type&) const;
 			void do_introduce_to(const ep_type&, simple_handler_type);
 			void do_get_presentation(const ep_type&, optional_presentation_store_handler_type);
 			void do_set_presentation(const ep_type&, cert_type, cert_type, void_handler_type);
@@ -516,6 +517,11 @@ namespace fscp
 			bool m_accept_session_request_messages_default;
 			cipher_algorithm_list_type m_cipher_capabilities;
 			session_request_received_handler_type m_session_request_message_received_handler;
+
+		private: // SESSION messages
+
+			void do_send_clear_session(const ep_type&, session_store::session_number_type);
+			void do_send_session(const ep_type&, boost::asio::const_buffer);
 
 		private: // DATA messages
 

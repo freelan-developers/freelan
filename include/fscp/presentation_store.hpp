@@ -79,6 +79,15 @@ namespace fscp
 			presentation_store(cert_type sig_cert, cert_type enc_cert = cert_type());
 
 			/**
+			 * \brief Check if the presentation store is empty.
+			 * \return true if the presentation store is empty.
+			 */
+			bool empty() const
+			{
+				return !m_sig_cert;
+			}
+
+			/**
 			 * \brief Get the signature certificate.
 			 * \return The signature certificate.
 			 */
