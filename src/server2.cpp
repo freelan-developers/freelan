@@ -458,13 +458,16 @@ namespace fscp
 		m_socket.async_receive_from(
 			buffer(receive_buffer),
 			*sender,
-			boost::bind(
-				&server2::handle_receive_from,
-				this,
-				sender,
+			make_shared_buffer_handler(
 				receive_buffer,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred
+				boost::bind(
+					&server2::handle_receive_from,
+					this,
+					sender,
+					receive_buffer,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred
+				)
 			)
 		);
 	}
