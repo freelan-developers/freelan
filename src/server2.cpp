@@ -543,6 +543,8 @@ namespace fscp
 							session_message session_message(message, m_identity_store.encryption_key().size());
 
 							handle_session_message_from(data, session_message, *sender);
+
+							break;
 						}
 						default:
 						{
