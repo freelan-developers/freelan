@@ -414,6 +414,38 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+	void server2::sync_set_session_failed_callback(session_failed_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_session_failed_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
+
+	void server2::sync_set_session_established_callback(session_established_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_session_established_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
+
+	void server2::sync_set_session_lost_callback(session_lost_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_session_lost_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	// Private methods
 
 	void server2::do_async_receive_from()
@@ -1363,6 +1395,39 @@ namespace fscp
 	{
 		// All do_set_session_message_received_callback() calls are done in the same strand so the following is thread-safe.
 		set_session_message_received_callback(callback);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::do_set_session_failed_callback(session_failed_handler_type callback, void_handler_type handler)
+	{
+		// All do_set_session_failed_callback() calls are done in the same strand so the following is thread-safe.
+		set_session_failed_callback(callback);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::do_set_session_established_callback(session_established_handler_type callback, void_handler_type handler)
+	{
+		// All do_set_session_established_callback() calls are done in the same strand so the following is thread-safe.
+		set_session_established_callback(callback);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server2::do_set_session_lost_callback(session_lost_handler_type callback, void_handler_type handler)
+	{
+		// All do_set_session_lost_callback() calls are done in the same strand so the following is thread-safe.
+		set_session_lost_callback(callback);
 
 		if (handler)
 		{
