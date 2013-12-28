@@ -1075,7 +1075,7 @@ namespace fscp
 					&server2::do_handle_session_request,
 					this,
 					sender,
-					boost::ref(_session_request_message)
+					_session_request_message
 				)
 			)
 		);
@@ -1113,7 +1113,7 @@ namespace fscp
 					&server2::do_handle_clear_session_request,
 					this,
 					sender,
-					boost::ref(_clear_session_request_message)
+					_clear_session_request_message
 				)
 			)
 		);
@@ -1278,7 +1278,7 @@ namespace fscp
 					&server2::do_handle_session,
 					this,
 					sender,
-					boost::ref(_session_message)
+					_session_message
 				)
 			)
 		);
@@ -1317,7 +1317,7 @@ namespace fscp
 					&server2::do_handle_clear_session,
 					this,
 					sender,
-					boost::ref(_clear_session_message)
+					_clear_session_message
 				)
 			)
 		);
