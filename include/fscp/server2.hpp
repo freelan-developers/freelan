@@ -156,6 +156,30 @@ namespace fscp
 			 */
 			typedef boost::function<bool (const ep_type& sender, cipher_algorithm_type calg, bool default_accept)> session_received_handler_type;
 
+			/**
+			 * \brief A handler for when a session establishment failed.
+			 * \param host The host with which the session establishment failed.
+			 * \param is_new A flag that indicates whether the session would have been a new session or a renewal.
+			 * \param local The local algorithm info.
+			 * \param remote The remote algorithm info.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)> session_failed_handler_type;
+
+			/**
+			 * \brief A handler for when a session was established.
+			 * \param host The host with which the session was established.
+			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
+			 * \param local The local algorithm info.
+			 * \param remote The remote algorithm info.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)> session_established_handler_type;
+
+			/**
+			 * \brief A handler for when a session was lost.
+			 * \param host The host with which a session was lost.
+			 */
+			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
+
 			// Static variables
 
 			static const cipher_algorithm_list_type DEFAULT_CIPHER_CAPABILITIES;
@@ -772,6 +796,9 @@ namespace fscp
 
 			bool m_accept_session_messages_default;
 			session_received_handler_type m_session_message_received_handler;
+			session_failed_handler_type m_session_failed_handler;
+			session_established_handler_type m_session_established_handler;
+			session_lost_handler_type m_session_lost_handler;
 
 		private: // DATA messages
 

@@ -164,7 +164,10 @@ namespace fscp
 		m_cipher_capabilities(DEFAULT_CIPHER_CAPABILITIES),
 		m_session_request_message_received_handler(),
 		m_accept_session_messages_default(true),
-		m_session_message_received_handler()
+		m_session_message_received_handler(),
+		m_session_failed_handler(),
+		m_session_established_handler(),
+		m_session_lost_handler()
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
@@ -1017,7 +1020,10 @@ namespace fscp
 		{
 			handler(server_error::success);
 
-			//TODO: Callback that the session was lost.
+			if (m_session_lost_handler)
+			{
+				m_session_lost_handler(target);
+			}
 		}
 		else
 		{
@@ -1313,15 +1319,12 @@ namespace fscp
 				const algorithm_info_type local = { session_pair.local_cipher_algorithm() };
 				const algorithm_info_type remote = { _clear_session_message.cipher_algorithm() };
 
-				//TODO: Remove this
-				static_cast<void>(session_is_new);
-				static_cast<void>(local);
-				static_cast<void>(remote);
-
 				if (_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported)
 				{
-					//TODO: Implement this
-					//session_failed(sender, session_is_new, local, remote);
+					if (m_session_failed_handler)
+					{
+						m_session_failed_handler(sender, session_is_new, local, remote);
+					}
 				}
 				else
 				{
@@ -1336,8 +1339,10 @@ namespace fscp
 
 					session_pair.set_remote_session(_session_store);
 
-					//TODO: Implement this
-					//session_established(sender, session_is_new, local, remote);
+					if (m_session_established_handler)
+					{
+						m_session_established_handler(sender, session_is_new, local, remote);
+					}
 				}
 			}
 		}
