@@ -94,6 +94,8 @@ static bool on_hello(const std::string& name, fscp::server2& server, const fscp:
 
 	std::cout << "[" << name << "] Received HELLO request from " << sender << " (default accept is: " << default_accept << ")" << std::endl;
 
+	server.async_introduce_to(sender, boost::bind(&simple_handler, name, "async_introduce_to()", _1));
+
 	return default_accept;
 }
 
