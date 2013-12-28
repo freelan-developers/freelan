@@ -175,7 +175,11 @@ int main()
 
 		boost::thread_group threads;
 
-		for (std::size_t i = 0; i < 10; ++i)
+		const unsigned int THREAD_COUNT = boost::thread::hardware_concurrency();
+
+		std::cout << "Starting client with " << THREAD_COUNT << " thread(s)." << std::endl;
+
+		for (std::size_t i = 0; i < THREAD_COUNT; ++i)
 		{
 			threads.create_thread(boost::bind(&boost::asio::io_service::run, &_io_service));
 		}
