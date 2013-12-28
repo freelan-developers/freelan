@@ -512,6 +512,62 @@ namespace fscp
 			 */
 			void sync_set_session_request_message_received_callback(session_request_received_handler_type callback);
 
+			/**
+			 * \brief Set the default acceptance behavior of incoming sessions.
+			 * \param value The default value.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_accept_session_messages_default(bool value)
+			{
+				m_accept_session_messages_default = value;
+			}
+
+			/**
+			 * \brief Set the default acceptance behavior of incoming sessions.
+			 * \param value The default value.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_accept_session_messages_default(bool value, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server2::do_set_accept_session_messages_default, this, value, handler));
+			}
+
+			/**
+			 * \brief Set the default acceptance behavior of incoming sessions.
+			 * \param value The default value.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_accept_session_messages_default(bool value);
+
+			/**
+			 * \brief Set the session message received callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_session_message_received_callback(session_received_handler_type callback)
+			{
+				m_session_message_received_handler = callback;
+			}
+
+			/**
+			 * \brief Set the session message received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_session_message_received_callback(session_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server2::do_set_session_message_received_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the session message received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_session_message_received_callback(session_received_handler_type callback);
+
 		private:
 
 			const identity_store m_identity_store;
@@ -710,6 +766,9 @@ namespace fscp
 			void do_handle_session(const ep_type&, const session_message&);
 			void handle_clear_session_message_from(socket_memory_pool::shared_buffer_type, const clear_session_message&, const ep_type&);
 			void do_handle_clear_session(const ep_type&, const clear_session_message&);
+
+			void do_set_accept_session_messages_default(bool, void_handler_type);
+			void do_set_session_message_received_callback(session_received_handler_type, void_handler_type);
 
 			bool m_accept_session_messages_default;
 			session_received_handler_type m_session_message_received_handler;
