@@ -167,7 +167,8 @@ namespace fscp
 		m_session_message_received_handler(),
 		m_session_failed_handler(),
 		m_session_established_handler(),
-		m_session_lost_handler()
+		m_session_lost_handler(),
+		m_keep_alive_timer(io_service, SESSION_KEEP_ALIVE_PERIOD)
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
@@ -186,11 +187,15 @@ namespace fscp
 		m_socket.bind(listen_endpoint);
 
 		async_receive_from();
+
+		m_keep_alive_timer.async_wait(m_session_strand.wrap(boost::bind(&server2::do_check_keep_alive, this, boost::asio::placeholders::error)));
 	}
 
 	void server2::close()
 	{
 		cancel_all_greetings();
+
+		m_keep_alive_timer.cancel();
 
 		m_socket.close();
 	}
@@ -508,8 +513,7 @@ namespace fscp
 						{
 							data_message data_message(message);
 
-							//TODO: Implement
-							//handle_data_message_from(data_message, *sender);
+							handle_data_message_from(data, data_message, *sender);
 
 							break;
 						}
@@ -1233,6 +1237,7 @@ namespace fscp
 
 	void server2::do_send_session(const ep_type& target, boost::asio::const_buffer cleartext)
 	{
+		// All do_send_session() calls are done in the same strand so the following is thread-safe.
 		if (!has_presentation_store_for(target))
 		{
 			// We don't have any presentation_store for the specified target.
@@ -1241,7 +1246,6 @@ namespace fscp
 			return;
 		}
 
-		// All do_send_session() calls are done in the same strand so the following is thread-safe.
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
 		const size_t size = session_message::write(
@@ -1435,5 +1439,91 @@ namespace fscp
 		{
 			handler();
 		}
+	}
+
+	void server2::handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&)
+	{
+		//TODO: Implement.
+	}
+
+	void server2::do_check_keep_alive(const boost::system::error_code& ec)
+	{
+		// All do_check_keep_alive() calls are done in the same strand so the following is thread-safe.
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			for (session_pair_map::iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+			{
+				if (session_pair->second.has_timed_out(SESSION_TIMEOUT))
+				{
+					if (session_pair->second.clear_remote_session())
+					{
+						if (m_session_lost_handler)
+						{
+							m_session_lost_handler(session_pair->first);
+						}
+					}
+				}
+				else
+				{
+					do_send_keep_alive(session_pair->first, null_simple_handler);
+				}
+			}
+
+			m_keep_alive_timer.expires_from_now(SESSION_KEEP_ALIVE_PERIOD);
+			m_keep_alive_timer.async_wait(m_session_strand.wrap(boost::bind(&server2::do_check_keep_alive, this, boost::asio::placeholders::error)));
+		}
+	}
+
+	void server2::do_send_keep_alive(const ep_type& target, simple_handler_type handler)
+	{
+		// All do_send_keep_alive() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		session_pair& session_pair = m_session_map[target];
+
+		if (!session_pair.has_remote_session())
+		{
+			handler(server_error::no_session_for_host);
+
+			return;
+		}
+
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+
+		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = data_message::write_keep_alive(
+			buffer_cast<uint8_t*>(send_buffer),
+			buffer_size(send_buffer),
+			session_pair.remote_session().session_number(),
+			session_pair.remote_session().sequence_number(),
+			cipher_algorithm,
+			session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
+			session_pair.remote_session().encryption_key(),
+			session_pair.remote_session().encryption_key_size(),
+			session_pair.remote_session().nonce_prefix(),
+			session_pair.remote_session().nonce_prefix_size()
+		);
+
+		session_pair.remote_session().increment_sequence_number();
+
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					&server2::handle_send_to,
+					this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred
+				)
+			)
+		);
 	}
 }

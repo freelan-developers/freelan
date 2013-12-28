@@ -889,7 +889,12 @@ namespace fscp
 
 		private: // DATA messages
 
-			void handle_data_message_from(const data_message&, const ep_type&);
+			void handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
+
+			void do_check_keep_alive(const boost::system::error_code&);
+			void do_send_keep_alive(const ep_type&, simple_handler_type);
+
+			boost::asio::deadline_timer m_keep_alive_timer;
 	};
 }
 
