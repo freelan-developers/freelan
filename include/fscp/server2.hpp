@@ -147,6 +147,15 @@ namespace fscp
 			 */
 			typedef boost::function<bool (const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, bool default_accept)> session_request_received_handler_type;
 
+			/**
+			 * \brief A handler for when session messages are received.
+			 * \param sender The endpoint that sent the session message.
+			 * \param calg The cipher algorithm used for the session.
+			 * \param default_accept The default return value.
+			 * \return true to accept the session.
+			 */
+			typedef boost::function<bool (const ep_type& sender, cipher_algorithm_type calg, bool default_accept)> session_received_handler_type;
+
 			// Static variables
 
 			static const cipher_algorithm_list_type DEFAULT_CIPHER_CAPABILITIES;
@@ -656,6 +665,7 @@ namespace fscp
 
 			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
 
+			// This strand is also used by session requests and session messages during the cipherment/decipherment phase.
 			boost::asio::strand m_presentation_strand;
 			presentation_memory_pool m_presentation_memory_pool;
 
@@ -683,6 +693,7 @@ namespace fscp
 			void do_set_cipher_capabilities(cipher_algorithm_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
+			// This strand is common to both session requests and session messages.
 			boost::asio::strand m_session_strand;
 
 			session_pair_map m_session_map;
@@ -695,6 +706,13 @@ namespace fscp
 
 			void do_send_clear_session(const ep_type&, session_store::session_number_type);
 			void do_send_session(const ep_type&, boost::asio::const_buffer);
+			void handle_session_message_from(socket_memory_pool::shared_buffer_type, const session_message&, const ep_type&);
+			void do_handle_session(const ep_type&, const session_message&);
+			void handle_clear_session_message_from(socket_memory_pool::shared_buffer_type, const clear_session_message&, const ep_type&);
+			void do_handle_clear_session(const ep_type&, const clear_session_message&);
+
+			bool m_accept_session_messages_default;
+			session_received_handler_type m_session_message_received_handler;
 
 		private: // DATA messages
 

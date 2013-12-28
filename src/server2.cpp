@@ -162,7 +162,9 @@ namespace fscp
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
 		m_cipher_capabilities(DEFAULT_CIPHER_CAPABILITIES),
-		m_session_request_message_received_handler()
+		m_session_request_message_received_handler(),
+		m_accept_session_messages_default(true),
+		m_session_message_received_handler()
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
@@ -485,8 +487,7 @@ namespace fscp
 						{
 							session_message session_message(message, m_identity_store.encryption_key().size());
 
-							//TODO: Implement
-							//handle_session_message_from(session_message, *sender);
+							handle_session_message_from(data, session_message, *sender);
 						}
 						default:
 						{
@@ -1205,5 +1206,120 @@ namespace fscp
 				)
 			)
 		);
+	}
+
+	void server2::handle_session_message_from(socket_memory_pool::shared_buffer_type data, const session_message& _session_message, const ep_type& sender)
+	{
+		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
+		m_presentation_strand.post(
+			make_shared_buffer_handler(
+				data,
+				boost::bind(
+					&server2::do_handle_session,
+					this,
+					sender,
+					boost::ref(_session_message)
+				)
+			)
+		);
+	}
+
+	void server2::do_handle_session(const ep_type& sender, const session_message& _session_message)
+	{
+		// All do_handle_session() calls are done in the same strand so the following is thread-safe.
+
+		if (!has_presentation_store_for(sender))
+		{
+			// No presentation_store for the given host.
+			// We do nothing.
+
+			return;
+		}
+
+		_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+
+		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t cleartext_len = _session_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), m_identity_store.encryption_key());
+
+		clear_session_message clear_session_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
+
+		handle_clear_session_message_from(cleartext_buffer, clear_session_message, sender);
+	}
+
+	void server2::handle_clear_session_message_from(socket_memory_pool::shared_buffer_type data, const clear_session_message& _clear_session_message, const ep_type& sender)
+	{
+		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
+		m_session_strand.post(
+			make_shared_buffer_handler(
+				data,
+				boost::bind(
+					&server2::do_handle_clear_session,
+					this,
+					sender,
+					boost::ref(_clear_session_message)
+				)
+			)
+		);
+	}
+
+	void server2::do_handle_clear_session(const ep_type& sender, const clear_session_message& _clear_session_message)
+	{
+		// All do_handle_clear_session() calls are done in the same strand so the following is thread-safe.
+		session_pair& session_pair = m_session_map[sender];
+
+		// FIXME: Handle the possible overflow for session numbers ! Even if it
+		// will happen in a *very long* time, it can still happen and will result
+		// in a session loss.
+		if (
+			_clear_session_message.challenge() == session_pair.local_challenge() &&
+			(
+				!session_pair.has_remote_session() ||
+				(session_pair.remote_session().session_number() < _clear_session_message.session_number())
+			)
+		)
+		{
+			bool can_accept = m_accept_session_messages_default;
+
+			if (m_session_message_received_handler)
+			{
+				can_accept = m_session_message_received_handler(sender, _clear_session_message.cipher_algorithm(), can_accept);
+			}
+
+			if (can_accept)
+			{
+				const bool session_is_new = !session_pair.has_remote_session();
+
+				const algorithm_info_type local = { session_pair.local_cipher_algorithm() };
+				const algorithm_info_type remote = { _clear_session_message.cipher_algorithm() };
+
+				//TODO: Remove this
+				static_cast<void>(session_is_new);
+				static_cast<void>(local);
+				static_cast<void>(remote);
+
+				if (_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported)
+				{
+					//TODO: Implement this
+					//session_failed(sender, session_is_new, local, remote);
+				}
+				else
+				{
+					session_store _session_store(
+						_clear_session_message.session_number(),
+						_clear_session_message.cipher_algorithm(),
+						_clear_session_message.encryption_key(),
+						_clear_session_message.encryption_key_size(),
+						_clear_session_message.nonce_prefix(),
+						_clear_session_message.nonce_prefix_size()
+					);
+
+					session_pair.set_remote_session(_session_store);
+
+					//TODO: Implement this
+					//session_established(sender, session_is_new, local, remote);
+				}
+			}
+		}
 	}
 }
