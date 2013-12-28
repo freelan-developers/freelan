@@ -119,11 +119,63 @@ static bool on_presentation(const std::string& name, fscp::server2& server, cons
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	static_cast<void>(server);
-
 	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << (is_new ? "new" : "existing") << std::endl;
 
+	server.async_request_session(sender, boost::bind(&simple_handler, name, "async_request_session()", _1));
+
 	return true;
+}
+
+static bool on_session_request(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, const fscp::cipher_algorithm_list_type&, bool default_accept)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	static_cast<void>(server);
+
+	std::cout << "[" << name << "] Received SESSION_REQUEST from " << sender << std::endl;
+
+	return default_accept;
+}
+
+static bool on_session(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, fscp::cipher_algorithm_type calg, bool default_accept)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher: " << calg << ")" << std::endl;
+
+	static_cast<void>(server);
+
+	//TODO: Uncomment this
+	//server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello ! I'm " + name)), boost::bind(&on_data_sent, name, boost::ref(server), _1, _2));
+
+	return default_accept;
+}
+
+static void on_session_failed(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Session failed with " << host << std::endl;
+	std::cout << "New session: " << is_new << std::endl;
+	std::cout << "Local algorithms: " << local << std::endl;
+	std::cout << "Remote algorithms: " << remote << std::endl;
+}
+
+static void on_session_established(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Session established with " << host << std::endl;
+	std::cout << "New session: " << is_new << std::endl;
+	std::cout << "Local algorithms: " << local << std::endl;
+	std::cout << "Remote algorithms: " << remote << std::endl;
+}
+
+static void on_session_lost(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Session lost with " << host << std::endl;
 }
 
 static void _stop_function(fscp::server2& s1, fscp::server2& s2, fscp::server2& s3)
@@ -159,6 +211,26 @@ int main()
 		alice_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "alice", boost::ref(alice_server), _1, _2, _3, _4));
 		bob_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3, _4));
 		chris_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
+		alice_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "alice", boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "bob", boost::ref(bob_server), _1, _2, _3));
+		chris_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "chris", boost::ref(chris_server), _1, _2, _3));
+
+		alice_server.set_session_message_received_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_session_message_received_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2, _3));
+		chris_server.set_session_message_received_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2, _3));
+
+		alice_server.set_session_failed_callback(boost::bind(&on_session_failed, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_failed_callback(boost::bind(&on_session_failed, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_failed_callback(boost::bind(&on_session_failed, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
+		alice_server.set_session_established_callback(boost::bind(&on_session_established, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_established_callback(boost::bind(&on_session_established, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_established_callback(boost::bind(&on_session_established, "chris", boost::ref(chris_server), _1, _2, _3, _4));
+
+		alice_server.set_session_lost_callback(boost::bind(&on_session_lost, "alice", boost::ref(alice_server), _1));
+		bob_server.set_session_lost_callback(boost::bind(&on_session_lost, "bob", boost::ref(bob_server), _1));
+		chris_server.set_session_lost_callback(boost::bind(&on_session_lost, "chris", boost::ref(chris_server), _1));
 
 		alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
 		bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
