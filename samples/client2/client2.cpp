@@ -158,9 +158,9 @@ static void on_session_failed(const std::string& name, fscp::server2&, const fsc
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "[" << name << "] Session failed with " << host << std::endl;
-	std::cout << "New session: " << is_new << std::endl;
-	std::cout << "Local algorithms: " << local << std::endl;
-	std::cout << "Remote algorithms: " << remote << std::endl;
+	std::cout << "[" << name << "] New session: " << is_new << std::endl;
+	std::cout << "[" << name << "] Local algorithms: " << local << std::endl;
+	std::cout << "[" << name << "] Remote algorithms: " << remote << std::endl;
 }
 
 static void on_session_established(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
@@ -168,9 +168,9 @@ static void on_session_established(const std::string& name, fscp::server2&, cons
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "[" << name << "] Session established with " << host << std::endl;
-	std::cout << "New session: " << is_new << std::endl;
-	std::cout << "Local algorithms: " << local << std::endl;
-	std::cout << "Remote algorithms: " << remote << std::endl;
+	std::cout << "[" << name << "] New session: " << is_new << std::endl;
+	std::cout << "[" << name << "] Local algorithms: " << local << std::endl;
+	std::cout << "[" << name << "] Remote algorithms: " << remote << std::endl;
 }
 
 static void on_session_lost(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host)
