@@ -128,7 +128,7 @@ namespace fscp
 		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, &cleartext[0], cleartext.size(), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT);
 	}
 
-	std::vector<hash_type> data_message::parse_hash_list(void* buf, size_t buflen)
+	std::vector<hash_type> data_message::parse_hash_list(const void* buf, size_t buflen)
 	{
 		if ((buflen / hash_type::static_size) * hash_type::static_size != buflen)
 		{
@@ -149,7 +149,7 @@ namespace fscp
 		return result;
 	}
 
-	contact_map_type data_message::parse_contact_map(void* buf, size_t buflen)
+	contact_map_type data_message::parse_contact_map(const void* buf, size_t buflen)
 	{
 		contact_map_type result;
 

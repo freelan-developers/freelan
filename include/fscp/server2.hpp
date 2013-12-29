@@ -55,6 +55,9 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
+#include <set>
+#include <map>
+
 #include <stdint.h>
 
 namespace fscp
@@ -104,6 +107,11 @@ namespace fscp
 			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
 
 			/**
+			 * \brief An operation handler for multiple endpoints.
+			 */
+			typedef boost::function<void (const std::map<ep_type, boost::system::error_code>&)> multiple_endpoints_handler_type;
+
+			/**
 			 * \brief A duration operation handler.
 			 */
 			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
@@ -116,7 +124,7 @@ namespace fscp
 			/**
 			 * \brief An endpoints handler.
 			 */
-			typedef boost::function<void (const std::vector<ep_type>&)> endpoints_handler_type;
+			typedef boost::function<void (const std::set<ep_type>&)> endpoints_handler_type;
 
 			// Callbacks
 
@@ -179,6 +187,31 @@ namespace fscp
 			 * \param host The host with which a session was lost.
 			 */
 			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
+
+			/**
+			 * \brief A handler for when data is available.
+			 * \param sender The endpoint that sent the data message.
+			 * \param channel_number The channel number.
+			 * \param data The sent data.
+			 */
+			typedef boost::function<void (const ep_type& sender, channel_number_type channel_number, boost::asio::const_buffer data)> data_received_handler_type;
+
+			/**
+			 * \brief A handler for when contact requests are received.
+			 * \param sender The sender of the request.
+			 * \param cert The requested certificate.
+			 * \param answer The answer endpoint.
+			 * \return true to allow the request to be answered.
+			 */
+			typedef boost::function<bool (const ep_type& sender, cert_type cert, const ep_type& answer)> contact_request_received_handler_type;
+
+			/**
+			 * \brief A handler for when contacts are received.
+			 * \param sender The sender of the information.
+			 * \param cert The certificate.
+			 * \param answer The answer endpoint.
+			 */
+			typedef boost::function<void (const ep_type& sender, cert_type cert, const ep_type& answer)> contact_received_handler_type;
 
 			// Static variables
 
@@ -450,7 +483,7 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			std::vector<ep_type> sync_get_session_endpoints();
+			std::set<ep_type> sync_get_session_endpoints();
 
 			/**
 			 * \brief Set the default acceptance behavior of incoming session requests.
@@ -676,6 +709,100 @@ namespace fscp
 			 */
 			void sync_set_session_lost_callback(session_lost_handler_type callback);
 
+			/**
+			 * \brief Send data to a host.
+			 * \param target The target host.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent or an error occured.
+			 */
+			void async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler);
+
+			/**
+			 * \brief Send data to a host.
+			 * \param target The target host.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \return The error code associated to the send operation.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			boost::system::error_code sync_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data);
+
+			/**
+			 * \brief Send data to a list of hosts.
+			 * \param targets The list of hosts.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 */
+			void async_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler);
+
+			/**
+			 * \brief Send data to a list of hosts.
+			 * \param begin An iterator to the first endpoint of the list.
+			 * \param end An iterator past the last endpoint of the list.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 */
+			template <typename EPIterator>
+			void async_send_data_to_list(EPIterator begin, EPIterator end, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
+			{
+				async_send_data_to_list(std::set<ep_type>(begin, end), channel_number, data, handler);
+			}
+
+			/**
+			 * \brief Send data to a list of hosts.
+			 * \param targets The list of hosts.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \return A map of individual results.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			std::map<ep_type, boost::system::error_code> sync_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data);
+
+			/**
+			 * \brief Send data to a list of hosts.
+			 * \param begin An iterator to the first endpoint of the list.
+			 * \param end An iterator past the last endpoint of the list.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \return A map of individual results.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			template <typename EPIterator>
+			std::map<ep_type, boost::system::error_code> sync_send_data_to_list(EPIterator begin, EPIterator end, channel_number_type channel_number, boost::asio::const_buffer data)
+			{
+				return sync_send_data_to_list(std::set<ep_type>(begin, end), channel_number, data);
+			}
+
+			/**
+			 * \brief Send data to all hosts.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 */
+			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
+			{
+				//TODO: This can be optimized by implemented a specific sub-function that doesn't require two async calls.
+				void (server2::*func)(const std::set<ep_type>&, channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
+
+				async_get_session_endpoints(boost::bind(func, this, _1, channel_number, data, handler));
+			}
+
+			/**
+			 * \brief Send data to all hosts.
+			 * \param channel_number The channel number.
+			 * \param data The data to send.
+			 * \return A map of individual results.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			std::map<ep_type, boost::system::error_code> sync_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data);
+
 		private:
 
 			const identity_store m_identity_store;
@@ -857,7 +984,7 @@ namespace fscp
 			void do_set_cipher_capabilities(cipher_algorithm_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
-			// This strand is common to both session requests and session messages.
+			// This strand is common to session requests, session messages and data messages.
 			boost::asio::strand m_session_strand;
 
 			session_pair_map m_session_map;
@@ -889,7 +1016,21 @@ namespace fscp
 
 		private: // DATA messages
 
+			void do_send_data(const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
 			void handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
+			void do_handle_data(const ep_type&, const data_message&);
+			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);
+			void do_handle_contact_request(const ep_type&, const std::set<hash_type>&);
+			void do_handle_contact(const ep_type&, const contact_map_type&);
+
+			boost::asio::strand m_data_strand;
+			boost::asio::strand m_contact_strand;
+
+			data_received_handler_type m_data_received_handler;
+			contact_request_received_handler_type m_contact_request_message_received_handler;
+			contact_received_handler_type m_contact_message_received_handler;
+
+		private: // Keep-alive
 
 			void do_check_keep_alive(const boost::system::error_code&);
 			void do_send_keep_alive(const ep_type&, simple_handler_type);

@@ -144,6 +144,44 @@ namespace fscp
 
 			return result;
 		}
+
+		template <typename KeyType, typename ValueType, typename Handler>
+		class results_gatherer
+		{
+			public:
+
+				typedef std::set<KeyType> set_type;
+				typedef std::map<KeyType, ValueType> map_type;
+
+				results_gatherer(Handler handler, const set_type& keys) :
+					m_handler(handler),
+					m_keys(keys)
+				{}
+
+				void gather(const KeyType& key, const ValueType& value)
+				{
+					boost::mutex::scoped_lock lock(m_mutex);
+
+					const size_t erased_count = m_keys.erase(key);
+
+					// Ensure that gather was called only once for a given key.
+					assert(erased_count == 1);
+
+					m_results[key] = value;
+
+					if (m_keys.empty())
+					{
+						m_handler(m_results);
+					}
+				}
+
+			private:
+
+				boost::mutex m_mutex;
+				Handler m_handler;
+				set_type m_keys;
+				map_type m_results;
+		};
 	}
 
 	// Public methods
@@ -168,6 +206,11 @@ namespace fscp
 		m_session_failed_handler(),
 		m_session_established_handler(),
 		m_session_lost_handler(),
+		m_data_strand(io_service),
+		m_contact_strand(io_service),
+		m_data_received_handler(),
+		m_contact_request_message_received_handler(),
+		m_contact_message_received_handler(),
 		m_keep_alive_timer(io_service, SESSION_KEEP_ALIVE_PERIOD)
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
@@ -345,12 +388,13 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
-	std::vector<server2::ep_type> server2::sync_get_session_endpoints()
+	std::set<server2::ep_type> server2::sync_get_session_endpoints()
 	{
-		typedef boost::promise<std::vector<ep_type> > promise_type;
+		typedef std::set<ep_type> result_type;
+		typedef boost::promise<result_type> promise_type;
 		promise_type promise;
 
-		void (promise_type::*setter)(const std::vector<ep_type>&) = &promise_type::set_value;
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
 
 		async_get_session_endpoints(boost::bind(setter, &promise, _1));
 
@@ -449,6 +493,63 @@ namespace fscp
 		async_set_session_lost_callback(callback, boost::bind(&promise_type::set_value, &promise));
 
 		return promise.get_future().wait();
+	}
+
+	void server2::async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
+	{
+		m_session_strand.post(boost::bind(&server2::do_send_data, this, normalize(target), channel_number, data, handler));
+	}
+
+	boost::system::error_code server2::sync_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data)
+	{
+		typedef boost::promise<boost::system::error_code> promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const boost::system::error_code&) = &promise_type::set_value;
+
+		async_send_data(target, channel_number, data, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
+	void server2::async_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
+	{
+		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+
+		for (std::set<ep_type>::const_iterator ep = targets.begin(); ep != targets.end(); ++ep)
+		{
+			async_send_data(*ep, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, *ep, boost::asio::placeholders::error));
+		}
+	}
+
+	std::map<server2::ep_type, boost::system::error_code> server2::sync_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data)
+	{
+		typedef std::map<server2::ep_type, boost::system::error_code> result_type;
+		typedef boost::promise<result_type> promise_type;
+
+		promise_type promise;
+
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
+
+		async_send_data_to_list(targets, channel_number, data, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
+	std::map<server2::ep_type, boost::system::error_code> server2::sync_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data)
+	{
+		typedef std::map<server2::ep_type, boost::system::error_code> result_type;
+		typedef boost::promise<result_type> promise_type;
+
+		promise_type promise;
+
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
+
+		async_send_data_to_all(channel_number, data, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
 	}
 
 	// Private methods
@@ -1153,15 +1254,13 @@ namespace fscp
 	{
 		// All do_get_session_endpoints() calls are done in the same strand so the following is thread-safe.
 
-		std::vector<ep_type> result;
-
-		result.reserve(m_session_map.size());
+		std::set<ep_type> result;
 
 		for (session_pair_map::const_iterator pair = m_session_map.begin(); pair != m_session_map.end(); ++pair)
 		{
 			if ((pair->second.has_local_session()) && (pair->second.has_remote_session()))
 			{
-				result.push_back(pair->first);
+				result.insert(pair->first);
 			}
 		}
 
@@ -1441,9 +1540,227 @@ namespace fscp
 		}
 	}
 
-	void server2::handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&)
+	void server2::do_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
-		//TODO: Implement.
+		// All do_send_data() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		session_pair& session_pair = m_session_map[target];
+
+		if (!session_pair.has_remote_session())
+		{
+			handler(server_error::no_session_for_host);
+
+			return;
+		}
+
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+
+		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = data_message::write(
+			buffer_cast<uint8_t*>(send_buffer),
+			buffer_size(send_buffer),
+			channel_number,
+			session_pair.remote_session().session_number(),
+			session_pair.remote_session().sequence_number(),
+			cipher_algorithm,
+			buffer_cast<const uint8_t*>(data),
+			buffer_size(data),
+			session_pair.remote_session().encryption_key(),
+			session_pair.remote_session().encryption_key_size(),
+			session_pair.remote_session().nonce_prefix(),
+			session_pair.remote_session().nonce_prefix_size()
+		);
+
+		session_pair.remote_session().increment_sequence_number();
+
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					handler,
+					boost::asio::placeholders::error
+				)
+			)
+		);
+	}
+
+	void server2::handle_data_message_from(socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)
+	{
+		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
+		m_session_strand.post(
+			make_shared_buffer_handler(
+				data,
+				boost::bind(
+					&server2::do_handle_data,
+					this,
+					sender,
+					_data_message
+				)
+			)
+		);
+	}
+
+	void server2::do_handle_data(const ep_type& sender, const data_message& _data_message)
+	{
+		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
+		session_pair& session_pair = m_session_map[sender];
+
+		if (!session_pair.has_local_session())
+		{
+			// We don't have a session: we must ignore the message.
+			return;
+		}
+
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.local_session().cipher_algorithm().to_cipher_algorithm();
+
+		if (_data_message.sequence_number() <= session_pair.local_session().sequence_number())
+		{
+			// The message is outdated: we ignore it.
+			return;
+		}
+
+		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t cleartext_len = _data_message.get_cleartext(
+			buffer_cast<uint8_t*>(cleartext_buffer),
+			buffer_size(cleartext_buffer),
+			session_pair.local_session().session_number(),
+			cipher_algorithm,
+			session_pair.local_session().encryption_key(),
+			session_pair.local_session().encryption_key_size(),
+			session_pair.local_session().nonce_prefix(),
+			session_pair.local_session().nonce_prefix_size()
+		);
+
+		session_pair.local_session().set_sequence_number(_data_message.sequence_number());
+
+		if (session_pair.local_session().is_old())
+		{
+			// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
+			do_send_clear_session(sender, session_pair.local_session().session_number() + 1);
+		}
+
+		session_pair.keep_alive();
+
+		const message_type type = _data_message.type();
+
+		if (type == MESSAGE_TYPE_KEEP_ALIVE)
+		{
+			// If the message is a keep alive then nothing is to be done and we avoid posting an empty call into the data strand.
+			return;
+		}
+
+		// We don't need the original buffer at this point, so we just defer handling in another call so that it will free the buffer sooner and that it will allow parallel processing.
+		m_data_strand.post(
+			make_shared_buffer_handler(
+				cleartext_buffer,
+				boost::bind(
+					&server2::do_handle_data_message,
+					this,
+					sender,
+					type,
+					buffer(cleartext_buffer, cleartext_len)
+				)
+			)
+		);
+	}
+
+	void server2::do_handle_data_message(const ep_type& sender, message_type type, boost::asio::const_buffer data)
+	{
+		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
+		if (is_data_message_type(type))
+		{
+			// This is safe only because type is a DATA message type.
+			const channel_number_type channel_number = to_channel_number(type);
+
+			if (m_data_received_handler)
+			{
+				m_data_received_handler(sender, channel_number, data);
+			}
+		}
+		else if (type == MESSAGE_TYPE_CONTACT_REQUEST)
+		{
+			//TODO: Change this to a set (and below)
+			const std::vector<hash_type> hash_list = data_message::parse_hash_list(buffer_cast<const uint8_t*>(data), buffer_size(data));
+			const std::set<hash_type> hash_set(hash_list.begin(), hash_list.end());
+
+			m_presentation_strand.post(
+				boost::bind(
+					&server2::do_handle_contact_request,
+					this,
+					sender,
+					hash_set
+				)
+			);
+		}
+		else if (type == MESSAGE_TYPE_CONTACT)
+		{
+			const contact_map_type contact_map = data_message::parse_contact_map(buffer_cast<const uint8_t*>(data), buffer_size(data));
+
+			m_contact_strand.post(
+				boost::bind(
+					&server2::do_handle_contact,
+					this,
+					sender,
+					contact_map
+				)
+			);
+		}
+	}
+
+	void server2::do_handle_contact_request(const ep_type& sender, const std::set<hash_type>& hash_list)
+	{
+		// All do_handle_contact_request() calls are done in the same strand so the following is thread-safe.
+		contact_map_type contact_map;
+
+		for (std::set<hash_type>::iterator hash_it = hash_list.begin(); hash_it != hash_list.end(); ++hash_it)
+		{
+			for (presentation_store_map::const_iterator it = m_presentation_store_map.begin(); it != m_presentation_store_map.end(); ++it)
+			{
+				if (it->second.signature_certificate_hash() == *hash_it)
+				{
+					if (!m_contact_request_message_received_handler || m_contact_request_message_received_handler(sender, it->second.signature_certificate(), it->first))
+					{
+						contact_map[*hash_it] = it->first;
+					}
+				}
+			}
+		}
+
+		// Our contact map contains some answers: we send those.
+		if (!contact_map.empty())
+		{
+			//TODO: Implement
+			//do_send_contact(sender, contact_map);
+		}
+	}
+
+	void server2::do_handle_contact(const ep_type& sender, const contact_map_type& contact_map)
+	{
+		// All do_handle_contact() calls are done in the same strand so the following is thread-safe.
+
+		//TODO: Implement
+		static_cast<void>(sender);
+		static_cast<void>(contact_map);
+		// if (m_contact_message_received_handler)
+		// {
+		// 	for (contact_map_type::const_iterator contact_it = contact_map.begin(); contact_it != contact_map.end(); ++contact_it)
+		// 	{
+		// 		if (m_hash_to_cert.find(contact_it->first) != m_hash_to_cert.end())
+		// 		{
+		// 			m_contact_message_received_handler(sender, m_hash_to_cert[contact_it->first], contact_it->second);
+		// 		}
+		// 	}
+		// }
 	}
 
 	void server2::do_check_keep_alive(const boost::system::error_code& ec)

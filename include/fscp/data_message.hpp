@@ -137,7 +137,7 @@ namespace fscp
 			 * \param buflen The length of the buffer to parse.
 			 * \return The hash list.
 			 */
-			static std::vector<hash_type> parse_hash_list(void* buf, size_t buflen);
+			static std::vector<hash_type> parse_hash_list(const void* buf, size_t buflen);
 
 			/**
 			 * \brief Parse the contact map.
@@ -145,7 +145,7 @@ namespace fscp
 			 * \param buflen The length of the buffer to parse.
 			 * \return The contact map.
 			 */
-			static contact_map_type parse_contact_map(void* buf, size_t buflen);
+			static contact_map_type parse_contact_map(const void* buf, size_t buflen);
 
 			/**
 			 * \brief Create a data_message and map it on a buffer.
