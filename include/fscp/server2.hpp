@@ -801,6 +801,89 @@ namespace fscp
 			std::map<ep_type, boost::system::error_code> sync_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data);
 
 			/**
+			 * \brief Send a contact request to an host.
+			 * \param target The target host.
+			 * \param hash_list The hashes to request.
+			 * \param handler The handler to call when the data was sent or an error occured.
+			 */
+			void async_send_contact_request(const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler);
+
+			/**
+			 * \brief Send a contact request to an host.
+			 * \param target The target host.
+			 * \param hash_list The hashes to request.
+			 * \return The error code associated to the send operation.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			boost::system::error_code sync_send_contact_request(const ep_type& target, const hash_list_type& hash_list);
+
+			/**
+			 * \brief Send a contact request to a list of hosts.
+			 * \param targets The list of hosts.
+			 * \param hash_list The hashes to request.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 */
+			void async_send_contact_request_to_list(const std::set<ep_type>& targets, const hash_list_type& hash_list, multiple_endpoints_handler_type handler);
+
+			/**
+			 * \brief Send a contact request to a list of hosts.
+			 * \param begin An iterator to the first endpoint of the list.
+			 * \param end An iterator past the last endpoint of the list.
+			 * \param hash_list The hashes to request.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 */
+			template <typename EPIterator>
+			void async_send_contact_request_to_list(EPIterator begin, EPIterator end, const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+			{
+				async_send_contact_request_to_list(std::set<ep_type>(begin, end), hash_list, handler);
+			}
+
+			/**
+			 * \brief Send a contact request to a list of hosts.
+			 * \param targets The list of hosts.
+			 * \param hash_list The hashes to request.
+			 * \return A map of individual results.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			std::map<ep_type, boost::system::error_code> sync_send_contact_request_to_list(const std::set<ep_type>& targets, const hash_list_type& hash_list);
+
+			/**
+			 * \brief Send a contact request to a list of hosts.
+			 * \param begin An iterator to the first endpoint of the list.
+			 * \param end An iterator past the last endpoint of the list.
+			 * \param hash_list The hashes to request.
+			 * \return A map of individual results.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			template <typename EPIterator>
+			std::map<ep_type, boost::system::error_code> sync_send_contact_request_to_list(EPIterator begin, EPIterator end, const hash_list_type& hash_list)
+			{
+				return sync_send_contact_request_to_list(std::set<ep_type>(begin, end), hash_list);
+			}
+
+			/**
+			 * \brief Send a contact request to all hosts.
+			 * \param hash_list The hashes to request.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 */
+			void async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+			{
+				m_session_strand.post(boost::bind(&server2::do_send_contact_request_to_all, this, hash_list, handler));
+			}
+
+			/**
+			 * \brief Send a contact request to all hosts.
+			 * \param hash_list The hashes to request.
+			 * \return A map of individual results.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			std::map<ep_type, boost::system::error_code> sync_send_contact_request_to_all(const hash_list_type& hash_list);
+
+			/**
 			 * \brief Send contact information to an host.
 			 * \param target The target host.
 			 * \param contact_map The contact information.
