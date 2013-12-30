@@ -213,6 +213,28 @@ namespace fscp
 		server_category();
 	}
 
+	identity_store server2::sync_get_identity()
+	{
+		typedef boost::promise<identity_store> promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const identity_store&) = &promise_type::set_value;
+
+		async_get_identity(boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
+	void server2::sync_set_identity(const identity_store& identity)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_identity(identity, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	void server2::open(const ep_type& listen_endpoint)
 	{
 		m_socket.open(listen_endpoint.protocol());
@@ -266,7 +288,7 @@ namespace fscp
 
 	void server2::async_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
-		get_io_service().post(boost::bind(&server2::do_introduce_to, this, normalize(target), handler));
+		m_socket_strand.post(boost::bind(&server2::do_introduce_to, this, normalize(target), handler));
 	}
 
 	boost::system::error_code server2::sync_introduce_to(const ep_type& target)
@@ -364,7 +386,7 @@ namespace fscp
 
 	void server2::async_request_session(const ep_type& target, simple_handler_type handler)
 	{
-		m_session_strand.post(boost::bind(&server2::do_request_clear_session, this, normalize(target), handler));
+		async_get_identity(m_session_strand.wrap(boost::bind(&server2::do_request_clear_session, this, _1, normalize(target), handler)));
 	}
 
 	void server2::async_close_session(const ep_type& target, simple_handler_type handler)
@@ -679,19 +701,38 @@ namespace fscp
 
 	// Private methods
 
+	void server2::do_get_identity(identity_handler_type handler)
+	{
+		// do_set_identity() is executed within the socket strand so this is safe.
+
+		handler(get_identity());
+	}
+
+	void server2::do_set_identity(const identity_store& identity, void_handler_type handler)
+	{
+		// do_set_identity() is executed within the socket strand so this is safe.
+		set_identity(identity);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
 	void server2::do_async_receive_from()
 	{
+		// do_async_receive_from() is executed within the socket strand so this is safe.
 		boost::shared_ptr<ep_type> sender = boost::make_shared<ep_type>();
 
 		socket_memory_pool::shared_buffer_type receive_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		// do_async_receive_from() is executed within the socket strand so this is safe.
 		m_socket.async_receive_from(
 			buffer(receive_buffer),
 			*sender,
 			boost::bind(
 				&server2::handle_receive_from,
 				this,
+				get_identity(),
 				sender,
 				receive_buffer,
 				boost::asio::placeholders::error,
@@ -700,8 +741,10 @@ namespace fscp
 		);
 	}
 
-	void server2::handle_receive_from(boost::shared_ptr<ep_type> sender, socket_memory_pool::shared_buffer_type data, const boost::system::error_code& ec, size_t bytes_received)
+	void server2::handle_receive_from(const identity_store& identity, boost::shared_ptr<ep_type> sender, socket_memory_pool::shared_buffer_type data, const boost::system::error_code& ec, size_t bytes_received)
 	{
+		assert(sender);
+
 		if (ec != boost::asio::error::operation_aborted)
 		{
 			// Let's read again !
@@ -739,7 +782,7 @@ namespace fscp
 						{
 							data_message data_message(message);
 
-							handle_data_message_from(data, data_message, *sender);
+							handle_data_message_from(identity, data, data_message, *sender);
 
 							break;
 						}
@@ -762,17 +805,17 @@ namespace fscp
 						}
 						case MESSAGE_TYPE_SESSION_REQUEST:
 						{
-							session_request_message session_request_message(message, m_identity_store.encryption_key().size());
+							session_request_message session_request_message(message, identity.encryption_key().size());
 
-							handle_session_request_message_from(data, session_request_message, *sender);
+							handle_session_request_message_from(identity, data, session_request_message, *sender);
 
 							break;
 						}
 						case MESSAGE_TYPE_SESSION:
 						{
-							session_message session_message(message, m_identity_store.encryption_key().size());
+							session_message session_message(message, identity.encryption_key().size());
 
-							handle_session_message_from(data, session_message, *sender);
+							handle_session_message_from(identity, data, session_message, *sender);
 
 							break;
 						}
@@ -1088,6 +1131,7 @@ namespace fscp
 
 	void server2::do_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
+		// All do_introduce_to() calls are done in the same strand so the following is thread-safe.
 		if (!m_socket.is_open())
 		{
 			handler(server_error::server_offline);
@@ -1095,9 +1139,11 @@ namespace fscp
 			return;
 		}
 
+		const identity_store& identity = get_identity();
+
 		const presentation_memory_pool::shared_buffer_type send_buffer = m_presentation_memory_pool.allocate_shared_buffer();
 
-		const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), m_identity_store.signature_certificate(), m_identity_store.encryption_certificate());
+		const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), identity.signature_certificate(), identity.encryption_certificate());
 
 		async_send_to(
 			buffer(send_buffer, size),
@@ -1193,7 +1239,7 @@ namespace fscp
 		return default_value;
 	}
 
-	void server2::do_request_clear_session(const ep_type& target, simple_handler_type handler)
+	void server2::do_request_clear_session(const identity_store& identity, const ep_type& target, simple_handler_type handler)
 	{
 		// All do_request_clear_session() calls are done in the same strand so the following is thread-safe.
 		if (!m_socket.is_open())
@@ -1223,6 +1269,7 @@ namespace fscp
 				boost::bind(
 					&server2::do_request_session,
 					this,
+					identity,
 					target,
 					handler,
 					buffer(cleartext_buffer, size)
@@ -1231,7 +1278,7 @@ namespace fscp
 		);
 	}
 
-	void server2::do_request_session(const ep_type& target, simple_handler_type handler, boost::asio::const_buffer cleartext)
+	void server2::do_request_session(const identity_store& identity, const ep_type& target, simple_handler_type handler, boost::asio::const_buffer cleartext)
 	{
 		// All do_request_session() calls are done in the same strand so the following is thread-safe.
 
@@ -1260,7 +1307,7 @@ namespace fscp
 			buffer_cast<const uint8_t*>(cleartext),
 			buffer_size(cleartext),
 			m_presentation_store_map[target].encryption_certificate().public_key(),
-			m_identity_store.signature_key()
+			identity.signature_key()
 		);
 
 		async_send_to(
@@ -1295,7 +1342,7 @@ namespace fscp
 		}
 	}
 
-	void server2::handle_session_request_message_from(socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)
+	void server2::handle_session_request_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_presentation_strand.post(
@@ -1304,6 +1351,7 @@ namespace fscp
 				boost::bind(
 					&server2::do_handle_session_request,
 					this,
+					identity,
 					sender,
 					_session_request_message
 				)
@@ -1311,8 +1359,9 @@ namespace fscp
 		);
 	}
 
-	void server2::do_handle_session_request(const ep_type& sender, const session_request_message& _session_request_message)
+	void server2::do_handle_session_request(const identity_store& identity, const ep_type& sender, const session_request_message& _session_request_message)
 	{
+		// All do_handle_session_request() calls are done in the same strand so the following is thread-safe.
 		if (!has_presentation_store_for(sender))
 		{
 			// No presentation_store for the given host.
@@ -1321,19 +1370,18 @@ namespace fscp
 			return;
 		}
 
-		// All do_handle_session_request() calls are done in the same strand so the following is thread-safe.
 		_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t cleartext_len = _session_request_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), m_identity_store.encryption_key());
+		const size_t cleartext_len = _session_request_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
 
 		clear_session_request_message clear_session_request_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
 
-		handle_clear_session_request_message_from(cleartext_buffer, clear_session_request_message, sender);
+		handle_clear_session_request_message_from(identity, cleartext_buffer, clear_session_request_message, sender);
 	}
 
-	void server2::handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type data, const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
+	void server2::handle_clear_session_request_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_session_strand.post(
@@ -1342,6 +1390,7 @@ namespace fscp
 				boost::bind(
 					&server2::do_handle_clear_session_request,
 					this,
+					identity,
 					sender,
 					_clear_session_request_message
 				)
@@ -1349,7 +1398,7 @@ namespace fscp
 		);
 	}
 
-	void server2::do_handle_clear_session_request(const ep_type& sender, const clear_session_request_message& _clear_session_request_message)
+	void server2::do_handle_clear_session_request(const identity_store& identity, const ep_type& sender, const clear_session_request_message& _clear_session_request_message)
 	{
 		// All do_handle_clear_session_request() calls are done in the same strand so the following is thread-safe.
 		bool can_reply = m_accept_session_request_messages_default;
@@ -1371,7 +1420,7 @@ namespace fscp
 			session.set_remote_challenge(_clear_session_request_message.challenge());
 			session.set_local_cipher_algorithm(calg);
 
-			do_send_clear_session(sender, _clear_session_request_message.session_number());
+			do_send_clear_session(identity, sender, _clear_session_request_message.session_number());
 		}
 	}
 
@@ -1430,7 +1479,7 @@ namespace fscp
 		}
 	}
 
-	void server2::do_send_clear_session(const ep_type& target, session_store::session_number_type session_number)
+	void server2::do_send_clear_session(const identity_store& identity, const ep_type& target, session_store::session_number_type session_number)
 	{
 		// All do_send_clear_session() calls are done in the same strand so the following is thread-safe.
 		session_pair& session = m_session_map[target];
@@ -1457,6 +1506,7 @@ namespace fscp
 				boost::bind(
 					&server2::do_send_session,
 					this,
+					identity,
 					target,
 					buffer(cleartext_buffer, size)
 				)
@@ -1464,7 +1514,7 @@ namespace fscp
 		);
 	}
 
-	void server2::do_send_session(const ep_type& target, boost::asio::const_buffer cleartext)
+	void server2::do_send_session(const identity_store& identity, const ep_type& target, boost::asio::const_buffer cleartext)
 	{
 		// All do_send_session() calls are done in the same strand so the following is thread-safe.
 		if (!has_presentation_store_for(target))
@@ -1483,7 +1533,7 @@ namespace fscp
 			buffer_cast<const uint8_t*>(cleartext),
 			buffer_size(cleartext),
 			m_presentation_store_map[target].encryption_certificate().public_key(),
-			m_identity_store.signature_key()
+			identity.signature_key()
 		);
 
 		async_send_to(
@@ -1501,7 +1551,7 @@ namespace fscp
 		);
 	}
 
-	void server2::handle_session_message_from(socket_memory_pool::shared_buffer_type data, const session_message& _session_message, const ep_type& sender)
+	void server2::handle_session_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const session_message& _session_message, const ep_type& sender)
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_presentation_strand.post(
@@ -1510,6 +1560,7 @@ namespace fscp
 				boost::bind(
 					&server2::do_handle_session,
 					this,
+					identity,
 					sender,
 					_session_message
 				)
@@ -1517,7 +1568,7 @@ namespace fscp
 		);
 	}
 
-	void server2::do_handle_session(const ep_type& sender, const session_message& _session_message)
+	void server2::do_handle_session(const identity_store& identity, const ep_type& sender, const session_message& _session_message)
 	{
 		// All do_handle_session() calls are done in the same strand so the following is thread-safe.
 
@@ -1533,7 +1584,7 @@ namespace fscp
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t cleartext_len = _session_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), m_identity_store.encryption_key());
+		const size_t cleartext_len = _session_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
 
 		clear_session_message clear_session_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
 
@@ -1909,7 +1960,7 @@ namespace fscp
 		);
 	}
 
-	void server2::handle_data_message_from(socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)
+	void server2::handle_data_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)
 	{
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_session_strand.post(
@@ -1918,6 +1969,7 @@ namespace fscp
 				boost::bind(
 					&server2::do_handle_data,
 					this,
+					identity,
 					sender,
 					_data_message
 				)
@@ -1925,7 +1977,7 @@ namespace fscp
 		);
 	}
 
-	void server2::do_handle_data(const ep_type& sender, const data_message& _data_message)
+	void server2::do_handle_data(const identity_store& identity, const ep_type& sender, const data_message& _data_message)
 	{
 		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
 		session_pair& session_pair = m_session_map[sender];
@@ -1962,7 +2014,7 @@ namespace fscp
 		if (session_pair.local_session().is_old())
 		{
 			// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
-			do_send_clear_session(sender, session_pair.local_session().session_number() + 1);
+			do_send_clear_session(identity, sender, session_pair.local_session().session_number() + 1);
 		}
 
 		session_pair.keep_alive();

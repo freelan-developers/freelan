@@ -102,6 +102,11 @@ namespace fscp
 			typedef boost::function<void ()> void_handler_type;
 
 			/**
+			 * \brief An identity handler.
+			 */
+			typedef boost::function<void (const identity_store&)> identity_handler_type;
+
+			/**
 			 * \brief A simple operation handler.
 			 */
 			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
@@ -235,6 +240,61 @@ namespace fscp
 			{
 				return m_socket.get_io_service();
 			}
+
+			/**
+			 * \brief Get the identity of the server.
+			 * \return The identity.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			const identity_store& get_identity() const
+			{
+				return m_identity_store;
+			}
+
+			/**
+			 * \brief Get the identity of the server.
+			 * \param handler The handler to call when the result is available.
+			 */
+			void async_get_identity(identity_handler_type handler)
+			{
+				m_socket_strand.post(boost::bind(&server2::do_get_identity, this, handler));
+			}
+
+			/**
+			 * \brief Get the identity of the server.
+			 * \return The identity.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			identity_store sync_get_identity();
+
+			/**
+			 * \brief Set the identity of the server.
+			 * \param identity The identity.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_identity(const identity_store& identity)
+			{
+				m_identity_store = identity;
+			}
+
+			/**
+			 * \brief Set the identity of the server.
+			 * \param identity The identity.
+			 * \param handler The handler to call when the change is effective.
+			 */
+			void async_set_identity(const identity_store& identity, void_handler_type handler = void_handler_type())
+			{
+				m_socket_strand.post(boost::bind(&server2::do_set_identity, this, identity, handler));
+			}
+
+			/**
+			 * \brief Set the identity of the server.
+			 * \param identity The identity.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_identity(const identity_store& identity);
 
 			/**
 			 * \brief Open the server.
@@ -1053,7 +1113,10 @@ namespace fscp
 
 		private:
 
-			const identity_store m_identity_store;
+			identity_store m_identity_store;
+
+			void do_get_identity(identity_handler_type);
+			void do_set_identity(const identity_store&, void_handler_type);
 
 		private:
 
@@ -1065,7 +1128,7 @@ namespace fscp
 			}
 
 			void do_async_receive_from();
-			void handle_receive_from(boost::shared_ptr<ep_type>, socket_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
+			void handle_receive_from(const identity_store&, boost::shared_ptr<ep_type>, socket_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
 
 			ep_type to_socket_format(const server2::ep_type& ep);
 
@@ -1219,13 +1282,13 @@ namespace fscp
 
 			static cipher_algorithm_type get_first_common_supported_cipher_algorithm(const cipher_algorithm_list_type&, const cipher_algorithm_list_type&, cipher_algorithm_type);
 
-			void do_request_clear_session(const ep_type&, simple_handler_type);
-			void do_request_session(const ep_type&, simple_handler_type, boost::asio::const_buffer);
+			void do_request_clear_session(const identity_store&, const ep_type&, simple_handler_type);
+			void do_request_session(const identity_store&, const ep_type&, simple_handler_type, boost::asio::const_buffer);
 			void do_close_session(const ep_type&, simple_handler_type);
-			void handle_session_request_message_from(socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
-			void do_handle_session_request(const ep_type&, const session_request_message&);
-			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
-			void do_handle_clear_session_request(const ep_type&, const clear_session_request_message&);
+			void handle_session_request_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
+			void do_handle_session_request(const identity_store&, const ep_type&, const session_request_message&);
+			void handle_clear_session_request_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
+			void do_handle_clear_session_request(const identity_store&, const ep_type&, const clear_session_request_message&);
 
 			std::set<ep_type> get_session_endpoints() const;
 			void do_get_session_endpoints(endpoints_handler_type);
@@ -1244,10 +1307,10 @@ namespace fscp
 
 		private: // SESSION messages
 
-			void do_send_clear_session(const ep_type&, session_store::session_number_type);
-			void do_send_session(const ep_type&, boost::asio::const_buffer);
-			void handle_session_message_from(socket_memory_pool::shared_buffer_type, const session_message&, const ep_type&);
-			void do_handle_session(const ep_type&, const session_message&);
+			void do_send_clear_session(const identity_store&, const ep_type&, session_store::session_number_type);
+			void do_send_session(const identity_store&, const ep_type&, boost::asio::const_buffer);
+			void handle_session_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const session_message&, const ep_type&);
+			void do_handle_session(const identity_store&, const ep_type&, const session_message&);
 			void handle_clear_session_message_from(socket_memory_pool::shared_buffer_type, const clear_session_message&, const ep_type&);
 			void do_handle_clear_session(const ep_type&, const clear_session_message&);
 
@@ -1277,8 +1340,8 @@ namespace fscp
 			void do_send_contact_to_list(const std::set<ep_type>&, const contact_map_type&, multiple_endpoints_handler_type);
 			void do_send_contact_to_all(const contact_map_type&, multiple_endpoints_handler_type);
 			void do_send_contact_to_session(session_pair&, const ep_type&, const contact_map_type&, simple_handler_type);
-			void handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
-			void do_handle_data(const ep_type&, const data_message&);
+			void handle_data_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
+			void do_handle_data(const identity_store&, const ep_type&, const data_message&);
 			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);
 			void do_handle_contact_request(const ep_type&, const std::set<hash_type>&);
 			void do_handle_contact(const ep_type&, const contact_map_type&);
