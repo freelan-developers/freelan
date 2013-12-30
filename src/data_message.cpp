@@ -82,7 +82,9 @@ namespace fscp
 
 	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const hash_list_type& hash_list, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
 	{
-		return raw_write(buf, buf_len, session_number, sequence_number, cipher_algorithm, reinterpret_cast<const char*>(&hash_list[0]), hash_list.size() * hash_type::static_size, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT_REQUEST);
+		const std::vector<hash_type> hash_vec(hash_list.begin(), hash_list.end());
+
+		return raw_write(buf, buf_len, session_number, sequence_number, cipher_algorithm, reinterpret_cast<const char*>(&hash_vec[0]), hash_vec.size() * hash_type::static_size, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT_REQUEST);
 	}
 
 	size_t data_message::write_contact(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const contact_map_type& contact_map, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)

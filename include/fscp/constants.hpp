@@ -57,6 +57,7 @@
 #include <boost/utility/enable_if.hpp>
 
 #include <stdint.h>
+#include <set>
 #include <vector>
 #include <map>
 
@@ -151,7 +152,7 @@ namespace fscp
 	/**
 	 * \brief The hash list type.
 	 */
-	typedef std::vector<hash_type> hash_list_type;
+	typedef std::set<hash_type> hash_list_type;
 
 	/**
 	 * \brief The contact map type.

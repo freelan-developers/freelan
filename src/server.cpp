@@ -272,7 +272,7 @@ namespace fscp
 			normalize(target);
 
 			m_hash_to_cert[hash] = cert;
-			m_hash_list_map[target].push_back(hash);
+			m_hash_list_map[target].insert(hash);
 
 			get_io_service().post(bind(&server::do_send_contact_request, this, target));
 		}
@@ -290,7 +290,7 @@ namespace fscp
 			{
 				if (session_pair->second.has_remote_session())
 				{
-					m_hash_list_map[session_pair->first].push_back(hash);
+					m_hash_list_map[session_pair->first].insert(hash);
 
 					get_io_service().post(bind(&server::do_send_contact_request, this, session_pair->first));
 				}
