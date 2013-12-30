@@ -183,6 +183,8 @@ static void on_data(const std::string& name, fscp::server2& server, const fscp::
 {
 	const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
 
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << str_data << std::endl;
 
 	if (name == "alice")
@@ -196,6 +198,26 @@ static void on_data(const std::string& name, fscp::server2& server, const fscp::
 
 		server.async_send_contact_request(sender, hash_list, boost::bind(&simple_handler, name, "async_send_contact_request()", _1));
 	}
+}
+
+static bool on_contact_request_message(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type cert, fscp::hash_type hash, const fscp::server::ep_type& target)
+{
+	static_cast<void>(server);
+
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject().oneline() << " ? (Answer: " << hash << " is at " << target << ")" << std::endl;
+
+	return true;
+}
+
+static void on_contact_message(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::hash_type hash, const fscp::server::ep_type& target)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Received CONTACT from " << sender << ": " << hash << " is at " << target << std::endl;
+
+	server.async_greet(target, boost::bind(&on_hello_response, name, boost::ref(server), target, _2, _3));
 }
 
 static void _stop_function(fscp::server2& s1, fscp::server2& s2, fscp::server2& s3)
@@ -255,6 +277,10 @@ int main()
 		alice_server.set_data_received_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3));
 		bob_server.set_data_received_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3));
 		chris_server.set_data_received_callback(boost::bind(&on_data, "chris", boost::ref(chris_server), _1, _2, _3));
+
+		bob_server.set_contact_request_message_callback(boost::bind(&on_contact_request_message, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+
+		alice_server.set_contact_message_callback(boost::bind(&on_contact_message, "alice", boost::ref(alice_server), _1, _2, _3));
 
 		alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
 		bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
