@@ -543,6 +543,58 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
+	void server2::async_send_contact(const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
+	{
+		m_session_strand.post(boost::bind(&server2::do_send_contact, this, normalize(target), contact_map, handler));
+	}
+
+	boost::system::error_code server2::sync_send_contact(const ep_type& target, const contact_map_type& contact_map)
+	{
+		typedef boost::promise<boost::system::error_code> promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const boost::system::error_code&) = &promise_type::set_value;
+
+		async_send_contact(target, contact_map, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
+	void server2::async_send_contact_to_list(const std::set<ep_type>& targets, const contact_map_type& contact_map, multiple_endpoints_handler_type handler)
+	{
+		const std::set<ep_type> normalized_targets(boost::make_transform_iterator(targets.begin(), normalize), boost::make_transform_iterator(targets.end(), normalize));
+
+		m_session_strand.post(boost::bind(&server2::do_send_contact_to_list, this, normalized_targets, contact_map, handler));
+	}
+
+	std::map<server2::ep_type, boost::system::error_code> server2::sync_send_contact_to_list(const std::set<ep_type>& targets, const contact_map_type& contact_map)
+	{
+		typedef std::map<server2::ep_type, boost::system::error_code> result_type;
+		typedef boost::promise<result_type> promise_type;
+
+		promise_type promise;
+
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
+
+		async_send_contact_to_list(targets, contact_map, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
+	std::map<server2::ep_type, boost::system::error_code> server2::sync_send_contact_to_all(const contact_map_type& contact_map)
+	{
+		typedef std::map<server2::ep_type, boost::system::error_code> result_type;
+		typedef boost::promise<result_type> promise_type;
+
+		promise_type promise;
+
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
+
+		async_send_contact_to_all(contact_map, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
 	// Private methods
 
 	void server2::do_async_receive_from()
