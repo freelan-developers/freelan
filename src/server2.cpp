@@ -75,6 +75,10 @@ namespace fscp
 		{
 		}
 
+		void null_multiple_endpoints_handler(const std::map<server2::ep_type, boost::system::error_code>&)
+		{
+		}
+
 		server2::ep_type normalize(const server2::ep_type& ep)
 		{
 			server2::ep_type result = ep;
@@ -299,6 +303,25 @@ namespace fscp
 		void (promise_type::*setter)(const boost::system::error_code&) = &promise_type::set_value;
 
 		async_introduce_to(target, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
+	void server2::async_reintroduce_to_all(multiple_endpoints_handler_type handler)
+	{
+		m_presentation_strand.post(boost::bind(&server2::do_reintroduce_to_all, this, handler));
+	}
+
+	std::map<server2::ep_type, boost::system::error_code> server2::sync_reintroduce_to_all()
+	{
+		typedef std::map<server2::ep_type, boost::system::error_code> result_type;
+		typedef boost::promise<result_type> promise_type;
+
+		promise_type promise;
+
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
+
+		async_reintroduce_to_all(boost::bind(setter, &promise, _1));
 
 		return promise.get_future().get();
 	}
@@ -712,6 +735,8 @@ namespace fscp
 	{
 		// do_set_identity() is executed within the socket strand so this is safe.
 		set_identity(identity);
+
+		async_reintroduce_to_all(&null_multiple_endpoints_handler);
 
 		if (handler)
 		{
@@ -1156,6 +1181,26 @@ namespace fscp
 				)
 			)
 		);
+	}
+
+	void server2::do_reintroduce_to_all(multiple_endpoints_handler_type handler)
+	{
+		// All do_reintroduce_to_all() calls are done in the same strand so the following is thread-safe.
+		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+
+		results_gatherer_type::set_type targets;
+
+		for (presentation_store_map::const_iterator presentation_store = m_presentation_store_map.begin(); presentation_store != m_presentation_store_map.end(); ++presentation_store)
+		{
+			targets.insert(presentation_store->first);
+		}
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+
+		for (presentation_store_map::const_iterator presentation_store = m_presentation_store_map.begin(); presentation_store != m_presentation_store_map.end(); ++presentation_store)
+		{
+			async_introduce_to(presentation_store->first, boost::bind(&results_gatherer_type::gather, rg, presentation_store->first, _1));
+		}
 	}
 
 	void server2::do_get_presentation(const ep_type& target, optional_presentation_store_handler_type handler)
@@ -2107,7 +2152,7 @@ namespace fscp
 		// Our contact map contains some answers: we send those.
 		if (!contact_map.empty())
 		{
-			async_send_contact(sender, contact_map, null_simple_handler);
+			async_send_contact(sender, contact_map, &null_simple_handler);
 		}
 	}
 
@@ -2176,7 +2221,7 @@ namespace fscp
 				}
 				else
 				{
-					do_send_keep_alive(session_pair->first, null_simple_handler);
+					do_send_keep_alive(session_pair->first, &null_simple_handler);
 				}
 			}
 

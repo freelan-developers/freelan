@@ -384,7 +384,7 @@ namespace fscp
 			/**
 			 * \brief Send a presentation message to the specified target.
 			 * \param target The target host.
-			 * \param handler The handler to call when then presentation message is sent or an error occured.
+			 * \param handler The handler to call when the presentation message is sent or an error occured.
 			 */
 			void async_introduce_to(const ep_type& target, simple_handler_type handler);
 
@@ -396,6 +396,20 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			boost::system::error_code sync_introduce_to(const ep_type& target);
+
+			/**
+			 * \brief Resend a presentation message to all the known peers.
+			 * \param handler The handler to call when all the presentation messages were sent or an error occured.
+			 */
+			void async_reintroduce_to_all(multiple_endpoints_handler_type handler);
+
+			/**
+			 * \brief Send a presentation message to the specified target.
+			 * \return A map of error codes.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			std::map<ep_type, boost::system::error_code> sync_reintroduce_to_all();
 
 			/**
 			 * \brief Get the presentation store associated to a target.
@@ -1259,6 +1273,7 @@ namespace fscp
 
 			bool has_presentation_store_for(const ep_type&) const;
 			void do_introduce_to(const ep_type&, simple_handler_type);
+			void do_reintroduce_to_all(multiple_endpoints_handler_type);
 			void do_get_presentation(const ep_type&, optional_presentation_store_handler_type);
 			void do_set_presentation(const ep_type&, cert_type, cert_type, void_handler_type);
 			void do_clear_presentation(const ep_type&, void_handler_type);
