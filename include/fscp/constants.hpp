@@ -149,7 +149,7 @@ namespace fscp
 	 */
 	typedef boost::array<uint8_t, 32> hash_type;
 
-	inline std::ostream& operator<<(std::ostream& os, const hash_type& hash)
+	inline std::ostream& write(std::ostream& os, const hash_type& hash)
 	{
 		boost::io::ios_flags_saver ifs(os);
 
