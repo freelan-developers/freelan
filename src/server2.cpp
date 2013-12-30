@@ -59,6 +59,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
 #include <boost/thread/future.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 #include <cassert>
 
@@ -514,14 +515,11 @@ namespace fscp
 
 	void server2::async_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
 	{
-		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+		ep_type (*func)(const ep_type&) = normalize;
 
-		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+		const std::set<ep_type> normalized_targets(boost::make_transform_iterator(targets.begin(), func), boost::make_transform_iterator(targets.end(), func));
 
-		for (std::set<ep_type>::const_iterator ep = targets.begin(); ep != targets.end(); ++ep)
-		{
-			async_send_data(*ep, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, *ep, boost::asio::placeholders::error));
-		}
+		m_session_strand.post(boost::bind(&server2::do_send_data_to_list, this, normalized_targets, channel_number, data, handler));
 	}
 
 	std::map<server2::ep_type, boost::system::error_code> server2::sync_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data)
@@ -1567,6 +1565,44 @@ namespace fscp
 		do_send_data_to_session(session_pair, target, channel_number, data, handler);
 	}
 
+	void server2::do_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
+	{
+		// All do_send_data_to_list() calls are done in the same strand so the following is thread-safe.
+		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+
+		// All do_send_data_to_all() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			results_gatherer_type::map_type result;
+
+			for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+			{
+				if (targets.count(item->first) > 0)
+				{
+					rg->gather(item->first, server_error::server_offline);
+				}
+			}
+
+			return;
+		}
+
+		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		{
+			if (targets.count(item->first) > 0)
+			{
+				do_send_data_to_session(item->second, item->first, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+			}
+		}
+	}
+
+	void server2::do_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
+	{
+		// All do_send_data_to_all() calls are done in the same strand so the following is thread-safe.
+		do_send_data_to_list(get_session_endpoints(), channel_number, data, handler);
+	}
+
 	void server2::do_send_data_to_session(session_pair& session_pair, const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
 		// All do_send_data() calls are done in the same strand so the following is thread-safe.
@@ -1604,37 +1640,6 @@ namespace fscp
 				)
 			)
 		);
-	}
-
-	void server2::do_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
-	{
-		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
-
-		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, get_session_endpoints());
-
-		// All do_send_data_to_all() calls are done in the same strand so the following is thread-safe.
-		if (!m_socket.is_open())
-		{
-			results_gatherer_type::map_type result;
-
-			for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
-			{
-				if (item->second.has_remote_session())
-				{
-					rg->gather(item->first, server_error::server_offline);
-				}
-			}
-
-			return;
-		}
-
-		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
-		{
-			if (item->second.has_remote_session())
-			{
-				do_send_data_to_session(item->second, item->first, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
-			}
-		}
 	}
 
 	void server2::handle_data_message_from(socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)

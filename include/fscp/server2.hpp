@@ -1015,8 +1015,9 @@ namespace fscp
 		private: // DATA messages
 
 			void do_send_data(const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
-			void do_send_data_to_session(session_pair&, const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
+			void do_send_data_to_list(const std::set<ep_type>&, channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
 			void do_send_data_to_all(channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
+			void do_send_data_to_session(session_pair&, const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
 			void handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
 			void do_handle_data(const ep_type&, const data_message&);
 			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);
