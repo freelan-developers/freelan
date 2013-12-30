@@ -787,10 +787,7 @@ namespace fscp
 			 */
 			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
 			{
-				//TODO: This can be optimized by implemented a specific sub-function that doesn't require two async calls.
-				void (server2::*func)(const std::set<ep_type>&, channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
-
-				async_get_session_endpoints(boost::bind(func, this, _1, channel_number, data, handler));
+				m_session_strand.post(boost::bind(&server2::do_send_data_to_all, this, channel_number, data, handler));
 			}
 
 			/**
@@ -979,6 +976,7 @@ namespace fscp
 			void handle_clear_session_request_message_from(socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
 			void do_handle_clear_session_request(const ep_type&, const clear_session_request_message&);
 
+			std::set<ep_type> get_session_endpoints() const;
 			void do_get_session_endpoints(endpoints_handler_type);
 			void do_set_accept_session_request_messages_default(bool, void_handler_type);
 			void do_set_cipher_capabilities(cipher_algorithm_list_type, void_handler_type);
@@ -1017,6 +1015,8 @@ namespace fscp
 		private: // DATA messages
 
 			void do_send_data(const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
+			void do_send_data_to_session(session_pair&, const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
+			void do_send_data_to_all(channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
 			void handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
 			void do_handle_data(const ep_type&, const data_message&);
 			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);

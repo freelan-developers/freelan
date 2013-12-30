@@ -1250,10 +1250,9 @@ namespace fscp
 		}
 	}
 
-	void server2::do_get_session_endpoints(endpoints_handler_type handler)
+	std::set<server2::ep_type> server2::get_session_endpoints() const
 	{
-		// All do_get_session_endpoints() calls are done in the same strand so the following is thread-safe.
-
+		// All get_session_endpoints() calls are done in the same strand so the following is thread-safe.
 		std::set<ep_type> result;
 
 		for (session_pair_map::const_iterator pair = m_session_map.begin(); pair != m_session_map.end(); ++pair)
@@ -1264,7 +1263,13 @@ namespace fscp
 			}
 		}
 
-		handler(result);
+		return result;
+	}
+
+	void server2::do_get_session_endpoints(endpoints_handler_type handler)
+	{
+		// All do_get_session_endpoints() calls are done in the same strand so the following is thread-safe.
+		handler(get_session_endpoints());
 	}
 
 	void server2::do_set_accept_session_request_messages_default(bool value, void_handler_type handler)
@@ -1559,6 +1564,14 @@ namespace fscp
 			return;
 		}
 
+		do_send_data_to_session(session_pair, target, channel_number, data, handler);
+	}
+
+	void server2::do_send_data_to_session(session_pair& session_pair, const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
+	{
+		// All do_send_data() calls are done in the same strand so the following is thread-safe.
+		assert(session_pair.has_remote_session());
+
 		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
@@ -1591,6 +1604,37 @@ namespace fscp
 				)
 			)
 		);
+	}
+
+	void server2::do_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
+	{
+		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, get_session_endpoints());
+
+		// All do_send_data_to_all() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			results_gatherer_type::map_type result;
+
+			for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+			{
+				if (item->second.has_remote_session())
+				{
+					rg->gather(item->first, server_error::server_offline);
+				}
+			}
+
+			return;
+		}
+
+		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		{
+			if (item->second.has_remote_session())
+			{
+				do_send_data_to_session(item->second, item->first, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+			}
+		}
 	}
 
 	void server2::handle_data_message_from(socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)
