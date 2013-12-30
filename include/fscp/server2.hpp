@@ -967,6 +967,90 @@ namespace fscp
 			 */
 			std::map<ep_type, boost::system::error_code> sync_send_contact_to_all(const contact_map_type& contact_map);
 
+			/**
+			 * \brief Set the data received callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_data_received_callback(data_received_handler_type callback)
+			{
+				m_data_received_handler = callback;
+			}
+
+			/**
+			 * \brief Set the data received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_data_received_callback(data_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_data_strand.post(boost::bind(&server2::do_set_data_received_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the data received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_data_received_callback(data_received_handler_type callback);
+
+			/**
+			 * \brief Set the contact request received callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_contact_request_received_callback(contact_request_received_handler_type callback)
+			{
+				m_contact_request_message_received_handler = callback;
+			}
+
+			/**
+			 * \brief Set the contact request received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_contact_request_received_callback(contact_request_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_presentation_strand.post(boost::bind(&server2::do_set_contact_request_received_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the contact request received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_contact_request_received_callback(contact_request_received_handler_type callback);
+
+			/**
+			 * \brief Set the contact received callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_contact_received_callback(contact_received_handler_type callback)
+			{
+				m_contact_message_received_handler = callback;
+			}
+
+			/**
+			 * \brief Set the contact received callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_contact_received_callback(contact_received_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_contact_strand.post(boost::bind(&server2::do_set_contact_received_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the contact received callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_contact_received_callback(contact_received_handler_type callback);
+
 		private:
 
 			const identity_store m_identity_store;
@@ -1198,6 +1282,10 @@ namespace fscp
 			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);
 			void do_handle_contact_request(const ep_type&, const std::set<hash_type>&);
 			void do_handle_contact(const ep_type&, const contact_map_type&);
+
+			void do_set_data_received_callback(data_received_handler_type, void_handler_type);
+			void do_set_contact_request_received_callback(contact_request_received_handler_type, void_handler_type);
+			void do_set_contact_received_callback(contact_received_handler_type, void_handler_type);
 
 			boost::asio::strand m_data_strand;
 			boost::asio::strand m_contact_strand;
