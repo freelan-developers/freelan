@@ -1018,6 +1018,14 @@ namespace fscp
 			void do_send_data_to_list(const std::set<ep_type>&, channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
 			void do_send_data_to_all(channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
 			void do_send_data_to_session(session_pair&, const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
+			void do_send_contact_request(const ep_type&, const hash_list_type&, simple_handler_type);
+			void do_send_contact_request_to_list(const std::set<ep_type>&, const hash_list_type&, multiple_endpoints_handler_type);
+			void do_send_contact_request_to_all(const hash_list_type&, multiple_endpoints_handler_type);
+			void do_send_contact_request_to_session(session_pair&, const ep_type&, const hash_list_type&, simple_handler_type);
+			void do_send_contact(const ep_type&, const contact_map_type&, simple_handler_type);
+			void do_send_contact_to_list(const std::set<ep_type>&, const contact_map_type&, multiple_endpoints_handler_type);
+			void do_send_contact_to_all(const contact_map_type&, multiple_endpoints_handler_type);
+			void do_send_contact_to_session(session_pair&, const ep_type&, const contact_map_type&, simple_handler_type);
 			void handle_data_message_from(socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
 			void do_handle_data(const ep_type&, const data_message&);
 			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);

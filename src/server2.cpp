@@ -1539,21 +1539,7 @@ namespace fscp
 	void server2::do_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
 		// All do_send_data() calls are done in the same strand so the following is thread-safe.
-		if (!m_socket.is_open())
-		{
-			handler(server_error::server_offline);
-
-			return;
-		}
-
 		session_pair& session_pair = m_session_map[target];
-
-		if (!session_pair.has_remote_session())
-		{
-			handler(server_error::no_session_for_host);
-
-			return;
-		}
 
 		do_send_data_to_session(session_pair, target, channel_number, data, handler);
 	}
@@ -1564,22 +1550,6 @@ namespace fscp
 		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
 
 		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
-
-		// All do_send_data_to_all() calls are done in the same strand so the following is thread-safe.
-		if (!m_socket.is_open())
-		{
-			results_gatherer_type::map_type result;
-
-			for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
-			{
-				if (targets.count(item->first) > 0)
-				{
-					rg->gather(item->first, server_error::server_offline);
-				}
-			}
-
-			return;
-		}
 
 		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
 		{
@@ -1598,8 +1568,20 @@ namespace fscp
 
 	void server2::do_send_data_to_session(session_pair& session_pair, const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
-		// All do_send_data() calls are done in the same strand so the following is thread-safe.
-		assert(session_pair.has_remote_session());
+		// All do_send_data_to_session() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		if (!session_pair.has_remote_session())
+		{
+			handler(server_error::no_session_for_host);
+
+			return;
+		}
 
 		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
@@ -1614,6 +1596,164 @@ namespace fscp
 			cipher_algorithm,
 			buffer_cast<const uint8_t*>(data),
 			buffer_size(data),
+			session_pair.remote_session().encryption_key(),
+			session_pair.remote_session().encryption_key_size(),
+			session_pair.remote_session().nonce_prefix(),
+			session_pair.remote_session().nonce_prefix_size()
+		);
+
+		session_pair.remote_session().increment_sequence_number();
+
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					handler,
+					boost::asio::placeholders::error
+				)
+			)
+		);
+	}
+
+	void server2::do_send_contact_request(const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler)
+	{
+		// All do_send_contact_request() calls are done in the same strand so the following is thread-safe.
+		session_pair& session_pair = m_session_map[target];
+
+		do_send_contact_request_to_session(session_pair, target, hash_list, handler);
+	}
+
+	void server2::do_send_contact_request_to_list(const std::set<ep_type>& targets, const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+	{
+		// All do_send_contact_request_to_list() calls are done in the same strand so the following is thread-safe.
+		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+
+		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		{
+			if (targets.count(item->first) > 0)
+			{
+				do_send_contact_request_to_session(item->second, item->first, hash_list, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+			}
+		}
+	}
+
+	void server2::do_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+	{
+		// All do_send_contact_request_to_all() calls are done in the same strand so the following is thread-safe.
+		do_send_contact_request_to_list(get_session_endpoints(), hash_list, handler);
+	}
+
+	void server2::do_send_contact_request_to_session(session_pair& session_pair, const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler)
+	{
+		// All do_send_contact_request_to_session() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		if (!session_pair.has_remote_session())
+		{
+			handler(server_error::no_session_for_host);
+
+			return;
+		}
+
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+
+		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = data_message::write_contact_request(
+			buffer_cast<uint8_t*>(send_buffer),
+			buffer_size(send_buffer),
+			session_pair.remote_session().session_number(),
+			session_pair.remote_session().sequence_number(),
+			cipher_algorithm,
+			hash_list,
+			session_pair.remote_session().encryption_key(),
+			session_pair.remote_session().encryption_key_size(),
+			session_pair.remote_session().nonce_prefix(),
+			session_pair.remote_session().nonce_prefix_size()
+		);
+
+		session_pair.remote_session().increment_sequence_number();
+
+		async_send_to(
+			buffer(send_buffer, size),
+			target,
+			make_shared_buffer_handler(
+				send_buffer,
+				boost::bind(
+					handler,
+					boost::asio::placeholders::error
+				)
+			)
+		);
+	}
+
+	void server2::do_send_contact(const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
+	{
+		// All do_send_contact() calls are done in the same strand so the following is thread-safe.
+		session_pair& session_pair = m_session_map[target];
+
+		do_send_contact_to_session(session_pair, target, contact_map, handler);
+	}
+
+	void server2::do_send_contact_to_list(const std::set<ep_type>& targets, const contact_map_type& contact_map, multiple_endpoints_handler_type handler)
+	{
+		// All do_send_contact_to_list() calls are done in the same strand so the following is thread-safe.
+		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+
+		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		{
+			if (targets.count(item->first) > 0)
+			{
+				do_send_contact_to_session(item->second, item->first, contact_map, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+			}
+		}
+	}
+
+	void server2::do_send_contact_to_all(const contact_map_type& contact_map, multiple_endpoints_handler_type handler)
+	{
+		// All do_send_contact_to_all() calls are done in the same strand so the following is thread-safe.
+		do_send_contact_to_list(get_session_endpoints(), contact_map, handler);
+	}
+
+	void server2::do_send_contact_to_session(session_pair& session_pair, const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
+	{
+		// All do_send_contact_to_session() calls are done in the same strand so the following is thread-safe.
+		if (!m_socket.is_open())
+		{
+			handler(server_error::server_offline);
+
+			return;
+		}
+
+		if (!session_pair.has_remote_session())
+		{
+			handler(server_error::no_session_for_host);
+
+			return;
+		}
+
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
+
+		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+
+		const size_t size = data_message::write_contact(
+			buffer_cast<uint8_t*>(send_buffer),
+			buffer_size(send_buffer),
+			session_pair.remote_session().session_number(),
+			session_pair.remote_session().sequence_number(),
+			cipher_algorithm,
+			contact_map,
 			session_pair.remote_session().encryption_key(),
 			session_pair.remote_session().encryption_key_size(),
 			session_pair.remote_session().nonce_prefix(),
