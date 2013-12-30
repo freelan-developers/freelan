@@ -75,27 +75,22 @@ namespace fscp
 		{
 		}
 
-		server2::ep_type& normalize(server2::ep_type& ep)
-		{
-			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
-			if (ep.address().is_v6())
-			{
-				boost::asio::ip::address_v6 address = ep.address().to_v6();
-
-				if (address.is_v4_mapped())
-				{
-					ep = server2::ep_type(address.to_v4(), ep.port());
-				}
-			}
-
-			return ep;
-		}
-
 		server2::ep_type normalize(const server2::ep_type& ep)
 		{
 			server2::ep_type result = ep;
 
-			return normalize(result);
+			// If the endpoint is an IPv4 mapped address, return a real IPv4 address
+			if (result.address().is_v6())
+			{
+				boost::asio::ip::address_v6 address = result.address().to_v6();
+
+				if (address.is_v4_mapped())
+				{
+					result = server2::ep_type(address.to_v4(), result.port());
+				}
+			}
+
+			return result;
 		}
 
 		template <typename SharedBufferType, typename Handler>
@@ -515,9 +510,7 @@ namespace fscp
 
 	void server2::async_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
 	{
-		ep_type (*func)(const ep_type&) = normalize;
-
-		const std::set<ep_type> normalized_targets(boost::make_transform_iterator(targets.begin(), func), boost::make_transform_iterator(targets.end(), func));
+		const std::set<ep_type> normalized_targets(boost::make_transform_iterator(targets.begin(), normalize), boost::make_transform_iterator(targets.end(), normalize));
 
 		m_session_strand.post(boost::bind(&server2::do_send_data_to_list, this, normalized_targets, channel_number, data, handler));
 	}
@@ -580,7 +573,7 @@ namespace fscp
 			// Let's read again !
 			async_receive_from();
 
-			normalize(*sender);
+			*sender = normalize(*sender);
 
 			if (!ec)
 			{
