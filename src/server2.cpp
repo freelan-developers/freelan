@@ -1871,16 +1871,14 @@ namespace fscp
 		}
 		else if (type == MESSAGE_TYPE_CONTACT_REQUEST)
 		{
-			//TODO: Change this to a set (and below)
-			const std::vector<hash_type> hash_list = data_message::parse_hash_list(buffer_cast<const uint8_t*>(data), buffer_size(data));
-			const std::set<hash_type> hash_set(hash_list.begin(), hash_list.end());
+			const hash_list_type hash_list = data_message::parse_hash_list(buffer_cast<const uint8_t*>(data), buffer_size(data));
 
 			m_presentation_strand.post(
 				boost::bind(
 					&server2::do_handle_contact_request,
 					this,
 					sender,
-					hash_set
+					hash_list
 				)
 			);
 		}

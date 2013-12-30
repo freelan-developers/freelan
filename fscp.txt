@@ -390,6 +390,12 @@ Abstract
    hash is 32 bytes long and is the SHA-256 digest of the DER
    representation of the requested certificate.
 
+   Duplicates entries in the hash list MUST be treated like a single
+   entry.
+
+   The order of entries does not matter and CAN thus be ignored by the
+   implementation.
+
 2.8. CONTACT message format
 
    A CONTACT message is similar to a DATA message.

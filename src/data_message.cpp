@@ -130,14 +130,16 @@ namespace fscp
 		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, &cleartext[0], cleartext.size(), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT);
 	}
 
-	std::vector<hash_type> data_message::parse_hash_list(const void* buf, size_t buflen)
+	hash_list_type data_message::parse_hash_list(const void* buf, size_t buflen)
 	{
+		// Here we might loose duplicates but those are not allowed by the RFC anyway.
+
 		if ((buflen / hash_type::static_size) * hash_type::static_size != buflen)
 		{
 			throw std::runtime_error("Invalid message structure");
 		}
 
-		std::vector<hash_type> result;
+		hash_list_type result;
 
 		for (const uint8_t* ptr = static_cast<const uint8_t*>(buf); ptr < static_cast<const uint8_t*>(buf) + buflen; ptr += hash_type::static_size)
 		{
@@ -145,7 +147,7 @@ namespace fscp
 
 			std::copy(ptr, ptr + hash_type::static_size, hash.begin());
 
-			result.push_back(hash);
+			result.insert(hash);
 		}
 
 		return result;

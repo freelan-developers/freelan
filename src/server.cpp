@@ -759,11 +759,11 @@ namespace fscp
 				}
 				else if (_data_message.type() == MESSAGE_TYPE_CONTACT_REQUEST)
 				{
-					std::vector<hash_type> hash_list = data_message::parse_hash_list(m_data_buffer.data(), cnt);
+					hash_list_type hash_list = data_message::parse_hash_list(m_data_buffer.data(), cnt);
 
 					contact_map_type contact_map;
 
-					for (std::vector<hash_type>::iterator hash_it = hash_list.begin(); hash_it != hash_list.end(); ++hash_it)
+					for (hash_list_type::iterator hash_it = hash_list.begin(); hash_it != hash_list.end(); ++hash_it)
 					{
 						for (presentation_store_map::const_iterator it = m_presentation_map.begin(); it != m_presentation_map.end(); ++it)
 						{
