@@ -716,7 +716,7 @@ namespace fscp
 			 * \param data The data to send.
 			 * \param handler The handler to call when the data was sent or an error occured.
 			 */
-			void async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler);
+			void async_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler);
 
 			/**
 			 * \brief Send data to a host.
@@ -727,7 +727,7 @@ namespace fscp
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			boost::system::error_code sync_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data);
+			boost::system::error_code sync_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data);
 
 			/**
 			 * \brief Send data to a list of hosts.

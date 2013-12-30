@@ -491,12 +491,12 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
-	void server2::async_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
+	void server2::async_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
 		m_session_strand.post(boost::bind(&server2::do_send_data, this, normalize(target), channel_number, data, handler));
 	}
 
-	boost::system::error_code server2::sync_send_data(ep_type target, channel_number_type channel_number, boost::asio::const_buffer data)
+	boost::system::error_code server2::sync_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data)
 	{
 		typedef boost::promise<boost::system::error_code> promise_type;
 		promise_type promise;
