@@ -199,19 +199,20 @@ namespace fscp
 			/**
 			 * \brief A handler for when contact requests are received.
 			 * \param sender The sender of the request.
-			 * \param cert The requested certificate.
+			 * \param cert The certificate associated to the answer.
+			 * \param hash The requested hash.
 			 * \param answer The answer endpoint.
 			 * \return true to allow the request to be answered.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cert_type cert, const ep_type& answer)> contact_request_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, cert_type cert, hash_type hash, const ep_type& answer)> contact_request_received_handler_type;
 
 			/**
 			 * \brief A handler for when contacts are received.
 			 * \param sender The sender of the information.
-			 * \param cert The certificate.
+			 * \param hash The hash.
 			 * \param answer The answer endpoint.
 			 */
-			typedef boost::function<void (const ep_type& sender, cert_type cert, const ep_type& answer)> contact_received_handler_type;
+			typedef boost::function<void (const ep_type& sender, hash_type hash, const ep_type& answer)> contact_received_handler_type;
 
 			// Static variables
 

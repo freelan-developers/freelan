@@ -2010,9 +2010,11 @@ namespace fscp
 		{
 			for (presentation_store_map::const_iterator it = m_presentation_store_map.begin(); it != m_presentation_store_map.end(); ++it)
 			{
-				if (it->second.signature_certificate_hash() == *hash_it)
+				const hash_type hash = it->second.signature_certificate_hash();
+
+				if (hash == *hash_it)
 				{
-					if (!m_contact_request_message_received_handler || m_contact_request_message_received_handler(sender, it->second.signature_certificate(), it->first))
+					if (!m_contact_request_message_received_handler || m_contact_request_message_received_handler(sender, it->second.signature_certificate(), hash, it->first))
 					{
 						contact_map[*hash_it] = it->first;
 					}
@@ -2023,8 +2025,7 @@ namespace fscp
 		// Our contact map contains some answers: we send those.
 		if (!contact_map.empty())
 		{
-			//TODO: Implement
-			//do_send_contact(sender, contact_map);
+			async_send_contact(sender, contact_map, null_simple_handler);
 		}
 	}
 
@@ -2032,19 +2033,13 @@ namespace fscp
 	{
 		// All do_handle_contact() calls are done in the same strand so the following is thread-safe.
 
-		//TODO: Implement
-		static_cast<void>(sender);
-		static_cast<void>(contact_map);
-		// if (m_contact_message_received_handler)
-		// {
-		// 	for (contact_map_type::const_iterator contact_it = contact_map.begin(); contact_it != contact_map.end(); ++contact_it)
-		// 	{
-		// 		if (m_hash_to_cert.find(contact_it->first) != m_hash_to_cert.end())
-		// 		{
-		// 			m_contact_message_received_handler(sender, m_hash_to_cert[contact_it->first], contact_it->second);
-		// 		}
-		// 	}
-		// }
+		if (m_contact_message_received_handler)
+		{
+			for (contact_map_type::const_iterator contact_it = contact_map.begin(); contact_it != contact_map.end(); ++contact_it)
+			{
+				m_contact_message_received_handler(sender, contact_it->first, contact_it->second);
+			}
+		}
 	}
 
 	void server2::do_check_keep_alive(const boost::system::error_code& ec)
