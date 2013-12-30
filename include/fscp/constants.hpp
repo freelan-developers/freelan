@@ -149,6 +149,20 @@ namespace fscp
 	 */
 	typedef boost::array<uint8_t, 32> hash_type;
 
+	inline std::ostream& operator<<(std::ostream& os, const hash_type& hash)
+	{
+		boost::io::ios_flags_saver ifs(os);
+
+		os << std::hex;
+
+		for (hash_type::const_iterator it = hash.begin(); it != hash.end(); ++it)
+		{
+			os << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(*it);
+		}
+
+		return os;
+	}
+
 	/**
 	 * \brief The hash list type.
 	 */
