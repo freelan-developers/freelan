@@ -145,10 +145,9 @@ static bool on_session(const std::string& name, fscp::server2& server, const fsc
 
 	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher: " << calg << ")" << std::endl;
 
-	static_cast<void>(server);
+	static const std::string HELLO = "Hello you !";
 
-	//TODO: Uncomment this
-	//server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(std::string("Hello ! I'm " + name)), boost::bind(&on_data_sent, name, boost::ref(server), _1, _2));
+	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(HELLO), boost::bind(&simple_handler, name, "async_send_data()", _1));
 
 	return default_accept;
 }
@@ -178,6 +177,25 @@ static void on_session_lost(const std::string& name, fscp::server2&, const fscp:
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "[" << name << "] Session lost with " << host << std::endl;
+}
+
+static void on_data(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+{
+	const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
+
+	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << str_data << std::endl;
+
+	if (name == "alice")
+	{
+		using cryptoplus::file;
+
+		cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
+
+		fscp::hash_list_type hash_list;
+		hash_list.insert(fscp::get_certificate_hash(cert));
+
+		server.async_send_contact_request(sender, hash_list, boost::bind(&simple_handler, name, "async_send_contact_request()", _1));
+	}
 }
 
 static void _stop_function(fscp::server2& s1, fscp::server2& s2, fscp::server2& s3)
@@ -233,6 +251,10 @@ int main()
 		alice_server.set_session_lost_callback(boost::bind(&on_session_lost, "alice", boost::ref(alice_server), _1));
 		bob_server.set_session_lost_callback(boost::bind(&on_session_lost, "bob", boost::ref(bob_server), _1));
 		chris_server.set_session_lost_callback(boost::bind(&on_session_lost, "chris", boost::ref(chris_server), _1));
+
+		alice_server.set_data_received_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_data_received_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3));
+		chris_server.set_data_received_callback(boost::bind(&on_data, "chris", boost::ref(chris_server), _1, _2, _3));
 
 		alice_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12000));
 		bob_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12001));
