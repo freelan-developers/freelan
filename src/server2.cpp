@@ -1476,7 +1476,7 @@ namespace fscp
 
 		for (session_pair_map::const_iterator pair = m_session_map.begin(); pair != m_session_map.end(); ++pair)
 		{
-			if ((pair->second.has_local_session()) && (pair->second.has_remote_session()))
+			if (pair->second.has_remote_session())
 			{
 				result.insert(pair->first);
 			}
