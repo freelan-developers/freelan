@@ -81,7 +81,7 @@ namespace fscp
 	{
 		hash_type result;
 
-		get_certificate_hash(&result[0], result.size(), cert);
+		get_certificate_hash(&result.data[0], result.data.size(), cert);
 
 		return result;
 	}

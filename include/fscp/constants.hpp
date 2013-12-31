@@ -147,21 +147,41 @@ namespace fscp
 	/**
 	 * \brief The hash type.
 	 */
-	typedef boost::array<uint8_t, 32> hash_type;
-
-	inline std::ostream& write(std::ostream& os, const hash_type& hash)
+	struct hash_type
 	{
-		boost::io::ios_flags_saver ifs(os);
+		typedef boost::array<uint8_t, 32> data_type;
 
-		os << std::hex;
+		data_type data;
 
-		for (hash_type::const_iterator it = hash.begin(); it != hash.end(); ++it)
+		friend bool operator<(const hash_type& lhs, const hash_type& rhs)
 		{
-			os << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(*it);
+			return (lhs.data < rhs.data);
 		}
 
-		return os;
-	}
+		friend bool operator==(const hash_type& lhs, const hash_type& rhs)
+		{
+			return (lhs.data == rhs.data);
+		}
+
+		friend bool operator!=(const hash_type& lhs, const hash_type& rhs)
+		{
+			return (lhs.data != rhs.data);
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const hash_type& hash)
+		{
+			boost::io::ios_flags_saver ifs(os);
+
+			os << std::hex;
+
+			for (data_type::const_iterator it = hash.data.begin(); it != hash.data.end(); ++it)
+			{
+				os << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(*it);
+			}
+
+			return os;
+		}
+	};
 
 	/**
 	 * \brief The hash list type.

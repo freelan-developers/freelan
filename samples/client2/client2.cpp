@@ -208,7 +208,7 @@ static bool on_contact_request_message(const std::string& name, fscp::server2& s
 
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject().oneline() << " ? (Answer: " << fscp::write(std::cout, hash) << " is at " << target << ")" << std::endl;
+	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject().oneline() << " ? (Answer: " << hash << " is at " << target << ")" << std::endl;
 
 	return true;
 }
@@ -217,7 +217,7 @@ static void on_contact_message(const std::string& name, fscp::server2& server, c
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received CONTACT from " << sender << ": " << fscp::write(std::cout, hash) << " is at " << target << std::endl;
+	std::cout << "[" << name << "] Received CONTACT from " << sender << ": " << hash << " is at " << target << std::endl;
 
 	server.async_greet(target, boost::bind(&on_hello_response, name, boost::ref(server), target, _1, _2));
 }
