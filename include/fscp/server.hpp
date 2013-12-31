@@ -94,6 +94,11 @@ namespace fscp
 			 */
 			typedef cryptoplus::x509::certificate cert_type;
 
+			/**
+			 * \brief The socket type.
+			 */
+			typedef boost::asio::ip::udp::socket socket_type;
+
 			// Handlers
 
 			/**
@@ -233,12 +238,20 @@ namespace fscp
 			server(boost::asio::io_service& io_service, const identity_store& identity);
 
 			/**
+			 * \brief Get the underlying socket.
+			 */
+			socket_type& get_socket()
+			{
+				return m_socket;
+			}
+
+			/**
 			 * \brief Get the associated io_service.
 			 * \return The associated io_service.
 			 */
 			boost::asio::io_service& get_io_service()
 			{
-				return m_socket.get_io_service();
+				return get_socket().get_io_service();
 			}
 
 			/**
@@ -1154,7 +1167,7 @@ namespace fscp
 
 			void handle_send_to(const boost::system::error_code&, size_t) {};
 
-			boost::asio::ip::udp::socket m_socket;
+			socket_type m_socket;
 			boost::asio::strand m_socket_strand;
 			socket_memory_pool m_socket_memory_pool;
 
