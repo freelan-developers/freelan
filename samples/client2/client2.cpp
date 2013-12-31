@@ -162,7 +162,7 @@ static void on_session_failed(const std::string& name, fscp::server2&, const fsc
 	std::cout << "[" << name << "] Remote algorithms: " << remote << std::endl;
 }
 
-static void on_session_established(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+static void on_session_established(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 {
 	mutex::scoped_lock lock(output_mutex);
 
@@ -170,6 +170,18 @@ static void on_session_established(const std::string& name, fscp::server2&, cons
 	std::cout << "[" << name << "] New session: " << is_new << std::endl;
 	std::cout << "[" << name << "] Local algorithms: " << local << std::endl;
 	std::cout << "[" << name << "] Remote algorithms: " << remote << std::endl;
+
+	if (name == "alice")
+	{
+		using cryptoplus::file;
+
+		cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
+
+		fscp::hash_list_type hash_list;
+		hash_list.insert(fscp::get_certificate_hash(cert));
+
+		server.async_send_contact_request(host, hash_list, boost::bind(&simple_handler, name, "async_send_contact_request()", _1));
+	}
 }
 
 static void on_session_lost(const std::string& name, fscp::server2&, const fscp::server2::ep_type& host)
@@ -181,23 +193,13 @@ static void on_session_lost(const std::string& name, fscp::server2&, const fscp:
 
 static void on_data(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
+	static_cast<void>(server);
+
 	const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
 
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << str_data << std::endl;
-
-	if (name == "alice")
-	{
-		using cryptoplus::file;
-
-		cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
-
-		fscp::hash_list_type hash_list;
-		hash_list.insert(fscp::get_certificate_hash(cert));
-
-		server.async_send_contact_request(sender, hash_list, boost::bind(&simple_handler, name, "async_send_contact_request()", _1));
-	}
 }
 
 static bool on_contact_request_message(const std::string& name, fscp::server2& server, const fscp::server2::ep_type& sender, fscp::server2::cert_type cert, fscp::hash_type hash, const fscp::server2::ep_type& target)
