@@ -10,7 +10,9 @@
 #include <cryptoplus/error/error_strings.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -18,6 +20,9 @@
 #include <csignal>
 
 static boost::function<void ()> stop_function = 0;
+static boost::mutex output_mutex;
+
+using boost::mutex;
 
 static void signal_handler(int code)
 {
@@ -62,45 +67,67 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static bool on_hello_request(fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
+static void simple_handler(const std::string& msg, const boost::system::error_code& ec)
 {
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << msg << ": " << ec.message() << std::endl;
+}
+
+static void multiple_handler(const std::map<fscp::server::ep_type, boost::system::error_code>& results)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	for (std::map<fscp::server::ep_type, boost::system::error_code>::const_iterator result = results.begin(); result != results.end(); ++result)
+	{
+		std::cout << result->first << ": " << result->second.message() << std::endl;
+	}
+}
+
+static bool on_hello(fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
+{
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "Received HELLO request from " << sender << std::endl;
 
-  server.async_introduce_to(sender);
+	server.async_introduce_to(sender, boost::bind(&simple_handler, "async_introduce_to()", _1));
 
 	return default_accept;
 }
 
-static void on_hello_response(fscp::server& server, const fscp::server::ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
+static void on_hello_response(fscp::server& server, const fscp::server::ep_type& sender, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
 {
-	if (!success)
-	{
-		std::cout << "Received no HELLO response from " << sender << " after " << time_duration.total_milliseconds() << " ms" << std::endl;
-	} else
-	{
-		std::cout << "Received HELLO response from " << sender << " (" << time_duration.total_milliseconds() << " ms)" << std::endl;
+	mutex::scoped_lock lock(output_mutex);
 
-		server.async_introduce_to(sender);
+	if (ec)
+	{
+		std::cout << "Received no HELLO response from " << sender << " after " << duration << ": " << ec.message() << std::endl;
+	}
+	else
+	{
+		std::cout << "Received HELLO response from " << sender << " after " << duration << ": " << ec.message() << std::endl;
+
+		server.async_introduce_to(sender, boost::bind(&simple_handler, "async_introduce_to()", _1));
+
+		std::cout << "Sending a presentation message to " << sender << std::endl;
 	}
 }
 
 static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool is_new)
 {
-	if (is_new)
-	{
-		std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
-	} else
-	{
-		std::cout << "Received another PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ")" << std::endl;
-	}
+	mutex::scoped_lock lock(output_mutex);
 
-	server.async_request_session(sender);
+	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << (is_new ? "new" : "existing") << std::endl;
 
-  return true;
+	server.async_request_session(sender, boost::bind(&simple_handler, "async_request_session()", _1));
+
+	return true;
 }
 
 static bool on_session_request(const fscp::server::ep_type& sender, const fscp::cipher_algorithm_list_type&, bool default_accept)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "Received SESSION_REQUEST from " << sender << std::endl;
 
 	return default_accept;
@@ -108,6 +135,8 @@ static bool on_session_request(const fscp::server::ep_type& sender, const fscp::
 
 static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_algorithm_type, bool default_accept)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "Received SESSION from " << sender << std::endl;
 
 	return default_accept;
@@ -115,6 +144,8 @@ static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_algorit
 
 static void on_session_failed(const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "Session failed with " << host << std::endl;
 	std::cout << "New session: " << is_new << std::endl;
 	std::cout << "Local algorithms: " << local << std::endl;
@@ -123,6 +154,8 @@ static void on_session_failed(const fscp::server::ep_type& host, bool is_new, co
 
 static void on_session_established(const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "Session established with " << host << std::endl;
 	std::cout << "New session: " << is_new << std::endl;
 	std::cout << "Local algorithms: " << local << std::endl;
@@ -131,22 +164,18 @@ static void on_session_established(const fscp::server::ep_type& host, bool is_ne
 
 static void on_session_lost(const fscp::server::ep_type& host)
 {
+	mutex::scoped_lock lock(output_mutex);
+
 	std::cout << "Session lost with " << host << std::endl;
 }
 
-static void on_data_sent(fscp::server& server, const fscp::server::ep_type& sender, const boost::system::error_code& code)
-{
-	static_cast<void>(server);
-
-	std::cout << "Data sent from " << sender << ": " << code << std::endl;
-}
-
-static void on_data(fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
 {
 	try
 	{
-		const std::string sender_name = server.get_presentation(sender).signature_certificate().subject().find(NID_commonName)->data().str();
-		std::cout << sender_name << " (" << static_cast<int>(channel_number) << "): " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
+		mutex::scoped_lock lock(output_mutex);
+
+		std::cout << sender << " (" << static_cast<int>(channel_number) << "): " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
 	}
 	catch (std::exception&)
 	{
@@ -176,7 +205,7 @@ void handle_read_line(fscp::server& server, std::string line)
 				{
 					boost::asio::ip::udp::endpoint ep = *resolver.resolve(query);
 
-					server.async_greet(ep, boost::bind(&on_hello_response, boost::ref(server), _1, _2, _3));
+					server.async_greet(ep, boost::bind(&on_hello_response, boost::ref(server), ep, _1, _2));
 
 					std::cout << "Contacting " << ep << "..." << std::endl;
 				}
@@ -191,7 +220,7 @@ void handle_read_line(fscp::server& server, std::string line)
 		}
 	} else
 	{
-		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, boost::asio::buffer(line), boost::bind(&on_data_sent, boost::ref(server), _1, _2));
+		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, boost::asio::buffer(line), multiple_handler);
 	}
 }
 
@@ -259,18 +288,27 @@ int main(int argc, char** argv)
 
 		server.open(listen_ep);
 
-		server.set_hello_message_callback(boost::bind(&on_hello_request, boost::ref(server), _1, _2));
-		server.set_presentation_message_callback(boost::bind(&on_presentation, boost::ref(server), _1, _2, _3, _4));
-		server.set_session_request_message_callback(&on_session_request);
-		server.set_session_message_callback(&on_session);
+		server.set_hello_message_received_callback(boost::bind(&on_hello, boost::ref(server), _1, _2));
+		server.set_presentation_message_received_callback(boost::bind(&on_presentation, boost::ref(server), _1, _2, _3, _4));
+		server.set_session_request_message_received_callback(&on_session_request);
+		server.set_session_message_received_callback(&on_session);
 		server.set_session_failed_callback(&on_session_failed);
 		server.set_session_established_callback(&on_session_established);
 		server.set_session_lost_callback(&on_session_lost);
-		server.set_data_message_callback(boost::bind(&on_data, boost::ref(server), _1, _2, _3));
+		server.set_data_received_callback(&on_data);
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;
 
-		boost::thread thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		boost::thread_group threads;
+
+		const unsigned int THREAD_COUNT = boost::thread::hardware_concurrency();
+
+		std::cout << "Starting client with " << THREAD_COUNT << " thread(s)." << std::endl;
+
+		for (std::size_t i = 0; i < THREAD_COUNT; ++i)
+		{
+			threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		}
 
 #ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 		boost::asio::streambuf input_buffer(512);
@@ -294,7 +332,7 @@ int main(int argc, char** argv)
 
 #endif
 
-		thread.join();
+		threads.join_all();
 
 		stop_function = 0;
 
