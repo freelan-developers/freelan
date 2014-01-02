@@ -337,7 +337,7 @@ namespace freelan
 
 	void core::async_send_contact_request_to_all(const hash_list_type& hash_list)
 	{
-		async_send_contact_request_to_all(hash_list, boost::bind(&core::do_handle_send_contact_request_to_all, this));
+		async_send_contact_request_to_all(hash_list, boost::bind(&core::do_handle_send_contact_request_to_all, this, _1));
 	}
 
 	void core::async_introduce_to(const ep_type& target, simple_handler_type handler)
