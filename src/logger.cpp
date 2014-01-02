@@ -45,59 +45,6 @@
 
 #include "logger.hpp"
 
-#include <sstream>
-
-#include "logger_stream.hpp"
-
 namespace freelan
 {
-	logger::logger(log_callback_type callback, log_level _level) :
-		m_callback(callback),
-		m_level(_level),
-		m_os(new std::ostringstream())
-	{
-	}
-
-	logger_stream logger::operator()(log_level _level)
-	{
-		if (_level >= m_level)
-		{
-			return logger_stream(*this, _level);
-		}
-		else
-		{
-			return logger_stream();
-		}
-	}
-
-	void logger::log(log_level _level, const std::string& msg)
-	{
-		if (_level >= m_level)
-		{
-			if (m_callback)
-			{
-				m_callback(_level, msg);
-			}
-		}
-	}
-
-	void logger::flush(log_level _level)
-	{
-		std::ostringstream& oss = static_cast<std::ostringstream&>(os());
-
-		oss << std::flush;
-
-		const std::string msg = oss.str();
-		oss.str("");
-
-		if (m_callback)
-		{
-			m_callback(_level, msg);
-		}
-	}
-
-	std::ostream& logger::os()
-	{
-		return *m_os;
-	}
 }

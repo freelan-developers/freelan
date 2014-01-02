@@ -47,12 +47,18 @@
 #define LOGGER_HPP
 
 #include <iostream>
+#include <sstream>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/function.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/variant.hpp>
 
 namespace freelan
 {
+	class logger;
+
 	/**
 	 * \brief Log level type.
 	 */
@@ -65,7 +71,165 @@ namespace freelan
 		LL_FATAL /**< \brief The fatal log level. */
 	};
 
-	class logger_stream;
+	/**
+	 * \brief A null logger stream.
+	 */
+	class null_logger_stream {};
+
+	/**
+	 * \brief A string logger stream.
+	 */
+	class string_logger_stream
+	{
+		public:
+
+			/**
+			 * \brief Create a string logger stream.
+			 * \param logger_ The logger to attach to.
+			 * \param level_ The level of the logger stream.
+			 */
+			string_logger_stream(logger& logger_, log_level level_) :
+				m_logger(logger_),
+				m_level(level_)
+			{}
+
+			/**
+			 * \brief Destroy the string logger.
+			 */
+			~string_logger_stream();
+
+			/**
+			 * \brief Output a value to the stream.
+			 * \return *this.
+			 */
+			template <typename Type>
+			string_logger_stream& operator<<(const Type& value)
+			{
+				if (!m_oss)
+				{
+					m_oss = boost::make_shared<std::ostringstream>();
+				}
+
+				(*m_oss) << value;
+
+				return *this;
+			}
+
+		private:
+
+			logger& m_logger;
+			log_level m_level;
+			boost::shared_ptr<std::ostringstream> m_oss;
+	};
+
+	/**
+	 * \brief The logger stream type implementation.
+	 */
+	typedef boost::variant<null_logger_stream, string_logger_stream> logger_stream_impl;
+
+	/**
+	 * \brief A visitor that outputs value to the logger stream.
+	 */
+	template <typename Type>
+	class output_visitor : public boost::static_visitor<>
+	{
+		public:
+
+			/**
+			 * \brief Create an output visitor.
+			 * \param value The value to output.
+			 */
+			output_visitor(const Type& value) :
+				m_value(value)
+			{
+			}
+
+			/**
+			 * \brief Does nothing.
+			 */
+			void operator()(null_logger_stream&) const
+			{
+			}
+
+			/**
+			 * \brief Output the value to the internal ostringstream.
+			 * \param ls The logger stream.
+			 * \return The logger stream.
+			 */
+			void operator()(string_logger_stream& ls) const
+			{
+				ls << m_value;
+			}
+
+		private:
+
+			const Type& m_value;
+	};
+
+	/**
+	 * \brief The logger stream type.
+	 */
+	class logger_stream
+	{
+		public:
+
+			/**
+			 * \brief The ostream manipulator type.
+			 */
+			typedef std::ostream& (ostream_manipulator_type)(std::ostream&);
+
+			/**
+			 * \brief The manipulator type.
+			 */
+			typedef logger_stream& (manipulator_type)(logger_stream&);
+
+			logger_stream() :
+				m_impl()
+			{}
+
+			logger_stream(const logger_stream_impl& impl) :
+				m_impl(impl)
+			{}
+
+			/**
+			 * \brief Output a value to the logger stream.
+			 * \param value The value.
+			 * \return *this.
+			 */
+			template <typename Type>
+			logger_stream& operator<<(const Type& value)
+			{
+				boost::apply_visitor(output_visitor<Type>(value), m_impl);
+
+				return *this;
+			}
+
+			/**
+			 * \brief Output a standard manipulator to the logger stream.
+			 * \param manipulator The manipulator.
+			 * \return *this.
+			 */
+			logger_stream& operator<<(const ostream_manipulator_type& manipulator)
+			{
+				boost::apply_visitor(output_visitor<ostream_manipulator_type>(manipulator), m_impl);
+
+				return *this;
+			}
+
+			/**
+			 * \brief Output a standard manipulator to the logger stream.
+			 * \param manipulator The manipulator.
+			 * \return *this.
+			 */
+			logger_stream& operator<<(manipulator_type manipulator)
+			{
+				return manipulator(*this);
+			}
+
+		private:
+
+			logger_stream_impl m_impl;
+	};
 
 	/**
 	 * \brief A logger class.
@@ -75,55 +239,84 @@ namespace freelan
 		public:
 
 			/**
-			 * \brief The log callback function type.
+			 * \brief The stream type.
 			 */
-			typedef boost::function<void (log_level, const std::string&)> log_callback_type;
+			typedef logger_stream stream_type;
+
+			/**
+			 * \brief The timestamp type.
+			 */
+			typedef boost::posix_time::ptime timestamp_type;
+
+			/**
+			 * \brief The log handler type.
+			 */
+			typedef boost::function<void (log_level, const std::string&, const timestamp_type&)> log_handler_type;
 
 			/**
 			 * \brief Create a new logger.
-			 * \param callback The callback to use for logging.
-			 * \param level The desired log level.
+			 * \param handler The function to call whenever a log entry must be written.
+			 * \param level The desired log level of the logger. Any logging below that level will be silently ignored.
 			 */
-			logger(log_callback_type callback = log_callback_type(0), log_level level = LL_INFORMATION);
-
-			/**
-			 * \brief Get the appropriate logger stream for the specified log level.
-			 * \param level The log level.
-			 * \return The appropriate logger stream.
-			 */
-			logger_stream operator()(log_level level);
-
-			/**
-			 * \brief Log the specified message.
-			 * \param level The log level.
-			 * \param msg The message to log.
-			 */
-			void log(log_level level, const std::string& msg);
+			logger(log_handler_type handler = log_handler_type(), log_level level = LL_INFORMATION);
 
 			/**
 			 * \brief Get the logger's level.
 			 * \return The logger's level.
 			 */
-			log_level level() const;
+			log_level level() const
+			{
+				return m_level;
+			}
+
+			/**
+			 * \brief Get a logger stream.
+			 * \param level_ The log level.
+			 * \return The appropriate logger stream.
+			 */
+			stream_type operator()(log_level level_)
+			{
+				if (level_ >= m_level)
+				{
+					return logger_stream_impl(string_logger_stream(*this, level_));
+				}
+				else
+				{
+					return logger_stream_impl(null_logger_stream());
+				}
+			}
+
+			/**
+			 * \brief Log the specified message.
+			 * \param level_ The log level.
+			 * \param msg The message to log.
+			 * \param timestamp The timestamp.
+			 */
+			void log(log_level level_, const std::string& msg, timestamp_type timestamp)
+			{
+				if (m_handler && (level_ >= m_level))
+				{
+					m_handler(level_, msg, timestamp);
+				}
+			}
 
 		private:
 
-			void flush(log_level);
-
-		private:
-
-			std::ostream& os();
-
-			log_callback_type m_callback;
+			log_handler_type m_handler;
 			log_level m_level;
-			boost::shared_ptr<std::ostream> m_os;
-
-			friend class logger_stream;
 	};
 
-	inline log_level logger::level() const
+	string_logger_stream::~string_logger_stream()
 	{
-		return m_level;
+		if (m_oss)
+		{
+			(*m_oss) << std::flush;
+
+			const std::string msg = (*m_oss).str();
+			const logger::timestamp_type timestamp = boost::posix_time::microsec_clock::universal_time();
+
+			m_logger.log(m_level, msg, timestamp);
+		}
 	}
 }
 

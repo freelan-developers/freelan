@@ -51,7 +51,6 @@
 #include "endpoint_switch_port.hpp"
 #include "tap_adapter_router_port.hpp"
 #include "endpoint_router_port.hpp"
-#include "logger_stream.hpp"
 
 #include <fscp/server_error.hpp>
 
