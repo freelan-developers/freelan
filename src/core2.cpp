@@ -308,12 +308,12 @@ namespace freelan
 		async_send_contact_request_to_all(hash_list);
 	}
 
-	void async_send_contact_request_to_all(hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+	void async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
 	{
 		m_server->async_send_contact_request_to_all(hash_list, handler);
 	}
 
-	void async_send_contact_request_to_all(hash_list_type& hash_list)
+	void async_send_contact_request_to_all(const hash_list_type& hash_list)
 	{
 		async_send_contact_request_to_all(hash_list, boost::bind(&core::do_handle_send_contact_request_to_all, this));
 	}

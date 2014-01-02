@@ -186,8 +186,8 @@ namespace freelan
 			void async_contact(const endpoint& target);
 			void async_contact_all();
 			void async_dynamic_contact_all();
-			void async_send_contact_request_to_all(fscp::hash_list_type&, multiple_endpoints_handler_type);
-			void async_send_contact_request_to_all(fscp::hash_list_type&);
+			void async_send_contact_request_to_all(const fscp::hash_list_type&, multiple_endpoints_handler_type);
+			void async_send_contact_request_to_all(const fscp::hash_list_type&);
 			void async_introduce_to(const ep_type&, simple_handler_type);
 			void async_introduce_to(const ep_type&);
 			void async_request_session(const ep_type&, simple_handler_type);
