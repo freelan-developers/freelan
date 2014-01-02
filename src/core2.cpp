@@ -130,6 +130,14 @@ namespace freelan
 				set_type m_keys;
 				map_type m_results;
 		};
+
+		unsigned int get_auto_mtu_value()
+		{
+			const unsigned int default_mtu_value = 1500;
+			const size_t static_payload_size = 20 + 8 + 4 + 22; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
+
+			return default_mtu_value - static_payload_size;
+		}
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
@@ -149,7 +157,12 @@ namespace freelan
 		m_resolver(m_io_service),
 		m_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
-		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD)
+		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_arp_filter(m_ethernet_filter),
+		m_ipv4_filter(m_ethernet_filter),
+		m_udp_filter(m_ipv4_filter),
+		m_bootp_filter(m_udp_filter),
+		m_dhcp_filter(m_bootp_filter)
 	{
 	}
 
@@ -184,8 +197,7 @@ namespace freelan
 		}
 
 		open_server(listen_endpoint);
-		//TODO: Uncomment
-		//open_tap_adapter();
+		open_tap_adapter();
 
 		m_logger(LL_DEBUG) << "Core opened.";
 	}
@@ -194,8 +206,7 @@ namespace freelan
 	{
 		m_logger(LL_DEBUG) << "Closing core...";
 
-		//TODO: Uncomment
-		//close_tap_adapter();
+		close_tap_adapter();
 		close_server();
 
 		m_logger(LL_DEBUG) << "Core closed.";
@@ -742,5 +753,220 @@ namespace freelan
 		}
 
 		return true;
+	}
+
+	void core::open_tap_adapter()
+	{
+		if (m_configuration.tap_adapter.enabled)
+		{
+			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
+
+			m_tap_adapter.reset(new asiotap::tap_adapter(m_io_service));
+
+			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
+			{
+				//TODO: Uncomment
+				// Registers the switch port.
+				//m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
+				//m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
+			}
+			else
+			{
+				//TODO: Uncomment
+				// Registers the router port.
+				//const routes_type& local_routes = m_configuration.router.local_ip_routes;
+
+				//m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
+				//m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
+			}
+
+			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
+
+			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
+
+			// IPv4 address
+			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+			{
+				try
+				{
+#ifdef WINDOWS
+					// Quick fix for Windows:
+					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
+					// We disable direct setting if DHCP is enabled.
+
+					if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
+					{
+						m_tap_adapter->add_ip_address_v4(
+						    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+						    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+						);
+					}
+#else
+					m_tap_adapter->add_ip_address_v4(
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+					);
+#endif
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot set IPv4 address: " << ex.what();
+				}
+			}
+
+			// IPv6 address
+			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
+			{
+				try
+				{
+					m_tap_adapter->add_ip_address_v6(
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
+					);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot set IPv6 address: " << ex.what();
+				}
+			}
+
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TUN)
+			{
+				if (m_configuration.tap_adapter.remote_ipv4_address)
+				{
+					m_tap_adapter->set_remote_ip_address_v4(m_configuration.tap_adapter.ipv4_address_prefix_length.address(), *m_configuration.tap_adapter.remote_ipv4_address);
+				}
+			}
+
+			m_tap_adapter->set_connected_state(true);
+
+			//TODO: Uncomment
+			//m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
+
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+			{
+				// The ARP proxy
+				if (m_configuration.tap_adapter.arp_proxy_enabled)
+				{
+					m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_arp_filter));
+					m_arp_proxy->set_arp_request_callback(boost::bind(&core::do_handle_arp_request, this, _1, _2));
+				}
+				else
+				{
+					m_arp_proxy.reset();
+				}
+
+				// The DHCP proxy
+				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
+				{
+					m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_dhcp_filter));
+					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
+
+					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
+					{
+						m_dhcp_proxy->set_software_address(m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.address());
+					}
+
+					if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+					{
+						m_dhcp_proxy->add_entry(
+								m_tap_adapter->ethernet_address(),
+								m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+								m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+						);
+					}
+				}
+				else
+				{
+					m_dhcp_proxy.reset();
+				}
+			}
+			else
+			{
+				// We don't need any proxies in TUN mode.
+				m_arp_proxy.reset();
+				m_dhcp_proxy.reset();
+			}
+
+			//TODO: Handle tap_adapter_up callback
+			//m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
+		}
+		else
+		{
+			m_tap_adapter.reset();
+		}
+	}
+
+	void core::close_tap_adapter()
+	{
+		m_dhcp_proxy.reset();
+		m_arp_proxy.reset();
+
+		if (m_tap_adapter)
+		{
+			//TODO: Handle tap_adapter_down callback
+			//m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
+
+			m_tap_adapter->cancel();
+			m_tap_adapter->set_connected_state(false);
+
+			// IPv6 address
+			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
+			{
+				try
+				{
+					m_tap_adapter->remove_ip_address_v6(
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
+					);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot unset IPv6 address: " << ex.what();
+				}
+			}
+
+			// IPv4 address
+			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+			{
+				try
+				{
+					m_tap_adapter->remove_ip_address_v4(
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+					);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot unset IPv4 address: " << ex.what();
+				}
+			}
+
+			m_tap_adapter->close();
+		}
+	}
+
+	void core::do_handle_proxy_data(boost::asio::const_buffer data)
+	{
+		if (m_tap_adapter)
+		{
+			//TODO: Make that asynchronous
+			m_tap_adapter->write(data);
+		}
+	}
+
+	bool core::do_handle_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
+	{
+		if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+		{
+			if (logical_address != m_configuration.tap_adapter.ipv4_address_prefix_length.address())
+			{
+				ethernet_address = m_configuration.tap_adapter.arp_proxy_fake_ethernet_address;
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

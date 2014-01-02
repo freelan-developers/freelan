@@ -49,7 +49,12 @@
 #include "configuration.hpp"
 #include "logger.hpp"
 
-#include <fscp/server.hpp>
+#include <fscp/fscp.hpp>
+
+#include <asiotap/asiotap.hpp>
+#include <asiotap/osi/arp_proxy.hpp>
+#include <asiotap/osi/dhcp_proxy.hpp>
+#include <asiotap/osi/complex_filter.hpp>
 
 #include <cryptoplus/x509/store.hpp>
 #include <cryptoplus/x509/store_context.hpp>
@@ -219,6 +224,7 @@ namespace freelan
 			boost::asio::deadline_timer m_dynamic_contact_timer;
 
 		private: /* Certificate validation */
+
 			static const int ex_data_index;
 			static int certificate_validation_callback(int, X509_STORE_CTX*);
 
@@ -226,6 +232,30 @@ namespace freelan
 			bool certificate_is_valid(cert_type);
 
 			cryptoplus::x509::store m_ca_store;
+
+		private: /* TAP adapter */
+
+			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
+			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
+
+			void open_tap_adapter();
+			void close_tap_adapter();
+
+			void do_handle_proxy_data(boost::asio::const_buffer);
+			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
+
+			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
+
+			asiotap::osi::filter<asiotap::osi::ethernet_frame> m_ethernet_filter;
+			asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type m_arp_filter;
+			asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_ipv4_filter;
+			asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_udp_filter;
+			asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_bootp_filter;
+			asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_dhcp_filter;
+
+			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
+			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
+			boost::array<unsigned char, 2048> m_proxy_buffer;
 	};
 }
 
