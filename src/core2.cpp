@@ -66,7 +66,10 @@ namespace freelan
 {
 	namespace
 	{
-		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, boost::function<void (const core::ep_type&)> success_handler, core::simple_handler_type error_handler)
+		typedef boost::function<void (const core::ep_type&)> resolve_success_handler_type;
+		typedef core::simple_handler_type resolve_error_handler_type;
+
+		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, resolve_success_handler_type success_handler, resolve_error_handler_type error_handler)
 		{
 			if (ec)
 			{
@@ -282,6 +285,9 @@ namespace freelan
 
 	void core::async_contact(const endpoint& target, duration_handler_type handler)
 	{
+		resolve_success_handler_type success_handler = boost::bind(&core::do_contact, this, _1, handler);
+		resolve_error_handler_type error_handler = boost::bind(handler, ep_type(), _1, boost::posix_time::time_duration());
+
 		boost::apply_visitor(
 			endpoint_async_resolve_visitor(
 				m_resolver,
@@ -292,8 +298,8 @@ namespace freelan
 					&resolve_handler,
 					_1,
 					_2,
-					boost::bind(&core::do_contact, this, _1, handler), // Success handler
-					boost::bind(handler, _1, boost::posix_time::time_duration()) // Error handler
+					success_handler,
+					error_handler
 				)
 			),
 			target
