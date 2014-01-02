@@ -64,8 +64,7 @@ namespace freelan
 {
 	namespace
 	{
-		template <typename SuccessHandler, typename ErrorHandler>
-		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, SuccessHandler success_handler, ErrorHandler error_handler)
+		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, boost::function<void (const core::ep_type&)> success_handler, core::simple_handler_type error_handler)
 		{
 			if (ec)
 			{
