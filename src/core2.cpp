@@ -536,7 +536,7 @@ namespace freelan
 		return false;
 	}
 
-	bool core::do_handle_session_request_received(const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, bool default_accept)
+	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_capabilities, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
 
@@ -555,7 +555,7 @@ namespace freelan
 		return default_accept;
 	}
 
-	bool core::do_handle_session_received(const ep_type& sender, cipher_algorithm_type calg, bool default_accept)
+	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_algorithm_type calg, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
 		m_logger(LL_DEBUG) << "Cipher algorithm: " << calg;
@@ -563,7 +563,7 @@ namespace freelan
 		return default_accept;
 	}
 
-	void core::do_handle_session_failed(const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)
+	void core::do_handle_session_failed(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 	{
 		if (is_new)
 		{
@@ -581,7 +581,7 @@ namespace freelan
 		//m_session_failed_callback(host, is_new, local, remote);
 	}
 
-	void core::do_handle_session_established(const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)
+	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 	{
 		if (is_new)
 		{
