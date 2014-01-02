@@ -51,14 +51,93 @@
 
 #include <fscp/server.hpp>
 
+#include <cryptoplus/x509/store.hpp>
+#include <cryptoplus/x509/store_context.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/scoped_ptr.hpp>
+
 namespace freelan
 {
 	/**
 	 * \brief The core class.
+	 * All the public methods are thread-safe, unless otherwise specified.
+	 *
+	 * async_* methods are designed to be run from inside handlers (or callbacks).
+	 * sync_* methods are designed to be run outside of the core running threads while the core is running.
 	 */
 	class core
 	{
 		public:
+
+			// General purpose type definitions
+
+			/**
+			 * \brief The ethernet address type.
+			 */
+			typedef freelan::tap_adapter_configuration::ethernet_address_type ethernet_address_type;
+
+			/**
+			 * \brief The low-level endpoint type.
+			 */
+			typedef fscp::server::ep_type ep_type;
+
+			/**
+			 * \brief The certificate type.
+			 */
+			typedef fscp::server::cert_type cert_type;
+
+			/**
+			 * \brief The hash type.
+			 */
+			typedef fscp::hash_type hash_type;
+
+			/**
+			 * \brief The hash list type.
+			 */
+			typedef fscp::hash_list_type hash_list_type;
+
+			// Handlers
+
+			/**
+			 * \brief A void operation handler.
+			 */
+			typedef boost::function<void ()> void_handler_type;
+
+			/**
+			 * \brief A simple operation handler.
+			 */
+			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
+
+			/**
+			 * \brief An operation handler for multiple endpoints.
+			 */
+			typedef boost::function<void (const std::map<ep_type, boost::system::error_code>&)> multiple_endpoints_handler_type;
+
+			/**
+			 * \brief A duration operation handler.
+			 */
+			typedef boost::function<void (const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
+
+			// Public constants
+
+			/**
+			 * \brief The contact period.
+			 */
+			static const boost::posix_time::time_duration CONTACT_PERIOD;
+
+			/**
+			 * \brief The dynamic contact period.
+			 */
+			static const boost::posix_time::time_duration DYNAMIC_CONTACT_PERIOD;
+
+			/**
+			 * \brief The default service.
+			 */
+			static const std::string DEFAULT_SERVICE;
+
+			// Public methods
 
 			/**
 			 * \brief The constructor.
@@ -68,8 +147,75 @@ namespace freelan
 			 */
 			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& _logger);
 
+			/**
+			 * \brief Open the core.
+			 * \see close
+			 */
+			void open();
+
+			/**
+			 * \brief Close the core.
+			 */
+			void close();
+
+
 		private:
+			bool is_banned(const boost::asio::ip::address& address) const;
+
 			boost::asio::io_service& m_io_service;
+			freelan::configuration m_configuration;
+			freelan::logger m_logger;
+			boost::asio::ip::udp::resolver m_resolver;
+
+		private: /* FSCP server */
+
+			void open_server(const ep_type&);
+			void close_server();
+
+			void async_contact(const endpoint& target, duration_handler_type handler);
+			void async_contact(const endpoint& target);
+			void async_contact_all();
+			void async_dynamic_contact_all();
+			void async_send_contact_request_to_all(fscp::hash_list_type&, multiple_endpoints_handler_type);
+			void async_send_contact_request_to_all(fscp::hash_list_type&);
+			void async_introduce_to(const ep_type&, simple_handler_type);
+			void async_introduce_to(const ep_type&);
+			void async_request_session(const ep_type&, simple_handler_type);
+			void async_request_session(const ep_type&);
+
+			void do_contact(const endpoint&, const ep_type&, duration_handler_type);
+
+			void do_handle_contact(const endpoint&, const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration&);
+			void do_handle_periodic_contact(const boost::system::error_code&);
+			void do_handle_periodic_dynamic_contact(const boost::system::error_code&);
+			void do_handle_send_contact_request(const ep_type&, const boost::system::error_code&);
+			void do_handle_send_contact_request_to_all(const std::map<ep_type, boost::system::error_code>&);
+			void do_handle_introduce_to(const ep_type&, const boost::system::error_code&);
+			void do_handle_request_session(const ep_type&, const boost::system::error_code&);
+
+			bool do_handle_hello_received(const ep_type&, bool);
+			bool do_handle_contact_request_received(const ep_type&, cert_type, hash_type, const ep_type&);
+			void do_handle_contact_received(const ep_type&, hash_type, const ep_type&);
+			bool do_handle_presentation_received(const ep_type&, cert_type, cert_type, bool);
+			bool do_handle_session_request_received(const ep_type&, const cipher_algorithm_list_type&, bool);
+			bool do_handle_session_received(const ep_type&, cipher_algorithm_type, bool);
+			void do_handle_session_failed(const ep_type&, bool, const algorithm_info_type&, const algorithm_info_type&);
+			void do_handle_session_established(const ep_type&, bool, const algorithm_info_type&, const algorithm_info_type&);
+			void do_handle_session_lost(const ep_type&);
+			void do_handle_data_received(const ep_type&, fscp::channel_number_type, boost::asio::const_buffer);
+
+			boost::scoped_ptr<fscp::server> m_server;
+			boost::asio::deadline_timer m_contact_timer;
+			boost::asio::deadline_timer m_dynamic_contact_timer;
+
+		private: /* Certificate validation */
+			static const int ex_data_index;
+			static int certificate_validation_callback(int, X509_STORE_CTX*);
+
+			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
+			bool certificate_is_valid(cert_type);
+
+			cryptoplus::x509::store m_ca_store;
 	};
 }
 

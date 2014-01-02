@@ -48,6 +48,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <iostream>
 #include <iomanip>
 
@@ -85,7 +86,7 @@ namespace freelan
 		/**
 		 * \brief The endpoint list type.
 		 */
-		typedef std::vector<endpoint> endpoint_list;
+		typedef std::set<endpoint> endpoint_list;
 
 		/**
 		 * \brief Create a new server configuration.
@@ -175,7 +176,7 @@ namespace freelan
 		/**
 		 * \brief The endpoint list type.
 		 */
-		typedef std::vector<endpoint> endpoint_list;
+		typedef std::set<endpoint> endpoint_list;
 
 		/**
 		 * \brief The hostname resolution protocol type.
