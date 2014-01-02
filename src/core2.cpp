@@ -78,6 +78,18 @@ namespace freelan
 			}
 		}
 
+		endpoint to_endpoint(const core::ep_type& host)
+		{
+			if (host.address().is_v4())
+			{
+				return ipv4_endpoint(host.address().to_v4(), host.port());
+			}
+			else
+			{
+				return ipv6_endpoint(host.address().to_v6(), host.port());
+			}
+		}
+
 		template <typename KeyType, typename ValueType, typename Handler>
 		class results_gatherer
 		{
@@ -474,7 +486,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << hash << " is at: " << answer;
 
-				async_contact(answer);
+				async_contact(to_endpoint(answer));
 			}
 		}
 	}
