@@ -42,8 +42,8 @@
  * \brief The server class.
  */
 
-#ifndef FSCP_SERVER_HPP_2
-#define FSCP_SERVER_HPP_2
+#ifndef FSCP_SERVER_HPP
+#define FSCP_SERVER_HPP
 
 #include "identity_store.hpp"
 #include "memory_pool.hpp"
