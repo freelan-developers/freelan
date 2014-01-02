@@ -256,30 +256,22 @@ namespace freelan
 
 	void core::async_request_routes(const ep_type& target)
 	{
-		messenger_type& messenger = m_messengers[target];
-
-		const routes_request_message::sequence_type sequence = messenger.get_next_request_sequence();
-
-		messenger_type::transmission_type& request = messenger.requests[sequence];
-
-		const size_t count = routes_request_message::write(request.buffer.data(), request.buffer.size(), sequence);
+		(void)target;
+		//const size_t count = routes_request_message::write(request.buffer.data(), request.buffer.size(), sequence);
 
 		//TODO: Use a real handler in the async_send_data call
-		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(request.buffer.data(), count), fscp::server::write_callback());
+		//m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(request.buffer.data(), count), fscp::server::write_callback());
 	}
 
 	void core::async_send_routes(const ep_type& target, const routes_request_message& rr_msg, const routes_type& routes)
 	{
-		messenger_type& messenger = m_messengers[target];
-
-		const routes_request_message::sequence_type sequence = rr_msg.sequence();
-
-		messenger_type::transmission_type& response = messenger.responses[sequence];
-
-		const size_t count = routes_message::write(response.buffer.data(), response.buffer.size(), sequence, routes);
+		(void)target;
+		(void)rr_msg;
+		(void)routes;
+		//const size_t count = routes_message::write(response.buffer.data(), response.buffer.size(), sequence, routes);
 
 		//TODO: Use a real handler in the async_send_data call
-		m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(response.buffer.data(), count), fscp::server::write_callback());
+		//m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(response.buffer.data(), count), fscp::server::write_callback());
 	}
 
 	bool core::on_hello_request(const ep_type& sender, bool default_accept)
@@ -295,7 +287,7 @@ namespace freelan
 
 		if (default_accept)
 		{
-			m_server->async_introduce_to(sender);
+			m_server->async_introduce_to(sender, boost::bind(&core::handle_introduce_to, this, sender, _1));
 
 			return true;
 		}
@@ -309,7 +301,7 @@ namespace freelan
 		{
 			m_logger(LL_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << ".";
 
-			m_server->async_introduce_to(sender);
+			m_server->async_introduce_to(sender, boost::bind(&core::handle_introduce_to, this, sender, _1));
 		}
 		else
 		{
@@ -333,7 +325,8 @@ namespace freelan
 
 		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
 		{
-			m_server->async_request_session(sender);
+			m_server->async_request_session(sender, boost::bind(&core::handle_request_session, this, sender, _1));
+
 			return true;
 		}
 
@@ -366,15 +359,13 @@ namespace freelan
 
 	void core::on_session_failed(const ep_type& sender, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 	{
-		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
-
 		if (is_new)
 		{
-			m_logger(LL_WARNING) << "Session establishment with " << sender << " (" << sig_cert.subject().oneline() << ") failed.";
+			m_logger(LL_WARNING) << "Session establishment with " << sender << " failed.";
 		}
 		else
 		{
-			m_logger(LL_WARNING) << "Session renewal with " << sender << " (" << sig_cert.subject().oneline() << ") failed.";
+			m_logger(LL_WARNING) << "Session renewal with " << sender << " failed.";
 		}
 
 		m_logger(LL_WARNING) << "Local algorithms: " << local;
@@ -388,15 +379,13 @@ namespace freelan
 
 	void core::on_session_established(const ep_type& sender, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
 	{
-		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
-
 		if (is_new)
 		{
-			m_logger(LL_INFORMATION) << "Session established with " << sender << " (" << sig_cert.subject().oneline() << ").";
+			m_logger(LL_INFORMATION) << "Session established with " << sender << ".";
 		}
 		else
 		{
-			m_logger(LL_INFORMATION) << "Session renewed with " << sender << " (" << sig_cert.subject().oneline() << ").";
+			m_logger(LL_INFORMATION) << "Session renewed with " << sender << ".";
 		}
 
 		m_logger(LL_INFORMATION) << "Local algorithms: " << local;
@@ -433,9 +422,7 @@ namespace freelan
 
 	void core::on_session_lost(const ep_type& sender)
 	{
-		cert_type sig_cert = m_server->get_presentation(sender).signature_certificate();
-
-		m_logger(LL_INFORMATION) << "Session with " << sender << " lost (" << sig_cert.subject().oneline() << ").";
+		m_logger(LL_INFORMATION) << "Session with " << sender << " lost.";
 
 		if (m_session_lost_callback)
 		{
@@ -552,11 +539,6 @@ namespace freelan
 		}
 	}
 
-	void core::on_network_error(const ep_type& target, const boost::system::error_code& ec)
-	{
-		m_logger(LL_WARNING) << "Error while sending message to" << target << ": " << ec;
-	}
-
 	void core::on_message(const ep_type& sender, const message& msg)
 	{
 		// Get or create the messenger associated with the peer.
@@ -604,6 +586,30 @@ namespace freelan
 	void core::on_routes_received(const ep_type& sender, const routes_message& msg)
 	{
 		m_logger(LL_INFORMATION) << "Received routes from " << sender << ": " << msg.routes();
+	}
+
+	void core::handle_introduce_to(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error sending introduction message to " << target << ": " << ec << " (" << ec.message() << ")";
+		}
+	}
+
+	void core::handle_request_session(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error requesting session from " << target << ": " << ec << " (" << ec.message() << ")";
+		}
+	}
+
+	void core::handle_network_event(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Sending message to " << target << ": " << ec << " (" << ec.message() << ")";
+		}
 	}
 
 	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
@@ -777,10 +783,9 @@ namespace freelan
 		m_server->set_session_failed_callback(boost::bind(&core::on_session_failed, this, _1, _2, _3, _4));
 		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
-		m_server->set_data_message_callback(boost::bind(&core::on_data, this, _1, _2, _3));
-		m_server->set_contact_request_message_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
-		m_server->set_contact_message_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
-		m_server->set_network_error_callback(boost::bind(&core::on_network_error, this, _1, _2));
+		m_server->set_data_received_callback(boost::bind(&core::on_data, this, _1, _2, _3));
+		m_server->set_contact_request_message_received_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
+		m_server->set_contact_message_received_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
 
 		m_server->open(*m_listen_endpoint);
 
