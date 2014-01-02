@@ -176,7 +176,8 @@ namespace freelan
 			void close();
 
 
-		private:
+		private: /* General purpose */
+
 			bool is_banned(const boost::asio::ip::address& address) const;
 
 			boost::asio::io_service& m_io_service;
