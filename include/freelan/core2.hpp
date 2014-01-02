@@ -48,6 +48,8 @@
 
 #include "configuration.hpp"
 #include "logger.hpp"
+#include "switch.hpp"
+#include "router.hpp"
 
 #include <fscp/fscp.hpp>
 
@@ -237,14 +239,19 @@ namespace freelan
 
 			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
 			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
+			typedef fscp::memory_pool<65536, 8> tap_adapter_memory_pool;
 
 			void open_tap_adapter();
 			void close_tap_adapter();
 
+			void async_read_tap();
+
+			void do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
 			void do_handle_proxy_data(boost::asio::const_buffer);
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
 
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
+			tap_adapter_memory_pool m_tap_adapter_memory_pool;
 
 			asiotap::osi::filter<asiotap::osi::ethernet_frame> m_ethernet_filter;
 			asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type m_arp_filter;
@@ -256,6 +263,20 @@ namespace freelan
 			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
 			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
 			boost::array<unsigned char, 2048> m_proxy_buffer;
+
+		private: /* Switch & router */
+
+			typedef std::map<ep_type, switch_::port_type> endpoint_switch_port_map_type;
+			typedef std::map<ep_type, router::port_type> endpoint_router_port_map_type;
+
+			switch_ m_switch;
+			router m_router;
+
+			endpoint_switch_port_map_type m_endpoint_switch_port_map;
+			endpoint_router_port_map_type m_endpoint_router_port_map;
+
+			router::port_type m_tap_adapter_router_port;
+			switch_::port_type m_tap_adapter_switch_port;
 	};
 }
 

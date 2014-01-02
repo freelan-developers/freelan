@@ -64,6 +64,10 @@
 
 namespace freelan
 {
+	using boost::asio::buffer;
+	using boost::asio::buffer_cast;
+	using boost::asio::buffer_size;
+
 	namespace
 	{
 		typedef boost::function<void (const core::ep_type&)> resolve_success_handler_type;
@@ -138,6 +142,9 @@ namespace freelan
 
 			return default_mtu_value - static_payload_size;
 		}
+
+		static const switch_::group_type TAP_ADAPTERS_GROUP = 0;
+		static const switch_::group_type ENDPOINTS_GROUP = 1;
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
@@ -162,7 +169,9 @@ namespace freelan
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
-		m_dhcp_filter(m_bootp_filter)
+		m_dhcp_filter(m_bootp_filter),
+		m_switch(m_configuration.switch_),
+		m_router(m_configuration.router)
 	{
 	}
 
@@ -684,7 +693,7 @@ namespace freelan
 
 				break;
 			default:
-				m_logger(LL_WARNING) << "Received unhandled " << boost::asio::buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
+				m_logger(LL_WARNING) << "Received unhandled " << buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
 				break;
 		}
 	}
@@ -765,19 +774,17 @@ namespace freelan
 
 			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
 			{
-				//TODO: Uncomment
 				// Registers the switch port.
-				//m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
-				//m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
+				m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
+				m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
 			}
 			else
 			{
-				//TODO: Uncomment
 				// Registers the router port.
-				//const routes_type& local_routes = m_configuration.router.local_ip_routes;
+				const routes_type& local_routes = m_configuration.router.local_ip_routes;
 
-				//m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
-				//m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
+				m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
+				m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
 			}
 
 			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
@@ -840,15 +847,14 @@ namespace freelan
 
 			m_tap_adapter->set_connected_state(true);
 
-			//TODO: Uncomment
-			//m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
+			async_read_tap();
 
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
 				// The ARP proxy
 				if (m_configuration.tap_adapter.arp_proxy_enabled)
 				{
-					m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_arp_filter));
+					m_arp_proxy.reset(new arp_proxy_type(buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_arp_filter));
 					m_arp_proxy->set_arp_request_callback(boost::bind(&core::do_handle_arp_request, this, _1, _2));
 				}
 				else
@@ -859,7 +865,7 @@ namespace freelan
 				// The DHCP proxy
 				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
 				{
-					m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_dhcp_filter));
+					m_dhcp_proxy.reset(new dhcp_proxy_type(buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_dhcp_filter));
 					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
 
 					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
@@ -907,6 +913,9 @@ namespace freelan
 			//TODO: Handle tap_adapter_down callback
 			//m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
 
+			m_switch.unregister_port(m_tap_adapter_switch_port);
+			m_router.unregister_port(m_tap_adapter_router_port);
+
 			m_tap_adapter->cancel();
 			m_tap_adapter->set_connected_state(false);
 
@@ -943,6 +952,75 @@ namespace freelan
 			}
 
 			m_tap_adapter->close();
+		}
+	}
+
+	void core::async_read_tap()
+	{
+		//TODO: Execute this from a strand to prevent concurrent accesses to the m_tap_adapter instance.
+		assert(m_tap_adapter);
+
+		tap_adapter_memory_pool::shared_buffer_type receive_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+
+		m_tap_adapter->async_read(
+			buffer(receive_buffer),
+			boost::bind(
+				&core::do_handle_tap_adapter_read,
+				this,
+				receive_buffer,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred
+			)
+		);
+	}
+
+	void core::do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type receive_buffer, const boost::system::error_code& ec, size_t count)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			// We try to read again, as soon as possible.
+			async_read_tap();
+		}
+
+		if (!ec)
+		{
+			const boost::asio::const_buffer data = buffer(receive_buffer, count);
+
+			if (m_tap_adapter->type() == asiotap::tap_adapter::AT_TAP_ADAPTER)
+			{
+				bool handled = false;
+
+				if (m_arp_proxy || m_dhcp_proxy)
+				{
+					m_ethernet_filter.parse(data);
+
+					if (m_arp_proxy && m_arp_filter.get_last_helper())
+					{
+						handled = true;
+						m_arp_filter.clear_last_helper();
+					}
+
+					if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
+					{
+						handled = true;
+						m_dhcp_filter.clear_last_helper();
+					}
+				}
+
+				if (!handled)
+				{
+					m_switch.receive_data(m_tap_adapter_switch_port, data);
+				}
+			}
+			else
+			{
+				// This is a TUN interface. We receive either IPv4 or IPv6 frames.
+				m_router.receive_data(m_tap_adapter_router_port, data);
+			}
+		}
+		else if (ec != boost::asio::error::operation_aborted)
+		{
+			m_logger(LL_ERROR) << "Read failed on " << m_tap_adapter->name() << ". Error: " << ec;
 		}
 	}
 
