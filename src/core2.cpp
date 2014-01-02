@@ -53,6 +53,8 @@
 #include "endpoint_router_port.hpp"
 #include "logger_stream.hpp"
 
+#include <fscp/server_error.hpp>
+
 #include <boost/make_shared.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread/future.hpp>
@@ -278,7 +280,7 @@ namespace freelan
 					&resolve_handler,
 					_1,
 					_2,
-					boost::bind(&core::do_contact, this, target, _1, handler), // Success handler
+					boost::bind(&core::do_contact, this, _1, handler), // Success handler
 					boost::bind(handler, _1, boost::posix_time::time_duration()) // Error handler
 				)
 			),
@@ -303,24 +305,28 @@ namespace freelan
 	{
 		using boost::make_transform_iterator;
 
-		const hash_list_type hash_list(make_transform_iterator(m_configuration.fscp.dynamic_contact_list.begin(), fscp::get_certificate_hash), make_transform_iterator(m_configuration.fscp.dynamic_contact_list.end(), fscp::get_certificate_hash));
+		hash_type (*func)(cert_type) = fscp::get_certificate_hash;
+
+		const hash_list_type hash_list(make_transform_iterator(m_configuration.fscp.dynamic_contact_list.begin(), func), make_transform_iterator(m_configuration.fscp.dynamic_contact_list.end(), func));
 
 		async_send_contact_request_to_all(hash_list);
 	}
 
-	void async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+	void core::async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
 	{
 		m_server->async_send_contact_request_to_all(hash_list, handler);
 	}
 
-	void async_send_contact_request_to_all(const hash_list_type& hash_list)
+	void core::async_send_contact_request_to_all(const hash_list_type& hash_list)
 	{
 		async_send_contact_request_to_all(hash_list, boost::bind(&core::do_handle_send_contact_request_to_all, this));
 	}
 
-	void core::async_introduce_to(const ep_type& target, simple_handler_type)
+	void core::async_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
-		m_server->async_introduce_to(target, simple_handler_type);
+		assert(m_server);
+
+		m_server->async_introduce_to(target, handler);
 	}
 
 	void core::async_introduce_to(const ep_type& target)
@@ -330,6 +336,8 @@ namespace freelan
 
 	void core::async_request_session(const ep_type& target, simple_handler_type handler)
 	{
+		assert(m_server);
+
 		m_server->async_request_session(target, handler);
 	}
 
@@ -338,7 +346,7 @@ namespace freelan
 		async_request_session(target, boost::bind(&core::do_handle_request_session, this, target, _1));
 	}
 
-	void core::do_contact(const endpoint& target, const ep_type& address, duration_handler_type handler)
+	void core::do_contact(const ep_type& address, duration_handler_type handler)
 	{
 		assert(m_server);
 
@@ -357,7 +365,7 @@ namespace freelan
 		{
 			if (ec == fscp::server_error::hello_request_timed_out)
 			{
-				m_logger(LL_DEBUG) << "Received no HELLO_RESPONSE from " << host << " at " << address << ": " << ec.message() << " (timeout: " << time_duration << ")";
+				m_logger(LL_DEBUG) << "Received no HELLO_RESPONSE from " << host << " at " << address << ": " << ec.message() << " (timeout: " << duration << ")";
 			}
 			else
 			{
@@ -458,13 +466,13 @@ namespace freelan
 		if (m_configuration.fscp.accept_contacts)
 		{
 			// We check if the contact belongs to the forbidden network list.
-			if (is_banned(target.address()))
+			if (is_banned(answer.address()))
 			{
-				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << hash << " is at " << target << " but won't be contacted.";
+				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << hash << " is at " << answer << " but won't be contacted.";
 			}
 			else
 			{
-				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << hash << " is at: " << target;
+				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << hash << " is at: " << answer;
 
 				async_contact(answer);
 			}
@@ -504,7 +512,7 @@ namespace freelan
 		{
 			std::ostringstream oss;
 
-			BOOST_FOREACH(const fscp::cipher_algorithm_type& calg, calg_cap)
+			BOOST_FOREACH(const fscp::cipher_algorithm_type& calg, calg_capabilities)
 			{
 				oss << " " << calg;
 			}

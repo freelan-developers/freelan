@@ -193,7 +193,7 @@ namespace freelan
 			void async_request_session(const ep_type&, simple_handler_type);
 			void async_request_session(const ep_type&);
 
-			void do_contact(const endpoint&, const ep_type&, duration_handler_type);
+			void do_contact(const ep_type&, duration_handler_type);
 
 			void do_handle_contact(const endpoint&, const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration&);
 			void do_handle_periodic_contact(const boost::system::error_code&);
