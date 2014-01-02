@@ -114,45 +114,6 @@ namespace freelan
 				set_type m_keys;
 				map_type m_results;
 		};
-
-		template <typename KeyType, typename Handler>
-		class results_gatherer<KeyType, core::duration_result_type, Handler>
-		{
-			public:
-
-				typedef core::duration_result_type value_type;
-				typedef std::set<KeyType> set_type;
-				typedef std::map<KeyType, value_type> map_type;
-
-				results_gatherer(Handler handler, const set_type& keys) :
-					m_handler(handler),
-					m_keys(keys)
-				{}
-
-				void gather(const KeyType& key, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
-				{
-					boost::mutex::scoped_lock lock(m_mutex);
-
-					const size_t erased_count = m_keys.erase(key);
-
-					// Ensure that gather was called only once for a given key.
-					assert(erased_count == 1);
-
-					m_results[key] = value_type(ec, duration);
-
-					if (m_keys.empty())
-					{
-						m_handler(m_results);
-					}
-				}
-
-			private:
-
-				boost::mutex m_mutex;
-				Handler m_handler;
-				set_type m_keys;
-				map_type m_results;
-		};
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
