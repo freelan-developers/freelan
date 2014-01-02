@@ -302,9 +302,8 @@ namespace freelan
 	void core::async_dynamic_contact_all()
 	{
 		using boost::make_transform_iterator;
-		using fscp::get_certificate_hash;
 
-		const hash_list_type hash_list(make_transform_iterator(m_configuration.fscp.dynamic_contact_list.begin(), get_certificate_hash), make_transform_iterator(m_configuration.fscp.dynamic_contact_list.end(), get_certificate_hash));
+		const hash_list_type hash_list(make_transform_iterator(m_configuration.fscp.dynamic_contact_list.begin(), fscp::get_certificate_hash), make_transform_iterator(m_configuration.fscp.dynamic_contact_list.end(), fscp::get_certificate_hash));
 
 		async_send_contact_request_to_all(hash_list);
 	}
