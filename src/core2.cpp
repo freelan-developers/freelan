@@ -167,7 +167,7 @@ namespace freelan
 			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
 		}
 
-		open_server();
+		open_server(listen_endpoint);
 		//TODO: Uncomment
 		//open_tap_adapter();
 
@@ -178,7 +178,8 @@ namespace freelan
 	{
 		m_logger(LL_DEBUG) << "Closing core...";
 
-		close_tap_adapter();
+		//TODO: Uncomment
+		//close_tap_adapter();
 		close_server();
 
 		m_logger(LL_DEBUG) << "Core closed.";
@@ -199,12 +200,12 @@ namespace freelan
 
 		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
 
-		m_server->set_hello_message_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
-		m_server->set_contact_request_message_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
-		m_server->set_contact_message_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
-		m_server->set_presentation_message_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
-		m_server->set_session_request_message_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
-		m_server->set_session_message_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
+		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
+		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
+		m_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
+		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
+		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
+		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
 		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2, _3, _4));
 		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));

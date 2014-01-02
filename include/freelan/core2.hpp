@@ -89,6 +89,16 @@ namespace freelan
 			typedef fscp::server::cert_type cert_type;
 
 			/**
+			 * \brief The certificate list type.
+			 */
+			typedef std::vector<cert_type> cert_list_type;
+
+			/**
+			 * \brief The certificate revocation list type.
+			 */
+			typedef security_configuration::crl_type crl_type;
+
+			/**
 			 * \brief The hash type.
 			 */
 			typedef fscp::hash_type hash_type;
