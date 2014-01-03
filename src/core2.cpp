@@ -519,7 +519,6 @@ namespace freelan
 			return false;
 		}
 
-		// TODO: Make the checks below in a strand or make sure do_handle_presentation_received is only called from the same thread...
 		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
 		{
 			async_request_session(sender);
@@ -699,14 +698,13 @@ namespace freelan
 	{
 		cert_type cert = store_context.get_current_certificate();
 
-		if (m_logger.level() <= LL_DEBUG)
-		{
-			m_logger(LL_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error");
-		}
-
 		if (!ok)
 		{
 			m_logger(LL_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << cert.subject().oneline() << " is valid.";
 		}
 
 		return ok;
@@ -719,6 +717,9 @@ namespace freelan
 			case security_configuration::CVM_DEFAULT:
 				{
 					using namespace cryptoplus;
+
+					// We can't easily ensure m_ca_store is used only in one strand, so we protect it with a mutex instead.
+					boost::mutex::scoped_lock lock(m_ca_store_mutex);
 
 					// Create a store context to proceed to verification
 					x509::store_context store_context = x509::store_context::create();

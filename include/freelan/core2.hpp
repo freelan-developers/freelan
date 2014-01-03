@@ -186,7 +186,7 @@ namespace freelan
 			bool is_banned(const boost::asio::ip::address& address) const;
 
 			boost::asio::io_service& m_io_service;
-			freelan::configuration m_configuration;
+			const freelan::configuration m_configuration;
 			freelan::logger m_logger;
 
 		private: /* FSCP server */
@@ -239,6 +239,7 @@ namespace freelan
 			bool certificate_is_valid(cert_type);
 
 			cryptoplus::x509::store m_ca_store;
+			boost::mutex m_ca_store_mutex;
 
 		private: /* TAP adapter */
 
