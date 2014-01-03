@@ -68,10 +68,6 @@ static boost::array<char, 2048> read_buffer;
 static boost::array<char, 2048> write_buffer;
 asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter;
 
-void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
-void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
-void do_write(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer);
-
 void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
 {
 	(void) tap_adapter;
@@ -94,6 +90,33 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 void do_write(asiotap::tap_adapter& tap_adapter, boost::asio::const_buffer buffer)
 {
 	tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
+}
+
+void arp_frame_available(asiotap::tap_adapter& tap_adapter, const asiotap::osi::proxy<asiotap::osi::arp_frame>& arp_proxy, const asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type& arp_filter, asiotap::osi::const_helper<asiotap::osi::arp_frame> arp_helper)
+{
+	boost::optional<boost::asio::const_buffer> buffer = arp_proxy.process_frame(*arp_filter.parent().get_last_helper(), arp_helper, boost::asio::buffer(write_buffer));
+
+	if (buffer)
+	{
+		do_write(tap_adapter, *buffer);
+	}
+}
+
+void dhcp_frame_available(asiotap::tap_adapter& tap_adapter, const asiotap::osi::proxy<asiotap::osi::dhcp_frame>& dhcp_proxy, const asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type& dhcp_filter, asiotap::osi::const_helper<asiotap::osi::dhcp_frame> dhcp_helper)
+{
+	boost::optional<boost::asio::const_buffer> buffer = dhcp_proxy.process_frame(
+		*dhcp_filter.parent().parent().parent().parent().get_last_helper(),
+		*dhcp_filter.parent().parent().parent().get_last_helper(),
+		*dhcp_filter.parent().parent().get_last_helper(),
+		*dhcp_filter.parent().get_last_helper(),
+		dhcp_helper,
+		boost::asio::buffer(write_buffer)
+	);
+
+	if (buffer)
+	{
+		do_write(tap_adapter, *buffer);
+	}
 }
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
@@ -140,14 +163,18 @@ int main()
 		ao::complex_filter<ao::dhcp_frame, ao::bootp_frame, ao::udp_frame, ao::ipv4_frame, ao::ethernet_frame>::type dhcp_filter(bootp_filter);
 
 		// We add the ARP proxy
-		ao::proxy<ao::arp_frame> arp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), arp_filter);
+		ao::proxy<ao::arp_frame> arp_proxy;
 		arp_proxy.add_entry(other_ipv4_address, tap_adapter.ethernet_address());
 
+		arp_filter.add_handler(boost::bind(&arp_frame_available, boost::ref(tap_adapter), boost::cref(arp_proxy), boost::cref(arp_filter), _1));
+
 		// We add the DHCP proxy
-		ao::proxy<ao::dhcp_frame> dhcp_proxy(ba::buffer(write_buffer), boost::bind(&do_write, boost::ref(tap_adapter), _1), dhcp_filter);
+		ao::proxy<ao::dhcp_frame> dhcp_proxy;
 		dhcp_proxy.set_hardware_address(tap_adapter.ethernet_address());
 		dhcp_proxy.set_software_address(dhcp_server_ipv4_address);
 		dhcp_proxy.add_entry(tap_adapter.ethernet_address(), my_ipv4_address, my_ipv4_prefix_length);
+
+		dhcp_filter.add_handler(boost::bind(&dhcp_frame_available, boost::ref(tap_adapter), boost::cref(dhcp_proxy), boost::cref(dhcp_filter), _1));
 
 		// Let's run !
 		_io_service.run();
