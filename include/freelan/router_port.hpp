@@ -65,26 +65,34 @@ namespace freelan
 
 			/**
 			 * \brief Create a new router port.
-			 * \param local_routes The routes associated to this port.
+			 * \param routes The routes associated to this port.
 			 */
-			router_port(const routes_type& local_routes);
+			router_port(const routes_type& routes) :
+				m_local_routes(routes)
+			{}
 
 			/**
 			 * \brief Virtual destructor.
 			 */
-			virtual ~router_port();
+			virtual ~router_port() {};
 
 			/**
 			 * \brief Get the associated local routes.
 			 * \return The associated local routes.
 			 */
-			const routes_type& local_routes() const;
+			const routes_type& local_routes() const
+			{
+				return m_local_routes;
+			}
 
 			/**
 			 * \brief Set local routes.
 			 * \param routes The new routes.
 			 */
-			virtual void set_local_routes(const routes_type& routes);
+			virtual void set_local_routes(const routes_type& routes)
+			{
+				m_local_routes = routes;
+			}
 
 		protected:
 
@@ -109,58 +117,21 @@ namespace freelan
 			virtual std::ostream& output(std::ostream& os) const = 0;
 
 			friend class router;
-			friend bool operator==(const router_port&, const router_port&);
-			friend std::ostream& operator<<(std::ostream&, const router_port&);
+
+			friend bool operator==(const router_port& lhs, const router_port& rhs)
+			{
+				return lhs.equals(rhs);
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, const router_port& port)
+			{
+				return port.output(os);
+			}
 
 		private:
 
 			routes_type m_local_routes;
 	};
-
-	/**
-	 * \brief Test two router_port for equality.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
-	 * \return true if lhs and rhs have the exact same attributes.
-	 */
-	bool operator==(const router_port& lhs, const router_port& rhs);
-
-	/**
-	 * \brief Print a router port to an output stream.
-	 * \param os The output stream.
-	 * \param port The router port.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, const router_port& port);
-
-	inline router_port::router_port(const routes_type& _local_routes) :
-		m_local_routes(_local_routes)
-	{
-	}
-
-	inline router_port::~router_port()
-	{
-	}
-
-	inline const routes_type& router_port::local_routes() const
-	{
-		return m_local_routes;
-	}
-
-	inline void router_port::set_local_routes(const routes_type& routes)
-	{
-		m_local_routes = routes;
-	}
-
-	inline bool operator==(const router_port& lhs, const router_port& rhs)
-	{
-		return lhs.equals(rhs);
-	}
-
-	inline std::ostream& operator<<(std::ostream& os, const router_port& port)
-	{
-		return port.output(os);
-	}
 }
 
 #endif /* ROUTER_PORT_HPP */

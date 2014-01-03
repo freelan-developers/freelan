@@ -64,7 +64,7 @@ namespace freelan
 			/**
 			 * \brief Virtual destructor.
 			 */
-			virtual ~switch_port();
+			virtual ~switch_port() {};
 
 		protected:
 
@@ -89,39 +89,17 @@ namespace freelan
 			virtual std::ostream& output(std::ostream& os) const = 0;
 
 			friend class switch_;
-			friend bool operator==(const switch_port&, const switch_port&);
-			friend std::ostream& operator<<(std::ostream&, const switch_port&);
+
+			friend bool operator==(const switch_port& lhs, const switch_port& rhs)
+			{
+				return lhs.equals(rhs);
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, const switch_port& port)
+			{
+				return port.output(os);
+			}
 	};
-
-	/**
-	 * \brief Test two switch_port for equality.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
-	 * \return true if lhs and rhs have the exact same attributes.
-	 */
-	bool operator==(const switch_port& lhs, const switch_port& rhs);
-
-	/**
-	 * \brief Print a switch port to an output stream.
-	 * \param os The output stream.
-	 * \param port The switch port.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, const switch_port& port);
-
-	inline switch_port::~switch_port()
-	{
-	}
-
-	inline bool operator==(const switch_port& lhs, const switch_port& rhs)
-	{
-		return lhs.equals(rhs);
-	}
-
-	inline std::ostream& operator<<(std::ostream& os, const switch_port& port)
-	{
-		return port.output(os);
-	}
 }
 
 #endif /* SWITCH_PORT_HPP */
