@@ -56,6 +56,7 @@
 
 #include <boost/array.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 #include <map>
 
@@ -75,11 +76,6 @@ namespace asiotap
 				 * \brief The default lease time.
 				 */
 				static const boost::posix_time::time_duration DEFAULT_LEASE_TIME;
-
-				/**
-				 * \brief The filter type.
-				 */
-				typedef complex_filter<frame_type, bootp_frame, udp_frame, ipv4_frame, ethernet_frame>::type filter_type;
 
 				/**
 				 * \brief The Ethernet address type.
@@ -102,17 +98,11 @@ namespace asiotap
 
 				/**
 				 * \brief Create an DHCP proxy.
-				 * \param response_buffer The buffer to write the responses into.
-				 * \param on_data_available The callback function to call when data is available for writing.
-				 * \param dhcp_filter The DHCP filter to use.
 				 */
-				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter);
-
-				/**
-				 * \brief Check if the proxy matched during the last parsing.
-				 * \return true if the proxy matched.
-				 */
-				bool matched() const;
+				proxy() :
+					m_lease_time(DEFAULT_LEASE_TIME)
+				{
+				}
 
 				/**
 				 * \brief Set the hardware address.
@@ -155,12 +145,19 @@ namespace asiotap
 				 */
 				bool remove_entry(const ethernet_address_type& hardware_address);
 
+				/**
+				 * \brief Process a frame.
+				 * \param ethernet_helper The ethernet layer.
+				 * \param ipv4_helper The IPv4 layer.
+				 * \param udp_helper The UDP layer.
+				 * \param bootp_helper The BOOTP layer.
+				 * \param dhcp_helper The DHCP layer.
+				 * \param response_buffer The buffer to write the response to.
+				 * \return The buffer that contains the answer, if there is one.
+				 */
+				boost::optional<boost::asio::const_buffer> process_frame(const_helper<ethernet_frame> ethernet_helper, const_helper<ipv4_frame> ipv4_helper, const_helper<udp_frame> udp_helper, const_helper<bootp_frame> bootp_helper, const_helper<dhcp_frame> dhcp_helper, boost::asio::mutable_buffer response_buffer) const;
+
 			private:
-
-				void on_frame(const_helper<frame_type>);
-				void do_handle_frame(const_helper<ethernet_frame>, const_helper<ipv4_frame>, const_helper<udp_frame>, const_helper<bootp_frame>, const_helper<dhcp_frame>);
-
-				filter_type& m_dhcp_filter;
 
 				typedef std::map<ethernet_address_type, ipv4_address_netmask_type> entry_map_type;
 
@@ -169,19 +166,6 @@ namespace asiotap
 				boost::posix_time::time_duration m_lease_time;
 				entry_map_type m_entry_map;
 		};
-
-		inline proxy<dhcp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter_type& dhcp_filter) :
-			_base_proxy<dhcp_frame>(_response_buffer, on_data_available),
-			m_dhcp_filter(dhcp_filter),
-			m_lease_time(DEFAULT_LEASE_TIME)
-		{
-			m_dhcp_filter.add_handler(boost::bind(&proxy<dhcp_frame>::on_frame, this, _1));
-		}
-
-		inline bool proxy<dhcp_frame>::matched() const
-		{
-			return m_dhcp_filter.get_last_helper();
-		}
 
 		inline void proxy<dhcp_frame>::set_hardware_address(const ethernet_address_type& hardware_address)
 		{
@@ -213,17 +197,6 @@ namespace asiotap
 		inline bool proxy<dhcp_frame>::remove_entry(const ethernet_address_type& hardware_address)
 		{
 			return (m_entry_map.erase(hardware_address) > 0);
-		}
-
-		inline void proxy<dhcp_frame>::on_frame(const_helper<frame_type> helper)
-		{
-			do_handle_frame(
-			    *m_dhcp_filter.parent().parent().parent().parent().get_last_helper(),
-			    *m_dhcp_filter.parent().parent().parent().get_last_helper(),
-			    *m_dhcp_filter.parent().parent().get_last_helper(),
-			    *m_dhcp_filter.parent().get_last_helper(),
-			    helper
-			);
 		}
 	}
 }

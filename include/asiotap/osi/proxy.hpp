@@ -64,44 +64,6 @@ namespace asiotap
 				 * \brief The frame type.
 				 */
 				typedef OSIFrameType frame_type;
-
-				/**
-				 * \brief The data available callback type.
-				 */
-				typedef boost::function<void (boost::asio::const_buffer)> data_available_callback_type;
-
-				/**
-				 * \brief Create a proxy.
-				 * \param response_buffer The buffer to write the responses into.
-				 * \param on_data_available The callback function to call when data is available for writing.
-				 */
-				_base_proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available);
-
-			protected:
-
-				/**
-				 * \brief Get the response buffer.
-				 * \return The response buffer.
-				 */
-				boost::asio::mutable_buffer response_buffer() const;
-
-				/**
-				 * \brief Get the truncated response buffer.
-				 * \param size The size of the truncated response buffer.
-				 * \return The truncated response buffer.
-				 */
-				boost::asio::mutable_buffer get_truncated_response_buffer(size_t size) const;
-
-				/**
-				 * \brief Data is available.
-				 * \param buffer The data.
-				 */
-				void data_available(boost::asio::const_buffer buffer);
-
-			private:
-
-				boost::asio::mutable_buffer m_response_buffer;
-				data_available_callback_type m_on_data_available;
 		};
 
 		/**
@@ -109,32 +71,6 @@ namespace asiotap
 		 */
 		template <typename OSIFrameType>
 		class proxy;
-
-		template <typename OSIFrameType>
-		inline _base_proxy<OSIFrameType>::_base_proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available) :
-			m_response_buffer(_response_buffer),
-			m_on_data_available(on_data_available)
-		{
-			assert(m_on_data_available);
-		}
-
-		template <typename OSIFrameType>
-		inline boost::asio::mutable_buffer _base_proxy<OSIFrameType>::response_buffer() const
-		{
-			return m_response_buffer;
-		}
-
-		template <typename OSIFrameType>
-		inline boost::asio::mutable_buffer _base_proxy<OSIFrameType>::get_truncated_response_buffer(size_t size) const
-		{
-			return m_response_buffer + (boost::asio::buffer_size(m_response_buffer) - size);
-		}
-
-		template <typename OSIFrameType>
-		inline void _base_proxy<OSIFrameType>::data_available(boost::asio::const_buffer buffer)
-		{
-			m_on_data_available(buffer);
-		}
 	}
 }
 

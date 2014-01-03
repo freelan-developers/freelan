@@ -105,13 +105,14 @@ namespace asiotap
 
 		const boost::posix_time::time_duration proxy<dhcp_frame>::DEFAULT_LEASE_TIME = boost::posix_time::hours(1);
 
-		void proxy<dhcp_frame>::do_handle_frame(
-		    const_helper<ethernet_frame> ethernet_helper,
-		    const_helper<ipv4_frame> ipv4_helper,
-		    const_helper<udp_frame> udp_helper,
-		    const_helper<bootp_frame> bootp_helper,
-		    const_helper<dhcp_frame> dhcp_helper
-		)
+		boost::optional<boost::asio::const_buffer> proxy<dhcp_frame>::process_frame(
+				const_helper<ethernet_frame> ethernet_helper,
+				const_helper<ipv4_frame> ipv4_helper,
+				const_helper<udp_frame> udp_helper,
+				const_helper<bootp_frame> bootp_helper,
+				const_helper<dhcp_frame> dhcp_helper,
+				boost::asio::mutable_buffer response_buffer
+		) const
 		{
 			// This implementation is partial and far from being perfect.
 			// In a ideal world, there should be some udp_socket and a real (complete) DHCP server implementation.
@@ -135,7 +136,7 @@ namespace asiotap
 
 						size_t payload_size;
 
-						builder<dhcp_frame> dhcp_builder(response_buffer());
+						builder<dhcp_frame> dhcp_builder(response_buffer);
 
 						switch (message_type_option->value_as<uint8_t>())
 						{
@@ -211,7 +212,7 @@ namespace asiotap
 						dhcp_builder.complete_padding(60);
 						payload_size = dhcp_builder.write();
 
-						builder<bootp_frame> bootp_builder(response_buffer(), payload_size);
+						builder<bootp_frame> bootp_builder(response_buffer, payload_size);
 
 						payload_size = bootp_builder.write(
 						                   BOOTP_BOOTREPLY,
@@ -230,11 +231,11 @@ namespace asiotap
 						                   boost::asio::const_buffer(NULL, 0)
 						               );
 
-						builder<udp_frame> udp_builder(response_buffer(), payload_size);
+						builder<udp_frame> udp_builder(response_buffer, payload_size);
 
 						payload_size = udp_builder.write(udp_helper.destination(), udp_helper.source());
 
-						builder<ipv4_frame> ipv4_builder(response_buffer(), payload_size);
+						builder<ipv4_frame> ipv4_builder(response_buffer, payload_size);
 
 						payload_size = ipv4_builder.write(
 						                   ipv4_helper.tos(),
@@ -249,14 +250,16 @@ namespace asiotap
 
 						udp_builder.update_checksum(ipv4_builder.get_helper());
 
-						builder<ethernet_frame> ethernet_builder(response_buffer(), payload_size);
+						builder<ethernet_frame> ethernet_builder(response_buffer, payload_size);
 
 						payload_size = ethernet_builder.write(ethernet_helper.sender(), boost::asio::buffer(m_hardware_address), ethernet_helper.protocol());
 
-						data_available(get_truncated_response_buffer(payload_size));
+						return boost::make_optional<boost::asio::const_buffer>(response_buffer + (boost::asio::buffer_size(response_buffer) - payload_size));
 					}
 				}
 			}
+
+			return boost::optional<boost::asio::const_buffer>();
 		}
 	}
 }

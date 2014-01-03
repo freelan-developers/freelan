@@ -52,6 +52,8 @@
 #include "complex_filter.hpp"
 #include "ethernet_address.hpp"
 
+#include <boost/optional.hpp>
+
 #include <map>
 
 namespace asiotap
@@ -65,11 +67,6 @@ namespace asiotap
 		class proxy<arp_frame> : public _base_proxy<arp_frame>
 		{
 			public:
-
-				/**
-				 * \brief The filter type.
-				 */
-				typedef complex_filter<frame_type, ethernet_frame>::type filter_type;
 
 				/**
 				 * \brief The Ethernet address type.
@@ -88,17 +85,11 @@ namespace asiotap
 
 				/**
 				 * \brief Create an ARP proxy.
-				 * \param response_buffer The buffer to write the responses into.
-				 * \param on_data_available The callback function to call when data is available for writing.
-				 * \param arp_filter The ARP filter to use.
 				 */
-				proxy(boost::asio::mutable_buffer response_buffer, data_available_callback_type on_data_available, filter_type& arp_filter);
-
-				/**
-				 * \brief Check if the proxy matched during the last parsing.
-				 * \return true if the proxy matched.
-				 */
-				bool matched() const;
+				proxy() :
+					m_arp_request_callback(0)
+				{
+				}
 
 				/**
 				 * \brief Add a proxy entry.
@@ -128,31 +119,22 @@ namespace asiotap
 				 */
 				void set_arp_request_callback(arp_request_callback_type callback);
 
+				/**
+				 * \brief Process a frame.
+				 * \param ethernet_helper The ethernet layer.
+				 * \param arp_helper The ARP layer.
+				 * \param response_buffer The buffer to write the response to.
+				 * \return The buffer that contains the answer, if there is one.
+				 */
+				boost::optional<boost::asio::const_buffer> process_frame(const_helper<ethernet_frame> ethernet_helper, const_helper<arp_frame> arp_helper, boost::asio::mutable_buffer response_buffer) const;
+
 			private:
-
-				void on_frame(const_helper<frame_type>);
-				void do_handle_frame(const_helper<ethernet_frame>, const_helper<arp_frame>);
-
-				filter_type& m_arp_filter;
 
 				typedef std::map<boost::asio::ip::address_v4, ethernet_address_type> entry_map_type;
 
 				entry_map_type m_entry_map;
 				arp_request_callback_type m_arp_request_callback;
 		};
-
-		inline proxy<arp_frame>::proxy(boost::asio::mutable_buffer _response_buffer, data_available_callback_type on_data_available, filter_type& arp_filter) :
-			_base_proxy<arp_frame>(_response_buffer, on_data_available),
-			m_arp_filter(arp_filter),
-			m_arp_request_callback(0)
-		{
-			m_arp_filter.add_handler(boost::bind(&proxy<arp_frame>::on_frame, this, _1));
-		}
-
-		inline bool proxy<arp_frame>::matched() const
-		{
-			return m_arp_filter.get_last_helper();
-		}
 
 		inline bool proxy<arp_frame>::add_entry(const entry_type& entry)
 		{
@@ -172,14 +154,6 @@ namespace asiotap
 		inline void proxy<arp_frame>::set_arp_request_callback(arp_request_callback_type callback)
 		{
 			m_arp_request_callback = callback;
-		}
-
-		inline void proxy<arp_frame>::on_frame(const_helper<frame_type> helper)
-		{
-			do_handle_frame(
-			    *m_arp_filter.parent().get_last_helper(),
-			    helper
-			);
 		}
 	}
 }
