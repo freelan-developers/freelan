@@ -292,7 +292,7 @@ namespace freelan
 			 * \param msg The message to log.
 			 * \param timestamp The timestamp.
 			 */
-			void log(log_level level_, const std::string& msg, timestamp_type timestamp)
+			void log(log_level level_, const std::string& msg, timestamp_type timestamp = boost::posix_time::microsec_clock::universal_time())
 			{
 				if (m_handler && (level_ >= m_level))
 				{
@@ -313,9 +313,8 @@ namespace freelan
 			(*m_oss) << std::flush;
 
 			const std::string msg = (*m_oss).str();
-			const logger::timestamp_type timestamp = boost::posix_time::microsec_clock::universal_time();
 
-			m_logger.log(m_level, msg, timestamp);
+			m_logger.log(m_level, msg);
 		}
 	}
 }
