@@ -96,6 +96,45 @@ namespace freelan
 			}
 		}
 
+		template <typename SharedBufferType, typename Handler>
+		class shared_buffer_handler
+		{
+			public:
+
+				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
+					m_buffer(_buffer),
+					m_handler(_handler)
+				{}
+
+				void operator()()
+				{
+					m_handler();
+				}
+
+				template <typename Arg1>
+				void operator()(Arg1 arg1)
+				{
+					m_handler(arg1);
+				}
+
+				template <typename Arg1, typename Arg2>
+				void operator()(Arg1 arg1, Arg2 arg2)
+				{
+					m_handler(arg1, arg2);
+				}
+
+			private:
+
+				SharedBufferType m_buffer;
+				Handler m_handler;
+		};
+
+		template <typename SharedBufferType, typename Handler>
+		inline shared_buffer_handler<SharedBufferType, Handler> make_shared_buffer_handler(SharedBufferType _buffer, Handler _handler)
+		{
+			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
+		}
+
 		template <typename KeyType, typename ValueType, typename Handler>
 		class results_gatherer
 		{
@@ -164,6 +203,7 @@ namespace freelan
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
 		m_tap_adapter_strand(m_io_service),
+		m_proxies_strand(m_io_service),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
@@ -760,7 +800,7 @@ namespace freelan
 		{
 			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
 
-			m_tap_adapter.reset(new asiotap::tap_adapter(m_io_service));
+			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service));
 
 			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
 			{
@@ -842,7 +882,7 @@ namespace freelan
 				// The ARP proxy
 				if (m_configuration.tap_adapter.arp_proxy_enabled)
 				{
-					m_arp_proxy.reset(new arp_proxy_type(buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_arp_filter));
+					m_arp_proxy.reset(new arp_proxy_type());
 					m_arp_proxy->set_arp_request_callback(boost::bind(&core::do_handle_arp_request, this, _1, _2));
 				}
 				else
@@ -853,7 +893,7 @@ namespace freelan
 				// The DHCP proxy
 				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
 				{
-					m_dhcp_proxy.reset(new dhcp_proxy_type(buffer(m_proxy_buffer), boost::bind(&core::do_handle_proxy_data, this, _1), m_dhcp_filter));
+					m_dhcp_proxy.reset(new dhcp_proxy_type());
 					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
 
 					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
@@ -952,25 +992,28 @@ namespace freelan
 
 	void core::do_read_tap()
 	{
-		// All calls to do_read_tap() are done within the same strand, so the following is safe.
+		// All calls to do_read_tap() are done within the m_tap_adapter_strand, so the following is safe.
 		assert(m_tap_adapter);
 
-		tap_adapter_memory_pool::shared_buffer_type receive_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+		const tap_adapter_memory_pool::shared_buffer_type receive_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
 
 		m_tap_adapter->async_read(
 			buffer(receive_buffer),
-			boost::bind(
-				&core::do_handle_tap_adapter_read,
-				this,
-				receive_buffer,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred
+			m_proxies_strand.wrap(
+				boost::bind(
+					&core::do_handle_tap_adapter_read,
+					this,
+					receive_buffer,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred
+				)
 			)
 		);
 	}
 
 	void core::do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type receive_buffer, const boost::system::error_code& ec, size_t count)
 	{
+		// All calls to do_read_tap() are done within the m_proxies_strand, so the following is safe.
 		if (ec != boost::asio::error::operation_aborted)
 		{
 			// We try to read again, as soon as possible.
@@ -987,6 +1030,7 @@ namespace freelan
 
 				if (m_arp_proxy || m_dhcp_proxy)
 				{
+					// This line will eventually call the filters callbacks.
 					m_ethernet_filter.parse(data);
 
 					if (m_arp_proxy && m_arp_filter.get_last_helper())
@@ -1015,16 +1059,83 @@ namespace freelan
 		}
 		else if (ec != boost::asio::error::operation_aborted)
 		{
-			m_logger(LL_ERROR) << "Read failed on " << m_tap_adapter->name() << ". Error: " << ec;
+			m_logger(LL_ERROR) << "Read failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
 		}
 	}
 
-	void core::do_handle_proxy_data(boost::asio::const_buffer data)
+	void core::do_handle_tap_adapter_write(const boost::system::error_code& ec, size_t count)
 	{
-		if (m_tap_adapter)
+		static_cast<void>(count);
+
+		if (ec)
 		{
-			//TODO: Make that asynchronous
-			m_tap_adapter->write(data);
+			if (ec != boost::asio::error::operation_aborted)
+			{
+				m_logger(LL_WARNING) << "Write failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
+			}
+		}
+	}
+
+	void core::do_handle_arp_frame(const arp_helper_type& helper)
+	{
+		if (m_arp_proxy)
+		{
+			const proxy_memory_pool::shared_buffer_type response_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+			const boost::optional<boost::asio::const_buffer> data = m_arp_proxy->process_frame(
+				*m_arp_filter.parent().get_last_helper(),
+				helper,
+				buffer(response_buffer)
+			);
+
+			if (data)
+			{
+				async_write_tap(
+					*data,
+					make_shared_buffer_handler(
+						response_buffer,
+						boost::bind(
+							&core::do_handle_tap_adapter_write,
+							this,
+							boost::asio::placeholders::error,
+							boost::asio::placeholders::bytes_transferred
+						)
+					)
+				);
+			}
+		}
+	}
+
+	void core::do_handle_dhcp_frame(const dhcp_helper_type& helper)
+	{
+		if (m_dhcp_proxy)
+		{
+			const proxy_memory_pool::shared_buffer_type response_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+			const boost::optional<boost::asio::const_buffer> data = m_dhcp_proxy->process_frame(
+				*m_dhcp_filter.parent().parent().parent().parent().get_last_helper(),
+				*m_dhcp_filter.parent().parent().parent().get_last_helper(),
+				*m_dhcp_filter.parent().parent().get_last_helper(),
+				*m_dhcp_filter.parent().get_last_helper(),
+				helper,
+				buffer(response_buffer)
+			);
+
+			if (data)
+			{
+				async_write_tap(
+					*data,
+					make_shared_buffer_handler(
+						response_buffer,
+						boost::bind(
+							&core::do_handle_tap_adapter_write,
+							this,
+							boost::asio::placeholders::error,
+							boost::asio::placeholders::bytes_transferred
+						)
+					)
+				);
+			}
 		}
 	}
 

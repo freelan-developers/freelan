@@ -243,35 +243,53 @@ namespace freelan
 
 		private: /* TAP adapter */
 
+			typedef asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type arp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type ipv4_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type udp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type bootp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type dhcp_filter_type;
+			typedef asiotap::osi::const_helper<asiotap::osi::arp_frame> arp_helper_type;
+			typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame> dhcp_helper_type;
 			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
 			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
 			typedef fscp::memory_pool<65536, 8> tap_adapter_memory_pool;
+			typedef fscp::memory_pool<2048, 2> proxy_memory_pool;
 
 			void open_tap_adapter();
 			void close_tap_adapter();
 
 			void async_read_tap();
 
+			template <typename WriteHandler>
+			void async_write_tap(boost::asio::const_buffer data, WriteHandler handler)
+			{
+				m_tap_adapter_strand.post(boost::bind(&asiotap::tap_adapter::async_write<WriteHandler>, m_tap_adapter, data, handler));
+			}
+
 			void do_read_tap();
 
 			void do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
-			void do_handle_proxy_data(boost::asio::const_buffer);
+			void do_handle_tap_adapter_write(const boost::system::error_code&, size_t);
+			void do_handle_arp_frame(const arp_helper_type&);
+			void do_handle_dhcp_frame(const dhcp_helper_type&);
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
 
-			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
+			boost::shared_ptr<asiotap::tap_adapter> m_tap_adapter;
 			boost::asio::strand m_tap_adapter_strand;
+			boost::asio::strand m_proxies_strand;
 			tap_adapter_memory_pool m_tap_adapter_memory_pool;
 
-			asiotap::osi::filter<asiotap::osi::ethernet_frame> m_ethernet_filter;
-			asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type m_arp_filter;
-			asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_ipv4_filter;
-			asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_udp_filter;
-			asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_bootp_filter;
-			asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_dhcp_filter;
+			ethernet_filter_type m_ethernet_filter;
+			arp_filter_type m_arp_filter;
+			ipv4_filter_type m_ipv4_filter;
+			udp_filter_type m_udp_filter;
+			bootp_filter_type m_bootp_filter;
+			dhcp_filter_type m_dhcp_filter;
 
 			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
 			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
-			boost::array<unsigned char, 2048> m_proxy_buffer;
+			proxy_memory_pool m_proxy_memory_pool;
 
 		private: /* Switch & router */
 
