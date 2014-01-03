@@ -922,8 +922,7 @@ namespace freelan
 				m_dhcp_proxy.reset();
 			}
 
-			//TODO: Handle tap_adapter_up callback
-			//m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
+			m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
 
 			async_read_tap();
 		}
