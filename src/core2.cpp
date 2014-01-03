@@ -163,6 +163,7 @@ namespace freelan
 		m_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_tap_adapter_strand(m_io_service),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
@@ -836,8 +837,6 @@ namespace freelan
 
 			m_tap_adapter->set_connected_state(true);
 
-			async_read_tap();
-
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
 				// The ARP proxy
@@ -885,6 +884,8 @@ namespace freelan
 
 			//TODO: Handle tap_adapter_up callback
 			//m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
+
+			async_read_tap();
 		}
 		else
 		{
@@ -946,7 +947,12 @@ namespace freelan
 
 	void core::async_read_tap()
 	{
-		//TODO: Execute this from a strand to prevent concurrent accesses to the m_tap_adapter instance.
+		m_tap_adapter_strand.post(boost::bind(&core::do_read_tap, this));
+	}
+
+	void core::do_read_tap()
+	{
+		// All calls to do_read_tap() are done within the same strand, so the following is safe.
 		assert(m_tap_adapter);
 
 		tap_adapter_memory_pool::shared_buffer_type receive_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();

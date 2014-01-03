@@ -252,11 +252,14 @@ namespace freelan
 
 			void async_read_tap();
 
+			void do_read_tap();
+
 			void do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
 			void do_handle_proxy_data(boost::asio::const_buffer);
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
 
 			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
+			boost::asio::strand m_tap_adapter_strand;
 			tap_adapter_memory_pool m_tap_adapter_memory_pool;
 
 			asiotap::osi::filter<asiotap::osi::ethernet_frame> m_ethernet_filter;
