@@ -106,6 +106,11 @@ namespace freelan
 			typedef security_configuration::crl_type crl_type;
 
 			/**
+			 * \brief The resolver type.
+			 */
+			typedef boost::asio::ip::udp::resolver resolver_type;
+
+			/**
 			 * \brief The hash type.
 			 */
 			typedef fscp::hash_type hash_type;
@@ -183,11 +188,10 @@ namespace freelan
 			boost::asio::io_service& m_io_service;
 			freelan::configuration m_configuration;
 			freelan::logger m_logger;
-			boost::asio::ip::udp::resolver m_resolver;
 
 		private: /* FSCP server */
 
-			void open_server(const ep_type&);
+			void open_server();
 			void close_server();
 
 			void async_contact(const endpoint& target, duration_handler_type handler);

@@ -129,7 +129,12 @@ namespace freelan
 	 * \param default_service The default service to use.
 	 * \return The endpoint.
 	 */
-	boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service);
+	boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service)
+	{
+		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
+
+		return *resolver.resolve(query);
+	}
 
 	/**
 	 * \brief Perform an asynchronous host resolution on the endpoint.
@@ -140,7 +145,13 @@ namespace freelan
 	 * \param default_service The default service to use.
 	 * \param handler The handler.
 	 */
-	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, hostname_endpoint::handler handler);
+	template <typename ResolveHandler>
+	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, ResolveHandler handler)
+	{
+		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
+
+		resolver.async_resolve(query, handler);
+	}
 
 	/**
 	 * \brief Write an endpoint to an output stream.

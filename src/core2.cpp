@@ -160,7 +160,6 @@ namespace freelan
 		m_io_service(io_service),
 		m_configuration(_configuration),
 		m_logger(_logger),
-		m_resolver(m_io_service),
 		m_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
@@ -172,39 +171,17 @@ namespace freelan
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router)
 	{
+		if (!m_configuration.security.identity)
+		{
+			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
+		}
 	}
 
 	void core::open()
 	{
 		m_logger(LL_DEBUG) << "Opening core...";
 
-		const ep_type listen_endpoint = boost::apply_visitor(
-			endpoint_resolve_visitor(
-				m_resolver,
-				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
-				resolver_query::address_configured | resolver_query::passive, DEFAULT_SERVICE
-			),
-			m_configuration.fscp.listen_on
-		);
-
-		m_logger(LL_INFORMATION) << "Core set to listen on: " << listen_endpoint;
-
-		if (m_configuration.server.enabled)
-		{
-			m_logger(LL_INFORMATION) << "Server mode enabled.";
-
-			//TODO: Uncomment
-			//update_server_configuration(CI_ALL);
-
-			//TODO: Should we notify anyone that the configuration changed ?
-		}
-
-		if (!m_configuration.security.identity)
-		{
-			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
-		}
-
-		open_server(listen_endpoint);
+		open_server();
 		open_tap_adapter();
 
 		m_logger(LL_DEBUG) << "Core opened.";
@@ -227,10 +204,8 @@ namespace freelan
 		return has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), address);
 	}
 
-	void core::open_server(const ep_type& listen_endpoint)
+	void core::open_server()
 	{
-		assert(m_configuration.security.identity);
-
 		m_server.reset(new fscp::server(m_io_service, *m_configuration.security.identity));
 
 		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
@@ -246,7 +221,18 @@ namespace freelan
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
 		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3));
 
-		m_server->open(listen_endpoint);
+		resolver_type resolver(m_io_service);
+
+		const ep_type listen_endpoint = boost::apply_visitor(
+			endpoint_resolve_visitor(
+				resolver,
+				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+				resolver_query::address_configured | resolver_query::passive, DEFAULT_SERVICE
+			),
+			m_configuration.fscp.listen_on
+		);
+
+		m_logger(LL_INFORMATION) << "Core set to listen on: " << listen_endpoint;
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -286,6 +272,9 @@ namespace freelan
 			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
 		}
 
+		// Let's open the server.
+		m_server->open(listen_endpoint);
+
 		// We start the contact loop.
 		async_contact_all();
 
@@ -309,7 +298,7 @@ namespace freelan
 
 		boost::apply_visitor(
 			endpoint_async_resolve_visitor(
-				m_resolver,
+				boost::make_shared<resolver_type>(boost::ref(m_io_service)),
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured,
 				DEFAULT_SERVICE,

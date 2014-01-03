@@ -119,12 +119,34 @@ namespace freelan
 			/**
 			 * \brief The resolver type.
 			 */
-			typedef boost::asio::ip::udp::resolver resolver;
+			typedef boost::asio::ip::udp::resolver resolver_type;
 
 			/**
 			 * \brief The handler type.
 			 */
-			typedef boost::function<void (const boost::system::error_code&, resolver::iterator)> handler;
+			typedef boost::function<void (const boost::system::error_code&, resolver_type::iterator)> handler_type;
+
+		private:
+
+			class resolver_handler
+			{
+				public:
+					resolver_handler(boost::shared_ptr<resolver_type> _resolver, handler_type _handler) :
+						m_resolver(_resolver),
+						m_handler(_handler)
+					{}
+
+					void operator()(const boost::system::error_code& ec, resolver_type::iterator it)
+					{
+						m_handler(ec, it);
+					}
+
+				private:
+					boost::shared_ptr<resolver_type> m_resolver;
+					handler_type m_handler;
+			};
+
+		public:
 
 			/**
 			 * \brief Create a new endpoint_async_resolve_visitor.
@@ -134,7 +156,7 @@ namespace freelan
 			 * \param default_service The default service to use.
 			 * \param _handler The handler to use.
 			 */
-			endpoint_async_resolve_visitor(resolver& _resolver, resolver::query::protocol_type protocol, resolver::query::flags flags, const std::string& default_service, handler _handler) :
+			endpoint_async_resolve_visitor(boost::shared_ptr<resolver_type> _resolver, resolver_type::query::protocol_type protocol, resolver_type::query::flags flags, const std::string& default_service, handler_type _handler) :
 				m_resolver(_resolver),
 				m_protocol(protocol),
 				m_flags(flags),
@@ -152,16 +174,16 @@ namespace freelan
 			template <typename T>
 			void operator()(const T& ep) const
 			{
-				return async_resolve(ep, m_resolver, m_protocol, m_flags, m_default_service, m_handler);
+				return async_resolve(ep, *m_resolver, m_protocol, m_flags, m_default_service, resolver_handler(m_resolver, m_handler));
 			}
 
 		private:
 
-			resolver& m_resolver;
-			resolver::query::protocol_type m_protocol;
-			resolver::query::flags m_flags;
+			boost::shared_ptr<resolver_type> m_resolver;
+			resolver_type::query::protocol_type m_protocol;
+			resolver_type::query::flags m_flags;
 			std::string m_default_service;
-			handler m_handler;
+			handler_type m_handler;
 	};
 
 	/**

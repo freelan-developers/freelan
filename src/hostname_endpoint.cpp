@@ -73,20 +73,6 @@ namespace freelan
 		}
 	}
 
-	boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service)
-	{
-		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
-
-		return *resolver.resolve(query);
-	}
-
-	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, hostname_endpoint::handler handler)
-	{
-		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
-
-		resolver.async_resolve(query, handler);
-	}
-
 	std::ostream& operator<<(std::ostream& os, const hostname_endpoint& value)
 	{
 		os << value.hostname();
