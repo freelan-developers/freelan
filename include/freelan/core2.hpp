@@ -64,6 +64,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
  #include <queue>
 
@@ -71,10 +72,6 @@ namespace freelan
 {
 	/**
 	 * \brief The core class.
-	 * All the public methods are thread-safe, unless otherwise specified.
-	 *
-	 * async_* methods are designed to be run from inside handlers (or callbacks).
-	 * sync_* methods are designed to be run outside of the core running threads while the core is running.
 	 */
 	class core
 	{
@@ -144,6 +141,47 @@ namespace freelan
 			 */
 			typedef boost::function<void (const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
 
+			// Callbacks
+
+			/**
+			 * \brief The log callback.
+			 */
+			typedef logger::log_handler_type log_handler_type;
+
+			/**
+			 * \brief The core opened callback.
+			 */
+			typedef boost::function<void ()> core_opened_handler_type;
+
+			/**
+			 * \brief The core closed callback.
+			 */
+			typedef boost::function<void ()> core_closed_handler_type;
+
+			/**
+			 * \brief A session failed callback.
+			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
+			 * \param local The local algorithms.
+			 * \param remote The remote algorithms.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_failed_handler_type;
+
+			/**
+			 * \brief A session established callback.
+			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
+			 * \param local The local algorithms.
+			 * \param remote The remote algorithms.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_handler_type;
+
+			/**
+			 * \brief A session lost callback.
+			 * \param host The host with which a session was lost.
+			 */
+			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
+
 			// Public constants
 
 			/**
@@ -167,9 +205,63 @@ namespace freelan
 			 * \brief The constructor.
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
-			 * \param _logger The logger to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& _logger);
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration);
+
+			/**
+			 * \brief Set the function to call when a log entry is emitted.
+			 * \param callback The callback.
+			 *
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_log_callback(log_handler_type callback);
+
+			/**
+			 * \brief Set the logger's level.
+			 * \param level The log level.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_log_level(log_level level)
+			{
+				m_logger.set_level(level);
+			}
+
+			/**
+			 * \brief Set the function to call when the core was just opened.
+			 * \param callback The callback.
+			 *
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_core_opened_callback(core_opened_handler_type callback);
+
+			/**
+			 * \brief Set the function to call when the core was just closed.
+			 * \param callback The callback.
+			 *
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_close_callback(core_closed_handler_type callback);
+
+			/**
+			 * \brief Set the session failed callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_session_failed_callback(session_failed_handler_type callback);
+
+			/**
+			 * \brief Set the session established callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_session_established_callback(session_established_handler_type callback);
+
+			/**
+			 * \brief Set the session lost callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_session_lost_callback(session_lost_handler_type callback);
 
 			/**
 			 * \brief Open the core.
@@ -182,14 +274,27 @@ namespace freelan
 			 */
 			void close();
 
+		private:
+
+			boost::asio::io_service& m_io_service;
+			const freelan::configuration m_configuration;
+			boost::asio::strand m_logger_strand;
+			freelan::logger m_logger;
+
+		private: /* Callbacks */
+
+			void do_handle_log(log_level, const std::string&, const boost::posix_time::ptime&);
+
+			log_handler_type m_log_callback;
+			core_opened_handler_type m_core_opened_callback;
+			core_closed_handler_type m_core_closed_callback;
+			session_failed_handler_type m_session_failed_callback;
+			session_established_handler_type m_session_established_callback;
+			session_lost_handler_type m_session_lost_callback;
 
 		private: /* General purpose */
 
 			bool is_banned(const boost::asio::ip::address& address) const;
-
-			boost::asio::io_service& m_io_service;
-			const freelan::configuration m_configuration;
-			freelan::logger m_logger;
 
 		private: /* FSCP server */
 

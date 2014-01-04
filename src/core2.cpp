@@ -261,10 +261,17 @@ namespace freelan
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
-	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration, const freelan::logger& _logger) :
+	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
 		m_io_service(io_service),
 		m_configuration(_configuration),
-		m_logger(_logger),
+		m_logger_strand(m_io_service),
+		m_logger(m_logger_strand.wrap(boost::bind(&core::do_handle_log, this, _1, _2, _3))),
+		m_log_callback(),
+		m_core_opened_callback(),
+		m_core_closed_callback(),
+		m_session_failed_callback(),
+		m_session_established_callback(),
+		m_session_lost_callback(),
 		m_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
@@ -309,6 +316,15 @@ namespace freelan
 	}
 
 	// Private methods
+
+	void core::do_handle_log(log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp)
+	{
+		// All do_handle_log() calls are done within the same strand, so the user does not need to protect his callback with a mutex that might slow things down.
+		if (m_log_callback)
+		{
+			m_log_callback(level, msg, timestamp);
+		}
+	}
 
 	bool core::is_banned(const boost::asio::ip::address& address) const
 	{
@@ -681,8 +697,10 @@ namespace freelan
 		m_logger(LL_WARNING) << "Local algorithms: " << local;
 		m_logger(LL_WARNING) << "Remote algorithms: " << remote;
 
-		//TODO: Handle callback
-		//m_session_failed_callback(host, is_new, local, remote);
+		if (m_session_failed_callback)
+		{
+			m_session_failed_callback(host, is_new, local, remote);
+		}
 	}
 
 	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
@@ -722,16 +740,20 @@ namespace freelan
 			}
 		}
 
-		//TODO: Handle callbacks
-		//m_session_established_callback(host, is_new, local, remote);
+		if (m_session_established_callback)
+		{
+			m_session_established_callback(host, is_new, local, remote);
+		}
 	}
 
 	void core::do_handle_session_lost(const ep_type& host)
 	{
 		m_logger(LL_INFORMATION) << "Session with " << host << " lost.";
 
-		//TODO: Handle session lost callback
-		//m_session_lost_callback(host);
+		if (m_session_lost_callback)
+		{
+			m_session_lost_callback(host);
+		}
 
 		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 		{
@@ -1009,8 +1031,7 @@ namespace freelan
 
 		if (m_tap_adapter)
 		{
-			//TODO: Handle tap_adapter_down callback
-			//m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
+			m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
 
 			m_switch.unregister_port(m_tap_adapter_switch_port);
 			m_router.unregister_port(m_tap_adapter_router_port);
