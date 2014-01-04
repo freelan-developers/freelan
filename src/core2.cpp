@@ -135,6 +135,72 @@ namespace freelan
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
 
+		template <typename Handler, typename CausalHandler>
+		class causal_handler
+		{
+			private:
+
+				class automatic_caller : public boost::noncopyable
+				{
+					public:
+
+						automatic_caller(CausalHandler& _handler) :
+							m_auto_handler(_handler)
+						{
+						}
+
+						~automatic_caller()
+						{
+							m_auto_handler();
+						}
+
+					private:
+
+						CausalHandler& m_auto_handler;
+				};
+
+			public:
+
+				causal_handler(Handler _handler, CausalHandler _causal_handler) :
+					m_handler(_handler),
+					m_causal_handler(_causal_handler)
+				{}
+
+				void operator()()
+				{
+					automatic_caller ac(m_causal_handler);
+
+					m_handler();
+				}
+
+				template <typename Arg1>
+				void operator()(Arg1 arg1)
+				{
+					automatic_caller ac(m_causal_handler);
+
+					m_handler(arg1);
+				}
+
+				template <typename Arg1, typename Arg2>
+				void operator()(Arg1 arg1, Arg2 arg2)
+				{
+					automatic_caller ac(m_causal_handler);
+
+					m_handler(arg1, arg2);
+				}
+
+			private:
+
+				Handler m_handler;
+				CausalHandler m_causal_handler;
+		};
+
+		template <typename Handler, typename CausalHandler>
+		inline causal_handler<Handler, CausalHandler> make_causal_handler(Handler _handler, CausalHandler _causal_handler)
+		{
+			return causal_handler<Handler, CausalHandler>(_handler, _causal_handler);
+		}
+
 		template <typename KeyType, typename ValueType, typename Handler>
 		class results_gatherer
 		{
@@ -204,6 +270,7 @@ namespace freelan
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
 		m_tap_adapter_strand(m_io_service),
 		m_proxies_strand(m_io_service),
+		m_tap_write_queue_strand(m_io_service),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
@@ -990,6 +1057,29 @@ namespace freelan
 	void core::async_read_tap()
 	{
 		m_tap_adapter_strand.post(boost::bind(&core::do_read_tap, this));
+	}
+
+	void core::push_tap_write(void_handler_type handler)
+	{
+		// All push_write() calls are done in the same strand so the following is thread-safe.
+		if (m_tap_write_queue.empty())
+		{
+			// Nothing is being written, lets start the write immediately.
+			m_tap_adapter_strand.post(make_causal_handler(handler, m_tap_write_queue_strand.wrap(boost::bind(&core::pop_tap_write, this))));
+		}
+
+		m_tap_write_queue.push(handler);
+	}
+
+	void core::pop_tap_write()
+	{
+		// All pop_write() calls are done in the same strand so the following is thread-safe.
+		m_tap_write_queue.pop();
+
+		if (!m_tap_write_queue.empty())
+		{
+			m_tap_adapter_strand.post(make_causal_handler(m_tap_write_queue.front(), m_tap_write_queue_strand.wrap(boost::bind(&core::pop_tap_write, this))));
+		}
 	}
 
 	void core::do_read_tap()

@@ -65,6 +65,8 @@
 #include <boost/bind.hpp>
 #include <boost/scoped_ptr.hpp>
 
+ #include <queue>
+
 namespace freelan
 {
 	/**
@@ -264,8 +266,13 @@ namespace freelan
 			template <typename WriteHandler>
 			void async_write_tap(boost::asio::const_buffer data, WriteHandler handler)
 			{
-				m_tap_adapter_strand.post(boost::bind(&asiotap::tap_adapter::async_write<WriteHandler>, m_tap_adapter, data, handler));
+				void_handler_type write_handler = boost::bind(&asiotap::tap_adapter::async_write<WriteHandler>, m_tap_adapter, data, handler);
+
+				m_tap_write_queue_strand.post(boost::bind(&core::push_tap_write, this, write_handler));
 			}
+
+			void push_tap_write(void_handler_type);
+			void pop_tap_write();
 
 			void do_read_tap();
 
@@ -279,6 +286,8 @@ namespace freelan
 			boost::asio::strand m_tap_adapter_strand;
 			boost::asio::strand m_proxies_strand;
 			tap_adapter_memory_pool m_tap_adapter_memory_pool;
+			std::queue<void_handler_type> m_tap_write_queue;
+			boost::asio::strand m_tap_write_queue_strand;
 
 			ethernet_filter_type m_ethernet_filter;
 			arp_filter_type m_arp_filter;
