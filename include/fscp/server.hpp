@@ -57,6 +57,7 @@
 
 #include <set>
 #include <map>
+#include <queue>
 
 #include <stdint.h>
 
@@ -1162,14 +1163,21 @@ namespace fscp
 			template <typename ConstBufferSequence, typename WriteHandler>
 			void async_send_to(const ConstBufferSequence& data, const ep_type& target, WriteHandler handler)
 			{
-				m_socket_strand.post(boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, to_socket_format(target), 0, handler));
+				const void_handler_type write_handler = boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, to_socket_format(target), 0, handler);
+
+				m_write_queue_strand.post(boost::bind(&server::push_write, this, write_handler));
 			}
+
+			void push_write(void_handler_type);
+			void pop_write();
 
 			void handle_send_to(const boost::system::error_code&, size_t) {};
 
 			socket_type m_socket;
 			boost::asio::strand m_socket_strand;
 			socket_memory_pool m_socket_memory_pool;
+			std::queue<void_handler_type> m_write_queue;
+			boost::asio::strand m_write_queue_strand;
 
 		private: // HELLO messages
 

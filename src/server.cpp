@@ -136,6 +136,48 @@ namespace fscp
 			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
 
+		template <typename Handler, typename CausalHandler>
+		class causal_handler
+		{
+			public:
+
+				causal_handler(Handler _handler, CausalHandler _causal_handler) :
+					m_handler(_handler),
+					m_causal_handler(_causal_handler)
+				{}
+
+				void operator()()
+				{
+					m_handler();
+					m_causal_handler();
+				}
+
+				template <typename Arg1>
+				void operator()(Arg1 arg1)
+				{
+					m_handler(arg1);
+					m_causal_handler();
+				}
+
+				template <typename Arg1, typename Arg2>
+				void operator()(Arg1 arg1, Arg2 arg2)
+				{
+					m_handler(arg1, arg2);
+					m_causal_handler();
+				}
+
+			private:
+
+				Handler m_handler;
+				CausalHandler m_causal_handler;
+		};
+
+		template <typename Handler, typename CausalHandler>
+		inline causal_handler<Handler, CausalHandler> make_causal_handler(Handler _handler, CausalHandler _causal_handler)
+		{
+			return causal_handler<Handler, CausalHandler>(_handler, _causal_handler);
+		}
+
 		cipher_algorithm_list_type get_default_cipher_capabilities()
 		{
 			cipher_algorithm_list_type result;
@@ -192,6 +234,7 @@ namespace fscp
 		m_identity_store(identity),
 		m_socket(io_service),
 		m_socket_strand(io_service),
+		m_write_queue_strand(io_service),
 		m_greet_strand(io_service),
 		m_accept_hello_messages_default(true),
 		m_hello_message_received_handler(),
@@ -860,6 +903,29 @@ namespace fscp
 				// The host refused the connection, meaning it closed its socket so we can force-terminate the session.
 				async_close_session(*sender, &null_simple_handler);
 			}
+		}
+	}
+
+	void server::push_write(void_handler_type handler)
+	{
+		// All push_write() calls are done in the same strand so the following is thread-safe.
+		if (m_write_queue.empty())
+		{
+			// Nothing is being written, lets start the write immediately.
+			m_socket_strand.post(make_causal_handler(handler, m_write_queue_strand.wrap(boost::bind(&server::pop_write, this))));
+		}
+
+		m_write_queue.push(handler);
+	}
+
+	void server::pop_write()
+	{
+		// All pop_write() calls are done in the same strand so the following is thread-safe.
+		m_write_queue.pop();
+
+		if (!m_write_queue.empty())
+		{
+			m_socket_strand.post(make_causal_handler(m_write_queue.front(), m_write_queue_strand.wrap(boost::bind(&server::pop_write, this))));
 		}
 	}
 
