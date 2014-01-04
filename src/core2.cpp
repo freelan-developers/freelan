@@ -216,6 +216,9 @@ namespace freelan
 		{
 			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
 		}
+
+		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
+		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
 	}
 
 	void core::open()
