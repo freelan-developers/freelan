@@ -139,6 +139,27 @@ namespace fscp
 		template <typename Handler, typename CausalHandler>
 		class causal_handler
 		{
+			private:
+
+				class automatic_caller : public boost::noncopyable
+				{
+					public:
+
+						automatic_caller(CausalHandler& _handler) :
+							m_auto_handler(_handler)
+						{
+						}
+
+						~automatic_caller()
+						{
+							m_auto_handler();
+						}
+
+					private:
+
+						CausalHandler& m_auto_handler;
+				};
+
 			public:
 
 				causal_handler(Handler _handler, CausalHandler _causal_handler) :
@@ -148,22 +169,25 @@ namespace fscp
 
 				void operator()()
 				{
+					automatic_caller ac(m_causal_handler);
+
 					m_handler();
-					m_causal_handler();
 				}
 
 				template <typename Arg1>
 				void operator()(Arg1 arg1)
 				{
+					automatic_caller ac(m_causal_handler);
+
 					m_handler(arg1);
-					m_causal_handler();
 				}
 
 				template <typename Arg1, typename Arg2>
 				void operator()(Arg1 arg1, Arg2 arg2)
 				{
+					automatic_caller ac(m_causal_handler);
+
 					m_handler(arg1, arg2);
-					m_causal_handler();
 				}
 
 			private:
