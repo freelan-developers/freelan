@@ -191,7 +191,7 @@ static void on_session_lost(const std::string& name, fscp::server&, const fscp::
 	std::cout << "[" << name << "] Session lost with " << host << std::endl;
 }
 
-static void on_data(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+static void on_data(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type, boost::asio::const_buffer data)
 {
 	static_cast<void>(server);
 
@@ -276,9 +276,9 @@ int main()
 		bob_server.set_session_lost_callback(boost::bind(&on_session_lost, "bob", boost::ref(bob_server), _1));
 		chris_server.set_session_lost_callback(boost::bind(&on_session_lost, "chris", boost::ref(chris_server), _1));
 
-		alice_server.set_data_received_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_data_received_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3));
-		chris_server.set_data_received_callback(boost::bind(&on_data, "chris", boost::ref(chris_server), _1, _2, _3));
+		alice_server.set_data_received_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_data_received_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_data_received_callback(boost::bind(&on_data, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		bob_server.set_contact_request_received_callback(boost::bind(&on_contact_request_message, "bob", boost::ref(bob_server), _1, _2, _3, _4));
 

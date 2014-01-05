@@ -2173,20 +2173,18 @@ namespace fscp
 
 		// We don't need the original buffer at this point, so we just defer handling in another call so that it will free the buffer sooner and that it will allow parallel processing.
 		m_data_strand.post(
-			make_shared_buffer_handler(
+			boost::bind(
+				&server::do_handle_data_message,
+				this,
+				sender,
+				type,
 				cleartext_buffer,
-				boost::bind(
-					&server::do_handle_data_message,
-					this,
-					sender,
-					type,
-					buffer(cleartext_buffer, cleartext_len)
-				)
+				buffer(cleartext_buffer, cleartext_len)
 			)
 		);
 	}
 
-	void server::do_handle_data_message(const ep_type& sender, message_type type, boost::asio::const_buffer data)
+	void server::do_handle_data_message(const ep_type& sender, message_type type, shared_buffer_type buffer, boost::asio::const_buffer data)
 	{
 		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
 		if (is_data_message_type(type))
@@ -2196,7 +2194,7 @@ namespace fscp
 
 			if (m_data_received_handler)
 			{
-				m_data_received_handler(sender, channel_number, data);
+				m_data_received_handler(sender, channel_number, buffer, data);
 			}
 		}
 		else if (type == MESSAGE_TYPE_CONTACT_REQUEST)

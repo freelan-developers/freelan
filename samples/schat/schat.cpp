@@ -169,7 +169,7 @@ static void on_session_lost(const fscp::server::ep_type& host)
 	std::cout << "Session lost with " << host << std::endl;
 }
 
-static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type, boost::asio::const_buffer data)
 {
 	try
 	{
@@ -328,7 +328,7 @@ int main(int argc, char** argv)
 		while (std::cin.getline(line, sizeof(line)))
 		{
 			server.get_io_service().post(boost::bind(&handle_read_line, boost::ref(server), std::string(line)));
-		}	
+		}
 
 #endif
 

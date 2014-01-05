@@ -81,6 +81,10 @@ namespace fscp
 	 */
 	class server
 	{
+		private:
+
+			typedef memory_pool<65536, 32> socket_memory_pool;
+
 		public:
 
 			// General purpose type definitions
@@ -99,6 +103,11 @@ namespace fscp
 			 * \brief The socket type.
 			 */
 			typedef boost::asio::ip::udp::socket socket_type;
+
+			/**
+			 * \brief The shared buffer type.
+			 */
+			typedef socket_memory_pool::shared_buffer_type shared_buffer_type;
 
 			// Handlers
 
@@ -203,9 +212,10 @@ namespace fscp
 			 * \brief A handler for when data is available.
 			 * \param sender The endpoint that sent the data message.
 			 * \param channel_number The channel number.
+			 * \param buffer The buffer that own the data. Must be release as soon as possible to avoid memory starvation.
 			 * \param data The sent data.
 			 */
-			typedef boost::function<void (const ep_type& sender, channel_number_type channel_number, boost::asio::const_buffer data)> data_received_handler_type;
+			typedef boost::function<void (const ep_type& sender, channel_number_type channel_number, shared_buffer_type buffer, boost::asio::const_buffer data)> data_received_handler_type;
 
 			/**
 			 * \brief A handler for when contact requests are received.
@@ -1148,8 +1158,6 @@ namespace fscp
 
 		private:
 
-			typedef memory_pool<65536, 32> socket_memory_pool;
-
 			void async_receive_from()
 			{
 				m_socket_strand.post(boost::bind(&server::do_async_receive_from, this));
@@ -1378,7 +1386,7 @@ namespace fscp
 			void do_send_contact_to_session(session_pair&, const ep_type&, const contact_map_type&, simple_handler_type);
 			void handle_data_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
 			void do_handle_data(const identity_store&, const ep_type&, const data_message&);
-			void do_handle_data_message(const ep_type&, message_type, boost::asio::const_buffer);
+			void do_handle_data_message(const ep_type&, message_type, shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_contact_request(const ep_type&, const std::set<hash_type>&);
 			void do_handle_contact(const ep_type&, const contact_map_type&);
 
