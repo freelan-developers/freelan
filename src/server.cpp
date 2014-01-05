@@ -222,7 +222,12 @@ namespace fscp
 				results_gatherer(Handler handler, const set_type& keys) :
 					m_handler(handler),
 					m_keys(keys)
-				{}
+				{
+					if (m_keys.empty())
+					{
+						m_handler(m_results);
+					}
+				}
 
 				void gather(const KeyType& key, const ValueType& value)
 				{
