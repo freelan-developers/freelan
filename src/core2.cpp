@@ -47,6 +47,8 @@
 
 #include "os.hpp"
 #include "client.hpp"
+#include "routes_request_message.hpp"
+#include "routes_message.hpp"
 
 #include <fscp/server_error.hpp>
 
@@ -760,10 +762,9 @@ namespace freelan
 			case fscp::CHANNEL_NUMBER_1:
 				try
 				{
-					//TODO: Uncomment
-					//const message msg(boost::asio::buffer_cast<const uint8_t*>(data), boost::asio::buffer_size(data));
+					const message msg(buffer_cast<const uint8_t*>(data), buffer_size(data));
 
-					//on_message(sender, msg);
+					do_handle_message(sender, buffer, msg);
 				}
 				catch (std::runtime_error& ex)
 				{
@@ -773,6 +774,43 @@ namespace freelan
 				break;
 			default:
 				m_logger(LL_WARNING) << "Received unhandled " << buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
+				break;
+		}
+	}
+
+	void core::do_handle_message(const ep_type& sender, fscp::server::shared_buffer_type, const message& msg)
+	{
+		switch (msg.type())
+		{
+			case message::MT_ROUTES_REQUEST:
+				{
+					if (m_configuration.router.accept_routes_requests)
+					{
+						routes_request_message rr_msg(msg);
+
+						static_cast<void>(sender);
+
+						//TODO: Handle msg.sequence()
+						//on_routes_requested(sender, rr_msg);
+					}
+
+					break;
+				}
+
+			case message::MT_ROUTES:
+				{
+					routes_message r_msg(msg);
+
+					//TODO: Handle received routes.
+					//const routes_type routes = r_msg.routes();
+
+					//on_routes_received(sender, r_msg);
+
+					break;
+				}
+
+			default:
+				m_logger(LL_WARNING) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
 				break;
 		}
 	}

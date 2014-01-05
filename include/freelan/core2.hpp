@@ -50,6 +50,7 @@
 #include "logger.hpp"
 #include "switch.hpp"
 #include "router.hpp"
+#include "message.hpp"
 
 #include <fscp/fscp.hpp>
 
@@ -337,6 +338,7 @@ namespace freelan
 			void do_handle_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void do_handle_session_lost(const ep_type&);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
+			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
 
 			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;
