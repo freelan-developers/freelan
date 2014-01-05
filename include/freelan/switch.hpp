@@ -48,12 +48,13 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 
-#include "switch_port.hpp"
 #include "configuration.hpp"
+#include "port_index.hpp"
 
 namespace freelan
 {
@@ -70,65 +71,134 @@ namespace freelan
 			static const unsigned int MAX_ENTRIES_DEFAULT;
 
 			/**
-			 * \brief The base port type.
+			 * \brief The port group type.
 			 */
-			typedef switch_port base_port_type;
+			typedef unsigned int port_group_type;
 
 			/**
-			 * \brief The port type.
+			 * \brief The multi write result type.
 			 */
-			typedef boost::shared_ptr<base_port_type> port_type;
+			typedef std::map<port_index_type, boost::system::error_code> multi_write_result_type;
 
 			/**
-			 * \brief The group type.
+			 * \brief The write handler type.
 			 */
-			typedef unsigned int group_type;
+			typedef boost::function<void (const multi_write_result_type&)> multi_write_handler_type;
+
+			/**
+			 * \brief A switch port type.
+			 */
+			class port_type
+			{
+				public:
+
+					/**
+					 * \brief The write handler type.
+					 */
+					typedef boost::function<void (boost::system::error_code)> write_handler_type;
+
+					/**
+					 * \brief A write function type.
+					 */
+					typedef boost::function<void (boost::asio::const_buffer data, write_handler_type handler)> write_function_type;
+
+					/**
+					 * \brief Create a new default port.
+					 */
+					port_type() :
+						m_write_function(),
+						m_group()
+					{}
+
+					/**
+					 * \brief Create a new port.
+					 * \param write_function The write function to use.
+					 * \param _group The group this port belongs to.
+					 */
+					port_type(write_function_type write_function, port_group_type _group) :
+						m_write_function(write_function),
+						m_group(_group)
+					{}
+
+					/**
+					 * \brief Write data to the port.
+					 * \param data The data to write.
+					 * \param handler The handler to call when the write is complete.
+					 */
+					void async_write(boost::asio::const_buffer data, write_handler_type handler)
+					{
+						m_write_function(data, handler);
+					}
+
+					port_group_type group() const
+					{
+						return m_group;
+					}
+
+				private:
+
+					write_function_type m_write_function;
+					port_group_type m_group;
+			};
 
 			/**
 			 * \brief The port list type.
 			 */
-			typedef std::map<port_type, group_type> port_list_type;
+			typedef std::map<port_index_type, port_type> port_list_type;
 
 			/**
 			 * \brief Create a new switch.
 			 * \param configuration The switch configuration.
 			 * \param max_entries maximum entries allowed.
 			 */
-			switch_(const switch_configuration& configuration, const unsigned int max_entries = MAX_ENTRIES_DEFAULT);
+			switch_(const switch_configuration& configuration, const unsigned int max_entries = MAX_ENTRIES_DEFAULT) :
+				m_configuration(configuration),
+				m_max_entries(max_entries)
+			{}
 
 			/**
 			 * \brief Register a switch port.
+			 * \param index The index of the port.
 			 * \param port The port to register. Cannot be null.
-			 * \param group The group of the port.
 			 */
-			void register_port(port_type port, group_type group = 0);
+			void register_port(port_index_type index, port_type port)
+			{
+				m_ports[index] = port;
+			}
 
 			/**
 			 * \brief Unregister a port.
-			 * \param port The port to unregister. Cannot be null.
+			 * \param index The port to unregister. Cannot be null.
 			 *
 			 * If the port was not registered, nothing is done.
 			 */
-			void unregister_port(port_type port);
+			void unregister_port(port_index_type index)
+			{
+				m_ports.erase(index);
+			}
 
 			/**
 			 * \brief Check if the specified port is registered.
-			 * \param port The port to check.
+			 * \param index The port to check.
 			 * \return true if the port is registered, false otherwise.
 			 */
-			bool is_registered(port_type port) const;
+			bool is_registered(port_index_type index) const
+			{
+				return (m_ports.find(index) != m_ports.end());
+			}
 
 			/**
 			 * \brief Receive data trough the specified port.
-			 * \param port The port from which the data comes. Cannot be null.
-			 * \param data The data.
+			 * \param index The port from which the data comes.
+			 * \param data The data to write.
+			 * \param handler The handler to call when the write is complete.
 			 */
-			void receive_data(port_type port, boost::asio::const_buffer data);
+			void async_write(port_index_type index, boost::asio::const_buffer data, multi_write_handler_type handler);
 
 		private:
 
-			void send_data_from(port_type, boost::asio::const_buffer);
-			void send_data_from_to(port_type, port_type, boost::asio::const_buffer);
+			std::set<port_index_type> get_targets_for(port_index_type, boost::asio::const_buffer);
+			std::set<port_index_type> get_targets_for(port_list_type::const_iterator);
 
 			switch_configuration m_configuration;
 			unsigned int m_max_entries;
@@ -136,35 +206,13 @@ namespace freelan
 			port_list_type m_ports;
 
 			typedef boost::array<uint8_t, 6> ethernet_address_type;
-			typedef boost::weak_ptr<base_port_type> weak_port_type;
-			typedef std::map<ethernet_address_type, weak_port_type> ethernet_address_map_type;
+			typedef std::map<ethernet_address_type, port_index_type> ethernet_address_map_type;
 
 			static ethernet_address_type to_ethernet_address(boost::asio::const_buffer);
-			static bool is_multicast_address(const ethernet_address_type& address);
+			static bool is_multicast_address(const ethernet_address_type&);
 
 			ethernet_address_map_type m_ethernet_address_map;
 	};
-
-	inline switch_::switch_(const switch_configuration& configuration, const unsigned int max_entries) :
-		m_configuration(configuration),
-		m_max_entries(max_entries)
-	{
-	}
-
-	inline void switch_::register_port(port_type port, group_type group)
-	{
-		m_ports[port] = group;
-	}
-
-	inline void switch_::unregister_port(port_type port)
-	{
-		m_ports.erase(port);
-	}
-
-	inline bool switch_::is_registered(port_type port) const
-	{
-		return (m_ports.find(port) != m_ports.end());
-	}
 }
 
 #endif /* SWITCH_HPP */

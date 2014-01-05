@@ -59,35 +59,100 @@
 #include <boost/random/variate_generator.hpp>
 #endif
 
-#include <asiotap/osi/ethernet_helper.hpp>
+#include <boost/mutex.hpp>
+#include <boost/make_shared.hpp>
 
-#include "tap_adapter_switch_port.hpp"
+#include <asiotap/osi/ethernet_helper.hpp>
 
 namespace freelan
 {
+	namespace
+	{
+		template <typename KeyType, typename ValueType, typename Handler>
+		class results_gatherer
+		{
+			public:
+
+				typedef std::set<KeyType> set_type;
+				typedef std::map<KeyType, ValueType> map_type;
+
+				results_gatherer(Handler handler, const set_type& keys) :
+					m_handler(handler),
+					m_keys(keys)
+				{
+					if (m_keys.empty())
+					{
+						m_handler(m_results);
+					}
+				}
+
+				void gather(const KeyType& key, const ValueType& value)
+				{
+					boost::mutex::scoped_lock lock(m_mutex);
+
+					const size_t erased_count = m_keys.erase(key);
+
+					// Ensure that gather was called only once for a given key.
+					assert(erased_count == 1);
+
+					m_results[key] = value;
+
+					if (m_keys.empty())
+					{
+						m_handler(m_results);
+					}
+				}
+
+			private:
+
+				boost::mutex m_mutex;
+				Handler m_handler;
+				set_type m_keys;
+				map_type m_results;
+		};
+	}
+
 	const unsigned int switch_::MAX_ENTRIES_DEFAULT = 1024;
 
-	void switch_::receive_data(port_type port, boost::asio::const_buffer data)
+	void switch_::async_write(port_index_type index, boost::asio::const_buffer data, multi_write_handler_type handler)
 	{
-		assert(port);
+		typedef results_gatherer<port_index_type, boost::system::error_code, multi_write_handler_type> results_gatherer_type;
 
-		switch (m_configuration.routing_method)
+		results_gatherer_type::set_type targets = get_targets_for(index);
+
+		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
+
+		for (results_gatherer_type::set_type::const_iterator target_entry = targets.begin(); target_entry != targets.end(); ++target_entry)
 		{
-			case switch_configuration::RM_HUB:
-				{
-					send_data_from(port, data);
+			m_ports[*target_entry].async_write(data, boost::bind(&results_gatherer_type::gather, rg, *target_entry, _1));
+		}
+	}
 
-					break;
+	void std::set<switch_::port_index_type> switch_::get_targets_for(port_index_type index, boost::asio::const_buffer data)
+	{
+		const port_list_type::iterator source_port_entry = m_ports.find(index);
+
+		if (source_port_entry != m_ports.end())
+		{
+			switch (m_configuration.routing_method)
+			{
+				case switch_configuration::RM_HUB:
+				{
+					return get_targets_for(source_port_entry);
 				}
-			case switch_configuration::RM_SWITCH:
+				case switch_configuration::RM_SWITCH:
 				{
 					asiotap::osi::const_helper<asiotap::osi::ethernet_frame> ethernet_helper(data);
 
 					const ethernet_address_type target_address = to_ethernet_address(ethernet_helper.target());
 
-					if (!is_multicast_address(target_address))
+					if (is_multicast_address(target_address))
 					{
-						m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = port;
+						return get_targets_for(source_port_entry);
+					}
+					else
+					{
+						m_ethernet_address_map[to_ethernet_address(ethernet_helper.sender())] = index;
 
 						// We exceeded the maximum count for entries: we delete random entries to fix it.
 						while (m_ethernet_address_map.size() > m_max_entries)
@@ -112,52 +177,51 @@ namespace freelan
 
 						const ethernet_address_map_type::iterator target_entry = m_ethernet_address_map.find(target_address);
 
-						if (target_entry != m_ethernet_address_map.end())
-						{
-							port_type target_port = target_entry->second.lock();
-
-							if (target_port)
-							{
-								send_data_from_to(port, target_port, data);
-							}
-							else
-							{
-								// The port is no longer valid: we delete the entry.
-								m_ethernet_address_map.erase(target_entry);
-							}
-						}
-						else
+						if (target_entry == m_ethernet_address_map.end())
 						{
 							// No target entry: we send the message to everybody.
-							send_data_from(port, data);
+							return get_targets_for(source_port_entry);
 						}
-					}
-					else
-					{
-						// Address is multicast: we send to everybody.
-						send_data_from(port, data);
+
+						const port_index_type target_port_index = target_entry->second;
+
+						if (!is_registered(target_port_index))
+						{
+							// The port does not exist: we delete the entry and send to everybody.
+							m_ethernet_address_map.erase(target_entry);
+
+							return get_targets_for(source_port_entry);
+						}
+
+						std::set<port_index_type> targets;
+
+						targets.insert(target_port_index);
+
+						return targets;
 					}
 				}
-		}
-	}
-
-	void switch_::send_data_from(port_type source_port, boost::asio::const_buffer data)
-	{
-		BOOST_FOREACH(port_list_type::value_type& entry, m_ports)
-		{
-			send_data_from_to(source_port, entry.first, data);
-		}
-	}
-
-	void switch_::send_data_from_to(port_type source_port, port_type target_port, boost::asio::const_buffer data)
-	{
-		if (source_port != target_port)
-		{
-			if (m_configuration.relay_mode_enabled || (m_ports[source_port] != m_ports[target_port]))
-			{
-				target_port->write(data);
 			}
 		}
+
+		return std::set<port_index_type>();
+	}
+
+	void std::set<switch_::port_index_type> switch_::get_targets_for(port_list_type::const_iterator source_port_entry)
+	{
+		std::set<port_index_type> targets;
+
+		for (port_list_type::const_iterator port_entry = m_ports.begin(); port_entry != m_ports.end(); ++port_entry)
+		{
+			if (source_port_entry != port_entry)
+			{
+				if (m_configuration.relay_mode_enabled || (source_port_entry->second.group() != port_entry->second.group()))
+				{
+					targets.insert(port_entry->first);
+				}
+			}
+		}
+
+		return targets;
 	}
 
 	switch_::ethernet_address_type switch_::to_ethernet_address(boost::asio::const_buffer buf)

@@ -132,6 +132,11 @@ namespace freelan
 			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
 
 			/**
+			 * \brief An IO operation handler.
+			 */
+			typedef boost::function<void (const boost::system::error_code&, size_t)> io_handler_type;
+
+			/**
 			 * \brief An operation handler for multiple endpoints.
 			 */
 			typedef boost::function<void (const std::map<ep_type, boost::system::error_code>&)> multiple_endpoints_handler_type;
@@ -333,7 +338,7 @@ namespace freelan
 			void do_handle_session_lost(const ep_type&);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, boost::asio::const_buffer);
 
-			boost::scoped_ptr<fscp::server> m_server;
+			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;
 			boost::asio::deadline_timer m_dynamic_contact_timer;
 
@@ -376,13 +381,18 @@ namespace freelan
 				m_tap_write_queue_strand.post(boost::bind(&core::push_tap_write, this, write_handler));
 			}
 
+			void async_write_tap(boost::asio::const_buffer data, simple_handler_type handler)
+			{
+				async_write_tap<io_handler_type>(data, boost::bind(handler, _1));
+			}
+
 			void push_tap_write(void_handler_type);
 			void pop_tap_write();
 
 			void do_read_tap();
 
 			void do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
-			void do_handle_tap_adapter_write(const boost::system::error_code&, size_t);
+			void do_handle_tap_adapter_write(const boost::system::error_code&);
 			void do_handle_arp_frame(const arp_helper_type&);
 			void do_handle_dhcp_frame(const dhcp_helper_type&);
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
@@ -410,14 +420,50 @@ namespace freelan
 			typedef std::map<ep_type, switch_::port_type> endpoint_switch_port_map_type;
 			typedef std::map<ep_type, router::port_type> endpoint_router_port_map_type;
 
+			void async_register_switch_port(const ep_type& host)
+			{
+				m_switch_strand.post(boost::bind(&core::do_register_switch_port, this, host));
+			}
+
+			void async_unregister_switch_port(const ep_type& host)
+			{
+				m_switch_strand.post(boost::bind(&core::do_unregister_switch_port, this, host));
+			}
+
+			void async_register_router_port(const ep_type& host)
+			{
+				m_router_strand.post(boost::bind(&core::do_register_router_port, this, host));
+			}
+
+			void async_unregister_router_port(const ep_type& host)
+			{
+				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host));
+			}
+
+			template <typename WriteHandler>
+			void async_write_switch(const port_index_type& index, boost::asio::const_buffer data, WriteHandler handler)
+			{
+				m_switch_strand.post(boost::bind(&core::do_write_switch, this, index, data, handler));
+			}
+
+			template <typename WriteHandler>
+			void async_write_router(const port_index_type& index, boost::asio::const_buffer data, WriteHandler handler)
+			{
+				m_router_strand.post(boost::bind(&core::do_write_router, this, index, data, handler));
+			}
+
+			void do_register_switch_port(const ep_type&);
+			void do_register_router_port(const ep_type&);
+			void do_unregister_switch_port(const ep_type&);
+			void do_unregister_router_port(const ep_type&);
+			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
+			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
+
+			boost::asio::strand m_switch_strand;
+			boost::asio::strand m_router_strand;
+
 			switch_ m_switch;
 			router m_router;
-
-			endpoint_switch_port_map_type m_endpoint_switch_port_map;
-			endpoint_router_port_map_type m_endpoint_router_port_map;
-
-			router::port_type m_tap_adapter_router_port;
-			switch_::port_type m_tap_adapter_switch_port;
 	};
 }
 

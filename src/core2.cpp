@@ -47,10 +47,6 @@
 
 #include "os.hpp"
 #include "client.hpp"
-#include "tap_adapter_switch_port.hpp"
-#include "endpoint_switch_port.hpp"
-#include "tap_adapter_router_port.hpp"
-#include "endpoint_router_port.hpp"
 
 #include <fscp/server_error.hpp>
 
@@ -84,6 +80,14 @@ namespace freelan
 			}
 		}
 
+		void null_switch_write_handler(const switch_::multi_write_result_type&)
+		{
+		}
+
+		void null_router_write_handler(const boost::system::error_code&)
+		{
+		}
+
 		endpoint to_endpoint(const core::ep_type& host)
 		{
 			if (host.address().is_v4())
@@ -101,24 +105,26 @@ namespace freelan
 		{
 			public:
 
+				typedef void result_type;
+
 				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
 					m_buffer(_buffer),
 					m_handler(_handler)
 				{}
 
-				void operator()()
+				result_type operator()()
 				{
 					m_handler();
 				}
 
 				template <typename Arg1>
-				void operator()(Arg1 arg1)
+				result_type operator()(Arg1 arg1)
 				{
 					m_handler(arg1);
 				}
 
 				template <typename Arg1, typename Arg2>
-				void operator()(Arg1 arg1, Arg2 arg2)
+				result_type operator()(Arg1 arg1, Arg2 arg2)
 				{
 					m_handler(arg1, arg2);
 				}
@@ -161,12 +167,14 @@ namespace freelan
 
 			public:
 
+				typedef void result_type;
+
 				causal_handler(Handler _handler, CausalHandler _causal_handler) :
 					m_handler(_handler),
 					m_causal_handler(_causal_handler)
 				{}
 
-				void operator()()
+				result_type operator()()
 				{
 					automatic_caller ac(m_causal_handler);
 
@@ -174,7 +182,7 @@ namespace freelan
 				}
 
 				template <typename Arg1>
-				void operator()(Arg1 arg1)
+				result_type operator()(Arg1 arg1)
 				{
 					automatic_caller ac(m_causal_handler);
 
@@ -182,7 +190,7 @@ namespace freelan
 				}
 
 				template <typename Arg1, typename Arg2>
-				void operator()(Arg1 arg1, Arg2 arg2)
+				result_type operator()(Arg1 arg1, Arg2 arg2)
 				{
 					automatic_caller ac(m_causal_handler);
 
@@ -201,44 +209,6 @@ namespace freelan
 			return causal_handler<Handler, CausalHandler>(_handler, _causal_handler);
 		}
 
-		template <typename KeyType, typename ValueType, typename Handler>
-		class results_gatherer
-		{
-			public:
-
-				typedef std::set<KeyType> set_type;
-				typedef std::map<KeyType, ValueType> map_type;
-
-				results_gatherer(Handler handler, const set_type& keys) :
-					m_handler(handler),
-					m_keys(keys)
-				{}
-
-				void gather(const KeyType& key, const ValueType& value)
-				{
-					boost::mutex::scoped_lock lock(m_mutex);
-
-					const size_t erased_count = m_keys.erase(key);
-
-					// Ensure that gather was called only once for a given key.
-					assert(erased_count == 1);
-
-					m_results[key] = value;
-
-					if (m_keys.empty())
-					{
-						m_handler(m_results);
-					}
-				}
-
-			private:
-
-				boost::mutex m_mutex;
-				Handler m_handler;
-				set_type m_keys;
-				map_type m_results;
-		};
-
 		unsigned int get_auto_mtu_value()
 		{
 			const unsigned int default_mtu_value = 1500;
@@ -247,8 +217,8 @@ namespace freelan
 			return default_mtu_value - static_payload_size;
 		}
 
-		static const switch_::group_type TAP_ADAPTERS_GROUP = 0;
-		static const switch_::group_type ENDPOINTS_GROUP = 1;
+		static const unsigned int TAP_ADAPTERS_GROUP = 0;
+		static const unsigned int ENDPOINTS_GROUP = 1;
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
@@ -283,6 +253,8 @@ namespace freelan
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
+		m_switch_strand(m_io_service),
+		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router)
 	{
@@ -333,7 +305,7 @@ namespace freelan
 
 	void core::open_server()
 	{
-		m_server.reset(new fscp::server(m_io_service, *m_configuration.security.identity));
+		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
 		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
 
@@ -721,22 +693,11 @@ namespace freelan
 		{
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
-				//TODO: Make sure the buffer remains available and unmodified until the callback (which must be changed) gets called.
-				//const switch_::port_type port = boost::make_shared<endpoint_switch_port>(host, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2, fscp::server::write_callback()));
-
-				//m_endpoint_switch_port_map[host] = port;
-				//m_switch.register_port(port, ENDPOINTS_GROUP);
+				async_register_switch_port(host);
 			}
 			else
 			{
-				//TODO: Get the routes somewhere...
-				//routes_type local_routes;
-
-				//TODO: Make sure the buffer remains available and unmodified until the callback (which must be changed) gets called.
-				//const router::port_type port = boost::make_shared<endpoint_router_port>(host, local_routes, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2, fscp::server::write_callback()));
-
-				//m_endpoint_router_port_map[host] = port;
-				//m_router.register_port(port, ENDPOINTS_GROUP);
+				async_register_router_port(host);
 			}
 		}
 
@@ -757,25 +718,11 @@ namespace freelan
 
 		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 		{
-			//TODO: Implement
-			//const switch_::port_type port = m_endpoint_switch_port_map[sender];
-
-			//if (port)
-			//{
-			//	m_switch.unregister_port(port);
-			//	m_endpoint_switch_port_map.erase(sender);
-			//}
+			async_unregister_switch_port(host);
 		}
 		else
 		{
-			//TODO: Implement
-			//const router::port_type port = m_endpoint_router_port_map[sender];
-
-			//if (port)
-			//{
-			//	m_router.unregister_port(port);
-			//	m_endpoint_router_port_map.erase(sender);
-			//}
+			async_unregister_router_port(host);
 		}
 	}
 
@@ -894,19 +841,21 @@ namespace freelan
 
 			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service));
 
+			void (core::* const write_func)(boost::asio::const_buffer, simple_handler_type) = &core::async_write_tap;
+
 			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
 			{
 				// Registers the switch port.
-				m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
-				m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
+				m_switch.register_port(make_port_index(m_tap_adapter), switch_::port_type(boost::bind(write_func, this, _1, _2), TAP_ADAPTERS_GROUP));
 			}
 			else
 			{
 				// Registers the router port.
 				const routes_type& local_routes = m_configuration.router.local_ip_routes;
 
-				m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
-				m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
+				//TODO: Add the routes read from the system tap adapter
+
+				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(boost::bind(write_func, this, _1, _2), local_routes, TAP_ADAPTERS_GROUP));
 			}
 
 			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
@@ -1033,8 +982,8 @@ namespace freelan
 		{
 			m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
 
-			m_switch.unregister_port(m_tap_adapter_switch_port);
-			m_router.unregister_port(m_tap_adapter_router_port);
+			m_switch.unregister_port(make_port_index(m_tap_adapter));
+			m_router.unregister_port(make_port_index(m_tap_adapter));
 
 			m_tap_adapter->cancel();
 			m_tap_adapter->set_connected_state(false);
@@ -1161,13 +1110,27 @@ namespace freelan
 
 				if (!handled)
 				{
-					m_switch.receive_data(m_tap_adapter_switch_port, data);
+					async_write_switch(
+						make_port_index(m_tap_adapter),
+						data,
+						make_shared_buffer_handler(
+							receive_buffer,
+							&null_switch_write_handler
+						)
+					);
 				}
 			}
 			else
 			{
 				// This is a TUN interface. We receive either IPv4 or IPv6 frames.
-				m_router.receive_data(m_tap_adapter_router_port, data);
+				async_write_router(
+					make_port_index(m_tap_adapter),
+					data,
+					make_shared_buffer_handler(
+						receive_buffer,
+						&null_router_write_handler
+					)
+				);
 			}
 		}
 		else if (ec != boost::asio::error::operation_aborted)
@@ -1176,10 +1139,8 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_tap_adapter_write(const boost::system::error_code& ec, size_t count)
+	void core::do_handle_tap_adapter_write(const boost::system::error_code& ec)
 	{
-		static_cast<void>(count);
-
 		if (ec)
 		{
 			if (ec != boost::asio::error::operation_aborted)
@@ -1210,8 +1171,7 @@ namespace freelan
 						boost::bind(
 							&core::do_handle_tap_adapter_write,
 							this,
-							boost::asio::placeholders::error,
-							boost::asio::placeholders::bytes_transferred
+							boost::asio::placeholders::error
 						)
 					)
 				);
@@ -1243,8 +1203,7 @@ namespace freelan
 						boost::bind(
 							&core::do_handle_tap_adapter_write,
 							this,
-							boost::asio::placeholders::error,
-							boost::asio::placeholders::bytes_transferred
+							boost::asio::placeholders::error
 						)
 					)
 				);
@@ -1265,5 +1224,44 @@ namespace freelan
 		}
 
 		return false;
+	}
+
+	void core::do_register_switch_port(const ep_type& host)
+	{
+		// All calls to do_register_switch_port() are done within the m_switch_strand, so the following is safe.
+		m_switch.register_port(make_port_index(host), switch_::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
+	}
+
+	void core::do_unregister_switch_port(const ep_type& host)
+	{
+		// All calls to do_unregister_switch_port() are done within the m_switch_strand, so the following is safe.
+		m_switch.unregister_port(make_port_index(host));
+	}
+
+	void core::do_register_router_port(const ep_type& host)
+	{
+		// All calls to do_register_router_port() are done within the m_router_strand, so the following is safe.
+		//TODO: Get the routes somewhere...
+		routes_type local_routes;
+
+		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), local_routes, ENDPOINTS_GROUP));
+	}
+
+	void core::do_unregister_router_port(const ep_type& host)
+	{
+		// All calls to do_unregister_router_port() are done within the m_router_strand, so the following is safe.
+		m_router.unregister_port(make_port_index(host));
+	}
+
+	void core::do_write_switch(const port_index_type& index, boost::asio::const_buffer data, switch_::multi_write_handler_type handler)
+	{
+		// All calls to do_write_switch() are done within the m_switch_strand, so the following is safe.
+		m_switch.async_write(index, data, handler);
+	}
+
+	void core::do_write_router(const port_index_type& index, boost::asio::const_buffer data, router::port_type::write_handler_type handler)
+	{
+		// All calls to do_write_router() are done within the m_router_strand, so the following is safe.
+		m_router.async_write(index, data, handler);
 	}
 }

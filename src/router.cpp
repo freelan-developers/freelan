@@ -52,14 +52,20 @@
 #include <asiotap/osi/ipv4_helper.hpp>
 #include <asiotap/osi/ipv6_helper.hpp>
 
-#include "tap_adapter_router_port.hpp"
-
 namespace freelan
 {
-	void router::receive_data(port_type port, boost::asio::const_buffer data)
+	void router::async_write(port_index_type index, boost::asio::const_buffer data, write_handler_type handler)
 	{
-		assert(port);
+		const port_list_type::const_iterator port_entry = get_target_for(index, data);
 
+		if (port_entry != m_ports.end())
+		{
+			port_entry->second.async_write(data, handler);
+		}
+	}
+
+	router::port_list_type::const_iterator router::get_target_for(port_index_type index, boost::asio::const_buffer data)
+	{
 		// Try IPv4 first because it is more likely.
 
 		m_ipv4_filter.parse(data);
@@ -70,7 +76,7 @@ namespace freelan
 
 			m_ipv4_filter.clear_last_helper();
 
-			receive_data(port, destination, data);
+			return get_target_for(port, destination, data);
 		}
 		else
 		{
@@ -82,32 +88,39 @@ namespace freelan
 
 				m_ipv6_filter.clear_last_helper();
 
-				receive_data(port, destination, data);
+				return get_target_for(port, destination, data);
 			}
 		}
 
 		// Frame of other types than IPv4 or IPv6 are silently dropped.
+		return m_ports.end();
 	}
 
 	template <typename AddressType>
-	void router::receive_data(port_type port, const AddressType& dest, boost::asio::const_buffer data)
+	router::port_list_type::const_iterator router::get_target_for(port_index_type index, const AddressType& dest_addr)
 	{
-		const routes_port_type& routes_ports = routes();
+		const router::port_list_type::const_iterator source_port_entry = m_ports.find(index);
 
-		BOOST_FOREACH(const routes_port_type::value_type& route_port, routes_ports)
+		if (source_port_entry != m_ports.end())
 		{
-			if (m_configuration.client_routing_enabled || (m_ports[port] != m_ports[route_port.second]))
-			{
-				if (has_address(route_port.first, dest))
-				{
-					route_port.second->write(data);
+			const routes_port_type& routes_ports = routes();
 
-					break;
+			BOOST_FOREACH(const routes_port_type::value_type& route_port, routes_ports)
+			{
+				if (has_address(route_port.first, dest_addr))
+				{
+					const port_list_type::const_iterator port_entry = m_ports.find(route_port.second);
+
+					if (m_configuration.client_routing_enabled || (source_port_entry->second.group() != port_entry->second.group()))
+					{
+						return port_entry;
+					}
 				}
 			}
 		}
 
-		// No route for the current frame so we drop it silently.
+		// No route for the current frame so we return an invalid iterator.
+		return m_ports.end();
 	}
 
 	const router::routes_port_type& router::routes() const
@@ -115,16 +128,16 @@ namespace freelan
 		if (!m_routes)
 		{
 			// The routes were invalidated, we recompile them.
-			
+
 			m_routes = routes_port_type();
 
 			// We add all the port routes to the routes list.
 			// These are sorted automatically by the container.
-			BOOST_FOREACH(const port_list_type::value_type& port, m_ports)
+			BOOST_FOREACH(const port_list_type::value_type & port, m_ports)
 			{
-				const routes_type local_routes = port.first->local_routes();
+				const routes_type& local_routes = port.first->local_routes();
 
-				BOOST_FOREACH(const routes_type::value_type& route, local_routes)
+				BOOST_FOREACH(const routes_type::value_type & route, local_routes)
 				{
 					m_routes->insert(routes_port_type::value_type(route, port.first));
 				}
