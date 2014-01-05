@@ -318,7 +318,7 @@ namespace freelan
 		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2, _3, _4));
 		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
-		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3));
+		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
 		resolver_type resolver(m_io_service);
 
@@ -726,7 +726,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
+	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type buffer, boost::asio::const_buffer data)
 	{
 		switch (channel_number)
 		{
@@ -734,13 +734,25 @@ namespace freelan
 			case fscp::CHANNEL_NUMBER_0:
 				if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 				{
-					//TODO: Uncomment
-					//on_ethernet_data(sender, data);
+					async_write_switch(
+						make_port_index(sender),
+						data,
+						make_shared_buffer_handler(
+							buffer,
+							&null_switch_write_handler
+						)
+					);
 				}
 				else
 				{
-					//TODO: Uncomment
-					//on_ip_data(sender, data);
+					async_write_router(
+						make_port_index(sender),
+						data,
+						make_shared_buffer_handler(
+							buffer,
+							&null_router_write_handler
+						)
+					);
 				}
 
 				break;
