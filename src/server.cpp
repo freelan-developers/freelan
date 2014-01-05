@@ -102,24 +102,26 @@ namespace fscp
 		{
 			public:
 
+				typedef void result_type;
+
 				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
 					m_buffer(_buffer),
 					m_handler(_handler)
 				{}
 
-				void operator()()
+				result_type operator()()
 				{
 					m_handler();
 				}
 
 				template <typename Arg1>
-				void operator()(Arg1 arg1)
+				result_type operator()(Arg1 arg1)
 				{
 					m_handler(arg1);
 				}
 
 				template <typename Arg1, typename Arg2>
-				void operator()(Arg1 arg1, Arg2 arg2)
+				result_type operator()(Arg1 arg1, Arg2 arg2)
 				{
 					m_handler(arg1, arg2);
 				}
@@ -162,12 +164,14 @@ namespace fscp
 
 			public:
 
+				typedef void result_type;
+
 				causal_handler(Handler _handler, CausalHandler _causal_handler) :
 					m_handler(_handler),
 					m_causal_handler(_causal_handler)
 				{}
 
-				void operator()()
+				result_type operator()()
 				{
 					automatic_caller ac(m_causal_handler);
 
@@ -175,7 +179,7 @@ namespace fscp
 				}
 
 				template <typename Arg1>
-				void operator()(Arg1 arg1)
+				result_type operator()(Arg1 arg1)
 				{
 					automatic_caller ac(m_causal_handler);
 
@@ -183,7 +187,7 @@ namespace fscp
 				}
 
 				template <typename Arg1, typename Arg2>
-				void operator()(Arg1 arg1, Arg2 arg2)
+				result_type operator()(Arg1 arg1, Arg2 arg2)
 				{
 					automatic_caller ac(m_causal_handler);
 
