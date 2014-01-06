@@ -1317,7 +1317,6 @@ namespace fscp
 
 			presentation_store_map m_presentation_store_map;
 
-			bool m_accept_presentation_messages_default;
 			presentation_message_received_handler_type m_presentation_message_received_handler;
 
 		private: // SESSION_REQUEST messages
