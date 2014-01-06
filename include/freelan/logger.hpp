@@ -209,9 +209,9 @@ namespace freelan
 			 * \param manipulator The manipulator.
 			 * \return *this.
 			 */
-			logger_stream& operator<<(const ostream_manipulator_type& manipulator)
+			logger_stream& operator<<(ostream_manipulator_type manipulator)
 			{
-				boost::apply_visitor(output_visitor<ostream_manipulator_type>(manipulator), m_impl);
+				boost::apply_visitor(output_visitor<ostream_manipulator_type>(*manipulator), m_impl);
 
 				return *this;
 			}

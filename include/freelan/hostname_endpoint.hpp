@@ -118,6 +118,28 @@ namespace freelan
 
 			std::string m_hostname;
 			std::string m_service;
+
+			friend bool operator<(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
+			{
+				if (lhs.m_hostname == rhs.m_hostname)
+				{
+					return (lhs.m_service < rhs.m_service);
+				}
+				else
+				{
+					return (lhs.m_hostname < rhs.m_hostname);
+				}
+			}
+
+			friend bool operator==(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
+			{
+				return (lhs.m_hostname == rhs.m_hostname) && (lhs.m_service == rhs.m_service);
+			}
+
+			friend bool operator!=(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
+			{
+				return !(lhs == rhs);
+			}
 	};
 
 	/**
@@ -168,25 +190,6 @@ namespace freelan
 	 * \return is.
 	 */
 	std::istream& operator>>(std::istream& is, hostname_endpoint& value);
-
-	/**
-	 * \brief Compare two endpoints.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
-	 * \return true if the two endpoints are equal.
-	 */
-	bool operator==(const hostname_endpoint& lhs, const hostname_endpoint& rhs);
-
-	/**
-	 * \brief Compare two endpoints.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
-	 * \return true if the two endpoints are different.
-	 */
-	inline bool operator!=(const hostname_endpoint& lhs, const hostname_endpoint& rhs)
-	{
-		return !(lhs == rhs);
-	}
 
 	inline bool hostname_endpoint::is_null() const
 	{
