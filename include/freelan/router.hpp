@@ -62,6 +62,7 @@
 #include "configuration.hpp"
 #include "port_index.hpp"
 #include "ip_network_address.hpp"
+#include "routes_message.hpp"
 
 namespace freelan
 {
@@ -95,10 +96,16 @@ namespace freelan
 					typedef boost::function<void (boost::asio::const_buffer data, write_handler_type handler)> write_function_type;
 
 					/**
+					 * \brief The version type.
+					 */
+					typedef routes_message::version_type version_type;
+
+					/**
 					 * \brief Create a new default port.
 					 */
 					port_type() :
 						m_write_function(),
+						m_version(),
 						m_local_routes(),
 						m_group(),
 						m_router(NULL)
@@ -107,12 +114,12 @@ namespace freelan
 					/**
 					 * \brief Create a new port.
 					 * \param write_function The write function to use.
-					 * \param _local_routes The local routes associated to the port.
 					 * \param _group The group this port belongs to.
 					 */
-					port_type(write_function_type write_function, routes_type _local_routes, port_group_type _group) :
+					port_type(write_function_type write_function, port_group_type _group) :
 						m_write_function(write_function),
-						m_local_routes(_local_routes),
+						m_version(),
+						m_local_routes(),
 						m_group(_group),
 						m_router(NULL)
 					{}
@@ -123,6 +130,7 @@ namespace freelan
 					 */
 					port_type(const port_type& other) :
 						m_write_function(other.m_write_function),
+						m_version(other.m_version),
 						m_local_routes(other.m_local_routes),
 						m_group(other.m_group),
 						m_router(NULL)
@@ -162,19 +170,32 @@ namespace freelan
 						m_write_function(data, handler);
 					}
 
+					boost::optional<version_type> version() const
+					{
+						return m_version;
+					}
+
 					const routes_type& local_routes() const
 					{
 						return m_local_routes;
 					}
 
-					void set_local_routes(const routes_type& _local_routes)
+					bool set_local_routes(version_type _version, const routes_type& _local_routes)
 					{
-						m_local_routes = _local_routes;
-
-						if (m_router)
+						if (!m_version || (_version > m_version))
 						{
-							m_router->invalidate_routes();
+							m_version = _version;
+							m_local_routes = _local_routes;
+
+							if (m_router)
+							{
+								m_router->invalidate_routes();
+							}
+
+							return true;
 						}
+
+						return false;
 					}
 
 					port_group_type group() const
@@ -207,6 +228,7 @@ namespace freelan
 					friend class router;
 
 					write_function_type m_write_function;
+					boost::optional<version_type> m_version;
 					routes_type m_local_routes;
 					port_group_type m_group;
 					router* m_router;
@@ -265,6 +287,23 @@ namespace freelan
 			bool is_registered(port_index_type index) const
 			{
 				return (m_ports.find(index) != m_ports.end());
+			}
+
+			/**
+			 * \brief Get the port associated to a given index, if it exists.
+			 * \param index The index of the port to get.
+			 * \return A pointer to the port.
+			 */
+			boost::shared_ptr<port_type> get_port(port_index_type index)
+			{
+				const port_list_type::iterator port_entry = m_ports.find(index);
+
+				if (port_entry == m_ports.end())
+				{
+					return boost::shared_ptr<port_type>();
+				}
+
+				return boost::make_shared<port_type>(port_entry->second);
 			}
 
 			/**

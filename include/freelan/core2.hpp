@@ -51,6 +51,7 @@
 #include "switch.hpp"
 #include "router.hpp"
 #include "message.hpp"
+#include "routes_message.hpp"
 
 #include <fscp/fscp.hpp>
 
@@ -71,6 +72,8 @@
 
 namespace freelan
 {
+	class routes_request_message;
+
 	/**
 	 * \brief The core class.
 	 */
@@ -317,6 +320,8 @@ namespace freelan
 			void async_introduce_to(const ep_type&);
 			void async_request_session(const ep_type&, simple_handler_type);
 			void async_request_session(const ep_type&);
+			void async_handle_routes_request(const ep_type&, const routes_request_message&);
+			void async_handle_routes(const ep_type&, const routes_message&);
 
 			void do_contact(const ep_type&, duration_handler_type);
 
@@ -339,6 +344,8 @@ namespace freelan
 			void do_handle_session_lost(const ep_type&);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
+			void do_handle_routes_request(const ep_type&, message::sequence_type);
+			void do_handle_routes(const ep_type&, message::sequence_type, routes_message::version_type, const routes_type&);
 
 			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;

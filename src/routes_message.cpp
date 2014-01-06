@@ -105,7 +105,7 @@ namespace freelan
 		};
 	}
 
-	size_t routes_message::write(void* buf, size_t buf_len, sequence_type sequence, const routes_type& routes)
+	size_t routes_message::write(void* buf, size_t buf_len, sequence_type sequence, version_type _version, const routes_type& routes)
 	{
 		if (buf_len < HEADER_LENGTH)
 		{
@@ -115,6 +115,12 @@ namespace freelan
 		size_t required_size = 0;
 		char* pbuf = static_cast<char*>(buf) + HEADER_LENGTH;
 		size_t pbuf_len = buf_len - HEADER_LENGTH;
+
+		fscp::buffer_tools::set<uint32_t>(pbuf, 0, htonl(static_cast<uint32_t>(_version)));
+
+		required_size += sizeof(uint32_t);
+		pbuf += sizeof(uint32_t);
+		pbuf_len -= sizeof(uint32_t);
 
 		for (routes_type::const_iterator it = routes.begin(); it != routes.end(); ++it)
 		{
@@ -128,14 +134,19 @@ namespace freelan
 		return message::write(buf, buf_len, MT_ROUTES, sequence, required_size);
 	}
 
+	routes_message::version_type message::version() const
+	{
+		return ntohl(static_cast<version_type>(fscp::buffer_tools::get<uint32_t>(payload(), 0)));
+	}
+
 	const routes_type& routes_message::routes() const
 	{
 		if (!m_routes_cache)
 		{
 			routes_type result;
 
-			const uint8_t* pbuf = payload();
-			size_t pbuf_len = length();
+			const uint8_t* pbuf = payload() + sizeof(uint32_t);
+			size_t pbuf_len = length() - sizeof(uint32_t);
 
 			while (pbuf_len > 2)
 			{

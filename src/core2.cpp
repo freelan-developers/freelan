@@ -473,6 +473,32 @@ namespace freelan
 		async_request_session(target, boost::bind(&core::do_handle_request_session, this, target, _1));
 	}
 
+	void core::async_handle_routes_request(const ep_type& sender, const routes_request_message& msg)
+	{
+		m_io_service.post(
+			boost::bind(
+				&core::do_handle_routes_request,
+				this,
+				sender,
+				msg.sequence()
+			)
+		);
+	}
+
+	void core::async_handle_routes(const ep_type& sender, const routes_message& msg)
+	{
+		m_router_strand.post(
+			boost::bind(
+				&core::do_handle_routes,
+				this,
+				sender,
+				msg.sequence(),
+				msg.version(),
+				msg.routes()
+			)
+		);
+	}
+
 	void core::do_contact(const ep_type& address, duration_handler_type handler)
 	{
 		assert(m_server);
@@ -699,6 +725,7 @@ namespace freelan
 			}
 			else
 			{
+				// We register the router port without any routes, at first.
 				async_register_router_port(host);
 			}
 		}
@@ -784,15 +811,9 @@ namespace freelan
 		{
 			case message::MT_ROUTES_REQUEST:
 				{
-					if (m_configuration.router.accept_routes_requests)
-					{
-						routes_request_message rr_msg(msg);
+					routes_request_message rr_msg(msg);
 
-						static_cast<void>(sender);
-
-						//TODO: Handle msg.sequence()
-						//on_routes_requested(sender, rr_msg);
-					}
+					async_handle_routes_request(sender, rr_msg);
 
 					break;
 				}
@@ -801,10 +822,7 @@ namespace freelan
 				{
 					routes_message r_msg(msg);
 
-					//TODO: Handle received routes.
-					//const routes_type routes = r_msg.routes();
-
-					//on_routes_received(sender, r_msg);
+					async_handle_routes(sender, r_msg);
 
 					break;
 				}
@@ -812,6 +830,44 @@ namespace freelan
 			default:
 				m_logger(LL_WARNING) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
 				break;
+		}
+	}
+
+	void core::do_handle_routes_request(const ep_type& sender, message::sequence_type sequence)
+	{
+		if (!m_configuration.router.accept_routes_requests)
+		{
+			m_logger(LL_DEBUG) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
+		}
+		else
+		{
+			const routes_type& routes = m_configuration.router.local_ip_routes;
+
+			m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with: " << routes;
+
+			//TODO: Uncomment and implement.
+			//async_send_routes(sender, sequence, routes);
+			static_cast<void>(sequence);
+		}
+	}
+
+	void core::do_handle_routes(const ep_type& sender, message::sequence_type sequence, routes_message::version_type version, const routes_type& routes)
+	{
+		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
+		static_cast<void>(sequence);
+
+		boost::shared_ptr<router::port_type> port = m_router.get_port(make_port_index(sender));
+
+		if (port)
+		{
+			if (port->set_local_routes(version, routes))
+			{
+				m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (#" << version << ")";
+			}
 		}
 	}
 
@@ -901,11 +957,14 @@ namespace freelan
 			else
 			{
 				// Registers the router port.
+				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(boost::bind(write_func, this, _1, _2), TAP_ADAPTERS_GROUP));
+
+				// Add the routes.
 				const routes_type& local_routes = m_configuration.router.local_ip_routes;
 
 				//TODO: Add the routes read from the system tap adapter
 
-				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(boost::bind(write_func, this, _1, _2), local_routes, TAP_ADAPTERS_GROUP));
+				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
 			}
 
 			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
@@ -1291,10 +1350,7 @@ namespace freelan
 	void core::do_register_router_port(const ep_type& host)
 	{
 		// All calls to do_register_router_port() are done within the m_router_strand, so the following is safe.
-		//TODO: Get the routes somewhere...
-		routes_type local_routes;
-
-		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), local_routes, ENDPOINTS_GROUP));
+		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
 	}
 
 	void core::do_unregister_router_port(const ep_type& host)
