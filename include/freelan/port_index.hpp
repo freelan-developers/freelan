@@ -58,6 +58,31 @@
 namespace freelan
 {
 	/**
+	 * \brief A null port index.
+	 */
+	class null_port_index_type
+	{
+		public:
+
+			/**
+			 * \brief Create a null port index.
+			 */
+			null_port_index_type();
+
+		private:
+
+			friend bool operator<(const null_port_index_type&, const null_port_index_type&)
+			{
+				return false;
+			}
+
+			friend bool operator==(const null_port_index_type&, const null_port_index_type&)
+			{
+				return true;
+			}
+	};
+
+	/**
 	 * \brief A tap adapter port index.
 	 */
 	class tap_adapter_port_index_type
@@ -134,7 +159,7 @@ namespace freelan
 	/**
 	 * \brief The generic port index type.
 	 */
-	typedef boost::variant<tap_adapter_port_index_type, endpoint_port_index_type> port_index_type;
+	typedef boost::variant<null_port_index_type, tap_adapter_port_index_type, endpoint_port_index_type> port_index_type;
 
 	inline port_index_type make_port_index(boost::shared_ptr<asiotap::tap_adapter> tap_adapter)
 	{

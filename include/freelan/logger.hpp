@@ -320,7 +320,7 @@ namespace freelan
 			log_level m_level;
 	};
 
-	string_logger_stream::~string_logger_stream()
+	inline string_logger_stream::~string_logger_stream()
 	{
 		if (m_oss)
 		{

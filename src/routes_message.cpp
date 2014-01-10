@@ -134,7 +134,7 @@ namespace freelan
 		return message::write(buf, buf_len, MT_ROUTES, required_size);
 	}
 
-	routes_message::version_type message::version() const
+	routes_message::version_type routes_message::version() const
 	{
 		return ntohl(static_cast<version_type>(fscp::buffer_tools::get<uint32_t>(payload(), 0)));
 	}

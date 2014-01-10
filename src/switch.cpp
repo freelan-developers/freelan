@@ -59,7 +59,7 @@
 #include <boost/random/variate_generator.hpp>
 #endif
 
-#include <boost/mutex.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/make_shared.hpp>
 
 #include <asiotap/osi/ethernet_helper.hpp>
@@ -118,7 +118,7 @@ namespace freelan
 	{
 		typedef results_gatherer<port_index_type, boost::system::error_code, multi_write_handler_type> results_gatherer_type;
 
-		results_gatherer_type::set_type targets = get_targets_for(index);
+		results_gatherer_type::set_type targets = get_targets_for(index, data);
 
 		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
 
@@ -128,7 +128,7 @@ namespace freelan
 		}
 	}
 
-	void std::set<switch_::port_index_type> switch_::get_targets_for(port_index_type index, boost::asio::const_buffer data)
+	std::set<port_index_type> switch_::get_targets_for(port_index_type index, boost::asio::const_buffer data)
 	{
 		const port_list_type::iterator source_port_entry = m_ports.find(index);
 
@@ -206,7 +206,7 @@ namespace freelan
 		return std::set<port_index_type>();
 	}
 
-	void std::set<switch_::port_index_type> switch_::get_targets_for(port_list_type::const_iterator source_port_entry)
+	std::set<port_index_type> switch_::get_targets_for(port_list_type::const_iterator source_port_entry)
 	{
 		std::set<port_index_type> targets;
 

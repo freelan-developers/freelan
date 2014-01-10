@@ -46,31 +46,33 @@
 #ifndef FREELAN_CORE_HPP
 #define FREELAN_CORE_HPP
 
-#include <vector>
+#include "configuration.hpp"
+#include "logger.hpp"
+#include "switch.hpp"
+#include "router.hpp"
+#include "message.hpp"
+#include "routes_message.hpp"
 
-#include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/function.hpp>
+#include <fscp/fscp.hpp>
 
-#include <cryptoplus/x509/store.hpp>
-#include <cryptoplus/x509/store_context.hpp>
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
 #include <asiotap/osi/dhcp_proxy.hpp>
 #include <asiotap/osi/complex_filter.hpp>
-#include <fscp/fscp.hpp>
 
-#include "configuration.hpp"
-#include "switch.hpp"
-#include "router.hpp"
-#include "logger.hpp"
-#include "message.hpp"
-#include "routes_request_message.hpp"
-#include "routes_message.hpp"
+#include <cryptoplus/x509/store.hpp>
+#include <cryptoplus/x509/store_context.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+ #include <queue>
 
 namespace freelan
 {
-	struct network_info;
+	class routes_request_message;
 
 	/**
 	 * \brief The core class.
@@ -79,13 +81,15 @@ namespace freelan
 	{
 		public:
 
+			// General purpose type definitions
+
 			/**
 			 * \brief The ethernet address type.
 			 */
 			typedef freelan::tap_adapter_configuration::ethernet_address_type ethernet_address_type;
 
 			/**
-			 * \brief The endpoint type.
+			 * \brief The low-level endpoint type.
 			 */
 			typedef fscp::server::ep_type ep_type;
 
@@ -93,11 +97,6 @@ namespace freelan
 			 * \brief The certificate type.
 			 */
 			typedef fscp::server::cert_type cert_type;
-
-			/**
-			 * \brief The endpoint list type.
-			 */
-			typedef std::vector<endpoint> endpoint_list;
 
 			/**
 			 * \brief The certificate list type.
@@ -110,9 +109,89 @@ namespace freelan
 			typedef security_configuration::crl_type crl_type;
 
 			/**
-			 * \brief The identity store type.
+			 * \brief The resolver type.
 			 */
-			typedef fscp::identity_store identity_store;
+			typedef boost::asio::ip::udp::resolver resolver_type;
+
+			/**
+			 * \brief The hash type.
+			 */
+			typedef fscp::hash_type hash_type;
+
+			/**
+			 * \brief The hash list type.
+			 */
+			typedef fscp::hash_list_type hash_list_type;
+
+			// Handlers
+
+			/**
+			 * \brief A void operation handler.
+			 */
+			typedef boost::function<void ()> void_handler_type;
+
+			/**
+			 * \brief A simple operation handler.
+			 */
+			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
+
+			/**
+			 * \brief An IO operation handler.
+			 */
+			typedef boost::function<void (const boost::system::error_code&, size_t)> io_handler_type;
+
+			/**
+			 * \brief An operation handler for multiple endpoints.
+			 */
+			typedef boost::function<void (const std::map<ep_type, boost::system::error_code>&)> multiple_endpoints_handler_type;
+
+			/**
+			 * \brief A duration operation handler.
+			 */
+			typedef boost::function<void (const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
+
+			// Callbacks
+
+			/**
+			 * \brief The log callback.
+			 */
+			typedef logger::log_handler_type log_handler_type;
+
+			/**
+			 * \brief The core opened callback.
+			 */
+			typedef boost::function<void ()> core_opened_handler_type;
+
+			/**
+			 * \brief The core closed callback.
+			 */
+			typedef boost::function<void ()> core_closed_handler_type;
+
+			/**
+			 * \brief A session failed callback.
+			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
+			 * \param local The local algorithms.
+			 * \param remote The remote algorithms.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_failed_handler_type;
+
+			/**
+			 * \brief A session established callback.
+			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
+			 * \param local The local algorithms.
+			 * \param remote The remote algorithms.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_handler_type;
+
+			/**
+			 * \brief A session lost callback.
+			 * \param host The host with which a session was lost.
+			 */
+			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
+
+			// Public constants
 
 			/**
 			 * \brief The contact period.
@@ -125,348 +204,290 @@ namespace freelan
 			static const boost::posix_time::time_duration DYNAMIC_CONTACT_PERIOD;
 
 			/**
+			 * \brief The routes request period.
+			 */
+			static const boost::posix_time::time_duration ROUTES_REQUEST_PERIOD;
+
+			/**
 			 * \brief The default service.
 			 */
 			static const std::string DEFAULT_SERVICE;
 
-			/**
-			 * \brief The configuration change callback.
-			 */
-			typedef boost::function<void (const freelan::configuration&)> configuration_update_callback;
-
-			/**
-			 * \brief The open callback.
-			 */
-			typedef boost::function<void ()> open_callback;
-
-			/**
-			 * \brief The close callback.
-			 */
-			typedef boost::function<void ()> close_callback;
-
-			/**
-			 * \brief A session failed callback.
-			 * \param host The host with which a session is established.
-			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
-			 * \param local The local algorithms.
-			 * \param remote The remote algorithms.
-			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_failed_callback;
-
-			/**
-			 * \brief A session established callback.
-			 * \param host The host with which a session is established.
-			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
-			 * \param local The local algorithms.
-			 * \param remote The remote algorithms.
-			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_callback;
-
-			/**
-			 * \brief A session lost callback.
-			 * \param host The host with which a session was lost.
-			 */
-			typedef boost::function<void (const ep_type& host)> session_lost_callback;
+			// Public methods
 
 			/**
 			 * \brief The constructor.
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
-			 * \param _logger The logger to use for logging.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration, const freelan::logger& _logger);
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration);
 
 			/**
-			 * \brief Get the configuration.
-			 * \return The current configuration.
-			 */
-			const freelan::configuration& configuration() const;
-
-			/**
-			 * \brief Check if the core has a tap adapter.
-			 * \return true if the core has a tap adapter.
-			 */
-			bool has_tap_adapter() const;
-
-			/**
-			 * \brief Get the associated tap adapter.
-			 * \return The associated tap adapter.
-			 *
-			 * \warning Calling this method while has_tap_adapter() is false is undefined behavior.
-			 */
-			const asiotap::tap_adapter& tap_adapter() const;
-
-			/**
-			 * \brief Check if the core has a server.
-			 * \return true if the core has a server.
-			 */
-			bool has_server() const;
-
-			/**
-			 * \brief Get the associated server.
-			 * \return The associated server.
-			 *
-			 * \warning Calling this method while has_server() is false is undefined behavior.
-			 */
-			const fscp::server& server() const;
-
-			/**
-			 * \brief Get the associated logger instance.
-			 * \return The associated logger instance.
-			 */
-			freelan::logger& logger();
-
-			/**
-			 * \brief Set the configuration update callback.
+			 * \brief Set the function to call when a log entry is emitted.
 			 * \param callback The callback.
 			 *
-			 * This callback is called when the configuration is updated.
-			 *
-			 * This is a very good time to save the configuration on disk if you need to.
+			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_configuration_update_callback(configuration_update_callback callback);
+			void set_log_callback(log_handler_type callback);
 
 			/**
-			 * \brief Set the open callback.
-			 * \param callback The callback.
-			 *
-			 * This callback is called when the core was just opened.
+			 * \brief Set the logger's level.
+			 * \param level The log level.
+			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_open_callback(open_callback callback);
+			void set_log_level(log_level level)
+			{
+				m_logger.set_level(level);
+			}
 
 			/**
-			 * \brief Set the close callback.
+			 * \brief Set the function to call when the core was just opened.
 			 * \param callback The callback.
 			 *
-			 * This callback is called when the core was just closed.
+			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_close_callback(close_callback callback);
+			void set_core_opened_callback(core_opened_handler_type callback);
+
+			/**
+			 * \brief Set the function to call when the core was just closed.
+			 * \param callback The callback.
+			 *
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_close_callback(core_closed_handler_type callback);
 
 			/**
 			 * \brief Set the session failed callback.
 			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_session_failed_callback(session_failed_callback callback);
+			void set_session_failed_callback(session_failed_handler_type callback);
 
 			/**
 			 * \brief Set the session established callback.
 			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_session_established_callback(session_established_callback callback);
+			void set_session_established_callback(session_established_handler_type callback);
 
 			/**
 			 * \brief Set the session lost callback.
 			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_session_lost_callback(session_lost_callback callback);
+			void set_session_lost_callback(session_lost_handler_type callback);
 
 			/**
-			 * \brief Open the current core instance.
+			 * \brief Open the core.
+			 * \see close
 			 */
 			void open();
 
 			/**
-			 * \brief Close the current core instance.
+			 * \brief Close the core.
 			 */
 			void close();
 
-			/**
-			 * \brief Add a log entry to the attached logger.
-			 * \param level The log level of the entry. If level is inferior to the
-			 * current log level of the attached logger, the call will have no
-			 * effect.
-			 * \param msg The message to log. It will be copied and can be deleted
-			 * safely at any time.
-			 */
-			void log(freelan::log_level level, const std::string& msg);
-
 		private:
 
-			// Setting up
 			boost::asio::io_service& m_io_service;
-
-			// The running flag
-			volatile bool m_running;
-			void do_close();
-
-			// FSCP methods
-			void async_greet(const ep_type&);
-			void async_request_routes(const ep_type&);
-			void async_send_routes(const ep_type&, const routes_request_message&, const routes_type&);
-			bool on_hello_request(const ep_type&, bool);
-			void on_hello_response(const ep_type&, const boost::posix_time::time_duration&, bool);
-			bool on_presentation(const ep_type&, cert_type, cert_type, bool);
-			bool on_session_request(const ep_type&, const fscp::cipher_algorithm_list_type&, bool);
-			void on_session_failed(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
-			void on_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
-			void on_session_lost(const ep_type&);
-			void on_data(const ep_type&, fscp::channel_number_type, boost::asio::const_buffer);
-			bool on_contact_request(const ep_type&, cert_type, const ep_type&);
-			void on_contact(const ep_type&, cert_type, const ep_type&);
-			void on_ethernet_data(const ep_type&, boost::asio::const_buffer);
-			void on_ip_data(const ep_type&, boost::asio::const_buffer);
-			void on_message(const ep_type&, const message&);
-			void on_routes_requested(const ep_type&, const routes_request_message&);
-			void on_routes_received(const ep_type&, const routes_message&);
-			void handle_introduce_to(const ep_type&, const boost::system::error_code&);
-			void handle_request_session(const ep_type&, const boost::system::error_code&);
-			void handle_network_event(const ep_type&, const boost::system::error_code&);
-
-			// Tap adapter methods
-			void tap_adapter_read_done(asiotap::tap_adapter&, const boost::system::error_code&, size_t);
-
-			// Other methods
-			void do_greet(const ep_type& ep);
-			void do_greet(const boost::system::error_code&, boost::asio::ip::udp::resolver::iterator, const freelan::fscp_configuration::endpoint&);
-			void do_contact();
-			void do_contact(const fscp_configuration::endpoint&);
-			void do_dynamic_contact();
-			void do_dynamic_contact(cert_type cert);
-			void do_periodic_contact(const boost::system::error_code&);
-			void do_periodic_dynamic_contact(const boost::system::error_code&);
-			void do_check_configuration(const boost::system::error_code&);
-
-			// Members
-			freelan::configuration m_configuration;
+			const freelan::configuration m_configuration;
+			boost::asio::strand m_logger_strand;
 			freelan::logger m_logger;
-			endpoint_list m_last_contact_list_from_server;
-			cert_list_type m_last_dynamic_contact_list_from_server;
 
-			// FSCP
-			void create_server();
-			boost::optional<ep_type> m_listen_endpoint;
-			boost::scoped_ptr<fscp::server> m_server;
-			boost::asio::ip::udp::resolver m_resolver;
-			boost::asio::deadline_timer m_contact_timer;
-			boost::asio::deadline_timer m_dynamic_contact_timer;
+		private: /* Callbacks */
 
-			// Tap adapter
-			void create_tap_adapter();
-			unsigned int get_auto_mtu_value() const;
-			boost::scoped_ptr<asiotap::tap_adapter> m_tap_adapter;
-			boost::array<unsigned char, 65536> m_tap_adapter_buffer;
+			void do_handle_log(log_level, const std::string&, const boost::posix_time::ptime&);
 
-			// User callbacks
-			configuration_update_callback m_configuration_update_callback;
-			open_callback m_open_callback;
-			close_callback m_close_callback;
-			session_failed_callback m_session_failed_callback;
-			session_established_callback m_session_established_callback;
-			session_lost_callback m_session_lost_callback;
+			log_handler_type m_log_callback;
+			core_opened_handler_type m_core_opened_callback;
+			core_closed_handler_type m_core_closed_callback;
+			session_failed_handler_type m_session_failed_callback;
+			session_established_handler_type m_session_established_callback;
+			session_lost_handler_type m_session_lost_callback;
 
-			// Filters
-			asiotap::osi::filter<asiotap::osi::ethernet_frame> m_ethernet_filter;
-			asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type m_arp_filter;
-			asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_ipv4_filter;
-			asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_udp_filter;
-			asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_bootp_filter;
-			asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type m_dhcp_filter;
+		private: /* General purpose */
 
-			// Proxies
-			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
-			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
-			boost::shared_ptr<arp_proxy_type> m_arp_proxy;
-			boost::shared_ptr<dhcp_proxy_type> m_dhcp_proxy;
-			boost::array<unsigned char, 2048> m_proxy_buffer;
-
-			// Proxies related methods
-			void on_proxy_data(boost::asio::const_buffer);
-			bool on_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
-
-			// Switch
-			switch_ m_switch;
-
-			typedef std::map<ep_type, switch_::port_type> endpoint_switch_port_map_type;
-			endpoint_switch_port_map_type m_endpoint_switch_port_map;
-
-			switch_::port_type m_tap_adapter_switch_port;
-
-			// Router
-			router m_router;
-
-			typedef std::map<ep_type, router::port_type> endpoint_router_port_map_type;
-			endpoint_router_port_map_type m_endpoint_router_port_map;
-
-			router::port_type m_tap_adapter_router_port;
-
-			// Checks
 			bool is_banned(const boost::asio::ip::address& address) const;
 
-			// Certificate validation
+		private: /* FSCP server */
+
+			void open_server();
+			void close_server();
+
+			void async_contact(const endpoint& target, duration_handler_type handler);
+			void async_contact(const endpoint& target);
+			void async_contact_all();
+			void async_dynamic_contact_all();
+			void async_send_contact_request_to_all(const fscp::hash_list_type&, multiple_endpoints_handler_type);
+			void async_send_contact_request_to_all(const fscp::hash_list_type&);
+			void async_introduce_to(const ep_type&, simple_handler_type);
+			void async_introduce_to(const ep_type&);
+			void async_request_session(const ep_type&, simple_handler_type);
+			void async_request_session(const ep_type&);
+			void async_handle_routes_request(const ep_type&, const routes_request_message&);
+			void async_handle_routes(const ep_type&, const routes_message&);
+			void async_send_routes_request(const ep_type&, simple_handler_type);
+			void async_send_routes_request(const ep_type&);
+			void async_send_routes_request_to_all(multiple_endpoints_handler_type);
+			void async_send_routes_request_to_all();
+			void async_send_routes(const ep_type&, routes_message::version_type, const routes_type&, simple_handler_type);
+
+			void do_contact(const ep_type&, duration_handler_type);
+
+			void do_handle_contact(const endpoint&, const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration&);
+			void do_handle_periodic_contact(const boost::system::error_code&);
+			void do_handle_periodic_dynamic_contact(const boost::system::error_code&);
+			void do_handle_periodic_routes_request(const boost::system::error_code&);
+			void do_handle_send_contact_request(const ep_type&, const boost::system::error_code&);
+			void do_handle_send_contact_request_to_all(const std::map<ep_type, boost::system::error_code>&);
+			void do_handle_introduce_to(const ep_type&, const boost::system::error_code&);
+			void do_handle_request_session(const ep_type&, const boost::system::error_code&);
+			void do_handle_send_routes_request(const ep_type&, const boost::system::error_code&);
+			void do_handle_send_routes_request_to_all(const std::map<ep_type, boost::system::error_code>&);
+
+			bool do_handle_hello_received(const ep_type&, bool);
+			bool do_handle_contact_request_received(const ep_type&, cert_type, hash_type, const ep_type&);
+			void do_handle_contact_received(const ep_type&, hash_type, const ep_type&);
+			bool do_handle_presentation_received(const ep_type&, cert_type, cert_type, bool);
+			bool do_handle_session_request_received(const ep_type&, const fscp::cipher_algorithm_list_type&, bool);
+			bool do_handle_session_received(const ep_type&, fscp::cipher_algorithm_type, bool);
+			void do_handle_session_failed(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
+			void do_handle_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
+			void do_handle_session_lost(const ep_type&);
+			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
+			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
+			void do_handle_routes_request(const ep_type&);
+			void do_handle_routes(const ep_type&, routes_message::version_type, const routes_type&);
+
+			boost::shared_ptr<fscp::server> m_server;
+			boost::asio::deadline_timer m_contact_timer;
+			boost::asio::deadline_timer m_dynamic_contact_timer;
+			boost::asio::deadline_timer m_routes_request_timer;
+
+		private: /* Certificate validation */
+
 			static const int ex_data_index;
 			static int certificate_validation_callback(int, X509_STORE_CTX*);
+
 			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
-			bool certificate_is_valid(cert_type cert);
+			bool certificate_is_valid(cert_type);
+
 			cryptoplus::x509::store m_ca_store;
+			boost::mutex m_ca_store_mutex;
 
-			// Client
-			void async_update_server_configuration(int);
-			void update_server_configuration(int, bool delayed = false);
-			void set_ca_certificate(cert_type);
-			void set_network_information(const network_info& ninfo);
-			void set_identity(identity_store);
-			boost::asio::deadline_timer m_check_configuration_timer;
+		private: /* TAP adapter */
+
+			typedef asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type arp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type ipv4_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type udp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type bootp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type dhcp_filter_type;
+			typedef asiotap::osi::const_helper<asiotap::osi::arp_frame> arp_helper_type;
+			typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame> dhcp_helper_type;
+			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
+			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
+			typedef fscp::memory_pool<65536, 8> tap_adapter_memory_pool;
+			typedef fscp::memory_pool<2048, 2> proxy_memory_pool;
+
+			void open_tap_adapter();
+			void close_tap_adapter();
+
+			void async_read_tap();
+
+			template <typename WriteHandler>
+			void async_write_tap(boost::asio::const_buffer data, WriteHandler handler)
+			{
+				void_handler_type write_handler = boost::bind(&asiotap::tap_adapter::async_write<WriteHandler>, m_tap_adapter, data, handler);
+
+				m_tap_write_queue_strand.post(boost::bind(&core::push_tap_write, this, write_handler));
+			}
+
+			void async_write_tap(boost::asio::const_buffer data, simple_handler_type handler)
+			{
+				async_write_tap<io_handler_type>(data, boost::bind(handler, _1));
+			}
+
+			void push_tap_write(void_handler_type);
+			void pop_tap_write();
+
+			void do_read_tap();
+
+			void do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
+			void do_handle_tap_adapter_write(const boost::system::error_code&);
+			void do_handle_arp_frame(const arp_helper_type&);
+			void do_handle_dhcp_frame(const dhcp_helper_type&);
+			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
+
+			boost::shared_ptr<asiotap::tap_adapter> m_tap_adapter;
+			boost::asio::strand m_tap_adapter_strand;
+			boost::asio::strand m_proxies_strand;
+			tap_adapter_memory_pool m_tap_adapter_memory_pool;
+			std::queue<void_handler_type> m_tap_write_queue;
+			boost::asio::strand m_tap_write_queue_strand;
+
+			ethernet_filter_type m_ethernet_filter;
+			arp_filter_type m_arp_filter;
+			ipv4_filter_type m_ipv4_filter;
+			udp_filter_type m_udp_filter;
+			bootp_filter_type m_bootp_filter;
+			dhcp_filter_type m_dhcp_filter;
+
+			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
+			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
+			proxy_memory_pool m_proxy_memory_pool;
+
+		private: /* Switch & router */
+
+			typedef std::map<ep_type, switch_::port_type> endpoint_switch_port_map_type;
+			typedef std::map<ep_type, router::port_type> endpoint_router_port_map_type;
+
+			void async_register_switch_port(const ep_type& host, void_handler_type handler)
+			{
+				m_switch_strand.post(boost::bind(&core::do_register_switch_port, this, host, handler));
+			}
+
+			void async_unregister_switch_port(const ep_type& host, void_handler_type handler)
+			{
+				m_switch_strand.post(boost::bind(&core::do_unregister_switch_port, this, host, handler));
+			}
+
+			void async_register_router_port(const ep_type& host, void_handler_type handler)
+			{
+				m_router_strand.post(boost::bind(&core::do_register_router_port, this, host, handler));
+			}
+
+			void async_unregister_router_port(const ep_type& host, void_handler_type handler)
+			{
+				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host, handler));
+			}
+
+			template <typename WriteHandler>
+			void async_write_switch(const port_index_type& index, boost::asio::const_buffer data, WriteHandler handler)
+			{
+				m_switch_strand.post(boost::bind(&core::do_write_switch, this, index, data, handler));
+			}
+
+			template <typename WriteHandler>
+			void async_write_router(const port_index_type& index, boost::asio::const_buffer data, WriteHandler handler)
+			{
+				m_router_strand.post(boost::bind(&core::do_write_router, this, index, data, handler));
+			}
+
+			void do_register_switch_port(const ep_type&, void_handler_type);
+			void do_register_router_port(const ep_type&, void_handler_type);
+			void do_unregister_switch_port(const ep_type&, void_handler_type);
+			void do_unregister_router_port(const ep_type&, void_handler_type);
+			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
+			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
+
+			boost::asio::strand m_switch_strand;
+			boost::asio::strand m_router_strand;
+
+			switch_ m_switch;
+			router m_router;
 	};
-
-	inline const freelan::configuration& core::configuration() const
-	{
-		return m_configuration;
-	}
-
-	inline bool core::has_tap_adapter() const
-	{
-		return static_cast<bool>(m_tap_adapter);
-	}
-
-	inline const asiotap::tap_adapter& core::tap_adapter() const
-	{
-		return *m_tap_adapter;
-	}
-
-	inline bool core::has_server() const
-	{
-		return static_cast<bool>(m_server);
-	}
-
-	inline const fscp::server& core::server() const
-	{
-		return *m_server;
-	}
-
-	inline freelan::logger& core::logger()
-	{
-		return m_logger;
-	}
-
-	inline void core::set_configuration_update_callback(configuration_update_callback callback)
-	{
-		m_configuration_update_callback = callback;
-	}
-
-	inline void core::set_open_callback(open_callback callback)
-	{
-		m_open_callback = callback;
-	}
-
-	inline void core::set_close_callback(close_callback callback)
-	{
-		m_close_callback = callback;
-	}
-
-	inline void core::set_session_failed_callback(session_failed_callback callback)
-	{
-		m_session_failed_callback = callback;
-	}
-
-	inline void core::set_session_established_callback(session_established_callback callback)
-	{
-		m_session_established_callback = callback;
-	}
-
-	inline void core::set_session_lost_callback(session_lost_callback callback)
-	{
-		m_session_lost_callback = callback;
-	}
 }
 
 #endif /* FREELAN_CORE_HPP */

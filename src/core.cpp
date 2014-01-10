@@ -45,749 +45,301 @@
 
 #include "core.hpp"
 
-#include <sstream>
-
-#include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-
 #include "os.hpp"
 #include "client.hpp"
-#include "tap_adapter_switch_port.hpp"
-#include "endpoint_switch_port.hpp"
-#include "tap_adapter_router_port.hpp"
-#include "endpoint_router_port.hpp"
-#include "logger_stream.hpp"
+#include "routes_request_message.hpp"
+#include "routes_message.hpp"
+
+#include <fscp/server_error.hpp>
+
+#include <boost/make_shared.hpp>
+#include <boost/foreach.hpp>
+#include <boost/thread/future.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+
+#include <cassert>
 
 namespace freelan
 {
+	using boost::asio::buffer;
+	using boost::asio::buffer_cast;
+	using boost::asio::buffer_size;
+
 	namespace
 	{
-		static const switch_::group_type TAP_ADAPTERS_GROUP = 0;
-		static const switch_::group_type ENDPOINTS_GROUP = 1;
-		static const boost::posix_time::time_duration CERTIFICATE_RENEWAL_DELAY = boost::posix_time::hours(6);
+		typedef boost::function<void (const core::ep_type&)> resolve_success_handler_type;
+		typedef core::simple_handler_type resolve_error_handler_type;
 
-		enum ConfigurationItems
+		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, resolve_success_handler_type success_handler, resolve_error_handler_type error_handler)
 		{
-			CI_GET_AUTHORITY_CERTIFICATE = 0x01,
-			CI_JOIN_NETWORK = 0x02,
-			CI_SIGN = 0x04,
-			CI_ALL = CI_GET_AUTHORITY_CERTIFICATE | CI_JOIN_NETWORK | CI_SIGN
+			if (ec)
+			{
+				success_handler(*it);
+			}
+			else
+			{
+				error_handler(ec);
+			}
+		}
+
+		void null_simple_write_handler(const boost::system::error_code&)
+		{
+		}
+
+		void null_switch_write_handler(const switch_::multi_write_result_type&)
+		{
+		}
+
+		void null_router_write_handler(const boost::system::error_code&)
+		{
+		}
+
+		endpoint to_endpoint(const core::ep_type& host)
+		{
+			if (host.address().is_v4())
+			{
+				return ipv4_endpoint(host.address().to_v4(), host.port());
+			}
+			else
+			{
+				return ipv6_endpoint(host.address().to_v6(), host.port());
+			}
+		}
+
+		template <typename SharedBufferType, typename Handler>
+		class shared_buffer_handler
+		{
+			public:
+
+				typedef void result_type;
+
+				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
+					m_buffer(_buffer),
+					m_handler(_handler)
+				{}
+
+				result_type operator()()
+				{
+					m_handler();
+				}
+
+				template <typename Arg1>
+				result_type operator()(Arg1 arg1)
+				{
+					m_handler(arg1);
+				}
+
+				template <typename Arg1, typename Arg2>
+				result_type operator()(Arg1 arg1, Arg2 arg2)
+				{
+					m_handler(arg1, arg2);
+				}
+
+			private:
+
+				SharedBufferType m_buffer;
+				Handler m_handler;
 		};
 
-		cryptoplus::x509::certificate_request generate_certificate_request(const freelan::configuration& configuration, const cryptoplus::pkey::rsa_key& private_key)
+		template <typename SharedBufferType, typename Handler>
+		inline shared_buffer_handler<SharedBufferType, Handler> make_shared_buffer_handler(SharedBufferType _buffer, Handler _handler)
 		{
-			using namespace cryptoplus;
-
-			x509::certificate_request csr = x509::certificate_request::create();
-
-			csr.set_version(2);
-
-			csr.set_public_key(pkey::pkey::from_rsa_key(private_key));
-
-			csr.subject().push_back("CN", MBSTRING_ASC, configuration.server.username.c_str(), configuration.server.username.size());
-
-			csr.sign(pkey::pkey::from_rsa_key(private_key), hash::message_digest_algorithm(NID_sha1));
-
-			return csr;
+			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
+
+		template <typename Handler, typename CausalHandler>
+		class causal_handler
+		{
+			private:
+
+				class automatic_caller : public boost::noncopyable
+				{
+					public:
+
+						automatic_caller(CausalHandler& _handler) :
+							m_auto_handler(_handler)
+						{
+						}
+
+						~automatic_caller()
+						{
+							m_auto_handler();
+						}
+
+					private:
+
+						CausalHandler& m_auto_handler;
+				};
+
+			public:
+
+				typedef void result_type;
+
+				causal_handler(Handler _handler, CausalHandler _causal_handler) :
+					m_handler(_handler),
+					m_causal_handler(_causal_handler)
+				{}
+
+				result_type operator()()
+				{
+					automatic_caller ac(m_causal_handler);
+
+					m_handler();
+				}
+
+				template <typename Arg1>
+				result_type operator()(Arg1 arg1)
+				{
+					automatic_caller ac(m_causal_handler);
+
+					m_handler(arg1);
+				}
+
+				template <typename Arg1, typename Arg2>
+				result_type operator()(Arg1 arg1, Arg2 arg2)
+				{
+					automatic_caller ac(m_causal_handler);
+
+					m_handler(arg1, arg2);
+				}
+
+			private:
+
+				Handler m_handler;
+				CausalHandler m_causal_handler;
+		};
+
+		template <typename Handler, typename CausalHandler>
+		inline causal_handler<Handler, CausalHandler> make_causal_handler(Handler _handler, CausalHandler _causal_handler)
+		{
+			return causal_handler<Handler, CausalHandler>(_handler, _causal_handler);
+		}
+
+		unsigned int get_auto_mtu_value()
+		{
+			const unsigned int default_mtu_value = 1500;
+			const size_t static_payload_size = 20 + 8 + 4 + 22; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
+
+			return default_mtu_value - static_payload_size;
+		}
+
+		static const unsigned int TAP_ADAPTERS_GROUP = 0;
+		static const unsigned int ENDPOINTS_GROUP = 1;
 	}
 
-	// Has to be put first, as static variables definition order matters
+	typedef boost::asio::ip::udp::resolver::query resolver_query;
+
+	// Has to be put first, as static variables definition order matters.
 	const int core::ex_data_index = cryptoplus::x509::store_context::register_index();
 
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
 	const boost::posix_time::time_duration core::DYNAMIC_CONTACT_PERIOD = boost::posix_time::seconds(45);
+	const boost::posix_time::time_duration core::ROUTES_REQUEST_PERIOD = boost::posix_time::seconds(180);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
-	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration, const freelan::logger& _logger) :
+	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
 		m_io_service(io_service),
-		m_running(false),
 		m_configuration(_configuration),
-		m_logger(_logger),
-		m_server(),
-		m_resolver(m_io_service),
-		m_contact_timer(m_io_service, CONTACT_PERIOD),
-		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
-		m_configuration_update_callback(),
-		m_open_callback(),
-		m_close_callback(),
+		m_logger_strand(m_io_service),
+		m_logger(m_logger_strand.wrap(boost::bind(&core::do_handle_log, this, _1, _2, _3))),
+		m_log_callback(),
+		m_core_opened_callback(),
+		m_core_closed_callback(),
 		m_session_failed_callback(),
 		m_session_established_callback(),
 		m_session_lost_callback(),
+		m_server(),
+		m_contact_timer(m_io_service, CONTACT_PERIOD),
+		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_routes_request_timer(m_io_service, ROUTES_REQUEST_PERIOD),
+		m_tap_adapter_strand(m_io_service),
+		m_proxies_strand(m_io_service),
+		m_tap_write_queue_strand(m_io_service),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
+		m_switch_strand(m_io_service),
+		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
-		m_router(m_configuration.router),
-		m_check_configuration_timer(m_io_service)
+		m_router(m_configuration.router)
 	{
-	}
-
-	void core::open()
-	{
-		typedef boost::asio::ip::udp::resolver::query query;
-
-		m_listen_endpoint = boost::apply_visitor(endpoint_resolve_visitor(m_resolver, to_protocol(m_configuration.fscp.hostname_resolution_protocol), query::address_configured | query::passive, DEFAULT_SERVICE), m_configuration.fscp.listen_on);
-
-		m_logger(LL_DEBUG) << "Core opening on " << *m_listen_endpoint << "...";
-
-		if (m_configuration.server.enabled)
-		{
-			m_logger(LL_INFORMATION) << "Server mode enabled.";
-
-			update_server_configuration(CI_ALL);
-		}
-
-		if (m_configuration_update_callback)
-		{
-			m_configuration_update_callback(m_configuration);
-		}
-
 		if (!m_configuration.security.identity)
 		{
 			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
 		}
 
-		// Create the FSCP server
-		create_server();
+		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
+		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
+	}
 
-		// Create the TAP/TUN adapter.
-		create_tap_adapter();
+	void core::open()
+	{
+		m_logger(LL_DEBUG) << "Opening core...";
+
+		open_server();
+		open_tap_adapter();
 
 		m_logger(LL_DEBUG) << "Core opened.";
-
-		if (m_open_callback)
-		{
-			m_io_service.post(m_open_callback);
-		}
-
-		m_running = true;
 	}
 
 	void core::close()
 	{
-		if (m_running)
-		{
-			m_running = false;
+		m_logger(LL_DEBUG) << "Closing core...";
 
-			if (m_close_callback)
-			{
-				m_io_service.post(m_close_callback);
-			}
-
-			m_io_service.post(boost::bind(&core::do_close, this));
-		}
-	}
-
-	void core::log(freelan::log_level level, const std::string& msg)
-	{
-		m_io_service.post(boost::bind(&logger::log, boost::ref(m_logger), level, msg));
-	}
-
-	void core::do_close()
-	{
-		m_logger(LL_DEBUG) << "Core closing...";
-
-		m_dhcp_proxy.reset();
-		m_arp_proxy.reset();
-
-		if (m_tap_adapter)
-		{
-			if (m_configuration.tap_adapter.down_callback)
-			{
-				m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
-			}
-
-			m_tap_adapter->cancel();
-			m_tap_adapter->set_connected_state(false);
-
-			// IPv6 address
-			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
-			{
-				try
-				{
-					m_tap_adapter->remove_ip_address_v6(
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
-					);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot unset IPv6 address: " << ex.what();
-				}
-			}
-
-			// IPv4 address
-			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
-			{
-				try
-				{
-					m_tap_adapter->remove_ip_address_v4(
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-					);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot unset IPv4 address: " << ex.what();
-				}
-			}
-
-			m_tap_adapter->close();
-		}
-
-		m_check_configuration_timer.cancel();
-		m_contact_timer.cancel();
-		m_dynamic_contact_timer.cancel();
-
-		m_server->close();
-		m_listen_endpoint = boost::none;
+		close_tap_adapter();
+		close_server();
 
 		m_logger(LL_DEBUG) << "Core closed.";
 	}
 
-	void core::async_greet(const ep_type& target)
+	// Private methods
+
+	void core::do_handle_log(log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp)
 	{
-		m_server->async_greet(target, boost::bind(&core::on_hello_response, this, _1, _2, _3), m_configuration.fscp.hello_timeout);
-	}
-
-	void core::async_request_routes(const ep_type& target)
-	{
-		(void)target;
-		//const size_t count = routes_request_message::write(request.buffer.data(), request.buffer.size(), sequence);
-
-		//TODO: Use a real handler in the async_send_data call
-		//m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(request.buffer.data(), count), fscp::server::write_callback());
-	}
-
-	void core::async_send_routes(const ep_type& target, const routes_request_message& rr_msg, const routes_type& routes)
-	{
-		(void)target;
-		(void)rr_msg;
-		(void)routes;
-		//const size_t count = routes_message::write(response.buffer.data(), response.buffer.size(), sequence, routes);
-
-		//TODO: Use a real handler in the async_send_data call
-		//m_server->async_send_data(target, fscp::CHANNEL_NUMBER_1, boost::asio::const_buffer(response.buffer.data(), count), fscp::server::write_callback());
-	}
-
-	bool core::on_hello_request(const ep_type& sender, bool default_accept)
-	{
-		m_logger(LL_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
-
-		if (is_banned(sender.address()))
+		// All do_handle_log() calls are done within the same strand, so the user does not need to protect his callback with a mutex that might slow things down.
+		if (m_log_callback)
 		{
-			m_logger(LL_WARNING) << "Ignoring HELLO_REQUEST from " << sender << " as it is a banned host.";
-
-			return false;
-		}
-
-		if (default_accept)
-		{
-			m_server->async_introduce_to(sender, boost::bind(&core::handle_introduce_to, this, sender, _1));
-
-			return true;
-		}
-
-		return false;
-	}
-
-	void core::on_hello_response(const ep_type& sender, const boost::posix_time::time_duration& time_duration, bool success)
-	{
-		if (success)
-		{
-			m_logger(LL_DEBUG) << "Received HELLO_RESPONSE from " << sender << ". Latency: " << time_duration << ".";
-
-			m_server->async_introduce_to(sender, boost::bind(&core::handle_introduce_to, this, sender, _1));
-		}
-		else
-		{
-			m_logger(LL_DEBUG) << "Received no HELLO_RESPONSE from " << sender << ". Timeout: " << time_duration << ".";
+			m_log_callback(level, msg, timestamp);
 		}
 	}
 
-	bool core::on_presentation(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
+	bool core::is_banned(const boost::asio::ip::address& address) const
 	{
-		if (m_logger.level() <= LL_DEBUG)
-		{
-			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << ".";
-		}
-
-		if (is_banned(sender.address()))
-		{
-			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as it is a banned host.";
-
-			return false;
-		}
-
-		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
-		{
-			m_server->async_request_session(sender, boost::bind(&core::handle_request_session, this, sender, _1));
-
-			return true;
-		}
-
-		return false;
+		return has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), address);
 	}
 
-	bool core::on_session_request(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_cap, bool default_accept)
+	void core::open_server()
 	{
-		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << ".";
-
-		if (m_logger.level() <= LL_DEBUG)
-		{
-			std::ostringstream oss;
-
-			BOOST_FOREACH(const fscp::cipher_algorithm_type& calg, calg_cap)
-			{
-				oss << " " << calg;
-			}
-
-			m_logger(LL_DEBUG) << "Cipher algorithm capabilities:" << oss.str();
-		}
-
-		if (default_accept)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	void core::on_session_failed(const ep_type& sender, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
-	{
-		if (is_new)
-		{
-			m_logger(LL_WARNING) << "Session establishment with " << sender << " failed.";
-		}
-		else
-		{
-			m_logger(LL_WARNING) << "Session renewal with " << sender << " failed.";
-		}
-
-		m_logger(LL_WARNING) << "Local algorithms: " << local;
-		m_logger(LL_WARNING) << "Remote algorithms: " << remote;
-
-		if (m_session_failed_callback)
-		{
-			m_session_failed_callback(sender, is_new, local, remote);
-		}
-	}
-
-	void core::on_session_established(const ep_type& sender, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
-	{
-		if (is_new)
-		{
-			m_logger(LL_INFORMATION) << "Session established with " << sender << ".";
-		}
-		else
-		{
-			m_logger(LL_INFORMATION) << "Session renewed with " << sender << ".";
-		}
-
-		m_logger(LL_INFORMATION) << "Local algorithms: " << local;
-		m_logger(LL_INFORMATION) << "Remote algorithms: " << remote;
-
-		if (is_new)
-		{
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
-			{
-				//TODO: Make sure the buffer remains available and unmodified until the callback (which must be changed) gets called.
-				const switch_::port_type port = boost::make_shared<endpoint_switch_port>(sender, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2, fscp::server::write_callback()));
-
-				m_endpoint_switch_port_map[sender] = port;
-				m_switch.register_port(port, ENDPOINTS_GROUP);
-			}
-			else
-			{
-				//TODO: Get the routes somewhere...
-				routes_type local_routes;
-
-				//TODO: Make sure the buffer remains available and unmodified until the callback (which must be changed) gets called.
-				const router::port_type port = boost::make_shared<endpoint_router_port>(sender, local_routes, boost::bind(&fscp::server::async_send_data, &*m_server, _1, fscp::CHANNEL_NUMBER_0, _2, fscp::server::write_callback()));
-
-				m_endpoint_router_port_map[sender] = port;
-				m_router.register_port(port, ENDPOINTS_GROUP);
-			}
-		}
-
-		if (m_session_established_callback)
-		{
-			m_session_established_callback(sender, is_new, local, remote);
-		}
-	}
-
-	void core::on_session_lost(const ep_type& sender)
-	{
-		m_logger(LL_INFORMATION) << "Session with " << sender << " lost.";
-
-		if (m_session_lost_callback)
-		{
-			m_session_lost_callback(sender);
-		}
-
-		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
-		{
-			const switch_::port_type port = m_endpoint_switch_port_map[sender];
-
-			if (port)
-			{
-				m_switch.unregister_port(port);
-				m_endpoint_switch_port_map.erase(sender);
-			}
-		}
-		else
-		{
-			const router::port_type port = m_endpoint_router_port_map[sender];
-
-			if (port)
-			{
-				m_router.unregister_port(port);
-				m_endpoint_router_port_map.erase(sender);
-			}
-		}
-	}
-
-	void core::on_data(const ep_type& sender, fscp::channel_number_type channel_number, boost::asio::const_buffer data)
-	{
-		switch (channel_number)
-		{
-			// Channel 0 contains ethernet/ip frames
-			case fscp::CHANNEL_NUMBER_0:
-				if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
-				{
-					on_ethernet_data(sender, data);
-				}
-				else
-				{
-					on_ip_data(sender, data);
-				}
-
-				break;
-			// Channel 1 contains messages
-			case fscp::CHANNEL_NUMBER_1:
-				try
-				{
-					const message msg(boost::asio::buffer_cast<const uint8_t*>(data), boost::asio::buffer_size(data));
-
-					on_message(sender, msg);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Received incorrectly formatted message from " << sender << ". Error was: " << ex.what();
-				}
-
-				break;
-			default:
-				m_logger(LL_WARNING) << "Received unhandled " << boost::asio::buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
-				break;
-		}
-	}
-
-	bool core::on_contact_request(const ep_type& sender, cert_type cert, const ep_type& target)
-	{
-		if (m_configuration.fscp.accept_contact_requests)
-		{
-			m_logger(LL_INFORMATION) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << target << ")";
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	void core::on_contact(const ep_type& sender, cert_type cert, const ep_type& target)
-	{
-		if (m_configuration.fscp.accept_contacts)
-		{
-			// We check if the contact is one of our forbidden network list.
-			if (is_banned(target.address()))
-			{
-				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << cert.subject().oneline() << " is at " << target << " but won't be contacted.";
-			}
-			else
-			{
-				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << cert.subject().oneline() << " is at " << target;
-
-				do_greet(target);
-			}
-		}
-	}
-
-	void core::on_ethernet_data(const ep_type& sender, boost::asio::const_buffer data)
-	{
-		const switch_::port_type port = m_endpoint_switch_port_map[sender];
-
-		if (port)
-		{
-			m_switch.receive_data(port, data);
-		}
-	}
-
-	void core::on_ip_data(const ep_type& sender, boost::asio::const_buffer data)
-	{
-		const router::port_type port = m_endpoint_router_port_map[sender];
-
-		if (port)
-		{
-			m_router.receive_data(port, data);
-		}
-	}
-
-	void core::on_message(const ep_type& sender, const message& msg)
-	{
-		// Get or create the messenger associated with the peer.
-		messenger_type& messenger = m_messengers[sender];
-		messenger.clean();
-
-		switch (msg.type())
-		{
-			case message::MT_ROUTES_REQUEST:
-				{
-					routes_request_message rr_msg(msg);
-
-					on_routes_requested(sender, rr_msg);
-
-					break;
-				}
-			case message::MT_ROUTES:
-				{
-					routes_message r_msg(msg);
-
-					on_routes_received(sender, r_msg);
-
-					break;
-				}
-			default:
-				m_logger(LL_WARNING) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
-				break;
-		}
-	}
-
-	void core::on_routes_requested(const ep_type& sender, const routes_request_message& msg)
-	{
-		if (!m_configuration.router.accept_routes_requests)
-		{
-			m_logger(LL_DEBUG) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
-		}
-		else
-		{
-			m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with: " << m_configuration.router.local_ip_routes;
-
-			async_send_routes(sender, msg, m_configuration.router.local_ip_routes);
-		}
-	}
-
-	void core::on_routes_received(const ep_type& sender, const routes_message& msg)
-	{
-		m_logger(LL_INFORMATION) << "Received routes from " << sender << ": " << msg.routes();
-	}
-
-	void core::handle_introduce_to(const ep_type& target, const boost::system::error_code& ec)
-	{
-		if (ec)
-		{
-			m_logger(LL_WARNING) << "Error sending introduction message to " << target << ": " << ec << " (" << ec.message() << ")";
-		}
-	}
-
-	void core::handle_request_session(const ep_type& target, const boost::system::error_code& ec)
-	{
-		if (ec)
-		{
-			m_logger(LL_WARNING) << "Error requesting session from " << target << ": " << ec << " (" << ec.message() << ")";
-		}
-	}
-
-	void core::handle_network_event(const ep_type& target, const boost::system::error_code& ec)
-	{
-		if (ec)
-		{
-			m_logger(LL_WARNING) << "Sending message to " << target << ": " << ec << " (" << ec.message() << ")";
-		}
-	}
-
-	void core::tap_adapter_read_done(asiotap::tap_adapter& _tap_adapter, const boost::system::error_code& ec, size_t cnt)
-	{
-		if (!ec)
-		{
-			boost::asio::const_buffer data = boost::asio::buffer(m_tap_adapter_buffer, cnt);
-
-			if (m_tap_adapter->type() == asiotap::tap_adapter::AT_TAP_ADAPTER)
-			{
-				bool handled = false;
-
-				if (m_arp_proxy || m_dhcp_proxy)
-				{
-					m_ethernet_filter.parse(data);
-
-					if (m_arp_proxy && m_arp_filter.get_last_helper())
-					{
-						handled = true;
-						m_arp_filter.clear_last_helper();
-					}
-
-					if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
-					{
-						handled = true;
-						m_dhcp_filter.clear_last_helper();
-					}
-				}
-
-				if (!handled)
-				{
-					m_switch.receive_data(m_tap_adapter_switch_port, data);
-				}
-			}
-			else
-			{
-				// This is a TUN interface. We receive either IPv4 or IPv6 frames.
-				m_router.receive_data(m_tap_adapter_router_port, data);
-			}
-
-			// Start another read
-			_tap_adapter.async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(_tap_adapter), _1, _2));
-		}
-		else
-		{
-			// If the core is currently stopping, this kind of error is expected.
-			if (m_running)
-			{
-				m_logger(LL_ERROR) << "Read failed on " << _tap_adapter.name() << ". Error: " << ec;
-
-				close();
-			}
-		}
-	}
-
-	void core::do_greet(const ep_type& ep)
-	{
-		if (!m_server->has_session(ep))
-		{
-			m_logger(LL_DEBUG) << "Sending HELLO_REQUEST to " << ep << "...";
-
-			async_greet(ep);
-		}
-	}
-
-	void core::do_greet(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, const freelan::fscp_configuration::endpoint& ep)
-	{
-		if (!ec)
-		{
-			do_greet(*it);
-		}
-		else
-		{
-			m_logger(LL_WARNING) << "Failed to resolve " << ep << ": " << ec;
-		}
-	}
-
-	void core::do_contact()
-	{
-		std::for_each(m_configuration.fscp.contact_list.begin(), m_configuration.fscp.contact_list.end(), boost::bind(&core::do_contact, this, _1));
-	}
-
-	void core::do_contact(const fscp_configuration::endpoint& ep)
-	{
-		typedef boost::asio::ip::udp::resolver::query query;
-
-		boost::apply_visitor(
-		    endpoint_async_resolve_visitor(
-		        m_resolver,
-		        to_protocol(m_configuration.fscp.hostname_resolution_protocol),
-		        query::address_configured,
-		        DEFAULT_SERVICE,
-		        boost::bind(&core::do_greet, this, _1, _2, ep)
-		    ),
-		    ep
-		);
-	}
-
-	void core::do_periodic_contact(const boost::system::error_code& ec)
-	{
-		if (ec != boost::asio::error::operation_aborted)
-		{
-			do_contact();
-
-			m_contact_timer.expires_from_now(CONTACT_PERIOD);
-			m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
-		}
-	}
-
-	void core::do_dynamic_contact()
-	{
-		std::for_each(m_configuration.fscp.dynamic_contact_list.begin(), m_configuration.fscp.dynamic_contact_list.end(), boost::bind(&core::do_dynamic_contact, this, _1));
-	}
-
-	void core::do_dynamic_contact(cert_type cert)
-	{
-		m_server->async_send_contact_request_to_all(cert);
-	}
-
-	void core::do_periodic_dynamic_contact(const boost::system::error_code& ec)
-	{
-		if (ec != boost::asio::error::operation_aborted)
-		{
-			do_dynamic_contact();
-
-			m_dynamic_contact_timer.expires_from_now(DYNAMIC_CONTACT_PERIOD);
-			m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
-		}
-	}
-
-	void core::do_check_configuration(const boost::system::error_code& ec)
-	{
-		using namespace cryptoplus::pkey;
-		using namespace cryptoplus::x509;
-
-		if (ec != boost::asio::error::operation_aborted)
-		{
-			m_logger(LL_DEBUG) << "Checking certificate expiration...";
-
-			const certificate sig_cert = m_configuration.security.identity->signature_certificate();
-			const boost::posix_time::ptime not_after = sig_cert.not_after().to_ptime();
-			const boost::posix_time::time_duration time_left = not_after - boost::posix_time::second_clock::universal_time();
-
-			if (time_left <= CERTIFICATE_RENEWAL_DELAY)
-			{
-				m_logger(LL_INFORMATION) << "Certificate expires in " << time_left << ". Renewing...";
-
-				async_update_server_configuration(CI_SIGN);
-			}
-			else
-			{
-				m_logger(LL_DEBUG) << "Certificate doesn't expire yet. Checking again at " << boost::posix_time::to_simple_string(not_after - CERTIFICATE_RENEWAL_DELAY) << ".";
-
-				m_check_configuration_timer.expires_at(not_after - CERTIFICATE_RENEWAL_DELAY);
-				m_check_configuration_timer.async_wait(boost::bind(&core::do_check_configuration, this, boost::asio::placeholders::error));
-			}
-		}
-	}
-
-	void core::create_server()
-	{
-		assert(m_configuration.security.identity);
-
-		m_server.reset(new fscp::server(m_io_service, *m_configuration.security.identity));
+		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
 		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
 
-		m_server->set_hello_message_callback(boost::bind(&core::on_hello_request, this, _1, _2));
-		m_server->set_presentation_message_callback(boost::bind(&core::on_presentation, this, _1, _2, _3, _4));
-		m_server->set_session_request_message_callback(boost::bind(&core::on_session_request, this, _1, _2, _3));
-		m_server->set_session_failed_callback(boost::bind(&core::on_session_failed, this, _1, _2, _3, _4));
-		m_server->set_session_established_callback(boost::bind(&core::on_session_established, this, _1, _2, _3, _4));
-		m_server->set_session_lost_callback(boost::bind(&core::on_session_lost, this, _1));
-		m_server->set_data_received_callback(boost::bind(&core::on_data, this, _1, _2, _3));
-		m_server->set_contact_request_message_received_callback(boost::bind(&core::on_contact_request, this, _1, _2, _3));
-		m_server->set_contact_message_received_callback(boost::bind(&core::on_contact, this, _1, _2, _3));
+		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
+		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
+		m_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
+		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
+		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
+		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
+		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2, _3, _4));
+		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
+		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
+		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
-		m_server->open(*m_listen_endpoint);
+		resolver_type resolver(m_io_service);
+
+		const ep_type listen_endpoint = boost::apply_visitor(
+			endpoint_resolve_visitor(
+				resolver,
+				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+				resolver_query::address_configured | resolver_query::passive, DEFAULT_SERVICE
+			),
+			m_configuration.fscp.listen_on
+		);
+
+		m_logger(LL_INFORMATION) << "Core set to listen on: " << listen_endpoint;
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -827,37 +379,714 @@ namespace freelan
 			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
 		}
 
-		// We start the contact loop
-		do_contact();
-		m_contact_timer.async_wait(boost::bind(&core::do_periodic_contact, this, boost::asio::placeholders::error));
-		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+		// Let's open the server.
+		m_server->open(listen_endpoint);
 
+		// We start the contact loop.
+		async_contact_all();
+
+		m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
+		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+		m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
 	}
 
-	void core::create_tap_adapter()
+	void core::close_server()
+	{
+		// Stop the contact loop timers.
+		m_dynamic_contact_timer.cancel();
+		m_contact_timer.cancel();
+
+		m_server->close();
+	}
+
+	void core::async_contact(const endpoint& target, duration_handler_type handler)
+	{
+		resolve_success_handler_type success_handler = boost::bind(&core::do_contact, this, _1, handler);
+		resolve_error_handler_type error_handler = boost::bind(handler, ep_type(), _1, boost::posix_time::time_duration());
+
+		boost::apply_visitor(
+			endpoint_async_resolve_visitor(
+				boost::make_shared<resolver_type>(boost::ref(m_io_service)),
+				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+				resolver_query::address_configured,
+				DEFAULT_SERVICE,
+				boost::bind(
+					&resolve_handler,
+					_1,
+					_2,
+					success_handler,
+					error_handler
+				)
+			),
+			target
+		);
+	}
+
+	void core::async_contact(const endpoint& target)
+	{
+		async_contact(target, boost::bind(&core::do_handle_contact, this, target, _1, _2, _3));
+	}
+
+	void core::async_contact_all()
+	{
+		BOOST_FOREACH(const endpoint& contact, m_configuration.fscp.contact_list)
+		{
+			async_contact(contact);
+		}
+	}
+
+	void core::async_dynamic_contact_all()
+	{
+		using boost::make_transform_iterator;
+
+		hash_type (*func)(cert_type) = fscp::get_certificate_hash;
+
+		const hash_list_type hash_list(make_transform_iterator(m_configuration.fscp.dynamic_contact_list.begin(), func), make_transform_iterator(m_configuration.fscp.dynamic_contact_list.end(), func));
+
+		async_send_contact_request_to_all(hash_list);
+	}
+
+	void core::async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
+	{
+		m_server->async_send_contact_request_to_all(hash_list, handler);
+	}
+
+	void core::async_send_contact_request_to_all(const hash_list_type& hash_list)
+	{
+		async_send_contact_request_to_all(hash_list, boost::bind(&core::do_handle_send_contact_request_to_all, this, _1));
+	}
+
+	void core::async_introduce_to(const ep_type& target, simple_handler_type handler)
+	{
+		assert(m_server);
+
+		m_server->async_introduce_to(target, handler);
+	}
+
+	void core::async_introduce_to(const ep_type& target)
+	{
+		async_introduce_to(target, boost::bind(&core::do_handle_introduce_to, this, target, _1));
+	}
+
+	void core::async_request_session(const ep_type& target, simple_handler_type handler)
+	{
+		assert(m_server);
+
+		m_server->async_request_session(target, handler);
+	}
+
+	void core::async_request_session(const ep_type& target)
+	{
+		async_request_session(target, boost::bind(&core::do_handle_request_session, this, target, _1));
+	}
+
+	void core::async_handle_routes_request(const ep_type& sender, const routes_request_message& msg)
+	{
+		// The routes request message does not contain any meaningful information.
+		static_cast<void>(msg);
+
+		m_router_strand.post(
+			boost::bind(
+				&core::do_handle_routes_request,
+				this,
+				sender
+			)
+		);
+	}
+
+	void core::async_handle_routes(const ep_type& sender, const routes_message& msg)
+	{
+		m_router_strand.post(
+			boost::bind(
+				&core::do_handle_routes,
+				this,
+				sender,
+				msg.version(),
+				msg.routes()
+			)
+		);
+	}
+
+	void core::async_send_routes_request(const ep_type& target, simple_handler_type handler)
+	{
+		assert(m_server);
+
+		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
+		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+		const size_t size = routes_request_message::write(
+			buffer_cast<uint8_t*>(data_buffer),
+			buffer_size(data_buffer)
+		);
+
+		m_server->async_send_data(
+			target,
+			fscp::CHANNEL_NUMBER_1,
+			buffer(data_buffer, size),
+			make_shared_buffer_handler(
+				data_buffer,
+				handler
+			)
+		);
+	}
+
+	void core::async_send_routes_request(const ep_type& target)
+	{
+		async_send_routes_request(target, boost::bind(&core::do_handle_send_routes_request, this, target, _1));
+	}
+
+	void core::async_send_routes_request_to_all(multiple_endpoints_handler_type handler)
+	{
+		assert(m_server);
+
+		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
+		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+		const size_t size = routes_request_message::write(
+			buffer_cast<uint8_t*>(data_buffer),
+			buffer_size(data_buffer)
+		);
+
+		m_server->async_send_data_to_all(
+			fscp::CHANNEL_NUMBER_1,
+			buffer(data_buffer, size),
+			make_shared_buffer_handler(
+				data_buffer,
+				handler
+			)
+		);
+	}
+
+	void core::async_send_routes_request_to_all()
+	{
+		async_send_routes_request_to_all(boost::bind(&core::do_handle_send_routes_request_to_all, this, _1));
+	}
+
+	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const routes_type& routes, simple_handler_type handler)
+	{
+		assert(m_server);
+
+		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+
+		const size_t size = routes_message::write(
+			buffer_cast<uint8_t*>(data_buffer),
+			buffer_size(data_buffer),
+			version,
+			routes
+		);
+
+		m_server->async_send_data(
+			target,
+			fscp::CHANNEL_NUMBER_1,
+			buffer(data_buffer, size),
+			make_shared_buffer_handler(
+				data_buffer,
+				handler
+			)
+		);
+	}
+
+	void core::do_contact(const ep_type& address, duration_handler_type handler)
+	{
+		assert(m_server);
+
+		m_server->async_greet(address, boost::bind(handler, address, _1, _2));
+	}
+
+	void core::do_handle_contact(const endpoint& host, const ep_type& address, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
+	{
+		if (!ec)
+		{
+			m_logger(LL_DEBUG) << "Received HELLO_RESPONSE from " << host << " at " << address << ". Latency: " << duration << "";
+
+			async_introduce_to(address);
+		}
+		else
+		{
+			if (ec == fscp::server_error::hello_request_timed_out)
+			{
+				m_logger(LL_DEBUG) << "Received no HELLO_RESPONSE from " << host << " at " << address << ": " << ec.message() << " (timeout: " << duration << ")";
+			}
+			else
+			{
+				m_logger(LL_DEBUG) << "Unable to send HELLO to " << host << ": " << ec.message();
+			}
+		}
+	}
+
+	void core::do_handle_periodic_contact(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			async_contact_all();
+
+			m_contact_timer.expires_from_now(CONTACT_PERIOD);
+			m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void core::do_handle_periodic_dynamic_contact(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			async_dynamic_contact_all();
+
+			m_dynamic_contact_timer.expires_from_now(DYNAMIC_CONTACT_PERIOD);
+			m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void core::do_handle_periodic_routes_request(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			async_send_routes_request_to_all();
+
+			m_routes_request_timer.expires_from_now(ROUTES_REQUEST_PERIOD);
+			m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
+		}
+	}
+
+	void core::do_handle_send_contact_request(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error sending contact request to " << target << ": " << ec.message();
+		}
+	}
+
+	void core::do_handle_send_contact_request_to_all(const std::map<ep_type, boost::system::error_code>& results)
+	{
+		for (std::map<ep_type, boost::system::error_code>::const_iterator result = results.begin(); result != results.end(); ++result)
+		{
+			do_handle_send_contact_request(result->first, result->second);
+		}
+	}
+
+	void core::do_handle_introduce_to(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error sending introduction message to " << target << ": " << ec.message();
+		}
+	}
+
+	void core::do_handle_request_session(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error requesting session to " << target << ": " << ec.message();
+		}
+	}
+
+	void core::do_handle_send_routes_request(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error sending routes request to " << target << ": " << ec.message();
+		}
+	}
+
+	void core::do_handle_send_routes_request_to_all(const std::map<ep_type, boost::system::error_code>& results)
+	{
+		for (std::map<ep_type, boost::system::error_code>::const_iterator result = results.begin(); result != results.end(); ++result)
+		{
+			do_handle_send_routes_request(result->first, result->second);
+		}
+	}
+
+	bool core::do_handle_hello_received(const ep_type& sender, bool default_accept)
+	{
+		m_logger(LL_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
+
+		if (is_banned(sender.address()))
+		{
+			m_logger(LL_WARNING) << "Ignoring HELLO_REQUEST from " << sender << " as it is a banned host.";
+
+			default_accept = false;
+		}
+
+		if (default_accept)
+		{
+			async_introduce_to(sender);
+		}
+
+		return default_accept;
+	}
+
+	bool core::do_handle_contact_request_received(const ep_type& sender, cert_type cert, hash_type hash, const ep_type& answer)
+	{
+		if (m_configuration.fscp.accept_contact_requests)
+		{
+			m_logger(LL_INFORMATION) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << hash << "). Host is at: " << answer;
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void core::do_handle_contact_received(const ep_type& sender, hash_type hash, const ep_type& answer)
+	{
+		if (m_configuration.fscp.accept_contacts)
+		{
+			// We check if the contact belongs to the forbidden network list.
+			if (is_banned(answer.address()))
+			{
+				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << hash << " is at " << answer << " but won't be contacted.";
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << hash << " is at: " << answer;
+
+				async_contact(to_endpoint(answer));
+			}
+		}
+	}
+
+	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
+	{
+		if (m_logger.level() <= LL_DEBUG)
+		{
+			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << ".";
+		}
+
+		if (is_banned(sender.address()))
+		{
+			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as it is a banned host.";
+
+			return false;
+		}
+
+		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
+		{
+			async_request_session(sender);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_capabilities, bool default_accept)
+	{
+		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
+
+		if (m_logger.level() <= LL_DEBUG)
+		{
+			std::ostringstream oss;
+
+			BOOST_FOREACH(const fscp::cipher_algorithm_type& calg, calg_capabilities)
+			{
+				oss << " " << calg;
+			}
+
+			m_logger(LL_DEBUG) << "Cipher algorithm capabilities:" << oss.str();
+		}
+
+		return default_accept;
+	}
+
+	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_algorithm_type calg, bool default_accept)
+	{
+		m_logger(LL_DEBUG) << "Received SESSION from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
+		m_logger(LL_DEBUG) << "Cipher algorithm: " << calg;
+
+		return default_accept;
+	}
+
+	void core::do_handle_session_failed(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+	{
+		if (is_new)
+		{
+			m_logger(LL_WARNING) << "Session establishment with " << host << " failed.";
+		}
+		else
+		{
+			m_logger(LL_WARNING) << "Session renewal with " << host << " failed.";
+		}
+
+		m_logger(LL_WARNING) << "Local algorithms: " << local;
+		m_logger(LL_WARNING) << "Remote algorithms: " << remote;
+
+		if (m_session_failed_callback)
+		{
+			m_session_failed_callback(host, is_new, local, remote);
+		}
+	}
+
+	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+	{
+		if (is_new)
+		{
+			m_logger(LL_INFORMATION) << "Session established with " << host << ".";
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << "Session renewed with " << host << ".";
+		}
+
+		m_logger(LL_INFORMATION) << "Local algorithms: " << local;
+		m_logger(LL_INFORMATION) << "Remote algorithms: " << remote;
+
+		if (is_new)
+		{
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+			{
+				async_register_switch_port(host, boost::bind(&core::async_send_routes_request, this, host));
+			}
+			else
+			{
+				// We register the router port without any routes, at first.
+				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
+			}
+		}
+
+		if (m_session_established_callback)
+		{
+			m_session_established_callback(host, is_new, local, remote);
+		}
+	}
+
+	void core::do_handle_session_lost(const ep_type& host)
+	{
+		m_logger(LL_INFORMATION) << "Session with " << host << " lost.";
+
+		if (m_session_lost_callback)
+		{
+			m_session_lost_callback(host);
+		}
+
+		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+		{
+			async_unregister_switch_port(host, void_handler_type());
+		}
+		else
+		{
+			async_unregister_router_port(host, void_handler_type());
+		}
+	}
+
+	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type buffer, boost::asio::const_buffer data)
+	{
+		switch (channel_number)
+		{
+			// Channel 0 contains ethernet/ip frames
+			case fscp::CHANNEL_NUMBER_0:
+				if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+				{
+					async_write_switch(
+						make_port_index(sender),
+						data,
+						make_shared_buffer_handler(
+							buffer,
+							&null_switch_write_handler
+						)
+					);
+				}
+				else
+				{
+					async_write_router(
+						make_port_index(sender),
+						data,
+						make_shared_buffer_handler(
+							buffer,
+							&null_router_write_handler
+						)
+					);
+				}
+
+				break;
+			// Channel 1 contains messages
+			case fscp::CHANNEL_NUMBER_1:
+				try
+				{
+					const message msg(buffer_cast<const uint8_t*>(data), buffer_size(data));
+
+					do_handle_message(sender, buffer, msg);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Received incorrectly formatted message from " << sender << ". Error was: " << ex.what();
+				}
+
+				break;
+			default:
+				m_logger(LL_WARNING) << "Received unhandled " << buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
+				break;
+		}
+	}
+
+	void core::do_handle_message(const ep_type& sender, fscp::server::shared_buffer_type, const message& msg)
+	{
+		switch (msg.type())
+		{
+			case message::MT_ROUTES_REQUEST:
+				{
+					routes_request_message rr_msg(msg);
+
+					async_handle_routes_request(sender, rr_msg);
+
+					break;
+				}
+
+			case message::MT_ROUTES:
+				{
+					routes_message r_msg(msg);
+
+					async_handle_routes(sender, r_msg);
+
+					break;
+				}
+
+			default:
+				m_logger(LL_WARNING) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
+				break;
+		}
+	}
+
+	void core::do_handle_routes_request(const ep_type& sender)
+	{
+		// All calls to do_handle_routes_request() are done within the m_router_strand, so the following is safe.
+		if (!m_configuration.router.accept_routes_requests)
+		{
+			m_logger(LL_DEBUG) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
+		}
+		else
+		{
+			if (m_tap_adapter)
+			{
+				const boost::shared_ptr<router::port_type> local_port = m_router.get_port(make_port_index(m_tap_adapter));
+
+				const boost::optional<routes_message::version_type> version = local_port->version();
+
+				if (version)
+				{
+					const routes_type& routes = local_port->local_routes();
+
+					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *version << ": " << routes;
+
+					async_send_routes(sender, *version, routes, &null_simple_write_handler);
+				}
+			}
+		}
+	}
+
+	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const routes_type& routes)
+	{
+		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
+		boost::shared_ptr<router::port_type> port = m_router.get_port(make_port_index(sender));
+
+		if (port)
+		{
+			if (port->set_local_routes(version, routes))
+			{
+				m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (#" << version << ")";
+			}
+		}
+	}
+
+	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
+	{
+		cryptoplus::x509::store_context store_context(ctx);
+
+		core* _this = static_cast<core*>(store_context.get_external_data(core::ex_data_index));
+
+		return (_this->certificate_validation_method(ok != 0, store_context)) ? 1 : 0;
+	}
+
+	bool core::certificate_validation_method(bool ok, cryptoplus::x509::store_context store_context)
+	{
+		cert_type cert = store_context.get_current_certificate();
+
+		if (!ok)
+		{
+			m_logger(LL_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << cert.subject().oneline() << " is valid.";
+		}
+
+		return ok;
+	}
+
+	bool core::certificate_is_valid(cert_type cert)
+	{
+		switch (m_configuration.security.certificate_validation_method)
+		{
+			case security_configuration::CVM_DEFAULT:
+				{
+					using namespace cryptoplus;
+
+					// We can't easily ensure m_ca_store is used only in one strand, so we protect it with a mutex instead.
+					boost::mutex::scoped_lock lock(m_ca_store_mutex);
+
+					// Create a store context to proceed to verification
+					x509::store_context store_context = x509::store_context::create();
+
+					store_context.initialize(m_ca_store, cert, NULL);
+
+					// Ensure to set the verification callback *AFTER* you called initialize or it will be ignored.
+					store_context.set_verification_callback(&core::certificate_validation_callback);
+
+					// Add a reference to the current instance into the store context.
+					store_context.set_external_data(core::ex_data_index, this);
+
+					if (!store_context.verify())
+					{
+						return false;
+					}
+
+					break;
+				}
+			case security_configuration::CVM_NONE:
+				{
+					break;
+				}
+		}
+
+		if (m_configuration.security.certificate_validation_callback)
+		{
+			return m_configuration.security.certificate_validation_callback(*this, cert);
+		}
+
+		return true;
+	}
+
+	void core::open_tap_adapter()
 	{
 		if (m_configuration.tap_adapter.enabled)
 		{
 			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
 
-			m_tap_adapter.reset(new asiotap::tap_adapter(m_io_service));
+			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service));
+
+			void (core::* const write_func)(boost::asio::const_buffer, simple_handler_type) = &core::async_write_tap;
 
 			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
 			{
 				// Registers the switch port.
-				m_tap_adapter_switch_port = boost::make_shared<tap_adapter_switch_port>(boost::ref(*m_tap_adapter));
-				m_switch.register_port(m_tap_adapter_switch_port, TAP_ADAPTERS_GROUP);
+				m_switch.register_port(make_port_index(m_tap_adapter), switch_::port_type(boost::bind(write_func, this, _1, _2), TAP_ADAPTERS_GROUP));
 			}
 			else
 			{
 				// Registers the router port.
+				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(boost::bind(write_func, this, _1, _2), TAP_ADAPTERS_GROUP));
+
+				// Add the routes.
 				const routes_type& local_routes = m_configuration.router.local_ip_routes;
 
-				m_tap_adapter_router_port = boost::make_shared<tap_adapter_router_port>(boost::ref(*m_tap_adapter), local_routes);
-				m_router.register_port(m_tap_adapter_router_port, TAP_ADAPTERS_GROUP);
-			}
+				//TODO: Add the routes read from the system tap adapter
 
-			m_logger(LL_DEBUG) << "Opening tap adapter \"" << m_configuration.tap_adapter.name << "\" in mode " << m_configuration.tap_adapter.type << " with a desired MTU set to: " << m_configuration.tap_adapter.mtu;
+				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
+			}
 
 			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
 
@@ -919,15 +1148,13 @@ namespace freelan
 
 			m_tap_adapter->set_connected_state(true);
 
-			m_tap_adapter->async_read(boost::asio::buffer(m_tap_adapter_buffer, m_tap_adapter_buffer.size()), boost::bind(&core::tap_adapter_read_done, this, boost::ref(*m_tap_adapter), _1, _2));
-
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
 				// The ARP proxy
 				if (m_configuration.tap_adapter.arp_proxy_enabled)
 				{
-					m_arp_proxy.reset(new arp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_arp_filter));
-					m_arp_proxy->set_arp_request_callback(boost::bind(&core::on_arp_request, this, _1, _2));
+					m_arp_proxy.reset(new arp_proxy_type());
+					m_arp_proxy->set_arp_request_callback(boost::bind(&core::do_handle_arp_request, this, _1, _2));
 				}
 				else
 				{
@@ -937,7 +1164,7 @@ namespace freelan
 				// The DHCP proxy
 				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
 				{
-					m_dhcp_proxy.reset(new dhcp_proxy_type(boost::asio::buffer(m_proxy_buffer), boost::bind(&core::on_proxy_data, this, _1), m_dhcp_filter));
+					m_dhcp_proxy.reset(new dhcp_proxy_type());
 					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
 
 					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
@@ -961,14 +1188,14 @@ namespace freelan
 			}
 			else
 			{
+				// We don't need any proxies in TUN mode.
 				m_arp_proxy.reset();
 				m_dhcp_proxy.reset();
 			}
 
-			if (m_configuration.tap_adapter.up_callback)
-			{
-				m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
-			}
+			m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
+
+			async_read_tap();
 		}
 		else
 		{
@@ -976,25 +1203,245 @@ namespace freelan
 		}
 	}
 
-	unsigned int core::get_auto_mtu_value() const
+	void core::close_tap_adapter()
 	{
-		assert(m_server);
+		m_dhcp_proxy.reset();
+		m_arp_proxy.reset();
 
-		const unsigned int default_mtu_value = 1500;
-		const size_t static_payload_size = 20 + 8 + 4 + 22; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
-
-		return default_mtu_value - static_payload_size;
-	}
-
-	void core::on_proxy_data(boost::asio::const_buffer data)
-	{
 		if (m_tap_adapter)
 		{
-			m_tap_adapter->write(data);
+			m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
+
+			m_switch.unregister_port(make_port_index(m_tap_adapter));
+			m_router.unregister_port(make_port_index(m_tap_adapter));
+
+			m_tap_adapter->cancel();
+			m_tap_adapter->set_connected_state(false);
+
+			// IPv6 address
+			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
+			{
+				try
+				{
+					m_tap_adapter->remove_ip_address_v6(
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
+					);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot unset IPv6 address: " << ex.what();
+				}
+			}
+
+			// IPv4 address
+			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
+			{
+				try
+				{
+					m_tap_adapter->remove_ip_address_v4(
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
+					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
+					);
+				}
+				catch (std::runtime_error& ex)
+				{
+					m_logger(LL_WARNING) << "Cannot unset IPv4 address: " << ex.what();
+				}
+			}
+
+			m_tap_adapter->close();
 		}
 	}
 
-	bool core::on_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
+	void core::async_read_tap()
+	{
+		m_tap_adapter_strand.post(boost::bind(&core::do_read_tap, this));
+	}
+
+	void core::push_tap_write(void_handler_type handler)
+	{
+		// All push_write() calls are done in the same strand so the following is thread-safe.
+		if (m_tap_write_queue.empty())
+		{
+			// Nothing is being written, lets start the write immediately.
+			m_tap_adapter_strand.post(make_causal_handler(handler, m_tap_write_queue_strand.wrap(boost::bind(&core::pop_tap_write, this))));
+		}
+
+		m_tap_write_queue.push(handler);
+	}
+
+	void core::pop_tap_write()
+	{
+		// All pop_write() calls are done in the same strand so the following is thread-safe.
+		m_tap_write_queue.pop();
+
+		if (!m_tap_write_queue.empty())
+		{
+			m_tap_adapter_strand.post(make_causal_handler(m_tap_write_queue.front(), m_tap_write_queue_strand.wrap(boost::bind(&core::pop_tap_write, this))));
+		}
+	}
+
+	void core::do_read_tap()
+	{
+		// All calls to do_read_tap() are done within the m_tap_adapter_strand, so the following is safe.
+		assert(m_tap_adapter);
+
+		const tap_adapter_memory_pool::shared_buffer_type receive_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+
+		m_tap_adapter->async_read(
+			buffer(receive_buffer),
+			m_proxies_strand.wrap(
+				boost::bind(
+					&core::do_handle_tap_adapter_read,
+					this,
+					receive_buffer,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred
+				)
+			)
+		);
+	}
+
+	void core::do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type receive_buffer, const boost::system::error_code& ec, size_t count)
+	{
+		// All calls to do_read_tap() are done within the m_proxies_strand, so the following is safe.
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			// We try to read again, as soon as possible.
+			async_read_tap();
+		}
+
+		if (!ec)
+		{
+			const boost::asio::const_buffer data = buffer(receive_buffer, count);
+
+			if (m_tap_adapter->type() == asiotap::tap_adapter::AT_TAP_ADAPTER)
+			{
+				bool handled = false;
+
+				if (m_arp_proxy || m_dhcp_proxy)
+				{
+					// This line will eventually call the filters callbacks.
+					m_ethernet_filter.parse(data);
+
+					if (m_arp_proxy && m_arp_filter.get_last_helper())
+					{
+						handled = true;
+						m_arp_filter.clear_last_helper();
+					}
+
+					if (m_dhcp_proxy && m_dhcp_filter.get_last_helper())
+					{
+						handled = true;
+						m_dhcp_filter.clear_last_helper();
+					}
+				}
+
+				if (!handled)
+				{
+					async_write_switch(
+						make_port_index(m_tap_adapter),
+						data,
+						make_shared_buffer_handler(
+							receive_buffer,
+							&null_switch_write_handler
+						)
+					);
+				}
+			}
+			else
+			{
+				// This is a TUN interface. We receive either IPv4 or IPv6 frames.
+				async_write_router(
+					make_port_index(m_tap_adapter),
+					data,
+					make_shared_buffer_handler(
+						receive_buffer,
+						&null_router_write_handler
+					)
+				);
+			}
+		}
+		else if (ec != boost::asio::error::operation_aborted)
+		{
+			m_logger(LL_ERROR) << "Read failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
+		}
+	}
+
+	void core::do_handle_tap_adapter_write(const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			if (ec != boost::asio::error::operation_aborted)
+			{
+				m_logger(LL_WARNING) << "Write failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
+			}
+		}
+	}
+
+	void core::do_handle_arp_frame(const arp_helper_type& helper)
+	{
+		if (m_arp_proxy)
+		{
+			const proxy_memory_pool::shared_buffer_type response_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+			const boost::optional<boost::asio::const_buffer> data = m_arp_proxy->process_frame(
+				*m_arp_filter.parent().get_last_helper(),
+				helper,
+				buffer(response_buffer)
+			);
+
+			if (data)
+			{
+				async_write_tap(
+					*data,
+					make_shared_buffer_handler(
+						response_buffer,
+						boost::bind(
+							&core::do_handle_tap_adapter_write,
+							this,
+							boost::asio::placeholders::error
+						)
+					)
+				);
+			}
+		}
+	}
+
+	void core::do_handle_dhcp_frame(const dhcp_helper_type& helper)
+	{
+		if (m_dhcp_proxy)
+		{
+			const proxy_memory_pool::shared_buffer_type response_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+			const boost::optional<boost::asio::const_buffer> data = m_dhcp_proxy->process_frame(
+				*m_dhcp_filter.parent().parent().parent().parent().get_last_helper(),
+				*m_dhcp_filter.parent().parent().parent().get_last_helper(),
+				*m_dhcp_filter.parent().parent().get_last_helper(),
+				*m_dhcp_filter.parent().get_last_helper(),
+				helper,
+				buffer(response_buffer)
+			);
+
+			if (data)
+			{
+				async_write_tap(
+					*data,
+					make_shared_buffer_handler(
+						response_buffer,
+						boost::bind(
+							&core::do_handle_tap_adapter_write,
+							this,
+							boost::asio::placeholders::error
+						)
+					)
+				);
+			}
+		}
+	}
+
+	bool core::do_handle_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
 	{
 		if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 		{
@@ -1009,300 +1456,59 @@ namespace freelan
 		return false;
 	}
 
-	bool core::is_banned(const boost::asio::ip::address& address) const
+	void core::do_register_switch_port(const ep_type& host, void_handler_type handler)
 	{
-		return has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), address);
-	}
+		// All calls to do_register_switch_port() are done within the m_switch_strand, so the following is safe.
+		m_switch.register_port(make_port_index(host), switch_::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
 
-	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
-	{
-		cryptoplus::x509::store_context store_context(ctx);
-
-		core* _this = static_cast<core*>(store_context.get_external_data(core::ex_data_index));
-
-		return (_this->certificate_validation_method(ok != 0, store_context)) ? 1 : 0;
-	}
-
-	bool core::certificate_validation_method(bool ok, cryptoplus::x509::store_context store_context)
-	{
-		(void)store_context;
-
-		cert_type cert = store_context.get_current_certificate();
-
-		if (m_logger.level() <= LL_DEBUG)
+		if (handler)
 		{
-			m_logger(LL_DEBUG) << "Validating " << cert.subject().oneline() << ": " << (ok ? "OK" : "Error");
-		}
-
-		if (!ok)
-		{
-			m_logger(LL_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
-		}
-
-		return ok;
-	}
-
-	bool core::certificate_is_valid(cert_type cert)
-	{
-		switch (m_configuration.security.certificate_validation_method)
-		{
-			case security_configuration::CVM_DEFAULT:
-				{
-					using namespace cryptoplus;
-
-					// Create a store context to proceed to verification
-					x509::store_context store_context = x509::store_context::create();
-
-					store_context.initialize(m_ca_store, cert, NULL);
-
-					// Ensure to set the verification callback *AFTER* you called initialize or it will be ignored.
-					store_context.set_verification_callback(&core::certificate_validation_callback);
-
-					// Add a reference to the current instance into the store context.
-					store_context.set_external_data(core::ex_data_index, this);
-
-					if (!store_context.verify())
-					{
-						return false;
-					}
-
-					break;
-				}
-			case security_configuration::CVM_NONE:
-				{
-					break;
-				}
-		}
-
-		if (m_configuration.security.certificate_validation_callback)
-		{
-			return m_configuration.security.certificate_validation_callback(*this, cert);
-		}
-
-		return true;
-	}
-
-	void core::async_update_server_configuration(int items)
-	{
-		boost::thread thread(boost::bind(&core::update_server_configuration, this, items, true));
-
-		thread.detach();
-	}
-
-	void core::update_server_configuration(int items, bool delayed)
-	{
-		// Warning !
-		// This function may be called in another thread than the io_service thread.
-		//
-		// That is, modifiying values should *NOT* be done here.
-
-		using namespace cryptoplus::pkey;
-		using namespace cryptoplus::x509;
-
-		freelan::logger delayed_logger(boost::bind(&core::log, this, _1, _2), m_logger.level());
-
-		client _client(m_configuration, delayed ? delayed_logger : m_logger);
-
-		_client.authenticate();
-
-		if (CI_GET_AUTHORITY_CERTIFICATE & items)
-		{
-			certificate ca_cert = _client.get_authority_certificate();
-
-			if (delayed)
-			{
-				m_io_service.post(boost::bind(&core::set_ca_certificate, this, ca_cert));
-			}
-			else
-			{
-				set_ca_certificate(ca_cert);
-			}
-		}
-
-		if (CI_JOIN_NETWORK & items)
-		{
-			server_configuration::endpoint_list public_endpoint_list(m_configuration.server.public_endpoint_list.size());
-
-			const uint16_t default_port = m_server ? m_server->socket().local_endpoint().port() : m_listen_endpoint->port();
-
-			std::transform(
-					m_configuration.server.public_endpoint_list.begin(),
-					m_configuration.server.public_endpoint_list.end(),
-					public_endpoint_list.begin(),
-					boost::bind(get_default_port_endpoint, _1, default_port)
-					);
-
-			const network_info ninfo = _client.join_network(m_configuration.server.network, public_endpoint_list);
-
-			if (delayed)
-			{
-				m_io_service.post(boost::bind(&core::set_network_information, this, ninfo));
-			}
-			else
-			{
-				set_network_information(ninfo);
-			}
-		}
-
-		if (CI_SIGN & items)
-		{
-			pkey rsa_key = pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17, NULL, NULL, false));
-
-			certificate_request csr = generate_certificate_request(m_configuration, rsa_key.get_rsa_key());
-
-			certificate cert = _client.renew_certificate(csr);
-
-			if (delayed)
-			{
-				m_io_service.post(boost::bind(&core::set_identity, this, fscp::identity_store(cert, rsa_key)));
-			}
-			else
-			{
-				set_identity(fscp::identity_store(cert, rsa_key));
-			}
+			handler();
 		}
 	}
 
-	void core::set_ca_certificate(cert_type ca_cert)
+	void core::do_unregister_switch_port(const ep_type& host, void_handler_type handler)
 	{
-		m_logger(LL_INFORMATION) << "Adding authority certificate to the trusted certificate list.";
+		// All calls to do_unregister_switch_port() are done within the m_switch_strand, so the following is safe.
+		m_switch.unregister_port(make_port_index(host));
 
-		m_configuration.security.certificate_authority_list.push_back(ca_cert);
-
-		if (!!m_ca_store)
+		if (handler)
 		{
-			m_ca_store.add_certificate(ca_cert);
+			handler();
 		}
 	}
 
-	void core::set_network_information(const network_info& ninfo)
+	void core::do_register_router_port(const ep_type& host, void_handler_type handler)
 	{
-		if (!ninfo.ipv4_address_prefix_length.is_null())
+		// All calls to do_register_router_port() are done within the m_router_strand, so the following is safe.
+		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
+
+		if (handler)
 		{
-			m_configuration.tap_adapter.ipv4_address_prefix_length = ninfo.ipv4_address_prefix_length;
-			m_logger(LL_INFORMATION) << "IPv4 address set to " << m_configuration.tap_adapter.ipv4_address_prefix_length;
-		}
-		else
-		{
-			m_logger(LL_INFORMATION) << "No IPv4 address set.";
-		}
-
-		if (!ninfo.ipv6_address_prefix_length.is_null())
-		{
-			m_configuration.tap_adapter.ipv6_address_prefix_length = ninfo.ipv6_address_prefix_length;
-			m_logger(LL_INFORMATION) << "IPv6 address set to " << m_configuration.tap_adapter.ipv6_address_prefix_length;
-		}
-		else
-		{
-			m_logger(LL_INFORMATION) << "No IPv6 address set.";
-		}
-
-		// This eases writting
-		cert_list_type& dcl = m_configuration.fscp.dynamic_contact_list;
-
-		BOOST_FOREACH(cert_type& user_cert, m_last_dynamic_contact_list_from_server)
-		{
-			const cert_list_type::iterator it = std::remove(dcl.begin(), dcl.end(), user_cert);
-
-			if (it != dcl.end())
-			{
-				m_logger(LL_INFORMATION) << "Removing " << user_cert.subject().oneline() << " from the dynamic contact list.";
-
-				dcl.erase(it, dcl.end());
-			}
-		}
-
-		m_last_dynamic_contact_list_from_server = ninfo.users_certificates;
-
-		BOOST_FOREACH(cert_type& user_cert, m_last_dynamic_contact_list_from_server)
-		{
-			m_logger(LL_INFORMATION) << "Adding " << user_cert.subject().oneline() << " to the dynamic contact list.";
-
-			dcl.push_back(user_cert);
-		}
-
-		// This eases writting
-		endpoint_list& el = m_configuration.fscp.contact_list;
-
-		BOOST_FOREACH(endpoint& ep, m_last_contact_list_from_server)
-		{
-			const endpoint_list::iterator it = std::remove(el.begin(), el.end(), ep);
-
-			if (it != el.end())
-			{
-				m_logger(LL_INFORMATION) << "Removing " << ep << " from the contact list.";
-
-				el.erase(it, el.end());
-			}
-		}
-
-		m_last_contact_list_from_server = ninfo.users_endpoints;
-
-		BOOST_FOREACH(endpoint& ep, m_last_contact_list_from_server)
-		{
-			m_logger(LL_INFORMATION) << "Adding " << ep << " to the contact list.";
-
-			el.push_back(ep);
+			handler();
 		}
 	}
 
-	void core::set_identity(identity_store _identity)
+	void core::do_unregister_router_port(const ep_type& host, void_handler_type handler)
 	{
-		m_configuration.security.identity.reset(_identity);
+		// All calls to do_unregister_router_port() are done within the m_router_strand, so the following is safe.
+		m_router.unregister_port(make_port_index(host));
 
-		if (m_server)
+		if (handler)
 		{
-			m_server->set_identity(_identity);
+			handler();
 		}
-
-		m_logger(LL_INFORMATION) << "Local client identity was updated.";
-
-		using namespace cryptoplus::pkey;
-		using namespace cryptoplus::x509;
-
-		const certificate sig_cert = _identity.signature_certificate();
-		const boost::posix_time::ptime not_after = sig_cert.not_after().to_ptime();
-		const boost::posix_time::ptime renewal_date = not_after - CERTIFICATE_RENEWAL_DELAY;
-
-		m_check_configuration_timer.expires_at(renewal_date);
-		m_check_configuration_timer.async_wait(boost::bind(&core::do_check_configuration, this, boost::asio::placeholders::error));
-
-		m_logger(LL_INFORMATION) << "Checking again configuration on " << boost::posix_time::to_simple_string(renewal_date) << ".";
 	}
 
-	core::messenger_type::transmission_type::transmission_type() : timestamp(boost::posix_time::second_clock::universal_time()) {}
-	bool core::messenger_type::transmission_type::is_outdated() const { return ((boost::posix_time::second_clock::universal_time() - timestamp) > CONTACT_PERIOD); }
-
-	message::sequence_type core::messenger_type::get_next_request_sequence() const
+	void core::do_write_switch(const port_index_type& index, boost::asio::const_buffer data, switch_::multi_write_handler_type handler)
 	{
-		message::sequence_type result = 0;
-
-		for (transmissions_type::const_iterator request = requests.begin(); request != requests.end(); ++request)
-		{
-			result = std::max(result, request->first + 1);
-		}
-
-		return result;
+		// All calls to do_write_switch() are done within the m_switch_strand, so the following is safe.
+		m_switch.async_write(index, data, handler);
 	}
 
-	void core::messenger_type::clean()
+	void core::do_write_router(const port_index_type& index, boost::asio::const_buffer data, router::port_type::write_handler_type handler)
 	{
-		//TODO: Have a better way of creating the responses/requests.
-		// Currently a race condition can occur because we always delete the transmission even if they were not written yet.
-		for (transmissions_type::iterator request = requests.begin(); request != requests.end(); ++request)
-		{
-			if (request->second.is_outdated())
-			{
-				requests.erase(request);
-			}
-		}
-
-		for (transmissions_type::iterator response = responses.begin(); response != responses.end(); ++response)
-		{
-			if (response->second.is_outdated())
-			{
-				responses.erase(response);
-			}
-		}
+		// All calls to do_write_router() are done within the m_router_strand, so the following is safe.
+		m_router.async_write(index, data, handler);
 	}
 }

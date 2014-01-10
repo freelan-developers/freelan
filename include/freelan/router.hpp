@@ -53,6 +53,7 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/optional.hpp>
+#include <boost/make_shared.hpp>
 
 #include <asiotap/osi/ipv4_filter.hpp>
 #include <asiotap/osi/ipv6_filter.hpp>
@@ -165,7 +166,7 @@ namespace freelan
 					 * \param data The data to write.
 					 * \param handler The handler to call when the write is complete.
 					 */
-					void async_write(boost::asio::const_buffer data, write_handler_type handler)
+					void async_write(boost::asio::const_buffer data, write_handler_type handler) const
 					{
 						m_write_function(data, handler);
 					}

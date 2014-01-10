@@ -62,7 +62,6 @@
 
 #include "configuration.hpp"
 #include "logger.hpp"
-#include "logger_stream.hpp"
 
 namespace freelan
 {

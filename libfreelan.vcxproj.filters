@@ -30,9 +30,6 @@
     <ClCompile Include="src\endpoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\endpoint_switch_port.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\freelan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,9 +45,6 @@
     <ClCompile Include="src\logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\logger_stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\mtu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,22 +54,7 @@
     <ClCompile Include="src\switch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\switch_port.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tap_adapter_switch_port.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\endpoint_router_port.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\router.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\router_port.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tap_adapter_router_port.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,9 +77,6 @@
     <ClInclude Include="include\freelan\endpoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\freelan\endpoint_switch_port.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\freelan\freelan.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -116,9 +92,6 @@
     <ClInclude Include="include\freelan\logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\freelan\logger_stream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\freelan\mtu.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -128,22 +101,7 @@
     <ClInclude Include="include\freelan\switch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\freelan\switch_port.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\freelan\tap_adapter_switch_port.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\freelan\endpoint_router_port.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\freelan\router.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\freelan\router_port.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\freelan\tap_adapter_router_port.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

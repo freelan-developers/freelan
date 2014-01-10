@@ -54,7 +54,7 @@
 
 namespace freelan
 {
-	void router::async_write(port_index_type index, boost::asio::const_buffer data, write_handler_type handler)
+	void router::async_write(port_index_type index, boost::asio::const_buffer data, port_type::write_handler_type handler)
 	{
 		const port_list_type::const_iterator port_entry = get_target_for(index, data);
 
@@ -76,7 +76,7 @@ namespace freelan
 
 			m_ipv4_filter.clear_last_helper();
 
-			return get_target_for(port, destination, data);
+			return get_target_for(index, destination);
 		}
 		else
 		{
@@ -88,7 +88,7 @@ namespace freelan
 
 				m_ipv6_filter.clear_last_helper();
 
-				return get_target_for(port, destination, data);
+				return get_target_for(index, destination);
 			}
 		}
 
@@ -133,13 +133,13 @@ namespace freelan
 
 			// We add all the port routes to the routes list.
 			// These are sorted automatically by the container.
-			BOOST_FOREACH(const port_list_type::value_type & port, m_ports)
+			for (port_list_type::const_iterator port = m_ports.begin(); port != m_ports.end(); ++port)
 			{
-				const routes_type& local_routes = port.first->local_routes();
+				const routes_type& local_routes = port->second.local_routes();
 
-				BOOST_FOREACH(const routes_type::value_type & route, local_routes)
+				BOOST_FOREACH(const routes_type::value_type& route, local_routes)
 				{
-					m_routes->insert(routes_port_type::value_type(route, port.first));
+					m_routes->insert(routes_port_type::value_type(route, port->first));
 				}
 			}
 		}

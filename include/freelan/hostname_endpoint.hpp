@@ -94,7 +94,10 @@ namespace freelan
 			 * \brief Check if the instance is null.
 			 * \return true if the instance is null.
 			 */
-			bool is_null() const;
+			bool is_null() const
+			{
+				return (*this == null());
+			}
 
 			/**
 			 * \brief Get the hostname.
@@ -151,7 +154,7 @@ namespace freelan
 	 * \param default_service The default service to use.
 	 * \return The endpoint.
 	 */
-	boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service)
+	inline boost::asio::ip::udp::endpoint resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service)
 	{
 		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
 
@@ -168,7 +171,7 @@ namespace freelan
 	 * \param handler The handler.
 	 */
 	template <typename ResolveHandler>
-	void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, ResolveHandler handler)
+	inline void async_resolve(const hostname_endpoint& ep, hostname_endpoint::resolver& resolver, hostname_endpoint::resolver::protocol_type protocol, hostname_endpoint::resolver::query::flags flags, const std::string& default_service, ResolveHandler handler)
 	{
 		hostname_endpoint::resolver::query query(protocol, ep.hostname(), ep.service().empty() ? default_service : ep.service(), flags);
 
@@ -190,11 +193,6 @@ namespace freelan
 	 * \return is.
 	 */
 	std::istream& operator>>(std::istream& is, hostname_endpoint& value);
-
-	inline bool hostname_endpoint::is_null() const
-	{
-		return (*this == null());
-	}
 }
 
 #endif /* FREELAN_HOSTNAME_ENDPOINT_HPP */
