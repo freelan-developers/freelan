@@ -249,6 +249,9 @@ namespace freelan
 		m_session_failed_callback(),
 		m_session_established_callback(),
 		m_session_lost_callback(),
+		m_certificate_validation_callback(),
+		m_tap_adapter_up_callback(),
+		m_tap_adapter_down_callback(),
 		m_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
@@ -1052,9 +1055,9 @@ namespace freelan
 				}
 		}
 
-		if (m_configuration.security.certificate_validation_callback)
+		if (m_certificate_validation_callback)
 		{
-			return m_configuration.security.certificate_validation_callback(cert);
+			return m_certificate_validation_callback(cert);
 		}
 
 		return true;
@@ -1193,7 +1196,10 @@ namespace freelan
 				m_dhcp_proxy.reset();
 			}
 
-			m_configuration.tap_adapter.up_callback(*m_tap_adapter);
+			if (m_tap_adapter_up_callback)
+			{
+				m_tap_adapter_up_callback(*m_tap_adapter);
+			}
 
 			async_read_tap();
 		}
@@ -1210,7 +1216,10 @@ namespace freelan
 
 		if (m_tap_adapter)
 		{
-			m_configuration.tap_adapter.down_callback(*m_tap_adapter);
+			if (m_tap_adapter_down_callback)
+			{
+				m_tap_adapter_down_callback(*m_tap_adapter);
+			}
 
 			m_switch.unregister_port(make_port_index(m_tap_adapter));
 			m_router.unregister_port(make_port_index(m_tap_adapter));

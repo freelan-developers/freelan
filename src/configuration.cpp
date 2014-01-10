@@ -79,7 +79,7 @@ namespace freelan
 	security_configuration::security_configuration() :
 		identity(),
 		certificate_validation_method(CVM_DEFAULT),
-		certificate_validation_callback(0),
+		certificate_validation_script(),
 		certificate_authority_list(),
 		certificate_revocation_validation_method(CRVM_NONE),
 		certificate_revocation_list_list()
@@ -96,8 +96,8 @@ namespace freelan
 		dhcp_proxy_enabled(false),
 		dhcp_server_ipv4_address_prefix_length(),
 		dhcp_server_ipv6_address_prefix_length(),
-		up_callback(0),
-		down_callback(0)
+		up_script(),
+		down_script()
 	{
 	}
 

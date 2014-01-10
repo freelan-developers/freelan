@@ -298,11 +298,6 @@ namespace freelan
 		typedef std::vector<crl_type> crl_list_type;
 
 		/**
-		 * \brief The certificate validation callback type.
-		 */
-		typedef boost::function<bool (cert_type)> certificate_validation_callback_type;
-
-		/**
 		 * \brief Constructor.
 		 */
 		security_configuration();
@@ -318,9 +313,9 @@ namespace freelan
 		certificate_validation_method_type certificate_validation_method;
 
 		/**
-		 * \brief The certificate validation callback.
+		 * \brief The certificate validation script.
 		 */
-		certificate_validation_callback_type certificate_validation_callback;
+		boost::filesystem::path certificate_validation_script;
 
 		/**
 		 * \brief The certificate authorities.
@@ -423,24 +418,14 @@ namespace freelan
 		boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
 
 		/**
-		 * \brief The up callback type.
+		 * \brief The up script.
 		 */
-		typedef boost::function<void (const asiotap::tap_adapter&)> up_callback_type;
+		boost::filesystem::path up_script;
 
 		/**
-		 * \brief The down callback type.
+		 * \brief The down script.
 		 */
-		typedef up_callback_type down_callback_type;
-
-		/**
-		 * \brief The up callback.
-		 */
-		up_callback_type up_callback;
-
-		/**
-		 * \brief The down callback.
-		 */
-		down_callback_type down_callback;
+		boost::filesystem::path down_script;
 	};
 
 	/**

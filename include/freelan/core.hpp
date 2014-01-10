@@ -191,6 +191,16 @@ namespace freelan
 			 */
 			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
 
+			/**
+			 * \brief The certificate validation callback type.
+			 */
+			typedef boost::function<bool (cert_type)> certificate_validation_handler_type;
+
+			/**
+			 * \brief The up callback type.
+			 */
+			typedef boost::function<void (const asiotap::tap_adapter&)> tap_adapter_handler_type;
+
 			// Public constants
 
 			/**
@@ -246,7 +256,10 @@ namespace freelan
 			 *
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_core_opened_callback(core_opened_handler_type callback);
+			void set_core_opened_callback(core_opened_handler_type callback)
+			{
+				m_core_opened_callback = callback;
+			}
 
 			/**
 			 * \brief Set the function to call when the core was just closed.
@@ -254,28 +267,70 @@ namespace freelan
 			 *
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_close_callback(core_closed_handler_type callback);
+			void set_close_callback(core_closed_handler_type callback)
+			{
+				m_core_closed_callback = callback;
+			}
 
 			/**
 			 * \brief Set the session failed callback.
 			 * \param callback The callback.
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_session_failed_callback(session_failed_handler_type callback);
+			void set_session_failed_callback(session_failed_handler_type callback)
+			{
+				m_session_failed_callback = callback;
+			}
 
 			/**
 			 * \brief Set the session established callback.
 			 * \param callback The callback.
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_session_established_callback(session_established_handler_type callback);
+			void set_session_established_callback(session_established_handler_type callback)
+			{
+				m_session_established_callback = callback;
+			}
 
 			/**
 			 * \brief Set the session lost callback.
 			 * \param callback The callback.
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_session_lost_callback(session_lost_handler_type callback);
+			void set_session_lost_callback(session_lost_handler_type callback)
+			{
+				m_session_lost_callback = callback;
+			}
+
+			/**
+			 * \brief Set the certificate validation callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_certificate_validation_callback(certificate_validation_handler_type callback)
+			{
+				m_certificate_validation_callback = callback;
+			}
+
+			/**
+			 * \brief Set the tap adapter up callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_tap_adapter_up_callback(tap_adapter_handler_type callback)
+			{
+				m_tap_adapter_up_callback = callback;
+			}
+
+			/**
+			 * \brief Set the tap adapter down callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_tap_adapter_down_callback(tap_adapter_handler_type callback)
+			{
+				m_tap_adapter_down_callback = callback;
+			}
 
 			/**
 			 * \brief Open the core.
@@ -305,6 +360,9 @@ namespace freelan
 			session_failed_handler_type m_session_failed_callback;
 			session_established_handler_type m_session_established_callback;
 			session_lost_handler_type m_session_lost_callback;
+			certificate_validation_handler_type m_certificate_validation_callback;
+			tap_adapter_handler_type m_tap_adapter_up_callback;
+			tap_adapter_handler_type m_tap_adapter_down_callback;
 
 		private: /* General purpose */
 
