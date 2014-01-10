@@ -300,7 +300,7 @@ namespace freelan
 		/**
 		 * \brief The certificate validation callback type.
 		 */
-		typedef boost::function<bool (core&, cert_type)> certificate_validation_callback_type;
+		typedef boost::function<bool (cert_type)> certificate_validation_callback_type;
 
 		/**
 		 * \brief Constructor.
@@ -425,7 +425,7 @@ namespace freelan
 		/**
 		 * \brief The up callback type.
 		 */
-		typedef boost::function<void (core&, const asiotap::tap_adapter&)> up_callback_type;
+		typedef boost::function<void (const asiotap::tap_adapter&)> up_callback_type;
 
 		/**
 		 * \brief The down callback type.

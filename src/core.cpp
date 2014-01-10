@@ -1054,7 +1054,7 @@ namespace freelan
 
 		if (m_configuration.security.certificate_validation_callback)
 		{
-			return m_configuration.security.certificate_validation_callback(*this, cert);
+			return m_configuration.security.certificate_validation_callback(cert);
 		}
 
 		return true;
@@ -1193,7 +1193,7 @@ namespace freelan
 				m_dhcp_proxy.reset();
 			}
 
-			m_configuration.tap_adapter.up_callback(*this, *m_tap_adapter);
+			m_configuration.tap_adapter.up_callback(*m_tap_adapter);
 
 			async_read_tap();
 		}
@@ -1210,7 +1210,7 @@ namespace freelan
 
 		if (m_tap_adapter)
 		{
-			m_configuration.tap_adapter.down_callback(*this, *m_tap_adapter);
+			m_configuration.tap_adapter.down_callback(*m_tap_adapter);
 
 			m_switch.unregister_port(make_port_index(m_tap_adapter));
 			m_router.unregister_port(make_port_index(m_tap_adapter));
