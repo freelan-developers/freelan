@@ -322,6 +322,8 @@ namespace freelan
 			void async_request_session(const ep_type&);
 			void async_handle_routes_request(const ep_type&, const routes_request_message&);
 			void async_handle_routes(const ep_type&, const routes_message&);
+			void async_send_routes_request(const ep_type&, message::sequence_type, simple_handler_type);
+			void async_send_routes(const ep_type&, message::sequence_type, routes_message::version_type, const routes_type&, simple_handler_type);
 
 			void do_contact(const ep_type&, duration_handler_type);
 

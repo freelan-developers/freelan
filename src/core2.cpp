@@ -82,6 +82,10 @@ namespace freelan
 			}
 		}
 
+		void null_simple_write_handler(const boost::system::error_code&)
+		{
+		}
+
 		void null_switch_write_handler(const switch_::multi_write_result_type&)
 		{
 		}
@@ -475,7 +479,7 @@ namespace freelan
 
 	void core::async_handle_routes_request(const ep_type& sender, const routes_request_message& msg)
 	{
-		m_io_service.post(
+		m_router_strand.post(
 			boost::bind(
 				&core::do_handle_routes_request,
 				this,
@@ -495,6 +499,54 @@ namespace freelan
 				msg.sequence(),
 				msg.version(),
 				msg.routes()
+			)
+		);
+	}
+
+	void core::async_send_routes_request(const ep_type& target, message::sequence_type sequence, simple_handler_type handler)
+	{
+		assert(m_server);
+
+		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+
+		const size_t size = routes_request_message::write(
+			buffer_cast<uint8_t*>(data_buffer),
+			buffer_size(data_buffer),
+			sequence
+		);
+
+		m_server->async_send_data(
+			target,
+			fscp::CHANNEL_NUMBER_1,
+			buffer(data_buffer, size),
+			make_shared_buffer_handler(
+				data_buffer,
+				handler
+			)
+		);
+	}
+
+	void core::async_send_routes(const ep_type& target, message::sequence_type sequence, routes_message::version_type version, const routes_type& routes, simple_handler_type handler)
+	{
+		assert(m_server);
+
+		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+
+		const size_t size = routes_message::write(
+			buffer_cast<uint8_t*>(data_buffer),
+			buffer_size(data_buffer),
+			sequence,
+			version,
+			routes
+		);
+
+		m_server->async_send_data(
+			target,
+			fscp::CHANNEL_NUMBER_1,
+			buffer(data_buffer, size),
+			make_shared_buffer_handler(
+				data_buffer,
+				handler
 			)
 		);
 	}
@@ -835,19 +887,28 @@ namespace freelan
 
 	void core::do_handle_routes_request(const ep_type& sender, message::sequence_type sequence)
 	{
+		// All calls to do_handle_routes_request() are done within the m_router_strand, so the following is safe.
 		if (!m_configuration.router.accept_routes_requests)
 		{
 			m_logger(LL_DEBUG) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
 		}
 		else
 		{
-			const routes_type& routes = m_configuration.router.local_ip_routes;
+			if (m_tap_adapter)
+			{
+				const boost::shared_ptr<router::port_type> local_port = m_router.get_port(make_port_index(m_tap_adapter));
 
-			m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with: " << routes;
+				const boost::optional<routes_message::version_type> version = local_port->version();
 
-			//TODO: Uncomment and implement.
-			//async_send_routes(sender, sequence, routes);
-			static_cast<void>(sequence);
+				if (version)
+				{
+					const routes_type& routes = local_port->local_routes();
+
+					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *version << ": " << routes;
+
+					async_send_routes(sender, sequence, *version, routes, &null_simple_write_handler);
+				}
+			}
 		}
 	}
 
