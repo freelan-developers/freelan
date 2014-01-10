@@ -88,7 +88,7 @@ namespace freelan
 			 * \param logger_ The logger to attach to.
 			 * \param level_ The level of the logger stream.
 			 */
-			string_logger_stream(logger& logger_, log_level level_) :
+			string_logger_stream(const logger& logger_, log_level level_) :
 				m_logger(logger_),
 				m_level(level_)
 			{}
@@ -117,7 +117,7 @@ namespace freelan
 
 		private:
 
-			logger& m_logger;
+			const logger& m_logger;
 			log_level m_level;
 			boost::shared_ptr<std::ostringstream> m_oss;
 	};
@@ -288,7 +288,7 @@ namespace freelan
 			 * \param level_ The log level.
 			 * \return The appropriate logger stream.
 			 */
-			stream_type operator()(log_level level_)
+			stream_type operator()(log_level level_) const
 			{
 				if (level_ >= m_level)
 				{
@@ -306,7 +306,7 @@ namespace freelan
 			 * \param msg The message to log.
 			 * \param timestamp The timestamp.
 			 */
-			void log(log_level level_, const std::string& msg, timestamp_type timestamp = boost::posix_time::microsec_clock::universal_time())
+			void log(log_level level_, const std::string& msg, timestamp_type timestamp = boost::posix_time::microsec_clock::universal_time()) const
 			{
 				if (m_handler && (level_ >= m_level))
 				{
