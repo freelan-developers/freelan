@@ -258,7 +258,7 @@ namespace freelan
 			 * \param handler The function to call whenever a log entry must be written.
 			 * \param _level The desired log level of the logger. Any logging below that level will be silently ignored.
 			 */
-			logger(log_handler_type handler, log_level _level = LL_INFORMATION) :
+			logger(log_handler_type handler = log_handler_type(), log_level _level = LL_INFORMATION) :
 				m_handler(handler),
 				m_level(_level)
 			{
