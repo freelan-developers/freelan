@@ -238,7 +238,10 @@ namespace freelan
 			 *
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_log_callback(log_handler_type callback);
+			void set_log_callback(log_handler_type callback)
+			{
+				m_logger.set_callback(callback);
+			}
 
 			/**
 			 * \brief Set the logger's level.

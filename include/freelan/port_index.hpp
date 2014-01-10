@@ -67,7 +67,7 @@ namespace freelan
 			/**
 			 * \brief Create a null port index.
 			 */
-			null_port_index_type();
+			null_port_index_type() {};
 
 		private:
 

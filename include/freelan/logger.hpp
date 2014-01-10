@@ -265,6 +265,25 @@ namespace freelan
 			}
 
 			/**
+			 * \brief Set the logger's callback.
+			 * \param _callback The callback.
+			 * \warning This method is NOT thread-safe.
+			 */
+			void set_callback(log_handler_type _callback)
+			{
+				m_handler = _callback;
+			}
+
+			/**
+			 * \brief Get the logger's callback.
+			 * \return The logger's callback.
+			 */
+			log_handler_type callback() const
+			{
+				return m_handler;
+			}
+
+			/**
 			 * \brief Set the logger's level.
 			 * \param _level The log level.
 			 * \warning This method is NOT thread-safe.
