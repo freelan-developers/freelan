@@ -234,6 +234,7 @@ namespace freelan
 
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
 	const boost::posix_time::time_duration core::DYNAMIC_CONTACT_PERIOD = boost::posix_time::seconds(45);
+	const boost::posix_time::time_duration core::ROUTES_REQUEST_PERIOD = boost::posix_time::seconds(180);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -251,6 +252,7 @@ namespace freelan
 		m_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_routes_request_timer(m_io_service, ROUTES_REQUEST_PERIOD),
 		m_tap_adapter_strand(m_io_service),
 		m_proxies_strand(m_io_service),
 		m_tap_write_queue_strand(m_io_service),
@@ -385,6 +387,7 @@ namespace freelan
 
 		m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
 		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+		m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
 	}
 
 	void core::close_server()
@@ -479,12 +482,14 @@ namespace freelan
 
 	void core::async_handle_routes_request(const ep_type& sender, const routes_request_message& msg)
 	{
+		// The routes request message does not contain any meaningful information.
+		static_cast<void>(msg);
+
 		m_router_strand.post(
 			boost::bind(
 				&core::do_handle_routes_request,
 				this,
-				sender,
-				msg.sequence()
+				sender
 			)
 		);
 	}
@@ -496,23 +501,22 @@ namespace freelan
 				&core::do_handle_routes,
 				this,
 				sender,
-				msg.sequence(),
 				msg.version(),
 				msg.routes()
 			)
 		);
 	}
 
-	void core::async_send_routes_request(const ep_type& target, message::sequence_type sequence, simple_handler_type handler)
+	void core::async_send_routes_request(const ep_type& target, simple_handler_type handler)
 	{
 		assert(m_server);
 
-		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
+		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
 
 		const size_t size = routes_request_message::write(
 			buffer_cast<uint8_t*>(data_buffer),
-			buffer_size(data_buffer),
-			sequence
+			buffer_size(data_buffer)
 		);
 
 		m_server->async_send_data(
@@ -526,7 +530,39 @@ namespace freelan
 		);
 	}
 
-	void core::async_send_routes(const ep_type& target, message::sequence_type sequence, routes_message::version_type version, const routes_type& routes, simple_handler_type handler)
+	void core::async_send_routes_request(const ep_type& target)
+	{
+		async_send_routes_request(target, boost::bind(&core::do_handle_send_routes_request, this, target, _1));
+	}
+
+	void core::async_send_routes_request_to_all(multiple_endpoints_handler_type handler)
+	{
+		assert(m_server);
+
+		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
+		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
+
+		const size_t size = routes_request_message::write(
+			buffer_cast<uint8_t*>(data_buffer),
+			buffer_size(data_buffer)
+		);
+
+		m_server->async_send_data_to_all(
+			fscp::CHANNEL_NUMBER_1,
+			buffer(data_buffer, size),
+			make_shared_buffer_handler(
+				data_buffer,
+				handler
+			)
+		);
+	}
+
+	void core::async_send_routes_request_to_all()
+	{
+		async_send_routes_request_to_all(boost::bind(&core::do_handle_send_routes_request_to_all, this, _1));
+	}
+
+	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const routes_type& routes, simple_handler_type handler)
 	{
 		assert(m_server);
 
@@ -535,7 +571,6 @@ namespace freelan
 		const size_t size = routes_message::write(
 			buffer_cast<uint8_t*>(data_buffer),
 			buffer_size(data_buffer),
-			sequence,
 			version,
 			routes
 		);
@@ -601,6 +636,17 @@ namespace freelan
 		}
 	}
 
+	void core::do_handle_periodic_routes_request(const boost::system::error_code& ec)
+	{
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			async_send_routes_request_to_all();
+
+			m_routes_request_timer.expires_from_now(ROUTES_REQUEST_PERIOD);
+			m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
+		}
+	}
+
 	void core::do_handle_send_contact_request(const ep_type& target, const boost::system::error_code& ec)
 	{
 		if (ec)
@@ -630,6 +676,22 @@ namespace freelan
 		if (ec)
 		{
 			m_logger(LL_WARNING) << "Error requesting session to " << target << ": " << ec.message();
+		}
+	}
+
+	void core::do_handle_send_routes_request(const ep_type& target, const boost::system::error_code& ec)
+	{
+		if (ec)
+		{
+			m_logger(LL_WARNING) << "Error sending routes request to " << target << ": " << ec.message();
+		}
+	}
+
+	void core::do_handle_send_routes_request_to_all(const std::map<ep_type, boost::system::error_code>& results)
+	{
+		for (std::map<ep_type, boost::system::error_code>::const_iterator result = results.begin(); result != results.end(); ++result)
+		{
+			do_handle_send_routes_request(result->first, result->second);
 		}
 	}
 
@@ -773,12 +835,12 @@ namespace freelan
 		{
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
-				async_register_switch_port(host);
+				async_register_switch_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
 			else
 			{
 				// We register the router port without any routes, at first.
-				async_register_router_port(host);
+				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
 		}
 
@@ -799,11 +861,11 @@ namespace freelan
 
 		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 		{
-			async_unregister_switch_port(host);
+			async_unregister_switch_port(host, void_handler_type());
 		}
 		else
 		{
-			async_unregister_router_port(host);
+			async_unregister_router_port(host, void_handler_type());
 		}
 	}
 
@@ -885,7 +947,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_routes_request(const ep_type& sender, message::sequence_type sequence)
+	void core::do_handle_routes_request(const ep_type& sender)
 	{
 		// All calls to do_handle_routes_request() are done within the m_router_strand, so the following is safe.
 		if (!m_configuration.router.accept_routes_requests)
@@ -906,17 +968,15 @@ namespace freelan
 
 					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *version << ": " << routes;
 
-					async_send_routes(sender, sequence, *version, routes, &null_simple_write_handler);
+					async_send_routes(sender, *version, routes, &null_simple_write_handler);
 				}
 			}
 		}
 	}
 
-	void core::do_handle_routes(const ep_type& sender, message::sequence_type sequence, routes_message::version_type version, const routes_type& routes)
+	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const routes_type& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
-		static_cast<void>(sequence);
-
 		boost::shared_ptr<router::port_type> port = m_router.get_port(make_port_index(sender));
 
 		if (port)
@@ -1396,28 +1456,48 @@ namespace freelan
 		return false;
 	}
 
-	void core::do_register_switch_port(const ep_type& host)
+	void core::do_register_switch_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_register_switch_port() are done within the m_switch_strand, so the following is safe.
 		m_switch.register_port(make_port_index(host), switch_::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
+
+		if (handler)
+		{
+			handler();
+		}
 	}
 
-	void core::do_unregister_switch_port(const ep_type& host)
+	void core::do_unregister_switch_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_unregister_switch_port() are done within the m_switch_strand, so the following is safe.
 		m_switch.unregister_port(make_port_index(host));
+
+		if (handler)
+		{
+			handler();
+		}
 	}
 
-	void core::do_register_router_port(const ep_type& host)
+	void core::do_register_router_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_register_router_port() are done within the m_router_strand, so the following is safe.
 		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
+
+		if (handler)
+		{
+			handler();
+		}
 	}
 
-	void core::do_unregister_router_port(const ep_type& host)
+	void core::do_unregister_router_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_unregister_router_port() are done within the m_router_strand, so the following is safe.
 		m_router.unregister_port(make_port_index(host));
+
+		if (handler)
+		{
+			handler();
+		}
 	}
 
 	void core::do_write_switch(const port_index_type& index, boost::asio::const_buffer data, switch_::multi_write_handler_type handler)

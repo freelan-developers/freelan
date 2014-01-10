@@ -69,12 +69,11 @@ namespace freelan
 			 * \brief Write a routes message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param sequence The sequence number.
 			 * \param version The version.
 			 * \param routes The routes.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, sequence_type sequence, version_type version, const routes_type& routes);
+			static size_t write(void* buf, size_t buf_len, version_type version, const routes_type& routes);
 
 			/**
 			 * \brief Get the version.

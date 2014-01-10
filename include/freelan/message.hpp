@@ -55,7 +55,7 @@ namespace freelan
 	/**
 	 * \brief The base class for all messages.
 	 *
-	 * A message is composed of a message type, a sequence number and arbitrary
+	 * A message is composed of a message type and arbitrary
 	 * data depending on the effective message type.
 	 */
 	class message
@@ -72,20 +72,14 @@ namespace freelan
 			};
 
 			/**
-			 * \brief A sequence type.
-			 */
-			typedef uint32_t sequence_type;
-
-			/**
 			 * \brief Write a message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param type The message type.
-			 * \param sequence The message sequence number.
 			 * \param length The length of the payload.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, message_type type, sequence_type sequence, size_t length);
+			static size_t write(void* buf, size_t buf_len, message_type type, size_t length);
 
 			/**
 			 * \brief Create a message and map it on a buffer.
@@ -101,12 +95,6 @@ namespace freelan
 			 * \return The type.
 			 */
 			message_type type() const;
-
-			/**
-			 * \brief Get the sequence.
-			 * \return The sequence.
-			 */
-			sequence_type sequence() const;
 
 			/**
 			 * \brief Get the length.
@@ -137,7 +125,7 @@ namespace freelan
 			/**
 			 * \brief The length of the header.
 			 */
-			static const size_t HEADER_LENGTH = sizeof(uint8_t) + sizeof(sequence_type) + sizeof(uint16_t);
+			static const size_t HEADER_LENGTH = sizeof(uint8_t) +  sizeof(uint16_t);
 
 		private:
 
@@ -149,14 +137,9 @@ namespace freelan
 		return static_cast<message_type>(fscp::buffer_tools::get<uint8_t>(m_data, 0));
 	}
 
-	inline message::sequence_type message::sequence() const
-	{
-		return ntohl(static_cast<sequence_type>(fscp::buffer_tools::get<uint8_t>(m_data, 1)));
-	}
-
 	inline size_t message::length() const
 	{
-		return ntohs(fscp::buffer_tools::get<uint16_t>(m_data, 5));
+		return ntohs(fscp::buffer_tools::get<uint16_t>(m_data, 1));
 	}
 
 	inline const uint8_t* message::data() const

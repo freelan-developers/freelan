@@ -61,10 +61,9 @@ namespace freelan
 			 * \brief Write a routes request message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param sequence The sequence number.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, sequence_type sequence);
+			static size_t write(void* buf, size_t buf_len);
 
 			/**
 			 * \brief Create a routes_request_message and map it on a buffer.

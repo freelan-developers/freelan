@@ -204,6 +204,11 @@ namespace freelan
 			static const boost::posix_time::time_duration DYNAMIC_CONTACT_PERIOD;
 
 			/**
+			 * \brief The routes request period.
+			 */
+			static const boost::posix_time::time_duration ROUTES_REQUEST_PERIOD;
+
+			/**
 			 * \brief The default service.
 			 */
 			static const std::string DEFAULT_SERVICE;
@@ -322,18 +327,24 @@ namespace freelan
 			void async_request_session(const ep_type&);
 			void async_handle_routes_request(const ep_type&, const routes_request_message&);
 			void async_handle_routes(const ep_type&, const routes_message&);
-			void async_send_routes_request(const ep_type&, message::sequence_type, simple_handler_type);
-			void async_send_routes(const ep_type&, message::sequence_type, routes_message::version_type, const routes_type&, simple_handler_type);
+			void async_send_routes_request(const ep_type&, simple_handler_type);
+			void async_send_routes_request(const ep_type&);
+			void async_send_routes_request_to_all(multiple_endpoints_handler_type);
+			void async_send_routes_request_to_all();
+			void async_send_routes(const ep_type&, routes_message::version_type, const routes_type&, simple_handler_type);
 
 			void do_contact(const ep_type&, duration_handler_type);
 
 			void do_handle_contact(const endpoint&, const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration&);
 			void do_handle_periodic_contact(const boost::system::error_code&);
 			void do_handle_periodic_dynamic_contact(const boost::system::error_code&);
+			void do_handle_periodic_routes_request(const boost::system::error_code&);
 			void do_handle_send_contact_request(const ep_type&, const boost::system::error_code&);
 			void do_handle_send_contact_request_to_all(const std::map<ep_type, boost::system::error_code>&);
 			void do_handle_introduce_to(const ep_type&, const boost::system::error_code&);
 			void do_handle_request_session(const ep_type&, const boost::system::error_code&);
+			void do_handle_send_routes_request(const ep_type&, const boost::system::error_code&);
+			void do_handle_send_routes_request_to_all(const std::map<ep_type, boost::system::error_code>&);
 
 			bool do_handle_hello_received(const ep_type&, bool);
 			bool do_handle_contact_request_received(const ep_type&, cert_type, hash_type, const ep_type&);
@@ -346,12 +357,13 @@ namespace freelan
 			void do_handle_session_lost(const ep_type&);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
-			void do_handle_routes_request(const ep_type&, message::sequence_type);
-			void do_handle_routes(const ep_type&, message::sequence_type, routes_message::version_type, const routes_type&);
+			void do_handle_routes_request(const ep_type&);
+			void do_handle_routes(const ep_type&, routes_message::version_type, const routes_type&);
 
 			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;
 			boost::asio::deadline_timer m_dynamic_contact_timer;
+			boost::asio::deadline_timer m_routes_request_timer;
 
 		private: /* Certificate validation */
 
@@ -431,24 +443,24 @@ namespace freelan
 			typedef std::map<ep_type, switch_::port_type> endpoint_switch_port_map_type;
 			typedef std::map<ep_type, router::port_type> endpoint_router_port_map_type;
 
-			void async_register_switch_port(const ep_type& host)
+			void async_register_switch_port(const ep_type& host, void_handler_type handler)
 			{
-				m_switch_strand.post(boost::bind(&core::do_register_switch_port, this, host));
+				m_switch_strand.post(boost::bind(&core::do_register_switch_port, this, host, handler));
 			}
 
-			void async_unregister_switch_port(const ep_type& host)
+			void async_unregister_switch_port(const ep_type& host, void_handler_type handler)
 			{
-				m_switch_strand.post(boost::bind(&core::do_unregister_switch_port, this, host));
+				m_switch_strand.post(boost::bind(&core::do_unregister_switch_port, this, host, handler));
 			}
 
-			void async_register_router_port(const ep_type& host)
+			void async_register_router_port(const ep_type& host, void_handler_type handler)
 			{
-				m_router_strand.post(boost::bind(&core::do_register_router_port, this, host));
+				m_router_strand.post(boost::bind(&core::do_register_router_port, this, host, handler));
 			}
 
-			void async_unregister_router_port(const ep_type& host)
+			void async_unregister_router_port(const ep_type& host, void_handler_type handler)
 			{
-				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host));
+				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host, handler));
 			}
 
 			template <typename WriteHandler>
@@ -463,10 +475,10 @@ namespace freelan
 				m_router_strand.post(boost::bind(&core::do_write_router, this, index, data, handler));
 			}
 
-			void do_register_switch_port(const ep_type&);
-			void do_register_router_port(const ep_type&);
-			void do_unregister_switch_port(const ep_type&);
-			void do_unregister_router_port(const ep_type&);
+			void do_register_switch_port(const ep_type&, void_handler_type);
+			void do_register_router_port(const ep_type&, void_handler_type);
+			void do_unregister_switch_port(const ep_type&, void_handler_type);
+			void do_unregister_router_port(const ep_type&, void_handler_type);
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
 

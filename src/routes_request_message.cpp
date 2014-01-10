@@ -49,9 +49,9 @@
 
 namespace freelan
 {
-	size_t routes_request_message::write(void* buf, size_t buf_len, sequence_type sequence)
+	size_t routes_request_message::write(void* buf, size_t buf_len)
 	{
-		return message::write(buf, buf_len, MT_ROUTES_REQUEST, sequence, 0);
+		return message::write(buf, buf_len, MT_ROUTES_REQUEST, 0);
 	}
 
 	routes_request_message::routes_request_message(const void* buf, size_t buf_len) :

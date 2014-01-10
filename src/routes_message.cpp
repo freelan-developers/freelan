@@ -105,7 +105,7 @@ namespace freelan
 		};
 	}
 
-	size_t routes_message::write(void* buf, size_t buf_len, sequence_type sequence, version_type _version, const routes_type& routes)
+	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const routes_type& routes)
 	{
 		if (buf_len < HEADER_LENGTH)
 		{
@@ -131,7 +131,7 @@ namespace freelan
 			pbuf_len -= count;
 		}
 
-		return message::write(buf, buf_len, MT_ROUTES, sequence, required_size);
+		return message::write(buf, buf_len, MT_ROUTES, required_size);
 	}
 
 	routes_message::version_type message::version() const

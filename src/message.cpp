@@ -49,7 +49,7 @@
 
 namespace freelan
 {
-	size_t message::write(void* buf, size_t buf_len, message_type _type, sequence_type _sequence, size_t _length)
+	size_t message::write(void* buf, size_t buf_len, message_type _type, size_t _length)
 	{
 		if (buf_len < HEADER_LENGTH)
 		{
@@ -57,8 +57,7 @@ namespace freelan
 		}
 
 		fscp::buffer_tools::set<uint8_t>(buf, 0, static_cast<uint8_t>(_type));
-		fscp::buffer_tools::set<uint32_t>(buf, 1, htons(static_cast<uint16_t>(_sequence)));
-		fscp::buffer_tools::set<uint16_t>(buf, 5, htons(static_cast<uint16_t>(_length)));
+		fscp::buffer_tools::set<uint16_t>(buf, 1, htons(static_cast<uint16_t>(_length)));
 
 		return HEADER_LENGTH;
 	}
