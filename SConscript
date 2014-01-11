@@ -5,7 +5,7 @@ The main SConscript file.
 name = 'freelan'
 
 major = '1'
-minor = '1'
+minor = '2'
 libraries = []
 
 # You should not need to modify anything below this line
