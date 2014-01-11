@@ -71,6 +71,12 @@ namespace cryptoplus
 			size_t generic_update(cipher_context& ctx, update_function update_func, void* out, size_t out_len, const void* in, size_t in_len)
 			{
 				assert(out);
+
+				if (in_len <= 0)
+				{
+					return 0;
+				}
+
 				assert(in);
 				assert(out_len >= in_len + ctx.algorithm().block_size());
 
