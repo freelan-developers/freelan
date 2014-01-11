@@ -553,9 +553,9 @@ namespace win32
 					}
 				}
 
-				logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s)." << std::endl;
+				logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s).";
 
-				logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
+				logger(fl::LL_INFORMATION) << "Execution started.";
 
 				for (std::size_t i = 0; i < thread_count; ++i)
 				{
@@ -564,7 +564,7 @@ namespace win32
 
 				threads.join_all();
 
-				logger(fl::LL_INFORMATION) << "Execution stopped." << std::endl;
+				logger(fl::LL_INFORMATION) << "Execution stopped.";
 
 				lock.lock();
 
