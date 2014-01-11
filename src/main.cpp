@@ -142,7 +142,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	("help,h", "Produce help message.")
 	("version,v", "Get the program version.")
 	("debug,d", "Enables debug output.")
-	("threads,t", po::value<unsigned int>(), "The number of threads to use.")
+	("threads,t", po::value<unsigned int>(&configuration.thread_count)->default_value(0), "The number of threads to use.")
 	("configuration_file,c", po::value<std::string>(), "The configuration file to use.")
 	;
 
@@ -379,7 +379,6 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 
 	configuration.debug = vm.count("debug") > 0;
-	configuration.thread_count = vm["threads"].as<unsigned int>();
 
 	return true;
 }
