@@ -396,6 +396,7 @@ namespace freelan
 	void core::close_server()
 	{
 		// Stop the contact loop timers.
+		m_routes_request_timer.cancel();
 		m_dynamic_contact_timer.cancel();
 		m_contact_timer.cancel();
 
