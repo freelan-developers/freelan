@@ -30,16 +30,10 @@
     <ClCompile Include="src\data_message.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\data_store.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\fscp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\hello_message.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hello_request.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\identity_store.cpp">
@@ -69,6 +63,12 @@
     <ClCompile Include="src\session_store.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\memory_pool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\server_error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\fscp\buffer_tools.hpp">
@@ -86,16 +86,10 @@
     <ClInclude Include="include\fscp\data_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\fscp\data_store.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\fscp\fscp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fscp\hello_message.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\fscp\hello_request.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fscp\identity_store.hpp">
@@ -123,6 +117,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fscp\session_store.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\fscp\memory_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\fscp\server_error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

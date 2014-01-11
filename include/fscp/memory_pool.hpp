@@ -170,23 +170,23 @@ namespace fscp
 			 */
 			typedef boost::shared_ptr<scoped_buffer_type> shared_buffer_type;
 
-			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer)
+			friend inline typename memory_pool::buffer_type buffer(typename memory_pool::shared_buffer_type _buffer)
 			{
 				return buffer(*_buffer);
 			}
 
-			friend inline memory_pool::buffer_type buffer(memory_pool::shared_buffer_type _buffer, size_t size)
+			friend inline typename memory_pool::buffer_type buffer(typename memory_pool::shared_buffer_type _buffer, size_t size)
 			{
 				return buffer(*_buffer, size);
 			}
 
 			template <typename Type>
-			friend inline Type buffer_cast(memory_pool::shared_buffer_type _buffer)
+			friend inline Type buffer_cast(typename memory_pool::shared_buffer_type _buffer)
 			{
 				return buffer_cast<Type>(*_buffer);
 			}
 
-			friend inline size_t buffer_size(memory_pool::shared_buffer_type _buffer)
+			friend inline size_t buffer_size(typename memory_pool::shared_buffer_type _buffer)
 			{
 				return buffer_size(*_buffer);
 			}
