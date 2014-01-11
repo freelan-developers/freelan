@@ -754,11 +754,11 @@ namespace freelan
 		}
 	}
 
-	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)
+	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, fscp::server::presentation_status_type status)
 	{
 		if (m_logger.level() <= LL_DEBUG)
 		{
-			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". New presentation: " << is_new << ".";
+			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". Status: " << status << ".";
 		}
 
 		if (is_banned(sender.address()))
@@ -768,11 +768,25 @@ namespace freelan
 			return false;
 		}
 
-		if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
+		switch (status)
 		{
-			async_request_session(sender);
+			case fscp::server::PS_FIRST:
+			case fscp::server::PS_NEW:
+			{
+				if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
+				{
+					async_request_session(sender);
 
-			return true;
+					return true;
+				}
+
+				break;
+			}
+			case fscp::server::PS_SAME:
+			{
+				// The presentation did not change: we do not accept it.
+				break;
+			}
 		}
 
 		return false;
