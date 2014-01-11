@@ -257,6 +257,14 @@ namespace fscp
 				set_type m_keys;
 				map_type m_results;
 		};
+
+		bool compare_certificates(const server::cert_type& lhs, const server::cert_type& rhs)
+		{
+			assert(!!lhs);
+			assert(!!rhs);
+
+			return (lhs.write_der() == rhs.write_der());
+		}
 	}
 
 	// Public methods
@@ -1353,11 +1361,25 @@ namespace fscp
 	void server::do_handle_presentation(const ep_type& sender, cert_type signature_certificate, cert_type encryption_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
-		const bool is_new = !has_presentation_store_for(sender);
+		presentation_status_type presentation_status = PS_FIRST;
+
+		const presentation_store_map::iterator entry = m_presentation_store_map.find(sender);
+
+		if (entry != m_presentation_store_map.end())
+		{
+			if (compare_certificates(entry->second.signature_certificate(), signature_certificate) && compare_certificates(entry->second.encryption_certificate(), encryption_certificate))
+			{
+				presentation_status = PS_SAME;
+			}
+			else
+			{
+				presentation_status = PS_NEW;
+			}
+		}
 
 		if (m_presentation_message_received_handler)
 		{
-			if (!m_presentation_message_received_handler(sender, signature_certificate, encryption_certificate, is_new))
+			if (!m_presentation_message_received_handler(sender, signature_certificate, encryption_certificate, presentation_status))
 			{
 				return;
 			}

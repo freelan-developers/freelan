@@ -117,11 +117,11 @@ static void on_hello_response(const std::string& name, fscp::server& server, con
 	}
 }
 
-static bool on_presentation(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool is_new)
+static bool on_presentation(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, fscp::server::presentation_status_type status)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << (is_new ? "new" : "existing") << std::endl;
+	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << status << std::endl;
 
 	server.async_request_session(sender, boost::bind(&simple_handler, name, "async_request_session()", _1));
 
