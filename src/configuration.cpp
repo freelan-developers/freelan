@@ -108,7 +108,9 @@ namespace freelan
 	}
 
 	router_configuration::router_configuration() :
-		client_routing_enabled(false)
+		local_ip_routes(),
+		client_routing_enabled(false),
+		accept_routes_requests(true)
 	{
 	}
 
