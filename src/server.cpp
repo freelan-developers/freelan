@@ -1267,19 +1267,26 @@ namespace fscp
 
 		const presentation_memory_pool::shared_buffer_type send_buffer = m_presentation_memory_pool.allocate_shared_buffer();
 
-		const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), identity.signature_certificate(), identity.encryption_certificate());
+		try
+		{
+			const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), identity.signature_certificate(), identity.encryption_certificate());
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					handler,
-					_1
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						handler,
+						_1
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 
 	void server::do_reintroduce_to_all(multiple_endpoints_handler_type handler)
@@ -1399,27 +1406,34 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = clear_session_request_message::write(
-			buffer_cast<uint8_t*>(cleartext_buffer),
-			buffer_size(cleartext_buffer),
-			session_number,
-			session.generate_local_challenge(),
-			m_cipher_capabilities
-		);
+		try
+		{
+			const size_t size = clear_session_request_message::write(
+				buffer_cast<uint8_t*>(cleartext_buffer),
+				buffer_size(cleartext_buffer),
+				session_number,
+				session.generate_local_challenge(),
+				m_cipher_capabilities
+			);
 
-		m_presentation_strand.post(
-			make_shared_buffer_handler(
-				cleartext_buffer,
-				boost::bind(
-					&server::do_request_session,
-					this,
-					identity,
-					target,
-					handler,
-					buffer(cleartext_buffer, size)
+			m_presentation_strand.post(
+				make_shared_buffer_handler(
+					cleartext_buffer,
+					boost::bind(
+						&server::do_request_session,
+						this,
+						identity,
+						target,
+						handler,
+						buffer(cleartext_buffer, size)
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 
 	void server::do_request_session(const identity_store& identity, const ep_type& target, simple_handler_type handler, boost::asio::const_buffer cleartext)
@@ -1445,26 +1459,33 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = session_request_message::write(
-			buffer_cast<uint8_t*>(send_buffer),
-			buffer_size(send_buffer),
-			buffer_cast<const uint8_t*>(cleartext),
-			buffer_size(cleartext),
-			m_presentation_store_map[target].encryption_certificate().public_key(),
-			identity.signature_key()
-		);
+		try
+		{
+			const size_t size = session_request_message::write(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				buffer_cast<const uint8_t*>(cleartext),
+				buffer_size(cleartext),
+				m_presentation_store_map[target].encryption_certificate().public_key(),
+				identity.signature_key()
+			);
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					handler,
-					boost::asio::placeholders::error
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						handler,
+						boost::asio::placeholders::error
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 
 	void server::do_close_session(const ep_type& target, simple_handler_type handler)
@@ -1518,11 +1539,18 @@ namespace fscp
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t cleartext_len = _session_request_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
+		try
+		{
+			const size_t cleartext_len = _session_request_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
 
-		clear_session_request_message clear_session_request_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
+			clear_session_request_message clear_session_request_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
 
-		handle_clear_session_request_message_from(identity, cleartext_buffer, clear_session_request_message, sender);
+			handle_clear_session_request_message_from(identity, cleartext_buffer, clear_session_request_message, sender);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			// Do nothing.
+		}
 	}
 
 	void server::handle_clear_session_request_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
@@ -1632,30 +1660,37 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = clear_session_message::write(
-			buffer_cast<uint8_t*>(cleartext_buffer),
-			buffer_size(cleartext_buffer),
-			session.local_session().session_number(),
-			session.remote_challenge(),
-			session.local_cipher_algorithm(),
-			session.local_session().encryption_key(),
-			session.local_session().encryption_key_size(),
-			session.local_session().nonce_prefix(),
-			session.local_session().nonce_prefix_size()
-		);
+		try
+		{
+			const size_t size = clear_session_message::write(
+				buffer_cast<uint8_t*>(cleartext_buffer),
+				buffer_size(cleartext_buffer),
+				session.local_session().session_number(),
+				session.remote_challenge(),
+				session.local_cipher_algorithm(),
+				session.local_session().encryption_key(),
+				session.local_session().encryption_key_size(),
+				session.local_session().nonce_prefix(),
+				session.local_session().nonce_prefix_size()
+			);
 
-		m_presentation_strand.post(
-			make_shared_buffer_handler(
-				cleartext_buffer,
-				boost::bind(
-					&server::do_send_session,
-					this,
-					identity,
-					target,
-					buffer(cleartext_buffer, size)
+			m_presentation_strand.post(
+				make_shared_buffer_handler(
+					cleartext_buffer,
+					boost::bind(
+						&server::do_send_session,
+						this,
+						identity,
+						target,
+						buffer(cleartext_buffer, size)
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			// Do nothing.
+		}
 	}
 
 	void server::do_send_session(const identity_store& identity, const ep_type& target, boost::asio::const_buffer cleartext)
@@ -1671,28 +1706,35 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = session_message::write(
-			buffer_cast<uint8_t*>(send_buffer),
-			buffer_size(send_buffer),
-			buffer_cast<const uint8_t*>(cleartext),
-			buffer_size(cleartext),
-			m_presentation_store_map[target].encryption_certificate().public_key(),
-			identity.signature_key()
-		);
+		try
+		{
+			const size_t size = session_message::write(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				buffer_cast<const uint8_t*>(cleartext),
+				buffer_size(cleartext),
+				m_presentation_store_map[target].encryption_certificate().public_key(),
+				identity.signature_key()
+			);
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					&server::handle_send_to,
-					this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						&server::handle_send_to,
+						this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			// Do nothing.
+		}
 	}
 
 	void server::handle_session_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const session_message& _session_message, const ep_type& sender)
@@ -1728,11 +1770,18 @@ namespace fscp
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t cleartext_len = _session_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
+		try
+		{
+			const size_t cleartext_len = _session_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
 
-		clear_session_message clear_session_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
+			clear_session_message clear_session_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
 
-		handle_clear_session_message_from(cleartext_buffer, clear_session_message, sender);
+			handle_clear_session_message_from(cleartext_buffer, clear_session_message, sender);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			// Do nothing.
+		}
 	}
 
 	void server::handle_clear_session_message_from(socket_memory_pool::shared_buffer_type data, const clear_session_message& _clear_session_message, const ep_type& sender)
@@ -1916,34 +1965,41 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = data_message::write(
-			buffer_cast<uint8_t*>(send_buffer),
-			buffer_size(send_buffer),
-			channel_number,
-			session_pair.remote_session().session_number(),
-			session_pair.remote_session().sequence_number(),
-			cipher_algorithm,
-			buffer_cast<const uint8_t*>(data),
-			buffer_size(data),
-			session_pair.remote_session().encryption_key(),
-			session_pair.remote_session().encryption_key_size(),
-			session_pair.remote_session().nonce_prefix(),
-			session_pair.remote_session().nonce_prefix_size()
-		);
+		try
+		{
+			const size_t size = data_message::write(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				channel_number,
+				session_pair.remote_session().session_number(),
+				session_pair.remote_session().sequence_number(),
+				cipher_algorithm,
+				buffer_cast<const uint8_t*>(data),
+				buffer_size(data),
+				session_pair.remote_session().encryption_key(),
+				session_pair.remote_session().encryption_key_size(),
+				session_pair.remote_session().nonce_prefix(),
+				session_pair.remote_session().nonce_prefix_size()
+			);
 
-		session_pair.remote_session().increment_sequence_number();
+			session_pair.remote_session().increment_sequence_number();
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					handler,
-					boost::asio::placeholders::error
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						handler,
+						boost::asio::placeholders::error
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 
 	void server::do_send_contact_request(const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler)
@@ -1997,32 +2053,39 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = data_message::write_contact_request(
-			buffer_cast<uint8_t*>(send_buffer),
-			buffer_size(send_buffer),
-			session_pair.remote_session().session_number(),
-			session_pair.remote_session().sequence_number(),
-			cipher_algorithm,
-			hash_list,
-			session_pair.remote_session().encryption_key(),
-			session_pair.remote_session().encryption_key_size(),
-			session_pair.remote_session().nonce_prefix(),
-			session_pair.remote_session().nonce_prefix_size()
-		);
+		try
+		{
+			const size_t size = data_message::write_contact_request(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				session_pair.remote_session().session_number(),
+				session_pair.remote_session().sequence_number(),
+				cipher_algorithm,
+				hash_list,
+				session_pair.remote_session().encryption_key(),
+				session_pair.remote_session().encryption_key_size(),
+				session_pair.remote_session().nonce_prefix(),
+				session_pair.remote_session().nonce_prefix_size()
+			);
 
-		session_pair.remote_session().increment_sequence_number();
+			session_pair.remote_session().increment_sequence_number();
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					handler,
-					boost::asio::placeholders::error
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						handler,
+						boost::asio::placeholders::error
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 
 	void server::do_send_contact(const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
@@ -2076,32 +2139,39 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = data_message::write_contact(
-			buffer_cast<uint8_t*>(send_buffer),
-			buffer_size(send_buffer),
-			session_pair.remote_session().session_number(),
-			session_pair.remote_session().sequence_number(),
-			cipher_algorithm,
-			contact_map,
-			session_pair.remote_session().encryption_key(),
-			session_pair.remote_session().encryption_key_size(),
-			session_pair.remote_session().nonce_prefix(),
-			session_pair.remote_session().nonce_prefix_size()
-		);
+		try
+		{
+			const size_t size = data_message::write_contact(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				session_pair.remote_session().session_number(),
+				session_pair.remote_session().sequence_number(),
+				cipher_algorithm,
+				contact_map,
+				session_pair.remote_session().encryption_key(),
+				session_pair.remote_session().encryption_key_size(),
+				session_pair.remote_session().nonce_prefix(),
+				session_pair.remote_session().nonce_prefix_size()
+			);
 
-		session_pair.remote_session().increment_sequence_number();
+			session_pair.remote_session().increment_sequence_number();
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					handler,
-					boost::asio::placeholders::error
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						handler,
+						boost::asio::placeholders::error
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 
 	void server::handle_data_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)
@@ -2142,46 +2212,53 @@ namespace fscp
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t cleartext_len = _data_message.get_cleartext(
-			buffer_cast<uint8_t*>(cleartext_buffer),
-			buffer_size(cleartext_buffer),
-			session_pair.local_session().session_number(),
-			cipher_algorithm,
-			session_pair.local_session().encryption_key(),
-			session_pair.local_session().encryption_key_size(),
-			session_pair.local_session().nonce_prefix(),
-			session_pair.local_session().nonce_prefix_size()
-		);
-
-		session_pair.local_session().set_sequence_number(_data_message.sequence_number());
-
-		if (session_pair.local_session().is_old())
+		try
 		{
-			// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
-			do_send_clear_session(identity, sender, session_pair.local_session().session_number() + 1);
+			const size_t cleartext_len = _data_message.get_cleartext(
+				buffer_cast<uint8_t*>(cleartext_buffer),
+				buffer_size(cleartext_buffer),
+				session_pair.local_session().session_number(),
+				cipher_algorithm,
+				session_pair.local_session().encryption_key(),
+				session_pair.local_session().encryption_key_size(),
+				session_pair.local_session().nonce_prefix(),
+				session_pair.local_session().nonce_prefix_size()
+			);
+
+			session_pair.local_session().set_sequence_number(_data_message.sequence_number());
+
+			if (session_pair.local_session().is_old())
+			{
+				// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
+				do_send_clear_session(identity, sender, session_pair.local_session().session_number() + 1);
+			}
+
+			session_pair.keep_alive();
+
+			const message_type type = _data_message.type();
+
+			if (type == MESSAGE_TYPE_KEEP_ALIVE)
+			{
+				// If the message is a keep alive then nothing is to be done and we avoid posting an empty call into the data strand.
+				return;
+			}
+
+			// We don't need the original buffer at this point, so we just defer handling in another call so that it will free the buffer sooner and that it will allow parallel processing.
+			m_data_strand.post(
+				boost::bind(
+					&server::do_handle_data_message,
+					this,
+					sender,
+					type,
+					cleartext_buffer,
+					buffer(cleartext_buffer, cleartext_len)
+				)
+			);
 		}
-
-		session_pair.keep_alive();
-
-		const message_type type = _data_message.type();
-
-		if (type == MESSAGE_TYPE_KEEP_ALIVE)
+		catch (const cryptoplus::error::cryptographic_exception&)
 		{
-			// If the message is a keep alive then nothing is to be done and we avoid posting an empty call into the data strand.
-			return;
+			// This can happen if a message is decoded after a session rekeying.
 		}
-
-		// We don't need the original buffer at this point, so we just defer handling in another call so that it will free the buffer sooner and that it will allow parallel processing.
-		m_data_strand.post(
-			boost::bind(
-				&server::do_handle_data_message,
-				this,
-				sender,
-				type,
-				cleartext_buffer,
-				buffer(cleartext_buffer, cleartext_len)
-			)
-		);
 	}
 
 	void server::do_handle_data_message(const ep_type& sender, message_type type, shared_buffer_type buffer, boost::asio::const_buffer data)
@@ -2350,33 +2427,38 @@ namespace fscp
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
-		const size_t size = data_message::write_keep_alive(
-			buffer_cast<uint8_t*>(send_buffer),
-			buffer_size(send_buffer),
-			session_pair.remote_session().session_number(),
-			session_pair.remote_session().sequence_number(),
-			cipher_algorithm,
-			session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
-			session_pair.remote_session().encryption_key(),
-			session_pair.remote_session().encryption_key_size(),
-			session_pair.remote_session().nonce_prefix(),
-			session_pair.remote_session().nonce_prefix_size()
-		);
+		try
+		{
+			const size_t size = data_message::write_keep_alive(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				session_pair.remote_session().session_number(),
+				session_pair.remote_session().sequence_number(),
+				cipher_algorithm,
+				session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
+				session_pair.remote_session().encryption_key(),
+				session_pair.remote_session().encryption_key_size(),
+				session_pair.remote_session().nonce_prefix(),
+				session_pair.remote_session().nonce_prefix_size()
+			);
 
-		session_pair.remote_session().increment_sequence_number();
+			session_pair.remote_session().increment_sequence_number();
 
-		async_send_to(
-			buffer(send_buffer, size),
-			target,
-			make_shared_buffer_handler(
-				send_buffer,
-				boost::bind(
-					&server::handle_send_to,
-					this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred
+			async_send_to(
+				buffer(send_buffer, size),
+				target,
+				make_shared_buffer_handler(
+					send_buffer,
+					boost::bind(
+						handler,
+						boost::asio::placeholders::error
+					)
 				)
-			)
-		);
+			);
+		}
+		catch (const cryptoplus::error::cryptographic_exception&)
+		{
+			handler(server_error::cryptographic_error);
+		}
 	}
 }
