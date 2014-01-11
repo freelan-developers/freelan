@@ -843,7 +843,7 @@ namespace freelan
 		{
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
 			{
-				async_register_switch_port(host, boost::bind(&core::async_send_routes_request, this, host));
+				async_register_switch_port(host, void_handler_type());
 			}
 			else
 			{
@@ -964,7 +964,7 @@ namespace freelan
 		}
 		else
 		{
-			if (m_tap_adapter)
+			if (m_tap_adapter && (m_tap_adapter->type() == asiotap::tap_adapter::AT_TUN_ADAPTER))
 			{
 				const boost::shared_ptr<router::port_type> local_port = m_router.get_port(make_port_index(m_tap_adapter));
 
