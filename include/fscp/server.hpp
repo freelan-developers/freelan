@@ -58,6 +58,7 @@
 #include <set>
 #include <map>
 #include <queue>
+#include <iostream>
 
 #include <stdint.h>
 
@@ -157,14 +158,24 @@ namespace fscp
 			typedef boost::function<bool (const ep_type& sender, bool default_accept)> hello_message_received_handler_type;
 
 			/**
+			 * \brief A presentation status type.
+			 */
+			enum presentation_status_type
+			{
+				PS_FIRST,
+				PS_NEW,
+				PS_SAME
+			};
+
+			/**
 			 * \brief A handler for when presentation requests are received.
 			 * \param sender The endpoint that sent the presentation message.
 			 * \param sig_cert The signature certificate.
 			 * \param enc_cert The encryption certificate.
-			 * \param is_new True if the presentation is new.
+			 * \param status The presentation status.
 			 * \return true to accept the presentation message for the originating host.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, bool is_new)> presentation_message_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, presentation_status_type status)> presentation_message_received_handler_type;
 
 			/**
 			 * \brief A handler for when session requests are received.
@@ -1406,6 +1417,24 @@ namespace fscp
 			void do_send_keep_alive(const ep_type&, simple_handler_type);
 
 			boost::asio::deadline_timer m_keep_alive_timer;
+
+		private: // Misc
+
+			friend std::ostream& operator<<(std::ostream& os, presentation_status_type status)
+			{
+				switch (status)
+				{
+					case PS_FIRST:
+						return os << "first presentation";
+					case PS_NEW:
+						return os << "new presentation";
+					case PS_SAME:
+						return os << "same presentation";
+				}
+
+				assert(false);
+				return os << "invalid presentation status";
+			}
 	};
 }
 

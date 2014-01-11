@@ -113,11 +113,11 @@ static void on_hello_response(fscp::server& server, const fscp::server::ep_type&
 	}
 }
 
-static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, bool is_new)
+static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, fscp::server::presentation_status_type status)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << (is_new ? "new" : "existing") << std::endl;
+	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << status << std::endl;
 
 	server.async_request_session(sender, boost::bind(&simple_handler, "async_request_session()", _1));
 
