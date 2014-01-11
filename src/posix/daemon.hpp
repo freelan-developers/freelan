@@ -63,7 +63,7 @@ namespace posix
 	 * \param level The freelan level.
 	 * \param msg The message to log.
 	 */
-	void syslog(freelan::log_level level, const std::string& msg);
+	void syslog(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime&);
 }
 
 #endif /* POSIX_DAEMON_HPP */

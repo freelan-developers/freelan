@@ -50,7 +50,7 @@
 #include <syslog.h>
 #endif
 
-#include <freelan/logger_stream.hpp>
+#include <freelan/logger.hpp>
 
 #include "system.hpp"
 
@@ -99,37 +99,40 @@ const char* log_level_to_string(freelan::log_level level)
 	throw std::logic_error("Unsupported enumeration value");
 }
 
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 	int exit_status = execute(script, tap_adapter.name().c_str(), NULL);
 
 	if (exit_status != 0)
 	{
-		core.logger()(freelan::LL_WARNING) << "Up script exited with a non-zero exit status: " << exit_status;
+		logger(freelan::LL_WARNING) << "Up script exited with a non-zero exit status: " << exit_status;
 	}
 }
 
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 	int exit_status = execute(script, tap_adapter.name().c_str(), NULL);
 
 	if (exit_status != 0)
 	{
-		core.logger()(freelan::LL_WARNING) << "Down script exited with a non-zero exit status: " << exit_status;
+		logger(freelan::LL_WARNING) << "Down script exited with a non-zero exit status: " << exit_status;
 	}
 }
 
-bool execute_certificate_validation_script(const fs::path& script, fl::core& core, fl::security_configuration::cert_type cert)
+bool execute_certificate_validation_script(const fs::path& script, const freelan::logger& logger, fl::security_configuration::cert_type cert)
 {
-	static unsigned int counter = 0;
+	static boost::mutex mutex;
+
+	// This prevents two scripts validation to run at the same time.
+	boost::mutex::scoped_lock lock(mutex);
 
 	try
 	{
-		const fs::path filename = get_temporary_directory() / ("freelan_certificate_" + boost::lexical_cast<std::string>(counter++) + ".crt");
+		const fs::path filename = get_temporary_directory() / ("freelan_certificate.crt");
 
-		if (core.logger().level() <= freelan::LL_DEBUG)
+		if (logger.level() <= freelan::LL_DEBUG)
 		{
-			core.logger()(freelan::LL_DEBUG) << "Writing temporary certificate file at: " << filename;
+			logger(freelan::LL_DEBUG) << "Writing temporary certificate file at: " << filename;
 		}
 
 #ifdef WINDOWS
@@ -144,9 +147,9 @@ bool execute_certificate_validation_script(const fs::path& script, fl::core& cor
 
 		const int exit_status = execute(script, filename.c_str(), NULL);
 
-		if (core.logger().level() <= freelan::LL_DEBUG)
+		if (logger.level() <= freelan::LL_DEBUG)
 		{
-			core.logger()(freelan::LL_DEBUG) << script << " terminated execution with exit status " << exit_status ;
+			logger(freelan::LL_DEBUG) << script << " terminated execution with exit status " << exit_status ;
 		}
 
 		fs::remove(filename);
@@ -155,7 +158,7 @@ bool execute_certificate_validation_script(const fs::path& script, fl::core& cor
 	}
 	catch (std::exception& ex)
 	{
-		core.logger()(freelan::LL_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
+		logger(freelan::LL_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
 
 		return false;
 	}

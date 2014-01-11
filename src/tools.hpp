@@ -75,26 +75,26 @@ const char* log_level_to_string(freelan::log_level level);
 /**
  * \brief The tap adapter up function.
  * \param script The script to call.
- * \param core The core instance.
+ * \param logger The logger instance.
  * \param tap_adapter The tap_adapter instance.
  */
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter);
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The tap adapter down function.
  * \param script The script to call.
- * \param core The core instance.
+ * \param logger The logger instance.
  * \param tap_adapter The tap_adapter instance.
  */
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, freelan::core& core, const asiotap::tap_adapter& tap_adapter);
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The certificate validation function.
  * \param script The script to call.
- * \param core The core instance.
+ * \param logger The logger instance.
  * \param cert The certificate.
  * \return The execution result of the specified script.
  */
-bool execute_certificate_validation_script(const boost::filesystem::path& script, freelan::core& core, freelan::security_configuration::cert_type cert);
+bool execute_certificate_validation_script(const boost::filesystem::path& script, const freelan::logger& logger, freelan::security_configuration::cert_type cert);
 
 #endif /* TOOLS_HPP */

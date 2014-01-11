@@ -59,7 +59,6 @@
 #include <cryptoplus/error/error_strings.hpp>
 
 #include <freelan/freelan.hpp>
-#include <freelan/logger_stream.hpp>
 
 #ifdef WINDOWS
 #include "win32/service.hpp"
@@ -78,8 +77,21 @@ namespace fl = freelan;
 
 struct cli_configuration
 {
+	cli_configuration() :
+		fl_configuration(),
+		debug(false),
+#ifndef WINDOWS
+		thread_count(0),
+		foreground(false),
+		pid_file()
+#else
+		thread_count(0)
+#endif
+	{}
+
 	fl::configuration fl_configuration;
 	bool debug;
+	unsigned int thread_count;
 #ifndef WINDOWS
 	bool foreground;
 	fs::path pid_file;
@@ -101,9 +113,9 @@ std::vector<fs::path> get_configuration_files()
 	return configuration_files;
 }
 
-void do_log(freelan::log_level level, const std::string& msg)
+void do_log(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 {
-	std::cout << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+	std::cout << boost::posix_time::to_iso_extended_string(timestamp) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
 }
 
 void signal_handler(const boost::system::error_code& error, int signal_number, fl::core& core, int& exit_signal)
@@ -130,6 +142,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	("help,h", "Produce help message.")
 	("version,v", "Get the program version.")
 	("debug,d", "Enables debug output.")
+	("threads,t", po::value<unsigned int>(), "The number of threads to use.")
 	("configuration_file,c", po::value<std::string>(), "The configuration file to use.")
 	;
 
@@ -348,24 +361,25 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	if (!tap_adapter_up_script.empty())
 	{
-		configuration.fl_configuration.tap_adapter.up_callback = boost::bind(&execute_tap_adapter_up_script, tap_adapter_up_script, _1, _2);
+		configuration.fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
 	}
 
 	const fs::path tap_adapter_down_script = get_tap_adapter_down_script(execution_root_directory, vm);
 
 	if (!tap_adapter_down_script.empty())
 	{
-		configuration.fl_configuration.tap_adapter.down_callback = boost::bind(&execute_tap_adapter_down_script, tap_adapter_down_script, _1, _2);
+		configuration.fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
 	}
 
 	const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
 
 	if (!certificate_validation_script.empty())
 	{
-		configuration.fl_configuration.security.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
+		configuration.fl_configuration.security.certificate_validation_script = certificate_validation_script;
 	}
 
 	configuration.debug = vm.count("debug") > 0;
+	configuration.thread_count = vm["threads"].as<unsigned int>();
 
 	return true;
 }
@@ -383,7 +397,7 @@ void run(const cli_configuration& configuration, int& exit_signal)
 	}
 #endif
 
-	boost::function<void (freelan::log_level, const std::string&)> log_func = &do_log;
+	freelan::core::log_handler_type log_func = &do_log;
 
 #ifndef WINDOWS
 	if (!configuration.foreground)
@@ -403,24 +417,60 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 
-	fl::logger logger(log_func, configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
+	const freelan::log_level log_level = configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION;
 
-	fl::core core(io_service, configuration.fl_configuration, logger);
+	const freelan::logger logger(log_func, log_level);
+
+	fl::core core(io_service, configuration.fl_configuration);
+
+	core.set_log_level(log_level);
+	core.set_log_callback(log_func);
+
+	if (!configuration.fl_configuration.tap_adapter.up_script.empty())
+	{
+		core.set_tap_adapter_up_callback(boost::bind(&execute_tap_adapter_up_script, configuration.fl_configuration.tap_adapter.up_script, logger, _1));
+	}
+
+	if (!configuration.fl_configuration.tap_adapter.down_script.empty())
+	{
+		core.set_tap_adapter_down_callback(boost::bind(&execute_tap_adapter_down_script, configuration.fl_configuration.tap_adapter.down_script, logger, _1));
+	}
+
+	if (!configuration.fl_configuration.security.certificate_validation_script.empty())
+	{
+		core.set_certificate_validation_callback(boost::bind(&execute_certificate_validation_script, configuration.fl_configuration.security.certificate_validation_script, logger, _1));
+	}
 
 	core.open();
 
 	signals.async_wait(boost::bind(signal_handler, _1, _2, boost::ref(core), boost::ref(exit_signal)));
 
-	logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
+	boost::thread_group threads;
 
-	if (!core.has_tap_adapter())
+	unsigned int thread_count = configuration.thread_count;
+
+	if (thread_count == 0)
 	{
-		logger(fl::LL_INFORMATION) << "Configured not to use any tap adapter.";
+		thread_count = boost::thread::hardware_concurrency();
+
+		// Some implementation can return 0.
+		if (thread_count == 0)
+		{
+			// We create 2 threads.
+			thread_count = 2;
+		}
 	}
 
-	logger(fl::LL_INFORMATION) << "Listening on: " << core.server().socket().local_endpoint();
+	logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s)." << std::endl;
 
-	io_service.run();
+	logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
+
+	for (std::size_t i = 0; i < thread_count; ++i)
+	{
+		threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+	}
+
+	threads.join_all();
 
 	logger(fl::LL_INFORMATION) << "Execution stopped." << std::endl;
 }

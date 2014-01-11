@@ -60,7 +60,6 @@
 #include <cryptoplus/error/error_strings.hpp>
 
 #include <freelan/freelan.hpp>
-#include <freelan/logger_stream.hpp>
 
 #include "../tools.hpp"
 #include "../system.hpp"
@@ -175,8 +174,17 @@ namespace win32
 		/* Local types */
 		struct service_configuration
 		{
+			service_configuration() :
+				configuration_file(),
+				debug(false),
+				thread_count(0),
+				log_file()
+			{
+			}
+
 			fs::path configuration_file;
 			bool debug;
+			unsigned int thread_count;
 			fs::path log_file;
 		};
 
@@ -192,7 +200,7 @@ namespace win32
 	/* Local functions declarations */
 	void parse_service_options(int argc, LPTSTR* argv, service_configuration& configuration);
 	fl::logger create_logger(const service_configuration& configuration);
-	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg);
+	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
 	fl::configuration get_freelan_configuration(const service_configuration& configuration);
 	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
 	VOID WINAPI service_main(DWORD argc, LPTSTR* argv);
@@ -303,6 +311,7 @@ namespace win32
 		service_options.add_options()
 		("configuration_file,c", po::value<std::string>(), "The configuration file to use.")
 		("debug,d", "Enables debug output.")
+		("threads,t", po::value<unsigned int>(), "The number of threads to use.")
 		("log_file,l", po::value<std::string>(), "The log file to use.")
 		;
 
@@ -318,6 +327,7 @@ namespace win32
 		}
 
 		configuration.debug = (vm.count("debug") > 0);
+		configuration.thread_count = vm["threads"].as<unsigned int>();
 
 		if (vm.count("log_file"))
 		{
@@ -339,15 +349,15 @@ namespace win32
 		{
 			boost::shared_ptr<std::ostream> log_stream = boost::make_shared<fs::basic_ofstream<char> >(configuration.log_file);
 
-			return fl::logger(boost::bind(&log_function, log_stream, _1, _2), configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
+			return fl::logger(boost::bind(&log_function, log_stream, _1, _2, _3), configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
 		}
 	}
 
-	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg)
+	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 	{
 		if (os)
 		{
-			(*os) << boost::posix_time::to_iso_extended_string(boost::posix_time::microsec_clock::local_time()) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+			(*os) << boost::posix_time::to_iso_extended_string(timestamp) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
 		}
 	}
 
@@ -392,21 +402,21 @@ namespace win32
 
 		if (!tap_adapter_up_script.empty())
 		{
-			fl_configuration.tap_adapter.up_callback = boost::bind(&execute_tap_adapter_up_script, tap_adapter_up_script, _1, _2);
+			configuration.fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
 		}
 
 		const fs::path tap_adapter_down_script = get_tap_adapter_down_script(execution_root_directory, vm);
 
 		if (!tap_adapter_down_script.empty())
 		{
-			fl_configuration.tap_adapter.down_callback = boost::bind(&execute_tap_adapter_down_script, tap_adapter_down_script, _1, _2);
+			configuration.fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
 		}
 
 		const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
 
 		if (!certificate_validation_script.empty())
 		{
-			fl_configuration.security.certificate_validation_callback = boost::bind(&execute_certificate_validation_script, certificate_validation_script, _1, _2);
+			configuration.fl_configuration.security.certificate_validation_script = certificate_validation_script;
 		}
 
 		return fl_configuration;
@@ -460,7 +470,7 @@ namespace win32
 
 		parse_service_options(argc, argv, configuration);
 
-		fl::logger logger = create_logger(configuration);
+		const fl::logger logger = create_logger(configuration);
 
 		logger(fl::LL_INFORMATION) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 
@@ -494,7 +504,26 @@ namespace win32
 				boost::asio::io_service io_service;
 
 				fl::configuration fl_configuration = get_freelan_configuration(configuration);
-				freelan::core core(io_service, fl_configuration, logger);
+
+				fl::core core(io_service, fl_configuration);
+
+				core.set_log_level(logger.level());
+				core.set_log_callback(logger.callback());
+
+				if (!fl_configuration.tap_adapter.up_script.empty())
+				{
+					core.set_tap_adapter_up_callback(boost::bind(&execute_tap_adapter_up_script, fl_configuration.tap_adapter.up_script, logger, _1));
+				}
+
+				if (!fl_configuration.tap_adapter.down_script.empty())
+				{
+					core.set_tap_adapter_down_callback(boost::bind(&execute_tap_adapter_down_script, fl_configuration.tap_adapter.down_script, logger, _1));
+				}
+
+				if (!fl_configuration.security.certificate_validation_script.empty())
+				{
+					core.set_certificate_validation_callback(boost::bind(&execute_certificate_validation_script, fl_configuration.security.certificate_validation_script, logger, _1));
+				}
 
 				core.open();
 
@@ -509,7 +538,34 @@ namespace win32
 				ctx.service_status.dwCurrentState = SERVICE_RUNNING;
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				io_service.run();
+				boost::thread_group threads;
+
+				unsigned int thread_count = configuration.thread_count;
+
+				if (thread_count == 0)
+				{
+					thread_count = boost::thread::hardware_concurrency();
+
+					// Some implementation can return 0.
+					if (thread_count == 0)
+					{
+						// We create 2 threads.
+						thread_count = 2;
+					}
+				}
+
+				logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s)." << std::endl;
+
+				logger(fl::LL_INFORMATION) << "Execution started." << std::endl;
+
+				for (std::size_t i = 0; i < thread_count; ++i)
+				{
+					threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+				}
+
+				threads.join_all();
+
+				logger(fl::LL_INFORMATION) << "Execution stopped." << std::endl;
 
 				lock.lock();
 

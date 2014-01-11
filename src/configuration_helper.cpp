@@ -287,7 +287,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		}
 	}
 
-	configuration.server.public_endpoint_list = vm["server.public_endpoint"].as<std::vector<fl::endpoint> >();
+	const std::vector<fl::endpoint> public_endpoint_list = vm["server.public_endpoint"].as<std::vector<fl::endpoint> >();
+	configuration.server.public_endpoint_list.insert(public_endpoint_list.begin(), public_endpoint_list.end());
 
 	if (vm.count("server.user_agent"))
 	{
@@ -309,7 +310,9 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.fscp.listen_on = vm["fscp.listen_on"].as<fl::endpoint>();
 	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>().to_time_duration();
 
-	configuration.fscp.contact_list = vm["fscp.contact"].as<std::vector<fl::endpoint> >();
+	const std::vector<fl::endpoint> contact = vm["fscp.contact"].as<std::vector<fl::endpoint> >();
+	configuration.fscp.contact_list.insert(contact.begin(), contact.end());
+
 	configuration.fscp.accept_contact_requests = vm["fscp.accept_contact_requests"].as<bool>();
 	configuration.fscp.accept_contacts = vm["fscp.accept_contacts"].as<bool>();
 	const std::vector<std::string> dynamic_contact_file_list = vm["fscp.dynamic_contact_file"].as<std::vector<std::string> >();
