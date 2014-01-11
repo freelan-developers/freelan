@@ -72,7 +72,7 @@ namespace freelan
 
 		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, resolve_success_handler_type success_handler, resolve_error_handler_type error_handler)
 		{
-			if (ec)
+			if (!ec)
 			{
 				success_handler(*it);
 			}
@@ -405,6 +405,8 @@ namespace freelan
 
 	void core::async_contact(const endpoint& target, duration_handler_type handler)
 	{
+		m_logger(LL_DEBUG) << "Trying to contact " << target << "...";
+
 		resolve_success_handler_type success_handler = boost::bind(&core::do_contact, this, _1, handler);
 		resolve_error_handler_type error_handler = boost::bind(handler, ep_type(), _1, boost::posix_time::time_duration());
 
@@ -593,6 +595,8 @@ namespace freelan
 	void core::do_contact(const ep_type& address, duration_handler_type handler)
 	{
 		assert(m_server);
+
+		m_logger(LL_DEBUG) << "Sending HELLO to " << address;
 
 		m_server->async_greet(address, boost::bind(handler, address, _1, _2));
 	}
