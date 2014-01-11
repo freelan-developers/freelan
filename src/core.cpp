@@ -1103,6 +1103,8 @@ namespace freelan
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 			{
+				m_logger(LL_INFORMATION) << "IPv4 address: " << m_configuration.tap_adapter.ipv4_address_prefix_length;
+
 				try
 				{
 #ifdef WINDOWS
@@ -1129,10 +1131,16 @@ namespace freelan
 					m_logger(LL_WARNING) << "Cannot set IPv4 address: " << ex.what();
 				}
 			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "No IPv4 address configured.";
+			}
 
 			// IPv6 address
 			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
 			{
+				m_logger(LL_INFORMATION) << "IPv6 address: " << m_configuration.tap_adapter.ipv6_address_prefix_length;
+
 				try
 				{
 					m_tap_adapter->add_ip_address_v6(
@@ -1144,6 +1152,10 @@ namespace freelan
 				{
 					m_logger(LL_WARNING) << "Cannot set IPv6 address: " << ex.what();
 				}
+			}
+			else
+			{
+				m_logger(LL_INFORMATION) << "No IPv6 address configured.";
 			}
 
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TUN)
