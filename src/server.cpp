@@ -991,7 +991,7 @@ namespace fscp
 	uint32_t server::ep_hello_context_type::generate_unique_number()
 	{
 		// The first call to this function is *NOT* thread-safe in C++03 !
-		static boost::mt19937 rng(time(0));
+		static boost::mt19937 rng(static_cast<uint32_t>(time(0)));
 
 		return rng();
 	}

@@ -45,12 +45,13 @@
 #ifndef FSCP_SERVER_HPP
 #define FSCP_SERVER_HPP
 
+#include <boost/asio.hpp>
+
 #include "identity_store.hpp"
 #include "memory_pool.hpp"
 #include "presentation_store.hpp"
 #include "session_pair.hpp"
 
-#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
