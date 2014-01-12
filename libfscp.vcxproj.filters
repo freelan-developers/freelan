@@ -30,9 +30,6 @@
     <ClCompile Include="src\data_message.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\fscp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\hello_message.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

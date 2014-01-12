@@ -24,7 +24,6 @@
     <ClCompile Include="src\clear_session_request_message.cpp" />
     <ClCompile Include="src\constants.cpp" />
     <ClCompile Include="src\data_message.cpp" />
-    <ClCompile Include="src\fscp.cpp" />
     <ClCompile Include="src\hello_message.cpp" />
     <ClCompile Include="src\identity_store.cpp" />
     <ClCompile Include="src\memory_pool.cpp" />
