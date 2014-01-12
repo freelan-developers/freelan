@@ -9,7 +9,7 @@ attendees:
         filters: msvc-x86
         prefix: x86
         commands:
-          - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="Win32"'
+          - 'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"'
           - 'md {{prefix}}\lib || echo'
           - 'md {{prefix}}\include || echo'
           - 'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
@@ -19,17 +19,27 @@ attendees:
         filters: msvc-x64
         prefix: x64
         commands:
-          - 'msbuild libiconv.sln /p:Configuration=ReleaseStatic /p:Platform="x64"'
+          - 'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"'
           - 'md {{prefix}}\lib || echo'
           - 'md {{prefix}}\include || echo'
           - 'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib'
           - 'xcopy include\* {{prefix}}\include\ /S /Y'
   boost:
-    filters: msvc
     source:
-      location: http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.zip/download
-      type: application/zip
+      -
+        location: http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
+        type: application/x-bzip2
+        filters: darwin
+      -
+        location: http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.zip/download
+        type: application/zip
+        filters: windows
     builders:
+      osx:
+        filters: darwin
+        commands:
+          - './bootstrap.sh'
+          - './b2 --prefix={{prefix}} --layout=system --without-serialization variant=release link=static threading=multi runtime-link=shared address-model=64 install'
       msvc-x86:
         tags: x86
         filters: msvc-x86
@@ -45,9 +55,14 @@ attendees:
           - 'bootstrap.bat'
           - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install'
   openssl:
-    filters: msvc
     source: http://www.openssl.org/source/openssl-1.0.1e.tar.gz
     builders:
+      osx:
+        filters: darwin
+        commands:
+          - './Configure no-shared no-asm --prefix={{prefix}} darwin64-x86_64-cc '
+          - 'make'
+          - 'make install'
       msvc-x86:
         tags: x86
         filters: msvc-x86
@@ -69,9 +84,20 @@ attendees:
   curl:
     depends:
       - openssl
-    filters: msvc
-    source: http://curl.haxx.se/download/curl-7.32.0.zip
+    source:
+      -
+        location: http://curl.haxx.se/download/curl-7.32.0.zip
+        filters: windows
+      -
+        location: http://curl.haxx.se/download/curl-7.33.0.tar.bz2
+        filters: darwin
     builders:
+      osx:
+        filters: darwin
+        commands:
+          - 'sh configure --enable-static -disable-shared --without-darwinssl --with-ssl={{prefix}} --prefix={{prefix}}'
+          - 'make'
+          - 'make install'
       msvc-x86:
         tags: x86
         filters: msvc-x86
