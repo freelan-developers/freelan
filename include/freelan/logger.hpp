@@ -167,6 +167,50 @@ namespace freelan
 	};
 
 	/**
+	* \brief A visitor that applies a manipulator to the logger stream.
+	*/
+	template <typename StreamType>
+	class manipulator_visitor : public boost::static_visitor<>
+	{
+	public:
+
+		/**
+		 * \brief The manipulator type.
+		 */
+		typedef StreamType& (*manipulator_type)(StreamType&);
+
+		/**
+		* \brief Create a manipulator visitor.
+		* \param manipulator The manipulator to apply.
+		*/
+		manipulator_visitor(manipulator_type manipulator) :
+			m_manipulator(manipulator)
+		{
+		}
+
+		/**
+		* \brief Does nothing.
+		*/
+		void operator()(null_logger_stream&) const
+		{
+		}
+
+		/**
+		* \brief Output the value to the internal ostringstream.
+		* \param ls The logger stream.
+		* \return The logger stream.
+		*/
+		void operator()(string_logger_stream& ls) const
+		{
+			ls << m_manipulator;
+		}
+
+	private:
+
+		manipulator_type m_manipulator;
+	};
+
+	/**
 	 * \brief The logger stream type.
 	 */
 	class logger_stream
@@ -211,7 +255,7 @@ namespace freelan
 			 */
 			logger_stream& operator<<(ostream_manipulator_type manipulator)
 			{
-				boost::apply_visitor(output_visitor<ostream_manipulator_type>(*manipulator), m_impl);
+				boost::apply_visitor(manipulator_visitor<std::ostream>(manipulator), m_impl);
 
 				return *this;
 			}
