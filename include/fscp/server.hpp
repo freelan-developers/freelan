@@ -1180,10 +1180,22 @@ namespace fscp
 
 			ep_type to_socket_format(const ep_type& ep);
 
+			class async_sender
+			{
+				public:
+					template <typename ConstBufferSequence, typename WriteHandler>
+					void operator()(boost::asio::ip::udp::socket* socket, const ConstBufferSequence& data, const ep_type& target, int flags, WriteHandler handler)
+					{
+						assert(socket);
+
+						socket->async_send_to(data, target, flags, handler);
+					}
+			};
+
 			template <typename ConstBufferSequence, typename WriteHandler>
 			void async_send_to(const ConstBufferSequence& data, const ep_type& target, WriteHandler handler)
 			{
-				const void_handler_type write_handler = boost::bind(&boost::asio::ip::udp::socket::async_send_to<ConstBufferSequence, WriteHandler>, &m_socket, data, to_socket_format(target), 0, handler);
+				const void_handler_type write_handler = boost::bind<void>(async_sender(), &m_socket, data, to_socket_format(target), 0, handler);
 
 				m_write_queue_strand.post(boost::bind(&server::push_write, this, write_handler));
 			}
