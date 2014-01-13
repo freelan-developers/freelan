@@ -323,7 +323,6 @@ namespace freelan
 			port_list_type::const_iterator get_target_for(port_index_type, const AddressType&);
 
 			router_configuration m_configuration;
-			unsigned int m_max_entries;
 
 			port_list_type m_ports;
 
