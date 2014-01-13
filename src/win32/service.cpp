@@ -401,21 +401,21 @@ namespace win32
 
 		if (!tap_adapter_up_script.empty())
 		{
-			configuration.fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
+			fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
 		}
 
 		const fs::path tap_adapter_down_script = get_tap_adapter_down_script(execution_root_directory, vm);
 
 		if (!tap_adapter_down_script.empty())
 		{
-			configuration.fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
+			fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
 		}
 
 		const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
 
 		if (!certificate_validation_script.empty())
 		{
-			configuration.fl_configuration.security.certificate_validation_script = certificate_validation_script;
+			fl_configuration.security.certificate_validation_script = certificate_validation_script;
 		}
 
 		return fl_configuration;
