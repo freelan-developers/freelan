@@ -29,8 +29,11 @@
     <ClCompile Include="src\ip_endpoint.cpp" />
     <ClCompile Include="src\ip_network_address.cpp" />
     <ClCompile Include="src\logger.cpp" />
+    <ClCompile Include="src\message.cpp" />
     <ClCompile Include="src\mtu.cpp" />
     <ClCompile Include="src\router.cpp" />
+    <ClCompile Include="src\routes_message.cpp" />
+    <ClCompile Include="src\routes_request_message.cpp" />
     <ClCompile Include="src\stream_operations.cpp" />
     <ClCompile Include="src\switch.cpp" />
   </ItemGroup>
@@ -43,9 +46,13 @@
     <ClInclude Include="include\freelan\ip_endpoint.hpp" />
     <ClInclude Include="include\freelan\ip_network_address.hpp" />
     <ClInclude Include="include\freelan\logger.hpp" />
+    <ClInclude Include="include\freelan\message.hpp" />
     <ClInclude Include="include\freelan\mtu.hpp" />
     <ClInclude Include="include\freelan\os.hpp" />
+    <ClInclude Include="include\freelan\port_index.hpp" />
     <ClInclude Include="include\freelan\router.hpp" />
+    <ClInclude Include="include\freelan\routes_message.hpp" />
+    <ClInclude Include="include\freelan\routes_request_message.hpp" />
     <ClInclude Include="include\freelan\switch.hpp" />
     <ClInclude Include="src\client.hpp" />
     <ClInclude Include="src\curl.hpp" />
