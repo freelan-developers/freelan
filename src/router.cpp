@@ -139,7 +139,7 @@ namespace freelan
 
 				BOOST_FOREACH(const routes_type::value_type& route, local_routes)
 				{
-					m_routes->insert(routes_port_type::value_type(route, port->first));
+					m_routes->insert(std::make_pair(route, port->first));
 				}
 			}
 		}

@@ -79,11 +79,7 @@ namespace freelan
 			/**
 			 * \brief The single address prefix length.
 			 */
-#ifdef _MSC_VER
-			static const size_t single_address_prefix_length = std::tuple_size<address_type::bytes_type>::value * 8;
-#else
-			static const size_t single_address_prefix_length = address_type::bytes_type::static_size * 8;
-#endif
+			static const size_t single_address_prefix_length = std::tuple_size<typename address_type::bytes_type>::value * 8;
 
 			/**
 			 * \brief Create an IP network address.
