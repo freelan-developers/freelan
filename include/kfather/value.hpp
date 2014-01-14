@@ -73,7 +73,7 @@ namespace kfather
 	/**
 	 * \brief The generic value type.
 	 */
-	typedef boost::variant<null_type, boolean_type, number_type, string_type, array_type, object_type> value_type;
+	typedef boost::variant<null_type, boolean_type, number_type, string_type, boost::recursive_wrapper<array_type>, boost::recursive_wrapper<object_type>> value_type;
 
 	/**
 	 * \brief The array type.
