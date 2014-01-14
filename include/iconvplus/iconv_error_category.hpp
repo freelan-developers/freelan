@@ -66,7 +66,7 @@ namespace iconvplus
 			 * \brief Get the name of the category.
 			 * \return The name of the category.
 			 */
-			const char* name() const
+			const char* name() const throw()
 			{
 				return "iconv";
 			}
