@@ -53,7 +53,7 @@ namespace fscp
 		return instance;
 	}
 
-	const char* server_category_impl::name() const
+	const char* server_category_impl::name() const throw()
 	{
 		return "fscp::server";
 	}

@@ -106,7 +106,7 @@ namespace fscp
 			 * @brief Get the name of the category.
 			 * @return The name of the category.
 			 */
-			virtual const char* name() const;
+			virtual const char* name() const throw();
 
 			/**
 			 * @brief Get the error message for a given error.
