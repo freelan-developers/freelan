@@ -33,6 +33,7 @@ class PosixEnvironment(BaseEnvironment):
         )
 
         if not 'CXXFLAGS' in self.environ:
+            self.Append(CXXFLAGS='--std=c++11')
             self.Append(CXXFLAGS='-Wall')
             self.Append(CXXFLAGS='-Wextra')
             self.Append(CXXFLAGS='-Werror')
