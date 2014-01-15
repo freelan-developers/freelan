@@ -71,7 +71,7 @@ namespace iconvplus
 			/**
 			 * \brief The null pointer type.
 			 */
-			static constexpr iconv_t iconv_nullptr = reinterpret_cast<native_type>(-1);
+			static const native_type iconv_nullptr;
 
 			/**
 			 * \brief The error value.
