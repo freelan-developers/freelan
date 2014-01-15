@@ -1385,7 +1385,7 @@ namespace fscp
 			}
 		}
 
-		entry->second = presentation_store(signature_certificate, encryption_certificate);
+		m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
 	}
 
 	void server::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)
