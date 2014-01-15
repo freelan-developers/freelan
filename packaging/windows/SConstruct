@@ -23,4 +23,13 @@ defines = {
     'XARCH': 'x64' if env.arch.lower() == 'amd64' else 'x86',
 }
 
+tap_setup = env.Install(
+    target=os.path.abspath('files/%s/' % env.arch.lower()),
+    source=os.path.abspath(
+        '../../libasiotap/windows/tap_adapter/tap-setup/objfre_win7_%(arch)s/%(arch)s/tap-setup.exe' % {
+            'arch': env.arch.lower(),
+        }
+    ),
+)
+
 installer = env.INNOSetup(source = 'freelan.iss', ISCC_DEFINES = defines)
