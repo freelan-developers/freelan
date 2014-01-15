@@ -69,9 +69,14 @@ namespace iconvplus
 			typedef iconv_t native_type;
 
 			/**
-			 * \brief The null pointer type.
+			 * \brief Check if a native_type is null.
+			 * \param value The value to check.
+			 * \return true if the value is null.
 			 */
-			static const native_type iconv_nullptr;
+			static bool is_null(native_type value)
+			{
+				return (value == (native_type)-1);
+			}
 
 			/**
 			 * \brief The error value.
@@ -104,7 +109,7 @@ namespace iconvplus
 			iconv_instance(iconv_instance&& other) noexcept :
 				m_iconv(other.m_iconv)
 			{
-				other.m_iconv = iconv_nullptr;
+				other.m_iconv = (native_type)-1;
 			}
 
 			/**
@@ -124,7 +129,7 @@ namespace iconvplus
 			 */
 			~iconv_instance()
 			{
-				if (m_iconv != iconv_nullptr)
+				if (!is_null(m_iconv))
 				{
 					::iconv_close(m_iconv);
 				}
@@ -274,7 +279,7 @@ namespace iconvplus
 
 	inline void iconv_instance::check_iconv() const
 	{
-		if (m_iconv == iconv_nullptr)
+		if (is_null(m_iconv))
 		{
 			throw std::runtime_error("Unknown encoding");
 		}

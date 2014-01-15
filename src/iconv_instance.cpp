@@ -54,8 +54,6 @@
 
 namespace iconvplus
 {
-	const iconv_instance::native_type iconv_nullptr = (iconv_instance::native_type)-1;
-
 	size_t iconv_instance::convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft, boost::system::error_code& ec) const
 	{
 		size_t result = raw_convert(inbuf, inbytesleft, outbuf, outbytesleft);
