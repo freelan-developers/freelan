@@ -106,7 +106,7 @@ namespace iconvplus
 			 * \brief Move an iconv instance.
 			 * \param other The other instance.
 			 */
-			iconv_instance(iconv_instance&& other) noexcept :
+			iconv_instance(iconv_instance&& other) throw() :
 				m_iconv(other.m_iconv)
 			{
 				other.m_iconv = (native_type)-1;
@@ -117,7 +117,7 @@ namespace iconvplus
 			 * \param other The other instance.
 			 * \return *this.
 			 */
-			iconv_instance& operator=(iconv_instance&& other) noexcept
+			iconv_instance& operator=(iconv_instance&& other) throw()
 			{
 				std::swap(other.m_iconv, m_iconv);
 
