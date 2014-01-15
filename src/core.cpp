@@ -771,7 +771,6 @@ namespace freelan
 		switch (status)
 		{
 			case fscp::server::PS_FIRST:
-			case fscp::server::PS_NEW:
 			{
 				if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
 				{
@@ -782,6 +781,7 @@ namespace freelan
 
 				break;
 			}
+			case fscp::server::PS_NEW:
 			case fscp::server::PS_SAME:
 			{
 				// The presentation did not change: we do not accept it.
