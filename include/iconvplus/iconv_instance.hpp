@@ -47,7 +47,6 @@
 
 #include <iconv.h>
 
-#include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <stdexcept>
@@ -57,14 +56,22 @@ namespace iconvplus
 	/**
 	 * \brief A class that wraps a iconv_t.
 	 */
-	class iconv_instance : public boost::noncopyable
+	class iconv_instance
 	{
 		public:
+
+			iconv_instance(const iconv_instance&) = delete;
+			iconv_instance& operator=(const iconv_instance&) = delete;
 
 			/**
 			 * \brief The native type.
 			 */
 			typedef iconv_t native_type;
+
+			/**
+			 * \brief The null pointer type.
+			 */
+			static constexpr iconv_t iconv_nullptr = reinterpret_cast<native_type>(-1);
 
 			/**
 			 * \brief The error value.
@@ -91,9 +98,38 @@ namespace iconvplus
 			iconv_instance(const std::string& to, const std::string& from);
 
 			/**
+			 * \brief Move an iconv instance.
+			 * \param other The other instance.
+			 */
+			iconv_instance(iconv_instance&& other) noexcept :
+				m_iconv(other.m_iconv)
+			{
+				other.m_iconv = iconv_nullptr;
+			}
+
+			/**
+			 * \brief Assign-move an iconv instance.
+			 * \param other The other instance.
+			 * \return *this.
+			 */
+			iconv_instance& operator=(iconv_instance&& other) noexcept
+			{
+				std::swap(other.m_iconv, m_iconv);
+
+				return *this;
+			}
+
+			/**
 			 * \brief Destroy the iconv instance.
 			 */
-			~iconv_instance();
+			~iconv_instance()
+			{
+				if (m_iconv != iconv_nullptr)
+				{
+					::iconv_close(m_iconv);
+				}
+			}
+
 
 			/**
 			 * \brief Get the native pointer.
@@ -207,11 +243,6 @@ namespace iconvplus
 		check_iconv();
 	}
 
-	inline iconv_instance::~iconv_instance()
-	{
-		::iconv_close(m_iconv);
-	}
-
 	inline iconv_instance::native_type iconv_instance::raw() const
 	{
 		return m_iconv;
@@ -243,7 +274,7 @@ namespace iconvplus
 
 	inline void iconv_instance::check_iconv() const
 	{
-		if (m_iconv == reinterpret_cast<native_type>(-1))
+		if (m_iconv == iconv_nullptr)
 		{
 			throw std::runtime_error("Unknown encoding");
 		}
