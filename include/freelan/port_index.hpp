@@ -80,6 +80,11 @@ namespace freelan
 			{
 				return true;
 			}
+
+			friend std::ostream& operator<<(std::ostream& os, const null_port_index_type&)
+			{
+				return os << "null()";
+			}
 	};
 
 	/**
@@ -118,6 +123,11 @@ namespace freelan
 			{
 				return (lhs.m_tap_adapter == rhs.m_tap_adapter);
 			}
+
+			friend std::ostream& operator<<(std::ostream& os, const tap_adapter_port_index_type& idx)
+			{
+				return os << "tap_adapter(" << idx.m_tap_adapter->name() << ")";
+			}
 	};
 
 	/**
@@ -149,6 +159,11 @@ namespace freelan
 			friend bool operator==(const endpoint_port_index_type& lhs, const endpoint_port_index_type& rhs)
 			{
 				return (lhs.m_ep == rhs.m_ep);
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, const endpoint_port_index_type& idx)
+			{
+				return os << "endpoint(" << idx.m_ep << ")";
 			}
 
 		private:
