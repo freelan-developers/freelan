@@ -45,15 +45,21 @@
 #ifndef ASIOTAP_TAP_ADAPTER_HPP
 #define ASIOTAP_TAP_ADAPTER_HPP
 
-#include "basic_tap_adapter.hpp"
-#include "basic_tap_adapter_service.hpp"
+#include "os.hpp"
+
+#ifdef WINDOWS
+#include "windows/windows_tap_adapter.hpp"
+#elif defined(UNIX)
+#include "posix/posix_tap_adapter.hpp"
+#endif
 
 namespace asiotap
 {
-	/**
-	 * \brief The tap adapter class.
-	 */
-	typedef basic_tap_adapter<basic_tap_adapter_service<> > tap_adapter;
+#ifdef WINDOWS
+	typedef windows_tap_adapter tap_adapter;
+#elif defined(UNIX)
+	typedef posix_tap_adapter tap_adapter;
+#endif
 }
 
 #endif /* ASIOTAP_TAP_ADAPTER_HPP */

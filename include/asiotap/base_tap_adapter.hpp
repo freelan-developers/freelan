@@ -37,13 +37,22 @@
  */
 
 /**
- * \file tap_adapter.cpp
+ * \file base_tap_adapter.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The tap adapter class.
+ * \brief The base tap adapter class.
  */
 
-#include "tap_adapter.hpp"
+#ifndef ASIOTAP_BASE_TAP_ADAPTER_HPP
+#define ASIOTAP_BASE_TAP_ADAPTER_HPP
+
+#include <boost/asio.hpp>
+#include <boost/system/system_error.hpp>
 
 namespace asiotap
 {
+	class base_tap_adapter
+	{
+	};
 }
+
+#endif /* ASIOTAP_BASE_TAP_ADAPTER_HPP */

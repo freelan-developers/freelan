@@ -37,18 +37,13 @@
  */
 
 /**
- * \file asiotap.hpp
+ * \file base_tap_adapter.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The global asiotap include file.
+ * \brief The base tap adapter class.
  */
 
-#ifndef ASIOTAP_ASIOTAP_HPP
-#define ASIOTAP_ASIOTAP_HPP
-
-#include "tap_adapter.hpp"
+#include "base_tap_adapter.hpp"
 
 namespace asiotap
 {
 }
-
-#endif /* ASIOTAP_ASIOTAP_HPP */

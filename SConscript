@@ -43,7 +43,14 @@ else:
     if sys.platform.startswith('linux2'):
         libraries.append('rt')
 
-project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
+source_files = Glob('src/*.cpp')
+
+if sys.platform.startswith('win32'):
+    source_files = source_files + Glob('src/windows/*.cpp')
+else:
+    source_files = source_files + Glob('src/posix/*.cpp')
+
+project = LibraryProject(Dir('.'), name, major, minor, libraries, source_files=source_files)
 
 build = env.FreelanProject(project)
 install = env.FreelanProjectInstall(project)
