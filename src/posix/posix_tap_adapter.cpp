@@ -46,4 +46,40 @@
 
 namespace asiotap
 {
+	std::map<std::string, std::string> posix_tap_adapter::enumerate(tap_adapter_layer _layer)
+	{
+		std::map<std::string, std::string> result;
+
+		struct ifaddrs* addrs = nullptr;
+
+		if (getifaddrs(&addrs) != -1)
+		{
+			boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+
+			for (struct ifaddrs* ifa = paddrs.get(); ifa != NULL ; ifa = ifa->ifa_next)
+			{
+				const std::string name(ifa->ifa_name);
+
+				switch (_layer)
+				{
+					case tap_adapter_layer::ethernet:
+					{
+						if (name.substr(0, 3) == "tap")
+						{
+							result[name] = name;
+						}
+					}
+					case tap_adapter_layer::ip:
+					{
+						if (name.substr(0, 3) == "tun")
+						{
+							result[name] = name;
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	}
 }

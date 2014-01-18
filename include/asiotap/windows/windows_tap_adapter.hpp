@@ -61,7 +61,7 @@ namespace asiotap
 			 * \param _layer The layer of the adapters to list.
 			 * \return A map of the tap adapter identifiers with their names.
 			 */
-			static std::map<std::string, std::string> enumerate();
+			static std::map<std::string, std::string> enumerate(tap_adapter_layer _layer);
 
 			/**
 			 * \brief Create a new tap adapter.
