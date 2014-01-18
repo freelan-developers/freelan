@@ -47,10 +47,30 @@
 
 #include "../base_tap_adapter.hpp"
 
+#include <map>
+#include <string>
+
 namespace asiotap
 {
-	class windows_tap_adapter : public base_tap_adapter
+	class windows_tap_adapter : public base_tap_adapter<boost::asio::windows::stream_handle>
 	{
+		public:
+
+			/**
+			 * \brief Enumerate the tap adapters available on the system.
+			 * \param _layer The layer of the adapters to list.
+			 * \return A map of the tap adapter identifiers with their names.
+			 */
+			static std::map<std::string, std::string> enumerate();
+
+			/**
+			 * \brief Create a new tap adapter.
+			 * \param _io_service The io_service to attach to.
+			 * \param _layer The layer of the tap adapter.
+			 */
+			windows_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
+				base_tap_adapter(_io_service, _layer)
+			{}
 	};
 }
 

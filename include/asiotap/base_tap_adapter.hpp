@@ -50,8 +50,142 @@
 
 namespace asiotap
 {
+	enum class tap_adapter_layer
+	{
+		ethernet,
+		ip
+	};
+
+	template <typename DescriptorType>
 	class base_tap_adapter
 	{
+		public:
+
+			/**
+			 * \brief The descriptor type.
+			 */
+			typedef DescriptorType descriptor_type;
+
+			/**
+			 * \brief Read some data from the tap adapter.
+			 * \param buffers The buffers into which the data will be read.
+			 * \param handler The handler to be called when the read operation completes.
+			 */
+			template <typename MutableBufferSequence, typename ReadHandler>
+			void async_read(const MutableBufferSequence& buffers, ReadHandler handler)
+			{
+				m_descriptor.async_read_some(buffers, handler);
+			}
+
+			/**
+			 * \brief Write some data to the tap adapter.
+			 * \param buffers One or more buffers to be written to the tap adapter.
+			 * \param handler The handler to be called when the write operation completes.
+			 */
+			template <typename ConstBufferSequence, typename WriteHandler>
+			void async_write(const ConstBufferSequence& buffers, WriteHandler handler)
+			{
+				m_descriptor.async_write_some(buffers, handler);
+			}
+
+			/**
+			 * \brief Read some data from the tap adapter.
+			 * \param buffers The buffers into which the data will be read.
+			 * \return The number of bytes read.
+			 */
+			template <typename MutableBufferSequence>
+			size_t read(const MutableBufferSequence& buffers)
+			{
+				return m_descriptor.read_some(buffers);
+			}
+
+			/**
+			 * \brief Read some data from the tap adapter.
+			 * \param buffers The buffers into which the data will be read.
+			 * \param ec The error code.
+			 * \return The number of bytes read.
+			 */
+			template <typename MutableBufferSequence>
+			size_t read(const MutableBufferSequence& buffers, boost::system::error_code& ec)
+			{
+				return m_descriptor.read_some(buffers, ec);
+			}
+
+			/**
+			 * \brief Write some data to the tap adapter.
+			 * \param buffers One or more buffers to be written to the tap adapter.
+			 * \return The number of bytes written.
+			 */
+			template <typename ConstBufferSequence>
+			size_t write(const ConstBufferSequence& buffers)
+			{
+				return m_descriptor.write_some(buffers);
+			}
+
+			/**
+			 * \brief Write some data to the tap adapter.
+			 * \param buffers One or more buffers to be written to the tap adapter.
+			 * \param ec The error code.
+			 * \return The number of bytes written.
+			 */
+			template <typename ConstBufferSequence>
+			size_t write(const ConstBufferSequence& buffers, boost::system::error_code& ec)
+			{
+				return m_descriptor.write_some(buffers, ec);
+			}
+
+			/**
+			 * \brief Cancel all pending asynchronous operations associated with the tap adapter.
+			 */
+			void cancel()
+			{
+				m_descriptor.cancel();
+			}
+
+			/**
+			 * \brief Cancel all pending asynchronous operations associated with the tap adapter.
+			 * \param ec The error code.
+			 */
+			void cancel(boost::system::error_code& ec)
+			{
+				m_descriptor.cancel(ec);
+			}
+
+			/**
+			 * \brief Get the associated io_service instance.
+			 * \return The associated io_service.
+			 */
+			boost::asio::io_service& get_io_service()
+			{
+				return m_descriptor.get_io_service();
+			}
+
+		protected:
+
+			base_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
+				m_descriptor(_io_service),
+				m_layer(_layer)
+			{}
+
+			descriptor_type& descriptor()
+			{
+				return m_descriptor;
+			}
+
+			const descriptor_type& descriptor() const
+			{
+				return m_descriptor;
+			}
+
+			tap_adapter_layer layer() const
+			{
+				return m_layer;
+			}
+
+		private:
+
+			descriptor_type m_descriptor;
+			tap_adapter_layer m_layer;
 	};
 }
 
