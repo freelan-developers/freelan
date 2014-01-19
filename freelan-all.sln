@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libiconvplus", "libiconvplus\libiconvplus.vcxproj", "{ACD7B910-1594-4192-9AE1-E805B2F5DB59}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libkfather", "libkfather\libkfather.vcxproj", "{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}"
@@ -27,6 +29,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freelan", "freelan\freelan.vcxproj", "{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3BCC24B5-D624-47BC-AFED-BF540AFA29F8} = {3BCC24B5-D624-47BC-AFED-BF540AFA29F8}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libasiotap_samples_tap", "libasiotap\samples\tap\libasiotap_samples_tap.vcxproj", "{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742} = {9173624C-FFF7-4431-BB4A-FC30B13AD742}
 	EndProjectSection
 EndProject
 Global
@@ -93,6 +100,14 @@ Global
 		{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}.Release|x64.Build.0 = Release|x64
 		{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}.Release|x86.ActiveCfg = Release|Win32
 		{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}.Release|x86.Build.0 = Release|Win32
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Debug|x64.ActiveCfg = Debug|x64
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Debug|x64.Build.0 = Debug|x64
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Debug|x86.ActiveCfg = Debug|Win32
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Debug|x86.Build.0 = Debug|Win32
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Release|x64.ActiveCfg = Release|x64
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Release|x64.Build.0 = Release|x64
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Release|x86.ActiveCfg = Release|Win32
+		{C1A4D2AC-0D8B-420B-8E9A-63B8148DD732}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
