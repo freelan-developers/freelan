@@ -103,7 +103,7 @@ namespace asiotap
 			 * \param name The name of the tap adapter to open. If name is empty, then the first available tap adapter is opened.
 			 * \param mtu The MTU to set on the tap adapter.
 			 */
-			void open(const std::string& name, size_t mtu);
+			void open(const std::string& name = "", size_t mtu = 0);
 
 			/**
 			 * \brief Set the tap adapter connected state.

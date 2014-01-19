@@ -94,7 +94,7 @@ namespace asiotap
 				/**
 				 * \brief Create an empty iterator.
 				 */
-				dhcp_option_helper_iterator();
+				dhcp_option_helper_iterator() {}
 
 				/**
 				 * \brief Dereference operator.
@@ -131,38 +131,27 @@ namespace asiotap
 
 				boost::optional<helper_type> m_helper;
 
-				friend bool operator==<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
-				friend bool operator!=<>(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs);
+				friend bool operator==(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
+				{
+					if (lhs.m_helper)
+					{
+						return
+							rhs.m_helper &&
+							(boost::asio::buffer_cast<const void*>(lhs.m_helper->buffer()) == boost::asio::buffer_cast<const void*>(rhs.m_helper->buffer())) &&
+							(boost::asio::buffer_size(lhs.m_helper->buffer()) == boost::asio::buffer_size(rhs.m_helper->buffer()))
+							;
+					}
+					else
+					{
+						return (!rhs.m_helper);
+					}
+				}
+				friend bool operator!=(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
+				{
+					return !(lhs == rhs);
+				}
 				friend class _base_helper_impl<HelperTag, dhcp_frame>;
 		};
-
-		template <class HelperTag>
-		inline bool operator==(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
-		{
-			if (lhs.m_helper)
-			{
-				return
-				    rhs.m_helper &&
-				    (boost::asio::buffer_cast<const void*>(lhs.m_helper->buffer()) == boost::asio::buffer_cast<const void*>(rhs.m_helper->buffer())) &&
-				    (boost::asio::buffer_size(lhs.m_helper->buffer()) == boost::asio::buffer_size(rhs.m_helper->buffer()))
-				    ;
-			}
-			else
-			{
-				return (!rhs.m_helper);
-			}
-		}
-
-		template <class HelperTag>
-		inline bool operator!=(const dhcp_option_helper_iterator<HelperTag>& lhs, const dhcp_option_helper_iterator<HelperTag>& rhs)
-		{
-			return !(lhs == rhs);
-		}
-
-		template <class HelperTag>
-		inline dhcp_option_helper_iterator<HelperTag>::dhcp_option_helper_iterator()
-		{
-		}
 
 		template <class HelperTag>
 		inline typename dhcp_option_helper_iterator<HelperTag>::reference dhcp_option_helper_iterator<HelperTag>::operator*()
