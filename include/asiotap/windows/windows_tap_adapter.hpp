@@ -69,8 +69,116 @@ namespace asiotap
 			 * \param _layer The layer of the tap adapter.
 			 */
 			windows_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
-				base_tap_adapter(_io_service, _layer)
+				base_tap_adapter(_io_service, _layer),
+				m_display_name(),
+				m_interface_index()
 			{}
+
+			/**
+			 * \brief Get the device display name.
+			 * \return The device display name.
+			 */
+			const std::string& display_name() const
+			{
+				return m_display_name;
+			}
+
+			/**
+			 * \brief Open the first available tap adapter.
+			 * \param mtu The MTU to set on the tap adapter.
+			 * \param ec The error code.
+			 */
+			void open(size_t mtu, boost::system::error_code& ec);
+
+			/**
+			 * \brief Open the tap adapter.
+			 * \param name The name of the tap adapter to open.
+			 * \param mtu The MTU to set on the tap adapter.
+			 * \param ec The error code.
+			 */
+			void open(const std::string& name, size_t mtu, boost::system::error_code& ec);
+
+			/**
+			 * \brief Open the tap adapter.
+			 * \param name The name of the tap adapter to open. If name is empty, then the first available tap adapter is opened.
+			 * \param mtu The MTU to set on the tap adapter.
+			 */
+			void open(const std::string& name, size_t mtu);
+
+			/**
+			 * \brief Set the tap adapter connected state.
+			 * \param connected The connected state.
+			 */
+			void set_connected_state(bool connected);
+
+			/**
+			 * \brief Get the IP addresses associated to this tap adapter.
+			 * \return A list of IP addresses.
+			 */
+			std::vector<ip_address_prefix_length> get_ip_addresses();
+
+			/**
+			 * \brief Add an IP address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Add an IPv4 address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Add an IPv6 address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Set the point-to-point address on the tap adaper.
+			 * \param local The local address.
+			 * \param remote The remote address.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 * \warning Performing this operation on a device that is not in TUN mode has undefined behavior.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
+			 */
+			void set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote);
+
+		private:
+
+			std::string m_display_name;
+			size_t m_interface_index;
 	};
 }
 

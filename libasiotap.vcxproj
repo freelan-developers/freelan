@@ -25,8 +25,7 @@
     <ClCompile Include="src\arp_helper.cpp" />
     <ClCompile Include="src\arp_proxy.cpp" />
     <ClCompile Include="src\asiotap.cpp" />
-    <ClCompile Include="src\basic_tap_adapter.cpp" />
-    <ClCompile Include="src\basic_tap_adapter_service.cpp" />
+    <ClCompile Include="src\base_tap_adapter.cpp" />
     <ClCompile Include="src\bootp_builder.cpp" />
     <ClCompile Include="src\bootp_filter.cpp" />
     <ClCompile Include="src\bootp_frame.cpp" />
@@ -43,6 +42,7 @@
     <ClCompile Include="src\dhcp_option_helper.cpp" />
     <ClCompile Include="src\dhcp_option_helper_iterator.cpp" />
     <ClCompile Include="src\dhcp_proxy.cpp" />
+    <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\ethernet_address.cpp" />
     <ClCompile Include="src\ethernet_builder.cpp" />
     <ClCompile Include="src\ethernet_filter.cpp" />
@@ -63,17 +63,16 @@
     <ClCompile Include="src\ipv6_frame.cpp" />
     <ClCompile Include="src\ipv6_helper.cpp" />
     <ClCompile Include="src\proxy.cpp" />
-    <ClCompile Include="src\tap_adapter.cpp" />
-    <ClCompile Include="src\tap_adapter_impl.cpp" />
     <ClCompile Include="src\udp_builder.cpp" />
     <ClCompile Include="src\udp_filter.cpp" />
     <ClCompile Include="src\udp_frame.cpp" />
     <ClCompile Include="src\udp_helper.cpp" />
+    <ClCompile Include="src\windows\windows_tap_adapter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\asiotap\asiotap.hpp" />
-    <ClInclude Include="include\asiotap\basic_tap_adapter.hpp" />
-    <ClInclude Include="include\asiotap\basic_tap_adapter_service.hpp" />
+    <ClInclude Include="include\asiotap\base_tap_adapter.hpp" />
+    <ClInclude Include="include\asiotap\error.hpp" />
     <ClInclude Include="include\asiotap\os.hpp" />
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\arp_filter.hpp" />
@@ -122,6 +121,8 @@
     <ClInclude Include="include\asiotap\osi\udp_helper.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter_impl.hpp" />
+    <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp" />
+    <ClInclude Include="src\windows\registry.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9173624C-FFF7-4431-BB4A-FC30B13AD742}</ProjectGuid>

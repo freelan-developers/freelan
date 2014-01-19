@@ -48,9 +48,13 @@
 #include <windows.h>
 
 #include <boost/system/system_error.hpp>
+#include <boost/optional.hpp>
+#include <boost/array.hpp>
 
 #include <string>
 #include <iterator>
+
+#include "error.hpp"
 
 namespace asiotap
 {
@@ -59,32 +63,36 @@ namespace asiotap
 		public:
 
 			registry_key() :
-				m_key(INVALID_HANDLE)
+				m_key()
 			{
 			}
 
 			registry_key(HKEY hKey, const std::string& name, REGSAM samDesired = KEY_READ) :
-				m_key(INVALID_HANDLE),
+				m_key(),
 				m_name(name)
 			{
-				const LONG status = RegOpenKeyExA(hKey, m_name.c_str(), 0, samDesired, &m_key);
+				HKEY key;
+
+				const LONG status = ::RegOpenKeyExA(hKey, m_name.c_str(), 0, samDesired, &key);
 
 				if (status != ERROR_SUCCESS)
 				{
 					throw boost::system::system_error(status, boost::system::system_category());
 				}
+
+				m_key = key;
 			}
 
-			registry_key(const registry_key parent, const std::string& name, REGSAM samDesired = KEY_READ) :
+			registry_key(const registry_key& parent, const std::string& name, REGSAM samDesired = KEY_READ) :
 				registry_key(parent.native_handle(), name, samDesired)
 			{
 			}
 
 			~registry_key()
 			{
-				if (m_key != INVALID_HANDLE)
+				if (m_key)
 				{
-					RegCloseKey(m_key);
+					::RegCloseKey(*m_key);
 				}
 			}
 
@@ -94,11 +102,13 @@ namespace asiotap
 			registry_key(registry_key&& other) throw() :
 				m_key(other.m_key)
 			{
-				other.m_key = INVALID_HANDLE;
+				other.m_key.reset();
 			}
 
 			registry_key& operator=(registry_key&& other) throw()
 			{
+				using std::swap;
+
 				swap(m_key, other.m_key);
 
 				return *this;
@@ -106,7 +116,7 @@ namespace asiotap
 
 			HKEY native_handle() const
 			{
-				return m_key;
+				return *m_key;
 			}
 
 			const std::string& name() const
@@ -118,7 +128,7 @@ namespace asiotap
 			{
 				DWORD data_len = static_cast<DWORD>(buflen);
 
-				const LONG status = RegQueryValueExA(m_key, value_name.c_str(), NULL, &type, static_cast<LPBYTE>(buf), &data_len);
+				const LONG status = ::RegQueryValueExA(native_handle(), value_name.c_str(), NULL, &type, static_cast<LPBYTE>(buf), &data_len);
 
 				buflen = static_cast<size_t>(data_len);
 
@@ -147,7 +157,7 @@ namespace asiotap
 
 				if (type != REG_SZ)
 				{
-					return std::string();
+					ec = make_error_code(asiotap_error::invalid_type);
 				}
 
 				return std::string(value.begin(), value.begin() + value_size - 1);
@@ -172,7 +182,7 @@ namespace asiotap
 				boost::array<char, 256> name;
 				DWORD name_size = static_cast<DWORD>(name.size());
 
-				const LONG status = RegEnumKeyExA(m_key, static_cast<DWORD>(index), name.data(), &name_size, NULL, NULL, NULL, NULL);
+				const LONG status = ::RegEnumKeyExA(native_handle(), static_cast<DWORD>(index), name.data(), &name_size, NULL, NULL, NULL, NULL);
 
 				switch (status)
 				{
@@ -195,7 +205,7 @@ namespace asiotap
 			{
 				DWORD count = 0;
 
-				const LONG status = RegQueryInfoKey(m_key, NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+				const LONG status = ::RegQueryInfoKey(native_handle(), NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 				if (status != ERROR_SUCCESS)
 				{
@@ -252,8 +262,17 @@ namespace asiotap
 						return (lhs.m_index == rhs.m_index);
 					}
 
+					friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs)
+					{
+						assert(&lhs.m_key == &rhs.m_key);
+
+						return (lhs.m_index != rhs.m_index);
+					}
+
 					const registry_key& m_key;
 					size_t m_index;
+
+					friend class registry_key;
 			};
 
 			const_iterator begin() const
@@ -268,7 +287,7 @@ namespace asiotap
 
 		private:
 
-			HKEY m_key;
+			boost::optional<HKEY> m_key;
 			std::string m_name;
 	};
 }

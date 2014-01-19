@@ -48,12 +48,62 @@
 #include <boost/asio.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <iostream>
+#include <iomanip>
+
+#include "osi/ethernet_address.hpp"
+
 namespace asiotap
 {
+	/**
+	 * \brief The tap adapter layers.
+	 */
 	enum class tap_adapter_layer
 	{
 		ethernet,
 		ip
+	};
+
+	/**
+	 * \brief An IP address and prefix length type.
+	 */
+	struct ip_address_prefix_length
+	{
+		boost::asio::ip::address ip_address;
+		unsigned int prefix_length;
+
+		friend bool operator<(const ip_address_prefix_length& lhs, const ip_address_prefix_length& rhs)
+		{
+			if (lhs.ip_address < rhs.ip_address)
+			{
+				return true;
+			}
+			else if (lhs.ip_address == rhs.ip_address)
+			{
+				return (lhs.prefix_length < rhs.prefix_length);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		friend bool operator==(const ip_address_prefix_length& lhs, const ip_address_prefix_length& rhs)
+		{
+			return ((lhs.ip_address == rhs.ip_address) && (lhs.prefix_length == rhs.prefix_length));
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const ip_address_prefix_length& v)
+		{
+			if (v.ip_address.is_v6())
+			{
+				return os << "[" << v.ip_address << "]:" << v.prefix_length;
+			}
+			else
+			{
+				return os << v.ip_address << ":" << v.prefix_length;
+			}
+		}
 	};
 
 	template <typename DescriptorType>
@@ -160,11 +210,76 @@ namespace asiotap
 				return m_descriptor.get_io_service();
 			}
 
+			/**
+			 * \brief Get the layer of the tap adapter.
+			 * \return The layer.
+			 */
+			tap_adapter_layer layer() const
+			{
+				return m_layer;
+			}
+
+			/**
+			 * \brief Get the device name.
+			 * \return The device name.
+			 */
+			const std::string& name() const
+			{
+				return m_name;
+			}
+
+			/**
+			 * \brief Get the device MTU.
+			 * \return The device MTU.
+			 */
+			size_t mtu() const
+			{
+				return m_mtu;
+			}
+
+			/**
+			 * \brief Get the device ethernet address.
+			 * \return The device ethernet address.
+			 */
+			const osi::ethernet_address& ethernet_address() const
+			{
+				return m_ethernet_address;
+			}
+
+			/**
+			 * \brief Get the tap adapter current state.
+			 * \return true if the tap adapter is open.
+			 */
+			bool is_open() const
+			{
+				return m_descriptor.is_open();
+			}
+
+			/**
+			 * \brief Close the associated descriptor.
+			 */
+			void close()
+			{
+				m_descriptor.close();
+			}
+
+			/**
+			 * \brief Close the associated descriptor.
+			 * \param ec The error code.
+			 */
+			boost::system::error_code close(boost::system::error_code& ec)
+			{
+				return m_descriptor.close(ec);
+			}
+
 		protected:
 
 			base_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
 				m_descriptor(_io_service),
-				m_layer(_layer)
+				m_layer(_layer),
+				m_name(),
+				m_mtu(),
+				m_ethernet_address()
 			{}
 
 			descriptor_type& descriptor()
@@ -177,15 +292,28 @@ namespace asiotap
 				return m_descriptor;
 			}
 
-			tap_adapter_layer layer() const
+			std::string& name()
 			{
-				return m_layer;
+				return m_name;
+			}
+
+			size_t& mtu()
+			{
+				return m_mtu;
+			}
+
+			osi::ethernet_address& ethernet_address()
+			{
+				return m_ethernet_address;
 			}
 
 		private:
 
 			descriptor_type m_descriptor;
 			tap_adapter_layer m_layer;
+			std::string m_name;
+			size_t m_mtu;
+			osi::ethernet_address m_ethernet_address;
 	};
 }
 

@@ -33,12 +33,6 @@
     <ClCompile Include="src\asiotap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\basic_tap_adapter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\basic_tap_adapter_service.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\bootp_builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,9 +144,6 @@
     <ClCompile Include="src\tap_adapter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\tap_adapter_impl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\udp_builder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -163,6 +154,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\udp_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\base_tap_adapter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\windows_tap_adapter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -305,12 +305,6 @@
     <ClInclude Include="include\asiotap\asiotap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\asiotap\basic_tap_adapter.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\asiotap\basic_tap_adapter_service.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\asiotap\os.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -318,6 +312,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\tap_adapter_impl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\base_tap_adapter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\error.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\registry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

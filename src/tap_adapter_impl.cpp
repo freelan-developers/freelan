@@ -130,94 +130,6 @@ namespace asiotap
 		}
 
 #ifdef WINDOWS
-		void throw_system_error(LONG error)
-		{
-			throw boost::system::system_error(error, boost::system::system_category());
-		}
-
-		void throw_system_error_if_not(LONG error)
-		{
-			if (error != ERROR_SUCCESS)
-			{
-				throw_system_error(error);
-			}
-		}
-
-		void throw_last_system_error()
-		{
-			throw_system_error_if_not(::GetLastError());
-		}
-
-		DWORD shell_execute(const std::string& cmd, const std::string& params)
-		{
-			SHELLEXECUTEINFO sei;
-			memset(&sei, 0x00, sizeof(sei));
-			sei.cbSize = sizeof(sei);
-			sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-			sei.lpVerb = NULL;
-			sei.lpFile = cmd.c_str();
-			sei.lpParameters = params.c_str();
-			sei.nShow = SW_HIDE;
-
-			if (ShellExecuteEx(&sei) != TRUE)
-			{
-				throw_last_system_error();
-			}
-
-			if (!sei.hProcess)
-			{
-				throw std::runtime_error("A process handle was expected");
-			}
-
-			if (WaitForSingleObject(sei.hProcess, INFINITE) != WAIT_OBJECT_0)
-			{
-				throw_last_system_error();
-			}
-
-			DWORD exit_code = 0;
-
-			if (GetExitCodeProcess(sei.hProcess, &exit_code) == 0)
-			{
-				throw_last_system_error();
-			}
-
-			return exit_code;
-		}
-
-		DWORD netsh_execute(const std::string& params)
-		{
-			return shell_execute("netsh.exe", params);
-		}
-
-		DWORD netsh_add_address(const std::string& address_family, DWORD interface_index, const std::string& address, unsigned int prefix_len)
-		{
-			std::ostringstream oss;
-
-			oss << "int " << address_family << " add address " << interface_index << " " << address;
-
-			OSVERSIONINFO os_version;
-			os_version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-			GetVersionEx(&os_version);
-
-			// The /prefix parameter is only supported after Windows XP
-			if (os_version.dwMajorVersion >= 6)
-			{
-				oss << "/" << prefix_len;
-			}
-
-			oss << " store=active";
-
-			return netsh_execute(oss.str());
-		}
-
-		DWORD netsh_remove_address(const std::string& address_family, DWORD interface_index, const std::string& address)
-		{
-			std::ostringstream oss;
-
-			oss << "int " << address_family << " delete address \"" << interface_index << "\" " << address;
-
-			return netsh_execute(oss.str());
-		}
 #else
 #ifndef AIO_RESOLUTION
 #define AIO_RESOLUTION 500
@@ -262,25 +174,10 @@ namespace asiotap
 	tap_adapter_impl::tap_adapter_impl() :
 		m_mtu(0),
 #ifdef WINDOWS
-		m_handle(INVALID_HANDLE_VALUE),
-		m_interface_index(0)
 #else
 		m_device(-1)
 #endif
 	{
-#ifndef WINDOWS
-		std::memset(&m_read_aio, 0, sizeof(m_read_aio));
-		std::memset(&m_write_aio, 0, sizeof(m_write_aio));
-#endif
-	}
-
-	bool tap_adapter_impl::is_open() const
-	{
-#ifdef WINDOWS
-		return m_handle != INVALID_HANDLE_VALUE;
-#else
-		return m_device >= 0;
-#endif
 	}
 
 	void tap_adapter_impl::open(const std::string& _name, unsigned _mtu, tap_adapter_impl::adapter_type _type)
@@ -293,106 +190,6 @@ namespace asiotap
 
 		/* TODO: Implement TUN logic for Windows. */
 
-		if (_name.empty())
-		{
-			guid_map_type tap_adapters_map = enumerate_tap_adapters();
-
-			for (guid_map_type::const_iterator tap_adapter = tap_adapters_map.begin(); !is_open() && tap_adapter != tap_adapters_map.end(); ++tap_adapter)
-			{
-				try
-				{
-					open(tap_adapter->first, _mtu, _type);
-				}
-				catch (const std::exception&)
-				{
-					// This is not as ugly as it seems :)
-				}
-			}
-
-			if (!is_open())
-			{
-				throw std::runtime_error("No suitable tap adapter found.");
-			}
-		}
-		else
-		{
-			PIP_ADAPTER_INFO piai = NULL;
-			ULONG size = 0;
-			DWORD status;
-
-			status = GetAdaptersInfo(piai, &size);
-
-			if (status != ERROR_BUFFER_OVERFLOW)
-			{
-				throw_system_error_if_not(status);
-			}
-
-			std::vector<unsigned char> piai_data(size);
-			piai = reinterpret_cast<PIP_ADAPTER_INFO>(&piai_data[0]);
-
-			status = GetAdaptersInfo(piai, &size);
-
-			throw_system_error_if_not(status);
-
-			piai_data.resize(size);
-
-			guid_pair_type adapter = find_tap_adapter_by_guid(_name);
-
-			for (PIP_ADAPTER_INFO pi = piai; pi; pi = pi->Next)
-			{
-				if (adapter.first == std::string(pi->AdapterName))
-				{
-					m_handle = CreateFileA(
-					               (USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
-					               GENERIC_READ | GENERIC_WRITE,
-					               0,
-					               0,
-					               OPEN_EXISTING,
-					               FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
-					               0
-					           );
-
-					if (m_handle == INVALID_HANDLE_VALUE)
-					{
-						throw_last_system_error();
-					}
-
-					m_name = adapter.first;
-					m_display_name = adapter.second;
-					m_interface_index = pi->Index;
-
-					if (pi->AddressLength != m_ethernet_address.size())
-					{
-						close();
-
-						throw std::runtime_error("Unexpected Ethernet address size");
-					}
-
-					std::memcpy(m_ethernet_address.data(), pi->Address, pi->AddressLength);
-
-					DWORD len;
-
-					if (!DeviceIoControl(m_handle, TAP_IOCTL_GET_MTU, &m_mtu, sizeof(m_mtu), &m_mtu, sizeof(m_mtu), &len, NULL))
-					{
-						close();
-
-						throw_last_system_error();
-					}
-
-					std::memset(&m_read_overlapped, 0, sizeof(m_read_overlapped));
-					m_read_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-					std::memset(&m_write_overlapped, 0, sizeof(m_write_overlapped));
-					m_write_overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-					break;
-				}
-			}
-
-			if (!is_open())
-			{
-				throw std::runtime_error("Unable to open the specified tap adapter: " + _name);
-			}
-		}
 #elif defined(LINUX)
 		struct ifreq ifr;
 		std::memset(&ifr, 0x00, sizeof(struct ifreq));
@@ -675,11 +472,6 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			cancel();
-			CloseHandle(m_write_overlapped.hEvent);
-			CloseHandle(m_read_overlapped.hEvent);
-			CloseHandle(m_handle);
-			m_handle = INVALID_HANDLE_VALUE;
 #else
 #if defined(MACINTOSH) || defined(BSD)
 			int ctl_fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -711,14 +503,6 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			ULONG status = connected ? TRUE : FALSE;
-			DWORD len;
-
-			if (!DeviceIoControl(m_handle, TAP_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
-			{
-				throw_last_system_error();
-			}
-
 #else
 			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -781,100 +565,6 @@ namespace asiotap
 		ip_address_list result;
 
 #ifdef WINDOWS
-		IP_ADAPTER_ADDRESSES* allAdapters = NULL;
-		IP_ADAPTER_ADDRESSES* adapter = NULL;
-		ULONG size = 16384;
-		DWORD ret = 0;
-
-		do
-		{
-			/* we should loop only if host has more than
-			 * (size / sizeof(IP_ADAPTER_ADDRESSES)) interfaces
-			 */
-			allAdapters = (IP_ADAPTER_ADDRESSES*)malloc(size);
-
-			if(!allAdapters)
-			{
-				/* out of memory */
-				throw_last_system_error();
-			}
-
-			/* get the list of host addresses and try to find
-			 * the index
-			 */
-			ret = GetAdaptersAddresses(AF_UNSPEC,
-					GAA_FLAG_INCLUDE_ALL_INTERFACES | GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_DNS_SERVER |
-					GAA_FLAG_SKIP_FRIENDLY_NAME | GAA_FLAG_SKIP_MULTICAST,
-					NULL, /* reserved */
-					allAdapters,
-					&size);
-
-			if(ret == ERROR_BUFFER_OVERFLOW)
-			{
-				/* free memory as the loop will allocate again with
-				 * proper size
-				 */
-				free(allAdapters);
-			}
-		}while(ret == ERROR_BUFFER_OVERFLOW);
-
-		if(ret != ERROR_SUCCESS)
-		{
-			free(allAdapters);
-			return result;
-		}
-
-		adapter = allAdapters;
-
-		while(adapter)
-		{
-			const std::string ifname(adapter->AdapterName);
-
-			if(ifname == name())
-			{
-				IP_ADAPTER_UNICAST_ADDRESS* unicast = adapter->FirstUnicastAddress;
-
-				while(unicast)
-				{
-					if(unicast->Address.lpSockaddr->sa_family == AF_INET)
-					{
-						struct sockaddr_in* sai = (struct sockaddr_in*)unicast->Address.lpSockaddr;
-						boost::asio::ip::address_v4::bytes_type bytes;
-						unsigned int prefix_len = sizeof(in_addr) * 8;
-
-						std::memcpy(bytes.data(), &sai->sin_addr, bytes.size());
-						boost::asio::ip::address_v4 address(bytes);
-						prefix_len = unicast->OnLinkPrefixLength;
-
-						ip_address item = { address, prefix_len };
-
-						result.push_back(item);
-					}
-					else
-					{
-						struct sockaddr_in6* sai = (struct sockaddr_in6*)unicast->Address.lpSockaddr;
-						boost::asio::ip::address_v6::bytes_type bytes;
-						unsigned int prefix_len = sizeof(in6_addr) * 8;
-
-						memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
-						boost::asio::ip::address_v6 address(bytes);
-						prefix_len = unicast->OnLinkPrefixLength;
-
-						ip_address item = { address, prefix_len };
-
-						result.push_back(item);
-					}
-
-					/* next address/prefix */
-					unicast = unicast->Next;
-				}
-			}
-
-			adapter = adapter->Next;
-		}
-
-		/* cleanup */
-		free(allAdapters);
 #else
 		struct ifaddrs* addrs = NULL;
 
@@ -948,30 +638,6 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			// in TUN mode, we need to perform an ioctl with some IPv4 parameters
-			if(m_type == AT_TUN_ADAPTER)
-			{
-				uint8_t param[12];
-				DWORD len = 0;
-
-				boost::asio::ip::address_v4::bytes_type addr = address.to_bytes();
-				uint32_t netmask = htonl((0xFFFFFFFF >> (32 - prefix_len)) << (32 - prefix_len));
-				uint32_t network = htonl(address.to_ulong()) & netmask;
-
-				// address
-				std::memcpy(param, addr.data(), addr.size());
-				// network
-				std::memcpy(param + 4, &network, sizeof(uint32_t));
-				// netmask
-				std::memcpy(param + 8, &netmask, sizeof(uint32_t));
-
-				if (!DeviceIoControl(m_handle, TAP_IOCTL_CONFIG_TUN, param, sizeof(param), NULL, 0, &len, NULL))
-				{
-					throw_last_system_error();
-				}
-			}
-
-			return (netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len) == 0);
 #else
 			int ctl_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -1058,8 +724,6 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-
-			return (netsh_remove_address("ipv4", m_interface_index, address.to_string()) == 0);
 #elif defined(LINUX)
 			(void)address;
 			return add_ip_address_v4(boost::asio::ip::address_v4::any(), 0);
@@ -1121,8 +785,6 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			return (netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len) == 0);
-
 #else
 			int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
 
@@ -1203,9 +865,6 @@ namespace asiotap
 		if (is_open())
 		{
 #ifdef WINDOWS
-			(void)prefix_len;
-
-			return (netsh_remove_address("ipv6", m_interface_index, address.to_string()) == 0);
 #else
 			int ctl_fd = ::socket(AF_INET6, SOCK_DGRAM, 0);
 

@@ -109,7 +109,16 @@ namespace asiotap
 					return m_data;
 				}
 
-			private:
+				/**
+				* \brief Get the associated data.
+				* \return The associated data.
+				*/
+				data_type& data()
+				{
+					return m_data;
+				}
+
+		private:
 
 				data_type m_data;
 		};
