@@ -114,6 +114,11 @@ namespace asiotap
 				return *this;
 			}
 
+			bool is_open() const
+			{
+				return static_cast<bool>(m_key);
+			}
+
 			HKEY native_handle() const
 			{
 				return *m_key;
@@ -144,7 +149,7 @@ namespace asiotap
 			{
 				boost::array<char, 256> value;
 
-				DWORD type;
+				DWORD type = REG_NONE;
 
 				size_t value_size = value.size();
 
@@ -169,7 +174,7 @@ namespace asiotap
 
 				const std::string result = query_string(value_name, ec);
 
-				if (!ec)
+				if (ec)
 				{
 					throw boost::system::system_error(ec);
 				}
@@ -187,17 +192,24 @@ namespace asiotap
 				switch (status)
 				{
 					case ERROR_SUCCESS:
+					{
+						try
 						{
-							return registry_key(*this, std::string(name.begin(), name.begin() + name_size - 1));
+							return registry_key(*this, std::string(name.begin(), name.begin() + name_size));
 						}
-					case ERROR_NO_MORE_ITEMS:
+						catch (const boost::system::system_error&)
 						{
 							return registry_key();
 						}
+					}
+					case ERROR_NO_MORE_ITEMS:
+					{
+						return registry_key();
+					}
 					default:
-						{
-							throw boost::system::system_error(status, boost::system::system_category());
-						}
+					{
+						throw boost::system::system_error(status, boost::system::system_category());
+					}
 				}
 			}
 
@@ -275,14 +287,34 @@ namespace asiotap
 					friend class registry_key;
 			};
 
-			const_iterator begin() const
+			class available_keys_range
 			{
-				return const_iterator(*this, 0);
-			}
+				public:
 
-			const_iterator end() const
+					const_iterator begin() const
+					{
+						return const_iterator(m_key, 0);
+					}
+
+					const_iterator end() const
+					{
+						return const_iterator(m_key, m_key.size());
+					}
+
+				private:
+
+					available_keys_range(const registry_key& key) :
+						m_key(key)
+					{}
+
+					const registry_key& m_key;
+
+					friend class registry_key;
+			};
+
+			available_keys_range available_keys() const
 			{
-				return const_iterator(*this, size());
+				return available_keys_range(*this);
 			}
 
 		private:

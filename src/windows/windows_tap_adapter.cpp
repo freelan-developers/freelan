@@ -73,15 +73,24 @@ namespace asiotap
 			const std::string tap_component_id(TAP_COMPONENT_ID);
 			const registry_key adapter_key(HKEY_LOCAL_MACHINE, ADAPTER_KEY);
 
-			for (registry_key network_adapter_key : adapter_key)
+			for (registry_key network_adapter_key : adapter_key.available_keys())
 			{
-				const std::string component_id_str = network_adapter_key.query_string("ComponentId");
-
-				if (tap_component_id == component_id_str)
+				if (network_adapter_key.is_open())
 				{
-					const std::string net_cfg_instance_id_str = network_adapter_key.query_string("NetCfgInstanceId");
+					try
+					{
+						const std::string component_id_str = network_adapter_key.query_string("ComponentId");
 
-					tap_adapters_list.push_back(net_cfg_instance_id_str);
+						if (tap_component_id == component_id_str)
+						{
+							const std::string net_cfg_instance_id_str = network_adapter_key.query_string("NetCfgInstanceId");
+
+							tap_adapters_list.push_back(net_cfg_instance_id_str);
+						}
+					}
+					catch (const boost::system::system_error&)
+					{
+					}
 				}
 			}
 
@@ -94,12 +103,21 @@ namespace asiotap
 
 			const registry_key network_connections_key(HKEY_LOCAL_MACHINE, NETWORK_CONNECTIONS_KEY);
 
-			for (registry_key network_connection_key : network_connections_key)
+			for (registry_key network_connection_key : network_connections_key.available_keys())
 			{
-				const registry_key connection_key(network_connection_key, "Connection");
-				const std::string name = connection_key.query_string("Name");
+				if (network_connection_key.is_open())
+				{
+					try
+					{
+						const registry_key connection_key(network_connection_key, "Connection");
+						const std::string name = connection_key.query_string("Name");
 
-				network_connections_map[network_connection_key.name()] = name;
+						network_connections_map[network_connection_key.name()] = name;
+					}
+					catch (const boost::system::system_error&)
+					{
+					}
+				}
 			}
 
 			return network_connections_map;
@@ -107,18 +125,23 @@ namespace asiotap
 
 		guid_map_type enumerate_tap_adapters()
 		{
-			guid_map_type network_connections_map = enumerate_network_connections();
-
-			const guid_array_type tap_adapters_list = enumerate_tap_adapters_guid();
-
 			guid_map_type tap_adapters_map;
 
-			for (const std::string& guid : tap_adapters_list)
+			try
 			{
-				if (network_connections_map.find(guid) != network_connections_map.end())
+				guid_map_type network_connections_map = enumerate_network_connections();
+				const guid_array_type tap_adapters_list = enumerate_tap_adapters_guid();
+
+				for (const std::string& guid : tap_adapters_list)
 				{
-					tap_adapters_map[guid] = network_connections_map[guid];
+					if (network_connections_map.find(guid) != network_connections_map.end())
+					{
+						tap_adapters_map[guid] = network_connections_map[guid];
+					}
 				}
+			}
+			catch (const boost::system::system_error&)
+			{
 			}
 
 			return tap_adapters_map;
@@ -178,7 +201,8 @@ namespace asiotap
 		{
 			if (shell_execute("netsh.exe", params) != 0)
 			{
-				throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
+				// Should be that but the call will likely fail a lot.
+				//throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
 			}
 		}
 
