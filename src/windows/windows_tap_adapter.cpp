@@ -262,6 +262,8 @@ namespace asiotap
 
 	void windows_tap_adapter::open(const std::string& _name, size_t _mtu, boost::system::error_code& ec)
 	{
+		ec = boost::system::error_code();
+
 		if (_name.empty())
 		{
 			open(_mtu, ec);

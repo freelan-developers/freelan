@@ -71,6 +71,28 @@ namespace asiotap
 			posix_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
 				base_tap_adapter(_io_service, _layer)
 			{}
+
+			/**
+			 * \brief Open the first available tap adapter.
+			 * \param mtu The MTU to set on the tap adapter.
+			 * \param ec The error code.
+			 */
+			void open(size_t mtu, boost::system::error_code& ec);
+
+			/**
+			 * \brief Open the tap adapter.
+			 * \param name The name of the tap adapter to open.
+			 * \param mtu The MTU to set on the tap adapter.
+			 * \param ec The error code.
+			 */
+			void open(const std::string& name, size_t mtu, boost::system::error_code& ec);
+
+			/**
+			 * \brief Open the tap adapter.
+			 * \param name The name of the tap adapter to open. If name is empty, then the first available tap adapter is opened.
+			 * \param mtu The MTU to set on the tap adapter.
+			 */
+			void open(const std::string& name = "", size_t mtu = 0);
 	};
 }
 
