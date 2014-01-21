@@ -62,6 +62,17 @@ namespace asiotap
 	{
 		ethernet,
 		ip
+
+		friend ostream& operator<<(std::ostream& os, const tap_adapter_layer& value)
+		{
+			switch (value)
+			{
+				case ethernet:
+					return os << "ethernet";
+				case ip:
+					return os << "ip";
+			}
+		}
 	};
 
 	/**
@@ -314,6 +325,11 @@ namespace asiotap
 			std::string m_name;
 			size_t m_mtu;
 			osi::ethernet_address m_ethernet_address;
+
+			friend ostream& operator<<(std::ostream& os, const base_tap_adapter& value)
+			{
+				return os << value.name() << " (" << value.layer() << ")";
+			}
 	};
 }
 
