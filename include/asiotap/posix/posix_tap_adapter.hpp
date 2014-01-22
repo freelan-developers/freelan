@@ -77,15 +77,12 @@ namespace asiotap
 			 */
 			~posix_tap_adapter()
 			{
-				try
-				{
-					// We need to do that as it is required on OSX.
-					destroy_device();
-				}
-				catch (const boost::system::system_error&)
-				{
-					// We don't throw as this can happen legitimately.
-				}
+				boost::system::error_code ec;
+
+				// This is required on OSX.
+				destroy_device(ec);
+
+				// We do nothing with the error code as errors can happen legitimately.
 			}
 
 			posix_tap_adapter(const posix_tap_adapter&) = delete;
@@ -120,14 +117,11 @@ namespace asiotap
 			 */
 			void close()
 			{
-				try
-				{
-					destroy_device();
-				}
-				catch (const boost::system::system_error&)
-				{
-					// We don't throw as this can happen legitimately.
-				}
+				boost::system::error_code ec;
+
+				destroy_device(ec);
+
+				// We do nothing with the error code as errors can happen legitimately.
 
 				base_tap_adapter::close();
 			}
