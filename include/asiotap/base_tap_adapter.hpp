@@ -52,6 +52,7 @@
 #include <iomanip>
 
 #include "osi/ethernet_address.hpp"
+#include "os.hpp"
 
 namespace asiotap
 {

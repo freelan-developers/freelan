@@ -140,6 +140,19 @@ namespace asiotap
 				base_tap_adapter::close(ec);
 			}
 
+			/**
+			 * \brief Set the tap adapter connected state.
+			 * \param connected The connected state.
+			 */
+			void set_connected_state(bool connected);
+
+			/**
+			 * \brief Get the IP addresses associated to this tap adapter.
+			 * \return A list of IP addresses.
+			 */
+			std::vector<ip_address_prefix_length> get_ip_addresses();
+
+
 		private:
 
 			void destroy_device();

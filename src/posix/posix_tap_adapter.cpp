@@ -44,33 +44,33 @@
 
 #include "posix/posix_tap_adapter.hpp"
 
- namespace asiotap
- {
- 	namespace
- 	{
- 		class descriptor_handler
- 		{
- 			public:
+namespace asiotap
+{
+	namespace
+	{
+		class descriptor_handler
+		{
+			public:
 
- 				descriptor_handler() : m_fd(-1) {}
- 				explicit descriptor_handler(int fd) : m_fd(-1) {}
- 				descriptor_handler(const descriptor_handler&) = delete;
- 				descriptor_handler& operator=(const descriptor_handler&) = delete;
- 				descriptor_handler(descriptor_handler&& other) : m_fd(other.m_fd) { other.m_fd = -1; }
- 				descriptor_handler& operator(descriptor_handler&& other) { using std::swap; swap(m_fd, other.m_fd); }
- 				~descriptor_handler() { if (m_fd >= 0) { ::close(m_fd); }}
- 				int native_handle() const { return m_fd; }
- 				bool valid() const { return (m_fd >= 0); }
- 				int release() { const int result = m_fd; m_fd = -1; return result; }
+				descriptor_handler() : m_fd(-1) {}
+				explicit descriptor_handler(int fd) : m_fd(-1) {}
+				descriptor_handler(const descriptor_handler&) = delete;
+				descriptor_handler& operator=(const descriptor_handler&) = delete;
+				descriptor_handler(descriptor_handler&& other) : m_fd(other.m_fd) { other.m_fd = -1; }
+				descriptor_handler& operator(descriptor_handler&& other) { using std::swap; swap(m_fd, other.m_fd); }
+				~descriptor_handler() { if (m_fd >= 0) { ::close(m_fd); }}
+				int native_handle() const { return m_fd; }
+				bool valid() const { return (m_fd >= 0); }
+				int release() { const int result = m_fd; m_fd = -1; return result; }
 
- 			private:
+			private:
 
- 				int m_fd;
- 		};
+				int m_fd;
+		};
 
- 		descriptor_handler open_device(const std::string& name, boost::system::error_code& ec)
- 		{
-	 		const int device_fd = ::open(name.c_str(), O_RDWR);
+		descriptor_handler open_device(const std::string& name, boost::system::error_code& ec)
+		{
+			const int device_fd = ::open(name.c_str(), O_RDWR);
 
 			if (device_fd < 0)
 			{
@@ -81,10 +81,10 @@
 			}
 
 			return descriptor_handler(device_fd);
- 		}
+		}
 
- 		descriptor_handler open_socket(boost::system::error_code& ec)
- 		{
+		descriptor_handler open_socket(boost::system::error_code& ec)
+		{
 			const int socket_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
 
 			if (socket_fd < 0)
@@ -95,69 +95,81 @@
 			}
 
 			return descriptor_handler(socket_fd);
- 		}
- 	}
+		}
 
- 	std::map<std::string, std::string> posix_tap_adapter::enumerate(tap_adapter_layer _layer)
- 	{
- 		std::map<std::string, std::string> result;
+		descriptor_handler open_socket()
+		{
+			boost::system::error_code ec;
 
- 		struct ifaddrs* addrs = nullptr;
+			descriptor_handler result = open_socket(ec);
 
- 		if (getifaddrs(&addrs) != -1)
- 		{
- 			boost::unique_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+			if (!result.is_valid())
+			{
+				throw boost::system::system_error(ec);
+			}
+		}
+	}
 
- 			for (struct ifaddrs* ifa = paddrs.get(); ifa != NULL ; ifa = ifa->ifa_next)
- 			{
- 				const std::string name(ifa->ifa_name);
+	std::map<std::string, std::string> posix_tap_adapter::enumerate(tap_adapter_layer _layer)
+	{
+		std::map<std::string, std::string> result;
 
- 				switch (_layer)
- 				{
- 					case tap_adapter_layer::ethernet:
- 					{
- 						if (name.substr(0, 3) == "tap")
- 						{
- 							result[name] = name;
- 						}
- 					}
- 					case tap_adapter_layer::ip:
- 					{
- 						if (name.substr(0, 3) == "tun")
- 						{
- 							result[name] = name;
- 						}
- 					}
- 				}
- 			}
- 		}
+		struct ifaddrs* addrs = nullptr;
 
- 		return result;
- 	}
+		if (getifaddrs(&addrs) != -1)
+		{
+			boost::unique_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
 
- 	void posix_tap_adapter::open(size_t _mtu, boost::system::error_code& ec)
- 	{
- 		open("", _mtu, ec);
- 	}
+			for (struct ifaddrs* ifa = paddrs.get(); ifa != NULL ; ifa = ifa->ifa_next)
+			{
+				const std::string name(ifa->ifa_name);
 
- 	void posix_tap_adapter::open(const std::string& _name, size_t _mtu, boost::system::error_code& ec)
- 	{
- 		ec = boost::system::error_code();
+				switch (_layer)
+				{
+					case tap_adapter_layer::ethernet:
+					{
+						if (name.substr(0, 3) == "tap")
+						{
+							result[name] = name;
+						}
+					}
+					case tap_adapter_layer::ip:
+					{
+						if (name.substr(0, 3) == "tun")
+						{
+							result[name] = name;
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	void posix_tap_adapter::open(size_t _mtu, boost::system::error_code& ec)
+	{
+		open("", _mtu, ec);
+	}
+
+	void posix_tap_adapter::open(const std::string& _name, size_t _mtu, boost::system::error_code& ec)
+	{
+		ec = boost::system::error_code();
 
 #if defined(LINUX)
- 		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/net/tap" : "/dev/net/tun";
+		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/net/tap" : "/dev/net/tun";
 
 		if (::access(dev_name.c_str(), F_OK) == -1)
 		{
 			if (errno != ENOENT)
 			{
-				// Unable to access the tap adapter yet it exists: this is an error.
+			// Unable to access the tap adapter yet it exists: this is an error.
 				ec = boost::system::error_code(errno, boost::system::system_category());
 
 				return;
 			}
 
-			// No tap found, create one.
+		// No tap found, create one.
 			if (::mknod(dev_name.c_str(), S_IFCHR | S_IRUSR | S_IWUSR, ::makedev(10, 200)) == -1)
 			{
 				ec = boost::system::error_code(errno, boost::system::system_category());
@@ -173,22 +185,22 @@
 			return;
 		}
 
- 		struct ifreq ifr = {};
+		struct ifreq ifr {};
 
- 		ifr.ifr_flags = IFF_NO_PI;
+		ifr.ifr_flags = IFF_NO_PI;
 
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
- 		ifr.ifr_flags |= IFF_ONE_QUEUE;
+		ifr.ifr_flags |= IFF_ONE_QUEUE;
 #endif
 
- 		if (layer() == tap_adapter_layer::ethernet)
- 		{
- 			ifr.ifr_flags |= IFF_TAP;
- 		}
- 		else
- 		{
- 			ifr.ifr_flags |= IFF_TUN;
- 		}
+		if (layer() == tap_adapter_layer::ethernet)
+		{
+			ifr.ifr_flags |= IFF_TAP;
+		}
+		else
+		{
+			ifr.ifr_flags |= IFF_TUN;
+		}
 
 		if (!_name.empty())
 		{
@@ -210,11 +222,11 @@
 			return;
 		}
 
- 		{
-			struct ifreq netifr = {};
+		{
+			struct ifreq netifr {};
 
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
-			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+				std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 			netifr.ifr_qlen = 100; // 100 is the default value
 
 			if (::ioctl(socket.native_handle(), SIOCSIFTXQLEN, (void *)&netifr) < 0)
@@ -267,7 +279,7 @@
 
 #else /* *BSD and Mac OS X */
 
- 		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/tap" : "/dev/tun";
+		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/tap" : "/dev/tun";
 
 		descriptor_handler device;
 
@@ -299,7 +311,7 @@
 			return;
 		}
 
-		struct stat st;
+		struct stat st {};
 
 		::fstat(device.native_handle(), &st);
 
@@ -323,7 +335,7 @@
 		}
 
 		{
-			struct ifreq netifr = {};
+			struct ifreq netifr {};
 
 			// Set the MTU
 			strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
@@ -348,7 +360,7 @@
 		}
 
 		/* Get the hardware address of tap inteface. */
-		struct ifaddrs* addrs = NULL;
+		struct ifaddrs* addrs = nullptr;
 
 		if (getifaddrs(&addrs) < 0)
 		{
@@ -417,7 +429,7 @@
 			return;
 		}
 
-		struct ifreq ifr = {};
+		struct ifreq ifr {};
 
 		strncpy(ifr.ifr_name, m_name.c_str(), IFNAMSIZ);
 
@@ -429,5 +441,109 @@
 #else
 		static_cast<void>(ec);
 #endif
+	}
+
+	void posix_tap_adapter::set_connected_state(bool connected)
+	{
+		descriptor_handler socket = open_socket();
+
+		struct ifreq netifr {};
+
+		strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+
+		// Set the interface UP
+		if (::ioctl(socket.native_handle(), SIOCGIFFLAGS, static_cast<void*>(&netifr)) < 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+
+		if (connected)
+		{
+#ifdef MACINTOSH
+			netifr.ifr_flags |= IFF_UP;
+#else
+			netifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+#endif
+		}
+		else
+		{
+#ifdef MACINTOSH
+			// Mac OS X: set_connected_state(false) seems to confuse the TAP
+			// so do nothing for the moment.
+			return;
+#else
+			netifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+#endif
+		}
+
+		if (::ioctl(socket.native_handle(), SIOCSIFFLAGS, static_cast<void*>(&netifr)) < 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+	}
+
+	std::vector<ip_address_prefix_length> posix_tap_adapter::get_ip_addresses()
+	{
+		std::vector<ip_address_prefix_length> result;
+
+		struct ifaddrs* addrs = nullptr;
+
+		if (::getifaddrs(&addrs) < 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+
+		boost::unique_ptr<struct ifaddrs> paddrs(addrs, ::freeifaddrs);
+
+		for (struct ifaddrs* ifa = paddrs.get(); ifa != nullptr; ifa = ifa->ifa_next)
+		{
+			const std::string ifname(ifa->ifa_name);
+
+			if ((ifa->ifa_addr) && (ifname == name()))
+			{
+				if (ifa->ifa_addr->sa_family == AF_INET)
+				{
+					struct sockaddr_in* sai = reinterpret_cast<struct sockaddr_in*>(ifa->ifa_addr);
+
+					boost::asio::ip::address_v4::bytes_type bytes;
+					memcpy(bytes.data(), &sai->sin_addr, bytes.size());
+
+					boost::asio::ip::address_v4 address(bytes);
+
+					unsigned int prefix_len = sizeof(in_addr) * 8;
+
+					if (ifa->ifa_netmask)
+					{
+						struct sockaddr_in* sain = reinterpret_cast<struct sockaddr_in*>(ifa->ifa_netmask);
+
+						prefix_len = netmask_to_prefix_len(sain->sin_addr);
+					}
+
+					result.push_back({ address, prefix_len });
+				}
+				else if (ifa->ifa_addr->sa_family == AF_INET6)
+				{
+					struct sockaddr_in6* sai = reinterpret_cast<struct sockaddr_in6*>(ifa->ifa_addr);
+
+					boost::asio::ip::address_v6::bytes_type bytes;
+					memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
+
+					boost::asio::ip::address_v6 address(bytes);
+
+					unsigned int prefix_len = sizeof(in6_addr) * 8;
+
+					if (ifa->ifa_netmask)
+					{
+						struct sockaddr_in6* sain = reinterpret_cast<struct sockaddr_in6*>(ifa->ifa_netmask);
+
+						prefix_len = netmask_to_prefix_len(sain->sin6_addr);
+					}
+
+					result.push_back({ address, prefix_len });
+				}
+			}
+		}
+
+		return result;
 	}
 }
