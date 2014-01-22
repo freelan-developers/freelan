@@ -73,6 +73,27 @@ namespace asiotap
 			{}
 
 			/**
+			 * \brief Destroy the tap adapter.
+			 */
+			~posix_tap_adapter()
+			{
+				try
+				{
+					// We need to do that as it is required on OSX.
+					destroy_device();
+				}
+				catch (const boost::system::system_error&)
+				{
+					// We don't throw as this can happen legitimately.
+				}
+			}
+
+			posix_tap_adapter(const posix_tap_adapter&) = delete;
+			posix_tap_adapter& operator=(const posix_tap_adapter&) = delete;
+			posix_tap_adapter(posix_tap_adapter&&) = default;
+			posix_tap_adapter& operator=(posix_tap_adapter&&) = default;
+
+			/**
 			 * \brief Open the first available tap adapter.
 			 * \param mtu The MTU to set on the tap adapter.
 			 * \param ec The error code.
@@ -93,6 +114,39 @@ namespace asiotap
 			 * \param mtu The MTU to set on the tap adapter.
 			 */
 			void open(const std::string& name = "", size_t mtu = 0);
+
+			/**
+			 * \brief Close the associated descriptor.
+			 */
+			void close()
+			{
+				try
+				{
+					destroy_device();
+				}
+				catch (const boost::system::system_error&)
+				{
+					// We don't throw as this can happen legitimately.
+				}
+
+				base_tap_adapter::close();
+			}
+
+			/**
+			 * \brief Close the associated descriptor.
+			 * \param ec The error code.
+			 */
+			boost::system::error_code close(boost::system::error_code& ec)
+			{
+				destroy_device(ec);
+
+				base_tap_adapter::close(ec);
+			}
+
+		private:
+
+			void destroy_device();
+			void destroy_device(boost::system::error_code& ec);
 	};
 }
 

@@ -74,6 +74,9 @@ namespace asiotap
 				m_interface_index()
 			{}
 
+			windows_tap_adapter(const windows_tap_adapter&) = delete;
+			windows_tap_adapter& operator=(const windows_tap_adapter&) = delete;
+
 			/**
 			 * \brief Get the device display name.
 			 * \return The device display name.

@@ -394,4 +394,40 @@
 			throw boost::system::system_error(ec);
 		}
 	}
+
+	void posix_tap_adapter::destroy_device()
+	{
+		boost::system::error_code ec;
+
+		destroy_device(ec);
+
+		if (ec)
+		{
+			throw boost::system::system_error(ec);
+		}
+	}
+
+	void posix_tap_adapter::destroy_device(boost::system::error_code& ec)
+	{
+#if defined(MACINTOSH) || defined(BSD)
+		descriptor_handler socket = open_socket(ec);
+
+		if (!socket.valid())
+		{
+			return;
+		}
+
+		struct ifreq ifr = {};
+
+		strncpy(ifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+
+		// Destroy the virtual tap device
+		if (ioctl(socket.native_handle(), SIOCIFDESTROY, &ifr) < 0)
+		{
+			ec = boost::system::error_code(errno, boost::system::system_category());
+		}
+#else
+		static_cast<void>(ec);
+#endif
+	}
 }

@@ -171,46 +171,6 @@ namespace asiotap
 #endif
 	}
 
-	tap_adapter_impl::tap_adapter_impl() :
-		m_mtu(0),
-#ifdef WINDOWS
-#else
-		m_device(-1)
-#endif
-	{
-	}
-
-	void tap_adapter_impl::close()
-	{
-		if (is_open())
-		{
-#ifdef WINDOWS
-#else
-#if defined(MACINTOSH) || defined(BSD)
-			int ctl_fd = socket(AF_INET, SOCK_DGRAM, 0);
-
-			if (ctl_fd >= 0)
-			{
-				struct ifreq ifr;
-
-				memset(&ifr, 0x00, sizeof(ifr));
-				strncpy(ifr.ifr_name, m_name.c_str(), IFNAMSIZ);
-
-				// Destroy the virtual tap device
-				if (ioctl(ctl_fd, SIOCIFDESTROY, &ifr) < 0)
-				{
-					// Oops ! The destruction failed. There is nothing much we can do.
-				}
-
-				::close(ctl_fd);
-			}
-#endif
-			::close(m_device);
-			m_device = -1;
-#endif
-		}
-	}
-
 	void tap_adapter_impl::set_connected_state(bool connected)
 	{
 		if (is_open())
