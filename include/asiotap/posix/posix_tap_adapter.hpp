@@ -77,12 +77,15 @@ namespace asiotap
 			 */
 			~posix_tap_adapter()
 			{
-				boost::system::error_code ec;
+				if (is_open())
+				{
+					boost::system::error_code ec;
 
-				// This is required on OSX.
-				destroy_device(ec);
+					// This is required on OSX.
+					destroy_device(ec);
 
-				// We do nothing with the error code as errors can happen legitimately.
+					// We do nothing with the error code as errors can happen legitimately.
+				}
 			}
 
 			posix_tap_adapter(const posix_tap_adapter&) = delete;
