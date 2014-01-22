@@ -152,6 +152,63 @@ namespace asiotap
 			 */
 			std::vector<ip_address_prefix_length> get_ip_addresses();
 
+			/**
+			 * \brief Add an IP address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Add an IPv4 address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Add an IPv6 address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
+
+			/**
+			 * \brief Set the point-to-point address on the tap adaper.
+			 * \param local The local address.
+			 * \param remote The remote address.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 * \warning Performing this operation on a device that is not in TUN mode has undefined behavior.
+			 * \warning On most operating system, administrative privileges are usually required to perform this operation.
+			 */
+			void set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote);
 
 		private:
 

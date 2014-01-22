@@ -48,6 +48,37 @@ namespace asiotap
 {
 	namespace
 	{
+		unsigned int netmask_to_prefix_len(in_addr netmask)
+		{
+			uint32_t bits = ~ntohl(netmask.s_addr);
+
+			unsigned int result = 0;
+
+			while (bits > 0) {
+				bits >>= 1;
+				++result;
+			}
+
+			return (sizeof(in_addr) * 8) - result;
+		}
+
+		unsigned int netmask_to_prefix_len(in6_addr netmask)
+		{
+			unsigned int result = 0;
+
+			for (size_t i = 0; i < sizeof(netmask.s6_addr); ++i)
+			{
+				uint8_t bits = ~netmask.s6_addr[i];
+
+				while (bits > 0) {
+					bits >>= 1;
+					++result;
+				}
+			}
+
+			return (sizeof(in6_addr) * 8) - result;
+		}
+
 		class descriptor_handler
 		{
 			public:
@@ -545,5 +576,57 @@ namespace asiotap
 		}
 
 		return result;
+	}
+
+	void posix_tap_adapter::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	{
+		if (address.is_v4())
+		{
+			return add_ip_address_v4(address.to_v4(), prefix_len);
+		}
+		else if (address.is_v6())
+		{
+			return add_ip_address_v6(address.to_v6(), prefix_len);
+		}
+		else
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+		}
+	}
+
+	void posix_tap_adapter::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+	{
+		if (address.is_v4())
+		{
+			return remove_ip_address_v4(address.to_v4(), prefix_len);
+		}
+		else if (address.is_v6())
+		{
+			return remove_ip_address_v6(address.to_v6(), prefix_len);
+		}
+		else
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+		}
+	}
+
+	void posix_tap_adapter::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	{
+	}
+
+	void posix_tap_adapter::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	{
+	}
+
+	void posix_tap_adapter::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	{
+	}
+
+	void posix_tap_adapter::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	{
+	}
+
+	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote)
+	{
 	}
 }
