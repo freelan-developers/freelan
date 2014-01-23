@@ -74,6 +74,9 @@ namespace asiotap
 		case tap_adapter_layer::ip:
 			return os << "ip";
 		}
+
+		assert(false);
+		return os;
 	}
 
 	/**
