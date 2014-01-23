@@ -45,6 +45,7 @@ class PosixEnvironment(BaseEnvironment):
 
             if self.mode == 'debug':
                 self.Append(CXXFLAGS='-g')
+                self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
             else:
                 self.Append(CXXFLAGS='-O3')
 
