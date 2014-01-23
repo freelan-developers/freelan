@@ -153,9 +153,9 @@ namespace asiotap
 			return descriptor_handler(device_fd);
 		}
 
-		descriptor_handler open_socket(boost::system::error_code& ec)
+		descriptor_handler open_socket(int family, boost::system::error_code& ec)
 		{
-			const int socket_fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+			const int socket_fd = ::socket(family, SOCK_DGRAM, 0);
 
 			if (socket_fd < 0)
 			{
@@ -167,11 +167,11 @@ namespace asiotap
 			return descriptor_handler(socket_fd);
 		}
 
-		descriptor_handler open_socket()
+		descriptor_handler open_socket(int family)
 		{
 			boost::system::error_code ec;
 
-			descriptor_handler result = open_socket(ec);
+			descriptor_handler result = open_socket(family, ec);
 
 			if (!result.valid())
 			{
@@ -287,7 +287,7 @@ namespace asiotap
 			return;
 		}
 
-		descriptor_handler socket = open_socket(ec);
+		descriptor_handler socket = open_socket(AF_INET, ec);
 
 		if (!socket.valid())
 		{
@@ -401,7 +401,7 @@ namespace asiotap
 		// Do not pass the descriptor to child
 		::fcntl(device.native_handle(), F_SETFD, FD_CLOEXEC);
 
-		descriptor_handler socket = open_socket(ec);
+		descriptor_handler socket = open_socket(AF_INET, ec);
 
 		if (!socket.valid())
 		{
@@ -498,7 +498,7 @@ namespace asiotap
 	void posix_tap_adapter::destroy_device(boost::system::error_code& ec)
 	{
 #if defined(MACINTOSH) || defined(BSD)
-		descriptor_handler socket = open_socket(ec);
+		descriptor_handler socket = open_socket(AF_INET, ec);
 
 		if (!socket.valid())
 		{
@@ -521,7 +521,7 @@ namespace asiotap
 
 	void posix_tap_adapter::set_connected_state(bool connected)
 	{
-		descriptor_handler socket = open_socket();
+		descriptor_handler socket = open_socket(AF_INET);
 
 		struct ifreq netifr {};
 
@@ -627,7 +627,7 @@ namespace asiotap
 	{
 		assert(prefix_len < 32);
 
-		descriptor_handler socket = open_socket();
+		descriptor_handler socket = open_socket(AF_INET);
 
 		ifreq ifr_a {};
 
@@ -704,7 +704,7 @@ namespace asiotap
 		ifraddr->sin_len = sizeof(struct sockaddr_in);
 #endif
 
-		descriptor_handler socket = open_socket();
+		descriptor_handler socket = open_socket(AF_INET);
 
 		if (::ioctl(socket.native_handle(), SIOCDIFADDR, &ifr) < 0)
 		{
@@ -715,7 +715,7 @@ namespace asiotap
 
 	void posix_tap_adapter::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
-		descriptor_handler socket = open_socket();
+		descriptor_handler socket = open_socket(AF_INET6);
 
 #ifdef LINUX
 		const unsigned int if_index = ::if_nametoindex(name().c_str());
@@ -763,7 +763,7 @@ namespace asiotap
 
 	void posix_tap_adapter::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
-		descriptor_handler socket = open_socket();
+		descriptor_handler socket = open_socket(AF_INET6);
 
 #ifdef LINUX
 		const unsigned int if_index = ::if_nametoindex(name().c_str());
@@ -819,7 +819,7 @@ namespace asiotap
 			throw boost::system::system_error(make_error_code(asiotap_error::invalid_tap_adapter_layer));
 		}
 
-		descriptor_handler socket = open_socket();
+		descriptor_handler socket = open_socket(AF_INET);
 
 		ifreq ifr_d {};
 
