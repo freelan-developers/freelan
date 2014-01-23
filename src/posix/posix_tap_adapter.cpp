@@ -44,6 +44,8 @@
 
 #include "posix/posix_tap_adapter.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <ifaddrs.h>
@@ -389,7 +391,7 @@ namespace asiotap
 
 		::fstat(device.native_handle(), &st);
 
-		name() = ::devname(st.st_rdev, S_IFCHR);
+		set_name(::devname(st.st_rdev, S_IFCHR));
 
 		if (if_nametoindex(name().c_str()) == 0)
 		{
@@ -456,7 +458,7 @@ namespace asiotap
 				if (sdl->sdl_type == IFT_ETHER)
 				{
 					osi::ethernet_address _ethernet_address;
-					std::memcpy(_ethernet_address.data().data(), LLADDR(sdl), ethernet_address().data().siwe());
+					std::memcpy(_ethernet_address.data().data(), LLADDR(sdl), ethernet_address().data().size());
 					set_ethernet_address(_ethernet_address);
 
 					break;
