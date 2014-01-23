@@ -123,11 +123,11 @@ namespace asiotap
 			public:
 
 				descriptor_handler() : m_fd(-1) {}
-				explicit descriptor_handler(int fd) : m_fd(-1) {}
+				explicit descriptor_handler(int fd) : m_fd(fd) {}
 				descriptor_handler(const descriptor_handler&) = delete;
 				descriptor_handler& operator=(const descriptor_handler&) = delete;
 				descriptor_handler(descriptor_handler&& other) : m_fd(other.m_fd) { other.m_fd = -1; }
-				descriptor_handler& operator(descriptor_handler&& other) { using std::swap; swap(m_fd, other.m_fd); }
+				descriptor_handler& operator=(descriptor_handler&& other) { using std::swap; swap(m_fd, other.m_fd); return *this; }
 				~descriptor_handler() { if (m_fd >= 0) { ::close(m_fd); }}
 				int native_handle() const { return m_fd; }
 				bool valid() const { return (m_fd >= 0); }
@@ -147,7 +147,7 @@ namespace asiotap
 				// Unable to open the device.
 				ec = boost::system::error_code(errno, boost::system::system_category());
 
-				return;
+				return descriptor_handler();
 			}
 
 			return descriptor_handler(device_fd);
@@ -161,7 +161,7 @@ namespace asiotap
 			{
 				ec = boost::system::error_code(errno, boost::system::system_category());
 
-				return;
+				return descriptor_handler();
 			}
 
 			return descriptor_handler(socket_fd);
@@ -173,10 +173,12 @@ namespace asiotap
 
 			descriptor_handler result = open_socket(ec);
 
-			if (!result.is_valid())
+			if (!result.valid())
 			{
 				throw boost::system::system_error(ec);
 			}
+
+			return result;
 		}
 	}
 
@@ -188,7 +190,7 @@ namespace asiotap
 
 		if (getifaddrs(&addrs) != -1)
 		{
-			boost::unique_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+			boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
 
 			for (struct ifaddrs* ifa = paddrs.get(); ifa != NULL ; ifa = ifa->ifa_next)
 			{
@@ -321,7 +323,7 @@ namespace asiotap
 
 			if (::ioctl(socket.native_handle(), SIOCGIFMTU, (void*)&netifr) >= 0)
 			{
-				mtu() = netifr.ifr_mtu;
+				set_mtu(netifr.ifr_mtu);
 			}
 			else
 			{
@@ -342,7 +344,9 @@ namespace asiotap
 				return;
 			}
 
-			std::memcpy(ethernet_address().data().data(), netifr.ifr_hwaddr.sa_data, ethernet_address().data().size());
+			osi::ethernet_address _ethernet_address;
+			std::memcpy(_ethernet_address.data().data(), netifr.ifr_hwaddr.sa_data, _ethernet_address.data().size());
+			set_ethernet_address(_ethernet_address);
 		}
 
 		set_name(ifr.ifr_name);
@@ -408,7 +412,7 @@ namespace asiotap
 			struct ifreq netifr {};
 
 			// Set the MTU
-			strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+			strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
 
 			if (_mtu > 0)
 			{
@@ -439,7 +443,7 @@ namespace asiotap
 			return;
 		}
 
-		boost::unique_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+		boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
 
 		for (struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next)
 		{
@@ -461,7 +465,7 @@ namespace asiotap
 		}
 #endif
 
-		if (descriptor.assign(device.release(), ec))
+		if (descriptor().assign(device.release(), ec))
 		{
 			return;
 		}
@@ -503,7 +507,7 @@ namespace asiotap
 
 		struct ifreq ifr {};
 
-		strncpy(ifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+		strncpy(ifr.ifr_name, name().c_str(), IFNAMSIZ);
 
 		// Destroy the virtual tap device
 		if (ioctl(socket.native_handle(), SIOCIFDESTROY, &ifr) < 0)
@@ -521,7 +525,7 @@ namespace asiotap
 
 		struct ifreq netifr {};
 
-		strncpy(netifr.ifr_name, m_name.c_str(), IFNAMSIZ);
+		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
 
 		// Set the interface UP
 		if (::ioctl(socket.native_handle(), SIOCGIFFLAGS, static_cast<void*>(&netifr)) < 0)
@@ -565,7 +569,7 @@ namespace asiotap
 			throw boost::system::system_error(errno, boost::system::system_category());
 		}
 
-		boost::unique_ptr<struct ifaddrs> paddrs(addrs, ::freeifaddrs);
+		boost::shared_ptr<struct ifaddrs> paddrs(addrs, ::freeifaddrs);
 
 		for (struct ifaddrs* ifa = paddrs.get(); ifa != nullptr; ifa = ifa->ifa_next)
 		{
@@ -627,7 +631,7 @@ namespace asiotap
 
 		ifreq ifr_a {};
 
-		std::strncpy(ifr_a.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+		std::strncpy(ifr_a.ifr_name, name().c_str(), IFNAMSIZ - 1);
 
 		sockaddr_in* ifr_a_addr = reinterpret_cast<sockaddr_in*>(&ifr_a.ifr_addr);
 		ifr_a_addr->sin_family = AF_INET;
@@ -652,7 +656,7 @@ namespace asiotap
 		{
 			ifreq ifr_n {};
 
-			std::strncpy(ifr_n.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+			std::strncpy(ifr_n.ifr_name, name().c_str(), IFNAMSIZ - 1);
 			sockaddr_in* ifr_n_addr = reinterpret_cast<sockaddr_in*>(&ifr_n.ifr_addr);
 			ifr_n_addr->sin_family = AF_INET;
 #ifdef BSD
@@ -683,7 +687,7 @@ namespace asiotap
 
 		add_ip_address_v4(boost::asio::ip::address_v4::any(), 0);
 #elif defined(BSD) || defined(MACINTOSH)
-		unsigned int if_index = if_nametoindex(m_name.c_str());
+		unsigned int if_index = if_nametoindex(name().c_str());
 
 		ifaliasreq ifr {};
 
@@ -714,7 +718,7 @@ namespace asiotap
 		descriptor_handler socket = open_socket();
 
 #ifdef LINUX
-		const unsigned int if_index = ::if_nametoindex(m_name.c_str());
+		const unsigned int if_index = ::if_nametoindex(name().c_str());
 
 		if (if_index == 0)
 		{
@@ -729,7 +733,7 @@ namespace asiotap
 		if (::ioctl(socket.native_handle(), SIOCSIFADDR, &ifr) < 0)
 #elif defined(MACINTOSH) || defined(BSD)
 		in6_aliasreq iar {};
-		std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
+		std::memcpy(iar.ifra_name, name().c_str(), name().length());
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
 		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().data(), address.to_bytes().size());
@@ -762,7 +766,7 @@ namespace asiotap
 		descriptor_handler socket = open_socket();
 
 #ifdef LINUX
-		const unsigned int if_index = ::if_nametoindex(m_name.c_str());
+		const unsigned int if_index = ::if_nametoindex(name().c_str());
 
 		if (if_index == 0)
 		{
@@ -778,7 +782,7 @@ namespace asiotap
 #elif defined(MACINTOSH) || defined(BSD)
 		in6_aliasreq iar;
 		std::memset(&iar, 0x00, sizeof(iar));
-		std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
+		std::memcpy(iar.ifra_name, name().c_str(), name().length());
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
 		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().data(), address.to_bytes().size());
@@ -819,7 +823,7 @@ namespace asiotap
 
 		ifreq ifr_d {};
 
-		std::strncpy(ifr_d.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+		std::strncpy(ifr_d.ifr_name, name().c_str(), IFNAMSIZ - 1);
 		sockaddr_in* ifr_dst_addr = reinterpret_cast<sockaddr_in*>(&ifr_d.ifr_dstaddr);
 		ifr_dst_addr->sin_family = AF_INET;
 #ifdef BSD

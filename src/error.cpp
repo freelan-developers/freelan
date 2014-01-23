@@ -60,7 +60,7 @@ namespace asiotap
 
 	std::string asiotap_category_impl::message(int ev) const
 	{
-		switch (ev)
+		switch (static_cast<asiotap_error>(ev))
 		{
 			case asiotap_error::success:
 			{

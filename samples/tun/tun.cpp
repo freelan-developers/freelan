@@ -133,7 +133,7 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 		ipv4_filter.parse(buffer);
 		ipv6_filter.parse(buffer);
 
-		tap_adapter.async_write(buffer, boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
+		tap_adapter.async_write(boost::asio::buffer(buffer), boost::bind(&write_done, boost::ref(tap_adapter), _1, _2));
 	}
 	else
 	{
@@ -200,11 +200,11 @@ int main()
 	{
 		boost::asio::io_service _io_service;
 
-		asiotap::tap_adapter tap_adapter(_io_service);
+		asiotap::tap_adapter tap_adapter(_io_service, asiotap::tap_adapter_layer::ip);
 
 		stop_function = boost::bind(&close_tap_adapter, boost::ref(tap_adapter));
 
-		tap_adapter.open("", 0, asiotap::tap_adapter::AT_TUN_ADAPTER);
+		tap_adapter.open();
 		tap_adapter.add_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
 		tap_adapter.add_ip_address_v6(boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64);
 		tap_adapter.set_remote_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.1"), boost::asio::ip::address_v4::from_string("9.0.0.0"));
@@ -212,13 +212,13 @@ int main()
 
 		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
 
-		const asiotap::tap_adapter::ip_address_list addresses = tap_adapter.get_ip_addresses();
+		const auto addresses = tap_adapter.get_ip_addresses();
 
 		std::cout << "Current IP addresses for the interface:" << std::endl;
 
-		BOOST_FOREACH(const asiotap::tap_adapter::ip_address& address, addresses)
+		for(auto&& address : addresses)
 		{
-			std::cout << address.address << "/" << address.prefix_length << std::endl;
+			std::cout << address << std::endl;
 		}
 
 		_io_service.run();
