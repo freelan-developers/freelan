@@ -328,7 +328,7 @@ namespace asiotap
 						return;
 					}
 
-					name() = adapter.first;
+					set_name(adapter.first);
 					m_display_name = adapter.second;
 					m_interface_index = pi->Index;
 
@@ -344,7 +344,9 @@ namespace asiotap
 						return;
 					}
 
-					std::memcpy(ethernet_address().data().data(), pi->Address, pi->AddressLength);
+					osi::ethernet_address _ethernet_address;
+					std::memcpy(_ethernet_address.data().data(), pi->Address, pi->AddressLength);
+					set_ethernet_address(_ethernet_address);
 
 					DWORD read_mtu = static_cast<DWORD>(_mtu);
 					DWORD len;
@@ -356,7 +358,7 @@ namespace asiotap
 						return;
 					}
 
-					mtu() = static_cast<size_t>(read_mtu);
+					set_mtu(static_cast<size_t>(read_mtu));
 
 					break;
 				}

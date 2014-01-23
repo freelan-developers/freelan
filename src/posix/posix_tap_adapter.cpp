@@ -345,7 +345,7 @@ namespace asiotap
 			std::memcpy(ethernet_address().data().data(), netifr.ifr_hwaddr.sa_data, ethernet_address().data().size());
 		}
 
-		name() = ifr.ifr_name;
+		set_name(ifr.ifr_name);
 
 #else /* *BSD and Mac OS X */
 
@@ -419,7 +419,7 @@ namespace asiotap
 
 			if (::ioctl(socket.native_handle(), SIOCGIFMTU, (void*)&netifr) >= 0)
 			{
-				mtu() = netifr.ifr_mtu;
+				set_mtu(netifr.ifr_mtu);
 			}
 			else
 			{
@@ -451,7 +451,9 @@ namespace asiotap
 
 				if (sdl->sdl_type == IFT_ETHER)
 				{
-					std::memcpy(ethernet_address().data().data(), LLADDR(sdl), ethernet_address().data().siwe());
+					osi::ethernet_address _ethernet_address;
+					std::memcpy(_ethernet_address.data().data(), LLADDR(sdl), ethernet_address().data().siwe());
+					set_ethernet_address(_ethernet_address);
 
 					break;
 				}

@@ -167,7 +167,7 @@ namespace asiotap
 			std::string m_display_name;
 			size_t m_interface_index;
 
-			friend ostream& operator<<(std::ostream& os, const windows_tap_adapter& value)
+			friend std::ostream& operator<<(std::ostream& os, const windows_tap_adapter& value)
 			{
 				return os << value.display_name() << " (" << value.layer() << ")";
 			}

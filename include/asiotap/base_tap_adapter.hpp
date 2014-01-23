@@ -63,18 +63,18 @@ namespace asiotap
 	{
 		ethernet,
 		ip
-
-		friend ostream& operator<<(std::ostream& os, const tap_adapter_layer& value)
-		{
-			switch (value)
-			{
-				case ethernet:
-					return os << "ethernet";
-				case ip:
-					return os << "ip";
-			}
-		}
 	};
+
+	inline std::ostream& operator<<(std::ostream& os, const tap_adapter_layer& value)
+	{
+		switch (value)
+		{
+		case tap_adapter_layer::ethernet:
+			return os << "ethernet";
+		case tap_adapter_layer::ip:
+			return os << "ip";
+		}
+	}
 
 	/**
 	 * \brief An IP address and prefix length type.
@@ -343,24 +343,19 @@ namespace asiotap
 				return m_descriptor;
 			}
 
-			const descriptor_type& descriptor() const
+			void set_name(const std::string& _name)
 			{
-				return m_descriptor;
+				m_name = _name;
 			}
 
-			std::string& name()
+			void set_mtu(size_t _mtu)
 			{
-				return m_name;
+				m_mtu = _mtu;
 			}
 
-			size_t& mtu()
+			void set_ethernet_address(const osi::ethernet_address& _ethernet_address)
 			{
-				return m_mtu;
-			}
-
-			osi::ethernet_address& ethernet_address()
-			{
-				return m_ethernet_address;
+				m_ethernet_address = _ethernet_address;
 			}
 
 		private:
@@ -371,7 +366,7 @@ namespace asiotap
 			size_t m_mtu;
 			osi::ethernet_address m_ethernet_address;
 
-			friend ostream& operator<<(std::ostream& os, const base_tap_adapter& value)
+			friend std::ostream& operator<<(std::ostream& os, const base_tap_adapter& value)
 			{
 				return os << value.name() << " (" << value.layer() << ")";
 			}
