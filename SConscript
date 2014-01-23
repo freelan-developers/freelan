@@ -38,7 +38,11 @@ if sys.platform.startswith('win32'):
         env['CXXFLAGS'].append('/DTAP_ID=\\"%s\\"' % os.environ.get('FREELAN_TAP_ID', 'tap0901'))
         env['CXXFLAGS'].append('/D_WIN32_WINNT=0x0501')
 else:
-    env['CXXFLAGS'].append('-Wno-missing-field-initializers')
+    if sys.platform.startswith('darwin'):
+        # Tun/Tap OS X doesn't support kqueue.
+        env['CXXFLAGS'].append('-DBOOST_ASIO_DISABLE_KQUEUE')
+    else:
+        env['CXXFLAGS'].append('-Wno-missing-field-initializers')
 
     libraries.append('pthread')
 
