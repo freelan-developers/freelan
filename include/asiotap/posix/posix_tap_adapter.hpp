@@ -52,7 +52,7 @@
 
 namespace asiotap
 {
-	class posix_tap_adapter : public base_tap_adapter<boost::asio::posix::stream_descriptor>
+	class posix_tap_adapter : public base_tap_adapter<boost::asio::posix::stream_descriptor, posix_tap_adapter>
 	{
 		public:
 
@@ -151,22 +151,6 @@ namespace asiotap
 			 * \return A list of IP addresses.
 			 */
 			std::vector<ip_address_prefix_length> get_ip_addresses();
-
-			/**
-			 * \brief Add an IP address to the tap adapter.
-			 * \param address The address.
-			 * \param prefix_len The prefix length, in bits.
-			 * \warning If a serious error occurs, an exception will be thrown.
-			 */
-			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
-
-			/**
-			 * \brief Remove an IP address from the tap adapter.
-			 * \param address The address.
-			 * \param prefix_len The prefix length, in bits.
-			 * \warning If a serious error occurs, an exception will be thrown.
-			 */
-			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len);
 
 			/**
 			 * \brief Add an IPv4 address to the tap adapter.

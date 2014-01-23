@@ -466,38 +466,6 @@ namespace asiotap
 		return result;
 	}
 
-	void windows_tap_adapter::add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
-	{
-		if (address.is_v4())
-		{
-			return add_ip_address_v4(address.to_v4(), prefix_len);
-		}
-		else if (address.is_v6())
-		{
-			return add_ip_address_v6(address.to_v6(), prefix_len);
-		}
-		else
-		{
-			throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
-		}
-	}
-
-	void windows_tap_adapter::remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
-	{
-		if (address.is_v4())
-		{
-			return remove_ip_address_v4(address.to_v4(), prefix_len);
-		}
-		else if (address.is_v6())
-		{
-			return remove_ip_address_v6(address.to_v6(), prefix_len);
-		}
-		else
-		{
-			throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
-		}
-	}
-
 	void windows_tap_adapter::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		assert(prefix_len < 32);

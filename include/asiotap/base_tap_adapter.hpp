@@ -118,7 +118,7 @@ namespace asiotap
 		}
 	};
 
-	template <typename DescriptorType>
+	template <typename DescriptorType, typename DerivedType>
 	class base_tap_adapter
 	{
 		public:
@@ -282,6 +282,50 @@ namespace asiotap
 			boost::system::error_code close(boost::system::error_code& ec)
 			{
 				return m_descriptor.close(ec);
+			}
+
+			/**
+			 * \brief Add an IP address to the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+			{
+				if (address.is_v4())
+				{
+					return static_cast<DerivedType*>(this)->add_ip_address_v4(address.to_v4(), prefix_len);
+				}
+				else if (address.is_v6())
+				{
+					return static_cast<DerivedType*>(this)->add_ip_address_v6(address.to_v6(), prefix_len);
+				}
+				else
+				{
+					throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+				}
+			}
+
+			/**
+			 * \brief Remove an IP address from the tap adapter.
+			 * \param address The address.
+			 * \param prefix_len The prefix length, in bits.
+			 * \warning If a serious error occurs, an exception will be thrown.
+			 */
+			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
+			{
+				if (address.is_v4())
+				{
+					return static_cast<DerivedType*>(this)->remove_ip_address_v4(address.to_v4(), prefix_len);
+				}
+				else if (address.is_v6())
+				{
+					return static_cast<DerivedType*>(this)->remove_ip_address_v6(address.to_v6(), prefix_len);
+				}
+				else
+				{
+					throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+				}
 			}
 
 		protected:
