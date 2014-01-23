@@ -978,7 +978,7 @@ namespace freelan
 		}
 		else
 		{
-			if (m_tap_adapter && (m_tap_adapter->type() == asiotap::tap_adapter::AT_TUN_ADAPTER))
+			if (m_tap_adapter && (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip))
 			{
 				const boost::shared_ptr<router::port_type> local_port = m_router.get_port(make_port_index(m_tap_adapter));
 
@@ -1086,21 +1086,25 @@ namespace freelan
 	{
 		if (m_configuration.tap_adapter.enabled)
 		{
-			const asiotap::tap_adapter::adapter_type tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter::AT_TAP_ADAPTER : asiotap::tap_adapter::AT_TUN_ADAPTER;
+			const asiotap::tap_adapter_layer tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter_layer::ethernet : asiotap::tap_adapter_layer::ip;
 
-			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service));
+			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service), tap_adapter_type);
 
-			void (core::* const write_func)(boost::asio::const_buffer, simple_handler_type) = &core::async_write_tap;
+			const auto write_func = [this] (boost::asio::const_buffer data, simple_handler_type handler) {
+				async_write_tap(buffer(data), [handler](const boost::system::error_code& ec, size_t) {
+					handler(ec);
+				});
+			};
 
-			if (tap_adapter_type == asiotap::tap_adapter::AT_TAP_ADAPTER)
+			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
 			{
 				// Registers the switch port.
-				m_switch.register_port(make_port_index(m_tap_adapter), switch_::port_type(boost::bind(write_func, this, _1, _2), TAP_ADAPTERS_GROUP));
+				m_switch.register_port(make_port_index(m_tap_adapter), switch_::port_type(write_func, TAP_ADAPTERS_GROUP));
 			}
 			else
 			{
 				// Registers the router port.
-				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(boost::bind(write_func, this, _1, _2), TAP_ADAPTERS_GROUP));
+				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(write_func, TAP_ADAPTERS_GROUP));
 
 				// Add the routes.
 				const routes_type& local_routes = m_configuration.router.local_ip_routes;
@@ -1110,9 +1114,9 @@ namespace freelan
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
 			}
 
-			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()), tap_adapter_type);
+			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()));
 
-			m_logger(LL_INFORMATION) << "Tap adapter \"" << m_tap_adapter->name() << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
+			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
@@ -1199,7 +1203,7 @@ namespace freelan
 				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
 				{
 					m_dhcp_proxy.reset(new dhcp_proxy_type());
-					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address());
+					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address().data());
 
 					if (!m_configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length.is_null())
 					{
@@ -1209,7 +1213,7 @@ namespace freelan
 					if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 					{
 						m_dhcp_proxy->add_entry(
-								m_tap_adapter->ethernet_address(),
+								m_tap_adapter->ethernet_address().data(),
 								m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
 								m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
 						);
@@ -1356,7 +1360,7 @@ namespace freelan
 		{
 			const boost::asio::const_buffer data = buffer(receive_buffer, count);
 
-			if (m_tap_adapter->type() == asiotap::tap_adapter::AT_TAP_ADAPTER)
+			if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ethernet)
 			{
 				bool handled = false;
 
@@ -1435,7 +1439,7 @@ namespace freelan
 			if (data)
 			{
 				async_write_tap(
-					*data,
+					buffer(*data),
 					make_shared_buffer_handler(
 						response_buffer,
 						boost::bind(
@@ -1467,7 +1471,7 @@ namespace freelan
 			if (data)
 			{
 				async_write_tap(
-					*data,
+					buffer(*data),
 					make_shared_buffer_handler(
 						response_buffer,
 						boost::bind(

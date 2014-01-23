@@ -457,17 +457,12 @@ namespace freelan
 
 			void async_read_tap();
 
-			template <typename WriteHandler>
-			void async_write_tap(boost::asio::const_buffer data, WriteHandler handler)
+			template <typename ConstBufferSequence, typename WriteHandler>
+			void async_write_tap(const ConstBufferSequence& data, WriteHandler handler)
 			{
-				void_handler_type write_handler = boost::bind(&asiotap::tap_adapter::async_write<WriteHandler>, m_tap_adapter, data, handler);
+				void_handler_type write_handler = [this, data, handler](){ m_tap_adapter->async_write(data, handler); };
 
 				m_tap_write_queue_strand.post(boost::bind(&core::push_tap_write, this, write_handler));
-			}
-
-			void async_write_tap(boost::asio::const_buffer data, simple_handler_type handler)
-			{
-				async_write_tap<io_handler_type>(data, boost::bind(handler, _1));
 			}
 
 			void push_tap_write(void_handler_type);

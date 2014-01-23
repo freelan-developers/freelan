@@ -126,7 +126,7 @@ namespace freelan
 
 			friend std::ostream& operator<<(std::ostream& os, const tap_adapter_port_index_type& idx)
 			{
-				return os << "tap_adapter(" << idx.m_tap_adapter->name() << ")";
+				return os << "tap_adapter(" << *idx.m_tap_adapter << ")";
 			}
 	};
 
