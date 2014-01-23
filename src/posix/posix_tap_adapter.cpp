@@ -44,6 +44,45 @@
 
 #include "posix/posix_tap_adapter.hpp"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <ifaddrs.h>
+#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#ifdef LINUX
+
+#include <linux/if_tun.h>
+
+/**
+ * \struct in6_ifreq
+ * \brief Replacement structure since the include of linux/ipv6.h introduces conflicts.
+ *
+ * If someone comes up with a better solution, feel free to contribute :)
+ */
+struct in6_ifreq
+{
+	struct in6_addr ifr6_addr; /**< IPv6 address */
+	uint32_t ifr6_prefixlen; /**< Length of the prefix */
+	int ifr6_ifindex; /**< Interface index */
+};
+
+#elif defined(MACINTOSH) || defined(BSD)
+
+/*
+ * Note for Mac OS X users : you have to download and install the tun/tap driver from (http://tuntaposx.sourceforge.net).
+ */
+
+#include <net/if_var.h>
+#include <net/if_types.h>
+#include <net/if_dl.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet6/in6_var.h>
+
+#endif
+
 namespace asiotap
 {
 	namespace
@@ -580,21 +619,222 @@ namespace asiotap
 
 	void posix_tap_adapter::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
+		assert(prefix_len < 32);
+
+		descriptor_handler socket = open_socket();
+
+		ifreq ifr_a {};
+
+		std::strncpy(ifr_a.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+
+		sockaddr_in* ifr_a_addr = reinterpret_cast<sockaddr_in*>(&ifr_a.ifr_addr);
+		ifr_a_addr->sin_family = AF_INET;
+#ifdef BSD
+		ifr_a_addr->sin_len = sizeof(sockaddr_in);
+#endif
+		std::memcpy(&ifr_a_addr->sin_addr.s_addr, address.to_bytes().data(), address.to_bytes().size());
+
+		if (::ioctl(socket.native_handle(), SIOCSIFADDR, &ifr_a) < 0)
+		{
+			if (errno == EEXIST)
+			{
+				// The address is already set. We ignore this.
+			}
+			else
+			{
+				throw boost::system::system_error(errno, boost::system::system_category());
+			}
+		}
+
+		if (prefix_len > 0)
+		{
+			ifreq ifr_n {};
+
+			std::strncpy(ifr_n.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+			sockaddr_in* ifr_n_addr = reinterpret_cast<sockaddr_in*>(&ifr_n.ifr_addr);
+			ifr_n_addr->sin_family = AF_INET;
+#ifdef BSD
+			ifr_n_addr->sin_len = sizeof(sockaddr_in);
+#endif
+			ifr_n_addr->sin_addr.s_addr = htonl((0xFFFFFFFF >> (32 - prefix_len)) << (32 - prefix_len));
+
+			if (::ioctl(socket.native_handle(), SIOCSIFNETMASK, &ifr_n) < 0)
+			{
+				if (errno == EEXIST)
+				{
+					// The netmask is already set. We ignore this.
+				}
+				else
+				{
+					throw boost::system::system_error(errno, boost::system::system_category());
+				}
+			}
+		}
 	}
 
 	void posix_tap_adapter::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
+		static_cast<void>(prefix_len);
+
+#if defined(LINUX)
+		static_cast<void>(address);
+
+		add_ip_address_v4(boost::asio::ip::address_v4::any(), 0);
+#elif defined(BSD) || defined(MACINTOSH)
+		unsigned int if_index = if_nametoindex(m_name.c_str());
+
+		ifaliasreq ifr {};
+
+		if (if_indextoname(if_index, ifr.ifra_name) == NULL)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+
+		sockaddr_in* ifraddr = reinterpret_cast<sockaddr_in*>(&ifr.ifra_addr);
+		std::memcpy(&ifraddr->sin_addr, address.to_bytes().data(), address.to_bytes().size());
+		ifraddr->sin_family = AF_INET;
+
+#ifdef BSD
+		ifraddr->sin_len = sizeof(struct sockaddr_in);
+#endif
+
+		descriptor_handler socket = open_socket();
+
+		if (::ioctl(socket.native_handle(), SIOCDIFADDR, &ifr) < 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+#endif
 	}
 
 	void posix_tap_adapter::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
+		descriptor_handler socket = open_socket();
+
+#ifdef LINUX
+		const unsigned int if_index = ::if_nametoindex(m_name.c_str());
+
+		if (if_index == 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+
+		in6_ifreq ifr {};
+		std::memcpy(&ifr.ifr6_addr, address.to_bytes().data(), address.to_bytes().size());
+		ifr.ifr6_prefixlen = prefix_len;
+		ifr.ifr6_ifindex = if_index;
+
+		if (::ioctl(socket.native_handle(), SIOCSIFADDR, &ifr) < 0)
+#elif defined(MACINTOSH) || defined(BSD)
+		in6_aliasreq iar {};
+		std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().data(), address.to_bytes().size());
+		std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+		iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+		iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+
+#ifdef SIN6_LEN
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+#endif
+
+		if (::ioctl(socket.native_handle(), SIOCAIFADDR_IN6, &iar) < 0)
+#endif
+		{
+			if (errno == EEXIST)
+			{
+				// The address is already set. We ignore this.
+			}
+			else
+			{
+				throw boost::system::system_error(errno, boost::system::system_category());
+			}
+		}
 	}
 
 	void posix_tap_adapter::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
+		descriptor_handler socket = open_socket();
+
+#ifdef LINUX
+		const unsigned int if_index = ::if_nametoindex(m_name.c_str());
+
+		if (if_index == 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+
+		in6_ifreq ifr {};
+		std::memcpy(&ifr.ifr6_addr, address.to_bytes().data(), address.to_bytes().size());
+		ifr.ifr6_prefixlen = prefix_len;
+		ifr.ifr6_ifindex = if_index;
+
+		if (::ioctl(socket.native_handle(), SIOCDIFADDR, &ifr) < 0)
+#elif defined(MACINTOSH) || defined(BSD)
+		in6_aliasreq iar;
+		std::memset(&iar, 0x00, sizeof(iar));
+		std::memcpy(iar.ifra_name, m_name.c_str(), m_name.length());
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
+		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().data(), address.to_bytes().size());
+		std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
+		iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
+		iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
+
+#ifdef SIN6_LEN
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
+		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
+#endif
+
+		if (::ioctl(socket.native_handle(), SIOCDIFADDR_IN6, &iar) < 0)
+#endif
+		{
+			if (errno == EEXIST)
+			{
+				// The address is already set. We ignore this.
+			}
+			else
+			{
+				throw boost::system::system_error(errno, boost::system::system_category());
+			}
+		}
 	}
 
 	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote)
 	{
+		static_cast<void>(local);
+
+		if (layer() != tap_adapter_layer::ip)
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::invalid_tap_adapter_layer));
+		}
+
+		descriptor_handler socket = open_socket();
+
+		ifreq ifr_d {};
+
+		std::strncpy(ifr_d.ifr_name, m_name.c_str(), IFNAMSIZ - 1);
+		sockaddr_in* ifr_dst_addr = reinterpret_cast<sockaddr_in*>(&ifr_d.ifr_dstaddr);
+		ifr_dst_addr->sin_family = AF_INET;
+#ifdef BSD
+		ifr_dst_addr->sin_len = sizeof(sockaddr_in);
+#endif
+		std::memcpy(&ifr_dst_addr->sin_addr.s_addr, remote.to_bytes().data(), remote.to_bytes().size());
+
+		if (::ioctl(socket.native_handle(), SIOCSIFDSTADDR, &ifr_d) < 0)
+		{
+			if (errno == EEXIST)
+			{
+				// The address is already set. We ignore this.
+			}
+			else
+			{
+				throw boost::system::system_error(errno, boost::system::system_category());
+			}
+		}
 	}
 }
