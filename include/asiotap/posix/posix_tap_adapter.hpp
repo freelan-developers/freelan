@@ -138,6 +138,8 @@ namespace asiotap
 				destroy_device(ec);
 
 				base_tap_adapter::close(ec);
+
+				return ec;
 			}
 
 			/**

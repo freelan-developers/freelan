@@ -53,6 +53,7 @@
 
 #include "osi/ethernet_address.hpp"
 #include "os.hpp"
+#include "error.hpp"
 
 namespace asiotap
 {
