@@ -67,21 +67,6 @@ namespace freelan
 
 	namespace
 	{
-		typedef boost::function<void (const core::ep_type&)> resolve_success_handler_type;
-		typedef core::simple_handler_type resolve_error_handler_type;
-
-		void resolve_handler(const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it, resolve_success_handler_type success_handler, resolve_error_handler_type error_handler)
-		{
-			if (!ec)
-			{
-				success_handler(*it);
-			}
-			else
-			{
-				error_handler(ec);
-			}
-		}
-
 		void null_simple_write_handler(const boost::system::error_code&)
 		{
 		}
@@ -405,10 +390,37 @@ namespace freelan
 
 	void core::async_contact(const endpoint& target, duration_handler_type handler)
 	{
-		m_logger(LL_DEBUG) << "Trying to contact " << target << "...";
+		m_logger(LL_DEBUG) << "Resolving " << target << " for potential contact...";
 
-		resolve_success_handler_type success_handler = boost::bind(&core::do_contact, this, _1, handler);
-		resolve_error_handler_type error_handler = boost::bind(handler, ep_type(), _1, boost::posix_time::time_duration());
+		const auto resolve_handler = [this, handler, target] (const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it)
+		{
+			if (!ec)
+			{
+				const ep_type host = *it;
+
+				// The host was resolved: we first make sure no session exist with that host before doing anything else.
+				m_server->async_has_session_with_endpoint(
+					host,
+					[this, handler, host, target] (bool has_session)
+					{
+						if (!has_session)
+						{
+							m_logger(LL_DEBUG) << "No session exists with " << target << " (at " << host << "). Contacting...";
+
+							do_contact(host, handler);
+						}
+						else
+						{
+							m_logger(LL_DEBUG) << "A session already exists with " << target << " (at " << host << "). Not contacting again.";
+						}
+					}
+				);
+			}
+			else
+			{
+				handler(ep_type(), ec, boost::posix_time::time_duration());
+			}
+		};
 
 		boost::apply_visitor(
 			endpoint_async_resolve_visitor(
@@ -416,13 +428,7 @@ namespace freelan
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured,
 				DEFAULT_SERVICE,
-				boost::bind(
-					&resolve_handler,
-					_1,
-					_2,
-					success_handler,
-					error_handler
-				)
+				resolve_handler
 			),
 			target
 		);
