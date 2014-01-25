@@ -1130,36 +1130,25 @@ namespace freelan
 
 			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
 
+			asiotap::ip_configuration tap_config;
+
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 			{
 				m_logger(LL_INFORMATION) << "IPv4 address: " << m_configuration.tap_adapter.ipv4_address_prefix_length;
 
-				try
-				{
 #ifdef WINDOWS
-					// Quick fix for Windows:
-					// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
-					// We disable direct setting if DHCP is enabled.
+				// Quick fix for Windows:
+				// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
+				// We disable direct setting if DHCP is enabled.
 
-					if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
-					{
-						m_tap_adapter->add_ip_address_v4(
-						    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-						    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-						);
-					}
-#else
-					m_tap_adapter->add_ip_address_v4(
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-					);
-#endif
-				}
-				catch (std::runtime_error& ex)
+				if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
 				{
-					m_logger(LL_WARNING) << "Cannot set IPv4 address: " << ex.what();
+					tap_config.ipv4 = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
 				}
+#else
+				tap_config.ipv4 = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
+#endif
 			}
 			else
 			{
@@ -1171,17 +1160,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "IPv6 address: " << m_configuration.tap_adapter.ipv6_address_prefix_length;
 
-				try
-				{
-					m_tap_adapter->add_ip_address_v6(
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
-					);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot set IPv6 address: " << ex.what();
-				}
+				tap_config.ipv6 = { m_configuration.tap_adapter.ipv6_address_prefix_length.address(), m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length() };
 			}
 			else
 			{
@@ -1192,9 +1171,11 @@ namespace freelan
 			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
-					m_tap_adapter->set_remote_ip_address_v4(m_configuration.tap_adapter.ipv4_address_prefix_length.address(), *m_configuration.tap_adapter.remote_ipv4_address);
+					tap_config.remote_ipv4_address = *m_configuration.tap_adapter.remote_ipv4_address;
 				}
 			}
+
+			m_tap_adapter->set_ip_configuration(tap_config);
 
 			m_tap_adapter->set_connected_state(true);
 
@@ -1273,38 +1254,6 @@ namespace freelan
 
 			m_tap_adapter->cancel();
 			m_tap_adapter->set_connected_state(false);
-
-			// IPv6 address
-			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
-			{
-				try
-				{
-					m_tap_adapter->remove_ip_address_v6(
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length()
-					);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot unset IPv6 address: " << ex.what();
-				}
-			}
-
-			// IPv4 address
-			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
-			{
-				try
-				{
-					m_tap_adapter->remove_ip_address_v4(
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.address(),
-					    m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length()
-					);
-				}
-				catch (std::runtime_error& ex)
-				{
-					m_logger(LL_WARNING) << "Cannot unset IPv4 address: " << ex.what();
-				}
-			}
 
 			m_tap_adapter->close();
 		}
