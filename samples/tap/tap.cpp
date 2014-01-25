@@ -223,9 +223,12 @@ int main()
 		stop_function = boost::bind(&close_tap_adapter, boost::ref(tap_adapter));
 
 		tap_adapter.open();
+
 		asiotap::ip_configuration config;
 		config.ipv4 = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
 		config.ipv6 = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
+
+		tap_adapter.set_ip_configuration(config);
 
 		tap_adapter.set_connected_state(true);
 

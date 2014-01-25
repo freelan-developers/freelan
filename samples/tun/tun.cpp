@@ -182,8 +182,6 @@ void dhcp_frame_read(asiotap::osi::const_helper<asiotap::osi::dhcp_frame> frame)
 
 void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
 {
-	tap_adapter.remove_ip_address_v6(boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64);
-	tap_adapter.remove_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
 	tap_adapter.cancel();
 	tap_adapter.set_connected_state(false);
 	tap_adapter.close();
@@ -205,9 +203,14 @@ int main()
 		stop_function = boost::bind(&close_tap_adapter, boost::ref(tap_adapter));
 
 		tap_adapter.open();
-		tap_adapter.add_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
-		tap_adapter.add_ip_address_v6(boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64);
-		tap_adapter.set_remote_ip_address_v4(boost::asio::ip::address_v4::from_string("9.0.0.1"), boost::asio::ip::address_v4::from_string("9.0.0.0"));
+
+		asiotap::ip_configuration config;
+		config.ipv4 = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
+		config.ipv6 = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
+		config.remote_ipv4_address = boost::asio::ip::address_v4::from_string("9.0.0.0");
+
+		tap_adapter.set_ip_configuration(config);
+
 		tap_adapter.set_connected_state(true);
 
 		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
@@ -216,7 +219,12 @@ int main()
 
 		std::cout << "Current IP addresses for the interface:" << std::endl;
 
-		for(auto&& address : addresses)
+		for(auto&& address : addresses.ipv4)
+		{
+			std::cout << address << std::endl;
+		}
+
+		for(auto&& address : addresses.ipv6)
 		{
 			std::cout << address << std::endl;
 		}
