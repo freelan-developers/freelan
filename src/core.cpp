@@ -1366,6 +1366,10 @@ namespace freelan
 		{
 			const boost::asio::const_buffer data = buffer(receive_buffer, count);
 
+#ifdef FREELAN_DEBUG
+			std::cerr << "Read " << buffer_size(data) << " byte(s) on " << *m_tap_adapter << std::endl;
+#endif
+
 			if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ethernet)
 			{
 				bool handled = false;

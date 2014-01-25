@@ -58,6 +58,17 @@ namespace freelan
 	{
 		const port_list_type::const_iterator port_entry = get_target_for(index, data);
 
+#if FREELAN_DEBUG
+		if (port_entry != m_ports.end())
+		{
+			std::cerr << "Routing " << buffer_size(data) << " byte(s) of data from " << index << " to " << port_entry->first << std::endl;
+		}
+		else
+		{
+			std::cerr << "Routing " << buffer_size(data) << " byte(s) of data from " << index << ": no route." << std::endl;
+		}
+#endif
+
 		if (port_entry != m_ports.end())
 		{
 			port_entry->second.async_write(data, handler);

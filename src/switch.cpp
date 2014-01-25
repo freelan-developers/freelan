@@ -118,13 +118,28 @@ namespace freelan
 	{
 		typedef results_gatherer<port_index_type, boost::system::error_code, multi_write_handler_type> results_gatherer_type;
 
-		results_gatherer_type::set_type targets = get_targets_for(index, data);
+		const auto targets = get_targets_for(index, data);
+
+#if FREELAN_DEBUG
+		if (!targets.empty())
+		{
+			std::cerr << "Switching " << buffer_size(data) << " byte(s) of data from " << index << " to " << targets.size() << " host(s)." << std::endl;
+		}
+		else
+		{
+			std::cerr << "Switching " << buffer_size(data) << " byte(s) of data from " << index << ": no targets." << std::endl;
+		}
+#endif
 
 		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
 
-		for (results_gatherer_type::set_type::const_iterator target_entry = targets.begin(); target_entry != targets.end(); ++target_entry)
+		for (auto&& target : targets)
 		{
-			m_ports[*target_entry].async_write(data, boost::bind(&results_gatherer_type::gather, rg, *target_entry, _1));
+#if FREELAN_DEBUG
+			std::cerr << index << "-> " << target << std::endl;
+#endif
+
+			m_ports[target].async_write(data, boost::bind(&results_gatherer_type::gather, rg, target, _1));
 		}
 	}
 
