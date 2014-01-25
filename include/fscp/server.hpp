@@ -129,6 +129,11 @@ namespace fscp
 			typedef boost::function<void (const boost::system::error_code&)> simple_handler_type;
 
 			/**
+			 * \brief A boolean operation handler.
+			 */
+			typedef boost::function<void (bool)> boolean_handler_type;
+
+			/**
 			 * \brief An operation handler for multiple endpoints.
 			 */
 			typedef boost::function<void (const std::map<ep_type, boost::system::error_code>&)> multiple_endpoints_handler_type;
@@ -595,6 +600,23 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			std::set<ep_type> sync_get_session_endpoints();
+
+			/**
+			 * \brief Check if a session exists with the specified endpoint.
+			 * \param handler The handler to call with the result.
+			 */
+			void async_has_session_with_endpoint(const ep_type& host, boolean_handler_type handler)
+			{
+				m_session_strand.post(boost::bind(&server::do_has_session_with_endpoint, this, host, handler));
+			}
+
+			/**
+			 * \brief Check if a session exists with the specified endpoint.
+			 * \param handler The handler to call with the result.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			bool sync_has_session_with_endpoint(const ep_type& host);
 
 			/**
 			 * \brief Set the default acceptance behavior of incoming session requests.
@@ -1358,7 +1380,9 @@ namespace fscp
 			void do_handle_clear_session_request(const identity_store&, const ep_type&, const clear_session_request_message&);
 
 			std::set<ep_type> get_session_endpoints() const;
+			bool has_session_with_endpoint(const ep_type&);
 			void do_get_session_endpoints(endpoints_handler_type);
+			void do_has_session_with_endpoint(const ep_type&, boolean_handler_type);
 			void do_set_accept_session_request_messages_default(bool, void_handler_type);
 			void do_set_cipher_capabilities(cipher_algorithm_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);

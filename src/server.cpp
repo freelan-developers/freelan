@@ -526,6 +526,19 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
+	bool server::sync_has_session_with_endpoint(const ep_type& host)
+	{
+		typedef bool result_type;
+		typedef boost::promise<result_type> promise_type;
+		promise_type promise;
+
+		void (promise_type::*setter)(const result_type&) = &promise_type::set_value;
+
+		async_has_session_with_endpoint(host, boost::bind(setter, &promise, _1));
+
+		return promise.get_future().get();
+	}
+
 	boost::system::error_code server::sync_request_session(const ep_type& target)
 	{
 		typedef boost::promise<boost::system::error_code> promise_type;
@@ -1634,10 +1647,29 @@ namespace fscp
 		return result;
 	}
 
+	bool server::has_session_with_endpoint(const ep_type& host)
+	{
+		// All has_session_with_endpoint() calls are done in the same strand so the following is thread-safe.
+		const auto session = m_session_map.find(host);
+
+		if (session != m_session_map.end())
+		{
+			return session->second.has_remote_session();
+		}
+
+		return false;
+	}
+
 	void server::do_get_session_endpoints(endpoints_handler_type handler)
 	{
 		// All do_get_session_endpoints() calls are done in the same strand so the following is thread-safe.
 		handler(get_session_endpoints());
+	}
+
+	void server::do_has_session_with_endpoint(const ep_type& host, boolean_handler_type handler)
+	{
+		// All do_has_session_with_endpoint() calls are done in the same strand so the following is thread-safe.
+		handler(has_session_with_endpoint(host));
 	}
 
 	void server::do_set_accept_session_request_messages_default(bool value, void_handler_type handler)
