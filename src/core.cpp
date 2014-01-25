@@ -392,26 +392,32 @@ namespace freelan
 	{
 		m_logger(LL_DEBUG) << "Resolving " << target << " for potential contact...";
 
-		const auto resolve_handler = [this, handler, target] (const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it)
+		// This is a ugly workaround for a bug in Boost::Variant (<1.55)
+		endpoint target1 = target;
+
+		const auto resolve_handler = [this, handler, target1] (const boost::system::error_code& ec, boost::asio::ip::udp::resolver::iterator it)
 		{
 			if (!ec)
 			{
 				const ep_type host = *it;
 
+				// This is a ugly workaround for a bug in Boost::Variant (<1.55)
+				endpoint target2 = target1;
+
 				// The host was resolved: we first make sure no session exist with that host before doing anything else.
 				m_server->async_has_session_with_endpoint(
 					host,
-					[this, handler, host, target] (bool has_session)
+					[this, handler, host, target2] (bool has_session)
 					{
 						if (!has_session)
 						{
-							m_logger(LL_DEBUG) << "No session exists with " << target << " (at " << host << "). Contacting...";
+							m_logger(LL_DEBUG) << "No session exists with " << target2 << " (at " << host << "). Contacting...";
 
 							do_contact(host, handler);
 						}
 						else
 						{
-							m_logger(LL_DEBUG) << "A session already exists with " << target << " (at " << host << "). Not contacting again.";
+							m_logger(LL_DEBUG) << "A session already exists with " << target2 << " (at " << host << "). Not contacting again.";
 						}
 					}
 				);
