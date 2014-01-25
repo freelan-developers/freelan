@@ -560,9 +560,9 @@ namespace asiotap
 		}
 	}
 
-	std::vector<ip_address_prefix_length> posix_tap_adapter::get_ip_addresses()
+	ip_addresses posix_tap_adapter::get_ip_addresses()
 	{
-		std::vector<ip_address_prefix_length> result;
+		ip_addresses result;
 
 		struct ifaddrs* addrs = nullptr;
 
@@ -597,7 +597,7 @@ namespace asiotap
 						prefix_len = netmask_to_prefix_len(sain->sin_addr);
 					}
 
-					result.push_back({ address, prefix_len });
+					result.ipv4.push_back({ address, prefix_len });
 				}
 				else if (ifa->ifa_addr->sa_family == AF_INET6)
 				{
@@ -617,7 +617,7 @@ namespace asiotap
 						prefix_len = netmask_to_prefix_len(sain->sin6_addr);
 					}
 
-					result.push_back({ address, prefix_len });
+					result.ipv6.push_back({ address, prefix_len });
 				}
 			}
 		}
@@ -625,7 +625,25 @@ namespace asiotap
 		return result;
 	}
 
-	void posix_tap_adapter::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	void posix_tap_adapter::set_ip_configuration(const ip_configuration& config)
+	{
+		if (config.ipv4)
+		{
+			set_ip_address_v4(config.ipv4->ip_address, config.ipv4->prefix_length);
+		}
+
+		if (config.remote_ipv4_address)
+		{
+			set_remote_ip_address_v4(*config.remote_ipv4_address);
+		}
+
+		if (config.ipv6)
+		{
+			set_ip_address_v6(config.ipv6->ip_address, config.ipv6->prefix_length);
+		}
+	}
+
+	void posix_tap_adapter::set_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
 	{
 		assert(prefix_len < 32);
 
@@ -680,42 +698,7 @@ namespace asiotap
 		}
 	}
 
-	void posix_tap_adapter::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
-	{
-		static_cast<void>(prefix_len);
-
-#if defined(LINUX)
-		static_cast<void>(address);
-
-		add_ip_address_v4(boost::asio::ip::address_v4::any(), 0);
-#elif defined(BSD) || defined(MACINTOSH)
-		unsigned int if_index = if_nametoindex(name().c_str());
-
-		ifaliasreq ifr {};
-
-		if (if_indextoname(if_index, ifr.ifra_name) == NULL)
-		{
-			throw boost::system::system_error(errno, boost::system::system_category());
-		}
-
-		sockaddr_in* ifraddr = reinterpret_cast<sockaddr_in*>(&ifr.ifra_addr);
-		std::memcpy(&ifraddr->sin_addr, address.to_bytes().data(), address.to_bytes().size());
-		ifraddr->sin_family = AF_INET;
-
-#ifdef BSD
-		ifraddr->sin_len = sizeof(struct sockaddr_in);
-#endif
-
-		descriptor_handler socket = open_socket(AF_INET);
-
-		if (::ioctl(socket.native_handle(), SIOCDIFADDR, &ifr) < 0)
-		{
-			throw boost::system::system_error(errno, boost::system::system_category());
-		}
-#endif
-	}
-
-	void posix_tap_adapter::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	void posix_tap_adapter::set_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
 	{
 		descriptor_handler socket = open_socket(AF_INET6);
 
@@ -763,59 +746,8 @@ namespace asiotap
 		}
 	}
 
-	void posix_tap_adapter::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& remote_address)
 	{
-		descriptor_handler socket = open_socket(AF_INET6);
-
-#ifdef LINUX
-		const unsigned int if_index = ::if_nametoindex(name().c_str());
-
-		if (if_index == 0)
-		{
-			throw boost::system::system_error(errno, boost::system::system_category());
-		}
-
-		in6_ifreq ifr {};
-		std::memcpy(&ifr.ifr6_addr, address.to_bytes().data(), address.to_bytes().size());
-		ifr.ifr6_prefixlen = prefix_len;
-		ifr.ifr6_ifindex = if_index;
-
-		if (::ioctl(socket.native_handle(), SIOCDIFADDR, &ifr) < 0)
-#elif defined(MACINTOSH) || defined(BSD)
-		in6_aliasreq iar;
-		std::memset(&iar, 0x00, sizeof(iar));
-		std::memcpy(iar.ifra_name, name().c_str(), name().length());
-		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
-		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().data(), address.to_bytes().size());
-		std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
-		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
-		iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
-		iar.ifra_lifetime.ia6t_vltime = 0xFFFFFFFF;
-
-#ifdef SIN6_LEN
-		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_len = sizeof(sockaddr_in6);
-		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_len = sizeof(sockaddr_in6);
-#endif
-
-		if (::ioctl(socket.native_handle(), SIOCDIFADDR_IN6, &iar) < 0)
-#endif
-		{
-			if (errno == EEXIST)
-			{
-				// The address is already set. We ignore this.
-			}
-			else
-			{
-				throw boost::system::system_error(errno, boost::system::system_category());
-			}
-		}
-	}
-
-	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote)
-	{
-		static_cast<void>(local);
-
 		if (layer() != tap_adapter_layer::ip)
 		{
 			throw boost::system::system_error(make_error_code(asiotap_error::invalid_tap_adapter_layer));
@@ -831,7 +763,7 @@ namespace asiotap
 #ifdef BSD
 		ifr_dst_addr->sin_len = sizeof(sockaddr_in);
 #endif
-		std::memcpy(&ifr_dst_addr->sin_addr.s_addr, remote.to_bytes().data(), remote.to_bytes().size());
+		std::memcpy(&ifr_dst_addr->sin_addr.s_addr, remote_address.to_bytes().data(), remote_address.to_bytes().size());
 
 		if (::ioctl(socket.native_handle(), SIOCSIFDSTADDR, &ifr_d) < 0)
 		{
