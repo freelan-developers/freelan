@@ -71,7 +71,8 @@ namespace asiotap
 		no_ethernet_address,
 		process_handle_expected,
 		external_process_failed,
-		no_such_tap_adapter
+		no_such_tap_adapter,
+		invalid_ip_configuration
 	};
 
 	/**

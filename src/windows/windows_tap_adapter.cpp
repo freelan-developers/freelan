@@ -206,6 +206,27 @@ namespace asiotap
 			}
 		}
 
+		void netsh_set_address(const std::string& address_family, size_t interface_index, const std::string& address, unsigned int prefix_len)
+		{
+			std::ostringstream oss;
+
+			oss << "int " << address_family << " set address " << interface_index << " " << address;
+
+			OSVERSIONINFO os_version;
+			os_version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+			::GetVersionEx(&os_version);
+
+			// The /prefix parameter is only supported after Windows XP
+			if (os_version.dwMajorVersion >= 6)
+			{
+				oss << "/" << prefix_len;
+			}
+
+			oss << " store=active";
+
+			netsh_execute(oss.str());
+		}
+
 		void netsh_add_address(const std::string& address_family, size_t interface_index, const std::string& address, unsigned int prefix_len)
 		{
 			std::ostringstream oss;
@@ -400,9 +421,9 @@ namespace asiotap
 		}
 	}
 
-	std::vector<ip_address_prefix_length> windows_tap_adapter::get_ip_addresses()
+	ip_addresses windows_tap_adapter::get_ip_addresses()
 	{
-		std::vector<ip_address_prefix_length> result;
+		ip_addresses result;
 
 		DWORD status;
 
@@ -447,7 +468,7 @@ namespace asiotap
 						boost::asio::ip::address_v4 address(bytes);
 						prefix_len = unicast_address->OnLinkPrefixLength;
 
-						result.push_back({ address, prefix_len });
+						result.ipv4.push_back({ address, prefix_len });
 					}
 					else
 					{
@@ -459,7 +480,7 @@ namespace asiotap
 						boost::asio::ip::address_v6 address(bytes);
 						prefix_len = unicast_address->OnLinkPrefixLength;
 
-						result.push_back({ address, prefix_len });
+						result.ipv6.push_back({ address, prefix_len });
 					}
 				}
 			}
@@ -468,19 +489,26 @@ namespace asiotap
 		return result;
 	}
 
-	void windows_tap_adapter::add_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	void windows_tap_adapter::set_ip_configuration(const ip_configuration& config)
 	{
-		assert(prefix_len < 32);
-
-		// In TUN mode, we need to perform an ioctl with some IPv4 parameters
 		if (layer() == tap_adapter_layer::ip)
 		{
+			if (!config.ipv4)
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
+			}
+
+			if (!config.remote_ipv4_address)
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
+			}
+
 			uint8_t param[12];
 			DWORD len = 0;
 
-			boost::asio::ip::address_v4::bytes_type addr = address.to_bytes();
-			uint32_t netmask = htonl((0xFFFFFFFF >> (32 - prefix_len)) << (32 - prefix_len));
-			uint32_t network = htonl(address.to_ulong()) & netmask;
+			const boost::asio::ip::address_v4::bytes_type addr = config.ipv4->ip_address.to_bytes();
+			const uint32_t netmask = htonl((0xFFFFFFFF >> (32 - config.ipv4->prefix_length)) << (32 - config.ipv4->prefix_length));
+			const uint32_t network = htonl(config.remote_ipv4_address->to_ulong()) & netmask;
 
 			// address
 			std::memcpy(param, addr.data(), addr.size());
@@ -494,48 +522,22 @@ namespace asiotap
 				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 			}
 		}
-
-		netsh_add_address("ipv4", m_interface_index, address.to_string(), prefix_len);
-	}
-
-	void windows_tap_adapter::remove_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int)
-	{
-		netsh_remove_address("ipv4", m_interface_index, address.to_string());
-	}
-
-	void windows_tap_adapter::add_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
-	{
-		netsh_add_address("ipv6", m_interface_index, address.to_string(), prefix_len);
-	}
-
-	void windows_tap_adapter::remove_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int)
-	{
-		netsh_remove_address("ipv6", m_interface_index, address.to_string());
-	}
-
-	void windows_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& local, const boost::asio::ip::address_v4& remote)
-	{
-		if (layer() != tap_adapter_layer::ip)
+		else
 		{
-			throw boost::system::system_error(make_error_code(asiotap_error::invalid_tap_adapter_layer));
+			if (config.remote_ipv4_address)
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
+			}
 		}
 
-		const std::vector<ip_address_prefix_length> ip_addresses = get_ip_addresses();
-
-		uint8_t param[8];
-		DWORD len = 0;
-
-		boost::asio::ip::address_v4::bytes_type v4addr = local.to_bytes();
-		boost::asio::ip::address_v4::bytes_type v4network = remote.to_bytes();
-
-		// Address goes first.
-		std::memcpy(param, v4addr.data(), v4addr.size());
-		// Then goes the network.
-		std::memcpy(param + 4, v4network.data(), v4network.size());
-
-		if (!::DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_CONFIG_POINT_TO_POINT, param, sizeof(param), NULL, 0, &len, NULL))
+		if (config.ipv4)
 		{
-			throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			netsh_set_address("ipv4", m_interface_index, config.ipv4->ip_address.to_string(), config.ipv4->prefix_length);
+		}
+
+		if (config.ipv6)
+		{
+			netsh_set_address("ipv6", m_interface_index, config.ipv6->ip_address.to_string(), config.ipv6->prefix_length);
 		}
 	}
 }

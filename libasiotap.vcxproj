@@ -62,6 +62,7 @@
     <ClCompile Include="src\ipv6_filter.cpp" />
     <ClCompile Include="src\ipv6_frame.cpp" />
     <ClCompile Include="src\ipv6_helper.cpp" />
+    <ClCompile Include="src\ip_configuration.cpp" />
     <ClCompile Include="src\proxy.cpp" />
     <ClCompile Include="src\udp_builder.cpp" />
     <ClCompile Include="src\udp_filter.cpp" />
@@ -73,6 +74,7 @@
     <ClInclude Include="include\asiotap\asiotap.hpp" />
     <ClInclude Include="include\asiotap\base_tap_adapter.hpp" />
     <ClInclude Include="include\asiotap\error.hpp" />
+    <ClInclude Include="include\asiotap\ip_configuration.hpp" />
     <ClInclude Include="include\asiotap\os.hpp" />
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\arp_filter.hpp" />

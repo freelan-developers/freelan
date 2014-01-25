@@ -52,6 +52,7 @@
 #include <iomanip>
 
 #include "osi/ethernet_address.hpp"
+#include "ip_configuration.hpp"
 #include "os.hpp"
 #include "error.hpp"
 
@@ -80,49 +81,7 @@ namespace asiotap
 		return os;
 	}
 
-	/**
-	 * \brief An IP address and prefix length type.
-	 */
-	struct ip_address_prefix_length
-	{
-		boost::asio::ip::address ip_address;
-		unsigned int prefix_length;
-
-		friend bool operator<(const ip_address_prefix_length& lhs, const ip_address_prefix_length& rhs)
-		{
-			if (lhs.ip_address < rhs.ip_address)
-			{
-				return true;
-			}
-			else if (lhs.ip_address == rhs.ip_address)
-			{
-				return (lhs.prefix_length < rhs.prefix_length);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		friend bool operator==(const ip_address_prefix_length& lhs, const ip_address_prefix_length& rhs)
-		{
-			return ((lhs.ip_address == rhs.ip_address) && (lhs.prefix_length == rhs.prefix_length));
-		}
-
-		friend std::ostream& operator<<(std::ostream& os, const ip_address_prefix_length& v)
-		{
-			if (v.ip_address.is_v6())
-			{
-				return os << "[" << v.ip_address << "]:" << v.prefix_length;
-			}
-			else
-			{
-				return os << v.ip_address << ":" << v.prefix_length;
-			}
-		}
-	};
-
-	template <typename DescriptorType, typename DerivedType>
+	template <typename DescriptorType>
 	class base_tap_adapter
 	{
 		public:
@@ -286,50 +245,6 @@ namespace asiotap
 			boost::system::error_code close(boost::system::error_code& ec)
 			{
 				return m_descriptor.close(ec);
-			}
-
-			/**
-			 * \brief Add an IP address to the tap adapter.
-			 * \param address The address.
-			 * \param prefix_len The prefix length, in bits.
-			 * \warning If a serious error occurs, an exception will be thrown.
-			 */
-			void add_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
-			{
-				if (address.is_v4())
-				{
-					return static_cast<DerivedType*>(this)->add_ip_address_v4(address.to_v4(), prefix_len);
-				}
-				else if (address.is_v6())
-				{
-					return static_cast<DerivedType*>(this)->add_ip_address_v6(address.to_v6(), prefix_len);
-				}
-				else
-				{
-					throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
-				}
-			}
-
-			/**
-			 * \brief Remove an IP address from the tap adapter.
-			 * \param address The address.
-			 * \param prefix_len The prefix length, in bits.
-			 * \warning If a serious error occurs, an exception will be thrown.
-			 */
-			void remove_ip_address(const boost::asio::ip::address& address, unsigned int prefix_len)
-			{
-				if (address.is_v4())
-				{
-					return static_cast<DerivedType*>(this)->remove_ip_address_v4(address.to_v4(), prefix_len);
-				}
-				else if (address.is_v6())
-				{
-					return static_cast<DerivedType*>(this)->remove_ip_address_v6(address.to_v6(), prefix_len);
-				}
-				else
-				{
-					throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
-				}
 			}
 
 		protected:
