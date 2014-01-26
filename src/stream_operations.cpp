@@ -204,7 +204,7 @@ namespace asiotap
 
 	bool is_hostname_label_regular_character(char c)
 	{
-		return std::isalnum(c);
+		return (std::isalnum(c) != 0);
 	}
 
 	bool is_hostname_label_special_character(char c)

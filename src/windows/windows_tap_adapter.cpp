@@ -206,16 +206,6 @@ namespace asiotap
 			}
 		}
 
-		void netsh_set_address(size_t interface_index, const ipv4_network_address& network_address)
-		{
-			network_address("ipv4", interface_index, network_address.address().to_string(), network_address.prefix_length());
-		}
-
-		void netsh_set_address(size_t interface_index, const ipv6_network_address& network_address)
-		{
-			network_address("ipv6", interface_index, network_address.address().to_string(), network_address.prefix_length());
-		}
-
 		void netsh_set_address(const std::string& address_family, size_t interface_index, const std::string& address, unsigned int prefix_len)
 		{
 			std::ostringstream oss;
@@ -235,6 +225,16 @@ namespace asiotap
 			oss << " store=active";
 
 			netsh_execute(oss.str());
+		}
+
+		void netsh_set_address(size_t interface_index, const ipv4_network_address& network_address)
+		{
+			netsh_set_address("ipv4", interface_index, network_address.address().to_string(), network_address.prefix_length());
+		}
+
+		void netsh_set_address(size_t interface_index, const ipv6_network_address& network_address)
+		{
+			netsh_set_address("ipv6", interface_index, network_address.address().to_string(), network_address.prefix_length());
 		}
 	}
 
@@ -512,12 +512,12 @@ namespace asiotap
 
 		if (configuration.ipv4.network_address)
 		{
-			netsh_set_address(m_interface_index, configuration.ipv4.network_address);
+			netsh_set_address(m_interface_index, *configuration.ipv4.network_address);
 		}
 
 		if (configuration.ipv6.network_address)
 		{
-			netsh_set_address(m_interface_index, configuration.ipv6.network_address);
+			netsh_set_address(m_interface_index, *configuration.ipv6.network_address);
 		}
 	}
 }

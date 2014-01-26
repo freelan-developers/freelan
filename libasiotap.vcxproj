@@ -42,6 +42,7 @@
     <ClCompile Include="src\dhcp_option_helper.cpp" />
     <ClCompile Include="src\dhcp_option_helper_iterator.cpp" />
     <ClCompile Include="src\dhcp_proxy.cpp" />
+    <ClCompile Include="src\endpoint.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\ethernet_address.cpp" />
     <ClCompile Include="src\ethernet_builder.cpp" />
@@ -51,6 +52,7 @@
     <ClCompile Include="src\filter.cpp" />
     <ClCompile Include="src\frame.cpp" />
     <ClCompile Include="src\helper.cpp" />
+    <ClCompile Include="src\hostname_endpoint.cpp" />
     <ClCompile Include="src\icmp_builder.cpp" />
     <ClCompile Include="src\icmp_filter.cpp" />
     <ClCompile Include="src\icmp_frame.cpp" />
@@ -62,9 +64,10 @@
     <ClCompile Include="src\ipv6_filter.cpp" />
     <ClCompile Include="src\ipv6_frame.cpp" />
     <ClCompile Include="src\ipv6_helper.cpp" />
-    <ClCompile Include="src\ip_configuration.cpp" />
+    <ClCompile Include="src\ip_endpoint.cpp" />
     <ClCompile Include="src\ip_network_address.cpp" />
     <ClCompile Include="src\proxy.cpp" />
+    <ClCompile Include="src\stream_operations.cpp" />
     <ClCompile Include="src\udp_builder.cpp" />
     <ClCompile Include="src\udp_filter.cpp" />
     <ClCompile Include="src\udp_frame.cpp" />
@@ -75,8 +78,6 @@
     <ClInclude Include="include\asiotap\asiotap.hpp" />
     <ClInclude Include="include\asiotap\base_tap_adapter.hpp" />
     <ClInclude Include="include\asiotap\error.hpp" />
-    <ClInclude Include="include\asiotap\ip_configuration.hpp" />
-    <ClInclude Include="include\asiotap\ip_network_address.hpp" />
     <ClInclude Include="include\asiotap\os.hpp" />
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\arp_filter.hpp" />
@@ -124,7 +125,14 @@
     <ClInclude Include="include\asiotap\osi\udp_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\udp_helper.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter.hpp" />
+    <ClInclude Include="include\asiotap\tap_adapter_configuration.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter_impl.hpp" />
+    <ClInclude Include="include\asiotap\tap_adapter_layer.hpp" />
+    <ClInclude Include="include\asiotap\types\endpoint.hpp" />
+    <ClInclude Include="include\asiotap\types\hostname_endpoint.hpp" />
+    <ClInclude Include="include\asiotap\types\ip_endpoint.hpp" />
+    <ClInclude Include="include\asiotap\types\ip_network_address.hpp" />
+    <ClInclude Include="include\asiotap\types\stream_operations.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp" />
     <ClInclude Include="src\windows\registry.hpp" />
   </ItemGroup>
