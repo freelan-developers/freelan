@@ -204,12 +204,12 @@ int main()
 
 		tap_adapter.open();
 
-		asiotap::ip_configuration config;
-		config.ipv4 = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
-		config.ipv6 = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
-		config.remote_ipv4_address = boost::asio::ip::address_v4::from_string("9.0.0.0");
+		asiotap::tap_adapter_configuration configuration;
+		configuration.ipv4.network_address = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
+		configuration.ipv4.remote_address = boost::asio::ip::address_v4::from_string("9.0.0.0");
+		configuration.ipv6.network_address = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
 
-		tap_adapter.set_ip_configuration(config);
+		tap_adapter.configure(configuration);
 
 		tap_adapter.set_connected_state(true);
 
@@ -219,12 +219,7 @@ int main()
 
 		std::cout << "Current IP addresses for the interface:" << std::endl;
 
-		for(auto&& address : addresses.ipv4)
-		{
-			std::cout << address << std::endl;
-		}
-
-		for(auto&& address : addresses.ipv6)
+		for(auto&& address : addresses)
 		{
 			std::cout << address << std::endl;
 		}

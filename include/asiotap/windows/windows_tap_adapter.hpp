@@ -88,25 +88,22 @@ namespace asiotap
 
 			/**
 			 * \brief Open the first available tap adapter.
-			 * \param mtu The MTU to set on the tap adapter.
 			 * \param ec The error code.
 			 */
-			void open(size_t mtu, boost::system::error_code& ec);
+			void open(boost::system::error_code& ec);
 
 			/**
 			 * \brief Open the tap adapter.
 			 * \param name The name of the tap adapter to open.
-			 * \param mtu The MTU to set on the tap adapter.
 			 * \param ec The error code.
 			 */
-			void open(const std::string& name, size_t mtu, boost::system::error_code& ec);
+			void open(const std::string& name, boost::system::error_code& ec);
 
 			/**
 			 * \brief Open the tap adapter.
 			 * \param name The name of the tap adapter to open. If name is empty, then the first available tap adapter is opened.
-			 * \param mtu The MTU to set on the tap adapter.
 			 */
-			void open(const std::string& name = "", size_t mtu = 0);
+			void open(const std::string& name = "");
 
 			/**
 			 * \brief Set the tap adapter connected state.
@@ -118,14 +115,14 @@ namespace asiotap
 			 * \brief Get the IP addresses of the adapter.
 			 * \return The IP addresses.
 			 */
-			ip_addresses get_ip_addresses();
+			ip_network_address_list get_ip_addresses();
 
 			/**
-			 * \brief Set the IP configuration of the adapter.
-			 * \param config The IP configuration.
+			 * \brief Configure the tap adapter.
+			 * \param configuration The IP configuration.
 			 * \warning If a serious error occurs, an exception will be thrown.
 			 */
-			void set_ip_configuration(const ip_configuration& config);
+			void configure(const configuration_type& configuration);
 
 		private:
 

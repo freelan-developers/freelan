@@ -49,38 +49,15 @@
 #include <boost/system/system_error.hpp>
 
 #include <iostream>
-#include <iomanip>
 
 #include "osi/ethernet_address.hpp"
-#include "ip_configuration.hpp"
+#include "tap_adapter_layer.hpp"
+#include "tap_adapter_configuration.hpp"
 #include "os.hpp"
 #include "error.hpp"
 
 namespace asiotap
 {
-	/**
-	 * \brief The tap adapter layers.
-	 */
-	enum class tap_adapter_layer
-	{
-		ethernet,
-		ip
-	};
-
-	inline std::ostream& operator<<(std::ostream& os, const tap_adapter_layer& value)
-	{
-		switch (value)
-		{
-		case tap_adapter_layer::ethernet:
-			return os << "ethernet";
-		case tap_adapter_layer::ip:
-			return os << "ip";
-		}
-
-		assert(false);
-		return os;
-	}
-
 	template <typename DescriptorType>
 	class base_tap_adapter
 	{
@@ -90,6 +67,16 @@ namespace asiotap
 			 * \brief The descriptor type.
 			 */
 			typedef DescriptorType descriptor_type;
+
+			/**
+			 * \brief The layer type.
+			 */
+			typedef tap_adapter_layer layer_type;
+
+			/**
+			 * \brief The configuration type.
+			 */
+			typedef tap_adapter_configuration configuration_type;
 
 			/**
 			 * \brief Read some data from the tap adapter.

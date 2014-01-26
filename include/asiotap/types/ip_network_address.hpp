@@ -139,12 +139,24 @@ namespace asiotap
 
 			friend bool operator==(const base_ip_network_address& lhs, const base_ip_network_address& rhs)
 			{
-				return (lhs.address() == rhs.address()) && (lhs.m_prefix_length == rhs.m_prefix_length);
+				return (lhs.address() == rhs.address()) && (lhs.prefix_length() == rhs.prefix_length());
 			}
 
 			friend bool operator!=(const base_ip_network_address& lhs, const base_ip_network_address& rhs)
 			{
 				return !(lhs == rhs);
+			}
+
+			friend bool operator<(const base_ip_network_address& lhs, const base_ip_network_address& rhs)
+			{
+				if (lhs.address() == rhs.address())
+				{
+					return (lhs.prefix_length() < rhs.prefix_length());
+				}
+				else
+				{
+					return (lhs.address() < rhs.address());
+				}
 			}
 	};
 
@@ -184,6 +196,21 @@ namespace asiotap
 	typedef boost::variant<ipv4_network_address, ipv6_network_address> ip_network_address;
 
 	/**
+	 * \brief An IPv4 network list type.
+	 */
+	typedef std::vector<ipv4_network_address> ipv4_network_address_list;
+
+	/**
+	 * \brief An IPv6 network list type.
+	 */
+	typedef std::vector<ipv6_network_address> ipv6_network_address_list;
+
+	/**
+	 * \brief A generic IP network list type.
+	 */
+	typedef std::vector<ip_network_address> ip_network_address_list;
+
+	/**
 	 * \brief Convert an IP address into a network address.
 	 * \param addr The address.
 	 * \return The network address.
@@ -217,21 +244,6 @@ namespace asiotap
 			return ipv6_network_address(addr.to_v6(), prefix_len);
 		}
 	}
-
-	/**
-	 * \brief An IPv4 network list type.
-	 */
-	typedef std::vector<ipv4_network_address> ipv4_network_address_list;
-
-	/**
-	 * \brief An IPv6 network list type.
-	 */
-	typedef std::vector<ipv6_network_address> ipv6_network_address_list;
-
-	/**
-	 * \brief A generic IP network list type.
-	 */
-	typedef std::vector<ip_network_address> ip_network_address_list;
 
 	/**
 	 * \brief A visitor that writes ip_network_address to output streams.
@@ -281,17 +293,6 @@ namespace asiotap
 	 * \return is.
 	 */
 	std::istream& operator>>(std::istream& is, ip_network_address& value);
-
-	/**
-	 * \brief Compare two ip_network_address.
-	 * \param lhs The left argument.
-	 * \param rhs The right argument.
-	 * \return true if the two ip_network_address are different.
-	 */
-	inline bool operator!=(const ip_network_address& lhs, const ip_network_address& rhs)
-	{
-		return !(lhs == rhs);
-	}
 
 	/**
 	 * \brief A visitor that checks if the ip_network_address contains an address.
@@ -439,9 +440,9 @@ namespace asiotap
 	};
 
 	/**
-	 * \brief A generic routes list.
+	 * \brief A route list type.
 	 */
-	typedef std::set<ip_network_address, routes_compare> routes_type;
+	typedef std::set<ip_network_address, routes_compare> ip_routes_set;
 
 	/**
 	 * \brief Output the routes to a stream.
@@ -449,7 +450,7 @@ namespace asiotap
 	 * \param routes The routes to output.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, const routes_type& routes);
+	std::ostream& operator<<(std::ostream& os, const ip_routes_set& routes);
 }
 
 #endif /* ASIOTAP_IP_NETWORK_ADDRESS_HPP */

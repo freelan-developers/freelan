@@ -221,12 +221,12 @@ namespace asiotap
 		return result;
 	}
 
-	void posix_tap_adapter::open(size_t _mtu, boost::system::error_code& ec)
+	void posix_tap_adapter::open(boost::system::error_code& ec)
 	{
-		open("", _mtu, ec);
+		open("", ec);
 	}
 
-	void posix_tap_adapter::open(const std::string& _name, size_t _mtu, boost::system::error_code& ec)
+	void posix_tap_adapter::open(const std::string& _name, boost::system::error_code& ec)
 	{
 		ec = boost::system::error_code();
 
@@ -299,8 +299,10 @@ namespace asiotap
 		{
 			struct ifreq netifr {};
 
+			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
-				std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+
 			netifr.ifr_qlen = 100; // 100 is the default value
 
 			if (::ioctl(socket.native_handle(), SIOCSIFTXQLEN, (void *)&netifr) < 0)
@@ -312,31 +314,9 @@ namespace asiotap
 
 			// Reset the structure for the next call.
 			netifr = {};
+
+			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 #endif
-			// Set the MTU
-			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
-
-			if (_mtu > 0)
-			{
-				netifr.ifr_mtu = _mtu;
-
-				::ioctl(socket.native_handle(), SIOCSIFMTU, (void*)&netifr);
-			}
-
-			if (::ioctl(socket.native_handle(), SIOCGIFMTU, (void*)&netifr) >= 0)
-			{
-				set_mtu(netifr.ifr_mtu);
-			}
-			else
-			{
-				ec = boost::system::error_code(errno, boost::system::system_category());
-
-				return;
-			}
-
-			netifr = {};
-
-			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
 
 			// Get the interface hwaddr
 			if (::ioctl(socket.native_handle(), SIOCGIFHWADDR, (void*)&netifr) < 0)
@@ -410,31 +390,6 @@ namespace asiotap
 			return;
 		}
 
-		{
-			struct ifreq netifr {};
-
-			// Set the MTU
-			strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
-
-			if (_mtu > 0)
-			{
-				netifr.ifr_mtu = _mtu;
-
-				::ioctl(socket.native_handle(), SIOCSIFMTU, (void*)&netifr);
-			}
-
-			if (::ioctl(socket.native_handle(), SIOCGIFMTU, (void*)&netifr) >= 0)
-			{
-				set_mtu(netifr.ifr_mtu);
-			}
-			else
-			{
-				ec = boost::system::error_code(errno, boost::system::system_category());
-
-				return;
-			}
-		}
-
 		/* Get the hardware address of tap inteface. */
 		struct ifaddrs* addrs = nullptr;
 
@@ -467,17 +422,19 @@ namespace asiotap
 		}
 #endif
 
+		update_mtu_from_device();
+
 		if (descriptor().assign(device.release(), ec))
 		{
 			return;
 		}
 	}
 
-	void posix_tap_adapter::open(const std::string& _name, size_t _mtu)
+	void posix_tap_adapter::open(const std::string& _name)
 	{
 		boost::system::error_code ec;
 
-		open(_name, _mtu, ec);
+		open(_name, ec);
 
 		if (ec)
 		{
@@ -560,9 +517,9 @@ namespace asiotap
 		}
 	}
 
-	ip_addresses posix_tap_adapter::get_ip_addresses()
+	ip_network_address_list posix_tap_adapter::get_ip_addresses()
 	{
-		ip_addresses result;
+		ip_network_address_list result;
 
 		struct ifaddrs* addrs = nullptr;
 
@@ -597,7 +554,7 @@ namespace asiotap
 						prefix_len = netmask_to_prefix_len(sain->sin_addr);
 					}
 
-					result.ipv4.push_back({ address, prefix_len });
+					result.push_back(ipv4_network_address{ address, prefix_len });
 				}
 				else if (ifa->ifa_addr->sa_family == AF_INET6)
 				{
@@ -617,7 +574,7 @@ namespace asiotap
 						prefix_len = netmask_to_prefix_len(sain->sin6_addr);
 					}
 
-					result.ipv6.push_back({ address, prefix_len });
+					result.push_back(ipv6_network_address{ address, prefix_len });
 				}
 			}
 		}
@@ -625,21 +582,60 @@ namespace asiotap
 		return result;
 	}
 
-	void posix_tap_adapter::set_ip_configuration(const ip_configuration& config)
+	void posix_tap_adapter::configure(const configuration_type& configuration)
 	{
-		if (config.ipv4)
+		if (configuration.ipv4.network_address)
 		{
-			set_ip_address_v4(config.ipv4->ip_address, config.ipv4->prefix_length);
+			set_ip_address_v4(configuration.ipv4.network_address->address(), configuration.ipv4.network_address->prefix_length());
 		}
 
-		if (config.remote_ipv4_address)
+		if (configuration.ipv4.remote_address)
 		{
-			set_remote_ip_address_v4(*config.remote_ipv4_address);
+			set_remote_ip_address_v4(*configuration.ipv4.remote_address);
 		}
 
-		if (config.ipv6)
+		if (configuration.ipv6.network_address)
 		{
-			set_ip_address_v6(config.ipv6->ip_address, config.ipv6->prefix_length);
+			set_ip_address_v6(configuration.ipv6.network_address->address(), configuration.ipv6.network_address->prefix_length());
+		}
+
+		if (configuration.mtu > 0)
+		{
+			set_device_mtu(configuration.mtu);
+		}
+	}
+
+	void posix_tap_adapter::update_mtu_from_device()
+	{
+		descriptor_handler socket = open_socket(AF_INET);
+
+		struct ifreq netifr {};
+
+		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
+
+		if (::ioctl(socket.native_handle(), SIOCGIFMTU, (void*)&netifr) >= 0)
+		{
+			set_mtu(netifr.ifr_mtu);
+		}
+		else
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+	}
+
+	void posix_tap_adapter::set_device_mtu(size_t _mtu)
+	{
+		descriptor_handler socket = open_socket(AF_INET);
+
+		struct ifreq netifr {};
+
+		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
+
+		netifr.ifr_mtu = _mtu;
+
+		if (::ioctl(socket.native_handle(), SIOCSIFMTU, (void*)&netifr) < 0)
+		{
+			throw boost::system::system_error(errno, boost::system::system_category());
 		}
 	}
 

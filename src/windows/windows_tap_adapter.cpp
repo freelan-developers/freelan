@@ -206,6 +206,16 @@ namespace asiotap
 			}
 		}
 
+		void netsh_set_address(size_t interface_index, const ipv4_network_address& network_address)
+		{
+			network_address("ipv4", interface_index, network_address.address().to_string(), network_address.prefix_length());
+		}
+
+		void netsh_set_address(size_t interface_index, const ipv6_network_address& network_address)
+		{
+			network_address("ipv6", interface_index, network_address.address().to_string(), network_address.prefix_length());
+		}
+
 		void netsh_set_address(const std::string& address_family, size_t interface_index, const std::string& address, unsigned int prefix_len)
 		{
 			std::ostringstream oss;
@@ -226,36 +236,6 @@ namespace asiotap
 
 			netsh_execute(oss.str());
 		}
-
-		void netsh_add_address(const std::string& address_family, size_t interface_index, const std::string& address, unsigned int prefix_len)
-		{
-			std::ostringstream oss;
-
-			oss << "int " << address_family << " add address " << interface_index << " " << address;
-
-			OSVERSIONINFO os_version;
-			os_version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-			::GetVersionEx(&os_version);
-
-			// The /prefix parameter is only supported after Windows XP
-			if (os_version.dwMajorVersion >= 6)
-			{
-				oss << "/" << prefix_len;
-			}
-
-			oss << " store=active";
-
-			netsh_execute(oss.str());
-		}
-
-		void netsh_remove_address(const std::string& address_family, size_t interface_index, const std::string& address)
-		{
-			std::ostringstream oss;
-
-			oss << "int " << address_family << " delete address \"" << interface_index << "\" " << address;
-
-			netsh_execute(oss.str());
-		}
 	}
 
 	std::map<std::string, std::string> windows_tap_adapter::enumerate(tap_adapter_layer)
@@ -263,7 +243,7 @@ namespace asiotap
 		return enumerate_tap_adapters();
 	}
 
-	void windows_tap_adapter::open(size_t _mtu, boost::system::error_code& ec)
+	void windows_tap_adapter::open(boost::system::error_code& ec)
 	{
 		const guid_map_type tap_adapters_map = enumerate_tap_adapters();
 
@@ -271,7 +251,7 @@ namespace asiotap
 		{
 			if (!tap_adapter.first.empty())
 			{
-				open(tap_adapter.first, _mtu, ec);
+				open(tap_adapter.first, ec);
 
 				if (!ec)
 				{
@@ -281,13 +261,13 @@ namespace asiotap
 		}
 	}
 
-	void windows_tap_adapter::open(const std::string& _name, size_t _mtu, boost::system::error_code& ec)
+	void windows_tap_adapter::open(const std::string& _name, boost::system::error_code& ec)
 	{
 		ec = boost::system::error_code();
 
 		if (_name.empty())
 		{
-			open(_mtu, ec);
+			open(ec);
 
 			return;
 		}
@@ -369,7 +349,7 @@ namespace asiotap
 					std::memcpy(_ethernet_address.data().data(), pi->Address, pi->AddressLength);
 					set_ethernet_address(_ethernet_address);
 
-					DWORD read_mtu = static_cast<DWORD>(_mtu);
+					DWORD read_mtu;
 					DWORD len;
 
 					if (!DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_GET_MTU, &read_mtu, sizeof(read_mtu), &read_mtu, sizeof(read_mtu), &len, NULL))
@@ -398,11 +378,11 @@ namespace asiotap
 		}
 	}
 
-	void windows_tap_adapter::open(const std::string& _name, size_t _mtu)
+	void windows_tap_adapter::open(const std::string& _name)
 	{
 		boost::system::error_code ec;
 
-		open(_name, _mtu, ec);
+		open(_name, ec);
 
 		if (ec)
 		{
@@ -421,9 +401,9 @@ namespace asiotap
 		}
 	}
 
-	ip_addresses windows_tap_adapter::get_ip_addresses()
+	ip_network_address_list windows_tap_adapter::get_ip_addresses()
 	{
-		ip_addresses result;
+		ip_network_address_list result;
 
 		DWORD status;
 
@@ -468,7 +448,7 @@ namespace asiotap
 						boost::asio::ip::address_v4 address(bytes);
 						prefix_len = unicast_address->OnLinkPrefixLength;
 
-						result.ipv4.push_back({ address, prefix_len });
+						result.push_back(ipv4_network_address{ address, prefix_len });
 					}
 					else
 					{
@@ -480,7 +460,7 @@ namespace asiotap
 						boost::asio::ip::address_v6 address(bytes);
 						prefix_len = unicast_address->OnLinkPrefixLength;
 
-						result.ipv6.push_back({ address, prefix_len });
+						result.push_back(ipv6_network_address{ address, prefix_len });
 					}
 				}
 			}
@@ -489,16 +469,16 @@ namespace asiotap
 		return result;
 	}
 
-	void windows_tap_adapter::set_ip_configuration(const ip_configuration& config)
+	void windows_tap_adapter::configure(const configuration_type& configuration)
 	{
 		if (layer() == tap_adapter_layer::ip)
 		{
-			if (!config.ipv4)
+			if (!configuration.ipv4.network_address)
 			{
 				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
 			}
 
-			if (!config.remote_ipv4_address)
+			if (!configuration.ipv4.remote_address)
 			{
 				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
 			}
@@ -506,9 +486,9 @@ namespace asiotap
 			uint8_t param[12];
 			DWORD len = 0;
 
-			const boost::asio::ip::address_v4::bytes_type addr = config.ipv4->ip_address.to_bytes();
-			const uint32_t netmask = htonl((0xFFFFFFFF >> (32 - config.ipv4->prefix_length)) << (32 - config.ipv4->prefix_length));
-			const uint32_t network = htonl(config.remote_ipv4_address->to_ulong()) & netmask;
+			const boost::asio::ip::address_v4::bytes_type addr = configuration.ipv4.network_address->address().to_bytes();
+			const uint32_t netmask = htonl((0xFFFFFFFF >> (32 - configuration.ipv4.network_address->prefix_length())) << (32 - configuration.ipv4.network_address->prefix_length()));
+			const uint32_t network = htonl(configuration.ipv4.remote_address->to_ulong()) & netmask;
 
 			// address
 			std::memcpy(param, addr.data(), addr.size());
@@ -524,20 +504,20 @@ namespace asiotap
 		}
 		else
 		{
-			if (config.remote_ipv4_address)
+			if (configuration.ipv4.remote_address)
 			{
 				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
 			}
 		}
 
-		if (config.ipv4)
+		if (configuration.ipv4.network_address)
 		{
-			netsh_set_address("ipv4", m_interface_index, config.ipv4->ip_address.to_string(), config.ipv4->prefix_length);
+			netsh_set_address(m_interface_index, configuration.ipv4.network_address);
 		}
 
-		if (config.ipv6)
+		if (configuration.ipv6.network_address)
 		{
-			netsh_set_address("ipv6", m_interface_index, config.ipv6->ip_address.to_string(), config.ipv6->prefix_length);
+			netsh_set_address(m_interface_index, configuration.ipv6.network_address);
 		}
 	}
 }

@@ -37,36 +37,41 @@
  */
 
 /**
- * \file base_tap_adapter.hpp
+ * \file tap_adapter_layer.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Deals with IP configurations.
+ * \brief A tap adapter layer enum.
  */
 
-#ifndef ASIOTAP_IP_CONFIGURATION_HPP
-#define ASIOTAP_IP_CONFIGURATION_HPP
+#ifndef ASIOTAP_TAP_ADAPTER_LAYER_HPP
+#define ASIOTAP_TAP_ADAPTER_LAYER_HPP
 
-#include <boost/asio.hpp>
-#include <boost/optional.hpp>
-
-#include <vector>
-
-#include "ip_network_address.hpp"
+#include <iostream>
+#include <iomanip>
 
 namespace asiotap
 {
-	struct ip_configuration
+	/**
+	 * \brief The tap adapter layers.
+	 */
+	enum class tap_adapter_layer
 	{
-		public:
-			boost::optional<ipv4_network_address> ipv4;
-			boost::optional<ipv6_network_address> ipv6;
-			boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
+		ethernet,
+		ip
 	};
 
-	struct ip_addresses
+	inline std::ostream& operator<<(std::ostream& os, const tap_adapter_layer& value)
 	{
-		std::vector<ipv4_network_address> ipv4;
-		std::vector<ipv6_network_address> ipv6;
-	};
+		switch (value)
+		{
+		case tap_adapter_layer::ethernet:
+			return os << "ethernet";
+		case tap_adapter_layer::ip:
+			return os << "ip";
+		}
+
+		assert(false);
+		return os;
+	}
 }
 
-#endif /* ASIOTAP_IP_CONFIGURATION_HPP */
+#endif /* ASIOTAP_TAP_ADAPTER_LAYER_HPP */

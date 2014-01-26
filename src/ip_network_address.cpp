@@ -42,7 +42,9 @@
  * \brief Deals with IP configurations.
  */
 
-#include "ip_network_address.hpp"
+#include "types/ip_network_address.hpp"
+
+#include "types/stream_operations.hpp"
 
 #include <boost/lexical_cast.hpp>
 
@@ -189,11 +191,11 @@ namespace asiotap
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, const routes_type& routes)
+	std::ostream& operator<<(std::ostream& os, const ip_routes_set& routes)
 	{
 		if (routes.size() > 0)
 		{
-			routes_type::const_iterator route = routes.begin();
+			auto route = routes.begin();
 
 			os << *route;
 
