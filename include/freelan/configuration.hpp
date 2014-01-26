@@ -64,9 +64,9 @@
 
 #include <asiotap/tap_adapter.hpp>
 #include <asiotap/osi/ethernet_address.hpp>
+#include <asiotap/ip_network_address.hpp>
 
 #include "endpoint.hpp"
-#include "ip_network_address.hpp"
 #include "mtu.hpp"
 
 namespace freelan
@@ -200,7 +200,7 @@ namespace freelan
 		/**
 		 * \brief The ip_network_address list type.
 		 */
-		typedef std::vector<ip_network_address> ip_network_address_list_type;
+		typedef asiotap::ip_network_address_list ip_network_address_list_type;
 
 		/**
 		 * \brief Create a new FSCP configuration.

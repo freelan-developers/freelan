@@ -59,10 +59,10 @@
 #include <asiotap/osi/ipv6_filter.hpp>
 #include <asiotap/osi/ipv4_frame.hpp>
 #include <asiotap/osi/ipv6_frame.hpp>
+#include <asiotap/ip_network_address.hpp>
 
 #include "configuration.hpp"
 #include "port_index.hpp"
-#include "ip_network_address.hpp"
 #include "routes_message.hpp"
 
 namespace freelan
