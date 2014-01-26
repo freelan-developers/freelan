@@ -46,86 +46,26 @@
 #define ASIOTAP_IP_CONFIGURATION_HPP
 
 #include <boost/asio.hpp>
-#include <boost/system/system_error.hpp>
 #include <boost/optional.hpp>
 
-#include <iostream>
-#include <iomanip>
 #include <vector>
 
-#include "os.hpp"
-#include "error.hpp"
+#include "ip_network_address.hpp"
 
 namespace asiotap
 {
-	/**
-	 * \brief An IP address and prefix length type.
-	 */
-	template <typename AddressType>
-	struct generic_ip_address_prefix_length
-	{
-		/**
-		 * \brief The address type.
-		 */
-		typedef AddressType address_type;
-
-		/**
-		 * \brief The IP address.
-		 */
-		address_type ip_address;
-
-		/**
-		 * \brief The prefix length.
-		 */
-		unsigned int prefix_length;
-
-		friend bool operator<(const generic_ip_address_prefix_length& lhs, const generic_ip_address_prefix_length& rhs)
-		{
-			if (lhs.ip_address < rhs.ip_address)
-			{
-				return true;
-			}
-			else if (lhs.ip_address == rhs.ip_address)
-			{
-				return (lhs.prefix_length < rhs.prefix_length);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		friend bool operator==(const generic_ip_address_prefix_length& lhs, const generic_ip_address_prefix_length& rhs)
-		{
-			return ((lhs.ip_address == rhs.ip_address) && (lhs.prefix_length == rhs.prefix_length));
-		}
-	};
-
-	typedef generic_ip_address_prefix_length<boost::asio::ip::address_v4> ipv4_address_prefix_length;
-	typedef generic_ip_address_prefix_length<boost::asio::ip::address_v6> ipv6_address_prefix_length;
-
-	inline std::ostream& operator<<(std::ostream& os, const ipv4_address_prefix_length& v)
-	{
-		return os << v.ip_address << ":" << v.prefix_length;
-	}
-
-	inline std::ostream& operator<<(std::ostream& os, const ipv6_address_prefix_length& v)
-	{
-		return os << "[" << v.ip_address << "]:" << v.prefix_length;
-	}
-
 	struct ip_configuration
 	{
 		public:
-			boost::optional<ipv4_address_prefix_length> ipv4;
-			boost::optional<ipv6_address_prefix_length> ipv6;
+			boost::optional<ipv4_network_address> ipv4;
+			boost::optional<ipv6_network_address> ipv6;
 			boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
 	};
 
 	struct ip_addresses
 	{
-		std::vector<ipv4_address_prefix_length> ipv4;
-		std::vector<ipv6_address_prefix_length> ipv6;
+		std::vector<ipv4_network_address> ipv4;
+		std::vector<ipv6_network_address> ipv6;
 	};
 }
 

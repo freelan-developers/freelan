@@ -165,6 +165,9 @@
     <ClCompile Include="src\ip_configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ip_network_address.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp">
@@ -327,6 +330,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\ip_configuration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\ip_network_address.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
