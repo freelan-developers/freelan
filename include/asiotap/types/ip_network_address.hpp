@@ -423,7 +423,7 @@ namespace asiotap
 	/**
 	 * \brief A route comparison class.
 	 */
-	class routes_compare
+	class ip_routes_compare
 	{
 		public:
 
@@ -442,7 +442,7 @@ namespace asiotap
 	/**
 	 * \brief A route list type.
 	 */
-	typedef std::set<ip_network_address, routes_compare> ip_routes_set;
+	typedef std::set<ip_network_address, ip_routes_compare> ip_routes_set;
 
 	/**
 	 * \brief Output the routes to a stream.
