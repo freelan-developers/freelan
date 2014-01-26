@@ -204,7 +204,7 @@ int main()
 
 		tap_adapter.open();
 
-		asiotap::tap_adapter_configuration configuration;
+		asiotap::tap_adapter_configuration configuration {};
 		configuration.ipv4.network_address = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
 		configuration.ipv4.remote_address = boost::asio::ip::address_v4::from_string("9.0.0.0");
 		configuration.ipv6.network_address = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
