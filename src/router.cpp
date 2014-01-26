@@ -114,9 +114,9 @@ namespace freelan
 
 		if (source_port_entry != m_ports.end())
 		{
-			const routes_port_type& routes_ports = routes();
+			const auto& routes_ports = routes();
 
-			BOOST_FOREACH(const routes_port_type::value_type& route_port, routes_ports)
+			for (auto&& route_port : routes_ports)
 			{
 				if (has_address(route_port.first, dest_addr))
 				{
@@ -146,9 +146,9 @@ namespace freelan
 			// These are sorted automatically by the container.
 			for (port_list_type::const_iterator port = m_ports.begin(); port != m_ports.end(); ++port)
 			{
-				const routes_type& local_routes = port->second.local_routes();
+				const auto& local_routes = port->second.local_routes();
 
-				BOOST_FOREACH(const routes_type::value_type& route, local_routes)
+				for (auto&& route : local_routes)
 				{
 					m_routes->insert(std::make_pair(route, port->first));
 				}

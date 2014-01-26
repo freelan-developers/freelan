@@ -79,15 +79,15 @@ namespace freelan
 		{
 		}
 
-		endpoint to_endpoint(const core::ep_type& host)
+		asiotap::endpoint to_endpoint(const core::ep_type& host)
 		{
 			if (host.address().is_v4())
 			{
-				return ipv4_endpoint(host.address().to_v4(), host.port());
+				return asiotap::ipv4_endpoint(host.address().to_v4(), host.port());
 			}
 			else
 			{
-				return ipv6_endpoint(host.address().to_v6(), host.port());
+				return asiotap::ipv6_endpoint(host.address().to_v6(), host.port());
 			}
 		}
 
@@ -319,7 +319,7 @@ namespace freelan
 		resolver_type resolver(m_io_service);
 
 		const ep_type listen_endpoint = boost::apply_visitor(
-			endpoint_resolve_visitor(
+			asiotap::endpoint_resolve_visitor(
 				resolver,
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured | resolver_query::passive, DEFAULT_SERVICE
@@ -362,7 +362,7 @@ namespace freelan
 			}
 		}
 
-		BOOST_FOREACH(const ip_network_address& network_address, m_configuration.fscp.never_contact_list)
+		for(auto&& network_address : m_configuration.fscp.never_contact_list)
 		{
 			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
 		}
@@ -429,7 +429,7 @@ namespace freelan
 		};
 
 		boost::apply_visitor(
-			endpoint_async_resolve_visitor(
+			asiotap::endpoint_async_resolve_visitor(
 				boost::make_shared<resolver_type>(boost::ref(m_io_service)),
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured,
@@ -580,7 +580,7 @@ namespace freelan
 		async_send_routes_request_to_all(boost::bind(&core::do_handle_send_routes_request_to_all, this, _1));
 	}
 
-	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const routes_type& routes, simple_handler_type handler)
+	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const asiotap::ip_routes_set& routes, simple_handler_type handler)
 	{
 		assert(m_server);
 
@@ -998,7 +998,7 @@ namespace freelan
 
 				if (version)
 				{
-					const routes_type& routes = local_port->local_routes();
+					const auto& routes = local_port->local_routes();
 
 					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *version << ": " << routes;
 
@@ -1008,7 +1008,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const routes_type& routes)
+	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const asiotap::ip_routes_set& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 		boost::shared_ptr<router::port_type> port = m_router.get_port(make_port_index(sender));
@@ -1119,18 +1119,21 @@ namespace freelan
 				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(write_func, TAP_ADAPTERS_GROUP));
 
 				// Add the routes.
-				const routes_type& local_routes = m_configuration.router.local_ip_routes;
+				const auto& local_routes = m_configuration.router.local_ip_routes;
 
 				//TODO: Add the routes read from the system tap adapter
 
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
 			}
 
-			m_tap_adapter->open(m_configuration.tap_adapter.name, compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value()));
+			m_tap_adapter->open(m_configuration.tap_adapter.name);
 
 			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
 
-			asiotap::ip_configuration tap_config;
+			asiotap::tap_adapter_configuration tap_config;
+
+			// The device MTU.
+			tap_config.mtu = compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value());
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
@@ -1142,13 +1145,14 @@ namespace freelan
 				// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
 				// We disable direct setting if DHCP is enabled.
 
-				if ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled)
-				{
-					tap_config.ipv4 = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
-				}
+				const bool set_ipv4_network_address = ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled);
 #else
-				tap_config.ipv4 = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
+				const bool set_ipv4_network_address = true;
 #endif
+				if (set_ipv4_network_address)
+				{
+					tap_config.ipv4.network_address = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
+				}
 			}
 			else
 			{
@@ -1160,7 +1164,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "IPv6 address: " << m_configuration.tap_adapter.ipv6_address_prefix_length;
 
-				tap_config.ipv6 = { m_configuration.tap_adapter.ipv6_address_prefix_length.address(), m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length() };
+				tap_config.ipv6.network_address = { m_configuration.tap_adapter.ipv6_address_prefix_length.address(), m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length() };
 			}
 			else
 			{
@@ -1171,11 +1175,11 @@ namespace freelan
 			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
-					tap_config.remote_ipv4_address = *m_configuration.tap_adapter.remote_ipv4_address;
+					tap_config.ipv4.remote_address = *m_configuration.tap_adapter.remote_ipv4_address;
 				}
 			}
 
-			m_tap_adapter->set_ip_configuration(tap_config);
+			m_tap_adapter->configure(tap_config);
 
 			m_tap_adapter->set_connected_state(true);
 

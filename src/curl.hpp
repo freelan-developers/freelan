@@ -53,7 +53,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 
-#include "endpoint.hpp"
+#include <asiotap/types/endpoint.hpp>
 
 namespace freelan
 {
@@ -177,7 +177,7 @@ namespace freelan
 			 * \brief Set the HTTP(S) proxy to use.
 			 * \param proxy The proxy.
 			 */
-			void set_proxy(const endpoint& proxy);
+			void set_proxy(const asiotap::endpoint& proxy);
 
 			/**
 			 * \brief Set a debug function.

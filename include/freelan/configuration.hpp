@@ -64,9 +64,9 @@
 
 #include <asiotap/tap_adapter.hpp>
 #include <asiotap/osi/ethernet_address.hpp>
-#include <asiotap/ip_network_address.hpp>
+#include <asiotap/types/ip_network_address.hpp>
+#include <asiotap/types/endpoint.hpp>
 
-#include "endpoint.hpp"
 #include "mtu.hpp"
 
 namespace freelan
@@ -81,7 +81,7 @@ namespace freelan
 		/**
 		 * \brief The endpoint type.
 		 */
-		typedef freelan::endpoint endpoint;
+		typedef asiotap::endpoint endpoint;
 
 		/**
 		 * \brief The endpoint list type.
@@ -171,7 +171,7 @@ namespace freelan
 		/**
 		 * \brief The endpoint type.
 		 */
-		typedef freelan::endpoint endpoint;
+		typedef asiotap::endpoint endpoint;
 
 		/**
 		 * \brief The endpoint list type.
@@ -380,12 +380,12 @@ namespace freelan
 		/**
 		 * \brief The IPv4 tap adapter address.
 		 */
-		ipv4_network_address ipv4_address_prefix_length;
+		asiotap::ipv4_network_address ipv4_address_prefix_length;
 
 		/**
 		 * \brief The IPv6 tap adapter address.
 		 */
-		ipv6_network_address ipv6_address_prefix_length;
+		asiotap::ipv6_network_address ipv6_address_prefix_length;
 
 		/**
 		 * \brief Whether to enable the ARP proxy.
@@ -405,12 +405,12 @@ namespace freelan
 		/**
 		 * \brief The DHCP server IPv4 address.
 		 */
-		ipv4_network_address dhcp_server_ipv4_address_prefix_length;
+		asiotap::ipv4_network_address dhcp_server_ipv4_address_prefix_length;
 
 		/**
 		 * \brief The DHCP server IPv6 address.
 		 */
-		ipv6_network_address dhcp_server_ipv6_address_prefix_length;
+		asiotap::ipv6_network_address dhcp_server_ipv6_address_prefix_length;
 
 		/**
 		 * \brief The remote IPv4 address.
@@ -473,7 +473,7 @@ namespace freelan
 		 *
 		 * These routes are sent to the other hosts for VPN routing.
 		 */
-		routes_type local_ip_routes;
+		asiotap::ip_routes_set local_ip_routes;
 
 		/**
 		 * \brief Whether to enable client routing.

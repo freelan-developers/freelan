@@ -139,9 +139,9 @@ namespace freelan
 		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
 	}
 
-	void curl::set_proxy(const endpoint& proxy)
+	void curl::set_proxy(const asiotap::endpoint& proxy)
 	{
-		if (proxy != hostname_endpoint::null())
+		if (proxy != asiotap::hostname_endpoint::null())
 		{
 			set_option(CURLOPT_PROXY, static_cast<const void*>(boost::lexical_cast<std::string>(proxy).c_str()));
 		}

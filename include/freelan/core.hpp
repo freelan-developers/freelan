@@ -94,6 +94,11 @@ namespace freelan
 			typedef fscp::server::ep_type ep_type;
 
 			/**
+			 * \brief The high-level endpoint type.
+			 */
+			typedef asiotap::endpoint endpoint;
+
+			/**
 			 * \brief The certificate type.
 			 */
 			typedef fscp::server::cert_type cert_type;
@@ -392,7 +397,7 @@ namespace freelan
 			void async_send_routes_request(const ep_type&);
 			void async_send_routes_request_to_all(multiple_endpoints_handler_type);
 			void async_send_routes_request_to_all();
-			void async_send_routes(const ep_type&, routes_message::version_type, const routes_type&, simple_handler_type);
+			void async_send_routes(const ep_type&, routes_message::version_type, const asiotap::ip_routes_set&, simple_handler_type);
 
 			void do_contact(const ep_type&, duration_handler_type);
 
@@ -419,7 +424,7 @@ namespace freelan
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
 			void do_handle_routes_request(const ep_type&);
-			void do_handle_routes(const ep_type&, routes_message::version_type, const routes_type&);
+			void do_handle_routes(const ep_type&, routes_message::version_type, const asiotap::ip_routes_set&);
 
 			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;

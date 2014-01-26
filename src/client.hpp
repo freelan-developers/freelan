@@ -54,7 +54,8 @@
 #include <kfather/kfather.hpp>
 #include <kfather/value.hpp>
 
-#include "ip_network_address.hpp"
+#include <asiotap/types/ip_network_address.hpp>
+
 #include "curl.hpp"
 
 namespace cryptoplus
@@ -76,10 +77,10 @@ namespace freelan
 	 */
 	struct network_info
 	{
-		ipv4_network_address ipv4_address_prefix_length;
-		ipv6_network_address ipv6_address_prefix_length;
+		asiotap::ipv4_network_address ipv4_address_prefix_length;
+		asiotap::ipv6_network_address ipv6_address_prefix_length;
 		std::vector<cryptoplus::x509::certificate> users_certificates;
-		std::vector<endpoint> users_endpoints;
+		std::vector<asiotap::endpoint> users_endpoints;
 	};
 
 	/**
@@ -122,7 +123,7 @@ namespace freelan
 			 * \param endpoints The endpoints to publish.
 			 * \return The network authority certificate.
 			 */
-			network_info join_network(const std::string& network, const std::vector<endpoint>& endpoints);
+			network_info join_network(const std::string& network, const std::vector<asiotap::endpoint>& endpoints);
 
 			/**
 			 * \brief Renew the certificate.
@@ -142,7 +143,7 @@ namespace freelan
 			// Version 1 methods
 			void v1_authenticate(curl&, const std::string&);
 			cryptoplus::x509::certificate v1_get_authority_certificate(curl&, const std::string&);
-			network_info_v1 v1_join_network(curl&, const std::string&, const std::string&, const std::vector<endpoint>&);
+			network_info_v1 v1_join_network(curl&, const std::string&, const std::string&, const std::vector<asiotap::endpoint>&);
 			cryptoplus::x509::certificate v1_sign_certificate_request(curl&, const std::string&, const cryptoplus::x509::certificate_request&);
 
 			// Version 1 sub-methods

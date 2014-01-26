@@ -48,7 +48,8 @@
 
 #include <boost/optional.hpp>
 
-#include "ip_network_address.hpp"
+#include <asiotap/types/ip_network_address.hpp>
+
 #include "message.hpp"
 
 namespace freelan
@@ -73,7 +74,7 @@ namespace freelan
 			 * \param routes The routes.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, version_type version, const routes_type& routes);
+			static size_t write(void* buf, size_t buf_len, version_type version, const asiotap::ip_routes_set& routes);
 
 			/**
 			 * \brief Get the version.
@@ -85,7 +86,7 @@ namespace freelan
 			 * \brief Get the routes.
 			 * \return The routes.
 			 */
-			const routes_type& routes() const;
+			const asiotap::ip_routes_set& routes() const;
 
 			/**
 			 * \brief Create a routes_message and map it on a buffer.
@@ -104,7 +105,7 @@ namespace freelan
 
 		private:
 
-			mutable boost::optional<routes_type> m_routes_cache;
+			mutable boost::optional<asiotap::ip_routes_set> m_routes_cache;
 	};
 }
 

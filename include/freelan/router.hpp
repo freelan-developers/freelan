@@ -59,7 +59,7 @@
 #include <asiotap/osi/ipv6_filter.hpp>
 #include <asiotap/osi/ipv4_frame.hpp>
 #include <asiotap/osi/ipv6_frame.hpp>
-#include <asiotap/ip_network_address.hpp>
+#include <asiotap/types/ip_network_address.hpp>
 
 #include "configuration.hpp"
 #include "port_index.hpp"
@@ -176,12 +176,12 @@ namespace freelan
 						return m_version;
 					}
 
-					const routes_type& local_routes() const
+					const asiotap::ip_routes_set& local_routes() const
 					{
 						return m_local_routes;
 					}
 
-					bool set_local_routes(version_type _version, const routes_type& _local_routes)
+					bool set_local_routes(version_type _version, const asiotap::ip_routes_set& _local_routes)
 					{
 						if (!m_version || (_version > m_version))
 						{
@@ -230,7 +230,7 @@ namespace freelan
 
 					write_function_type m_write_function;
 					boost::optional<version_type> m_version;
-					routes_type m_local_routes;
+					asiotap::ip_routes_set m_local_routes;
 					port_group_type m_group;
 					router* m_router;
 			};
@@ -329,7 +329,7 @@ namespace freelan
 			asiotap::osi::filter<asiotap::osi::ipv4_frame> m_ipv4_filter;
 			asiotap::osi::filter<asiotap::osi::ipv6_frame> m_ipv6_filter;
 
-			typedef std::multimap<routes_type::value_type, port_index_type, routes_compare> routes_port_type;
+			typedef std::multimap<asiotap::ip_routes_set::value_type, port_index_type, asiotap::ip_routes_compare> routes_port_type;
 
 			const routes_port_type& routes() const;
 			mutable boost::optional<routes_port_type> m_routes;

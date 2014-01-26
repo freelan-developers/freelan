@@ -80,10 +80,10 @@ namespace freelan
 				 * \return The representation size.
 				 */
 				template <typename AddressType>
-				result_type operator()(const base_ip_network_address<AddressType>& ina) const
+				result_type operator()(const asiotap::base_ip_network_address<AddressType>& ina) const
 				{
 					const uint8_t prefix_length = static_cast<uint8_t>(ina.prefix_length());
-					const typename base_ip_network_address<AddressType>::address_type::bytes_type bytes = ina.address().to_bytes();
+					const typename asiotap::base_ip_network_address<AddressType>::address_type::bytes_type bytes = ina.address().to_bytes();
 
 					if (m_buf_len < 2 + bytes.size())
 					{
@@ -105,7 +105,7 @@ namespace freelan
 		};
 	}
 
-	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const routes_type& routes)
+	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const asiotap::ip_routes_set& routes)
 	{
 		if (buf_len < HEADER_LENGTH)
 		{
@@ -122,9 +122,9 @@ namespace freelan
 		pbuf += sizeof(uint32_t);
 		pbuf_len -= sizeof(uint32_t);
 
-		for (routes_type::const_iterator it = routes.begin(); it != routes.end(); ++it)
+		for (auto&& route : routes)
 		{
-			const size_t count = boost::apply_visitor(ip_network_address_representation(pbuf, pbuf_len), *it);
+			const size_t count = boost::apply_visitor(ip_network_address_representation(pbuf, pbuf_len), route);
 
 			required_size += count;
 			pbuf += count;
@@ -139,11 +139,11 @@ namespace freelan
 		return ntohl(static_cast<version_type>(fscp::buffer_tools::get<uint32_t>(payload(), 0)));
 	}
 
-	const routes_type& routes_message::routes() const
+	const asiotap::ip_routes_set& routes_message::routes() const
 	{
 		if (!m_routes_cache)
 		{
-			routes_type result;
+			asiotap::ip_routes_set result;
 
 			const uint8_t* pbuf = payload() + sizeof(uint32_t);
 			size_t pbuf_len = length() - sizeof(uint32_t);
@@ -174,7 +174,7 @@ namespace freelan
 							pbuf += bytes.size();
 							pbuf_len -= bytes.size();
 
-							result.insert(ipv4_network_address(boost::asio::ip::address_v4(bytes), prefix_length));
+							result.insert(asiotap::ipv4_network_address(boost::asio::ip::address_v4(bytes), prefix_length));
 
 							break;
 						}
@@ -201,7 +201,7 @@ namespace freelan
 							pbuf += bytes.size();
 							pbuf_len -= bytes.size();
 
-							result.insert(ipv6_network_address(boost::asio::ip::address_v6(bytes), prefix_length));
+							result.insert(asiotap::ipv6_network_address(boost::asio::ip::address_v6(bytes), prefix_length));
 
 							break;
 						}

@@ -151,7 +151,7 @@ namespace freelan
 			cert = string_to_certificate(cert_str);
 		}
 
-		void assert_has_value(const client::values_type& values, const std::string& key, ipv4_network_address& ep)
+		void assert_has_value(const client::values_type& values, const std::string& key, asiotap::ipv4_network_address& ep)
 		{
 			boost::optional<std::string> str;
 
@@ -159,15 +159,15 @@ namespace freelan
 
 			if (str)
 			{
-				ep = boost::lexical_cast<ipv4_network_address>(*str);
+				ep = boost::lexical_cast<asiotap::ipv4_network_address>(*str);
 			}
 			else
 			{
-				ep = ipv4_network_address::null();
+				ep = asiotap::ipv4_network_address::null();
 			}
 		}
 
-		void assert_has_value(const client::values_type& values, const std::string& key, ipv6_network_address& ep)
+		void assert_has_value(const client::values_type& values, const std::string& key, asiotap::ipv6_network_address& ep)
 		{
 			boost::optional<std::string> str;
 
@@ -175,11 +175,11 @@ namespace freelan
 
 			if (str)
 			{
-				ep = boost::lexical_cast<ipv6_network_address>(*str);
+				ep = boost::lexical_cast<asiotap::ipv6_network_address>(*str);
 			}
 			else
 			{
-				ep = ipv6_network_address::null();
+				ep = asiotap::ipv6_network_address::null();
 			}
 		}
 	}
@@ -212,7 +212,7 @@ namespace freelan
 		// Set the HTTP proxy
 		if (m_configuration.server.https_proxy)
 		{
-			if (*m_configuration.server.https_proxy != hostname_endpoint::null())
+			if (*m_configuration.server.https_proxy != asiotap::hostname_endpoint::null())
 			{
 				m_logger(LL_INFORMATION) << "Setting HTTP(S) proxy to \"" << *m_configuration.server.https_proxy << "\".";
 			}
@@ -295,7 +295,7 @@ namespace freelan
 		}
 	}
 
-	network_info client::join_network(const std::string& network, const std::vector<endpoint>& endpoints)
+	network_info client::join_network(const std::string& network, const std::vector<asiotap::endpoint>& endpoints)
 	{
 		if (m_server_version_major == 1)
 		{
@@ -470,7 +470,7 @@ namespace freelan
 		return authority_certificate;
 	}
 
-	network_info_v1 client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network, const std::vector<endpoint>& endpoints)
+	network_info_v1 client::v1_join_network(curl& request, const std::string& join_network_url, const std::string& network, const std::vector<asiotap::endpoint>& endpoints)
 	{
 		const std::string url = m_scheme + boost::lexical_cast<std::string>(m_configuration.server.host) + join_network_url;
 
@@ -482,7 +482,7 @@ namespace freelan
 
 		json::array_type _endpoints;
 
-		BOOST_FOREACH(const endpoint& ep, endpoints)
+		for (auto&& ep : endpoints)
 		{
 			_endpoints.items.push_back(boost::lexical_cast<std::string>(ep));
 		}
@@ -541,7 +541,7 @@ namespace freelan
 			{
 				m_logger(LL_DEBUG) << "Adding " << ep << " to the users endpoints list.";
 
-				ninfo.users_endpoints.push_back(boost::lexical_cast<endpoint>(ep));
+				ninfo.users_endpoints.push_back(boost::lexical_cast<asiotap::endpoint>(ep));
 			}
 			catch (boost::bad_lexical_cast& ex)
 			{
