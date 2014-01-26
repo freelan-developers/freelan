@@ -102,12 +102,12 @@ po::options_description get_server_options()
 
 	result.add_options()
 	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
-	("server.host", po::value<fl::endpoint>(), "The server host.")
-	("server.https_proxy", po::value<fl::endpoint>(), "The HTTP proxy host.")
+	("server.host", po::value<asiotap::endpoint>(), "The server host.")
+	("server.https_proxy", po::value<asiotap::endpoint>(), "The HTTP proxy host.")
 	("server.username", po::value<std::string>(), "The username.")
 	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
 	("server.network", po::value<std::string>(), "The network. If no network is specified, it will be taken from the FREELAN_SERVER_NETWORK environment variable.")
-	("server.public_endpoint", po::value<std::vector<fl::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::endpoint>(), ""), "A public endpoint to publish to others hosts.")
+	("server.public_endpoint", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "A public endpoint to publish to others hosts.")
 	("server.user_agent", po::value<std::string>(), "The user agent. If no user agent is specified, \"" FREELAN_USER_AGENT "\" will be used.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
 	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
@@ -124,13 +124,13 @@ po::options_description get_fscp_options()
 
 	result.add_options()
 	("fscp.hostname_resolution_protocol", po::value<fl::fscp_configuration::hostname_resolution_protocol_type>()->default_value(fl::fscp_configuration::HRP_IPV4), "The hostname resolution protocol to use.")
-	("fscp.listen_on", po::value<fl::endpoint>()->default_value(fl::ipv4_endpoint(boost::asio::ip::address_v4::any(), 12000)), "The endpoint to listen on.")
+	("fscp.listen_on", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 12000)), "The endpoint to listen on.")
 	("fscp.hello_timeout", po::value<millisecond_duration>()->default_value(3000), "The default timeout for HELLO messages, in milliseconds.")
-	("fscp.contact", po::value<std::vector<fl::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::endpoint>(), ""), "The address of an host to contact.")
+	("fscp.contact", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "The address of an host to contact.")
 	("fscp.accept_contact_requests", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT-REQUEST messages.")
 	("fscp.accept_contacts", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT messages.")
 	("fscp.dynamic_contact_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The certificate of an host to dynamically contact.")
-	("fscp.never_contact", po::value<std::vector<fl::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
+	("fscp.never_contact", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
 	("fscp.cipher_capability", po::value<std::vector<fscp::cipher_algorithm_type> >()->multitoken()->zero_tokens()->default_value(std::vector<fscp::cipher_algorithm_type>(), ""), "A cipher algorithm to allow.")
 	;
 
@@ -160,23 +160,23 @@ po::options_description get_tap_adapter_options()
 {
 	po::options_description result("Tap adapter options");
 
-	const fl::ipv4_network_address default_ipv4_network_address(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
-	const fl::ipv6_network_address default_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::1"), 10);
-	const fl::ipv4_network_address default_dhcp_ipv4_network_address(boost::asio::ip::address_v4::from_string("9.0.0.0"), 24);
-	const fl::ipv6_network_address default_dhcp_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::"), 10);
+	const asiotap::ipv4_network_address default_ipv4_network_address(boost::asio::ip::address_v4::from_string("9.0.0.1"), 24);
+	const asiotap::ipv6_network_address default_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::1"), 10);
+	const asiotap::ipv4_network_address default_dhcp_ipv4_network_address(boost::asio::ip::address_v4::from_string("9.0.0.0"), 24);
+	const asiotap::ipv6_network_address default_dhcp_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::"), 10);
 
 	result.add_options()
 	("tap_adapter.type", po::value<fl::tap_adapter_configuration::tap_adapter_type>()->default_value(fl::tap_adapter_configuration::TAT_TAP, "tap"), "The TAP adapter type.")
 	("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
 	("tap_adapter.name", po::value<std::string>(), "The name of the tap adapter to use or create.")
 	("tap_adapter.mtu", po::value<fl::mtu_type>()->default_value(fl::auto_mtu_type()), "The MTU of the tap adapter.")
-	("tap_adapter.ipv4_address_prefix_length", po::value<fl::ipv4_network_address>()->default_value(default_ipv4_network_address), "The tap adapter IPv4 address and prefix length.")
-	("tap_adapter.ipv6_address_prefix_length", po::value<fl::ipv6_network_address>()->default_value(default_ipv6_network_address), "The tap adapter IPv6 address and prefix length.")
+	("tap_adapter.ipv4_address_prefix_length", po::value<asiotap::ipv4_network_address>()->default_value(default_ipv4_network_address), "The tap adapter IPv4 address and prefix length.")
+	("tap_adapter.ipv6_address_prefix_length", po::value<asiotap::ipv6_network_address>()->default_value(default_ipv6_network_address), "The tap adapter IPv6 address and prefix length.")
 	("tap_adapter.arp_proxy_enabled", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
 	("tap_adapter.arp_proxy_fake_ethernet_address", po::value<fl::tap_adapter_configuration::ethernet_address_type>()->default_value(boost::lexical_cast<fl::tap_adapter_configuration::ethernet_address_type>("00:aa:bb:cc:dd:ee")), "The ARP proxy fake ethernet address.")
 	("tap_adapter.dhcp_proxy_enabled", po::value<bool>()->default_value(true), "Whether to enable the DHCP proxy.")
-	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<fl::ipv4_network_address>()->default_value(default_dhcp_ipv4_network_address), "The DHCP proxy server IPv4 address and prefix length.")
-	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<fl::ipv6_network_address>()->default_value(default_dhcp_ipv6_network_address), "The DHCP proxy server IPv6 address and prefix length.")
+	("tap_adapter.dhcp_server_ipv4_address_prefix_length", po::value<asiotap::ipv4_network_address>()->default_value(default_dhcp_ipv4_network_address), "The DHCP proxy server IPv4 address and prefix length.")
+	("tap_adapter.dhcp_server_ipv6_address_prefix_length", po::value<asiotap::ipv6_network_address>()->default_value(default_dhcp_ipv6_network_address), "The DHCP proxy server IPv6 address and prefix length.")
 	("tap_adapter.up_script", po::value<fs::path>()->default_value(""), "The tap adapter up script.")
 	("tap_adapter.down_script", po::value<fs::path>()->default_value(""), "The tap adapter down script.")
 	;
@@ -201,7 +201,7 @@ po::options_description get_router_options()
 	po::options_description result("Router options");
 
 	result.add_options()
-	("router.local_ip_route", po::value<std::vector<fl::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<fl::ip_network_address>(), ""), "A route to advertise to the other peers.")
+	("router.local_ip_route", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A route to advertise to the other peers.")
 	("router.client_routing_enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable client routing.")
 	;
 
@@ -218,12 +218,12 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	if (vm.count("server.host"))
 	{
-		configuration.server.host = vm["server.host"].as<fl::endpoint>();
+		configuration.server.host = vm["server.host"].as<asiotap::endpoint>();
 	}
 
 	if (vm.count("server.https_proxy"))
 	{
-		configuration.server.https_proxy = vm["server.https_proxy"].as<fl::endpoint>();
+		configuration.server.https_proxy = vm["server.https_proxy"].as<asiotap::endpoint>();
 	}
 
 	if (vm.count("server.username"))
@@ -287,7 +287,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		}
 	}
 
-	const std::vector<fl::endpoint> public_endpoint_list = vm["server.public_endpoint"].as<std::vector<fl::endpoint> >();
+	const std::vector<asiotap::endpoint> public_endpoint_list = vm["server.public_endpoint"].as<std::vector<asiotap::endpoint> >();
 	configuration.server.public_endpoint_list.insert(public_endpoint_list.begin(), public_endpoint_list.end());
 
 	if (vm.count("server.user_agent"))
@@ -307,10 +307,10 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
-	configuration.fscp.listen_on = vm["fscp.listen_on"].as<fl::endpoint>();
+	configuration.fscp.listen_on = vm["fscp.listen_on"].as<asiotap::endpoint>();
 	configuration.fscp.hello_timeout = vm["fscp.hello_timeout"].as<millisecond_duration>().to_time_duration();
 
-	const std::vector<fl::endpoint> contact = vm["fscp.contact"].as<std::vector<fl::endpoint> >();
+	const std::vector<asiotap::endpoint> contact = vm["fscp.contact"].as<std::vector<asiotap::endpoint> >();
 	configuration.fscp.contact_list.insert(contact.begin(), contact.end());
 
 	configuration.fscp.accept_contact_requests = vm["fscp.accept_contact_requests"].as<bool>();
@@ -324,7 +324,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		configuration.fscp.dynamic_contact_list.push_back(load_certificate(fs::absolute(dynamic_contact_file, root)));
 	}
 
-	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<fl::ip_network_address> >();
+	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<asiotap::ip_network_address> >();
 	configuration.fscp.cipher_capabilities = vm["fscp.cipher_capability"].as<std::vector<fscp::cipher_algorithm_type> >();
 
 	// Security options
@@ -390,20 +390,20 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 
 	configuration.tap_adapter.mtu = vm["tap_adapter.mtu"].as<fl::mtu_type>();
-	configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<fl::ipv4_network_address>();
-	configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<fl::ipv6_network_address>();
+	configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<asiotap::ipv4_network_address>();
+	configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<asiotap::ipv6_network_address>();
 	configuration.tap_adapter.arp_proxy_enabled = vm["tap_adapter.arp_proxy_enabled"].as<bool>();
 	configuration.tap_adapter.arp_proxy_fake_ethernet_address = vm["tap_adapter.arp_proxy_fake_ethernet_address"].as<fl::tap_adapter_configuration::ethernet_address_type>();
 	configuration.tap_adapter.dhcp_proxy_enabled = vm["tap_adapter.dhcp_proxy_enabled"].as<bool>();
-	configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length = vm["tap_adapter.dhcp_server_ipv4_address_prefix_length"].as<fl::ipv4_network_address>();
-	configuration.tap_adapter.dhcp_server_ipv6_address_prefix_length = vm["tap_adapter.dhcp_server_ipv6_address_prefix_length"].as<fl::ipv6_network_address>();
+	configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length = vm["tap_adapter.dhcp_server_ipv4_address_prefix_length"].as<asiotap::ipv4_network_address>();
+	configuration.tap_adapter.dhcp_server_ipv6_address_prefix_length = vm["tap_adapter.dhcp_server_ipv6_address_prefix_length"].as<asiotap::ipv6_network_address>();
 
 	// Switch options
 	configuration.switch_.routing_method = vm["switch.routing_method"].as<fl::switch_configuration::routing_method_type>();
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
 
 	// Router
-	const std::vector<fl::ip_network_address> local_ip_routes = vm["router.local_ip_route"].as<std::vector<fl::ip_network_address> >();
+	const auto local_ip_routes = vm["router.local_ip_route"].as<std::vector<asiotap::ip_network_address> >();
 	configuration.router.local_ip_routes.insert(local_ip_routes.begin(), local_ip_routes.end());
 
 	configuration.router.client_routing_enabled = vm["router.client_routing_enabled"].as<bool>();
