@@ -65,6 +65,8 @@ namespace asiotap
 			boost::optional<ipv6_network_address> network_address;
 		};
 
+		tap_adapter_configuration() : mtu(0) {}
+
 		size_t mtu;
 		ipv4_configuration ipv4;
 		ipv6_configuration ipv6;
