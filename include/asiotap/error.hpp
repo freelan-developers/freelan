@@ -121,7 +121,7 @@ namespace boost
 	namespace system
 	{
 		template <>
-		struct is_error_code_enum<::asiotap::asiotap_error> : public boost::true_type {};
+		struct is_error_code_enum< ::asiotap::asiotap_error> : public boost::true_type {};
 	}
 }
 
