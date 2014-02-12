@@ -391,6 +391,36 @@ namespace asiotap
 	}
 
 	/**
+	* \brief A visitor that gets the IP address.
+	*/
+	class ip_network_address_ip_address_visitor : public boost::static_visitor<boost::asio::ip::address>
+	{
+	public:
+
+		/**
+		* \brief Get the IP address of the specified ip_network_address.
+		* \tparam T The type of the ip_network_address.
+		* \param ina The ip_network_address.
+		* \return The prefix length.
+		*/
+		template <typename T>
+		result_type operator()(const T& ina) const
+		{
+			return ina.address();
+		}
+	};
+
+	/**
+	* \brief Get the IP address of a given network address.
+	* \param ina the ip_network_address.
+	* \return The network address IP address.
+	*/
+	inline boost::asio::ip::address ip_address(const ip_network_address& ina)
+	{
+		return boost::apply_visitor(ip_network_address_ip_address_visitor(), ina);
+	}
+
+	/**
 	 * \brief A visitor that gets the prefix length.
 	 */
 	class ip_network_address_prefix_len_visitor : public boost::static_visitor<unsigned int>

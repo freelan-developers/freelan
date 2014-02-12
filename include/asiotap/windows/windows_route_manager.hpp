@@ -47,10 +47,20 @@
 
 #include "../base_route_manager.hpp"
 
+#include <ifdef.h>
+
 namespace asiotap
 {
-	class windows_route_manager : public base_route_manager
+	typedef base_routing_table_entry<NET_LUID> windows_routing_table_entry;
+
+	class windows_route_manager : public base_route_manager<windows_route_manager, windows_routing_table_entry>
 	{
+		protected:
+
+			void register_route(const route_type& route);
+			void unregister_route(const route_type& route);
+
+		friend class base_route_manager<windows_route_manager, windows_routing_table_entry>;
 	};
 }
 

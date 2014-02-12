@@ -177,6 +177,9 @@
     <ClCompile Include="src\stream_operations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\windows\windows_route_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp">
@@ -357,6 +360,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\types\stream_operations.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\base_route_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\route_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

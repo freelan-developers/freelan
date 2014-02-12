@@ -333,6 +333,13 @@ namespace asiotap
 					m_display_name = adapter.second;
 					m_interface_index = pi->Index;
 
+					if (::ConvertInterfaceIndexToLuid(m_interface_index, &m_interface_luid) != NO_ERROR)
+					{
+						ec = boost::system::error_code(::GetLastError(), boost::system::system_category());
+
+						return;
+					}
+
 					if (pi->AddressLength != ethernet_address().data().size())
 					{
 						if (close(ec))

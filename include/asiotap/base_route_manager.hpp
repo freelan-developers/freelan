@@ -45,10 +45,111 @@
 #ifndef ASIOTAP_BASE_ROUTE_MANAGER_HPP
 #define ASIOTAP_BASE_ROUTE_MANAGER_HPP
 
+#include <string>
+#include <map>
+#include <iostream>
+
+#include <boost/optional.hpp>
+
+#include "types/ip_network_address.hpp"
+
 namespace asiotap
 {
+	/**
+	 * \brief A routing table entry.
+	 */
+	template <typename InterfaceType>
+	struct base_routing_table_entry
+	{
+		ip_network_address network;
+		boost::optional<boost::asio::ip::address> gateway;
+		boost::optional<InterfaceType> interface;
+
+		friend bool operator==(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
+		{
+			return ((lhs.network == rhs.network) && (lhs.gateway == rhs.gateway) && (lhs.interface == rhs.interface));
+		}
+
+		friend bool operator<(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
+		{
+			return ((lhs.network < rhs.network) || (lhs.gateway < rhs.gateway) || (lhs.interface < rhs.interface));
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
+		{
+			return os << value.network << " - " << value.gateway ? *(value.gateway) : "no gateway" << " - " << value.interface ? *(value.interface) : "no interface";
+		}
+	};
+
+	/**
+	 * \brief Handle system routes.
+	 */
+	template <typename RouteManagerType, typename RouteType>
 	class base_route_manager
 	{
+		public:
+			typedef RouteType route_type;
+
+			base_route_manager(const base_route_manager&) = delete;
+			base_route_manager& operator=(const base_route_manager&) = delete;
+
+			base_route_manager(base_route_manager&&) = delete;
+			base_route_manager& operator=(base_route_manager&&) = delete;
+
+			~base_route_manager()
+			{
+				for (auto&& route : m_routing_table)
+				{
+					try
+					{
+						RouteManagerType::unregister_route(route.first);
+					}
+					catch (boost::system::system_error&)
+					{
+						// We don't care about errors at this point: we can't handle them and we must continue anyway.
+					}
+				}
+			}
+
+			void has_route(const route_type& route)
+			{
+				return (m_routing_table.find(route) != m_routing_table.end());
+			}
+
+			void add_route(const route_type& route)
+			{
+				if (m_routing_table[route]++ == 0)
+				{
+					RouteManagerType::register_route(route);
+				}
+			}
+
+			void remove_route(const route_type& route)
+			{
+				const auto route_position = m_routing_table.find(route);
+
+				if (route_position != m_routing_table.end())
+				{
+					if (route_position->second == 1)
+					{
+						RouteManagerType::unregister_route(route);
+
+						m_routing_table.erase(route_position);
+					}
+					else if (route_position->second > 1)
+					{
+						--route_position->second;
+					}
+				}
+			}
+
+		protected:
+
+			typedef std::map<route_type, unsigned int> routing_table_type;
+
+		private:
+
+			routing_table_type m_routing_table;
 	};
 }
 

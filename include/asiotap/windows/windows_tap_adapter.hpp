@@ -50,6 +50,8 @@
 #include <map>
 #include <string>
 
+#include <ifdef.h>
+
 namespace asiotap
 {
 	class windows_tap_adapter : public base_tap_adapter<boost::asio::windows::stream_handle>
@@ -71,7 +73,8 @@ namespace asiotap
 			windows_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
 				base_tap_adapter(_io_service, _layer),
 				m_display_name(),
-				m_interface_index()
+				m_interface_index(),
+				m_interface_luid()
 			{}
 
 			windows_tap_adapter(const windows_tap_adapter&) = delete;
@@ -127,7 +130,8 @@ namespace asiotap
 		private:
 
 			std::string m_display_name;
-			size_t m_interface_index;
+			NET_IFINDEX m_interface_index;
+			NET_LUID m_interface_luid;
 
 			friend std::ostream& operator<<(std::ostream& os, const windows_tap_adapter& value)
 			{
