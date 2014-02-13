@@ -55,18 +55,6 @@
 
 namespace asiotap
 {
-	template <typename InterfaceType>
-	inline bool compare_interfaces_equal(const InterfaceType& lhs, const InterfaceType& rhs)
-	{
-		return (lhs == rhs);
-	}
-
-	template <typename InterfaceType>
-	inline bool compare_interfaces_less_than(const InterfaceType& lhs, const InterfaceType& rhs)
-	{
-		return (lhs < rhs);
-	}
-
 	/**
 	 * \brief A routing table entry.
 	 */
@@ -79,12 +67,12 @@ namespace asiotap
 
 		friend bool operator==(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
-			return ((lhs.network == rhs.network) && (lhs.gateway == rhs.gateway) && compare_interfaces_equal(lhs, rhs));
+			return ((lhs.network == rhs.network) && (lhs.gateway == rhs.gateway) && (lhs.interface == rhs.interface));
 		}
 
 		friend bool operator<(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
-			return ((lhs.network < rhs.network) || (lhs.gateway < rhs.gateway) || compare_interfaces_less_than(lhs, rhs));
+			return ((lhs.network < rhs.network) || (lhs.gateway < rhs.gateway) || (lhs.interface < rhs.interface));
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
