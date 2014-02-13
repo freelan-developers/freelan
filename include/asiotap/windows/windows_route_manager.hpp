@@ -53,6 +53,16 @@ namespace asiotap
 {
 	typedef base_routing_table_entry<NET_LUID> windows_routing_table_entry;
 
+	inline bool compare_interfaces_equal(const NET_LUID& lhs, const NET_LUID& rhs)
+	{
+		return (lhs.Value == rhs.Value);
+	}
+
+	inline bool compare_interfaces_less_than(const NET_LUID& lhs, const NET_LUID& rhs)
+	{
+		return (lhs.Value < rhs.Value);
+	}
+
 	class windows_route_manager : public base_route_manager<windows_route_manager, windows_routing_table_entry>
 	{
 		protected:

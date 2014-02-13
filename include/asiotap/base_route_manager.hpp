@@ -55,6 +55,18 @@
 
 namespace asiotap
 {
+	template <typename InterfaceType>
+	inline bool compare_interfaces_equal(const InterfaceType& lhs, const InterfaceType& rhs)
+	{
+		return (lhs == rhs);
+	}
+
+	template <typename InterfaceType>
+	inline bool compare_interfaces_less_than(const InterfaceType& lhs, const InterfaceType& rhs)
+	{
+		return (lhs < rhs);
+	}
+
 	/**
 	 * \brief A routing table entry.
 	 */
@@ -67,12 +79,12 @@ namespace asiotap
 
 		friend bool operator==(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
-			return ((lhs.network == rhs.network) && (lhs.gateway == rhs.gateway) && (lhs.interface == rhs.interface));
+			return ((lhs.network == rhs.network) && (lhs.gateway == rhs.gateway) && compare_interfaces_equal(lhs, rhs));
 		}
 
 		friend bool operator<(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
-			return ((lhs.network < rhs.network) || (lhs.gateway < rhs.gateway) || (lhs.interface < rhs.interface));
+			return ((lhs.network < rhs.network) || (lhs.gateway < rhs.gateway) || compare_interfaces_less_than(lhs, rhs));
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
@@ -90,6 +102,8 @@ namespace asiotap
 		public:
 			typedef RouteType route_type;
 
+			base_route_manager() = default;
+
 			base_route_manager(const base_route_manager&) = delete;
 			base_route_manager& operator=(const base_route_manager&) = delete;
 
@@ -102,7 +116,7 @@ namespace asiotap
 				{
 					try
 					{
-						RouteManagerType::unregister_route(route.first);
+						static_cast<RouteManagerType*>(this)->unregister_route(route.first);
 					}
 					catch (boost::system::system_error&)
 					{
@@ -120,7 +134,7 @@ namespace asiotap
 			{
 				if (m_routing_table[route]++ == 0)
 				{
-					RouteManagerType::register_route(route);
+					static_cast<RouteManagerType*>(this)->register_route(route);
 				}
 			}
 
@@ -132,7 +146,7 @@ namespace asiotap
 				{
 					if (route_position->second == 1)
 					{
-						RouteManagerType::unregister_route(route);
+						static_cast<RouteManagerType*>(this)->unregister_route(route);
 
 						m_routing_table.erase(route_position);
 					}
