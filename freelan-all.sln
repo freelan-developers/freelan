@@ -41,6 +41,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libasiotap_samples_tun", "l
 		{9173624C-FFF7-4431-BB4A-FC30B13AD742} = {9173624C-FFF7-4431-BB4A-FC30B13AD742}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libasiotap_samples_routes", "libasiotap\samples\routes\libasiotap_samples_routes.vcxproj", "{AC316C25-377E-422E-B0DF-4233840A3C9F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9173624C-FFF7-4431-BB4A-FC30B13AD742} = {9173624C-FFF7-4431-BB4A-FC30B13AD742}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -121,6 +126,14 @@ Global
 		{5B6983DF-70BA-4754-B7BD-C4B5EA3F30A7}.Release|x64.Build.0 = Release|x64
 		{5B6983DF-70BA-4754-B7BD-C4B5EA3F30A7}.Release|x86.ActiveCfg = Release|Win32
 		{5B6983DF-70BA-4754-B7BD-C4B5EA3F30A7}.Release|x86.Build.0 = Release|Win32
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Debug|x64.ActiveCfg = Debug|x64
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Debug|x64.Build.0 = Debug|x64
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Debug|x86.ActiveCfg = Debug|Win32
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Debug|x86.Build.0 = Debug|Win32
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Release|x64.ActiveCfg = Release|x64
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Release|x64.Build.0 = Release|x64
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Release|x86.ActiveCfg = Release|Win32
+		{AC316C25-377E-422E-B0DF-4233840A3C9F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
