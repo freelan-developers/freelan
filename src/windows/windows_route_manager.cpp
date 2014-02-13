@@ -110,7 +110,7 @@ namespace asiotap
 
 		if (result != NO_ERROR)
 		{
-			throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			throw boost::system::system_error(result, boost::system::system_category());
 		}
 	}
 
@@ -122,7 +122,7 @@ namespace asiotap
 
 		if (result != NO_ERROR)
 		{
-			throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			throw boost::system::system_error(result, boost::system::system_category());
 		}
 	}
 }
