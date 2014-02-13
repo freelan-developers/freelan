@@ -89,7 +89,7 @@ namespace asiotap
 
 		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
 		{
-			return os << value.network << " - " << value.gateway ? *(value.gateway) : "no gateway" << " - " << value.interface ? *(value.interface) : "no interface";
+			return os << value.network << " - " << (value.gateway ? *(value.gateway) : "no gateway") << " - " << (value.interface ? *(value.interface) : "no interface");
 		}
 	};
 

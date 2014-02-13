@@ -37,31 +37,28 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file posix_route_manager.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief The POSIX route manager class.
  */
 
-#ifndef ASIOTAP_POSIX_ROUTE_MANAGER_HPP
-#define ASIOTAP_POSIX_ROUTE_MANAGER_HPP
+#include "posix/posix_route_manager.hpp"
 
-#include "../base_route_manager.hpp"
-
-#include <string>
+#include "error.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace
 	{
-		protected:
+	}
 
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
+	void posix_route_manager::register_route(const route_type& route)
+	{
+		static_cast<void>(route);
+	}
 
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-	};
+	void posix_route_manager::unregister_route(const route_type& route)
+	{
+		static_cast<void>(route);
+	}
 }
-
-#endif /* ASIOTAP_POSIX_ROUTE_MANAGER_HPP */

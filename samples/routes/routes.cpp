@@ -65,9 +65,7 @@ static bool register_signal_handlers()
 
 static char my_buf[2048];
 
-void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
-
-void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
+void read_done(const boost::system::error_code& ec, size_t cnt)
 {
 	if (!ec)
 	{
@@ -112,7 +110,7 @@ int main()
 
 		tap_adapter.set_connected_state(true);
 
-		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), &read_done);
 
 		const auto addresses = tap_adapter.get_ip_addresses();
 
