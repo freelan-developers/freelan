@@ -1,0 +1,142 @@
+/**
+ * \file routes.cpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief A simple routes test program.
+ */
+
+#include <asiotap/asiotap.hpp>
+#include <asiotap/route_manager.hpp>
+
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/foreach.hpp>
+
+#include <cstdlib>
+#include <csignal>
+#include <iostream>
+
+static volatile bool signaled = false;
+static boost::function<void ()> stop_function = 0;
+
+static void signal_handler(int code)
+{
+	switch (code)
+	{
+		case SIGTERM:
+		case SIGINT:
+		case SIGABRT:
+			if (!signaled && stop_function)
+			{
+				signaled = true;
+				std::cerr << "Signal caught: stopping..." << std::endl;
+
+				stop_function();
+				stop_function = 0;
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+static bool register_signal_handlers()
+{
+	if (signal(SIGTERM, signal_handler) == SIG_ERR)
+	{
+		std::cerr << "Failed to catch SIGTERM signals." << std::endl;
+		return false;
+	}
+
+	if (signal(SIGINT, signal_handler) == SIG_ERR)
+	{
+		std::cerr << "Failed to catch SIGINT signals." << std::endl;
+		return false;
+	}
+
+	if (signal(SIGABRT, signal_handler) == SIG_ERR)
+	{
+		std::cerr << "Failed to catch SIGABRT signals." << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+static char my_buf[2048];
+
+void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt);
+
+void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_code& ec, size_t cnt)
+{
+	if (!ec)
+	{
+		std::cout << "Read: " << cnt << " bytes." << std::endl;
+	}
+	else
+	{
+		std::cout << "Read: " << cnt << " bytes. Error: " << ec << std::endl;
+	}
+}
+
+void close_tap_adapter(asiotap::tap_adapter& tap_adapter)
+{
+	tap_adapter.cancel();
+	tap_adapter.set_connected_state(false);
+	tap_adapter.close();
+}
+
+int main()
+{
+	if (!register_signal_handlers())
+	{
+		return EXIT_FAILURE;
+	}
+
+	try
+	{
+		boost::asio::io_service _io_service;
+
+		asiotap::tap_adapter tap_adapter(_io_service, asiotap::tap_adapter_layer::ip);
+
+		stop_function = boost::bind(&close_tap_adapter, boost::ref(tap_adapter));
+
+		tap_adapter.open();
+
+		asiotap::tap_adapter_configuration configuration {};
+		configuration.ipv4.network_address = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
+		configuration.ipv4.remote_address = boost::asio::ip::address_v4::from_string("9.0.0.0");
+		configuration.ipv6.network_address = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
+
+		tap_adapter.configure(configuration);
+
+		tap_adapter.set_connected_state(true);
+
+		tap_adapter.async_read(boost::asio::buffer(my_buf, sizeof(my_buf)), boost::bind(&read_done, boost::ref(tap_adapter), _1, _2));
+
+		const auto addresses = tap_adapter.get_ip_addresses();
+
+		std::cout << "Current IP addresses for the interface:" << std::endl;
+
+		for(auto&& address : addresses)
+		{
+			std::cout << address << std::endl;
+		}
+
+		std::cout << "Adding routes" << std::endl;
+
+		asiotap::route_manager rmgr;
+
+		rmgr.add_route(tap_adapter.get_route(asiotap::to_network_address(boost::asio::ip::address_v4::from_string("9.0.1.0"), 24)));
+
+		_io_service.run();
+	}
+	catch (std::exception& ex)
+	{
+		std::cerr << "Exception caught: " << ex.what() << std::endl;
+
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}

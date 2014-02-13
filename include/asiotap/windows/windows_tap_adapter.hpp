@@ -47,6 +47,8 @@
 
 #include "../base_tap_adapter.hpp"
 
+#include "windows_route_manager.hpp"
+
 #include <map>
 #include <string>
 
@@ -126,6 +128,17 @@ namespace asiotap
 			 * \warning If a serious error occurs, an exception will be thrown.
 			 */
 			void configure(const configuration_type& configuration);
+
+			/**
+			 * \brief Build a route associated to this tap adapter.
+			 * \param network_address The network_address.
+			 * \param gateway The gateway.
+			 * \return The route.
+			 */
+			windows_routing_table_entry get_route(const ip_network_address& network_address, boost::optional<boost::asio::ip::address> gateway = boost::none)
+			{
+				return {network_address, gateway, m_interface_luid};
+			}
 
 		private:
 
