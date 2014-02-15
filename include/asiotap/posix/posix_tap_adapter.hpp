@@ -177,7 +177,7 @@ namespace asiotap
 			void set_device_mtu(size_t _mtu);
 			void set_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len);
 			void set_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len);
-			void set_remote_ip_address_v4(const boost::asio::ip::address_v4& remote_address);
+			void set_remote_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len, const boost::asio::ip::address_v4& remote_address);
 
 			void destroy_device();
 			void destroy_device(boost::system::error_code& ec);

@@ -44,6 +44,8 @@
 
 #include "posix/posix_tap_adapter.hpp"
 
+#include "posix_system.hpp"
+
 #include <boost/lexical_cast.hpp>
 
 #include <sys/types.h>
@@ -586,12 +588,17 @@ namespace asiotap
 	{
 		if (configuration.ipv4.network_address)
 		{
-			set_ip_address_v4(configuration.ipv4.network_address->address(), configuration.ipv4.network_address->prefix_length());
-		}
-
-		if (configuration.ipv4.remote_address)
-		{
-			set_remote_ip_address_v4(*configuration.ipv4.remote_address);
+			if (layer() == tap_adapter_layer::ethernet)
+			{
+				set_ip_address_v4(configuration.ipv4.network_address->address(), configuration.ipv4.network_address->prefix_length());
+			}
+			else
+			{
+				if (configuration.ipv4.remote_address)
+				{
+					set_remote_ip_address_v4(configuration.ipv4.network_address->address(), configuration.ipv4.network_address->prefix_length(), *configuration.ipv4.remote_address);
+				}
+			}
 		}
 
 		if (configuration.ipv6.network_address)
@@ -742,12 +749,21 @@ namespace asiotap
 		}
 	}
 
-	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& remote_address)
+	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len, const boost::asio::ip::address_v4& remote_address)
 	{
 		if (layer() != tap_adapter_layer::ip)
 		{
 			throw boost::system::system_error(make_error_code(asiotap_error::invalid_tap_adapter_layer));
 		}
+
+#ifdef MACINTOSH
+		// For some reason, on Mac, setting up the IP address using ioctl() doesn't work for TUN devices.
+		using std::string;
+		using boost::lexical_cast;
+
+		ifconfig(name(), { lexical_cast<string>(address) + "/" + lexical_cast<string>(prefix_len), lexical_cast<string>(remote_address) });
+#else
+		set_ip_address_v4(address, prefix_len);
 
 		descriptor_handler socket = open_socket(AF_INET);
 
@@ -772,5 +788,6 @@ namespace asiotap
 				throw boost::system::system_error(errno, boost::system::system_category());
 			}
 		}
+#endif
 	}
 }
