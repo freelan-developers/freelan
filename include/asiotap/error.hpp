@@ -37,9 +37,9 @@
  */
 
 /**
- * \file server_error.hpp
+ * \file error.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief The server errors.
+ * \brief The errors.
  */
 
 #ifndef ASIOTAP_ERROR_HPP

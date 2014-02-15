@@ -48,13 +48,19 @@
 #include <vector>
 #include <string>
 
+#include <boost/asio.hpp>
 #include <boost/system/system_error.hpp>
+
+#include "types/ip_network_address.hpp"
 
 namespace asiotap
 {
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
 	int execute(const std::vector<std::string>& args);
-	bool ifconfig(const std::string& interface, const std::vector<std::string>& args);
+	void checked_execute(const std::vector<std::string>& args);
+	void ifconfig(const std::string& interface, const ip_network_address& address);
+	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
 }
 
 #endif /* ASIOTAP_POSIX_SYSTEM_HPP */

@@ -44,15 +44,30 @@
 
 #include "posix_system.hpp"
 
+#include "error.hpp"
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 
+#include <boost/lexical_cast.hpp>
+
 namespace asiotap
 {
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
 	{
+#if FREELAN_DEBUG
+		std::cout << "Executing:";
+
+		for (auto&& arg : args)
+		{
+			std::cout << " " << arg;
+		}
+
+		std::cout << std::endl;
+#endif
+
 		int fd[2];
 
 		if (::pipe(fd) < 0)
@@ -92,7 +107,6 @@ namespace asiotap
 					fcntl(fd[1], F_SETFD, FD_CLOEXEC);
 
 					// Estimate the required size for the argv buffer.
-
 					// One null-terminated byte per arg.
 					size_t buffer_size = args.size();
 
@@ -160,7 +174,13 @@ namespace asiotap
 					{
 						if (WIFEXITED(status))
 						{
-							return WEXITSTATUS(status);
+							const int result = WEXITSTATUS(status);
+
+#if FREELAN_DEBUG
+							std::cout << "Exit status: " << result << std::endl;
+#endif
+
+							return result;
 						}
 					}
 
@@ -185,14 +205,32 @@ namespace asiotap
 		return result;
 	}
 
-	bool ifconfig(const std::string& interface, const std::vector<std::string>& args)
+	void checked_execute(const std::vector<std::string>& args)
 	{
-		std::vector<std::string> real_args;
-		real_args.reserve(args.size() + 2);
-		real_args.push_back("/sbin/ifconfig");
-		real_args.push_back(interface);
-		real_args.insert(real_args.end(), args.begin(), args.end());
+		if (execute(args) != 0)
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
+		}
+	}
 
-		return (execute(real_args) == 0);
+	void ifconfig(const std::string& interface, const ip_network_address& address)
+	{
+		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address) };
+
+		checked_execute(real_args);
+	}
+
+	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address)
+	{
+		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address), boost::lexical_cast<std::string>(remote_address) };
+
+		checked_execute(real_args);
+	}
+
+	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
+	{
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-ifscope", interface, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
+
+		checked_execute(real_args);
 	}
 }

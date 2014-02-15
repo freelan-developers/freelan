@@ -590,20 +590,20 @@ namespace asiotap
 		{
 			if (layer() == tap_adapter_layer::ethernet)
 			{
-				set_ip_address_v4(configuration.ipv4.network_address->address(), configuration.ipv4.network_address->prefix_length());
+				set_ip_address_v4(*configuration.ipv4.network_address);
 			}
 			else
 			{
 				if (configuration.ipv4.remote_address)
 				{
-					set_remote_ip_address_v4(configuration.ipv4.network_address->address(), configuration.ipv4.network_address->prefix_length(), *configuration.ipv4.remote_address);
+					set_remote_ip_address_v4(*configuration.ipv4.network_address, *configuration.ipv4.remote_address);
 				}
 			}
 		}
 
 		if (configuration.ipv6.network_address)
 		{
-			set_ip_address_v6(configuration.ipv6.network_address->address(), configuration.ipv6.network_address->prefix_length());
+			set_ip_address_v6(*configuration.ipv6.network_address);
 		}
 
 		if (configuration.mtu > 0)
@@ -646,8 +646,11 @@ namespace asiotap
 		}
 	}
 
-	void posix_tap_adapter::set_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len)
+	void posix_tap_adapter::set_ip_address_v4(const ipv4_network_address& network_address)
 	{
+		const boost::asio::ip::address_v4& address = network_address.address();
+		const unsigned int prefix_len = network_address.prefix_length();
+
 		assert(prefix_len < 32);
 
 		descriptor_handler socket = open_socket(AF_INET);
@@ -701,8 +704,13 @@ namespace asiotap
 		}
 	}
 
-	void posix_tap_adapter::set_ip_address_v6(const boost::asio::ip::address_v6& address, unsigned int prefix_len)
+	void posix_tap_adapter::set_ip_address_v6(const ipv6_network_address& network_address)
 	{
+		const boost::asio::ip::address_v6& address = network_address.address();
+		const unsigned int prefix_len = network_address.prefix_length();
+
+		assert(prefix_len < 128);
+
 		descriptor_handler socket = open_socket(AF_INET6);
 
 #ifdef LINUX
@@ -749,7 +757,7 @@ namespace asiotap
 		}
 	}
 
-	void posix_tap_adapter::set_remote_ip_address_v4(const boost::asio::ip::address_v4& address, unsigned int prefix_len, const boost::asio::ip::address_v4& remote_address)
+	void posix_tap_adapter::set_remote_ip_address_v4(const ipv4_network_address& network_address, const boost::asio::ip::address_v4& remote_address)
 	{
 		if (layer() != tap_adapter_layer::ip)
 		{
@@ -758,12 +766,13 @@ namespace asiotap
 
 #ifdef MACINTOSH
 		// For some reason, on Mac, setting up the IP address using ioctl() doesn't work for TUN devices.
-		using std::string;
-		using boost::lexical_cast;
+		ifconfig(name(), network_address, remote_address);
 
-		ifconfig(name(), { lexical_cast<string>(address) + "/" + lexical_cast<string>(prefix_len), lexical_cast<string>(remote_address) });
+		// OSX apparently does not create a route even though ifconfig indicates that the netmask is understood.
+		// We must create it ourselves.
+		route("add", name(), network_address, network_address.address());
 #else
-		set_ip_address_v4(address, prefix_len);
+		set_ip_address_v4(network_address);
 
 		descriptor_handler socket = open_socket(AF_INET);
 
