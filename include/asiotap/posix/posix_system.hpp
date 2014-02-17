@@ -55,9 +55,12 @@
 
 namespace asiotap
 {
+	// These functions are common to all operating systems.
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
 	int execute(const std::vector<std::string>& args);
 	void checked_execute(const std::vector<std::string>& args);
+
+	// These functions are OS specific.
 	void ifconfig(const std::string& interface, const ip_network_address& address);
 	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);

@@ -44,7 +44,7 @@
 
 #include "posix/posix_tap_adapter.hpp"
 
-#include "posix_system.hpp"
+#include "posix/posix_system.hpp"
 
 #include <boost/lexical_cast.hpp>
 
