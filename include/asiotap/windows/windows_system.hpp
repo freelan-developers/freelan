@@ -37,33 +37,22 @@
  */
 
 /**
- * \file posix_system.hpp
+ * \file windows_system.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX system functions.
+ * \brief The Windows system functions.
  */
 
-#ifndef ASIOTAP_POSIX_SYSTEM_HPP
-#define ASIOTAP_POSIX_SYSTEM_HPP
+#ifndef ASIOTAP_WINDOWS_SYSTEM_HPP
+#define ASIOTAP_WINDOWS_SYSTEM_HPP
 
 #include <vector>
 #include <string>
 
-#include <boost/asio.hpp>
-#include <boost/system/system_error.hpp>
-
-#include "types/ip_network_address.hpp"
-
 namespace asiotap
 {
-	// These functions are common to all operating systems.
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
 	int execute(const std::vector<std::string>& args);
 	void checked_execute(const std::vector<std::string>& args);
-
-	// These functions are OS specific.
-	void ifconfig(const std::string& interface, const ip_network_address& address);
-	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
-	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
 }
 
-#endif /* ASIOTAP_POSIX_SYSTEM_HPP */
+#endif /* ASIOTAP_WINDOWS_SYSTEM_HPP */
