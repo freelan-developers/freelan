@@ -44,21 +44,36 @@
 
 #include "posix/posix_route_manager.hpp"
 
+#include "posix/posix_system.hpp"
 #include "error.hpp"
 
 namespace asiotap
 {
 	namespace
 	{
+		void do_register_route(const std::string& command, const posix_route_manager::route_type& route)
+		{
+			if (!route.interface)
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+			}
+
+			if (!route.gateway)
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+			}
+
+			asiotap::route(command, *route.interface, route.network, *route.gateway);
+		}
 	}
 
 	void posix_route_manager::register_route(const route_type& route)
 	{
-		static_cast<void>(route);
+		do_register_route("add", route);
 	}
 
 	void posix_route_manager::unregister_route(const route_type& route)
 	{
-		static_cast<void>(route);
+		do_register_route("del", route);
 	}
 }
