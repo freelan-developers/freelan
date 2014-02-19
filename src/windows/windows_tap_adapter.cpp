@@ -490,21 +490,24 @@ namespace asiotap
 				throw boost::system::system_error(make_error_code(asiotap_error::invalid_ip_configuration));
 			}
 
-			uint8_t param[12];
 			DWORD len = 0;
 
+			const unsigned int plen = configuration.ipv4.network_address->prefix_length();
+
 			const boost::asio::ip::address_v4::bytes_type addr = configuration.ipv4.network_address->address().to_bytes();
-			const uint32_t netmask = htonl((0xFFFFFFFF >> (32 - configuration.ipv4.network_address->prefix_length())) << (32 - configuration.ipv4.network_address->prefix_length()));
+			const uint32_t netmask = htonl(plen > 0 ? 0 - (1 << (32 - plen)) : 0xFFFFFFFF);
 			const uint32_t network = htonl(configuration.ipv4.remote_address->to_ulong()) & netmask;
+
+			uint8_t param[3 * sizeof(uint32_t)];
 
 			// address
 			std::memcpy(param, addr.data(), addr.size());
 			// network
-			std::memcpy(param + 4, &network, sizeof(uint32_t));
+			std::memcpy(param + sizeof(uint32_t), &network, sizeof(uint32_t));
 			// netmask
-			std::memcpy(param + 8, &netmask, sizeof(uint32_t));
+			std::memcpy(param + 2 * sizeof(uint32_t), &netmask, sizeof(uint32_t));
 
-			if (!::DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_CONFIG_TUN, param, sizeof(param), NULL, 0, &len, NULL))
+			if (!::DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_CONFIG_TUN, param, sizeof(param), param, sizeof(param), &len, NULL))
 			{
 				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 			}
