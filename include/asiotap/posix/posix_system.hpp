@@ -63,6 +63,7 @@ namespace asiotap
 	// These functions are OS specific.
 	void ifconfig(const std::string& interface, const ip_network_address& address);
 	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+	void route(const std::string& command, const std::string& interface, const ip_network_address& dest);
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
 }
 

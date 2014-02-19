@@ -81,11 +81,7 @@ namespace asiotap
 			::InitializeIpForwardEntry(&entry);
 
 			entry.Protocol = MIB_IPPROTO_NETMGMT;
-
-			if (route.interface)
-			{
-				entry.InterfaceLuid = *route.interface;
-			}
+			entry.InterfaceLuid = route.interface;
 
 			if (route.gateway)
 			{

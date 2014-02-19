@@ -53,17 +53,14 @@ namespace asiotap
 	{
 		void do_register_route(const std::string& command, const posix_route_manager::route_type& route)
 		{
-			if (!route.interface)
+			if (route.gateway)
 			{
-				throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+				asiotap::route(command, route.interface, route.network, *route.gateway);
 			}
-
-			if (!route.gateway)
+			else
 			{
-				throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+				asiotap::route(command, route.interface, route.network);
 			}
-
-			asiotap::route(command, *route.interface, route.network, *route.gateway);
 		}
 	}
 

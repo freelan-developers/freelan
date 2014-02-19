@@ -227,9 +227,16 @@ namespace asiotap
 		checked_execute(real_args);
 	}
 
+	void route(const std::string& command, const std::string& interface, const ip_network_address& dest)
+	{
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "-interface", interface };
+
+		checked_execute(real_args);
+	}
+
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
 	{
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-ifscope", interface, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway), "-interface", interface };
 
 		checked_execute(real_args);
 	}

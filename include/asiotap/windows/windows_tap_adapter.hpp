@@ -137,7 +137,7 @@ namespace asiotap
 			 */
 			windows_routing_table_entry get_route(const ip_network_address& network_address, boost::optional<boost::asio::ip::address> gateway = boost::none)
 			{
-				return {network_address, gateway, m_interface_luid};
+				return { m_interface_luid, network_address, gateway };
 			}
 
 		private:
