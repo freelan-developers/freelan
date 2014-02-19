@@ -44,6 +44,10 @@
 
 #include "windows/windows_system.hpp"
 
+#include "error.hpp"
+
+#include <sstream>
+
 #include <shlobj.h>
 #include <shellapi.h>
 
@@ -61,22 +65,114 @@ namespace asiotap
 				HANDLE m_handle;
 		};
 
-		DWORD do_create_process(const char* application, char* command_line, STARTUPINFO& si, PROCESS_INFORMATION& pi)
+		bool has_escapable_characters(const std::string& str)
 		{
-			return ::CreateProcessA(application, command_line, NULL, NUL, FALSE, 0, NULL, NULL, &si, &pi);
+			return (str.find_first_of(" \t\n\v\"") != std::string::npos);
 		}
 
-		DWORD do_create_process(const wchar_t* application, wchar_t* command_line, STARTUPINFO& si, PROCESS_INFORMATION& pi)
+		bool has_escapable_characters(const std::wstring& str)
 		{
-			return ::CreateProcessW(application, command_line, NULL, NUL, FALSE, 0, NULL, NULL, &si, &pi);
+			return (str.find_first_of(L" \t\n\v\"") != std::string::npos);
 		}
+
+		template <typename CharType>
+		struct argument_helper;
+
+		template <>
+		struct argument_helper<char>
+		{
+			static const char ESCAPE_CHARACTER = '\\';
+			static const char QUOTE_CHARACTER = '"';
+		};
+
+		template <>
+		struct argument_helper<wchar_t>
+		{
+			static const wchar_t ESCAPE_CHARACTER = L'\\';
+			static const wchar_t QUOTE_CHARACTER = L'"';
+		};
+
+		template <typename CharType>
+		std::basic_string<CharType> escape_argument(const std::basic_string<CharType>& arg)
+		{
+			std::basic_string<CharType> result(1, argument_helper<CharType>::QUOTE_CHARACTER);
+
+			for (auto it = arg.begin();; ++it)
+			{
+				unsigned int escapes_count = 0;
+
+				while ((it != arg.end()) && (*it == argument_helper<CharType>::ESCAPE_CHARACTER))
+				{
+					++it;
+					++escapes_count;
+				}
+
+				if (it == arg.end())
+				{
+					result.append(escapes_count * 2, argument_helper<CharType>::ESCAPE_CHARACTER);
+					break;
+				}
+				else if (*it == argument_helper<CharType>::QUOTE_CHARACTER)
+				{
+					result.append(escapes_count * 2 + 1, argument_helper<CharType>::ESCAPE_CHARACTER);
+					result.push_back(*it);
+				}
+				else
+				{
+					result.append(escapes_count, argument_helper<CharType>::ESCAPE_CHARACTER);
+					result.push_back(*it);
+				}
+			}
+
+			result.push_back(argument_helper<CharType>::QUOTE_CHARACTER);
+
+			return result;
+		}
+
+		template <typename CharType>
+		std::basic_string<CharType> escape_argument_if_needed(const std::basic_string<CharType>& arg)
+		{
+			if (!arg.empty() && !has_escapable_characters(arg))
+			{
+				return escape_argument(arg);
+			}
+			else
+			{
+				return arg;
+			}
+		}
+
+		DWORD do_create_process(const char* application, char* command_line, STARTUPINFOA& si, PROCESS_INFORMATION& pi)
+		{
+			return ::CreateProcessA(application, command_line, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		}
+
+		DWORD do_create_process(const wchar_t* application, wchar_t* command_line, STARTUPINFOW& si, PROCESS_INFORMATION& pi)
+		{
+			return ::CreateProcessW(application, command_line, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+		}
+
+		template <typename CharType>
+		struct startupinfo;
+
+		template <>
+		struct startupinfo<char>
+		{
+			typedef STARTUPINFOA type;
+		};
+
+		template <>
+		struct startupinfo<wchar_t>
+		{
+			typedef STARTUPINFOW type;
+		};
 
 		template <typename CharType>
 		DWORD create_process(const CharType* application, CharType* command_line)
 		{
 			DWORD exit_status;
 
-			STARTUPINFO si;
+			typename startupinfo<CharType>::type si;
 			si.cb = sizeof(si);
 			si.lpReserved = NULL;
 			si.lpDesktop = NULL;
@@ -137,33 +233,87 @@ namespace asiotap
 
 			return exit_status;
 		}
+
+		template <typename CharType>
+		int do_execute(const std::vector<std::basic_string<CharType>>& args, boost::system::error_code& ec)
+		{
+			if (args.empty())
+			{
+				ec = make_error_code(asiotap_error::external_process_failed);
+
+				return EXIT_FAILURE;
+			}
+
+			const std::basic_string<CharType> application = args.front();
+			std::basic_ostringstream<CharType> command_line_buffer;
+
+			for (auto it = args.begin() + 1; it != args.end(); ++it)
+			{
+				if (it != args.begin() + 1)
+				{
+					command_line_buffer << " ";
+				}
+
+				command_line_buffer << escape_argument_if_needed(*it);
+			}
+
+			std::basic_string<CharType> command_line = command_line_buffer.str();
+
+			return create_process(application.c_str(), &command_line[0]);
+		}
+
+		template <typename CharType>
+		int do_execute(const std::vector<std::basic_string<CharType>>& args)
+		{
+			boost::system::error_code ec;
+
+			const auto result = execute(args, ec);
+
+			if (result < 0)
+			{
+				throw boost::system::system_error(ec);
+			}
+
+			return result;
+		}
+
+		template <typename CharType>
+		void do_checked_execute(const std::vector<std::basic_string<CharType>>& args)
+		{
+			if (do_execute(args) != 0)
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
+			}
+		}
 	}
 
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
 	{
-		//TODO: Implement
-		return EXIT_FAILURE;
+		return do_execute(args, ec);
+	}
+
+	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec)
+	{
+		return do_execute(args, ec);
 	}
 
 	int execute(const std::vector<std::string>& args)
 	{
-		boost::system::error_code ec;
+		return do_execute(args);
+	}
 
-		const auto result = execute(args, ec);
-
-		if (result < 0)
-		{
-			throw boost::system::system_error(ec);
-		}
-
-		return result;
+	int execute(const std::vector<std::wstring>& args)
+	{
+		return do_execute(args);
 	}
 
 	void checked_execute(const std::vector<std::string>& args)
 	{
-		if (execute(args) != 0)
-		{
-			throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
-		}
+		do_checked_execute(args);
+	}
+
+	void checked_execute(const std::vector<std::wstring>& args)
+	{
+		do_checked_execute(args);
 	}
 }

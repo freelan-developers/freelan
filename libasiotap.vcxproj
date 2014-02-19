@@ -73,6 +73,7 @@
     <ClCompile Include="src\udp_frame.cpp" />
     <ClCompile Include="src\udp_helper.cpp" />
     <ClCompile Include="src\windows\windows_route_manager.cpp" />
+    <ClCompile Include="src\windows\windows_system.cpp" />
     <ClCompile Include="src\windows\windows_tap_adapter.cpp" />
   </ItemGroup>
   <ItemGroup>

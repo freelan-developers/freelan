@@ -48,11 +48,16 @@
 #include <vector>
 #include <string>
 
+#include <boost/system/system_error.hpp>
+
 namespace asiotap
 {
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
+	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec);
 	int execute(const std::vector<std::string>& args);
+	int execute(const std::vector<std::wstring>& args);
 	void checked_execute(const std::vector<std::string>& args);
+	void checked_execute(const std::vector<std::wstring>& args);
 }
 
 #endif /* ASIOTAP_WINDOWS_SYSTEM_HPP */
