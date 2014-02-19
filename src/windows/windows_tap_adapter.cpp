@@ -478,6 +478,13 @@ namespace asiotap
 
 	void windows_tap_adapter::configure(const configuration_type& configuration)
 	{
+		if (::FlushIpNetTable(m_interface_index) != NO_ERROR)
+		{
+			// Not able to flush the ARP table.
+			//
+			// This is non fatal.
+		}
+
 		if (layer() == tap_adapter_layer::ip)
 		{
 			if (!configuration.ipv4.network_address)
