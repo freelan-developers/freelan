@@ -44,6 +44,7 @@
 
 #include "posix/posix_system.hpp"
 
+#include "os.hpp"
 #include "error.hpp"
 
 #include <unistd.h>
@@ -229,14 +230,22 @@ namespace asiotap
 
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest)
 	{
+#ifdef MACINTOSH
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "-interface", interface };
+#else
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "dev", interface };
+#endif
 
 		checked_execute(real_args);
 	}
 
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
 	{
+#ifdef MACINTOSH
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway), "-interface", interface };
+#else
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
+#endif
 
 		checked_execute(real_args);
 	}
