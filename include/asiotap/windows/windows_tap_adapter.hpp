@@ -148,7 +148,7 @@ namespace asiotap
 
 			friend std::ostream& operator<<(std::ostream& os, const windows_tap_adapter& value)
 			{
-				return os << value.display_name() << " (" << value.layer() << ")";
+				return os << value.display_name();
 			}
 	};
 }
