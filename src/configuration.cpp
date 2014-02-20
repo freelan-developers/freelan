@@ -88,7 +88,7 @@ namespace freelan
 
 	tap_adapter_configuration::tap_adapter_configuration() :
 		enabled(true),
-		type(TAT_TAP),
+		type(tap_adapter_type::tap),
 		ipv4_address_prefix_length(),
 		ipv6_address_prefix_length(),
 		arp_proxy_enabled(false),
@@ -140,7 +140,7 @@ namespace freelan
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, server_configuration::server_protocol_type& value)
+	std::ostream& operator<<(std::ostream& os, const server_configuration::server_protocol_type& value)
 	{
 		switch (value)
 		{
@@ -184,7 +184,7 @@ namespace freelan
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, fscp_configuration::hostname_resolution_protocol_type& value)
+	std::ostream& operator<<(std::ostream& os, const fscp_configuration::hostname_resolution_protocol_type& value)
 	{
 		switch (value)
 		{
@@ -214,7 +214,7 @@ namespace freelan
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_validation_method_type& value)
+	std::ostream& operator<<(std::ostream& os, const security_configuration::certificate_validation_method_type& value)
 	{
 		switch (value)
 		{
@@ -246,7 +246,7 @@ namespace freelan
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_revocation_validation_method_type& value)
+	std::ostream& operator<<(std::ostream& os, const security_configuration::certificate_revocation_validation_method_type& value)
 	{
 		switch (value)
 		{
@@ -269,22 +269,22 @@ namespace freelan
 		is >> value;
 
 		if (value == "tap")
-			v = tap_adapter_configuration::TAT_TAP;
+			v = tap_adapter_configuration::tap_adapter_type::tap;
 		else if (value == "tun")
-			v = tap_adapter_configuration::TAT_TUN;
+			v = tap_adapter_configuration::tap_adapter_type::tun;
 		else
 			throw boost::bad_lexical_cast();
 
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::tap_adapter_type& value)
+	std::ostream& operator<<(std::ostream& os, const tap_adapter_configuration::tap_adapter_type& value)
 	{
 		switch (value)
 		{
-			case tap_adapter_configuration::TAT_TAP:
+			case tap_adapter_configuration::tap_adapter_type::tap:
 				return os << "tap";
-			case tap_adapter_configuration::TAT_TUN:
+			case tap_adapter_configuration::tap_adapter_type::tun:
 				return os << "tun";
 		}
 
@@ -308,7 +308,7 @@ namespace freelan
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, switch_configuration::routing_method_type& value)
+	std::ostream& operator<<(std::ostream& os, const switch_configuration::routing_method_type& value)
 	{
 		switch (value)
 		{

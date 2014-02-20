@@ -867,7 +867,7 @@ namespace freelan
 
 		if (is_new)
 		{
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
 			{
 				async_register_switch_port(host, void_handler_type());
 			}
@@ -893,7 +893,7 @@ namespace freelan
 			m_session_lost_callback(host);
 		}
 
-		if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+		if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
 		{
 			async_unregister_switch_port(host, void_handler_type());
 		}
@@ -909,7 +909,7 @@ namespace freelan
 		{
 			// Channel 0 contains ethernet/ip frames
 			case fscp::CHANNEL_NUMBER_0:
-				if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+				if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
 				{
 					async_write_switch(
 						make_port_index(sender),
@@ -1098,7 +1098,7 @@ namespace freelan
 	{
 		if (m_configuration.tap_adapter.enabled)
 		{
-			const asiotap::tap_adapter_layer tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP) ? asiotap::tap_adapter_layer::ethernet : asiotap::tap_adapter_layer::ip;
+			const asiotap::tap_adapter_layer tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap) ? asiotap::tap_adapter_layer::ethernet : asiotap::tap_adapter_layer::ip;
 
 			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service), tap_adapter_type);
 
@@ -1159,7 +1159,7 @@ namespace freelan
 				m_logger(LL_INFORMATION) << "No IPv6 address configured.";
 			}
 
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TUN)
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
 			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
@@ -1171,7 +1171,7 @@ namespace freelan
 
 			m_tap_adapter->set_connected_state(true);
 
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::TAT_TAP)
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
 			{
 				// The ARP proxy
 				if (m_configuration.tap_adapter.arp_proxy_enabled)

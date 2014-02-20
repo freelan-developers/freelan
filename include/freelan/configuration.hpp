@@ -346,10 +346,10 @@ namespace freelan
 		/**
 		 * \brief The tap adapter type.
 		 */
-		enum tap_adapter_type
+		enum class tap_adapter_type
 		{
-			TAT_TAP = 0,
-			TAT_TUN = 1
+			tap = 0,
+			tun = 1
 		};
 
 		/**
@@ -541,7 +541,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, server_configuration::server_protocol_type& value);
+	std::ostream& operator<<(std::ostream& os, const server_configuration::server_protocol_type& value);
 
 	/**
 	 * \brief Convert a hostname resolution protocol type into a boost asio udp endpoint type.
@@ -564,7 +564,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, fscp_configuration::hostname_resolution_protocol_type& value);
+	std::ostream& operator<<(std::ostream& os, const fscp_configuration::hostname_resolution_protocol_type& value);
 
 	/**
 	 * \brief Input a certificate validation method.
@@ -580,7 +580,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_validation_method_type& value);
+	std::ostream& operator<<(std::ostream& os, const security_configuration::certificate_validation_method_type& value);
 
 	/**
 	 * \brief Input a certificate revocation validation method.
@@ -596,7 +596,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, security_configuration::certificate_revocation_validation_method_type& value);
+	std::ostream& operator<<(std::ostream& os, const security_configuration::certificate_revocation_validation_method_type& value);
 
 	/**
 	 * \brief Input a tap adapter type.
@@ -612,7 +612,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, tap_adapter_configuration::tap_adapter_type& value);
+	std::ostream& operator<<(std::ostream& os, const tap_adapter_configuration::tap_adapter_type& value);
 
 	/**
 	 * \brief Input a routing method.
@@ -628,7 +628,7 @@ namespace freelan
 	 * \param value The value.
 	 * \return os.
 	 */
-	std::ostream& operator<<(std::ostream& os, switch_configuration::routing_method_type& value);
+	std::ostream& operator<<(std::ostream& os, const switch_configuration::routing_method_type& value);
 }
 
 #endif /* FREELAN_CONFIGURATION_HPP */
