@@ -46,10 +46,10 @@
 
 #include "tools.hpp"
 
-#ifndef WINDOWS
+#ifdef WINDOWS
 #include <locale>
 #include <codecvt>
-
+#else
 #include <syslog.h>
 #endif
 
