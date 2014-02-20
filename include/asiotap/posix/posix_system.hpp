@@ -51,7 +51,7 @@
 #include <boost/asio.hpp>
 #include <boost/system/system_error.hpp>
 
-#include "types/ip_network_address.hpp"
+#include "../types/ip_network_address.hpp"
 
 namespace asiotap
 {
