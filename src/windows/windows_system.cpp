@@ -147,11 +147,11 @@ namespace asiotap
 		{
 			if (!arg.empty() && !has_escapable_characters(arg))
 			{
-				return escape_argument(arg);
+				return arg;
 			}
 			else
 			{
-				return arg;
+				return escape_argument(arg);
 			}
 		}
 
@@ -340,6 +340,68 @@ namespace asiotap
 
 			return result;
 		}
+
+		void set_sockaddr_inet(SOCKADDR_INET& result, const boost::asio::ip::address& address)
+		{
+			if (address.is_v4())
+			{
+				const auto bytes = address.to_v4().to_bytes();
+
+				std::memcpy(&result.Ipv4.sin_addr, bytes.data(), bytes.size());
+				result.Ipv4.sin_family = AF_INET;
+			}
+			else if (address.is_v6())
+			{
+				const auto bytes = address.to_v6().to_bytes();
+
+				std::memcpy(&result.Ipv6.sin6_addr, bytes.data(), bytes.size());
+				result.Ipv6.sin6_family = AF_INET6;
+			}
+			else
+			{
+				throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
+			}
+		}
+
+		MIB_IPFORWARD_ROW2 make_ip_forward_row(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)
+		{
+			MIB_IPFORWARD_ROW2 entry{};
+
+			::InitializeIpForwardEntry(&entry);
+
+			entry.Protocol = MIB_IPPROTO_NETMGMT;
+			entry.InterfaceLuid = interface_luid;
+
+			if (gateway)
+			{
+				set_sockaddr_inet(entry.NextHop, *gateway);
+			}
+
+			const auto network_ip_address = ip_address(route);
+			const auto network_prefix_length = prefix_length(route);
+
+			set_sockaddr_inet(entry.DestinationPrefix.Prefix, network_ip_address);
+			entry.DestinationPrefix.PrefixLength = network_prefix_length;
+
+			return entry;
+		}
+
+		MIB_UNICASTIPADDRESS_ROW make_unicast_ip_address_row(const NET_LUID& interface_luid, const ip_network_address& network_address)
+		{
+			MIB_UNICASTIPADDRESS_ROW entry{};
+
+			InitializeUnicastIpAddressEntry(&entry);
+
+			entry.InterfaceLuid = interface_luid;
+
+			const auto network_ip_address = ip_address(network_address);
+			const auto network_prefix_length = prefix_length(network_address);
+
+			set_sockaddr_inet(entry.Address, network_ip_address);
+			entry.OnLinkPrefixLength = network_prefix_length;
+
+			return entry;
+		}
 	}
 
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
@@ -381,20 +443,39 @@ namespace asiotap
 		do_checked_execute(real_args);
 	}
 
-	void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)
+	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)
 	{
-		const std::vector<std::string> args = {
-			"interface",
-			ip_address(address).is_v4() ? "ip" : "ipv6",
-			"set",
-			"address",
-			"name=" + interface_name,
-			"source=static",
-			"addr=" + boost::lexical_cast<std::string>(address),
-			"gateway=none",
-			persistent ? "store=persistent" : "store=active"
-		};
+		const auto row = make_ip_forward_row(interface_luid, route, gateway);
 
-		netsh(args);
+		const DWORD result = ::CreateIpForwardEntry2(&row);
+
+		if (result != NO_ERROR)
+		{
+			throw boost::system::system_error(result, boost::system::system_category());
+		}
+	}
+
+	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)
+	{
+		const auto row = make_ip_forward_row(interface_luid, route, gateway);
+
+		const DWORD result = ::DeleteIpForwardEntry2(&row);
+
+		if (result != NO_ERROR)
+		{
+			throw boost::system::system_error(result, boost::system::system_category());
+		}
+	}
+
+	void set_unicast_address(const NET_LUID& interface_luid, const ip_network_address& network_address)
+	{
+		const auto row = make_unicast_ip_address_row(interface_luid, network_address);
+
+		const DWORD result = ::SetUnicastIpAddressEntry(&row);
+
+		if (result != NO_ERROR)
+		{
+			throw boost::system::system_error(result, boost::system::system_category());
+		}
 	}
 }

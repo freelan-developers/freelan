@@ -44,81 +44,17 @@
 
 #include "windows/windows_route_manager.hpp"
 
-#include <Iphlpapi.h>
-
-#include "error.hpp"
+#include "windows/windows_system.hpp"
 
 namespace asiotap
 {
-	namespace
-	{
-		void set_sockaddr_inet(SOCKADDR_INET& result, const boost::asio::ip::address& address)
-		{
-			if (address.is_v4())
-			{
-				const auto bytes = address.to_v4().to_bytes();
-
-				std::memcpy(&result.Ipv4.sin_addr, bytes.data(), bytes.size());
-				result.Ipv4.sin_family = AF_INET;
-			}
-			else if (address.is_v6())
-			{
-				const auto bytes = address.to_v6().to_bytes();
-
-				std::memcpy(&result.Ipv6.sin6_addr, bytes.data(), bytes.size());
-				result.Ipv6.sin6_family = AF_INET6;
-			}
-			else
-			{
-				throw boost::system::system_error(make_error_code(asiotap_error::invalid_type));
-			}
-		}
-
-		MIB_IPFORWARD_ROW2 make_row(const windows_route_manager::route_type& route)
-		{
-			MIB_IPFORWARD_ROW2 entry{};
-
-			::InitializeIpForwardEntry(&entry);
-
-			entry.Protocol = MIB_IPPROTO_NETMGMT;
-			entry.InterfaceLuid = route.interface;
-
-			if (route.gateway)
-			{
-				set_sockaddr_inet(entry.NextHop, *route.gateway);
-			}
-
-			const auto network_ip_address = ip_address(route.network);
-			const auto network_prefix_length = prefix_length(route.network);
-
-			set_sockaddr_inet(entry.DestinationPrefix.Prefix, network_ip_address);
-			entry.DestinationPrefix.PrefixLength = network_prefix_length;
-
-			return entry;
-		}
-	}
-
 	void windows_route_manager::register_route(const route_type& route)
 	{
-		const auto row = make_row(route);
-
-		const DWORD result = ::CreateIpForwardEntry2(&row);
-
-		if (result != NO_ERROR)
-		{
-			throw boost::system::system_error(result, boost::system::system_category());
-		}
+		asiotap::register_route(route.interface, route.network, route.gateway);
 	}
 
 	void windows_route_manager::unregister_route(const route_type& route)
 	{
-		const auto row = make_row(route);
-
-		const DWORD result = ::DeleteIpForwardEntry2(&row);
-
-		if (result != NO_ERROR)
-		{
-			throw boost::system::system_error(result, boost::system::system_category());
-		}
+		asiotap::unregister_route(route.interface, route.network, route.gateway);
 	}
 }
