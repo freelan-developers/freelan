@@ -282,25 +282,30 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	else
 	{
 #ifdef _MSC_VER
+#ifdef UNICODE
+		std::wstring value(4096, L'\0');
+
+		const DWORD value_size = GetEnvironmentVariable(L"FREELAN_CONFIGURATION_FILE", &value[0], static_cast<DWORD>(value.size()));
+#else
 		std::string value(4096, '\0');
 
-		DWORD value_size = GetEnvironmentVariable("FREELAN_CONFIGURATION_FILE", &value[0], static_cast<DWORD>(value.size()));
-
-		const char* val = NULL;
+		const DWORD value_size = GetEnvironmentVariable("FREELAN_CONFIGURATION_FILE", &value[0], static_cast<DWORD>(value.size()));
+#endif
 
 		if (value_size > 0)
 		{
 			value.resize(value_size);
-			val = value.c_str();
+
+			configuration_file = fs::absolute(value);
 		}
 #else
 		const char* val = getenv("FREELAN_CONFIGURATION_FILE");
-#endif
 
 		if (val)
 		{
 			configuration_file = fs::absolute(std::string(val));
 		}
+#endif
 	}
 
 	if (!configuration_file.empty())
