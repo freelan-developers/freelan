@@ -50,14 +50,21 @@
 
 #include <boost/system/system_error.hpp>
 
+#include "types/ip_network_address.hpp"
+
 namespace asiotap
 {
+	// These functions are common to all operating systems.
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
 	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec);
 	int execute(const std::vector<std::string>& args);
 	int execute(const std::vector<std::wstring>& args);
 	void checked_execute(const std::vector<std::string>& args);
 	void checked_execute(const std::vector<std::wstring>& args);
+
+	// These functions are OS specific.
+	void netsh(const std::vector<std::string>& args);
+	void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent = false);
 }
 
 #endif /* ASIOTAP_WINDOWS_SYSTEM_HPP */

@@ -128,6 +128,7 @@
     <ClInclude Include="include\asiotap\osi\udp_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\udp_helper.hpp" />
     <ClInclude Include="include\asiotap\route_manager.hpp" />
+    <ClInclude Include="include\asiotap\system.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter_configuration.hpp" />
     <ClInclude Include="include\asiotap\tap_adapter_impl.hpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="include\asiotap\types\ip_network_address.hpp" />
     <ClInclude Include="include\asiotap\types\stream_operations.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp" />
+    <ClInclude Include="include\asiotap\windows\windows_system.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp" />
     <ClInclude Include="src\windows\registry.hpp" />
   </ItemGroup>

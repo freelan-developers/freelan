@@ -45,6 +45,7 @@
 #include "windows/windows_tap_adapter.hpp"
 
 #include "registry.hpp"
+#include "system.hpp"
 
 #include <boost/optional.hpp>
 
@@ -159,82 +160,6 @@ namespace asiotap
 			}
 
 			return *it;
-		}
-
-		DWORD shell_execute(const std::string& cmd, const std::string& params)
-		{
-			SHELLEXECUTEINFO sei = {};
-
-			sei.cbSize = sizeof(sei);
-			sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-			sei.lpVerb = NULL;
-			sei.lpFile = cmd.c_str();
-			sei.lpParameters = params.c_str();
-			sei.nShow = SW_HIDE;
-
-			if (::ShellExecuteEx(&sei) != TRUE)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			if (!sei.hProcess)
-			{
-				throw boost::system::system_error(make_error_code(asiotap_error::process_handle_expected));
-			}
-
-			if (::WaitForSingleObject(sei.hProcess, INFINITE) != WAIT_OBJECT_0)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			DWORD exit_code = 0;
-
-			if (::GetExitCodeProcess(sei.hProcess, &exit_code) == 0)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			return exit_code;
-		}
-
-		void netsh_execute(const std::string& params)
-		{
-			if (shell_execute("netsh.exe", params) != 0)
-			{
-				// Should be that but the call will likely fail a lot.
-				//throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
-			}
-		}
-
-		void netsh_set_address(const std::string& address_family, size_t interface_index, const std::string& address, unsigned int prefix_len)
-		{
-			std::ostringstream oss;
-
-			oss << "int " << address_family << " set address " << interface_index << " " << address;
-
-			OSVERSIONINFO os_version;
-			os_version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-			::GetVersionEx(&os_version);
-
-			// The /prefix parameter is only supported after Windows XP
-			if (os_version.dwMajorVersion >= 6)
-			{
-				oss << "/" << prefix_len;
-			}
-
-			oss << " store=active";
-
-			netsh_execute(oss.str());
-		}
-
-		void netsh_set_address(size_t interface_index, const ipv4_network_address& network_address)
-		{
-			netsh_set_address("ipv4", interface_index, network_address.address().to_string(), network_address.prefix_length());
-		}
-
-		void netsh_set_address(size_t interface_index, const ipv6_network_address& network_address)
-		{
-			netsh_set_address("ipv6", interface_index, network_address.address().to_string(), network_address.prefix_length());
 		}
 	}
 
@@ -529,12 +454,12 @@ namespace asiotap
 
 		if (configuration.ipv4.network_address)
 		{
-			netsh_set_address(m_interface_index, *configuration.ipv4.network_address);
+			netsh_interface_ip_set_address(display_name(), *configuration.ipv4.network_address);
 		}
 
 		if (configuration.ipv6.network_address)
 		{
-			netsh_set_address(m_interface_index, *configuration.ipv6.network_address);
+			netsh_interface_ip_set_address(display_name(), *configuration.ipv6.network_address);
 		}
 	}
 }

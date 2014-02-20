@@ -46,7 +46,10 @@
 
 #include "error.hpp"
 
+#include <iostream>
 #include <sstream>
+
+#include <boost/lexical_cast.hpp>
 
 #include <shlobj.h>
 #include <shellapi.h>
@@ -64,6 +67,16 @@ namespace asiotap
 			private:
 				HANDLE m_handle;
 		};
+
+		void output(const char* str)
+		{
+			std::cout << str << std::endl;
+		}
+
+		void output(const wchar_t* str)
+		{
+			std::wcout << str << std::endl;
+		}
 
 		bool has_escapable_characters(const std::string& str)
 		{
@@ -198,6 +211,10 @@ namespace asiotap
 
 			PROCESS_INFORMATION pi;
 
+#if FREELAN_DEBUG
+			output(command_line);
+#endif
+
 			if (!do_create_process(application, command_line, si, pi))
 			{
 				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
@@ -247,9 +264,9 @@ namespace asiotap
 			const std::basic_string<CharType> application = args.front();
 			std::basic_ostringstream<CharType> command_line_buffer;
 
-			for (auto it = args.begin() + 1; it != args.end(); ++it)
+			for (auto it = args.begin(); it != args.end(); ++it)
 			{
-				if (it != args.begin() + 1)
+				if (it != args.begin())
 				{
 					command_line_buffer << " ";
 				}
@@ -285,6 +302,44 @@ namespace asiotap
 				throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
 			}
 		}
+
+		size_t get_system_directory(char* buf, size_t buf_len)
+		{
+			return static_cast<size_t>(::GetSystemDirectoryA(buf, static_cast<UINT>(buf_len)));
+		}
+
+		size_t get_system_directory(wchar_t* buf, size_t buf_len)
+		{
+			return static_cast<size_t>(::GetSystemDirectoryW(buf, static_cast<UINT>(buf_len)));
+		}
+
+		template <typename CharType>
+		std::basic_string<CharType> get_system_directory()
+		{
+			const size_t required_size = get_system_directory(static_cast<CharType*>(NULL), 0);
+
+			if (required_size == 0)
+			{
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			}
+
+			std::basic_string<CharType> result;
+
+			// We make room for the content and the trailing NULL character.
+			result.resize(required_size + 1);
+
+			const size_t new_size = get_system_directory(&result[0], result.size());
+
+			if (new_size == 0)
+			{
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			}
+
+			// Get rid of the trailing NULL character.
+			result.resize(new_size);
+
+			return result;
+		}
 	}
 
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
@@ -315,5 +370,31 @@ namespace asiotap
 	void checked_execute(const std::vector<std::wstring>& args)
 	{
 		do_checked_execute(args);
+	}
+
+	void netsh(const std::vector<std::string>& args)
+	{
+		std::vector<std::string> real_args = { get_system_directory<char>() + "\\netsh.exe" };
+
+		real_args.insert(real_args.end(), args.begin(), args.end());
+
+		do_checked_execute(real_args);
+	}
+
+	void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)
+	{
+		const std::vector<std::string> args = {
+			"interface",
+			ip_address(address).is_v4() ? "ip" : "ipv6",
+			"set",
+			"address",
+			"name=" + interface_name,
+			"source=static",
+			"addr=" + boost::lexical_cast<std::string>(address),
+			"gateway=none",
+			persistent ? "store=persistent" : "store=active"
+		};
+
+		netsh(args);
 	}
 }
