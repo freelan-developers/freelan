@@ -1140,19 +1140,7 @@ namespace freelan
 			{
 				m_logger(LL_INFORMATION) << "IPv4 address: " << m_configuration.tap_adapter.ipv4_address_prefix_length;
 
-#ifdef WINDOWS
-				// Quick fix for Windows:
-				// Directly setting the IPv4 address/prefix length doesn't work like it should on Windows.
-				// We disable direct setting if DHCP is enabled.
-
-				const bool set_ipv4_network_address = ((m_configuration.tap_adapter.type != tap_adapter_configuration::TAT_TAP) || !m_configuration.tap_adapter.dhcp_proxy_enabled);
-#else
-				const bool set_ipv4_network_address = true;
-#endif
-				if (set_ipv4_network_address)
-				{
-					tap_config.ipv4.network_address = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
-				}
+				tap_config.ipv4.network_address = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
 			}
 			else
 			{
