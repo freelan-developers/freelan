@@ -47,6 +47,9 @@
 #include "tools.hpp"
 
 #ifndef WINDOWS
+#include <locale>
+#include <codecvt>
+
 #include <syslog.h>
 #endif
 
@@ -101,7 +104,13 @@ const char* log_level_to_string(freelan::log_level level)
 
 void execute_tap_adapter_up_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
-	int exit_status = execute(script, tap_adapter.name().c_str(), NULL);
+#if defined(WINDOWS) && defined(UNICODE)
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+	int exit_status = execute(script, { converter.from_bytes(tap_adapter.name()) });
+#else
+	int exit_status = execute(script, { tap_adapter.name() });
+#endif
 
 	if (exit_status != 0)
 	{
@@ -111,7 +120,13 @@ void execute_tap_adapter_up_script(const boost::filesystem::path& script, const 
 
 void execute_tap_adapter_down_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
-	int exit_status = execute(script, tap_adapter.name().c_str(), NULL);
+#if defined(WINDOWS) && defined(UNICODE)
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+	int exit_status = execute(script, { converter.from_bytes(tap_adapter.name()) });
+#else
+	int exit_status = execute(script, { tap_adapter.name() });
+#endif
 
 	if (exit_status != 0)
 	{
@@ -145,8 +160,11 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 		cert.write_certificate(cryptoplus::file::open(filename.string<std::basic_string<char> >(), "w"));
 #endif
 
-		const int exit_status = execute(script, filename.c_str(), NULL);
-
+#if defined(WINDOWS) && defined(UNICODE)
+		const int exit_status = execute(script, { filename.wstring() });
+#else
+		const int exit_status = execute(script, { filename.string() });
+#endif
 		if (logger.level() <= freelan::LL_DEBUG)
 		{
 			logger(freelan::LL_DEBUG) << script << " terminated execution with exit status " << exit_status ;

@@ -87,9 +87,13 @@ boost::filesystem::path get_temporary_directory();
 /**
  * \brief Execute a script and get the exit status.
  * \param script The script to execute.
- * \param ... The parameters. The last parameter MUST be NULL or very bad things will happen ! Something involving dinosaurs and meteorites.
+ * \param args The parameters.
  * \return The exit status.
  */
-int execute(boost::filesystem::path script, ...);
+#if defined(WINDOWS) && defined(UNICODE)
+int execute(boost::filesystem::path script, const std::vector<std::wstring>& args);
+#else
+int execute(boost::filesystem::path script, const std::vector<std::string>& args);
+#endif
 
 #endif /* SYSTEM_HPP */

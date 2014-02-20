@@ -51,228 +51,13 @@
 #include <cstdarg>
 #include <sstream>
 
-#include <cryptoplus/os.hpp>
-
-#include <boost/system/system_error.hpp>
+#include <asiotap/system.hpp>
 
 #ifdef WINDOWS
 #include <shlobj.h>
-#include <shellapi.h>
-#elif defined(UNIX)
-#include <unistd.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <cstring>
-#endif
-
-#ifdef EXECUTE_ENABLE_STDOUT
-#define ENABLE_STDOUT_DEFAULT true
-#else
-#define ENABLE_STDOUT_DEFAULT false
 #endif
 
 namespace fs = boost::filesystem;
-
-namespace
-{
-#ifdef WINDOWS
-	void throw_system_error(LONG error)
-	{
-		throw boost::system::system_error(error, boost::system::system_category());
-	}
-
-	DWORD create_process(const TCHAR* application, TCHAR* command_line, bool enable_stdout = ENABLE_STDOUT_DEFAULT)
-	{
-		DWORD exit_status;
-
-		STARTUPINFO si;
-		si.cb = sizeof(si);
-		si.lpReserved = NULL;
-		si.lpDesktop = NULL;
-		si.lpTitle = NULL;
-		si.dwX = 0;
-		si.dwY = 0;
-		si.dwXSize = 0;
-		si.dwYSize = 0;
-		si.dwXCountChars = 0;
-		si.dwYCountChars = 0;
-		si.dwFillAttribute = 0;
-		si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES; // Remove STARTF_USESTDHANDLES to show stdout
-		si.wShowWindow = SW_HIDE;
-		si.cbReserved2 = 0;
-		si.lpReserved2 = NULL;
-		si.hStdInput = INVALID_HANDLE_VALUE;
-		si.hStdOutput = enable_stdout ? ::GetStdHandle(STD_OUTPUT_HANDLE) : INVALID_HANDLE_VALUE;
-		si.hStdError = INVALID_HANDLE_VALUE;
-
-		PROCESS_INFORMATION pi;
-
-		if (!::CreateProcess(
-		            application,
-		            command_line,
-		            NULL,
-		            NULL,
-		            FALSE,
-		            0,
-		            NULL, //environment
-		            NULL,
-		            &si,
-		            &pi
-		        ))
-		{
-			throw_system_error(::GetLastError());
-		}
-
-		::CloseHandle(pi.hThread);
-
-		DWORD wait_result = ::WaitForSingleObject(pi.hProcess, INFINITE);
-
-		try
-		{
-			switch (wait_result)
-			{
-				case WAIT_OBJECT_0:
-					{
-						DWORD exit_code = 0;
-
-						if (::GetExitCodeProcess(pi.hProcess, &exit_code))
-						{
-							exit_status = static_cast<int>(exit_code);
-						}
-						else
-						{
-							throw_system_error(::GetLastError());
-						}
-
-						break;
-					}
-				default:
-					{
-						throw_system_error(::GetLastError());
-					}
-			}
-		}
-		catch (...)
-		{
-			::CloseHandle(pi.hProcess);
-
-			throw;
-		}
-
-		::CloseHandle(pi.hProcess);
-
-		return exit_status;
-	}
-
-#elif defined(UNIX)
-	void throw_system_error(int error)
-	{
-		char error_str[256] = { 0 };
-
-		if (strerror_r(error, error_str, sizeof(error_str)) != 0)
-		{
-			throw boost::system::system_error(error, boost::system::system_category());
-		}
-		else
-		{
-			throw boost::system::system_error(error, boost::system::system_category(), error_str);
-		}
-	}
-
-	int execute_script(const char* file, char* const argv[], bool enable_stdout = ENABLE_STDOUT_DEFAULT)
-	{
-		int exit_status = 255;
-		int fd[2];
-
-		if (::pipe(fd) < 0)
-		{
-			throw_system_error(errno);
-		}
-
-		pid_t pid;
-
-		switch (pid = fork())
-		{
-			case -1:
-				{
-					::close(fd[0]);
-					::close(fd[1]);
-
-					throw_system_error(errno);
-					break;
-				}
-
-			case 0:
-				{
-					// Child process
-					int fdlimit = ::sysconf(_SC_OPEN_MAX);
-
-					for (int n = 0; n < fdlimit; ++n)
-					{
-						if (n != fd[1])
-						{
-							if (!enable_stdout || (n != STDOUT_FILENO))
-							{
-								::close(n);
-							}
-						}
-					}
-
-					fcntl(fd[1], F_SETFD, FD_CLOEXEC);
-
-					// Execute the file specified
-					::execv(file, argv);
-
-					// Something went wrong. Sending back errno to parent process then exiting.
-					if (::write(fd[1], &errno, sizeof(errno))) {}
-					_exit(EXIT_FAILURE);
-					break;
-				}
-
-			default:
-				{
-					// Parent process
-					int errno_child = 0;
-					::close(fd[1]);
-
-					ssize_t readcnt = ::read(fd[0], &errno_child, sizeof(errno_child));
-					::close(fd[0]);
-
-					if (readcnt < 0)
-					{
-						throw_system_error(errno);
-					}
-					else if (readcnt == sizeof(errno_child))
-					{
-						throw_system_error(errno_child);
-					}
-					else
-					{
-						int status;
-
-						if (::waitpid(pid, &status, 0) < 0)
-						{
-							throw_system_error(errno);
-						}
-						else
-						{
-							if (WIFEXITED(status))
-							{
-								exit_status = WEXITSTATUS(status);
-							}
-						}
-					}
-
-					break;
-				}
-		}
-
-		return exit_status;
-	}
-
-#endif
-}
 
 #ifdef WINDOWS
 fs::path get_module_filename()
@@ -360,72 +145,18 @@ fs::path get_temporary_directory()
 #endif
 }
 
-int execute(fs::path script, ...)
-{
-	int exit_status;
-
-	va_list vl;
-	va_start(vl, script);
-
-	try
-	{
-#ifdef WINDOWS
-		TCHAR command_line[32768] = {};
-		size_t offset = 0;
-
-		for (const TCHAR* arg = va_arg(vl, const TCHAR*); arg != NULL; arg = va_arg(vl, const TCHAR*))
-		{
-			command_line[offset++] = '"';
-
-			for (; *arg != '\0'; ++arg)
-			{
-				if (*arg == '"')
-				{
-					command_line[offset++] = '\\';
-				}
-
-				command_line[offset++] = *arg;
-			}
-
-			command_line[offset++] = '"';
-			command_line[offset++] = ' ';
-		}
-
-		exit_status = create_process(script.string<std::basic_string<TCHAR> >().c_str(), command_line);
-
-#elif defined(UNIX)
-		char* argv[256] = {};
-		size_t cnt = 0;
-		char args[32728] = {};
-		size_t offset = 0;
-
-		const char* file = script.c_str();
-
-		for (const char* arg = file; arg != NULL; arg = va_arg(vl, const char*))
-		{
-			argv[cnt++] = &args[offset];
-
-			for (; *arg != '\0'; ++arg)
-			{
-				args[offset++] = *arg;
-			}
-
-			args[offset++] = '\0';
-		}
-
-		exit_status = execute_script(file, argv);
-
+#if defined(WINDOWS) && defined(UNICODE)
+int execute(fs::path script, const std::vector<std::wstring>& args)
+#else
+int execute(fs::path script, const std::vector<std::string>& args)
 #endif
-	}
-	catch (...)
-	{
-		va_end(vl);
+{
+#if defined(WINDOWS) && defined(UNICODE)
+	std::vector<std::wstring> real_args = { script.wstring() };
+#else
+	std::vector<std::string> real_args = { script.string() };
+#endif
+	real_args.insert(real_args.end(), args.begin(), args.end());
 
-		throw;
-	}
-
-	va_end(vl);
-
-	return exit_status;
+	return asiotap::execute(real_args);
 }
-
