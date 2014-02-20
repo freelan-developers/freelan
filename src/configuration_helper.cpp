@@ -166,7 +166,7 @@ po::options_description get_tap_adapter_options()
 	const asiotap::ipv6_network_address default_dhcp_ipv6_network_address(boost::asio::ip::address_v6::from_string("fe80::"), 10);
 
 	result.add_options()
-	("tap_adapter.type", po::value<fl::tap_adapter_configuration::tap_adapter_type>()->default_value(fl::tap_adapter_configuration::TAT_TAP, "tap"), "The TAP adapter type.")
+	("tap_adapter.type", po::value<fl::tap_adapter_configuration::tap_adapter_type>()->default_value(fl::tap_adapter_configuration::tap_adapter_type::tap, "tap"), "The TAP adapter type.")
 	("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
 	("tap_adapter.name", po::value<std::string>(), "The name of the tap adapter to use or create.")
 	("tap_adapter.mtu", po::value<fl::mtu_type>()->default_value(fl::auto_mtu_type()), "The MTU of the tap adapter.")
