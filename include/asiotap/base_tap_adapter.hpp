@@ -274,7 +274,7 @@ namespace asiotap
 
 			friend std::ostream& operator<<(std::ostream& os, const base_tap_adapter& value)
 			{
-				return os << value.name() << " (" << value.layer() << ")";
+				return os << value.name();
 			}
 	};
 }
