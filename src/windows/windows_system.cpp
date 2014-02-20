@@ -404,39 +404,44 @@ namespace asiotap
 		}
 	}
 
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
-	{
-		return do_execute(args, ec);
-	}
-
+#ifdef UNICODE
 	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec)
+#else
+	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
+#endif
 	{
 		return do_execute(args, ec);
 	}
 
-	int execute(const std::vector<std::string>& args)
-	{
-		return do_execute(args);
-	}
-
+#ifdef UNICODE
 	int execute(const std::vector<std::wstring>& args)
+#else
+	int execute(const std::vector<std::string>& args)
+#endif
 	{
 		return do_execute(args);
 	}
 
-	void checked_execute(const std::vector<std::string>& args)
-	{
-		do_checked_execute(args);
-	}
-
+#ifdef UNICODE
 	void checked_execute(const std::vector<std::wstring>& args)
+#else
+	void checked_execute(const std::vector<std::string>& args)
+#endif
 	{
 		do_checked_execute(args);
 	}
 
+#ifdef UNICODE
+	void netsh(const std::vector<std::wstring>& args)
+#else
 	void netsh(const std::vector<std::string>& args)
+#endif
 	{
+#ifdef UNICODE
+		std::vector<std::wstring> real_args = { get_system_directory<wchar_t>() + L"\\netsh.exe" };
+#else
 		std::vector<std::string> real_args = { get_system_directory<char>() + "\\netsh.exe" };
+#endif
 
 		real_args.insert(real_args.end(), args.begin(), args.end());
 

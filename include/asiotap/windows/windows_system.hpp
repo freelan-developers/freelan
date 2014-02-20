@@ -52,21 +52,30 @@
 #include <boost/optional.hpp>
 
 #include "types/ip_network_address.hpp"
+#include "os.hpp"
 
 #include <Iphlpapi.h>
 
 namespace asiotap
 {
 	// These functions are common to all operating systems.
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
+#ifdef UNICODE
 	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec);
-	int execute(const std::vector<std::string>& args);
 	int execute(const std::vector<std::wstring>& args);
-	void checked_execute(const std::vector<std::string>& args);
 	void checked_execute(const std::vector<std::wstring>& args);
+#else
+	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
+	int execute(const std::vector<std::string>& args);
+	void checked_execute(const std::vector<std::string>& args);
+#endif
 
 	// These functions are OS specific.
+#ifdef UNICODE
+	void netsh(const std::vector<std::wstring>& args);
+#else
 	void netsh(const std::vector<std::string>& args);
+#endif
+
 	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway);
 	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway);
 	void set_unicast_address(const NET_LUID& interface_luid, const ip_network_address& network_address);
