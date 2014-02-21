@@ -142,7 +142,7 @@ namespace asiotap
 			}
 			else if (prefix_len > 0)
 			{
-				const auto byte_mask = static_cast<AddressType::bytes_type::value_type>((0xFF >> prefix_len) ^ 0xFF);
+				const auto byte_mask = static_cast<typename AddressType::bytes_type::value_type>((0xFF >> prefix_len) ^ 0xFF);
 
 				byte ^= byte_mask;
 			}
