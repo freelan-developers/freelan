@@ -128,6 +128,37 @@ namespace asiotap
 	template bool base_ip_network_address<boost::asio::ip::address_v6>::has_address(const boost::asio::ip::address_v6&) const;
 
 	template <typename AddressType>
+	typename base_ip_network_address<AddressType>::address_type base_ip_network_address<AddressType>::get_network_address() const
+	{
+		typename AddressType::bytes_type network_bytes = address().to_bytes();
+
+		unsigned int prefix_len = m_prefix_length;
+
+		for (auto&& byte : network_bytes)
+		{
+			if (prefix_len >= 8)
+			{
+				prefix_len -= 8;
+			}
+			else if (prefix_len > 0)
+			{
+				const auto byte_mask = static_cast<AddressType::bytes_type::value_type>((0xFF >> prefix_len) ^ 0xFF);
+
+				byte ^= byte_mask;
+			}
+			else
+			{
+				byte = 0x00;
+			}
+		}
+
+		return AddressType(network_bytes);
+	}
+
+	template boost::asio::ip::address_v4 base_ip_network_address<boost::asio::ip::address_v4>::get_network_address() const;
+	template boost::asio::ip::address_v6 base_ip_network_address<boost::asio::ip::address_v6>::get_network_address() const;
+
+	template <typename AddressType>
 	std::istream& operator>>(std::istream& is, base_ip_network_address<AddressType>& value)
 	{
 		std::string ip_address;

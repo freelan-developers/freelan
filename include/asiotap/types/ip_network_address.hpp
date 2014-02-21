@@ -130,7 +130,13 @@ namespace asiotap
 			 * \param addr The address to check.
 			 * \return true if addr belongs to the network address, false otherwise.
 			 */
-			bool has_address(const AddressType& addr) const;
+			bool has_address(const address_type& addr) const;
+
+			/**
+			 * \brief Get the network address.
+			 * \return The network address.
+			 */
+			address_type get_network_address() const;
 
 		private:
 
@@ -339,7 +345,7 @@ namespace asiotap
 	 * \return true if addr is contained in ina.
 	 */
 	template <typename AddressType>
-	bool has_address(const base_ip_network_address<AddressType>& ina, const AddressType& addr)
+	inline bool has_address(const base_ip_network_address<AddressType>& ina, const AddressType& addr)
 	{
 		return ina.has_address(addr);
 	}
@@ -351,9 +357,38 @@ namespace asiotap
 	 * \return true if addr is contained in ina.
 	 */
 	template <typename AddressType>
-	bool has_address(const ip_network_address& ina, const AddressType& addr)
+	inline bool has_address(const ip_network_address& ina, const AddressType& addr)
 	{
 		return boost::apply_visitor(ip_network_address_has_address_visitor(addr), ina);
+	}
+
+	/**
+	 * \brief A visitor that gets the network address.
+	 */
+	class ip_network_address_get_network_address_visitor : public boost::static_visitor<boost::asio::ip::address>
+	{
+		public:
+
+			/**
+			 * \brief Get the network address of the specified address.
+			 * \param ina The base_ip_network_address instance.
+			 * \return The network address.
+			 */
+			template <typename AddressType>
+			result_type operator()(const base_ip_network_address<AddressType>& ina) const
+			{
+				return ina.get_network_address();
+			}
+	};
+
+	/**
+	 * \brief Get the network address associated to an address.
+	 * \param ina The ip_network_address.
+	 * \return The network address.
+	 */
+	inline boost::asio::ip::address get_network_address(const ip_network_address& ina)
+	{
+		return boost::apply_visitor(ip_network_address_get_network_address_visitor(), ina);
 	}
 
 	/**
@@ -385,7 +420,7 @@ namespace asiotap
 	 * \return true if the address was found in the list.
 	 */
 	template <typename NetworkAddressIterator, typename AddressType>
-	bool has_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
+	inline bool has_address(NetworkAddressIterator begin, NetworkAddressIterator end, const AddressType& addr)
 	{
 		return (find_address(begin, end, addr) != end);
 	}
