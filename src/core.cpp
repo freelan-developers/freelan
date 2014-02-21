@@ -1144,7 +1144,14 @@ namespace freelan
 			}
 			else
 			{
-				m_logger(LL_INFORMATION) << "No IPv4 address configured.";
+				if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
+				{
+					throw std::runtime_error("No IPv4 address configured but we are in tun mode: unable to continue");
+				}
+				else
+				{
+					m_logger(LL_INFORMATION) << "No IPv4 address configured.";
+				}
 			}
 
 			// IPv6 address
@@ -1163,7 +1170,17 @@ namespace freelan
 			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
+					m_logger(LL_INFORMATION) << "IPv4 remote address: " << m_configuration.tap_adapter.remote_ipv4_address->to_string();
+
 					tap_config.ipv4.remote_address = *m_configuration.tap_adapter.remote_ipv4_address;
+				}
+				else
+				{
+					const boost::asio::ip::address_v4 remote_ipv4_address = m_configuration.tap_adapter.ipv4_address_prefix_length.get_network_address();
+
+					m_logger(LL_INFORMATION) << "No IPv4 remote address configured. Using a default of: " << remote_ipv4_address.to_string();
+
+					tap_config.ipv4.remote_address = remote_ipv4_address;
 				}
 			}
 

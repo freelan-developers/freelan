@@ -388,6 +388,11 @@ namespace freelan
 		asiotap::ipv6_network_address ipv6_address_prefix_length;
 
 		/**
+		 * \brief The remote IPv4 address.
+		 */
+		boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
+
+		/**
 		 * \brief Whether to enable the ARP proxy.
 		 */
 		bool arp_proxy_enabled;
@@ -411,11 +416,6 @@ namespace freelan
 		 * \brief The DHCP server IPv6 address.
 		 */
 		asiotap::ipv6_network_address dhcp_server_ipv6_address_prefix_length;
-
-		/**
-		 * \brief The remote IPv4 address.
-		 */
-		boost::optional<boost::asio::ip::address_v4> remote_ipv4_address;
 
 		/**
 		 * \brief The up script.
