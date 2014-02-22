@@ -48,6 +48,9 @@
 
 #include <iostream>
 #include <sstream>
+#include <locale>
+#include <codecvt>
+#include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 
@@ -446,6 +449,53 @@ namespace asiotap
 		real_args.insert(real_args.end(), args.begin(), args.end());
 
 		do_checked_execute(real_args);
+	}
+
+	void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)
+	{
+		std::vector<std::string> args;
+
+		if (ip_address(address).is_v4())
+		{
+			args = {
+				"interface",
+				"ip",
+				"set",
+				"address",
+				"name=" + interface_name,
+				"source=static",
+				"addr=" + boost::lexical_cast<std::string>(address),
+				"gateway=none",
+				persistent ? "store=persistent" : "store=active"
+			};
+		}
+		else
+		{
+			args = {
+				"interface",
+				"ipv6",
+				"set",
+				"address",
+				"interface=" + interface_name,
+				"address=" + boost::lexical_cast<std::string>(address),
+				persistent ? "store=persistent" : "store=active"
+			};
+		}
+
+#ifdef UNICODE
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+		std::vector<std::wstring> wargs;
+
+		for (auto&& arg : args)
+		{
+			wargs.push_back(converter.from_bytes(arg));
+		}
+
+		netsh(wargs);
+#else
+		netsh(args);
+#endif
 	}
 
 	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)

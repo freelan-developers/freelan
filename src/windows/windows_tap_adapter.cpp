@@ -457,7 +457,7 @@ namespace asiotap
 			try
 			{
 				// Depending on the TAP adapter version this may not be supported.
-				set_unicast_address(m_interface_luid, *configuration.ipv4.network_address);
+				netsh_interface_ip_set_address(display_name(), *configuration.ipv4.network_address);
 			}
 			catch (const boost::system::system_error& ex)
 			{
@@ -477,7 +477,7 @@ namespace asiotap
 			try
 			{
 				// Depending on the TAP adapter version this may not be supported.
-				set_unicast_address(m_interface_luid, *configuration.ipv6.network_address);
+				netsh_interface_ip_set_address(display_name(), *configuration.ipv6.network_address);
 			}
 			catch (const boost::system::system_error& ex)
 			{
