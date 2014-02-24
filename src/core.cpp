@@ -1119,9 +1119,11 @@ namespace freelan
 				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(write_func, TAP_ADAPTERS_GROUP));
 
 				// Add the routes.
-				const auto& local_routes = m_configuration.router.local_ip_routes;
+				auto local_routes = m_configuration.router.local_ip_routes;
 
-				//TODO: Add the routes read from the system tap adapter
+				const auto tap_ip_addresses = m_tap_adapter->get_ip_addresses();
+
+				local_routes.insert(tap_ip_addresses.begin(), tap_ip_addresses.end());
 
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
 			}
