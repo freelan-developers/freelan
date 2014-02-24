@@ -461,12 +461,8 @@ namespace asiotap
 			}
 			catch (const boost::system::system_error& ex)
 			{
-				switch (ex.code().value())
+				if (ex.code() != asiotap_error::external_process_failed)
 				{
-				case ERROR_NOT_FOUND:
-				case ERROR_NOT_SUPPORTED:
-					break;
-				default:
 					throw;
 				}
 			}
@@ -481,13 +477,9 @@ namespace asiotap
 			}
 			catch (const boost::system::system_error& ex)
 			{
-				switch (ex.code().value())
+				if (ex.code() != asiotap_error::external_process_failed)
 				{
-					case ERROR_NOT_FOUND:
-					case ERROR_NOT_SUPPORTED:
-						break;
-					default:
-						throw;
+					throw;
 				}
 			}
 		}
