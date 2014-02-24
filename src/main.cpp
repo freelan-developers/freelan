@@ -76,6 +76,11 @@
 namespace fs = boost::filesystem;
 namespace fl = freelan;
 
+namespace
+{
+	boost::mutex log_mutex;
+}
+
 struct cli_configuration
 {
 	cli_configuration() :
@@ -116,6 +121,8 @@ std::vector<fs::path> get_configuration_files()
 
 void do_log(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 {
+	boost::mutex::scoped_lock lock(log_mutex);
+
 	std::cout << boost::posix_time::to_iso_extended_string(timestamp) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
 }
 
