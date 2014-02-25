@@ -529,6 +529,8 @@ namespace freelan
 	{
 		assert(m_server);
 
+		m_logger(LL_DEBUG) << "Sending routes request to " << target << ".";
+
 		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
 		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
 
@@ -556,6 +558,8 @@ namespace freelan
 	void core::async_send_routes_request_to_all(multiple_endpoints_handler_type handler)
 	{
 		assert(m_server);
+
+		m_logger(LL_DEBUG) << "Sending routes request to all hosts.";
 
 		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
 		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
@@ -1108,26 +1112,6 @@ namespace freelan
 				});
 			};
 
-			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
-			{
-				// Registers the switch port.
-				m_switch.register_port(make_port_index(m_tap_adapter), switch_::port_type(write_func, TAP_ADAPTERS_GROUP));
-			}
-			else
-			{
-				// Registers the router port.
-				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(write_func, TAP_ADAPTERS_GROUP));
-
-				// Add the routes.
-				auto local_routes = m_configuration.router.local_ip_routes;
-
-				const auto tap_ip_addresses = m_tap_adapter->get_ip_addresses();
-
-				local_routes.insert(tap_ip_addresses.begin(), tap_ip_addresses.end());
-
-				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
-			}
-
 			m_tap_adapter->open(m_configuration.tap_adapter.name);
 
 			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
@@ -1190,8 +1174,11 @@ namespace freelan
 
 			m_tap_adapter->set_connected_state(true);
 
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
+			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
 			{
+				// Registers the switch port.
+				m_switch.register_port(make_port_index(m_tap_adapter), switch_::port_type(write_func, TAP_ADAPTERS_GROUP));
+
 				// The ARP proxy
 				if (m_configuration.tap_adapter.arp_proxy_enabled)
 				{
@@ -1230,6 +1217,18 @@ namespace freelan
 			}
 			else
 			{
+				// Registers the router port.
+				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(write_func, TAP_ADAPTERS_GROUP));
+
+				// Add the routes.
+				auto local_routes = m_configuration.router.local_ip_routes;
+
+				const auto tap_ip_addresses = m_tap_adapter->get_ip_addresses();
+
+				local_routes.insert(tap_ip_addresses.begin(), tap_ip_addresses.end());
+
+				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
+
 				// We don't need any proxies in TUN mode.
 				m_arp_proxy.reset();
 				m_dhcp_proxy.reset();
