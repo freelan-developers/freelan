@@ -295,16 +295,16 @@ namespace freelan
 			 * \param index The index of the port to get.
 			 * \return A pointer to the port.
 			 */
-			boost::shared_ptr<port_type> get_port(port_index_type index)
+			port_type* get_port(port_index_type index)
 			{
 				const port_list_type::iterator port_entry = m_ports.find(index);
 
 				if (port_entry == m_ports.end())
 				{
-					return boost::shared_ptr<port_type>();
+					return nullptr;
 				}
 
-				return boost::make_shared<port_type>(port_entry->second);
+				return &port_entry->second;
 			}
 
 			/**

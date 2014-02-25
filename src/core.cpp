@@ -1002,17 +1002,21 @@ namespace freelan
 		{
 			if (m_tap_adapter && (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip))
 			{
-				const boost::shared_ptr<router::port_type> local_port = m_router.get_port(make_port_index(m_tap_adapter));
+				const auto local_port = m_router.get_port(make_port_index(m_tap_adapter));
 
 				const boost::optional<routes_message::version_type> version = local_port->version();
 
-				if (version)
+				if (version.is_initialized())
 				{
 					const auto& routes = local_port->local_routes();
 
 					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *version << ": " << routes;
 
 					async_send_routes(sender, *version, routes, &null_simple_write_handler);
+				}
+				else
+				{
+					m_logger(LL_DEBUG) << "Received routes request from " << sender << " but no local routes are set. Not sending anything.";
 				}
 			}
 		}
@@ -1021,7 +1025,7 @@ namespace freelan
 	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const asiotap::ip_routes_set& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
-		boost::shared_ptr<router::port_type> port = m_router.get_port(make_port_index(sender));
+		const auto port = m_router.get_port(make_port_index(sender));
 
 		if (port)
 		{
