@@ -967,8 +967,6 @@ namespace freelan
 				{
 					routes_request_message rr_msg(msg);
 
-					m_logger(LL_DEBUG) << "Received routes request from " << sender << ".";
-
 					async_handle_routes_request(sender, rr_msg);
 
 					break;
@@ -977,8 +975,6 @@ namespace freelan
 			case message::MT_ROUTES:
 				{
 					routes_message r_msg(msg);
-
-					m_logger(LL_DEBUG) << "Received routes from " << sender << ".";
 
 					async_handle_routes(sender, r_msg);
 
@@ -1019,24 +1015,47 @@ namespace freelan
 					m_logger(LL_DEBUG) << "Received routes request from " << sender << " but no local routes are set. Not sending anything.";
 				}
 			}
+			else
+			{
+				const auto routes = m_configuration.router.local_ip_routes;
+				const auto version = 0;
+
+				m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << version << ": " << routes;
+
+				async_send_routes(sender, version, routes, &null_simple_write_handler);
+			}
 		}
 	}
 
 	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const asiotap::ip_routes_set& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
-		const auto port = m_router.get_port(make_port_index(sender));
 
-		if (port)
+		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
 		{
-			if (port->set_local_routes(version, routes))
+			const auto port = m_router.get_port(make_port_index(sender));
+
+			if (port)
 			{
-				m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+				if (port->set_local_routes(version, routes))
+				{
+					m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+				}
+				else
+				{
+					m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (#" << version << ")";
+				}
 			}
 			else
 			{
-				m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (#" << version << ")";
+				m_logger(LL_DEBUG) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
 			}
+		}
+		else
+		{
+			m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+
+			//TODO: Add the routes to the system if allowed by the configuration.
 		}
 	}
 
