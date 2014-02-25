@@ -588,6 +588,8 @@ namespace freelan
 	{
 		assert(m_server);
 
+		m_logger(LL_DEBUG) << "Sending routes to " << target << ": version " << version << " (" << routes << ").";
+
 		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
 
 		const size_t size = routes_message::write(
@@ -965,6 +967,8 @@ namespace freelan
 				{
 					routes_request_message rr_msg(msg);
 
+					m_logger(LL_DEBUG) << "Received routes request from " << sender << ".";
+
 					async_handle_routes_request(sender, rr_msg);
 
 					break;
@@ -973,6 +977,8 @@ namespace freelan
 			case message::MT_ROUTES:
 				{
 					routes_message r_msg(msg);
+
+					m_logger(LL_DEBUG) << "Received routes from " << sender << ".";
 
 					async_handle_routes(sender, r_msg);
 
