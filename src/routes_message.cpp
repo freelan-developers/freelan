@@ -57,6 +57,21 @@ namespace freelan
 			INAT_IPV6 = 0x02
 		};
 
+		template <typename AddressType>
+		ip_network_address_type get_address_type();
+
+		template <>
+		ip_network_address_type get_address_type<boost::asio::ip::address_v4>()
+		{
+			return INAT_IPV4;
+		}
+
+		template <>
+		ip_network_address_type get_address_type<boost::asio::ip::address_v6>()
+		{
+			return INAT_IPV6;
+		}
+
 		/**
 		 * \brief A visitor that writes the representation of a network address to a buffer.
 		 */
@@ -90,7 +105,7 @@ namespace freelan
 						throw std::runtime_error("buf_len");
 					}
 
-					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(INAT_IPV4));
+					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(get_address_type<AddressType>()));
 					fscp::buffer_tools::set<uint8_t>(m_buf, 1, static_cast<uint8_t>(prefix_length));
 
 					std::copy(bytes.begin(), bytes.end(), m_buf + 2);
