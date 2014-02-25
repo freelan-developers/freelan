@@ -1254,7 +1254,10 @@ namespace freelan
 
 				const auto tap_ip_addresses = m_tap_adapter->get_ip_addresses();
 
-				local_routes.insert(tap_ip_addresses.begin(), tap_ip_addresses.end());
+				for (auto&& ip_address : tap_ip_addresses)
+				{
+					local_routes.insert(asiotap::to_network_address(asiotap::ip_address(ip_address)));
+				}
 
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
 
