@@ -59,7 +59,7 @@ namespace freelan
 		fscp::buffer_tools::set<uint8_t>(buf, 0, static_cast<uint8_t>(_type));
 		fscp::buffer_tools::set<uint16_t>(buf, 1, htons(static_cast<uint16_t>(_length)));
 
-		return HEADER_LENGTH;
+		return HEADER_LENGTH + _length;
 	}
 
 	message::message(const void* buf, size_t buf_len) :
