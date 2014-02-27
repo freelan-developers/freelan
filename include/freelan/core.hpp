@@ -155,6 +155,11 @@ namespace freelan
 			 */
 			typedef boost::function<void (const ep_type&, const boost::system::error_code&, const boost::posix_time::time_duration& duration)> duration_handler_type;
 
+			/**
+			 * \brief An IP network addresses operation handler.
+			 */
+			typedef boost::function<void (const asiotap::ip_network_address_list&)> ip_network_address_list_handler_type;
+
 			// Callbacks
 
 			/**
@@ -424,7 +429,7 @@ namespace freelan
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
 			void do_handle_routes_request(const ep_type&);
-			void do_handle_routes(const ep_type&, routes_message::version_type, const asiotap::ip_routes_set&);
+			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_routes_set&);
 
 			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;
@@ -460,6 +465,7 @@ namespace freelan
 			void open_tap_adapter();
 			void close_tap_adapter();
 
+			void async_get_tap_addresses(ip_network_address_list_handler_type);
 			void async_read_tap();
 
 			template <typename ConstBufferSequence, typename WriteHandler>

@@ -573,15 +573,21 @@ namespace freelan
 
 	void core::async_handle_routes(const ep_type& sender, const routes_message& msg)
 	{
-		m_router_strand.post(
-			boost::bind(
-				&core::do_handle_routes,
-				this,
-				sender,
-				msg.version(),
-				msg.routes()
-			)
-		);
+		const auto version = msg.version();
+		const auto routes = msg.routes();
+
+		async_get_tap_addresses([this, sender, version, routes](const asiotap::ip_network_address_list& ip_addresses){
+			m_router_strand.post(
+				boost::bind(
+					&core::do_handle_routes,
+					this,
+					ip_addresses,
+					sender,
+					version,
+					routes
+				)
+			);
+		});
 	}
 
 	void core::async_send_routes_request(const ep_type& target, simple_handler_type handler)
@@ -1086,7 +1092,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_routes(const ep_type& sender, routes_message::version_type version, const asiotap::ip_routes_set& routes)
+	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_routes_set& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 
@@ -1101,17 +1107,13 @@ namespace freelan
 
 			const auto port = m_router.get_port(make_port_index(sender));
 
-			//TODO: Read something like this instead:
-			//const auto network_addresses = m_tap_adapter->get_ip_addresses();
-			const auto network_addresses = asiotap::ip_network_address_list();
-
-			const auto filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, network_addresses);
+			const auto filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
 
 			if (filtered_routes != routes)
 			{
 				if (filtered_routes.empty() && !routes.empty())
 				{
-					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but none matched the internal route acceptance policy: " << routes;
+					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << routes;
 
 					return;
 				}
@@ -1120,7 +1122,7 @@ namespace freelan
 					asiotap::ip_routes_set excluded_routes;
 					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
 
-					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but some did not match the internal route acceptance policy: " << excluded_routes;
+					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << excluded_routes;
 				}
 			}
 
@@ -1390,6 +1392,13 @@ namespace freelan
 
 			m_tap_adapter->close();
 		}
+	}
+
+	void core::async_get_tap_addresses(ip_network_address_list_handler_type handler)
+	{
+		m_tap_adapter_strand.post([this, handler](){
+			handler(m_tap_adapter->get_ip_addresses());
+		});
 	}
 
 	void core::async_read_tap()
