@@ -47,6 +47,7 @@
 
 #include <vector>
 #include <set>
+#include <type_traits>
 
 #include <boost/asio.hpp>
 #include <boost/variant.hpp>
@@ -131,6 +132,13 @@ namespace asiotap
 			 * \return true if addr belongs to the network address, false otherwise.
 			 */
 			bool has_address(const address_type& addr) const;
+
+			/**
+			 * \brief Check if the specified network address is a subnet of the current network address.
+			 * \param addr The network address to check.
+			 * \return true if addr belongs to the network address, false otherwise.
+			 */
+			bool has_network(const base_ip_network_address& addr) const;
 
 			/**
 			 * \brief Get the network address.
@@ -360,6 +368,70 @@ namespace asiotap
 	inline bool has_address(const ip_network_address& ina, const AddressType& addr)
 	{
 		return boost::apply_visitor(ip_network_address_has_address_visitor(addr), ina);
+	}
+
+	/**
+	 * \brief A visitor that checks if the ip_network_address contains a network.
+	 */
+	template <typename AddressType>
+	class ip_network_address_has_network_visitor : public boost::static_visitor<bool>
+	{
+		public:
+
+			/**
+			 * \brief Create a new ip_network_address_has_network_visitor.
+			 * \param addr The address.
+			 */
+			ip_network_address_has_network_visitor(const base_ip_network_address<AddressType>& addr) : m_addr(addr) {}
+
+			/**
+			 * \brief Default implementation.
+			 * \return false.
+			 */
+			template <typename Any>
+			result_type operator()(const Any&) const
+			{
+				return false;
+			}
+
+			/**
+			 * \brief Check if the ip_network_address contains an address.
+			 * \param ina The ipv4_network_address.
+			 * \return true if the network is a subnet.
+			 */
+			template <typename OtherAddressType>
+			result_type operator()(const typename std::enable_if<std::is_same<AddressType, OtherAddressType>::value, base_ip_network_address<OtherAddressType>>::type& ina) const
+			{
+				return ina.has_network(m_addr);
+			}
+
+		private:
+
+			base_ip_network_address<AddressType> m_addr;
+	};
+
+	/**
+	 * \brief Check if an ip_network_address contains a network.
+	 * \param ina The ip_network_address.
+	 * \param addr The network address.
+	 * \return true if addr is contained in ina.
+	 */
+	template <typename AddressType>
+	inline bool has_network(const base_ip_network_address<AddressType>& ina, const base_ip_network_address<AddressType>& addr)
+	{
+		return ina.has_network(addr);
+	}
+
+	/**
+	 * \brief Check if an ip_network_address contains a network.
+	 * \param ina The ip_network_address.
+	 * \param addr The network address.
+	 * \return true if addr is contained in ina.
+	 */
+	template <typename AddressType>
+	inline bool has_network(const ip_network_address& ina, const ip_network_address& addr)
+	{
+		return boost::apply_visitor(ip_network_address_has_network_visitor<AddressType>(addr), ina);
 	}
 
 	/**
