@@ -52,6 +52,8 @@
 
 #include <fscp/server_error.hpp>
 
+#include <asiotap/types/ip_network_address.hpp>
+
 #include <boost/make_shared.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread/future.hpp>
@@ -210,6 +212,63 @@ namespace freelan
 
 		static const unsigned int TAP_ADAPTERS_GROUP = 0;
 		static const unsigned int ENDPOINTS_GROUP = 1;
+
+		asiotap::ip_routes_set filter_routes(const asiotap::ip_routes_set& routes, router_configuration::route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
+		{
+			asiotap::ip_routes_set result;
+
+			switch (scope)
+			{
+				case router_configuration::route_scope_type::none:
+					return {};
+				case router_configuration::route_scope_type::unicast_in_network:
+				{
+					for (auto&& network_address : network_addresses)
+					{
+						for (auto&& route : routes)
+						{
+							if ((result.size() < limit) && is_unicast(route) && has_network(network_address, route))
+							{
+								result.insert(route);
+							}
+						}
+					}
+
+					break;
+				}
+				case router_configuration::route_scope_type::unicast:
+				{
+					for (auto&& route : routes)
+					{
+						if ((result.size() < limit) && is_unicast(route))
+						{
+							result.insert(route);
+						}
+					}
+
+					break;
+				}
+				case router_configuration::route_scope_type::subnet:
+				{
+					for (auto&& network_address : network_addresses)
+					{
+						for (auto&& route : routes)
+						{
+							if ((result.size() < limit) && has_network(network_address, route))
+							{
+								result.insert(route);
+							}
+						}
+					}
+
+					break;
+				}
+				case router_configuration::route_scope_type::any:
+					return routes;
+			}
+
+			return result;
+		}
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
@@ -1033,13 +1092,43 @@ namespace freelan
 
 		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
 		{
+			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::route_scope_type::none)
+			{
+				m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") will be ignored, as the configuration requires: " << routes;
+
+				return;
+			}
+
 			const auto port = m_router.get_port(make_port_index(sender));
+
+			//TODO: Read something like this instead:
+			//const auto network_addresses = m_tap_adapter->get_ip_addresses();
+			const auto network_addresses = asiotap::ip_network_address_list();
+
+			const auto filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, network_addresses);
+
+			if (filtered_routes != routes)
+			{
+				if (filtered_routes.empty() && !routes.empty())
+				{
+					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but none matched the internal route acceptance policy: " << routes;
+
+					return;
+				}
+				else
+				{
+					asiotap::ip_routes_set excluded_routes;
+					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
+
+					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but some did not match the internal route acceptance policy: " << excluded_routes;
+				}
+			}
 
 			if (port)
 			{
-				if (port->set_local_routes(version, routes))
+				if (port->set_local_routes(version, filtered_routes))
 				{
-					m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+					m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << ") were applied: " << filtered_routes;
 				}
 				else
 				{
@@ -1050,12 +1139,14 @@ namespace freelan
 			{
 				m_logger(LL_DEBUG) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
 			}
+
+			//TODO: Add the filtered routes to the system if allowed by the configuration.
 		}
 		else
 		{
 			m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
 
-			//TODO: Add the routes to the system if allowed by the configuration.
+			//TODO: Add the filtered routes to the system if allowed by the configuration.
 		}
 	}
 
