@@ -141,6 +141,15 @@ namespace asiotap
 			bool has_network(const base_ip_network_address& addr) const;
 
 			/**
+			 * \brief Check if the specified network address represents an unicast address.
+			 * \return true if the specified network address represents an unicast address.
+			 */
+			bool is_unicast() const
+			{
+				return (m_prefix_length == single_address_prefix_length);
+			}
+
+			/**
 			 * \brief Get the network address.
 			 * \return The network address.
 			 */
@@ -373,41 +382,53 @@ namespace asiotap
 	/**
 	 * \brief A visitor that checks if the ip_network_address contains a network.
 	 */
-	template <typename AddressType>
 	class ip_network_address_has_network_visitor : public boost::static_visitor<bool>
 	{
+		private:
+			template <typename AddressType>
+			class ip_network_address_belongs_to_network_visitor : public boost::static_visitor<bool>
+			{
+				public:
+
+					ip_network_address_belongs_to_network_visitor(const base_ip_network_address<AddressType>& ina) : m_ina(ina) {}
+
+					template <typename Any>
+					result_type operator()(const Any&) const
+					{
+						return false;
+					}
+
+					result_type operator()(const base_ip_network_address<AddressType>& addr) const
+					{
+						return m_ina.has_network(addr);
+					}
+
+				private:
+
+					base_ip_network_address<AddressType> m_ina;
+			};
+
 		public:
 
 			/**
 			 * \brief Create a new ip_network_address_has_network_visitor.
 			 * \param addr The address.
 			 */
-			ip_network_address_has_network_visitor(const base_ip_network_address<AddressType>& addr) : m_addr(addr) {}
+			ip_network_address_has_network_visitor(const ip_network_address& addr) : m_addr(addr) {}
 
 			/**
 			 * \brief Default implementation.
-			 * \return false.
+			 * \return true if m_addr belongs to ina..
 			 */
-			template <typename Any>
-			result_type operator()(const Any&) const
+			template <typename AddressType>
+			result_type operator()(const base_ip_network_address<AddressType>& ina) const
 			{
-				return false;
-			}
-
-			/**
-			 * \brief Check if the ip_network_address contains an address.
-			 * \param ina The ipv4_network_address.
-			 * \return true if the network is a subnet.
-			 */
-			template <typename OtherAddressType>
-			result_type operator()(const typename std::enable_if<std::is_same<AddressType, OtherAddressType>::value, base_ip_network_address<OtherAddressType>>::type& ina) const
-			{
-				return ina.has_network(m_addr);
+				return boost::apply_visitor(ip_network_address_belongs_to_network_visitor<AddressType>(ina), m_addr);
 			}
 
 		private:
 
-			base_ip_network_address<AddressType> m_addr;
+			ip_network_address m_addr;
 	};
 
 	/**
@@ -428,10 +449,48 @@ namespace asiotap
 	 * \param addr The network address.
 	 * \return true if addr is contained in ina.
 	 */
-	template <typename AddressType>
 	inline bool has_network(const ip_network_address& ina, const ip_network_address& addr)
 	{
-		return boost::apply_visitor(ip_network_address_has_network_visitor<AddressType>(addr), ina);
+		return boost::apply_visitor(ip_network_address_has_network_visitor(addr), ina);
+	}
+
+	/**
+	 * \brief A visitor that checks if the ip_network_address is an unicast address.
+	 */
+	class ip_network_address_is_unicast_visitor : public boost::static_visitor<bool>
+	{
+		public:
+
+			/**
+			 * \brief Default implementation.
+			 * \return false.
+			 */
+			template <typename AddressType>
+			result_type operator()(const base_ip_network_address<AddressType>& ina) const
+			{
+				return ina.is_unicast();
+			}
+	};
+
+	/**
+	 * \brief Check if an ip_network_address is an unicast address.
+	 * \param ina The ip_network_address.
+	 * \return true if ina is an unicast address.
+	 */
+	template <typename AddressType>
+	inline bool is_unicast(const base_ip_network_address<AddressType>& ina)
+	{
+		return ina.is_unicast();
+	}
+
+	/**
+	 * \brief Check if an ip_network_address is an unicast address.
+	 * \param ina The ip_network_address.
+	 * \return true if ina is an unicast address.
+	 */
+	inline bool is_unicast(const ip_network_address& ina)
+	{
+		return boost::apply_visitor(ip_network_address_is_unicast_visitor(), ina);
 	}
 
 	/**
