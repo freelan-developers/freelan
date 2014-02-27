@@ -124,6 +124,9 @@ namespace asiotap
 		return true;
 	}
 
+	template bool base_ip_network_address<boost::asio::ip::address_v4>::has_address(const boost::asio::ip::address_v4&) const;
+	template bool base_ip_network_address<boost::asio::ip::address_v6>::has_address(const boost::asio::ip::address_v6&) const;
+
 	template <typename AddressType>
 	bool base_ip_network_address<AddressType>::has_network(const base_ip_network_address& addr) const
 	{
@@ -136,8 +139,8 @@ namespace asiotap
 		return has_address(addr.get_network_address());
 	}
 
-	template bool base_ip_network_address<boost::asio::ip::address_v4>::has_address(const boost::asio::ip::address_v4&) const;
-	template bool base_ip_network_address<boost::asio::ip::address_v6>::has_address(const boost::asio::ip::address_v6&) const;
+	template bool base_ip_network_address<boost::asio::ip::address_v4>::has_network(const base_ip_network_address<boost::asio::ip::address_v4>&) const;
+	template bool base_ip_network_address<boost::asio::ip::address_v6>::has_network(const base_ip_network_address<boost::asio::ip::address_v6>&) const;
 
 	template <typename AddressType>
 	typename base_ip_network_address<AddressType>::address_type base_ip_network_address<AddressType>::get_network_address() const
