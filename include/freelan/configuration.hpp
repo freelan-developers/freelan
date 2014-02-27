@@ -481,9 +481,36 @@ namespace freelan
 		bool client_routing_enabled;
 
 		/**
-		 * \brief Whether the client accepts routes requests from other peers.
+		 * \brief Whether to accept route requests.
 		 */
 		bool accept_routes_requests;
+
+		/**
+		 * \brief The route scope type.
+		 */
+		enum class route_scope_type
+		{
+			none, /**< \brief Don't accept routes. */
+			unicast_in_network, /**< \brief Accept only unicast addresses that belong to the network. */
+			unicast, /**< \brief Accept only unicast addresses. */
+			subnet, /**< \brief Accept only subnets of the network. */
+			any /**< \brief Accept any routes. */
+		};
+
+		/**
+		 * \brief The internal route acceptance policy.
+		 */
+		route_scope_type internal_route_acceptance_policy;
+
+		/**
+		 * \brief The system route acceptance policy.
+		 */
+		route_scope_type system_route_acceptance_policy;
+
+		/**
+		 * \brief The maximum routes count to accept from a given peer.
+		 */
+		unsigned int maximum_routes_limit;
 	};
 
 	/**
@@ -629,6 +656,22 @@ namespace freelan
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, const switch_configuration::routing_method_type& value);
+
+	/**
+	 * \brief Input a route scope.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, router_configuration::route_scope_type& value);
+
+	/**
+	 * \brief Output a route scope to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const router_configuration::route_scope_type& value);
 }
 
 #endif /* FREELAN_CONFIGURATION_HPP */
