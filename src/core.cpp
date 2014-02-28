@@ -241,7 +241,7 @@ namespace freelan
 			switch (scope)
 			{
 				case router_configuration::route_scope_type::none:
-					return {};
+					break;
 				case router_configuration::route_scope_type::unicast_in_network:
 				{
 					for (auto&& network_address : network_addresses)
