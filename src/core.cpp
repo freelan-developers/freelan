@@ -216,6 +216,27 @@ namespace freelan
 		asiotap::ip_routes_set filter_routes(const asiotap::ip_routes_set& routes, router_configuration::route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
 		{
 			asiotap::ip_routes_set result;
+			auto ipv4_limit = limit;
+			auto ipv6_limit = limit;
+
+			auto check_limit = [limit, &ipv4_limit, &ipv6_limit](const asiotap::ip_network_address& route) {
+
+				if (limit == 0)
+				{
+					return true;
+				}
+
+				const bool is_ipv4 = get_network_address(route).is_v4();
+
+				if (is_ipv4 ? ipv4_limit : ipv6_limit > 0)
+				{
+					(is_ipv4 ? ipv4_limit : ipv6_limit)--;
+
+					return true;
+				}
+
+				return false;
+			};
 
 			switch (scope)
 			{
@@ -227,9 +248,12 @@ namespace freelan
 					{
 						for (auto&& route : routes)
 						{
-							if ((result.size() < limit) && is_unicast(route) && has_network(network_address, route))
+							if (is_unicast(route) && has_network(network_address, route))
 							{
-								result.insert(route);
+								if (check_limit(route))
+								{
+									result.insert(route);
+								}
 							}
 						}
 					}
@@ -240,9 +264,12 @@ namespace freelan
 				{
 					for (auto&& route : routes)
 					{
-						if ((result.size() < limit) && is_unicast(route))
+						if (is_unicast(route))
 						{
-							result.insert(route);
+							if (check_limit(route))
+							{
+								result.insert(route);
+							}
 						}
 					}
 
@@ -254,9 +281,12 @@ namespace freelan
 					{
 						for (auto&& route : routes)
 						{
-							if ((result.size() < limit) && has_network(network_address, route))
+							if (has_network(network_address, route))
 							{
-								result.insert(route);
+								if (check_limit(route))
+								{
+									result.insert(route);
+								}
 							}
 						}
 					}
@@ -264,7 +294,17 @@ namespace freelan
 					break;
 				}
 				case router_configuration::route_scope_type::any:
-					return routes;
+				{
+					for (auto&& route : routes)
+					{
+						if (check_limit(route))
+						{
+							result.insert(route);
+						}
+					}
+
+					break;
+				}
 			}
 
 			return result;
@@ -1113,7 +1153,7 @@ namespace freelan
 			{
 				if (filtered_routes.empty() && !routes.empty())
 				{
-					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << routes;
+					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << routes;
 
 					return;
 				}
@@ -1122,7 +1162,7 @@ namespace freelan
 					asiotap::ip_routes_set excluded_routes;
 					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()), asiotap::ip_routes_set::key_compare());
 
-					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << excluded_routes;
+					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
 				}
 			}
 
