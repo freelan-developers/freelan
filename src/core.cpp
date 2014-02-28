@@ -1100,7 +1100,7 @@ namespace freelan
 		{
 			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::route_scope_type::none)
 			{
-				m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") will be ignored, as the configuration requires: " << routes;
+				m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
 
 				return;
 			}
@@ -1113,16 +1113,16 @@ namespace freelan
 			{
 				if (filtered_routes.empty() && !routes.empty())
 				{
-					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << routes;
+					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << routes;
 
 					return;
 				}
 				else
 				{
 					asiotap::ip_routes_set excluded_routes;
-					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
+					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()), asiotap::ip_routes_set::key_compare());
 
-					m_logger(LL_WARNING) << "Received routes from " << sender << "(#" << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << excluded_routes;
+					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << "): " << excluded_routes;
 				}
 			}
 
@@ -1130,11 +1130,11 @@ namespace freelan
 			{
 				if (port->set_local_routes(version, filtered_routes))
 				{
-					m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << ") were applied: " << filtered_routes;
+					m_logger(LL_INFORMATION) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
 				}
 				else
 				{
-					m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (#" << version << ")";
+					m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (version " << version << ")";
 				}
 			}
 			else
@@ -1146,7 +1146,7 @@ namespace freelan
 		}
 		else
 		{
-			m_logger(LL_INFORMATION) << "Received routes from " << sender << " (#" << version << "): " << routes;
+			m_logger(LL_INFORMATION) << "Received routes from " << sender << " (version " << version << "): " << routes;
 
 			//TODO: Add the filtered routes to the system if allowed by the configuration.
 		}
