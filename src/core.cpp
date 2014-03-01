@@ -410,6 +410,7 @@ namespace freelan
 		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
 		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
 		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
+		m_server->set_old_session_exists_callback(boost::bind(&core::do_handle_old_session_exists, this, _1));
 		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2, _3, _4));
 		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
@@ -940,6 +941,11 @@ namespace freelan
 		m_logger(LL_DEBUG) << "Cipher algorithm: " << calg;
 
 		return default_accept;
+	}
+
+	void core::do_handle_old_session_exists(const ep_type& host)
+	{
+		m_logger(LL_WARNING) << "An old session exists with " << host << ". Waiting for it to timeout.";
 	}
 
 	void core::do_handle_session_failed(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
