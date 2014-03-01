@@ -589,6 +589,8 @@ namespace freelan
 	{
 		assert(m_server);
 
+		m_logger(LL_DEBUG) << "Sending SESSION_REQUEST to " << target << ".";
+
 		m_server->async_request_session(target, handler);
 	}
 
