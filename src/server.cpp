@@ -601,16 +601,6 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
-	void server::sync_set_old_session_exists_callback(old_session_exists_handler_type callback)
-	{
-		typedef boost::promise<void> promise_type;
-		promise_type promise;
-
-		async_set_old_session_exists_callback(callback, boost::bind(&promise_type::set_value, &promise));
-
-		return promise.get_future().wait();
-	}
-
 	void server::sync_set_session_failed_callback(session_failed_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
@@ -621,6 +611,7 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+
 	void server::sync_set_session_established_callback(session_established_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
@@ -630,6 +621,7 @@ namespace fscp
 
 		return promise.get_future().wait();
 	}
+
 
 	void server::sync_set_session_lost_callback(session_lost_handler_type callback)
 	{
@@ -1895,19 +1887,6 @@ namespace fscp
 			)
 		)
 		{
-			if (session_pair.local_cipher_algorithm() == cipher_algorithm_type::unsupported)
-			{
-				// We received a valid SESSION message but no local cipher algorithm was set.
-				// This usually means that the remote host already had a session with us that did not timeout yet.
-
-				if (m_old_session_exists_handler)
-				{
-					m_old_session_exists_handler(sender);
-				}
-
-				return;
-			}
-
 			bool can_accept = m_accept_session_messages_default;
 
 			if (m_session_message_received_handler)
@@ -1924,8 +1903,6 @@ namespace fscp
 
 				if (_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported)
 				{
-					session_pair.clear_remote_session();
-
 					if (m_session_failed_handler)
 					{
 						m_session_failed_handler(sender, session_is_new, local, remote);
@@ -1968,17 +1945,6 @@ namespace fscp
 	{
 		// All do_set_session_message_received_callback() calls are done in the same strand so the following is thread-safe.
 		set_session_message_received_callback(callback);
-
-		if (handler)
-		{
-			handler();
-		}
-	}
-
-	void server::do_set_old_session_exists_callback(old_session_exists_handler_type callback, void_handler_type handler)
-	{
-		// All do_set_session_failed_callback() calls are done in the same strand so the following is thread-safe.
-		set_old_session_exists_callback(callback);
 
 		if (handler)
 		{
