@@ -179,9 +179,10 @@ namespace fscp
 			 * \param sig_cert The signature certificate.
 			 * \param enc_cert The encryption certificate.
 			 * \param status The presentation status.
+			 * \param has_session Tell if a session currently exists with the host.
 			 * \return true to accept the presentation message for the originating host.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, presentation_status_type status)> presentation_message_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, cert_type sig_cert, cert_type enc_cert, presentation_status_type status, bool has_session)> presentation_message_received_handler_type;
 
 			/**
 			 * \brief A handler for when session requests are received.

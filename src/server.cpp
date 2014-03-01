@@ -1400,13 +1400,30 @@ namespace fscp
 
 		if (m_presentation_message_received_handler)
 		{
-			if (!m_presentation_message_received_handler(sender, signature_certificate, encryption_certificate, presentation_status))
-			{
-				return;
-			}
-		}
+			const auto handler = m_presentation_message_received_handler;
 
-		m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
+			async_has_session_with_endpoint(sender, [this, handler, sender, signature_certificate, encryption_certificate, presentation_status](bool has_session)
+			{
+				if (handler(sender, signature_certificate, encryption_certificate, presentation_status, has_session))
+				{
+					m_presentation_strand.post([this, sender, signature_certificate, encryption_certificate](){
+						m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
+					});
+				}
+			});
+		}
+		else
+		{
+			async_has_session_with_endpoint(sender, [this, sender, signature_certificate, encryption_certificate, presentation_status](bool has_session)
+			{
+				if (!has_session)
+				{
+					m_presentation_strand.post([this, sender, signature_certificate, encryption_certificate](){
+						m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
+					});
+				}
+			});
+		}
 	}
 
 	void server::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)
