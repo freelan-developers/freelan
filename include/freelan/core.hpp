@@ -423,7 +423,6 @@ namespace freelan
 			bool do_handle_presentation_received(const ep_type&, cert_type, cert_type, fscp::server::presentation_status_type, bool);
 			bool do_handle_session_request_received(const ep_type&, const fscp::cipher_algorithm_list_type&, bool);
 			bool do_handle_session_received(const ep_type&, fscp::cipher_algorithm_type, bool);
-			void do_handle_old_session_exists(const ep_type&);
 			void do_handle_session_failed(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void do_handle_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
 			void do_handle_session_lost(const ep_type&);
