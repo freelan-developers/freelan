@@ -407,7 +407,7 @@ namespace freelan
 		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
 		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
 		m_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
-		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
+		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4, _5));
 		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
 		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
 		m_server->set_old_session_exists_callback(boost::bind(&core::do_handle_old_session_exists, this, _1));
@@ -878,7 +878,7 @@ namespace freelan
 		}
 	}
 
-	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, fscp::server::presentation_status_type status)
+	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, fscp::server::presentation_status_type status, bool has_session)
 	{
 		if (m_logger.level() <= LL_DEBUG)
 		{
@@ -892,28 +892,32 @@ namespace freelan
 			return false;
 		}
 
-		switch (status)
+		if (has_session)
 		{
-			case fscp::server::PS_FIRST:
-			{
-				if (certificate_is_valid(sig_cert) && certificate_is_valid(enc_cert))
-				{
-					async_request_session(sender);
+			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as an active session currently exists with this host.";
 
-					return true;
-				}
-
-				break;
-			}
-			case fscp::server::PS_NEW:
-			case fscp::server::PS_SAME:
-			{
-				// The presentation did not change: we do not accept it.
-				break;
-			}
+			return false;
 		}
 
-		return false;
+		if (!certificate_is_valid(sig_cert))
+		{
+			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as the signature certificate is invalid.";
+
+			return false;
+		}
+
+		if (!certificate_is_valid(enc_cert))
+		{
+			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as the encryption certificate is invalid.";
+
+			return false;
+		}
+
+		m_logger(LL_INFORMATION) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << "): " << status << ".";
+
+		async_request_session(sender);
+
+		return true;
 	}
 
 	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_capabilities, bool default_accept)
