@@ -1360,18 +1360,24 @@ namespace fscp
 
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
-		m_presentation_strand.post(
-			boost::bind(
-				&server::do_handle_presentation,
-				this,
-				sender,
-				_presentation_message.signature_certificate(),
-				_presentation_message.encryption_certificate()
-			)
-		);
+		const auto signature_certificate = _presentation_message.signature_certificate();
+		const auto encryption_certificate = _presentation_message.encryption_certificate();
+
+		async_has_session_with_endpoint(sender, [this, sender, signature_certificate, encryption_certificate](bool has_session) {
+			m_presentation_strand.post(
+				boost::bind(
+					&server::do_handle_presentation,
+					this,
+					sender,
+					has_session,
+					signature_certificate,
+					encryption_certificate
+				)
+			);
+		});
 	}
 
-	void server::do_handle_presentation(const ep_type& sender, cert_type signature_certificate, cert_type encryption_certificate)
+	void server::do_handle_presentation(const ep_type& sender, bool has_session, cert_type signature_certificate, cert_type encryption_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
 		presentation_status_type presentation_status = PS_FIRST;
@@ -1392,30 +1398,13 @@ namespace fscp
 
 		if (m_presentation_message_received_handler)
 		{
-			const auto handler = m_presentation_message_received_handler;
+			if (!m_presentation_message_received_handler(sender, signature_certificate, encryption_certificate, presentation_status, has_session))
+			{
+				return;
+			}
+		}
 
-			async_has_session_with_endpoint(sender, [this, handler, sender, signature_certificate, encryption_certificate, presentation_status](bool has_session)
-			{
-				if (handler(sender, signature_certificate, encryption_certificate, presentation_status, has_session))
-				{
-					m_presentation_strand.post([this, sender, signature_certificate, encryption_certificate](){
-						m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
-					});
-				}
-			});
-		}
-		else
-		{
-			async_has_session_with_endpoint(sender, [this, sender, signature_certificate, encryption_certificate, presentation_status](bool has_session)
-			{
-				if (!has_session)
-				{
-					m_presentation_strand.post([this, sender, signature_certificate, encryption_certificate](){
-						m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
-					});
-				}
-			});
-		}
+		m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
 	}
 
 	void server::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)

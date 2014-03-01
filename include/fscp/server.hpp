@@ -1354,7 +1354,7 @@ namespace fscp
 			void do_set_presentation(const ep_type&, cert_type, cert_type, void_handler_type);
 			void do_clear_presentation(const ep_type&, void_handler_type);
 			void handle_presentation_message_from(const presentation_message&, const ep_type&);
-			void do_handle_presentation(const ep_type&, cert_type, cert_type);
+			void do_handle_presentation(const ep_type&, bool, cert_type, cert_type);
 
 			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
 
