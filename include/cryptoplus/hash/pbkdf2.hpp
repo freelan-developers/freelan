@@ -96,7 +96,7 @@ namespace cryptoplus
 		{
 			buffer result(algorithm.result_size());
 
-			pbkdf2(password, passwordlen, salt, saltlen, buffer_cast<uint8_t>(result), buffer_size(result), algorithm, iter);
+			pbkdf2(password, passwordlen, salt, saltlen, buffer_cast<uint8_t*>(result), buffer_size(result), algorithm, iter);
 
 			return result;
 		}

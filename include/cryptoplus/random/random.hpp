@@ -220,7 +220,7 @@ namespace cryptoplus
 		{
 			buffer result(cnt);
 
-			get_random_bytes(buffer_cast<uint8_t>(result), buffer_size(result));
+			get_random_bytes(buffer_cast<uint8_t*>(result), buffer_size(result));
 
 			return result;
 		}
@@ -238,7 +238,7 @@ namespace cryptoplus
 		{
 			buffer result(cnt);
 
-			get_pseudo_random_bytes(buffer_cast<uint8_t>(result), buffer_size(result));
+			get_pseudo_random_bytes(buffer_cast<uint8_t*>(result), buffer_size(result));
 
 			return result;
 		}

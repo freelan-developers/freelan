@@ -945,7 +945,7 @@ namespace cryptoplus
 		}
 		inline certificate certificate::from_der(const buffer& buf)
 		{
-			return from_der(buffer_cast<uint8_t>(buf), buffer_size(buf));
+			return from_der(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 		}
 		inline certificate::certificate()
 		{
@@ -992,7 +992,7 @@ namespace cryptoplus
 		{
 			buffer result(write_der(static_cast<void*>(NULL)));
 
-			write_der(buffer_cast<uint8_t>(result));
+			write_der(buffer_cast<uint8_t*>(result));
 
 			return result;
 		}

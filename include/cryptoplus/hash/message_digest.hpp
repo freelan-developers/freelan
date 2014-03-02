@@ -89,14 +89,14 @@ namespace cryptoplus
 		{
 			buffer result(algorithm.result_size());
 
-			message_digest(buffer_cast<uint8_t>(result), buffer_size(result), data, len, algorithm, impl);
+			message_digest(buffer_cast<uint8_t*>(result), buffer_size(result), data, len, algorithm, impl);
 
 			return result;
 		}
 
 		inline buffer message_digest(const buffer& buf, const message_digest_algorithm& algorithm, ENGINE* impl)
 		{
-			return message_digest(buffer_cast<uint8_t>(buf), buffer_size(buf), algorithm, impl);
+			return message_digest(buffer_cast<const uint8_t*>(buf), buffer_size(buf), algorithm, impl);
 		}
 	}
 }

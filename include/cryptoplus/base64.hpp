@@ -116,14 +116,14 @@ namespace cryptoplus
 
 	inline std::string base64_encode(const buffer& buf)
 	{
-		return base64_encode(buffer_cast<uint8_t>(buf), buffer_size(buf));
+		return base64_encode(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 	}
 
 	inline buffer base64_decode(const void* input, size_t inputlen)
 	{
 		buffer result((inputlen * 3) / 4);
 
-		result.data().resize(base64_decode(buffer_cast<uint8_t>(result), buffer_size(result), input, inputlen));
+		result.data().resize(base64_decode(buffer_cast<uint8_t*>(result), buffer_size(result), input, inputlen));
 
 		return result;
 	}

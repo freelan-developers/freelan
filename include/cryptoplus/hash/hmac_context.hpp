@@ -165,7 +165,7 @@ namespace cryptoplus
 		{
 			buffer result(algorithm().result_size());
 
-			finalize(buffer_cast<uint8_t>(result), buffer_size(result));
+			finalize(buffer_cast<uint8_t*>(result), buffer_size(result));
 
 			return result;
 		}

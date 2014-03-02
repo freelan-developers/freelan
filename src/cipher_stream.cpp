@@ -60,7 +60,7 @@ namespace cryptoplus
 				out_len = algorithm().block_size() + buf_len;
 			}
 
-			m_offset += update(buffer_cast<uint8_t>(m_buffer) + m_offset, out_len, buf, buf_len);
+			m_offset += update(buffer_cast<uint8_t*>(m_buffer) + m_offset, out_len, buf, buf_len);
 
 			return *this;
 		}
@@ -75,7 +75,7 @@ namespace cryptoplus
 				out_len = algorithm().block_size();
 			}
 
-			m_buffer.data().resize(m_offset + finalize(buffer_cast<uint8_t>(m_buffer) + m_offset, out_len));
+			m_buffer.data().resize(m_offset + finalize(buffer_cast<uint8_t*>(m_buffer) + m_offset, out_len));
 
 			m_offset = 0;
 		}

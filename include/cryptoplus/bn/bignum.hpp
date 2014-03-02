@@ -325,7 +325,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(to_bin(buffer_cast<uint8_t>(result), buffer_size(result)));
+			result.data().resize(to_bin(buffer_cast<uint8_t*>(result), buffer_size(result)));
 
 			return result;
 		}

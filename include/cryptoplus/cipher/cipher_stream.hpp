@@ -166,7 +166,7 @@ namespace cryptoplus
 
 		inline cipher_stream& cipher_stream::append(const buffer& buf)
 		{
-			return append(buffer_cast<uint8_t>(buf), buffer_size(buf));
+			return append(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 		}
 
 		inline cipher_stream& cipher_stream::append(const char* cstr)

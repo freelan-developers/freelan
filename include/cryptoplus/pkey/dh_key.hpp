@@ -312,7 +312,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(compute_key(buffer_cast<uint8_t>(result), buffer_size(result), pub_key.raw()));
+			result.data().resize(compute_key(buffer_cast<uint8_t*>(result), buffer_size(result), pub_key.raw()));
 
 			return result;
 		}

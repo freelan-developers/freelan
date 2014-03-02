@@ -723,13 +723,13 @@ namespace cryptoplus
 		}
 		inline void rsa_key::verify_PKCS1_PSS(const buffer& digest, const buffer& buf, hash::message_digest_algorithm algorithm, int salt_len) const
 		{
-			verify_PKCS1_PSS(buffer_cast<uint8_t>(digest), buffer_size(digest), buffer_cast<uint8_t>(buf), buffer_size(buf), algorithm, salt_len);
+			verify_PKCS1_PSS(buffer_cast<const uint8_t*>(digest), buffer_size(digest), buffer_cast<const uint8_t*>(buf), buffer_size(buf), algorithm, salt_len);
 		}
 		inline buffer rsa_key::private_encrypt(const void* buf, size_t buf_len, int padding) const
 		{
 			buffer result(size());
 
-			result.data().resize(private_encrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+			result.data().resize(private_encrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buf, buf_len, padding));
 
 			return result;
 		}
@@ -737,7 +737,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(public_decrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+			result.data().resize(public_decrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buf, buf_len, padding));
 
 			return result;
 		}
@@ -745,7 +745,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(public_encrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+			result.data().resize(public_encrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buf, buf_len, padding));
 
 			return result;
 		}
@@ -753,7 +753,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(private_decrypt(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, padding));
+			result.data().resize(private_decrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buf, buf_len, padding));
 
 			return result;
 		}
@@ -761,7 +761,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(private_encrypt(buffer_cast<uint8_t>(result), buffer_size(result), buffer_cast<uint8_t>(buf), buffer_size(buf), padding));
+			result.data().resize(private_encrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buffer_cast<const uint8_t*>(buf), buffer_size(buf), padding));
 
 			return result;
 		}
@@ -769,7 +769,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(public_decrypt(buffer_cast<uint8_t>(result), buffer_size(result), buffer_cast<uint8_t>(buf), buffer_size(buf), padding));
+			result.data().resize(public_decrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buffer_cast<const uint8_t*>(buf), buffer_size(buf), padding));
 
 			return result;
 		}
@@ -777,7 +777,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(public_encrypt(buffer_cast<uint8_t>(result), buffer_size(result), buffer_cast<uint8_t>(buf), buffer_size(buf), padding));
+			result.data().resize(public_encrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buffer_cast<const uint8_t*>(buf), buffer_size(buf), padding));
 
 			return result;
 		}
@@ -785,7 +785,7 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(private_decrypt(buffer_cast<uint8_t>(result), buffer_size(result), buffer_cast<uint8_t>(buf), buffer_size(buf), padding));
+			result.data().resize(private_decrypt(buffer_cast<uint8_t*>(result), buffer_size(result), buffer_cast<const uint8_t*>(buf), buffer_size(buf), padding));
 
 			return result;
 		}
@@ -793,17 +793,17 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(sign(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, type));
+			result.data().resize(sign(buffer_cast<uint8_t*>(result), buffer_size(result), buf, buf_len, type));
 
 			return result;
 		}
 		inline buffer rsa_key::sign(const buffer& buf, int type) const
 		{
-			return sign(buffer_cast<uint8_t>(buf), buffer_size(buf), type);
+			return sign(buffer_cast<const uint8_t*>(buf), buffer_size(buf), type);
 		}
 		inline void rsa_key::verify(const buffer& _sign, const buffer& buf, int type) const
 		{
-			verify(buffer_cast<uint8_t>(_sign), buffer_size(_sign), buffer_cast<uint8_t>(buf), buffer_size(buf), type);
+			verify(buffer_cast<const uint8_t*>(_sign), buffer_size(_sign), buffer_cast<const uint8_t*>(buf), buffer_size(buf), type);
 		}
 		inline rsa_key::rsa_key(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

@@ -416,8 +416,8 @@ namespace cryptoplus
 		inline buffer cipher_context::get_iso_10126_padded_buffer(const void* buf, size_t buf_len) const
 		{
 			buffer result(get_iso_10126_padding_size(buf_len));
-			std::memcpy(buffer_cast<uint8_t>(result), buf, buf_len);
-			result.data().resize(add_iso_10126_padding(buffer_cast<uint8_t>(result), buf_len, buffer_size(result)));
+			std::memcpy(buffer_cast<uint8_t*>(result), buf, buf_len);
+			result.data().resize(add_iso_10126_padding(buffer_cast<uint8_t*>(result), buf_len, buffer_size(result)));
 
 			return result;
 		}
@@ -450,17 +450,17 @@ namespace cryptoplus
 
 		inline size_t cipher_context::update(void* out, size_t out_len, const buffer& in)
 		{
-			return update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
+			return update(out, out_len, buffer_cast<const uint8_t*>(in), buffer_size(in));
 		}
 
 		inline size_t cipher_context::seal_update(void* out, size_t out_len, const buffer& in)
 		{
-			return seal_update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
+			return seal_update(out, out_len, buffer_cast<const uint8_t*>(in), buffer_size(in));
 		}
 
 		inline size_t cipher_context::open_update(void* out, size_t out_len, const buffer& in)
 		{
-			return open_update(out, out_len, buffer_cast<uint8_t>(in), buffer_size(in));
+			return open_update(out, out_len, buffer_cast<const uint8_t*>(in), buffer_size(in));
 		}
 
 		inline const EVP_CIPHER_CTX& cipher_context::raw() const

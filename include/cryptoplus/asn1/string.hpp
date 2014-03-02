@@ -264,7 +264,7 @@ namespace cryptoplus
 		}
 		inline void string::set_data(const buffer& _data) const
 		{
-			set_data(buffer_cast<uint8_t>(_data), buffer_size(_data));
+			set_data(buffer_cast<const uint8_t*>(_data), buffer_size(_data));
 		}
 		inline void string::set_data(const char* _data) const
 		{

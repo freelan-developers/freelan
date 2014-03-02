@@ -282,24 +282,24 @@ namespace cryptoplus
 
 		inline void message_digest_context::update(const buffer& buf)
 		{
-			update(buffer_cast<uint8_t>(buf), buffer_size(buf));
+			update(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 		}
 
 		inline void message_digest_context::sign_update(const buffer& buf)
 		{
-			sign_update(buffer_cast<uint8_t>(buf), buffer_size(buf));
+			sign_update(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 		}
 
 		inline void message_digest_context::verify_update(const buffer& buf)
 		{
-			verify_update(buffer_cast<uint8_t>(buf), buffer_size(buf));
+			verify_update(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 		}
 
 		inline buffer message_digest_context::finalize()
 		{
 			buffer result(algorithm().result_size());
 
-			finalize(buffer_cast<uint8_t>(result), buffer_size(result));
+			finalize(buffer_cast<uint8_t*>(result), buffer_size(result));
 
 			return result;
 		}
@@ -308,14 +308,14 @@ namespace cryptoplus
 		{
 			buffer result(pkey.size());
 
-			sign_finalize(buffer_cast<uint8_t>(result), buffer_size(result), pkey);
+			sign_finalize(buffer_cast<uint8_t*>(result), buffer_size(result), pkey);
 
 			return result;
 		}
 
 		inline bool message_digest_context::verify_finalize(const buffer& sig, pkey::pkey& pkey)
 		{
-			return verify_finalize(buffer_cast<uint8_t>(sig), buffer_size(sig), pkey);
+			return verify_finalize(buffer_cast<const uint8_t*>(sig), buffer_size(sig), pkey);
 		}
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)

@@ -530,13 +530,13 @@ namespace cryptoplus
 		{
 			buffer result(size());
 
-			result.data().resize(sign(buffer_cast<uint8_t>(result), buffer_size(result), buf, buf_len, type));
+			result.data().resize(sign(buffer_cast<uint8_t*>(result), buffer_size(result), buf, buf_len, type));
 
 			return result;
 		}
 		inline buffer dsa_key::sign(const buffer& buf, int type) const
 		{
-			return sign(buffer_cast<uint8_t>(buf), buffer_size(buf), type);
+			return sign(buffer_cast<const uint8_t*>(buf), buffer_size(buf), type);
 		}
 		inline void dsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type) const
 		{
@@ -544,7 +544,7 @@ namespace cryptoplus
 		}
 		inline void dsa_key::verify(const buffer& _sign, const buffer& buf, int type) const
 		{
-			verify(buffer_cast<uint8_t>(_sign), buffer_size(_sign), buffer_cast<uint8_t>(buf), buffer_size(buf), type);
+			verify(buffer_cast<const uint8_t*>(_sign), buffer_size(_sign), buffer_cast<const uint8_t*>(buf), buffer_size(buf), type);
 		}
 		inline dh_key dsa_key::to_dh_key() const
 		{

@@ -37,59 +37,77 @@
  */
 
 /**
- * \file hmac.hpp
+ * \file ecdhe.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief HMAC helper functions.
+ * \brief An Elliptical Curve Diffie-Hellman Ephemeral context class.
  */
 
-#ifndef CRYPTOPLUS_HASH_HMAC_HPP
-#define CRYPTOPLUS_HASH_HMAC_HPP
+#ifndef CRYPTOPLUS_PKEY_ECDHE_HPP
+#define CRYPTOPLUS_PKEY_ECDHE_HPP
 
+#include "pkey.hpp"
 #include "../buffer.hpp"
-#include "message_digest_algorithm.hpp"
+#include "../error/cryptographic_exception.hpp"
 
-#include <openssl/hmac.h>
+#include <openssl/ec.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/obj_mac.h>
+
+#include <memory>
 
 namespace cryptoplus
 {
-	namespace hash
+	namespace pkey
 	{
-		/**
-		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
-		 * \param out The output buffer. Must be at least as big as the message digest algorithm result size.
-		 * \param out_len The output buffer length.
-		 * \param key The key to use.
-		 * \param key_len The key length.
-		 * \param data The buffer.
-		 * \param len The buffer length.
-		 * \param algorithm The message digest algorithm to use.
-		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
-		 * \return The count of bytes written to out. Should be equal to algorithm.result_size().
-		 */
-		size_t hmac(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
-
-		/**
-		 * \brief Compute a HMAC for the given buffer, using the given key and digest method.
-		 * \param key The key to use.
-		 * \param key_len The key length.
-		 * \param data The buffer.
-		 * \param len The buffer length.
-		 * \param algorithm The message digest algorithm to use.
-		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
-		 * \return The hmac.
-		 */
-		buffer hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl = NULL);
-
-		inline buffer hmac(const void* key, size_t key_len, const void* data, size_t len, const message_digest_algorithm& algorithm, ENGINE* impl)
+		class ecdhe_context
 		{
-			buffer result(algorithm.result_size());
+			public:
 
-			hmac(buffer_cast<uint8_t*>(result), buffer_size(result), key, key_len, data, len, algorithm, impl);
+				/**
+				 * \brief Create a new context with the specified elliptic curve NID.
+				 *
+				 * See <openssl/obj_mac.h> for a list of possible NIDs.
+				 */
+				explicit ecdhe_context(int nid);
 
-			return result;
-		}
+				/**
+				 * \brief Generate new keys for the context.
+				 */
+				void generate_keys();
+
+				/**
+				 * \brief Get the internal public key, generating one if none exists yet.
+				 * \return The public key.
+				 */
+				buffer get_public_key();
+
+				/**
+				 * \brief Derive the secret key from a given peer public key.
+				 * \param peer_key The peer key buffer.
+				 * \param peer_key_len The length of the peer key buffer.
+				 * \return The buffer.
+				 */
+				buffer derive_secret_key(const void* peer_key, size_t peer_key_len);
+
+				/**
+				 * \brief Derive the secret key from a given peer public key.
+				 * \param peer_key The peer key buffer.
+				 * \return The buffer.
+				 */
+				template <typename BufferType>
+				buffer derive_secret_key(const BufferType& peer_key)
+				{
+					return derive_secret_key(buffer_cast<const char*>(peer_key), buffer_size(peer_key));
+				}
+
+			private:
+
+				int m_nid;
+				pkey m_private_key;
+		};
 	}
 }
 
-#endif /* CRYPTOPLUS_HASH_HMAC_HPP */
+#endif /* CRYPTOPLUS_PKEY_ECDHE_HPP */
 
