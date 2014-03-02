@@ -164,11 +164,11 @@ namespace fscp
 		const cryptoplus::buffer digest = mdctx.finalize();
 
 		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(cryptoplus::buffer_cast<uint8_t>(padded_buf), cryptoplus::buffer_size(padded_buf), cryptoplus::buffer_cast<uint8_t>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(cryptoplus::buffer_cast<uint8_t*>(padded_buf), cryptoplus::buffer_size(padded_buf), cryptoplus::buffer_cast<const uint8_t*>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
 
 		const cryptoplus::buffer ciphertext_signature = sig_key.get_rsa_key().private_encrypt(padded_buf, RSA_NO_PADDING);
 
-		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, cryptoplus::buffer_cast<uint8_t>(ciphertext_signature), cryptoplus::buffer_size(ciphertext_signature), type);
+		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, cryptoplus::buffer_cast<const uint8_t*>(ciphertext_signature), cryptoplus::buffer_size(ciphertext_signature), type);
 	}
 
 }

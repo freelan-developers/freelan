@@ -87,7 +87,7 @@ namespace fscp
 	{
 		const cryptoplus::buffer random = cryptoplus::random::get_random_bytes(random_len);
 
-		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, cryptoplus::buffer_cast<uint8_t>(random), cryptoplus::buffer_size(random), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_KEEP_ALIVE);
+		return raw_write(buf, buf_len, session_number, _sequence_number, cipher_algorithm, cryptoplus::buffer_cast<const uint8_t*>(random), cryptoplus::buffer_size(random), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_KEEP_ALIVE);
 	}
 
 	size_t data_message::write_contact_request(void* buf, size_t buf_len, session_number_type session_number, sequence_number_type sequence_number, data_message::calg_t cipher_algorithm, const hash_list_type& hash_list, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
