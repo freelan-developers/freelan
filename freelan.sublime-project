@@ -58,6 +58,22 @@
           "cmd": ["msbuild", "freelan-all.sln", "/p:Configuration=Debug", "/t:Clean"]
         }
       ]
+    },
+    {
+      "name": "SCons",
+      "shell": true,
+      "working_dir": "${project_path}",
+      "selector": "source.c++",
+      "variants": [
+        {
+          "name": "Release",
+          "shell_cmd": "scons install samples -j 5"
+        },
+        {
+          "name": "Debug",
+          "shell_cmd": "scons install samples -j 5 mode=debug"
+        }
+      ]
     }
   ],
   "settings":
