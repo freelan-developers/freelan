@@ -48,6 +48,8 @@
 #include <cstring>
 #include <iomanip>
 
+#include <boost/io/ios_state.hpp>
+
 namespace cryptoplus
 {
 	buffer::buffer(const void* _data, size_t data_len) :
@@ -72,6 +74,8 @@ namespace cryptoplus
 
 	std::ostream& operator<<(std::ostream& os, const buffer& buf)
 	{
+	    boost::io::ios_flags_saver ifs(os);
+
 		for (buffer::storage_type::const_iterator i = buf.data().begin(); i != buf.data().end(); ++i)
 		{
 			os << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(*i);
