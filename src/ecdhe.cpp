@@ -46,7 +46,7 @@
 
 #include <cassert>
 
-#include "bio/bio_ptr.hpp"
+#include "bio/bio_chain.hpp"
 
 namespace cryptoplus
 {
@@ -102,11 +102,11 @@ namespace cryptoplus
 				generate_keys();
 			}
 
-			bio::bio_ptr bio(::BIO_new(::BIO_s_mem()));
-			m_private_key.write_certificate_public_key(bio);
+			bio::bio_chain bio(::BIO_new(::BIO_s_mem()));
+			m_private_key.write_certificate_public_key(bio.first());
 
 			char* buf = nullptr;
-		 	const size_t buf_len = bio.get_mem_data(buf);
+			const size_t buf_len = bio.first().get_mem_data(buf);
 
 			return buffer(buf, buf_len);
 		}
@@ -118,8 +118,8 @@ namespace cryptoplus
 				generate_keys();
 			}
 
-			bio::bio_ptr bio(::BIO_new_mem_buf(const_cast<void*>(peer_key), static_cast<int>(peer_key_len)));
-			pkey peer_pkey = pkey::from_certificate_public_key(bio);
+			bio::bio_chain bio(::BIO_new_mem_buf(const_cast<void*>(peer_key), static_cast<int>(peer_key_len)));
+			pkey peer_pkey = pkey::from_certificate_public_key(bio.first());
 
 			evp_pkey_context_type key_derivation_context(::EVP_PKEY_CTX_new(m_private_key.raw(), NULL));
 
