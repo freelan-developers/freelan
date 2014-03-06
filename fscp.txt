@@ -145,21 +145,32 @@ Abstract
                  +-----------------------------------+
                  |          session_number           |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-                 |             challenge             |
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |   ec_cap_len    |      ec_cap     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |   kd_cap_len    |      kd_cap     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  | cipher_cap_len  |    cipher_cap   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
-   This header is not sent in clear-text. It is first ciphered using the
-   public PKE of the target host, then the ciphertext is signed using
-   the sender host signature private key (PKS).
+   This header is signed using the sender host signature private key
+   (PKS).
 
    That is, a SESSION_REQUEST message sent over the wire has the
    following format:
 
                   0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          session_number           |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |   ec_cap_len    |      ec_cap     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |      ct_cnt     |        ct       |
+                 |   kd_cap_len    |      kd_cap     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 | cipher_cap_len  |    cipher_cap   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    ct_sig_len   |      ct_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -170,38 +181,47 @@ Abstract
 
 2.4.2. SESSION_REQUEST message fields
 
-   The session_number indicates the last known identifier of the
-   session. If no previous session is known, session_number MUST be 0.
+   The session_number indicates the requested session number. If no
+   previous session is known, session_number MUST be 0.
 
-   The challenge field is 32 bytes long and MUST be random for each
-   SESSION_REQUEST message sent.
+   The host_identifier field is 32 bytes long and is a random number
+   generated on startup (or at least before a session attempt begins).
+
+   It MUST remain constant during the lifetime of a FSCP client.
+
+   The host_identifier can be different for every host the client wants
+   to establish a session with, but MUST remain constant within that
+   relationship.
+
+   The ec_cap_len field indicates the length of the ec_cap field.
+
+   The ec_cap field is a list of elliptic curves supported by the client,
+   by order of preference.
+
+   The kd_cap_len field indicates the length of the kd_cap field.
+
+   The kd_cap field is a list of key derivation algorithm supported by
+   the client, by order of preference.
 
    The cipher_cap_len field indicates the length of the cipher_cap field.
 
-   The cipher_cap field is a list of the cipher algorithms supported by
-   the client, by order of preference.
+   The cipher_cap field is a list of cipher algorithms supported by the
+   client, by order of preference.
 
-   A list of the ciphers codes is available in a further section of this
-   document.
+   A list of identifiers for the elliptic curves, key derivation
+   algorithms and cipher algorithms is available in a further section of
+   this document.
 
-   The ct_cnt field indicates the count of ciphertext blocks in the ct
-   field.
+   The ct_sig_len field indicates the length of the ct_sig field.
 
-   The ct field is the concatenation of 0 to N ciphertexts, generated
-   using the public encryption key (PKE) of the target host.
-
-   The ct_sig_len field indicates the length of the cts field.
-
-   The ct_sig field is the ciphertext signature, generated using the
+   The ct_sig field is the header signature, generated using the
    private signature key (PKS) of the sender host.
 
    A host who receives a SESSION_REQUEST message MUST first check if the
-   cts signature matches the sending host public verification key (PKV).
-   If the signature does not match, the message MUST be ignored.
+   ct_sig signature matches the sending host public verification key
+   (PKV).
 
-   Once the signature has been checked, the receiving host MUST then
-   decipher the ct field, using its own private decryption key (PKD). If
-   the decipherment fails, the message MUST be ignored.
+   If the signature does not match, the message MUST be ignored.
 
 2.5. SESSION message format
 
@@ -211,25 +231,32 @@ Abstract
                  +-----------------------------------+
                  |          session_number           |
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
-                 |             challenge             |
+                 |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |  calg  |        <reserved>        |
+                 |   ec   |   kd   |  calg  | <zero> |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |   enc_key_len   |     enc_key     |
+                 |   pub_key_len   |     pub_key     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |nonce_prefix_len |  nonce_prefix   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
-   This header is not sent in clear-text. It is first ciphered using the
-   public PKE of the target host, then the ciphertext is signed using
-   the sender host signature private key (PKS).
+   This header is signed using the sender host signature private key
+   (PKS).
 
    That is, a SESSION message sent over the wire has the following
    format:
 
                   0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          session_number           |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |   ec   |   kd   |  calg  | <zero> |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |      ct_cnt     |        ct       |
+                 |   pub_key_len   |     pub_key     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |nonce_prefix_len |  nonce_prefix   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    ct_sig_len   |      ct_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -241,64 +268,72 @@ Abstract
 2.5.2. SESSION message fields
 
    The session_number indicates the identifier of the session. Every
-   session SHOULD have its own and unique session_number value.
+   session MUST have its own and unique session_number value.
 
-   The challenge field is 32 bytes long and SHOULD be identical to the
-   challenge field in the last SESSION_REQUEST message received from the
-   same host.
+   The host_identifier field is 32 bytes long and is a random number
+   generated on startup (or at least before a session attempt begins).
 
-   The calg field is the code of the chosen cipher algorithm. It SHOULD
-   be the cipher code of the first supported cipher algorithm specified
-   in the associated SESSION_REQUEST.
+   It MUST remain constant during the lifetime of a FSCP client.
 
-   A list of the ciphers codes is available in a further section of this
-   document.
+   The host_identifier can be different for every host the client wants
+   to establish a session with, but MUST remain constant within that
+   relationship.
 
-   If there is no such cipher algorithm, this value MUST be 0 to indicate
-   to the peer that no session can be established with the requested
-   parameters.
+   The ec field is the code of the chosen elliptic curve. It MUST
+   be the identifier of the first supported elliptic curve specified in
+   the associated SESSION_REQUEST.
 
-   In this case, the remaining fields SHOULD be empty and ignored by the
-   remote peer.
+   The kd field is the code of the chosen key derivation algorithm. It
+   MUST be the identifier of the first supported key derivation algorithm
+   specified in the associated SESSION_REQUEST.
 
-   The <reserved> field is reserved for future uses and MUST be zero in
+   The calg field is the code of the chosen cipher algorithm. It MUST
+   be the identifier of the first supported cipher algorithm specified in
+   the associated SESSION_REQUEST.
+
+   A list of identifiers for the elliptic curves, key derivation
+   algorithms and cipher algorithms is available in a further section of
+   this document.
+
+   A value of 0 in one of the ec, kd or calg fields indicates that none
+   of the requested elliptic curve or algorithms are supported. In this
+   case, the pub_key and nonce_prefix field SHOULD be empty.
+
+   The <zero> field is reserved for future uses and MUST be zero in
    the current implementation.
 
-   The enc_key_len field indicates the size of the enc_key field. It
-   depends on the chosen cipher algorithm.
+   The pub_key_len field indicates the size of the pub_key field. It
+   depends on the chosen elliptic curve.
 
-   The enc_key field is a enc_key_len bytes long encryption key used for
-   message cipherment. In the next sections, this key will be referred
-   as KE.
+   The pub_key field is a pub_key_len bytes long Elliptic Curve
+   Diffie-Hellman Ephemeral public key generated by the host. It MUST be
+   fed to the local ECDHE instance to generate the shared secret.
+
+   Once generated, this shared secret is hashed using the key derivation
+   algorithm both parties agreed on.
 
    The nonce_prefix_len indicates the size of the nonce_prefix field. It
-   can be anything, but a value of 8 bytes is recommended.
+   MUST be at least 8 bytes.
 
    The nonce_prefix field is a random value that will be prepended to
    the session and sequence number when generating the nonce.
 
-   The ct_cnt field indicates the count of ciphertext blocks in the ct
-   field.
+   If the nonce_prefix received matches the local one, then the local MUST
+   be regenerated until it is different. Failing to do so nullifies the
+   security completely.
 
-   The ct field is the concatenation of 0 to N ciphertexts, generated
-   using the public encryption key (PKE) of the target host.
+   The ct_sig_len field indicates the length of the ct_sig field.
 
-   The ct_sig_len field indicates the length of the cts field.
-
-   The ct_sig field is the ciphertext signature, generated using the
+   The ct_sig field is the header signature, generated using the
    private signature key (PKS) of the sender host.
 
    A host who receives a SESSION message MUST first check if the
-   cts signature matches the sending host public verification key (PKV).
+   ct_sig signature matches the sending host public verification key (PKV).
    If the signature does not match, the message MUST be ignored.
 
-   Once the signature has been checked, the receiving host MUST then
-   decipher the ct field, using its own private decryption key (PKD). If
-   the decipherment fails, the message MUST be ignored.
-
-   If an host receives a SESSION message whose calg is null, it SHOULD
-   indicate to the upper layer that no session could be established with
-   the requested parameters.
+   If an host receives a SESSION message whose ec, kd or calg is null, it
+   SHOULD report to the upper layer that no session could be established
+   with the requested parameters.
 
 2.6. DATA message format
 
@@ -342,14 +377,18 @@ Abstract
    using the target host session cipher key.
 
    The nonce used for the generation of the ciphertext is a
-   concatenation of the session nonce_prefix, the session_number and the
+   concatenation of the local nonce_prefix, the session_number and the
+   sequence_number.
+
+   The nonce used for the decipherment of the ciphertext is a
+   concatenation of the remote nonce_prefix, the session_number and the
    sequence_number.
 
    If the decipherment of the ciphertext fails, the message MUST be
    ignored.
 
    The 4 less significant bits of the message type value indicate the
-   channel number. The channel number SHOULD be made available for the
+   channel number. The channel number SHOULD be made available to the
    upper layers.
 
 2.7. CONTACT-REQUEST message format
@@ -497,6 +536,16 @@ Abstract
 
 3.1. Symmetric cipherment algorithm
 
+   The available elliptic curves used with ECDHE are:
+
+   - 0x0D: SECT571K1
+   - 0x0E: SECT571R1
+
+   The available key derivation algorithms used with the ECDHE
+   generated secret are:
+
+   - 0x01: PBKDF2
+
    The available cipher algorithms used in the symmetric cipherment are:
 
    - 0x01: AES256-GCM.
@@ -524,6 +573,15 @@ Abstract
    RSA padding size.
 
    The minimum key size is 1024. The RECOMMENDED key size is 2048.
+
+3.3. Symmetric cipherment
+
+   The DATA messages are ciphered using the chosen cipher algorithm.
+
+   The key to use with that cipher is generated by applying the key
+   derivation algorithm to the generated shared secret resulting for the
+   ECDHE sequence. The size of that key depends on the chosen cipher
+   algorithm.
 
 4. Protocol
 
@@ -562,30 +620,73 @@ Abstract
 4.3. Sessions
 
    When a host wants to establish a session MUST send a SESSION_REQUEST
-   message to the target host indicating the last know session number of
-   the target host.
+   message to the target host indicating the desired session number.
 
-   If no previous session exists with the requesting host, the target
-   host SHOULD generate new session parameters and reply with a SESSION
-   message containing those parameters. The session_number of the new
-   session MUST be greater or equal to the requested session_number.
+   When a host receives a SESSION_REQUEST or a SESSION message from an
+   host, the following can happen:
+
+   - If the message is the first one received from the host (that is,
+   if no host_identifier is known for that host), the specified
+   host_identifier is stored for later comparisons.
+   - If the message host_identifier does not match the one known for
+   the host, ignore it.
+   - If the message host_identifier matches the one known for the host,
+   continue to process it.
+
+   When a session is lost (because of a timeout, or whenever the
+   implementation decide a session is to be considered dead), the
+   host_identifier known for the host SHOULD be emptied. This allows
+   for session reestablishment with a given host that went down for
+   some time (and thus changed his host_identifier).
+
+   When receiving a SESSION_REQUEST message:
+
+   - If no previous session exists with the requesting host, the target
+   host and the parameters of the request are acceptable, the target
+   host should generate a new ECDHE public key, a new nonce prefix and
+   reply with a SESSION message containing those parameters.
+
+   - If a previous session exists and the requested session number is
+   higher than the current one, the target host should also generate a
+   new ECDHE public key, a new nonce prefix and reply with a SESSION
+   message containing those parameters.
+
+   - If the requested session number is equal to or lower than the
+   current one, the target host should reply with the same SESSION
+   message that was used to establish the current session, except for
+   the challenge that must match the one of the request.
+
+   When receiving a SESSION message:
+
+   - If the session number is higher than the current one, it should
+   renew its session parameters and reply with an updated SESSION
+   message that contains its new ECDHE public key as well as a new
+   nonce prefix. The session is considered established on this
+   receiving side.
+
+   - If the session number, the public key, the algorithms and the
+   nonce prefix match the current ones, the host MUST ignore it.
+
+   - If the session number matches the current one, but the public
+   key, the algorithms or the nonce prefix do not match the ones of the
+  current session, it should send a SESSION_REQUEST with an incremented
+  session number to start a new session.
+
+   An existing session MUST remain valid until a new one completes to
+   prevent DoS-replay attacks.
 
    If a host does not receive a response SESSION message after 3
-   seconds, he SHOULD send another SESSION_REQUEST.
+   seconds, it MAY send another SESSION_REQUEST.
 
    If a host receives more than one request SESSION_REQUEST within 3
-   seconds, he SHOULD only accept the first one and discard the others.
-
-   If a host receives a SESSION message whose challenge field does not
-   match the challenge field of the last sent SESSION_REQUEST message,
-   he MUST ignore the message.
+   seconds, it MAY only accept the first one and discard the others.
 
    If a session with the requesting host already exists and is not too
    old (more on that in the next sub-section), the target host MAY
    reply with the parameters from the current session.
 
-   Whenever a session is sent, its associated sequence number MUST be
-   reset.
+   Whenever a session is established, its associated sequence number
+   MUST be reset to zero.
 
 4.3.1 Old sessions
 
@@ -613,14 +714,14 @@ Abstract
 4.3.2. Session timeout
 
    If an host does not receive any DATA or KEEP-ALIVE message from
-   another host during 30 seconds, he SHOULD consider the session lost.
+   another host during 30 seconds, it SHOULD consider the session lost.
 
    After a session is lost, the hosts MUST renegotiate session keys
    before sending any DATA message.
 
 4.4. DATA messages
 
-   Once a host has the session parameters for a target host, he can
+   Once a host has the session parameters for a target host, it can
    start sending DATA messages to him.
 
    The sequence number of the first DATA message of a given session MUST
@@ -630,7 +731,7 @@ Abstract
    sequence number within the same session.
 
    If a host receives a DATA message with a sequence number lower than
-   or equal to a previously received sequence number, he MUST ignore it.
+   or equal to a previously received sequence number, it MUST ignore it.
 
 4.5. CONTACT-REQUEST and CONTACT messages
 
@@ -656,7 +757,7 @@ Abstract
 4.6. KEEP-ALIVE messages
 
    If a host does not send any DATA message to another host within 10
-   seconds, he SHOULD send a KEEP-ALIVE message to maintain the session
+   seconds, it SHOULD send a KEEP-ALIVE message to maintain the session
    alive.
 
 5. Thanks
