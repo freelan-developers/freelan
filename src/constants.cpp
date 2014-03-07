@@ -50,6 +50,14 @@
 
 namespace fscp
 {
+	const elliptic_curve_type::value_type elliptic_curve_type::unsupported = 0x00;
+	const elliptic_curve_type::value_type elliptic_curve_type::sect571k1 = 0x0D;
+	const elliptic_curve_type::value_type elliptic_curve_type::sect571r1 = 0x0E;
+	const std::string elliptic_curve_type::sect571k1_string("sect571k1");
+	const std::string elliptic_curve_type::sect571r1_string("sect571r1");
+	const key_derivation_algorithm_type::value_type key_derivation_algorithm_type::unsupported = 0x00;
+	const key_derivation_algorithm_type::value_type key_derivation_algorithm_type::pbkdf2_sha256 = 0x01;
+	const std::string key_derivation_algorithm_type::pbkdf2_sha256_string("pbkdf2-sha256");
 	const cipher_algorithm_type::value_type cipher_algorithm_type::unsupported = 0x00;
 	const cipher_algorithm_type::value_type cipher_algorithm_type::aes256_gcm = 0x01;
 	const std::string cipher_algorithm_type::aes256_gcm_string("aes256-gcm");

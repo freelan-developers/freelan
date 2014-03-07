@@ -277,6 +277,180 @@ namespace fscp
 	};
 
 	/**
+	 * \brief The elliptic curve type.
+	 */
+	class elliptic_curve_type : public enumeration_type
+	{
+		public:
+
+			static const value_type unsupported;
+			static const value_type sect571k1;
+			static const value_type sect571r1;
+
+			elliptic_curve_type() {}
+			elliptic_curve_type(value_type _value) : enumeration_type(_value) {}
+
+			/**
+			 * \brief Check whether the instance is a valid elliptic curve.
+			 * \return true if the elliptic curve is valid.
+			 */
+			bool is_valid() const
+			{
+				if ((value() == unsupported) || (value() == sect571k1) || value() == sect571r1)
+				{
+					return true;
+				}
+
+				return false;
+			}
+
+			/**
+			 * \brief Get a string representation of the elliptic curve.
+			 * \return A string representation.
+			 */
+			std::string to_string() const
+			{
+				if (value() == unsupported)
+				{
+					throw std::runtime_error("Unsupported elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == sect571k1)
+				{
+					return sect571k1_string;
+				}
+				else if (value() == sect571r1)
+				{
+					return sect571r1_string;
+				}
+
+				throw std::invalid_argument("Invalid elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+			/**
+			 * \brief Get a elliptic curve from its string representation.
+			 * \param str The string representation.
+			 * \return The elliptic curve.
+			 */
+			static elliptic_curve_type from_string(const std::string& str)
+			{
+				if (str == sect571k1_string)
+				{
+					return sect571k1;
+				}
+				else if (str == sect571r1_string)
+				{
+					return sect571r1;
+				}
+
+				throw std::invalid_argument("Invalid elliptic curve string representation: " + str);
+			}
+
+			/**
+			 * \brief Get the elliptic curve associated with the instance.
+			 * \return The associated elliptic curve.
+			 *
+			 * If the instance is not supported, a std::runtime_error is thrown.
+			 */
+			int to_elliptic_curve_nid() const
+			{
+				if (value() == unsupported)
+				{
+					throw std::runtime_error("Unsupported elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == sect571k1)
+				{
+					return NID_sect571k1;
+				}
+				else if (value() == sect571r1)
+				{
+					return NID_sect571r1;
+				}
+
+				throw std::invalid_argument("Invalid elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+		private:
+
+			static const std::string sect571k1_string;
+			static const std::string sect571r1_string;
+	};
+
+	/**
+	 * \brief The elliptic curve list type.
+	 */
+	typedef std::vector<elliptic_curve_type> elliptic_curve_type_list_type;
+
+	/**
+	 * \brief The key derivation algorithm type.
+	 */
+	class key_derivation_algorithm_type : public enumeration_type
+	{
+		public:
+
+			static const value_type unsupported;
+			static const value_type pbkdf2_sha256;
+
+			key_derivation_algorithm_type() {}
+			key_derivation_algorithm_type(value_type _value) : enumeration_type(_value) {}
+
+			/**
+			 * \brief Check whether the instance is a valid key derivation algorithm.
+			 * \return true if the key derivation algorithm is valid.
+			 */
+			bool is_valid() const
+			{
+				if ((value() == unsupported) || (value() == pbkdf2_sha256))
+				{
+					return true;
+				}
+
+				return false;
+			}
+
+			/**
+			 * \brief Get a string representation of the key derivation algorithm.
+			 * \return A string representation.
+			 */
+			std::string to_string() const
+			{
+				if (value() == unsupported)
+				{
+					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == pbkdf2_sha256)
+				{
+					return pbkdf2_sha256_string;
+				}
+
+				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+			/**
+			 * \brief Get a key derivation algorithm from its string representation.
+			 * \param str The string representation.
+			 * \return The key derivation algorithm.
+			 */
+			static key_derivation_algorithm_type from_string(const std::string& str)
+			{
+				if (str == pbkdf2_sha256_string)
+				{
+					return pbkdf2_sha256;
+				}
+
+				throw std::invalid_argument("Invalid key derivation algorithm string representation: " + str);
+			}
+
+		private:
+
+			static const std::string pbkdf2_sha256_string;
+	};
+
+	/**
+	 * \brief The key derivation algorithm list type.
+	 */
+	typedef std::vector<key_derivation_algorithm_type> key_derivation_algorithm_list_type;
+
+	/**
 	 * \brief The cipher algorithm type.
 	 */
 	class cipher_algorithm_type : public enumeration_type
