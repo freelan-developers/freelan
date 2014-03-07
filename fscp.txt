@@ -641,36 +641,37 @@ Abstract
 
    When receiving a SESSION_REQUEST message:
 
-   - If no previous session exists with the requesting host, the target
-   host and the parameters of the request are acceptable, the target
-   host should generate a new ECDHE public key, a new nonce prefix and
-   reply with a SESSION message containing those parameters.
+   - If no previous session exists with the requesting host, and the
+   target host and the parameters of the request are acceptable, the
+   target host should generate a new ECDHE public key, a new nonce
+   prefix and reply with a SESSION message matching those parameters.
 
    - If a previous session exists and the requested session number is
    higher than the current one, the target host should also generate a
    new ECDHE public key, a new nonce prefix and reply with a SESSION
-   message containing those parameters.
+   message matching those parameters.
 
    - If the requested session number is equal to or lower than the
    current one, the target host should reply with the same SESSION
-   message that was used to establish the current session, except for
-   the challenge that must match the one of the request.
+   message that was used to establish the current session.
 
    When receiving a SESSION message:
 
-   - If the session number is higher than the current one, it should
-   renew its session parameters and reply with an updated SESSION
-   message that contains its new ECDHE public key as well as a new
-   nonce prefix. The session is considered established on this
-   receiving side.
+   - If the session number is higher than the current one or if no
+   session exists, the receiving host should renew its session
+   parameters and reply with an updated SESSION message that contains
+   its new ECDHE public key as well as a new nonce prefix. The session
+   is then considered established on this receiving side.
 
    - If the session number, the public key, the algorithms and the
-   nonce prefix match the current ones, the host MUST ignore it.
+   nonce prefix match the current ones, the host MUST ignore it as it
+   might be the result of a frame duplication or an attempt of replay.
 
    - If the session number matches the current one, but the public
-   key, the algorithms or the nonce prefix do not match the ones of the
-  current session, it should send a SESSION_REQUEST with an incremented
-  session number to start a new session.
+   key, the algorithms or the nonce prefix do not match the ones
+   currently used by the active session, it should send a
+   SESSION_REQUEST with an incremented session number to start a new
+   session.
 
    An existing session MUST remain valid until a new one completes to
    prevent DoS-replay attacks.
@@ -681,9 +682,9 @@ Abstract
    If a host receives more than one request SESSION_REQUEST within 3
    seconds, it MAY only accept the first one and discard the others.
 
-   If a session with the requesting host already exists and is not too
-   old (more on that in the next sub-section), the target host MAY
-   reply with the parameters from the current session.
+   If a session becomes too old (more on that in the next sub-section),
+   an host SHOULD send a SESSION_REQUEST message with an incremented
+   session number.
 
    Whenever a session is established, its associated sequence number
    MUST be reset to zero.
@@ -700,10 +701,7 @@ Abstract
    Using a value too close from 2^16 may cause an interruption of the
    communication channel while new keys are being exchanged.
 
-   Using a value too small would cause too many key exchange to occur.
-
-   If a host receives a SESSION message with a session_number smaller
-   than the last used session_number, it MUST discard the message.
+   Using a value too small would cause too many key exchanges to occur.
 
    Note that in any case, the session lifespan is way smaller than the
    AES cipherment and sealing keys lifespan.
@@ -750,7 +748,7 @@ Abstract
    The receiving host SHOULD only reply to requests for which the
    requested certificate is known and used in an active session.
 
-   If an host receives a request for its own certificate, it SHOULD
+   If an host receives a request for its own certificate, it MUST
    discard it, but CAN still process other requests contained in the
    same CONTACT-REQUEST message.
 
