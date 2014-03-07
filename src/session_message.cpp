@@ -44,38 +44,76 @@
 
 #include "session_message.hpp"
 
-#include "constants.hpp"
-
-#include <cryptoplus/hash/message_digest_context.hpp>
-#include <cryptoplus/pkey/pkey.hpp>
-#include <cryptoplus/pkey/rsa_key.hpp>
 #include <cassert>
 #include <stdexcept>
 
+#include <cryptoplus/hash/message_digest_context.hpp>
+
 namespace fscp
 {
-	session_message::session_message(const message& _message, size_t pkey_size) :
-		message(_message),
-		m_pkey_size(pkey_size)
+	size_t session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key)
 	{
-		check_format();
+		using cryptoplus::buffer_cast;
+		using cryptoplus::buffer_size;
+
+		const size_t unsigned_payload_size = MIN_BODY_LENGTH + pub_key_len + nonce_prefix_len;
+		const size_t signed_payload_size = unsigned_payload_size + sig_key.get_rsa_key().size();
+
+		if (buf_len < HEADER_LENGTH + signed_payload_size)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
+
+		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
+		std::copy(_host_identifier.begin(), _host_identifier.end(), payload + sizeof(_session_number));
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size, ec.value());
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t), kd.value());
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 2, calg.value());
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3, 0x00);
+		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1, htons(static_cast<uint16_t>(pub_key_len)));
+		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t), pub_key, pub_key_len);
+		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len, htons(static_cast<uint16_t>(nonce_prefix_len)));
+		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len + sizeof(uint16_t), nonce_prefix, nonce_prefix_len);
+
+		cryptoplus::hash::message_digest_context mdctx;
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
+		mdctx.update(static_cast<const uint8_t*>(payload), unsigned_payload_size);
+		const cryptoplus::buffer digest = mdctx.finalize();
+
+		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(buffer_cast<uint8_t*>(padded_buf), buffer_size(padded_buf), cryptoplus::buffer_cast<const uint8_t*>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
+
+		const size_t signature_size = sig_key.get_rsa_key().private_encrypt(payload + unsigned_payload_size + sizeof(uint16_t), sig_key.get_rsa_key().size(), buffer_cast<const uint8_t*>(padded_buf), buffer_size(padded_buf), RSA_NO_PADDING);
+		buffer_tools::set<uint16_t>(payload, unsigned_payload_size, htons(static_cast<uint16_t>(signature_size)));
+
+		const size_t length = unsigned_payload_size + sizeof(uint16_t) + signature_size;
+
+		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION, length) + length;
 	}
 
-	void session_message::check_format() const
+	session_message::session_message(const message& _message) :
+		message(_message)
 	{
 		if (length() < MIN_BODY_LENGTH)
 		{
-			throw std::runtime_error("bad message length");
+			throw std::runtime_error("buf_len");
 		}
 
-		if (length() < MIN_BODY_LENGTH + ciphertext_size())
+		if (length() < MIN_BODY_LENGTH + public_key_size())
 		{
-			throw std::runtime_error("bad message length");
+			throw std::runtime_error("buf_len");
 		}
 
-		if (length() != MIN_BODY_LENGTH + ciphertext_size() + ciphertext_signature_size())
+		if (length() < MIN_BODY_LENGTH + public_key_size() + nonce_prefix_size())
 		{
-			throw std::runtime_error("bad message length");
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + public_key_size() + nonce_prefix_size() + header_signature_size())
+		{
+			throw std::runtime_error("buf_len");
 		}
 	}
 
@@ -86,89 +124,11 @@ namespace fscp
 
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
-		mdctx.update(ciphertext(), ciphertext_size());
+		mdctx.update(payload(), header_size());
 
 		const cryptoplus::buffer digest = mdctx.finalize();
-		const cryptoplus::buffer padded_buf = key.get_rsa_key().public_decrypt(ciphertext_signature(), ciphertext_signature_size(), RSA_NO_PADDING);
+		const cryptoplus::buffer padded_buf = key.get_rsa_key().public_decrypt(header_signature(), header_signature_size(), RSA_NO_PADDING);
 
 		key.get_rsa_key().verify_PKCS1_PSS(digest, padded_buf, cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
 	}
-
-	size_t session_message::get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const
-	{
-		assert(key);
-		assert(key.size() == m_pkey_size);
-
-		if (buf)
-		{
-			size_t result = 0;
-
-			for (unsigned int ciphertext_index = 0; ciphertext_index < ciphertext_count(); ++ciphertext_index)
-			{
-				result += key.get_rsa_key().private_decrypt(static_cast<char*>(buf) + result, buf_len - result, ciphertext() + ciphertext_index * m_pkey_size, m_pkey_size, RSA_PKCS1_OAEP_PADDING);
-			}
-
-			return result;
-		}
-		else
-		{
-			return key.get_rsa_key().size() * ciphertext_count();
-		}
-	}
-
-	size_t session_message::_write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, unsigned int ciphertext_cnt, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type)
-	{
-		const size_t payload_len = MIN_BODY_LENGTH + ciphertext_len + ciphertext_signature_len;
-
-		if (buf_len < HEADER_LENGTH + payload_len)
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH, htons(static_cast<uint16_t>(ciphertext_cnt)));
-		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + sizeof(uint16_t), ciphertext, ciphertext_len);
-		buffer_tools::set<uint16_t>(buf, HEADER_LENGTH + sizeof(uint16_t) + ciphertext_len, htons(static_cast<uint16_t>(ciphertext_signature_len)));
-		std::memcpy(static_cast<uint8_t*>(buf) + HEADER_LENGTH + 2 * sizeof(uint16_t) + ciphertext_len, ciphertext_signature, ciphertext_signature_len);
-
-		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, type, payload_len);
-
-		return HEADER_LENGTH + payload_len;
-	}
-
-	size_t session_message::_write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key, message_type type)
-	{
-		const size_t max_cleartext_len = enc_key.size() - cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM).result_size() * 2 - 2;
-		const unsigned int packet_count = static_cast<unsigned int>((cleartext_len + max_cleartext_len - 1) / max_cleartext_len);
-
-		if (packet_count >= (1 << 16))
-		{
-			throw std::runtime_error("Too many ciphertexts");
-		}
-
-		std::vector<uint8_t> ciphertext(packet_count * enc_key.size());
-
-		size_t remaining_cleartext_len = cleartext_len;
-
-		for (unsigned int packet_index = 0; packet_index < packet_count; ++packet_index)
-		{
-			size_t len = std::min(max_cleartext_len, remaining_cleartext_len);
-
-			enc_key.get_rsa_key().public_encrypt(&ciphertext[0 + packet_index * enc_key.size()], enc_key.size(), static_cast<const char*>(cleartext) + packet_index * max_cleartext_len, len, RSA_PKCS1_OAEP_PADDING);
-
-			remaining_cleartext_len -= len;
-		}
-
-		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
-		mdctx.update(&ciphertext[0], ciphertext.size());
-		const cryptoplus::buffer digest = mdctx.finalize();
-
-		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(cryptoplus::buffer_cast<uint8_t*>(padded_buf), cryptoplus::buffer_size(padded_buf), cryptoplus::buffer_cast<const uint8_t*>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
-
-		const cryptoplus::buffer ciphertext_signature = sig_key.get_rsa_key().private_encrypt(padded_buf, RSA_NO_PADDING);
-
-		return _write(buf, buf_len, &ciphertext[0], ciphertext.size(), packet_count, cryptoplus::buffer_cast<const uint8_t*>(ciphertext_signature), cryptoplus::buffer_size(ciphertext_signature), type);
-	}
-
 }

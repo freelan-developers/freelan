@@ -39,16 +39,136 @@
 /**
  * \file session_request_message.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A session request message class.
+ * \brief A clear session request message class.
  */
 
 #include "session_request_message.hpp"
 
+#include <cassert>
+#include <stdexcept>
+
 namespace fscp
 {
-	session_request_message::session_request_message(const message& _message, size_t pkey_size) :
-		session_message(_message, pkey_size)
+	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const elliptic_curve_list_type& ec_cap, const key_derivation_algorithm_list_tyep& kd_cap, const cipher_algorithm_list_type& cipher_cap, cryptoplus::pkey::pkey sig_key)
 	{
-		check_format();
+		using cryptoplus::buffer_cast;
+		using cryptoplus::buffer_size;
+
+		const size_t unsigned_payload_size = MIN_BODY_LENGTH + ec_cap.size() + kd_cap.size() + cipher_cap.size();
+		const size_t signed_payload_size = unsigned_payload_size + sig_key.get_rsa_key().size();
+
+		if (buf_len < HEADER_LENGTH + signed_payload_size)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
+
+		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
+		std::copy(_host_identifier.begin(), _host_identifier.end(), payload + sizeof(_session_number));
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size, htons(static_cast<uint16_t>(ec_cap.size())));
+		std::copy(ec_cap.begin(), ec_cap.end(), static_cast<elliptic_curve_list_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t));
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size(), htons(static_cast<uint16_t>(kd_cap.size())));
+		std::copy(kd_cap.begin(), kd_cap.end(), static_cast<key_derivation_algorithm_list_tyep*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size() + sizeof(uint16_t));
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size() + sizeof(uint16_t) + kd_cap.size(), htons(static_cast<uint16_t>(cipher_cap.size())));
+		std::copy(cipher_cap.begin(), cipher_cap.end(), static_cast<cipher_algorithm_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size() + sizeof(uint16_t) + kd_cap.size() + sizeof(uint16_t));
+
+		cryptoplus::hash::message_digest_context mdctx;
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
+		mdctx.update(static_cast<const uint8_t*>(payload), unsigned_payload_size);
+		const cryptoplus::buffer digest = mdctx.finalize();
+
+		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
+		sig_key.get_rsa_key().padding_add_PKCS1_PSS(buffer_cast<uint8_t*>(padded_buf), buffer_size(padded_buf), cryptoplus::buffer_cast<const uint8_t*>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
+
+		const size_t signature_size = sig_key.get_rsa_key().private_encrypt(payload + unsigned_payload_size + sizeof(uint16_t), sig_key.get_rsa_key().size(), buffer_cast<const uint8_t*>(padded_buf), buffer_size(padded_buf), RSA_NO_PADDING);
+		buffer_tools::set<uint16_t>(payload, unsigned_payload_size, htons(static_cast<uint16_t>(signature_size)));
+
+		const size_t length = unsigned_payload_size + sizeof(uint16_t) + signature_size;
+
+		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION_REQUEST, length) + length;
+	}
+
+	session_request_message::session_request_message(const message& _message) :
+		message(_message)
+	{
+		if (length() < MIN_BODY_LENGTH)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size() + key_derivation_capabilities_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size() + key_derivation_capabilities_size() + cipher_capabilities_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size() + key_derivation_capabilities_size() + cipher_capabilities_size() + header_signature_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+	}
+
+	elliptic_curve_list_type session_request_message::elliptic_curve_capabilities() const
+	{
+		elliptic_curve_list_type result(elliptic_curve_capabilities_size());
+
+		std::copy(
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t),
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size(),
+			result.begin()
+		);
+
+		return result;
+	}
+
+	key_derivation_algorithm_list_type session_request_message::key_derivation_capabilities() const
+	{
+		key_derivation_algorithm_list_type result(key_derivation_capabilities_size());
+
+		std::copy(
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t),
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size(),
+			result.begin()
+		);
+
+		return result;
+	}
+
+	cipher_algorithm_list_type session_request_message::cipher_capabilities() const
+	{
+		cipher_algorithm_list_type result(cipher_capabilities_size());
+
+		std::copy(
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size() + sizeof(uint16_t),
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size() + sizeof(uint16_t) + cipher_capabilities_size(),
+			result.begin()
+		);
+
+		return result;
+	}
+
+	void session_request_message::check_signature(cryptoplus::pkey::pkey key) const
+	{
+		assert(key);
+		assert(key.get_rsa_key());
+
+		cryptoplus::hash::message_digest_context mdctx;
+		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
+		mdctx.update(payload(), header_size());
+
+		const cryptoplus::buffer digest = mdctx.finalize();
+		const cryptoplus::buffer padded_buf = key.get_rsa_key().public_decrypt(header_signature(), header_signature_size(), RSA_NO_PADDING);
+
+		key.get_rsa_key().verify_PKCS1_PSS(digest, padded_buf, cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
 	}
 }

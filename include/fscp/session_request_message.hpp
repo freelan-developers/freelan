@@ -45,14 +45,20 @@
 #ifndef FSCP_SESSION_REQUEST_MESSAGE_HPP
 #define FSCP_SESSION_REQUEST_MESSAGE_HPP
 
-#include "session_message.hpp"
+#include "buffer_tools.hpp"
+#include "constants.hpp"
+
+#include <stdint.h>
+#include <cstring>
+
+#include <boost/asio.hpp>
 
 namespace fscp
 {
 	/**
 	 * \brief A session request message class.
 	 */
-	class session_request_message : private session_message
+	class session_request_message
 	{
 		public:
 
@@ -60,34 +66,146 @@ namespace fscp
 			 * \brief Write a session request message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param cleartext The cleartext.
-			 * \param cleartext_len The cleartext length.
-			 * \param enc_key The public key to use to cipher the cleartext.
+			 * \param session_number The session number.
+			 * \param host_identifier The host identifier.
+			 * \param ec_cap The elliptic curve capabilities.
+			 * \param kd_cap The key derivation algorithm capabilities.
+			 * \param cipher_cap The cipher algorithm capabilities.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, const elliptic_curve_list_type& ec_cap, const key_derivation_algorithm_list_tyep& kd_cap, const cipher_algorithm_list_type& cipher_cap, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_request_message from a message.
 			 * \param message The message.
-			 * \param pkey_size The private key size.
 			 */
-			session_request_message(const message& message, size_t pkey_size);
+			session_request_message(const message& message);
 
-			using session_message::ciphertext;
-			using session_message::ciphertext_size;
-			using session_message::ciphertext_signature;
-			using session_message::ciphertext_signature_size;
-			using session_message::check_signature;
-			using session_message::get_cleartext;
+			/**
+			 * \brief Get the session number.
+			 * \return The session number.
+			 */
+			session_number_type session_number() const;
+
+			/**
+			 * \brief Get the host identifier.
+			 * \return The host identifier.
+			 */
+			host_identifier_type host_identifier() const;
+
+			/**
+			 * \brief Get the elliptic curve capabilities.
+			 * \return The elliptic curve capabilities.
+			 */
+			elliptic_curve_list_type elliptic_curve_capabilities() const;
+
+			/**
+			 * \brief Get the elliptic curve capabilities size.
+			 * \return The elliptic curve capabilities size.
+			 */
+			size_t elliptic_curve_capabilities_size() const;
+
+			/**
+			 * \brief Get the key derivation capabilities.
+			 * \return The key derivation capabilities.
+			 */
+			key_derivation_algorithm_list_type key_derivation_capabilities() const;
+
+			/**
+			 * \brief Get the key_derivation capabilities size.
+			 * \return The key_derivation capabilities size.
+			 */
+			size_t key_derivation_capabilities_size() const;
+
+			/**
+			 * \brief Get the cipher capabilities.
+			 * \return The cipher capabilities.
+			 */
+			cipher_algorithm_list_type cipher_capabilities() const;
+
+			/**
+			 * \brief Get the cipher capabilities size.
+			 * \return The cipher capabilities size.
+			 */
+			size_t cipher_capabilities_size() const;
+
+			/**
+			 * \brief Get the header size, without the signature.
+			 * \return The header size, without the signature.
+			 */
+			size_t header_size() const;
+
+			/**
+			 * \brief Get the header signature.
+			 * \return The header signature.
+			 */
+			const uint8_t* header_signature() const;
+
+			/**
+			 * \brief Get the header signature size.
+			 * \return The header signature size.
+			 */
+			size_t header_signature_size() const;
+
+			/**
+			 * \brief Check if the signature matches with a given public key.
+			 * \param key The public key to use.
+			 * \warning If the check fails, an exception is thrown.
+			 */
+			void check_signature(cryptoplus::pkey::pkey key) const;
+
+		protected:
+
+			/**
+			 * \brief The min length of the body.
+			 */
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) * 3;
 	};
 
-	inline size_t session_request_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
+	inline session_number_type session_request_message::session_number() const
 	{
-		return _write(buf, buf_len, cleartext, cleartext_len, enc_key, sig_key, MESSAGE_TYPE_SESSION_REQUEST);
+		return ntohl(buffer_tools::get<session_number_type>(payload(), 0));
 	}
 
+	inline host_identifier_type session_request_message::host_identifier() const
+	{
+		host_identifier_type result;
+
+		std::copy(payload() + sizeof(session_number_type), payload() + sizeof(session_number_type) + result.size(), result.begin());
+
+		return result;
+	}
+
+	inline size_t session_request_message::elliptic_curve_capabilities_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size));
+	}
+
+	inline size_t session_request_message::key_derivation_capabilities_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size()));
+	}
+
+	inline size_t session_request_message::cipher_capabilities_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size()));
+	}
+
+	inline size_t session_request_message::header_size() const
+	{
+		return sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size() + sizeof(uint16_t) + cipher_capabilities_size();
+	}
+
+	inline const uint8_t* session_request_message::header_signature() const
+	{
+		return payload() + header_size() + sizeof(uint16_t);
+	}
+
+	inline size_t session_request_message::header_signature_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), header_size()));
+	}
 }
 
 #endif /* FSCP_SESSION_REQUEST_MESSAGE_HPP */

@@ -45,7 +45,14 @@
 #ifndef FSCP_SESSION_MESSAGE_HPP
 #define FSCP_SESSION_MESSAGE_HPP
 
+#include <boost/asio.hpp>
+
 #include "message.hpp"
+#include "buffer_tools.hpp"
+#include "constants.hpp"
+
+#include <stdint.h>
+#include <cstring>
 
 #include <cryptoplus/pkey/pkey.hpp>
 
@@ -62,50 +69,95 @@ namespace fscp
 			 * \brief Write a session message to a buffer.
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
-			 * \param cleartext The cleartext.
-			 * \param cleartext_len The cleartext length.
-			 * \param enc_key The public key to use to cipher the cleartext.
+			 * \param session_number The session number.
+			 * \param host_identifier The host identifier.
+			 * \param calg The cipher algorithm type.
+			 * \param pub_key The public key.
+			 * \param pub_key_len The public key length.
+			 * \param nonce_prefix The nonce prefix.
+			 * \param nonce_prefix_len The nonce prefix length.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_message from a message.
 			 * \param message The message.
-			 * \param pkey_size The private key size.
 			 */
-			session_message(const message& message, size_t pkey_size);
+			session_message(const message& message);
 
 			/**
-			 * \brief Get the ciphertext.
-			 * \return The ciphertext.
+			 * \brief Get the session number.
+			 * \return The session number.
 			 */
-			const uint8_t* ciphertext() const;
+			session_number_type session_number() const;
 
 			/**
-			 * \brief Get the ciphertext size.
-			 * \return The ciphertext size.
+			 * \brief Get the host identifier.
+			 * \return The host identifier.
 			 */
-			size_t ciphertext_size() const;
+			host_identifier_type host_identifier() const;
 
 			/**
-			 * \brief Get the ciphertext count.
-			 * \return The ciphertext count.
+			 * \brief Get the elliptic curve.
+			 * \return The elliptic curve.
 			 */
-			unsigned int ciphertext_count() const;
+			elliptic_curve_type elliptic_curve() const;
 
 			/**
-			 * \brief Get the ciphertext signature.
-			 * \return The ciphertext signature.
+			 * \brief Get the key derivation algorithm.
+			 * \return The key derivation algorithm.
 			 */
-			const uint8_t* ciphertext_signature() const;
+			key_derivation_algorithm_type key_derivation_algorithm() const;
 
 			/**
-			 * \brief Get the ciphertext signature size.
-			 * \return The ciphertext signature size.
+			 * \brief Get the cipher algorithm.
+			 * \return The cipher algorithm.
 			 */
-			size_t ciphertext_signature_size() const;
+			cipher_algorithm_type cipher_algorithm() const;
+
+			/**
+			 * \brief Get the public key.
+			 * \return The public key.
+			 */
+			const uint8_t* public_key() const;
+
+			/**
+			 * \brief Get the public key size.
+			 * \return The public key size.
+			 */
+			size_t public_key_size() const;
+
+			/**
+			 * \brief Get the nonce prefix.
+			 * \return The nonce prefix.
+			 */
+			const uint8_t* nonce_prefix() const;
+
+			/**
+			 * \brief Get the nonce prefix size.
+			 * \return The nonce prefix size.
+			 */
+			size_t nonce_prefix_size() const;
+
+			/**
+			 * \brief Get the header size, without the signature.
+			 * \return The header size, without the signature.
+			 */
+			size_t header_size() const;
+
+			/**
+			 * \brief Get the header signature.
+			 * \return The header signature.
+			 */
+			const uint8_t* header_signature() const;
+
+			/**
+			 * \brief Get the header signature size.
+			 * \return The header signature size.
+			 */
+			size_t header_signature_size() const;
 
 			/**
 			 * \brief Check if the signature matches with a given public key.
@@ -114,105 +166,76 @@ namespace fscp
 			 */
 			void check_signature(cryptoplus::pkey::pkey key) const;
 
-			/**
-			 * \brief Get the clear text data, using a given private key.
-			 * \param buf The buffer that must receive the data. If buf is NULL, the function returns the expected size of buf.
-			 * \param buf_len The length of buf.
-			 * \param key The private key to use.
-			 * \return The count of bytes deciphered.
-			 */
-			size_t get_cleartext(void* buf, size_t buf_len, cryptoplus::pkey::pkey key) const;
-
-			/**
-			 * \brief Get the clear text data, using a given private key.
-			 * \param key The private key to use.
-			 * \return The clear text data.
-			 */
-			template <typename T>
-			std::vector<T> get_cleartext(cryptoplus::pkey::pkey key) const;
-
 		protected:
-
-			/**
-			 * \brief Write a session message to a buffer.
-			 * \param buf The buffer to write to.
-			 * \param buf_len The length of buf.
-			 * \param ciphertext The ciphertext.
-			 * \param ciphertext_len The ciphertext length.
-			 * \param ciphertext_cnt The ciphertext count.
-			 * \param ciphertext_signature The ciphertext signature.
-			 * \param ciphertext_signature_len The ciphertext signature length.
-			 * \param type The message type.
-			 * \return The count of bytes written.
-			 */
-			static size_t _write(void* buf, size_t buf_len, const void* ciphertext, size_t ciphertext_len, unsigned int ciphertext_cnt, const void* ciphertext_signature, size_t ciphertext_signature_len, message_type type);
-
-			/**
-			 * \brief Write a session message to a buffer.
-			 * \param buf The buffer to write to.
-			 * \param buf_len The length of buf.
-			 * \param cleartext The cleartext.
-			 * \param cleartext_len The cleartext length.
-			 * \param enc_key The public key to use to cipher the cleartext.
-			 * \param sig_key The private key to use to sign the ciphertext.
-			 * \param type The message type.
-			 * \return The count of bytes written.
-			 */
-			static size_t _write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key, message_type type);
 
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
-
-			/**
-			 * \brief Check that the format of the message matches his type.
-			 */
-			void check_format() const;
-
-		private:
-
-			size_t m_pkey_size;
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t);
 	};
 
-	inline size_t session_message::write(void* buf, size_t buf_len, const void* cleartext, size_t cleartext_len, cryptoplus::pkey::pkey enc_key, cryptoplus::pkey::pkey sig_key)
+	inline session_number_type session_message::session_number() const
 	{
-		return _write(buf, buf_len, cleartext, cleartext_len, enc_key, sig_key, MESSAGE_TYPE_SESSION);
+		return ntohl(buffer_tools::get<session_number_type>(payload(), 0));
 	}
 
-	inline const uint8_t* session_message::ciphertext() const
+	inline host_identifier_type session_message::host_identifier() const
 	{
-		return payload() + sizeof(uint16_t);
-	}
+		host_identifier_type result;
 
-	inline size_t session_message::ciphertext_size() const
-	{
-		return ciphertext_count() * m_pkey_size;
-	}
-
-	inline unsigned int session_message::ciphertext_count() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), 0));
-	}
-
-	inline const uint8_t* session_message::ciphertext_signature() const
-	{
-		return payload() + 2 * sizeof(uint16_t) + ciphertext_size();
-	}
-
-	inline size_t session_message::ciphertext_signature_size() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + ciphertext_size()));
-	}
-
-	template <typename T>
-	inline std::vector<T> session_message::get_cleartext(cryptoplus::pkey::pkey key) const
-	{
-		std::vector<T> result(get_cleartext(NULL, 0, key));
-
-		result.resize(get_cleartext(&result[0], result.size(), key));
+		std::copy(payload() + sizeof(session_number_type), payload() + sizeof(session_number_type) + result.size(), result.begin());
 
 		return result;
+	}
+
+	inline elliptic_curve_type session_message::elliptic_curve() const
+	{
+		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size);
+	}
+
+	inline key_derivation_algorithm_type session_message::key_derivation_algorithm() const
+	{
+		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t));
+	}
+
+	inline cipher_algorithm_type session_message::cipher_algorithm() const
+	{
+		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 2);
+	}
+
+	inline const uint8_t* session_message::public_key() const
+	{
+		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t);
+	}
+
+	inline size_t session_message::public_key_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1));
+	}
+
+	inline const uint8_t* session_message::nonce_prefix() const
+	{
+		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t);
+	}
+
+	inline size_t session_message::nonce_prefix_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size()));
+	}
+
+	inline size_t session_message::header_size() const
+	{
+		return sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + nonce_prefix_size();
+	}
+
+	inline const uint8_t* session_message::header_signature() const
+	{
+		return payload() + header_size() + sizeof(uint16_t);
+	}
+
+	inline size_t session_message::header_signature_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), header_size()));
 	}
 }
 

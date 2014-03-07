@@ -18,12 +18,6 @@
     <ClCompile Include="src\buffer_tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\clear_session_message.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\clear_session_request_message.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\constants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,12 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\fscp\buffer_tools.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\fscp\clear_session_message.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\fscp\clear_session_request_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fscp\constants.hpp">

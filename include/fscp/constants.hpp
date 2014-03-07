@@ -140,9 +140,9 @@ namespace fscp
 	typedef uint32_t session_number_type;
 
 	/**
-	 * \brief The challenge type.
+	 * \brief The host identifier type.
 	 */
-	typedef boost::array<uint8_t, 32> challenge_type;
+	typedef boost::array<uint8_t, 32> host_identifier_type;
 
 	/**
 	 * \brief The hash type.
@@ -201,7 +201,7 @@ namespace fscp
 	/**
 	 * \brief The current protocol version.
 	 */
-	const unsigned char CURRENT_PROTOCOL_VERSION = 2;
+	const unsigned char CURRENT_PROTOCOL_VERSION = 3;
 
 	/**
 	 * \brief The length of the GCM tag.
