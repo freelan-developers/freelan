@@ -54,7 +54,7 @@ Abstract
 
    The version MUST be set to the currently used version of the FreeLAN
    Secure Channel Protocol. The current version described in this
-   document is 2.
+   document is 3.
 
    The type field indicates the type of the message. Its possible values
    are listed in the next sections.
@@ -172,7 +172,7 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  | cipher_cap_len  |    cipher_cap   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |    ct_sig_len   |      ct_sig     |
+                 |    hr_sig_len   |      hr_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.4.1. SESSION_REQUEST message type
@@ -212,13 +212,13 @@ Abstract
    algorithms and cipher algorithms is available in a further section of
    this document.
 
-   The ct_sig_len field indicates the length of the ct_sig field.
+   The hr_sig_len field indicates the length of the hr_sig field.
 
-   The ct_sig field is the header signature, generated using the
+   The hr_sig field is the header signature, generated using the
    private signature key (PKS) of the sender host.
 
    A host who receives a SESSION_REQUEST message MUST first check if the
-   ct_sig signature matches the sending host public verification key
+   hr_sig signature matches the sending host public verification key
    (PKV).
 
    If the signature does not match, the message MUST be ignored.
@@ -258,7 +258,7 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |nonce_prefix_len |  nonce_prefix   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |    ct_sig_len   |      ct_sig     |
+                 |    hr_sig_len   |      hr_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.5.1. SESSION message type
@@ -322,13 +322,13 @@ Abstract
    be regenerated until it is different. Failing to do so nullifies the
    security completely.
 
-   The ct_sig_len field indicates the length of the ct_sig field.
+   The hr_sig_len field indicates the length of the hr_sig field.
 
-   The ct_sig field is the header signature, generated using the
+   The hr_sig field is the header signature, generated using the
    private signature key (PKS) of the sender host.
 
    A host who receives a SESSION message MUST first check if the
-   ct_sig signature matches the sending host public verification key (PKV).
+   hr_sig signature matches the sending host public verification key (PKV).
    If the signature does not match, the message MUST be ignored.
 
    If an host receives a SESSION message whose ec, kd or calg is null, it
