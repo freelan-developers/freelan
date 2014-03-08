@@ -51,12 +51,12 @@
 
 namespace fscp
 {
-	size_t session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key)
+	size_t session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* _salt, size_t salt_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key)
 	{
 		using cryptoplus::buffer_cast;
 		using cryptoplus::buffer_size;
 
-		const size_t unsigned_payload_size = MIN_BODY_LENGTH + pub_key_len + nonce_prefix_len;
+		const size_t unsigned_payload_size = MIN_BODY_LENGTH + pub_key_len + nonce_prefix_len + salt_len;
 		const size_t signed_payload_size = unsigned_payload_size + sig_key.get_rsa_key().size();
 
 		if (buf_len < HEADER_LENGTH + signed_payload_size)
@@ -74,8 +74,10 @@ namespace fscp
 		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3, 0x00);
 		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1, htons(static_cast<uint16_t>(pub_key_len)));
 		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t), pub_key, pub_key_len);
-		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len, htons(static_cast<uint16_t>(nonce_prefix_len)));
-		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len + sizeof(uint16_t), nonce_prefix, nonce_prefix_len);
+		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len, htons(static_cast<uint16_t>(salt_len)));
+		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len + sizeof(uint16_t), _salt, salt_len);
+		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len + sizeof(uint16_t) + salt_len, htons(static_cast<uint16_t>(nonce_prefix_len)));
+		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + pub_key_len + sizeof(uint16_t) + salt_len + sizeof(uint16_t), nonce_prefix, nonce_prefix_len);
 
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
@@ -106,12 +108,17 @@ namespace fscp
 			throw std::runtime_error("buf_len");
 		}
 
-		if (length() < MIN_BODY_LENGTH + public_key_size() + nonce_prefix_size())
+		if (length() < MIN_BODY_LENGTH + public_key_size() + salt_size())
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		if (length() < MIN_BODY_LENGTH + public_key_size() + nonce_prefix_size() + header_signature_size())
+		if (length() < MIN_BODY_LENGTH + public_key_size() + salt_size() + nonce_prefix_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + public_key_size() + salt_size() + nonce_prefix_size() + header_signature_size())
 		{
 			throw std::runtime_error("buf_len");
 		}

@@ -74,12 +74,14 @@ namespace fscp
 			 * \param calg The cipher algorithm type.
 			 * \param pub_key The public key.
 			 * \param pub_key_len The public key length.
+			 * \param salt The salt.
+			 * \param salt_len The salt length.
 			 * \param nonce_prefix The nonce prefix.
 			 * \param nonce_prefix_len The nonce prefix length.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* salt, size_t salt_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_message from a message.
@@ -130,6 +132,18 @@ namespace fscp
 			size_t public_key_size() const;
 
 			/**
+			 * \brief Get the salt.
+			 * \return The salt.
+			 */
+			const uint8_t* salt() const;
+
+			/**
+			 * \brief Get the salt size.
+			 * \return The salt size.
+			 */
+			size_t salt_size() const;
+
+			/**
 			 * \brief Get the nonce prefix.
 			 * \return The nonce prefix.
 			 */
@@ -171,7 +185,7 @@ namespace fscp
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t);
 	};
 
 	inline session_number_type session_message::session_number() const
@@ -213,19 +227,29 @@ namespace fscp
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1));
 	}
 
-	inline const uint8_t* session_message::nonce_prefix() const
+	inline const uint8_t* session_message::salt() const
 	{
 		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t);
 	}
 
-	inline size_t session_message::nonce_prefix_size() const
+	inline size_t session_message::salt_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size()));
 	}
 
+	inline const uint8_t* session_message::nonce_prefix() const
+	{
+		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + salt_size() + sizeof(uint16_t);
+	}
+
+	inline size_t session_message::nonce_prefix_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + salt_size()));
+	}
+
 	inline size_t session_message::header_size() const
 	{
-		return sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + nonce_prefix_size();
+		return sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + salt_size() + sizeof(uint16_t) + nonce_prefix_size();
 	}
 
 	inline const uint8_t* session_message::header_signature() const

@@ -49,6 +49,7 @@
 
 #include <cryptoplus/cipher/cipher_algorithm.hpp>
 #include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/hash/message_digest_algorithm.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/array.hpp>
@@ -388,7 +389,7 @@ namespace fscp
 		public:
 
 			static const value_type unsupported;
-			static const value_type pbkdf2_sha256;
+			static const value_type pbkdf2_sha256_1000;
 
 			key_derivation_algorithm_type() {}
 			key_derivation_algorithm_type(value_type _value) : enumeration_type(_value) {}
@@ -417,9 +418,9 @@ namespace fscp
 				{
 					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
-				else if (value() == pbkdf2_sha256)
+				else if (value() == pbkdf2_sha256_1000)
 				{
-					return pbkdf2_sha256_string;
+					return pbkdf2_sha256_1000_string;
 				}
 
 				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
@@ -432,17 +433,53 @@ namespace fscp
 			 */
 			static key_derivation_algorithm_type from_string(const std::string& str)
 			{
-				if (str == pbkdf2_sha256_string)
+				if (str == pbkdf2_sha256_1000_string)
 				{
-					return pbkdf2_sha256;
+					return pbkdf2_sha256_1000;
 				}
 
 				throw std::invalid_argument("Invalid key derivation algorithm string representation: " + str);
 			}
 
+			/**
+			 * \brief Get the associated message digest algorithm.
+			 * \return The message digest algorithm.
+			 */
+			cryptoplus::hash::message_digest_algorithm to_message_digest_algorithm() const
+			{
+				if (value() == unsupported)
+				{
+					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == pbkdf2_sha256_1000)
+				{
+					return cryptoplus::hash::message_digest_algorithm(EVP_sha256);
+				}
+
+				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
+			/**
+			 * \brief Get the iteration count associated with the key derivation algorithm.
+			 * \return The number of iterations.
+			 */
+			unsigned int to_iterations_count() const
+			{
+				if (value() == unsupported)
+				{
+					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				}
+				else if (value() == pbkdf2_sha256_1000)
+				{
+					return 1000;
+				}
+
+				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+			}
+
 		private:
 
-			static const std::string pbkdf2_sha256_string;
+			static const std::string pbkdf2_sha256_1000_string;
 	};
 
 	/**
