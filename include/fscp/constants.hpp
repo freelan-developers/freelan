@@ -278,26 +278,26 @@ namespace fscp
 	};
 
 	/**
-	 * \brief The elliptic curve type.
+	 * \brief The cipher suite type.
 	 */
-	class elliptic_curve_type : public enumeration_type
+	class cipher_suite_type : public enumeration_type
 	{
 		public:
 
 			static const value_type unsupported;
-			static const value_type sect571k1;
-			static const value_type sect571r1;
+			static const value_type ecdhe_rsa_aes128_gcm_sha256;
+			static const value_type ecdhe_rsa_aes256_gcm_sha384;
 
-			elliptic_curve_type() {}
-			elliptic_curve_type(value_type _value) : enumeration_type(_value) {}
+			cipher_suite_type() {}
+			cipher_suite_type(value_type _value) : enumeration_type(_value) {}
 
 			/**
-			 * \brief Check whether the instance is a valid elliptic curve.
-			 * \return true if the elliptic curve is valid.
+			 * \brief Check whether the instance is a valid cipher suite.
+			 * \return true if the cipher suite is valid.
 			 */
 			bool is_valid() const
 			{
-				if ((value() == unsupported) || (value() == sect571k1) || value() == sect571r1)
+				if ((value() == unsupported) || (value() == ecdhe_rsa_aes128_gcm_sha256) || value() == ecdhe_rsa_aes256_gcm_sha384)
 				{
 					return true;
 				}
@@ -306,44 +306,44 @@ namespace fscp
 			}
 
 			/**
-			 * \brief Get a string representation of the elliptic curve.
+			 * \brief Get a string representation of the cipher suite.
 			 * \return A string representation.
 			 */
 			std::string to_string() const
 			{
 				if (value() == unsupported)
 				{
-					throw std::runtime_error("Unsupported elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
-				else if (value() == sect571k1)
+				else if (value() == ecdhe_rsa_aes128_gcm_sha256)
 				{
-					return sect571k1_string;
+					return ecdhe_rsa_aes128_gcm_sha256_string;
 				}
-				else if (value() == sect571r1)
+				else if (value() == ecdhe_rsa_aes256_gcm_sha384)
 				{
-					return sect571r1_string;
+					return ecdhe_rsa_aes256_gcm_sha384_string;
 				}
 
-				throw std::invalid_argument("Invalid elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 			/**
-			 * \brief Get a elliptic curve from its string representation.
+			 * \brief Get a cipher suite from its string representation.
 			 * \param str The string representation.
-			 * \return The elliptic curve.
+			 * \return The cipher suite.
 			 */
-			static elliptic_curve_type from_string(const std::string& str)
+			static cipher_suite_type from_string(const std::string& str)
 			{
-				if (str == sect571k1_string)
+				if (str == ecdhe_rsa_aes128_gcm_sha256_string)
 				{
-					return sect571k1;
+					return ecdhe_rsa_aes128_gcm_sha256;
 				}
-				else if (str == sect571r1_string)
+				else if (str == ecdhe_rsa_aes256_gcm_sha384_string)
 				{
-					return sect571r1;
+					return ecdhe_rsa_aes256_gcm_sha384;
 				}
 
-				throw std::invalid_argument("Invalid elliptic curve string representation: " + str);
+				throw std::invalid_argument("Invalid cipher suite string representation: " + str);
 			}
 
 			/**
@@ -356,89 +356,10 @@ namespace fscp
 			{
 				if (value() == unsupported)
 				{
-					throw std::runtime_error("Unsupported elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-				}
-				else if (value() == sect571k1)
-				{
-					return NID_sect571k1;
-				}
-				else if (value() == sect571r1)
-				{
-					return NID_sect571r1;
+					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
 
-				throw std::invalid_argument("Invalid elliptic curve value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-			}
-
-		private:
-
-			static const std::string sect571k1_string;
-			static const std::string sect571r1_string;
-	};
-
-	/**
-	 * \brief The elliptic curve list type.
-	 */
-	typedef std::vector<elliptic_curve_type> elliptic_curve_type_list_type;
-
-	/**
-	 * \brief The key derivation algorithm type.
-	 */
-	class key_derivation_algorithm_type : public enumeration_type
-	{
-		public:
-
-			static const value_type unsupported;
-			static const value_type pbkdf2_sha256_1000;
-
-			key_derivation_algorithm_type() {}
-			key_derivation_algorithm_type(value_type _value) : enumeration_type(_value) {}
-
-			/**
-			 * \brief Check whether the instance is a valid key derivation algorithm.
-			 * \return true if the key derivation algorithm is valid.
-			 */
-			bool is_valid() const
-			{
-				if ((value() == unsupported) || (value() == pbkdf2_sha256))
-				{
-					return true;
-				}
-
-				return false;
-			}
-
-			/**
-			 * \brief Get a string representation of the key derivation algorithm.
-			 * \return A string representation.
-			 */
-			std::string to_string() const
-			{
-				if (value() == unsupported)
-				{
-					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-				}
-				else if (value() == pbkdf2_sha256_1000)
-				{
-					return pbkdf2_sha256_1000_string;
-				}
-
-				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-			}
-
-			/**
-			 * \brief Get a key derivation algorithm from its string representation.
-			 * \param str The string representation.
-			 * \return The key derivation algorithm.
-			 */
-			static key_derivation_algorithm_type from_string(const std::string& str)
-			{
-				if (str == pbkdf2_sha256_1000_string)
-				{
-					return pbkdf2_sha256_1000;
-				}
-
-				throw std::invalid_argument("Invalid key derivation algorithm string representation: " + str);
+				return NID_sect571k1;
 			}
 
 			/**
@@ -449,104 +370,18 @@ namespace fscp
 			{
 				if (value() == unsupported)
 				{
-					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
-				else if (value() == pbkdf2_sha256_1000)
+				else if (value() == ecdhe_rsa_aes128_gcm_sha256_string)
 				{
 					return cryptoplus::hash::message_digest_algorithm(EVP_sha256);
 				}
-
-				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-			}
-
-			/**
-			 * \brief Get the iteration count associated with the key derivation algorithm.
-			 * \return The number of iterations.
-			 */
-			unsigned int to_iterations_count() const
-			{
-				if (value() == unsupported)
+				else if (value() == ecdhe_rsa_aes256_gcm_sha384_string)
 				{
-					throw std::runtime_error("Unsupported key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-				}
-				else if (value() == pbkdf2_sha256_1000)
-				{
-					return 1000;
+					return cryptoplus::hash::message_digest_algorithm(EVP_sha384);
 				}
 
-				throw std::invalid_argument("Invalid key derivation algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-			}
-
-		private:
-
-			static const std::string pbkdf2_sha256_1000_string;
-	};
-
-	/**
-	 * \brief The key derivation algorithm list type.
-	 */
-	typedef std::vector<key_derivation_algorithm_type> key_derivation_algorithm_list_type;
-
-	/**
-	 * \brief The cipher algorithm type.
-	 */
-	class cipher_algorithm_type : public enumeration_type
-	{
-		public:
-
-			static const value_type unsupported;
-			static const value_type aes256_gcm;
-
-			cipher_algorithm_type() {}
-			cipher_algorithm_type(value_type _value) : enumeration_type(_value) {}
-
-			/**
-			 * \brief Check whether the instance is a valid cipher algorithm.
-			 * \return true if the cipher algorithm is valid.
-			 */
-			bool is_valid() const
-			{
-				if ((value() == unsupported) || (value() == aes256_gcm))
-				{
-					return true;
-				}
-
-				return false;
-			}
-
-			/**
-			 * \brief Get a string representation of the cipher algorithm.
-			 * \return A string representation.
-			 */
-			std::string to_string() const
-			{
-				if (value() == unsupported)
-				{
-					throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-				}
-				else if (value() == aes256_gcm)
-				{
-					return aes256_gcm_string;
-				}
-
-				throw std::invalid_argument("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
-			}
-
-			/**
-			 * \brief Get a cipher algorithm from its string representation.
-			 * \param str The string representation.
-			 * \return The cipher algorithm.
-			 *
-			 * If str does not match any known cipher algorithm
-			 */
-			static cipher_algorithm_type from_string(const std::string& str)
-			{
-				if (str == aes256_gcm_string)
-				{
-					return aes256_gcm;
-				}
-
-				throw std::invalid_argument("Invalid cipher algorithm string representation: " + str);
+				throw std::invalid_argument("Invalid cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 			/**
@@ -559,40 +394,30 @@ namespace fscp
 			{
 				if (value() == unsupported)
 				{
-					throw std::runtime_error("Unsupported cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
-				else if (value() == aes256_gcm)
+				else if (value() == ecdhe_rsa_aes128_gcm_sha256_string)
+				{
+					return cryptoplus::cipher::cipher_algorithm(NID_aes_128_gcm);
+				}
+				else if (value() == ecdhe_rsa_aes256_gcm_sha384_string)
 				{
 					return cryptoplus::cipher::cipher_algorithm(NID_aes_256_gcm);
 				}
 
-				throw std::invalid_argument("Invalid cipher algorithm value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
+				throw std::invalid_argument("Invalid cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 			}
 
 		private:
 
-			static const std::string aes256_gcm_string;
+			static const std::string ecdhe_rsa_aes128_gcm_sha256_string;
+			static const std::string ecdhe_rsa_aes256_gcm_sha384_string;
 	};
 
 	/**
-	 * \brief The cipher algorithm list type.
+	 * \brief The cipher suite list type.
 	 */
-	typedef std::vector<cipher_algorithm_type> cipher_algorithm_list_type;
-
-	/**
-	 * \brief An algorithm info type.
-	 */
-	struct algorithm_info_type
-	{
-		cipher_algorithm_type cipher_algorithm;
-	};
-
-	inline std::ostream& operator<<(std::ostream& os, const algorithm_info_type& ai)
-	{
-		const std::string cipher_algorithm = (ai.cipher_algorithm != cipher_algorithm_type::unsupported) ? boost::lexical_cast<std::string>(ai.cipher_algorithm) : "<unsupported>";
-
-		return os << cipher_algorithm;
-	}
+	typedef std::vector<cipher_suite_type> cipher_suite_list_type;
 
 	/**
 	 * \brief The certificate digest algorithm.

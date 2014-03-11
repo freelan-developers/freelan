@@ -49,12 +49,12 @@
 
 namespace fscp
 {
-	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const elliptic_curve_list_type& ec_cap, const key_derivation_algorithm_list_tyep& kd_cap, const cipher_algorithm_list_type& cipher_cap, cryptoplus::pkey::pkey sig_key)
+	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, cryptoplus::pkey::pkey sig_key)
 	{
 		using cryptoplus::buffer_cast;
 		using cryptoplus::buffer_size;
 
-		const size_t unsigned_payload_size = MIN_BODY_LENGTH + ec_cap.size() + kd_cap.size() + cipher_cap.size();
+		const size_t unsigned_payload_size = MIN_BODY_LENGTH + cs_cap.size();
 		const size_t signed_payload_size = unsigned_payload_size + sig_key.get_rsa_key().size();
 
 		if (buf_len < HEADER_LENGTH + signed_payload_size)
@@ -66,12 +66,8 @@ namespace fscp
 
 		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
 		std::copy(_host_identifier.begin(), _host_identifier.end(), payload + sizeof(_session_number));
-		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size, htons(static_cast<uint16_t>(ec_cap.size())));
-		std::copy(ec_cap.begin(), ec_cap.end(), static_cast<elliptic_curve_list_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t));
-		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size(), htons(static_cast<uint16_t>(kd_cap.size())));
-		std::copy(kd_cap.begin(), kd_cap.end(), static_cast<key_derivation_algorithm_list_tyep*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size() + sizeof(uint16_t));
-		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size() + sizeof(uint16_t) + kd_cap.size(), htons(static_cast<uint16_t>(cipher_cap.size())));
-		std::copy(cipher_cap.begin(), cipher_cap.end(), static_cast<cipher_algorithm_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t) + ec_cap.size() + sizeof(uint16_t) + kd_cap.size() + sizeof(uint16_t));
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size, htons(static_cast<uint16_t>(cs_cap.size())));
+		std::copy(cs_cap.begin(), cs_cap.end(), static_cast<cipher_suite_list_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t));
 
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
@@ -97,60 +93,24 @@ namespace fscp
 			throw std::runtime_error("buf_len");
 		}
 
-		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size())
+		if (length() < MIN_BODY_LENGTH + cipher_suite_capabilities_size())
 		{
 			throw std::runtime_error("buf_len");
 		}
 
-		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size() + key_derivation_capabilities_size())
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size() + key_derivation_capabilities_size() + cipher_capabilities_size())
-		{
-			throw std::runtime_error("buf_len");
-		}
-
-		if (length() < MIN_BODY_LENGTH + elliptic_curve_capabilities_size() + key_derivation_capabilities_size() + cipher_capabilities_size() + header_signature_size())
+		if (length() < MIN_BODY_LENGTH + cipher_suite_capabilities_size() + header_signature_size())
 		{
 			throw std::runtime_error("buf_len");
 		}
 	}
 
-	elliptic_curve_list_type session_request_message::elliptic_curve_capabilities() const
+	cipher_suite_list_type session_request_message::cipher_suite_capabilities() const
 	{
-		elliptic_curve_list_type result(elliptic_curve_capabilities_size());
+		cipher_suite_list_type result(cipher_suite_capabilities_size());
 
 		std::copy(
 			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t),
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size(),
-			result.begin()
-		);
-
-		return result;
-	}
-
-	key_derivation_algorithm_list_type session_request_message::key_derivation_capabilities() const
-	{
-		key_derivation_algorithm_list_type result(key_derivation_capabilities_size());
-
-		std::copy(
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t),
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size(),
-			result.begin()
-		);
-
-		return result;
-	}
-
-	cipher_algorithm_list_type session_request_message::cipher_capabilities() const
-	{
-		cipher_algorithm_list_type result(cipher_capabilities_size());
-
-		std::copy(
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size() + sizeof(uint16_t),
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size() + sizeof(uint16_t) + cipher_capabilities_size(),
+			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size(),
 			result.begin()
 		);
 

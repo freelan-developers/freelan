@@ -147,11 +147,7 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |   ec_cap_len    |      ec_cap     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |   kd_cap_len    |      kd_cap     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 | cipher_cap_len  |    cipher_cap   |
+                 |      cs_len     |        cs       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is signed using the sender host signature private key
@@ -166,11 +162,7 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |   ec_cap_len    |      ec_cap     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |   kd_cap_len    |      kd_cap     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 | cipher_cap_len  |    cipher_cap   |
+                 |      cs_len     |        cs       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    hr_sig_len   |      hr_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -193,24 +185,13 @@ Abstract
    to establish a session with, but MUST remain constant within that
    relationship.
 
-   The ec_cap_len field indicates the length of the ec_cap field.
+   The cs_len field indicates the length of the cs field.
 
-   The ec_cap field is a list of elliptic curves supported by the client,
-   by order of preference.
+   The cs field is a list of cipher suites supported by the client, by
+   order of preference.
 
-   The kd_cap_len field indicates the length of the kd_cap field.
-
-   The kd_cap field is a list of key derivation algorithm supported by
-   the client, by order of preference.
-
-   The cipher_cap_len field indicates the length of the cipher_cap field.
-
-   The cipher_cap field is a list of cipher algorithms supported by the
-   client, by order of preference.
-
-   A list of identifiers for the elliptic curves, key derivation
-   algorithms and cipher algorithms is available in a further section of
-   this document.
+   A list of identifiers for the cipher suites is available in a
+   further section of this document.
 
    The hr_sig_len field indicates the length of the hr_sig field.
 
@@ -233,13 +214,9 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |   ec   |   kd   |  calg  | <zero> |
+                 |   cs   |          <zero>          |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   pub_key_len   |     pub_key     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     salt_len    |       salt      |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |nonce_prefix_len |  nonce_prefix   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is signed using the sender host signature private key
@@ -254,13 +231,9 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |   ec   |   kd   |  calg  | <zero> |
+                 |   cs   |          <zero>          |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   pub_key_len   |     pub_key     |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |     salt_len    |       salt      |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
-                 |nonce_prefix_len |  nonce_prefix   |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    hr_sig_len   |      hr_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -283,55 +256,24 @@ Abstract
    to establish a session with, but MUST remain constant within that
    relationship.
 
-   The ec field is the code of the chosen elliptic curve. It MUST
-   be the identifier of the first supported elliptic curve specified in
-   the associated SESSION_REQUEST.
+   The cs field is the code of the chosen cipher suite. It MUST be the
+   identifier of the first supported cipher suite specified in the
+   associated SESSION_REQUEST.
 
-   The kd field is the code of the chosen key derivation algorithm. It
-   MUST be the identifier of the first supported key derivation algorithm
-   specified in the associated SESSION_REQUEST.
+   A list of identifiers for the cipher suites is available in a
+   further section of this document.
 
-   The calg field is the code of the chosen cipher algorithm. It MUST
-   be the identifier of the first supported cipher algorithm specified in
-   the associated SESSION_REQUEST.
-
-   A list of identifiers for the elliptic curves, key derivation
-   algorithms and cipher algorithms is available in a further section of
-   this document.
-
-   A value of 0 in one of the ec, kd or calg fields indicates that none
-   of the requested elliptic curve or algorithms are supported. In this
-   case, the pub_key and nonce_prefix field SHOULD be empty.
+   A value of 0 in cs indicates that no cipher suite was supported. In
+   this case, the pub_key field SHOULD be empty.
 
    The <zero> field is reserved for future uses and MUST be zero in
    the current implementation.
 
-   The pub_key_len field indicates the size of the pub_key field. It
-   depends on the chosen elliptic curve.
+   The pub_key_len field indicates the size of the pub_key field.
 
    The pub_key field is a pub_key_len bytes long Elliptic Curve
    Diffie-Hellman Ephemeral public key generated by the host. It MUST be
    fed to the local ECDHE instance to generate the shared secret.
-
-   The salt_len field indicates the size of the salt field. It can be
-   anything and depends on the desired salt.
-
-   The salt field is a salt to use with the key derivation function.
-
-   Once generated, the ECDHE shared secret is hashed two times using
-   the key derivation algorithm both parties agreed on, with each of
-   the local and remote salts. This gives two shared secret to use with
-   the symmetric encryption algorithm.
-
-   The nonce_prefix_len indicates the size of the nonce_prefix field. It
-   MUST be at least 8 bytes.
-
-   The nonce_prefix field is a random value that will be prepended to
-   the session and sequence number when generating the nonce.
-
-   If the nonce_prefix received matches the local one, then the local MUST
-   be regenerated until it is different. Failing to do so nullifies the
-   security completely.
 
    The hr_sig_len field indicates the length of the hr_sig field.
 
@@ -342,9 +284,9 @@ Abstract
    hr_sig signature matches the sending host public verification key (PKV).
    If the signature does not match, the message MUST be ignored.
 
-   If an host receives a SESSION message whose ec, kd or calg is null, it
-   SHOULD report to the upper layer that no session could be established
-   with the requested parameters.
+   If an host receives a SESSION message whose cs is null, it SHOULD
+   report to the upper layer that no session could be established with
+   the requested parameters.
 
 2.6. DATA message format
 
@@ -388,12 +330,12 @@ Abstract
    using the target host session cipher key.
 
    The nonce used for the generation of the ciphertext is a
-   concatenation of the local nonce_prefix, the session_number and the
-   sequence_number.
+   concatenation of the local host identifer, the session_number and
+   the sequence_number.
 
    The nonce used for the decipherment of the ciphertext is a
-   concatenation of the remote nonce_prefix, the session_number and the
-   sequence_number.
+   concatenation of the remote host identifier, the session_number and
+   the sequence_number.
 
    If the decipherment of the ciphertext fails, the message MUST be
    ignored.
@@ -545,24 +487,14 @@ Abstract
 
 3. Algorithms
 
-3.1. Symmetric cipherment algorithm
+3.1. Supported cipher suites
 
-   The available elliptic curves used with ECDHE are:
+   The available cipher suites are:
 
-   - 0x0D: SECT571K1
-   - 0x0E: SECT571R1
+   - 0x01: ECDHE-RSA-AES128-GCM-SHA256
+   - 0x02: ECDHE-RSA-AES256-GCM-SHA384
 
-   The available key derivation algorithms used with the ECDHE
-   generated secret are:
-
-   - 0x01: PBKDF2-SHA256-1000 - PBKDF2 with SHA256 using 1000 iterations.
-
-   The available cipher algorithms used in the symmetric cipherment are:
-
-   - 0x01: AES256-GCM.
-
-   If an unknown cipher algorithm code is met, it must be ignored to
-   account for implementation specific codes.
+   The curve used for ECDHE is SECT571K1.
 
 3.2. Asymmetric cipherment and signature algorithms
 
@@ -574,15 +506,6 @@ Abstract
    message digest, that is, 32 bytes.
 
    The minimum key size is 1024. The RECOMMENDED key size is 2048.
-
-3.3. Symmetric cipherment
-
-   The DATA messages are ciphered using the chosen cipher algorithm.
-
-   The key to use with that cipher is generated by applying the key
-   derivation algorithm to the generated shared secret resulting for the
-   ECDHE sequence. The size of that key depends on the chosen cipher
-   algorithm.
 
 4. Protocol
 
@@ -644,13 +567,13 @@ Abstract
 
    - If no previous session exists with the requesting host, and the
    target host and the parameters of the request are acceptable, the
-   target host should generate a new ECDHE public key, a new nonce
-   prefix and reply with a SESSION message matching those parameters.
+   target host should generate a new ECDHE public key and reply with a
+   SESSION message matching those parameters.
 
    - If a previous session exists and the requested session number is
    higher than the current one, the target host should also generate a
-   new ECDHE public key, a new nonce prefix and reply with a SESSION
-   message matching those parameters.
+   new ECDHE public key and reply with a SESSION message matching those
+   parameters.
 
    - If the requested session number is equal to or lower than the
    current one, the target host should reply with the same SESSION
@@ -664,15 +587,14 @@ Abstract
    its new ECDHE public key as well as a new nonce prefix. The session
    is then considered established on this receiving side.
 
-   - If the session number, the public key, the algorithms and the
-   nonce prefix match the current ones, the host MUST ignore it as it
-   might be the result of a frame duplication or an attempt of replay.
+   - If the session number, the public key, the cipher suite match the
+   current ones, the host MUST ignore it as it might be the result of a
+   frame duplication or an attempt of replay.
 
    - If the session number matches the current one, but the public
-   key, the algorithms or the nonce prefix do not match the ones
-   currently used by the active session, it should send a
-   SESSION_REQUEST with an incremented session number to start a new
-   session.
+   key or the cipher suite do not match the ones currently used by the
+   active session, it should send a SESSION_REQUEST with an incremented
+   session number to start a new session.
 
    An existing session MUST remain valid until a new one completes to
    prevent DoS-replay attacks.

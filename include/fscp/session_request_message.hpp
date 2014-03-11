@@ -68,13 +68,11 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
 			 * \param host_identifier The host identifier.
-			 * \param ec_cap The elliptic curve capabilities.
-			 * \param kd_cap The key derivation algorithm capabilities.
-			 * \param cipher_cap The cipher algorithm capabilities.
+			 * \param cs_cap The cipher suite capabilities.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, const elliptic_curve_list_type& ec_cap, const key_derivation_algorithm_list_tyep& kd_cap, const cipher_algorithm_list_type& cipher_cap, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, const cipher_suite_list_type& cs_cap, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_request_message from a message.
@@ -95,40 +93,16 @@ namespace fscp
 			host_identifier_type host_identifier() const;
 
 			/**
-			 * \brief Get the elliptic curve capabilities.
-			 * \return The elliptic curve capabilities.
+			 * \brief Get the cipher suite capabilities.
+			 * \return The cipher suite capabilities.
 			 */
-			elliptic_curve_list_type elliptic_curve_capabilities() const;
+			cipher_suite_list_type cipher_suite_capabilities() const;
 
 			/**
-			 * \brief Get the elliptic curve capabilities size.
-			 * \return The elliptic curve capabilities size.
+			 * \brief Get the cipher suite capabilities size.
+			 * \return The cipher suite capabilities size.
 			 */
-			size_t elliptic_curve_capabilities_size() const;
-
-			/**
-			 * \brief Get the key derivation capabilities.
-			 * \return The key derivation capabilities.
-			 */
-			key_derivation_algorithm_list_type key_derivation_capabilities() const;
-
-			/**
-			 * \brief Get the key_derivation capabilities size.
-			 * \return The key_derivation capabilities size.
-			 */
-			size_t key_derivation_capabilities_size() const;
-
-			/**
-			 * \brief Get the cipher capabilities.
-			 * \return The cipher capabilities.
-			 */
-			cipher_algorithm_list_type cipher_capabilities() const;
-
-			/**
-			 * \brief Get the cipher capabilities size.
-			 * \return The cipher capabilities size.
-			 */
-			size_t cipher_capabilities_size() const;
+			size_t cipher_suite_capabilities_size() const;
 
 			/**
 			 * \brief Get the header size, without the signature.
@@ -160,7 +134,7 @@ namespace fscp
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) * 3;
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t);
 	};
 
 	inline session_number_type session_request_message::session_number() const
@@ -177,24 +151,14 @@ namespace fscp
 		return result;
 	}
 
-	inline size_t session_request_message::elliptic_curve_capabilities_size() const
+	inline size_t session_request_message::cipher_suite_capabilities_size() const
 	{
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size));
 	}
 
-	inline size_t session_request_message::key_derivation_capabilities_size() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size()));
-	}
-
-	inline size_t session_request_message::cipher_capabilities_size() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size()));
-	}
-
 	inline size_t session_request_message::header_size() const
 	{
-		return sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + elliptic_curve_capabilities_size() + sizeof(uint16_t) + key_derivation_capabilities_size() + sizeof(uint16_t) + cipher_capabilities_size();
+		return sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size();
 	}
 
 	inline const uint8_t* session_request_message::header_signature() const

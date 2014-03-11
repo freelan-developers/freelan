@@ -71,17 +71,13 @@ namespace fscp
 			 * \param buf_len The length of buf.
 			 * \param session_number The session number.
 			 * \param host_identifier The host identifier.
-			 * \param calg The cipher algorithm type.
+			 * \param cs The cipher suite.
 			 * \param pub_key The public key.
 			 * \param pub_key_len The public key length.
-			 * \param salt The salt.
-			 * \param salt_len The salt length.
-			 * \param nonce_prefix The nonce prefix.
-			 * \param nonce_prefix_len The nonce prefix length.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, elliptic_curve_type ec, key_derivation_algorithm_type kd, cipher_algorithm_type calg, const void* pub_key, size_t pub_key_len, const void* salt, size_t salt_len, const void* nonce_prefix, size_t nonce_prefix_len, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, cipher_suite_type cs, const void* pub_key, size_t pub_key_len, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_message from a message.
@@ -102,22 +98,10 @@ namespace fscp
 			host_identifier_type host_identifier() const;
 
 			/**
-			 * \brief Get the elliptic curve.
-			 * \return The elliptic curve.
+			 * \brief Get the cipher suite.
+			 * \return The cipher suite.
 			 */
-			elliptic_curve_type elliptic_curve() const;
-
-			/**
-			 * \brief Get the key derivation algorithm.
-			 * \return The key derivation algorithm.
-			 */
-			key_derivation_algorithm_type key_derivation_algorithm() const;
-
-			/**
-			 * \brief Get the cipher algorithm.
-			 * \return The cipher algorithm.
-			 */
-			cipher_algorithm_type cipher_algorithm() const;
+			cipher_suite_type cipher_suite() const;
 
 			/**
 			 * \brief Get the public key.
@@ -130,30 +114,6 @@ namespace fscp
 			 * \return The public key size.
 			 */
 			size_t public_key_size() const;
-
-			/**
-			 * \brief Get the salt.
-			 * \return The salt.
-			 */
-			const uint8_t* salt() const;
-
-			/**
-			 * \brief Get the salt size.
-			 * \return The salt size.
-			 */
-			size_t salt_size() const;
-
-			/**
-			 * \brief Get the nonce prefix.
-			 * \return The nonce prefix.
-			 */
-			const uint8_t* nonce_prefix() const;
-
-			/**
-			 * \brief Get the nonce prefix size.
-			 * \return The nonce prefix size.
-			 */
-			size_t nonce_prefix_size() const;
 
 			/**
 			 * \brief Get the header size, without the signature.
@@ -185,7 +145,7 @@ namespace fscp
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + sizeof(uint16_t);
 	};
 
 	inline session_number_type session_message::session_number() const
@@ -202,54 +162,24 @@ namespace fscp
 		return result;
 	}
 
-	inline elliptic_curve_type session_message::elliptic_curve() const
+	inline cipher_suite_type session_message::cipher_suite() const
 	{
 		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size);
 	}
 
-	inline key_derivation_algorithm_type session_message::key_derivation_algorithm() const
-	{
-		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t));
-	}
-
-	inline cipher_algorithm_type session_message::cipher_algorithm() const
-	{
-		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 2);
-	}
-
 	inline const uint8_t* session_message::public_key() const
 	{
-		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t);
+		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t);
 	}
 
 	inline size_t session_message::public_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1));
-	}
-
-	inline const uint8_t* session_message::salt() const
-	{
-		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t);
-	}
-
-	inline size_t session_message::salt_size() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size()));
-	}
-
-	inline const uint8_t* session_message::nonce_prefix() const
-	{
-		return payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + salt_size() + sizeof(uint16_t);
-	}
-
-	inline size_t session_message::nonce_prefix_size() const
-	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + salt_size()));
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) + 3));
 	}
 
 	inline size_t session_message::header_size() const
 	{
-		return sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) * 3 + 1 + sizeof(uint16_t) + public_key_size() + sizeof(uint16_t) + salt_size() + sizeof(uint16_t) + nonce_prefix_size();
+		return sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + public_key_size();
 	}
 
 	inline const uint8_t* session_message::header_signature() const
