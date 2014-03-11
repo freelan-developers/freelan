@@ -37,12 +37,12 @@
  */
 
 /**
- * \file session.cpp
+ * \file peer_session.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief An session class.
+ * \brief An peer session storage class.
  */
 
-#include "session.hpp"
+#include "peer_session.hpp"
 
 namespace fscp
 {

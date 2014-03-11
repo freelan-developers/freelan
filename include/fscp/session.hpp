@@ -125,6 +125,7 @@ namespace fscp
 
 				const auto dh_shared_secret = m_ecdhe_context.derive_secret_key(buffer_cast<const void*>(remote_public_key), buffer_cast(remote_public_key));
 
+				// The local shared secret.
 				m_shared_secret = cryptoplus::hash::pbkdf2(
 					buffer_cast<const void*>(dh_shared_secret),
 					buffer_size(dh_shared_secret),
@@ -134,6 +135,7 @@ namespace fscp
 					m_key_derivation_algorithm.to_iterations_count()
 				);
 
+				// The remote shared secret.
 				const auto shared_secret = cryptoplus::hash::pbkdf2(
 					buffer_cast<const void*>(dh_shared_secret),
 					buffer_size(dh_shared_secret),
