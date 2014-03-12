@@ -584,8 +584,8 @@ Abstract
    - If the session number is higher than the current one or if no
    session exists, the receiving host should renew its session
    parameters and reply with an updated SESSION message that contains
-   its new ECDHE public key as well as a new nonce prefix. The session
-   is then considered established on this receiving side.
+   its new ECDHE public key. The session is then considered established
+   on this receiving side.
 
    - If the session number, the public key, the cipher suite match the
    current ones, the host MUST ignore it as it might be the result of a

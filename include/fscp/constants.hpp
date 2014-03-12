@@ -390,7 +390,7 @@ namespace fscp
 			 *
 			 * If the instance is not supported, a std::runtime_error is thrown.
 			 */
-			cryptoplus::cipher::cipher_algorithm to_cipher_algorithm() const
+			cryptoplus::cipher::cipher_algorithm to_cipher_algorithm() cons
 			{
 				if (value() == unsupported)
 				{
