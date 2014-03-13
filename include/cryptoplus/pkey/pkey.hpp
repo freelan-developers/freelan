@@ -171,6 +171,14 @@ namespace cryptoplus
 				static pkey from_certificate_public_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback = NULL, void* callback_arg = NULL);
 
 				/**
+				 * \brief Create a new EVP_PKEY from a HMAC secret key.
+				 * \brief buf Is a buffer that contains the secret key.
+				 * \brief buf_len Is the length of buf.
+				 * \brief engine Is the engine to use, if any.
+				 */
+				static pkey from_hmac_key(const void* buf, size_t buf_len, ENGINE* engine = NULL);
+
+				/**
 				 * \brief Create a new empty pkey.
 				 */
 				pkey();
@@ -442,6 +450,10 @@ namespace cryptoplus
 		inline pkey pkey::from_certificate_public_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_bio_PUBKEY(bio.raw(), NULL, callback, callback_arg));
+		}
+		inline pkey pkey::from_hmac_key(const void* buf, size_t buf_len, ENGINE* engine)
+		{
+			return take_ownership(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, engine, static_cast<const unsigned char*>(buf), buf_len));
 		}
 		inline pkey pkey::from_private_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
