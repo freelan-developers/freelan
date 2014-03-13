@@ -258,6 +258,12 @@ namespace cryptoplus
 				void copy(const message_digest_context& ctx);
 
 				/**
+				 * \brief Set the flags on the message digest context.
+				 * \param flags The flags to set.
+				 */
+				void set_flags(int flags);
+
+				/**
 				 * \brief Get the underlying context.
 				 * \return The underlying context.
 				 * \warning This method is provided for compatibility issues only. Its use is greatly discouraged.
@@ -387,6 +393,11 @@ namespace cryptoplus
 		inline void message_digest_context::copy(const message_digest_context& ctx)
 		{
 			error::throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx) != 0);
+		}
+
+		inline void message_digest_context::set_flags(int flags)
+		{
+			EVP_MD_CTX_set_flags(&m_ctx, flags);
 		}
 
 		inline const EVP_MD_CTX& message_digest_context::raw() const
