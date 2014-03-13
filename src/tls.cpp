@@ -53,14 +53,13 @@ namespace cryptoplus
 {
 	namespace tls
 	{
-		size_t p_hash(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl)
+		size_t p_hash(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const void* data2, size_t data2_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl)
 		{
 			using hash::message_digest_context;
 			using pkey::pkey;
 
 			assert(out);
 			assert(key);
-			assert(data);
 
 			message_digest_context ctx;
 			message_digest_context ctx_a1;
@@ -75,7 +74,14 @@ namespace cryptoplus
 			// Everything is set up. We can start the computation.
 
 			ctx.copy(ctx_init);
-			ctx.digest_sign_update(data, data_len);
+
+			if (data) {
+				ctx.digest_sign_update(data, data_len);
+			}
+
+			if (data2) {
+				ctx.digest_sign_update(data2, data2_len);
+			}
 
 			buffer a1 = ctx.digest_sign_finalize();
 
@@ -90,7 +96,14 @@ namespace cryptoplus
 				ctx.copy(ctx_init);
 				ctx.digest_sign_update(a1);
 				ctx_a1.copy(ctx);
-				ctx.digest_sign_update(data, data_len);
+
+				if (data) {
+					ctx.digest_sign_update(data, data_len);
+				}
+
+				if (data2) {
+					ctx.digest_sign_update(data2, data2_len);
+				}
 
 				if (bytes_left > chunk_size) {
 					const size_t len = ctx.digest_sign_finalize(buf, bytes_left);

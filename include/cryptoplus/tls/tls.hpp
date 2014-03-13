@@ -45,6 +45,8 @@
 #ifndef CRYPTOPLUS_TLS_TLS_HPP
 #define CRYPTOPLUS_TLS_TLS_HPP
 
+#include <string>
+
 #include "../buffer.hpp"
 #include "hash/message_digest_algorithm.hpp"
 
@@ -58,13 +60,15 @@ namespace cryptoplus
 		 * \param out_len The output buffer length. Also the count of bytes requested.
 		 * \param key The key to use.
 		 * \param key_len The key length.
-		 * \param data The buffer.
-		 * \param data_len The buffer length.
+		 * \param data The first buffer of data.
+		 * \param data_len The data length.
+		 * \param data2 The second buffer of data.
+		 * \param data2_len The data2 length.
 		 * \param algorithm The message digest algorithm to use.
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The count of bytes written to out. Should be equal to out_len.
 		 */
-		size_t p_hash(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL);
+		size_t p_hash(void* out, size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const void* data2, size_t data2_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL);
 
 		/**
 		 * \brief Computes the P_hash as defined in TLS RFC 5246.
@@ -77,14 +81,55 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The hash.
 		 */
-		buffer p_hash(size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
+		buffer p_hash(size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const void* data2, size_t data2_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
 		{
 			buffer result(out_len);
 
-			p_hash(buffer_cast<uint8_t*>(result), buffer_size(result), key, key_len, data, data_len, algorithm, impl);
+			p_hash(buffer_cast<uint8_t*>(result), buffer_size(result), key, key_len, data, data_len, data2, data2_len, algorithm, impl);
 
 			return result;
 		}
+
+		/**
+		 * \brief TLS PRF function as defined in RFC 5246.
+		 * \param out The output buffer. Must be at least as big as the message digest algorithm result size.
+		 * \param out_len The output buffer length. Also the count of bytes requested.
+		 * \param key The key to use.
+		 * \param key_len The key length.
+		 * \param label The label to use.
+		 * \param label_len The label length.
+		 * \param seed The seed. Typically the concatenation of the client and server randoms.
+		 * \param seed_len The seed length.
+		 * \param algorithm The message digest algorithm to use.
+		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
+		 * \return The count of bytes written to out. Should be equal to out_len.
+		 */
+		size_t prf(void* out, size_t out_len, const void* key, size_t key_len, const void* label, size_t label_len, const void* seed, size_t seed_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
+		{
+			return p_hash(out, out_len, key, key_len, label, label_len, seed, seed_len, algorithm, impl);
+		}
+
+		/**
+		 * \brief TLS PRF function as defined in RFC 5246.
+		 * \param out_len The count of bytes requested.
+		 * \param key The key to use.
+		 * \param key_len The key length.
+		 * \param label The label to use.
+		 * \param seed The seed. Typically the concatenation of the client and server randoms.
+		 * \param seed_len The seed length.
+		 * \param algorithm The message digest algorithm to use.
+		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
+		 * \return The hash.
+		 */
+		buffer prf(size_t out_len, const void* key, size_t key_len, const std::string& label, const void* seed, size_t seed_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
+		{
+			buffer result(out_len);
+
+			prf(buffer_cast<uint8_t*>(result), buffer_size(result), key, key_len, label.c_str(), label.size(), seed, seed_len, algorithm, impl);
+
+			return result;
+		}
+
 	}
 }
 
