@@ -82,6 +82,16 @@ namespace cryptoplus
 
 			return (result == 1);
 		}
+
+		size_t message_digest_context::digest_sign_finalize(void* md, size_t md_len)
+		{
+			assert(md);
+
+			error::throw_error_if_not(EVP_DigestSignFinal(&m_ctx, static_cast<unsigned char*>(md), &md_len) != 0);
+
+			return md_len;
+		}
+
 	}
 }
 
