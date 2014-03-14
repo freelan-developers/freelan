@@ -422,7 +422,7 @@ namespace fscp
 	/**
 	 * \brief The certificate digest algorithm.
 	 */
-	const int CERTIFICATE_DIGEST_ALGORITHM = NID_sha256;
+	const cryptoplus::hash::message_digest_algorithm CERTIFICATE_DIGEST_ALGORITHM = NID_sha256;
 
 	/**
 	 * \brief The session keep-alive period.

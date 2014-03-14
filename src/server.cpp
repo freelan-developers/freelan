@@ -206,13 +206,12 @@ namespace fscp
 			return causal_handler<Handler, CausalHandler>(_handler, _causal_handler);
 		}
 
-		cipher_algorithm_list_type get_default_cipher_capabilities()
+		cipher_suite_list_type get_default_cipher_suites()
 		{
-			cipher_algorithm_list_type result;
-
-			result.push_back(cipher_algorithm_type::aes256_gcm);
-
-			return result;
+			return {
+				cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384,
+				cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256
+			}
 		}
 
 		template <typename KeyType, typename ValueType, typename Handler>
@@ -269,7 +268,7 @@ namespace fscp
 
 	// Public methods
 
-	const cipher_algorithm_list_type server::DEFAULT_CIPHER_CAPABILITIES = get_default_cipher_capabilities();
+	const cipher_suite_list_type server::DEFAULT_CIPHER_SUITES = get_default_cipher_suites();
 
 	server::server(boost::asio::io_service& io_service, const identity_store& identity) :
 		m_identity_store(identity),
@@ -283,7 +282,7 @@ namespace fscp
 		m_presentation_message_received_handler(),
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
-		m_cipher_capabilities(DEFAULT_CIPHER_CAPABILITIES),
+		m_cipher_suites(DEFAULT_CIPHER_SUITES),
 		m_session_request_message_received_handler(),
 		m_accept_session_messages_default(true),
 		m_session_message_received_handler(),
@@ -561,12 +560,12 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
-	void server::sync_set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities)
+	void server::sync_set_cipher_suites(const cipher_suite_list_type& cipher_suites)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
 
-		async_set_cipher_capabilities(cipher_capabilities, boost::bind(&promise_type::set_value, &promise));
+		async_set_cipher_suites(cipher_suites, boost::bind(&promise_type::set_value, &promise));
 
 		return promise.get_future().wait();
 	}
@@ -1418,13 +1417,13 @@ namespace fscp
 		}
 	}
 
-	cipher_algorithm_type server::get_first_common_supported_cipher_algorithm(const cipher_algorithm_list_type& reference, const cipher_algorithm_list_type& capabilities, cipher_algorithm_type default_value = cipher_algorithm_type::unsupported)
+	cipher_suite_type server::get_first_common_supported_cipher_suite(const cipher_suite_list_type& reference, const cipher_suite_list_type& capabilities, cipher_suite_type default_value = cipher_suite_type::unsupported)
 	{
-		for (cipher_algorithm_list_type::const_iterator it = reference.begin(); it != reference.end(); ++it)
+		for (auto&& cs : reference)
 		{
-			if (std::find(capabilities.begin(), capabilities.end(), *it) != capabilities.end())
+			if (std::find(capabilities.begin(), capabilities.end(), cs) != capabilities.end())
 			{
-				return it->value();
+				return cs;
 			}
 		}
 
@@ -1441,10 +1440,9 @@ namespace fscp
 			return;
 		}
 
-		session_pair& session = m_session_map[target];
+		peer_session& session = m_peer_sessions[target];
 
-		const session_store::session_number_type session_number = session.has_remote_session() ? session.remote_session().session_number() + 1 : 0;
-
+		const session_store::session_number_type session_number = session.next_session_number();
 		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
 		try
@@ -1454,7 +1452,7 @@ namespace fscp
 				buffer_size(cleartext_buffer),
 				session_number,
 				session.generate_local_challenge(),
-				m_cipher_capabilities
+				m_cipher_suites
 			);
 
 			m_presentation_strand.post(
@@ -1576,7 +1574,10 @@ namespace fscp
 			return;
 		}
 
-		_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+		if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+		{
+			return;
+		}
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -1619,13 +1620,13 @@ namespace fscp
 		// Get the associated session, creating one if none exists.
 		session_pair& session = m_session_map[sender];
 
-		const cipher_algorithm_list_type cipher_capabilities = _clear_session_request_message.cipher_capabilities();
+		const cipher_suite_list_type cipher_suites = _clear_session_request_message.cipher_suites();
 
-		const cipher_algorithm_type calg = get_first_common_supported_cipher_algorithm(m_cipher_capabilities, cipher_capabilities);
+		const cipher_suite_type calg = get_first_common_supported_cipher_suite(m_cipher_suites, cipher_suites);
 
 		if (m_session_request_message_received_handler)
 		{
-			can_reply = m_session_request_message_received_handler(sender, cipher_capabilities, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_received_handler(sender, cipher_suites, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
@@ -1689,10 +1690,10 @@ namespace fscp
 		}
 	}
 
-	void server::do_set_cipher_capabilities(cipher_algorithm_list_type cipher_capabilities, void_handler_type handler)
+	void server::do_set_cipher_suites(cipher_suite_list_type cipher_suites, void_handler_type handler)
 	{
 		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
-		set_cipher_capabilities(cipher_capabilities);
+		set_cipher_suites(cipher_suites);
 
 		if (handler)
 		{
@@ -1826,7 +1827,10 @@ namespace fscp
 			return;
 		}
 
-		_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+		if (!_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+		{
+			return;
+		}
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 

@@ -136,9 +136,9 @@ namespace fscp
 			/**
 			 * \brief Check if the signature matches with a given public key.
 			 * \param key The public key to use.
-			 * \warning If the check fails, an exception is thrown.
+			 * \return If the check fails, false is returned.
 			 */
-			void check_signature(cryptoplus::pkey::pkey key) const;
+			bool check_signature(cryptoplus::pkey::pkey key) const;
 
 		protected:
 

@@ -49,15 +49,24 @@
 
 namespace fscp
 {
+	namespace
+	{
+		void configure_context(EVP_PKEY_CTX* evp_ctx)
+		{
+			// Set RSASSA_PSS with a digest size salt length.
+			EVP_PKEY_CTX_set_rsa_padding(evp_ctx, RSA_PKCS1_PSS_PADDING);
+			EVP_PKEY_CTX_set_rsa_pss_saltlen(evp_ctx, -1);
+		}
+	}
+
 	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, cryptoplus::pkey::pkey sig_key)
 	{
 		using cryptoplus::buffer_cast;
 		using cryptoplus::buffer_size;
 
 		const size_t unsigned_payload_size = MIN_BODY_LENGTH + cs_cap.size();
-		const size_t signed_payload_size = unsigned_payload_size + sig_key.get_rsa_key().size();
 
-		if (buf_len < HEADER_LENGTH + signed_payload_size)
+		if (buf_len < HEADER_LENGTH + unsigned_payload_size)
 		{
 			throw std::runtime_error("buf_len");
 		}
@@ -70,19 +79,24 @@ namespace fscp
 		std::copy(cs_cap.begin(), cs_cap.end(), static_cast<cipher_suite_list_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t));
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
-		mdctx.update(static_cast<const uint8_t*>(payload), unsigned_payload_size);
-		const cryptoplus::buffer digest = mdctx.finalize();
+		EVP_PKEY_CTX* evp_ctx = nullptr;
 
-		cryptoplus::buffer padded_buf(sig_key.get_rsa_key().size());
-		sig_key.get_rsa_key().padding_add_PKCS1_PSS(buffer_cast<uint8_t*>(padded_buf), buffer_size(padded_buf), cryptoplus::buffer_cast<const uint8_t*>(digest), cryptoplus::buffer_size(digest), cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
+		mdctx.digest_sign_initialize(CERTIFICATE_DIGEST_ALGORITHM, sig_key, &evp_ctx);
+		configure_context(evp_ctx);
+		mdctx.digest_sign_update(static_cast<const uint8_t*>(payload), unsigned_payload_size);
 
-		const size_t signature_size = sig_key.get_rsa_key().private_encrypt(payload + unsigned_payload_size + sizeof(uint16_t), sig_key.get_rsa_key().size(), buffer_cast<const uint8_t*>(padded_buf), buffer_size(padded_buf), RSA_NO_PADDING);
+		const size_t signature_size = mdctx.digest_sign_finalize(nullptr, 0);
+		const size_t signed_payload_size = unsigned_payload_size + sizeof(uint16_t) + signature_size;
+
+		if (buf_len < HEADER_LENGTH + signed_payload_size)
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		mdctx.digest_sign_finalize(payload + unsigned_payload_size + sizeof(uint16_t), signature_size);
 		buffer_tools::set<uint16_t>(payload, unsigned_payload_size, htons(static_cast<uint16_t>(signature_size)));
 
-		const size_t length = unsigned_payload_size + sizeof(uint16_t) + signature_size;
-
-		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION_REQUEST, length) + length;
+		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION_REQUEST, signed_payload_size) + signed_payload_size;
 	}
 
 	session_request_message::session_request_message(const message& _message) :
@@ -117,18 +131,18 @@ namespace fscp
 		return result;
 	}
 
-	void session_request_message::check_signature(cryptoplus::pkey::pkey key) const
+	bool session_request_message::check_signature(cryptoplus::pkey::pkey key) const
 	{
 		assert(key);
 		assert(key.get_rsa_key());
 
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
-		mdctx.update(payload(), header_size());
+		EVP_PKEY_CTX* evp_ctx = nullptr;
 
-		const cryptoplus::buffer digest = mdctx.finalize();
-		const cryptoplus::buffer padded_buf = key.get_rsa_key().public_decrypt(header_signature(), header_signature_size(), RSA_NO_PADDING);
+		mdctx.digest_verify_initialize(CERTIFICATE_DIGEST_ALGORITHM, key, &evp_ctx);
+		configure_context(evp_ctx);
+		mdctx.digest_verify_update(payload(), header_size());
 
-		key.get_rsa_key().verify_PKCS1_PSS(digest, padded_buf, cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM), -1);
+		return mdctx.digest_verify_finalize(header_signature(), header_signature_size());
 	}
 }

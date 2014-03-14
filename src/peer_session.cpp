@@ -46,4 +46,19 @@
 
 namespace fscp
 {
+	session_number_type peer_session::next_session_number() const
+	{
+		if (!has_current_session())
+		{
+			return 0;
+		}
+		else if (!has_next_session())
+		{
+			return current_session().session_number() + 1;
+		}
+		else
+		{
+			return next_session().session_number();
+		}
+	}
 }

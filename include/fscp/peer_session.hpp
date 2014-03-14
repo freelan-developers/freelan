@@ -72,6 +72,7 @@ namespace fscp
 				cryptoplus::random::get_random_bytes(m_host_identifier.data(), m_host_identifier.size());
 			}
 
+			session_number_type next_session_number() const;
 			bool has_current_session() { return !!m_current_session; }
 			session& current_session() { return *m_current_session; }
 			const session& current_session() const { return *m_current_session; }

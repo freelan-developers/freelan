@@ -330,12 +330,14 @@ Abstract
    using the target host session cipher key.
 
    The nonce used for the generation of the ciphertext is a
-   concatenation of the local host identifer, the session_number and
-   the sequence_number.
+   8 bytes derived from the session shared secret concatenated to the 4
+   bytes sequence number in network byte order.
 
-   The nonce used for the decipherment of the ciphertext is a
-   concatenation of the remote host identifier, the session_number and
-   the sequence_number.
+   The nonce used for the generation of the ciphertext is a
+   8 bytes derived from the session shared secret concatenated to the 4
+   bytes sequence number in network byte order.
+
+   The generation of the nonce is detailled later in 3.3.
 
    If the decipherment of the ciphertext fails, the message MUST be
    ignored.
@@ -496,16 +498,36 @@ Abstract
 
    The curve used for ECDHE is SECT571K1.
 
-3.2. Asymmetric cipherment and signature algorithms
+3.2. Signature algorithms
 
    The used signature algorithm is RSA with a PKCS#1 v2.1 PSS padding
    (RSASSA_PSS).
 
-   The underlying hash algorithm is SHA256, the MGF method is
-   MGF1-SHA256 and the salt length is equal to size of the SHA256
-   message digest, that is, 32 bytes.
+   The underlying hash algorithm is SHA256. The salt len for PSS is the
+   size of the hash digest.
 
    The minimum key size is 1024. The RECOMMENDED key size is 2048.
+
+3.3. Key derivation
+
+   The key derivation function is the same as the one for TLS 1.2, and
+   is defined in RFC 5246.
+
+   Is it defined as:
+
+      PRF(secret, label, seed)
+
+   The used hash algorithm is SHA256.
+
+   When deriving session keys, the label is "session key".
+
+   When deriving nonce 8-bytes prefixes, the label is "nonce prefix".
+
+   When deriving the local session key or the local nonce prefix, the
+   seed is the local host identifier.
+
+   When deriving the remote session key or the local nonce prefix, the
+   seed is the remote host identifier.
 
 4. Protocol
 

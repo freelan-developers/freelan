@@ -50,7 +50,7 @@
 #include "identity_store.hpp"
 #include "memory_pool.hpp"
 #include "presentation_store.hpp"
-#include "session_pair.hpp"
+#include "peer_session.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -187,20 +187,20 @@ namespace fscp
 			/**
 			 * \brief A handler for when session requests are received.
 			 * \param sender The endpoint that sent the session request message.
-			 * \param calg_capabilities The cipher algorithm capabilities of the remote host.
+			 * \param cs_cap The cipher suite capabilities of the remote host.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session request.
 			 */
-			typedef boost::function<bool (const ep_type& sender, const cipher_algorithm_list_type& calg_capabilities, bool default_accept)> session_request_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, const cipher_suite_list_type& cs_cap, bool default_accept)> session_request_received_handler_type;
 
 			/**
 			 * \brief A handler for when session messages are received.
 			 * \param sender The endpoint that sent the session message.
-			 * \param calg The cipher algorithm used for the session.
+			 * \param cs The cipher suite used for the session.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cipher_algorithm_type calg, bool default_accept)> session_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, cipher_suite_type cs, bool default_accept)> session_received_handler_type;
 
 			/**
 			 * \brief A handler for when a session establishment failed.
@@ -255,7 +255,7 @@ namespace fscp
 
 			// Static variables
 
-			static const cipher_algorithm_list_type DEFAULT_CIPHER_CAPABILITIES;
+			static const cipher_suite_list_type DEFAULT_CIPHER_SUITES;
 
 			// Public methods
 
@@ -648,32 +648,32 @@ namespace fscp
 			void sync_set_accept_session_request_messages_default(bool value);
 
 			/**
-			 * \brief Set the cipher capabilities.
-			 * \param cipher_capabilities The cipher capabilities.
+			 * \brief Set the cipher suites.
+			 * \param cipher_suites The cipher suites.
 			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
 			 */
-			void set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities)
+			void set_cipher_suites(const cipher_suite_list_type& cipher_suites)
 			{
-				m_cipher_capabilities = cipher_capabilities;
+				m_cipher_suites = cipher_suites;
 			}
 
 			/**
-			 * \brief Set the cipher capabilities.
-			 * \param cipher_capabilities The cipher capabilities.
+			 * \brief Set the cipher suites.
+			 * \param cipher_suites The cipher suites.
 			 * \param handler The handler to call when the change was made effective.
 			 */
-			void async_set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities, void_handler_type handler = void_handler_type())
+			void async_set_cipher_suites(const cipher_suite_list_type& cipher_suites, void_handler_type handler = void_handler_type())
 			{
-				m_session_strand.post(boost::bind(&server::do_set_cipher_capabilities, this, cipher_capabilities, handler));
+				m_session_strand.post(boost::bind(&server::do_set_cipher_suites, this, cipher_suites, handler));
 			}
 
 			/**
-			 * \brief Set the cipher capabilities.
-			 * \param cipher_capabilities The cipher capabilities.
+			 * \brief Set the cipher suites.
+			 * \param cipher_suites The cipher suites.
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			void sync_set_cipher_capabilities(const cipher_algorithm_list_type& cipher_capabilities);
+			void sync_set_cipher_suites(const cipher_suite_list_type& cipher_suites);
 
 			/**
 			 * \brief Set the session request message received callback.
@@ -1368,9 +1368,9 @@ namespace fscp
 
 		private: // SESSION_REQUEST messages
 
-			typedef std::map<ep_type, session_pair> session_pair_map;
+			typedef std::map<ep_type, peer_session> peer_session_map_type;
 
-			static cipher_algorithm_type get_first_common_supported_cipher_algorithm(const cipher_algorithm_list_type&, const cipher_algorithm_list_type&, cipher_algorithm_type);
+			static cipher_suite_type get_first_common_supported_cipher_suite(const cipher_suite_list_type&, const cipher_suite_list_type&, cipher_suite_type);
 
 			void do_request_clear_session(const identity_store&, const ep_type&, simple_handler_type);
 			void do_request_session(const identity_store&, const ep_type&, simple_handler_type, boost::asio::const_buffer);
@@ -1385,16 +1385,16 @@ namespace fscp
 			void do_get_session_endpoints(endpoints_handler_type);
 			void do_has_session_with_endpoint(const ep_type&, boolean_handler_type);
 			void do_set_accept_session_request_messages_default(bool, void_handler_type);
-			void do_set_cipher_capabilities(cipher_algorithm_list_type, void_handler_type);
+			void do_set_cipher_suites(cipher_suite_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
 			// This strand is common to session requests, session messages and data messages.
 			boost::asio::strand m_session_strand;
 
-			session_pair_map m_session_map;
+			peer_session_map_type m_peer_sessions;
 
 			bool m_accept_session_request_messages_default;
-			cipher_algorithm_list_type m_cipher_capabilities;
+			cipher_suite_list_type m_cipher_suites;
 			session_request_received_handler_type m_session_request_message_received_handler;
 
 		private: // SESSION messages
@@ -1423,15 +1423,15 @@ namespace fscp
 			void do_send_data(const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
 			void do_send_data_to_list(const std::set<ep_type>&, channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
 			void do_send_data_to_all(channel_number_type, boost::asio::const_buffer, multiple_endpoints_handler_type);
-			void do_send_data_to_session(session_pair&, const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
+			void do_send_data_to_session(peer_session&, const ep_type&, channel_number_type, boost::asio::const_buffer, simple_handler_type);
 			void do_send_contact_request(const ep_type&, const hash_list_type&, simple_handler_type);
 			void do_send_contact_request_to_list(const std::set<ep_type>&, const hash_list_type&, multiple_endpoints_handler_type);
 			void do_send_contact_request_to_all(const hash_list_type&, multiple_endpoints_handler_type);
-			void do_send_contact_request_to_session(session_pair&, const ep_type&, const hash_list_type&, simple_handler_type);
+			void do_send_contact_request_to_session(peer_session&, const ep_type&, const hash_list_type&, simple_handler_type);
 			void do_send_contact(const ep_type&, const contact_map_type&, simple_handler_type);
 			void do_send_contact_to_list(const std::set<ep_type>&, const contact_map_type&, multiple_endpoints_handler_type);
 			void do_send_contact_to_all(const contact_map_type&, multiple_endpoints_handler_type);
-			void do_send_contact_to_session(session_pair&, const ep_type&, const contact_map_type&, simple_handler_type);
+			void do_send_contact_to_session(peer_session&, const ep_type&, const contact_map_type&, simple_handler_type);
 			void handle_data_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
 			void do_handle_data(const identity_store&, const ep_type&, const data_message&);
 			void do_handle_data_message(const ep_type&, message_type, shared_buffer_type, boost::asio::const_buffer);
