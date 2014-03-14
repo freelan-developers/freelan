@@ -257,7 +257,7 @@ namespace cryptoplus
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting signature.
-				 * \param sig The resulting signature. Cannot be NULL. Must be at least pkey->size() bytes long.
+				 * \param sig The resulting signature. If NULL, the required size will be returned.
 				 * \param sig_len The length of sig.
 				 * \return The number of bytes written.
 				 *
