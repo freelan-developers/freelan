@@ -121,6 +121,17 @@ namespace cryptoplus
 				void digest_sign_initialize(const message_digest_algorithm& algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx = NULL, ENGINE* impl = NULL);
 
 				/**
+				 * \brief Initialize the message_digest_context for digest signature verification.
+				 * \param algorithm The message digest algorithm to use.
+				 * \param key The pkey to use.
+				 * \param pctx If not NULL, *pctx will point to the signing operation context.
+				 * \param impl The engine to use. Default is NULL which indicates that no engine should be used.
+				 *
+				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
+				 */
+				void digest_verify_initialize(const message_digest_algorithm& algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx = NULL, ENGINE* impl = NULL);
+
+				/**
 				 * \brief Update the message_digest_context with some data.
 				 * \param data The data buffer.
 				 * \param len The data length.
@@ -150,6 +161,13 @@ namespace cryptoplus
 
 				/**
 				 * \brief Update the message_digest_context with some data.
+				 * \param data The data buffer.
+				 * \param len The data length.
+				 */
+				void digest_verify_update(const void* data, size_t len);
+
+				/**
+				 * \brief Update the message_digest_context with some data.
 				 * \param buf The data buffer.
 				 */
 				void update(const buffer& buf);
@@ -171,6 +189,12 @@ namespace cryptoplus
 				 * \param buf The data buffer.
 				 */
 				void digest_sign_update(const buffer& buf);
+
+				/**
+				 * \brief Update the message_digest_context with some data.
+				 * \param buf The data buffer.
+				 */
+				void digest_verify_update(const buffer& buf);
 
 				/**
 				 * \brief Finalize the message_digest_context and get the resulting buffer.
@@ -250,6 +274,25 @@ namespace cryptoplus
 				buffer digest_sign_finalize();
 
 				/**
+				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
+				 * \param sig The signature to compare to. Cannot be NULL.
+				 * \param sig_len The length of sig.
+				 * \return true if the signature matches, false otherwise.
+				 *
+				 * After a call to digest_verify_finalize() no more call to digest_verify_update() can be made unless digest_verify_initialize() is called again first.
+				 */
+				bool digest_verify_finalize(const void* sig, size_t sig_len);
+
+				/**
+				 * \brief Finalize the message_digest_context and compare its resulting signature to the specified signature.
+				 * \param sig The signature to compare to.
+				 * \return true if the signature matches, false otherwise.
+				 *
+				 * After a call to digest_verify_finalize() no more call to digest_verify_update() can be made unless digest_verify_initialize() is called again first.
+				 */
+				bool digest_verify_finalize(const buffer& sig);
+
+				/**
 				 * \brief Copy an existing message_digest_context, including its current state.
 				 * \param ctx A message_digest_context to copy.
 				 *
@@ -318,6 +361,11 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, key.raw()) == 1);
 		}
 
+		inline void message_digest_context::digest_verify_initialize(const message_digest_algorithm& _algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
+		{
+			error::throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, key.raw()) == 1);
+		}
+
 		inline void message_digest_context::update(const void* data, size_t len)
 		{
 			error::throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len) != 0);
@@ -338,6 +386,11 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_DigestSignUpdate(&m_ctx, data, len) != 0);
 		}
 
+		inline void message_digest_context::digest_verify_update(const void* data, size_t len)
+		{
+			error::throw_error_if_not(EVP_DigestVerifyUpdate(&m_ctx, data, len) != 0);
+		}
+
 		inline void message_digest_context::update(const buffer& buf)
 		{
 			update(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
@@ -356,6 +409,11 @@ namespace cryptoplus
 		inline void message_digest_context::digest_sign_update(const buffer& buf)
 		{
 			digest_sign_update(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
+		}
+
+		inline void message_digest_context::digest_verify_update(const buffer& buf)
+		{
+			digest_verify_update(buffer_cast<const uint8_t*>(buf), buffer_size(buf));
 		}
 
 		inline buffer message_digest_context::finalize()
@@ -383,11 +441,16 @@ namespace cryptoplus
 
 		inline buffer message_digest_context::digest_sign_finalize()
 		{
-			buffer result(algorithm().result_size());
+			buffer result(digest_sign_finalize(nullptr, 0));
 
 			digest_sign_finalize(buffer_cast<uint8_t*>(result), buffer_size(result));
 
 			return result;
+		}
+
+		inline bool message_digest_context::digest_verify_finalize(const buffer& sig)
+		{
+			return digest_verify_finalize(buffer_cast<const uint8_t*>(sig), buffer_size(sig));
 		}
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)

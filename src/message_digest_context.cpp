@@ -85,11 +85,23 @@ namespace cryptoplus
 
 		size_t message_digest_context::digest_sign_finalize(void* md, size_t md_len)
 		{
-			assert(md);
-
 			error::throw_error_if_not(EVP_DigestSignFinal(&m_ctx, static_cast<unsigned char*>(md), &md_len) != 0);
 
 			return md_len;
+		}
+
+		bool message_digest_context::digest_verify_finalize(const void* sig, size_t sig_len)
+		{
+			// The const_cast<> below is needed because the prototype in the code is incorrect...
+			//
+			// The documentation clearly states this should be const.
+			// http://www.openssl.org/docs/crypto/EVP_DigestVerifyInit.html
+
+			int result = EVP_DigestVerifyFinal(&m_ctx, const_cast<unsigned char*>(static_cast<const unsigned char*>(sig)), static_cast<unsigned int>(sig_len));
+
+			error::throw_error_if(result < 0);
+
+			return (result == 1);
 		}
 
 	}
