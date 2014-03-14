@@ -148,7 +148,7 @@ namespace cryptoplus
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 				 */
-				void digest_sign_initialize(const message_digest_algorithm& algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx = NULL, ENGINE* impl = NULL);
+				void digest_sign_initialize(const message_digest_algorithm& algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx = NULL, ENGINE* impl = NULL);
 
 				/**
 				 * \brief Initialize the message_digest_context for digest signature verification.
@@ -159,7 +159,7 @@ namespace cryptoplus
 				 *
 				 * The list of the available hash methods depends on the version of OpenSSL and can be found on the man page of EVP_DigestInit().
 				 */
-				void digest_verify_initialize(const message_digest_algorithm& algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx = NULL, ENGINE* impl = NULL);
+				void digest_verify_initialize(const message_digest_algorithm& algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx = NULL, ENGINE* impl = NULL);
 
 				/**
 				 * \brief Update the message_digest_context with some data.
@@ -376,14 +376,14 @@ namespace cryptoplus
 			error::throw_error_if_not(EVP_VerifyInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
-		inline void message_digest_context::digest_sign_initialize(const message_digest_algorithm& _algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
+		inline void message_digest_context::digest_sign_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, key.raw()) == 1);
+			error::throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
 		}
 
-		inline void message_digest_context::digest_verify_initialize(const message_digest_algorithm& _algorithm, pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
+		inline void message_digest_context::digest_verify_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, key.raw()) == 1);
+			error::throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
 		}
 
 		inline void message_digest_context::update(const void* data, size_t len)
