@@ -51,8 +51,6 @@
 
 #include <openssl/evp.h>
 
-#include <boost/noncopyable.hpp>
-
 namespace cryptoplus
 {
 	namespace hash
@@ -66,21 +64,53 @@ namespace cryptoplus
 		 *
 		 * message_digest_context is noncopyable by design, however you may copy an existing message_digest_context using copy(). This is useful when you have to compute the hash of several values that differ only in their last bytes.
 		 */
-		class message_digest_context : public boost::noncopyable
+		class message_digest_context
 		{
 			public:
 
 				/**
 				 * \brief Create a new message_digest_context.
 				 */
-				message_digest_context();
+				message_digest_context()
+				{
+					EVP_MD_CTX_init(&m_ctx);
+				}
+
+				/**
+				 * \brief Copy a message_digest_context.
+				 * \param other The other instance.
+				 */
+				message_digest_context(const message_digest_context& other)
+				{
+					EVP_MD_CTX_init(&m_ctx);
+
+					copy(other);
+				}
 
 				/**
 				 * \brief Destroy a message_digest_context.
 				 *
 				 * Calls EVP_MD_CTX_cleanup() on the internal EVP_MD_CTX.
 				 */
-				~message_digest_context();
+				~message_digest_context()
+				{
+					EVP_MD_CTX_cleanup(&m_ctx);
+				}
+
+				/**
+				 * \brief Assign a message_digest_context to this instance.
+				 * \param other The other instance.
+				 * \return The current modified instance.
+				 */
+				message_digest_context& operator=(const message_digest_context& other)
+				{
+					if (&other != this)
+					{
+						copy(other);
+					}
+
+					return *this;
+				}
 
 				/**
 				 * \brief Initialize the message_digest_context.
@@ -330,16 +360,6 @@ namespace cryptoplus
 
 				EVP_MD_CTX m_ctx;
 		};
-
-		inline message_digest_context::message_digest_context()
-		{
-			EVP_MD_CTX_init(&m_ctx);
-		}
-
-		inline message_digest_context::~message_digest_context()
-		{
-			EVP_MD_CTX_cleanup(&m_ctx);
-		}
 
 		inline void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
