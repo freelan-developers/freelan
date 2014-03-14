@@ -48,7 +48,7 @@
 #include <string>
 
 #include "../buffer.hpp"
-#include "hash/message_digest_algorithm.hpp"
+#include "../hash/message_digest_algorithm.hpp"
 
 namespace cryptoplus
 {
@@ -81,7 +81,7 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The hash.
 		 */
-		buffer p_hash(size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const void* data2, size_t data2_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
+		inline buffer p_hash(size_t out_len, const void* key, size_t key_len, const void* data, size_t data_len, const void* data2, size_t data2_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
 		{
 			buffer result(out_len);
 
@@ -104,7 +104,7 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The count of bytes written to out. Should be equal to out_len.
 		 */
-		size_t prf(void* out, size_t out_len, const void* key, size_t key_len, const void* label, size_t label_len, const void* seed, size_t seed_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
+		inline size_t prf(void* out, size_t out_len, const void* key, size_t key_len, const void* label, size_t label_len, const void* seed, size_t seed_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
 		{
 			return p_hash(out, out_len, key, key_len, label, label_len, seed, seed_len, algorithm, impl);
 		}
@@ -121,7 +121,7 @@ namespace cryptoplus
 		 * \param impl The engine to use. The NULL default value indicate that no engine should be used.
 		 * \return The hash.
 		 */
-		buffer prf(size_t out_len, const void* key, size_t key_len, const std::string& label, const void* seed, size_t seed_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
+		inline buffer prf(size_t out_len, const void* key, size_t key_len, const std::string& label, const void* seed, size_t seed_len, const hash::message_digest_algorithm& algorithm, ENGINE* impl = NULL)
 		{
 			buffer result(out_len);
 

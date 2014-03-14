@@ -47,6 +47,7 @@
 #include "hash/message_digest_context.hpp"
 #include "pkey/pkey.hpp"
 
+#include <iomanip>
 #include <cassert>
 
 namespace cryptoplus
@@ -114,6 +115,7 @@ namespace cryptoplus
 				} else {
 					a1 = ctx.digest_sign_finalize();
 					std::copy(a1.data().begin(), a1.data().begin() + bytes_left, buf);
+					bytes_left = 0;
 				}
 			}
 
