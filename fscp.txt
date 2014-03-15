@@ -526,7 +526,7 @@ Abstract
    When deriving the local session key or the local nonce prefix, the
    seed is the local host identifier.
 
-   When deriving the remote session key or the local nonce prefix, the
+   When deriving the remote session key or the remote nonce prefix, the
    seed is the remote host identifier.
 
 4. Protocol
