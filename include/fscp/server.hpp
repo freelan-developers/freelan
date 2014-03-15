@@ -206,19 +206,16 @@ namespace fscp
 			 * \brief A handler for when a session establishment failed.
 			 * \param host The host with which the session establishment failed.
 			 * \param is_new A flag that indicates whether the session would have been a new session or a renewal.
-			 * \param local The local algorithm info.
-			 * \param remote The remote algorithm info.
 			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)> session_failed_handler_type;
+			typedef boost::function<void (const ep_type& host, bool is_new)> session_failed_handler_type;
 
 			/**
 			 * \brief A handler for when a session was established.
 			 * \param host The host with which the session was established.
 			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
-			 * \param local The local algorithm info.
-			 * \param remote The remote algorithm info.
+			 * \param cipher_suite The cipher suite used in the session.
 			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const algorithm_info_type& local, const algorithm_info_type& remote)> session_established_handler_type;
+			typedef boost::function<void (const ep_type& host, bool is_new, const cipher_suite_type& cipher_suite)> session_established_handler_type;
 
 			/**
 			 * \brief A handler for when a session was lost.
@@ -1372,13 +1369,10 @@ namespace fscp
 
 			static cipher_suite_type get_first_common_supported_cipher_suite(const cipher_suite_list_type&, const cipher_suite_list_type&, cipher_suite_type);
 
-			void do_request_clear_session(const identity_store&, const ep_type&, simple_handler_type);
-			void do_request_session(const identity_store&, const ep_type&, simple_handler_type, boost::asio::const_buffer);
+			void do_request_session(const identity_store&, const ep_type&, simple_handler_type);
 			void do_close_session(const ep_type&, simple_handler_type);
-			void handle_session_request_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const session_request_message&, const ep_type&);
-			void do_handle_session_request(const identity_store&, const ep_type&, const session_request_message&);
-			void handle_clear_session_request_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const clear_session_request_message&, const ep_type&);
-			void do_handle_clear_session_request(const identity_store&, const ep_type&, const clear_session_request_message&);
+			void do_handle_session_request(socket_memory_pool::shared_buffer_type, const identity_store&, const ep_type&, const session_request_message&);
+			void do_handle_verified_session_request(const identity_store&, const ep_type&, const session_request_message&);
 
 			std::set<ep_type> get_session_endpoints() const;
 			bool has_session_with_endpoint(const ep_type&);
@@ -1399,12 +1393,9 @@ namespace fscp
 
 		private: // SESSION messages
 
-			void do_send_clear_session(const identity_store&, const ep_type&, session_store::session_number_type);
-			void do_send_session(const identity_store&, const ep_type&, boost::asio::const_buffer);
-			void handle_session_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const session_message&, const ep_type&);
-			void do_handle_session(const identity_store&, const ep_type&, const session_message&);
-			void handle_clear_session_message_from(socket_memory_pool::shared_buffer_type, const clear_session_message&, const ep_type&);
-			void do_handle_clear_session(const ep_type&, const clear_session_message&);
+			void do_send_session(const identity_store&, const ep_type&, const session&);
+			void do_handle_session(socket_memory_pool::shared_buffer_type, const identity_store&, const ep_type&, const session_message&);
+			void do_handle_verified_session(const identity_store&, const ep_type&, const session_message&);
 
 			void do_set_accept_session_messages_default(bool, void_handler_type);
 			void do_set_session_message_received_callback(session_received_handler_type, void_handler_type);

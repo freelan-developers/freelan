@@ -46,6 +46,17 @@
 
 namespace fscp
 {
+	bool peer_session::clear()
+	{
+		const bool result = has_current_session();
+
+		clear_current_session();
+		clear_next_session();
+		clear_remote_host_identifier();
+
+		return result;
+	}
+
 	session_number_type peer_session::next_session_number() const
 	{
 		if (!has_current_session())
@@ -60,5 +71,17 @@ namespace fscp
 		{
 			return next_session().session_number();
 		}
+	}
+
+	bool set_first_remote_host_identifier(const host_identifier_type& _host_identifier)
+	{
+		if (!has_remote_host_identifier())
+		{
+			set_remote_host_identifier(_host_identifier);
+
+			return true;
+		}
+
+		return (_host_identifier == host_identifier());
 	}
 }

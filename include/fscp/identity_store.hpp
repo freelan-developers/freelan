@@ -71,11 +71,8 @@ namespace fscp
 			 * \brief Create a new identity store.
 			 * \param sig_cert The signature certificate. Cannot be null.
 			 * \param sig_key The signature key. Cannot be null.
-			 * \param enc_cert The encryption certificate. If enc_cert is null, sig_cert is taken instead.
-			 * \param enc_key The encryption key. If enc_key is null, sig_key is taken instead.
-			 * \warning Each certificate must match his private key. Otherwise, an std::runtime_error is thrown.
 			 */
-			identity_store(cert_type sig_cert, key_type sig_key, cert_type enc_cert = cert_type(), key_type enc_key = key_type());
+			identity_store(cert_type sig_cert, key_type sig_key);
 
 			/**
 			 * \brief Get the signature certificate.
@@ -89,24 +86,10 @@ namespace fscp
 			 */
 			key_type signature_key() const;
 
-			/**
-			 * \brief Get the encryption certificate.
-			 * \return The encryption certificate.
-			 */
-			cert_type encryption_certificate() const;
-
-			/**
-			 * \brief Get the encryption key.
-			 * \return The encryption key.
-			 */
-			key_type encryption_key() const;
-
 		private:
 
 			cert_type m_sig_cert;
 			key_type m_sig_key;
-			cert_type m_enc_cert;
-			key_type m_enc_key;
 	};
 
 	inline identity_store::cert_type identity_store::signature_certificate() const
@@ -117,16 +100,6 @@ namespace fscp
 	inline identity_store::key_type identity_store::signature_key() const
 	{
 		return m_sig_key;
-	}
-
-	inline identity_store::cert_type identity_store::encryption_certificate() const
-	{
-		return m_enc_cert;
-	}
-
-	inline identity_store::key_type identity_store::encryption_key() const
-	{
-		return m_enc_key;
 	}
 }
 

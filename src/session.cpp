@@ -44,6 +44,67 @@
 
 #include "session.hpp"
 
+#include <cassert>
+#include <cstring>
+
 namespace fscp
 {
+	void session::set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size)
+	{
+		assert(!m_remote_parameters);
+
+		m_remote_parameters = parameters(
+			cryptoplus::buffer(remote_public_key, remote_public_key_size),
+		);
+
+		const auto dh_shared_secret = m_ecdhe_context.derive_secret_key(m_remote_parameters->public_key());
+
+		// We derive the shared secret so it looks random.
+		message_digest_context md_ctx;
+		md_ctx.initialize(m_cipher_suite.to_message_digest_algorithm());
+		md_ctx.update(dh_shared_secret);
+		m_shared_secret = md_ctx.finalize();
+
+		// We resize the shared secret to match the key size of the used cipher algorithm.
+		assert(buffer_size(*m_shared_secret) >= m_cipher_suite.to_cipher_algorithm().key_length());
+
+		m_shared_secret->data().resize(m_cipher_suite.to_cipher_algorithm().key_length());
+	}
+
+	bool session::match_parameters(cipher_suite_type _cipher_suite, const void* remote_public_key, size_t remote_public_key_size)
+	{
+		assert(remote_public_key);
+
+		if (_cipher_suite != cipher_suite())
+		{
+			return false;
+		}
+
+		if (!has_remote_parameters())
+		{
+			return false;
+		}
+
+		const size_t buf_len = buffer_size(remote_parameters().public_key());
+
+		if (remote_public_key_size != buf_len)
+		{
+			return false;
+		}
+
+		const uint8_t* const buf = buffer_cast<const uint8_t*>(remote_parameters().public_key());
+
+		if (std::memcmp(buf, static_cast<const uint8_t*>(remote_public_key), buf_len) != 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	bool session::is_old() const
+	{
+		const auto max = std::numeric_limits<sequence_number_type>::max() / 2;
+		return (sequence_number() > max) || (has_remote_parameters() && remote_parameters().sequence_number() > max);
+	}
 }

@@ -49,43 +49,16 @@
 
 namespace fscp
 {
-	identity_store::identity_store(identity_store::cert_type sig_cert, identity_store::key_type sig_key, identity_store::cert_type enc_cert, identity_store::key_type enc_key) :
+	identity_store::identity_store(identity_store::cert_type sig_cert, identity_store::key_type sig_key) :
 		m_sig_cert(sig_cert),
-		m_sig_key(sig_key),
-		m_enc_cert(enc_cert),
-		m_enc_key(enc_key)
+		m_sig_key(sig_key)
 	{
 		assert(m_sig_cert);
 		assert(m_sig_key);
 
-		if (!m_enc_cert)
-		{
-			m_enc_cert = m_sig_cert;
-		}
-
-		if (!m_enc_key)
-		{
-			m_enc_key = m_sig_key;
-		}
-
 		if (!m_sig_cert.verify_private_key(m_sig_key))
 		{
 			throw std::runtime_error("sig_key mismatch");
-		}
-
-		if (!m_enc_cert.verify_private_key(m_enc_key))
-		{
-			throw std::runtime_error("enc_key mismatch");
-		}
-
-		if (cryptoplus::x509::compare(m_sig_cert.subject(), m_enc_cert.subject()) != 0)
-		{
-			throw std::runtime_error("subject name mistmatch");
-		}
-
-		if (cryptoplus::x509::compare(m_sig_cert.issuer(), m_enc_cert.issuer()) != 0)
-		{
-			throw std::runtime_error("issuer name mistmatch");
 		}
 	}
 }

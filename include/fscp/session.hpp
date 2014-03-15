@@ -66,16 +66,23 @@ namespace fscp
 			class parameters
 			{
 				public:
-					explicit parameters(const cryptoplus::buffer& public_key) :
-						m_public_key(public_key),
+					explicit parameters(const cryptoplus::buffer& _public_key, const cryptoplus::buffer& _shared_secret, const cryptoplus::buffer& _nonce_prefix) :
+						m_public_key(_public_key),
+						m_shared_secret(_shared_secret),
+						m_nonce_prefix(_nonce_prefix),
 						m_sequence_number()
 					{}
 
 					const cryptoplus::buffer& public_key() const { return m_public_key; }
+					const cryptoplus::buffer& shared_secret() const { return m_shared_secret; }
+					const cryptoplus::buffer& nonce_prefix() const { return m_nonce_prefix; }
 					sequence_number_type sequence_number() const { return m_sequence_number; }
+					void set_sequence_number(sequence_number_type _sequence_number) { m_sequence_number = _sequence_number; }
 
 				private:
 					cryptoplus::buffer m_public_key;
+					cryptoplus::buffer m_shared_secret;
+					cryptoplus::buffer m_nonce_prefix;
 					sequence_number_type m_sequence_number;
 			};
 
@@ -91,13 +98,15 @@ namespace fscp
 			cipher_suite_type cipher_suite() const { return m_cipher_suite; }
 			const cryptoplus::buffer& public_key() { return m_public_key; }
 			sequence_number_type sequence_number() const { return m_sequence_number; }
+			sequence_number_type increment_sequence_number() { return m_sequence_number++; }
 			bool has_remote_parameters() const { return !!m_remote_parameters; }
 			const parameters& remote_parameters() const { return *m_remote_parameters; }
 			bool has_shared_secret() const { return !!m_shared_secret; }
 			const cryptoplus::buffer& shared_secret() const { return *m_shared_secret; }
+			bool has_nonce_prefix() const { return !!m_nonce_prefix; }
+			const cryptoplus::buffer& nonce_prefix() const { return *m_nonce_prefix; }
 
-			template <typename ConstBufferType>
-			void set_remote_parameters(const ConstBufferType& remote_public_key)
+			void set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size)
 			{
 				assert(!m_remote_parameters);
 
@@ -119,6 +128,9 @@ namespace fscp
 				m_shared_secret->data().resize(m_cipher_suite.to_cipher_algorithm().key_length());
 			}
 
+			bool match_parameters(cipher_suite_type _cipher_suite, const void* remote_public_key, size_t remote_public_key_size);
+			bool is_old() const;
+
 		private:
 
 			session_number_type m_session_number;
@@ -128,6 +140,7 @@ namespace fscp
 			sequence_number_type m_sequence_number;
 			boost::optional<parameters> m_remote_parameters;
 			boost::optional<cryptoplus::buffer> m_shared_secret;
+			boost::optional<cryptoplus::buffer> m_nonce_prefix;
 	};
 }
 

@@ -492,7 +492,7 @@ namespace fscp
 
 	void server::async_request_session(const ep_type& target, simple_handler_type handler)
 	{
-		async_get_identity(m_session_strand.wrap(boost::bind(&server::do_request_clear_session, this, _1, normalize(target), handler)));
+		async_get_identity(m_session_strand.wrap(boost::bind(&server::do_request_session, this, _1, normalize(target), handler)));
 	}
 
 	void server::async_close_session(const ep_type& target, simple_handler_type handler)
@@ -903,7 +903,18 @@ namespace fscp
 						{
 							data_message data_message(message);
 
-							handle_data_message_from(identity, data, data_message, *sender);
+							m_session_strand.post(
+								make_shared_buffer_handler(
+									data,
+									boost::bind(
+										&server::do_handle_data,
+										this,
+										identity,
+										*sender,
+										data_message
+									)
+								)
+							);
 
 							break;
 						}
@@ -926,17 +937,36 @@ namespace fscp
 						}
 						case MESSAGE_TYPE_SESSION_REQUEST:
 						{
-							session_request_message session_request_message(message, identity.encryption_key().size());
+							session_request_message session_request_message(message);
 
-							handle_session_request_message_from(identity, data, session_request_message, *sender);
+							m_presentation_strand.post(
+								boost::bind(
+									&server::do_handle_session_request,
+									this,
+									data,
+									identity,
+									*sender,
+									session_request_message
+								)
+							);
 
 							break;
 						}
 						case MESSAGE_TYPE_SESSION:
 						{
-							session_message session_message(message, identity.encryption_key().size());
+							session_message session_message(message);
 
 							handle_session_message_from(identity, data, session_message, *sender);
+							m_presentation_strand.post(
+								boost::bind(
+									&server::do_handle_session,
+									this,
+									data,
+									identity,
+									sender,
+									session_message
+								)
+							);
 
 							break;
 						}
@@ -1430,9 +1460,9 @@ namespace fscp
 		return default_value;
 	}
 
-	void server::do_request_clear_session(const identity_store& identity, const ep_type& target, simple_handler_type handler)
+	void server::do_request_session(const identity_store& identity, const ep_type& target, simple_handler_type handler)
 	{
-		// All do_request_clear_session() calls are done in the same strand so the following is thread-safe.
+		// All do_request_session() calls are done in the session strand so the following is thread-safe.
 		if (!m_socket.is_open())
 		{
 			handler(server_error::server_offline);
@@ -1440,62 +1470,9 @@ namespace fscp
 			return;
 		}
 
-		peer_session& session = m_peer_sessions[target];
+		peer_session& p_session = m_peer_sessions[target];
 
-		const session_store::session_number_type session_number = session.next_session_number();
-		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
-
-		try
-		{
-			const size_t size = clear_session_request_message::write(
-				buffer_cast<uint8_t*>(cleartext_buffer),
-				buffer_size(cleartext_buffer),
-				session_number,
-				session.generate_local_challenge(),
-				m_cipher_suites
-			);
-
-			m_presentation_strand.post(
-				make_shared_buffer_handler(
-					cleartext_buffer,
-					boost::bind(
-						&server::do_request_session,
-						this,
-						identity,
-						target,
-						handler,
-						buffer(cleartext_buffer, size)
-					)
-				)
-			);
-		}
-		catch (const cryptoplus::error::cryptographic_exception&)
-		{
-			handler(server_error::cryptographic_error);
-		}
-	}
-
-	void server::do_request_session(const identity_store& identity, const ep_type& target, simple_handler_type handler, boost::asio::const_buffer cleartext)
-	{
-		// All do_request_session() calls are done in the same strand so the following is thread-safe.
-
-		if (!m_socket.is_open())
-		{
-			handler(server_error::server_offline);
-
-			return;
-		}
-
-		if (!has_presentation_store_for(target))
-		{
-			// We don't have any presentation_store for the specified target.
-			// Doing nothing.
-
-			handler(server_error::no_presentation_for_host);
-
-			return;
-		}
-
+		const session_store::session_number_type session_number = p_session.next_session_number();
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
 		try
@@ -1503,9 +1480,9 @@ namespace fscp
 			const size_t size = session_request_message::write(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				buffer_cast<const uint8_t*>(cleartext),
-				buffer_size(cleartext),
-				m_presentation_store_map[target].encryption_certificate().public_key(),
+				session_number,
+				p_session.host_identifier(),
+				m_cipher_suites,
 				identity.signature_key()
 			);
 
@@ -1531,7 +1508,7 @@ namespace fscp
 	{
 		// All do_close_session() calls are done in the same strand so the following is thread-safe.
 
-		if (m_session_map[target].clear_remote_session())
+		if (m_peer_sessions[sender].clear())
 		{
 			handler(server_error::success);
 
@@ -1546,14 +1523,29 @@ namespace fscp
 		}
 	}
 
-	void server::handle_session_request_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const session_request_message& _session_request_message, const ep_type& sender)
+	void server::do_handle_session_request(socket_memory_pool::shared_buffer_type data, const identity_store& identity, const ep_type& sender, const session_request_message& _session_request_message)
 	{
+		// All do_handle_session_request() calls are done in the presentation strand so the following is thread-safe.
+		if (!has_presentation_store_for(sender))
+		{
+			// No presentation_store for the given host.
+			// We do nothing.
+
+			return;
+		}
+
+		// We make sure the signatures matches.
+		if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+		{
+			return;
+		}
+
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
-		m_presentation_strand.post(
+		m_session_strand.post(
 			make_shared_buffer_handler(
 				data,
 				boost::bind(
-					&server::do_handle_session_request,
+					&server::do_handle_verified_session_request,
 					this,
 					identity,
 					sender,
@@ -1563,66 +1555,29 @@ namespace fscp
 		);
 	}
 
-	void server::do_handle_session_request(const identity_store& identity, const ep_type& sender, const session_request_message& _session_request_message)
+	void server::do_handle_verified_session_request(const identity_store& identity, const ep_type& sender, const session_request_message& _session_request_message)
 	{
-		// All do_handle_session_request() calls are done in the same strand so the following is thread-safe.
-		if (!has_presentation_store_for(sender))
-		{
-			// No presentation_store for the given host.
-			// We do nothing.
-
-			return;
-		}
-
-		if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
-		{
-			return;
-		}
-
-		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
-
-		try
-		{
-			const size_t cleartext_len = _session_request_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
-
-			clear_session_request_message clear_session_request_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
-
-			handle_clear_session_request_message_from(identity, cleartext_buffer, clear_session_request_message, sender);
-		}
-		catch (const cryptoplus::error::cryptographic_exception&)
-		{
-			// Do nothing.
-		}
-	}
-
-	void server::handle_clear_session_request_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const clear_session_request_message& _clear_session_request_message, const ep_type& sender)
-	{
-		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
-		m_session_strand.post(
-			make_shared_buffer_handler(
-				data,
-				boost::bind(
-					&server::do_handle_clear_session_request,
-					this,
-					identity,
-					sender,
-					_clear_session_request_message
-				)
-			)
-		);
-	}
-
-	void server::do_handle_clear_session_request(const identity_store& identity, const ep_type& sender, const clear_session_request_message& _clear_session_request_message)
-	{
-		// All do_handle_clear_session_request() calls are done in the same strand so the following is thread-safe.
-		bool can_reply = m_accept_session_request_messages_default;
+		// All do_handle_verified_session_request() calls are done in the session strand so the following is thread-safe.
 
 		// Get the associated session, creating one if none exists.
-		session_pair& session = m_session_map[sender];
+		peer_session& p_session = m_peer_sessions[sender];
+
+		if (!p_session.set_first_remote_host_identifier(_session_request_message.host_identifier()))
+		{
+			// The host identifier does not match.
+			return;
+		}
 
 		const cipher_suite_list_type cipher_suites = _clear_session_request_message.cipher_suites();
-
 		const cipher_suite_type calg = get_first_common_supported_cipher_suite(m_cipher_suites, cipher_suites);
+
+		if (calg == cipher_suite_type::unsupported)
+		{
+			// No suitable cipher is available.
+			return;
+		}
+
+		bool can_reply = m_accept_session_request_messages_default;
 
 		if (m_session_request_message_received_handler)
 		{
@@ -1631,10 +1586,25 @@ namespace fscp
 
 		if (can_reply)
 		{
-			session.set_remote_challenge(_clear_session_request_message.challenge());
-			session.set_local_cipher_algorithm(calg);
-
-			do_send_clear_session(identity, sender, _clear_session_request_message.session_number());
+			if (!p_session.has_current_session())
+			{
+				p_session.set_next_session(session(_session_request_message.session_number(), calg));
+				do_send_session(identity, sender, p_session.next_session());
+			}
+			else
+			{
+				if (_session_request_message.session_number() > p_session.current_session().session_number())
+				{
+					// A new session is requested. Sending a new message.
+					p_session.set_next_session(session(_session_request_message.session_number(), calg));
+					do_send_session(identity, sender, p_session.next_session());
+				}
+				else
+				{
+					// An old session is requested: sending the same message.
+					do_send_session(identity, sender, p_session.current_session());
+				}
+			}
 		}
 	}
 
@@ -1712,58 +1682,12 @@ namespace fscp
 		}
 	}
 
-	void server::do_send_clear_session(const identity_store& identity, const ep_type& target, session_store::session_number_type session_number)
+	void server::do_send_session(const identity_store& identity, const ep_type& target, session& _session)
 	{
-		// All do_send_clear_session() calls are done in the same strand so the following is thread-safe.
-		session_pair& session = m_session_map[target];
+		// All do_send_session() calls are done in the session strand so the following is thread-safe.
 
-		session.renew_local_session(session_number);
-
-		const socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
-
-		try
-		{
-			const size_t size = clear_session_message::write(
-				buffer_cast<uint8_t*>(cleartext_buffer),
-				buffer_size(cleartext_buffer),
-				session.local_session().session_number(),
-				session.remote_challenge(),
-				session.local_cipher_algorithm(),
-				session.local_session().encryption_key(),
-				session.local_session().encryption_key_size(),
-				session.local_session().nonce_prefix(),
-				session.local_session().nonce_prefix_size()
-			);
-
-			m_presentation_strand.post(
-				make_shared_buffer_handler(
-					cleartext_buffer,
-					boost::bind(
-						&server::do_send_session,
-						this,
-						identity,
-						target,
-						buffer(cleartext_buffer, size)
-					)
-				)
-			);
-		}
-		catch (const cryptoplus::error::cryptographic_exception&)
-		{
-			// Do nothing.
-		}
-	}
-
-	void server::do_send_session(const identity_store& identity, const ep_type& target, boost::asio::const_buffer cleartext)
-	{
-		// All do_send_session() calls are done in the same strand so the following is thread-safe.
-		if (!has_presentation_store_for(target))
-		{
-			// We don't have any presentation_store for the specified target.
-			// Doing nothing.
-
-			return;
-		}
+		//TODO: Handle session renewal
+		peer_session& p_session = m_peer_sessions[target];
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -1772,9 +1696,11 @@ namespace fscp
 			const size_t size = session_message::write(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				buffer_cast<const uint8_t*>(cleartext),
-				buffer_size(cleartext),
-				m_presentation_store_map[target].encryption_certificate().public_key(),
+				_session.session_number(),
+				p_session.host_identifier(),
+				_session.cipher_suite(),
+				buffer_cast<const void*>(_session.public_key()),
+				buffer_size(_session.public_key()),
 				identity.signature_key()
 			);
 
@@ -1798,24 +1724,7 @@ namespace fscp
 		}
 	}
 
-	void server::handle_session_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const session_message& _session_message, const ep_type& sender)
-	{
-		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
-		m_presentation_strand.post(
-			make_shared_buffer_handler(
-				data,
-				boost::bind(
-					&server::do_handle_session,
-					this,
-					identity,
-					sender,
-					_session_message
-				)
-			)
-		);
-	}
-
-	void server::do_handle_session(const identity_store& identity, const ep_type& sender, const session_message& _session_message)
+	void server::do_handle_session(socket_memory_pool::shared_buffer_type data, const identity_store& identity, const ep_type& sender, const session_message& _session_message)
 	{
 		// All do_handle_session() calls are done in the same strand so the following is thread-safe.
 
@@ -1827,98 +1736,96 @@ namespace fscp
 			return;
 		}
 
+		// We make sure the signatures matches.
 		if (!_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
 		{
 			return;
 		}
 
-		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
-
-		try
-		{
-			const size_t cleartext_len = _session_message.get_cleartext(buffer_cast<uint8_t*>(cleartext_buffer), buffer_size(cleartext_buffer), identity.encryption_key());
-
-			clear_session_message clear_session_message(buffer_cast<const uint8_t*>(cleartext_buffer), cleartext_len);
-
-			handle_clear_session_message_from(cleartext_buffer, clear_session_message, sender);
-		}
-		catch (const cryptoplus::error::cryptographic_exception&)
-		{
-			// Do nothing.
-		}
-	}
-
-	void server::handle_clear_session_message_from(socket_memory_pool::shared_buffer_type data, const clear_session_message& _clear_session_message, const ep_type& sender)
-	{
-		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
 		m_session_strand.post(
 			make_shared_buffer_handler(
 				data,
 				boost::bind(
-					&server::do_handle_clear_session,
+					&server::do_handle_verified_session,
 					this,
+					identity,
 					sender,
-					_clear_session_message
+					_session_message
 				)
 			)
 		);
 	}
 
-	void server::do_handle_clear_session(const ep_type& sender, const clear_session_message& _clear_session_message)
+	void server::do_handle_verified_session(const identity_store& identity, const ep_type& sender, const clear_session_message& _session_message)
 	{
-		// All do_handle_clear_session() calls are done in the same strand so the following is thread-safe.
-		session_pair& session_pair = m_session_map[sender];
+		// All do_handle_verified_session() calls are done in the session strand so the following is thread-safe.
+		peer_session& p_session = m_peer_sessions[target];
 
-		// FIXME: Handle the possible overflow for session numbers ! Even if it
-		// will happen in a *very long* time, it can still happen and will result
-		// in a session loss.
-		if (
-			_clear_session_message.challenge() == session_pair.local_challenge() &&
-			(
-				!session_pair.has_remote_session() ||
-				(session_pair.remote_session().session_number() < _clear_session_message.session_number())
-			)
-		)
+		if (!p_session.set_first_remote_host_identifier(_session_request_message.host_identifier()))
 		{
-			bool can_accept = m_accept_session_messages_default;
+			// The host identifier does not match.
+			return;
+		}
 
-			if (m_session_message_received_handler)
+		if (_session_message.cipher_suite() == cipher_suite_type::unsupported)
+		{
+			return;
+		}
+
+		if (p_session.has_current_session())
+		{
+			if (_session_message.session_number() == p_session.current_session().session_number())
 			{
-				can_accept = m_session_message_received_handler(sender, _clear_session_message.cipher_algorithm(), can_accept);
+				// The session number matches the current session.
+
+				if (!p_session.current_session().match_parameters(_session_message.cipher_suite(), _session_message.public_key(), _session_message.public_key_size()))
+				{
+					// The parameters don't match the current session. Requesting a new one.
+					do_request_session(identity, sender, simple_handler_type());
+				}
+
+				return;
+			}
+			else if (_session_message.session_number() < p_session.current_session().session_number())
+			{
+				// This is an old session message. Ignore it.
+				return;
+			}
+		}
+
+		const bool session_is_new = !p_session.has_current_session();
+
+		if (_session_message.cipher_suite() == cipher_suite_type::unsupported)
+		{
+			if (m_session_failed_handler)
+			{
+				m_session_failed_handler(sender, session_is_new);
 			}
 
-			if (can_accept)
+			return;
+		}
+
+		bool can_accept = m_accept_session_messages_default;
+
+		if (m_session_message_received_handler)
+		{
+			can_accept = m_session_message_received_handler(sender, _session_message.cipher_suite(), can_accept);
+		}
+
+		if (can_accept)
+		{
 			{
-				const bool session_is_new = !session_pair.has_remote_session();
+				auto& session = p_session.set_next_session(session(_session_message.session_number(), _session_message.cipher_suite()));
+				session.set_remote_parameters(_session_message.public_key(), _session_message.public_key_size());
 
-				const algorithm_info_type local = { session_pair.local_cipher_algorithm() };
-				const algorithm_info_type remote = { _clear_session_message.cipher_algorithm() };
+				do_send_session(identity, sender, session);
+			}
 
-				if (_clear_session_message.cipher_algorithm() == cipher_algorithm_type::unsupported)
-				{
-					if (m_session_failed_handler)
-					{
-						m_session_failed_handler(sender, session_is_new, local, remote);
-					}
-				}
-				else
-				{
-					session_store _session_store(
-						_clear_session_message.session_number(),
-						_clear_session_message.cipher_algorithm(),
-						_clear_session_message.encryption_key(),
-						_clear_session_message.encryption_key_size(),
-						_clear_session_message.nonce_prefix(),
-						_clear_session_message.nonce_prefix_size()
-					);
+			p_session.activate_next_session();
 
-					session_pair.set_remote_session(_session_store);
-
-					if (m_session_established_handler)
-					{
-						m_session_established_handler(sender, session_is_new, local, remote);
-					}
-				}
+			if (m_session_established_handler)
+			{
+				m_session_established_handler(sender, session_is_new, p_session.current_session().cipher_suite());
 			}
 		}
 	}
@@ -1980,37 +1887,37 @@ namespace fscp
 
 	void server::do_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
-		// All do_send_data() calls are done in the same strand so the following is thread-safe.
-		session_pair& session_pair = m_session_map[target];
+		// All do_send_data() calls are done in the session strand so the following is thread-safe.
+		peer_session& p_session = m_peer_sessions[target];
 
-		do_send_data_to_session(session_pair, target, channel_number, data, handler);
+		do_send_data_to_session(p_session, target, channel_number, data, handler);
 	}
 
 	void server::do_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
 	{
-		// All do_send_data_to_list() calls are done in the same strand so the following is thread-safe.
+		// All do_send_data_to_list() calls are done in the session strand so the following is thread-safe.
 		typedef results_gatherer<ep_type, boost::system::error_code, multiple_endpoints_handler_type> results_gatherer_type;
 
 		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
 
-		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		for (auto&& item: m_peer_sessions)
 		{
-			if (targets.count(item->first) > 0)
+			if (targets.count(item.first) > 0)
 			{
-				do_send_data_to_session(item->second, item->first, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+				do_send_data_to_session(item.second, item.first, channel_number, data, boost::bind(&results_gatherer_type::gather, rg, item.first, _1));
 			}
 		}
 	}
 
 	void server::do_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
 	{
-		// All do_send_data_to_all() calls are done in the same strand so the following is thread-safe.
+		// All do_send_data_to_all() calls are done in the session strand so the following is thread-safe.
 		do_send_data_to_list(get_session_endpoints(), channel_number, data, handler);
 	}
 
-	void server::do_send_data_to_session(session_pair& session_pair, const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
+	void server::do_send_data_to_session(peer_session& p_session, const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler)
 	{
-		// All do_send_data_to_session() calls are done in the same strand so the following is thread-safe.
+		// All do_send_data_to_session() calls are done in the session strand so the following is thread-safe.
 		if (!m_socket.is_open())
 		{
 			handler(server_error::server_offline);
@@ -2018,14 +1925,12 @@ namespace fscp
 			return;
 		}
 
-		if (!session_pair.has_remote_session())
+		if (!p_session.has_current_session())
 		{
 			handler(server_error::no_session_for_host);
 
 			return;
 		}
-
-		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -2035,18 +1940,15 @@ namespace fscp
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
 				channel_number,
-				session_pair.remote_session().session_number(),
-				session_pair.remote_session().sequence_number(),
-				cipher_algorithm,
+				p_session.current_session().increment_sequence_number(),
+				p_session.current_session().cipher_suite().to_cipher_algorithm(),
 				buffer_cast<const uint8_t*>(data),
 				buffer_size(data),
-				session_pair.remote_session().encryption_key(),
-				session_pair.remote_session().encryption_key_size(),
-				session_pair.remote_session().nonce_prefix(),
-				session_pair.remote_session().nonce_prefix_size()
+				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
+				buffer_size(p_session.current_session().shared_secret()),
+				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
+				buffer_size(p_session.current_session().nonce_prefix())
 			);
-
-			session_pair.remote_session().increment_sequence_number();
 
 			async_send_to(
 				buffer(send_buffer, size),
@@ -2068,10 +1970,10 @@ namespace fscp
 
 	void server::do_send_contact_request(const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler)
 	{
-		// All do_send_contact_request() calls are done in the same strand so the following is thread-safe.
-		session_pair& session_pair = m_session_map[target];
+		// All do_send_contact_request() calls are done in the session strand so the following is thread-safe.
+		peer_session& p_session = m_peer_sessions[target];
 
-		do_send_contact_request_to_session(session_pair, target, hash_list, handler);
+		do_send_contact_request_to_session(p_session, target, hash_list, handler);
 	}
 
 	void server::do_send_contact_request_to_list(const std::set<ep_type>& targets, const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
@@ -2081,11 +1983,11 @@ namespace fscp
 
 		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
 
-		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		for (auto&& item: m_peer_sessions)
 		{
-			if (targets.count(item->first) > 0)
+			if (targets.count(item.first) > 0)
 			{
-				do_send_contact_request_to_session(item->second, item->first, hash_list, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+				do_send_contact_request_to_session(item.second, item.first, hash_list, boost::bind(&results_gatherer_type::gather, rg, item.first, _1));
 			}
 		}
 	}
@@ -2096,7 +1998,7 @@ namespace fscp
 		do_send_contact_request_to_list(get_session_endpoints(), hash_list, handler);
 	}
 
-	void server::do_send_contact_request_to_session(session_pair& session_pair, const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler)
+	void server::do_send_contact_request_to_session(peer_session& p_session, const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler)
 	{
 		// All do_send_contact_request_to_session() calls are done in the same strand so the following is thread-safe.
 		if (!m_socket.is_open())
@@ -2106,14 +2008,12 @@ namespace fscp
 			return;
 		}
 
-		if (!session_pair.has_remote_session())
+		if (!p_session.has_current_session())
 		{
 			handler(server_error::no_session_for_host);
 
 			return;
 		}
-
-		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -2122,17 +2022,14 @@ namespace fscp
 			const size_t size = data_message::write_contact_request(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				session_pair.remote_session().session_number(),
-				session_pair.remote_session().sequence_number(),
-				cipher_algorithm,
+				p_session.current_session().increment_sequence_number(),
+				p_session.current_session().cipher_suite().to_cipher_algorithm(),
 				hash_list,
-				session_pair.remote_session().encryption_key(),
-				session_pair.remote_session().encryption_key_size(),
-				session_pair.remote_session().nonce_prefix(),
-				session_pair.remote_session().nonce_prefix_size()
+				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
+				buffer_size(p_session.current_session().shared_secret()),
+				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
+				buffer_size(p_session.current_session().nonce_prefix())
 			);
-
-			session_pair.remote_session().increment_sequence_number();
 
 			async_send_to(
 				buffer(send_buffer, size),
@@ -2155,9 +2052,9 @@ namespace fscp
 	void server::do_send_contact(const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
 	{
 		// All do_send_contact() calls are done in the same strand so the following is thread-safe.
-		session_pair& session_pair = m_session_map[target];
+		peer_session& p_session = m_peer_sessions[target];
 
-		do_send_contact_to_session(session_pair, target, contact_map, handler);
+		do_send_contact_to_session(p_session, target, contact_map, handler);
 	}
 
 	void server::do_send_contact_to_list(const std::set<ep_type>& targets, const contact_map_type& contact_map, multiple_endpoints_handler_type handler)
@@ -2167,11 +2064,11 @@ namespace fscp
 
 		boost::shared_ptr<results_gatherer_type> rg = boost::make_shared<results_gatherer_type>(handler, targets);
 
-		for (session_pair_map::iterator item = m_session_map.begin(); item != m_session_map.end(); ++item)
+		for (auto&& item: m_peer_sessions)
 		{
-			if (targets.count(item->first) > 0)
+			if (targets.count(item.first) > 0)
 			{
-				do_send_contact_to_session(item->second, item->first, contact_map, boost::bind(&results_gatherer_type::gather, rg, item->first, _1));
+				do_send_contact_to_session(item.second, item.first, contact_map, boost::bind(&results_gatherer_type::gather, rg, item.first, _1));
 			}
 		}
 	}
@@ -2182,7 +2079,7 @@ namespace fscp
 		do_send_contact_to_list(get_session_endpoints(), contact_map, handler);
 	}
 
-	void server::do_send_contact_to_session(session_pair& session_pair, const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
+	void server::do_send_contact_to_session(peer_session& p_session, const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler)
 	{
 		// All do_send_contact_to_session() calls are done in the same strand so the following is thread-safe.
 		if (!m_socket.is_open())
@@ -2192,14 +2089,12 @@ namespace fscp
 			return;
 		}
 
-		if (!session_pair.has_remote_session())
+		if (!p_session.has_current_session())
 		{
 			handler(server_error::no_session_for_host);
 
 			return;
 		}
-
-		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -2208,17 +2103,14 @@ namespace fscp
 			const size_t size = data_message::write_contact(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				session_pair.remote_session().session_number(),
-				session_pair.remote_session().sequence_number(),
-				cipher_algorithm,
+				p_session.current_session().increment_sequence_number(),
+				p_session.current_session().cipher_suite().to_cipher_algorithm(),
 				contact_map,
-				session_pair.remote_session().encryption_key(),
-				session_pair.remote_session().encryption_key_size(),
-				session_pair.remote_session().nonce_prefix(),
-				session_pair.remote_session().nonce_prefix_size()
+				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
+				buffer_size(p_session.current_session().shared_secret()),
+				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
+				buffer_size(p_session.current_session().nonce_prefix())
 			);
-
-			session_pair.remote_session().increment_sequence_number();
 
 			async_send_to(
 				buffer(send_buffer, size),
@@ -2238,41 +2130,25 @@ namespace fscp
 		}
 	}
 
-	void server::handle_data_message_from(const identity_store& identity, socket_memory_pool::shared_buffer_type data, const data_message& _data_message, const ep_type& sender)
-	{
-		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
-		m_session_strand.post(
-			make_shared_buffer_handler(
-				data,
-				boost::bind(
-					&server::do_handle_data,
-					this,
-					identity,
-					sender,
-					_data_message
-				)
-			)
-		);
-	}
-
 	void server::do_handle_data(const identity_store& identity, const ep_type& sender, const data_message& _data_message)
 	{
 		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
-		session_pair& session_pair = m_session_map[sender];
+		peer_session& p_session = m_peer_sessions[sender];
 
-		if (!session_pair.has_local_session())
+		if (!p_session.has_current_session() || !p_session.current_session().has_remote_paramters())
 		{
-			// We don't have a session: we must ignore the message.
+			handler(server_error::no_session_for_host);
+
 			return;
 		}
 
-		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.local_session().cipher_algorithm().to_cipher_algorithm();
-
-		if (_data_message.sequence_number() <= session_pair.local_session().sequence_number())
+		if (_data_message.sequence_number() <= p_session.current_session().remote_parameters().sequence_number())
 		{
 			// The message is outdated: we ignore it.
 			return;
 		}
+
+		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.local_session().cipher_algorithm().to_cipher_algorithm();
 
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -2281,23 +2157,22 @@ namespace fscp
 			const size_t cleartext_len = _data_message.get_cleartext(
 				buffer_cast<uint8_t*>(cleartext_buffer),
 				buffer_size(cleartext_buffer),
-				session_pair.local_session().session_number(),
-				cipher_algorithm,
-				session_pair.local_session().encryption_key(),
-				session_pair.local_session().encryption_key_size(),
-				session_pair.local_session().nonce_prefix(),
-				session_pair.local_session().nonce_prefix_size()
+				p_session.current_session().cipher_suite().to_cipher_algorithm(),
+				buffer_cast<const uint8_t*>(p_session.current_session().remote_parameters().shared_secret()),
+				buffer_size(p_session.current_session().remote_parameters().shared_secret()),
+				buffer_cast<const uint8_t*>(p_session.current_session().remote_parameters().nonce_prefix()),
+				buffer_size(p_session.current_session().remote_parameters().nonce_prefix())
 			);
 
-			session_pair.local_session().set_sequence_number(_data_message.sequence_number());
+			p_session.current_session().remote_parameters().set_sequence_number(_data_message.sequence_number());
+			p_session.keep_alive();
 
-			if (session_pair.local_session().is_old())
+			if (p_session.current_session().is_old())
 			{
 				// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
-				do_send_clear_session(identity, sender, session_pair.local_session().session_number() + 1);
+				auto& session = p_session.set_next_session(session(p_session.next_session_number(), p_session.current_session().cipher_suite()));
+				do_send_session(identity, sender, session);
 			}
-
-			session_pair.keep_alive();
 
 			const message_type type = _data_message.type();
 

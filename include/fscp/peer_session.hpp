@@ -72,6 +72,8 @@ namespace fscp
 				cryptoplus::random::get_random_bytes(m_host_identifier.data(), m_host_identifier.size());
 			}
 
+			bool clear();
+
 			session_number_type next_session_number() const;
 			bool has_current_session() { return !!m_current_session; }
 			session& current_session() { return *m_current_session; }
@@ -87,7 +89,9 @@ namespace fscp
 			const host_identifier_type& host_identifier() const { return m_host_identifier; }
 			bool has_remote_host_identifier() const { return !!m_remote_host_identifier; }
 			const host_identifier_type& remote_host_identifier() const { return *m_remote_host_identifier; }
+			bool set_first_remote_host_identifier(const host_identifier_type& _host_identifier);
 			void set_remote_host_identifier(const host_identifier_type& _host_identifier) { m_remote_host_identifier = _host_identifier; }
+			void clear_remote_host_identifier() { m_remote_host_identifier = boost::none; }
 
 			/**
 			 * \brief Check if the session has timed out.
