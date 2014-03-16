@@ -90,8 +90,6 @@ Abstract
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |  sig_cert_len   |     sig_cert    |
                  +-----------------+~~~~~~~~~~~~~~~~~+
-                 |  enc_cert_len   |     enc_cert    |
-                 +-----------------+~~~~~~~~~~~~~~~~~+
 
 2.3.1. PRESENTATION message type
 
@@ -107,30 +105,8 @@ Abstract
    next sections, its associated RSA public and private keys for
    signature will respectively be referred as PKV and PKS.
 
-   The enc_cert_len field indicates the size of the enc_cert field.
-
-   The enc_cert field is a DER-encoded X509 certificate used for key
-   exchange by the sender. This certificate SHOULD have the
-   keyEncipherment key usage set, as specified in [RFC2459]. In the next
-   sections, its associated RSA public and private keys for encryption
-   will respectively be referred as PKE and PKD.
-
-   If the same certificate is to be used for both usages, a sender MAY
-   set enc_cert_len to zero and leave enc_cert empty. In this case, the
-   certificate SHOULD have both digitalSignature and keyEncipherment key
-   usage set, as specified in [RFC2459].
-
-   However, it is RECOMMENDED that two different keys pairs be used for
-   signature and encryption. A strict implementation MAY reject
-   PRESENTATION messages with identicial signature and encryption
-   certificates.
-
-   The sig_cert and enc_cert certificates MUST have the exact same
-   subjectName and issuerName. If they don't, the presentation message
-   MUST be ignored.
-
-   A host MIGHT ignore any PRESENTATION message whose sig_cert or
-   enc_cert field does not satisfy the key usage requirements.
+   A host MIGHT ignore any PRESENTATION message whose sig_cert field
+   does not satisfy the key usage requirements.
 
    The minimum RSA key size is 1024 bits. The RECOMMENDED RSA key size
    is 2048 bits or higher, with an exponent of 2^16 + 1. A strict
