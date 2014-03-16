@@ -47,6 +47,8 @@
 #include <cassert>
 #include <stdexcept>
 
+#include <cryptoplus/hash/message_digest_context.hpp>
+
 namespace fscp
 {
 	namespace
@@ -76,7 +78,15 @@ namespace fscp
 		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
 		std::copy(_host_identifier.begin(), _host_identifier.end(), payload + sizeof(_session_number));
 		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size, htons(static_cast<uint16_t>(cs_cap.size())));
-		std::copy(cs_cap.begin(), cs_cap.end(), static_cast<cipher_suite_list_type*>(payload) + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t));
+
+		{
+			uint8_t* cs_buf = payload + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t);
+
+			for (auto&& cs: cs_cap)
+			{
+				*cs_buf++ = cs.value();
+			}
+		}
 
 		cryptoplus::hash::message_digest_context mdctx;
 		EVP_PKEY_CTX* evp_ctx = nullptr;

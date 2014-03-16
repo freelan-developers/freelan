@@ -952,7 +952,7 @@ namespace fscp
 									this,
 									data,
 									identity,
-									sender,
+									*sender,
 									session_message
 								)
 							);
@@ -1806,7 +1806,7 @@ namespace fscp
 		{
 			{
 				auto& _session = p_session.set_next_session(session(_session_message.session_number(), _session_message.cipher_suite()));
-				_session.set_remote_parameters(_session_message.public_key(), _session_message.public_key_size());
+				_session.set_remote_parameters(_session_message.public_key(), _session_message.public_key_size(), p_session.host_identifier(), p_session.remote_host_identifier());
 
 				do_send_session(identity, sender, _session);
 			}
@@ -2127,8 +2127,6 @@ namespace fscp
 
 		if (!p_session.has_current_session() || !p_session.current_session().has_remote_parameters())
 		{
-			handler(server_error::no_session_for_host);
-
 			return;
 		}
 
@@ -2158,8 +2156,8 @@ namespace fscp
 			if (p_session.current_session().is_old())
 			{
 				// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
-				auto& session = p_session.set_next_session(session(p_session.next_session_number(), p_session.current_session().cipher_suite()));
-				do_send_session(identity, sender, session);
+				auto& _session = p_session.set_next_session(session(p_session.next_session_number(), p_session.current_session().cipher_suite()));
+				do_send_session(identity, sender, _session);
 			}
 
 			const message_type type = _data_message.type();
@@ -2190,7 +2188,7 @@ namespace fscp
 
 	void server::do_handle_data_message(const ep_type& sender, message_type type, shared_buffer_type buffer, boost::asio::const_buffer data)
 	{
-		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
+		// All do_handle_data_message() calls are done in the same strand so the following is thread-safe.
 		if (is_data_message_type(type))
 		{
 			// This is safe only because type is a DATA message type.

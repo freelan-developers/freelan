@@ -101,12 +101,13 @@ namespace fscp
 			sequence_number_type increment_sequence_number() { return m_sequence_number++; }
 			bool has_remote_parameters() const { return !!m_remote_parameters; }
 			const parameters& remote_parameters() const { return *m_remote_parameters; }
+			parameters& remote_parameters() { return *m_remote_parameters; }
 			bool has_shared_secret() const { return !!m_shared_secret; }
 			const cryptoplus::buffer& shared_secret() const { return *m_shared_secret; }
 			bool has_nonce_prefix() const { return !!m_nonce_prefix; }
 			const cryptoplus::buffer& nonce_prefix() const { return *m_nonce_prefix; }
 
-			void set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size);
+			void set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size, const host_identifier_type& local_host_identifier, const host_identifier_type& remote_host_identifier);
 			bool match_parameters(cipher_suite_type _cipher_suite, const void* remote_public_key, size_t remote_public_key_size);
 			bool is_old() const;
 

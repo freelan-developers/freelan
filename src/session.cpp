@@ -51,13 +51,15 @@
 
 namespace fscp
 {
-	void session::set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size)
+	using cryptoplus::buffer_cast;
+
+	void session::set_remote_parameters(const void* _remote_public_key, size_t remote_public_key_size, const host_identifier_type& local_host_identifier, const host_identifier_type& remote_host_identifier)
 	{
 		assert(!m_remote_parameters);
 
 		const size_t key_length = m_cipher_suite.to_cipher_algorithm().key_length();
 
-		const auto remote_public_key = cryptoplus::buffer(remote_public_key, remote_public_key_size);
+		const auto remote_public_key = cryptoplus::buffer(_remote_public_key, remote_public_key_size);
 
 		// We get the derived secret key.
 		m_secret_key = m_ecdhe_context.derive_secret_key(remote_public_key);
@@ -67,8 +69,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"session key",
-			host_identifier().data(),
-			host_identifier().size(),
+			local_host_identifier.data(),
+			local_host_identifier.size(),
 			CERTIFICATE_DIGEST_ALGORITHM
 		);
 
@@ -77,8 +79,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"session key",
-			host_identifier().data(),
-			host_identifier().size(),
+			remote_host_identifier.data(),
+			remote_host_identifier.size(),
 			CERTIFICATE_DIGEST_ALGORITHM
 		);
 
@@ -87,8 +89,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"nonce prefix",
-			host_identifier().data(),
-			host_identifier().size(),
+			local_host_identifier.data(),
+			local_host_identifier.size(),
 			CERTIFICATE_DIGEST_ALGORITHM
 		);
 
@@ -97,8 +99,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"nonce prefix",
-			host_identifier().data(),
-			host_identifier().size(),
+			remote_host_identifier.data(),
+			remote_host_identifier.size(),
 			CERTIFICATE_DIGEST_ALGORITHM
 		);
 
