@@ -26,14 +26,14 @@
     <ClCompile Include="src\identity_store.cpp" />
     <ClCompile Include="src\memory_pool.cpp" />
     <ClCompile Include="src\message.cpp" />
+    <ClCompile Include="src\peer_session.cpp" />
     <ClCompile Include="src\presentation_message.cpp" />
     <ClCompile Include="src\presentation_store.cpp" />
     <ClCompile Include="src\server.cpp" />
     <ClCompile Include="src\server_error.cpp" />
+    <ClCompile Include="src\session.cpp" />
     <ClCompile Include="src\session_message.cpp" />
-    <ClCompile Include="src\session_pair.cpp" />
     <ClCompile Include="src\session_request_message.cpp" />
-    <ClCompile Include="src\session_store.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\fscp\buffer_tools.hpp" />
@@ -44,14 +44,14 @@
     <ClInclude Include="include\fscp\identity_store.hpp" />
     <ClInclude Include="include\fscp\memory_pool.hpp" />
     <ClInclude Include="include\fscp\message.hpp" />
+    <ClInclude Include="include\fscp\peer_session.hpp" />
     <ClInclude Include="include\fscp\presentation_message.hpp" />
     <ClInclude Include="include\fscp\presentation_store.hpp" />
     <ClInclude Include="include\fscp\server.hpp" />
     <ClInclude Include="include\fscp\server_error.hpp" />
+    <ClInclude Include="include\fscp\session.hpp" />
     <ClInclude Include="include\fscp\session_message.hpp" />
-    <ClInclude Include="include\fscp\session_pair.hpp" />
     <ClInclude Include="include\fscp\session_request_message.hpp" />
-    <ClInclude Include="include\fscp\session_store.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D2906D5F-3E94-4376-814D-299B8F81E195}</ProjectGuid>

@@ -47,28 +47,66 @@
 #include <cassert>
 #include <cstring>
 
+#include <cryptoplus/tls/tls.hpp>
+
 namespace fscp
 {
 	void session::set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size)
 	{
 		assert(!m_remote_parameters);
 
-		m_remote_parameters = parameters(
-			cryptoplus::buffer(remote_public_key, remote_public_key_size),
+		const size_t key_length = m_cipher_suite.to_cipher_algorithm().key_length();
+
+		const auto remote_public_key = cryptoplus::buffer(remote_public_key, remote_public_key_size);
+
+		// We get the derived secret key.
+		m_secret_key = m_ecdhe_context.derive_secret_key(remote_public_key);
+
+		m_shared_secret = cryptoplus::tls::prf(
+			key_length,
+			buffer_cast<const void*>(*m_secret_key),
+			buffer_size(*m_secret_key),
+			"session key",
+			host_identifier().data(),
+			host_identifier().size(),
+			CERTIFICATE_DIGEST_ALGORITHM
 		);
 
-		const auto dh_shared_secret = m_ecdhe_context.derive_secret_key(m_remote_parameters->public_key());
+		const auto remote_shared_secret = cryptoplus::tls::prf(
+			key_length,
+			buffer_cast<const void*>(*m_secret_key),
+			buffer_size(*m_secret_key),
+			"session key",
+			host_identifier().data(),
+			host_identifier().size(),
+			CERTIFICATE_DIGEST_ALGORITHM
+		);
 
-		// We derive the shared secret so it looks random.
-		message_digest_context md_ctx;
-		md_ctx.initialize(m_cipher_suite.to_message_digest_algorithm());
-		md_ctx.update(dh_shared_secret);
-		m_shared_secret = md_ctx.finalize();
+		m_nonce_prefix = cryptoplus::tls::prf(
+			DEFAULT_NONCE_PREFIX_SIZE,
+			buffer_cast<const void*>(*m_secret_key),
+			buffer_size(*m_secret_key),
+			"nonce prefix",
+			host_identifier().data(),
+			host_identifier().size(),
+			CERTIFICATE_DIGEST_ALGORITHM
+		);
 
-		// We resize the shared secret to match the key size of the used cipher algorithm.
-		assert(buffer_size(*m_shared_secret) >= m_cipher_suite.to_cipher_algorithm().key_length());
+		const auto remote_nonce_prefix = cryptoplus::tls::prf(
+			DEFAULT_NONCE_PREFIX_SIZE,
+			buffer_cast<const void*>(*m_secret_key),
+			buffer_size(*m_secret_key),
+			"nonce prefix",
+			host_identifier().data(),
+			host_identifier().size(),
+			CERTIFICATE_DIGEST_ALGORITHM
+		);
 
-		m_shared_secret->data().resize(m_cipher_suite.to_cipher_algorithm().key_length());
+		m_remote_parameters = parameters(
+			remote_public_key,
+			remote_shared_secret,
+			remote_nonce_prefix
+		);
 	}
 
 	bool session::match_parameters(cipher_suite_type _cipher_suite, const void* remote_public_key, size_t remote_public_key_size)

@@ -106,28 +106,7 @@ namespace fscp
 			bool has_nonce_prefix() const { return !!m_nonce_prefix; }
 			const cryptoplus::buffer& nonce_prefix() const { return *m_nonce_prefix; }
 
-			void set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size)
-			{
-				assert(!m_remote_parameters);
-
-				m_remote_parameters = parameters(
-					cryptoplus::buffer(buffer_cast<const void*>(remote_public_key), buffer_size(remote_public_key)),
-				);
-
-				const auto dh_shared_secret = m_ecdhe_context.derive_secret_key(m_remote_parameters->public_key());
-
-				// We derive the shared secret so it looks random.
-				message_digest_context md_ctx;
-				md_ctx.initialize(m_cipher_suite.to_message_digest_algorithm());
-				md_ctx.update(dh_shared_secret);
-				m_shared_secret = md_ctx.finalize();
-
-				// We resize the shared secret to match the key size of the used cipher algorithm.
-				assert(buffer_size(*m_shared_secret) >= m_cipher_suite.to_cipher_algorithm().key_length());
-
-				m_shared_secret->data().resize(m_cipher_suite.to_cipher_algorithm().key_length());
-			}
-
+			void set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size);
 			bool match_parameters(cipher_suite_type _cipher_suite, const void* remote_public_key, size_t remote_public_key_size);
 			bool is_old() const;
 
@@ -138,6 +117,7 @@ namespace fscp
 			cryptoplus::pkey::ecdhe_context m_ecdhe_context;
 			cryptoplus::buffer m_public_key;
 			sequence_number_type m_sequence_number;
+			boost::optional<cryptoplus::buffer> m_secret_key;
 			boost::optional<parameters> m_remote_parameters;
 			boost::optional<cryptoplus::buffer> m_shared_secret;
 			boost::optional<cryptoplus::buffer> m_nonce_prefix;

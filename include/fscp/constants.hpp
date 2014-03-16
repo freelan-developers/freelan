@@ -435,6 +435,11 @@ namespace fscp
 	const boost::posix_time::time_duration SESSION_TIMEOUT = SESSION_KEEP_ALIVE_PERIOD * 3;
 
 	/**
+	 * \brief The keep-alive data size.
+	 */
+	const size_t SESSION_KEEP_ALIVE_DATA_SIZE = 32;
+
+	/**
 	 * \brief Check if a message type is a DATA type message.
 	 * \param type The message type.
 	 * \return true if the message type is one from MESSAGE_TYPE_DATA_0 to MESSAGE_TYPE_DATA_15.

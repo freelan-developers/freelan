@@ -71,14 +71,6 @@ namespace fscp
 
 	namespace
 	{
-		void null_simple_handler(const boost::system::error_code&)
-		{
-		}
-
-		void null_multiple_endpoints_handler(const std::map<server::ep_type, boost::system::error_code>&)
-		{
-		}
-
 		server::ep_type normalize(const server::ep_type& ep)
 		{
 			server::ep_type result = ep;
@@ -832,7 +824,7 @@ namespace fscp
 		// do_set_identity() is executed within the socket strand so this is safe.
 		set_identity(identity);
 
-		async_reintroduce_to_all(&null_multiple_endpoints_handler);
+		async_reintroduce_to_all(multiple_endpoints_handler_type());
 
 		if (handler)
 		{
@@ -984,7 +976,7 @@ namespace fscp
 			else if (ec == boost::asio::error::connection_refused)
 			{
 				// The host refused the connection, meaning it closed its socket so we can force-terminate the session.
-				async_close_session(*sender, &null_simple_handler);
+				async_close_session(*sender, simple_handler_type());
 			}
 		}
 	}
@@ -1613,11 +1605,11 @@ namespace fscp
 		// All get_session_endpoints() calls are done in the same strand so the following is thread-safe.
 		std::set<ep_type> result;
 
-		for (session_pair_map::const_iterator pair = m_session_map.begin(); pair != m_session_map.end(); ++pair)
+		for (auto&& p_session: m_peer_sessions)
 		{
-			if (pair->second.has_remote_session())
+			if (p_session.second.has_remote_session())
 			{
-				result.insert(pair->first);
+				result.insert(p_session.first);
 			}
 		}
 
@@ -2148,8 +2140,6 @@ namespace fscp
 			return;
 		}
 
-		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.local_session().cipher_algorithm().to_cipher_algorithm();
-
 		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
 		try
@@ -2265,7 +2255,7 @@ namespace fscp
 		// Our contact map contains some answers: we send those.
 		if (!contact_map.empty())
 		{
-			async_send_contact(sender, contact_map, &null_simple_handler);
+			async_send_contact(sender, contact_map, simple_handler_type());
 		}
 	}
 
@@ -2320,21 +2310,21 @@ namespace fscp
 		// All do_check_keep_alive() calls are done in the same strand so the following is thread-safe.
 		if (ec != boost::asio::error::operation_aborted)
 		{
-			for (session_pair_map::iterator session_pair = m_session_map.begin(); session_pair != m_session_map.end(); ++session_pair)
+			for (auto&& p_session: m_peer_sessions)
 			{
-				if (session_pair->second.has_timed_out(SESSION_TIMEOUT))
+				if (p_session.second.has_timed_out(SESSION_TIMEOUT))
 				{
-					if (session_pair->second.clear_remote_session())
+					if (p_session.second.clear_remote_session())
 					{
 						if (m_session_lost_handler)
 						{
-							m_session_lost_handler(session_pair->first);
+							m_session_lost_handler(p_session.first);
 						}
 					}
 				}
 				else
 				{
-					do_send_keep_alive(session_pair->first, &null_simple_handler);
+					do_send_keep_alive(p_session.first, simple_handler_type());
 				}
 			}
 
@@ -2353,16 +2343,14 @@ namespace fscp
 			return;
 		}
 
-		session_pair& session_pair = m_session_map[target];
+		peer_session& p_session = m_peer_sessions[target];
 
-		if (!session_pair.has_remote_session())
+		if (!p_session.has_current_session())
 		{
 			handler(server_error::no_session_for_host);
 
 			return;
 		}
-
-		const cryptoplus::cipher::cipher_algorithm cipher_algorithm = session_pair.remote_session().cipher_algorithm().to_cipher_algorithm();
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
@@ -2371,17 +2359,14 @@ namespace fscp
 			const size_t size = data_message::write_keep_alive(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				session_pair.remote_session().session_number(),
-				session_pair.remote_session().sequence_number(),
-				cipher_algorithm,
-				session_pair.remote_session().encryption_key_size(), // This is the count of random data to send.
-				session_pair.remote_session().encryption_key(),
-				session_pair.remote_session().encryption_key_size(),
-				session_pair.remote_session().nonce_prefix(),
-				session_pair.remote_session().nonce_prefix_size()
+				p_session.current_session().increment_sequence_number(),
+				p_session.current_session().cipher_suite().to_cipher_algorithm(),
+				SESSION_KEEP_ALIVE_DATA_SIZE, // This is the count of random data to send.
+				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
+				buffer_size(p_session.current_session().shared_secret()),
+				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
+				buffer_size(p_session.current_session().nonce_prefix())
 			);
-
-			session_pair.remote_session().increment_sequence_number();
 
 			async_send_to(
 				buffer(send_buffer, size),
