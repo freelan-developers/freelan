@@ -113,7 +113,7 @@ static void on_hello_response(fscp::server& server, const fscp::server::ep_type&
 	}
 }
 
-static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::cert_type /*enc_cert*/, fscp::server::presentation_status_type status)
+static bool on_presentation(fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type sig_cert, fscp::server::presentation_status_type status)
 {
 	mutex::scoped_lock lock(output_mutex);
 
@@ -124,7 +124,7 @@ static bool on_presentation(fscp::server& server, const fscp::server::ep_type& s
 	return true;
 }
 
-static bool on_session_request(const fscp::server::ep_type& sender, const fscp::cipher_algorithm_list_type&, bool default_accept)
+static bool on_session_request(const fscp::server::ep_type& sender, const fscp::cipher_suite_list_type&, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
@@ -133,33 +133,30 @@ static bool on_session_request(const fscp::server::ep_type& sender, const fscp::
 	return default_accept;
 }
 
-static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_algorithm_type, bool default_accept)
+static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "Received SESSION from " << sender << std::endl;
+	std::cout << "Received SESSION from " << sender << ": " << cs << std::endl;
 
 	return default_accept;
 }
 
-static void on_session_failed(const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+static void on_session_failed(const fscp::server::ep_type& host, bool is_new)
 {
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "Session failed with " << host << std::endl;
 	std::cout << "New session: " << is_new << std::endl;
-	std::cout << "Local algorithms: " << local << std::endl;
-	std::cout << "Remote algorithms: " << remote << std::endl;
 }
 
-static void on_session_established(const fscp::server::ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+static void on_session_established(const fscp::server::ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)
 {
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "Session established with " << host << std::endl;
 	std::cout << "New session: " << is_new << std::endl;
-	std::cout << "Local algorithms: " << local << std::endl;
-	std::cout << "Remote algorithms: " << remote << std::endl;
+	std::cout << "Cipher suite: " << cs << std::endl;
 }
 
 static void on_session_lost(const fscp::server::ep_type& host)
@@ -254,7 +251,7 @@ int main(int argc, char** argv)
 	{
 		if (argc != 7)
 		{
-			std::cerr << "Usage: schat <certificate> <private_key> <listen_host> <listen_port> <calg> <mdalg>" << std::endl;
+			std::cerr << "Usage: schat <certificate> <private_key> <listen_host> <listen_port>" << std::endl;
 
 			return EXIT_FAILURE;
 		}
@@ -263,7 +260,6 @@ int main(int argc, char** argv)
 		const std::string private_key_filename(argv[2]);
 		const std::string listen_host(argv[3]);
 		const std::string listen_port(argv[4]);
-		const fscp::cipher_algorithm_type calg = boost::lexical_cast<fscp::cipher_algorithm_type>(argv[5]);
 
 		cryptoplus::crypto_initializer crypto_initializer;
 		cryptoplus::algorithms_initializer algorithms_initializer;
@@ -282,14 +278,10 @@ int main(int argc, char** argv)
 
 		fscp::server server(io_service, fscp::identity_store(certificate, private_key));
 
-		const fscp::cipher_algorithm_list_type calg_capabilities(1, calg);
-
-		server.set_cipher_capabilities(calg_capabilities);
-
 		server.open(listen_ep);
 
 		server.set_hello_message_received_callback(boost::bind(&on_hello, boost::ref(server), _1, _2));
-		server.set_presentation_message_received_callback(boost::bind(&on_presentation, boost::ref(server), _1, _2, _3, _4));
+		server.set_presentation_message_received_callback(boost::bind(&on_presentation, boost::ref(server), _1, _2, _3));
 		server.set_session_request_message_received_callback(&on_session_request);
 		server.set_session_message_received_callback(&on_session);
 		server.set_session_failed_callback(&on_session_failed);
