@@ -73,7 +73,7 @@ namespace fscp
 		}
 	}
 
-	bool set_first_remote_host_identifier(const host_identifier_type& _host_identifier)
+	bool peer_session::set_first_remote_host_identifier(const host_identifier_type& _host_identifier)
 	{
 		if (!has_remote_host_identifier())
 		{

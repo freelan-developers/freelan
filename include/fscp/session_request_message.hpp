@@ -45,6 +45,8 @@
 #ifndef FSCP_SESSION_REQUEST_MESSAGE_HPP
 #define FSCP_SESSION_REQUEST_MESSAGE_HPP
 
+#include "message.hpp"
+
 #include "buffer_tools.hpp"
 #include "constants.hpp"
 
@@ -58,7 +60,7 @@ namespace fscp
 	/**
 	 * \brief A session request message class.
 	 */
-	class session_request_message
+	class session_request_message : public message
 	{
 		public:
 

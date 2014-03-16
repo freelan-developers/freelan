@@ -372,13 +372,13 @@ namespace fscp
 				{
 					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
-				else if (value() == ecdhe_rsa_aes128_gcm_sha256_string)
+				else if (value() == ecdhe_rsa_aes128_gcm_sha256)
 				{
-					return cryptoplus::hash::message_digest_algorithm(EVP_sha256);
+					return cryptoplus::hash::message_digest_algorithm(NID_sha256);
 				}
-				else if (value() == ecdhe_rsa_aes256_gcm_sha384_string)
+				else if (value() == ecdhe_rsa_aes256_gcm_sha384)
 				{
-					return cryptoplus::hash::message_digest_algorithm(EVP_sha384);
+					return cryptoplus::hash::message_digest_algorithm(NID_sha384);
 				}
 
 				throw std::invalid_argument("Invalid cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
@@ -390,17 +390,17 @@ namespace fscp
 			 *
 			 * If the instance is not supported, a std::runtime_error is thrown.
 			 */
-			cryptoplus::cipher::cipher_algorithm to_cipher_algorithm() cons
+			cryptoplus::cipher::cipher_algorithm to_cipher_algorithm() const
 			{
 				if (value() == unsupported)
 				{
 					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
-				else if (value() == ecdhe_rsa_aes128_gcm_sha256_string)
+				else if (value() == ecdhe_rsa_aes128_gcm_sha256)
 				{
 					return cryptoplus::cipher::cipher_algorithm(NID_aes_128_gcm);
 				}
-				else if (value() == ecdhe_rsa_aes256_gcm_sha384_string)
+				else if (value() == ecdhe_rsa_aes256_gcm_sha384)
 				{
 					return cryptoplus::cipher::cipher_algorithm(NID_aes_256_gcm);
 				}
@@ -422,7 +422,7 @@ namespace fscp
 	/**
 	 * \brief The certificate digest algorithm.
 	 */
-	const cryptoplus::hash::message_digest_algorithm CERTIFICATE_DIGEST_ALGORITHM = NID_sha256;
+	const cryptoplus::hash::message_digest_algorithm CERTIFICATE_DIGEST_ALGORITHM = cryptoplus::hash::message_digest_algorithm(NID_sha256);
 
 	/**
 	 * \brief The session keep-alive period.

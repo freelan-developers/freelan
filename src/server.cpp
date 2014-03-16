@@ -50,9 +50,7 @@
 #include "hello_message.hpp"
 #include "presentation_message.hpp"
 #include "session_request_message.hpp"
-#include "clear_session_request_message.hpp"
 #include "session_message.hpp"
-#include "clear_session_message.hpp"
 #include "data_message.hpp"
 
 #include <boost/random.hpp>
@@ -203,7 +201,7 @@ namespace fscp
 			return {
 				cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384,
 				cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256
-			}
+			};
 		}
 
 		template <typename KeyType, typename ValueType, typename Handler>
@@ -432,22 +430,22 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
-	void server::set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate)
+	void server::set_presentation(const ep_type& target, cert_type signature_certificate)
 	{
-		m_presentation_store_map[target] = presentation_store(signature_certificate, encryption_certificate);
+		m_presentation_store_map[target] = presentation_store(signature_certificate);
 	}
 
-	void server::async_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
+	void server::async_set_presentation(const ep_type& target, cert_type signature_certificate, void_handler_type handler)
 	{
-		m_presentation_strand.post(boost::bind(&server::do_set_presentation, this, normalize(target), signature_certificate, encryption_certificate, handler));
+		m_presentation_strand.post(boost::bind(&server::do_set_presentation, this, normalize(target), signature_certificate, handler));
 	}
 
-	void server::sync_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate)
+	void server::sync_set_presentation(const ep_type& target, cert_type signature_certificate)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
 
-		async_set_presentation(target, signature_certificate, encryption_certificate, boost::bind(&promise_type::set_value, &promise));
+		async_set_presentation(target, signature_certificate, boost::bind(&promise_type::set_value, &promise));
 
 		return promise.get_future().wait();
 	}
@@ -948,7 +946,6 @@ namespace fscp
 						{
 							session_message session_message(message);
 
-							handle_session_message_from(identity, data, session_message, *sender);
 							m_presentation_strand.post(
 								boost::bind(
 									&server::do_handle_session,
@@ -1311,7 +1308,11 @@ namespace fscp
 
 		try
 		{
-			const size_t size = presentation_message::write(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), identity.signature_certificate(), identity.encryption_certificate());
+			const size_t size = presentation_message::write(
+				buffer_cast<uint8_t*>(send_buffer),
+				buffer_size(send_buffer),
+				identity.signature_certificate()
+			);
 
 			async_send_to(
 				buffer(send_buffer, size),
@@ -1357,10 +1358,10 @@ namespace fscp
 		handler(get_presentation(target));
 	}
 
-	void server::do_set_presentation(const ep_type& target, cert_type signature_certificate, cert_type encryption_certificate, void_handler_type handler)
+	void server::do_set_presentation(const ep_type& target, cert_type signature_certificate, void_handler_type handler)
 	{
 		// All do_set_presentation() calls are done in the same strand so the following is thread-safe.
-		set_presentation(target, signature_certificate, encryption_certificate);
+		set_presentation(target, signature_certificate);
 
 		if (handler)
 		{
@@ -1382,23 +1383,21 @@ namespace fscp
 	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
 	{
 		const auto signature_certificate = _presentation_message.signature_certificate();
-		const auto encryption_certificate = _presentation_message.encryption_certificate();
 
-		async_has_session_with_endpoint(sender, [this, sender, signature_certificate, encryption_certificate](bool has_session) {
+		async_has_session_with_endpoint(sender, [this, sender, signature_certificate](bool has_session) {
 			m_presentation_strand.post(
 				boost::bind(
 					&server::do_handle_presentation,
 					this,
 					sender,
 					has_session,
-					signature_certificate,
-					encryption_certificate
+					signature_certificate
 				)
 			);
 		});
 	}
 
-	void server::do_handle_presentation(const ep_type& sender, bool has_session, cert_type signature_certificate, cert_type encryption_certificate)
+	void server::do_handle_presentation(const ep_type& sender, bool has_session, cert_type signature_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
 		presentation_status_type presentation_status = PS_FIRST;
@@ -1407,7 +1406,7 @@ namespace fscp
 
 		if (entry != m_presentation_store_map.end())
 		{
-			if (compare_certificates(entry->second.signature_certificate(), signature_certificate) && compare_certificates(entry->second.encryption_certificate(), encryption_certificate))
+			if (compare_certificates(entry->second.signature_certificate(), signature_certificate))
 			{
 				presentation_status = PS_SAME;
 			}
@@ -1419,13 +1418,13 @@ namespace fscp
 
 		if (m_presentation_message_received_handler)
 		{
-			if (!m_presentation_message_received_handler(sender, signature_certificate, encryption_certificate, presentation_status, has_session))
+			if (!m_presentation_message_received_handler(sender, signature_certificate, presentation_status, has_session))
 			{
 				return;
 			}
 		}
 
-		m_presentation_store_map[sender] = presentation_store(signature_certificate, encryption_certificate);
+		m_presentation_store_map[sender] = presentation_store(signature_certificate);
 	}
 
 	void server::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)
@@ -1464,7 +1463,6 @@ namespace fscp
 
 		peer_session& p_session = m_peer_sessions[target];
 
-		const session_store::session_number_type session_number = p_session.next_session_number();
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
 		try
@@ -1472,7 +1470,7 @@ namespace fscp
 			const size_t size = session_request_message::write(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				session_number,
+				p_session.next_session_number(),
 				p_session.host_identifier(),
 				m_cipher_suites,
 				identity.signature_key()
@@ -1500,7 +1498,7 @@ namespace fscp
 	{
 		// All do_close_session() calls are done in the same strand so the following is thread-safe.
 
-		if (m_peer_sessions[sender].clear())
+		if (m_peer_sessions[target].clear())
 		{
 			handler(server_error::success);
 
@@ -1560,7 +1558,7 @@ namespace fscp
 			return;
 		}
 
-		const cipher_suite_list_type cipher_suites = _clear_session_request_message.cipher_suites();
+		const cipher_suite_list_type cipher_suites = _session_request_message.cipher_suite_capabilities();
 		const cipher_suite_type calg = get_first_common_supported_cipher_suite(m_cipher_suites, cipher_suites);
 
 		if (calg == cipher_suite_type::unsupported)
@@ -1607,7 +1605,7 @@ namespace fscp
 
 		for (auto&& p_session: m_peer_sessions)
 		{
-			if (p_session.second.has_remote_session())
+			if (p_session.second.has_current_session())
 			{
 				result.insert(p_session.first);
 			}
@@ -1619,11 +1617,11 @@ namespace fscp
 	bool server::has_session_with_endpoint(const ep_type& host)
 	{
 		// All has_session_with_endpoint() calls are done in the same strand so the following is thread-safe.
-		const auto session = m_session_map.find(host);
+		const auto p_session = m_peer_sessions.find(host);
 
-		if (session != m_session_map.end())
+		if (p_session != m_peer_sessions.end())
 		{
-			return session->second.has_remote_session();
+			return p_session->second.has_current_session();
 		}
 
 		return false;
@@ -1674,7 +1672,7 @@ namespace fscp
 		}
 	}
 
-	void server::do_send_session(const identity_store& identity, const ep_type& target, session& _session)
+	void server::do_send_session(const identity_store& identity, const ep_type& target, const session& _session)
 	{
 		// All do_send_session() calls are done in the session strand so the following is thread-safe.
 
@@ -1748,12 +1746,12 @@ namespace fscp
 		);
 	}
 
-	void server::do_handle_verified_session(const identity_store& identity, const ep_type& sender, const clear_session_message& _session_message)
+	void server::do_handle_verified_session(const identity_store& identity, const ep_type& sender, const session_message& _session_message)
 	{
 		// All do_handle_verified_session() calls are done in the session strand so the following is thread-safe.
-		peer_session& p_session = m_peer_sessions[target];
+		peer_session& p_session = m_peer_sessions[sender];
 
-		if (!p_session.set_first_remote_host_identifier(_session_request_message.host_identifier()))
+		if (!p_session.set_first_remote_host_identifier(_session_message.host_identifier()))
 		{
 			// The host identifier does not match.
 			return;
@@ -1807,10 +1805,10 @@ namespace fscp
 		if (can_accept)
 		{
 			{
-				auto& session = p_session.set_next_session(session(_session_message.session_number(), _session_message.cipher_suite()));
-				session.set_remote_parameters(_session_message.public_key(), _session_message.public_key_size());
+				auto& _session = p_session.set_next_session(session(_session_message.session_number(), _session_message.cipher_suite()));
+				_session.set_remote_parameters(_session_message.public_key(), _session_message.public_key_size());
 
-				do_send_session(identity, sender, session);
+				do_send_session(identity, sender, _session);
 			}
 
 			p_session.activate_next_session();
@@ -2127,7 +2125,7 @@ namespace fscp
 		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
 		peer_session& p_session = m_peer_sessions[sender];
 
-		if (!p_session.has_current_session() || !p_session.current_session().has_remote_paramters())
+		if (!p_session.has_current_session() || !p_session.current_session().has_remote_parameters())
 		{
 			handler(server_error::no_session_for_host);
 
@@ -2314,7 +2312,7 @@ namespace fscp
 			{
 				if (p_session.second.has_timed_out(SESSION_TIMEOUT))
 				{
-					if (p_session.second.clear_remote_session())
+					if (p_session.second.clear())
 					{
 						if (m_session_lost_handler)
 						{

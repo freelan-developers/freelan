@@ -49,16 +49,10 @@
 
 namespace fscp
 {
-	presentation_store::presentation_store(presentation_store::cert_type sig_cert, presentation_store::cert_type enc_cert) :
+	presentation_store::presentation_store(presentation_store::cert_type sig_cert) :
 		m_sig_cert(sig_cert),
-		m_enc_cert(enc_cert),
 		m_sig_hash(get_certificate_hash(m_sig_cert))
 	{
 		assert(sig_cert);
-
-		if (!enc_cert)
-		{
-			enc_cert = sig_cert;
-		}
 	}
 }

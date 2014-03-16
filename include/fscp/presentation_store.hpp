@@ -76,7 +76,7 @@ namespace fscp
 			 * \param sig_cert The signature certificate. Cannot be null.
 			 * \param enc_cert The encryption certificate. If enc_cert is null, sig_cert is taken instead.
 			 */
-			presentation_store(cert_type sig_cert, cert_type enc_cert = cert_type());
+			explicit presentation_store(cert_type sig_cert);
 
 			/**
 			 * \brief Check if the presentation store is empty.
@@ -97,15 +97,6 @@ namespace fscp
 			}
 
 			/**
-			 * \brief Get the encryption certificate.
-			 * \return The encryption certificate.
-			 */
-			cert_type encryption_certificate() const
-			{
-				return m_enc_cert;
-			}
-
-			/**
 			 * \brief Get the signature certificate hash.
 			 * \return The signature certificate hash.
 			 */
@@ -117,7 +108,6 @@ namespace fscp
 		private:
 
 			cert_type m_sig_cert;
-			cert_type m_enc_cert;
 			hash_type m_sig_hash;
 	};
 }

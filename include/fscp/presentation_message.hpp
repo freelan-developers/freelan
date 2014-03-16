@@ -68,10 +68,9 @@ namespace fscp
 			 * \param buf The buffer to write to.
 			 * \param buf_len The length of buf.
 			 * \param sig_cert The signature certificate. Cannot be null.
-			 * \param enc_cert The encryption certificate.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, cert_type sig_cert, cert_type enc_cert);
+			static size_t write(void* buf, size_t buf_len, cert_type sig_cert);
 
 			/**
 			 * \brief Create a presentation_message and map it on a buffer.
@@ -95,19 +94,12 @@ namespace fscp
 			 */
 			cert_type signature_certificate() const;
 
-			/**
-			 * \brief Get the encryption certificate.
-			 * \return The encryption certificate.
-			 * \warning The returned certificate is parsed from the underlying buffer on every call so storing the result might be a good idea.
-			 */
-			cert_type encryption_certificate() const;
-
 		protected:
 
 			/**
 			 * \brief The minimum body length.
 			 */
-			static const size_t MIN_BODY_LENGTH = 2 * sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(uint16_t);
 
 		private:
 

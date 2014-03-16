@@ -96,7 +96,7 @@ namespace fscp
 
 			session_number_type session_number() const { return m_session_number; }
 			cipher_suite_type cipher_suite() const { return m_cipher_suite; }
-			const cryptoplus::buffer& public_key() { return m_public_key; }
+			const cryptoplus::buffer& public_key() const { return m_public_key; }
 			sequence_number_type sequence_number() const { return m_sequence_number; }
 			sequence_number_type increment_sequence_number() { return m_sequence_number++; }
 			bool has_remote_parameters() const { return !!m_remote_parameters; }

@@ -50,12 +50,11 @@
 
 namespace fscp
 {
-	size_t presentation_message::write(void* buf, size_t buf_len, presentation_message::cert_type sig_cert, presentation_message::cert_type enc_cert)
+	size_t presentation_message::write(void* buf, size_t buf_len, presentation_message::cert_type sig_cert)
 	{
 		size_t sig_cert_len = !sig_cert.is_null() ? sig_cert.write_der(static_cast<void*>(0)) : 0;
-		size_t enc_cert_len = !enc_cert.is_null() ? enc_cert.write_der(static_cast<void*>(0)) : 0;
 
-		if (buf_len < HEADER_LENGTH + MIN_BODY_LENGTH + sig_cert_len + enc_cert_len)
+		if (buf_len < HEADER_LENGTH + MIN_BODY_LENGTH + sig_cert_len)
 		{
 			throw std::runtime_error("buf_len");
 		}
@@ -68,14 +67,6 @@ namespace fscp
 		if (!sig_cert.is_null())
 		{
 			pbuf += sig_cert.write_der(pbuf);
-		}
-
-		buffer_tools::set<uint16_t>(pbuf, 0, htons(static_cast<uint16_t>(enc_cert_len)));
-		pbuf += sizeof(uint16_t);
-
-		if (!enc_cert.is_null())
-		{
-			pbuf += enc_cert.write_der(pbuf);
 		}
 
 		message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_PRESENTATION, pbuf - static_cast<char*>(buf) - HEADER_LENGTH);
@@ -102,21 +93,6 @@ namespace fscp
 		return cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
 	}
 
-	presentation_message::cert_type presentation_message::encryption_certificate() const
-	{
-		uint16_t sig_len = ntohs(buffer_tools::get<uint16_t>(payload(), 0));
-		uint16_t enc_len = ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + sig_len));
-
-		if (enc_len == 0)
-		{
-			return signature_certificate();
-		}
-		else
-		{
-			return cert_type::from_der(payload() + MIN_BODY_LENGTH + sig_len, enc_len);
-		}
-	}
-
 	void presentation_message::check_format() const
 	{
 		if (length() < MIN_BODY_LENGTH)
@@ -136,30 +112,6 @@ namespace fscp
 		if (length() < MIN_BODY_LENGTH + sig_len)
 		{
 			throw std::runtime_error("sig_len value mismatch");
-		}
-
-		uint16_t enc_len = ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(uint16_t) + sig_len));
-
-		if (enc_len == 0)
-		{
-			if (length() != MIN_BODY_LENGTH + sig_len)
-			{
-				throw std::runtime_error("unexpected data after null enc_len");
-			}
-		}
-		else
-		{
-			cert_type enc_cert = cert_type::from_der(payload() + MIN_BODY_LENGTH + sig_len, enc_len);
-
-			if (cryptoplus::x509::compare(sig_cert.subject(), enc_cert.subject()) != 0)
-			{
-				throw std::runtime_error("certificate subject name do not match");
-			}
-
-			if (cryptoplus::x509::compare(sig_cert.issuer(), enc_cert.issuer()) != 0)
-			{
-				throw std::runtime_error("certificate issuer name do not match");
-			}
 		}
 	}
 }

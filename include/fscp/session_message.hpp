@@ -179,7 +179,7 @@ namespace fscp
 
 	inline size_t session_message::header_size() const
 	{
-		return sizeof(session_number_type) + challenge_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + public_key_size();
+		return sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t) + public_key_size();
 	}
 
 	inline const uint8_t* session_message::header_signature() const

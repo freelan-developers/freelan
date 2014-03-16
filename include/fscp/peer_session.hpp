@@ -75,11 +75,11 @@ namespace fscp
 			bool clear();
 
 			session_number_type next_session_number() const;
-			bool has_current_session() { return !!m_current_session; }
+			bool has_current_session() const { return !!m_current_session; }
 			session& current_session() { return *m_current_session; }
 			const session& current_session() const { return *m_current_session; }
 			void clear_current_session() { m_current_session = boost::none; }
-			bool has_next_session() { return !!m_next_session; }
+			bool has_next_session() const { return !!m_next_session; }
 			session& next_session() { return *m_next_session; }
 			const session& next_session() const { return *m_next_session; }
 			void clear_next_session() { m_next_session = boost::none; }
