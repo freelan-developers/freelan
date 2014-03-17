@@ -199,14 +199,6 @@ namespace fscp
 			return causal_handler<Handler, CausalHandler>(_handler, _causal_handler);
 		}
 
-		cipher_suite_list_type get_default_cipher_suites()
-		{
-			return {
-				cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384,
-				cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256
-			};
-		}
-
 		template <typename KeyType, typename ValueType, typename Handler>
 		class results_gatherer
 		{
@@ -261,7 +253,10 @@ namespace fscp
 
 	// Public methods
 
-	const cipher_suite_list_type server::DEFAULT_CIPHER_SUITES = get_default_cipher_suites();
+	const cipher_suite_list_type server::DEFAULT_CIPHER_SUITES = {
+		cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384,
+		cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256
+	};
 
 	server::server(boost::asio::io_service& io_service, const identity_store& identity) :
 		m_identity_store(identity),
