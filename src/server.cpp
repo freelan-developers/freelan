@@ -1766,7 +1766,7 @@ namespace fscp
 			{
 				// The session number matches the current session.
 
-				if (!p_session.current_session().match_parameters(_session_message.cipher_suite(), _session_message.public_key(), _session_message.public_key_size()))
+				if (p_session.current_session().cipher_suite() != _session_message.cipher_suite())
 				{
 					// The parameters don't match the current session. Requesting a new one.
 					do_request_session(identity, sender, &null_simple_handler);

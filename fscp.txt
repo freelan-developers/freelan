@@ -585,9 +585,9 @@ Abstract
    its new ECDHE public key. The session is then considered established
    on this receiving side.
 
-   - If the session number, the public key, the cipher suite match the
-   current ones, the host MUST ignore it as it might be the result of a
-   frame duplication or an attempt of replay.
+   - If the session number or the cipher suite match the current ones,
+   the host MUST ignore it as it might be the result of a frame
+   duplication or an attempt of replay.
 
    - If the session number matches the current one, but the public
    key or the cipher suite do not match the ones currently used by the

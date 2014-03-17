@@ -66,21 +66,18 @@ namespace fscp
 			class parameters
 			{
 				public:
-					explicit parameters(const cryptoplus::buffer& _public_key, const cryptoplus::buffer& _shared_secret, const cryptoplus::buffer& _nonce_prefix) :
-						m_public_key(_public_key),
+					explicit parameters(const cryptoplus::buffer& _shared_secret, const cryptoplus::buffer& _nonce_prefix) :
 						m_shared_secret(_shared_secret),
 						m_nonce_prefix(_nonce_prefix),
 						m_sequence_number()
 					{}
 
-					const cryptoplus::buffer& public_key() const { return m_public_key; }
 					const cryptoplus::buffer& shared_secret() const { return m_shared_secret; }
 					const cryptoplus::buffer& nonce_prefix() const { return m_nonce_prefix; }
 					sequence_number_type sequence_number() const { return m_sequence_number; }
 					void set_sequence_number(sequence_number_type _sequence_number) { m_sequence_number = _sequence_number; }
 
 				private:
-					cryptoplus::buffer m_public_key;
 					cryptoplus::buffer m_shared_secret;
 					cryptoplus::buffer m_nonce_prefix;
 					sequence_number_type m_sequence_number;
@@ -108,7 +105,6 @@ namespace fscp
 			const cryptoplus::buffer& nonce_prefix() const { return *m_nonce_prefix; }
 
 			void set_remote_parameters(const void* remote_public_key, size_t remote_public_key_size, const host_identifier_type& local_host_identifier, const host_identifier_type& remote_host_identifier);
-			bool match_parameters(cipher_suite_type _cipher_suite, const void* remote_public_key, size_t remote_public_key_size);
 			bool is_old() const;
 
 		private:
