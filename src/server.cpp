@@ -69,6 +69,9 @@ namespace fscp
 
 	namespace
 	{
+		void null_simple_handler(const boost::system::error_code&) {}
+		void null_multiple_endpoints_handler(const std::map<server::ep_type, boost::system::error_code>&) {}
+
 		server::ep_type normalize(const server::ep_type& ep)
 		{
 			server::ep_type result = ep;
@@ -822,7 +825,7 @@ namespace fscp
 		// do_set_identity() is executed within the socket strand so this is safe.
 		set_identity(identity);
 
-		async_reintroduce_to_all(multiple_endpoints_handler_type());
+		async_reintroduce_to_all(&null_multiple_endpoints_handler);
 
 		if (handler)
 		{
@@ -973,7 +976,7 @@ namespace fscp
 			else if (ec == boost::asio::error::connection_refused)
 			{
 				// The host refused the connection, meaning it closed its socket so we can force-terminate the session.
-				async_close_session(*sender, simple_handler_type());
+				async_close_session(*sender, &null_simple_handler);
 			}
 		}
 	}
@@ -1771,7 +1774,7 @@ namespace fscp
 				if (!p_session.current_session().match_parameters(_session_message.cipher_suite(), _session_message.public_key(), _session_message.public_key_size()))
 				{
 					// The parameters don't match the current session. Requesting a new one.
-					do_request_session(identity, sender, simple_handler_type());
+					do_request_session(identity, sender, &null_simple_handler);
 				}
 
 				return;
@@ -2251,7 +2254,7 @@ namespace fscp
 		// Our contact map contains some answers: we send those.
 		if (!contact_map.empty())
 		{
-			async_send_contact(sender, contact_map, simple_handler_type());
+			async_send_contact(sender, contact_map, &null_simple_handler);
 		}
 	}
 
@@ -2320,7 +2323,7 @@ namespace fscp
 				}
 				else
 				{
-					do_send_keep_alive(p_session.first, simple_handler_type());
+					do_send_keep_alive(p_session.first, &null_simple_handler);
 				}
 			}
 
