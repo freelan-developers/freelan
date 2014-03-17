@@ -133,8 +133,8 @@ namespace fscp
 		cipher_suite_list_type result(cipher_suite_capabilities_size());
 
 		std::copy(
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t),
-			data() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size(),
+			payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t),
+			payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size(),
 			result.begin()
 		);
 
