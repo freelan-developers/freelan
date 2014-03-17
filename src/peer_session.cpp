@@ -82,6 +82,6 @@ namespace fscp
 			return true;
 		}
 
-		return (_host_identifier == host_identifier());
+		return (_host_identifier == remote_host_identifier());
 	}
 }
