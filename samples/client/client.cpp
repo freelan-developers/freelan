@@ -83,7 +83,18 @@ static void simple_handler(const std::string& name, const std::string& msg, cons
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] " << msg << ": " << ec.message() << std::endl;
+	std::cout << "[" << name << "] " << msg << ": ";
+
+	if (ec)
+	{
+		std::cout << ec.message();
+	}
+	else
+	{
+		std::cout << "OK";
+	}
+
+	std::cout << std::endl;
 }
 
 static bool on_hello(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
