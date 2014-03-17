@@ -136,7 +136,7 @@ namespace fscp
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t);
 	};
 
 	inline session_number_type session_request_message::session_number() const
@@ -148,19 +148,19 @@ namespace fscp
 	{
 		host_identifier_type result;
 
-		std::copy(payload() + sizeof(session_number_type), payload() + sizeof(session_number_type) + result.size(), result.begin());
+		std::copy(payload() + sizeof(session_number_type), payload() + sizeof(session_number_type) + result.data.size(), result.data.begin());
 
 		return result;
 	}
 
 	inline size_t session_request_message::cipher_suite_capabilities_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::static_size));
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size));
 	}
 
 	inline size_t session_request_message::header_size() const
 	{
-		return sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size();
+		return sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size();
 	}
 
 	inline const uint8_t* session_request_message::header_signature() const

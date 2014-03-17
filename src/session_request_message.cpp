@@ -76,11 +76,11 @@ namespace fscp
 		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
 
 		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
-		std::copy(_host_identifier.begin(), _host_identifier.end(), payload + sizeof(_session_number));
-		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::static_size, htons(static_cast<uint16_t>(cs_cap.size())));
+		std::copy(_host_identifier.data.begin(), _host_identifier.data.end(), payload + sizeof(_session_number));
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::data_type::static_size, htons(static_cast<uint16_t>(cs_cap.size())));
 
 		{
-			uint8_t* cs_buf = payload + sizeof(_session_number) + host_identifier_type::static_size + sizeof(uint16_t);
+			uint8_t* cs_buf = payload + sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t);
 
 			for (auto&& cs: cs_cap)
 			{
@@ -133,8 +133,8 @@ namespace fscp
 		cipher_suite_list_type result(cipher_suite_capabilities_size());
 
 		std::copy(
-			payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t),
-			payload() + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size(),
+			payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t),
+			payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size(),
 			result.begin()
 		);
 

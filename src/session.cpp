@@ -69,8 +69,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"session key",
-			local_host_identifier.data(),
-			local_host_identifier.size(),
+			local_host_identifier.data.data(),
+			local_host_identifier.data.size(),
 			get_default_digest_algorithm()
 		);
 
@@ -79,8 +79,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"session key",
-			remote_host_identifier.data(),
-			remote_host_identifier.size(),
+			remote_host_identifier.data.data(),
+			remote_host_identifier.data.size(),
 			get_default_digest_algorithm()
 		);
 
@@ -89,8 +89,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"nonce prefix",
-			local_host_identifier.data(),
-			local_host_identifier.size(),
+			local_host_identifier.data.data(),
+			local_host_identifier.data.size(),
 			get_default_digest_algorithm()
 		);
 
@@ -99,8 +99,8 @@ namespace fscp
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
 			"nonce prefix",
-			remote_host_identifier.data(),
-			remote_host_identifier.size(),
+			remote_host_identifier.data.data(),
+			remote_host_identifier.data.size(),
 			get_default_digest_algorithm()
 		);
 

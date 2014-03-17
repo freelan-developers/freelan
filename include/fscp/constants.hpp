@@ -141,11 +141,6 @@ namespace fscp
 	typedef uint32_t session_number_type;
 
 	/**
-	 * \brief The host identifier type.
-	 */
-	typedef boost::array<uint8_t, 32> host_identifier_type;
-
-	/**
 	 * \brief The hash type.
 	 */
 	struct hash_type
@@ -183,6 +178,11 @@ namespace fscp
 			return os;
 		}
 	};
+
+	/**
+	 * \brief The host identifier type.
+	 */
+	typedef hash_type host_identifier_type;
 
 	/**
 	 * \brief The hash list type.

@@ -69,7 +69,7 @@ namespace fscp
 				m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
 			{
 				// Generate a random host identifier.
-				cryptoplus::random::get_random_bytes(m_host_identifier.data(), m_host_identifier.size());
+				cryptoplus::random::get_random_bytes(m_host_identifier.data.data(), m_host_identifier.data.size());
 			}
 
 			bool clear();

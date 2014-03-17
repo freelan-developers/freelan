@@ -76,13 +76,13 @@ namespace fscp
 		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
 
 		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
-		std::copy(_host_identifier.begin(), _host_identifier.end(), payload + sizeof(_session_number));
-		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size, cs.value());
-		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t), 0x00);
-		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 2, 0x00);
-		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) * 3, 0x00);
-		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) + 3, htons(static_cast<uint16_t>(pub_key_len)));
-		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t), pub_key, pub_key_len);
+		std::copy(_host_identifier.data.begin(), _host_identifier.data.end(), payload + sizeof(_session_number));
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size, cs.value());
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t), 0x00);
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 2, 0x00);
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 3, 0x00);
+		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 4, htons(static_cast<uint16_t>(pub_key_len)));
+		std::memcpy(static_cast<uint8_t*>(payload) + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 4 + sizeof(uint16_t), pub_key, pub_key_len);
 
 		cryptoplus::hash::message_digest_context mdctx;
 		EVP_PKEY_CTX* evp_ctx = nullptr;
