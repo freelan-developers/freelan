@@ -71,10 +71,15 @@ namespace fscp
 		return static_cast<message_type>(static_cast<uint8_t>(MESSAGE_TYPE_DATA_0) + static_cast<uint8_t>(channel_number));
 	}
 
+	cryptoplus::hash::message_digest_algorithm get_default_digest_algorithm()
+	{
+		return cryptoplus::hash::message_digest_algorithm(NID_sha256);
+	}
+
 	void get_certificate_hash(void* buf, size_t buflen, cryptoplus::x509::certificate cert)
 	{
 		cryptoplus::hash::message_digest_context mdctx;
-		mdctx.initialize(cryptoplus::hash::message_digest_algorithm(CERTIFICATE_DIGEST_ALGORITHM));
+		mdctx.initialize(get_default_digest_algorithm());
 		mdctx.update(cert.write_der());
 		mdctx.finalize(buf, buflen);
 	}

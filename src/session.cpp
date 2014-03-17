@@ -71,7 +71,7 @@ namespace fscp
 			"session key",
 			local_host_identifier.data(),
 			local_host_identifier.size(),
-			CERTIFICATE_DIGEST_ALGORITHM
+			get_default_digest_algorithm()
 		);
 
 		const auto remote_shared_secret = cryptoplus::tls::prf(
@@ -81,7 +81,7 @@ namespace fscp
 			"session key",
 			remote_host_identifier.data(),
 			remote_host_identifier.size(),
-			CERTIFICATE_DIGEST_ALGORITHM
+			get_default_digest_algorithm()
 		);
 
 		m_nonce_prefix = cryptoplus::tls::prf(
@@ -91,7 +91,7 @@ namespace fscp
 			"nonce prefix",
 			local_host_identifier.data(),
 			local_host_identifier.size(),
-			CERTIFICATE_DIGEST_ALGORITHM
+			get_default_digest_algorithm()
 		);
 
 		const auto remote_nonce_prefix = cryptoplus::tls::prf(
@@ -101,7 +101,7 @@ namespace fscp
 			"nonce prefix",
 			remote_host_identifier.data(),
 			remote_host_identifier.size(),
-			CERTIFICATE_DIGEST_ALGORITHM
+			get_default_digest_algorithm()
 		);
 
 		m_remote_parameters = parameters(

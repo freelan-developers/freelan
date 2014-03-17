@@ -87,7 +87,7 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		EVP_PKEY_CTX* evp_ctx = nullptr;
 
-		mdctx.digest_sign_initialize(CERTIFICATE_DIGEST_ALGORITHM, sig_key, &evp_ctx);
+		mdctx.digest_sign_initialize(get_default_digest_algorithm(), sig_key, &evp_ctx);
 		configure_context(evp_ctx);
 		mdctx.digest_sign_update(static_cast<const uint8_t*>(payload), unsigned_payload_size);
 
@@ -132,7 +132,7 @@ namespace fscp
 		cryptoplus::hash::message_digest_context mdctx;
 		EVP_PKEY_CTX* evp_ctx = nullptr;
 
-		mdctx.digest_verify_initialize(CERTIFICATE_DIGEST_ALGORITHM, key, &evp_ctx);
+		mdctx.digest_verify_initialize(get_default_digest_algorithm(), key, &evp_ctx);
 		configure_context(evp_ctx);
 		mdctx.digest_verify_update(payload(), header_size());
 

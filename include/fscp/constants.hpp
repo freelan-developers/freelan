@@ -421,8 +421,10 @@ namespace fscp
 
 	/**
 	 * \brief The certificate digest algorithm.
+	 *
+	 * This has to be a function sadly because initializing a message_digest_algorithm requires OpenSSL to be initialized first.
 	 */
-	const cryptoplus::hash::message_digest_algorithm CERTIFICATE_DIGEST_ALGORITHM = cryptoplus::hash::message_digest_algorithm(NID_sha256);
+	cryptoplus::hash::message_digest_algorithm get_default_digest_algorithm();
 
 	/**
 	 * \brief The session keep-alive period.
