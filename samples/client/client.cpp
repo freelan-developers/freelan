@@ -145,7 +145,7 @@ static bool on_session_request(const std::string& name, fscp::server& server, co
 
 	static_cast<void>(server);
 
-	std::cout << "[" << name << "] Received SESSION_REQUEST from " << sender << std::endl;
+	std::cout << "[" << name << "] Received SESSION_REQUEST from " << sender << ". Default accept is: " << default_accept << std::endl;
 
 	return default_accept;
 }
