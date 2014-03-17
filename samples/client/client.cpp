@@ -69,16 +69,6 @@ static bool register_signal_handlers()
 	return true;
 }
 
-static fscp::identity_store load_identity_store(const std::string& name)
-{
-	using cryptoplus::file;
-
-	cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_certificate(file::open(name + ".crt", "r"));
-	cryptoplus::pkey::pkey key = cryptoplus::pkey::pkey::from_private_key(file::open(name + ".key", "r"));
-
-	return fscp::identity_store(cert, key);
-}
-
 static void simple_handler(const std::string& name, const std::string& msg, const boost::system::error_code& ec)
 {
 	mutex::scoped_lock lock(output_mutex);
@@ -252,9 +242,18 @@ int main()
 	{
 		boost::asio::io_service _io_service;
 
-		fscp::server alice_server(_io_service, load_identity_store("alice"));
-		fscp::server bob_server(_io_service, load_identity_store("bob"));
-		fscp::server chris_server(_io_service, load_identity_store("chris"));
+		using cryptoplus::file;
+
+		cryptoplus::x509::certificate alice_cert = cryptoplus::x509::certificate::from_certificate(file::open("alice.crt", "r"));
+		cryptoplus::pkey::pkey alice_key = cryptoplus::pkey::pkey::from_private_key(file::open("alice.key", "r"));
+		cryptoplus::x509::certificate bob_cert = cryptoplus::x509::certificate::from_certificate(file::open("bob.crt", "r"));
+		cryptoplus::pkey::pkey bob_key = cryptoplus::pkey::pkey::from_private_key(file::open("bob.key", "r"));
+		cryptoplus::x509::certificate chris_cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
+		cryptoplus::pkey::pkey chris_key = cryptoplus::pkey::pkey::from_private_key(file::open("chris.key", "r"));
+
+		fscp::server alice_server(_io_service, fscp::identity_store(alice_cert, alice_key));
+		fscp::server bob_server(_io_service, fscp::identity_store(bob_cert, bob_key));
+		fscp::server chris_server(_io_service, fscp::identity_store(chris_cert, chris_key));
 
 		alice_server.set_hello_message_received_callback(boost::bind(&on_hello, "alice", boost::ref(alice_server), _1, _2));
 		bob_server.set_hello_message_received_callback(boost::bind(&on_hello, "bob", boost::ref(bob_server), _1, _2));
@@ -297,8 +296,20 @@ int main()
 		chris_server.open(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 12002));
 
 		boost::asio::ip::udp::resolver resolver(_io_service);
-		boost::asio::ip::udp::resolver::query query("127.0.0.1", "12001");
-		boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(query);
+		const boost::asio::ip::udp::resolver::query alice_query("127.0.0.1", "12000");
+		const boost::asio::ip::udp::resolver::query bob_query("127.0.0.1", "12001");
+		const boost::asio::ip::udp::resolver::query chris_query("127.0.0.1", "12002");
+
+		const boost::asio::ip::udp::endpoint alice_endpoint = *resolver.resolve(alice_query);
+		const boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(bob_query);
+		const boost::asio::ip::udp::endpoint chris_endpoint = *resolver.resolve(chris_query);
+
+		alice_server.set_presentation(bob_endpoint, bob_cert);
+		alice_server.set_presentation(chris_endpoint, chris_cert);
+		bob_server.set_presentation(alice_endpoint, alice_cert);
+		bob_server.set_presentation(chris_endpoint, chris_cert);
+		chris_server.set_presentation(bob_endpoint, bob_cert);
+		chris_server.set_presentation(chris_endpoint, chris_cert);
 
 		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
