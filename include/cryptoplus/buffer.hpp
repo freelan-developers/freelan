@@ -64,6 +64,11 @@ namespace cryptoplus
 			typedef std::vector<uint8_t> storage_type;
 
 			/**
+			 * \brief Create an empty buffer.
+			 */
+			buffer() {}
+
+			/**
 			 * \brief Create a buffer that has the specified size.
 			 * \param size The size of the buffer to create.
 			 */
