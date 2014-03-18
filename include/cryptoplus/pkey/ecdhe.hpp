@@ -71,6 +71,9 @@ namespace cryptoplus
 				 */
 				explicit ecdhe_context(int nid);
 
+				ecdhe_context(const ecdhe_context&) = delete;
+				ecdhe_context& operator=(const ecdhe_context&) = delete;
+
 				/**
 				 * \brief Generate new keys for the context.
 				 */
