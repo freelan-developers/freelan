@@ -51,6 +51,7 @@
 
 namespace fscp
 {
+	using cryptoplus::buffer;
 	using cryptoplus::buffer_cast;
 
 	void session::set_remote_parameters(const void* _remote_public_key, size_t remote_public_key_size, const host_identifier_type& local_host_identifier, const host_identifier_type& remote_host_identifier)
@@ -62,9 +63,9 @@ namespace fscp
 		const auto remote_public_key = cryptoplus::buffer(_remote_public_key, remote_public_key_size);
 
 		// We get the derived secret key.
-		m_secret_key = m_ecdhe_context.derive_secret_key(remote_public_key);
+		m_secret_key = boost::make_shared<buffer>(m_ecdhe_context->derive_secret_key(remote_public_key));
 
-		m_shared_secret = cryptoplus::tls::prf(
+		m_shared_secret = boost::make_shared<buffer>(cryptoplus::tls::prf(
 			key_length,
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
@@ -72,7 +73,7 @@ namespace fscp
 			local_host_identifier.data.data(),
 			local_host_identifier.data.size(),
 			get_default_digest_algorithm()
-		);
+		));
 
 		const auto remote_shared_secret = cryptoplus::tls::prf(
 			key_length,
@@ -84,7 +85,7 @@ namespace fscp
 			get_default_digest_algorithm()
 		);
 
-		m_nonce_prefix = cryptoplus::tls::prf(
+		m_nonce_prefix = boost::make_shared<buffer>(cryptoplus::tls::prf(
 			DEFAULT_NONCE_PREFIX_SIZE,
 			buffer_cast<const void*>(*m_secret_key),
 			buffer_size(*m_secret_key),
@@ -92,7 +93,7 @@ namespace fscp
 			local_host_identifier.data.data(),
 			local_host_identifier.data.size(),
 			get_default_digest_algorithm()
-		);
+		));
 
 		const auto remote_nonce_prefix = cryptoplus::tls::prf(
 			DEFAULT_NONCE_PREFIX_SIZE,
@@ -104,7 +105,7 @@ namespace fscp
 			get_default_digest_algorithm()
 		);
 
-		m_remote_parameters = parameters(
+		m_remote_parameters = boost::make_shared<parameters>(
 			remote_shared_secret,
 			remote_nonce_prefix
 		);

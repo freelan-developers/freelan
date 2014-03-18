@@ -52,7 +52,7 @@
 #include <cryptoplus/random/random.hpp>
 #include <cryptoplus/hash/message_digest_context.hpp>
 
-#include <boost/optional.hpp>
+#include <boost/make_shared.hpp>
 
 namespace fscp
 {
@@ -86,14 +86,14 @@ namespace fscp
 			session(session_number_type _session_number, cipher_suite_type _cipher_suite) :
 				m_session_number(_session_number),
 				m_cipher_suite(_cipher_suite),
-				m_ecdhe_context(m_cipher_suite.to_elliptic_curve_nid()),
-				m_public_key(m_ecdhe_context.get_public_key()),
+				m_ecdhe_context(boost::make_shared<cryptoplus::pkey::ecdhe_context>(m_cipher_suite.to_elliptic_curve_nid())),
+				m_public_key(boost::make_shared<cryptoplus::buffer>(m_ecdhe_context->get_public_key())),
 				m_sequence_number()
 			{}
 
 			session_number_type session_number() const { return m_session_number; }
 			cipher_suite_type cipher_suite() const { return m_cipher_suite; }
-			const cryptoplus::buffer& public_key() const { return m_public_key; }
+			const cryptoplus::buffer& public_key() const { return *m_public_key; }
 			sequence_number_type sequence_number() const { return m_sequence_number; }
 			sequence_number_type increment_sequence_number() { return m_sequence_number++; }
 			bool has_remote_parameters() const { return !!m_remote_parameters; }
@@ -111,13 +111,13 @@ namespace fscp
 
 			session_number_type m_session_number;
 			cipher_suite_type m_cipher_suite;
-			cryptoplus::pkey::ecdhe_context m_ecdhe_context;
-			cryptoplus::buffer m_public_key;
+			boost::shared_ptr<cryptoplus::pkey::ecdhe_context> m_ecdhe_context;
+			boost::shared_ptr<cryptoplus::buffer> m_public_key;
 			sequence_number_type m_sequence_number;
-			boost::optional<cryptoplus::buffer> m_secret_key;
-			boost::optional<parameters> m_remote_parameters;
-			boost::optional<cryptoplus::buffer> m_shared_secret;
-			boost::optional<cryptoplus::buffer> m_nonce_prefix;
+			boost::shared_ptr<cryptoplus::buffer> m_secret_key;
+			boost::shared_ptr<parameters> m_remote_parameters;
+			boost::shared_ptr<cryptoplus::buffer> m_shared_secret;
+			boost::shared_ptr<cryptoplus::buffer> m_nonce_prefix;
 	};
 }
 
