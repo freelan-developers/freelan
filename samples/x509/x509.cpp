@@ -80,7 +80,15 @@ int main()
 
 		// X509 extensions
 
-		unsigned char ca_true[] = { 0x30, 0x03, 0x01, 0x01, 0xff }; // If you ever find out what this format is, please tell me :)
+		// Thanks to Christer Palm for the explanations on this structure.
+		unsigned char ca_true[] = {
+			0x30, // BER Type (0x30 = SEQUENCE)
+			0x03, // BER Length (0x03 = 3 bytes)
+			0x01, // BER Value (for a SEQUENCE this is a variable number of BER elements - here 0x01 means BER Type BOOLEAN)
+			0x01, // BER Length (0x01 = 1 byte)
+			0xff  // BER Value (0xFF = TRUE - Any non-zero is truthy)
+		};
+
 		certificate.push_back(x509::extension::from_nid(NID_basic_constraints, true, asn1::string::from_data(ca_true, sizeof(ca_true))));
 
 		// One could also do that
