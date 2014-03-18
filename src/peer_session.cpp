@@ -44,17 +44,83 @@
 
 #include "peer_session.hpp"
 
+#include <cryptoplus/tls/tls.hpp>
+
 namespace fscp
 {
-	bool peer_session::clear()
+	bool peer_session::set_first_remote_host_identifier(const host_identifier_type& _host_identifier)
 	{
-		const bool result = has_current_session();
+		if (!m_remote_host_identifier)
+		{
+			m_remote_host_identifier = _host_identifier;
 
-		clear_current_session();
-		clear_next_session();
-		clear_remote_host_identifier();
+			return true;
+		}
 
-		return result;
+		return (_host_identifier == *m_remote_host_identifier);
+	}
+
+	bool peer_session::complete_session(const void* _remote_public_key, size_t remote_public_key_size)
+	{
+		using cryptoplus::buffer_cast;
+
+		if (!m_next_session || !m_remote_host_identifier)
+		{
+			return false;
+		}
+
+		boost::shared_ptr<current_session_type> current_session = boost::make_shared<current_session_type>(m_next_session->session_number);
+
+		const size_t key_length = m_next_session->cipher_suite.to_cipher_algorithm().key_length();
+		const auto remote_public_key = cryptoplus::buffer(_remote_public_key, remote_public_key_size);
+
+		// We get the derived secret key.
+		const auto secret_key = m_next_session->ecdhe_context.derive_secret_key(remote_public_key);
+
+		current_session->local_session_key = cryptoplus::tls::prf(
+			key_length,
+			buffer_cast<const void*>(secret_key),
+			buffer_size(secret_key),
+			"session key",
+			m_local_host_identifier.data.data(),
+			m_local_host_identifier.data.size(),
+			get_default_digest_algorithm()
+		);
+
+		current_session->remote_session_key = cryptoplus::tls::prf(
+			key_length,
+			buffer_cast<const void*>(secret_key),
+			buffer_size(secret_key),
+			"session key",
+			m_remote_host_identifier->data.data(),
+			m_remote_host_identifier->data.size(),
+			get_default_digest_algorithm()
+		);
+
+		current_session->local_nonce_prefix = cryptoplus::tls::prf(
+			DEFAULT_NONCE_PREFIX_SIZE,
+			buffer_cast<const void*>(secret_key),
+			buffer_size(secret_key),
+			"nonce prefix",
+			m_local_host_identifier.data.data(),
+			m_local_host_identifier.data.size(),
+			get_default_digest_algorithm()
+		);
+
+		current_session->remote_nonce_prefix = cryptoplus::tls::prf(
+			DEFAULT_NONCE_PREFIX_SIZE,
+			buffer_cast<const void*>(secret_key),
+			buffer_size(secret_key),
+			"nonce prefix",
+			m_remote_host_identifier->data.data(),
+			m_remote_host_identifier->data.size(),
+			get_default_digest_algorithm()
+		);
+
+		m_next_session.reset();
+		swap(m_current_session, current_session);
+
+		return true;
 	}
 
 	session_number_type peer_session::next_session_number() const
@@ -63,25 +129,35 @@ namespace fscp
 		{
 			return 0;
 		}
-		else if (!has_next_session())
+		else if (!m_next_session)
 		{
-			return current_session().session_number() + 1;
+			return current_session().session_number + 1;
 		}
 		else
 		{
-			return next_session().session_number();
+			return m_next_session->session_number;
 		}
 	}
 
-	bool peer_session::set_first_remote_host_identifier(const host_identifier_type& _host_identifier)
+	bool peer_session::set_remote_sequence_number(sequence_number_type sequence_number)
 	{
-		if (!has_remote_host_identifier())
+		if (sequence_number > m_current_session->remote_sequence_number)
 		{
-			set_remote_host_identifier(_host_identifier);
+			m_current_session->remote_sequence_number = sequence_number;
 
 			return true;
 		}
 
-		return (_host_identifier == remote_host_identifier());
+		return false;
+	}
+
+	bool peer_session::clear()
+	{
+		const bool result = has_current_session();
+
+		m_current_session.reset();
+		m_next_session.reset();
+
+		return result;
 	}
 }

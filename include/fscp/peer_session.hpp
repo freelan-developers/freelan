@@ -45,12 +45,15 @@
 #ifndef FSCP_PEER_SESSION_HPP
 #define FSCP_PEER_SESSION_HPP
 
-#include "session.hpp"
+#include "constants.hpp"
 
+#include <cryptoplus/buffer.hpp>
 #include <cryptoplus/random/random.hpp>
+#include <cryptoplus/pkey/ecdhe.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/make_shared.hpp>
 
 namespace fscp
 {
@@ -61,36 +64,63 @@ namespace fscp
 	{
 		public:
 
+			struct next_session_type
+			{
+				next_session_type(session_number_type _session_number, cipher_suite_type _cipher_suite) :
+					ecdhe_context(_cipher_suite.to_elliptic_curve_nid()),
+					session_number(_session_number),
+					cipher_suite(_cipher_suite),
+					public_key(ecdhe_context.get_public_key())
+				{}
+
+				cryptoplus::pkey::ecdhe_context ecdhe_context;
+				session_number_type session_number;
+				cipher_suite_type cipher_suite;
+				cryptoplus::buffer public_key;
+			};
+
+			struct current_session_type
+			{
+				current_session_type(session_number_type _session_number) :
+					session_number(_session_number),
+					local_sequence_number(),
+					remote_sequence_number()
+				{}
+
+				session_number_type session_number;
+				sequence_number_type local_sequence_number;
+				sequence_number_type remote_sequence_number;
+				cryptoplus::buffer local_session_key;
+				cryptoplus::buffer remote_session_key;
+				cryptoplus::buffer local_nonce_prefix;
+				cryptoplus::buffer remote_nonce_prefix;
+			};
+
 			peer_session() :
-				m_current_session(),
-				m_next_session(),
-				m_host_identifier(),
+				m_local_host_identifier(),
 				m_remote_host_identifier(),
 				m_last_sign_of_life(boost::posix_time::microsec_clock::local_time())
 			{
 				// Generate a random host identifier.
-				cryptoplus::random::get_random_bytes(m_host_identifier.data.data(), m_host_identifier.data.size());
+				cryptoplus::random::get_random_bytes(m_local_host_identifier.data.data(), m_local_host_identifier.data.size());
 			}
 
-			bool clear();
+			/**
+			 * \brief Get the local host identifier.
+			 * \return Return the local host identifier.
+			 */
+			const host_identifier_type& local_host_identifier() const { return m_local_host_identifier; }
 
-			session_number_type next_session_number() const;
-			bool has_current_session() const { return !!m_current_session; }
-			session& current_session() { return *m_current_session; }
-			const session& current_session() const { return *m_current_session; }
-			void clear_current_session() { m_current_session = boost::none; }
-			bool has_next_session() const { return !!m_next_session; }
-			session& next_session() { return *m_next_session; }
-			const session& next_session() const { return *m_next_session; }
-			void clear_next_session() { m_next_session = boost::none; }
-			session& set_next_session(session&& session) { m_next_session = std::move(session); return *m_next_session; }
-			void activate_next_session() { swap(m_current_session, m_next_session); clear_next_session(); }
-
-			const host_identifier_type& host_identifier() const { return m_host_identifier; }
-			bool has_remote_host_identifier() const { return !!m_remote_host_identifier; }
-			const host_identifier_type& remote_host_identifier() const { return *m_remote_host_identifier; }
+			/**
+			 * \brief Set the remote host identifier.
+			 * \param _host_identifier The host identifier to set.
+			 * \return Return true if there was no host identifier or if _host_identifier matches the current one.
+			 */
 			bool set_first_remote_host_identifier(const host_identifier_type& _host_identifier);
-			void set_remote_host_identifier(const host_identifier_type& _host_identifier) { m_remote_host_identifier = _host_identifier; }
+
+			/**
+			 * \brief Clear the remote host identifier.
+			 */
 			void clear_remote_host_identifier() { m_remote_host_identifier = boost::none; }
 
 			/**
@@ -111,13 +141,69 @@ namespace fscp
 				m_last_sign_of_life = boost::posix_time::microsec_clock::local_time();
 			}
 
+			/**
+			 * \brief Prepare the next session.
+			 * \param _session_number The next session number.
+			 * \param _cipher_suite The next cipher suite.
+			 */
+			void prepare_session(session_number_type _session_number, cipher_suite_type _cipher_suite) {
+				m_next_session = boost::make_shared<next_session_type>(_session_number, _cipher_suite);
+			}
+
+			/**
+			 * \brief Complete the next session.
+			 * \param remote_public_key The remote public key.
+			 * \param remote_public_key_size The remote public key size.
+			 * \return true if the session was completed.
+			 */
+			bool complete_session(const void* remote_public_key, size_t remote_public_key_size);
+
+			/**
+			 * \brief Get the next session number.
+			 * \return The next session number.
+			 */
+			session_number_type next_session_number() const;
+
+			/**
+			 * \brief Check if an active session exists.
+			 * \return true if an active session exists.
+			 */
+			bool has_current_session() const { return static_cast<bool>(m_current_session); }
+
+			/**
+			 * \brief Get the current session.
+			 * \return The current session, if there is one. If there is no current session, the behavior is undefined.
+			 */
+			const current_session_type& current_session() const { return *m_current_session; }
+
+			/**
+			 * \brief Increment the local sequence number.
+			 * \return Return the current sequence number and increment it afterwards.
+			 */
+			sequence_number_type increment_local_sequence_number() { return m_current_session->local_sequence_number++; }
+
+			/**
+			 * \brief Set the remote sequence number.
+			 * \param sequence_number The remote sequence number.
+			 * \return true if the sequence number was incremented with the new value, false is the current sequence number is greater than sequence_number.
+			 */
+			bool set_remote_sequence_number(sequence_number_type sequence_number);
+
+			/**
+			 * \brief Clear the current session.
+			 * \return True if the session was cleared. False is there was no active session.
+			 */
+			bool clear();
+
 		private:
 
-			boost::optional<session> m_current_session;
-			boost::optional<session> m_next_session;
-			host_identifier_type m_host_identifier;
+			host_identifier_type m_local_host_identifier;
 			boost::optional<host_identifier_type> m_remote_host_identifier;
+
 			boost::posix_time::ptime m_last_sign_of_life;
+
+			boost::shared_ptr<next_session_type> m_next_session;
+			boost::shared_ptr<current_session_type> m_current_session;
 	};
 }
 
