@@ -203,7 +203,7 @@ namespace fscp
 			 * \brief Increment the local sequence number.
 			 * \return Return the current sequence number and increment it afterwards.
 			 */
-			sequence_number_type increment_local_sequence_number() { return m_current_session->local_sequence_number++; }
+			sequence_number_type increment_local_sequence_number() { return ++m_current_session->local_sequence_number; }
 
 			/**
 			 * \brief Set the remote sequence number.
