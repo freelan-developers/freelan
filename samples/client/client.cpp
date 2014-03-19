@@ -193,11 +193,29 @@ static void on_data(const std::string& name, fscp::server& server, const fscp::s
 {
 	static_cast<void>(server);
 
-	const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
+	static std::atomic<int> send_counter;
 
-	mutex::scoped_lock lock(output_mutex);
+	if (channel_number == fscp::CHANNEL_NUMBER_3) {
+		const std::string str_data(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data));
 
-	std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << str_data << std::endl;
+		mutex::scoped_lock lock(output_mutex);
+
+		std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << str_data << std::endl;
+
+	} else if (channel_number == fscp::CHANNEL_NUMBER_4) {
+
+		const int receive_counter = *boost::asio::buffer_cast<const int*>(data);
+
+		mutex::scoped_lock lock(output_mutex);
+
+		std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << receive_counter << std::endl;
+	}
+
+	if ((name == "alice") || (name == "chris")) {
+		const int local_counter = send_counter++;
+
+		server.async_send_data(sender, fscp::CHANNEL_NUMBER_4, boost::asio::buffer(static_cast<const void *>(&local_counter), sizeof(local_counter)), boost::bind(&simple_handler, name, "async_send_data()", _1));
+	}
 }
 
 static bool on_contact_request_message(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::server::cert_type cert, fscp::hash_type hash, const fscp::server::ep_type& target)
@@ -218,13 +236,6 @@ static void on_contact_message(const std::string& name, fscp::server& server, co
 	std::cout << "[" << name << "] Received CONTACT from " << sender << ": " << hash << " is at " << target << std::endl;
 
 	server.async_greet(target, boost::bind(&on_hello_response, name, boost::ref(server), target, _1, _2));
-}
-
-static void _stop_function(fscp::server& s1, fscp::server& s2, fscp::server& s3)
-{
-	s1.close();
-	s2.close();
-	s3.close();
 }
 
 int main()
@@ -314,7 +325,11 @@ int main()
 		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
 
-		stop_function = boost::bind(&_stop_function, boost::ref(alice_server), boost::ref(bob_server), boost::ref(chris_server));
+		stop_function = [&](){
+			alice_server.close();
+			bob_server.close();
+			chris_server.close();
+		};
 
 		boost::thread_group threads;
 
