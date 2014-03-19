@@ -48,6 +48,12 @@
 
 namespace fscp
 {
+	bool peer_session::current_session_type::is_old() const
+	{
+		const auto max = std::numeric_limits<sequence_number_type>::max() / 2;
+		return ((local_sequence_number > max) || (remote_sequence_number > max));
+	}
+
 	bool peer_session::set_first_remote_host_identifier(const host_identifier_type& _host_identifier)
 	{
 		if (!m_remote_host_identifier)
@@ -69,9 +75,9 @@ namespace fscp
 			return false;
 		}
 
-		boost::shared_ptr<current_session_type> current_session = boost::make_shared<current_session_type>(m_next_session->session_number);
+		boost::shared_ptr<current_session_type> current_session = boost::make_shared<current_session_type>(m_next_session->parameters);
 
-		const size_t key_length = m_next_session->cipher_suite.to_cipher_algorithm().key_length();
+		const size_t key_length = m_next_session->parameters.cipher_suite.to_cipher_algorithm().key_length();
 		const auto remote_public_key = cryptoplus::buffer(_remote_public_key, remote_public_key_size);
 
 		// We get the derived secret key.
@@ -131,12 +137,26 @@ namespace fscp
 		}
 		else if (!m_next_session)
 		{
-			return current_session().session_number + 1;
+			return current_session().parameters.session_number + 1;
 		}
 		else
 		{
-			return m_next_session->session_number;
+			return m_next_session->parameters.session_number;
 		}
+	}
+
+	const peer_session::session_parameters& peer_session::next_session_parameters() const
+	{
+		assert(m_next_session);
+
+		return m_next_session->parameters;
+	}
+
+	const peer_session::session_parameters& peer_session::current_session_parameters() const
+	{
+		assert(m_current_session);
+
+		return m_current_session->parameters;
 	}
 
 	bool peer_session::set_remote_sequence_number(sequence_number_type sequence_number)

@@ -64,30 +64,41 @@ namespace fscp
 	{
 		public:
 
-			struct next_session_type
+			struct session_parameters
 			{
-				next_session_type(session_number_type _session_number, cipher_suite_type _cipher_suite) :
-					ecdhe_context(_cipher_suite.to_elliptic_curve_nid()),
+				session_parameters(session_number_type _session_number, cipher_suite_type _cipher_suite, const cryptoplus::buffer& _public_key) :
 					session_number(_session_number),
 					cipher_suite(_cipher_suite),
-					public_key(ecdhe_context.get_public_key())
+					public_key(_public_key)
 				{}
 
-				cryptoplus::pkey::ecdhe_context ecdhe_context;
 				session_number_type session_number;
 				cipher_suite_type cipher_suite;
 				cryptoplus::buffer public_key;
 			};
 
+			struct next_session_type
+			{
+				next_session_type(session_number_type _session_number, cipher_suite_type _cipher_suite) :
+					ecdhe_context(_cipher_suite.to_elliptic_curve_nid()),
+					parameters(_session_number, _cipher_suite, ecdhe_context.get_public_key())
+				{}
+
+				cryptoplus::pkey::ecdhe_context ecdhe_context;
+				session_parameters parameters;
+			};
+
 			struct current_session_type
 			{
-				current_session_type(session_number_type _session_number) :
-					session_number(_session_number),
+				explicit current_session_type(const session_parameters& _parameters) :
+					parameters(_parameters),
 					local_sequence_number(),
 					remote_sequence_number()
 				{}
 
-				session_number_type session_number;
+				bool is_old() const;
+
+				session_parameters parameters;
 				sequence_number_type local_sequence_number;
 				sequence_number_type remote_sequence_number;
 				cryptoplus::buffer local_session_key;
@@ -163,6 +174,18 @@ namespace fscp
 			 * \return The next session number.
 			 */
 			session_number_type next_session_number() const;
+
+			/**
+			 * \brief Get the next session parameters.
+			 * \return The next session parameters.
+			 */
+			const session_parameters& next_session_parameters() const;
+
+			/**
+			 * \brief Get the current session parameters.
+			 * \return The current session parameters.
+			 */
+			const session_parameters& current_session_parameters() const;
 
 			/**
 			 * \brief Check if an active session exists.

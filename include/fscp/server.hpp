@@ -1389,7 +1389,7 @@ namespace fscp
 
 		private: // SESSION messages
 
-			void do_send_session(const identity_store&, const ep_type&, const session&);
+			void do_send_session(const identity_store&, const ep_type&, const peer_session::session_parameters&);
 			void do_handle_session(socket_memory_pool::shared_buffer_type, const identity_store&, const ep_type&, const session_message&);
 			void do_handle_verified_session(const identity_store&, const ep_type&, const session_message&);
 

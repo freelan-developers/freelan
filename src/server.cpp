@@ -1469,7 +1469,7 @@ namespace fscp
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
 				p_session.next_session_number(),
-				p_session.host_identifier(),
+				p_session.local_host_identifier(),
 				m_cipher_suites,
 				identity.signature_key()
 			);
@@ -1576,21 +1576,21 @@ namespace fscp
 		{
 			if (!p_session.has_current_session())
 			{
-				p_session.set_next_session(session(_session_request_message.session_number(), calg));
-				do_send_session(identity, sender, p_session.next_session());
+				p_session.prepare_session(_session_request_message.session_number(), calg);
+				do_send_session(identity, sender, p_session.next_session_parameters());
 			}
 			else
 			{
-				if (_session_request_message.session_number() > p_session.current_session().session_number())
+				if (_session_request_message.session_number() > p_session.current_session().parameters.session_number)
 				{
 					// A new session is requested. Sending a new message.
-					p_session.set_next_session(session(_session_request_message.session_number(), calg));
-					do_send_session(identity, sender, p_session.next_session());
+					p_session.prepare_session(_session_request_message.session_number(), calg);
+					do_send_session(identity, sender, p_session.next_session_parameters());
 				}
 				else
 				{
 					// An old session is requested: sending the same message.
-					do_send_session(identity, sender, p_session.current_session());
+					do_send_session(identity, sender, p_session.current_session_parameters());
 				}
 			}
 		}
@@ -1670,7 +1670,7 @@ namespace fscp
 		}
 	}
 
-	void server::do_send_session(const identity_store& identity, const ep_type& target, const session& _session)
+	void server::do_send_session(const identity_store& identity, const ep_type& target, const peer_session::session_parameters& parameters)
 	{
 		// All do_send_session() calls are done in the session strand so the following is thread-safe.
 
@@ -1684,11 +1684,11 @@ namespace fscp
 			const size_t size = session_message::write(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				_session.session_number(),
-				p_session.host_identifier(),
-				_session.cipher_suite(),
-				buffer_cast<const void*>(_session.public_key()),
-				buffer_size(_session.public_key()),
+				parameters.session_number,
+				p_session.local_host_identifier(),
+				parameters.cipher_suite,
+				buffer_cast<const void*>(parameters.public_key),
+				buffer_size(parameters.public_key),
 				identity.signature_key()
 			);
 
@@ -1762,11 +1762,11 @@ namespace fscp
 
 		if (p_session.has_current_session())
 		{
-			if (_session_message.session_number() == p_session.current_session().session_number())
+			if (_session_message.session_number() == p_session.current_session().parameters.session_number)
 			{
 				// The session number matches the current session.
 
-				if (p_session.current_session().cipher_suite() != _session_message.cipher_suite())
+				if (p_session.current_session().parameters.cipher_suite != _session_message.cipher_suite())
 				{
 					// The parameters don't match the current session. Requesting a new one.
 					do_request_session(identity, sender, &null_simple_handler);
@@ -1774,7 +1774,7 @@ namespace fscp
 
 				return;
 			}
-			else if (_session_message.session_number() < p_session.current_session().session_number())
+			else if (_session_message.session_number() < p_session.current_session().parameters.session_number)
 			{
 				// This is an old session message. Ignore it.
 				return;
@@ -1802,18 +1802,23 @@ namespace fscp
 
 		if (can_accept)
 		{
+			if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
 			{
-				auto& _session = p_session.set_next_session(session(_session_message.session_number(), _session_message.cipher_suite()));
-				_session.set_remote_parameters(_session_message.public_key(), _session_message.public_key_size(), p_session.host_identifier(), p_session.remote_host_identifier());
+				// We received a session message but no session was prepared yet: we issue one and retry.
+				p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite());
 
-				do_send_session(identity, sender, _session);
+				if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
+				{
+					// Unable to complete the session.
+					return;
+				}
 			}
 
-			p_session.activate_next_session();
+			do_send_session(identity, sender, p_session.current_session_parameters());
 
 			if (m_session_established_handler)
 			{
-				m_session_established_handler(sender, session_is_new, p_session.current_session().cipher_suite());
+				m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite);
 			}
 		}
 	}
@@ -1928,14 +1933,14 @@ namespace fscp
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
 				channel_number,
-				p_session.current_session().increment_sequence_number(),
-				p_session.current_session().cipher_suite().to_cipher_algorithm(),
+				p_session.increment_local_sequence_number(),
+				p_session.current_session().parameters.cipher_suite.to_cipher_algorithm(),
 				buffer_cast<const uint8_t*>(data),
 				buffer_size(data),
-				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
-				buffer_size(p_session.current_session().shared_secret()),
-				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
-				buffer_size(p_session.current_session().nonce_prefix())
+				buffer_cast<const uint8_t*>(p_session.current_session().local_session_key),
+				buffer_size(p_session.current_session().local_session_key),
+				buffer_cast<const uint8_t*>(p_session.current_session().local_nonce_prefix),
+				buffer_size(p_session.current_session().local_nonce_prefix)
 			);
 
 			async_send_to(
@@ -2010,13 +2015,13 @@ namespace fscp
 			const size_t size = data_message::write_contact_request(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				p_session.current_session().increment_sequence_number(),
-				p_session.current_session().cipher_suite().to_cipher_algorithm(),
+				p_session.increment_local_sequence_number(),
+				p_session.current_session().parameters.cipher_suite.to_cipher_algorithm(),
 				hash_list,
-				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
-				buffer_size(p_session.current_session().shared_secret()),
-				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
-				buffer_size(p_session.current_session().nonce_prefix())
+				buffer_cast<const uint8_t*>(p_session.current_session().local_session_key),
+				buffer_size(p_session.current_session().local_session_key),
+				buffer_cast<const uint8_t*>(p_session.current_session().local_nonce_prefix),
+				buffer_size(p_session.current_session().local_nonce_prefix)
 			);
 
 			async_send_to(
@@ -2091,13 +2096,13 @@ namespace fscp
 			const size_t size = data_message::write_contact(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				p_session.current_session().increment_sequence_number(),
-				p_session.current_session().cipher_suite().to_cipher_algorithm(),
+				p_session.increment_local_sequence_number(),
+				p_session.current_session().parameters.cipher_suite.to_cipher_algorithm(),
 				contact_map,
-				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
-				buffer_size(p_session.current_session().shared_secret()),
-				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
-				buffer_size(p_session.current_session().nonce_prefix())
+				buffer_cast<const uint8_t*>(p_session.current_session().local_session_key),
+				buffer_size(p_session.current_session().local_session_key),
+				buffer_cast<const uint8_t*>(p_session.current_session().local_nonce_prefix),
+				buffer_size(p_session.current_session().local_nonce_prefix)
 			);
 
 			async_send_to(
@@ -2123,12 +2128,12 @@ namespace fscp
 		// All do_handle_data() calls are done in the same strand so the following is thread-safe.
 		peer_session& p_session = m_peer_sessions[sender];
 
-		if (!p_session.has_current_session() || !p_session.current_session().has_remote_parameters())
+		if (!p_session.has_current_session())
 		{
 			return;
 		}
 
-		if (_data_message.sequence_number() <= p_session.current_session().remote_parameters().sequence_number())
+		if (_data_message.sequence_number() <= p_session.current_session().remote_sequence_number)
 		{
 			// The message is outdated: we ignore it.
 			return;
@@ -2141,21 +2146,21 @@ namespace fscp
 			const size_t cleartext_len = _data_message.get_cleartext(
 				buffer_cast<uint8_t*>(cleartext_buffer),
 				buffer_size(cleartext_buffer),
-				p_session.current_session().cipher_suite().to_cipher_algorithm(),
-				buffer_cast<const uint8_t*>(p_session.current_session().remote_parameters().shared_secret()),
-				buffer_size(p_session.current_session().remote_parameters().shared_secret()),
-				buffer_cast<const uint8_t*>(p_session.current_session().remote_parameters().nonce_prefix()),
-				buffer_size(p_session.current_session().remote_parameters().nonce_prefix())
+				p_session.current_session().parameters.cipher_suite.to_cipher_algorithm(),
+				buffer_cast<const uint8_t*>(p_session.current_session().remote_session_key),
+				buffer_size(p_session.current_session().remote_session_key),
+				buffer_cast<const uint8_t*>(p_session.current_session().remote_nonce_prefix),
+				buffer_size(p_session.current_session().remote_nonce_prefix)
 			);
 
-			p_session.current_session().remote_parameters().set_sequence_number(_data_message.sequence_number());
+			p_session.set_remote_sequence_number(_data_message.sequence_number());
 			p_session.keep_alive();
 
 			if (p_session.current_session().is_old())
 			{
 				// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
-				auto& _session = p_session.set_next_session(session(p_session.next_session_number(), p_session.current_session().cipher_suite()));
-				do_send_session(identity, sender, _session);
+				p_session.prepare_session(p_session.next_session_number(), p_session.current_session().parameters.cipher_suite);
+				do_send_session(identity, sender, p_session.next_session_parameters());
 			}
 
 			const message_type type = _data_message.type();
@@ -2353,13 +2358,13 @@ namespace fscp
 			const size_t size = data_message::write_keep_alive(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				p_session.current_session().increment_sequence_number(),
-				p_session.current_session().cipher_suite().to_cipher_algorithm(),
+				p_session.increment_local_sequence_number(),
+				p_session.current_session().parameters.cipher_suite.to_cipher_algorithm(),
 				SESSION_KEEP_ALIVE_DATA_SIZE, // This is the count of random data to send.
-				buffer_cast<const uint8_t*>(p_session.current_session().shared_secret()),
-				buffer_size(p_session.current_session().shared_secret()),
-				buffer_cast<const uint8_t*>(p_session.current_session().nonce_prefix()),
-				buffer_size(p_session.current_session().nonce_prefix())
+				buffer_cast<const uint8_t*>(p_session.current_session().local_session_key),
+				buffer_size(p_session.current_session().local_session_key),
+				buffer_cast<const uint8_t*>(p_session.current_session().local_nonce_prefix),
+				buffer_size(p_session.current_session().local_nonce_prefix)
 			);
 
 			async_send_to(
