@@ -75,7 +75,7 @@ namespace fscp
 			return false;
 		}
 
-		boost::shared_ptr<current_session_type> current_session = boost::make_shared<current_session_type>(m_next_session->parameters);
+		boost::shared_ptr<current_session_type> _current_session = boost::make_shared<current_session_type>(m_next_session->parameters);
 
 		const size_t key_length = m_next_session->parameters.cipher_suite.to_cipher_algorithm().key_length();
 		const auto remote_public_key = cryptoplus::buffer(_remote_public_key, remote_public_key_size);
@@ -83,7 +83,7 @@ namespace fscp
 		// We get the derived secret key.
 		const auto secret_key = m_next_session->ecdhe_context.derive_secret_key(remote_public_key);
 
-		current_session->local_session_key = cryptoplus::tls::prf(
+		_current_session->local_session_key = cryptoplus::tls::prf(
 			key_length,
 			buffer_cast<const void*>(secret_key),
 			buffer_size(secret_key),
@@ -93,7 +93,7 @@ namespace fscp
 			get_default_digest_algorithm()
 		);
 
-		current_session->remote_session_key = cryptoplus::tls::prf(
+		_current_session->remote_session_key = cryptoplus::tls::prf(
 			key_length,
 			buffer_cast<const void*>(secret_key),
 			buffer_size(secret_key),
@@ -103,7 +103,7 @@ namespace fscp
 			get_default_digest_algorithm()
 		);
 
-		current_session->local_nonce_prefix = cryptoplus::tls::prf(
+		_current_session->local_nonce_prefix = cryptoplus::tls::prf(
 			DEFAULT_NONCE_PREFIX_SIZE,
 			buffer_cast<const void*>(secret_key),
 			buffer_size(secret_key),
@@ -113,7 +113,7 @@ namespace fscp
 			get_default_digest_algorithm()
 		);
 
-		current_session->remote_nonce_prefix = cryptoplus::tls::prf(
+		_current_session->remote_nonce_prefix = cryptoplus::tls::prf(
 			DEFAULT_NONCE_PREFIX_SIZE,
 			buffer_cast<const void*>(secret_key),
 			buffer_size(secret_key),
@@ -124,7 +124,7 @@ namespace fscp
 		);
 
 		m_next_session.reset();
-		swap(m_current_session, current_session);
+		swap(m_current_session, _current_session);
 
 		return true;
 	}
