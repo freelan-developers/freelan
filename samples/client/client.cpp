@@ -140,15 +140,11 @@ static bool on_session_request(const std::string& name, fscp::server& server, co
 	return default_accept;
 }
 
-static bool on_session(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
+static bool on_session(const std::string& name, fscp::server&, const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher suite: " << cs << ")" << std::endl;
-
-	static const std::string HELLO = "Hello you !";
-
-	server.async_send_data(sender, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(HELLO), boost::bind(&simple_handler, name, "async_send_data()", _1));
 
 	return default_accept;
 }
@@ -168,6 +164,10 @@ static void on_session_established(const std::string& name, fscp::server& server
 	std::cout << "[" << name << "] Session established with " << host << std::endl;
 	std::cout << "[" << name << "] New session: " << is_new << std::endl;
 	std::cout << "[" << name << "] Cipher suite: " << cs << std::endl;
+
+	static const std::string HELLO = "Hello you !";
+
+	server.async_send_data(host, fscp::CHANNEL_NUMBER_3, boost::asio::buffer(HELLO), boost::bind(&simple_handler, name, "async_send_data()", _1));
 
 	if (name == "alice")
 	{
