@@ -1461,6 +1461,13 @@ namespace fscp
 
 		peer_session& p_session = m_peer_sessions[target];
 
+		if (p_session.has_current_session())
+		{
+			handler(server_error::session_already_exist);
+
+			return;
+		}
+
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
 
 		try

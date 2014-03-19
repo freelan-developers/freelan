@@ -78,6 +78,10 @@ namespace fscp
 			{
 				return "No presentation is available for the specified host";
 			}
+			case server_error::session_already_exist:
+			{
+				return "A session already exists for the specified host";
+			}
 			case server_error::no_session_for_host:
 			{
 				return "No session is available for the specified host";
