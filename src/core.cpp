@@ -402,16 +402,16 @@ namespace freelan
 	{
 		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
-		m_server->set_cipher_capabilities(m_configuration.fscp.cipher_capabilities);
+		m_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
 
 		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
 		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
 		m_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
-		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4, _5));
+		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
 		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
 		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
-		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2, _3, _4));
-		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
+		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
+		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3));
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
 		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
@@ -879,11 +879,11 @@ namespace freelan
 		}
 	}
 
-	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, cert_type enc_cert, fscp::server::presentation_status_type status, bool has_session)
+	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, fscp::server::presentation_status_type status, bool has_session)
 	{
 		if (m_logger.level() <= LL_DEBUG)
 		{
-			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ". Signature: " << sig_cert.subject().oneline() << ". Cipherment: " << enc_cert.subject().oneline() << ". Status: " << status << ".";
+			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject().oneline() << ".";
 		}
 
 		if (is_banned(sender.address()))
@@ -907,13 +907,6 @@ namespace freelan
 			return false;
 		}
 
-		if (!certificate_is_valid(enc_cert))
-		{
-			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as the encryption certificate is invalid.";
-
-			return false;
-		}
-
 		m_logger(LL_INFORMATION) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << "): " << status << ".";
 
 		async_request_session(sender);
@@ -921,7 +914,7 @@ namespace freelan
 		return true;
 	}
 
-	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_algorithm_list_type& calg_capabilities, bool default_accept)
+	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_suite_list_type& cscap, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
 
@@ -929,26 +922,26 @@ namespace freelan
 		{
 			std::ostringstream oss;
 
-			BOOST_FOREACH(const fscp::cipher_algorithm_type& calg, calg_capabilities)
+			for (auto&& cs : cscap)
 			{
-				oss << " " << calg;
+				oss << " " << cs;
 			}
 
-			m_logger(LL_DEBUG) << "Cipher algorithm capabilities:" << oss.str();
+			m_logger(LL_DEBUG) << "Cipher suites capabilities:" << oss.str();
 		}
 
 		return default_accept;
 	}
 
-	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_algorithm_type calg, bool default_accept)
+	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
-		m_logger(LL_DEBUG) << "Cipher algorithm: " << calg;
+		m_logger(LL_DEBUG) << "Cipher suite: " << cs;
 
 		return default_accept;
 	}
 
-	void core::do_handle_session_failed(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+	void core::do_handle_session_failed(const ep_type& host, bool is_new)
 	{
 		if (is_new)
 		{
@@ -959,16 +952,13 @@ namespace freelan
 			m_logger(LL_WARNING) << "Session renewal with " << host << " failed.";
 		}
 
-		m_logger(LL_WARNING) << "Local algorithms: " << local;
-		m_logger(LL_WARNING) << "Remote algorithms: " << remote;
-
 		if (m_session_failed_callback)
 		{
-			m_session_failed_callback(host, is_new, local, remote);
+			m_session_failed_callback(host, is_new);
 		}
 	}
 
-	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)
+	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)
 	{
 		if (is_new)
 		{
@@ -979,8 +969,7 @@ namespace freelan
 			m_logger(LL_INFORMATION) << "Session renewed with " << host << ".";
 		}
 
-		m_logger(LL_INFORMATION) << "Local algorithms: " << local;
-		m_logger(LL_INFORMATION) << "Remote algorithms: " << remote;
+		m_logger(LL_INFORMATION) << "Cipher suite: " << cs;
 
 		if (is_new)
 		{
@@ -997,7 +986,7 @@ namespace freelan
 
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(host, is_new, local, remote);
+			m_session_established_callback(host, is_new, cs);
 		}
 	}
 

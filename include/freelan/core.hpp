@@ -181,19 +181,16 @@ namespace freelan
 			 * \brief A session failed callback.
 			 * \param host The host with which a session is established.
 			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
-			 * \param local The local algorithms.
-			 * \param remote The remote algorithms.
 			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_failed_handler_type;
+			typedef boost::function<void (const ep_type& host, bool is_new)> session_failed_handler_type;
 
 			/**
 			 * \brief A session established callback.
 			 * \param host The host with which a session is established.
 			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
-			 * \param local The local algorithms.
-			 * \param remote The remote algorithms.
+			 * \param cs The cipher suite.
 			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::algorithm_info_type& local, const fscp::algorithm_info_type& remote)> session_established_handler_type;
+			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)> session_established_handler_type;
 
 			/**
 			 * \brief A session lost callback.
@@ -420,11 +417,11 @@ namespace freelan
 			bool do_handle_hello_received(const ep_type&, bool);
 			bool do_handle_contact_request_received(const ep_type&, cert_type, hash_type, const ep_type&);
 			void do_handle_contact_received(const ep_type&, hash_type, const ep_type&);
-			bool do_handle_presentation_received(const ep_type&, cert_type, cert_type, fscp::server::presentation_status_type, bool);
-			bool do_handle_session_request_received(const ep_type&, const fscp::cipher_algorithm_list_type&, bool);
-			bool do_handle_session_received(const ep_type&, fscp::cipher_algorithm_type, bool);
-			void do_handle_session_failed(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
-			void do_handle_session_established(const ep_type&, bool, const fscp::algorithm_info_type&, const fscp::algorithm_info_type&);
+			bool do_handle_presentation_received(const ep_type&, cert_type, fscp::server::presentation_status_type, bool);
+			bool do_handle_session_request_received(const ep_type&, const fscp::cipher_suite_list_type&, bool);
+			bool do_handle_session_received(const ep_type&, fscp::cipher_suite_type, bool);
+			void do_handle_session_failed(const ep_type&, bool);
+			void do_handle_session_established(const ep_type&, bool, const fscp::cipher_suite_type&);
 			void do_handle_session_lost(const ep_type&);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);

@@ -248,9 +248,9 @@ namespace freelan
 		boost::posix_time::time_duration hello_timeout;
 
 		/**
-		 * \brief The list of allowed cipher algorithms.
+		 * \brief The list of allowed cipher suites.
 		 */
-		fscp::cipher_algorithm_list_type cipher_capabilities;
+		fscp::cipher_suite_list_type cipher_suite_capabilities;
 	};
 
 	/**
