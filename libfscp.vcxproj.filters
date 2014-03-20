@@ -57,9 +57,6 @@
     <ClCompile Include="src\peer_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\session.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\fscp\buffer_tools.hpp">
@@ -105,9 +102,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fscp\peer_session.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\fscp\session.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
