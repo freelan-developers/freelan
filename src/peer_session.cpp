@@ -189,6 +189,8 @@ namespace fscp
 
 	bool peer_session::clear()
 	{
+		clear_remote_host_identifier();
+
 		const bool result = has_current_session();
 
 		m_current_session.reset();
