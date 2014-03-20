@@ -131,7 +131,7 @@ po::options_description get_fscp_options()
 	("fscp.accept_contacts", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT messages.")
 	("fscp.dynamic_contact_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The certificate of an host to dynamically contact.")
 	("fscp.never_contact", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
-	("fscp.cipher_capability", po::value<std::vector<fscp::cipher_algorithm_type> >()->multitoken()->zero_tokens()->default_value(std::vector<fscp::cipher_algorithm_type>(), ""), "A cipher algorithm to allow.")
+	("fscp.cipher_suite_capability", po::value<std::vector<fscp::cipher_suite_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_cipher_suites(), ""), "A cipher suite to allow.")
 	;
 
 	return result;
@@ -144,8 +144,6 @@ po::options_description get_security_options()
 	result.add_options()
 	("security.signature_certificate_file", po::value<fs::path>(), "The certificate file to use for signing.")
 	("security.signature_private_key_file", po::value<fs::path>(), "The private key file to use for signing.")
-	("security.encryption_certificate_file", po::value<fs::path>(), "The certificate file to use for encryption.")
-	("security.encryption_private_key_file", po::value<fs::path>(), "The private key file to use for encryption.")
 	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT), "The certificate validation method.")
 	("security.certificate_validation_script", po::value<fs::path>()->default_value(""), "The certificate validation script to use.")
 	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
@@ -329,14 +327,12 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		configuration.fscp.dynamic_contact_list.push_back(load_certificate(fs::absolute(dynamic_contact_file, root)));
 	}
 
-	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<asiotap::ip_network_address> >();
-	configuration.fscp.cipher_capabilities = vm["fscp.cipher_capability"].as<std::vector<fscp::cipher_algorithm_type> >();
+	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<asiotap::ip_network_address>>();
+	configuration.fscp.cipher_suite_capabilities = vm["fscp.cipher_suite_capability"].as<std::vector<fscp::cipher_suite_type>>();
 
 	// Security options
 	cert_type signature_certificate;
 	pkey signature_private_key;
-	cert_type encryption_certificate;
-	pkey encryption_private_key;
 
 	if (vm.count("security.signature_certificate_file"))
 	{
@@ -348,19 +344,9 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 		signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<fs::path>(), root));
 	}
 
-	if (vm.count("security.encryption_certificate_file"))
-	{
-		encryption_certificate = load_certificate(fs::absolute(vm["security.encryption_certificate_file"].as<fs::path>(), root));
-	}
-
-	if (vm.count("security.encryption_private_key_file"))
-	{
-		encryption_private_key = load_private_key(fs::absolute(vm["security.encryption_private_key_file"].as<fs::path>(), root));
-	}
-
 	if (!!signature_certificate && !!signature_private_key)
 	{
-		configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, encryption_certificate, encryption_private_key);
+		configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key);
 	}
 
 	configuration.security.certificate_validation_method = vm["security.certificate_validation_method"].as<fl::security_configuration::certificate_validation_method_type>();
