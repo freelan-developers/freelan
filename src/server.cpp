@@ -253,11 +253,6 @@ namespace fscp
 
 	// Public methods
 
-	const cipher_suite_list_type server::DEFAULT_CIPHER_SUITES = {
-		cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384,
-		cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256
-	};
-
 	server::server(boost::asio::io_service& io_service, const identity_store& identity) :
 		m_identity_store(identity),
 		m_socket(io_service),
@@ -270,7 +265,7 @@ namespace fscp
 		m_presentation_message_received_handler(),
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
-		m_cipher_suites(DEFAULT_CIPHER_SUITES),
+		m_cipher_suites(get_default_cipher_suites()),
 		m_session_request_message_received_handler(),
 		m_accept_session_messages_default(true),
 		m_session_message_received_handler(),

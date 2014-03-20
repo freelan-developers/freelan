@@ -420,6 +420,17 @@ namespace fscp
 	typedef std::vector<cipher_suite_type> cipher_suite_list_type;
 
 	/**
+	 * \brief The default cipher suite list.
+	 */
+	inline const cipher_suite_list_type get_default_cipher_suites()
+	{
+		return {
+			cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384,
+			cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256
+		};
+	}
+
+	/**
 	 * \brief The certificate digest algorithm.
 	 *
 	 * This has to be a function sadly because initializing a message_digest_algorithm requires OpenSSL to be initialized first.
