@@ -82,7 +82,7 @@ namespace cryptoplus
 			error::throw_error_if(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(parameters_context.get(), m_nid) != 1);
 
 			EVP_PKEY* cparameters = nullptr;
-			error::throw_error_if_not(EVP_PKEY_paramgen(parameters_context.get(), &cparameters));
+			error::throw_error_if_not(EVP_PKEY_paramgen(parameters_context.get(), &cparameters) == 1);
 			pkey parameters = pkey::take_ownership(cparameters);
 
 			evp_pkey_context_type key_generation_context(EVP_PKEY_CTX_new(parameters.raw(), NULL));

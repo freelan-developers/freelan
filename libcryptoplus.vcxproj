@@ -34,6 +34,7 @@
     <ClCompile Include="src\cryptoplus.cpp" />
     <ClCompile Include="src\dh_key.cpp" />
     <ClCompile Include="src\dsa_key.cpp" />
+    <ClCompile Include="src\ecdhe.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\error_strings.cpp" />
     <ClCompile Include="src\extension.cpp" />
@@ -56,6 +57,7 @@
     <ClCompile Include="src\store.cpp" />
     <ClCompile Include="src\store_context.cpp" />
     <ClCompile Include="src\string.cpp" />
+    <ClCompile Include="src\tls.cpp" />
     <ClCompile Include="src\utctime.cpp" />
     <ClCompile Include="src\verify_param.cpp" />
     <ClCompile Include="src\x509v3_context.cpp" />
@@ -89,10 +91,12 @@
     <ClInclude Include="include\cryptoplus\os.hpp" />
     <ClInclude Include="include\cryptoplus\pkey\dh_key.hpp" />
     <ClInclude Include="include\cryptoplus\pkey\dsa_key.hpp" />
+    <ClInclude Include="include\cryptoplus\pkey\ecdhe.hpp" />
     <ClInclude Include="include\cryptoplus\pkey\pkey.hpp" />
     <ClInclude Include="include\cryptoplus\pkey\rsa_key.hpp" />
     <ClInclude Include="include\cryptoplus\pointer_wrapper.hpp" />
     <ClInclude Include="include\cryptoplus\random\random.hpp" />
+    <ClInclude Include="include\cryptoplus\tls\tls.hpp" />
     <ClInclude Include="include\cryptoplus\x509\certificate.hpp" />
     <ClInclude Include="include\cryptoplus\x509\certificate_request.hpp" />
     <ClInclude Include="include\cryptoplus\x509\certificate_revocation_list.hpp" />
