@@ -453,7 +453,7 @@ namespace cryptoplus
 		}
 		inline pkey pkey::from_hmac_key(const void* buf, size_t buf_len, ENGINE* engine)
 		{
-			return take_ownership(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, engine, static_cast<const unsigned char*>(buf), buf_len));
+			return take_ownership(EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, engine, static_cast<const unsigned char*>(buf), static_cast<int>(buf_len)));
 		}
 		inline pkey pkey::from_private_key(file _file, pem_passphrase_callback_type callback, void* callback_arg)
 		{
