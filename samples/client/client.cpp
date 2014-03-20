@@ -208,13 +208,20 @@ static void on_data(const std::string& name, fscp::server& server, const fscp::s
 
 		mutex::scoped_lock lock(output_mutex);
 
-		std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": " << receive_counter << std::endl;
+		std::cout << "[" << name << "] Received DATA on channel " << static_cast<unsigned int>(channel_number) << " from " << sender << ": #" << receive_counter << std::endl;
 	}
 
 	if ((name == "alice") || (name == "chris")) {
-		const int local_counter = send_counter++;
+		const boost::shared_ptr<int> local_counter(new int(send_counter++));
 
-		server.async_send_data(sender, fscp::CHANNEL_NUMBER_4, boost::asio::buffer(static_cast<const void *>(&local_counter), sizeof(local_counter)), boost::bind(&simple_handler, name, "async_send_data()", _1));
+		server.async_send_data(
+			sender,
+			fscp::CHANNEL_NUMBER_4,
+			boost::asio::buffer(local_counter.get(), sizeof(int)),
+			[name, local_counter](const boost::system::error_code& ec) {
+				simple_handler(name, "async_send_data()", ec);
+			}
+		);
 	}
 }
 
