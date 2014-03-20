@@ -1681,7 +1681,6 @@ namespace fscp
 	{
 		// All do_send_session() calls are done in the session strand so the following is thread-safe.
 
-		//TODO: Handle session renewal
 		peer_session& p_session = m_peer_sessions[target];
 
 		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();

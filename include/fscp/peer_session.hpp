@@ -156,10 +156,9 @@ namespace fscp
 			 * \brief Prepare the next session.
 			 * \param _session_number The next session number.
 			 * \param _cipher_suite The next cipher suite.
+			 * \return true if a new session was created.
 			 */
-			void prepare_session(session_number_type _session_number, cipher_suite_type _cipher_suite) {
-				m_next_session = boost::make_shared<next_session_type>(_session_number, _cipher_suite);
-			}
+			bool prepare_session(session_number_type _session_number, cipher_suite_type _cipher_suite);
 
 			/**
 			 * \brief Complete the next session.

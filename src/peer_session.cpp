@@ -66,6 +66,22 @@ namespace fscp
 		return (_host_identifier == *m_remote_host_identifier);
 	}
 
+	bool peer_session::prepare_session(session_number_type _session_number, cipher_suite_type _cipher_suite)
+	{
+		if (m_next_session)
+		{
+			if ((m_next_session->parameters.session_number == _session_number) && (m_next_session->parameters.cipher_suite == _cipher_suite))
+			{
+				// The session in preparation matches the requested one: not creating one to ensure the private DH key stays the same.
+				return false;
+			}
+		}
+
+		m_next_session = boost::make_shared<next_session_type>(_session_number, _cipher_suite);
+
+		return true;
+	}
+
 	bool peer_session::complete_session(const void* _remote_public_key, size_t remote_public_key_size)
 	{
 		using cryptoplus::buffer_cast;
