@@ -1642,6 +1642,77 @@ namespace freelan
 		return false;
 	}
 
+	core::endpoint_route_manager& core::endpoint_route_manager::operator=(const core::endpoint_route_manager& other)
+	{
+		remove_routes();
+
+		m_route_manager = other.m_route_manager;
+		m_routes = other.m_routes;
+		m_logger = other.m_logger;
+
+		add_routes();
+
+		return *this;
+	}
+
+	core::endpoint_route_manager& core::endpoint_route_manager::operator=(core::endpoint_route_manager&& other)
+	{
+		using std::swap;
+
+		swap(m_route_manager, other.m_route_manager);
+		swap(m_routes, other.m_routes);
+		swap(m_logger, other.m_logger);
+
+		return *this;
+	}
+
+	void core::endpoint_route_manager::add_routes() const
+	{
+		const boost::shared_ptr<asiotap::route_manager> route_manager = m_route_manager.lock();
+
+		if (route_manager)
+		{
+			for (auto&& route: m_routes)
+			{
+				try
+				{
+					route_manager->add_route(route);
+				}
+				catch (boost::system::system_error& ex)
+				{
+					if (m_logger)
+					{
+						(*m_logger)(LL_WARNING) << "Unable to set route (" << route << "): " << ex.what();
+					}
+				}
+			}
+		}
+	}
+
+	void core::endpoint_route_manager::remove_routes() const
+	{
+		const boost::shared_ptr<asiotap::route_manager> route_manager = m_route_manager.lock();
+
+		if (route_manager)
+		{
+			for (auto&& route: m_routes)
+			{
+				try
+				{
+					route_manager->remove_route(route);
+				}
+				catch (boost::system::system_error& ex)
+				{
+					if (m_logger)
+					{
+						(*m_logger)(LL_WARNING) << "Unable to remove route (" << route << "): " << ex.what();
+					}
+				}
+
+			}
+		}
+	}
+
 	void core::do_register_switch_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_register_switch_port() are done within the m_switch_strand, so the following is safe.
