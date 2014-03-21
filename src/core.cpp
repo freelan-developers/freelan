@@ -1676,7 +1676,13 @@ namespace freelan
 			{
 				try
 				{
-					route_manager->add_route(route);
+					if (route_manager->add_route(route))
+					{
+						if (m_logger)
+						{
+							(*m_logger)(LL_INFORMATION) << "Added route: " << route;
+						}
+					}
 				}
 				catch (boost::system::system_error& ex)
 				{
@@ -1699,7 +1705,13 @@ namespace freelan
 			{
 				try
 				{
-					route_manager->remove_route(route);
+					if (route_manager->remove_route(route))
+					{
+						if (m_logger)
+						{
+							(*m_logger)(LL_INFORMATION) << "Removed route: " << route;
+						}
+					}
 				}
 				catch (boost::system::system_error& ex)
 				{
