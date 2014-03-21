@@ -63,7 +63,7 @@ inline bool operator<(const NET_LUID& lhs, const NET_LUID& rhs)
 
 inline std::ostream& operator<<(std::ostream& os, const NET_LUID& value)
 {
-	return os << value.Info.NetLuidIndex << " (" << value.Info.IfType << ")";
+	return os << "Network interface #" << value.Info.NetLuidIndex;
 }
 
 namespace asiotap
