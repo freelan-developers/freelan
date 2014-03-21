@@ -514,6 +514,12 @@ namespace freelan
 					typedef asiotap::route_manager::route_type route_type;
 					typedef std::set<route_type> route_set_type;
 
+					endpoint_route_manager() :
+						m_route_manager(),
+						m_routes(),
+						m_logger()
+					{}
+
 					endpoint_route_manager(boost::shared_ptr<asiotap::route_manager> route_manager, const route_set_type& routes, freelan::logger* logger = nullptr) :
 						m_route_manager(route_manager),
 						m_routes(routes),
@@ -580,6 +586,16 @@ namespace freelan
 				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host, handler));
 			}
 
+			void async_set_system_routes(const ep_type& host, const asiotap::ip_routes_set& routes, void_handler_type handler)
+			{
+				m_router_strand.post(boost::bind(&core::do_set_system_routes, this, host, routes, handler));
+			}
+
+			void async_clear_system_routes(const ep_type& host, void_handler_type handler)
+			{
+				m_router_strand.post(boost::bind(&core::do_clear_system_routes, this, host, handler));
+			}
+
 			template <typename WriteHandler>
 			void async_write_switch(const port_index_type& index, boost::asio::const_buffer data, WriteHandler handler)
 			{
@@ -596,6 +612,8 @@ namespace freelan
 			void do_register_router_port(const ep_type&, void_handler_type);
 			void do_unregister_switch_port(const ep_type&, void_handler_type);
 			void do_unregister_router_port(const ep_type&, void_handler_type);
+			void do_set_system_routes(const ep_type&, const asiotap::ip_routes_set&, void_handler_type);
+			void do_clear_system_routes(const ep_type&, void_handler_type);
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
 
@@ -604,6 +622,8 @@ namespace freelan
 
 			switch_ m_switch;
 			router m_router;
+			boost::shared_ptr<asiotap::route_manager> m_route_manager;
+			endpoint_route_manager_map_type m_endpoint_route_manager_map;
 	};
 }
 

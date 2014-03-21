@@ -1007,6 +1007,8 @@ namespace freelan
 		{
 			async_unregister_router_port(host, void_handler_type());
 		}
+
+		async_clear_system_routes(host, void_handler_type());
 	}
 
 	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type buffer, boost::asio::const_buffer data)
@@ -1131,6 +1133,8 @@ namespace freelan
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 
+		asiotap::ip_routes_set filtered_routes;
+
 		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
 		{
 			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::route_scope_type::none)
@@ -1142,7 +1146,7 @@ namespace freelan
 
 			const auto port = m_router.get_port(make_port_index(sender));
 
-			const auto filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
+			filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
 
 			if (filtered_routes != routes)
 			{
@@ -1176,15 +1180,32 @@ namespace freelan
 			{
 				m_logger(LL_DEBUG) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
 			}
-
-			//TODO: Add the filtered routes to the system if allowed by the configuration.
 		}
 		else
 		{
-			m_logger(LL_INFORMATION) << "Received routes from " << sender << " (version " << version << "): " << routes;
-
-			//TODO: Add the filtered routes to the system if allowed by the configuration.
+			filtered_routes = routes;
 		}
+
+		const auto system_routes = filter_routes(filtered_routes, m_configuration.router.system_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
+
+		if (system_routes != filtered_routes)
+		{
+			if (system_routes.empty() && !filtered_routes.empty())
+			{
+				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << system_routes;
+
+				return;
+			}
+			else
+			{
+				asiotap::ip_routes_set excluded_routes;
+				std::set_difference(filtered_routes.begin(), filtered_routes.end(), system_routes.begin(), system_routes.end(), std::inserter(excluded_routes, excluded_routes.end()), asiotap::ip_routes_set::key_compare());
+
+				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but some did not match the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
+			}
+		}
+
+		do_set_system_routes(sender, system_routes, void_handler_type());
 	}
 
 	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
@@ -1762,6 +1783,40 @@ namespace freelan
 	{
 		// All calls to do_unregister_router_port() are done within the m_router_strand, so the following is safe.
 		m_router.unregister_port(make_port_index(host));
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void core::do_set_system_routes(const ep_type& host, const asiotap::ip_routes_set& routes, void_handler_type handler)
+	{
+		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
+
+		endpoint_route_manager::route_set_type ep_routes;
+
+		for (auto&& route : routes)
+		{
+			//TODO: Handle the gateway in get_route(route, gateway).
+			ep_routes.insert(m_tap_adapter->get_route(route));
+		}
+
+		// This sets the routes if required.
+		m_endpoint_route_manager_map[host] = endpoint_route_manager(m_route_manager, ep_routes, &m_logger);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void core::do_clear_system_routes(const ep_type& host, void_handler_type handler)
+	{
+		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
+
+		// This clears the routes if required.
+		m_endpoint_route_manager_map.erase(host);
 
 		if (handler)
 		{
