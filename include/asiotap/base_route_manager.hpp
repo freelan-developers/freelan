@@ -125,15 +125,19 @@ namespace asiotap
 				return (m_routing_table.find(route) != m_routing_table.end());
 			}
 
-			void add_route(const route_type& route)
+			bool add_route(const route_type& route)
 			{
 				if (m_routing_table[route]++ == 0)
 				{
 					static_cast<RouteManagerType*>(this)->register_route(route);
+
+					return true;
 				}
+
+				return false;
 			}
 
-			void remove_route(const route_type& route)
+			bool remove_route(const route_type& route)
 			{
 				const auto route_position = m_routing_table.find(route);
 
@@ -144,12 +148,16 @@ namespace asiotap
 						static_cast<RouteManagerType*>(this)->unregister_route(route);
 
 						m_routing_table.erase(route_position);
+
+						return true;
 					}
 					else if (route_position->second > 1)
 					{
 						--route_position->second;
 					}
 				}
+
+				return false;
 			}
 
 		protected:
