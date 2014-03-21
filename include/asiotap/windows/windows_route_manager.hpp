@@ -61,6 +61,11 @@ inline bool operator<(const NET_LUID& lhs, const NET_LUID& rhs)
 	return (lhs.Value < rhs.Value);
 }
 
+inline std::ostream& operator<<(std::ostream& os, const NET_LUID& value)
+{
+	return os << value.Info.NetLuidIndex << " (" << value.Info.IfType << ")";
+}
+
 namespace asiotap
 {
 	typedef base_routing_table_entry<NET_LUID> windows_routing_table_entry;
