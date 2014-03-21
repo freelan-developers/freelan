@@ -475,10 +475,16 @@ namespace freelan
 		m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
 		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
 		m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
+
+		// We create a route manager.
+		m_route_manager = boost::make_shared<asiotap::route_manager>();
 	}
 
 	void core::close_server()
 	{
+		// Destroy the route manager.
+		m_route_manager.reset();
+
 		// Stop the contact loop timers.
 		m_routes_request_timer.cancel();
 		m_dynamic_contact_timer.cancel();
