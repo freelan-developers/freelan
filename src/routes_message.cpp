@@ -120,7 +120,7 @@ namespace freelan
 		};
 	}
 
-	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const asiotap::ip_routes_set& routes)
+	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const asiotap::ip_route_set& routes)
 	{
 		if (buf_len < HEADER_LENGTH)
 		{
@@ -154,11 +154,11 @@ namespace freelan
 		return ntohl(static_cast<version_type>(fscp::buffer_tools::get<uint32_t>(payload(), 0)));
 	}
 
-	const asiotap::ip_routes_set& routes_message::routes() const
+	const asiotap::ip_route_set& routes_message::routes() const
 	{
 		if (!m_routes_cache)
 		{
-			asiotap::ip_routes_set result;
+			asiotap::ip_route_set result;
 
 			const uint8_t* pbuf = payload() + sizeof(uint32_t);
 			size_t pbuf_len = length() - sizeof(uint32_t);

@@ -65,6 +65,7 @@
 #include <asiotap/tap_adapter.hpp>
 #include <asiotap/osi/ethernet_address.hpp>
 #include <asiotap/types/ip_network_address.hpp>
+#include <asiotap/types/ip_route.hpp>
 #include <asiotap/types/endpoint.hpp>
 
 #include "mtu.hpp"
@@ -473,7 +474,7 @@ namespace freelan
 		 *
 		 * These routes are sent to the other hosts for VPN routing.
 		 */
-		asiotap::ip_routes_set local_ip_routes;
+		asiotap::ip_route_set local_ip_routes;
 
 		/**
 		 * \brief Whether to enable client routing.

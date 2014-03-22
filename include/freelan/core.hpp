@@ -60,6 +60,7 @@
 #include <asiotap/osi/dhcp_proxy.hpp>
 #include <asiotap/osi/complex_filter.hpp>
 #include <asiotap/route_manager.hpp>
+#include <asiotap/types/ip_route.hpp>
 
 #include <cryptoplus/x509/store.hpp>
 #include <cryptoplus/x509/store_context.hpp>
@@ -402,7 +403,7 @@ namespace freelan
 			void async_send_routes_request(const ep_type&);
 			void async_send_routes_request_to_all(multiple_endpoints_handler_type);
 			void async_send_routes_request_to_all();
-			void async_send_routes(const ep_type&, routes_message::version_type, const asiotap::ip_routes_set&, simple_handler_type);
+			void async_send_routes(const ep_type&, routes_message::version_type, const asiotap::ip_route_set&, simple_handler_type);
 
 			void do_contact(const ep_type&, duration_handler_type);
 
@@ -429,7 +430,7 @@ namespace freelan
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
 			void do_handle_routes_request(const ep_type&);
-			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_routes_set&);
+			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_route_set&);
 
 			boost::shared_ptr<fscp::server> m_server;
 			boost::asio::deadline_timer m_contact_timer;
@@ -586,7 +587,7 @@ namespace freelan
 				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host, handler));
 			}
 
-			void async_set_system_routes(const ep_type& host, const asiotap::ip_routes_set& routes, void_handler_type handler)
+			void async_set_system_routes(const ep_type& host, const asiotap::ip_route_set& routes, void_handler_type handler)
 			{
 				m_router_strand.post(boost::bind(&core::do_set_system_routes, this, host, routes, handler));
 			}
@@ -612,7 +613,7 @@ namespace freelan
 			void do_register_router_port(const ep_type&, void_handler_type);
 			void do_unregister_switch_port(const ep_type&, void_handler_type);
 			void do_unregister_router_port(const ep_type&, void_handler_type);
-			void do_set_system_routes(const ep_type&, const asiotap::ip_routes_set&, void_handler_type);
+			void do_set_system_routes(const ep_type&, const asiotap::ip_route_set&, void_handler_type);
 			void do_clear_system_routes(const ep_type&, void_handler_type);
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);

@@ -213,9 +213,9 @@ namespace freelan
 		static const unsigned int TAP_ADAPTERS_GROUP = 0;
 		static const unsigned int ENDPOINTS_GROUP = 1;
 
-		asiotap::ip_routes_set filter_routes(const asiotap::ip_routes_set& routes, router_configuration::route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
+		asiotap::ip_route_set filter_routes(const asiotap::ip_route_set& routes, router_configuration::route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
 		{
-			asiotap::ip_routes_set result;
+			asiotap::ip_route_set result;
 			auto ipv4_limit = limit;
 			auto ipv6_limit = limit;
 
@@ -697,7 +697,7 @@ namespace freelan
 		async_send_routes_request_to_all(boost::bind(&core::do_handle_send_routes_request_to_all, this, _1));
 	}
 
-	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const asiotap::ip_routes_set& routes, simple_handler_type handler)
+	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const asiotap::ip_route_set& routes, simple_handler_type handler)
 	{
 		assert(m_server);
 
@@ -1135,11 +1135,11 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_routes_set& routes)
+	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_route_set& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 
-		asiotap::ip_routes_set filtered_routes;
+		asiotap::ip_route_set filtered_routes;
 
 		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
 		{
@@ -1164,8 +1164,8 @@ namespace freelan
 				}
 				else
 				{
-					asiotap::ip_routes_set excluded_routes;
-					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()), asiotap::ip_routes_set::key_compare());
+					asiotap::ip_route_set excluded_routes;
+					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
 
 					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
 				}
@@ -1204,8 +1204,8 @@ namespace freelan
 			}
 			else
 			{
-				asiotap::ip_routes_set excluded_routes;
-				std::set_difference(filtered_routes.begin(), filtered_routes.end(), system_routes.begin(), system_routes.end(), std::inserter(excluded_routes, excluded_routes.end()), asiotap::ip_routes_set::key_compare());
+				asiotap::ip_route_set excluded_routes;
+				std::set_difference(filtered_routes.begin(), filtered_routes.end(), system_routes.begin(), system_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
 
 				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but some did not match the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
 			}
@@ -1796,7 +1796,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_set_system_routes(const ep_type& host, const asiotap::ip_routes_set& routes, void_handler_type handler)
+	void core::do_set_system_routes(const ep_type& host, const asiotap::ip_route_set& routes, void_handler_type handler)
 	{
 		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
 
