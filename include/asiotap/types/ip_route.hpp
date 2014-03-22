@@ -562,7 +562,7 @@ namespace asiotap
 			{
 				if (ir.gateway())
 				{
-					return *ir.gateway();
+					return boost::asio::ip::address(*ir.gateway());
 				}
 				else
 				{

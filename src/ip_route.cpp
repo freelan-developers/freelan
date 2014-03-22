@@ -99,8 +99,8 @@ namespace asiotap
 		}
 	}
 
-	template std::ostream& operator<<(std::ostream& is, const ipv4_network_address& value);
-	template std::ostream& operator<<(std::ostream& is, const ipv6_network_address& value);
+	template std::ostream& operator<<(std::ostream& is, const ipv4_route& value);
+	template std::ostream& operator<<(std::ostream& is, const ipv6_route& value);
 
 	std::istream& operator>>(std::istream& is, ip_route& value)
 	{
