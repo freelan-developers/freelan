@@ -291,6 +291,28 @@ namespace asiotap
 	}
 
 	/**
+	 * \brief Convert an IP address into an IP route.
+	 * \param addr The address.
+	 * \param prefix_len The prefix length.
+	 * \param gateway The gateway.
+	 * \return The IP route.
+	 */
+	inline ip_route to_ip_route(const ip_network_address& ina, const boost::optional<boost::asio::ip::address>& gateway)
+	{
+		const auto addr = get_network_address(ina);
+		const auto prefix_len = prefix_length(ina);
+
+		if (gateway)
+		{
+			return to_ip_route(addr, prefix_len, *gateway);
+		}
+		else
+		{
+			return to_ip_route(addr, prefix_len);
+		}
+	}
+
+	/**
 	 * \brief A visitor that writes ip_route to output streams.
 	 */
 	class ip_route_output_visitor : public boost::static_visitor<std::ostream&>

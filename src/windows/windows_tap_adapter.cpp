@@ -374,11 +374,10 @@ namespace asiotap
 					{
 						struct sockaddr_in* sai = reinterpret_cast<struct sockaddr_in*>(unicast_address->Address.lpSockaddr);
 						boost::asio::ip::address_v4::bytes_type bytes;
-						unsigned int prefix_len = sizeof(in_addr) * 8;
 
 						std::memcpy(bytes.data(), &sai->sin_addr, bytes.size());
 						boost::asio::ip::address_v4 address(bytes);
-						prefix_len = unicast_address->OnLinkPrefixLength;
+						const unsigned int prefix_len = unicast_address->OnLinkPrefixLength;
 
 						result.push_back(ipv4_network_address{ address, prefix_len });
 					}
@@ -386,11 +385,10 @@ namespace asiotap
 					{
 						struct sockaddr_in6* sai = reinterpret_cast<struct sockaddr_in6*>(unicast_address->Address.lpSockaddr);
 						boost::asio::ip::address_v6::bytes_type bytes;
-						unsigned int prefix_len = sizeof(in6_addr) * 8;
 
 						memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
 						boost::asio::ip::address_v6 address(bytes);
-						prefix_len = unicast_address->OnLinkPrefixLength;
+						const unsigned int prefix_len = unicast_address->OnLinkPrefixLength;
 
 						result.push_back(ipv6_network_address{ address, prefix_len });
 					}

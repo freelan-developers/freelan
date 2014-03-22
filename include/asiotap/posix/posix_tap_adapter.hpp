@@ -162,13 +162,12 @@ namespace asiotap
 
 			/**
 			 * \brief Build a route associated to this tap adapter.
-			 * \param network_address The network_address.
-			 * \param gateway The gateway.
+			 * \param route The route.
 			 * \return The route.
 			 */
-			posix_routing_table_entry get_route(const ip_network_address& network_address, boost::optional<boost::asio::ip::address> gateway = boost::none)
+			posix_routing_table_entry get_route(const ip_route& route)
 			{
-				return { name(), network_address, gateway };
+				return { name(), route };
 			}
 
 		private:

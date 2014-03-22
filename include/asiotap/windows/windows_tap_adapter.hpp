@@ -131,13 +131,12 @@ namespace asiotap
 
 			/**
 			 * \brief Build a route associated to this tap adapter.
-			 * \param network_address The network_address.
-			 * \param gateway The gateway.
+			 * \param route The route.
 			 * \return The route.
 			 */
-			windows_routing_table_entry get_route(const ip_network_address& network_address, boost::optional<boost::asio::ip::address> gateway = boost::none)
+			windows_routing_table_entry get_route(const ip_route& route)
 			{
-				return { m_interface_luid, network_address, gateway };
+				return { m_interface_luid, route };
 			}
 
 		private:

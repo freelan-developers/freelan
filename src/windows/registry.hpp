@@ -63,7 +63,8 @@ namespace asiotap
 		public:
 
 			registry_key() :
-				m_key()
+				m_key(),
+				m_name()
 			{
 			}
 
@@ -100,9 +101,11 @@ namespace asiotap
 			registry_key& operator=(const registry_key&) = delete;
 
 			registry_key(registry_key&& other) throw() :
-				m_key(other.m_key)
+				m_key(other.m_key),
+				m_name(other.m_name)
 			{
 				other.m_key.reset();
+				other.m_name.clear();
 			}
 
 			registry_key& operator=(registry_key&& other) throw()
