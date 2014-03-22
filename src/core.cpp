@@ -219,14 +219,14 @@ namespace freelan
 			auto ipv4_limit = limit;
 			auto ipv6_limit = limit;
 
-			auto check_limit = [limit, &ipv4_limit, &ipv6_limit](const asiotap::ip_network_address& route) {
+			auto check_limit = [limit, &ipv4_limit, &ipv6_limit](const asiotap::ip_route& route) {
 
 				if (limit == 0)
 				{
 					return true;
 				}
 
-				const bool is_ipv4 = get_network_address(route).is_v4();
+				const bool is_ipv4 = get_network_address(network_address(route)).is_v4();
 
 				if (is_ipv4 ? ipv4_limit : ipv6_limit > 0)
 				{
@@ -244,11 +244,11 @@ namespace freelan
 					break;
 				case router_configuration::route_scope_type::unicast_in_network:
 				{
-					for (auto&& network_address : network_addresses)
+					for (auto&& ina: network_addresses)
 					{
 						for (auto&& route : routes)
 						{
-							if (is_unicast(route) && has_network(network_address, route))
+							if (is_unicast(route) && has_network(ina, network_address(route)))
 							{
 								if (check_limit(route))
 								{
@@ -277,11 +277,11 @@ namespace freelan
 				}
 				case router_configuration::route_scope_type::subnet:
 				{
-					for (auto&& network_address : network_addresses)
+					for (auto&& ina : network_addresses)
 					{
 						for (auto&& route : routes)
 						{
-							if (has_network(network_address, route))
+							if (has_network(ina, network_address(route)))
 							{
 								if (check_limit(route))
 								{
