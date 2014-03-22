@@ -360,4 +360,114 @@ namespace asiotap
 
 		return is;
 	}
+
+	template <typename AddressType>
+	std::istream& read_ip_address_prefix_length(std::istream& is, std::string& ip_address, std::string& prefix_length)
+	{
+		if (is.good())
+		{
+			if (read_ip_address<AddressType>(is, ip_address))
+			{
+				if (is.good())
+				{
+					if (is.peek() == '/')
+					{
+						is.ignore();
+
+						if (!read_prefix_length<AddressType>(is, prefix_length))
+						{
+							putback(is, ip_address + '/');
+							is.setstate(std::ios_base::failbit);
+						}
+					}
+					else
+					{
+						putback(is, ip_address);
+						is.setstate(std::ios_base::failbit);
+					}
+				}
+				else if (is.eof())
+				{
+					prefix_length.clear();
+				}
+				else
+				{
+					putback(is, ip_address);
+					is.setstate(std::ios_base::failbit);
+				}
+			}
+		}
+
+		return is;
+	}
+
+	template std::istream& read_ip_address_prefix_length<boost::asio::ip::address_v4>(std::istream& is, std::string& ip_address, std::string& prefix_length);
+	template std::istream& read_ip_address_prefix_length<boost::asio::ip::address_v6>(std::istream& is, std::string& ip_address, std::string& prefix_length);
+
+	template <typename AddressType>
+	std::istream& read_ip_address_prefix_length_gateway(std::istream& is, std::string& ip_address, std::string& prefix_length, std::string& gateway)
+	{
+		if (is.good())
+		{
+			if (read_ip_address_prefix_length<AddressType>(is, ip_address, prefix_length))
+			{
+				if (is.good())
+				{
+					std::ostringstream oss;
+
+					while (is.good() && isblank(is.peek()))
+					{
+						oss.put(static_cast<char>(is.get()));
+					}
+
+					if (is.peek() == '=')
+					{
+						is.ignore();
+
+						if (is.peek() == '>')
+						{
+							is.ignore();
+
+							std::ostringstream oss2;
+
+							while (is.good() && isblank(is.peek()))
+							{
+								oss2.put(static_cast<char>(is.get()));
+							}
+
+							if (!read_ip_address<AddressType>(is, gateway))
+							{
+								putback(is, ip_address + '/' + prefix_length + oss.str() + "=>" + oss2.str());
+								is.setstate(std::ios_base::failbit);
+							}
+						}
+						else
+						{
+							putback(is, ip_address + '/' + prefix_length + oss.str() + '=');
+							is.setstate(std::ios_base::failbit);
+						}
+					}
+					else
+					{
+						putback(is, ip_address + '/' + prefix_length + oss.str());
+						is.setstate(std::ios_base::failbit);
+					}
+				}
+				else if (is.eof())
+				{
+					gateway.clear();
+				}
+				else
+				{
+					putback(is, ip_address + '/' + prefix_length);
+					is.setstate(std::ios_base::failbit);
+				}
+			}
+		}
+
+		return is;
+	}
+
+	template std::istream& read_ip_address_prefix_length_gateway<boost::asio::ip::address_v4>(std::istream& is, std::string& ip_address, std::string& prefix_length, std::string& gateway);
+	template std::istream& read_ip_address_prefix_length_gateway<boost::asio::ip::address_v6>(std::istream& is, std::string& ip_address, std::string& prefix_length, std::string& gateway);
 }

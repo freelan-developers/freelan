@@ -6,6 +6,7 @@
 
 #include <asiotap/types/endpoint.hpp>
 #include <asiotap/types/ip_network_address.hpp>
+#include <asiotap/types/ip_route.hpp>
 
 #include <cstdlib>
 #include <csignal>
@@ -23,6 +24,9 @@ int main()
 		asiotap::ipv4_network_address na1 = asiotap::ipv4_network_address(boost::asio::ip::address_v4::loopback(), 24);
 		asiotap::ipv6_network_address na2 = asiotap::ipv6_network_address(boost::asio::ip::address_v6::loopback(), 64);
 		asiotap::ipv4_network_address na3 = asiotap::ipv4_network_address(boost::asio::ip::address_v4::loopback());
+		asiotap::ipv4_route r1 = asiotap::ipv4_route(na1);
+		asiotap::ipv6_route r2 = asiotap::ipv6_route(na2);
+		asiotap::ipv4_route r3 = asiotap::ipv4_route(na3);
 
 		// Output
 		std::cout << "ep1: " << ep1 << std::endl;
@@ -31,6 +35,9 @@ int main()
 		std::cout << "na1: " << na1 << std::endl;
 		std::cout << "na2: " << na2 << std::endl;
 		std::cout << "na3: " << na3 << std::endl;
+		std::cout << "r1: " << r1 << std::endl;
+		std::cout << "r2: " << r2 << std::endl;
+		std::cout << "r3: " << r3 << std::endl;
 
 		// Comparison
 		std::cout << "ep1 == ep2: " << (ep1 == ep2) << std::endl;
@@ -46,6 +53,16 @@ int main()
 		std::cout << boost::lexical_cast<asiotap::ip_network_address>("fe80::1/10") << std::endl;
 		std::cout << boost::lexical_cast<asiotap::ip_network_address>("127.0.0.1") << std::endl;
 		std::cout << boost::lexical_cast<asiotap::ip_network_address>("fe80::1") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ipv4_route>("9.0.0.1/24") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ipv4_route>("9.0.0.1/24 => 9.0.0.255") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ipv6_route>("fe80::1/10") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ipv6_route>("fe80::1/10 => fe80::ff") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("9.0.0.1/24") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("127.0.0.1") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("127.0.0.1 => 127.0.0.255") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1 => fe80::ff") << std::endl;
 	}
 	catch (std::exception& ex)
 	{

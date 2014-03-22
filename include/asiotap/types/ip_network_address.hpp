@@ -160,6 +160,8 @@ namespace asiotap
 			address_type m_address;
 			unsigned int m_prefix_length;
 
+		public:
+
 			friend bool operator==(const base_ip_network_address& lhs, const base_ip_network_address& rhs)
 			{
 				return (lhs.address() == rhs.address()) && (lhs.prefix_length() == rhs.prefix_length());
@@ -172,13 +174,14 @@ namespace asiotap
 
 			friend bool operator<(const base_ip_network_address& lhs, const base_ip_network_address& rhs)
 			{
-				if (lhs.address() == rhs.address())
+				if (lhs.prefix_length() == rhs.prefix_length())
 				{
-					return (lhs.prefix_length() < rhs.prefix_length());
+					return (lhs.address() < rhs.address());
 				}
 				else
 				{
-					return (lhs.address() < rhs.address());
+					// More specific means a higher prefix length.
+					return (lhs.prefix_length() > rhs.prefix_length());
 				}
 			}
 	};
@@ -418,7 +421,7 @@ namespace asiotap
 
 			/**
 			 * \brief Default implementation.
-			 * \return true if m_addr belongs to ina..
+			 * \return true if m_addr belongs to ina.
 			 */
 			template <typename AddressType>
 			result_type operator()(const base_ip_network_address<AddressType>& ina) const
@@ -615,38 +618,6 @@ namespace asiotap
 	{
 		return boost::apply_visitor(ip_network_address_prefix_len_visitor(), ina);
 	}
-
-	/**
-	 * \brief A route comparison class.
-	 */
-	class ip_routes_compare
-	{
-		public:
-
-		/**
-		 * \brief Compare two routes.
-		 * \param lhs The first route.
-		 * \param rhs The second route.
-		 * \return true if lhs has a more specific prefix length.
-		 */
-		bool operator()(const ip_network_address& lhs, const ip_network_address& rhs) const
-		{
-			return prefix_length(lhs) > prefix_length(rhs);
-		}
-	};
-
-	/**
-	 * \brief A route list type.
-	 */
-	typedef std::set<ip_network_address, ip_routes_compare> ip_routes_set;
-
-	/**
-	 * \brief Output the routes to a stream.
-	 * \param os The output stream.
-	 * \param routes The routes to output.
-	 * \return os.
-	 */
-	std::ostream& operator<<(std::ostream& os, const ip_routes_set& routes);
 }
 
 #endif /* ASIOTAP_IP_NETWORK_ADDRESS_HPP */

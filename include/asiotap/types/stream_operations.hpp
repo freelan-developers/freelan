@@ -101,6 +101,29 @@ namespace asiotap
 	 * \return is.
 	 */
 	std::istream& read_service(std::istream& is, std::string& service);
+
+	/**
+	 * \brief Read an IP address and a prefix length.
+	 * \tparam AddressType The address type.
+	 * \param is The input stream.
+	 * \param ip_address The result address.
+	 * \param prefix_length The result prefix length.
+	 * \return is.
+	 */
+	template <typename AddressType>
+	std::istream& read_ip_address_prefix_length(std::istream& is, std::string& ip_address, std::string& prefix_length);
+
+	/**
+	 * \brief Read an IP address, a prefix length and a gateway.
+	 * \tparam AddressType The address type.
+	 * \param is The input stream.
+	 * \param ip_address The result address.
+	 * \param prefix_length The result prefix length.
+	 * \param gateway The result gateway.
+	 * \return is.
+	 */
+	template <typename AddressType>
+	std::istream& read_ip_address_prefix_length_gateway(std::istream& is, std::string& ip_address, std::string& prefix_length, std::string& gateway);
 }
 
 #endif /* ASIOTAP_STREAM_OPERATIONS_HPP */

@@ -50,49 +50,6 @@
 
 namespace asiotap
 {
-	namespace
-	{
-		template <typename AddressType>
-		std::istream& read_ip_address_prefix_length(std::istream& is, std::string& ip_address, std::string& prefix_length)
-		{
-			if (is.good())
-			{
-				if (read_ip_address<AddressType>(is, ip_address))
-				{
-					if (is.good())
-					{
-						if (is.peek() == '/')
-						{
-							is.ignore();
-
-							if (!read_prefix_length<AddressType>(is, prefix_length))
-							{
-								putback(is, ip_address + '/');
-								is.setstate(std::ios_base::failbit);
-							}
-						}
-						else
-						{
-							putback(is, ip_address);
-							is.setstate(std::ios_base::failbit);
-						}
-					}
-					else if (is.eof())
-					{
-						prefix_length.clear();
-					}
-					else
-					{
-							putback(is, ip_address);
-							is.setstate(std::ios_base::failbit);
-					}
-				}
-			}
-
-			return is;
-		}
-	}
-
 	template <typename AddressType>
 	bool base_ip_network_address<AddressType>::has_address(const AddressType& addr) const
 	{
@@ -235,22 +192,5 @@ namespace asiotap
 		}
 
 		return is;
-	}
-
-	std::ostream& operator<<(std::ostream& os, const ip_routes_set& routes)
-	{
-		if (routes.size() > 0)
-		{
-			auto route = routes.begin();
-
-			os << *route;
-
-			for (++route; route != routes.end(); ++route)
-			{
-				os << ", " << *route;
-			}
-		}
-
-		return os;
 	}
 }

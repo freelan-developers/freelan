@@ -66,6 +66,7 @@
     <ClCompile Include="src\ipv6_helper.cpp" />
     <ClCompile Include="src\ip_endpoint.cpp" />
     <ClCompile Include="src\ip_network_address.cpp" />
+    <ClCompile Include="src\ip_route.cpp" />
     <ClCompile Include="src\proxy.cpp" />
     <ClCompile Include="src\stream_operations.cpp" />
     <ClCompile Include="src\udp_builder.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="include\asiotap\types\hostname_endpoint.hpp" />
     <ClInclude Include="include\asiotap\types\ip_endpoint.hpp" />
     <ClInclude Include="include\asiotap\types\ip_network_address.hpp" />
+    <ClInclude Include="include\asiotap\types\ip_route.hpp" />
     <ClInclude Include="include\asiotap\types\stream_operations.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_system.hpp" />
