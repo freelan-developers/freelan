@@ -53,13 +53,15 @@ namespace asiotap
 	{
 		void do_register_route(const std::string& command, const posix_route_manager::route_type& route)
 		{
-			if (route.gateway)
+			const auto _gateway = gateway(route.route);
+
+			if (_gateway)
 			{
-				asiotap::route(command, route.interface, route.network, *route.gateway);
+				asiotap::route(command, route.interface, network_address(route.route), *_gateway);
 			}
 			else
 			{
-				asiotap::route(command, route.interface, route.network);
+				asiotap::route(command, route.interface, network_address(route.route));
 			}
 		}
 	}

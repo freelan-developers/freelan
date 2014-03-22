@@ -51,7 +51,7 @@
 
 #include <boost/optional.hpp>
 
-#include "types/ip_network_address.hpp"
+#include "types/ip_route.hpp"
 
 namespace asiotap
 {
@@ -62,28 +62,34 @@ namespace asiotap
 	struct base_routing_table_entry
 	{
 		InterfaceType interface;
-		ip_network_address network;
-		boost::optional<boost::asio::ip::address> gateway;
+		ip_route route;
 
 		friend bool operator==(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
-			return ((lhs.interface == rhs.interface) && (lhs.network == rhs.network) && (lhs.gateway == rhs.gateway));
+			return ((lhs.interface == rhs.interface) && (lhs.route == rhs.route));
 		}
 
 		friend bool operator<(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
-			return ((lhs.interface < rhs.interface) || (lhs.network < rhs.network) || (lhs.gateway < rhs.gateway));
+			if (lhs.interface == rhs.interface)
+			{
+				return (lhs.route < rhs.route);
+			}
+			else
+			{
+				return (lhs.interface < rhs.interface);
+			}
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
 		{
 			if (value.gateway)
 			{
-				return os << value.interface << " - " << value.network << " - " << *(value.gateway);
+				return os << value.interface << " - " << value.route;
 			}
 			else
 			{
-				return os << value.interface << " - " << value.network << " - no gateway";
+				return os << value.interface << " - " << value.route;
 			}
 		}
 	};
