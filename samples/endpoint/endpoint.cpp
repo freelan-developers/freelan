@@ -63,6 +63,10 @@ int main()
 		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1") << std::endl;
 		std::cout << boost::lexical_cast<asiotap::ip_route>("127.0.0.1 => 127.0.0.255") << std::endl;
 		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1 => fe80::ff") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10=>fe80::ff") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10 =>fe80::ff") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10=> fe80::ff") << std::endl;
+		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10\t=>\tfe80::ff") << std::endl;
 	}
 	catch (std::exception& ex)
 	{

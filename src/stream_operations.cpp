@@ -382,8 +382,7 @@ namespace asiotap
 					}
 					else
 					{
-						putback(is, ip_address);
-						is.setstate(std::ios_base::failbit);
+						prefix_length.clear();
 					}
 				}
 				else if (is.eof())
