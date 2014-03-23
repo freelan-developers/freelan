@@ -199,11 +199,6 @@ namespace freelan
 		typedef std::vector<cert_type> cert_list_type;
 
 		/**
-		 * \brief The ip_network_address list type.
-		 */
-		typedef asiotap::ip_network_address_list ip_network_address_list_type;
-
-		/**
 		 * \brief Create a new FSCP configuration.
 		 */
 		fscp_configuration();
@@ -236,7 +231,7 @@ namespace freelan
 		/**
 		 * \brief The never contact list.
 		 */
-		ip_network_address_list_type never_contact_list;
+		asiotap::ip_network_address_list never_contact_list;
 
 		/**
 		 * \brief The hostname resolution protocol.
