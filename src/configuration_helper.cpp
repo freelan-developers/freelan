@@ -200,7 +200,7 @@ po::options_description get_router_options()
 	po::options_description result("Router options");
 
 	result.add_options()
-	("router.local_ip_route", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A route to advertise to the other peers.")
+	("router.local_ip_route", po::value<std::vector<asiotap::ip_route> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_route>(), ""), "A route to advertise to the other peers.")
 	("router.client_routing_enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable client routing.")
 	("router.accept_routes_requests", po::value<bool>()->default_value(true, "yes"), "Whether to accept routes requests.")
 	("router.internal_route_acceptance_policy", po::value<fl::router_configuration::internal_route_scope_type>()->default_value(fl::router_configuration::internal_route_scope_type::unicast_in_network), "The internal route acceptance policy.")
@@ -400,7 +400,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.switch_.relay_mode_enabled = vm["switch.relay_mode_enabled"].as<bool>();
 
 	// Router
-	const auto local_ip_routes = vm["router.local_ip_route"].as<std::vector<asiotap::ip_network_address> >();
+	const auto local_ip_routes = vm["router.local_ip_route"].as<std::vector<asiotap::ip_route> >();
 	configuration.router.local_ip_routes.insert(local_ip_routes.begin(), local_ip_routes.end());
 
 	configuration.router.client_routing_enabled = vm["router.client_routing_enabled"].as<bool>();
