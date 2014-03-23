@@ -91,15 +91,17 @@ namespace freelan
 
 				/**
 				 * \brief Get the representation size of the network address.
-				 * \param ina The ipv4_network_address.
+				 * \param ir The ip_route.
 				 * \return The representation size.
 				 */
 				template <typename AddressType>
-				result_type operator()(const asiotap::base_ip_network_address<AddressType>& ina) const
+				result_type operator()(const asiotap::base_ip_route<AddressType>& ir) const
 				{
+					const auto ina = ir.network_address();
 					const uint8_t prefix_length = static_cast<uint8_t>(ina.prefix_length());
 					const typename asiotap::base_ip_network_address<AddressType>::address_type::bytes_type bytes = ina.address().to_bytes();
 
+					//TODO: Write the gateway, if any.
 					if (m_buf_len < 2 + bytes.size())
 					{
 						throw std::runtime_error("buf_len");
