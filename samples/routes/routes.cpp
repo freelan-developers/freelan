@@ -127,8 +127,8 @@ int main()
 
 		asiotap::route_manager rmgr;
 
-		rmgr.add_route(tap_adapter.get_route(asiotap::to_network_address(boost::asio::ip::address_v4::from_string("9.0.1.0"), 24)));
-		rmgr.add_route(tap_adapter.get_route(asiotap::to_network_address(boost::asio::ip::address_v4::from_string("9.0.2.0"), 24), static_cast<boost::asio::ip::address>(boost::asio::ip::address_v4::from_string("9.0.1.2"))));
+		rmgr.add_route(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.1.0"), 24)));
+		rmgr.add_route(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.2.0"), 24, boost::asio::ip::address_v4::from_string("9.0.1.2"))));
 
 		_io_service.run();
 	}
