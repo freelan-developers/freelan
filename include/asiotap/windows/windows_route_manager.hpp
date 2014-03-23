@@ -74,8 +74,8 @@ namespace asiotap
 	{
 		protected:
 
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
+			void register_route(const route_type& route_entry);
+			void unregister_route(const route_type& route_entry);
 
 		friend class base_route_manager<windows_route_manager, windows_routing_table_entry>;
 	};

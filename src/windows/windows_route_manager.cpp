@@ -48,13 +48,13 @@
 
 namespace asiotap
 {
-	void windows_route_manager::register_route(const route_type& route)
+	void windows_route_manager::register_route(const route_type& route_entry)
 	{
-		asiotap::register_route(route.interface, network_address(route.route), gateway(route));
+		asiotap::register_route(route_entry.interface, network_address(route_entry.route), gateway(route_entry.route));
 	}
 
-	void windows_route_manager::unregister_route(const route_type& route)
+	void windows_route_manager::unregister_route(const route_type& route_entry)
 	{
-		asiotap::unregister_route(route.interface, network_address(route.route), gateway(route));
+		asiotap::unregister_route(route_entry.interface, network_address(route_entry.route), gateway(route_entry.route));
 	}
 }
