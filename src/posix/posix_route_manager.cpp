@@ -51,28 +51,29 @@ namespace asiotap
 {
 	namespace
 	{
-		void do_register_route(const std::string& command, const posix_route_manager::route_type& route)
+		void do_register_route(const std::string& command, const posix_route_manager::route_type& route_entry)
 		{
-			const auto _gateway = gateway(route.route);
+			const auto _gateway = gateway(route_entry.route);
+			const auto ina = network_address(route_entry.route);
 
 			if (_gateway)
 			{
-				asiotap::route(command, route.interface, network_address(route.route), *_gateway);
+				asiotap::route(command, route_entry.interface, ina, *_gateway);
 			}
 			else
 			{
-				asiotap::route(command, route.interface, network_address(route.route));
+				asiotap::route(command, route_entry.interface, ina);
 			}
 		}
 	}
 
-	void posix_route_manager::register_route(const route_type& route)
+	void posix_route_manager::register_route(const route_type& route_entry)
 	{
-		do_register_route("add", route);
+		do_register_route("add", route_entry);
 	}
 
-	void posix_route_manager::unregister_route(const route_type& route)
+	void posix_route_manager::unregister_route(const route_type& route_entry)
 	{
-		do_register_route("del", route);
+		do_register_route("del", route_entry);
 	}
 }

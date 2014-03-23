@@ -230,10 +230,12 @@ namespace asiotap
 
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest)
 	{
+		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
+
 #ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "-interface", interface };
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
 #else
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "dev", interface };
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
 #endif
 
 		checked_execute(real_args);
@@ -241,10 +243,12 @@ namespace asiotap
 
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
 	{
+		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
+
 #ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway), "-interface", interface };
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway), "-interface", interface };
 #else
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, "-net", boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
 #endif
 
 		checked_execute(real_args);
