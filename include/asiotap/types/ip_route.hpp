@@ -604,6 +604,16 @@ namespace asiotap
 	}
 
 	/**
+	 * \brief Check if the given IP route has a gateway.
+	 * \param ir the ip_route.
+	 * \return True if the IP route has a gateway.
+	 */
+	inline bool has_gateway(const ip_route& ir)
+	{
+		return static_cast<bool>(gateway(ir));
+	}
+
+	/**
 	 * \brief A route set type.
 	 */
 	typedef std::set<ip_route> ip_route_set;
