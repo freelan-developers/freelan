@@ -213,7 +213,7 @@ namespace freelan
 		static const unsigned int TAP_ADAPTERS_GROUP = 0;
 		static const unsigned int ENDPOINTS_GROUP = 1;
 
-		asiotap::ip_route_set filter_routes(const asiotap::ip_route_set& routes, router_configuration::route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
+		asiotap::ip_route_set filter_routes(const asiotap::ip_route_set& routes, router_configuration::internal_route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
 		{
 			asiotap::ip_route_set result;
 			auto ipv4_limit = limit;
@@ -240,9 +240,9 @@ namespace freelan
 
 			switch (scope)
 			{
-				case router_configuration::route_scope_type::none:
+				case router_configuration::internal_route_scope_type::none:
 					break;
-				case router_configuration::route_scope_type::unicast_in_network:
+				case router_configuration::internal_route_scope_type::unicast_in_network:
 				{
 					for (auto&& ina: network_addresses)
 					{
@@ -260,7 +260,7 @@ namespace freelan
 
 					break;
 				}
-				case router_configuration::route_scope_type::unicast:
+				case router_configuration::internal_route_scope_type::unicast:
 				{
 					for (auto&& route : routes)
 					{
@@ -275,7 +275,7 @@ namespace freelan
 
 					break;
 				}
-				case router_configuration::route_scope_type::subnet:
+				case router_configuration::internal_route_scope_type::subnet:
 				{
 					for (auto&& ina : network_addresses)
 					{
@@ -293,13 +293,91 @@ namespace freelan
 
 					break;
 				}
-				case router_configuration::route_scope_type::any:
+				case router_configuration::internal_route_scope_type::any:
 				{
 					for (auto&& route : routes)
 					{
 						if (check_limit(route))
 						{
 							result.insert(route);
+						}
+					}
+
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		asiotap::ip_route_set filter_routes(const asiotap::ip_route_set& routes, router_configuration::system_route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
+		{
+			asiotap::ip_route_set result;
+			auto ipv4_limit = limit;
+			auto ipv6_limit = limit;
+
+			auto check_limit = [limit, &ipv4_limit, &ipv6_limit](const asiotap::ip_route& route) {
+
+				if (limit == 0)
+				{
+					return true;
+				}
+
+				const bool is_ipv4 = get_network_address(network_address(route)).is_v4();
+
+				if (is_ipv4 ? ipv4_limit : ipv6_limit > 0)
+				{
+					(is_ipv4 ? ipv4_limit : ipv6_limit)--;
+
+					return true;
+				}
+
+				return false;
+			};
+
+			switch (scope)
+			{
+				case router_configuration::system_route_scope_type::none:
+					break;
+				case router_configuration::system_route_scope_type::unicast:
+				case router_configuration::system_route_scope_type::unicast_with_gateway:
+				{
+					for (auto&& ina: network_addresses)
+					{
+						for (auto&& route : routes)
+						{
+							if (is_unicast(route) && !has_network(ina, network_address(route)))
+							{
+								if ((scope == router_configuration::system_route_scope_type::unicast_with_gateway) || !has_gateway(route))
+								{
+									if (check_limit(route))
+									{
+										result.insert(route);
+									}
+								}
+							}
+						}
+					}
+
+					break;
+				}
+				case router_configuration::system_route_scope_type::any:
+				case router_configuration::system_route_scope_type::any_with_gateway:
+				{
+					for (auto&& ina : network_addresses)
+					{
+						for (auto&& route : routes)
+						{
+							if (!has_network(ina, network_address(route)))
+							{
+								if ((scope == router_configuration::system_route_scope_type::any_with_gateway) || !has_gateway(route))
+								{
+									if (check_limit(route))
+									{
+										result.insert(route);
+									}
+								}
+							}
 						}
 					}
 
@@ -1143,7 +1221,7 @@ namespace freelan
 
 		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
 		{
-			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::route_scope_type::none)
+			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::internal_route_scope_type::none)
 			{
 				m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
 
@@ -1189,6 +1267,13 @@ namespace freelan
 		}
 		else
 		{
+			if (m_configuration.router.system_route_acceptance_policy == router_configuration::system_route_scope_type::none)
+			{
+				m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+
+				return;
+			}
+
 			filtered_routes = routes;
 		}
 

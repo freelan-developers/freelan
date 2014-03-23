@@ -111,8 +111,8 @@ namespace freelan
 		local_ip_routes(),
 		client_routing_enabled(false),
 		accept_routes_requests(true),
-		internal_route_acceptance_policy(route_scope_type::unicast_in_network),
-		system_route_acceptance_policy(route_scope_type::none),
+		internal_route_acceptance_policy(internal_route_scope_type::unicast_in_network),
+		system_route_acceptance_policy(system_route_scope_type::none),
 		maximum_routes_limit(1)
 	{
 	}
@@ -325,42 +325,84 @@ namespace freelan
 		throw std::logic_error("Unexpected value");
 	}
 
-	std::istream& operator>>(std::istream& is, router_configuration::route_scope_type& v)
+	std::istream& operator>>(std::istream& is, router_configuration::internal_route_scope_type& v)
 	{
 		std::string value;
 
 		is >> value;
 
 		if (value == "none")
-			v = router_configuration::route_scope_type::none;
+			v = router_configuration::internal_route_scope_type::none;
 		else if (value == "unicast_in_network")
-			v = router_configuration::route_scope_type::unicast_in_network;
+			v = router_configuration::internal_route_scope_type::unicast_in_network;
 		else if (value == "unicast")
-			v = router_configuration::route_scope_type::unicast;
+			v = router_configuration::internal_route_scope_type::unicast;
 		else if (value == "subnet")
-			v = router_configuration::route_scope_type::subnet;
+			v = router_configuration::internal_route_scope_type::subnet;
 		else if (value == "any")
-			v = router_configuration::route_scope_type::any;
+			v = router_configuration::internal_route_scope_type::any;
 		else
 			throw boost::bad_lexical_cast();
 
 		return is;
 	}
 
-	std::ostream& operator<<(std::ostream& os, const router_configuration::route_scope_type& value)
+	std::ostream& operator<<(std::ostream& os, const router_configuration::internal_route_scope_type& value)
 	{
 		switch (value)
 		{
-			case router_configuration::route_scope_type::none:
+			case router_configuration::internal_route_scope_type::none:
 				return os << "none";
-			case router_configuration::route_scope_type::unicast_in_network:
+			case router_configuration::internal_route_scope_type::unicast_in_network:
 				return os << "unicast_in_network";
-			case router_configuration::route_scope_type::unicast:
+			case router_configuration::internal_route_scope_type::unicast:
 				return os << "unicast";
-			case router_configuration::route_scope_type::subnet:
+			case router_configuration::internal_route_scope_type::subnet:
 				return os << "subnet";
-			case router_configuration::route_scope_type::any:
+			case router_configuration::internal_route_scope_type::any:
 				return os << "any";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
+
+	std::istream& operator>>(std::istream& is, router_configuration::system_route_scope_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "none")
+			v = router_configuration::system_route_scope_type::none;
+		else if (value == "unicast")
+			v = router_configuration::system_route_scope_type::unicast;
+		else if (value == "any")
+			v = router_configuration::system_route_scope_type::any;
+		else if (value == "unicast_with_gateway")
+			v = router_configuration::system_route_scope_type::unicast_with_gateway;
+		else if (value == "any_with_gateway")
+			v = router_configuration::system_route_scope_type::any_with_gateway;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const router_configuration::system_route_scope_type& value)
+	{
+		switch (value)
+		{
+			case router_configuration::system_route_scope_type::none:
+				return os << "none";
+			case router_configuration::system_route_scope_type::unicast:
+				return os << "unicast";
+			case router_configuration::system_route_scope_type::any:
+				return os << "any";
+			case router_configuration::system_route_scope_type::unicast_with_gateway:
+				return os << "unicast_with_gateway";
+			case router_configuration::system_route_scope_type::any_with_gateway:
+				return os << "any_with_gateway";
 		}
 
 		assert(false);
