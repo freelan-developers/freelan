@@ -1804,7 +1804,6 @@ namespace freelan
 
 		for (auto&& route : routes)
 		{
-			//TODO: Handle the gateway in get_route(route, gateway).
 			ep_routes.insert(m_tap_adapter->get_route(route));
 		}
 

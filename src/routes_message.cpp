@@ -54,27 +54,30 @@ namespace freelan
 		enum ip_network_address_type
 		{
 			INAT_IPV4 = 0x01,
-			INAT_IPV6 = 0x02
+			INAT_IPV4_GATEWAY = 0x02,
+			INAT_IPV6 = 0x03,
+			INAT_IPV6_GATEWAY = 0x04
 		};
 
 		template <typename AddressType>
-		ip_network_address_type get_address_type();
+		ip_network_address_type get_address_type(bool has_gateway);
 
 		template <>
-		ip_network_address_type get_address_type<boost::asio::ip::address_v4>()
+		ip_network_address_type get_address_type<boost::asio::ip::address_v4>(bool has_gateway)
 		{
-			return INAT_IPV4;
+			return has_gateway ? INAT_IPV4_GATEWAY : INAT_IPV4;
 		}
 
 		template <>
-		ip_network_address_type get_address_type<boost::asio::ip::address_v6>()
+		ip_network_address_type get_address_type<boost::asio::ip::address_v6>(bool has_gateway)
 		{
-			return INAT_IPV6;
+			return has_gateway ? INAT_IPV6_GATEWAY : INAT_IPV6;
 		}
 
 		/**
 		 * \brief A visitor that writes the representation of a network address to a buffer.
 		 */
+		template <typename BufferType>
 		class ip_network_address_representation : public boost::static_visitor<size_t>
 		{
 			public:
@@ -84,7 +87,7 @@ namespace freelan
 				 * \param buf The buffer to write the representation to.
 				 * \param buf_len The length of buf.
 				 */
-				ip_network_address_representation(char* buf, size_t buf_len) :
+				ip_network_address_representation(BufferType buf, size_t buf_len) :
 					m_buf(buf),
 					m_buf_len(buf_len)
 				{}
@@ -98,26 +101,132 @@ namespace freelan
 				result_type operator()(const asiotap::base_ip_route<AddressType>& ir) const
 				{
 					const auto ina = ir.network_address();
+					const auto _gateway = ir.gateway();
 					const uint8_t prefix_length = static_cast<uint8_t>(ina.prefix_length());
-					const typename asiotap::base_ip_network_address<AddressType>::address_type::bytes_type bytes = ina.address().to_bytes();
+					const auto bytes = ina.address().to_bytes();
 
-					//TODO: Write the gateway, if any.
-					if (m_buf_len < 2 + bytes.size())
+					size_t result_size = 2 + bytes.size();
+
+					if (m_buf_len < result_size)
 					{
 						throw std::runtime_error("buf_len");
 					}
 
-					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(get_address_type<AddressType>()));
+					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(get_address_type<AddressType>(_gateway)));
 					fscp::buffer_tools::set<uint8_t>(m_buf, 1, static_cast<uint8_t>(prefix_length));
 
 					std::copy(bytes.begin(), bytes.end(), m_buf + 2);
 
-					return 2 + bytes.size();
+					if (_gateway)
+					{
+						const auto gateway_bytes = _gateway->to_bytes();
+						result_size += gateway_bytes.size();
+
+						if (m_buf_len < result_size)
+						{
+							throw std::runtime_error("buf_len");
+						}
+
+						std::copy(gateway_bytes.begin(), gateway_bytes.end(), m_buf + 2 + bytes.size());
+					}
+
+					return result_size;
+				}
+
+				/**
+				 * \brief Read the next ip_route contained in the buffer.
+				 * \param ir The route to read.
+				 * \param has_gateway Whether the function must read a gateway or not.
+				 */
+				template <typename AddressType>
+				asiotap::base_ip_route<AddressType> read_next_ip_route(bool has_gateway)
+				{
+					if (m_buf_len == 0)
+					{
+						throw std::runtime_error("Not enough bytes for the expected prefix length");
+					}
+
+					const unsigned int prefix_length = static_cast<uint8_t>(*m_buf);
+
+					++m_buf;
+					--m_buf_len;
+
+					typename AddressType::bytes_type bytes;
+
+					if (m_buf_len < bytes.size())
+					{
+						throw std::runtime_error("Not enough bytes for the expected IP address");
+					}
+
+					std::copy(m_buf, m_buf + bytes.size(), bytes.begin());
+
+					m_buf += bytes.size();
+					m_buf_len -= bytes.size();
+
+					if (has_gateway)
+					{
+						typename AddressType::bytes_type gateway_bytes;
+
+						if (m_buf_len < gateway_bytes.size())
+						{
+							throw std::runtime_error("Not enough bytes for the expected IP address");
+						}
+
+						std::copy(m_buf, m_buf + gateway_bytes.size(), gateway_bytes.begin());
+
+						m_buf += gateway_bytes.size();
+						m_buf_len -= gateway_bytes.size();
+
+						return asiotap::base_ip_route<AddressType>(asiotap::base_ip_network_address<AddressType>(AddressType(bytes), prefix_length), AddressType(gateway_bytes));
+					}
+					else
+					{
+						return asiotap::base_ip_route<AddressType>(asiotap::base_ip_network_address<AddressType>(AddressType(bytes), prefix_length));
+					}
+				}
+
+				/**
+				 * \brief Read the next ip_route contained in the buffer.
+				 * \param ir The route to read.
+				 * \return True if a route was read.
+				 */
+				bool read_next_ip_route(asiotap::ip_route& ir)
+				{
+					if (m_buf_len == 0)
+					{
+						return false;
+					}
+
+					const auto _type = *m_buf;
+					++m_buf;
+					--m_buf_len;
+
+					switch (_type)
+					{
+						case INAT_IPV4:
+						case INAT_IPV4_GATEWAY:
+						{
+							ir = read_next_ip_route<boost::asio::ip::address_v4>(_type == INAT_IPV4_GATEWAY);
+
+							break;
+						}
+						case INAT_IPV6:
+						case INAT_IPV6_GATEWAY:
+						{
+							ir = read_next_ip_route<boost::asio::ip::address_v6>(_type == INAT_IPV4_GATEWAY);
+
+							break;
+						}
+						default:
+							throw std::runtime_error("Unknown route type in message");
+					}
+
+					return true;
 				}
 
 			private:
 
-				char* m_buf;
+				BufferType m_buf;
 				size_t m_buf_len;
 		};
 	}
@@ -130,7 +239,7 @@ namespace freelan
 		}
 
 		size_t required_size = 0;
-		char* pbuf = static_cast<char*>(buf) + HEADER_LENGTH;
+		uint8_t* pbuf = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
 		size_t pbuf_len = buf_len - HEADER_LENGTH;
 
 		fscp::buffer_tools::set<uint32_t>(pbuf, 0, htonl(static_cast<uint32_t>(_version)));
@@ -141,7 +250,7 @@ namespace freelan
 
 		for (auto&& route : routes)
 		{
-			const size_t count = boost::apply_visitor(ip_network_address_representation(pbuf, pbuf_len), route);
+			const size_t count = boost::apply_visitor(ip_network_address_representation<uint8_t*>(pbuf, pbuf_len), route);
 
 			required_size += count;
 			pbuf += count;
@@ -165,72 +274,13 @@ namespace freelan
 			const uint8_t* pbuf = payload() + sizeof(uint32_t);
 			size_t pbuf_len = length() - sizeof(uint32_t);
 
-			while (pbuf_len > 2)
+			ip_network_address_representation<const uint8_t*> deserializer(pbuf, pbuf_len);
+
+			asiotap::ip_route ir;
+
+			while (deserializer.read_next_ip_route(ir))
 			{
-				switch (*pbuf)
-				{
-					case INAT_IPV4:
-						{
-							++pbuf;
-							--pbuf_len;
-
-							const unsigned int prefix_length = static_cast<uint8_t>(*pbuf);
-
-							++pbuf;
-							--pbuf_len;
-
-							boost::asio::ip::address_v4::bytes_type bytes;
-
-							if (pbuf_len < bytes.size())
-							{
-								throw std::runtime_error("Not enough bytes for the expected IPv4 address");
-							}
-
-							std::copy(pbuf, pbuf + bytes.size(), bytes.begin());
-
-							pbuf += bytes.size();
-							pbuf_len -= bytes.size();
-
-							result.insert(asiotap::ipv4_network_address(boost::asio::ip::address_v4(bytes), prefix_length));
-
-							break;
-						}
-
-					case INAT_IPV6:
-						{
-							++pbuf;
-							--pbuf_len;
-
-							const unsigned int prefix_length = static_cast<uint8_t>(*pbuf);
-
-							++pbuf;
-							--pbuf_len;
-
-							boost::asio::ip::address_v6::bytes_type bytes;
-
-							if (pbuf_len < bytes.size())
-							{
-								throw std::runtime_error("Not enough bytes for the expected IPv6 address");
-							}
-
-							std::copy(pbuf, pbuf + bytes.size(), bytes.begin());
-
-							pbuf += bytes.size();
-							pbuf_len -= bytes.size();
-
-							result.insert(asiotap::ipv6_network_address(boost::asio::ip::address_v6(bytes), prefix_length));
-
-							break;
-						}
-
-					default:
-						throw std::runtime_error("Unknown route type in message");
-				}
-			}
-
-			if (pbuf_len > 0)
-			{
-				throw std::runtime_error("Unexpected bytes at the end of the routes list");
+				result.insert(ir);
 			}
 
 			m_routes_cache = result;
