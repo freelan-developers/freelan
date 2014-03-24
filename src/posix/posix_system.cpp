@@ -246,7 +246,8 @@ namespace asiotap
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
 
 #ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway), "-interface", interface };
+		static_cast<void>(interface);
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
 #else
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
 #endif

@@ -126,6 +126,18 @@ int main()
 		std::cout << "Adding routes" << std::endl;
 
 		asiotap::route_manager rmgr;
+		rmgr.set_route_registration_success_handler([](const asiotap::route_manager::route_type& route){
+			std::cout << "Added route: " << route << std::endl;
+		});
+		rmgr.set_route_registration_failure_handler([](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
+			std::cout << "Failure adding route (" << route << "): " << ex.what() << std::endl;
+		});
+		rmgr.set_route_unregistration_success_handler([](const asiotap::route_manager::route_type& route){
+			std::cout << "Removed route: " << route << std::endl;
+		});
+		rmgr.set_route_unregistration_failure_handler([](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
+			std::cout << "Failure removing route (" << route << "): " << ex.what() << std::endl;
+		});
 
 		const auto r1 = rmgr.get_route_entry(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.1.0"), 24)));
 		const auto r2 = rmgr.get_route_entry(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.2.0"), 24, boost::asio::ip::address_v4::from_string("9.0.1.2"))));
