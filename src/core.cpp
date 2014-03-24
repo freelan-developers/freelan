@@ -310,7 +310,7 @@ namespace freelan
 			return result;
 		}
 
-		asiotap::ip_route_set filter_routes(const asiotap::ip_route_set& routes, router_configuration::system_route_scope_type scope, unsigned int limit, const asiotap::ip_network_address_list& network_addresses)
+		asiotap::ip_route_set filter_routes(const asiotap::ip_route_set& routes, router_configuration::system_route_scope_type scope, unsigned int limit)
 		{
 			asiotap::ip_route_set result;
 			auto ipv4_limit = limit;
@@ -342,18 +342,15 @@ namespace freelan
 				case router_configuration::system_route_scope_type::unicast:
 				case router_configuration::system_route_scope_type::unicast_with_gateway:
 				{
-					for (auto&& ina: network_addresses)
+					for (auto&& route : routes)
 					{
-						for (auto&& route : routes)
+						if (is_unicast(route))
 						{
-							if (is_unicast(route) && !has_network(ina, network_address(route)))
+							if ((scope == router_configuration::system_route_scope_type::unicast_with_gateway) || !has_gateway(route))
 							{
-								if ((scope == router_configuration::system_route_scope_type::unicast_with_gateway) || !has_gateway(route))
+								if (check_limit(route))
 								{
-									if (check_limit(route))
-									{
-										result.insert(route);
-									}
+									result.insert(route);
 								}
 							}
 						}
@@ -364,19 +361,13 @@ namespace freelan
 				case router_configuration::system_route_scope_type::any:
 				case router_configuration::system_route_scope_type::any_with_gateway:
 				{
-					for (auto&& ina : network_addresses)
+					for (auto&& route : routes)
 					{
-						for (auto&& route : routes)
+						if ((scope == router_configuration::system_route_scope_type::any_with_gateway) || !has_gateway(route))
 						{
-							if (!has_network(ina, network_address(route)))
+							if (check_limit(route))
 							{
-								if ((scope == router_configuration::system_route_scope_type::any_with_gateway) || !has_gateway(route))
-								{
-									if (check_limit(route))
-									{
-										result.insert(route);
-									}
-								}
+								result.insert(route);
 							}
 						}
 					}
@@ -1291,11 +1282,25 @@ namespace freelan
 			filtered_routes = routes;
 		}
 
-		const auto system_routes = filter_routes(filtered_routes, m_configuration.router.system_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
+		// Silently filter out routes that are already covered by the default interface routing table entries (aka. routes that belong to the interface's network).
+		asiotap::ip_route_set filtered_system_routes;
+
+		for (auto&& ina: tap_addresses)
+		{
+			for (auto&& route : filtered_routes)
+			{
+				if (!has_network(ina, network_address(route)))
+				{
+					filtered_system_routes.insert(route);
+				}
+			}
+		}
+
+		const auto system_routes = filter_routes(filtered_system_routes, m_configuration.router.system_route_acceptance_policy, m_configuration.router.maximum_routes_limit);
 
 		if (system_routes != filtered_routes)
 		{
-			if (system_routes.empty() && !filtered_routes.empty())
+			if (system_routes.empty() && !filtered_system_routes.empty())
 			{
 				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << system_routes;
 
@@ -1304,7 +1309,7 @@ namespace freelan
 			else
 			{
 				asiotap::ip_route_set excluded_routes;
-				std::set_difference(filtered_routes.begin(), filtered_routes.end(), system_routes.begin(), system_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
+				std::set_difference(filtered_system_routes.begin(), filtered_system_routes.end(), system_routes.begin(), system_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
 
 				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but some did not match the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
 			}
