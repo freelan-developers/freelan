@@ -565,9 +565,6 @@ namespace freelan
 
 	void core::close_server()
 	{
-		// Clear the endpoint routes, if any.
-		m_endpoint_route_manager_map.clear();
-
 		// Stop the contact loop timers.
 		m_routes_request_timer.cancel();
 		m_dynamic_contact_timer.cancel();
@@ -1540,6 +1537,11 @@ namespace freelan
 
 	void core::close_tap_adapter()
 	{
+		// Clear the endpoint routes, if any.
+		m_router_strand.post([this](){
+			m_endpoint_route_manager_map.clear();
+		});
+
 		m_dhcp_proxy.reset();
 		m_arp_proxy.reset();
 
@@ -1550,8 +1552,13 @@ namespace freelan
 				m_tap_adapter_down_callback(*m_tap_adapter);
 			}
 
-			m_switch.unregister_port(make_port_index(m_tap_adapter));
-			m_router.unregister_port(make_port_index(m_tap_adapter));
+			m_switch_strand.post([this](){
+				m_switch.unregister_port(make_port_index(m_tap_adapter));
+			});
+
+			m_router_strand.post([this](){
+				m_router.unregister_port(make_port_index(m_tap_adapter));
+			});
 
 			m_tap_adapter->cancel();
 			m_tap_adapter->set_connected_state(false);
