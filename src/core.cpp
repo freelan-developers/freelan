@@ -1295,7 +1295,7 @@ namespace freelan
 
 		const auto system_routes = filter_routes(filtered_system_routes, m_configuration.router.system_route_acceptance_policy, m_configuration.router.maximum_routes_limit);
 
-		if (system_routes != filtered_routes)
+		if (system_routes != filtered_system_routes)
 		{
 			if (system_routes.empty() && !filtered_system_routes.empty())
 			{
