@@ -1312,7 +1312,7 @@ namespace freelan
 			}
 		}
 
-		do_set_system_routes(sender, system_routes, void_handler_type());
+		do_set_system_routes(sender, version, system_routes, void_handler_type());
 	}
 
 	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
@@ -1824,18 +1824,29 @@ namespace freelan
 		}
 	}
 
-	void core::do_set_system_routes(const ep_type& host, const asiotap::ip_route_set& routes, void_handler_type handler)
+	void core::do_set_system_routes(const ep_type& host, routes_message::version_type version, const asiotap::ip_route_set& routes, void_handler_type handler)
 	{
 		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
 
-		std::vector<asiotap::route_manager::entry_type> new_entries;
+		system_route_info& current_route_info = m_endpoint_route_manager_map[host];
+
+		if (current_route_info.version && ((*current_route_info.version) >= version))
+		{
+			m_logger(LL_WARNING) << "Ignoring already old system routes version " << version << ". Current is " << (*current_route_info.version) << ".";
+
+			return;
+		}
+
+		system_route_info route_info;
+
+		route_info.version = version;
 
 		for (auto&& route : routes)
 		{
-			new_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
+			route_info.route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
 		}
 
-		m_endpoint_route_manager_map[host] = new_entries;
+		m_endpoint_route_manager_map[host] = route_info;
 
 		if (handler)
 		{

@@ -508,7 +508,18 @@ namespace freelan
 
 		private: /* Switch & router */
 
-			typedef std::map<ep_type, std::vector<asiotap::route_manager::entry_type>> endpoint_route_manager_map_type;
+			struct system_route_info
+			{
+				system_route_info() :
+					version(),
+					route_entries()
+				{}
+
+				boost::optional<routes_message::version_type> version;
+				std::vector<asiotap::route_manager::entry_type> route_entries;
+			};
+
+			typedef std::map<ep_type, system_route_info> endpoint_route_manager_map_type;
 
 			void async_register_switch_port(const ep_type& host, void_handler_type handler)
 			{
@@ -530,9 +541,9 @@ namespace freelan
 				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host, handler));
 			}
 
-			void async_set_system_routes(const ep_type& host, const asiotap::ip_route_set& routes, void_handler_type handler)
+			void async_set_system_routes(const ep_type& host, routes_message::version_type version, const asiotap::ip_route_set& routes, void_handler_type handler)
 			{
-				m_router_strand.post(boost::bind(&core::do_set_system_routes, this, host, routes, handler));
+				m_router_strand.post(boost::bind(&core::do_set_system_routes, this, host, version, routes, handler));
 			}
 
 			void async_clear_system_routes(const ep_type& host, void_handler_type handler)
@@ -556,7 +567,7 @@ namespace freelan
 			void do_register_router_port(const ep_type&, void_handler_type);
 			void do_unregister_switch_port(const ep_type&, void_handler_type);
 			void do_unregister_router_port(const ep_type&, void_handler_type);
-			void do_set_system_routes(const ep_type&, const asiotap::ip_route_set&, void_handler_type);
+			void do_set_system_routes(const ep_type&, routes_message::version_type, const asiotap::ip_route_set&, void_handler_type);
 			void do_clear_system_routes(const ep_type&, void_handler_type);
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
