@@ -49,7 +49,11 @@
 #include <map>
 #include <iostream>
 
-#include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include <boost/system/system_error.hpp>
 
 #include "types/ip_route.hpp"
 
@@ -96,6 +100,70 @@ namespace asiotap
 		public:
 			typedef RouteType route_type;
 
+			class entry_type_impl
+			{
+				public:
+
+					~entry_type_impl()
+					{
+						if (m_success)
+						{
+							m_route_manager.unregister_route(m_route);
+						}
+					}
+
+					entry_type_impl(const entry_type_impl&) = delete;
+					entry_type_impl& operator=(const entry_type_impl&) = delete;
+
+					entry_type_impl(entry_type_impl&&) = delete;
+					entry_type_impl& operator=(entry_type_impl&&) = delete;
+
+					const route_type& route() const
+					{
+						return m_route;
+					}
+
+				private:
+
+					entry_type_impl(base_route_manager& route_manager, const route_type& _route) :
+						m_route_manager(route_manager),
+						m_route(_route),
+						m_success(m_route_manager.register_route(m_route))
+					{
+					}
+
+					base_route_manager& m_route_manager;
+					route_type m_route;
+					bool m_success;
+
+					friend class base_route_manager<RouteManagerType, RouteType>;
+			};
+
+			/**
+			 * \brief The entry implementation type.
+			 */
+			typedef boost::shared_ptr<entry_type_impl> entry_type;
+
+			/**
+			 * \brief The registration success handler type.
+			 */
+			typedef boost::function<void (const route_type&)> route_registration_success_handler_type;
+
+			/**
+			* \brief The registration failure handler type.
+			*/
+			typedef boost::function<void(const route_type&, const boost::system::system_error&)> route_registration_failure_handler_type;
+
+			/**
+			* \brief The unregistration success handler type.
+			*/
+			typedef boost::function<void (const route_type&)> route_unregistration_success_handler_type;
+
+			/**
+			 * \brief The unregistration failure handler type.
+			 */
+			typedef boost::function<void(const route_type&, const boost::system::system_error&)> route_unregistration_failure_handler_type;
+
 			base_route_manager() = default;
 
 			base_route_manager(const base_route_manager&) = delete;
@@ -104,68 +172,99 @@ namespace asiotap
 			base_route_manager(base_route_manager&&) = delete;
 			base_route_manager& operator=(base_route_manager&&) = delete;
 
-			~base_route_manager()
+			void set_route_registration_success_handler(route_registration_success_handler_type handler)
 			{
-				for (auto&& route : m_routing_table)
-				{
-					try
-					{
-						static_cast<RouteManagerType*>(this)->unregister_route(route.first);
-					}
-					catch (boost::system::system_error&)
-					{
-						// We don't care about errors at this point: we can't handle them and we must continue anyway.
-					}
-				}
+				m_route_registration_success_handler = handler;
 			}
 
-			void has_route(const route_type& route)
+			void set_route_registration_failure_handler(route_registration_failure_handler_type handler)
 			{
-				return (m_routing_table.find(route) != m_routing_table.end());
+				m_route_registration_failure_handler = handler;
 			}
 
-			bool add_route(const route_type& route)
+			void set_route_unregistration_success_handler(route_unregistration_success_handler_type handler)
 			{
-				if (m_routing_table[route]++ == 0)
+				m_route_unregistration_success_handler = handler;
+			}
+
+			void set_route_unregistration_failure_handler(route_unregistration_failure_handler_type handler)
+			{
+				m_route_unregistration_failure_handler = handler;
+			}
+
+			bool register_route(const route_type& route)
+			{
+				try
 				{
 					static_cast<RouteManagerType*>(this)->register_route(route);
 
-					return true;
+					if (m_route_registration_success_handler)
+					{
+						m_route_registration_success_handler(route);
+					}
+				}
+				catch (boost::system::system_error& ex)
+				{
+					if (m_route_registration_failure_handler)
+					{
+						m_route_registration_failure_handler(route, ex);
+					}
+
+					return false;
 				}
 
-				return false;
+				return true;
 			}
 
-			bool remove_route(const route_type& route)
+			bool unregister_route(const route_type& route)
 			{
-				const auto route_position = m_routing_table.find(route);
-
-				if (route_position != m_routing_table.end())
+				try
 				{
-					if (route_position->second == 1)
-					{
-						static_cast<RouteManagerType*>(this)->unregister_route(route);
+					static_cast<RouteManagerType*>(this)->unregister_route(route);
 
-						m_routing_table.erase(route_position);
-
-						return true;
-					}
-					else if (route_position->second > 1)
+					if (m_route_unregistration_success_handler)
 					{
-						--route_position->second;
+						m_route_unregistration_success_handler(route);
 					}
 				}
+				catch (boost::system::system_error& ex)
+				{
+					if (m_route_unregistration_failure_handler)
+					{
+						m_route_unregistration_failure_handler(route, ex);
+					}
 
-				return false;
+					return false;
+				}
+
+				return true;
+			}
+
+			entry_type get_route_entry(const route_type& route)
+			{
+				entry_type entry = m_entry_table[route].lock();
+
+				if (!entry)
+				{
+					entry = boost::shared_ptr<entry_type_impl>(new entry_type_impl(*this, route));
+
+					m_entry_table[route] = entry;
+				}
+
+				return entry;
 			}
 
 		protected:
 
-			typedef std::map<route_type, unsigned int> routing_table_type;
+			typedef std::map<route_type, boost::weak_ptr<entry_type_impl>> entry_table_type;
 
 		private:
 
-			routing_table_type m_routing_table;
+			entry_table_type m_entry_table;
+			route_registration_success_handler_type m_route_registration_success_handler;
+			route_registration_failure_handler_type m_route_registration_failure_handler;
+			route_unregistration_success_handler_type m_route_unregistration_success_handler;
+			route_unregistration_failure_handler_type m_route_unregistration_failure_handler;
 	};
 }
 
