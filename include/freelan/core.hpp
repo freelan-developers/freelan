@@ -508,27 +508,32 @@ namespace freelan
 
 		private: /* Switch & router */
 
-			struct system_route_info
+			struct client_router_info_type
 			{
-				system_route_info() :
+				client_router_info_type() :
 					version(),
-					route_entries()
+					system_route_entries()
 				{}
 
+				bool is_older_than(routes_message::version_type _version)
+				{
+					return (!version || ((*version) < _version));
+				}
+
 				boost::optional<routes_message::version_type> version;
-				std::vector<asiotap::route_manager::entry_type> route_entries;
+				std::vector<asiotap::route_manager::entry_type> system_route_entries;
 			};
 
-			typedef std::map<ep_type, system_route_info> endpoint_route_manager_map_type;
+			typedef std::map<ep_type, client_router_info_type> client_router_info_map_type;
 
 			void async_register_switch_port(const ep_type& host, void_handler_type handler)
 			{
-				m_switch_strand.post(boost::bind(&core::do_register_switch_port, this, host, handler));
+				m_router_strand.post(boost::bind(&core::do_register_switch_port, this, host, handler));
 			}
 
 			void async_unregister_switch_port(const ep_type& host, void_handler_type handler)
 			{
-				m_switch_strand.post(boost::bind(&core::do_unregister_switch_port, this, host, handler));
+				m_router_strand.post(boost::bind(&core::do_unregister_switch_port, this, host, handler));
 			}
 
 			void async_register_router_port(const ep_type& host, void_handler_type handler)
@@ -541,20 +546,15 @@ namespace freelan
 				m_router_strand.post(boost::bind(&core::do_unregister_router_port, this, host, handler));
 			}
 
-			void async_set_system_routes(const ep_type& host, routes_message::version_type version, const asiotap::ip_route_set& routes, void_handler_type handler)
+			void async_clear_client_router_info(const ep_type& host, void_handler_type handler)
 			{
-				m_router_strand.post(boost::bind(&core::do_set_system_routes, this, host, version, routes, handler));
-			}
-
-			void async_clear_system_routes(const ep_type& host, void_handler_type handler)
-			{
-				m_router_strand.post(boost::bind(&core::do_clear_system_routes, this, host, handler));
+				m_router_strand.post(boost::bind(&core::do_clear_client_router_info, this, host, handler));
 			}
 
 			template <typename WriteHandler>
 			void async_write_switch(const port_index_type& index, boost::asio::const_buffer data, WriteHandler handler)
 			{
-				m_switch_strand.post(boost::bind(&core::do_write_switch, this, index, data, handler));
+				m_router_strand.post(boost::bind(&core::do_write_switch, this, index, data, handler));
 			}
 
 			template <typename WriteHandler>
@@ -567,18 +567,17 @@ namespace freelan
 			void do_register_router_port(const ep_type&, void_handler_type);
 			void do_unregister_switch_port(const ep_type&, void_handler_type);
 			void do_unregister_router_port(const ep_type&, void_handler_type);
-			void do_set_system_routes(const ep_type&, routes_message::version_type, const asiotap::ip_route_set&, void_handler_type);
-			void do_clear_system_routes(const ep_type&, void_handler_type);
+			void do_clear_client_router_info(const ep_type&, void_handler_type);
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
 
-			boost::asio::strand m_switch_strand;
 			boost::asio::strand m_router_strand;
 
 			switch_ m_switch;
 			router m_router;
 			asiotap::route_manager m_route_manager;
-			endpoint_route_manager_map_type m_endpoint_route_manager_map;
+			boost::optional<routes_message::version_type> m_local_routes_version;
+			client_router_info_map_type m_client_router_info_map;
 	};
 }
 

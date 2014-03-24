@@ -97,16 +97,10 @@ namespace freelan
 					typedef boost::function<void (boost::asio::const_buffer data, write_handler_type handler)> write_function_type;
 
 					/**
-					 * \brief The version type.
-					 */
-					typedef routes_message::version_type version_type;
-
-					/**
 					 * \brief Create a new default port.
 					 */
 					port_type() :
 						m_write_function(),
-						m_version(),
 						m_local_routes(),
 						m_group(),
 						m_router(NULL)
@@ -119,7 +113,6 @@ namespace freelan
 					 */
 					port_type(write_function_type write_function, port_group_type _group) :
 						m_write_function(write_function),
-						m_version(),
 						m_local_routes(),
 						m_group(_group),
 						m_router(NULL)
@@ -131,7 +124,6 @@ namespace freelan
 					 */
 					port_type(const port_type& other) :
 						m_write_function(other.m_write_function),
-						m_version(other.m_version),
 						m_local_routes(other.m_local_routes),
 						m_group(other.m_group),
 						m_router(NULL)
@@ -171,32 +163,19 @@ namespace freelan
 						m_write_function(data, handler);
 					}
 
-					boost::optional<version_type> version() const
-					{
-						return m_version;
-					}
-
 					const asiotap::ip_route_set& local_routes() const
 					{
 						return m_local_routes;
 					}
 
-					bool set_local_routes(version_type _version, const asiotap::ip_route_set& _local_routes)
+					void set_local_routes(const asiotap::ip_route_set& _local_routes)
 					{
-						if (!m_version || (_version > m_version))
+						m_local_routes = _local_routes;
+
+						if (m_router)
 						{
-							m_version = _version;
-							m_local_routes = _local_routes;
-
-							if (m_router)
-							{
-								m_router->invalidate_routes();
-							}
-
-							return true;
+							m_router->invalidate_routes();
 						}
-
-						return false;
 					}
 
 					port_group_type group() const
@@ -229,7 +208,6 @@ namespace freelan
 					friend class router;
 
 					write_function_type m_write_function;
-					boost::optional<version_type> m_version;
 					asiotap::ip_route_set m_local_routes;
 					port_group_type m_group;
 					router* m_router;

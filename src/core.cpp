@@ -417,7 +417,6 @@ namespace freelan
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
-		m_switch_strand(m_io_service),
 		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
@@ -1094,7 +1093,7 @@ namespace freelan
 			async_unregister_router_port(host, void_handler_type());
 		}
 
-		async_clear_system_routes(host, void_handler_type());
+		async_clear_client_router_info(host, void_handler_type());
 	}
 
 	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type buffer, boost::asio::const_buffer data)
@@ -1188,15 +1187,13 @@ namespace freelan
 			{
 				const auto local_port = m_router.get_port(make_port_index(m_tap_adapter));
 
-				const boost::optional<routes_message::version_type> version = local_port->version();
-
-				if (version.is_initialized())
+				if (m_local_routes_version.is_initialized())
 				{
 					const auto& routes = local_port->local_routes();
 
-					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *version << ": " << routes;
+					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *m_local_routes_version << ": " << routes;
 
-					async_send_routes(sender, *version, routes, &null_simple_write_handler);
+					async_send_routes(sender, *m_local_routes_version, routes, &null_simple_write_handler);
 				}
 				else
 				{
@@ -1218,6 +1215,15 @@ namespace freelan
 	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_route_set& routes)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
+
+		client_router_info_type& client_router_info = m_client_router_info_map[sender];
+
+		if (!client_router_info.is_older_than(version))
+		{
+			m_logger(LL_DEBUG) << "Ignoring old routes message with version " << version << " as current version is " << *client_router_info.version;
+
+			return;
+		}
 
 		asiotap::ip_route_set filtered_routes;
 
@@ -1253,14 +1259,9 @@ namespace freelan
 
 			if (port)
 			{
-				if (port->set_local_routes(version, filtered_routes))
-				{
-					m_logger(LL_INFORMATION) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
-				}
-				else
-				{
-					m_logger(LL_INFORMATION) << "Ignoring old routes from " << sender << " (version " << version << ")";
-				}
+				port->set_local_routes(filtered_routes);
+
+				m_logger(LL_INFORMATION) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
 			}
 			else
 			{
@@ -1312,7 +1313,15 @@ namespace freelan
 			}
 		}
 
-		do_set_system_routes(sender, version, system_routes, void_handler_type());
+		client_router_info_type new_client_router_info;
+		new_client_router_info.version = client_router_info.version;
+
+		for (auto&& route : filtered_system_routes)
+		{
+			new_client_router_info.system_route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
+		}
+
+		client_router_info = new_client_router_info;
 	}
 
 	int core::certificate_validation_callback(int ok, X509_STORE_CTX* ctx)
@@ -1515,7 +1524,8 @@ namespace freelan
 					local_routes.insert(asiotap::to_network_address(asiotap::ip_address(ip_address)));
 				}
 
-				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(0, local_routes);
+				m_local_routes_version = routes_message::version_type();
+				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(local_routes);
 
 				// We don't need any proxies in TUN mode.
 				m_arp_proxy.reset();
@@ -1539,7 +1549,7 @@ namespace freelan
 	{
 		// Clear the endpoint routes, if any.
 		m_router_strand.post([this](){
-			m_endpoint_route_manager_map.clear();
+			m_client_router_info_map.clear();
 		});
 
 		m_dhcp_proxy.reset();
@@ -1552,11 +1562,8 @@ namespace freelan
 				m_tap_adapter_down_callback(*m_tap_adapter);
 			}
 
-			m_switch_strand.post([this](){
-				m_switch.unregister_port(make_port_index(m_tap_adapter));
-			});
-
 			m_router_strand.post([this](){
+				m_switch.unregister_port(make_port_index(m_tap_adapter));
 				m_router.unregister_port(make_port_index(m_tap_adapter));
 			});
 
@@ -1782,7 +1789,7 @@ namespace freelan
 
 	void core::do_register_switch_port(const ep_type& host, void_handler_type handler)
 	{
-		// All calls to do_register_switch_port() are done within the m_switch_strand, so the following is safe.
+		// All calls to do_register_switch_port() are done within the m_router_strand, so the following is safe.
 		m_switch.register_port(make_port_index(host), switch_::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
 
 		if (handler)
@@ -1793,7 +1800,7 @@ namespace freelan
 
 	void core::do_unregister_switch_port(const ep_type& host, void_handler_type handler)
 	{
-		// All calls to do_unregister_switch_port() are done within the m_switch_strand, so the following is safe.
+		// All calls to do_unregister_switch_port() are done within the m_router_strand, so the following is safe.
 		m_switch.unregister_port(make_port_index(host));
 
 		if (handler)
@@ -1824,42 +1831,12 @@ namespace freelan
 		}
 	}
 
-	void core::do_set_system_routes(const ep_type& host, routes_message::version_type version, const asiotap::ip_route_set& routes, void_handler_type handler)
+	void core::do_clear_client_router_info(const ep_type& host, void_handler_type handler)
 	{
-		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
-
-		system_route_info& current_route_info = m_endpoint_route_manager_map[host];
-
-		if (current_route_info.version && ((*current_route_info.version) >= version))
-		{
-			m_logger(LL_WARNING) << "Ignoring already old system routes version " << version << ". Current is " << (*current_route_info.version) << ".";
-
-			return;
-		}
-
-		system_route_info route_info;
-
-		route_info.version = version;
-
-		for (auto&& route : routes)
-		{
-			route_info.route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
-		}
-
-		m_endpoint_route_manager_map[host] = route_info;
-
-		if (handler)
-		{
-			handler();
-		}
-	}
-
-	void core::do_clear_system_routes(const ep_type& host, void_handler_type handler)
-	{
-		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
+		// All calls to do_clear_client_router_info() are done within the m_router_strand, so the following is safe.
 
 		// This clears the routes, if any.
-		m_endpoint_route_manager_map.erase(host);
+		m_client_router_info_map.erase(host);
 
 		if (handler)
 		{
@@ -1869,7 +1846,7 @@ namespace freelan
 
 	void core::do_write_switch(const port_index_type& index, boost::asio::const_buffer data, switch_::multi_write_handler_type handler)
 	{
-		// All calls to do_write_switch() are done within the m_switch_strand, so the following is safe.
+		// All calls to do_write_switch() are done within the m_router_strand, so the following is safe.
 		m_switch.async_write(index, data, handler);
 	}
 
