@@ -508,64 +508,7 @@ namespace freelan
 
 		private: /* Switch & router */
 
-			class endpoint_route_manager
-			{
-				public:
-
-					typedef asiotap::route_manager::route_type route_type;
-					typedef std::set<route_type> route_set_type;
-
-					endpoint_route_manager() :
-						m_route_manager(),
-						m_routes(),
-						m_logger()
-					{}
-
-					endpoint_route_manager(boost::shared_ptr<asiotap::route_manager> route_manager, const route_set_type& routes, freelan::logger* logger = nullptr) :
-						m_route_manager(route_manager),
-						m_routes(routes),
-						m_logger(logger)
-					{
-						add_routes();
-					}
-
-					endpoint_route_manager(const endpoint_route_manager& other) :
-						m_route_manager(other.m_route_manager),
-						m_routes(other.m_routes),
-						m_logger(other.m_logger)
-					{
-						add_routes();
-					}
-
-					endpoint_route_manager(endpoint_route_manager&& other) :
-						m_route_manager(other.m_route_manager),
-						m_routes(other.m_routes),
-						m_logger(other.m_logger)
-					{
-						other.m_route_manager.reset();
-						other.m_routes.clear();
-						other.m_logger = nullptr;
-					}
-
-					~endpoint_route_manager()
-					{
-						remove_routes();
-					}
-
-					endpoint_route_manager& operator=(const endpoint_route_manager& other);
-					endpoint_route_manager& operator=(endpoint_route_manager&& other);
-
-				private:
-
-					void add_routes() const;
-					void remove_routes() const;
-
-					boost::weak_ptr<asiotap::route_manager> m_route_manager;
-					route_set_type m_routes;
-					freelan::logger* m_logger;
-			};
-
-			typedef std::map<ep_type, endpoint_route_manager> endpoint_route_manager_map_type;
+			typedef std::map<ep_type, std::vector<asiotap::route_manager::entry_type>> endpoint_route_manager_map_type;
 
 			void async_register_switch_port(const ep_type& host, void_handler_type handler)
 			{
@@ -623,7 +566,7 @@ namespace freelan
 
 			switch_ m_switch;
 			router m_router;
-			boost::shared_ptr<asiotap::route_manager> m_route_manager;
+			asiotap::route_manager m_route_manager;
 			endpoint_route_manager_map_type m_endpoint_route_manager_map;
 	};
 }

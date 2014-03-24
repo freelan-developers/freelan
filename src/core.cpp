@@ -429,7 +429,8 @@ namespace freelan
 		m_switch_strand(m_io_service),
 		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
-		m_router(m_configuration.router)
+		m_router(m_configuration.router),
+		m_route_manager()
 	{
 		if (!m_configuration.security.identity)
 		{
@@ -438,6 +439,22 @@ namespace freelan
 
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
+
+		// Setup the route manager.
+		auto route_registration_success_handler = [this](const asiotap::route_manager::route_type& route){
+			m_logger(LL_INFORMATION) << "Added system route: " << route;
+		};
+
+		m_route_manager.set_route_registration_success_handler(route_registration_success_handler);
+		m_route_manager.set_route_registration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
+			m_logger(LL_WARNING) << "Unable to add system route (" << route << "): " << ex.what();
+		});
+		m_route_manager.set_route_unregistration_success_handler([this](const asiotap::route_manager::route_type& route){
+			m_logger(LL_INFORMATION) << "Removed system route: " << route;
+		});
+		m_route_manager.set_route_unregistration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
+			m_logger(LL_WARNING) << "Unable to remove system route (" << route << "): " << ex.what();
+		});
 	}
 
 	void core::open()
@@ -553,15 +570,12 @@ namespace freelan
 		m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
 		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
 		m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
-
-		// We create a route manager.
-		m_route_manager = boost::make_shared<asiotap::route_manager>();
 	}
 
 	void core::close_server()
 	{
-		// Destroy the route manager.
-		m_route_manager.reset();
+		// Clear the endpoint routes, if any.
+		m_endpoint_route_manager_map.clear();
 
 		// Stop the contact loop timers.
 		m_routes_request_timer.cancel();
@@ -1754,89 +1768,6 @@ namespace freelan
 		return false;
 	}
 
-	core::endpoint_route_manager& core::endpoint_route_manager::operator=(const core::endpoint_route_manager& other)
-	{
-		remove_routes();
-
-		m_route_manager = other.m_route_manager;
-		m_routes = other.m_routes;
-		m_logger = other.m_logger;
-
-		add_routes();
-
-		return *this;
-	}
-
-	core::endpoint_route_manager& core::endpoint_route_manager::operator=(core::endpoint_route_manager&& other)
-	{
-		using std::swap;
-
-		swap(m_route_manager, other.m_route_manager);
-		swap(m_routes, other.m_routes);
-		swap(m_logger, other.m_logger);
-
-		return *this;
-	}
-
-	void core::endpoint_route_manager::add_routes() const
-	{
-		const boost::shared_ptr<asiotap::route_manager> route_manager = m_route_manager.lock();
-
-		if (route_manager)
-		{
-			for (auto&& route: m_routes)
-			{
-				try
-				{
-					if (route_manager->add_route(route))
-					{
-						if (m_logger)
-						{
-							(*m_logger)(LL_INFORMATION) << "Added route: " << route;
-						}
-					}
-				}
-				catch (boost::system::system_error& ex)
-				{
-					if (m_logger)
-					{
-						(*m_logger)(LL_WARNING) << "Unable to set route (" << route << "): " << ex.what();
-					}
-				}
-			}
-		}
-	}
-
-	void core::endpoint_route_manager::remove_routes() const
-	{
-		const boost::shared_ptr<asiotap::route_manager> route_manager = m_route_manager.lock();
-
-		if (route_manager)
-		{
-			for (auto&& route: m_routes)
-			{
-				try
-				{
-					if (route_manager->remove_route(route))
-					{
-						if (m_logger)
-						{
-							(*m_logger)(LL_INFORMATION) << "Removed route: " << route;
-						}
-					}
-				}
-				catch (boost::system::system_error& ex)
-				{
-					if (m_logger)
-					{
-						(*m_logger)(LL_WARNING) << "Unable to remove route (" << route << "): " << ex.what();
-					}
-				}
-
-			}
-		}
-	}
-
 	void core::do_register_switch_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_register_switch_port() are done within the m_switch_strand, so the following is safe.
@@ -1885,15 +1816,14 @@ namespace freelan
 	{
 		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
 
-		endpoint_route_manager::route_set_type ep_routes;
+		std::vector<asiotap::route_manager::entry_type> new_entries;
 
 		for (auto&& route : routes)
 		{
-			ep_routes.insert(m_tap_adapter->get_route(route));
+			new_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
 		}
 
-		// This sets the routes if required.
-		m_endpoint_route_manager_map[host] = endpoint_route_manager(m_route_manager, ep_routes, &m_logger);
+		m_endpoint_route_manager_map[host] = new_entries;
 
 		if (handler)
 		{
@@ -1905,7 +1835,7 @@ namespace freelan
 	{
 		// All calls to do_clear_system_routes() are done within the m_router_strand, so the following is safe.
 
-		// This clears the routes if required.
+		// This clears the routes, if any.
 		m_endpoint_route_manager_map.erase(host);
 
 		if (handler)
