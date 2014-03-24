@@ -366,7 +366,7 @@ namespace asiotap
 			}
 		}
 
-		MIB_IPFORWARD_ROW2 make_ip_forward_row(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)
+		MIB_IPFORWARD_ROW2 make_ip_forward_row(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric)
 		{
 			MIB_IPFORWARD_ROW2 entry{};
 
@@ -374,6 +374,7 @@ namespace asiotap
 
 			entry.Protocol = MIB_IPPROTO_NETMGMT;
 			entry.InterfaceLuid = interface_luid;
+			entry.Metric = metric;
 
 			if (gateway)
 			{
@@ -498,9 +499,9 @@ namespace asiotap
 #endif
 	}
 
-	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)
+	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric)
 	{
-		const auto row = make_ip_forward_row(interface_luid, route, gateway);
+		const auto row = make_ip_forward_row(interface_luid, route, gateway, metric);
 
 		const DWORD result = ::CreateIpForwardEntry2(&row);
 
@@ -510,9 +511,9 @@ namespace asiotap
 		}
 	}
 
-	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway)
+	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric)
 	{
-		const auto row = make_ip_forward_row(interface_luid, route, gateway);
+		const auto row = make_ip_forward_row(interface_luid, route, gateway, metric);
 
 		const DWORD result = ::DeleteIpForwardEntry2(&row);
 

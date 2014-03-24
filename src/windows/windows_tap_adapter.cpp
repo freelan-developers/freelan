@@ -293,6 +293,9 @@ namespace asiotap
 
 					set_mtu(static_cast<size_t>(read_mtu));
 
+					// Set a default metric of 3 to beat the system's default.
+					set_metric(3);
+
 					break;
 				}
 			}
@@ -482,4 +485,34 @@ namespace asiotap
 			}
 		}
 	}
+
+	void windows_tap_adapter::set_metric(unsigned int metric)
+	{
+		MIB_IPINTERFACE_ROW row{};
+
+		::InitializeIpInterfaceEntry(&row);
+		row.InterfaceLuid = m_interface_luid;
+		row.Family = AF_INET;
+
+		auto error = ::GetIpInterfaceEntry(&row);
+
+		if (error != NO_ERROR)
+		{
+			throw boost::system::system_error(error, boost::system::system_category());
+		}
+
+		row.Metric = static_cast<ULONG>(metric);
+		row.UseAutomaticMetric = FALSE;
+
+		// This is needed before a call to SetIpInterfaceEntry with AF_INET as the family.
+		row.SitePrefixLength = 0;
+
+		error = ::SetIpInterfaceEntry(&row);
+
+		if (error != NO_ERROR)
+		{
+			throw boost::system::system_error(error, boost::system::system_category());
+		}
+	}
+
 }

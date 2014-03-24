@@ -67,6 +67,7 @@ namespace asiotap
 	{
 		InterfaceType interface;
 		ip_route route;
+		unsigned int metric;
 
 		friend bool operator==(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
@@ -87,7 +88,7 @@ namespace asiotap
 
 		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
 		{
-			return os << value.interface << " - " << value.route;
+			return os << value.interface << " - " << value.route << " - metric " << value.metric;
 		}
 	};
 

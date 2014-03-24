@@ -50,11 +50,11 @@ namespace asiotap
 {
 	void windows_route_manager::register_route(const route_type& route_entry)
 	{
-		asiotap::register_route(route_entry.interface, network_address(route_entry.route), gateway(route_entry.route));
+		asiotap::register_route(route_entry.interface, network_address(route_entry.route), gateway(route_entry.route), route_entry.metric);
 	}
 
 	void windows_route_manager::unregister_route(const route_type& route_entry)
 	{
-		asiotap::unregister_route(route_entry.interface, network_address(route_entry.route), gateway(route_entry.route));
+		asiotap::unregister_route(route_entry.interface, network_address(route_entry.route), gateway(route_entry.route), route_entry.metric);
 	}
 }

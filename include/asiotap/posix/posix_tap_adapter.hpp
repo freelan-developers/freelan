@@ -167,7 +167,7 @@ namespace asiotap
 			 */
 			posix_routing_table_entry get_route(const ip_route& route)
 			{
-				return { name(), route };
+				return { name(), route, 0 };
 			}
 
 		private:

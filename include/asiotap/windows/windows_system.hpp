@@ -77,8 +77,8 @@ namespace asiotap
 #endif
 	void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent = false);
 
-	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway);
-	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway);
+	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric);
+	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric);
 	void set_unicast_address(const NET_LUID& interface_luid, const ip_network_address& network_address);
 }
 

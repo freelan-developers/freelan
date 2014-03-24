@@ -136,8 +136,14 @@ namespace asiotap
 			 */
 			windows_routing_table_entry get_route(const ip_route& route)
 			{
-				return { m_interface_luid, route };
+				return { m_interface_luid, route, 0 };
 			}
+
+			/**
+			 * \brief Set the metric of the interface.
+			 * \param metric The metric of the interface.
+			 */
+			void set_metric(unsigned int metric);
 
 		private:
 
