@@ -381,19 +381,6 @@ namespace freelan
 
 			return result;
 		}
-
-#ifdef WINDOWS
-		NET_LUID get_best_interface(const core::ep_type& host)
-		{
-			return asiotap::get_best_interface(host.address());
-		}
-#else
-		std::string get_best_interface(const core::ep_type& host)
-		{
-			//TODO: Implement
-			return "";
-		}
-#endif
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
@@ -1101,9 +1088,10 @@ namespace freelan
 				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
 
-			const auto interface = get_best_interface(host);
-
-			async_save_system_route(host, interface, void_handler_type());
+#ifdef WINDOWS
+			const auto route = get_route_for(host);
+			async_save_system_route(host, route, void_handler_type());
+#endif
 		}
 
 		if (m_session_established_callback)
@@ -1889,11 +1877,11 @@ namespace freelan
 		}
 	}
 
-	void core::do_save_system_route(const ep_type& host, interface_type interface, void_handler_type handler)
+	void core::do_save_system_route(const ep_type& host, const route_type& route, void_handler_type handler)
 	{
 		// All calls to do_save_system_route() are done within the m_router_strand, so the following is safe.
 		client_router_info_type& client_router_info = m_client_router_info_map[host];
-		client_router_info.saved_system_route = m_route_manager.get_route_entry(asiotap::route_manager::route_type { interface, asiotap::to_ip_route(host.address()), 0 });
+		client_router_info.saved_system_route = m_route_manager.get_route_entry(route);
 
 		if (handler)
 		{
@@ -1924,5 +1912,16 @@ namespace freelan
 	{
 		// All calls to do_write_router() are done within the m_router_strand, so the following is safe.
 		m_router.async_write(index, data, handler);
+	}
+
+	core::route_type core::get_route_for(const core::ep_type& host)
+	{
+#ifdef WINDOWS
+		return asiotap::get_route_for(host.address());
+#else
+		//TODO: Implement
+		static_cast<void>(host);
+		return core::route_type {};
+#endif
 	}
 }
