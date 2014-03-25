@@ -67,6 +67,12 @@ int main()
 		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10 =>fe80::ff") << std::endl;
 		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10=> fe80::ff") << std::endl;
 		std::cout << boost::lexical_cast<asiotap::ip_route>("fe80::1/10\t=>\tfe80::ff") << std::endl;
+
+		// Create a route from its components.
+		const auto ina = boost::lexical_cast<asiotap::ip_network_address>("192.168.0.0/24");
+		const boost::optional<boost::asio::ip::address> gw = get_network_address(boost::lexical_cast<asiotap::ip_network_address>("192.168.0.254"));
+		const auto route = to_ip_route(ina, gw);
+		std::cout << route << std::endl;
 	}
 	catch (std::exception& ex)
 	{
