@@ -65,6 +65,8 @@ namespace asiotap
 	template <typename InterfaceType>
 	struct base_routing_table_entry
 	{
+		typedef InterfaceType interface_type;
+
 		InterfaceType interface;
 		ip_route route;
 		unsigned int metric;
