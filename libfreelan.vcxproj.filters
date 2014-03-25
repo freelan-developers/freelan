@@ -36,9 +36,6 @@
     <ClCompile Include="src\mtu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\stream_operations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\switch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,15 +51,15 @@
     <ClCompile Include="src\routes_request_message.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\metric.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\client.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\curl.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stream_operations.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\freelan\configuration.hpp">
@@ -99,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\freelan\routes_request_message.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\freelan\metric.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

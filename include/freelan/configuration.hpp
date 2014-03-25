@@ -69,6 +69,7 @@
 #include <asiotap/types/endpoint.hpp>
 
 #include "mtu.hpp"
+#include "metric.hpp"
 
 namespace freelan
 {
@@ -372,6 +373,11 @@ namespace freelan
 		 * \brief The tap adapter's MTU.
 		 */
 		mtu_type mtu;
+
+		/**
+		 * \brief The tap adapter's metric.
+		 */
+		metric_type metric;
 
 		/**
 		 * \brief The IPv4 tap adapter address.

@@ -26,6 +26,7 @@
     <ClCompile Include="src\freelan.cpp" />
     <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\message.cpp" />
+    <ClCompile Include="src\metric.cpp" />
     <ClCompile Include="src\mtu.cpp" />
     <ClCompile Include="src\router.cpp" />
     <ClCompile Include="src\routes_message.cpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="include\freelan\freelan.hpp" />
     <ClInclude Include="include\freelan\logger.hpp" />
     <ClInclude Include="include\freelan\message.hpp" />
+    <ClInclude Include="include\freelan\metric.hpp" />
     <ClInclude Include="include\freelan\mtu.hpp" />
     <ClInclude Include="include\freelan\os.hpp" />
     <ClInclude Include="include\freelan\port_index.hpp" />

@@ -60,16 +60,12 @@ namespace freelan
 	struct auto_mtu_type
 	{
 		static const std::string string_representation;
-	};
 
-	/**
-	 * \brief Comparison operator for auto_mtu_type.
-	 * \return true.
-	 */
-	inline bool operator==(const auto_mtu_type&, const auto_mtu_type&)
-	{
-		return true;
-	}
+		friend bool operator==(const auto_mtu_type&, const auto_mtu_type&)
+		{
+			return true;
+		}
+	};
 
 	/**
 	 * \brief A MTU system type.
@@ -77,16 +73,12 @@ namespace freelan
 	struct system_mtu_type
 	{
 		static const std::string string_representation;
-	};
 
-	/**
-	 * \brief Comparison operator for system_mtu_type.
-	 * \return true.
-	 */
-	inline bool operator==(const system_mtu_type&, const system_mtu_type&)
-	{
-		return true;
-	}
+		friend bool operator==(const system_mtu_type&, const system_mtu_type&)
+		{
+			return true;
+		}
+	};
 
 	/**
 	 * \brief The MTU type.
@@ -102,7 +94,7 @@ namespace freelan
 
 			/**
 			 * \brief Create a compute mtu visitor.
-			 * \param auto_value The auto value to use with auto_mtu_type. 
+			 * \param auto_value The auto value to use with auto_mtu_type.
 			 */
 			compute_mtu_visitor(unsigned int auto_value) :
 				m_auto_value(auto_value)
@@ -198,7 +190,7 @@ namespace freelan
 	}
 
 	/**
-	 * \brief Compare two endpoints.
+	 * \brief Compare two MTUs.
 	 * \param lhs The left argument.
 	 * \param rhs The right argument.
 	 * \return true if the two endpoints are different.
@@ -220,4 +212,4 @@ namespace freelan
 	}
 }
 
-#endif /* FREELAN_ENDPOINT_HPP */
+#endif /* FREELAN_MTU_HPP */

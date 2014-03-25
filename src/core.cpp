@@ -1466,6 +1466,17 @@ namespace freelan
 
 			m_tap_adapter->configure(tap_config);
 
+#ifdef WINDOWS
+			const auto metric_value = get_metric_value(m_configuration.tap_adapter.metric);
+
+			if (metric_value)
+			{
+				m_logger(LL_INFORMATION) << "Setting interface metric to: " << *metric_value;
+
+				m_tap_adapter->set_metric(*metric_value);
+			}
+#endif
+
 			m_tap_adapter->set_connected_state(true);
 
 			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
