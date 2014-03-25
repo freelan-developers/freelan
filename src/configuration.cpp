@@ -68,6 +68,7 @@ namespace freelan
 
 	fscp_configuration::fscp_configuration() :
 		listen_on(),
+		listen_on_device(),
 		contact_list(),
 		accept_contact_requests(true),
 		accept_contacts(true),

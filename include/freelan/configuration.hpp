@@ -210,6 +210,11 @@ namespace freelan
 		endpoint listen_on;
 
 		/**
+		 * \brief The device to listen on.
+		 */
+		std::string listen_on_device;
+
+		/**
 		 * \brief The contact list.
 		 */
 		endpoint_list contact_list;

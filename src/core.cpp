@@ -554,6 +554,23 @@ namespace freelan
 		// Let's open the server.
 		m_server->open(listen_endpoint);
 
+#ifdef LINUX
+		if (!m_configuration.fscp.listen_on_device.empty())
+		{
+			const auto socket_fd = m_server->get_socket().native();
+			const std::string device_name = m_configuration.fscp.listen_on_device;
+
+			if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
+			{
+				m_logger(LL_INFORMATION) << "Restricting VPN traffic on: " << device_name;
+			}
+			else
+			{
+				m_logger(LL_WARNING) << "Unable to restrict traffic on: " << device_name << ". Error was: " << boost::system::error_code(errno, boost::system::system_category()).message();
+			}
+		}
+#endif
+
 		// We start the contact loop.
 		async_contact_all();
 
