@@ -51,7 +51,8 @@
 #include <boost/system/system_error.hpp>
 #include <boost/optional.hpp>
 
-#include "../types/ip_network_address.hpp"
+#include "../types/ip_route.hpp"
+#include "windows_route_manager.hpp"
 #include "os.hpp"
 
 #include <Iphlpapi.h>
@@ -77,9 +78,9 @@ namespace asiotap
 #endif
 	void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent = false);
 
-	NET_LUID get_best_interface(const boost::asio::ip::address& host);
-	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric);
-	void unregister_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric);
+	windows_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
+	void register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric);
+	void unregister_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric);
 	void set_unicast_address(const NET_LUID& interface_luid, const ip_network_address& network_address);
 }
 
