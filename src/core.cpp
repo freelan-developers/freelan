@@ -1555,6 +1555,15 @@ namespace freelan
 				m_local_routes_version = routes_message::version_type();
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(local_routes);
 
+				if (local_routes.empty())
+				{
+					m_logger(LL_INFORMATION) << "Not advertising any route";
+				}
+				else
+				{
+					m_logger(LL_INFORMATION) << "Advertising the following routes: " << local_routes;
+				}
+
 				// We don't need any proxies in TUN mode.
 				m_arp_proxy.reset();
 				m_dhcp_proxy.reset();
