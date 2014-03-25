@@ -45,7 +45,6 @@
 
 #include "core.hpp"
 
-#include "os.hpp"
 #include "client.hpp"
 #include "routes_request_message.hpp"
 #include "routes_message.hpp"
@@ -53,6 +52,10 @@
 #include <fscp/server_error.hpp>
 
 #include <asiotap/types/ip_network_address.hpp>
+
+#ifdef WINDOWS
+#include <asiotap/windows/windows_system.hpp>
+#endif
 
 #include <boost/make_shared.hpp>
 #include <boost/foreach.hpp>
@@ -378,6 +381,19 @@ namespace freelan
 
 			return result;
 		}
+
+#ifdef WINDOWS
+		NET_LUID get_best_interface(const core::ep_type& host)
+		{
+			return asiotap::get_best_interface(host.address());
+		}
+#else
+		std::string get_best_interface(const core::ep_type& host)
+		{
+			//TODO: Implement
+			return "";
+		}
+#endif
 	}
 
 	typedef boost::asio::ip::udp::resolver::query resolver_query;
@@ -1084,6 +1100,10 @@ namespace freelan
 				// We register the router port without any routes, at first.
 				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
+
+			const auto interface = get_best_interface(host);
+
+			async_save_system_route(host, interface, void_handler_type());
 		}
 
 		if (m_session_established_callback)
@@ -1331,6 +1351,7 @@ namespace freelan
 		}
 
 		client_router_info_type new_client_router_info;
+		new_client_router_info.saved_system_route = client_router_info.saved_system_route;
 		new_client_router_info.version = client_router_info.version;
 
 		for (auto&& route : filtered_system_routes)
@@ -1861,6 +1882,18 @@ namespace freelan
 	{
 		// All calls to do_unregister_router_port() are done within the m_router_strand, so the following is safe.
 		m_router.unregister_port(make_port_index(host));
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void core::do_save_system_route(const ep_type& host, interface_type interface, void_handler_type handler)
+	{
+		// All calls to do_save_system_route() are done within the m_router_strand, so the following is safe.
+		client_router_info_type& client_router_info = m_client_router_info_map[host];
+		client_router_info.saved_system_route = m_route_manager.get_route_entry(asiotap::route_manager::route_type { interface, asiotap::to_ip_route(host.address()), 0 });
 
 		if (handler)
 		{
