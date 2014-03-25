@@ -551,8 +551,10 @@ namespace asiotap
 		}
 
 		const auto gw = from_sockaddr_inet(best_route.NextHop);
+		const auto route = to_ip_route(to_network_address(host), gw);
+		const windows_route_manager::route_type route_entry = { best_route.InterfaceLuid, route, 0 };
 
-		return windows_route_manager::route_type { best_route.InterfaceLuid, to_ip_route(to_network_address(host), gw), 0 };
+		return route_entry;
 	}
 
 	void register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric)
