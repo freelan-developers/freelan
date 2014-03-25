@@ -293,9 +293,6 @@ namespace asiotap
 
 					set_mtu(static_cast<size_t>(read_mtu));
 
-					// Set a default metric of 3 to beat the system's default.
-					set_metric(3);
-
 					break;
 				}
 			}
