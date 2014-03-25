@@ -366,25 +366,36 @@ namespace asiotap
 			}
 		}
 
-		boost::asio::ip::address from_sockaddr_inet(const SOCKADDR_INET& sai)
+		boost::optional<boost::asio::ip::address> from_sockaddr_inet(const SOCKADDR_INET& sai)
 		{
 			if (sai.si_family == AF_INET)
 			{
-				boost::asio::ip::address_v4::bytes_type bytes;
+				typedef boost::asio::ip::address_v4 addr_type;
+
+				addr_type::bytes_type bytes;
 				std::memcpy(bytes.data(), &sai.Ipv4.sin_addr, bytes.size());
-				return boost::asio::ip::address_v4(bytes);
+				const addr_type result(bytes);
+
+				if (result != addr_type::any())
+				{
+					return result;
+				}
 			}
 			else if (sai.si_family == AF_INET6)
 			{
-				boost::asio::ip::address_v6::bytes_type bytes;
+				typedef boost::asio::ip::address_v6 addr_type;
+
+				addr_type::bytes_type bytes;
 				std::memcpy(bytes.data(), &sai.Ipv6.sin6_addr, bytes.size());
-				return boost::asio::ip::address_v6(bytes);
+				const addr_type result(bytes);
+
+				if (result != addr_type::any())
+				{
+					return result;
+				}
 			}
-			else
-			{
-				assert(false);
-				throw std::invalid_argument("sai");
-			}
+
+			return boost::none;
 		}
 
 		MIB_IPFORWARD_ROW2 make_ip_forward_row(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric)
@@ -539,7 +550,7 @@ namespace asiotap
 			throw boost::system::system_error(result, boost::system::system_category());
 		}
 
-		const auto gw = boost::make_optional<boost::asio::ip::address>(from_sockaddr_inet(best_route.NextHop));
+		const auto gw = from_sockaddr_inet(best_route.NextHop);
 
 		return windows_route_manager::route_type { best_route.InterfaceLuid, to_ip_route(to_network_address(host), gw), 0 };
 	}
