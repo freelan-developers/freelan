@@ -168,6 +168,7 @@ po::options_description get_tap_adapter_options()
 	("tap_adapter.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable the tap adapter.")
 	("tap_adapter.name", po::value<std::string>(), "The name of the tap adapter to use or create.")
 	("tap_adapter.mtu", po::value<fl::mtu_type>()->default_value(fl::auto_mtu_type()), "The MTU of the tap adapter.")
+	("tap_adapter.metric", po::value<fl::metric_type>()->default_value(fl::auto_metric_type()), "The metric of the tap adapter.")
 	("tap_adapter.ipv4_address_prefix_length", po::value<asiotap::ipv4_network_address>()->default_value(default_ipv4_network_address), "The tap adapter IPv4 address and prefix length.")
 	("tap_adapter.ipv6_address_prefix_length", po::value<asiotap::ipv6_network_address>()->default_value(default_ipv6_network_address), "The tap adapter IPv6 address and prefix length.")
 	("tap_adapter.remote_ipv4_address", po::value<asiotap::ipv4_network_address>(), "The tap adapter IPv4 remote address.")
@@ -381,6 +382,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 
 	configuration.tap_adapter.mtu = vm["tap_adapter.mtu"].as<fl::mtu_type>();
+	configuration.tap_adapter.metric = vm["tap_adapter.metric"].as<fl::metric_type>();
 	configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<asiotap::ipv4_network_address>();
 	configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<asiotap::ipv6_network_address>();
 
