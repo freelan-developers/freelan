@@ -499,6 +499,25 @@ namespace asiotap
 #endif
 	}
 
+	NET_LUID get_best_interface(const boost::asio::ip::address& host)
+	{
+		SOCKADDR_INET dest_addr {};
+		set_sockaddr_inet(dest_addr, host);
+
+		MIB_IPFORWARD_ROW2 best_route{};
+		::InitializeIpForwardEntry(&best_route);
+		SOCKADDR_INET best_source_address {};
+
+		const DWORD result = ::GetBestRoute2(NULL, 0, NULL, &dest_addr, 0, &best_route, &best_source_address);
+
+		if (result != NO_ERROR)
+		{
+			throw boost::system::system_error(result, boost::system::system_category());
+		}
+
+		return best_route.InterfaceLuid;
+	}
+
 	void register_route(const NET_LUID& interface_luid, const ip_network_address& route, const boost::optional<boost::asio::ip::address>& gateway, unsigned int metric)
 	{
 		const auto row = make_ip_forward_row(interface_luid, route, gateway, metric);
