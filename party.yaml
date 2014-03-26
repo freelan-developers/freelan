@@ -39,7 +39,7 @@ attendees:
         filters: darwin
         commands:
           - './bootstrap.sh'
-          - './b2 --prefix={{prefix}} --layout=system --without-serialization cxxflags=-std=c++11 variant=release link=static threading=multi runtime-link=shared address-model=64 install'
+          - './b2 --prefix={{prefix}} --layout=system --without-serialization toolset=clang cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" variant=release link=static threading=multi runtime-link=shared address-model=64 install'
       msvc-x86:
         tags: x86
         filters: msvc-x86
