@@ -36,6 +36,7 @@ class MacEnvironment(PosixEnvironment):
             self.Append(CXXFLAGS='-arch')
             self.Append(CXXFLAGS='x86_64')
             self.Append(CXXFLAGS='-Wno-deprecated-declarations')
+            self.Append(CXXFLAGS='-stdlib=libc++')
 
         if not 'LINKFLAGS' in self.environ:
             for flag in ['-m64', '-m32']:
@@ -44,6 +45,7 @@ class MacEnvironment(PosixEnvironment):
 
             self.Append(LINKFLAGS='-arch')
             self.Append(LINKFLAGS='x86_64')
+            self.Append(LINKFLAGS='-stdlib=libc++')
 
     def FreelanSharedLibrary(self, target_dir, name, major, minor, source_files, **env):
         """Build a shared library."""
