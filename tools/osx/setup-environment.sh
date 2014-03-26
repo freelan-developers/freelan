@@ -5,6 +5,9 @@
 # This file is versioned so you probably should copy it first before modifying
 # it if you intend to.
 
+export CC=clang
+export CXX=clang++
+
 # Get the root directory
 export FREELAN_ALL_ROOT=$(cd $(dirname $0)/../..; pwd -P)
 
