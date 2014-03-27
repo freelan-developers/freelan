@@ -337,7 +337,8 @@ namespace asiotap
 
 #else /* *BSD and Mac OS X */
 
-		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/tap" : "/dev/tun";
+		const std::string dev_type = (layer() == tap_adapter_layer::ethernet) ? "tap" : "tun";
+		std::string interface_name = _name;
 
 		descriptor_handler device;
 
@@ -347,25 +348,23 @@ namespace asiotap
 		}
 		else
 		{
-			device = open_device(dev_name, ec);
-
-			if (!device.valid() && (errno == ENOENT))
+			for (unsigned int i = 0 ; !device.valid(); ++i)
 			{
-				for (unsigned int i = 0 ; !device.valid(); ++i)
-				{
-					device = open_device(dev_name + boost::lexical_cast<std::string>(i), ec);
+				interface_name = dev_type + boost::lexical_cast<std::string>(i);
+				device = open_device("/dev/" + interface_name, ec);
 
-					if (!device.valid() && (errno == ENOENT))
-					{
-						// We reached the end of the available tap adapters.
-						break;
-					}
+				if (!device.valid() && (errno == ENOENT))
+				{
+					// We reached the end of the available tap adapters.
+					break;
 				}
 			}
 		}
 
 		if (!device.valid())
 		{
+			ec = make_error_code(asiotap_error::no_such_tap_adapter);
+
 			return;
 		}
 
@@ -381,14 +380,14 @@ namespace asiotap
 		char namebuf[256];
 		memset(namebuf, 0x00, sizeof(namebuf));
 
-		if (::devname_r(st.st_dev, S_IFCHR, namebuf, sizeof(namebuf) - 1) == nullptr)
+		if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != NULL)
 		{
-			ec = boost::system::error_code(errno, boost::system::system_category());
-
-			return;
+			set_name(namebuf);
 		}
-
-		set_name(namebuf);
+		else
+		{
+			set_name(interface_name);
+		}
 
 		if (if_nametoindex(name().c_str()) == 0)
 		{
