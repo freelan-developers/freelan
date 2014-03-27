@@ -371,9 +371,24 @@ namespace asiotap
 
 		struct stat st {};
 
-		::fstat(device.native_handle(), &st);
+		if (::fstat(device.native_handle(), &st) != 0)
+		{
+			ec = boost::system::error_code(errno, boost::system::system_category());
 
-		set_name(::devname(st.st_rdev, S_IFCHR));
+			return;
+		}
+
+		char namebuf[256];
+		memset(namebuf, 0x00, sizeof(namebuf));
+
+		if (::devname_r(st.st_dev, S_IFCHR, namebuf, sizeof(namebuf) - 1) == nullptr)
+		{
+			ec = boost::system::error_code(errno, boost::system::system_category());
+
+			return;
+		}
+
+		set_name(namebuf);
 
 		if (if_nametoindex(name().c_str()) == 0)
 		{
