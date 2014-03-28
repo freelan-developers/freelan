@@ -1,0 +1,2 @@
+V	121010201037Z		01	unknown	/C=FR/ST=Alsace/L=Strasbourg/O=FreeLAN/OU=FreeLAN/CN=FreeLAN Sample Intermediate Certificate Authority
+V	121010201246Z		02	unknown	/C=FR/ST=Alsace/L=Strasbourg/O=FreeLAN/OU=FreeLAN/CN=FreeLAN Sample Final Certificate

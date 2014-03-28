@@ -1,0 +1,4 @@
+store
+*.lib
+*.exp
+*.old
