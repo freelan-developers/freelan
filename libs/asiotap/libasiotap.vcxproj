@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\arp_builder.cpp" />
+    <ClCompile Include="src\arp_filter.cpp" />
+    <ClCompile Include="src\arp_frame.cpp" />
+    <ClCompile Include="src\arp_helper.cpp" />
+    <ClCompile Include="src\arp_proxy.cpp" />
+    <ClCompile Include="src\asiotap.cpp" />
+    <ClCompile Include="src\base_tap_adapter.cpp" />
+    <ClCompile Include="src\bootp_builder.cpp" />
+    <ClCompile Include="src\bootp_filter.cpp" />
+    <ClCompile Include="src\bootp_frame.cpp" />
+    <ClCompile Include="src\bootp_helper.cpp" />
+    <ClCompile Include="src\builder.cpp" />
+    <ClCompile Include="src\checksum.cpp" />
+    <ClCompile Include="src\checksum_helper.cpp" />
+    <ClCompile Include="src\complex_filter.cpp" />
+    <ClCompile Include="src\dhcp_builder.cpp" />
+    <ClCompile Include="src\dhcp_filter.cpp" />
+    <ClCompile Include="src\dhcp_frame.cpp" />
+    <ClCompile Include="src\dhcp_helper.cpp" />
+    <ClCompile Include="src\dhcp_option.cpp" />
+    <ClCompile Include="src\dhcp_option_helper.cpp" />
+    <ClCompile Include="src\dhcp_option_helper_iterator.cpp" />
+    <ClCompile Include="src\dhcp_proxy.cpp" />
+    <ClCompile Include="src\endpoint.cpp" />
+    <ClCompile Include="src\error.cpp" />
+    <ClCompile Include="src\ethernet_address.cpp" />
+    <ClCompile Include="src\ethernet_builder.cpp" />
+    <ClCompile Include="src\ethernet_filter.cpp" />
+    <ClCompile Include="src\ethernet_frame.cpp" />
+    <ClCompile Include="src\ethernet_helper.cpp" />
+    <ClCompile Include="src\filter.cpp" />
+    <ClCompile Include="src\frame.cpp" />
+    <ClCompile Include="src\helper.cpp" />
+    <ClCompile Include="src\hostname_endpoint.cpp" />
+    <ClCompile Include="src\icmp_builder.cpp" />
+    <ClCompile Include="src\icmp_filter.cpp" />
+    <ClCompile Include="src\icmp_frame.cpp" />
+    <ClCompile Include="src\icmp_helper.cpp" />
+    <ClCompile Include="src\ipv4_builder.cpp" />
+    <ClCompile Include="src\ipv4_filter.cpp" />
+    <ClCompile Include="src\ipv4_frame.cpp" />
+    <ClCompile Include="src\ipv4_helper.cpp" />
+    <ClCompile Include="src\ipv6_filter.cpp" />
+    <ClCompile Include="src\ipv6_frame.cpp" />
+    <ClCompile Include="src\ipv6_helper.cpp" />
+    <ClCompile Include="src\ip_endpoint.cpp" />
+    <ClCompile Include="src\ip_network_address.cpp" />
+    <ClCompile Include="src\ip_route.cpp" />
+    <ClCompile Include="src\proxy.cpp" />
+    <ClCompile Include="src\stream_operations.cpp" />
+    <ClCompile Include="src\udp_builder.cpp" />
+    <ClCompile Include="src\udp_filter.cpp" />
+    <ClCompile Include="src\udp_frame.cpp" />
+    <ClCompile Include="src\udp_helper.cpp" />
+    <ClCompile Include="src\windows\windows_route_manager.cpp" />
+    <ClCompile Include="src\windows\windows_system.cpp" />
+    <ClCompile Include="src\windows\windows_tap_adapter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\asiotap\asiotap.hpp" />
+    <ClInclude Include="include\asiotap\base_route_manager.hpp" />
+    <ClInclude Include="include\asiotap\base_tap_adapter.hpp" />
+    <ClInclude Include="include\asiotap\error.hpp" />
+    <ClInclude Include="include\asiotap\os.hpp" />
+    <ClInclude Include="include\asiotap\osi\arp_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\arp_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\arp_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\arp_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\arp_proxy.hpp" />
+    <ClInclude Include="include\asiotap\osi\bootp_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\bootp_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\bootp_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\bootp_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\checksum.hpp" />
+    <ClInclude Include="include\asiotap\osi\checksum_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\complex_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_option.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_option_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_option_helper_iterator.hpp" />
+    <ClInclude Include="include\asiotap\osi\dhcp_proxy.hpp" />
+    <ClInclude Include="include\asiotap\osi\ethernet_address.hpp" />
+    <ClInclude Include="include\asiotap\osi\ethernet_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\ethernet_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\ethernet_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\ethernet_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmp_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmp_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmp_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmp_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv4_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv4_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv4_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv4_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv6_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv6_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv6_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\proxy.hpp" />
+    <ClInclude Include="include\asiotap\osi\udp_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\udp_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\udp_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\udp_helper.hpp" />
+    <ClInclude Include="include\asiotap\route_manager.hpp" />
+    <ClInclude Include="include\asiotap\system.hpp" />
+    <ClInclude Include="include\asiotap\tap_adapter.hpp" />
+    <ClInclude Include="include\asiotap\tap_adapter_configuration.hpp" />
+    <ClInclude Include="include\asiotap\tap_adapter_impl.hpp" />
+    <ClInclude Include="include\asiotap\tap_adapter_layer.hpp" />
+    <ClInclude Include="include\asiotap\types\endpoint.hpp" />
+    <ClInclude Include="include\asiotap\types\hostname_endpoint.hpp" />
+    <ClInclude Include="include\asiotap\types\ip_endpoint.hpp" />
+    <ClInclude Include="include\asiotap\types\ip_network_address.hpp" />
+    <ClInclude Include="include\asiotap\types\ip_route.hpp" />
+    <ClInclude Include="include\asiotap\types\stream_operations.hpp" />
+    <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp" />
+    <ClInclude Include="include\asiotap\windows\windows_system.hpp" />
+    <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp" />
+    <ClInclude Include="src\windows\registry.hpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9173624C-FFF7-4431-BB4A-FC30B13AD742}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libasiotap</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
+      <Message>Installing header files</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
+      <Message>Installing header files</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
+      <Message>Installing header files</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
+      <Message>Installing header files</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
