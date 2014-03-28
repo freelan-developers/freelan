@@ -1,0 +1,685 @@
+The FreeLAN Project                                         J. Kauffmann
+Draft:                                                   www.freelan.org
+Category: Informational                                    03 March 2011
+
+                    The FreeLAN Secure Channel Protocol
+
+Status of this Memo
+
+   This memo provides information for the Internet community.  It does
+   not specify an Internet standard of any kind.  Distribution of this
+   memo is unlimited.
+
+Abstract
+
+   The FreeLAN peer-to-peer virtual private network specification
+   requires a fast and secure communication channel.
+
+   The protocol is specialized into peer-to-peer applications and
+   supports some well-known NAT traversal techniques.
+
+1. Introduction
+
+   The FreeLAN peer-to-peer virtual private network specification
+   requires a fast and secure communication channel.
+
+   The FSCP (FreeLAN Secure Channel Protocol) is designed to be secure
+   and efficient, and tries to minimize the overhead. It is based over
+   UDP [RFC768].
+
+   The protocol supports packet loss. Reordered or duplicated packets
+   are treated as lost packets.
+
+1.1. Terminology
+
+   The keywords MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD,
+   SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL, when they appear in this
+   document, are to be interpreted as described in [RFC2119].
+
+2. Format
+
+   FSCP uses different message formats. The roles of these messages are
+   described in a further section.
+
+   Multi-bytes integer values MUST be written in network byte order.
+
+2.1. Generic message format
+
+   All messages start with a 4 bytes header whose layout is:
+
+                  0      7 8     15 16    23 24    31
+                 +--------+--------+-----------------+
+                 |version |  type  |      length     |
+                 +--------+--------+-----------------+
+
+   The version MUST be set to the currently used version of the FreeLAN
+   Secure Channel Protocol. The current version described in this
+   document is 3.
+
+   The type field indicates the type of the message. Its possible values
+   are listed in the next sections.
+
+   The length field indicates the length of the message body.
+
+2.2. HELLO message format
+
+   A HELLO message is 4 bytes long and has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |           unique_number           |
+                 +-----------------------------------+
+
+2.2.1. HELLO message type
+
+   The type value of a HELLO message can be either:
+
+     0x00: For a request HELLO message
+     0x01: For a response HELLO message
+
+2.2.2. HELLO message fields
+
+   The unique_number field is a 4 bytes value chosen by the sender of a
+   HELLO request message.
+
+2.3. PRESENTATION message format
+
+   A PRESENTATION message has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |  sig_cert_len   |     sig_cert    |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+2.3.1. PRESENTATION message type
+
+   A PRESENTATION message has a type value of 0x02.
+
+2.3.2. PRESENTATION message fields
+
+   The sig_cert_len field indicates the size of the sig_cert field.
+
+   The sig_cert field is a DER-encoded X509 certificate used for message
+   signature by the sender. This certificate SHOULD have the
+   digitalSignature key usage set, as specified in [RFC2459]. In the
+   next sections, its associated RSA public and private keys for
+   signature will respectively be referred as PKV and PKS.
+
+   A host MIGHT ignore any PRESENTATION message whose sig_cert field
+   does not satisfy the key usage requirements.
+
+   The minimum RSA key size is 1024 bits. The RECOMMENDED RSA key size
+   is 2048 bits or higher, with an exponent of 2^16 + 1. A strict
+   implementation MAY reject PRESENTATION messages with a low RSA key
+   size.
+
+2.4. SESSION_REQUEST message format
+
+   A SESSION_REQUEST message has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          session_number           |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |      cs_len     |        cs       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+   This header is signed using the sender host signature private key
+   (PKS).
+
+   That is, a SESSION_REQUEST message sent over the wire has the
+   following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          session_number           |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |      cs_len     |        cs       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |    hr_sig_len   |      hr_sig     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+2.4.1. SESSION_REQUEST message type
+
+   A SESSION_REQUEST message has a type value of 0x03.
+
+2.4.2. SESSION_REQUEST message fields
+
+   The session_number indicates the requested session number. If no
+   previous session is known, session_number MUST be 0.
+
+   The host_identifier field is 32 bytes long and is a random number
+   generated on startup (or at least before a session attempt begins).
+
+   It MUST remain constant during the lifetime of a FSCP client.
+
+   The host_identifier can be different for every host the client wants
+   to establish a session with, but MUST remain constant within that
+   relationship.
+
+   The cs_len field indicates the length of the cs field.
+
+   The cs field is a list of cipher suites supported by the client, by
+   order of preference.
+
+   A list of identifiers for the cipher suites is available in a
+   further section of this document.
+
+   The hr_sig_len field indicates the length of the hr_sig field.
+
+   The hr_sig field is the header signature, generated using the
+   private signature key (PKS) of the sender host.
+
+   A host who receives a SESSION_REQUEST message MUST first check if the
+   hr_sig signature matches the sending host public verification key
+   (PKV).
+
+   If the signature does not match, the message MUST be ignored.
+
+2.5. SESSION message format
+
+   A SESSION message has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          session_number           |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |   cs   |          <zero>          |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |   pub_key_len   |     pub_key     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+   This header is signed using the sender host signature private key
+   (PKS).
+
+   That is, a SESSION message sent over the wire has the following
+   format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          session_number           |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |          host_identifier          |
+                 +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
+                 |   cs   |          <zero>          |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |   pub_key_len   |     pub_key     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |    hr_sig_len   |      hr_sig     |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+2.5.1. SESSION message type
+
+   A SESSION message has a type value of 0x04.
+
+2.5.2. SESSION message fields
+
+   The session_number indicates the identifier of the session. Every
+   session MUST have its own and unique session_number value.
+
+   The host_identifier field is 32 bytes long and is a random number
+   generated on startup (or at least before a session attempt begins).
+
+   It MUST remain constant during the lifetime of a FSCP client.
+
+   The host_identifier can be different for every host the client wants
+   to establish a session with, but MUST remain constant within that
+   relationship.
+
+   The cs field is the code of the chosen cipher suite. It MUST be the
+   identifier of the first supported cipher suite specified in the
+   associated SESSION_REQUEST.
+
+   A list of identifiers for the cipher suites is available in a
+   further section of this document.
+
+   A value of 0 in cs indicates that no cipher suite was supported. In
+   this case, the pub_key field SHOULD be empty.
+
+   The <zero> field is reserved for future uses and MUST be zero in
+   the current implementation.
+
+   The pub_key_len field indicates the size of the pub_key field.
+
+   The pub_key field is a pub_key_len bytes long Elliptic Curve
+   Diffie-Hellman Ephemeral public key generated by the host. It MUST be
+   fed to the local ECDHE instance to generate the shared secret.
+
+   The hr_sig_len field indicates the length of the hr_sig field.
+
+   The hr_sig field is the header signature, generated using the
+   private signature key (PKS) of the sender host.
+
+   A host who receives a SESSION message MUST first check if the
+   hr_sig signature matches the sending host public verification key (PKV).
+   If the signature does not match, the message MUST be ignored.
+
+   If an host receives a SESSION message whose cs is null, it SHOULD
+   report to the upper layer that no session could be established with
+   the requested parameters.
+
+2.6. DATA message format
+
+   A DATA message format has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |          sequence_number          |
+                 +-----------------------------------+
+                 |              tag...               |
+                 +-----------------------------------+
+                 |                ...                |
+                 +-----------------------------------+
+                 |                ...                |
+                 +-----------------------------------+
+                 |                ...                |
+                 +~----------------+~~~~~~~~~~~~~~~~~+
+                 |  ciphertext_len |    ciphertext   |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+
+2.6.1. DATA message type
+
+   Valid type values for DATA messages are 0x70 to 0x7F.
+
+   Every value represent a different channel. Those channels share the
+   same session and thus, the same sequence numbers.
+
+2.6.2. DATA message fields
+
+   The sequence_number field indicates the sequence number of the
+   current message. Two different DATA messages belonging to the same
+   session MUST have two different sequence numbers. The rules governing
+   the sequence number are explained in a further section.
+
+   The tag field is 16 bytes long and contains the GCM tag associated to
+   ciphertext.
+
+   The ciphertext_len field is the length of the ciphertext field.
+
+   The ciphertext field represents the data of the message, ciphered
+   using the target host session cipher key.
+
+   The nonce used for the generation of the ciphertext is a
+   8 bytes derived from the session shared secret concatenated to the 4
+   bytes sequence number in network byte order.
+
+   The nonce used for the generation of the ciphertext is a
+   8 bytes derived from the session shared secret concatenated to the 4
+   bytes sequence number in network byte order.
+
+   The generation of the nonce is detailled later in 3.3.
+
+   If the decipherment of the ciphertext fails, the message MUST be
+   ignored.
+
+   The 4 less significant bits of the message type value indicate the
+   channel number. The channel number SHOULD be made available to the
+   upper layers.
+
+2.7. CONTACT-REQUEST message format
+
+   A CONTACT-REQUEST message is similar to a DATA message.
+
+2.7.1. CONTACT-REQUEST message type
+
+   A CONTACT-REQUEST message has a type value of 0xFD.
+
+2.7.2. CONTACT-REQUEST message fields
+
+   A CONTACT-REQUEST is similar to a DATA message.
+
+   CONTACT-REQUEST and DATA messages share the same sequence counter.
+
+   A host who receives a CONTACT-REQUEST message MUST also first check
+   if the hmac matches the message. If the HMAC doesn't match, the
+   message MUST be ignored.
+
+   The data contained in a CONTACT-REQUEST message has the following
+   format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |               hash 0              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 1              |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |                ...                |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash n              |
+                 +-----------------------------------+
+
+   That is, a list of 32 bytes hashes indicating the certificate(s) for
+   which contact addresses are requested.
+
+   hash is 32 bytes long and is the SHA-256 digest of the DER
+   representation of the requested certificate.
+
+   Duplicates entries in the hash list MUST be treated like a single
+   entry.
+
+   The order of entries does not matter and CAN thus be ignored by the
+   implementation.
+
+2.8. CONTACT message format
+
+   A CONTACT message is similar to a DATA message.
+
+2.8.1. CONTACT message type
+
+   A CONTACT message has a type value of 0xFE.
+
+2.8.2. CONTACT message fields
+
+   A CONTACT is similar to a DATA message.
+
+   CONTACT and DATA messages share the same sequence counter.
+
+   A host who receives a CONTACT message MUST also first check if the
+   hmac matches the message. If the HMAC doesn't match, the message MUST be
+   ignored.
+
+   The data contained in a CONTACT message has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |               hash 0              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash 1              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |                ...                |
+                 +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 |               hash n              |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                 | ep_type|         endpoint         |
+                 +--------+~~~~~~~~~~~~~~~~~~~~~~~~~~+
+
+   That is a list of (hash, ep_type, endpoint) tuples indicating the
+   contact information for the specified hosts.
+
+   hash is 32 bytes long and is the SHA-256 digest of the DER
+   representation of the requested certificate.
+
+   ep_type is a 1 byte field that can take the following values:
+
+   * 0x04: IPv4 endpoint
+
+   In which case, endpoint has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |            IPv4 address           |
+                 +-----------------+-----------------+
+                 |       port      |
+                 +-----------------+
+
+   * 0x06: IPv6 endpoint
+
+   In which case, endpoint has the following format:
+
+                  0      7 8     15 16    23 24    31
+                 +-----------------------------------+
+                 |            IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address...        :
+                 +-----------------+-----------------+
+                 :         ...IPv6 address           |
+                 +-----------------+-----------------+
+                 |       port      |
+                 +-----------------+
+
+2.9. KEEP-ALIVE message format
+
+   A KEEP-ALIVE message is similar to a DATA message.
+
+2.9.1. KEEP-ALIVE message type
+
+   A KEEP-ALIVE message has a type value of 0xFF.
+
+2.9.2. KEEP-ALIVE message fields
+
+   A KEEP-ALIVE is similar to a DATA message.
+
+   KEEP-ALIVE and DATA messages share the same sequence counter.
+
+   A host who receives a KEEP-ALIVE message MUST also first check if
+   the hmac matches the message. If the HMAC doesn't match, the
+   message MUST be ignored.
+
+   The data contained in a KEEP-ALIVE message MUST be random to
+   prevent key analysis attacks.
+
+   The deciphered data SHOULD be ignored and not made accessible to the
+   upper layers.
+
+3. Algorithms
+
+3.1. Supported cipher suites
+
+   The available cipher suites are:
+
+   - 0x01: ECDHE-RSA-AES128-GCM-SHA256
+   - 0x02: ECDHE-RSA-AES256-GCM-SHA384
+
+   The curve used for ECDHE is SECT571K1.
+
+3.2. Signature algorithms
+
+   The used signature algorithm is RSA with a PKCS#1 v2.1 PSS padding
+   (RSASSA_PSS).
+
+   The underlying hash algorithm is SHA256. The salt len for PSS is the
+   size of the hash digest.
+
+   The minimum key size is 1024. The RECOMMENDED key size is 2048.
+
+3.3. Key derivation
+
+   The key derivation function is the same as the one for TLS 1.2, and
+   is defined in RFC 5246.
+
+   Is it defined as:
+
+      PRF(secret, label, seed)
+
+   The used hash algorithm is SHA256.
+
+   When deriving session keys, the label is "session key".
+
+   When deriving nonce 8-bytes prefixes, the label is "nonce prefix".
+
+   When deriving the local session key or the local nonce prefix, the
+   seed is the local host identifier.
+
+   When deriving the remote session key or the remote nonce prefix, the
+   seed is the remote host identifier.
+
+4. Protocol
+
+4.1. Saying "Hello"
+
+   A host CAN test the protocol support of another host using a request
+   HELLO message.
+
+   A host who receives a request HELLO message MAY respond with a
+   matching HELLO response message. The response message MUST have the
+   same unique_number value.
+
+   If a HELLO response is received that doesn't match with a recently
+   send HELLO request, it MUST be ignored.
+
+   The maximum amount of time to wait for a HELLO response is up to the
+   implementor. A recommended value is 4 seconds.
+
+   That is, the whole HELLO message functionality is OPTIONAL.
+
+4.2. Presentation
+
+   If two hosts want to communicate but don't "know" each other, they
+   CAN send a PRESENTATION message to the remote host to inform them
+   about their idendity.
+
+   A host who receives a PRESENTATION message is free to ignore it if
+   the presented certificates are not acceptable. Whether a certificate
+   is acceptable or not is up to the host.
+
+   A host MAY ignore any PRESENTATION message whose certificate does
+   not match a previously sent certificate.
+
+   That is, the whole PRESENTATION message functionality is OPTIONAL.
+
+4.3. Sessions
+
+   When a host wants to establish a session MUST send a SESSION_REQUEST
+   message to the target host indicating the desired session number.
+
+   When a host receives a SESSION_REQUEST or a SESSION message from an
+   host, the following can happen:
+
+   - If the message is the first one received from the host (that is,
+   if no host_identifier is known for that host), the specified
+   host_identifier is stored for later comparisons.
+   - If the message host_identifier does not match the one known for
+   the host, ignore it.
+   - If the message host_identifier matches the one known for the host,
+   continue to process it.
+
+   When a session is lost (because of a timeout, or whenever the
+   implementation decide a session is to be considered dead), the
+   host_identifier known for the host SHOULD be emptied. This allows
+   for session reestablishment with a given host that went down for
+   some time (and thus changed his host_identifier).
+
+   When receiving a SESSION_REQUEST message:
+
+   - If no previous session exists with the requesting host, and the
+   target host and the parameters of the request are acceptable, the
+   target host should generate a new ECDHE public key and reply with a
+   SESSION message matching those parameters.
+
+   - If a previous session exists and the requested session number is
+   higher than the current one, the target host should also generate a
+   new ECDHE public key and reply with a SESSION message matching those
+   parameters.
+
+   - If the requested session number is equal to or lower than the
+   current one, the target host should reply with the same SESSION
+   message that was used to establish the current session.
+
+   When receiving a SESSION message:
+
+   - If the session number is higher than the current one or if no
+   session exists, the receiving host should renew its session
+   parameters and reply with an updated SESSION message that contains
+   its new ECDHE public key. The session is then considered established
+   on this receiving side.
+
+   - If the session number or the cipher suite match the current ones,
+   the host MUST ignore it as it might be the result of a frame
+   duplication or an attempt of replay.
+
+   - If the session number matches the current one, but the public
+   key or the cipher suite do not match the ones currently used by the
+   active session, it should send a SESSION_REQUEST with an incremented
+   session number to start a new session.
+
+   An existing session MUST remain valid until a new one completes to
+   prevent DoS-replay attacks.
+
+   If a host does not receive a response SESSION message after 3
+   seconds, it MAY send another SESSION_REQUEST.
+
+   If a host receives more than one request SESSION_REQUEST within 3
+   seconds, it MAY only accept the first one and discard the others.
+
+   If a session becomes too old (more on that in the next sub-section),
+   an host SHOULD send a SESSION_REQUEST message with an incremented
+   session number.
+
+   Whenever a session is established, its associated sequence number
+   MUST be reset to zero.
+
+4.3.1 Old sessions
+
+   Every session has a limited lifespan. One host may send a maximum of
+   2^16 data messages during a session.
+
+   A session is considered old when a host considers too much data
+   messages were sent during it. A good value for this "too much" is
+   2^16 - 2^10 messages.
+
+   Using a value too close from 2^16 may cause an interruption of the
+   communication channel while new keys are being exchanged.
+
+   Using a value too small would cause too many key exchanges to occur.
+
+   Note that in any case, the session lifespan is way smaller than the
+   AES cipherment and sealing keys lifespan.
+
+   A well designed implementation should however limit session renewals
+   to a minimum since key exchange is a critical procedure.
+
+4.3.2. Session timeout
+
+   If an host does not receive any DATA or KEEP-ALIVE message from
+   another host during 30 seconds, it SHOULD consider the session lost.
+
+   After a session is lost, the hosts MUST renegotiate session keys
+   before sending any DATA message.
+
+4.4. DATA messages
+
+   Once a host has the session parameters for a target host, it can
+   start sending DATA messages to him.
+
+   The sequence number of the first DATA message of a given session MUST
+   be 1.
+
+   The next sequence numbers must be greater than any previously used
+   sequence number within the same session.
+
+   If a host receives a DATA message with a sequence number lower than
+   or equal to a previously received sequence number, it MUST ignore it.
+
+4.5. CONTACT-REQUEST and CONTACT messages
+
+   A host MAY send a CONTACT-REQUEST message for one or several
+   certificates, to one or several hosts. A session MUST be established
+   between the requesting host and the requested host.
+
+   A host SHOULD NOT send a CONTACT-REQUEST message to a host for a
+   certificate that is part of an active session (since a session is
+   active, contact information for the certificate is already know and
+   thus, sending a CONTACT-REQUEST for it is useless).
+
+   A host receiving a CONTACT-REQUEST message CAN reply with one or
+   several CONTACT messages.
+
+   The receiving host SHOULD only reply to requests for which the
+   requested certificate is known and used in an active session.
+
+   If an host receives a request for its own certificate, it MUST
+   discard it, but CAN still process other requests contained in the
+   same CONTACT-REQUEST message.
+
+4.6. KEEP-ALIVE messages
+
+   If a host does not send any DATA message to another host within 10
+   seconds, it SHOULD send a KEEP-ALIVE message to maintain the session
+   alive.
+
+5. Thanks
+
+   Thanks to N.Caritey for his precious help regarding the security
+   concerns and for his reviews of the present RFC.
