@@ -1,0 +1,18 @@
+.sconsign.dblite
+variables.cache
+*.pyc
+*.o
+*.os
+*.obj
+*.sobj
+bin/*
+build
+*.cfg
+
+# Microsoft Visual Studio (tm) files
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.user
+/build/
+/install/
