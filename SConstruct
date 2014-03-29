@@ -5,6 +5,7 @@ Works on all UNIX-like operating systems.
 """
 
 import os
+import sys
 
 from fnmatch import fnmatch
 
@@ -47,6 +48,8 @@ class FreelanEnvironment(Environment):
 
         self.debug = debug
 
+        self.Append(CXXFLAGS=['-Qunused-arguments'])
+        self.Append(CXXFLAGS=['-fcolor-diagnostics'])
         self.Append(CXXFLAGS=['--std=c++11'])
         self.Append(CXXFLAGS=['-Wall'])
         self.Append(CXXFLAGS=['-Wextra'])
@@ -56,6 +59,10 @@ class FreelanEnvironment(Environment):
         self.Append(CXXFLAGS=['-Wno-long-long'])
         self.Append(CXXFLAGS=['-Wno-uninitialized'])
         self.Append(CXXFLAGS=['-Wno-strict-aliasing'])
+
+        if sys.platform.startswith('darwin'):
+            self.Append(CXXFLAGS=['-arch', 'x86_64'])
+            self.Append(CXXFLAGS=['-Wno-deprecated-declarations'])
 
         if self.debug:
             self.Append(CXXFLAGS=['-g'])
