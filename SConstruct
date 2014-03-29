@@ -25,8 +25,21 @@ class FreelanEnvironment(Environment):
 
         self.debug = debug
 
+        self.Append(CXXFLAGS='--std=c++11')
+        self.Append(CXXFLAGS='-Wall')
+        self.Append(CXXFLAGS='-Wextra')
+        self.Append(CXXFLAGS='-Werror')
+        self.Append(CXXFLAGS='-pedantic')
+        self.Append(CXXFLAGS='-Wshadow')
+        self.Append(CXXFLAGS='-Wno-long-long')
+        self.Append(CXXFLAGS='-Wno-uninitialized')
+        self.Append(CXXFLAGS='-Wno-strict-aliasing')
+
         if self.debug:
             self.Append(CXXFLAGS=['-g'])
+            self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
+        else:
+            self.Append(CXXFLAGS='-O3')
 
     def RGlob(self, path, patterns=None):
         """
