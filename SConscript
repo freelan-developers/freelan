@@ -1,41 +1,45 @@
-"""The SConscript file"""
+"""
+A SConscript file.
 
-import os
+Builds everything.
+"""
 
 Import('env')
 
 env = env.Clone()
 
-# Here are the libraries, in order of compilation
-libraries = [
-    'libiconvplus',
-    'libkfather',
-    'libasiotap',
-    'libcryptoplus',
-    'libfscp',
-    'libfreelan',
-    'freelan',
-]
+dirs = {
+    'root': Dir('.'),
+    'include': Dir('include'),
+    'lib': Dir('lib'),
+    'bin': Dir('bin'),
+}
 
-targets_names = [
-    'build',
-    'install',
-    'documentation',
-    'indent',
-    'samples',
-]
+env.Append(CPPPATH=[dirs['include']])
+env.Append(CPPPATH=[Dir('third-party/install/include').srcnode()])
+env.Append(LIBPATH=[dirs['lib']])
+env.Append(LIBPATH=[Dir('third-party/install/lib').srcnode()])
 
-targets = {}
+libraries = []
+includes = []
 
-for library in libraries:
-    targets[library] = SConscript(os.path.join(library, 'SConscript'), variant_dir=env.get_variant_dir(Dir(library)), exports='env')
+for x in Glob('libs/iconvplus'):
+#for x in Glob('libs/*'):
+    sconscript_path = x.File('SConscript')
 
-    # Special alias to build the libraries
-    env.Alias(library, targets[library]['build'])
+    if sconscript_path.exists():
+        library, library_includes = SConscript(sconscript_path, exports='env dirs')
+        libraries.extend(library)
+        includes.extend(library_includes)
 
-    for target_name in targets_names:
-        if target_name in targets[library]:
-            env.Alias(library + '_' + target_name, targets[library][target_name])
-            env.Alias(target_name, targets[library][target_name])
+apps = []
 
-Return('targets')
+for x in []:
+#for x in Glob('apps/*'):
+    sconscript_path = x.File('SConscript')
+
+    if sconscript_path.exists():
+        app = SConscript(sconscript_path, exports='env')
+        apps.append(library)
+
+Return('libraries includes apps')
