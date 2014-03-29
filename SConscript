@@ -4,6 +4,9 @@ A SConscript file.
 Builds everything.
 """
 
+import os
+
+
 Import('env')
 
 env = env.Clone()
@@ -28,7 +31,8 @@ for x in Glob('libs/iconvplus'):
     sconscript_path = x.File('SConscript')
 
     if sconscript_path.exists():
-        library, library_includes = SConscript(sconscript_path, exports='env dirs')
+        name = os.path.basename(str(x))
+        library, library_includes = SConscript(sconscript_path, exports='env dirs name')
         libraries.extend(library)
         includes.extend(library_includes)
 

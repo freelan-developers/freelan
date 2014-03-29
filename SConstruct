@@ -9,6 +9,17 @@ import os
 from fnmatch import fnmatch
 
 
+AddOption(
+    '--prefix',
+    dest='prefix',
+    type='string',
+    nargs=1,
+    action='store',
+    metavar='DIR',
+    help='The installation prefix.',
+)
+
+
 class FreelanEnvironment(Environment):
     """
     A freelan specific environment class.
@@ -23,17 +34,28 @@ class FreelanEnvironment(Environment):
 
         super(FreelanEnvironment, self).__init__(**kwargs)
 
+        for flag in [
+            'CXX',
+            'CXXFLAGS',
+            'AR',
+            'ARFLAGS',
+            'LINK',
+            'LINKFLAGS',
+        ]:
+            if flag in os.environ:
+                self[flag] = os.environ[flag]
+
         self.debug = debug
 
-        self.Append(CXXFLAGS='--std=c++11')
-        self.Append(CXXFLAGS='-Wall')
-        self.Append(CXXFLAGS='-Wextra')
-        self.Append(CXXFLAGS='-Werror')
-        self.Append(CXXFLAGS='-pedantic')
-        self.Append(CXXFLAGS='-Wshadow')
-        self.Append(CXXFLAGS='-Wno-long-long')
-        self.Append(CXXFLAGS='-Wno-uninitialized')
-        self.Append(CXXFLAGS='-Wno-strict-aliasing')
+        self.Append(CXXFLAGS=['--std=c++11'])
+        self.Append(CXXFLAGS=['-Wall'])
+        self.Append(CXXFLAGS=['-Wextra'])
+        self.Append(CXXFLAGS=['-Werror'])
+        self.Append(CXXFLAGS=['-pedantic'])
+        self.Append(CXXFLAGS=['-Wshadow'])
+        self.Append(CXXFLAGS=['-Wno-long-long'])
+        self.Append(CXXFLAGS=['-Wno-uninitialized'])
+        self.Append(CXXFLAGS=['-Wno-strict-aliasing'])
 
         if self.debug:
             self.Append(CXXFLAGS=['-g'])
@@ -77,8 +99,8 @@ class FreelanEnvironment(Environment):
 
 
 envs = {
-    'release': FreelanEnvironment(ENV=os.environ.copy(), debug=False),
-    'debug': FreelanEnvironment(ENV=os.environ.copy(), debug=True),
+    'release': FreelanEnvironment(debug=False),
+    'debug': FreelanEnvironment(debug=True),
 }
 
 for dirname, env in envs.items():
