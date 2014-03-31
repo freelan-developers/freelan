@@ -1,8 +1,13 @@
+import os
+import sys
+
+
 Import('env dirs name')
 
-import os
-
 env = env.Clone()
+
+if sys.platform.startswith('darwin'):
+    env['CXXFLAGS'].append('-DBOOST_ASIO_DISABLE_KQUEUE')
 
 local_include_dir = Dir(os.path.join('include', name))
 env.Prepend(CPPPATH=[local_include_dir])
