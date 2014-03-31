@@ -1,12 +1,17 @@
 import os
+import sys
 
 
 libraries = [
     'kfather',
     'iconvplus',
     'boost_system',
-    'iconv',
 ]
+
+if sys.platform.startswith('darwin'):
+    libraries.extend([
+        'iconv',
+    ])
 
 Import('env dirs name')
 

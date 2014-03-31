@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 libraries = [
@@ -8,6 +9,11 @@ libraries = [
     'boost_system',
     'crypto',
 ]
+
+if sys.platform.startswith('linux'):
+    libraries.extend([
+        'pthread',
+    ])
 
 Import('env dirs name')
 

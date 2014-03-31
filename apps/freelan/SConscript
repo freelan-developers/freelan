@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 Import('env dirs name')
@@ -21,6 +22,11 @@ libraries = [
     'ldap',
     'z',
 ]
+
+if sys.platform.startswith('linux'):
+    libraries.extend([
+        'pthread',
+    ])
 
 env = env.Clone()
 env.Append(LIBS=libraries)

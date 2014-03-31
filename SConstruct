@@ -59,8 +59,13 @@ class FreelanEnvironment(Environment):
 
         self.debug = debug
 
-        self.Append(CXXFLAGS=['-Qunused-arguments'])
-        self.Append(CXXFLAGS=['-fcolor-diagnostics'])
+        if self['CXX'] == 'clang++':
+            self.Append(CXXFLAGS=['-Qunused-arguments'])
+            self.Append(CXXFLAGS=['-fcolor-diagnostics'])
+
+        if self['CXX'] == 'g++':
+            self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
+
         self.Append(CXXFLAGS=['--std=c++11'])
         self.Append(CXXFLAGS=['-Wall'])
         self.Append(CXXFLAGS=['-Wextra'])
