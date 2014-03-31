@@ -27,7 +27,7 @@ AddOption(
     nargs=1,
     action='store',
     choices=('all', 'debug', 'release'),
-    default='release',
+    default='all',
     help='The compilation mode.',
 )
 
