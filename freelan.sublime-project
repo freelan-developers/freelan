@@ -67,11 +67,11 @@
       "variants": [
         {
           "name": "Release",
-          "shell_cmd": "scons install samples -j 5"
+          "shell_cmd": "scons install samples -j 5 --mode=release"
         },
         {
           "name": "Debug",
-          "shell_cmd": "scons install samples -j 5 mode=debug"
+          "shell_cmd": "scons install samples -j 5 --mode=debug"
         }
       ]
     }
