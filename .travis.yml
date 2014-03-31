@@ -1,7 +1,7 @@
 language: cpp
 compiler:
     - clang
-script: ./tools/linux/setup-environment.sh -c scons install samples
+script: scons apps samples
 branches:
     only:
         - master
