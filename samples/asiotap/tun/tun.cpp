@@ -91,7 +91,7 @@ void write_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_co
 	}
 	else
 	{
-		std::cout << "Write: " << cnt << " bytes. Error: " << ec << std::endl;
+		std::cout << "Write: " << cnt << " bytes. Error: " << ec.message() << std::endl;
 	}
 }
 
@@ -137,7 +137,7 @@ void read_done(asiotap::tap_adapter& tap_adapter, const boost::system::error_cod
 	}
 	else
 	{
-		std::cout << "Read: " << cnt << " bytes. Error: " << ec << std::endl;
+		std::cout << "Read: " << cnt << " bytes. Error: " << ec.message() << std::endl;
 	}
 }
 
