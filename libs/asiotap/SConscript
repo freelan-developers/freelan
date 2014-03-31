@@ -7,7 +7,7 @@ env = env.Clone()
 local_include_dir = Dir(os.path.join('include', name))
 env.Prepend(CPPPATH=[local_include_dir])
 
-sources = list(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp')))
+sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
 
 includes = env.RInstall(dirs['root'], local_include_dir, ['*.hpp'])
 library = env.StaticLibrary(target=os.path.join(str(dirs['lib']), name), source=list(sources))

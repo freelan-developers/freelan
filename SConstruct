@@ -13,11 +13,22 @@ from fnmatch import fnmatch
 AddOption(
     '--prefix',
     dest='prefix',
+    default='./install',
     type='string',
     nargs=1,
     action='store',
     metavar='DIR',
     help='The installation prefix.',
+)
+
+AddOption(
+    '--mode',
+    dest='mode',
+    nargs=1,
+    action='store',
+    choices=('all', 'debug', 'release'),
+    default='all',
+    help='The compilation mode.',
 )
 
 
@@ -111,10 +122,22 @@ class FreelanEnvironment(Environment):
         return self.Command(target, source, create_symlink)
 
 
-envs = {
-    'release': FreelanEnvironment(debug=False),
-    'debug': FreelanEnvironment(debug=True),
-}
+mode = GetOption('mode')
+prefix = GetOption('prefix')
 
-for dirname, env in envs.items():
-    libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', dirname))
+if mode in ('all', 'release'):
+    env = FreelanEnvironment(debug=False)
+    libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'release'))
+    install = env.Install(os.path.join(prefix, 'bin'), apps)
+    Alias('install', install)
+    Alias('apps', apps)
+    Alias('samples', samples)
+
+
+if mode in ('all', 'debug'):
+    env = FreelanEnvironment(debug=True)
+    libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'debug'))
+    Alias('apps', apps)
+    Alias('samples', samples)
+
+Default('apps')

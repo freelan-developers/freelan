@@ -25,7 +25,7 @@ libraries = [
 env = env.Clone()
 env.Append(LIBS=libraries)
 
-sources = list(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp')))
+sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
 app = env.Program(target=os.path.join(str(dirs['bin']), name), source=sources)
 
 Return('app')
