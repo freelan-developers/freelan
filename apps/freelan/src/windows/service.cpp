@@ -168,7 +168,7 @@ namespace
 	};
 }
 
-namespace win32
+namespace windows
 {
 	namespace
 	{

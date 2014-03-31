@@ -37,12 +37,12 @@ for x in Glob('libs/*'):
 
 apps = []
 
-for x in []:
-#for x in Glob('apps/*'):
+for x in Glob('apps/*'):
     sconscript_path = x.File('SConscript')
 
     if sconscript_path.exists():
-        apps.extend(SConscript(sconscript_path, exports='env'))
+        name = os.path.basename(str(x))
+        apps.extend(SConscript(sconscript_path, exports='env dirs name'))
 
 samples = []
 

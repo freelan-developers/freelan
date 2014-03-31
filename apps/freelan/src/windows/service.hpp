@@ -47,7 +47,7 @@
 #ifndef WIN32_SERVICE_HPP
 #define WIN32_SERVICE_HPP
 
-namespace win32
+namespace windows
 {
 	/**
 	 * \brief Try to run the current process as a service.

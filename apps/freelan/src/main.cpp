@@ -62,7 +62,7 @@
 #include <freelan/freelan.hpp>
 
 #ifdef WINDOWS
-#include "win32/service.hpp"
+#include "windows/service.hpp"
 #else
 #include "posix/daemon.hpp"
 #include "posix/locked_pid_file.hpp"
@@ -215,7 +215,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 		}
 		else
 		{
-			if (win32::install_service())
+			if (windows::install_service())
 			{
 				std::cout << "Service installed." << std::endl;
 			}
@@ -229,7 +229,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 	else if (vm.count("uninstall"))
 	{
-		if (win32::uninstall_service())
+		if (windows::uninstall_service())
 		{
 			std::cout << "Service uninstalled." << std::endl;
 		}
@@ -242,7 +242,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 	else if (vm.count("reinstall"))
 	{
-		if (win32::uninstall_service())
+		if (windows::uninstall_service())
 		{
 			std::cout << "Service uninstalled." << std::endl;
 		}
@@ -251,7 +251,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 			std::cerr << "The service has already been deleted." << std::endl;
 		}
 
-		if (win32::install_service())
+		if (windows::install_service())
 		{
 			std::cout << "Service installed." << std::endl;
 		}
@@ -490,7 +490,7 @@ void run(const cli_configuration& configuration, int& exit_signal)
 int main(int argc, char** argv)
 {
 #ifdef WINDOWS
-	if (win32::run_service())
+	if (windows::run_service())
 	{
 		return EXIT_SUCCESS;
 	}
