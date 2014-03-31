@@ -2,9 +2,8 @@ import os
 
 
 libraries = [
-    'iconvplus',
-    'boost_system',
-    'iconv',
+    'cryptoplus',
+    'crypto',
 ]
 
 Import('env dirs name')

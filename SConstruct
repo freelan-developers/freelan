@@ -104,6 +104,12 @@ class FreelanEnvironment(Environment):
 
         return result
 
+    def SymLink(self, target, source):
+        def create_symlink(target, source, env):
+            os.symlink(os.path.abspath(str(source[0])), os.path.abspath(str(target[0])))
+
+        return self.Command(target, source, create_symlink)
+
 
 envs = {
     'release': FreelanEnvironment(debug=False),
@@ -111,4 +117,4 @@ envs = {
 }
 
 for dirname, env in envs.items():
-    libraries, includes, apps = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', dirname))
+    libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', dirname))

@@ -1,44 +1,13 @@
-"""
-The main SConscript file.
-"""
-
-name = 'cryptoplus'
-major = '2'
-minor = '0'
-libraries = []
-
-# You should not need to modify anything below this line
-
-Import('env')
-
-env = env.Clone()
+Import('env dirs name')
 
 import os
 
-from freelan.buildtools import LibraryProject
+env = env.Clone()
 
-if os.path.basename(env['CC']) in ('gcc', 'clang'):
-    libraries.append('crypto')
-    if os.name == 'nt':
-        libraries.append('gdi32')
-else:
-    if os.name == 'nt':
-        libraries.append('libeay32')
+local_include_dir = Dir('include/iconvplus')
+env.Prepend(CPPPATH=[local_include_dir])
 
-project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
+includes = env.RInstall(dirs['root'], local_include_dir, ['*.hpp'])
+library = env.StaticLibrary(target=os.path.join(str(dirs['lib']), name), source=env.RGlob('src', '*.cpp'))
 
-build = env.FreelanProject(project)
-install = env.FreelanProjectInstall(project)
-documentation = env.FreelanProjectDocumentation(project)
-indent = env.FreelanProjectIndent(project)
-samples = env.SConscript('samples/SConscript', exports = 'env project')
-
-targets = {
-    'build': build,
-    'install': install,
-    'documentation': documentation,
-    'indent': indent,
-    'samples': samples,
-}
-
-Return('targets')
+Return('library includes')

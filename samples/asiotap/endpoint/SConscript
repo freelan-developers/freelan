@@ -2,9 +2,7 @@ import os
 
 
 libraries = [
-    'iconvplus',
-    'boost_system',
-    'iconv',
+    'asiotap',
 ]
 
 Import('env dirs name')

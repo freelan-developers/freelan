@@ -2,6 +2,7 @@ import os
 
 
 libraries = [
+    'kfather',
     'iconvplus',
     'boost_system',
     'iconv',

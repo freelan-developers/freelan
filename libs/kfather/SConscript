@@ -1,49 +1,13 @@
-"""
-The main SConscript file.
-"""
+Import('env dirs name')
 
-name = 'kfather'
-major = '1'
-minor = '0'
-libraries = []
-
-# You should not need to modify anything below this line
-
-Import('env')
+import os
 
 env = env.Clone()
 
-import os
-import sys
+local_include_dir = Dir('include/iconvplus')
+env.Prepend(CPPPATH=[local_include_dir])
 
-from freelan.buildtools import LibraryProject
+includes = env.RInstall(dirs['root'], local_include_dir, ['*.hpp'])
+library = env.StaticLibrary(target=os.path.join(str(dirs['lib']), name), source=env.RGlob('src', '*.cpp'))
 
-if sys.platform.startswith('win32'):
-    libraries.append('iconvplus_static')
-    libraries.append('iconv')
-
-else:
-    if sys.platform.startswith('darwin'):
-        libraries.append('iconv')
-
-    libraries.append('iconvplus')
-
-libraries.append('boost_system')
-
-project = LibraryProject(Dir('.'), name, major, minor, libraries, Glob('src/*.cpp'))
-
-build = env.FreelanProject(project)
-install = env.FreelanProjectInstall(project)
-documentation = env.FreelanProjectDocumentation(project)
-indent = env.FreelanProjectIndent(project)
-samples = env.SConscript('samples/SConscript', exports = 'env project')
-
-targets = {
-    'build': build,
-    'install': install,
-    'documentation': documentation,
-    'indent': indent,
-    'samples': samples,
-}
-
-Return('targets')
+Return('library includes')
