@@ -27,7 +27,7 @@ AddOption(
     nargs=1,
     action='store',
     choices=('all', 'debug', 'release'),
-    default='all',
+    default='release',
     help='The compilation mode.',
 )
 
@@ -145,4 +145,4 @@ if mode in ('all', 'debug'):
     Alias('apps', apps)
     Alias('samples', samples)
 
-Default('apps')
+Default('install')

@@ -1,6 +1,10 @@
 import os
 import sys
+import datetime
 
+
+major = 2
+minor = 0
 
 Import('env dirs name')
 
@@ -30,6 +34,9 @@ if sys.platform.startswith('linux'):
 
 env = env.Clone()
 env.Append(LIBS=libraries)
+env['CXXFLAGS'].append(['-DFREELAN_VERSION_MAJOR=%s' % major])
+env['CXXFLAGS'].append(['-DFREELAN_VERSION_MINOR=%s' % minor])
+env['CXXFLAGS'].append([r"-DFREELAN_DATE=\"%s\"" % datetime.date.today().strftime('%a %d %b %Y')])
 
 sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
 app = env.Program(target=os.path.join(str(dirs['bin']), name), source=sources)
