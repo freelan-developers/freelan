@@ -6,6 +6,7 @@ libraries = [
     'cryptoplus',
     'boost_thread',
     'boost_system',
+    'crypto',
 ]
 
 Import('env dirs name')

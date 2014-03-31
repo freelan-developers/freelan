@@ -3,6 +3,7 @@ import os
 
 libraries = [
     'asiotap',
+    'boost_system',
 ]
 
 Import('env dirs name')
