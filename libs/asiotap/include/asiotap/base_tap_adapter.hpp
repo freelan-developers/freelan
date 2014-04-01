@@ -63,6 +63,9 @@ namespace asiotap
 	{
 		public:
 
+			base_tap_adapter(const base_tap_adapter&) = delete;
+			base_tap_adapter& operator=(const base_tap_adapter&) = delete;
+
 			/**
 			 * \brief The descriptor type.
 			 */
