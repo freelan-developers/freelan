@@ -72,15 +72,10 @@ class FreelanEnvironment(Environment):
         self.Append(CXXFLAGS=['-Werror'])
         self.Append(CXXFLAGS=['-pedantic'])
         self.Append(CXXFLAGS=['-Wshadow'])
-        #self.Append(CXXFLAGS=['-Wno-long-long'])
-        #self.Append(CXXFLAGS=['-Wno-uninitialized'])
-        #self.Append(CXXFLAGS=['-Wno-strict-aliasing'])
 
         if sys.platform.startswith('darwin'):
             self.Append(CXXFLAGS=['-arch', 'x86_64'])
             self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
-            #self.Append(CXXFLAGS=['-Wno-deprecated-declarations'])
-
 
         if self.debug:
             self.Append(CXXFLAGS=['-g'])
