@@ -81,22 +81,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
-    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
-    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
-    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
-    <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
