@@ -117,33 +117,6 @@ attendees:
         commands:
           - 'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64'
           - 'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y'
-  cppnetlib:
-    depends:
-      - openssl
-    source:
-      -
-        location: http://commondatastorage.googleapis.com/cpp-netlib-downloads/0.11.0/cpp-netlib-0.11.0.zip
-        filters: windows
-      -
-        location: http://commondatastorage.googleapis.com/cpp-netlib-downloads/0.11.0/cpp-netlib-0.11.0.tar.bz2
-        filters: unix
-    builders:
-      unix:
-        filters: unix
-        commands:
-          - 'bjam'
-      msvc-x86:
-        tags: x86
-        filters: msvc-x86
-        prefix: x86
-        commands:
-          - 'bjam'
-      msvc-x64:
-        tags: x64
-        filters: msvc-x64
-        prefix: x64
-        commands:
-          - 'bjam'
 
 # Path settings
 build_path: third-party/build
