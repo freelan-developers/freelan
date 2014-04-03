@@ -40,6 +40,7 @@ attendees:
         commands:
           - './bootstrap.sh'
           - './b2 --prefix={{prefix}} --layout=system --without-serialization toolset=clang cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" variant=release link=static threading=multi runtime-link=shared address-model=64 install'
+          - 'cp bjam {{prefix}}/bin/'
       msvc-x86:
         tags: x86
         filters: msvc-x86
@@ -47,6 +48,7 @@ attendees:
         commands:
           - 'bootstrap.bat'
           - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install'
+          - 'xcopy bjam.exe {{prefix}}\bin\ /S /Y'
       msvc-x64:
         tags: x64
         filters: msvc-x64
@@ -54,6 +56,7 @@ attendees:
         commands:
           - 'bootstrap.bat'
           - 'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install'
+          - 'xcopy bjam.exe {{prefix}}\bin\ /S /Y'
   openssl:
     source: http://www.openssl.org/source/openssl-1.0.1e.tar.gz
     builders:
@@ -114,6 +117,33 @@ attendees:
         commands:
           - 'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64'
           - 'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y'
+  cppnetlib:
+    depends:
+      - openssl
+    source:
+      -
+        location: http://commondatastorage.googleapis.com/cpp-netlib-downloads/0.11.0/cpp-netlib-0.11.0.zip
+        filters: windows
+      -
+        location: http://commondatastorage.googleapis.com/cpp-netlib-downloads/0.11.0/cpp-netlib-0.11.0.tar.bz2
+        filters: unix
+    builders:
+      unix:
+        filters: unix
+        commands:
+          - 'bjam'
+      msvc-x86:
+        tags: x86
+        filters: msvc-x86
+        prefix: x86
+        commands:
+          - 'bjam'
+      msvc-x64:
+        tags: x64
+        filters: msvc-x64
+        prefix: x64
+        commands:
+          - 'bjam'
 
 # Path settings
 build_path: third-party/build
