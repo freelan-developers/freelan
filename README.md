@@ -7,56 +7,61 @@ A super-project that includes all FreeLAN related projects and provides scripts 
 
 For help regarding the configuration, take a look at the [wiki](https://github.com/freelan-developers/freelan-all/wiki).
 
+Binaries
+--------
+
+It contains the following binaries:
+
+- freelan - The FreeLAN binary (acts as a service on Windows and as a daemon on Linux/Mac OSX)
+
 Libraries
 ---------
 
 It contains the following projects:
 
- - [libcryptoplus](https://github.com/freelan-developers/libcryptoplus) - A C++ wrapper around the OpenSSL cryptographic library.
- - [libiconvplus](https://github.com/freelan-developers/libiconvplus) - A C++ wrapper around the iconv library.
- - [libfscp](https://github.com/freelan-developers/libfscp) - The FreeLAN Secure Channel protocol and its C++ implementation.
- - [libasiotap](https://github.com/freelan-developers/libasiotap) - A C++ library to control virtual network interfaces also known as "TAP adapters".
- - [libfreelan](https://github.com/freelan-developers/libfreelan) - The FreeLAN C++ library.
- - [freelan](https://github.com/freelan-developers/freelan) - The FreeLAN binary.
- - [freelan-server](https://github.com/freelan-developers/freelan-server) - The FreeLAN configuration server.
- - [libkfather](https://github.com/freelan-developers/libkfather) - A C++ JSON parser/producer with a terrible name.
-
-To fetch those from their respective repositories, issue the following commands:
-
-> git submodule init
-
-> git submodule update
-
-And, to get the last revision for each repository:
-
-> git submodule foreach git checkout master
+ - cryptoplus - A C++ wrapper around the OpenSSL cryptographic library.
+ - iconvplus - A C++ wrapper around the iconv library.
+ - fscp - The FreeLAN Secure Channel protocol and its C++ implementation.
+ - asiotap - A C++ library to control virtual network interfaces also known as "TAP adapters".
+ - freelan - The FreeLAN C++ library.
+ - kfather - A C++ JSON parser/producer with a terrible name.
 
 Building
 --------
 
-You may setup quickly a building environment by calling the appropriate script at `tools/<your operating system>/setup-environment`.
+### Third-party
 
-If no script exists for your operating system, read the instructions in `freelan-buildtools/README.md`.
+The build relies on several third-parties. To build those, install the Python command `teapot` using the following command:
 
-This directory contains a `SConstruct` file which uses the [FreeLAN builds tools](https://github.com/freelan-developers/freelan-buildtools) to build the contained projects.
+> pip install teapot
 
-The default target (`freelan`) builds and installs all the necessary files for FreeLAN and FreeLAN itself to the environment specified `FREELAN_INSTALL_PREFIX` (or a OS-dependent default prefix if none is specified).
+Once you have `teapot` in your `PATH` (should be the case automatically), just type:
+
+> teapot build
+
+To build everything inside `third-party`. Once that is done, you can proceed with the next steps.
+
+### Common code
+
+This directory contains a `SConstruct` file to build the contained projects.
+
+The default target (`install`) builds and installs all the main FreeLAN binary.
 
 To do that, just type:
 
 > scons
 
-To build everything in the directory (all sub-projects), type instead:
+To build everything in the directory (all samples), type instead:
 
-> scons build
+> scons samples
 
-To build then install everything from the directory (all sub-projects), type instead:
+To build then install everything into a specific directory, type instead:
 
-> scons install
+> scons install --prefix=/usr/local/
 
 ### Windows
 
-You will need Microsoft Visual Studio 2012 to compile freelan. All projects come with a `.vcxproj` file for all the targets (debug/release and x86/x64).
+You will need Microsoft Visual Studio 2013 to compile freelan. All projects come with a `.vcxproj` file for all the targets (debug/release and x86/x64).
 
 The root directory also contains a solution file (`.sln`) that references all the sub-projects.
 
