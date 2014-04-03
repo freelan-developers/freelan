@@ -172,7 +172,11 @@ namespace asiotap
 				{
 					// Parent process
 					::close(fd[1]);
-					::close(output_fd[1]);
+
+					if (output)
+					{
+						::close(output_fd[1]);
+					}
 
 					int child_errno = 0;
 
