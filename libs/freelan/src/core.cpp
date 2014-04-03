@@ -1090,10 +1090,8 @@ namespace freelan
 				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
 
-#ifdef WINDOWS
 			const auto route = get_route_for(host);
 			async_save_system_route(host, route, void_handler_type());
-#endif
 		}
 
 		if (m_session_established_callback)
