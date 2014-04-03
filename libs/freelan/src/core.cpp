@@ -1325,7 +1325,7 @@ namespace freelan
 		{
 			if (system_routes.empty() && !filtered_system_routes.empty())
 			{
-				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << system_routes;
+				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << filtered_system_routes;
 
 				return;
 			}
