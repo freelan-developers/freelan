@@ -53,10 +53,12 @@
 #include <fcntl.h>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
+#include <boost/iostreams/stream.hpp>
 
 namespace asiotap
 {
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
+	int execute(const std::vector<std::string>& args, boost::system::error_code& ec, std::ostream* output)
 	{
 #if FREELAN_DEBUG
 		std::cout << "Executing:";
@@ -69,13 +71,25 @@ namespace asiotap
 		std::cout << std::endl;
 #endif
 
-		int fd[2];
+		int fd[2] = {0, 0};
 
 		if (::pipe(fd) < 0)
 		{
 			ec = boost::system::error_code(errno, boost::system::system_category());
 
 			return -1;
+		}
+
+		int output_fd[2] = {0, 0};
+
+		if (output)
+		{
+			if (::pipe(output_fd) < 0)
+			{
+				ec = boost::system::error_code(errno, boost::system::system_category());
+
+				return -1;
+			}
 		}
 
 		const pid_t pid = fork();
@@ -85,6 +99,12 @@ namespace asiotap
 			case -1:
 				{
 					// fork() failed.
+					if (output)
+					{
+						::close(output_fd[0]);
+						::close(output_fd[1]);
+					}
+
 					::close(fd[0]);
 					::close(fd[1]);
 
@@ -97,9 +117,15 @@ namespace asiotap
 					// Child process
 					const int fdlimit = ::sysconf(_SC_OPEN_MAX);
 
+					if (output)
+					{
+						::dup2(output_fd[1], STDOUT_FILENO);
+						::close(output_fd[1]);
+					}
+
 					for (int n = 0; n < fdlimit; ++n)
 					{
-						if (n != fd[1])
+						if ((n != fd[1]) && (!output || (n != STDOUT_FILENO)))
 						{
 							::close(n);
 						}
@@ -143,8 +169,18 @@ namespace asiotap
 				{
 					// Parent process
 					::close(fd[1]);
+					::close(output_fd[1]);
 
 					int child_errno = 0;
+
+					if (output)
+					{
+						// This will take ownership of the file descriptor.
+						boost::iostreams::file_descriptor_source output_src(output_fd[0], boost::iostreams::close_handle);
+						boost::iostreams::stream<boost::iostreams::file_descriptor_source> output_is(output_src);
+
+						(*output) << output_is.rdbuf();
+					}
 
 					const ssize_t readcnt = ::read(fd[0], &child_errno, sizeof(child_errno));
 
@@ -192,11 +228,11 @@ namespace asiotap
 		return EXIT_FAILURE;
 	}
 
-	int execute(const std::vector<std::string>& args)
+	int execute(const std::vector<std::string>& args, std::ostream* output)
 	{
 		boost::system::error_code ec;
 
-		const auto result = execute(args, ec);
+		const auto result = execute(args, ec, output);
 
 		if (result < 0)
 		{
@@ -206,9 +242,9 @@ namespace asiotap
 		return result;
 	}
 
-	void checked_execute(const std::vector<std::string>& args)
+	void checked_execute(const std::vector<std::string>& args, std::ostream* output)
 	{
-		if (execute(args) != 0)
+		if (execute(args, output) != 0)
 		{
 			throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
 		}

@@ -56,9 +56,9 @@
 namespace asiotap
 {
 	// These functions are common to all operating systems.
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
-	int execute(const std::vector<std::string>& args);
-	void checked_execute(const std::vector<std::string>& args);
+	int execute(const std::vector<std::string>& args, boost::system::error_code& ec, std::ostream* output = nullptr);
+	int execute(const std::vector<std::string>& args, std::ostream* output = nullptr);
+	void checked_execute(const std::vector<std::string>& args, std::ostream* output = nullptr);
 
 	// These functions are OS specific.
 	void ifconfig(const std::string& interface, const ip_network_address& address);
