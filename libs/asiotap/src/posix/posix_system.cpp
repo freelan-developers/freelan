@@ -52,9 +52,12 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
+#include <sstream>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace asiotap
 {
@@ -248,6 +251,108 @@ namespace asiotap
 		{
 			throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
 		}
+	}
+
+	posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host)
+	{
+#ifdef MACINTOSH
+		const std::vector<std::string> real_args { "/sbin/route", "-n", "get", boost::lexical_cast<std::string>(host) };
+
+		std::stringstream ss;
+		checked_execute(real_args, &ss);
+
+		//The output is like:
+		/*
+			   route to: 8.8.8.8
+			destination: default
+				   mask: default
+				gateway: 10.7.0.254
+			  interface: en0
+				  flags: <UP,GATEWAY,DONE,STATIC,PRCLONING>
+			 recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire
+				   0         0         0         0         0         0      1500         0
+		*/
+		std::map<std::string, std::string> values;
+		std::string line;
+
+		while (std::getline(ss, line))
+		{
+			const auto colon_pos = line.find_first_of(':');
+
+			if (colon_pos == std::string::npos)
+			{
+				continue;
+			}
+
+			std::string key = line.substr(0, colon_pos);
+			std::string value = line.substr(colon_pos + 1, std::string::npos);
+
+			boost::algorithm::trim(key);
+			boost::algorithm::trim(value);
+
+			values[key] = value;
+		}
+
+		if (values.find("interface") == values.end())
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::external_process_output_parsing_error));
+		}
+
+		const std::string interface = values["interface"];
+		boost::optional<boost::asio::ip::address> gw;
+
+		if (values.find("gateway") != values.end())
+		{
+			gw = boost::asio::ip::address::from_string(values["gateway"]);
+		}
+#else
+		const std::vector<std::string> real_args { "/bin/ip", "route", "get", boost::lexical_cast<std::string>(host) };
+
+		std::stringstream ss;
+		checked_execute(real_args, &ss);
+
+		// The output is like:
+		/*
+			8.8.8.8 via 37.59.15.254 dev eth0  src 46.105.57.112
+				cache
+		*/
+
+		std::string host_addr;
+
+		if (!(ss >> host_addr))
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::external_process_output_parsing_error));
+		}
+
+		std::map<std::string, std::string> values;
+		std::string key, value;
+
+		while (ss >> key >> value)
+		{
+			boost::algorithm::trim(key);
+			boost::algorithm::trim(value);
+
+			values[key] = value;
+		}
+
+		if (values.find("dev") == values.end())
+		{
+			throw boost::system::system_error(make_error_code(asiotap_error::external_process_output_parsing_error));
+		}
+
+		const std::string interface = values["dev"];
+		boost::optional<boost::asio::ip::address> gw;
+
+		if (values.find("via") != values.end())
+		{
+			gw = boost::asio::ip::address::from_string(values["via"]);
+		}
+#endif
+
+		const auto route = to_ip_route(to_network_address(host), gw);
+		const posix_route_manager::route_type route_entry = { interface, route, 0 };
+
+		return route_entry;
 	}
 
 	void ifconfig(const std::string& interface, const ip_network_address& address)

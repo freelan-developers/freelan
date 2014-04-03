@@ -55,6 +55,8 @@
 
 #ifdef WINDOWS
 #include <asiotap/windows/windows_system.hpp>
+#else
+#include <asiotap/posix/posix_system.hpp>
 #endif
 
 #include <boost/make_shared.hpp>
@@ -1916,12 +1918,6 @@ namespace freelan
 
 	core::route_type core::get_route_for(const core::ep_type& host)
 	{
-#ifdef WINDOWS
 		return asiotap::get_route_for(host.address());
-#else
-		//TODO: Implement
-		static_cast<void>(host);
-		return core::route_type {};
-#endif
 	}
 }

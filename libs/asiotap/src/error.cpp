@@ -90,6 +90,10 @@ namespace asiotap
 			{
 				return "A call to an external process failed";
 			}
+			case asiotap_error::external_process_output_parsing_error:
+			{
+				return "Unable to parse the output of the external process";
+			}
 			case asiotap_error::invalid_ip_configuration:
 			{
 				return "The specified IP configuration is invalid";

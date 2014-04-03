@@ -52,6 +52,7 @@
 #include <boost/system/system_error.hpp>
 
 #include "../types/ip_network_address.hpp"
+#include "posix_route_manager.hpp"
 
 namespace asiotap
 {
@@ -61,6 +62,7 @@ namespace asiotap
 	void checked_execute(const std::vector<std::string>& args, std::ostream* output = nullptr);
 
 	// These functions are OS specific.
+	posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
 	void ifconfig(const std::string& interface, const ip_network_address& address);
 	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
 	void route(const std::string& command, const std::string& interface, const ip_network_address& dest);
