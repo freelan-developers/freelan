@@ -3,7 +3,7 @@ libfreelan
 
 libfreelan is a portable C++ library that allows creation of peer-to-peer virtual private networks over IPv4/IPv6 networks.
 
-It is mainly based on [boost::asio](http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio.html), [libcryptoplus](https://github.com/freelan-developers/libcryptoplus) and [libfscp](https://github.com/freelan-developers/libfscp).
+It makes a great use of [boost::asio](http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio.html).
 
 Licensing
 ---------
@@ -17,4 +17,4 @@ Does the project have a website ?
 
 Yes, it does. And [here](http://www.freelan.org) it is. 
 
-You may also find the [git repository](https://github.com/freelan-developers/libfreelan) on github.
+You may also find the [git repository](https://github.com/freelan-developers/freelan-all) on github.

@@ -3,8 +3,6 @@ libfscp
 
 libfscp provides a portable C++ implementation of the FreeLAN Secure Channel Protocol.
 
-It is mainly based on [boost::asio](http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio.html) and [libcryptoplus](https://github.com/freelan-developers/libcryptoplus).
-
 Licensing
 ---------
 
@@ -17,4 +15,4 @@ Does the project have a website ?
 
 Yes, it does. And [here](http://www.freelan.org) it is. 
 
-You may also find the [git repository](https://github.com/freelan-developers/libfscp) on github.
+You may also find the [git repository](https://github.com/freelan-developers/freelan-all) on github.

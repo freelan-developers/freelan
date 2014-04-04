@@ -3,8 +3,6 @@ freelan
 
 A cross-platform daemon to establish IPv4/IPv6 peer-to-peer networks.
 
-It is based on [libfreelan](https://github.com/freelan-developers/libfreelan).
-
 This software supports the following operating systems:
 
  - Microsoft Windows (XP, Vista, Seven)
@@ -30,4 +28,4 @@ Does the project have a website ?
 
 Yes, it does. And [here](http://www.freelan.org) it is. 
 
-You may also find the [git repository](https://github.com/freelan-developers/freelan) on github.
+You may also find the [git repository](https://github.com/freelan-developers/freelan-all) on github.
