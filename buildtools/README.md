@@ -1,6 +1,8 @@
 Freelan build tools
 ===================
 
+**This project is deprecated. The new freelan source structure does not longer take advantage of the features provided by freelan-buildtools. This folder will be kept until all its features are migrated inside the new source structure.**
+
 A set of Python scripts to automate builds of FreeLAN related libraries.
 
 Requirements
