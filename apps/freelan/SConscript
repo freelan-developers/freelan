@@ -24,7 +24,6 @@ libraries = [
     'curl',
     'ssl',
     'crypto',
-    'ldap',
     'z',
 ]
 
