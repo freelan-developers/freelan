@@ -24,7 +24,6 @@ libraries = [
     'curl',
     'ssl',
     'crypto',
-    'z',
 ]
 
 if sys.platform.startswith('linux'):
