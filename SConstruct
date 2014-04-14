@@ -48,22 +48,26 @@ class FreelanEnvironment(Environment):
 
         for flag in [
             'CXX',
-            'CXXFLAGS',
             'AR',
-            'ARFLAGS',
             'LINK',
-            'LINKFLAGS',
         ]:
             if flag in os.environ:
                 self[flag] = os.environ[flag]
+
+        for flag in [
+            'CXXFLAGS',
+            'ARFLAGS',
+            'LINKFLAGS',
+        ]:
+            if flag in os.environ:
+                self[flag] = Split(os.environ[flag])
 
         self.debug = debug
 
         if os.path.basename(self['CXX']) == 'clang++':
             self.Append(CXXFLAGS=['-Qunused-arguments'])
             self.Append(CXXFLAGS=['-fcolor-diagnostics'])
-
-        if os.path.basename(self['CXX']) == 'g++':
+        elif os.path.basename(self['CXX']).endswith('g++'):
             self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
 
         self.Append(CXXFLAGS=['--std=c++11'])
@@ -73,15 +77,20 @@ class FreelanEnvironment(Environment):
         self.Append(CXXFLAGS=['-pedantic'])
         self.Append(CXXFLAGS=['-Wshadow'])
 
-        if sys.platform.startswith('darwin'):
-            self.Append(CXXFLAGS=['-arch', 'x86_64'])
-            self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
-
-        if self.debug:
-            self.Append(CXXFLAGS=['-g'])
-            self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
+        if 'OPENWRT_BUILD' in os.environ:
+            self['ENV'] = os.environ
+            self.arch = os.environ['ARCH']
         else:
-            self.Append(CXXFLAGS='-O3')
+            if sys.platform.startswith('darwin'):
+                self.Append(CXXFLAGS=['-arch', 'x86_64'])
+                self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
+
+            if self.debug:
+                self.Append(CXXFLAGS=['-g'])
+                self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
+            else:
+                self.Append(CXXFLAGS='-O3')
+
 
     def RGlob(self, path, patterns=None):
         """
