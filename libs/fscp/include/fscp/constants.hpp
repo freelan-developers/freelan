@@ -359,7 +359,7 @@ namespace fscp
 					throw std::runtime_error("Unsupported cipher suite value: " + boost::lexical_cast<std::string>(static_cast<int>(value())));
 				}
 
-				return NID_sect571k1;
+				return NID_secp521r1;
 			}
 
 			/**

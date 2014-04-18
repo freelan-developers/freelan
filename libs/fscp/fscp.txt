@@ -472,7 +472,7 @@ Abstract
    - 0x01: ECDHE-RSA-AES128-GCM-SHA256
    - 0x02: ECDHE-RSA-AES256-GCM-SHA384
 
-   The curve used for ECDHE is SECT571K1.
+   The curve used for ECDHE is SECP521R1.
 
 3.2. Signature algorithms
 
