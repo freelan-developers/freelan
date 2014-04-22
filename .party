@@ -1,0 +1,104 @@
+from teapot import *
+
+# General settings
+set_option('cache_root', 'third-party/cache')
+set_option('sources_root', 'third-party/sources')
+set_option('builds_root', 'third-party/builds')
+set_option('prefix', 'third-party/install')
+
+# libiconv
+Attendee('iconv', filter='msvc').add_source('third-party/source/libiconv-msvc')
+
+Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
+Attendee('iconv').get_build('msvc-x86').commands = [
+    'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"',
+    'md {{prefix}}\lib || echo',
+    'md {{prefix}}\include || echo',
+    'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    'xcopy include\* {{prefix}}\include\ /S /Y',
+]
+
+Attendee('iconv').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
+Attendee('iconv').get_build('msvc-x64').commands = [
+    'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"',
+    'md {{prefix}}\lib || echo',
+    'md {{prefix}}\include || echo',
+    'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    'xcopy include\* {{prefix}}\include\ /S /Y',
+]
+
+# boost
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download', filter='darwin', mimetype='application/x-bzip2')
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.zip/download', filter='windows', mimetype='application/zip')
+
+Attendee('boost').add_build('osx', environment='system', filter='darwin')
+Attendee('boost').get_build('osx').commands = [
+    './bootstrap.sh',
+    './b2 --prefix={{prefix}} --layout=system --without-serialization toolset=clang cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    'cp bjam {{prefix}}/bin/',
+]
+
+Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
+Attendee('boost').get_build('msvc-x86').commands = [
+    'bootstrap.bat',
+    'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+]
+
+Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
+Attendee('boost').get_build('msvc-x64').commands = [
+    'bootstrap.bat',
+    'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+]
+
+# OpenSSL
+Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.1e.tar.gz')
+
+Attendee('openssl').add_build('osx', environment='system', filter='darwin')
+Attendee('openssl').get_build('osx').commands = [
+    './Configure no-shared no-asm --prefix={{prefix}} darwin64-x86_64-cc',
+    'make',
+    'make install',
+]
+
+Attendee('openssl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
+Attendee('openssl').get_build('msvc-x86').commands = [
+    'perl Configure VC-WIN32 no-asm --prefix={{prefix}}',
+    'ms\do_ms',
+    'nmake -f ms\nt.mak',
+    'nmake -f ms\nt.mak install',
+]
+
+Attendee('openssl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
+Attendee('openssl').get_build('msvc-x64').commands = [
+    'perl Configure VC-WIN64A no-asm --prefix={{prefix}}',
+    'ms\do_win64a',
+    'nmake -f ms\nt.mak',
+    'nmake -f ms\nt.mak install',
+]
+
+# cURL
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.32.0.zip', filter='windows')
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter='darwin')
+
+Attendee('curl').depends_on('openssl')
+
+Attendee('curl').add_build('osx', environment='system', filter='darwin')
+Attendee('curl').get_build('osx').commands = [
+     'sh configure --enable-static -disable-shared --without-darwinssl --with-ssl={{prefix}} --prefix={{prefix}}',
+     'make',
+     'make install',
+]
+
+Attendee('curl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86', subdir='winbuild')
+Attendee('curl').get_build('msvc-x86').commands = [
+    'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x86',
+    'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
+]
+
+Attendee('curl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64', subdir='winbuild')
+Attendee('curl').get_build('msvc-x64').commands = [
+    'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64',
+    'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
+]

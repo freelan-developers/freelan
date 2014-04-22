@@ -1,3 +1,4 @@
-build/
 cache/
+sources/
+builds/
 install/
