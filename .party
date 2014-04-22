@@ -7,7 +7,7 @@ set_option('builds_root', 'third-party/builds')
 set_option('prefix', 'third-party/install')
 
 # libiconv
-Attendee('iconv', filter='msvc').add_source('third-party/source/libiconv-msvc')
+Attendee('iconv', filter='msvc').add_source('folder://third-party/source/libiconv-msvc')
 
 Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('iconv').get_build('msvc-x86').commands = [
