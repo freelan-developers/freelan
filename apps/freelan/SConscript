@@ -30,6 +30,11 @@ if sys.platform.startswith('linux'):
     libraries.extend([
         'pthread',
     ])
+elif sys.platform.startswith('darwin'):
+    libraries.extend([
+        'ldap',
+        'z',
+    ])
 
 env = env.Clone()
 env.Append(LIBS=libraries)
