@@ -11,20 +11,20 @@ Attendee('iconv', filter='msvc').add_source('folder://third-party/source/libicon
 
 Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('iconv').get_build('msvc-x86').commands = [
-    'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"',
-    'md {{prefix}}\lib || echo',
-    'md {{prefix}}\include || echo',
-    'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
-    'xcopy include\* {{prefix}}\include\ /S /Y',
+    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"',
+    r'md {{prefix}}\lib || echo',
+    r'md {{prefix}}\include || echo',
+    r'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    r'xcopy include\* {{prefix}}\include\ /S /Y',
 ]
 
 Attendee('iconv').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('iconv').get_build('msvc-x64').commands = [
-    'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"',
-    'md {{prefix}}\lib || echo',
-    'md {{prefix}}\include || echo',
-    'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
-    'xcopy include\* {{prefix}}\include\ /S /Y',
+    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"',
+    r'md {{prefix}}\lib || echo',
+    r'md {{prefix}}\include || echo',
+    r'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    r'xcopy include\* {{prefix}}\include\ /S /Y',
 ]
 
 # boost
@@ -40,16 +40,16 @@ Attendee('boost').get_build('osx').commands = [
 
 Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('boost').get_build('msvc-x86').commands = [
-    'bootstrap.bat',
-    'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
-    'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+    r'bootstrap.bat',
+    r'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
 Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('boost').get_build('msvc-x64').commands = [
-    'bootstrap.bat',
-    'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
-    'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+    r'bootstrap.bat',
+    r'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
 # OpenSSL
@@ -64,18 +64,18 @@ Attendee('openssl').get_build('osx').commands = [
 
 Attendee('openssl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('openssl').get_build('msvc-x86').commands = [
-    'perl Configure VC-WIN32 no-asm --prefix={{prefix}}',
-    'ms\do_ms',
-    'nmake -f ms\nt.mak',
-    'nmake -f ms\nt.mak install',
+    r'perl Configure VC-WIN32 no-asm --prefix={{prefix}}',
+    r'ms\do_ms',
+    r'nmake -f ms\nt.mak',
+    r'nmake -f ms\nt.mak install',
 ]
 
 Attendee('openssl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('openssl').get_build('msvc-x64').commands = [
-    'perl Configure VC-WIN64A no-asm --prefix={{prefix}}',
-    'ms\do_win64a',
-    'nmake -f ms\nt.mak',
-    'nmake -f ms\nt.mak install',
+    r'perl Configure VC-WIN64A no-asm --prefix={{prefix}}',
+    r'ms\do_win64a',
+    r'nmake -f ms\nt.mak',
+    r'nmake -f ms\nt.mak install',
 ]
 
 # cURL
@@ -93,12 +93,12 @@ Attendee('curl').get_build('osx').commands = [
 
 Attendee('curl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86', subdir='winbuild')
 Attendee('curl').get_build('msvc-x86').commands = [
-    'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x86',
-    'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
+    r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x86',
+    r'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
 ]
 
 Attendee('curl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64', subdir='winbuild')
 Attendee('curl').get_build('msvc-x64').commands = [
-    'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64',
-    'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
+    r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64',
+    r'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
 ]
