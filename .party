@@ -31,12 +31,13 @@ Attendee('iconv').get_build('msvc-x64').commands = [
 Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download', filter='darwin', mimetype='application/x-bzip2')
 Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.zip/download', filter='windows', mimetype='application/zip')
 
-Attendee('boost').add_post_unpack_command('cp -r {{root}}/third-party/patches/boost/* .', filter='darwin')
+Attendee('boost').add_post_unpack_command('cp -r {{root}}/third-party/patches/boost/* boost/', filter='darwin')
 
 Attendee('boost').add_build('osx', environment='system', filter='darwin')
 Attendee('boost').get_build('osx').commands = [
     './bootstrap.sh',
     './b2 --prefix={{prefix}} --layout=system --without-serialization toolset=clang cxxflags="-std=c++11 -stdlib=libc++" linkflags="-std=c++11 -stdlib=libc++" variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    'mkdir -p {{prefix}}/bin',
     'cp bjam {{prefix}}/bin/',
 ]
 
