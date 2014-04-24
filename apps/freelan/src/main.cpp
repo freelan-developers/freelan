@@ -116,13 +116,15 @@ std::vector<fs::path> get_configuration_files()
 	return configuration_files;
 }
 
+static bool DISABLE_COLOR = false;
+
 std::string log_level_to_string_extended(freelan::log_level level)
 {
 #ifdef WINDOWS
 	// No color support on Windows.
 	return log_level_to_string(level);
 #else
-	if (::isatty(STDOUT_FILENO))
+	if (!DISABLE_COLOR && ::isatty(STDOUT_FILENO))
 	{
 		// This is a terminal, we probably have color support.
 		return log_level_to_color(level) + log_level_to_string(level) + COLOR_RESET;
@@ -202,6 +204,14 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	visible_options.add(daemon_options);
 	all_options.add(daemon_options);
+
+	po::options_description misc_options("Miscellaneous");
+	misc_options.add_options()
+	("nocolor", "Disable color output.")
+	;
+
+	visible_options.add(misc_options);
+	all_options.add(misc_options);
 #endif
 
 	po::variables_map vm;
@@ -279,6 +289,12 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	}
 #else
 	configuration.foreground = (vm.count("foreground") > 0);
+
+	if (vm.count("nocolor") > 0)
+	{
+		// This is a global variable. Not really nice but does its job in this case.
+		DISABLE_COLOR = true;
+	}
 
 	if (vm.count("pid_file"))
 	{
