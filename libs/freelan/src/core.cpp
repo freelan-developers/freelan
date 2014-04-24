@@ -1434,12 +1434,12 @@ namespace freelan
 
 			m_tap_adapter->open(m_configuration.tap_adapter.name);
 
-			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << m_tap_adapter->mtu();
-
 			asiotap::tap_adapter_configuration tap_config;
 
 			// The device MTU.
 			tap_config.mtu = compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value());
+
+			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << tap_config.mtu;
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
