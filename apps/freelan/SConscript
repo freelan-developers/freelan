@@ -43,6 +43,6 @@ env['CXXFLAGS'].append(['-DFREELAN_VERSION_MINOR=%s' % minor])
 env['CXXFLAGS'].append([r"-DFREELAN_DATE=\"%s\"" % datetime.date.today().strftime('%a %d %b %Y')])
 
 sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
-app = env.Program(target=os.path.join(str(dirs['bin']), '%s%s' % (name,major)), source=sources)
+app = env.Program(target=os.path.join(str(dirs['bin']), '%s%s' % (name, major)), source=sources)
 
 Return('app')

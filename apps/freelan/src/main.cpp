@@ -108,13 +108,8 @@ std::vector<fs::path> get_configuration_files()
 {
 	std::vector<fs::path> configuration_files;
 
-#ifdef WINDOWS
-	configuration_files.push_back(get_home_directory() / "freelan.cfg");
-	configuration_files.push_back(get_application_directory() / "freelan.cfg");
-#else
 	configuration_files.push_back(get_home_directory() / "." FREELAN_NAME_VERSION_MAJOR "/freelan.cfg");
 	configuration_files.push_back(get_application_directory() / "freelan.cfg");
-#endif
 
 	return configuration_files;
 }
