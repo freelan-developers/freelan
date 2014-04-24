@@ -45,6 +45,7 @@
  */
 
 #include "system.hpp"
+#include "version.hpp"
 
 #include <stdexcept>
 #include <cstdlib>
@@ -80,7 +81,7 @@ boost::filesystem::path get_execution_root_directory()
 #ifdef WINDOWS
 	return get_module_filename().parent_path().parent_path();
 #else
-	return "/etc/freelan";
+	return "/etc/" FREELAN_NAME_VERSION_MAJOR;
 #endif
 }
 
@@ -121,9 +122,9 @@ fs::path get_application_directory()
 		throw std::runtime_error("Unable to determine the application directory");
 	}
 
-	return fs::path(path) / "freelan";
+	return fs::path(path) / FREELAN_NAME_VERSION_MAJOR;
 #else
-	return "/etc/freelan";
+	return "/etc/" FREELAN_NAME_VERSION_MAJOR;
 #endif
 }
 
