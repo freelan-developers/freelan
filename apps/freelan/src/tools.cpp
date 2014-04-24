@@ -69,6 +69,8 @@ int log_level_to_syslog_priority(freelan::log_level level)
 			return LOG_DEBUG;
 		case freelan::LL_INFORMATION:
 			return LOG_INFO;
+		case freelan::LL_IMPORTANT:
+			return LOG_NOTICE;
 		case freelan::LL_WARNING:
 			return LOG_WARNING;
 		case freelan::LL_ERROR:
@@ -90,6 +92,8 @@ const char* log_level_to_string(freelan::log_level level)
 			return "DEBUG";
 		case freelan::LL_INFORMATION:
 			return "INFORMATION";
+		case freelan::LL_IMPORTANT:
+			return "IMPORTANT";
 		case freelan::LL_WARNING:
 			return "WARNING";
 		case freelan::LL_ERROR:

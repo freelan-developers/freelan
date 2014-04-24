@@ -516,7 +516,7 @@ namespace freelan
 			m_configuration.fscp.listen_on
 		);
 
-		m_logger(LL_INFORMATION) << "Core set to listen on: " << listen_endpoint;
+		m_logger(LL_IMPORTANT) << "Core set to listen on: " << listen_endpoint;
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -567,7 +567,7 @@ namespace freelan
 
 			if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
 			{
-				m_logger(LL_INFORMATION) << "Restricting VPN traffic on: " << device_name;
+				m_logger(LL_IMPORTANT) << "Restricting VPN traffic on: " << device_name;
 			}
 			else
 			{
@@ -1069,7 +1069,7 @@ namespace freelan
 	{
 		if (is_new)
 		{
-			m_logger(LL_INFORMATION) << "Session established with " << host << ".";
+			m_logger(LL_IMPORTANT) << "Session established with " << host << ".";
 		}
 		else
 		{
@@ -1102,7 +1102,7 @@ namespace freelan
 
 	void core::do_handle_session_lost(const ep_type& host)
 	{
-		m_logger(LL_INFORMATION) << "Session with " << host << " lost.";
+		m_logger(LL_IMPORTANT) << "Session with " << host << " lost.";
 
 		if (m_session_lost_callback)
 		{
@@ -1439,7 +1439,7 @@ namespace freelan
 			// The device MTU.
 			tap_config.mtu = compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value());
 
-			m_logger(LL_INFORMATION) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << tap_config.mtu;
+			m_logger(LL_IMPORTANT) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << tap_config.mtu;
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())

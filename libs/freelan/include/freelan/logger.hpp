@@ -66,6 +66,7 @@ namespace freelan
 	{
 		LL_DEBUG, /**< \brief The debug log level. */
 		LL_INFORMATION, /**< \brief The information log level. */
+		LL_IMPORTANT, /**< \brief The important log level. */
 		LL_WARNING, /**< \brief The warning log level. */
 		LL_ERROR, /**< \brief The error log level. */
 		LL_FATAL /**< \brief The fatal log level. */

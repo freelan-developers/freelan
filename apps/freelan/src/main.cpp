@@ -66,12 +66,14 @@
 #else
 #include "posix/daemon.hpp"
 #include "posix/locked_pid_file.hpp"
+#include <unistd.h>
 #endif
 
 #include "version.hpp"
 #include "tools.hpp"
 #include "system.hpp"
 #include "configuration_helper.hpp"
+#include "colors.hpp"
 
 namespace fs = boost::filesystem;
 namespace fl = freelan;
@@ -114,11 +116,29 @@ std::vector<fs::path> get_configuration_files()
 	return configuration_files;
 }
 
+std::string log_level_to_string_extended(freelan::log_level level)
+{
+#ifdef WINDOWS
+	// No color support on Windows.
+	return log_level_to_string(level);
+#else
+	if (::isatty(STDOUT_FILENO))
+	{
+		// This is a terminal, we probably have color support.
+		return log_level_to_color(level) + log_level_to_string(level) + COLOR_RESET;
+	}
+	else
+	{
+		return log_level_to_string(level);
+	}
+#endif
+}
+
 void do_log(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 {
 	boost::mutex::scoped_lock lock(log_mutex);
 
-	std::cout << boost::posix_time::to_iso_extended_string(timestamp) << " [" << log_level_to_string(level) << "] " << msg << std::endl;
+	std::cout << boost::posix_time::to_iso_extended_string(timestamp) << " [" << log_level_to_string_extended(level) << "] " << msg << std::endl;
 }
 
 void signal_handler(const boost::system::error_code& error, int signal_number, fl::core& core, int& exit_signal)
@@ -470,7 +490,7 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s).";
 
-	logger(fl::LL_INFORMATION) << "Execution started.";
+	logger(fl::LL_IMPORTANT) << "Execution started.";
 
 	for (std::size_t i = 0; i < thread_count; ++i)
 	{
@@ -479,7 +499,7 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	threads.join_all();
 
-	logger(fl::LL_INFORMATION) << "Execution stopped.";
+	logger(fl::LL_IMPORTANT) << "Execution stopped.";
 }
 
 int main(int argc, char** argv)
