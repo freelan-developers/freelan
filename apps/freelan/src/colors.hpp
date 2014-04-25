@@ -50,6 +50,7 @@
 #include <freelan/logger.hpp>
 
 #include <string>
+#include <cassert>
 
 static const std::string COLOR_RESET = "\x1b[0m";
 static const std::string COLOR_BOLD = "\x1b[1m";
@@ -92,6 +93,9 @@ inline std::string log_level_to_color(freelan::log_level level)
 		case freelan::LL_FATAL:
 			return COLOR_BOLD + COLOR_REVERSE + COLOR_FG_RED;
 	}
+
+	assert(false);
+	return std::string();
 }
 
 #endif /* COLORS_HPP */
