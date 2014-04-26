@@ -1,0 +1,16 @@
+import os
+
+
+libraries = [
+    'asiotap',
+    'boost_system',
+    'boost_iostreams',
+]
+
+Import('env dirs name')
+
+env = env.Clone()
+env.Append(LIBS=libraries)
+samples = env.Program(target=os.path.join(str(dirs['bin']), name), source=env.RGlob('.', ['*.cpp']))
+
+Return('samples')

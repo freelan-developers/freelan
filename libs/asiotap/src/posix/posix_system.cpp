@@ -59,6 +59,10 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/algorithm/string.hpp>
 
+#ifdef LINUX
+#include "linux/netlink.hpp"
+#endif
+
 namespace asiotap
 {
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec, std::ostream* output)
@@ -310,6 +314,7 @@ namespace asiotap
 			gw = boost::asio::ip::address::from_string(values["gateway"]);
 		}
 #else
+#ifdef FREELAN_DISABLE_NETLINK
 		const std::vector<std::string> real_args { "/bin/ip", "route", "get", boost::lexical_cast<std::string>(host) };
 
 		std::stringstream ss;
@@ -351,6 +356,13 @@ namespace asiotap
 		{
 			gw = boost::asio::ip::address::from_string(values["via"]);
 		}
+#else
+		char ifname_buf[IF_NAMESIZE];
+
+		const auto route_info = netlink::get_route_for(host);
+		const auto interface = if_indextoname(route_info.interface, ifname_buf);
+		const auto gw = route_info.gateway;
+#endif
 #endif
 
 		const auto route = to_ip_route(to_network_address(host), gw);
