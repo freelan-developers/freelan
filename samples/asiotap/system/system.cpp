@@ -6,6 +6,8 @@
 
 #include <asiotap/os.hpp>
 
+#include <iostream>
+
 #ifdef LINUX
 #include <asiotap/linux/netlink.hpp>
 
