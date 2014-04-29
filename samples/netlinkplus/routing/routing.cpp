@@ -6,6 +6,8 @@
 
 #include <boost/asio.hpp>
 
+#include <iostream>
+
 #include <netlinkplus/route.hpp>
 
 int main()
