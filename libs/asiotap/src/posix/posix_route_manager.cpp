@@ -183,6 +183,33 @@ namespace asiotap
 		executeplus::checked_execute(real_args);
 	}
 
+	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest)
+	{
+		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
+
+#ifdef MACINTOSH
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
+#else
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
+#endif
+
+		executeplus::checked_execute(real_args);
+	}
+
+	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
+	{
+		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
+
+#ifdef MACINTOSH
+		static_cast<void>(interface);
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
+#else
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
+#endif
+
+		executeplus::checked_execute(real_args);
+	}
+
 	void posix_route_manager::register_route(const route_type& route_entry)
 	{
 		const auto _gateway = gateway(route_entry.route);
@@ -211,32 +238,5 @@ namespace asiotap
 		{
 				set_route("del", route_entry.interface, ina);
 		}
-	}
-
-	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest)
-	{
-		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-
-#ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
-#else
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
-#endif
-
-		executeplus::checked_execute(real_args);
-	}
-
-	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
-	{
-		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-
-#ifdef MACINTOSH
-		static_cast<void>(interface);
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
-#else
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
-#endif
-
-		executeplus::checked_execute(real_args);
 	}
 }

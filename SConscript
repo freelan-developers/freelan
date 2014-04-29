@@ -5,6 +5,7 @@ Builds everything.
 """
 
 import os
+import sys
 
 
 Import('env')
@@ -31,6 +32,11 @@ for x in Glob('libs/*'):
 
     if sconscript_path.exists():
         name = os.path.basename(str(x))
+
+        if not sys.platform.startswith('linux'):
+            if name in 'netlinkplus':
+                continue
+
         library, library_includes = SConscript(sconscript_path, exports='env dirs name')
         libraries.extend(library)
         includes.extend(library_includes)
@@ -47,11 +53,17 @@ for x in Glob('apps/*'):
 samples = []
 
 for x in Glob('samples/*'):
+    libname = os.path.basename(str(x))
+
+    if not sys.platform.startswith('linux'):
+        if libname in 'netlinkplus':
+            continue
+
     for y in x.glob('*'):
         sconscript_path = y.File('SConscript')
 
         if sconscript_path.exists():
-            name = 'sample_%s_%s' % (os.path.basename(str(x)), os.path.basename(str(y)))
+            name = 'sample_%s_%s' % (libname, os.path.basename(str(y)))
             sample = SConscript(sconscript_path, exports='env dirs name')
             samples.extend(sample)
 

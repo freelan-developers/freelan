@@ -71,7 +71,8 @@ namespace asiotap
 			 * \param _layer The layer of the tap adapter.
 			 */
 			posix_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
-				base_tap_adapter(_io_service, _layer)
+				base_tap_adapter(_io_service, _layer),
+				m_route_manager(_io_service)
 			{}
 
 			/**
@@ -180,6 +181,8 @@ namespace asiotap
 
 			void destroy_device();
 			void destroy_device(boost::system::error_code& ec);
+
+			posix_route_manager m_route_manager;
 	};
 }
 

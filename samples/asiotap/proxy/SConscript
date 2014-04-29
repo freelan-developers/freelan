@@ -3,6 +3,7 @@ import os
 
 libraries = [
     'asiotap',
+    'executeplus',
     'boost_system',
     'boost_iostreams',
 ]

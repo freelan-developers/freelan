@@ -780,11 +780,11 @@ namespace asiotap
 		// The TUN adapter for Mac OSX has a weird behavior regarding routes and ioctl.
 
 		// For some reason, on Mac, setting up the IP address using ioctl() doesn't work for TUN devices.
-		ifconfig(name(), network_address, remote_address);
+		m_route_manager.ifconfig(name(), network_address, remote_address);
 
 		// OSX apparently does not create a route even though ifconfig indicates that the netmask is understood.
 		// We must create it ourselves.
-		route("add", name(), network_address);
+		m_route_manager.set_route("add", name(), network_address);
 #else
 		set_ip_address_v4(network_address);
 

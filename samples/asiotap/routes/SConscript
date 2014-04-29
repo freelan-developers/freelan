@@ -1,13 +1,18 @@
 import os
+import sys
 
 
 libraries = [
     'asiotap',
-    'netlinkplus',
     'executeplus',
     'boost_system',
     'boost_iostreams',
 ]
+
+if sys.platform.startswith('linux'):
+    libraries.extend([
+        'netlinkplus',
+    ])
 
 Import('env dirs name')
 

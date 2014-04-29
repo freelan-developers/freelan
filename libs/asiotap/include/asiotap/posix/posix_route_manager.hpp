@@ -76,13 +76,13 @@ namespace asiotap
 			void ifconfig(const std::string& interface, const ip_network_address& address);
 			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
 
+			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest);
+			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
+
 		protected:
 
 			void register_route(const route_type& route);
 			void unregister_route(const route_type& route);
-
-			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest);
-			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
 
 		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
 
