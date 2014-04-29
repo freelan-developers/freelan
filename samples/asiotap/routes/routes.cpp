@@ -125,7 +125,7 @@ int main()
 
 		std::cout << "Adding routes" << std::endl;
 
-		asiotap::route_manager rmgr;
+		asiotap::route_manager rmgr(_io_service);
 		rmgr.set_route_registration_success_handler([](const asiotap::route_manager::route_type& route){
 			std::cout << "Added route: " << route << std::endl;
 		});

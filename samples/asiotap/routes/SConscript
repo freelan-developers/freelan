@@ -3,6 +3,8 @@ import os
 
 libraries = [
     'asiotap',
+    'netlinkplus',
+    'executeplus',
     'boost_system',
     'boost_iostreams',
 ]
