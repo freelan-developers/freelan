@@ -49,6 +49,7 @@
 #include <map>
 #include <iostream>
 
+#include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
@@ -167,13 +168,21 @@ namespace asiotap
 			 */
 			typedef boost::function<void(const route_type&, const boost::system::system_error&)> route_unregistration_failure_handler_type;
 
-			base_route_manager() = default;
+			explicit base_route_manager(boost::asio::io_service& io_service_) :
+				m_io_service(io_service_)
+			{
+			}
 
 			base_route_manager(const base_route_manager&) = delete;
 			base_route_manager& operator=(const base_route_manager&) = delete;
 
 			base_route_manager(base_route_manager&&) = delete;
 			base_route_manager& operator=(base_route_manager&&) = delete;
+
+			boost::asio::io_service& io_service()
+			{
+				return m_io_service;
+			}
 
 			void set_route_registration_success_handler(route_registration_success_handler_type handler)
 			{
@@ -263,6 +272,7 @@ namespace asiotap
 
 		private:
 
+			boost::asio::io_service& m_io_service;
 			entry_table_type m_entry_table;
 			route_registration_success_handler_type m_route_registration_success_handler;
 			route_registration_failure_handler_type m_route_registration_failure_handler;

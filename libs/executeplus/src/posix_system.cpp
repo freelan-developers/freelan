@@ -1,15 +1,15 @@
 /*
- * libasiotap - A portable TAP adapter extension for Boost::ASIO.
+ * libexecuteplus - A portable execution library.
  * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
- * This file is part of libasiotap.
+ * This file is part of libexecuteplus.
  *
- * libasiotap is free software; you can redistribute it and/or modify it
+ * libexecuteplus is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libasiotap is distributed in the hope that it will be useful, but
+ * libexecuteplus is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -31,7 +31,7 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libasiotap in a commercial software, please
+ * If you intend to use libexecuteplus in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
@@ -42,9 +42,10 @@
  * \brief Posix system primitives.
  */
 
-#include "posix/posix_system.hpp"
+#include "posix_system.hpp"
 
-#include "os.hpp"
+#ifdef UNIX
+
 #include "error.hpp"
 
 #include <unistd.h>
@@ -57,13 +58,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <boost/algorithm/string.hpp>
 
-#ifdef LINUX
-#include "linux/netlink.hpp"
-#endif
-
-namespace asiotap
+namespace executeplus
 {
 	int execute(const std::vector<std::string>& args, boost::system::error_code& ec, std::ostream* output)
 	{
@@ -257,158 +253,9 @@ namespace asiotap
 	{
 		if (execute(args, output) != 0)
 		{
-			throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
+			throw boost::system::system_error(make_error_code(executeplus_error::external_process_failed));
 		}
-	}
-
-	posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host)
-	{
-#ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", "get", boost::lexical_cast<std::string>(host) };
-
-		std::stringstream ss;
-		checked_execute(real_args, &ss);
-
-		//The output is like:
-		/*
-			   route to: 8.8.8.8
-			destination: default
-				   mask: default
-				gateway: 10.7.0.254
-			  interface: en0
-				  flags: <UP,GATEWAY,DONE,STATIC,PRCLONING>
-			 recvpipe  sendpipe  ssthresh  rtt,msec    rttvar  hopcount      mtu     expire
-				   0         0         0         0         0         0      1500         0
-		*/
-		std::map<std::string, std::string> values;
-		std::string line;
-
-		while (std::getline(ss, line))
-		{
-			const auto colon_pos = line.find_first_of(':');
-
-			if (colon_pos == std::string::npos)
-			{
-				continue;
-			}
-
-			std::string key = line.substr(0, colon_pos);
-			std::string value = line.substr(colon_pos + 1, std::string::npos);
-
-			boost::algorithm::trim(key);
-			boost::algorithm::trim(value);
-
-			values[key] = value;
-		}
-
-		if (values.find("interface") == values.end())
-		{
-			throw boost::system::system_error(make_error_code(asiotap_error::external_process_output_parsing_error));
-		}
-
-		const std::string interface = values["interface"];
-		boost::optional<boost::asio::ip::address> gw;
-
-		if (values.find("gateway") != values.end())
-		{
-			gw = boost::asio::ip::address::from_string(values["gateway"]);
-		}
-#else
-#ifdef FREELAN_DISABLE_NETLINK
-		const std::vector<std::string> real_args { "/bin/ip", "route", "get", boost::lexical_cast<std::string>(host) };
-
-		std::stringstream ss;
-		checked_execute(real_args, &ss);
-
-		// The output is like:
-		/*
-			8.8.8.8 via 37.59.15.254 dev eth0  src 46.105.57.112
-				cache
-		*/
-
-		std::string host_addr;
-
-		if (!(ss >> host_addr))
-		{
-			throw boost::system::system_error(make_error_code(asiotap_error::external_process_output_parsing_error));
-		}
-
-		std::map<std::string, std::string> values;
-		std::string key, value;
-
-		while (ss >> key >> value)
-		{
-			boost::algorithm::trim(key);
-			boost::algorithm::trim(value);
-
-			values[key] = value;
-		}
-
-		if (values.find("dev") == values.end())
-		{
-			throw boost::system::system_error(make_error_code(asiotap_error::external_process_output_parsing_error));
-		}
-
-		const std::string interface = values["dev"];
-		boost::optional<boost::asio::ip::address> gw;
-
-		if (values.find("via") != values.end())
-		{
-			gw = boost::asio::ip::address::from_string(values["via"]);
-		}
-#else
-		char ifname_buf[IF_NAMESIZE];
-
-		const auto route_info = netlink::get_route_for(host);
-		const auto interface = if_indextoname(route_info.interface, ifname_buf);
-		const auto gw = route_info.gateway;
-#endif
-#endif
-
-		const auto route = to_ip_route(to_network_address(host), gw);
-		const posix_route_manager::route_type route_entry = { interface, route, 0 };
-
-		return route_entry;
-	}
-
-	void ifconfig(const std::string& interface, const ip_network_address& address)
-	{
-		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address) };
-
-		checked_execute(real_args);
-	}
-
-	void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address)
-	{
-		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address), boost::lexical_cast<std::string>(remote_address) };
-
-		checked_execute(real_args);
-	}
-
-	void route(const std::string& command, const std::string& interface, const ip_network_address& dest)
-	{
-		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-
-#ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
-#else
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
-#endif
-
-		checked_execute(real_args);
-	}
-
-	void route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
-	{
-		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-
-#ifdef MACINTOSH
-		static_cast<void>(interface);
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
-#else
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
-#endif
-
-		checked_execute(real_args);
 	}
 }
+
+#endif

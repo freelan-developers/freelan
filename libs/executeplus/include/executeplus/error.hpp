@@ -1,15 +1,15 @@
 /*
- * libasiotap - A portable TAP adapter extension for Boost::ASIO.
- * Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
+ * libexecuteplus - A portable execution library.
+ * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
- * This file is part of libasiotap.
+ * This file is part of libexecuteplus.
  *
- * libasiotap is free software; you can redistribute it and/or modify it
+ * libexecuteplus is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libasiotap is distributed in the hope that it will be useful, but
+ * libexecuteplus is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -31,7 +31,7 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libasiotap in a commercial software, please
+ * If you intend to use libexecuteplus in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
@@ -42,15 +42,14 @@
  * \brief The errors.
  */
 
-#ifndef ASIOTAP_ERROR_HPP
-#define ASIOTAP_ERROR_HPP
+#pragma once
 
 #include <boost/system/error_code.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 
 #include <string>
 
-namespace asiotap
+namespace executeplus
 {
 	/**
 	 * @brief Get the default server error category.
@@ -58,21 +57,15 @@ namespace asiotap
 	 *
 	 * @warning The first call to this function is thread-safe only starting with C++11.
 	 */
-	const boost::system::error_category& asiotap_category();
+	const boost::system::error_category& executeplus_category();
 
 	/**
 	 * The list of errors.
 	 */
-	enum class asiotap_error
+	enum class executeplus_error
 	{
 		success = 0,
-		invalid_tap_adapter_layer,
-		invalid_type,
-		no_ethernet_address,
-		process_handle_expected,
-		external_process_output_parsing_error,
-		no_such_tap_adapter,
-		invalid_ip_configuration
+		external_process_failed
 	};
 
 	/**
@@ -80,9 +73,9 @@ namespace asiotap
 	 * @param error The error.
 	 * @return The error_code instance.
 	 */
-	inline boost::system::error_code make_error_code(asiotap_error error)
+	inline boost::system::error_code make_error_code(executeplus_error error)
 	{
-		return boost::system::error_code(static_cast<int>(error), asiotap_category());
+		return boost::system::error_code(static_cast<int>(error), executeplus_category());
 	}
 
 	/**
@@ -90,15 +83,15 @@ namespace asiotap
 	 * @param error The error.
 	 * @return The error_condition instance.
 	 */
-	inline boost::system::error_condition make_error_condition(asiotap_error error)
+	inline boost::system::error_condition make_error_condition(executeplus_error error)
 	{
-		return boost::system::error_condition(static_cast<int>(error), asiotap_category());
+		return boost::system::error_condition(static_cast<int>(error), executeplus_category());
 	}
 
 	/**
 	 * @brief A server error category.
 	 */
-	class asiotap_category_impl : public boost::system::error_category
+	class executeplus_category_impl : public boost::system::error_category
 	{
 		public:
 			/**
@@ -121,8 +114,6 @@ namespace boost
 	namespace system
 	{
 		template <>
-		struct is_error_code_enum< ::asiotap::asiotap_error> : public boost::true_type {};
+		struct is_error_code_enum< ::executeplus::executeplus_error> : public boost::true_type {};
 	}
 }
-
-#endif /* ASIOTAP_ERROR_HPP */

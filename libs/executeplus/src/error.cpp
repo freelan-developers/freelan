@@ -1,15 +1,15 @@
 /*
- * libasiotap - A portable TAP adapter extension for Boost::ASIO.
+ * libexecuteplus - A portable execution library.
  * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
- * This file is part of libasiotap.
+ * This file is part of libexecuteplus.
  *
- * libasiotap is free software; you can redistribute it and/or modify it
+ * libexecuteplus is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libasiotap is distributed in the hope that it will be useful, but
+ * libexecuteplus is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -31,26 +31,49 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libasiotap in a commercial software, please
+ * If you intend to use libexecuteplus in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
 
 /**
- * \file system.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A set of system functions.
+ * \file error.cpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief The errors.
  */
 
-#ifndef ASIOTAP_SYSTEM_HPP
-#define ASIOTAP_SYSTEM_HPP
+#include "error.hpp"
 
-#include "os.hpp"
+namespace executeplus
+{
+	const boost::system::error_category& executeplus_category()
+	{
+		static executeplus_category_impl instance;
 
-#ifdef WINDOWS
-#include "windows/windows_system.hpp"
-#elif defined(UNIX)
-#include "posix/posix_system.hpp"
-#endif
+		return instance;
+	}
 
-#endif /* ASIOTAP_SYSTEM_HPP */
+	const char* executeplus_category_impl::name() const throw()
+	{
+		return "executeplus::error";
+	}
+
+	std::string executeplus_category_impl::message(int ev) const
+	{
+		switch (static_cast<executeplus_error>(ev))
+		{
+			case executeplus_error::success:
+			{
+				return "Success";
+			}
+			case executeplus_error::external_process_failed:
+			{
+				return "A call to an external process failed";
+			}
+			default:
+			{
+				return "Unknown executeplus error";
+			}
+		}
+	}
+}

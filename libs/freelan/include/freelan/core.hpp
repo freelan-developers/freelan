@@ -582,8 +582,6 @@ namespace freelan
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
 
-			static route_type get_route_for(const core::ep_type&);
-
 			boost::asio::strand m_router_strand;
 
 			switch_ m_switch;

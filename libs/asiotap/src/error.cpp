@@ -86,10 +86,6 @@ namespace asiotap
 			{
 				return "A process handle was expected";
 			}
-			case asiotap_error::external_process_failed:
-			{
-				return "A call to an external process failed";
-			}
 			case asiotap_error::external_process_output_parsing_error:
 			{
 				return "Unable to parse the output of the external process";

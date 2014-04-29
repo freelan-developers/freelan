@@ -42,12 +42,17 @@
  * \brief The POSIX route manager class.
  */
 
-#ifndef ASIOTAP_POSIX_ROUTE_MANAGER_HPP
-#define ASIOTAP_POSIX_ROUTE_MANAGER_HPP
+#pragma once
 
+#include "../os.hpp"
 #include "../base_route_manager.hpp"
+#include "../types/ip_network_address.hpp"
 
 #include <string>
+
+#ifdef LINUX
+#include <netlinkplus/route.hpp>
+#endif
 
 namespace asiotap
 {
@@ -55,13 +60,35 @@ namespace asiotap
 
 	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
 	{
+		public:
+
+			explicit posix_route_manager(boost::asio::io_service& io_service_) :
+#ifndef LINUX
+				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
+#else
+				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
+				m_netlink_route_manager(io_service_)
+#endif
+			{
+			}
+
+			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
+			void ifconfig(const std::string& interface, const ip_network_address& address);
+			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+
 		protected:
 
 			void register_route(const route_type& route);
 			void unregister_route(const route_type& route);
 
+			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest);
+			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
+
 		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
+
+#ifdef LINUX
+		private:
+			netlink::route_manager m_netlink_route_manager;
+#endif
 	};
 }
-
-#endif /* ASIOTAP_POSIX_ROUTE_MANAGER_HPP */

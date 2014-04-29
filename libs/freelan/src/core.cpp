@@ -54,9 +54,9 @@
 #include <asiotap/types/ip_network_address.hpp>
 
 #ifdef WINDOWS
-#include <asiotap/windows/windows_system.hpp>
+#include <executeplus/windows_system.hpp>
 #else
-#include <asiotap/posix/posix_system.hpp>
+#include <executeplus/posix_system.hpp>
 #endif
 
 #include <boost/make_shared.hpp>
@@ -425,7 +425,7 @@ namespace freelan
 		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
-		m_route_manager()
+		m_route_manager(io_service)
 	{
 		if (!m_configuration.security.identity)
 		{
@@ -1090,7 +1090,7 @@ namespace freelan
 				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
 
-			const auto route = get_route_for(host);
+			const auto route = m_route_manager.get_route_for(host.address());
 			async_save_system_route(host, route, void_handler_type());
 		}
 
@@ -1912,10 +1912,5 @@ namespace freelan
 	{
 		// All calls to do_write_router() are done within the m_router_strand, so the following is safe.
 		m_router.async_write(index, data, handler);
-	}
-
-	core::route_type core::get_route_for(const core::ep_type& host)
-	{
-		return asiotap::get_route_for(host.address());
 	}
 }

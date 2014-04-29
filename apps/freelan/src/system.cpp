@@ -52,10 +52,12 @@
 #include <cstdarg>
 #include <sstream>
 
-#include <asiotap/system.hpp>
-
 #ifdef WINDOWS
+#include <executeplus/windows_system.hpp>
+
 #include <shlobj.h>
+#else
+#include <executeplus/posix_system.hpp>
 #endif
 
 namespace fs = boost::filesystem;
@@ -159,5 +161,5 @@ int execute(fs::path script, const std::vector<std::string>& args)
 #endif
 	real_args.insert(real_args.end(), args.begin(), args.end());
 
-	return asiotap::execute(real_args);
+	return executeplus::execute(real_args);
 }

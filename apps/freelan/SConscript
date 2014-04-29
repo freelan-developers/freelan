@@ -13,6 +13,7 @@ libraries = [
     'asiotap',
     'fscp',
     'cryptoplus',
+    'executeplus',
     'iconvplus',
     'kfather',
     'boost_system',
@@ -29,6 +30,7 @@ libraries = [
 if sys.platform.startswith('linux'):
     libraries.extend([
         'pthread',
+        'netlinkplus',
     ])
 elif sys.platform.startswith('darwin'):
     libraries.extend([
