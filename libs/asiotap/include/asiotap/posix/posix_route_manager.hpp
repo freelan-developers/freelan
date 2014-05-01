@@ -88,7 +88,7 @@ namespace asiotap
 
 #ifdef LINUX
 		private:
-			netlink::route_manager m_netlink_route_manager;
+			netlinkplus::route_manager m_netlink_route_manager;
 #endif
 	};
 }

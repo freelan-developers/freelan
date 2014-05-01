@@ -48,7 +48,7 @@
 #include <net/if.h>
 #include <errno.h>
 
-namespace netlink
+namespace netlinkplus
 {
 	namespace
 	{

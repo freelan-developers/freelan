@@ -16,7 +16,7 @@ int main()
 	{
 		boost::asio::io_service io_service;
 
-		netlink::route_manager route_manager(io_service);
+		netlinkplus::route_manager route_manager(io_service);
 
 		const auto host = boost::asio::ip::address_v4::from_string("8.8.8.8");
 		const auto route_info = route_manager.get_route_for(host);

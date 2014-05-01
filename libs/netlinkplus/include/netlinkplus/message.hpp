@@ -44,7 +44,7 @@
 
 #include <memory>
 
-namespace netlink
+namespace netlinkplus
 {
 	namespace
 	{

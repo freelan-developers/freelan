@@ -47,7 +47,7 @@
 #include <iterator>
 #include <cassert>
 
-namespace netlink
+namespace netlinkplus
 {
 	namespace
 	{

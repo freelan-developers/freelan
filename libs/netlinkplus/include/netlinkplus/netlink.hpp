@@ -50,7 +50,7 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
-namespace netlink
+namespace netlinkplus
 {
 	// Generic functions.
 	struct route_entry

@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 libraries = [
@@ -7,6 +8,9 @@ libraries = [
     'boost_system',
     'boost_iostreams',
 ]
+
+if sys.platform.startswith('linux'):
+    libraries.append('netlinkplus')
 
 Import('env dirs name')
 

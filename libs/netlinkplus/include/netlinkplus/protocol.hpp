@@ -51,7 +51,7 @@
 
 #include "endpoint.hpp"
 
-namespace netlink
+namespace netlinkplus
 {
 	/**
 	 * \brief A netlink protocol class.

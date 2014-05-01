@@ -51,7 +51,7 @@
 
 #include "protocol.hpp"
 
-namespace netlink
+namespace netlinkplus
 {
 	/**
 	 * \brief An interface entry class.

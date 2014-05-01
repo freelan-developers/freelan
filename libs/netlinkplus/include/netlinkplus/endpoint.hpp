@@ -49,7 +49,7 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
-namespace netlink
+namespace netlinkplus
 {
 	/**
 	 * \brief A netlink endpoint class.
