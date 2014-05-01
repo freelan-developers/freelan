@@ -51,6 +51,7 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <freelan/os.hpp>
 
 #ifdef WINDOWS
 /**

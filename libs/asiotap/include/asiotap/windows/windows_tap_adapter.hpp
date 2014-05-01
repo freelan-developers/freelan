@@ -74,6 +74,7 @@ namespace asiotap
 			 */
 			windows_tap_adapter(boost::asio::io_service& _io_service, tap_adapter_layer _layer) :
 				base_tap_adapter(_io_service, _layer),
+				m_route_manager(_io_service),
 				m_display_name(),
 				m_interface_index(),
 				m_interface_luid()
@@ -81,6 +82,15 @@ namespace asiotap
 
 			windows_tap_adapter(const windows_tap_adapter&) = delete;
 			windows_tap_adapter& operator=(const windows_tap_adapter&) = delete;
+
+			/**
+			 * \brief Get the associated network manager.
+			 * \return The associated network manager.
+			 */
+			windows_route_manager& network_manager()
+			{
+				return m_route_manager;
+			}
 
 			/**
 			 * \brief Get the device display name.
@@ -147,6 +157,7 @@ namespace asiotap
 
 		private:
 
+			windows_route_manager m_route_manager;
 			std::string m_display_name;
 			NET_IFINDEX m_interface_index;
 			NET_LUID m_interface_luid;

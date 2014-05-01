@@ -58,7 +58,6 @@
 
 #include <shlobj.h>
 #include <shellapi.h>
-#include <Iphlpapi.h>
 
 namespace executeplus
 {
@@ -262,7 +261,7 @@ namespace executeplus
 		{
 			if (args.empty())
 			{
-				ec = make_error_code(asiotap_error::external_process_failed);
+				ec = make_error_code(executeplus_error::external_process_failed);
 
 				return EXIT_FAILURE;
 			}
@@ -305,7 +304,7 @@ namespace executeplus
 		{
 			if (do_execute(args) != 0)
 			{
-				throw boost::system::system_error(make_error_code(asiotap_error::external_process_failed));
+				throw boost::system::system_error(make_error_code(executeplus_error::external_process_failed));
 			}
 		}
 	}

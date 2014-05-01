@@ -45,7 +45,6 @@
 #include "windows/windows_tap_adapter.hpp"
 
 #include "registry.hpp"
-#include "system.hpp"
 
 #include <boost/optional.hpp>
 
@@ -56,6 +55,8 @@
 #include <iphlpapi.h>
 #include <winbase.h>
 #include <shellapi.h>
+
+#include <executeplus/error.hpp>
 
 #include "../../windows/common.h"
 
@@ -455,11 +456,11 @@ namespace asiotap
 			try
 			{
 				// Depending on the TAP adapter version this may not be supported.
-				netsh_interface_ip_set_address(display_name(), *configuration.ipv4.network_address);
+				m_route_manager.netsh_interface_ip_set_address(display_name(), *configuration.ipv4.network_address);
 			}
 			catch (const boost::system::system_error& ex)
 			{
-				if (ex.code() != asiotap_error::external_process_failed)
+				if (ex.code() != executeplus::executeplus_error::external_process_failed)
 				{
 					throw;
 				}
@@ -471,11 +472,11 @@ namespace asiotap
 			try
 			{
 				// Depending on the TAP adapter version this may not be supported.
-				netsh_interface_ip_set_address(display_name(), *configuration.ipv6.network_address);
+				m_route_manager.netsh_interface_ip_set_address(display_name(), *configuration.ipv6.network_address);
 			}
 			catch (const boost::system::system_error& ex)
 			{
-				if (ex.code() != asiotap_error::external_process_failed)
+				if (ex.code() != executeplus::executeplus_error::external_process_failed)
 				{
 					throw;
 				}

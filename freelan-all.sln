@@ -16,6 +16,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcryptoplus", "libs\crypt
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libasiotap", "libs\asiotap\libasiotap.vcxproj", "{9173624C-FFF7-4431-BB4A-FC30B13AD742}"
+	ProjectSection(ProjectDependencies) = postProject
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4} = {67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfscp", "libs\fscp\libfscp.vcxproj", "{D2906D5F-3E94-4376-814D-299B8F81E195}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -32,8 +35,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfreelan", "libs\freelan\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freelan", "apps\freelan\freelan.vcxproj", "{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}"
 	ProjectSection(ProjectDependencies) = postProject
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4} = {67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}
 		{3BCC24B5-D624-47BC-AFED-BF540AFA29F8} = {3BCC24B5-D624-47BC-AFED-BF540AFA29F8}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libexecuteplus", "libs\executeplus\libexecuteplus.vcxproj", "{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +105,14 @@ Global
 		{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}.Release|Win32.Build.0 = Release|Win32
 		{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}.Release|x64.ActiveCfg = Release|x64
 		{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}.Release|x64.Build.0 = Release|x64
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Debug|Win32.Build.0 = Debug|Win32
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Debug|x64.ActiveCfg = Debug|x64
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Debug|x64.Build.0 = Debug|x64
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|Win32.ActiveCfg = Release|Win32
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|Win32.Build.0 = Release|Win32
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|x64.ActiveCfg = Release|x64
+		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

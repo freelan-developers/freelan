@@ -54,8 +54,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <shlobj.h>
-#include <shellapi.h>
+#include <Iphlpapi.h>
 
 #include <executeplus/windows_system.hpp>
 
@@ -202,12 +201,12 @@ namespace asiotap
 
 	void windows_route_manager::register_route(const route_type& route_entry)
 	{
-		asiotap::register_route(route_entry.interface, route_entry.route, route_entry.metric);
+		register_route(route_entry.interface, route_entry.route, route_entry.metric);
 	}
 
 	void windows_route_manager::unregister_route(const route_type& route_entry)
 	{
-		asiotap::unregister_route(route_entry.interface, route_entry.route, route_entry.metric);
+		unregister_route(route_entry.interface, route_entry.route, route_entry.metric);
 	}
 
 #ifdef UNICODE

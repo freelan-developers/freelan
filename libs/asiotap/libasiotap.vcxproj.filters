@@ -180,9 +180,6 @@
     <ClCompile Include="src\windows\windows_route_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\windows\windows_system.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ip_route.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -375,12 +372,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\asiotap\system.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\asiotap\windows\windows_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\types\ip_route.hpp">
