@@ -97,6 +97,15 @@ namespace asiotap
 			posix_tap_adapter& operator=(posix_tap_adapter&&) = default;
 
 			/**
+			 * \brief Get the associated network manager.
+			 * \return The associated network manager.
+			 */
+			posix_route_manager& network_manager()
+			{
+				return m_route_manager;
+			}
+
+			/**
 			 * \brief Open the first available tap adapter.
 			 * \param ec The error code.
 			 */
