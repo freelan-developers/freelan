@@ -16,3 +16,4 @@
 *.suo
 *.sdf
 *.opensdf
+*.vcxproj.user
