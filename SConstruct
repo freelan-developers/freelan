@@ -91,7 +91,6 @@ class FreelanEnvironment(Environment):
             else:
                 self.Append(CXXFLAGS='-O3')
 
-
     def RGlob(self, path, patterns=None):
         """
         Returns a list of file objects that match the specified patterns.
