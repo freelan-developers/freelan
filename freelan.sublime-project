@@ -78,6 +78,7 @@
   ],
   "settings":
   {
+    "draw_white_space": "selection",
     "AStyleFormatter":
     {
       "options_default":
