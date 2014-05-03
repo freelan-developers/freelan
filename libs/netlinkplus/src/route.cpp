@@ -196,11 +196,11 @@ namespace netlinkplus
 
 		if (!response.is_valid(cnt))
 		{
-			throw std::runtime_error("Invalid response");
+			throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_response));
 		}
 
 		if (response.header().nlmsg_type != RTM_NEWROUTE) {
-			throw std::runtime_error("Invalid response type");
+			throw boost::system::system_error(make_error_code(netlinkplus_error::unexpected_response_type));
 		}
 
 		const int family = response.subheader().rtm_family;

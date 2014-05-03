@@ -66,6 +66,14 @@ namespace netlinkplus
 			{
 				return "Success";
 			}
+			case netlinkplus_error::invalid_response:
+			{
+				return "Invalid response";
+			}
+			case netlinkplus_error::unexpected_response_type:
+			{
+				return "Unexpected response type";
+			}
 			case netlinkplus_error::invalid_route_destination:
 			{
 				return "Invalid route destination";

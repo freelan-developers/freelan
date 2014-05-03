@@ -65,6 +65,8 @@ namespace netlinkplus
 	enum class netlinkplus_error
 	{
 		success = 0,
+		invalid_response,
+		unexpected_response_type,
 		invalid_route_destination,
 		invalid_route_source,
 		invalid_route_input_interface,
