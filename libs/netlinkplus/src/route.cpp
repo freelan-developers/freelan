@@ -44,6 +44,7 @@
 
 #include "route.hpp"
 #include "route_message.hpp"
+#include "error.hpp"
 
 #include <net/if.h>
 #include <errno.h>
@@ -69,7 +70,7 @@ namespace netlinkplus
 
 							if (bytes.size() != buffer_size(data))
 							{
-								throw std::runtime_error("Invalid destination value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_destination));
 							}
 
 							::memcpy(bytes.data(), boost::asio::buffer_cast<const void*>(data), buffer_size(data));
@@ -83,7 +84,7 @@ namespace netlinkplus
 
 							if (bytes.size() != buffer_size(data))
 							{
-								throw std::runtime_error("Invalid source value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_source));
 							}
 
 							::memcpy(bytes.data(), boost::asio::buffer_cast<const void*>(data), buffer_size(data));
@@ -95,7 +96,7 @@ namespace netlinkplus
 						{
 							if (buffer_size(data) != sizeof(unsigned int))
 							{
-								throw std::runtime_error("Invalid interface value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_input_interface));
 							}
 
 							result.input_interface = interface_entry(*boost::asio::buffer_cast<unsigned int*>(data));
@@ -106,7 +107,7 @@ namespace netlinkplus
 						{
 							if (buffer_size(data) != sizeof(unsigned int))
 							{
-								throw std::runtime_error("Invalid interface value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_output_interface));
 							}
 
 							result.output_interface = interface_entry(*boost::asio::buffer_cast<unsigned int*>(data));
@@ -119,7 +120,7 @@ namespace netlinkplus
 
 							if (bytes.size() != buffer_size(data))
 							{
-								throw std::runtime_error("Invalid gateway value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_gateway));
 							}
 
 							::memcpy(bytes.data(), boost::asio::buffer_cast<const void*>(data), buffer_size(data));
@@ -131,7 +132,7 @@ namespace netlinkplus
 						{
 							if (buffer_size(data) != sizeof(result.priority))
 							{
-								throw std::runtime_error("Invalid priority value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_priority));
 							}
 
 							result.priority = *boost::asio::buffer_cast<unsigned int*>(data);
@@ -142,7 +143,7 @@ namespace netlinkplus
 						{
 							if (buffer_size(data) != sizeof(result.priority))
 							{
-								throw std::runtime_error("Invalid metric value");
+								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_metric));
 							}
 
 							result.metric = *boost::asio::buffer_cast<unsigned int*>(data);
