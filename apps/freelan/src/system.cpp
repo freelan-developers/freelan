@@ -45,12 +45,14 @@
  */
 
 #include "system.hpp"
-#include "version.hpp"
 
 #include <stdexcept>
 #include <cstdlib>
 #include <cstdarg>
 #include <sstream>
+
+// This file is generated locally.
+#include <defines.hpp>
 
 #ifdef WINDOWS
 #include <executeplus/windows_system.hpp>

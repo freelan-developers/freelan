@@ -1,6 +1,5 @@
 import os
 import sys
-import datetime
 
 
 Import('env dirs name')
@@ -37,13 +36,8 @@ elif sys.platform.startswith('darwin'):
 
 env = env.Clone()
 env.Append(LIBS=libraries)
-env.Append(CXXFLAGS=[
-    '-DFREELAN_VERSION_MAJOR=%s' % env.version.version[0],
-    '-DFREELAN_VERSION_MINOR=%s' % env.version.version[1],
-    r'-DFREELAN_DATE=\"%s\"' % datetime.date.today().strftime('%a %d %b %Y'),
-])
 
 sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
-app = env.Program(target=os.path.join(str(dirs['bin']), '%s%s' % (name, env.version.version[0])), source=sources)
+app = env.Program(target=os.path.join(str(dirs['bin']), '%s%s' % (name, env.defines.version.major)), source=sources)
 
 Return('app')

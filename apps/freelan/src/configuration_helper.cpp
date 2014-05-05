@@ -52,7 +52,9 @@
 #include <boost/foreach.hpp>
 
 #include "configuration_types.hpp"
-#include "version.hpp"
+
+// This file is generated locally.
+#include <defines.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

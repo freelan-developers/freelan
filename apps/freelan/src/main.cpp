@@ -69,11 +69,13 @@
 #include <unistd.h>
 #endif
 
-#include "version.hpp"
 #include "tools.hpp"
 #include "system.hpp"
 #include "configuration_helper.hpp"
 #include "colors.hpp"
+
+// This file is generated locally.
+#include <defines.hpp>
 
 namespace fs = boost::filesystem;
 namespace fl = freelan;

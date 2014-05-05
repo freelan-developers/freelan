@@ -7,9 +7,10 @@ Works on all UNIX-like operating systems.
 import os
 import sys
 
-from subprocess import check_output
 from fnmatch import fnmatch
-from distutils.version import StrictVersion
+
+# This file is local.
+from defines import Defines
 
 
 AddOption(
@@ -48,7 +49,8 @@ class FreelanEnvironment(Environment):
 
         super(FreelanEnvironment, self).__init__(**kwargs)
 
-        self._version = None
+        self.defines = Defines()
+        self.defines.register_into(self)
 
         for flag in [
             'CXX',
@@ -94,21 +96,6 @@ class FreelanEnvironment(Environment):
                 self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
             else:
                 self.Append(CXXFLAGS='-O3')
-
-    @property
-    def repository_root(self):
-        return os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip())
-
-    @property
-    def version_file_path(self):
-        return os.path.join(self.repository_root, 'VERSION')
-
-    @property
-    def version(self):
-        if self._version is None:
-            self._version = StrictVersion(open(self.version_file_path).read())
-
-        return self._version
 
     def RGlob(self, path, patterns=None):
         """
