@@ -83,21 +83,25 @@
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,6 +122,12 @@
       <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
       <Message>Installing header files</Message>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Message>Generating the common defines header.</Message>
+      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -138,6 +148,12 @@
       <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
       <Message>Installing header files</Message>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Message>Generating the common defines header.</Message>
+      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -162,6 +178,12 @@
       <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
       <Message>Installing header files</Message>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Message>Generating the common defines header.</Message>
+      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -186,6 +208,12 @@
       <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
       <Message>Installing header files</Message>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Message>Generating the common defines header.</Message>
+      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
