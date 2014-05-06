@@ -116,6 +116,23 @@ namespace netlinkplus
 	};
 
 	/**
+	 * \brief A interface address entry.
+	 */
+	struct address_entry
+	{
+		address_entry()
+		{
+		}
+
+		boost::asio::ip::address address;
+		interface_entry interface;
+		boost::optional<boost::asio::ip::address> local;
+		boost::optional<boost::asio::ip::address> broadcast;
+		boost::optional<boost::asio::ip::address> anycast;
+		boost::optional<std::string> label;
+	};
+
+	/**
 	 * \brief Manage routes.
 	 */
 	class manager
@@ -133,6 +150,14 @@ namespace netlinkplus
 			 * \return The route entry, if any.
 			 */
 			route_entry get_route_for(const boost::asio::ip::address& host);
+
+			/**
+			 * \brief Set an interface address.
+			 * \param interface The interface to set the address on.
+			 * \param address The address to set.
+			 * \param prefix_length The address prefix length.
+			 */
+			void set_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length);
 
 		private:
 

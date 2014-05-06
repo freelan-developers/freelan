@@ -361,5 +361,19 @@ namespace netlinkplus
 					this->push_attribute(IFA_LABEL, _label);
 				}
 		};
+
+		class address_request_type : public address_message_type<1024>
+		{
+			public:
+				explicit address_request_type(uint16_t type = 0) :
+					address_message_type<1024>(type, NLM_F_REQUEST)
+				{
+				}
+		};
+
+		class address_response_type : public address_message_type<1024>
+		{
+		};
+
 	}
 }

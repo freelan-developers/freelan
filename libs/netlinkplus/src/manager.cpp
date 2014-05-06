@@ -214,4 +214,24 @@ namespace netlinkplus
 			return get_route_entry<boost::asio::ip::address_v6>(response.attributes());
 		}
 	}
+
+	void manager::set_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length)
+	{
+		using boost::asio::buffer_size;
+		using boost::asio::buffer_cast;
+
+		address_request_type request(RTM_NEWADDR);
+		address_response_type response;
+		request.set_interface(interface.index());
+		request.set_address(address);
+		request.set_prefix_length(prefix_length);
+
+		m_socket.send(boost::asio::buffer(request.data(), request.size()));
+		const size_t cnt = m_socket.receive(boost::asio::buffer(response.data(), response.max_size()));
+
+		if (!response.is_valid(cnt))
+		{
+			throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_response));
+		}
+	}
 }
