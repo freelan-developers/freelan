@@ -19,6 +19,7 @@ class Defines(object):
 
     def __init__(self):
         self._repository_root = None
+        self._repository_version = None
         self._version = None
         self._date = None
 
@@ -31,6 +32,16 @@ class Defines(object):
                 self._repository_root = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
         return self._repository_root
+
+    @property
+    def repository_version(self):
+        if self._repository_version is None:
+            try:
+                self._repository_version = check_output(['git', 'describe', '--dirty=-modified']).rstrip()
+            except CalledProcessError, OSError:
+                self._repository_version = "<unspecified version>"
+
+        return self._repository_version
 
     @property
     def version_file_path(self):
@@ -72,6 +83,7 @@ class Defines(object):
         Modifies the dependencies.
         """
 
+        env.Depends(target, env.Value(self.repository_version))
         env.Depends(target, env.Value(self.version))
         env.Depends(target, env.Value(self.date))
 
