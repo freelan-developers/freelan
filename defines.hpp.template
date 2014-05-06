@@ -6,9 +6,9 @@
 #define TO_STRING(x) STRINGIFY(x)
 
 #define FREELAN_NAME "freelan"
-#define FREELAN_VERSION_MAJOR "{defines.version.major}"
-#define FREELAN_VERSION_MINOR "{defines.version.minor}"
-#define FREELAN_VERSION_PATCH "{defines.version.patch}"
+#define FREELAN_VERSION_MAJOR {defines.version.major}
+#define FREELAN_VERSION_MINOR {defines.version.minor}
+#define FREELAN_VERSION_PATCH {defines.version.patch}
 #define FREELAN_DATE "{defines.date}"
 
 #define FREELAN_VERSION (FREELAN_VERSION_MAJOR * 0x01000000L + FREELAN_VERSION_MINOR * 0x00010000L)
