@@ -1,35 +1,63 @@
 """The SConstruct file"""
 
-name = 'freelan'
-product_name = 'FreeLAN'
-major = '1'
-minor = '1'
-
-# You should not need to modify anything below this line
-
 import os
 import sys
+import innosetup
 
-sys.path.insert(0, os.path.abspath('../../freelan-buildtools'))
+sys.path.insert(0, os.path.abspath('../..'))
 
-from freelan.buildtools import Environment
+from defines import Defines
 
-env = Environment(ENV = os.environ.copy(), ARGUMENTS = ARGUMENTS)
 
-defines = {
-    'NAME': name,
-    'VERSION': major + '.' + minor,
-    'ARCH': env.arch.lower(),
-    'XARCH': 'x64' if env.arch.lower() == 'amd64' else 'x86',
-}
-
-tap_setup = env.Install(
-    target=os.path.abspath('files/%s/' % env.arch.lower()),
-    source=os.path.abspath(
-        '../../libasiotap/windows/tap_adapter/tap-setup/objfre_win7_%(arch)s/%(arch)s/tap-setup.exe' % {
-            'arch': env.arch.lower(),
-        }
-    ),
+AddOption(
+    '--arch',
+    dest='arch',
+    nargs=1,
+    action='store',
+    choices=('all', 'x86', 'amd64'),
+    default='all',
+    help='The architecture to build the packages for.',
 )
 
-installer = env.INNOSetup(source = 'freelan.iss', ISCC_DEFINES = defines)
+env = Environment()
+innosetup.generate(env)
+
+defines = Defines()
+installers = []
+
+
+def build_for_arch(arch):
+
+    TAP_SETUP_TEMPLATE = (
+        '../../libs/asiotap/windows/tap_adapter/tap-setup/'
+        '{}/tap-setup.exe'
+    )
+
+    iscc_defines = {
+        'NAME': 'freelan',
+        'PRODUCT_NAME': "FreeLAN",
+        'VERSION': '.'.join(map(str, (
+            defines.version.major,
+            defines.version.minor,
+            defines.version.patch
+        ))),
+        'ARCH': arch,
+        'XARCH': 'x64' if arch == 'amd64' else 'x86',
+        'TAP_SETUP': TAP_SETUP_TEMPLATE.format(
+            'objfre_win7_amd64/amd64'
+            if arch == 'amd64'
+            else 'objfre_wxp_x86/i386'
+        ),
+    }
+
+    return env.INNOSetup(source='freelan.iss', ISCC_DEFINES=iscc_defines)
+
+arch = GetOption('arch')
+
+if arch == 'all':
+    for arch in ('x86', 'amd64'):
+        installers.append(build_for_arch(arch))
+else:
+    installers.append(build_for_arch(arch))
+
+env.Default(installers)

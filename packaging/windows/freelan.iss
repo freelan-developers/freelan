@@ -34,11 +34,11 @@ Name: german; MessagesFile: compiler:Languages\German.isl
 
 [Files]
 Source: ..\..\install\{#XARCH}\Release\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
-Source: ..\..\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
+Source: ..\..\apps\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
 Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.sys; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
-Source: files\{#ARCH}\tap-setup.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: tap_adapter
+Source: {#TAP_SETUP}; DestDir: {app}\bin; Flags: ignoreversion; Components: tap_adapter
 Source: files\README.txt; DestDir: {app}; Flags: isreadme ignoreversion
 
 [Dirs]
