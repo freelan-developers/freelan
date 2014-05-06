@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include <netlinkplus/route.hpp>
+#include <netlinkplus/manager.hpp>
 
 int main()
 {
@@ -16,10 +16,10 @@ int main()
 	{
 		boost::asio::io_service io_service;
 
-		netlinkplus::route_manager route_manager(io_service);
+		netlinkplus::manager manager(io_service);
 
 		const auto host = boost::asio::ip::address_v4::from_string("8.8.8.8");
-		const auto route_info = route_manager.get_route_for(host);
+		const auto route_info = manager.get_route_for(host);
 
 		std::cout << "Route information to " << host << std::endl;
 		std::cout << "Destination: " << route_info.destination << std::endl;

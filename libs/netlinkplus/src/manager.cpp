@@ -37,13 +37,13 @@
  */
 
 /**
- * \file route.cpp
+ * \file manager.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief netlink route classes.
+ * \brief netlink manager classes.
  */
 
-#include "route.hpp"
-#include "route_message.hpp"
+#include "manager.hpp"
+#include "messages.hpp"
 #include "error.hpp"
 
 #include <net/if.h>
@@ -175,14 +175,14 @@ namespace netlinkplus
 		return m_name_cache;
 	}
 
-	route_manager::route_manager(boost::asio::io_service& io_service) :
+	manager::manager(boost::asio::io_service& io_service) :
 		m_socket(io_service, netlink_route_protocol::endpoint())
 	{
 		m_socket.set_option(boost::asio::socket_base::send_buffer_size(32768));
 		m_socket.set_option(boost::asio::socket_base::receive_buffer_size(32768));
 	}
 
-	route_entry route_manager::get_route_for(const boost::asio::ip::address& host)
+	route_entry manager::get_route_for(const boost::asio::ip::address& host)
 	{
 		using boost::asio::buffer_size;
 		using boost::asio::buffer_cast;

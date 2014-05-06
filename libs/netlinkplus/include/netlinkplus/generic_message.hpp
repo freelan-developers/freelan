@@ -37,7 +37,7 @@
  */
 
 /**
- * \file message.hpp
+ * \file generic_message.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief Base message class.
  */

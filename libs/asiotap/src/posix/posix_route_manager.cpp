@@ -54,7 +54,7 @@
 #include <boost/algorithm/string.hpp>
 
 #ifdef LINUX
-#include <netlinkplus/route.hpp>
+#include <netlinkplus/manager.hpp>
 #endif
 
 #include <executeplus/posix_system.hpp>
@@ -157,7 +157,7 @@ namespace asiotap
 			gw = boost::asio::ip::address::from_string(values["via"]);
 		}
 #else
-		const auto route_info = m_netlink_route_manager.get_route_for(host);
+		const auto route_info = m_netlink_manager.get_route_for(host);
 		const auto interface = route_info.output_interface.name();
 		const auto gw = route_info.gateway;
 #endif

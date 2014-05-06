@@ -51,7 +51,7 @@
 #include <string>
 
 #ifdef LINUX
-#include <netlinkplus/route.hpp>
+#include <netlinkplus/manager.hpp>
 #endif
 
 namespace asiotap
@@ -67,7 +67,7 @@ namespace asiotap
 				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
 #else
 				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_route_manager(io_service_)
+				m_netlink_manager(io_service_)
 #endif
 			{
 			}
@@ -88,7 +88,7 @@ namespace asiotap
 
 #ifdef LINUX
 		private:
-			netlinkplus::route_manager m_netlink_route_manager;
+			netlinkplus::manager m_netlink_manager;
 #endif
 	};
 }

@@ -37,9 +37,9 @@
  */
 
 /**
- * \file route.hpp
+ * \file manager.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief netlink route classes.
+ * \brief netlink manager class.
  */
 
 #pragma once
@@ -118,14 +118,14 @@ namespace netlinkplus
 	/**
 	 * \brief Manage routes.
 	 */
-	class route_manager
+	class manager
 	{
 		public:
 
 			/**
 			 * \brief Create a route manager.
 			 */
-			route_manager(boost::asio::io_service& io_service);
+			manager(boost::asio::io_service& io_service);
 
 			/**
 			 * \brief Get the route entry for the specified host.

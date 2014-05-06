@@ -37,12 +37,12 @@
  */
 
 /**
- * \file route_message.hpp
+ * \file messages.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief Route message classes.
  */
 
-#include "message.hpp"
+#include "generic_message.hpp"
 
 #include <iterator>
 #include <cassert>
