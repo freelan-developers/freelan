@@ -19,6 +19,6 @@ else:
     sources = all_sources - windows_sources - linux_sources
 
 includes = env.RInstall(dirs['root'], local_include_dir, ['*.hpp'])
-library = env.StaticLibrary(target=os.path.join(str(dirs['lib']), name), source=list(sorted(sources)))
+library = env.StaticLibrary(target=os.path.join(str(dirs['lib']), name), source=sorted(sources, key=str))
 
 Return('library includes')
