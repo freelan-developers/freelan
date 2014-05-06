@@ -51,8 +51,8 @@ namespace netlinkplus
 {
 	namespace
 	{
-		template <size_t DataSize>
-		class route_message_type : public generic_message_type<::rtmsg, DataSize>
+		template <typename Type>
+		class attribute_message
 		{
 			public:
 				template <class T>
@@ -113,7 +113,7 @@ namespace netlinkplus
 						typename base_attribute_iterator::pointer m_ptr;
 						size_t m_ptr_len;
 
-						friend class route_message_type;
+						friend class attribute_message;
 				};
 
 				typedef base_attribute_iterator<::rtattr> attribute_iterator;
@@ -125,7 +125,7 @@ namespace netlinkplus
 
 						const_attribute_iterator begin() const
 						{
-							return const_attribute_iterator(this->m_msg.first_attribute(), this->m_msg.payload_size());
+							return const_attribute_iterator(this->m_msg.first_attribute(), static_cast<const Type&>(this->m_msg).payload_size());
 						}
 
 						const_attribute_iterator end() const
@@ -135,7 +135,7 @@ namespace netlinkplus
 
 						attribute_iterator begin()
 						{
-							return attribute_iterator(this->m_msg.first_attribute(), this->m_msg.payload_size());
+							return attribute_iterator(this->m_msg.first_attribute(), static_cast<const Type&>(this->m_msg).payload_size());
 						}
 
 						attribute_iterator end()
@@ -145,16 +145,102 @@ namespace netlinkplus
 
 					protected:
 
-						explicit attributes_type(route_message_type& msg) :
+						explicit attributes_type(attribute_message<Type>& msg) :
 							m_msg(msg)
 						{
 						}
 
-						route_message_type& m_msg;
+						attribute_message<Type>& m_msg;
 
-						friend class route_message_type;
+						friend class attribute_message;
 				};
 
+				template <typename ValueType>
+				static size_t value_size(const ValueType& value)
+				{
+					return value.size();
+				}
+
+				template <typename ValueType>
+				static const void* value_data(const ValueType& value)
+				{
+					return static_cast<const void*>(value.data());
+				}
+
+				static size_t value_size(const std::string& value)
+				{
+					return value.size() + 1;
+				}
+
+				static const void* value_data(const std::string& value)
+				{
+					return static_cast<const void*>(value.c_str());
+				}
+
+				template <typename ValueType>
+				void push_attribute(int type, const ValueType& value)
+				{
+					const auto attribute_len = RTA_LENGTH(value_size(value));
+					const auto required_size = static_cast<Type*>(this)->size() + attribute_len;
+
+					assert(required_size < sizeof(Type));
+
+					// The remaining size is big enough: let's create an attribute.
+					::rtattr* const attribute = next_attribute();
+					attribute->rta_type = type;
+					attribute->rta_len = attribute_len;
+					::memcpy(RTA_DATA(attribute), value_data(value), value_size(value));
+
+					// Resize the message accordingly.
+					static_cast<Type*>(this)->resize(static_cast<Type*>(this)->size() + attribute_len);
+				}
+
+				::rtattr* first_attribute()
+				{
+					return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->payload());
+				}
+
+				const ::rtattr* first_attribute() const
+				{
+					return reinterpret_cast<const ::rtattr*>(static_cast<const Type*>(this)->payload());
+				}
+
+				::rtattr* next_attribute()
+				{
+					return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->end());
+				}
+
+				const ::rtattr* next_attribute() const
+				{
+					return reinterpret_cast<const ::rtattr*>(static_cast<const Type*>(this)->end());
+				}
+
+				attributes_type attributes()
+				{
+					return attributes_type(*this);
+				}
+
+			protected:
+
+				void generic_set_address(int type, const boost::asio::ip::address& _address)
+				{
+					if (_address.is_v4())
+					{
+						const auto bytes = _address.to_v4().to_bytes();
+						this->push_attribute(type, bytes);
+					}
+					else
+					{
+						const auto bytes = _address.to_v6().to_bytes();
+						this->push_attribute(type, bytes);
+					}
+				}
+		};
+
+		template <size_t DataSize>
+		class route_message_type : public generic_message_type<::rtmsg, DataSize>, public attribute_message<route_message_type<DataSize>>
+		{
+			public:
 				explicit route_message_type(uint16_t type = 0, uint16_t flags = 0) :
 					generic_message_type<::rtmsg, DataSize>(type, flags)
 				{
@@ -166,14 +252,14 @@ namespace netlinkplus
 					{
 						this->subheader().rtm_family = AF_INET;
 						const auto bytes = src.to_v4().to_bytes();
-						push_attribute(RTA_SRC, bytes);
+						this->push_attribute(RTA_SRC, bytes);
 						this->subheader().rtm_src_len = bytes.size() * 8;
 					}
 					else
 					{
 						this->subheader().rtm_family = AF_INET6;
 						const auto bytes = src.to_v6().to_bytes();
-						push_attribute(RTA_SRC, bytes);
+						this->push_attribute(RTA_SRC, bytes);
 						this->subheader().rtm_src_len = bytes.size() * 8;
 					}
 				}
@@ -184,59 +270,16 @@ namespace netlinkplus
 					{
 						this->subheader().rtm_family = AF_INET;
 						const auto bytes = dest.to_v4().to_bytes();
-						push_attribute(RTA_DST, bytes);
+						this->push_attribute(RTA_DST, bytes);
 						this->subheader().rtm_dst_len = bytes.size() * 8;
 					}
 					else
 					{
 						this->subheader().rtm_family = AF_INET6;
 						const auto bytes = dest.to_v6().to_bytes();
-						push_attribute(RTA_DST, bytes);
+						this->push_attribute(RTA_DST, bytes);
 						this->subheader().rtm_dst_len = bytes.size() * 8;
 					}
-				}
-
-				template <typename ValueType>
-				void push_attribute(int type, const ValueType& value)
-				{
-					const auto attribute_len = RTA_LENGTH(value.size());
-					const auto required_size = this->size() + attribute_len;
-
-					assert(required_size < sizeof(route_message_type));
-
-					// The remaining size is big enough: let's create an attribute.
-					::rtattr* const attribute = next_attribute();
-					attribute->rta_type = type;
-					attribute->rta_len = attribute_len;
-					::memcpy(RTA_DATA(attribute), static_cast<const void*>(value.data()), value.size());
-
-					// Resize the message accordingly.
-					this->resize(this->size() + attribute_len);
-				}
-
-				::rtattr* first_attribute()
-				{
-					return reinterpret_cast<::rtattr*>(reinterpret_cast<char*>(this->data()) + this->header_size());
-				}
-
-				const ::rtattr* first_attribute() const
-				{
-					return reinterpret_cast<const ::rtattr*>(reinterpret_cast<const char*>(this->data()) + this->header_size());
-				}
-
-				::rtattr* next_attribute()
-				{
-					return reinterpret_cast<::rtattr*>(reinterpret_cast<char*>(this->data()) + this->size());
-				}
-
-				const ::rtattr* next_attribute() const
-				{
-					return reinterpret_cast<const ::rtattr*>(reinterpret_cast<const char*>(this->data()) + this->size());
-				}
-
-				attributes_type attributes()
-				{
-					return attributes_type(*this);
 				}
 		};
 
@@ -251,6 +294,72 @@ namespace netlinkplus
 
 		class route_response_type : public route_message_type<1024>
 		{
+		};
+
+		template <size_t DataSize>
+		class address_message_type : public generic_message_type<::ifaddrmsg, DataSize>, public attribute_message<address_message_type<DataSize>>
+		{
+			public:
+				explicit address_message_type(uint16_t type = 0, uint16_t flags = 0) :
+					generic_message_type<::ifaddrmsg, DataSize>(type, flags)
+				{
+					set_flags(IFA_F_PERMANENT);
+					set_scope(RT_SCOPE_UNIVERSE);
+				}
+
+				void set_flags(unsigned char _flags)
+				{
+					this->subheader().ifa_flags = _flags;
+				}
+
+				void set_scope(unsigned char _scope)
+				{
+					this->subheader().ifa_scope = _scope;
+				}
+
+				void set_address(const boost::asio::ip::address& _address)
+				{
+					if (_address.is_v4())
+					{
+						this->subheader().ifa_family = AF_INET;
+					}
+					else
+					{
+						this->subheader().ifa_family = AF_INET6;
+					}
+
+					this->generic_set_address(IFA_ADDRESS, _address);
+				}
+
+				void set_local_address(const boost::asio::ip::address& _local_address)
+				{
+					this->generic_set_address(IFA_LOCAL, _local_address);
+				}
+
+				void set_broadcast_address(const boost::asio::ip::address& _broadcast_address)
+				{
+					this->generic_set_address(IFA_BROADCAST, _broadcast_address);
+				}
+
+				void set_anycast_address(const boost::asio::ip::address& _anycast_address)
+				{
+					this->generic_set_address(IFA_ANYCAST, _anycast_address);
+				}
+
+				void set_prefix_length(unsigned int _prefix_length)
+				{
+					this->subheader().ifa_prefixlen = static_cast<unsigned char>(_prefix_length);
+				}
+
+				void set_interface(int _interface_index)
+				{
+					this->subheader().ifa_index = _interface_index;
+				}
+
+				void set_label(const std::string& _label)
+				{
+					this->push_attribute(IFA_LABEL, _label);
+				}
 		};
 	}
 }
