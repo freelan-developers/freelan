@@ -148,12 +148,13 @@ if mode in ('all', 'release'):
     Alias('install', install)
     Alias('apps', apps)
     Alias('samples', samples)
-
+    Alias('all', install + apps + samples)
 
 if mode in ('all', 'debug'):
     env = FreelanEnvironment(debug=True)
     libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'debug'))
     Alias('apps', apps)
     Alias('samples', samples)
+    Alias('all', apps + samples)
 
 Default('install')
