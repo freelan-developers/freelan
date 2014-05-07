@@ -65,6 +65,11 @@ namespace netlinkplus
 			{
 			}
 
+			explicit interface_entry(const std::string& name_) :
+				interface_entry(get_index_from_name(name_))
+			{
+			}
+
 			bool is_null() const
 			{
 				return (m_index == 0);
@@ -78,6 +83,8 @@ namespace netlinkplus
 			std::string name() const;
 
 		private:
+
+			static unsigned int get_index_from_name(const std::string& name_);
 
 			unsigned int m_index;
 			mutable std::string m_name_cache;
@@ -152,14 +159,42 @@ namespace netlinkplus
 			route_entry get_route_for(const boost::asio::ip::address& host);
 
 			/**
-			 * \brief Set an interface address.
+			 * \brief Add an interface address.
 			 * \param interface The interface to set the address on.
 			 * \param address The address to set.
 			 * \param prefix_length The address prefix length.
 			 */
-			void set_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length);
+			void add_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length);
+
+			/**
+			 * \brief Add an interface address.
+			 * \param interface The interface to set the address on.
+			 * \param address The address to set.
+			 * \param prefix_length The address prefix length.
+			 * \param remote_address The address to set.
+			 */
+			void add_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address);
+
+			/**
+			 * \brief Remove an interface address.
+			 * \param interface The interface to set the address on.
+			 * \param address The address to set.
+			 * \param prefix_length The address prefix length.
+			 */
+			void remove_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length);
+
+			/**
+			 * \brief Remove an interface address.
+			 * \param interface The interface to set the address on.
+			 * \param address The address to set.
+			 * \param prefix_length The address prefix length.
+			 * \param remote_address The address to set.
+			 */
+			void remove_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address);
 
 		private:
+
+			void generic_interface_address(uint16_t type, const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address);
 
 			netlink_route_protocol::socket m_socket;
 	};

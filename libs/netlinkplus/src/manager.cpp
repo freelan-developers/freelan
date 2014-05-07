@@ -175,6 +175,18 @@ namespace netlinkplus
 		return m_name_cache;
 	}
 
+	unsigned int interface_entry::get_index_from_name(const std::string& name_)
+	{
+		const unsigned int result = ::if_nametoindex(name_.c_str());
+
+		if (result == 0)
+		{
+				throw boost::system::system_error(errno, boost::system::system_category(), "Unable to find an interface with the given name");
+		}
+
+		return result;
+	}
+
 	manager::manager(boost::asio::io_service& io_service) :
 		m_socket(io_service, netlink_route_protocol::endpoint())
 	{
@@ -187,7 +199,7 @@ namespace netlinkplus
 		using boost::asio::buffer_size;
 		using boost::asio::buffer_cast;
 
-		route_request_type request(RTM_GETROUTE);
+		route_request_type request(RTM_GETROUTE, NLM_F_REQUEST);
 		route_response_type response;
 		request.set_route_destination(host);
 
@@ -215,15 +227,36 @@ namespace netlinkplus
 		}
 	}
 
-	void manager::set_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length)
+	void manager::add_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length)
+	{
+		add_interface_address(interface, address, prefix_length, address);
+	}
+
+	void manager::add_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address)
+	{
+		generic_interface_address(RTM_NEWADDR, interface, address, prefix_length, remote_address);
+	}
+
+	void manager::remove_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length)
+	{
+		remove_interface_address(interface, address, prefix_length, address);
+	}
+
+	void manager::remove_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address)
+	{
+		generic_interface_address(RTM_DELADDR, interface, address, prefix_length, remote_address);
+	}
+
+	void manager::generic_interface_address(uint16_t type, const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address)
 	{
 		using boost::asio::buffer_size;
 		using boost::asio::buffer_cast;
 
-		address_request_type request(RTM_NEWADDR);
-		address_response_type response;
+		address_request_type request(type, NLM_F_REQUEST | NLM_F_CREATE | NLM_F_ACK | NLM_F_EXCL);
+		error_message_type response;
 		request.set_interface(interface.index());
-		request.set_address(address);
+		request.set_address(remote_address);
+		request.set_local_address(address);
 		request.set_prefix_length(prefix_length);
 
 		m_socket.send(boost::asio::buffer(request.data(), request.size()));
@@ -232,6 +265,16 @@ namespace netlinkplus
 		if (!response.is_valid(cnt))
 		{
 			throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_response));
+		}
+
+		if (response.header().nlmsg_type != NLMSG_ERROR)
+		{
+			throw boost::system::system_error(make_error_code(netlinkplus_error::unexpected_response_type));
+		}
+
+		if (response.subheader().error != 0)
+		{
+			throw boost::system::system_error(make_error_code(netlinkplus_error::request_error));
 		}
 	}
 }

@@ -49,331 +49,336 @@
 
 namespace netlinkplus
 {
-	namespace
+	template <typename Type>
+	class attribute_message
 	{
-		template <typename Type>
-		class attribute_message
-		{
-			public:
-				template <class T>
-				class base_attribute_iterator : public std::iterator<std::forward_iterator_tag, T>
-				{
-					public:
+		public:
+			template <class T>
+			class base_attribute_iterator : public std::iterator<std::forward_iterator_tag, T>
+			{
+				public:
 
-						base_attribute_iterator& operator++()
-						{
-							if (RTA_OK(m_ptr, m_ptr_len))
-							{
-								m_ptr = RTA_NEXT(m_ptr, m_ptr_len);
-							}
-							else
-							{
-								*this = base_attribute_iterator();
-							}
-
-							return *this;
-						}
-
-						base_attribute_iterator operator++(int)
-						{
-							base_attribute_iterator tmp(*this);
-							operator++();
-							return tmp;
-						}
-
-						bool operator==(const base_attribute_iterator& rhs) const
-						{
-							return (rhs.m_ptr == m_ptr);
-						}
-
-						bool operator!=(const base_attribute_iterator& rhs) const
-						{
-							return (rhs.m_ptr != m_ptr);
-						}
-
-						typename base_attribute_iterator::reference operator*()
-						{
-							return *m_ptr;
-						}
-
-					protected:
-
-						explicit base_attribute_iterator() :
-							m_ptr(nullptr), m_ptr_len()
-						{
-						}
-
-						explicit base_attribute_iterator(typename base_attribute_iterator::pointer ptr, size_t ptr_len) :
-							m_ptr(ptr),
-							m_ptr_len(ptr_len)
-						{
-						}
-
-					private:
-						typename base_attribute_iterator::pointer m_ptr;
-						size_t m_ptr_len;
-
-						friend class attribute_message;
-				};
-
-				typedef base_attribute_iterator<::rtattr> attribute_iterator;
-				typedef base_attribute_iterator<const ::rtattr> const_attribute_iterator;
-
-				class attributes_type
-				{
-					public:
-
-						const_attribute_iterator begin() const
-						{
-							return const_attribute_iterator(this->m_msg.first_attribute(), static_cast<const Type&>(this->m_msg).payload_size());
-						}
-
-						const_attribute_iterator end() const
-						{
-							return {};
-						}
-
-						attribute_iterator begin()
-						{
-							return attribute_iterator(this->m_msg.first_attribute(), static_cast<const Type&>(this->m_msg).payload_size());
-						}
-
-						attribute_iterator end()
-						{
-							return {};
-						}
-
-					protected:
-
-						explicit attributes_type(attribute_message<Type>& msg) :
-							m_msg(msg)
-						{
-						}
-
-						attribute_message<Type>& m_msg;
-
-						friend class attribute_message;
-				};
-
-				template <typename ValueType>
-				static size_t value_size(const ValueType& value)
-				{
-					return value.size();
-				}
-
-				template <typename ValueType>
-				static const void* value_data(const ValueType& value)
-				{
-					return static_cast<const void*>(value.data());
-				}
-
-				static size_t value_size(const std::string& value)
-				{
-					return value.size() + 1;
-				}
-
-				static const void* value_data(const std::string& value)
-				{
-					return static_cast<const void*>(value.c_str());
-				}
-
-				template <typename ValueType>
-				void push_attribute(int type, const ValueType& value)
-				{
-					const auto attribute_len = RTA_LENGTH(value_size(value));
-					const auto required_size = static_cast<Type*>(this)->size() + attribute_len;
-
-					assert(required_size < sizeof(Type));
-
-					// The remaining size is big enough: let's create an attribute.
-					::rtattr* const attribute = next_attribute();
-					attribute->rta_type = type;
-					attribute->rta_len = attribute_len;
-					::memcpy(RTA_DATA(attribute), value_data(value), value_size(value));
-
-					// Resize the message accordingly.
-					static_cast<Type*>(this)->resize(static_cast<Type*>(this)->size() + attribute_len);
-				}
-
-				::rtattr* first_attribute()
-				{
-					return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->payload());
-				}
-
-				const ::rtattr* first_attribute() const
-				{
-					return reinterpret_cast<const ::rtattr*>(static_cast<const Type*>(this)->payload());
-				}
-
-				::rtattr* next_attribute()
-				{
-					return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->end());
-				}
-
-				const ::rtattr* next_attribute() const
-				{
-					return reinterpret_cast<const ::rtattr*>(static_cast<const Type*>(this)->end());
-				}
-
-				attributes_type attributes()
-				{
-					return attributes_type(*this);
-				}
-
-			protected:
-
-				void generic_set_address(int type, const boost::asio::ip::address& _address)
-				{
-					if (_address.is_v4())
+					base_attribute_iterator& operator++()
 					{
-						const auto bytes = _address.to_v4().to_bytes();
-						this->push_attribute(type, bytes);
-					}
-					else
-					{
-						const auto bytes = _address.to_v6().to_bytes();
-						this->push_attribute(type, bytes);
-					}
-				}
-		};
+						if (RTA_OK(m_ptr, m_ptr_len))
+						{
+							m_ptr = RTA_NEXT(m_ptr, m_ptr_len);
+						}
+						else
+						{
+							*this = base_attribute_iterator();
+						}
 
-		template <size_t DataSize>
-		class route_message_type : public generic_message_type<::rtmsg, DataSize>, public attribute_message<route_message_type<DataSize>>
-		{
-			public:
-				explicit route_message_type(uint16_t type = 0, uint16_t flags = 0) :
-					generic_message_type<::rtmsg, DataSize>(type, flags)
-				{
-				}
-
-				void set_route_source(const boost::asio::ip::address& src)
-				{
-					if (src.is_v4())
-					{
-						this->subheader().rtm_family = AF_INET;
-						const auto bytes = src.to_v4().to_bytes();
-						this->push_attribute(RTA_SRC, bytes);
-						this->subheader().rtm_src_len = bytes.size() * 8;
-					}
-					else
-					{
-						this->subheader().rtm_family = AF_INET6;
-						const auto bytes = src.to_v6().to_bytes();
-						this->push_attribute(RTA_SRC, bytes);
-						this->subheader().rtm_src_len = bytes.size() * 8;
-					}
-				}
-
-				void set_route_destination(const boost::asio::ip::address& dest)
-				{
-					if (dest.is_v4())
-					{
-						this->subheader().rtm_family = AF_INET;
-						const auto bytes = dest.to_v4().to_bytes();
-						this->push_attribute(RTA_DST, bytes);
-						this->subheader().rtm_dst_len = bytes.size() * 8;
-					}
-					else
-					{
-						this->subheader().rtm_family = AF_INET6;
-						const auto bytes = dest.to_v6().to_bytes();
-						this->push_attribute(RTA_DST, bytes);
-						this->subheader().rtm_dst_len = bytes.size() * 8;
-					}
-				}
-		};
-
-		class route_request_type : public route_message_type<1024>
-		{
-			public:
-				explicit route_request_type(uint16_t type = 0) :
-					route_message_type<1024>(type, NLM_F_REQUEST)
-				{
-				}
-		};
-
-		class route_response_type : public route_message_type<1024>
-		{
-		};
-
-		template <size_t DataSize>
-		class address_message_type : public generic_message_type<::ifaddrmsg, DataSize>, public attribute_message<address_message_type<DataSize>>
-		{
-			public:
-				explicit address_message_type(uint16_t type = 0, uint16_t flags = 0) :
-					generic_message_type<::ifaddrmsg, DataSize>(type, flags)
-				{
-					set_flags(IFA_F_PERMANENT);
-					set_scope(RT_SCOPE_UNIVERSE);
-				}
-
-				void set_flags(unsigned char _flags)
-				{
-					this->subheader().ifa_flags = _flags;
-				}
-
-				void set_scope(unsigned char _scope)
-				{
-					this->subheader().ifa_scope = _scope;
-				}
-
-				void set_address(const boost::asio::ip::address& _address)
-				{
-					if (_address.is_v4())
-					{
-						this->subheader().ifa_family = AF_INET;
-					}
-					else
-					{
-						this->subheader().ifa_family = AF_INET6;
+						return *this;
 					}
 
-					this->generic_set_address(IFA_ADDRESS, _address);
-				}
+					base_attribute_iterator operator++(int)
+					{
+						base_attribute_iterator tmp(*this);
+						operator++();
+						return tmp;
+					}
 
-				void set_local_address(const boost::asio::ip::address& _local_address)
+					bool operator==(const base_attribute_iterator& rhs) const
+					{
+						return (rhs.m_ptr == m_ptr);
+					}
+
+					bool operator!=(const base_attribute_iterator& rhs) const
+					{
+						return (rhs.m_ptr != m_ptr);
+					}
+
+					typename base_attribute_iterator::reference operator*()
+					{
+						return *m_ptr;
+					}
+
+				protected:
+
+					explicit base_attribute_iterator() :
+						m_ptr(nullptr), m_ptr_len()
+					{
+					}
+
+					explicit base_attribute_iterator(typename base_attribute_iterator::pointer ptr, size_t ptr_len) :
+						m_ptr(ptr),
+						m_ptr_len(ptr_len)
+					{
+					}
+
+				private:
+					typename base_attribute_iterator::pointer m_ptr;
+					size_t m_ptr_len;
+
+					friend class attribute_message;
+			};
+
+			typedef base_attribute_iterator<::rtattr> attribute_iterator;
+			typedef base_attribute_iterator<const ::rtattr> const_attribute_iterator;
+
+			class attributes_type
+			{
+				public:
+
+					const_attribute_iterator begin() const
+					{
+						return const_attribute_iterator(this->m_msg.first_attribute(), static_cast<const Type&>(this->m_msg).payload_size());
+					}
+
+					const_attribute_iterator end() const
+					{
+						return {};
+					}
+
+					attribute_iterator begin()
+					{
+						return attribute_iterator(this->m_msg.first_attribute(), static_cast<const Type&>(this->m_msg).payload_size());
+					}
+
+					attribute_iterator end()
+					{
+						return {};
+					}
+
+				protected:
+
+					explicit attributes_type(attribute_message<Type>& msg) :
+						m_msg(msg)
+					{
+					}
+
+					attribute_message<Type>& m_msg;
+
+					friend class attribute_message;
+			};
+
+			template <typename ValueType>
+			static size_t value_size(const ValueType& value)
+			{
+				return value.size();
+			}
+
+			template <typename ValueType>
+			static const void* value_data(const ValueType& value)
+			{
+				return static_cast<const void*>(value.data());
+			}
+
+			static size_t value_size(const std::string& value)
+			{
+				return value.size() + 1;
+			}
+
+			static const void* value_data(const std::string& value)
+			{
+				return static_cast<const void*>(value.c_str());
+			}
+
+			template <typename ValueType>
+			void push_attribute(int type, const ValueType& value)
+			{
+				const auto attribute_len = RTA_LENGTH(value_size(value));
+				const auto required_size = static_cast<Type*>(this)->size() + attribute_len;
+
+				assert(required_size < sizeof(Type));
+
+				// The remaining size is big enough: let's create an attribute.
+				::rtattr* const attribute = next_attribute();
+				attribute->rta_type = type;
+				attribute->rta_len = attribute_len;
+				::memcpy(RTA_DATA(attribute), value_data(value), value_size(value));
+
+				// Resize the message accordingly.
+				static_cast<Type*>(this)->resize(static_cast<Type*>(this)->size() + attribute_len);
+			}
+
+			::rtattr* first_attribute()
+			{
+				return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->payload());
+			}
+
+			const ::rtattr* first_attribute() const
+			{
+				return reinterpret_cast<const ::rtattr*>(static_cast<const Type*>(this)->payload());
+			}
+
+			::rtattr* next_attribute()
+			{
+				return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->end());
+			}
+
+			const ::rtattr* next_attribute() const
+			{
+				return reinterpret_cast<const ::rtattr*>(static_cast<const Type*>(this)->end());
+			}
+
+			attributes_type attributes()
+			{
+				return attributes_type(*this);
+			}
+
+		protected:
+
+			void generic_set_address(int type, const boost::asio::ip::address& _address)
+			{
+				if (_address.is_v4())
 				{
-					this->generic_set_address(IFA_LOCAL, _local_address);
+					const auto bytes = _address.to_v4().to_bytes();
+					this->push_attribute(type, bytes);
 				}
-
-				void set_broadcast_address(const boost::asio::ip::address& _broadcast_address)
+				else
 				{
-					this->generic_set_address(IFA_BROADCAST, _broadcast_address);
+					const auto bytes = _address.to_v6().to_bytes();
+					this->push_attribute(type, bytes);
 				}
+			}
+	};
 
-				void set_anycast_address(const boost::asio::ip::address& _anycast_address)
+	template <size_t DataSize>
+	class route_message_type : public generic_message_type<::rtmsg, DataSize>, public attribute_message<route_message_type<DataSize>>
+	{
+		public:
+			explicit route_message_type(uint16_t type = 0, uint16_t flags = 0) :
+				generic_message_type<::rtmsg, DataSize>(type, flags)
+			{
+			}
+
+			void set_route_source(const boost::asio::ip::address& src)
+			{
+				if (src.is_v4())
 				{
-					this->generic_set_address(IFA_ANYCAST, _anycast_address);
+					this->subheader().rtm_family = AF_INET;
+					const auto bytes = src.to_v4().to_bytes();
+					this->push_attribute(RTA_SRC, bytes);
+					this->subheader().rtm_src_len = bytes.size() * 8;
 				}
-
-				void set_prefix_length(unsigned int _prefix_length)
+				else
 				{
-					this->subheader().ifa_prefixlen = static_cast<unsigned char>(_prefix_length);
+					this->subheader().rtm_family = AF_INET6;
+					const auto bytes = src.to_v6().to_bytes();
+					this->push_attribute(RTA_SRC, bytes);
+					this->subheader().rtm_src_len = bytes.size() * 8;
 				}
+			}
 
-				void set_interface(int _interface_index)
+			void set_route_destination(const boost::asio::ip::address& dest)
+			{
+				if (dest.is_v4())
 				{
-					this->subheader().ifa_index = _interface_index;
+					this->subheader().rtm_family = AF_INET;
+					const auto bytes = dest.to_v4().to_bytes();
+					this->push_attribute(RTA_DST, bytes);
+					this->subheader().rtm_dst_len = bytes.size() * 8;
 				}
-
-				void set_label(const std::string& _label)
+				else
 				{
-					this->push_attribute(IFA_LABEL, _label);
+					this->subheader().rtm_family = AF_INET6;
+					const auto bytes = dest.to_v6().to_bytes();
+					this->push_attribute(RTA_DST, bytes);
+					this->subheader().rtm_dst_len = bytes.size() * 8;
 				}
-		};
+			}
+	};
 
-		class address_request_type : public address_message_type<1024>
-		{
-			public:
-				explicit address_request_type(uint16_t type = 0) :
-					address_message_type<1024>(type, NLM_F_REQUEST)
+	class route_request_type : public route_message_type<1024>
+	{
+		public:
+			explicit route_request_type(uint16_t type = 0, uint16_t flags = 0) :
+				route_message_type<1024>(type, flags)
+			{
+			}
+	};
+
+	class route_response_type : public route_message_type<1024>
+	{
+	};
+
+	template <size_t DataSize>
+	class address_message_type : public generic_message_type<::ifaddrmsg, DataSize>, public attribute_message<address_message_type<DataSize>>
+	{
+		public:
+			explicit address_message_type(uint16_t type = 0, uint16_t flags = 0) :
+				generic_message_type<::ifaddrmsg, DataSize>(type, flags)
+			{
+				set_flags(IFA_F_PERMANENT | IFA_F_SECONDARY);
+				set_scope(RT_SCOPE_UNIVERSE);
+			}
+
+			void set_flags(unsigned char _flags)
+			{
+				this->subheader().ifa_flags = _flags;
+			}
+
+			void set_scope(unsigned char _scope)
+			{
+				this->subheader().ifa_scope = _scope;
+			}
+
+			void set_address(const boost::asio::ip::address& _address)
+			{
+				if (_address.is_v4())
 				{
+					this->subheader().ifa_family = AF_INET;
 				}
-		};
+				else
+				{
+					this->subheader().ifa_family = AF_INET6;
+				}
 
-		class address_response_type : public address_message_type<1024>
-		{
-		};
+				this->generic_set_address(IFA_ADDRESS, _address);
+			}
 
-	}
+			void set_local_address(const boost::asio::ip::address& _local_address)
+			{
+				this->generic_set_address(IFA_LOCAL, _local_address);
+			}
+
+			void set_broadcast_address(const boost::asio::ip::address& _broadcast_address)
+			{
+				this->generic_set_address(IFA_BROADCAST, _broadcast_address);
+			}
+
+			void set_anycast_address(const boost::asio::ip::address& _anycast_address)
+			{
+				this->generic_set_address(IFA_ANYCAST, _anycast_address);
+			}
+
+			void set_prefix_length(unsigned int _prefix_length)
+			{
+				this->subheader().ifa_prefixlen = static_cast<unsigned char>(_prefix_length);
+			}
+
+			void set_interface(int _interface_index)
+			{
+				this->subheader().ifa_index = _interface_index;
+			}
+
+			void set_label(const std::string& _label)
+			{
+				this->push_attribute(IFA_LABEL, _label);
+			}
+	};
+
+	class address_request_type : public address_message_type<1024>
+	{
+		public:
+			explicit address_request_type(uint16_t type = 0, uint16_t flags = 0) :
+				address_message_type<1024>(type, flags)
+			{
+			}
+	};
+
+	class address_response_type : public address_message_type<1024>
+	{
+	};
+
+	class error_message_type : public generic_message_type<::nlmsgerr, 1024>
+	{
+		public:
+			explicit error_message_type(uint16_t type = 0, uint16_t flags = 0) :
+				generic_message_type<::nlmsgerr, 1024>(type, flags)
+			{
+			}
+	};
 }

@@ -171,16 +171,24 @@ namespace asiotap
 
 	void posix_route_manager::ifconfig(const std::string& interface, const ip_network_address& address)
 	{
+#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address) };
 
 		executeplus::checked_execute(real_args);
+#else
+		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), ip_address(address), prefix_length(address));
+#endif
 	}
 
 	void posix_route_manager::ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address)
 	{
+#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address), boost::lexical_cast<std::string>(remote_address) };
 
 		executeplus::checked_execute(real_args);
+#else
+		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), remote_address, prefix_length(address), ip_address(address));
+#endif
 	}
 
 	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest)

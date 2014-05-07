@@ -46,131 +46,128 @@
 
 namespace netlinkplus
 {
-	namespace
+	template <typename Type, size_t DataSize>
+	class base_generic_message_type
 	{
-		template <typename Type, size_t DataSize>
-		class base_generic_message_type
-		{
-			public:
+		public:
 
-				explicit base_generic_message_type(uint16_t type = 0, uint16_t flags = 0) :
-					m_data{}
-				{
-					header().nlmsg_len = NLMSG_LENGTH(0);
-					header().nlmsg_type = type;
-					header().nlmsg_flags = flags;
-				}
+			explicit base_generic_message_type(uint16_t type = 0, uint16_t flags = 0) :
+				m_data{}
+			{
+				header().nlmsg_len = NLMSG_LENGTH(0);
+				header().nlmsg_type = type;
+				header().nlmsg_flags = flags;
+			}
 
-				size_t header_size() const
-				{
-					return sizeof(::nlmsghdr);
-				}
+			size_t header_size() const
+			{
+				return sizeof(::nlmsghdr);
+			}
 
-				size_t payload_size() const
-				{
-					return static_cast<const Type*>(this)->size() - static_cast<const Type*>(this)->header_size();
-				}
+			size_t payload_size() const
+			{
+				return static_cast<const Type*>(this)->size() - static_cast<const Type*>(this)->header_size();
+			}
 
-				size_t size() const
-				{
-					return NLMSG_ALIGN(static_cast<const Type*>(this)->header().nlmsg_len);
-				}
+			size_t size() const
+			{
+				return NLMSG_ALIGN(static_cast<const Type*>(this)->header().nlmsg_len);
+			}
 
-				size_t max_size() const
-				{
-					return sizeof(Type);
-				}
+			size_t max_size() const
+			{
+				return sizeof(Type);
+			}
 
-				void resize(size_t new_size)
-				{
-					static_cast<Type*>(this)->header().nlmsg_len = NLMSG_ALIGN(new_size);
-				}
+			void resize(size_t new_size)
+			{
+				static_cast<Type*>(this)->header().nlmsg_len = NLMSG_ALIGN(new_size);
+			}
 
-				::nlmsghdr& header()
-				{
-					return *reinterpret_cast<::nlmsghdr*>(m_data.data());
-				}
+			::nlmsghdr& header()
+			{
+				return *reinterpret_cast<::nlmsghdr*>(m_data.data());
+			}
 
-				const ::nlmsghdr& header() const
-				{
-					return *reinterpret_cast<const ::nlmsghdr*>(m_data.data());
-				}
+			const ::nlmsghdr& header() const
+			{
+				return *reinterpret_cast<const ::nlmsghdr*>(m_data.data());
+			}
 
-				void* data()
-				{
-					return m_data.data();
-				}
+			void* data()
+			{
+				return m_data.data();
+			}
 
-				const void* data() const
-				{
-					return m_data.data();
-				}
+			const void* data() const
+			{
+				return m_data.data();
+			}
 
-				void* payload()
-				{
-					return static_cast<char*>(data()) + static_cast<Type*>(this)->header_size();
-				}
+			void* payload()
+			{
+				return static_cast<char*>(data()) + static_cast<Type*>(this)->header_size();
+			}
 
-				const void* payload() const
-				{
-					return static_cast<const char*>(data()) + static_cast<const Type*>(this)->header_size();
-				}
+			const void* payload() const
+			{
+				return static_cast<const char*>(data()) + static_cast<const Type*>(this)->header_size();
+			}
 
-				void* end()
-				{
-					return static_cast<char*>(data()) + static_cast<Type*>(this)->size();
-				}
+			void* end()
+			{
+				return static_cast<char*>(data()) + static_cast<Type*>(this)->size();
+			}
 
-				const void* end() const
-				{
-					return static_cast<const char*>(data()) + static_cast<const Type*>(this)->size();
-				}
+			const void* end() const
+			{
+				return static_cast<const char*>(data()) + static_cast<const Type*>(this)->size();
+			}
 
-				bool is_valid(size_t cnt) const
-				{
-					return NLMSG_OK(&header(), cnt);
-				}
+			bool is_valid(size_t cnt) const
+			{
+				return NLMSG_OK(&header(), cnt);
+			}
 
-			private:
-				std::array<char, NLMSG_ALIGN(DataSize)> m_data;
-		};
+		private:
+			std::array<char, NLMSG_ALIGN(DataSize)> m_data;
+	};
 
-		template <typename SubHeaderType, size_t DataSize>
-		class generic_message_type : public base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>
-		{
-			public:
+	template <typename SubHeaderType, size_t DataSize>
+	class generic_message_type : public base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>
+	{
+		public:
 
-				explicit generic_message_type(uint16_t type = 0, uint16_t flags = 0) :
-					base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>(type, flags)
-				{
-					this->header().nlmsg_len = NLMSG_LENGTH(sizeof(SubHeaderType));
-				}
+			explicit generic_message_type(uint16_t type = 0, uint16_t flags = 0) :
+				base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>(type, flags)
+			{
+				this->header().nlmsg_len = NLMSG_LENGTH(sizeof(SubHeaderType));
+			}
 
-				size_t header_size() const
-				{
-					return base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>::header_size() + sizeof(SubHeaderType);
-				}
+			size_t header_size() const
+			{
+				return base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>::header_size() + sizeof(SubHeaderType);
+			}
 
-				SubHeaderType& subheader()
-				{
-					return *reinterpret_cast<SubHeaderType*>(reinterpret_cast<char*>(this->data()) + base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>::header_size());
-				}
+			SubHeaderType& subheader()
+			{
+				return *reinterpret_cast<SubHeaderType*>(reinterpret_cast<char*>(this->data()) + base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>::header_size());
+			}
 
-				const SubHeaderType& subheader() const
-				{
-					return *reinterpret_cast<const SubHeaderType*>(reinterpret_cast<const char*>(this->data()) + base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>::header_size());
-				}
-		};
+			const SubHeaderType& subheader() const
+			{
+				return *reinterpret_cast<const SubHeaderType*>(reinterpret_cast<const char*>(this->data()) + base_generic_message_type<generic_message_type<SubHeaderType, DataSize>, DataSize>::header_size());
+			}
+	};
 
-		template <size_t DataSize>
-		class generic_message_type<void, DataSize> : public base_generic_message_type<generic_message_type<void, DataSize>, DataSize>
-		{
-			public:
+	template <size_t DataSize>
+	class generic_message_type<void, DataSize> : public base_generic_message_type<generic_message_type<void, DataSize>, DataSize>
+	{
+		public:
 
-				explicit generic_message_type(uint16_t type = 0, uint16_t flags = 0) :
-					base_generic_message_type<generic_message_type<void, DataSize>, DataSize>(type, flags)
-				{
-				}
-		};
-	}
+			explicit generic_message_type(uint16_t type = 0, uint16_t flags = 0) :
+				base_generic_message_type<generic_message_type<void, DataSize>, DataSize>(type, flags)
+			{
+			}
+	};
 }
