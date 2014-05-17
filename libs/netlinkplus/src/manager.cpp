@@ -217,14 +217,31 @@ namespace netlinkplus
 
 		const int family = response.subheader().rtm_family;
 
+		route_entry result;
+
 		if (family == AF_INET)
 		{
-			return get_route_entry<boost::asio::ip::address_v4>(response.attributes());
+			result = get_route_entry<boost::asio::ip::address_v4>(response.attributes());
 		}
 		else
 		{
-			return get_route_entry<boost::asio::ip::address_v6>(response.attributes());
+			result = get_route_entry<boost::asio::ip::address_v6>(response.attributes());
 		}
+
+		result.destination_length = response.subheader().rtm_dst_len;
+		result.source_length = response.subheader().rtm_src_len;
+
+		return result;
+	}
+
+	void manager::add_route(const interface_entry& interface, const boost::asio::ip::address& destination, unsigned int destination_length, boost::optional<boost::asio::ip::address> gateway)
+	{
+		generic_route(RTM_NEWROUTE, interface, destination, destination_length, gateway);
+	}
+
+	void manager::remove_route(const interface_entry& interface, const boost::asio::ip::address& destination, unsigned int destination_length, boost::optional<boost::asio::ip::address> gateway)
+	{
+		generic_route(RTM_DELROUTE, interface, destination, destination_length, gateway);
 	}
 
 	void manager::add_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length)
@@ -245,6 +262,40 @@ namespace netlinkplus
 	void manager::remove_interface_address(const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address)
 	{
 		generic_interface_address(RTM_DELADDR, interface, address, prefix_length, remote_address);
+	}
+
+	void manager::generic_route(uint16_t type, const interface_entry& interface, const boost::asio::ip::address& destination, unsigned int destination_length, boost::optional<boost::asio::ip::address> gateway)
+	{
+		using boost::asio::buffer_size;
+		using boost::asio::buffer_cast;
+
+		route_request_type request(type, NLM_F_REQUEST | NLM_F_CREATE | NLM_F_ACK | NLM_F_EXCL);
+		error_message_type response;
+		request.set_route_destination(destination, destination_length);
+		request.set_output_interface(interface.index());
+
+		if (gateway)
+		{
+			request.set_gateway(*gateway);
+		}
+
+		m_socket.send(boost::asio::buffer(request.data(), request.size()));
+		const size_t cnt = m_socket.receive(boost::asio::buffer(response.data(), response.max_size()));
+
+		if (!response.is_valid(cnt))
+		{
+			throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_response));
+		}
+
+		if (response.header().nlmsg_type != NLMSG_ERROR)
+		{
+			throw boost::system::system_error(make_error_code(netlinkplus_error::unexpected_response_type));
+		}
+
+		if (response.subheader().error != 0)
+		{
+			throw boost::system::system_error(make_error_code(netlinkplus_error::request_error));
+		}
 	}
 
 	void manager::generic_interface_address(uint16_t type, const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address)

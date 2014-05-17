@@ -175,6 +175,16 @@ namespace netlinkplus
 				return static_cast<const void*>(value.c_str());
 			}
 
+			static size_t value_size(unsigned int)
+			{
+				return sizeof(unsigned int);
+			}
+
+			static const void* value_data(const unsigned int& value)
+			{
+				return static_cast<const void*>(&value);
+			}
+
 			template <typename ValueType>
 			void push_attribute(int type, const ValueType& value)
 			{
@@ -244,40 +254,106 @@ namespace netlinkplus
 			{
 			}
 
-			void set_route_source(const boost::asio::ip::address& src)
+			void set_route_source(const boost::asio::ip::address& src, boost::optional<unsigned int> src_len = boost::optional<unsigned int>())
 			{
 				if (src.is_v4())
 				{
 					this->subheader().rtm_family = AF_INET;
 					const auto bytes = src.to_v4().to_bytes();
 					this->push_attribute(RTA_SRC, bytes);
-					this->subheader().rtm_src_len = bytes.size() * 8;
+
+					if (src_len)
+					{
+						this->subheader().rtm_src_len = *src_len;
+					}
+					else
+					{
+						this->subheader().rtm_src_len = bytes.size() * 8;
+					}
 				}
 				else
 				{
 					this->subheader().rtm_family = AF_INET6;
 					const auto bytes = src.to_v6().to_bytes();
 					this->push_attribute(RTA_SRC, bytes);
-					this->subheader().rtm_src_len = bytes.size() * 8;
+
+					if (src_len)
+					{
+						this->subheader().rtm_src_len = *src_len;
+					}
+					else
+					{
+						this->subheader().rtm_src_len = bytes.size() * 8;
+					}
 				}
 			}
 
-			void set_route_destination(const boost::asio::ip::address& dest)
+			void set_route_destination(const boost::asio::ip::address& dest, boost::optional<unsigned int> dest_len = boost::optional<unsigned int>())
 			{
 				if (dest.is_v4())
 				{
 					this->subheader().rtm_family = AF_INET;
 					const auto bytes = dest.to_v4().to_bytes();
 					this->push_attribute(RTA_DST, bytes);
-					this->subheader().rtm_dst_len = bytes.size() * 8;
+
+					if (dest_len)
+					{
+						this->subheader().rtm_dst_len = *dest_len;
+					}
+					else
+					{
+						this->subheader().rtm_dst_len = bytes.size() * 8;
+					}
 				}
 				else
 				{
 					this->subheader().rtm_family = AF_INET6;
 					const auto bytes = dest.to_v6().to_bytes();
 					this->push_attribute(RTA_DST, bytes);
-					this->subheader().rtm_dst_len = bytes.size() * 8;
+
+					if (dest_len)
+					{
+						this->subheader().rtm_dst_len = *dest_len;
+					}
+					else
+					{
+						this->subheader().rtm_dst_len = bytes.size() * 8;
+					}
 				}
+			}
+
+			void set_input_interface(unsigned int interface)
+			{
+				this->push_attribute(RTA_IIF, interface);
+			}
+
+			void set_output_interface(unsigned int interface)
+			{
+				this->push_attribute(RTA_OIF, interface);
+			}
+
+			void set_gateway(const boost::asio::ip::address& gateway)
+			{
+				if (gateway.is_v4())
+				{
+					const auto bytes = gateway.to_v4().to_bytes();
+					this->push_attribute(RTA_GATEWAY, bytes);
+				}
+				else
+				{
+					const auto bytes = gateway.to_v6().to_bytes();
+					this->push_attribute(RTA_GATEWAY, bytes);
+				}
+			}
+
+			void set_priority(unsigned int priority)
+			{
+				this->push_attribute(RTA_PRIORITY, priority);
+			}
+
+			void set_metrics(unsigned int metrics)
+			{
+				this->push_attribute(RTA_METRICS, metrics);
 			}
 	};
 

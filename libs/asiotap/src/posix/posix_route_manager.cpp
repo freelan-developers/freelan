@@ -193,6 +193,7 @@ namespace asiotap
 
 	void posix_route_manager::set_route(route_action action, const std::string& interface, const ip_network_address& dest)
 	{
+#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
 		const std::string command = action == route_action::add ? "add" : "del";
 #ifdef MACINTOSH
@@ -202,10 +203,21 @@ namespace asiotap
 #endif
 
 		executeplus::checked_execute(real_args);
+#else
+		if (action == route_action::add)
+		{
+			m_netlink_manager.add_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest));
+		}
+		else
+		{
+			m_netlink_manager.remove_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest));
+		}
+#endif
 	}
 
 	void posix_route_manager::set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
 	{
+#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
 		const std::string command = action == route_action::add ? "add" : "del";
 #ifdef MACINTOSH
@@ -216,6 +228,16 @@ namespace asiotap
 #endif
 
 		executeplus::checked_execute(real_args);
+#else
+		if (action == route_action::add)
+		{
+			m_netlink_manager.add_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest), gateway);
+		}
+		else
+		{
+			m_netlink_manager.remove_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest), gateway);
+		}
+#endif
 	}
 
 	void posix_route_manager::register_route(const route_type& route_entry)

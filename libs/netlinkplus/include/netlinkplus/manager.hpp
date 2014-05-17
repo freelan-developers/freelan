@@ -108,13 +108,17 @@ namespace netlinkplus
 	struct route_entry
 	{
 		route_entry() :
+			destination_length{},
+			source_length{},
 			priority{},
 			metric{}
 		{
 		}
 
 		boost::asio::ip::address destination;
+		unsigned int destination_length;
 		boost::asio::ip::address source;
+		unsigned int source_length;
 		interface_entry input_interface;
 		interface_entry output_interface;
 		boost::optional<boost::asio::ip::address> gateway;
@@ -157,6 +161,24 @@ namespace netlinkplus
 			 * \return The route entry, if any.
 			 */
 			route_entry get_route_for(const boost::asio::ip::address& host);
+			
+			/**
+			 * \brief Add a route entry.
+			 * \param interface The interface.
+			 * \param destination The destination.
+			 * \param destination_length The destination length.
+			 * \param gateway The gateway.
+			 */
+			void add_route(const interface_entry& interface, const boost::asio::ip::address& destination, unsigned int destination_length, boost::optional<boost::asio::ip::address> gateway = boost::optional<boost::asio::ip::address>());
+
+			/**
+			 * \brief Remove a route entry.
+			 * \param interface The interface.
+			 * \param destination The destination.
+			 * \param destination_length The destination length.
+			 * \param gateway The gateway.
+			 */
+			void remove_route(const interface_entry& interface, const boost::asio::ip::address& destination, unsigned int destination_length, boost::optional<boost::asio::ip::address> gateway = boost::optional<boost::asio::ip::address>());
 
 			/**
 			 * \brief Add an interface address.
@@ -194,6 +216,7 @@ namespace netlinkplus
 
 		private:
 
+			void generic_route(uint16_t type, const interface_entry& interface, const boost::asio::ip::address& destination, unsigned int destination_length, boost::optional<boost::asio::ip::address> gateway);
 			void generic_interface_address(uint16_t type, const interface_entry& interface, const boost::asio::ip::address& address, size_t prefix_length, const boost::asio::ip::address& remote_address);
 
 			netlink_route_protocol::socket m_socket;
