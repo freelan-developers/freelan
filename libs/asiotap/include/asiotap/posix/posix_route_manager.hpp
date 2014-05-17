@@ -76,8 +76,13 @@ namespace asiotap
 			void ifconfig(const std::string& interface, const ip_network_address& address);
 			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
 
-			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest);
-			void set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
+			enum class route_action {
+				add,
+				remove
+			};
+
+			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
+			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
 
 		protected:
 

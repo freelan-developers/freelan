@@ -191,10 +191,10 @@ namespace asiotap
 #endif
 	}
 
-	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest)
+	void posix_route_manager::set_route(route_action action, const std::string& interface, const ip_network_address& dest)
 	{
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-
+		const std::string command = action == route_action::add ? "add" : "del";
 #ifdef MACINTOSH
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
 #else
@@ -204,10 +204,10 @@ namespace asiotap
 		executeplus::checked_execute(real_args);
 	}
 
-	void posix_route_manager::set_route(const std::string& command, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
+	void posix_route_manager::set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
 	{
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-
+		const std::string command = action == route_action::add ? "add" : "del";
 #ifdef MACINTOSH
 		static_cast<void>(interface);
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), boost::lexical_cast<std::string>(gateway) };
@@ -225,11 +225,11 @@ namespace asiotap
 
 		if (_gateway)
 		{
-				set_route("add", route_entry.interface, ina, *_gateway);
+				set_route(route_action::add, route_entry.interface, ina, *_gateway);
 		}
 		else
 		{
-				set_route("add", route_entry.interface, ina);
+				set_route(route_action::add, route_entry.interface, ina);
 		}
 	}
 
@@ -240,11 +240,11 @@ namespace asiotap
 
 		if (_gateway)
 		{
-				set_route("del", route_entry.interface, ina, *_gateway);
+				set_route(route_action::remove, route_entry.interface, ina, *_gateway);
 		}
 		else
 		{
-				set_route("del", route_entry.interface, ina);
+				set_route(route_action::remove, route_entry.interface, ina);
 		}
 	}
 }
