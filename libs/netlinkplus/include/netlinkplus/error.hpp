@@ -67,7 +67,6 @@ namespace netlinkplus
 		success = 0,
 		invalid_response,
 		unexpected_response_type,
-		request_error,
 		invalid_route_destination,
 		invalid_route_source,
 		invalid_route_input_interface,

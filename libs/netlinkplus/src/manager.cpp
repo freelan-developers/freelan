@@ -294,7 +294,7 @@ namespace netlinkplus
 
 		if (response.subheader().error != 0)
 		{
-			throw boost::system::system_error(make_error_code(netlinkplus_error::request_error));
+			throw boost::system::system_error(-response.subheader().error, boost::system::system_category());
 		}
 	}
 
@@ -325,7 +325,7 @@ namespace netlinkplus
 
 		if (response.subheader().error != 0)
 		{
-			throw boost::system::system_error(make_error_code(netlinkplus_error::request_error));
+			throw boost::system::system_error(-response.subheader().error, boost::system::system_category());
 		}
 	}
 }
