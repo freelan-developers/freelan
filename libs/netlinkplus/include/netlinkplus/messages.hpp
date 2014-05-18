@@ -63,6 +63,11 @@ namespace netlinkplus
 						if (RTA_OK(m_ptr, m_ptr_len))
 						{
 							m_ptr = RTA_NEXT(m_ptr, m_ptr_len);
+
+							if (m_ptr_len == 0)
+							{
+								*this = base_attribute_iterator();
+							}
 						}
 						else
 						{
@@ -102,7 +107,7 @@ namespace netlinkplus
 					}
 
 					explicit base_attribute_iterator(typename base_attribute_iterator::pointer ptr, size_t ptr_len) :
-						m_ptr(ptr),
+						m_ptr(ptr_len > 0 ? ptr : nullptr),
 						m_ptr_len(ptr_len)
 					{
 					}
