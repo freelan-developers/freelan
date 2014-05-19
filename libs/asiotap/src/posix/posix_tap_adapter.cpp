@@ -784,7 +784,7 @@ namespace asiotap
 
 		// OSX apparently does not create a route even though ifconfig indicates that the netmask is understood.
 		// We must create it ourselves.
-		m_route_manager.set_route("add", name(), network_address);
+		m_route_manager.set_route(posix_route_manager::route_action::add, name(), network_address);
 #else
 		set_ip_address_v4(network_address);
 
