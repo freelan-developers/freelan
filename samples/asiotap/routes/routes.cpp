@@ -139,8 +139,15 @@ int main()
 			std::cout << "Failure removing route (" << route << "): " << ex.what() << std::endl;
 		});
 
-		const auto r1 = rmgr.get_route_entry(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.1.0"), 24)));
-		const auto r2 = rmgr.get_route_entry(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.2.0"), 24, boost::asio::ip::address_v4::from_string("9.0.1.2"))));
+		{
+			std::cout << "Testing route addition..." << std::endl;
+
+			const auto r1 = rmgr.get_route_entry(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.1.0"), 24)));
+			const auto r2 = rmgr.get_route_entry(tap_adapter.get_route(asiotap::to_ip_route(boost::asio::ip::address_v4::from_string("9.0.2.0"), 24, boost::asio::ip::address_v4::from_string("9.0.0.2"))));
+
+			std::cout << "Press any key now to delete the routes." << std::endl;
+			std::cin.get();
+		}
 
 		_io_service.run();
 	}

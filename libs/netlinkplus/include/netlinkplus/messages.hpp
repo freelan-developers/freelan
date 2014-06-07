@@ -293,6 +293,40 @@ namespace netlinkplus
 				}
 			}
 
+			void set_route_preferred_source(const boost::asio::ip::address& src, boost::optional<unsigned int> src_len = boost::optional<unsigned int>())
+			{
+				if (src.is_v4())
+				{
+					this->subheader().rtm_family = AF_INET;
+					const auto bytes = src.to_v4().to_bytes();
+					this->push_attribute(RTA_PREFSRC, bytes);
+
+					if (src_len)
+					{
+						this->subheader().rtm_src_len = *src_len;
+					}
+					else
+					{
+						this->subheader().rtm_src_len = bytes.size() * 8;
+					}
+				}
+				else
+				{
+					this->subheader().rtm_family = AF_INET6;
+					const auto bytes = src.to_v6().to_bytes();
+					this->push_attribute(RTA_PREFSRC, bytes);
+
+					if (src_len)
+					{
+						this->subheader().rtm_src_len = *src_len;
+					}
+					else
+					{
+						this->subheader().rtm_src_len = bytes.size() * 8;
+					}
+				}
+			}
+
 			void set_route_destination(const boost::asio::ip::address& dest, boost::optional<unsigned int> dest_len = boost::optional<unsigned int>())
 			{
 				if (dest.is_v4())

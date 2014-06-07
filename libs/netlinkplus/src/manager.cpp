@@ -269,8 +269,21 @@ namespace netlinkplus
 		using boost::asio::buffer_size;
 		using boost::asio::buffer_cast;
 
-		route_request_type request(type, NLM_F_REQUEST | NLM_F_CREATE | NLM_F_ACK | NLM_F_EXCL);
+		int flags = NLM_F_REQUEST | NLM_F_ACK;
+
+		if (type == RTM_NEWROUTE)
+		{
+			flags |= NLM_F_CREATE | NLM_F_EXCL;
+		}
+
+		route_request_type request(type, flags);
 		error_message_type response;
+
+		request.subheader().rtm_table = RT_TABLE_MAIN;
+		request.subheader().rtm_scope = RT_SCOPE_UNIVERSE;
+		request.subheader().rtm_type = RTN_UNICAST;
+		request.subheader().rtm_protocol = RTPROT_STATIC;
+
 		request.set_route_destination(destination, destination_length);
 		request.set_output_interface(interface.index());
 
