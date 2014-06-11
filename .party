@@ -56,7 +56,7 @@ Attendee('boost').get_build('msvc-x64').commands = [
 ]
 
 # OpenSSL
-Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.1e.tar.gz')
+Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.1h.tar.gz')
 
 Attendee('openssl').add_build('osx', environment='system', filter='darwin')
 Attendee('openssl').get_build('osx').commands = [
