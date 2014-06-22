@@ -187,19 +187,21 @@ namespace fscp
 			 * \brief A handler for when session requests are received.
 			 * \param sender The endpoint that sent the session request message.
 			 * \param cs_cap The cipher suite capabilities of the remote host.
+			 * \param ec_cap The elliptic curve capabilities of the remote host.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session request.
 			 */
-			typedef boost::function<bool (const ep_type& sender, const cipher_suite_list_type& cs_cap, bool default_accept)> session_request_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap, bool default_accept)> session_request_received_handler_type;
 
 			/**
 			 * \brief A handler for when session messages are received.
 			 * \param sender The endpoint that sent the session message.
 			 * \param cs The cipher suite used for the session.
+			 * \param ec The elliptic curve used for the session.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cipher_suite_type cs, bool default_accept)> session_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, cipher_suite_type cs, elliptic_curve_type ec, bool default_accept)> session_received_handler_type;
 
 			/**
 			 * \brief A handler for when a session establishment failed.
@@ -220,8 +222,9 @@ namespace fscp
 			 * \param host The host with which the session was established.
 			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
 			 * \param cipher_suite The cipher suite used in the session.
+			 * \param elliptic_curve The elliptic curve used in the session.
 			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const cipher_suite_type& cipher_suite)> session_established_handler_type;
+			typedef boost::function<void (const ep_type& host, bool is_new, const cipher_suite_type& cipher_suite, const elliptic_curve_type& elliptic_curve)> session_established_handler_type;
 
 			/**
 			 * \brief A handler for when a session was lost.
@@ -255,10 +258,6 @@ namespace fscp
 			 * \param answer The answer endpoint.
 			 */
 			typedef boost::function<void (const ep_type& sender, hash_type hash, const ep_type& answer)> contact_received_handler_type;
-
-			// Static variables
-
-			static const cipher_suite_list_type DEFAULT_CIPHER_SUITES;
 
 			// Public methods
 

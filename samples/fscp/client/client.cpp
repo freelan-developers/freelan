@@ -129,7 +129,7 @@ static bool on_presentation(const std::string& name, fscp::server& server, const
 	return true;
 }
 
-static bool on_session_request(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, const fscp::cipher_suite_list_type&, bool default_accept)
+static bool on_session_request(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, const fscp::cipher_suite_list_type&, const fscp::elliptic_curve_list_type&, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
@@ -140,11 +140,11 @@ static bool on_session_request(const std::string& name, fscp::server& server, co
 	return default_accept;
 }
 
-static bool on_session(const std::string& name, fscp::server&, const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
+static bool on_session(const std::string& name, fscp::server&, const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, fscp::elliptic_curve_type ec, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher suite: " << cs << ")" << std::endl;
+	std::cout << "[" << name << "] Received SESSION from " << sender << " (cipher suite: " << cs << ", elliptic curve: " << ec << ")" << std::endl;
 
 	return default_accept;
 }
@@ -165,13 +165,14 @@ static void on_session_error(const std::string& name, fscp::server&, const fscp:
 	std::cout << "[" << name << "] New session: " << is_new << std::endl;
 }
 
-static void on_session_established(const std::string& name, fscp::server& server, const fscp::server::ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)
+static void on_session_established(const std::string& name, fscp::server& server, const fscp::server::ep_type& host, bool is_new, const fscp::cipher_suite_type& cs, const fscp::elliptic_curve_type& ec)
 {
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "[" << name << "] Session established with " << host << std::endl;
 	std::cout << "[" << name << "] New session: " << is_new << std::endl;
 	std::cout << "[" << name << "] Cipher suite: " << cs << std::endl;
+	std::cout << "[" << name << "] Elliptic curve: " << ec << std::endl;
 
 	static const std::string HELLO = "Hello you !";
 
@@ -289,13 +290,13 @@ int main()
 		bob_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "bob", boost::ref(bob_server), _1, _2, _3));
 		chris_server.set_presentation_message_received_callback(boost::bind(&on_presentation, "chris", boost::ref(chris_server), _1, _2, _3));
 
-		alice_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "alice", boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "bob", boost::ref(bob_server), _1, _2, _3));
-		chris_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "chris", boost::ref(chris_server), _1, _2, _3));
+		alice_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_request_message_received_callback(boost::bind(&on_session_request, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
-		alice_server.set_session_message_received_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_session_message_received_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2, _3));
-		chris_server.set_session_message_received_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2, _3));
+		alice_server.set_session_message_received_callback(boost::bind(&on_session, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_message_received_callback(boost::bind(&on_session, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_message_received_callback(boost::bind(&on_session, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		alice_server.set_session_failed_callback(boost::bind(&on_session_failed, "alice", boost::ref(alice_server), _1, _2));
 		bob_server.set_session_failed_callback(boost::bind(&on_session_failed, "bob", boost::ref(bob_server), _1, _2));
@@ -305,9 +306,9 @@ int main()
 		bob_server.set_session_error_callback(boost::bind(&on_session_error, "bob", boost::ref(bob_server), _1, _2, _3));
 		chris_server.set_session_error_callback(boost::bind(&on_session_error, "chris", boost::ref(chris_server), _1, _2, _3));
 
-		alice_server.set_session_established_callback(boost::bind(&on_session_established, "alice", boost::ref(alice_server), _1, _2, _3));
-		bob_server.set_session_established_callback(boost::bind(&on_session_established, "bob", boost::ref(bob_server), _1, _2, _3));
-		chris_server.set_session_established_callback(boost::bind(&on_session_established, "chris", boost::ref(chris_server), _1, _2, _3));
+		alice_server.set_session_established_callback(boost::bind(&on_session_established, "alice", boost::ref(alice_server), _1, _2, _3, _4));
+		bob_server.set_session_established_callback(boost::bind(&on_session_established, "bob", boost::ref(bob_server), _1, _2, _3, _4));
+		chris_server.set_session_established_callback(boost::bind(&on_session_established, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
 		alice_server.set_session_lost_callback(boost::bind(&on_session_lost, "alice", boost::ref(alice_server), _1));
 		bob_server.set_session_lost_callback(boost::bind(&on_session_lost, "bob", boost::ref(bob_server), _1));

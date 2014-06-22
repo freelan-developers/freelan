@@ -1608,7 +1608,7 @@ namespace fscp
 
 		if (m_session_request_message_received_handler)
 		{
-			can_reply = m_session_request_message_received_handler(sender, cipher_suites, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_received_handler(sender, cipher_suites, elliptic_curves, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
@@ -1847,7 +1847,7 @@ namespace fscp
 
 		if (m_session_message_received_handler)
 		{
-			can_accept = m_session_message_received_handler(sender, _session_message.cipher_suite(), can_accept);
+			can_accept = m_session_message_received_handler(sender, _session_message.cipher_suite(), _session_message.elliptic_curve(), can_accept);
 		}
 
 		if (can_accept)
@@ -1884,7 +1884,7 @@ namespace fscp
 
 				if (m_session_established_handler)
 				{
-					m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite);
+					m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite, p_session.current_session().parameters.elliptic_curve);
 				}
 			}
 		}
