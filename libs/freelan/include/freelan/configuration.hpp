@@ -253,6 +253,11 @@ namespace freelan
 		 * \brief The list of allowed cipher suites.
 		 */
 		fscp::cipher_suite_list_type cipher_suite_capabilities;
+
+		/**
+		 * \brief The list of allowed elliptic curves.
+		 */
+		fscp::elliptic_curve_list_type elliptic_curve_capabilities;
 	};
 
 	/**

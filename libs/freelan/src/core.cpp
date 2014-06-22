@@ -494,6 +494,7 @@ namespace freelan
 		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
 		m_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
+		m_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
 
 		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
 		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
