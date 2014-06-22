@@ -135,6 +135,7 @@ po::options_description get_fscp_options()
 	("fscp.dynamic_contact_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The certificate of an host to dynamically contact.")
 	("fscp.never_contact", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
 	("fscp.cipher_suite_capability", po::value<std::vector<fscp::cipher_suite_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_cipher_suites(), ""), "A cipher suite to allow.")
+	("fscp.elliptic_curve_capability", po::value<std::vector<fscp::elliptic_curve_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_elliptic_curves(), ""), "A elliptic curve to allow.")
 	;
 
 	return result;
@@ -334,6 +335,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<asiotap::ip_network_address>>();
 	configuration.fscp.cipher_suite_capabilities = vm["fscp.cipher_suite_capability"].as<std::vector<fscp::cipher_suite_type>>();
+	configuration.fscp.elliptic_curve_capabilities = vm["fscp.elliptic_curve_capability"].as<std::vector<fscp::elliptic_curve_type>>();
 
 	// Security options
 	cert_type signature_certificate;
