@@ -157,6 +157,14 @@ static void on_session_failed(const std::string& name, fscp::server&, const fscp
 	std::cout << "[" << name << "] New session: " << is_new << std::endl;
 }
 
+static void on_session_error(const std::string& name, fscp::server&, const fscp::server::ep_type& host, bool is_new, const std::exception& error)
+{
+	mutex::scoped_lock lock(output_mutex);
+
+	std::cout << "[" << name << "] Session error with " << host << ": " << error.what() << std::endl;
+	std::cout << "[" << name << "] New session: " << is_new << std::endl;
+}
+
 static void on_session_established(const std::string& name, fscp::server& server, const fscp::server::ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)
 {
 	mutex::scoped_lock lock(output_mutex);
@@ -292,6 +300,10 @@ int main()
 		alice_server.set_session_failed_callback(boost::bind(&on_session_failed, "alice", boost::ref(alice_server), _1, _2));
 		bob_server.set_session_failed_callback(boost::bind(&on_session_failed, "bob", boost::ref(bob_server), _1, _2));
 		chris_server.set_session_failed_callback(boost::bind(&on_session_failed, "chris", boost::ref(chris_server), _1, _2));
+
+		alice_server.set_session_error_callback(boost::bind(&on_session_error, "alice", boost::ref(alice_server), _1, _2, _3));
+		bob_server.set_session_error_callback(boost::bind(&on_session_error, "bob", boost::ref(bob_server), _1, _2, _3));
+		chris_server.set_session_error_callback(boost::bind(&on_session_error, "chris", boost::ref(chris_server), _1, _2, _3));
 
 		alice_server.set_session_established_callback(boost::bind(&on_session_established, "alice", boost::ref(alice_server), _1, _2, _3));
 		bob_server.set_session_established_callback(boost::bind(&on_session_established, "bob", boost::ref(bob_server), _1, _2, _3));

@@ -270,6 +270,7 @@ namespace fscp
 		m_accept_session_messages_default(true),
 		m_session_message_received_handler(),
 		m_session_failed_handler(),
+		m_session_error_handler(),
 		m_session_established_handler(),
 		m_session_lost_handler(),
 		m_data_strand(io_service),
@@ -593,6 +594,15 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+	void server::sync_set_session_error_callback(session_error_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_session_error_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
 
 	void server::sync_set_session_established_callback(session_established_handler_type callback)
 	{
@@ -603,7 +613,6 @@ namespace fscp
 
 		return promise.get_future().wait();
 	}
-
 
 	void server::sync_set_session_lost_callback(session_lost_handler_type callback)
 	{
@@ -1803,23 +1812,40 @@ namespace fscp
 
 		if (can_accept)
 		{
-			if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
-			{
-				// We received a session message but no session was prepared yet: we issue one and retry.
-				p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite());
+			bool session_completed = true;
 
+			try
+			{
 				if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
 				{
-					// Unable to complete the session.
-					return;
+					// We received a session message but no session was prepared yet: we issue one and retry.
+					p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite());
+
+					if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
+					{
+						// Unable to complete the session.
+						return;
+					}
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				session_completed = false;
+
+				if (m_session_error_handler)
+				{
+					m_session_error_handler(sender, session_is_new, ex);
 				}
 			}
 
-			do_send_session(identity, sender, p_session.current_session_parameters());
-
-			if (m_session_established_handler)
+			if (session_completed)
 			{
-				m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite);
+				do_send_session(identity, sender, p_session.current_session_parameters());
+
+				if (m_session_established_handler)
+				{
+					m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite);
+				}
 			}
 		}
 	}
@@ -1850,6 +1876,17 @@ namespace fscp
 	{
 		// All do_set_session_failed_callback() calls are done in the same strand so the following is thread-safe.
 		set_session_failed_callback(callback);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server::do_set_session_error_callback(session_error_handler_type callback, void_handler_type handler)
+	{
+		// All do_set_session_error_callback() calls are done in the same strand so the following is thread-safe.
+		set_session_error_callback(callback);
 
 		if (handler)
 		{

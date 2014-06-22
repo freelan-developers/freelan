@@ -405,6 +405,7 @@ namespace freelan
 		m_core_opened_callback(),
 		m_core_closed_callback(),
 		m_session_failed_callback(),
+		m_session_error_callback(),
 		m_session_established_callback(),
 		m_session_lost_callback(),
 		m_certificate_validation_callback(),
@@ -501,6 +502,7 @@ namespace freelan
 		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
 		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
 		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
+		m_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
 		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3));
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
 		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
@@ -1062,6 +1064,23 @@ namespace freelan
 		if (m_session_failed_callback)
 		{
 			m_session_failed_callback(host, is_new);
+		}
+	}
+
+	void core::do_handle_session_error(const ep_type& host, bool is_new, const std::exception& error)
+	{
+		if (is_new)
+		{
+			m_logger(LL_WARNING) << "Session establishment with " << host << " encountered an error: " << error.what();
+		}
+		else
+		{
+			m_logger(LL_WARNING) << "Session renewal with " << host << " encountered an error: " << error.what();
+		}
+
+		if (m_session_error_callback)
+		{
+			m_session_error_callback(host, is_new, error);
 		}
 	}
 

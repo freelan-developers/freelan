@@ -209,6 +209,13 @@ namespace fscp
 			typedef boost::function<void (const ep_type& host, bool is_new)> session_failed_handler_type;
 
 			/**
+			 * \brief A handler for when a session establishment encountered an error.
+			 * \param host The host with which the session establishment failed.
+			 * \param is_new A flag that indicates whether the session would have been a new session or a renewal.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const std::exception&)> session_error_handler_type;
+
+			/**
 			 * \brief A handler for when a session was established.
 			 * \param host The host with which the session was established.
 			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
@@ -779,6 +786,34 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			void sync_set_session_failed_callback(session_failed_handler_type callback);
+
+			/**
+			 * \brief Set the session error callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_session_error_callback(session_error_handler_type callback)
+			{
+				m_session_error_handler = callback;
+			}
+
+			/**
+			 * \brief Set the session error callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_session_error_callback(session_error_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server::do_set_session_error_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the session failed callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_session_error_callback(session_error_handler_type callback);
 
 			/**
 			 * \brief Set the session established callback.
@@ -1396,12 +1431,14 @@ namespace fscp
 			void do_set_accept_session_messages_default(bool, void_handler_type);
 			void do_set_session_message_received_callback(session_received_handler_type, void_handler_type);
 			void do_set_session_failed_callback(session_failed_handler_type, void_handler_type);
+			void do_set_session_error_callback(session_error_handler_type, void_handler_type);
 			void do_set_session_established_callback(session_established_handler_type, void_handler_type);
 			void do_set_session_lost_callback(session_lost_handler_type, void_handler_type);
 
 			bool m_accept_session_messages_default;
 			session_received_handler_type m_session_message_received_handler;
 			session_failed_handler_type m_session_failed_handler;
+			session_error_handler_type m_session_error_handler;
 			session_established_handler_type m_session_established_handler;
 			session_lost_handler_type m_session_lost_handler;
 

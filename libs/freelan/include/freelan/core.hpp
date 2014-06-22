@@ -190,6 +190,14 @@ namespace freelan
 			typedef boost::function<void (const ep_type& host, bool is_new)> session_failed_handler_type;
 
 			/**
+			 * \brief A session error callback.
+			 * \param host The host with which a session is established.
+			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
+			 * \param error The error.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const std::exception& error)> session_error_handler_type;
+
+			/**
 			 * \brief A session established callback.
 			 * \param host The host with which a session is established.
 			 * \param is_new A flag that indicates whether the session is a new session or a session renewal.
@@ -298,6 +306,16 @@ namespace freelan
 			}
 
 			/**
+			 * \brief Set the session error callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_session_error_callback(session_error_handler_type callback)
+			{
+				m_session_error_callback = callback;
+			}
+
+			/**
 			 * \brief Set the session established callback.
 			 * \param callback The callback.
 			 * \warning This method can only be called when the core is NOT running.
@@ -373,6 +391,7 @@ namespace freelan
 			core_opened_handler_type m_core_opened_callback;
 			core_closed_handler_type m_core_closed_callback;
 			session_failed_handler_type m_session_failed_callback;
+			session_error_handler_type m_session_error_callback;
 			session_established_handler_type m_session_established_callback;
 			session_lost_handler_type m_session_lost_callback;
 			certificate_validation_handler_type m_certificate_validation_callback;
@@ -426,6 +445,7 @@ namespace freelan
 			bool do_handle_session_request_received(const ep_type&, const fscp::cipher_suite_list_type&, bool);
 			bool do_handle_session_received(const ep_type&, fscp::cipher_suite_type, bool);
 			void do_handle_session_failed(const ep_type&, bool);
+			void do_handle_session_error(const ep_type&, bool, const std::exception&);
 			void do_handle_session_established(const ep_type&, bool, const fscp::cipher_suite_type&);
 			void do_handle_session_lost(const ep_type&);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
