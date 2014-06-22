@@ -61,12 +61,12 @@ namespace fscp
 		}
 	}
 
-	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, cryptoplus::pkey::pkey sig_key)
+	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap, cryptoplus::pkey::pkey sig_key)
 	{
 		using cryptoplus::buffer_cast;
 		using cryptoplus::buffer_size;
 
-		const size_t unsigned_payload_size = MIN_BODY_LENGTH + cs_cap.size();
+		const size_t unsigned_payload_size = MIN_BODY_LENGTH + cs_cap.size() + ec_cap.size();
 
 		if (buf_len < HEADER_LENGTH + unsigned_payload_size)
 		{
@@ -85,6 +85,17 @@ namespace fscp
 			for (auto&& cs: cs_cap)
 			{
 				*cs_buf++ = cs.value();
+			}
+		}
+
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cs_cap.size(), htons(static_cast<uint16_t>(ec_cap.size())));
+
+		{
+			uint8_t* ec_buf = payload + sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cs_cap.size() + sizeof(uint16_t);
+
+			for (auto&& ec: ec_cap)
+			{
+				*ec_buf++ = ec.value();
 			}
 		}
 
@@ -122,7 +133,12 @@ namespace fscp
 			throw std::runtime_error("buf_len");
 		}
 
-		if (length() < MIN_BODY_LENGTH + cipher_suite_capabilities_size() + header_signature_size())
+		if (length() < MIN_BODY_LENGTH + cipher_suite_capabilities_size() + elliptic_curve_capabilities_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		if (length() < MIN_BODY_LENGTH + cipher_suite_capabilities_size() + elliptic_curve_capabilities_size() + header_signature_size())
 		{
 			throw std::runtime_error("buf_len");
 		}
@@ -135,6 +151,19 @@ namespace fscp
 		std::copy(
 			payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t),
 			payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size(),
+			result.begin()
+		);
+
+		return result;
+	}
+
+	elliptic_curve_list_type session_request_message::elliptic_curve_capabilities() const
+	{
+		elliptic_curve_list_type result(elliptic_curve_capabilities_size());
+
+		std::copy(
+			payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size() + sizeof(uint16_t),
+			payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size() + sizeof(uint16_t) + elliptic_curve_capabilities_size(),
 			result.begin()
 		);
 

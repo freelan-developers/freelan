@@ -66,22 +66,24 @@ namespace fscp
 
 			struct session_parameters
 			{
-				session_parameters(session_number_type _session_number, cipher_suite_type _cipher_suite, const cryptoplus::buffer& _public_key) :
+				session_parameters(session_number_type _session_number, cipher_suite_type _cipher_suite, elliptic_curve_type _elliptic_curve, const cryptoplus::buffer& _public_key) :
 					session_number(_session_number),
 					cipher_suite(_cipher_suite),
+					elliptic_curve(_elliptic_curve),
 					public_key(_public_key)
 				{}
 
 				session_number_type session_number;
 				cipher_suite_type cipher_suite;
+				elliptic_curve_type elliptic_curve;
 				cryptoplus::buffer public_key;
 			};
 
 			struct next_session_type
 			{
-				next_session_type(session_number_type _session_number, cipher_suite_type _cipher_suite) :
-					ecdhe_context(_cipher_suite.to_elliptic_curve_nid()),
-					parameters(_session_number, _cipher_suite, ecdhe_context.get_public_key())
+				next_session_type(session_number_type _session_number, cipher_suite_type _cipher_suite, elliptic_curve_type _elliptic_curve) :
+					ecdhe_context(_elliptic_curve.to_elliptic_curve_nid()),
+					parameters(_session_number, _cipher_suite, _elliptic_curve, ecdhe_context.get_public_key())
 				{}
 
 				cryptoplus::pkey::ecdhe_context ecdhe_context;
@@ -156,9 +158,10 @@ namespace fscp
 			 * \brief Prepare the next session.
 			 * \param _session_number The next session number.
 			 * \param _cipher_suite The next cipher suite.
+			 * \param _elliptic_curve The next elliptic curve.
 			 * \return true if a new session was created.
 			 */
-			bool prepare_session(session_number_type _session_number, cipher_suite_type _cipher_suite);
+			bool prepare_session(session_number_type _session_number, cipher_suite_type _cipher_suite, elliptic_curve_type _elliptic_curve);
 
 			/**
 			 * \brief Complete the next session.

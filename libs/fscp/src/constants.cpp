@@ -55,6 +55,13 @@ namespace fscp
 	const cipher_suite_type::value_type cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384 = 0x02;
 	const std::string cipher_suite_type::ecdhe_rsa_aes128_gcm_sha256_string("ecdhe_rsa_aes128_gcm_sha256");
 	const std::string cipher_suite_type::ecdhe_rsa_aes256_gcm_sha384_string("ecdhe_rsa_aes256_gcm_sha384");
+	const elliptic_curve_type::value_type elliptic_curve_type::unsupported = 0x00;
+	const elliptic_curve_type::value_type elliptic_curve_type::sect571k1 = 0x01;
+	const elliptic_curve_type::value_type elliptic_curve_type::secp384r1 = 0x02;
+	const elliptic_curve_type::value_type elliptic_curve_type::secp521r1 = 0x03;
+	const std::string elliptic_curve_type::sect571k1_string("sect571k1");
+	const std::string elliptic_curve_type::secp384r1_string("secp384r1");
+	const std::string elliptic_curve_type::secp521r1_string("secp521r1");
 
 	channel_number_type to_channel_number(message_type type)
 	{

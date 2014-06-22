@@ -676,6 +676,34 @@ namespace fscp
 			void sync_set_cipher_suites(const cipher_suite_list_type& cipher_suites);
 
 			/**
+			 * \brief Set the elliptic curves.
+			 * \param elliptic_curves The elliptic curves.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves)
+			{
+				m_elliptic_curves = elliptic_curves;
+			}
+
+			/**
+			 * \brief Set the elliptic curves.
+			 * \param elliptic_curves The elliptic curves.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server::do_set_elliptic_curves, this, elliptic_curves, handler));
+			}
+
+			/**
+			 * \brief Set the elliptic curves.
+			 * \param elliptic_curves The elliptic curves.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves);
+
+			/**
 			 * \brief Set the session request message received callback.
 			 * \param callback The callback.
 			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
@@ -1399,6 +1427,7 @@ namespace fscp
 			typedef std::map<ep_type, peer_session> peer_session_map_type;
 
 			static cipher_suite_type get_first_common_supported_cipher_suite(const cipher_suite_list_type&, const cipher_suite_list_type&, cipher_suite_type);
+			static elliptic_curve_type get_first_common_supported_elliptic_curve(const elliptic_curve_list_type&, const elliptic_curve_list_type&, elliptic_curve_type);
 
 			void do_request_session(const identity_store&, const ep_type&, simple_handler_type);
 			void do_close_session(const ep_type&, simple_handler_type);
@@ -1411,6 +1440,7 @@ namespace fscp
 			void do_has_session_with_endpoint(const ep_type&, boolean_handler_type);
 			void do_set_accept_session_request_messages_default(bool, void_handler_type);
 			void do_set_cipher_suites(cipher_suite_list_type, void_handler_type);
+			void do_set_elliptic_curves(elliptic_curve_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
 			// This strand is common to session requests, session messages and data messages.
@@ -1420,6 +1450,7 @@ namespace fscp
 
 			bool m_accept_session_request_messages_default;
 			cipher_suite_list_type m_cipher_suites;
+			elliptic_curve_list_type m_elliptic_curves;
 			session_request_received_handler_type m_session_request_message_received_handler;
 
 		private: // SESSION messages

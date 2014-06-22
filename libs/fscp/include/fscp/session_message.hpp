@@ -72,12 +72,13 @@ namespace fscp
 			 * \param session_number The session number.
 			 * \param host_identifier The host identifier.
 			 * \param cs The cipher suite.
+			 * \param ec The elliptic curve.
 			 * \param pub_key The public key.
 			 * \param pub_key_len The public key length.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, cipher_suite_type cs, const void* pub_key, size_t pub_key_len, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, cipher_suite_type cs, elliptic_curve_type ec, const void* pub_key, size_t pub_key_len, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_message from a message.
@@ -102,6 +103,12 @@ namespace fscp
 			 * \return The cipher suite.
 			 */
 			cipher_suite_type cipher_suite() const;
+
+			/**
+			 * \brief Get the elliptic curve.
+			 * \return The elliptic curve.
+			 */
+			elliptic_curve_type elliptic_curve() const;
 
 			/**
 			 * \brief Get the public key.
@@ -167,19 +174,24 @@ namespace fscp
 		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size);
 	}
 
+	inline elliptic_curve_type session_message::elliptic_curve() const
+	{
+		return buffer_tools::get<uint8_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t));
+	}
+
 	inline const uint8_t* session_message::public_key() const
 	{
-		return payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) + 3 + sizeof(uint16_t);
+		return payload() + sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t);
 	}
 
 	inline size_t session_message::public_key_size() const
 	{
-		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) + 3));
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 2 + 2));
 	}
 
 	inline size_t session_message::header_size() const
 	{
-		return sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 4 + sizeof(uint16_t) + public_key_size();
+		return sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 2 + 2 + sizeof(uint16_t) + public_key_size();
 	}
 
 	inline const uint8_t* session_message::header_signature() const
