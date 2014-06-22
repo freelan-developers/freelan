@@ -26,6 +26,7 @@ namespace
 		int nid;
 		std::string name;
 		size_t result;
+		std::string error;
 	};
 }
 
@@ -40,64 +41,64 @@ int main()
 	std::cout << std::endl;
 
 	std::vector<named_nid_type> named_nids = {
-		{ NID_X9_62_c2pnb163v1, "NID_X9_62_c2pnb163v1", 0 },
-		{ NID_X9_62_c2pnb163v2, "NID_X9_62_c2pnb163v2", 0 },
-		{ NID_X9_62_c2pnb163v3, "NID_X9_62_c2pnb163v3", 0 },
-		{ NID_X9_62_c2pnb176v1, "NID_X9_62_c2pnb176v1", 0 },
-		{ NID_X9_62_c2tnb191v1, "NID_X9_62_c2tnb191v1", 0 },
-		{ NID_X9_62_c2tnb191v2, "NID_X9_62_c2tnb191v2", 0 },
-		{ NID_X9_62_c2tnb191v3, "NID_X9_62_c2tnb191v3", 0 },
-		{ NID_X9_62_c2pnb208w1, "NID_X9_62_c2pnb208w1", 0 },
-		{ NID_X9_62_c2tnb239v1, "NID_X9_62_c2tnb239v1", 0 },
-		{ NID_X9_62_c2tnb239v2, "NID_X9_62_c2tnb239v2", 0 },
-		{ NID_X9_62_c2tnb239v3, "NID_X9_62_c2tnb239v3", 0 },
-		{ NID_X9_62_c2pnb272w1, "NID_X9_62_c2pnb272w1", 0 },
-		{ NID_X9_62_c2pnb304w1, "NID_X9_62_c2pnb304w1", 0 },
-		{ NID_X9_62_c2tnb359v1, "NID_X9_62_c2tnb359v1", 0 },
-		{ NID_X9_62_c2pnb368w1, "NID_X9_62_c2pnb368w1", 0 },
-		{ NID_X9_62_c2tnb431r1, "NID_X9_62_c2tnb431r1", 0 },
-		{ NID_X9_62_prime256v1, "NID_X9_62_prime256v1", 0 },
-		{ NID_secp112r1, "NID_secp112r1", 0 },
-		{ NID_secp112r2, "NID_secp112r2", 0 },
-		{ NID_secp128r1, "NID_secp128r1", 0 },
-		{ NID_secp128r2, "NID_secp128r2", 0 },
-		{ NID_secp160k1, "NID_secp160k1", 0 },
-		{ NID_secp160r1, "NID_secp160r1", 0 },
-		{ NID_secp160r2, "NID_secp160r2", 0 },
-		{ NID_secp192k1, "NID_secp192k1", 0 },
-		{ NID_secp224k1, "NID_secp224k1", 0 },
-		{ NID_secp224r1, "NID_secp224r1", 0 },
-		{ NID_secp256k1, "NID_secp256k1", 0 },
-		{ NID_secp384r1, "NID_secp384r1", 0 },
-		{ NID_secp521r1, "NID_secp521r1", 0 },
-		{ NID_sect113r1, "NID_sect113r1", 0 },
-		{ NID_sect113r2, "NID_sect113r2", 0 },
-		{ NID_sect131r1, "NID_sect131r1", 0 },
-		{ NID_sect131r2, "NID_sect131r2", 0 },
-		{ NID_sect163k1, "NID_sect163k1", 0 },
-		{ NID_sect163r1, "NID_sect163r1", 0 },
-		{ NID_sect163r2, "NID_sect163r2", 0 },
-		{ NID_sect193r1, "NID_sect193r1", 0 },
-		{ NID_sect193r2, "NID_sect193r2", 0 },
-		{ NID_sect233k1, "NID_sect233k1", 0 },
-		{ NID_sect233r1, "NID_sect233r1", 0 },
-		{ NID_sect239k1, "NID_sect239k1", 0 },
-		{ NID_sect283k1, "NID_sect283k1", 0 },
-		{ NID_sect283r1, "NID_sect283r1", 0 },
-		{ NID_sect409k1, "NID_sect409k1", 0 },
-		{ NID_sect409r1, "NID_sect409r1", 0 },
-		{ NID_sect571k1, "NID_sect571k1", 0 },
-		{ NID_sect571r1, "NID_sect571r1", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls1, "NID_wap_wsg_idm_ecid_wtls1", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls3, "NID_wap_wsg_idm_ecid_wtls3", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls4, "NID_wap_wsg_idm_ecid_wtls4", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls5, "NID_wap_wsg_idm_ecid_wtls5", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls7, "NID_wap_wsg_idm_ecid_wtls7", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls8, "NID_wap_wsg_idm_ecid_wtls8", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls9, "NID_wap_wsg_idm_ecid_wtls9", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls10, "NID_wap_wsg_idm_ecid_wtls10", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls11, "NID_wap_wsg_idm_ecid_wtls11", 0 },
-		{ NID_wap_wsg_idm_ecid_wtls12, "NID_wap_wsg_idm_ecid_wtls12", 0 }
+		{ NID_X9_62_c2pnb163v1, "NID_X9_62_c2pnb163v1", 0, "" },
+		{ NID_X9_62_c2pnb163v2, "NID_X9_62_c2pnb163v2", 0, "" },
+		{ NID_X9_62_c2pnb163v3, "NID_X9_62_c2pnb163v3", 0, "" },
+		{ NID_X9_62_c2pnb176v1, "NID_X9_62_c2pnb176v1", 0, "" },
+		{ NID_X9_62_c2tnb191v1, "NID_X9_62_c2tnb191v1", 0, "" },
+		{ NID_X9_62_c2tnb191v2, "NID_X9_62_c2tnb191v2", 0, "" },
+		{ NID_X9_62_c2tnb191v3, "NID_X9_62_c2tnb191v3", 0, "" },
+		{ NID_X9_62_c2pnb208w1, "NID_X9_62_c2pnb208w1", 0, "" },
+		{ NID_X9_62_c2tnb239v1, "NID_X9_62_c2tnb239v1", 0, "" },
+		{ NID_X9_62_c2tnb239v2, "NID_X9_62_c2tnb239v2", 0, "" },
+		{ NID_X9_62_c2tnb239v3, "NID_X9_62_c2tnb239v3", 0, "" },
+		{ NID_X9_62_c2pnb272w1, "NID_X9_62_c2pnb272w1", 0, "" },
+		{ NID_X9_62_c2pnb304w1, "NID_X9_62_c2pnb304w1", 0, "" },
+		{ NID_X9_62_c2tnb359v1, "NID_X9_62_c2tnb359v1", 0, "" },
+		{ NID_X9_62_c2pnb368w1, "NID_X9_62_c2pnb368w1", 0, "" },
+		{ NID_X9_62_c2tnb431r1, "NID_X9_62_c2tnb431r1", 0, "" },
+		{ NID_X9_62_prime256v1, "NID_X9_62_prime256v1", 0, "" },
+		{ NID_secp112r1, "NID_secp112r1", 0, "" },
+		{ NID_secp112r2, "NID_secp112r2", 0, "" },
+		{ NID_secp128r1, "NID_secp128r1", 0, "" },
+		{ NID_secp128r2, "NID_secp128r2", 0, "" },
+		{ NID_secp160k1, "NID_secp160k1", 0, "" },
+		{ NID_secp160r1, "NID_secp160r1", 0, "" },
+		{ NID_secp160r2, "NID_secp160r2", 0, "" },
+		{ NID_secp192k1, "NID_secp192k1", 0, "" },
+		{ NID_secp224k1, "NID_secp224k1", 0, "" },
+		{ NID_secp224r1, "NID_secp224r1", 0, "" },
+		{ NID_secp256k1, "NID_secp256k1", 0, "" },
+		{ NID_secp384r1, "NID_secp384r1", 0, "" },
+		{ NID_secp521r1, "NID_secp521r1", 0, "" },
+		{ NID_sect113r1, "NID_sect113r1", 0, "" },
+		{ NID_sect113r2, "NID_sect113r2", 0, "" },
+		{ NID_sect131r1, "NID_sect131r1", 0, "" },
+		{ NID_sect131r2, "NID_sect131r2", 0, "" },
+		{ NID_sect163k1, "NID_sect163k1", 0, "" },
+		{ NID_sect163r1, "NID_sect163r1", 0, "" },
+		{ NID_sect163r2, "NID_sect163r2", 0, "" },
+		{ NID_sect193r1, "NID_sect193r1", 0, "" },
+		{ NID_sect193r2, "NID_sect193r2", 0, "" },
+		{ NID_sect233k1, "NID_sect233k1", 0, "" },
+		{ NID_sect233r1, "NID_sect233r1", 0, "" },
+		{ NID_sect239k1, "NID_sect239k1", 0, "" },
+		{ NID_sect283k1, "NID_sect283k1", 0, "" },
+		{ NID_sect283r1, "NID_sect283r1", 0, "" },
+		{ NID_sect409k1, "NID_sect409k1", 0, "" },
+		{ NID_sect409r1, "NID_sect409r1", 0, "" },
+		{ NID_sect571k1, "NID_sect571k1", 0, "" },
+		{ NID_sect571r1, "NID_sect571r1", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls1, "NID_wap_wsg_idm_ecid_wtls1", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls3, "NID_wap_wsg_idm_ecid_wtls3", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls4, "NID_wap_wsg_idm_ecid_wtls4", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls5, "NID_wap_wsg_idm_ecid_wtls5", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls7, "NID_wap_wsg_idm_ecid_wtls7", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls8, "NID_wap_wsg_idm_ecid_wtls8", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls9, "NID_wap_wsg_idm_ecid_wtls9", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls10, "NID_wap_wsg_idm_ecid_wtls10", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls11, "NID_wap_wsg_idm_ecid_wtls11", 0, "" },
+		{ NID_wap_wsg_idm_ecid_wtls12, "NID_wap_wsg_idm_ecid_wtls12", 0, "" }
 	};
 
 	for (auto&& named_nid : named_nids)
@@ -138,9 +139,10 @@ int main()
 				named_nid.result = buffer_size(secret_key_a);
 			}
 		}
-		catch (std::exception& ex)
+		catch (const std::exception& ex)
 		{
 			std::cerr << "Exception: " << ex.what() << std::endl;
+			named_nid.error = ex.what();
 		}
 
 		std::cout << std::endl;
@@ -152,6 +154,8 @@ int main()
 	{
 		if (named_nid.result) {
 			std::cout << named_nid.name << " (nid: " << named_nid.nid << "): " << named_nid.result * 8 << std::endl;
+		} else if (!named_nid.error.empty()) {
+			std::cout << named_nid.name << " (nid: " << named_nid.nid << "): " << named_nid.error << std::endl;
 		} else {
 			std::cout << named_nid.name << " (nid: " << named_nid.nid << "): " << "failed" << std::endl;
 		}
