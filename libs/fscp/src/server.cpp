@@ -266,10 +266,12 @@ namespace fscp
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
 		m_cipher_suites(get_default_cipher_suites()),
+		m_elliptic_curves(get_default_elliptic_curves()),
 		m_session_request_message_received_handler(),
 		m_accept_session_messages_default(true),
 		m_session_message_received_handler(),
 		m_session_failed_handler(),
+		m_session_error_handler(),
 		m_session_established_handler(),
 		m_session_lost_handler(),
 		m_data_strand(io_service),
@@ -553,6 +555,16 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+	void server::sync_set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_elliptic_curves(elliptic_curves, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
+
 	void server::sync_set_session_request_message_received_callback(session_request_received_handler_type callback)
 	{
 		typedef boost::promise<void> promise_type;
@@ -593,6 +605,15 @@ namespace fscp
 		return promise.get_future().wait();
 	}
 
+	void server::sync_set_session_error_callback(session_error_handler_type callback)
+	{
+		typedef boost::promise<void> promise_type;
+		promise_type promise;
+
+		async_set_session_error_callback(callback, boost::bind(&promise_type::set_value, &promise));
+
+		return promise.get_future().wait();
+	}
 
 	void server::sync_set_session_established_callback(session_established_handler_type callback)
 	{
@@ -603,7 +624,6 @@ namespace fscp
 
 		return promise.get_future().wait();
 	}
-
 
 	void server::sync_set_session_lost_callback(session_lost_handler_type callback)
 	{
@@ -1444,6 +1464,20 @@ namespace fscp
 		return default_value;
 	}
 
+	elliptic_curve_type server::get_first_common_supported_elliptic_curve(const elliptic_curve_list_type& reference, const elliptic_curve_list_type& capabilities, elliptic_curve_type default_value = elliptic_curve_type::unsupported)
+
+	{
+		for (auto&& cs : reference)
+		{
+			if (std::find(capabilities.begin(), capabilities.end(), cs) != capabilities.end())
+			{
+				return cs;
+			}
+		}
+
+		return default_value;
+	}
+
 	void server::do_request_session(const identity_store& identity, const ep_type& target, simple_handler_type handler)
 	{
 		// All do_request_session() calls are done in the session strand so the following is thread-safe.
@@ -1473,6 +1507,7 @@ namespace fscp
 				p_session.next_session_number(),
 				p_session.local_host_identifier(),
 				m_cipher_suites,
+				m_elliptic_curves,
 				identity.signature_key()
 			);
 
@@ -1559,11 +1594,13 @@ namespace fscp
 		}
 
 		const cipher_suite_list_type cipher_suites = _session_request_message.cipher_suite_capabilities();
+		const elliptic_curve_list_type elliptic_curves = _session_request_message.elliptic_curve_capabilities();
 		const cipher_suite_type calg = get_first_common_supported_cipher_suite(m_cipher_suites, cipher_suites);
+		const elliptic_curve_type ec = get_first_common_supported_elliptic_curve(m_elliptic_curves, elliptic_curves);
 
-		if (calg == cipher_suite_type::unsupported)
+		if ((calg == cipher_suite_type::unsupported) || (ec == elliptic_curve_type::unsupported))
 		{
-			// No suitable cipher is available.
+			// No suitable cipher and/or elliptic curve is available.
 			return;
 		}
 
@@ -1571,14 +1608,14 @@ namespace fscp
 
 		if (m_session_request_message_received_handler)
 		{
-			can_reply = m_session_request_message_received_handler(sender, cipher_suites, m_accept_session_request_messages_default);
+			can_reply = m_session_request_message_received_handler(sender, cipher_suites, elliptic_curves, m_accept_session_request_messages_default);
 		}
 
 		if (can_reply)
 		{
 			if (!p_session.has_current_session())
 			{
-				p_session.prepare_session(_session_request_message.session_number(), calg);
+				p_session.prepare_session(_session_request_message.session_number(), calg, ec);
 				do_send_session(identity, sender, p_session.next_session_parameters());
 			}
 			else
@@ -1586,7 +1623,7 @@ namespace fscp
 				if (_session_request_message.session_number() > p_session.current_session().parameters.session_number)
 				{
 					// A new session is requested. Sending a new message.
-					p_session.prepare_session(_session_request_message.session_number(), calg);
+					p_session.prepare_session(_session_request_message.session_number(), calg, ec);
 					do_send_session(identity, sender, p_session.next_session_parameters());
 				}
 				else
@@ -1661,6 +1698,17 @@ namespace fscp
 		}
 	}
 
+	void server::do_set_elliptic_curves(elliptic_curve_list_type elliptic_curves, void_handler_type handler)
+	{
+		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
+		set_elliptic_curves(elliptic_curves);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
 	void server::do_set_session_request_message_received_callback(session_request_received_handler_type callback, void_handler_type handler)
 	{
 		// All do_set_hello_message_received_callback() calls are done in the same strand so the following is thread-safe.
@@ -1688,6 +1736,7 @@ namespace fscp
 				parameters.session_number,
 				p_session.local_host_identifier(),
 				parameters.cipher_suite,
+				parameters.elliptic_curve,
 				buffer_cast<const void*>(parameters.public_key),
 				buffer_size(parameters.public_key),
 				identity.signature_key()
@@ -1798,28 +1847,45 @@ namespace fscp
 
 		if (m_session_message_received_handler)
 		{
-			can_accept = m_session_message_received_handler(sender, _session_message.cipher_suite(), can_accept);
+			can_accept = m_session_message_received_handler(sender, _session_message.cipher_suite(), _session_message.elliptic_curve(), can_accept);
 		}
 
 		if (can_accept)
 		{
-			if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
-			{
-				// We received a session message but no session was prepared yet: we issue one and retry.
-				p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite());
+			bool session_completed = true;
 
+			try
+			{
 				if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
 				{
-					// Unable to complete the session.
-					return;
+					// We received a session message but no session was prepared yet: we issue one and retry.
+					p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite(), _session_message.elliptic_curve());
+
+					if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
+					{
+						// Unable to complete the session.
+						return;
+					}
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				session_completed = false;
+
+				if (m_session_error_handler)
+				{
+					m_session_error_handler(sender, session_is_new, ex);
 				}
 			}
 
-			do_send_session(identity, sender, p_session.current_session_parameters());
-
-			if (m_session_established_handler)
+			if (session_completed)
 			{
-				m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite);
+				do_send_session(identity, sender, p_session.current_session_parameters());
+
+				if (m_session_established_handler)
+				{
+					m_session_established_handler(sender, session_is_new, p_session.current_session().parameters.cipher_suite, p_session.current_session().parameters.elliptic_curve);
+				}
 			}
 		}
 	}
@@ -1850,6 +1916,17 @@ namespace fscp
 	{
 		// All do_set_session_failed_callback() calls are done in the same strand so the following is thread-safe.
 		set_session_failed_callback(callback);
+
+		if (handler)
+		{
+			handler();
+		}
+	}
+
+	void server::do_set_session_error_callback(session_error_handler_type callback, void_handler_type handler)
+	{
+		// All do_set_session_error_callback() calls are done in the same strand so the following is thread-safe.
+		set_session_error_callback(callback);
 
 		if (handler)
 		{
@@ -2160,7 +2237,7 @@ namespace fscp
 			if (p_session.current_session().is_old())
 			{
 				// do_send_clear_session() and do_handle_data() are to be invoked through the same strand, so this is fine.
-				p_session.prepare_session(p_session.next_session_number(), p_session.current_session().parameters.cipher_suite);
+				p_session.prepare_session(p_session.next_session_number(), p_session.current_session().parameters.cipher_suite, p_session.current_session().parameters.elliptic_curve);
 				do_send_session(identity, sender, p_session.next_session_parameters());
 			}
 

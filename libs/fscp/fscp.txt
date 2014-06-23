@@ -125,6 +125,8 @@ Abstract
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
                  |      cs_len     |        cs       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
+                 |      ec_len     |        ec       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
 
    This header is signed using the sender host signature private key
    (PKS).
@@ -139,6 +141,8 @@ Abstract
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
                  |      cs_len     |        cs       |
+                 +-----------------+~~~~~~~~~~~~~~~~~+
+                 |      ec_len     |        ec       |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |    hr_sig_len   |      hr_sig     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -169,6 +173,14 @@ Abstract
    A list of identifiers for the cipher suites is available in a
    further section of this document.
 
+   The ec_len field indicates the length of the ec field.
+
+   The ec field is a list of elliptic curves supported by the client,
+   by order of preference.
+
+   A list of identifiers for the elliptic curves is available in a
+   further section of this document.
+
    The hr_sig_len field indicates the length of the hr_sig field.
 
    The hr_sig field is the header signature, generated using the
@@ -190,7 +202,7 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |   cs   |          <zero>          |
+                 |   cs   |   ec   |      <zero>     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   pub_key_len   |     pub_key     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -207,7 +219,7 @@ Abstract
                  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
                  |          host_identifier          |
                  +~~~~~~~~~~~~~~~~~+~~~~~~~~~~~~~~~~~+
-                 |   cs   |          <zero>          |
+                 |   cs   |   ec   |      <zero>     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
                  |   pub_key_len   |     pub_key     |
                  +-----------------+~~~~~~~~~~~~~~~~~+
@@ -240,6 +252,16 @@ Abstract
    further section of this document.
 
    A value of 0 in cs indicates that no cipher suite was supported. In
+   this case, the pub_key field SHOULD be empty.
+
+   The ec field is the code of the chosen elliptic curve. It MUST be
+   the identifier of the first supported elliptic curve specified in the
+   associated SESSION_REQUEST.
+
+   A list of identifiers for the elliptic curves is available in a
+   further section of this document.
+
+   A value of 0 in ec indicates that no elliptic curve was supported. In
    this case, the pub_key field SHOULD be empty.
 
    The <zero> field is reserved for future uses and MUST be zero in
@@ -465,14 +487,18 @@ Abstract
 
 3. Algorithms
 
-3.1. Supported cipher suites
+3.1. Supported cipher suites and elliptic curves
 
    The available cipher suites are:
 
    - 0x01: ECDHE-RSA-AES128-GCM-SHA256
    - 0x02: ECDHE-RSA-AES256-GCM-SHA384
 
-   The curve used for ECDHE is SECP521R1.
+   The available elliptic curves are:
+
+   - 0x01: SECT571K1
+   - 0x02: SECP384R1
+   - 0x03: SECP521R1
 
 3.2. Signature algorithms
 

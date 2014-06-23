@@ -124,7 +124,7 @@ static bool on_presentation(fscp::server& server, const fscp::server::ep_type& s
 	return true;
 }
 
-static bool on_session_request(const fscp::server::ep_type& sender, const fscp::cipher_suite_list_type&, bool default_accept)
+static bool on_session_request(const fscp::server::ep_type& sender, const fscp::cipher_suite_list_type&, const fscp::elliptic_curve_list_type&, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
@@ -133,11 +133,11 @@ static bool on_session_request(const fscp::server::ep_type& sender, const fscp::
 	return default_accept;
 }
 
-static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
+static bool on_session(const fscp::server::ep_type& sender, fscp::cipher_suite_type cs, fscp::elliptic_curve_type ec, bool default_accept)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "Received SESSION from " << sender << ": " << cs << std::endl;
+	std::cout << "Received SESSION from " << sender << ": " << cs << ", " << ec << std::endl;
 
 	return default_accept;
 }
@@ -150,13 +150,14 @@ static void on_session_failed(const fscp::server::ep_type& host, bool is_new)
 	std::cout << "New session: " << is_new << std::endl;
 }
 
-static void on_session_established(const fscp::server::ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)
+static void on_session_established(const fscp::server::ep_type& host, bool is_new, const fscp::cipher_suite_type& cs, const fscp::elliptic_curve_type& ec)
 {
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << "Session established with " << host << std::endl;
 	std::cout << "New session: " << is_new << std::endl;
 	std::cout << "Cipher suite: " << cs << std::endl;
+	std::cout << "Elliptic curve: " << ec << std::endl;
 }
 
 static void on_session_lost(const fscp::server::ep_type& host)

@@ -405,6 +405,7 @@ namespace freelan
 		m_core_opened_callback(),
 		m_core_closed_callback(),
 		m_session_failed_callback(),
+		m_session_error_callback(),
 		m_session_established_callback(),
 		m_session_lost_callback(),
 		m_certificate_validation_callback(),
@@ -493,15 +494,17 @@ namespace freelan
 		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
 		m_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
+		m_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
 
 		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
 		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
 		m_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
 		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
-		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3));
-		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3));
+		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3, _4));
+		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3, _4));
 		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
-		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3));
+		m_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
+		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
 		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
 		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
@@ -1021,7 +1024,7 @@ namespace freelan
 		return true;
 	}
 
-	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_suite_list_type& cscap, bool default_accept)
+	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_suite_list_type& cscap, const fscp::elliptic_curve_list_type& eccap, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
 
@@ -1035,15 +1038,25 @@ namespace freelan
 			}
 
 			m_logger(LL_DEBUG) << "Cipher suites capabilities:" << oss.str();
+
+			oss.str("");
+
+			for (auto&& ec : eccap)
+			{
+				oss << " " << ec;
+			}
+
+			m_logger(LL_DEBUG) << "Elliptic curve capabilities:" << oss.str();
 		}
 
 		return default_accept;
 	}
 
-	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_suite_type cs, bool default_accept)
+	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_suite_type cs, fscp::elliptic_curve_type ec, bool default_accept)
 	{
 		m_logger(LL_DEBUG) << "Received SESSION from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
 		m_logger(LL_DEBUG) << "Cipher suite: " << cs;
+		m_logger(LL_DEBUG) << "Elliptic curve: " << ec;
 
 		return default_accept;
 	}
@@ -1065,7 +1078,24 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::cipher_suite_type& cs)
+	void core::do_handle_session_error(const ep_type& host, bool is_new, const std::exception& error)
+	{
+		if (is_new)
+		{
+			m_logger(LL_WARNING) << "Session establishment with " << host << " encountered an error: " << error.what();
+		}
+		else
+		{
+			m_logger(LL_WARNING) << "Session renewal with " << host << " encountered an error: " << error.what();
+		}
+
+		if (m_session_error_callback)
+		{
+			m_session_error_callback(host, is_new, error);
+		}
+	}
+
+	void core::do_handle_session_established(const ep_type& host, bool is_new, const fscp::cipher_suite_type& cs, const fscp::elliptic_curve_type& ec)
 	{
 		if (is_new)
 		{
@@ -1077,6 +1107,7 @@ namespace freelan
 		}
 
 		m_logger(LL_INFORMATION) << "Cipher suite: " << cs;
+		m_logger(LL_INFORMATION) << "Elliptic curve: " << ec;
 
 		if (is_new)
 		{
@@ -1096,7 +1127,7 @@ namespace freelan
 
 		if (m_session_established_callback)
 		{
-			m_session_established_callback(host, is_new, cs);
+			m_session_established_callback(host, is_new, cs, ec);
 		}
 	}
 

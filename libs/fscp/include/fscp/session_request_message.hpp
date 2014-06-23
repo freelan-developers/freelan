@@ -71,10 +71,11 @@ namespace fscp
 			 * \param session_number The session number.
 			 * \param host_identifier The host identifier.
 			 * \param cs_cap The cipher suite capabilities.
+			 * \param ec_cap The elliptic curve capabilities.
 			 * \param sig_key The private key to use to sign the ciphertext.
 			 * \return The count of bytes written.
 			 */
-			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, const cipher_suite_list_type& cs_cap, cryptoplus::pkey::pkey sig_key);
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap, cryptoplus::pkey::pkey sig_key);
 
 			/**
 			 * \brief Create a session_request_message from a message.
@@ -101,10 +102,22 @@ namespace fscp
 			cipher_suite_list_type cipher_suite_capabilities() const;
 
 			/**
+			 * \brief Get the elliptic curve capabilities.
+			 * \return The elliptic curve capabilities.
+			 */
+			elliptic_curve_list_type elliptic_curve_capabilities() const;
+
+			/**
 			 * \brief Get the cipher suite capabilities size.
 			 * \return The cipher suite capabilities size.
 			 */
 			size_t cipher_suite_capabilities_size() const;
+
+			/**
+			 * \brief Get the elliptic curve capabilities size.
+			 * \return The elliptic curve capabilities size.
+			 */
+			size_t elliptic_curve_capabilities_size() const;
 
 			/**
 			 * \brief Get the header size, without the signature.
@@ -136,7 +149,7 @@ namespace fscp
 			/**
 			 * \brief The min length of the body.
 			 */
-			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t);
+			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) * 2;
 	};
 
 	inline session_number_type session_request_message::session_number() const
@@ -158,9 +171,14 @@ namespace fscp
 		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size));
 	}
 
+	inline size_t session_request_message::elliptic_curve_capabilities_size() const
+	{
+		return ntohs(buffer_tools::get<uint16_t>(payload(), sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size()));
+	}
+
 	inline size_t session_request_message::header_size() const
 	{
-		return sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size();
+		return sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cipher_suite_capabilities_size() + sizeof(uint16_t) + elliptic_curve_capabilities_size();
 	}
 
 	inline const uint8_t* session_request_message::header_signature() const

@@ -61,7 +61,7 @@ namespace fscp
 		}
 	}
 
-	size_t session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, cipher_suite_type cs, const void* pub_key, size_t pub_key_len, cryptoplus::pkey::pkey sig_key)
+	size_t session_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, cipher_suite_type cs, elliptic_curve_type ec, const void* pub_key, size_t pub_key_len, cryptoplus::pkey::pkey sig_key)
 	{
 		using cryptoplus::buffer_cast;
 		using cryptoplus::buffer_size;
@@ -78,7 +78,7 @@ namespace fscp
 		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
 		std::copy(_host_identifier.data.begin(), _host_identifier.data.end(), payload + sizeof(_session_number));
 		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size, cs.value());
-		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t), 0x00);
+		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t), ec.value());
 		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 2, 0x00);
 		buffer_tools::set<uint8_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 3, 0x00);
 		buffer_tools::set<uint16_t>(payload, sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 4, htons(static_cast<uint16_t>(pub_key_len)));

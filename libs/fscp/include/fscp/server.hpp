@@ -187,19 +187,21 @@ namespace fscp
 			 * \brief A handler for when session requests are received.
 			 * \param sender The endpoint that sent the session request message.
 			 * \param cs_cap The cipher suite capabilities of the remote host.
+			 * \param ec_cap The elliptic curve capabilities of the remote host.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session request.
 			 */
-			typedef boost::function<bool (const ep_type& sender, const cipher_suite_list_type& cs_cap, bool default_accept)> session_request_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap, bool default_accept)> session_request_received_handler_type;
 
 			/**
 			 * \brief A handler for when session messages are received.
 			 * \param sender The endpoint that sent the session message.
 			 * \param cs The cipher suite used for the session.
+			 * \param ec The elliptic curve used for the session.
 			 * \param default_accept The default return value.
 			 * \return true to accept the session.
 			 */
-			typedef boost::function<bool (const ep_type& sender, cipher_suite_type cs, bool default_accept)> session_received_handler_type;
+			typedef boost::function<bool (const ep_type& sender, cipher_suite_type cs, elliptic_curve_type ec, bool default_accept)> session_received_handler_type;
 
 			/**
 			 * \brief A handler for when a session establishment failed.
@@ -209,12 +211,20 @@ namespace fscp
 			typedef boost::function<void (const ep_type& host, bool is_new)> session_failed_handler_type;
 
 			/**
+			 * \brief A handler for when a session establishment encountered an error.
+			 * \param host The host with which the session establishment failed.
+			 * \param is_new A flag that indicates whether the session would have been a new session or a renewal.
+			 */
+			typedef boost::function<void (const ep_type& host, bool is_new, const std::exception&)> session_error_handler_type;
+
+			/**
 			 * \brief A handler for when a session was established.
 			 * \param host The host with which the session was established.
 			 * \param is_new A flag that indicates whether the session is a new session or a renewal.
 			 * \param cipher_suite The cipher suite used in the session.
+			 * \param elliptic_curve The elliptic curve used in the session.
 			 */
-			typedef boost::function<void (const ep_type& host, bool is_new, const cipher_suite_type& cipher_suite)> session_established_handler_type;
+			typedef boost::function<void (const ep_type& host, bool is_new, const cipher_suite_type& cipher_suite, const elliptic_curve_type& elliptic_curve)> session_established_handler_type;
 
 			/**
 			 * \brief A handler for when a session was lost.
@@ -248,10 +258,6 @@ namespace fscp
 			 * \param answer The answer endpoint.
 			 */
 			typedef boost::function<void (const ep_type& sender, hash_type hash, const ep_type& answer)> contact_received_handler_type;
-
-			// Static variables
-
-			static const cipher_suite_list_type DEFAULT_CIPHER_SUITES;
 
 			// Public methods
 
@@ -669,6 +675,34 @@ namespace fscp
 			void sync_set_cipher_suites(const cipher_suite_list_type& cipher_suites);
 
 			/**
+			 * \brief Set the elliptic curves.
+			 * \param elliptic_curves The elliptic curves.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves)
+			{
+				m_elliptic_curves = elliptic_curves;
+			}
+
+			/**
+			 * \brief Set the elliptic curves.
+			 * \param elliptic_curves The elliptic curves.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server::do_set_elliptic_curves, this, elliptic_curves, handler));
+			}
+
+			/**
+			 * \brief Set the elliptic curves.
+			 * \param elliptic_curves The elliptic curves.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves);
+
+			/**
 			 * \brief Set the session request message received callback.
 			 * \param callback The callback.
 			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
@@ -779,6 +813,34 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			void sync_set_session_failed_callback(session_failed_handler_type callback);
+
+			/**
+			 * \brief Set the session error callback.
+			 * \param callback The callback.
+			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
+			 */
+			void set_session_error_callback(session_error_handler_type callback)
+			{
+				m_session_error_handler = callback;
+			}
+
+			/**
+			 * \brief Set the session error callback.
+			 * \param callback The callback.
+			 * \param handler The handler to call when the change was made effective.
+			 */
+			void async_set_session_error_callback(session_error_handler_type callback, void_handler_type handler = void_handler_type())
+			{
+				m_session_strand.post(boost::bind(&server::do_set_session_error_callback, this, callback, handler));
+			}
+
+			/**
+			 * \brief Set the session failed callback.
+			 * \param callback The callback.
+			 * \warning If the io_service is not being run, the call will block undefinitely.
+			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
+			 */
+			void sync_set_session_error_callback(session_error_handler_type callback);
 
 			/**
 			 * \brief Set the session established callback.
@@ -1364,6 +1426,7 @@ namespace fscp
 			typedef std::map<ep_type, peer_session> peer_session_map_type;
 
 			static cipher_suite_type get_first_common_supported_cipher_suite(const cipher_suite_list_type&, const cipher_suite_list_type&, cipher_suite_type);
+			static elliptic_curve_type get_first_common_supported_elliptic_curve(const elliptic_curve_list_type&, const elliptic_curve_list_type&, elliptic_curve_type);
 
 			void do_request_session(const identity_store&, const ep_type&, simple_handler_type);
 			void do_close_session(const ep_type&, simple_handler_type);
@@ -1376,6 +1439,7 @@ namespace fscp
 			void do_has_session_with_endpoint(const ep_type&, boolean_handler_type);
 			void do_set_accept_session_request_messages_default(bool, void_handler_type);
 			void do_set_cipher_suites(cipher_suite_list_type, void_handler_type);
+			void do_set_elliptic_curves(elliptic_curve_list_type, void_handler_type);
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
 			// This strand is common to session requests, session messages and data messages.
@@ -1385,6 +1449,7 @@ namespace fscp
 
 			bool m_accept_session_request_messages_default;
 			cipher_suite_list_type m_cipher_suites;
+			elliptic_curve_list_type m_elliptic_curves;
 			session_request_received_handler_type m_session_request_message_received_handler;
 
 		private: // SESSION messages
@@ -1396,12 +1461,14 @@ namespace fscp
 			void do_set_accept_session_messages_default(bool, void_handler_type);
 			void do_set_session_message_received_callback(session_received_handler_type, void_handler_type);
 			void do_set_session_failed_callback(session_failed_handler_type, void_handler_type);
+			void do_set_session_error_callback(session_error_handler_type, void_handler_type);
 			void do_set_session_established_callback(session_established_handler_type, void_handler_type);
 			void do_set_session_lost_callback(session_lost_handler_type, void_handler_type);
 
 			bool m_accept_session_messages_default;
 			session_received_handler_type m_session_message_received_handler;
 			session_failed_handler_type m_session_failed_handler;
+			session_error_handler_type m_session_error_handler;
 			session_established_handler_type m_session_established_handler;
 			session_lost_handler_type m_session_lost_handler;
 

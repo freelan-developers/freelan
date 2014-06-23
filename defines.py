@@ -10,6 +10,7 @@ import datetime
 from subprocess import check_output, CalledProcessError
 from distutils.version import StrictVersion
 from collections import namedtuple
+from SCons.Errors import BuildError
 
 
 class Defines(object):
@@ -24,10 +25,21 @@ class Defines(object):
         self._date = None
 
     @property
+    def no_git(self):
+        return int(os.environ.get('FREELAN_NO_GIT', '0'))
+
+    @property
+    def local_path(self):
+        return os.path.dirname(os.path.realpath(__file__))
+
+    @property
     def repository_root(self):
         if self._repository_root is None:
             try:
-                self._repository_root = os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip())
+                if self.no_git:
+                    self._repository_root = self.local_path
+                else:
+                    self._repository_root = os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip())
             except CalledProcessError, OSError:
                 self._repository_root = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
@@ -37,7 +49,13 @@ class Defines(object):
     def repository_version(self):
         if self._repository_version is None:
             try:
-                self._repository_version = check_output(['git', 'describe', '--dirty=-modified']).rstrip()
+                if self.no_git:
+                    if not 'FREELAN_NO_GIT_VERSION' in os.environ:
+                        raise BuildError(errstr='You must specify FREELAN_NO_GIT_VERSION when FREELAN_NO_GIT is specified.')
+
+                    self._repository_version = os.environ['FREELAN_NO_GIT_VERSION'].rstrip()
+                else:
+                    self._repository_version = check_output(['git', 'describe', '--dirty=-modified']).rstrip()
             except CalledProcessError, OSError:
                 self._repository_version = "<unspecified version>"
 
