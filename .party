@@ -105,3 +105,17 @@ Attendee('curl').get_build('msvc-x64').commands = [
     r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no MACHINE=x64',
     r'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
 ]
+
+# cppnetlib
+Attendee('cppnetlib').add_source('http://commondatastorage.googleapis.com/cpp-netlib-downloads/0.11.0/cpp-netlib-0.11.0.zip', filter='windows')
+Attendee('cppnetlib').add_source('http://commondatastorage.googleapis.com/cpp-netlib-downloads/0.11.0/cpp-netlib-0.11.0.tar.gz', filter=~f('windows'))
+
+Attendee('cppnetlib').depends_on('boost')
+Attendee('cppnetlib').depends_on('openssl')
+
+Attendee('cppnetlib').add_build('osx', environment='system', filter='darwin')
+Attendee('cppnetlib').get_build('osx').commands = [
+	'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX={{prefix}} -DOPENSSL_SSL_LIBRARY={{prefix}}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY={{prefix}}/lib/libcrypto.a -DOPENSSL_INCLUDE_DIR={{prefix}}/include',
+	'make',
+	'make install',
+]
