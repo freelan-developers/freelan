@@ -118,14 +118,14 @@ Attendee('cppnetlib').depends_on('openssl')
 
 Attendee('cppnetlib').add_build('osx', environment='system', filter='darwin')
 Attendee('cppnetlib').get_build('osx').commands = [
-	'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX={{prefix}} -DOPENSSL_SSL_LIBRARY={{prefix}}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY={{prefix}}/lib/libcrypto.a -DOPENSSL_INCLUDE_DIR={{prefix}}/include',
-	'make',
-	'make install',
+    'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX={{prefix}} -DOPENSSL_SSL_LIBRARY={{prefix}}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY={{prefix}}/lib/libcrypto.a -DOPENSSL_INCLUDE_DIR={{prefix}}/include',
+    'make',
+    'make install',
 ]
 
 Attendee('cppnetlib').add_build('linux', environment='system', filter='linux')
 Attendee('cppnetlib').get_build('linux').commands = [
-	'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={{prefix}}',
-	'make',
-	'make install',
+    'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={{prefix}}',
+    'make',
+    'make install',
 ]
