@@ -28,7 +28,8 @@ Attendee('iconv').get_build('msvc-x64').commands = [
 ]
 
 # boost
-Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download', filter='darwin', mimetype='application/x-bzip2')
+Attendee('boost', filter=~f('linux'))
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download', filter=~f('windows'), mimetype='application/x-bzip2')
 Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.zip/download', filter='windows', mimetype='application/zip')
 
 Attendee('boost').add_post_unpack_command('cp -r {{root}}/third-party/patches/boost/* boost/', filter='darwin')
@@ -56,6 +57,7 @@ Attendee('boost').get_build('msvc-x64').commands = [
 ]
 
 # OpenSSL
+Attendee('openssl', filter=~f('linux'))
 Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.1h.tar.gz')
 
 Attendee('openssl').add_build('osx', environment='system', filter='darwin')
@@ -82,8 +84,9 @@ Attendee('openssl').get_build('msvc-x64').commands = [
 ]
 
 # cURL
+Attendee('curl', filter=~f('linux'))
 Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.32.0.zip', filter='windows')
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter='darwin')
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter=~f('windows'))
 
 Attendee('curl').depends_on('openssl')
 
@@ -116,6 +119,13 @@ Attendee('cppnetlib').depends_on('openssl')
 Attendee('cppnetlib').add_build('osx', environment='system', filter='darwin')
 Attendee('cppnetlib').get_build('osx').commands = [
 	'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX={{prefix}} -DOPENSSL_SSL_LIBRARY={{prefix}}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY={{prefix}}/lib/libcrypto.a -DOPENSSL_INCLUDE_DIR={{prefix}}/include',
+	'make',
+	'make install',
+]
+
+Attendee('cppnetlib').add_build('linux', environment='system', filter='linux')
+Attendee('cppnetlib').get_build('linux').commands = [
+	'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={{prefix}}',
 	'make',
 	'make install',
 ]
