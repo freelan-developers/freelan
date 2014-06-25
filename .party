@@ -45,14 +45,14 @@ Attendee('boost').get_build('osx').commands = [
 Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
 Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
@@ -128,4 +128,18 @@ Attendee('cppnetlib').get_build('linux').commands = [
     'cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={{prefix}}',
     'make',
     'make install',
+]
+
+Attendee('cppnetlib').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
+Attendee('cppnetlib').get_build('msvc-x86').commands = [
+    'cmake -G "Visual Studio 12 2013" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={{prefix}}',
+    'msbuild CPP-NETLIB.sln /p:Configuration=Release /p:Platform="Win32"',
+    'msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform="Win32"',
+]
+
+Attendee('cppnetlib').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
+Attendee('cppnetlib').get_build('msvc-x64').commands = [
+    'cmake -G "Visual Studio 12 2013 Win64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX={{prefix}}',
+    'msbuild CPP-NETLIB.sln /p:Configuration=Release /p:Platform="x64"',
+    'msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform="x64"',
 ]

@@ -84,7 +84,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_55;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
@@ -92,7 +92,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_55;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
@@ -100,7 +100,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_55;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
@@ -108,7 +108,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_55;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time.lib;libboost_system.lib;libboost_thread.lib;libboost_program_options.lib;libboost_filesystem.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc120-mt-1_55.lib;libboost_system-vc120-mt-1_55.lib;libboost_thread-vc120-mt-1_55.lib;libboost_program_options-vc120-mt-1_55.lib;libboost_filesystem-vc120-mt-1_55.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -156,7 +156,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time.lib;libboost_system.lib;libboost_thread.lib;libboost_program_options.lib;libboost_filesystem.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc120-mt-1_55.lib;libboost_system-vc120-mt-1_55.lib;libboost_thread-vc120-mt-1_55.lib;libboost_program_options-vc120-mt-1_55.lib;libboost_filesystem-vc120-mt-1_55.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -189,7 +189,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time.lib;libboost_system.lib;libboost_thread.lib;libboost_program_options.lib;libboost_filesystem.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc120-mt-1_55.lib;libboost_system-vc120-mt-1_55.lib;libboost_thread-vc120-mt-1_55.lib;libboost_program_options-vc120-mt-1_55.lib;libboost_filesystem-vc120-mt-1_55.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -222,7 +222,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time.lib;libboost_system.lib;libboost_thread.lib;libboost_program_options.lib;libboost_filesystem.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc120-mt-1_55.lib;libboost_system-vc120-mt-1_55.lib;libboost_thread-vc120-mt-1_55.lib;libboost_program_options-vc120-mt-1_55.lib;libboost_filesystem-vc120-mt-1_55.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
