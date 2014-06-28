@@ -81,16 +81,6 @@ namespace freelan
 	struct server_configuration
 	{
 		/**
-		 * \brief The endpoint type.
-		 */
-		typedef asiotap::endpoint endpoint;
-
-		/**
-		 * \brief The endpoint list type.
-		 */
-		typedef std::set<endpoint> endpoint_list;
-
-		/**
 		 * \brief Create a new server configuration.
 		 */
 		server_configuration();
@@ -101,39 +91,14 @@ namespace freelan
 		bool enabled;
 
 		/**
-		 * \brief The server host name.
+		 * \brief The address to listen on.
 		 */
-		endpoint host;
+		std::string listen_on_address;
 
 		/**
-		 * \brief The username.
+		 * \brief The port to listen on.
 		 */
-		std::string username;
-
-		/**
-		 * \brief The password.
-		 */
-		std::string password;
-
-		/**
-		 * \brief The network.
-		 */
-		std::string network;
-
-		/**
-		 * \brief The public endpoint list.
-		 */
-		endpoint_list public_endpoint_list;
-
-		/**
-		 * \brief The https proxy host name.
-		 */
-		boost::optional<endpoint> https_proxy;
-
-		/**
-		 * \brief The user agent.
-		 */
-		std::string user_agent;
+		std::string listen_on_port;
 
 		/**
 		 * \brief The server protocol type.
@@ -150,19 +115,24 @@ namespace freelan
 		server_protocol_type protocol;
 
 		/**
-		 * \brief The CA info file.
+		 * \brief The certificate type.
 		 */
-		boost::filesystem::path ca_info;
+		typedef cryptoplus::x509::certificate cert_type;
 
 		/**
-		 * \brief Disable peer verification.
+		 * \brief The key type.
 		 */
-		bool disable_peer_verification;
+		typedef cryptoplus::pkey::pkey key_type;
 
 		/**
-		 * \brief Disable host verification.
+		 * \brief The CA certificate to use to sign certificate requests.
 		 */
-		bool disable_host_verification;
+		cert_type certification_authority_certificate;
+
+		/**
+		 * \brief The CA private key to use to sign certificate requests.
+		 */
+		key_type certification_authority_private_key;
 	};
 
 	/**

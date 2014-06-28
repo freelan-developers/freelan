@@ -396,10 +396,10 @@ namespace freelan
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
-	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
+	core::core(boost::shared_ptr<boost::asio::io_service> io_service, const freelan::configuration& _configuration) :
 		m_io_service(io_service),
 		m_configuration(_configuration),
-		m_logger_strand(m_io_service),
+		m_logger_strand(*m_io_service),
 		m_logger(m_logger_strand.wrap(boost::bind(&core::do_handle_log, this, _1, _2, _3))),
 		m_log_callback(),
 		m_core_opened_callback(),
@@ -411,22 +411,22 @@ namespace freelan
 		m_certificate_validation_callback(),
 		m_tap_adapter_up_callback(),
 		m_tap_adapter_down_callback(),
-		m_server(),
-		m_contact_timer(m_io_service, CONTACT_PERIOD),
-		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
-		m_routes_request_timer(m_io_service, ROUTES_REQUEST_PERIOD),
-		m_tap_adapter_strand(m_io_service),
-		m_proxies_strand(m_io_service),
-		m_tap_write_queue_strand(m_io_service),
+		m_fscp_server(),
+		m_contact_timer(*m_io_service, CONTACT_PERIOD),
+		m_dynamic_contact_timer(*m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_routes_request_timer(*m_io_service, ROUTES_REQUEST_PERIOD),
+		m_tap_adapter_strand(*m_io_service),
+		m_proxies_strand(*m_io_service),
+		m_tap_write_queue_strand(*m_io_service),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
-		m_router_strand(m_io_service),
+		m_router_strand(*m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
-		m_route_manager(io_service)
+		m_route_manager(*m_io_service)
 	{
 		if (!m_configuration.security.identity)
 		{
@@ -457,8 +457,9 @@ namespace freelan
 	{
 		m_logger(LL_DEBUG) << "Opening core...";
 
-		open_server();
+		open_fscp_server();
 		open_tap_adapter();
+		open_web_server();
 
 		m_logger(LL_DEBUG) << "Core opened.";
 	}
@@ -467,8 +468,9 @@ namespace freelan
 	{
 		m_logger(LL_DEBUG) << "Closing core...";
 
+		close_web_server();
 		close_tap_adapter();
-		close_server();
+		close_fscp_server();
 
 		m_logger(LL_DEBUG) << "Core closed.";
 	}
@@ -489,26 +491,26 @@ namespace freelan
 		return has_address(m_configuration.fscp.never_contact_list.begin(), m_configuration.fscp.never_contact_list.end(), address);
 	}
 
-	void core::open_server()
+	void core::open_fscp_server()
 	{
-		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
+		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(*m_io_service), boost::cref(*m_configuration.security.identity));
 
-		m_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
-		m_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
+		m_fscp_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
+		m_fscp_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
 
-		m_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
-		m_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
-		m_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
-		m_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
-		m_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3, _4));
-		m_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3, _4));
-		m_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
-		m_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
-		m_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
-		m_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
-		m_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
+		m_fscp_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
+		m_fscp_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
+		m_fscp_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
+		m_fscp_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
+		m_fscp_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3, _4));
+		m_fscp_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3, _4));
+		m_fscp_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
+		m_fscp_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
+		m_fscp_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
+		m_fscp_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
+		m_fscp_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
-		resolver_type resolver(m_io_service);
+		resolver_type resolver(*m_io_service);
 
 		const ep_type listen_endpoint = boost::apply_visitor(
 			asiotap::endpoint_resolve_visitor(
@@ -560,12 +562,12 @@ namespace freelan
 		}
 
 		// Let's open the server.
-		m_server->open(listen_endpoint);
+		m_fscp_server->open(listen_endpoint);
 
 #ifdef LINUX
 		if (!m_configuration.fscp.listen_on_device.empty())
 		{
-			const auto socket_fd = m_server->get_socket().native();
+			const auto socket_fd = m_fscp_server->get_socket().native();
 			const std::string device_name = m_configuration.fscp.listen_on_device;
 
 			if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
@@ -587,14 +589,14 @@ namespace freelan
 		m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
 	}
 
-	void core::close_server()
+	void core::close_fscp_server()
 	{
 		// Stop the contact loop timers.
 		m_routes_request_timer.cancel();
 		m_dynamic_contact_timer.cancel();
 		m_contact_timer.cancel();
 
-		m_server->close();
+		m_fscp_server->close();
 	}
 
 	void core::async_contact(const endpoint& target, duration_handler_type handler)
@@ -614,7 +616,7 @@ namespace freelan
 				endpoint target2 = target1;
 
 				// The host was resolved: we first make sure no session exist with that host before doing anything else.
-				m_server->async_has_session_with_endpoint(
+				m_fscp_server->async_has_session_with_endpoint(
 					host,
 					[this, handler, host, target2] (bool has_session)
 					{
@@ -639,7 +641,7 @@ namespace freelan
 
 		boost::apply_visitor(
 			asiotap::endpoint_async_resolve_visitor(
-				boost::make_shared<resolver_type>(boost::ref(m_io_service)),
+				boost::make_shared<resolver_type>(boost::ref(*m_io_service)),
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured,
 				DEFAULT_SERVICE,
@@ -675,7 +677,7 @@ namespace freelan
 
 	void core::async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
 	{
-		m_server->async_send_contact_request_to_all(hash_list, handler);
+		m_fscp_server->async_send_contact_request_to_all(hash_list, handler);
 	}
 
 	void core::async_send_contact_request_to_all(const hash_list_type& hash_list)
@@ -685,9 +687,9 @@ namespace freelan
 
 	void core::async_introduce_to(const ep_type& target, simple_handler_type handler)
 	{
-		assert(m_server);
+		assert(m_fscp_server);
 
-		m_server->async_introduce_to(target, handler);
+		m_fscp_server->async_introduce_to(target, handler);
 	}
 
 	void core::async_introduce_to(const ep_type& target)
@@ -697,11 +699,11 @@ namespace freelan
 
 	void core::async_request_session(const ep_type& target, simple_handler_type handler)
 	{
-		assert(m_server);
+		assert(m_fscp_server);
 
 		m_logger(LL_DEBUG) << "Sending SESSION_REQUEST to " << target << ".";
 
-		m_server->async_request_session(target, handler);
+		m_fscp_server->async_request_session(target, handler);
 	}
 
 	void core::async_request_session(const ep_type& target)
@@ -744,7 +746,7 @@ namespace freelan
 
 	void core::async_send_routes_request(const ep_type& target, simple_handler_type handler)
 	{
-		assert(m_server);
+		assert(m_fscp_server);
 
 		m_logger(LL_DEBUG) << "Sending routes request to " << target << ".";
 
@@ -756,7 +758,7 @@ namespace freelan
 			buffer_size(data_buffer)
 		);
 
-		m_server->async_send_data(
+		m_fscp_server->async_send_data(
 			target,
 			fscp::CHANNEL_NUMBER_1,
 			buffer(data_buffer, size),
@@ -774,7 +776,7 @@ namespace freelan
 
 	void core::async_send_routes_request_to_all(multiple_endpoints_handler_type handler)
 	{
-		assert(m_server);
+		assert(m_fscp_server);
 
 		m_logger(LL_DEBUG) << "Sending routes request to all hosts.";
 
@@ -786,7 +788,7 @@ namespace freelan
 			buffer_size(data_buffer)
 		);
 
-		m_server->async_send_data_to_all(
+		m_fscp_server->async_send_data_to_all(
 			fscp::CHANNEL_NUMBER_1,
 			buffer(data_buffer, size),
 			make_shared_buffer_handler(
@@ -803,7 +805,7 @@ namespace freelan
 
 	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const asiotap::ip_route_set& routes, simple_handler_type handler)
 	{
-		assert(m_server);
+		assert(m_fscp_server);
 
 		m_logger(LL_DEBUG) << "Sending routes to " << target << ": version " << version << " (" << routes << ").";
 
@@ -816,7 +818,7 @@ namespace freelan
 			routes
 		);
 
-		m_server->async_send_data(
+		m_fscp_server->async_send_data(
 			target,
 			fscp::CHANNEL_NUMBER_1,
 			buffer(data_buffer, size),
@@ -829,11 +831,11 @@ namespace freelan
 
 	void core::do_contact(const ep_type& address, duration_handler_type handler)
 	{
-		assert(m_server);
+		assert(m_fscp_server);
 
 		m_logger(LL_DEBUG) << "Sending HELLO to " << address;
 
-		m_server->async_greet(address, boost::bind(handler, address, _1, _2));
+		m_fscp_server->async_greet(address, boost::bind(handler, address, _1, _2));
 	}
 
 	void core::do_handle_contact(const endpoint& host, const ep_type& address, const boost::system::error_code& ec, const boost::posix_time::time_duration& duration)
@@ -1455,7 +1457,7 @@ namespace freelan
 		{
 			const asiotap::tap_adapter_layer tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap) ? asiotap::tap_adapter_layer::ethernet : asiotap::tap_adapter_layer::ip;
 
-			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service), tap_adapter_type);
+			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(*m_io_service), tap_adapter_type);
 
 			const auto write_func = [this] (boost::asio::const_buffer data, simple_handler_type handler) {
 				async_write_tap(buffer(data), [handler](const boost::system::error_code& ec, size_t) {
@@ -1867,7 +1869,7 @@ namespace freelan
 	void core::do_register_switch_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_register_switch_port() are done within the m_router_strand, so the following is safe.
-		m_switch.register_port(make_port_index(host), switch_::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
+		m_switch.register_port(make_port_index(host), switch_::port_type(boost::bind(&fscp::server::async_send_data, m_fscp_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
 
 		if (handler)
 		{
@@ -1889,7 +1891,7 @@ namespace freelan
 	void core::do_register_router_port(const ep_type& host, void_handler_type handler)
 	{
 		// All calls to do_register_router_port() are done within the m_router_strand, so the following is safe.
-		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
+		m_router.register_port(make_port_index(host), router::port_type(boost::bind(&fscp::server::async_send_data, m_fscp_server, host, fscp::CHANNEL_NUMBER_0, _1, _2), ENDPOINTS_GROUP));
 
 		if (handler)
 		{
@@ -1943,5 +1945,18 @@ namespace freelan
 	{
 		// All calls to do_write_router() are done within the m_router_strand, so the following is safe.
 		m_router.async_write(index, data, handler);
+	}
+
+	void core::open_web_server()
+	{
+		if (m_configuration.server.enabled)
+		{
+			m_web_server = boost::make_shared<web_server_type>(m_io_service, m_configuration.server);
+		}
+	}
+
+	void core::close_web_server()
+	{
+		m_web_server.reset();
 	}
 }

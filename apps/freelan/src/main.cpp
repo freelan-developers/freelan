@@ -458,9 +458,9 @@ void run(const cli_configuration& configuration, int& exit_signal)
 	}
 #endif
 
-	boost::asio::io_service io_service;
+	boost::shared_ptr<boost::asio::io_service> io_service = boost::make_shared<boost::asio::io_service>();
 
-	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
+	boost::asio::signal_set signals(*io_service, SIGINT, SIGTERM);
 
 	const freelan::log_level log_level = configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION;
 
@@ -512,7 +512,7 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	for (std::size_t i = 0; i < thread_count; ++i)
 	{
-		threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		threads.create_thread(boost::bind(&boost::asio::io_service::run, io_service));
 	}
 
 	threads.join_all();

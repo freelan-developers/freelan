@@ -104,17 +104,11 @@ po::options_description get_server_options()
 
 	result.add_options()
 	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
-	("server.host", po::value<asiotap::endpoint>(), "The server host.")
-	("server.https_proxy", po::value<asiotap::endpoint>(), "The HTTP proxy host.")
-	("server.username", po::value<std::string>(), "The username.")
-	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
-	("server.network", po::value<std::string>(), "The network. If no network is specified, it will be taken from the FREELAN_SERVER_NETWORK environment variable.")
-	("server.public_endpoint", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "A public endpoint to publish to others hosts.")
-	("server.user_agent", po::value<std::string>(), "The user agent. If no user agent is specified, \"" FREELAN_USER_AGENT "\" will be used.")
+	("server.listen_on_address", po::value<std::string>()->default_value(std::string()), "The server listen endpoint.")
+	("server.listen_on_port", po::value<std::string>()->default_value(std::string()), "The server listen endpoint.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
-	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
-	("server.disable_peer_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable peer verification.")
-	("server.disable_host_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable host verification.")
+	("server.certification_authority_certificate_file", po::value<fs::path>()->default_value(""), "The certification authority certificate file.")
+	("server.certification_authority_private_key_file", po::value<fs::path>()->default_value(""), "The certification authority private key file.")
 	;
 
 	return result;
@@ -223,95 +217,19 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// Server options
 	configuration.server.enabled = vm["server.enabled"].as<bool>();
-
-	if (vm.count("server.host"))
-	{
-		configuration.server.host = vm["server.host"].as<asiotap::endpoint>();
-	}
-
-	if (vm.count("server.https_proxy"))
-	{
-		configuration.server.https_proxy = vm["server.https_proxy"].as<asiotap::endpoint>();
-	}
-
-	if (vm.count("server.username"))
-	{
-		configuration.server.username = vm["server.username"].as<std::string>();
-	}
-
-	if (vm.count("server.password"))
-	{
-		configuration.server.password = vm["server.password"].as<std::string>();
-	}
-	else
-	{
-#ifdef _MSC_VER
-		std::string value(256, '\0');
-
-		DWORD value_size = GetEnvironmentVariableA("FREELAN_SERVER_PASSWORD", &value[0], static_cast<DWORD>(value.size()));
-
-		const char* default_password = NULL;
-
-		if (value_size > 0)
-		{
-			value.resize(value_size);
-			default_password = value.c_str();
-		}
-#else
-		const char* default_password = getenv("FREELAN_SERVER_PASSWORD");
-#endif
-
-		if (default_password)
-		{
-			configuration.server.password = default_password;
-		}
-	}
-
-	if (vm.count("server.network"))
-	{
-		configuration.server.network= vm["server.network"].as<std::string>();
-	}
-	else
-	{
-#ifdef _MSC_VER
-		std::string value(256, '\0');
-
-		DWORD value_size = GetEnvironmentVariableA("FREELAN_SERVER_NETWORK", &value[0], static_cast<DWORD>(value.size()));
-
-		const char* default_network = NULL;
-
-		if (value_size > 0)
-		{
-			value.resize(value_size);
-			default_network = value.c_str();
-		}
-#else
-		const char* default_network = getenv("FREELAN_SERVER_NETWORK");
-#endif
-
-		if (default_network)
-		{
-			configuration.server.network = default_network;
-		}
-	}
-
-	const std::vector<asiotap::endpoint> public_endpoint_list = vm["server.public_endpoint"].as<std::vector<asiotap::endpoint> >();
-	configuration.server.public_endpoint_list.insert(public_endpoint_list.begin(), public_endpoint_list.end());
-
-	if (vm.count("server.user_agent"))
-	{
-		configuration.server.user_agent = vm["server.user_agent"].as<std::string>();
-	}
-	else
-	{
-		configuration.server.user_agent = FREELAN_USER_AGENT;
-	}
-
+	configuration.server.listen_on_address = vm["server.listen_on_address"].as<std::string>();
+	configuration.server.listen_on_port = vm["server.listen_on_port"].as<std::string>();
 	configuration.server.protocol = vm["server.protocol"].as<fl::server_configuration::server_protocol_type>();
-	configuration.server.ca_info = vm["server.ca_info_file"].as<fs::path>().empty() ? fs::path() : fs::absolute(vm["server.ca_info_file"].as<fs::path>(), root);
 
-	configuration.server.disable_peer_verification = vm["server.disable_peer_verification"].as<bool>();
-	configuration.server.disable_host_verification = vm["server.disable_host_verification"].as<bool>();
+	if (vm.count("server.certification_authority_certificate_file"))
+	{
+		configuration.server.certification_authority_certificate = load_certificate(fs::absolute(vm["server.certification_authority_certificate_file"].as<fs::path>(), root));
+	}
+
+	if (vm.count("server.certification_authority_private_key_file"))
+	{
+		configuration.server.certification_authority_private_key = load_private_key(fs::absolute(vm["server.certification_authority_private_key_file"].as<fs::path>(), root));
+	}
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();

@@ -53,16 +53,9 @@ namespace freelan
 {
 	server_configuration::server_configuration() :
 		enabled(false),
-		host(),
-		username(),
-		password(),
-		network(),
-		https_proxy(),
-		user_agent(),
-		protocol(SP_HTTPS),
-		ca_info(),
-		disable_peer_verification(false),
-		disable_host_verification(false)
+		listen_on_address(),
+		listen_on_port(),
+		protocol(SP_HTTPS)
 	{
 	}
 

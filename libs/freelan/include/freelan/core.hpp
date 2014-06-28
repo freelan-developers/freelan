@@ -53,6 +53,7 @@
 #include "router.hpp"
 #include "message.hpp"
 #include "routes_message.hpp"
+#include "server.hpp"
 
 #include <fscp/fscp.hpp>
 
@@ -251,7 +252,7 @@ namespace freelan
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
 			 */
-			core(boost::asio::io_service& io_service, const freelan::configuration& configuration);
+			core(boost::shared_ptr<boost::asio::io_service> io_service, const freelan::configuration& configuration);
 
 			/**
 			 * \brief Set the function to call when a log entry is emitted.
@@ -379,7 +380,7 @@ namespace freelan
 
 		private:
 
-			boost::asio::io_service& m_io_service;
+			boost::shared_ptr<boost::asio::io_service> m_io_service;
 			const freelan::configuration m_configuration;
 			boost::asio::strand m_logger_strand;
 			freelan::logger m_logger;
@@ -405,8 +406,8 @@ namespace freelan
 
 		private: /* FSCP server */
 
-			void open_server();
-			void close_server();
+			void open_fscp_server();
+			void close_fscp_server();
 
 			void async_contact(const endpoint& target, duration_handler_type handler);
 			void async_contact(const endpoint& target);
@@ -454,7 +455,7 @@ namespace freelan
 			void do_handle_routes_request(const ep_type&);
 			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_route_set&);
 
-			boost::shared_ptr<fscp::server> m_server;
+			boost::shared_ptr<fscp::server> m_fscp_server;
 			boost::asio::deadline_timer m_contact_timer;
 			boost::asio::deadline_timer m_dynamic_contact_timer;
 			boost::asio::deadline_timer m_routes_request_timer;
@@ -610,6 +611,13 @@ namespace freelan
 			asiotap::route_manager m_route_manager;
 			boost::optional<routes_message::version_type> m_local_routes_version;
 			client_router_info_map_type m_client_router_info_map;
+
+		private:
+
+			void open_web_server();
+			void close_web_server();
+
+			boost::shared_ptr<web_server_type> m_web_server;
 	};
 }
 
