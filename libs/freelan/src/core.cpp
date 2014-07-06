@@ -428,11 +428,6 @@ namespace freelan
 		m_router(m_configuration.router),
 		m_route_manager(*m_io_service)
 	{
-		if (!m_configuration.security.identity)
-		{
-			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
-		}
-
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
 
@@ -493,6 +488,11 @@ namespace freelan
 
 	void core::open_fscp_server()
 	{
+		if (!m_configuration.security.identity)
+		{
+			throw std::runtime_error("No user certificate or private key set. Unable to continue.");
+		}
+
 		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(*m_io_service), boost::cref(*m_configuration.security.identity));
 
 		m_fscp_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);

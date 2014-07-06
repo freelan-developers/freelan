@@ -125,6 +125,16 @@ namespace freelan
 		typedef cryptoplus::pkey::pkey key_type;
 
 		/**
+		 * \brief The server certificate to use for the web server.
+		 */
+		cert_type server_certificate;
+
+		/**
+		 * \brief The server private key to use for the web server.
+		 */
+		key_type server_private_key;
+
+		/**
 		 * \brief The CA certificate to use to sign certificate requests.
 		 */
 		cert_type certification_authority_certificate;
