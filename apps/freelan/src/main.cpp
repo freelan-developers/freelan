@@ -387,12 +387,12 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 		if (!configuration_read)
 		{
-			std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
-			std::cerr << "Looked up locations were:" << std::endl;
+			do_log(fl::LL_WARNING, "Warning ! No configuration file specified and none found in the environment.");
+			do_log(fl::LL_WARNING, "Looked up locations were:");
 
-			BOOST_FOREACH(const fs::path& conf, configuration_files)
+			for (auto&& conf : configuration_files)
 			{
-				std::cerr << "- " << conf << std::endl;
+				do_log(fl::LL_WARNING, "- " + conf.native());
 			}
 		}
 	}
