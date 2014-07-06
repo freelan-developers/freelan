@@ -547,7 +547,7 @@ int main(int argc, char** argv)
 	}
 	catch (std::exception& ex)
 	{
-		std::cerr << "Error: " << ex.what() << std::endl;
+		do_log(fl::LL_ERROR, ex.what());
 
 		return EXIT_FAILURE;
 	}
