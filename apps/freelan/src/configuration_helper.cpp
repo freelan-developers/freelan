@@ -182,11 +182,6 @@ namespace
 		return result;
 	}
 
-	bool load_crl(fl::security_configuration::crl_type& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
-	{
-		return load_file("certificate revocation list", value, name, vm, root);
-	}
-
 	bool load_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
 	{
 		return load_file_list("certificate", value, name, vm, root);
