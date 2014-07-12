@@ -525,8 +525,8 @@ namespace freelan
 			certificate.set_serial_number(asn1::integer::from_long(1));
 			certificate.push_back(x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
 
-			const asn1::utctime not_before = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::years(12));
-			const asn1::utctime not_after = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::posix_time::hours(1));
+			const asn1::utctime not_before = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::days(1));
+			const asn1::utctime not_after = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::gregorian::years(1));
 
 			certificate.set_not_before(not_before);
 			certificate.set_not_after(not_after);
@@ -537,7 +537,7 @@ namespace freelan
 
 			m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
-			m_logger(LL_WARNING) << "Temporary certificate used: connections won't be persistent ! You may want to generate and specify a static certificate/key pair.";
+			m_logger(LL_WARNING) << "Using a generated temporary certificate (" << certificate.subject().oneline() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
 		}
 
 		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(*m_io_service), boost::cref(*m_configuration.security.identity));
