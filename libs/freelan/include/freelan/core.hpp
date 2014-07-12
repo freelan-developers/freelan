@@ -381,7 +381,7 @@ namespace freelan
 		private:
 
 			boost::shared_ptr<boost::asio::io_service> m_io_service;
-			const freelan::configuration m_configuration;
+			freelan::configuration m_configuration;
 			boost::asio::strand m_logger_strand;
 			freelan::logger m_logger;
 
