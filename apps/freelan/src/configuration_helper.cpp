@@ -103,9 +103,9 @@ namespace
 		}
 		catch (const std::exception& ex)
 		{
-			po::error_with_option_name error("in %canonical_option%: unable to load %file_type% at \"%filename%\" (%error%)", name, filename.native());
+			po::error_with_option_name error("in %canonical_option%: unable to load %file_type% at \"%filename%\" (%error%)", name, filename.string());
 			error.set_substitute("file_type", file_type);
-			error.set_substitute("filename", filename.native());
+			error.set_substitute("filename", filename.string());
 			error.set_substitute("error", ex.what());
 
 			throw error;

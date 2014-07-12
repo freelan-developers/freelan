@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\client.cpp" />
     <ClCompile Include="src\configuration.cpp" />
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\curl.cpp" />
@@ -31,6 +30,7 @@
     <ClCompile Include="src\router.cpp" />
     <ClCompile Include="src\routes_message.cpp" />
     <ClCompile Include="src\routes_request_message.cpp" />
+    <ClCompile Include="src\server.cpp" />
     <ClCompile Include="src\switch.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -46,8 +46,8 @@
     <ClInclude Include="include\freelan\router.hpp" />
     <ClInclude Include="include\freelan\routes_message.hpp" />
     <ClInclude Include="include\freelan\routes_request_message.hpp" />
+    <ClInclude Include="include\freelan\server.hpp" />
     <ClInclude Include="include\freelan\switch.hpp" />
-    <ClInclude Include="src\client.hpp" />
     <ClInclude Include="src\curl.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

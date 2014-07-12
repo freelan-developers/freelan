@@ -392,7 +392,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 			for (auto&& conf : configuration_files)
 			{
-				do_log(fl::LL_WARNING, "- " + conf.native());
+				do_log(fl::LL_WARNING, "- " + conf.string());
 			}
 		}
 	}
