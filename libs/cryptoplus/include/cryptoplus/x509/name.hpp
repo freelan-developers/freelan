@@ -466,6 +466,18 @@ namespace cryptoplus
 				void push_back(const std::string& field, int type, const void* data, size_t data_len, int set = 0) const;
 
 				/**
+				* \brief Push a new entry at the end of the entry table.
+				* \param field The field.
+				* \param type The type.
+				* \param data The data.
+				* \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				*/
+				void push_back(const std::string& field, int type, const std::string& data, int set = 0) const
+				{
+					push_back(field, type, &data[0], data.size(), set);
+				}
+
+				/**
 				 * \brief Push a new entry at the end of the entry table.
 				 * \param object The ASN1 object.
 				 * \param type The type.
@@ -476,6 +488,19 @@ namespace cryptoplus
 				void push_back(asn1::object object, int type, const void* data, size_t data_len, int set = 0) const;
 
 				/**
+				* \brief Push a new entry at the end of the entry table.
+				* \param object The ASN1 object.
+				* \param type The type.
+				* \param data The data.
+				* \param data_len The length of data.
+				* \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				*/
+				void push_back(asn1::object object, int type, const std::string& data, int set = 0) const
+				{
+					push_back(object, type, &data[0], data.size(), set);
+				}
+
+				/**
 				 * \brief Push a new entry at the end of the entry table.
 				 * \param nid The NID.
 				 * \param type The type.
@@ -484,6 +509,18 @@ namespace cryptoplus
 				 * \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
 				 */
 				void push_back(int nid, int type, const void* data, size_t data_len, int set = 0) const;
+
+				/**
+				* \brief Push a new entry at the end of the entry table.
+				* \param nid The NID.
+				* \param type The type.
+				* \param data The data string.
+				* \param set If set is -1 or 1, the entry will be added to the previous or next RDN structure respectively. If set is 0, the default, a new RDN is created.
+				*/
+				void push_back(int nid, int type, const std::string& data, int set = 0) const
+				{
+					push_back(nid, type, &data[0], data.size(), set);
+				}
 
 				/**
 				 * \brief Insert a copy of the specified name_entry in the entry table.
