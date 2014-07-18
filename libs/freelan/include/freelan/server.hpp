@@ -47,6 +47,7 @@
 #define FREELAN_SERVER_HPP
 
 #include "os.hpp"
+#include "logger.hpp"
 #include "configuration.hpp"
 
 #include <boost/network/include/http/server.hpp>
@@ -58,20 +59,31 @@ namespace freelan
 
 	struct server_handler_type
 	{
-		void operator()(const server_type::request& request, server_type::response& response);
-		void log(const char* c) { std::cout << "log: " << c << std::endl; };
+		public:
+			server_handler_type(freelan::logger& _logger) :
+				m_logger(_logger)
+			{
+			}
+
+			void operator()(const server_type::request& request, server_type::response& response);
+			void log(const char* c);
+
+		private:
+			static const std::string LOG_PREFIX;
+
+			logger& m_logger;
 	};
 
 	class web_server_type
 	{
 		public:
-			web_server_type(boost::shared_ptr<boost::asio::io_service>& io_service, const freelan::server_configuration& configuration);
+			web_server_type(freelan::logger& _logger, const freelan::server_configuration& configuration);
 			void run() { m_server.run(); }
 			void stop() { m_server.stop(); }
 
 		private:
 
-			static server_type::options create_options(boost::shared_ptr<boost::asio::io_service>& io_service, const freelan::server_configuration& configuration, server_handler_type& handler);
+			static server_type::options create_options(const freelan::server_configuration& configuration, server_handler_type& handler);
 
 			server_handler_type m_handler;
 			server_type m_server;

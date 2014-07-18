@@ -1998,7 +1998,7 @@ namespace freelan
 	{
 		if (m_configuration.server.enabled)
 		{
-			m_web_server = boost::make_shared<web_server_type>(m_io_service, m_configuration.server);
+			m_web_server = boost::make_shared<web_server_type>(m_logger, m_configuration.server);
 
 			unsigned int thread_count = m_configuration.server.thread_count;
 
