@@ -103,10 +103,10 @@ namespace freelan
 		/**
 		 * \brief The server protocol type.
 		 */
-		enum server_protocol_type
+		enum class server_protocol_type
 		{
-			SP_HTTP = 0x00, /**< \brief HTTP. */
-			SP_HTTPS = 0x01 /**< \brief HTTPS. */
+			http, /**< \brief HTTP. */
+			https /**< \brief HTTPS. */
 		};
 
 		/**

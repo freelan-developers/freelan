@@ -55,7 +55,7 @@ namespace freelan
 		enabled(false),
 		listen_on_address(),
 		listen_on_port(),
-		protocol(SP_HTTPS)
+		protocol(server_protocol_type::https)
 	{
 	}
 
@@ -128,9 +128,9 @@ namespace freelan
 		is >> value;
 
 		if (value == "http")
-			v = server_configuration::SP_HTTP;
+			v = server_configuration::server_protocol_type::http;
 		else if (value == "https")
-			v = server_configuration::SP_HTTPS;
+			v = server_configuration::server_protocol_type::https;
 		else
 			throw boost::bad_lexical_cast();
 
@@ -141,9 +141,9 @@ namespace freelan
 	{
 		switch (value)
 		{
-			case server_configuration::SP_HTTP:
+			case server_configuration::server_protocol_type::http:
 				return os << "http";
-			case server_configuration::SP_HTTPS:
+			case server_configuration::server_protocol_type::https:
 				return os << "https";
 		}
 
