@@ -618,6 +618,7 @@ namespace freelan
 			void close_web_server();
 
 			boost::shared_ptr<web_server_type> m_web_server;
+			boost::thread_group m_web_server_thread_group;
 	};
 }
 

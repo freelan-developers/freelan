@@ -65,6 +65,8 @@ namespace freelan
 	{
 		public:
 			web_server_type(boost::shared_ptr<boost::asio::io_service>& io_service, const freelan::server_configuration& configuration);
+			void run() { m_server.run(); }
+			void stop() { m_server.stop(); }
 
 		private:
 

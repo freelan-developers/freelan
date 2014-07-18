@@ -1999,11 +1999,43 @@ namespace freelan
 		if (m_configuration.server.enabled)
 		{
 			m_web_server = boost::make_shared<web_server_type>(m_io_service, m_configuration.server);
+
+			unsigned int thread_count = m_configuration.server.thread_count;
+
+			if (thread_count == 0)
+			{
+				thread_count = boost::thread::hardware_concurrency();
+
+				if (thread_count == 0)
+				{
+					// If we can't get the proper thread count, then use 2 which is a sensible default for most architectures.
+					thread_count = 2;
+
+					m_logger(LL_WARNING) << "Can't determine the best count of threads to use for the web server: defaulting to " << thread_count;
+				}
+			}
+
+			m_logger(LL_INFORMATION) << "Starting web server on " << m_configuration.server.listen_on() << " with " << thread_count << " thread(s)...";
+
+			for (decltype(thread_count) i = 0; i < thread_count; ++i) {
+				m_web_server_thread_group.create_thread([this](){ m_web_server->run(); });
+			}
+
+			m_logger(LL_INFORMATION) << "Web server started.";
 		}
 	}
 
 	void core::close_web_server()
 	{
-		m_web_server.reset();
+		if (m_web_server)
+		{
+			m_logger(LL_INFORMATION) << "Closing web server...";
+
+			m_web_server->stop();
+			m_web_server_thread_group.join_all();
+			m_web_server.reset();
+
+			m_logger(LL_INFORMATION) << "Web server closed.";
+		}
 	}
 }
