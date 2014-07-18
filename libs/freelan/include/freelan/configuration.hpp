@@ -91,6 +91,11 @@ namespace freelan
 		bool enabled;
 
 		/**
+		 * \brief The number of threads to allocate to the embedded web server.
+		 */
+		unsigned int thread_count;
+
+		/**
 		 * \brief The address to listen on.
 		 */
 		std::string listen_on_address;

@@ -53,6 +53,7 @@ namespace freelan
 {
 	server_configuration::server_configuration() :
 		enabled(false),
+		thread_count(0),
 		listen_on_address(),
 		listen_on_port(),
 		protocol(server_protocol_type::https)
