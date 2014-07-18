@@ -496,17 +496,14 @@ namespace freelan
 
 			std::string hostname = "freelan client";
 #ifdef WINDOWS
-			DWORD size = 0;
+			std::wstring whostname;
+			whostname.resize(1024);
+			DWORD size = static_cast<DWORD>(whostname.size()) - 1;
 
-			if (::GetComputerNameA(&hostname[0], &size))
+			if (::GetComputerNameW(&whostname[0], &size))
 			{
-				hostname.resize(size);
-				
-				if (::GetComputerNameA(&hostname[0], &size))
-				{
-					// Get rid of the terminal NULL character.
-					hostname.resize(size - 1);
-				}
+				whostname.resize(size);
+				hostname.assign(whostname.begin(), whostname.end());
 			}
 #else
 			char buf[256] = {};
