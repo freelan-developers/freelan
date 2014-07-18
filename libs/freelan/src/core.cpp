@@ -396,10 +396,10 @@ namespace freelan
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
-	core::core(boost::shared_ptr<boost::asio::io_service> io_service, const freelan::configuration& _configuration) :
+	core::core(boost::asio::io_service& io_service, const freelan::configuration& _configuration) :
 		m_io_service(io_service),
 		m_configuration(_configuration),
-		m_logger_strand(*m_io_service),
+		m_logger_strand(m_io_service),
 		m_logger(m_logger_strand.wrap(boost::bind(&core::do_handle_log, this, _1, _2, _3))),
 		m_log_callback(),
 		m_core_opened_callback(),
@@ -412,21 +412,21 @@ namespace freelan
 		m_tap_adapter_up_callback(),
 		m_tap_adapter_down_callback(),
 		m_fscp_server(),
-		m_contact_timer(*m_io_service, CONTACT_PERIOD),
-		m_dynamic_contact_timer(*m_io_service, DYNAMIC_CONTACT_PERIOD),
-		m_routes_request_timer(*m_io_service, ROUTES_REQUEST_PERIOD),
-		m_tap_adapter_strand(*m_io_service),
-		m_proxies_strand(*m_io_service),
-		m_tap_write_queue_strand(*m_io_service),
+		m_contact_timer(m_io_service, CONTACT_PERIOD),
+		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
+		m_routes_request_timer(m_io_service, ROUTES_REQUEST_PERIOD),
+		m_tap_adapter_strand(m_io_service),
+		m_proxies_strand(m_io_service),
+		m_tap_write_queue_strand(m_io_service),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
-		m_router_strand(*m_io_service),
+		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
-		m_route_manager(*m_io_service)
+		m_route_manager(m_io_service)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -540,7 +540,7 @@ namespace freelan
 			m_logger(LL_WARNING) << "Using a generated temporary certificate (" << certificate.subject().oneline() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
 		}
 
-		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(*m_io_service), boost::cref(*m_configuration.security.identity));
+		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
 		m_fscp_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
 		m_fscp_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
@@ -557,7 +557,7 @@ namespace freelan
 		m_fscp_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
 		m_fscp_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
-		resolver_type resolver(*m_io_service);
+		resolver_type resolver(m_io_service);
 
 		const ep_type listen_endpoint = boost::apply_visitor(
 			asiotap::endpoint_resolve_visitor(
@@ -688,7 +688,7 @@ namespace freelan
 
 		boost::apply_visitor(
 			asiotap::endpoint_async_resolve_visitor(
-				boost::make_shared<resolver_type>(boost::ref(*m_io_service)),
+				boost::make_shared<resolver_type>(boost::ref(m_io_service)),
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured,
 				DEFAULT_SERVICE,
@@ -1504,7 +1504,7 @@ namespace freelan
 		{
 			const asiotap::tap_adapter_layer tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap) ? asiotap::tap_adapter_layer::ethernet : asiotap::tap_adapter_layer::ip;
 
-			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(*m_io_service), tap_adapter_type);
+			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service), tap_adapter_type);
 
 			const auto write_func = [this] (boost::asio::const_buffer data, simple_handler_type handler) {
 				async_write_tap(buffer(data), [handler](const boost::system::error_code& ec, size_t) {

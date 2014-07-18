@@ -252,7 +252,7 @@ namespace freelan
 			 * \param io_service The io_service to bind to.
 			 * \param configuration The configuration to use.
 			 */
-			core(boost::shared_ptr<boost::asio::io_service> io_service, const freelan::configuration& configuration);
+			core(boost::asio::io_service& io_service, const freelan::configuration& configuration);
 
 			/**
 			 * \brief Set the function to call when a log entry is emitted.
@@ -380,7 +380,7 @@ namespace freelan
 
 		private:
 
-			boost::shared_ptr<boost::asio::io_service> m_io_service;
+			boost::asio::io_service& m_io_service;
 			freelan::configuration m_configuration;
 			boost::asio::strand m_logger_strand;
 			freelan::logger m_logger;

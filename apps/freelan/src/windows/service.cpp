@@ -501,7 +501,7 @@ namespace windows
 
 			try
 			{
-				boost::shared_ptr<boost::asio::io_service> io_service;
+				boost::asio::io_service io_service;
 
 				fl::configuration fl_configuration = get_freelan_configuration(configuration);
 
@@ -560,7 +560,7 @@ namespace windows
 
 				for (std::size_t i = 0; i < thread_count; ++i)
 				{
-					threads.create_thread(boost::bind(&boost::asio::io_service::run, io_service));
+					threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
 				}
 
 				threads.join_all();
