@@ -60,6 +60,40 @@ namespace freelan
 	{
 	}
 
+	std::string server_configuration::listen_on() const
+	{
+		std::ostringstream oss;
+
+		if (listen_on_address.empty())
+		{
+			oss << "<all interfaces>";
+		}
+		else
+		{
+			oss << listen_on_address;
+		}
+
+		oss << ":";
+
+		if (listen_on_port.empty())
+		{
+			if (protocol == server_protocol_type::http)
+			{
+				oss << "<http>";
+			}
+			else
+			{
+				oss << "<https>";
+			}
+		}
+		else
+		{
+			oss << listen_on_port;
+		}
+
+		return oss.str();
+	}
+
 	fscp_configuration::fscp_configuration() :
 		listen_on(),
 		listen_on_device(),

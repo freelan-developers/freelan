@@ -106,6 +106,12 @@ namespace freelan
 		std::string listen_on_port;
 
 		/**
+		 * \brief Get a human readable string for the listen_on attributes.
+		 * \return A human-readable string.
+		 */
+		std::string listen_on() const;
+
+		/**
 		 * \brief The server protocol type.
 		 */
 		enum class server_protocol_type
