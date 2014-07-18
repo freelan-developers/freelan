@@ -498,7 +498,7 @@ namespace freelan
 #ifdef WINDOWS
 			DWORD size = 0;
 
-			if (::GetComputerNameA(NULL, &size))
+			if (::GetComputerNameA(&hostname[0], &size))
 			{
 				hostname.resize(size);
 				
