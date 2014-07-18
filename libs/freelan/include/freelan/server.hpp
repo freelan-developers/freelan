@@ -59,6 +59,7 @@ namespace freelan
 	struct server_handler_type
 	{
 		void operator()(const server_type::request& request, server_type::response& response);
+		void log(const char* c) { std::cout << "log: " << c << std::endl; };
 	};
 
 	class web_server_type
