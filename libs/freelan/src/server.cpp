@@ -53,7 +53,7 @@ namespace freelan
 
 	void server_handler_type::log(const char* c) {
 		m_logger(LL_WARNING) << LOG_PREFIX << c;
-	};
+	}
 
 	void server_handler_type::operator()(const server_type::request& request, server_type::response& response)
 	{
