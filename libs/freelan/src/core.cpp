@@ -45,6 +45,7 @@
 
 #include "core.hpp"
 
+#include "tools.hpp"
 #include "client.hpp"
 #include "routes_request_message.hpp"
 #include "routes_message.hpp"
@@ -491,46 +492,9 @@ namespace freelan
 		if (!m_configuration.security.identity)
 		{
 			m_logger(LL_WARNING) << "No user certificate or private key set. Generating temporary ones...";
-		
-			using namespace cryptoplus;
 
-			std::string hostname = "freelan client";
-#ifdef WINDOWS
-			std::wstring whostname;
-			whostname.resize(1024);
-			DWORD size = static_cast<DWORD>(whostname.size()) - 1;
-
-			if (::GetComputerNameW(&whostname[0], &size))
-			{
-				whostname.resize(size);
-				hostname.assign(whostname.begin(), whostname.end());
-			}
-#else
-			char buf[256] = {};
-
-			if (gethostname(buf, sizeof(buf)) == 0)
-			{
-				hostname = std::string(buf);
-			}
-#endif
-			cert_type certificate = cert_type::create();
-			certificate.set_version(2);
-			certificate.subject().push_back("CN", MBSTRING_ASC, hostname);
-			certificate.subject().push_back("C", MBSTRING_ASC, "US");
-			certificate.subject().push_back("O", MBSTRING_ASC, "Freelan");
-			certificate.set_issuer(certificate.subject());
-			certificate.set_serial_number(asn1::integer::from_long(1));
-			certificate.push_back(x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
-
-			const asn1::utctime not_before = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::days(1));
-			const asn1::utctime not_after = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::gregorian::years(1));
-
-			certificate.set_not_before(not_before);
-			certificate.set_not_after(not_after);
-
-			const cryptoplus::pkey::pkey private_key = pkey::pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(2048, 17));
-			certificate.set_public_key(private_key);
-			certificate.sign(private_key, hash::message_digest_algorithm(NID_sha1));
+			const auto private_key = generate_private_key();
+			const auto certificate = generate_self_signed_certificate(private_key);
 
 			m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
