@@ -130,7 +130,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
@@ -157,7 +157,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
@@ -186,7 +186,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
@@ -216,7 +216,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>

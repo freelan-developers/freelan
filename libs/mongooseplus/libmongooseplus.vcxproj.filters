@@ -18,9 +18,15 @@
     <ClCompile Include="src\mongooseplus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\mongoose.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\mongooseplus\mongooseplus.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mongoose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,10 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\mongoose.c">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4267;4244;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4267;4244;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4267;4244;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4267;4244;4996</DisableSpecificWarnings>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SDLCheck>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SDLCheck>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SDLCheck>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</SDLCheck>
+    </ClCompile>
     <ClCompile Include="src\mongooseplus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\mongooseplus\mongooseplus.hpp" />
+    <ClInclude Include="src\mongoose.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{70266482-33AC-449F-8356-0EC6FA0C1BBD}</ProjectGuid>
@@ -102,7 +113,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\mongooseplus</AdditionalIncludeDirectories>
       <ShowIncludes>
@@ -133,7 +144,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\mongooseplus</AdditionalIncludeDirectories>
       <ShowIncludes>
@@ -166,7 +177,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\mongooseplus</AdditionalIncludeDirectories>
       <ShowIncludes>
@@ -201,7 +212,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\mongooseplus</AdditionalIncludeDirectories>
       <ShowIncludes>
