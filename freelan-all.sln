@@ -43,6 +43,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libexecuteplus", "libs\executeplus\libexecuteplus.vcxproj", "{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmongooseplus", "libs\mongooseplus\libmongooseplus.vcxproj", "{70266482-33AC-449F-8356-0EC6FA0C1BBD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BABD5FDD-D2DC-44FE-B2A4-A21D3DD1F6C2} = {BABD5FDD-D2DC-44FE-B2A4-A21D3DD1F6C2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
