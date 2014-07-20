@@ -85,21 +85,21 @@ namespace mongooseplus
 		}
 
 		explicit underlying_server_type(web_server* parent) :
-			mg_server(mg_create_server(parent, event_handler), mg_destroy_server_simple)
+			server(mg_create_server(parent, event_handler), mg_destroy_server_simple)
 		{
 		}
 
-		std::unique_ptr<mg_server, void(*)(mg_server*)> mg_server;
+		std::unique_ptr<mg_server, void(*)(mg_server*)> server;
 	};
 
 	web_server::web_server() :
 		m_server(new underlying_server_type(this))
 	{}
 
-	web_server::connection::connection(mg_connection* connection) :
-		m_connection(connection)
+	web_server::connection::connection(mg_connection* _connection) :
+		m_connection(_connection)
 	{
-		assert(connection);		
+		assert(_connection);		
 	}
 
 	std::string web_server::connection::uri() const
