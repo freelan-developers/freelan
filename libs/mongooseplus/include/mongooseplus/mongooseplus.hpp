@@ -44,3 +44,50 @@
  */
 
 #pragma once
+
+#include <memory>
+#include <string>
+
+#include <boost/optional.hpp>
+#include <boost/asio.hpp>
+
+struct mg_connection;
+
+namespace mongooseplus
+{
+	class web_server
+	{
+		public:
+			web_server();
+			virtual ~web_server() {};
+			
+		private:
+			struct underlying_server_type;
+			std::unique_ptr<underlying_server_type> m_server;
+
+		protected:
+			class connection
+			{
+				public:
+					std::string uri() const;
+					boost::optional<std::string> get_header(const std::string& name) const;
+					std::string request_method() const;
+					std::string http_version() const;
+					std::string query_string() const;
+					const char* content() const;
+					size_t content_size() const;
+					boost::asio::ip::address local_ip() const;
+					uint16_t local_port() const;
+					boost::asio::ip::address remote_ip() const;
+					uint16_t remote_port() const;
+
+				private:
+					explicit connection(mg_connection* connection);
+					mg_connection* m_connection;
+
+					friend struct web_server::underlying_server_type;
+			};
+
+			virtual bool handle_request(connection& conn) = 0;
+	};
+}
