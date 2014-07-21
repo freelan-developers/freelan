@@ -57,4 +57,18 @@ namespace freelan
 		m_logger(LL_DEBUG) << "Web server's listen endpoint set to " << configuration.listen_on << ".";
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 	}
+
+	web_server::request_result web_server::handle_request(connection& conn)
+	{
+		m_logger(LL_DEBUG) << "Web server - Received request from " << conn.remote() << " for " << conn.uri() << ".";
+
+		return mongooseplus::web_server::handle_request(conn);
+	}
+
+	web_server::request_result web_server::handle_http_error(connection& conn)
+	{
+		m_logger(LL_WARNING) << "Web server - Sending back " << conn.status_code() << " to " << conn.remote() << ".";
+
+		return mongooseplus::web_server::handle_http_error(conn);
+	}
 }

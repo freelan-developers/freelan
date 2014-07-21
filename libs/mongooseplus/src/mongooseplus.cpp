@@ -53,8 +53,25 @@ namespace mongooseplus
 {
 	namespace
 	{
-		void mg_destroy_server_simple(mg_server* server) {
+		void mg_destroy_server_simple(mg_server* server)
+		{
 			mg_destroy_server(&server);
+		}
+
+		std::string ip_port_to_string(const boost::asio::ip::address& address, uint16_t port)
+		{
+			std::ostringstream oss;
+
+			if (address.is_v6())
+			{
+				oss << "[" << address << "]:" << port;
+			}
+			else
+			{
+				oss << address << ":" << port;
+			}
+
+			return oss.str();
 		}
 	}
 
@@ -182,6 +199,11 @@ namespace mongooseplus
 		return m_connection->query_string;
 	}
 
+	int web_server::connection::status_code() const
+	{
+		return m_connection->status_code;
+	}
+
 	const char* web_server::connection::content() const
 	{
 		return m_connection->content;
@@ -202,6 +224,11 @@ namespace mongooseplus
 		return m_connection->local_port;
 	}
 
+	std::string web_server::connection::local() const
+	{
+		return ip_port_to_string(local_ip(), local_port());
+	}
+
 	boost::asio::ip::address web_server::connection::remote_ip() const
 	{
 		return boost::asio::ip::address::from_string(m_connection->remote_ip);
@@ -210,6 +237,11 @@ namespace mongooseplus
 	uint16_t web_server::connection::remote_port() const
 	{
 		return m_connection->remote_port;
+	}
+
+	std::string web_server::connection::remote() const
+	{
+		return ip_port_to_string(remote_ip(), remote_port());
 	}
 
 	void web_server::connection::set_user_param(void* user_param)

@@ -81,12 +81,15 @@ namespace mongooseplus
 					std::string request_method() const;
 					std::string http_version() const;
 					std::string query_string() const;
+					int status_code() const;
 					const char* content() const;
 					size_t content_size() const;
 					boost::asio::ip::address local_ip() const;
 					uint16_t local_port() const;
+					std::string local() const;
 					boost::asio::ip::address remote_ip() const;
 					uint16_t remote_port() const;
+					std::string remote() const;
 					void set_user_param(void* user_param);
 					void* get_user_param() const;
 
