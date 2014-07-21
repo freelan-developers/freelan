@@ -54,6 +54,7 @@ class FreelanEnvironment(Environment):
 
         for flag in [
             'CXX',
+            'CC',
             'AR',
             'LINK',
         ]:
@@ -62,6 +63,7 @@ class FreelanEnvironment(Environment):
 
         for flag in [
             'CXXFLAGS',
+            'CCFLAGS',
             'ARFLAGS',
             'LINKFLAGS',
         ]:
