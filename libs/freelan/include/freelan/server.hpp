@@ -55,7 +55,7 @@
 
 namespace freelan
 {
-	class web_server : public mongooseplus::web_server
+	class web_server : public mongooseplus::routed_web_server
 	{
 		public:
 			web_server(freelan::logger& _logger, const freelan::server_configuration& configuration);

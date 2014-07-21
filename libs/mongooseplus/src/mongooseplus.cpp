@@ -184,6 +184,18 @@ namespace mongooseplus
 		return boost::none;
 	}
 
+	std::string web_server::connection::get_header(const std::string& name, const std::string& default_value) const
+	{
+		const char* const header = mg_get_header(m_connection, name.c_str());
+
+		if (header)
+		{
+			return std::string(header);
+		}
+
+		return default_value;
+	}
+
 	std::string web_server::connection::request_method() const
 	{
 		return m_connection->request_method;
@@ -252,5 +264,48 @@ namespace mongooseplus
 	void* web_server::connection::get_user_param() const
 	{
 		return m_connection->connection_param;
+	}
+
+	bool routed_web_server::route_type::matches(const web_server::connection& conn) const
+	{
+		if (!std::regex_match(conn.uri(), url_regex))
+		{
+			return false;
+		}
+
+		if (!request_methods.empty())
+		{
+			if (request_methods.find(conn.request_method()) == request_methods.end())
+			{
+				return false;
+			}
+		}
+
+		if (!content_types.empty())
+		{
+			if (content_types.find(conn.get_header("content-type", "text/html")) == content_types.end())
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	void routed_web_server::register_route(const route_type& route)
+	{
+		m_routes.push_back(route);
+	}
+
+	routed_web_server::route_type* routed_web_server::get_route(const connection& conn)
+	{
+		const auto route_it = std::find_if(m_routes.begin(), m_routes.end(), [&conn](const route_type& route){ return route.matches(conn); });
+
+		if (route_it != m_routes.end())
+		{
+			return &*route_it;
+		}
+
+		return nullptr;
 	}
 }

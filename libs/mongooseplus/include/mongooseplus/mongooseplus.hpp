@@ -48,6 +48,9 @@
 #include <memory>
 #include <string>
 #include <atomic>
+#include <vector>
+#include <set>
+#include <regex>
 
 #include <boost/optional.hpp>
 #include <boost/asio.hpp>
@@ -78,6 +81,7 @@ namespace mongooseplus
 				public:
 					std::string uri() const;
 					boost::optional<std::string> get_header(const std::string& name) const;
+					std::string get_header(const std::string& name, const std::string& default_value) const;
 					std::string request_method() const;
 					std::string http_version() const;
 					std::string query_string() const;
@@ -133,8 +137,62 @@ namespace mongooseplus
 			}
 	};
 
+	class routed_web_server : public web_server
+	{
+		protected:
+
+			struct route_type
+			{
+				typedef std::function<request_result (connection&)> function_type;
+
+				std::regex url_regex;
+				std::set<std::string> request_methods;
+				std::set<std::string> content_types;
+				function_type function;
+
+				route_type(const std::string& _url_regex, function_type _function) :
+					url_regex(_url_regex),
+					function(_function)
+				{}
+
+				route_type(const std::string& _url_regex, const std::set<std::string>& _request_methods, function_type _function) :
+					url_regex(_url_regex),
+					request_methods(_request_methods),
+					function(_function)
+				{}
+
+				route_type(const std::string& _url_regex, const std::set<std::string>& _request_methods, const std::set<std::string>& _content_types, function_type _function) :
+					url_regex(_url_regex),
+					request_methods(_request_methods),
+					content_types(_content_types),
+					function(_function)
+				{}
+
+				bool matches(const connection&) const;
+			};
+
+			void register_route(const route_type& route);
+
+			request_result handle_request(connection& conn) override
+			{
+				route_type* const route = get_route(conn);
+
+				if (route)
+				{
+					return route->function(conn);
+				}
+
+				return web_server::handle_request(conn);
+			}
+
+		private:
+			route_type* get_route(const connection&);
+
+			std::vector<route_type> m_routes;
+	};
+
 	template <typename ConnectionInfoType>
-	class object_web_server : public web_server
+	class object_web_server : public routed_web_server
 	{
 		protected:
 
@@ -145,7 +203,7 @@ namespace mongooseplus
 
 			virtual request_result handle_pre_auth(connection& conn)
 			{
-				return web_server::handle_auth(conn);
+				return routed_web_server::handle_auth(conn);
 			}
 
 			virtual void handle_post_auth(connection&)
@@ -176,7 +234,7 @@ namespace mongooseplus
 				std::unique_ptr<ConnectionInfoType> user_data(static_cast<ConnectionInfoType*>(conn.get_user_param()));
 				conn.set_user_param(nullptr);
 
-				return web_server::handle_close(conn);
+				return routed_web_server::handle_close(conn);
 			}
 	};
 }
