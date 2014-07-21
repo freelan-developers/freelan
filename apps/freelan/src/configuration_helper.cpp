@@ -210,8 +210,7 @@ po::options_description get_server_options()
 
 	result.add_options()
 	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
-	("server.listen_on_address", po::value<std::string>()->default_value(std::string()), "The server listen endpoint.")
-	("server.listen_on_port", po::value<std::string>()->default_value(std::string()), "The server listen endpoint.")
+	("server.listen_on", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 80)), "The endpoint to listen on.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::server_protocol_type::https), "The protocol to use to contact the server.")
 	("server.server_certificate_file", po::value<fs::path>()->default_value(""), "The server certificate file.")
 	("server.server_private_key_file", po::value<fs::path>()->default_value(""), "The server private key file.")
@@ -325,8 +324,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// Server options
 	configuration.server.enabled = vm["server.enabled"].as<bool>();
-	configuration.server.listen_on_address = vm["server.listen_on_address"].as<std::string>();
-	configuration.server.listen_on_port = vm["server.listen_on_port"].as<std::string>();
+	configuration.server.listen_on = vm["server.listen_on"].as<asiotap::endpoint>();
 	configuration.server.protocol = vm["server.protocol"].as<fl::server_configuration::server_protocol_type>();
 
 	load_certificate(configuration.server.server_certificate, "server.server_certificate_file", vm, root);

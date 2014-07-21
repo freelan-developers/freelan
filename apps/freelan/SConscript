@@ -12,6 +12,7 @@ libraries = [
     'executeplus',
     'iconvplus',
     'kfather',
+    'mongooseplus',
     'boost_system',
     'boost_thread',
     'boost_filesystem',

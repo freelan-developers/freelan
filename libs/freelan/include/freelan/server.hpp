@@ -43,52 +43,25 @@
  * \brief The freelan server class.
  */
 
-#ifndef FREELAN_SERVER_HPP
-#define FREELAN_SERVER_HPP
+#pragma once
 
 #include "os.hpp"
 #include "logger.hpp"
 #include "configuration.hpp"
 
-#include <boost/network/include/http/server.hpp>
+#include <boost/thread.hpp>
+
+#include <mongooseplus/mongooseplus.hpp>
 
 namespace freelan
 {
-	struct server_handler_type;
-	typedef boost::network::http::server<server_handler_type> server_type;
-
-	struct server_handler_type
+	class web_server : public mongooseplus::web_server
 	{
 		public:
-			server_handler_type(freelan::logger& _logger) :
-				m_logger(_logger)
-			{
-			}
-
-			void operator()(const server_type::request& request, server_type::response& response);
-			void log(const char* c);
+			web_server(freelan::logger& _logger, const freelan::server_configuration& configuration);
 
 		private:
-			static const std::string LOG_PREFIX;
-
-			logger& m_logger;
-	};
-
-	class web_server_type
-	{
-		public:
-			web_server_type(freelan::logger& _logger, const freelan::server_configuration& configuration);
-			void run() { m_server.run(); }
-			void stop() { m_server.stop(); }
-
-		private:
-
-			static server_type::options create_options(const freelan::server_configuration& configuration, server_handler_type& handler);
-
-			server_handler_type m_handler;
-			server_type m_server;
+			freelan::logger& m_logger;
 	};
 
 }
-
-#endif /* FREELAN_SERVER_HPP */

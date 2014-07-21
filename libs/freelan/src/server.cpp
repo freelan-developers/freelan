@@ -45,45 +45,16 @@
 
 #include "server.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <cassert>
 
 namespace freelan
 {
-	const std::string server_handler_type::LOG_PREFIX = "Web server: ";
-
-	void server_handler_type::log(const char* c) {
-		m_logger(LL_WARNING) << LOG_PREFIX << c;
-	}
-
-	void server_handler_type::operator()(const server_type::request& request, server_type::response& response)
+	web_server::web_server(logger& _logger, const freelan::server_configuration& configuration) :
+		m_logger(_logger)
 	{
-		static_cast<void>(request);
-		static_cast<void>(response);
-
-		const std::string request_source = source(request);
-		m_logger(LL_DEBUG) << LOG_PREFIX << "request from " << request_source;
-	}
-
-	web_server_type::web_server_type(logger& _logger, const freelan::server_configuration& configuration) :
-		m_handler(_logger),
-		m_server(create_options(configuration, m_handler))
-	{
-	}
-
-	server_type::options web_server_type::create_options(const freelan::server_configuration& configuration, server_handler_type& handler)
-	{
-		server_type::options options(handler);
-
-		if (!configuration.listen_on_address.empty())
-		{
-			options.address(configuration.listen_on_address);
-		}
-
-		if (!configuration.listen_on_port.empty())
-		{
-			options.port(configuration.listen_on_port);
-		}
-
-		return options;
+		m_logger(LL_DEBUG) << "Web server's listen endpoint set to " << configuration.listen_on << ".";
+		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 	}
 }

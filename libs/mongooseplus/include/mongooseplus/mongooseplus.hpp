@@ -47,6 +47,7 @@
 
 #include <memory>
 #include <string>
+#include <atomic>
 
 #include <boost/optional.hpp>
 #include <boost/asio.hpp>
@@ -59,13 +60,19 @@ namespace mongooseplus
 	{
 		public:
 			web_server();
-			virtual ~web_server() {};
+			virtual ~web_server();
+
+			void run(int poll_period = 1000);
+			void stop();
 			
 		private:
 			struct underlying_server_type;
 			std::unique_ptr<underlying_server_type> m_server;
+			std::atomic<bool> m_is_running;
 
 		protected:
+			void set_option(const std::string& name, const std::string& value);
+
 			class connection
 			{
 				public:
@@ -80,6 +87,8 @@ namespace mongooseplus
 					uint16_t local_port() const;
 					boost::asio::ip::address remote_ip() const;
 					uint16_t remote_port() const;
+					void set_user_param(void* user_param);
+					void* get_user_param() const;
 
 				private:
 					explicit connection(mg_connection* connection);
@@ -88,6 +97,83 @@ namespace mongooseplus
 					friend struct web_server::underlying_server_type;
 			};
 
-			virtual bool handle_request(connection& conn) = 0;
+			enum class request_result
+			{
+				handled,
+				ignored,
+				expect_more
+			};
+
+			virtual request_result handle_auth(connection&)
+			{
+				return request_result::handled;
+			}
+
+			virtual request_result handle_request(connection&)
+			{
+				return request_result::ignored;
+			}
+
+			virtual request_result handle_poll(connection&)
+			{
+				return request_result::ignored;
+			};
+
+			virtual request_result handle_http_error(connection&)
+			{
+				return request_result::ignored;
+			}
+
+			virtual request_result handle_close(connection&)
+			{
+				return request_result::ignored;
+			}
+	};
+
+	template <typename ConnectionInfoType>
+	class object_web_server : public web_server
+	{
+		protected:
+
+			ConnectionInfoType& get_connection_info(connection& conn)
+			{
+				return *static_cast<ConnectionInfoType*>(conn.get_user_param());
+			}
+
+			virtual request_result handle_pre_auth(connection& conn)
+			{
+				return web_server::handle_auth(conn);
+			}
+
+			virtual void handle_post_auth(connection&)
+			{
+			}
+
+		private:
+
+			request_result handle_auth(connection& conn) override
+			{
+				const request_result result = handle_pre_auth(conn);
+
+				if (result != request_result::handled)
+				{
+					std::unique_ptr<ConnectionInfoType> connection_info(new ConnectionInfoType());
+					conn.set_user_param(connection_info.get());
+
+					handle_post_auth(conn);
+
+					connection_info.release();
+				}
+
+				return result;
+			}
+
+			request_result handle_close(connection& conn)
+			{
+				std::unique_ptr<ConnectionInfoType> user_data(static_cast<ConnectionInfoType*>(conn.get_user_param()));
+				conn.set_user_param(nullptr);
+
+				return web_server::handle_close(conn);
+			}
 	};
 }

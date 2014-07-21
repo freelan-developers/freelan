@@ -58,6 +58,13 @@ namespace mongooseplus
 		}
 	}
 
+	web_server::~web_server() {}
+
+	void web_server::stop()
+	{
+		m_is_running = false;
+	}
+
 	struct web_server::underlying_server_type
 	{
 		static int event_handler(struct mg_connection* conn, enum mg_event ev)
@@ -66,21 +73,41 @@ namespace mongooseplus
 
 			web_server& ws = *static_cast<web_server*>(conn->server_param);
 
-			return event_handler_simple(ws, conn, ev) ? MG_TRUE : MG_FALSE;
+			const auto result = event_handler_simple(ws, conn, ev);
+
+			switch (result)
+			{
+				case web_server::request_result::handled:
+					return MG_TRUE;
+				case web_server::request_result::ignored:
+					return MG_FALSE;
+				case web_server::request_result::expect_more:
+					return MG_MORE;
+			}
+
+			assert(false);
+
+			return MG_FALSE;
 		}
 
-		static bool event_handler_simple(web_server& ws, struct mg_connection* conn, enum mg_event ev)
+		static web_server::request_result event_handler_simple(web_server& ws, struct mg_connection* conn, enum mg_event ev)
 		{
 			web_server::connection connection(conn);
 
 			switch (ev)
 			{
 				case MG_AUTH:
-					return true;
+					return ws.handle_auth(connection);
 				case MG_REQUEST:
 					return ws.handle_request(connection);
+				case MG_POLL:
+					return ws.handle_poll(connection);
+				case MG_HTTP_ERROR:
+					return ws.handle_http_error(connection);
+				case MG_CLOSE:
+					return ws.handle_close(connection);
 				default:
-					return false;
+					return web_server::request_result::ignored;
 			}
 		}
 
@@ -93,8 +120,29 @@ namespace mongooseplus
 	};
 
 	web_server::web_server() :
-		m_server(new underlying_server_type(this))
+		m_server(new underlying_server_type(this)),
+		m_is_running(false)
 	{}
+
+	void web_server::run(int poll_period)
+	{
+		m_is_running = true;
+
+		while (m_is_running)
+		{
+			mg_poll_server(m_server->server.get(), poll_period);
+		}
+	}
+
+	void web_server::set_option(const std::string& name, const std::string& value)
+	{
+		const char* result = ::mg_set_option(m_server->server.get(), name.c_str(), value.c_str());
+
+		if (result != NULL)
+		{
+			throw std::runtime_error(std::string(result));
+		}
+	}
 
 	web_server::connection::connection(mg_connection* _connection) :
 		m_connection(_connection)
@@ -162,5 +210,15 @@ namespace mongooseplus
 	uint16_t web_server::connection::remote_port() const
 	{
 		return m_connection->remote_port;
+	}
+
+	void web_server::connection::set_user_param(void* user_param)
+	{
+		m_connection->connection_param = user_param;
+	}
+
+	void* web_server::connection::get_user_param() const
+	{
+		return m_connection->connection_param;
 	}
 }

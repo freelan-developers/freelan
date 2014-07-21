@@ -81,6 +81,11 @@ namespace freelan
 	struct server_configuration
 	{
 		/**
+		 * \brief The endpoint type.
+		 */
+		typedef asiotap::endpoint endpoint;
+
+		/**
 		 * \brief Create a new server configuration.
 		 */
 		server_configuration();
@@ -91,25 +96,9 @@ namespace freelan
 		bool enabled;
 
 		/**
-		 * \brief The number of threads to allocate to the embedded web server.
+		 * \brief The endpoint to listen on.
 		 */
-		unsigned int thread_count;
-
-		/**
-		 * \brief The address to listen on.
-		 */
-		std::string listen_on_address;
-
-		/**
-		 * \brief The port to listen on.
-		 */
-		std::string listen_on_port;
-
-		/**
-		 * \brief Get a human readable string for the listen_on attributes.
-		 * \return A human-readable string.
-		 */
-		std::string listen_on() const;
+		endpoint listen_on;
 
 		/**
 		 * \brief The server protocol type.

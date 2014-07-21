@@ -53,45 +53,9 @@ namespace freelan
 {
 	server_configuration::server_configuration() :
 		enabled(false),
-		thread_count(0),
-		listen_on_address(),
-		listen_on_port(),
+		listen_on(),
 		protocol(server_protocol_type::https)
 	{
-	}
-
-	std::string server_configuration::listen_on() const
-	{
-		std::ostringstream oss;
-
-		if (listen_on_address.empty())
-		{
-			oss << "<all interfaces>";
-		}
-		else
-		{
-			oss << listen_on_address;
-		}
-
-		oss << ":";
-
-		if (listen_on_port.empty())
-		{
-			if (protocol == server_protocol_type::http)
-			{
-				oss << "<http>";
-			}
-			else
-			{
-				oss << "<https>";
-			}
-		}
-		else
-		{
-			oss << listen_on_port;
-		}
-
-		return oss.str();
 	}
 
 	fscp_configuration::fscp_configuration() :
