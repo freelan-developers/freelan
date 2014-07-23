@@ -58,11 +58,11 @@ namespace freelan
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 
 		// Routes
-		register_route(route_type("/", [this](connection&) {
+		register_route("/", [this](connection&) {
 			m_logger(LL_DEBUG) << "Requested root.";
 
 			return request_result::ignored;
-		}));
+		});
 	}
 
 	web_server::request_result web_server::handle_request(connection& conn)

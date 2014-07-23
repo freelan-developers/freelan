@@ -173,6 +173,12 @@ namespace mongooseplus
 
 			void register_route(const route_type& route);
 
+			template <typename... Types>
+			void register_route(Types... values)
+			{
+				register_route(route_type(values...));
+			}
+
 			request_result handle_request(connection& conn) override
 			{
 				route_type* const route = get_route(conn);
