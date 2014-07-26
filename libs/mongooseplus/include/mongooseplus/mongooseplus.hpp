@@ -177,7 +177,7 @@ namespace mongooseplus
 					template <typename... Types>
 					void send_header(Types... values)
 					{
-						send_header(header_type(values...));
+						send_header(header_type(std::forward<Types>(values)...));
 					}
 					void send_headers(const header_list_type& headers)
 					{
@@ -233,17 +233,17 @@ namespace mongooseplus
 				return request_result::ignored;
 			}
 
-			friend class authentication_handler;
+			friend class base_authentication_handler;
 	};
 
 	/**
 	 * \brief Authentication handler class.
 	 */
-	class authentication_handler
+	class base_authentication_handler
 	{
 		public:
 
-			virtual ~authentication_handler() {};
+			virtual ~base_authentication_handler() {};
 
 			const std::string& scheme() const
 			{
@@ -267,7 +267,7 @@ namespace mongooseplus
 
 		protected:
 
-			authentication_handler(const std::string& _scheme) :
+			base_authentication_handler(const std::string& _scheme) :
 				m_scheme(_scheme)
 			{
 			}
@@ -280,12 +280,12 @@ namespace mongooseplus
 			std::string m_scheme;
 	};
 
-	class basic_authentication_handler : public authentication_handler
+	class basic_authentication_handler : public base_authentication_handler
 	{
 		public:
 
 			basic_authentication_handler(const std::string& _realm) :
-				authentication_handler("Basic"),
+				base_authentication_handler("Basic"),
 				m_realm(_realm)
 			{
 			}
@@ -298,6 +298,7 @@ namespace mongooseplus
 		protected:
 
 			bool do_authenticate(const header_type& header) const override;
+			virtual bool do_authenticate(const std::string& username, const std::string& password) const = 0;
 			void raise_authentication_error() const override;
 
 		private:
@@ -316,6 +317,7 @@ namespace mongooseplus
 				std::regex url_regex;
 				std::set<std::string> request_methods;
 				std::set<std::string> content_types;
+				std::shared_ptr<base_authentication_handler> authentication_handler;
 				function_type function;
 
 				route_type(const std::string& _url_regex, function_type _function) :
@@ -336,17 +338,32 @@ namespace mongooseplus
 					function(_function)
 				{}
 
+				template <typename AuthenticationHandler, typename... Types>
+				route_type& set_authentication_handler(Types... values)
+				{
+					authentication_handler = std::make_shared<AuthenticationHandler>(std::forward<Types>(values)...);
+
+					return *this;
+				}
+
 				bool url_matches(const connection&) const;
 				bool request_method_matches(const connection&) const;
 				bool content_type_matches(const connection&) const;
+				void check_authentication(const connection& conn) const
+				{
+					if (authentication_handler)
+					{
+						authentication_handler->authenticate(conn);
+					}
+				}
 			};
 
-			void register_route(const route_type& route);
+			route_type& register_route(const route_type& route);
 
 			template <typename... Types>
-			void register_route(Types... values)
+			route_type& register_route(Types... values)
 			{
-				register_route(route_type(values...));
+				return register_route(route_type(std::forward<Types>(values)...));
 			}
 
 			request_result handle_request(connection& conn) override;

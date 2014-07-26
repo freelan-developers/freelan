@@ -406,10 +406,7 @@ namespace mongooseplus
 		const std::string username = decoded_value.substr(0, separator_index);
 		const std::string password = (separator_index != std::string::npos) ? decoded_value.substr(separator_index + 1) : "";
 
-		std::cout << "username: " << username << std::endl;
-		std::cout << "password: " << password << std::endl;
-
-		return false;
+		return do_authenticate(username, password);
 	}
 
 	void basic_authentication_handler::raise_authentication_error() const
@@ -450,9 +447,11 @@ namespace mongooseplus
 		return true;
 	}
 
-	void routed_web_server::register_route(const route_type& route)
+	routed_web_server::route_type& routed_web_server::register_route(const route_type& route)
 	{
 		m_routes.push_back(route);
+
+		return m_routes.back();
 	}
 
 	routed_web_server::request_result routed_web_server::handle_request(connection& conn)
@@ -463,6 +462,8 @@ namespace mongooseplus
 
 			if (route)
 			{
+				route->check_authentication(conn);
+
 				const auto result = route->function(conn);
 
 				if (result == request_result::handled)
