@@ -157,6 +157,11 @@ namespace mongooseplus
 					void* get_user_param() const;
 					void send_status_code(int status_code);
 					void send_header(const header_type& header);
+					template <typename... Types>
+					void send_header(Types... values)
+					{
+						send_header(header_type(values...));
+					}
 					void send_headers(const header_list_type& headers)
 					{
 						for (auto&& header : headers)
@@ -165,6 +170,10 @@ namespace mongooseplus
 						}
 					}
 					void send_data(const void* data, size_t data_len);
+					void send_data(const std::string& data)
+					{
+						send_data(&data[0], data.size());
+					}
 					void write(const void* buf, size_t buf_len);
 					void set_from_error(const http_error& ex);
 

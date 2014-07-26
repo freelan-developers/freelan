@@ -413,8 +413,9 @@ namespace mongooseplus
 					if (conn.status_code() == 0)
 					{
 						conn.send_status_code(200);
-						conn.send_data("", 0);
 					}
+
+					conn.send_data("", 0);
 				}
 
 				return result;
