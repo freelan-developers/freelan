@@ -337,9 +337,9 @@ namespace mongooseplus
 		return m_connection->connection_param;
 	}
 
-	void web_server::connection::send_status_code(int status_code)
+	void web_server::connection::send_status_code(int _status_code)
 	{
-		mg_send_status(m_connection, status_code);
+		mg_send_status(m_connection, _status_code);
 	}
 
 	void web_server::connection::send_header(const header_type& header)
