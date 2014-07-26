@@ -61,7 +61,7 @@ namespace freelan
 		register_route("/", [this](connection&) {
 			m_logger(LL_DEBUG) << "Requested root.";
 
-			return request_result::ignored;
+			return request_result::handled;
 		});
 	}
 

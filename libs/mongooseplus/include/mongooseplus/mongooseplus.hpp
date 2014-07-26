@@ -51,14 +51,72 @@
 #include <vector>
 #include <set>
 #include <regex>
+#include <type_traits>
 
 #include <boost/optional.hpp>
 #include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/exception/all.hpp>
+
+#include "error.hpp"
 
 struct mg_connection;
 
 namespace mongooseplus
 {
+	class header_type
+	{
+		public:
+			header_type(const std::string& _key, const std::string& _value) :
+				m_key(boost::to_lower_copy(_key)),
+				m_value(_value)
+			{}
+
+			template <typename SequenceType>
+			header_type(const typename std::enable_if<std::is_same<typename SequenceType::value_type, std::string>::value, std::string>::type& _key, const SequenceType& _values) :
+				m_key(boost::to_lower_copy(_key)),
+				m_value(flatten_list(_values))
+			{}
+
+			const std::string& key() const
+			{
+				return m_key;
+			}
+
+			const std::string& value() const
+			{
+				return m_value;
+			}
+
+			std::vector<std::string> values() const
+			{
+				return unflatten_list(m_value);
+			}
+
+		private:
+			template <typename SequenceType>
+			static std::string flatten_list(const SequenceType& values);
+			static std::vector<std::string> unflatten_list(const std::string& value);
+
+			std::string m_key;
+			std::string m_value;
+	};
+
+	/**
+	 * \brief The HTTP exception class.
+	 */
+	class http_error : public boost::system::system_error, public boost::exception
+	{
+		public:
+			explicit http_error(mongooseplus_error error) :
+				boost::system::system_error(make_error_code(error))
+			{
+			}
+	};
+
+	typedef std::vector<header_type> header_list_type;
+	typedef boost::error_info<struct tag_headers, header_list_type> headers_error_info;
+
 	class web_server
 	{
 		public:
@@ -80,8 +138,9 @@ namespace mongooseplus
 			{
 				public:
 					std::string uri() const;
-					boost::optional<std::string> get_header(const std::string& name) const;
-					std::string get_header(const std::string& name, const std::string& default_value) const;
+					boost::optional<header_type> get_header(const std::string& name) const;
+					header_type get_header(const std::string& name, const std::string& default_value) const;
+					header_type get_header(const std::string& name, const std::vector<std::string>& default_values) const;
 					std::string request_method() const;
 					std::string http_version() const;
 					std::string query_string() const;
@@ -96,6 +155,18 @@ namespace mongooseplus
 					std::string remote() const;
 					void set_user_param(void* user_param);
 					void* get_user_param() const;
+					void send_status_code(int status_code);
+					void send_header(const header_type& header);
+					void send_headers(const header_list_type& headers)
+					{
+						for (auto&& header : headers)
+						{
+							send_header(header);
+						}
+					}
+					void send_data(const void* data, size_t data_len);
+					void write(const void* buf, size_t buf_len);
+					void set_from_error(const http_error& ex);
 
 				private:
 					explicit connection(mg_connection* connection);
@@ -168,7 +239,9 @@ namespace mongooseplus
 					function(_function)
 				{}
 
-				bool matches(const connection&) const;
+				bool url_matches(const connection&) const;
+				bool request_method_matches(const connection&) const;
+				bool content_type_matches(const connection&) const;
 			};
 
 			void register_route(const route_type& route);
@@ -179,20 +252,10 @@ namespace mongooseplus
 				register_route(route_type(values...));
 			}
 
-			request_result handle_request(connection& conn) override
-			{
-				route_type* const route = get_route(conn);
-
-				if (route)
-				{
-					return route->function(conn);
-				}
-
-				return web_server::handle_request(conn);
-			}
+			request_result handle_request(connection& conn) override;
 
 		private:
-			route_type* get_route(const connection&);
+			const route_type* get_route(const connection&);
 
 			std::vector<route_type> m_routes;
 	};
