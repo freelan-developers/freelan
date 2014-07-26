@@ -64,6 +64,9 @@ struct mg_connection;
 
 namespace mongooseplus
 {
+	/**
+	 * \brief Represents a HTTP header.
+	 */
 	class header_type
 	{
 		public:
@@ -229,6 +232,77 @@ namespace mongooseplus
 			{
 				return request_result::ignored;
 			}
+
+			friend class authentication_handler;
+	};
+
+	/**
+	 * \brief Authentication handler class.
+	 */
+	class authentication_handler
+	{
+		public:
+
+			virtual ~authentication_handler() {};
+
+			const std::string& scheme() const
+			{
+				return m_scheme;
+			}
+
+			void authenticate(const web_server::connection& conn) const
+			{
+				const auto authorization_header = conn.get_header("authorization");
+
+				if (authorization_header)
+				{
+					if (do_authenticate(*authorization_header))
+					{
+						return;
+					}
+				}
+
+				raise_authentication_error();
+			}
+
+		protected:
+
+			authentication_handler(const std::string& _scheme) :
+				m_scheme(_scheme)
+			{
+			}
+
+			virtual bool do_authenticate(const header_type& header) const = 0;
+			virtual void raise_authentication_error() const = 0;
+
+		private:
+
+			std::string m_scheme;
+	};
+
+	class basic_authentication_handler : public authentication_handler
+	{
+		public:
+
+			basic_authentication_handler(const std::string& _realm) :
+				authentication_handler("Basic"),
+				m_realm(_realm)
+			{
+			}
+
+			const std::string& realm() const
+			{
+				return m_realm;
+			}
+
+		protected:
+
+			bool do_authenticate(const header_type& header) const override;
+			void raise_authentication_error() const override;
+
+		private:
+
+			std::string m_realm;
 	};
 
 	class routed_web_server : public web_server

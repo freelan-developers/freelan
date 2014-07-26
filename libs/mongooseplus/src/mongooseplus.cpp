@@ -50,6 +50,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
+#include <cryptoplus/base64.hpp>
+
 #include <cassert>
 
 namespace mongooseplus
@@ -379,6 +381,44 @@ namespace mongooseplus
 		send_status_code(static_cast<int>(ex.code().value()));
 	}
 
+	bool basic_authentication_handler::do_authenticate(const header_type& header) const
+	{
+		std::vector<std::string> items;
+		boost::split(items, header.value(), boost::is_any_of(" "));
+
+		if (items.size() != 2)
+		{
+			return false;
+		}
+
+		for (auto&& item : items)
+		{
+			boost::trim(item);
+		}
+
+		if (items[0] != scheme())
+		{
+			return false;
+		}
+
+		const std::string decoded_value = cryptoplus::base64_decode(items[1]).to_string();
+		const size_t separator_index = decoded_value.find_first_of(':');
+		const std::string username = decoded_value.substr(0, separator_index);
+		const std::string password = (separator_index != std::string::npos) ? decoded_value.substr(separator_index + 1) : "";
+
+		std::cout << "username: " << username << std::endl;
+		std::cout << "password: " << password << std::endl;
+
+		return false;
+	}
+
+	void basic_authentication_handler::raise_authentication_error() const
+	{
+		throw http_error(mongooseplus_error::http_401_unauthorized) << headers_error_info({
+			{"www-authenticate", scheme() + " realm=" + m_realm}
+		});
+	}
+
 	bool routed_web_server::route_type::url_matches(const web_server::connection& conn) const
 	{
 		return (std::regex_match(conn.uri(), url_regex));
@@ -466,11 +506,9 @@ namespace mongooseplus
 
 			if (method_matched_routes.empty())
 			{
-				throw http_error(mongooseplus_error::http_405_method_not_allowed) << headers_error_info(
-					{
-						{"Allow", matched_routes.front()->request_methods}
-					}
-				);
+				throw http_error(mongooseplus_error::http_405_method_not_allowed) << headers_error_info({
+					{"Allow", matched_routes.front()->request_methods}
+				});
 			}
 
 			const auto content_matched_routes = filter(method_matched_routes, [&conn](const route_type* route){ return route->content_type_matches(conn); });
