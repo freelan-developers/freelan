@@ -88,6 +88,20 @@ namespace mongooseplus
 				return m_value;
 			}
 
+			boost::optional<std::string> value(const std::string& key) const;
+
+			std::string value(const std::string& key, const std::string& default_value) const
+			{
+				const auto result = value(key);
+
+				if (result)
+				{
+					return *result;
+				}
+
+				return default_value;
+			}
+
 			std::vector<std::string> values() const
 			{
 				return unflatten_list(m_value);
