@@ -61,8 +61,8 @@ namespace freelan
 			web_server(freelan::logger& _logger, const freelan::server_configuration& configuration);
 
 		protected:
-			request_result handle_request(connection&) override;
-			request_result handle_http_error(connection&) override;
+			request_result handle_request(mongooseplus::connection&) override;
+			request_result handle_http_error(mongooseplus::connection&) override;
 
 		private:
 			freelan::logger& m_logger;

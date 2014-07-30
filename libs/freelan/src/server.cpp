@@ -51,6 +51,47 @@
 
 namespace freelan
 {
+	namespace
+	{
+		class session_type : public mongooseplus::generic_session, public mongooseplus::basic_session_type
+		{
+			public:
+				session_type(const std::string& session_id, const std::string& _username) :
+					mongooseplus::generic_session(session_id),
+					basic_session_type(_username)
+				{
+				}
+		};
+
+		class authentication_handler : public mongooseplus::basic_authentication_handler
+		{
+			public:
+
+				authentication_handler() :
+					mongooseplus::basic_authentication_handler("freelan")
+				{}
+
+			protected:
+
+				bool authenticate_from_username_and_password(mongooseplus::connection& conn, const std::string& username, const std::string& password) const override
+				{
+					if ((username != "test") || (password != "password"))
+					{
+						return false;
+					}
+
+					const auto session = conn.get_session<session_type>();
+
+					if (!session || (session->username() != username))
+					{
+						conn.set_session<session_type>(username);
+					}
+
+					return true;
+				}
+		};
+	}
+
 	web_server::web_server(logger& _logger, const freelan::server_configuration& configuration) :
 		m_logger(_logger)
 	{
@@ -58,21 +99,23 @@ namespace freelan
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 
 		// Routes
-		register_route("/", [this](connection&) {
+		register_route("/", [this](mongooseplus::connection& conn) {
 			m_logger(LL_DEBUG) << "Requested root.";
 
+			conn.send_header("content-type", "application/json");
+			conn.send_data("{\"a\": 1, \"b\": [2, 3]}");
 			return request_result::handled;
-		});
+		}).set_authentication_handler<authentication_handler>();
 	}
 
-	web_server::request_result web_server::handle_request(connection& conn)
+	web_server::request_result web_server::handle_request(mongooseplus::connection& conn)
 	{
 		m_logger(LL_DEBUG) << "Web server - Received " << conn.request_method() << " request from " << conn.remote() << " for " << conn.uri() << ".";
 
 		return mongooseplus::routed_web_server::handle_request(conn);
 	}
 
-	web_server::request_result web_server::handle_http_error(connection& conn)
+	web_server::request_result web_server::handle_http_error(mongooseplus::connection& conn)
 	{
 		m_logger(LL_WARNING) << "Web server - Sending back " << conn.status_code() << " to " << conn.remote() << ".";
 

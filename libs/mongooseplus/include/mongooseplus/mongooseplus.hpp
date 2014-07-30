@@ -55,8 +55,10 @@
 
 #include <boost/optional.hpp>
 #include <boost/asio.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/all.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "error.hpp"
 
@@ -119,6 +121,95 @@ namespace mongooseplus
 			std::string m_value;
 	};
 
+	class generic_session
+	{
+		public:
+
+			generic_session(const std::string& _session_id, const boost::posix_time::time_duration& duration = boost::posix_time::minutes(5)) :
+				m_session_id(_session_id),
+				m_expires(boost::posix_time::second_clock::universal_time() + duration)
+			{
+			}
+
+			virtual ~generic_session()
+			{
+			}
+
+			const std::string& session_id() const
+			{
+				return m_session_id;
+			}
+
+			bool has_expired(const boost::posix_time::ptime& reference = boost::posix_time::second_clock::universal_time()) const
+			{
+				return (m_expires <= reference);
+			}
+
+			void expires_in(const boost::posix_time::time_duration& duration)
+			{
+				expires_at(boost::posix_time::second_clock::universal_time() + duration);
+			}
+
+			void expires_at(const boost::posix_time::ptime& date)
+			{
+				m_expires = date;
+			}
+
+			const boost::posix_time::ptime& expiration_date() const
+			{
+				return m_expires;
+			}
+
+		private:
+
+			void set_session_id(const std::string& _session_id)
+			{
+				m_session_id = _session_id;
+			}
+
+			std::string m_session_id;
+			boost::posix_time::ptime m_expires;
+
+			friend class session_handler_type;
+	};
+
+	class connection;
+
+	/**
+	 * \brief A session handler class.
+	 */
+	class session_handler_type
+	{
+		public:
+
+			session_handler_type()
+			{
+				generate_session_id();
+			}
+
+			template <typename SessionType, typename... Types>
+			boost::shared_ptr<SessionType> generate_session(Types... values)
+			{
+				const std::string session_id = generate_session_id();
+				boost::shared_ptr<SessionType> session = boost::make_shared<SessionType>(session_id, std::forward<Types>(values)...);
+
+				m_sessions[session_id] = session;
+
+				return session;
+			}
+
+			boost::shared_ptr<generic_session> read_session(const connection& conn) const;
+
+			void clear_expired();
+
+		private:
+
+			std::string generate_session_id() const;
+
+			mutable std::string m_last_session_id;
+			std::map<std::string, boost::shared_ptr<generic_session>> m_sessions;
+	};
+
 	/**
 	 * \brief The HTTP exception class.
 	 */
@@ -134,6 +225,9 @@ namespace mongooseplus
 	typedef std::vector<header_type> header_list_type;
 	typedef boost::error_info<struct tag_headers, header_list_type> headers_error_info;
 
+	/**
+	 * \brief A base web server class.
+	 */
 	class web_server
 	{
 		public:
@@ -142,64 +236,19 @@ namespace mongooseplus
 
 			void run(int poll_period = 1000);
 			void stop();
-			
+
 		private:
 			struct underlying_server_type;
 			std::unique_ptr<underlying_server_type> m_server;
 			std::atomic<bool> m_is_running;
 
 		protected:
-			void set_option(const std::string& name, const std::string& value);
-
-			class connection
+			session_handler_type& session_handler()
 			{
-				public:
-					std::string uri() const;
-					boost::optional<header_type> get_header(const std::string& name) const;
-					header_type get_header(const std::string& name, const std::string& default_value) const;
-					header_type get_header(const std::string& name, const std::vector<std::string>& default_values) const;
-					std::string request_method() const;
-					std::string http_version() const;
-					std::string query_string() const;
-					int status_code() const;
-					const char* content() const;
-					size_t content_size() const;
-					boost::asio::ip::address local_ip() const;
-					uint16_t local_port() const;
-					std::string local() const;
-					boost::asio::ip::address remote_ip() const;
-					uint16_t remote_port() const;
-					std::string remote() const;
-					void set_user_param(void* user_param);
-					void* get_user_param() const;
-					void send_status_code(int status_code);
-					void send_header(const header_type& header);
-					template <typename... Types>
-					void send_header(Types... values)
-					{
-						send_header(header_type(std::forward<Types>(values)...));
-					}
-					void send_headers(const header_list_type& headers)
-					{
-						for (auto&& header : headers)
-						{
-							send_header(header);
-						}
-					}
-					void send_data(const void* data, size_t data_len);
-					void send_data(const std::string& data)
-					{
-						send_data(&data[0], data.size());
-					}
-					void write(const void* buf, size_t buf_len);
-					void set_from_error(const http_error& ex);
+				return m_session_handler;
+			}
 
-				private:
-					explicit connection(mg_connection* connection);
-					mg_connection* m_connection;
-
-					friend struct web_server::underlying_server_type;
-			};
+			void set_option(const std::string& name, const std::string& value);
 
 			enum class request_result
 			{
@@ -212,6 +261,8 @@ namespace mongooseplus
 			{
 				return request_result::handled;
 			}
+
+			virtual void prepare_request(connection&);
 
 			virtual request_result handle_request(connection&)
 			{
@@ -233,7 +284,94 @@ namespace mongooseplus
 				return request_result::ignored;
 			}
 
+			virtual boost::shared_ptr<generic_session> handle_session_required(const connection&)
+			{
+				return boost::shared_ptr<generic_session>();
+			}
+
+		private:
+			session_handler_type m_session_handler;
+
 			friend class base_authentication_handler;
+			friend class connection;
+	};
+
+	/**
+	 * \brief A base connection class.
+	 */
+	class connection
+	{
+		public:
+			web_server& get_web_server()
+			{
+				return m_web_server;
+			}
+			boost::shared_ptr<generic_session> get_session() const
+			{
+				return m_session;
+			}
+			template <typename SessionType>
+			boost::shared_ptr<SessionType> get_session() const
+			{
+				return boost::dynamic_pointer_cast<SessionType>(m_session);
+			}
+			void set_session(boost::shared_ptr<generic_session> _session)
+			{
+				m_session = _session;
+			}
+			template <typename SessionType, typename... Types>
+			void set_session(Types... values)
+			{
+				set_session(get_web_server().session_handler().generate_session<SessionType>(std::forward<Types>(values)...));
+			}
+			std::string uri() const;
+			boost::optional<header_type> get_header(const std::string& name) const;
+			header_type get_header(const std::string& name, const std::string& default_value) const;
+			header_type get_header(const std::string& name, const std::vector<std::string>& default_values) const;
+			std::string request_method() const;
+			std::string http_version() const;
+			std::string query_string() const;
+			int status_code() const;
+			const char* content() const;
+			size_t content_size() const;
+			boost::asio::ip::address local_ip() const;
+			uint16_t local_port() const;
+			std::string local() const;
+			boost::asio::ip::address remote_ip() const;
+			uint16_t remote_port() const;
+			std::string remote() const;
+			void set_user_param(void* user_param);
+			void* get_user_param() const;
+			void send_status_code(int status_code);
+			void send_header(const header_type& header);
+			template <typename... Types>
+			void send_header(Types... values)
+			{
+				send_header(header_type(std::forward<Types>(values)...));
+			}
+			void send_headers(const header_list_type& headers)
+			{
+				for (auto&& header : headers)
+				{
+					send_header(header);
+				}
+			}
+			void send_session();
+			void send_data(const void* data, size_t data_len);
+			void send_data(const std::string& data)
+			{
+				send_data(&data[0], data.size());
+			}
+			void write(const void* buf, size_t buf_len);
+			void set_from_error(const http_error& ex);
+
+		private:
+			connection(web_server&, mg_connection* connection);
+			mg_connection* m_connection;
+			web_server& m_web_server;
+			boost::shared_ptr<generic_session> m_session;
+
+			friend struct web_server::underlying_server_type;
 	};
 
 	/**
@@ -250,19 +388,28 @@ namespace mongooseplus
 				return m_scheme;
 			}
 
-			void authenticate(const web_server::connection& conn) const
+			void authenticate(connection& conn) const
 			{
 				const auto authorization_header = conn.get_header("authorization");
 
 				if (authorization_header)
 				{
-					if (do_authenticate(*authorization_header))
+					if (authenticate_from_header(conn, *authorization_header))
 					{
 						return;
 					}
-				}
 
-				raise_authentication_error();
+					raise_authentication_error();
+				}
+				else
+				{
+					if (authenticate_from_session(conn, conn.get_session()))
+					{
+						return;
+					}
+
+					raise_authentication_error();
+				}
 			}
 
 		protected:
@@ -272,12 +419,41 @@ namespace mongooseplus
 			{
 			}
 
-			virtual bool do_authenticate(const header_type& header) const = 0;
+			virtual bool authenticate_from_header(connection& conn, const header_type& header) const = 0;
+			virtual bool authenticate_from_session(connection& conn, boost::shared_ptr<generic_session> session) const = 0;
 			virtual void raise_authentication_error() const = 0;
 
 		private:
 
 			std::string m_scheme;
+	};
+
+	class basic_session_type
+	{
+		public:
+
+			explicit basic_session_type(const std::string& _username) :
+				m_username(_username)
+			{
+			}
+
+			virtual ~basic_session_type()
+			{
+			}
+
+			const std::string& username() const
+			{
+				return m_username;
+			}
+
+			void set_username(const std::string& _username)
+			{
+				m_username = _username;
+			}
+
+		private:
+
+			std::string m_username;
 	};
 
 	class basic_authentication_handler : public base_authentication_handler
@@ -297,8 +473,9 @@ namespace mongooseplus
 
 		protected:
 
-			bool do_authenticate(const header_type& header) const override;
-			virtual bool do_authenticate(const std::string& username, const std::string& password) const = 0;
+			bool authenticate_from_header(connection& conn, const header_type& header) const override;
+			bool authenticate_from_session(connection& conn, boost::shared_ptr<generic_session> session) const override;
+			virtual bool authenticate_from_username_and_password(connection& conn, const std::string& username, const std::string& password) const = 0;
 			void raise_authentication_error() const override;
 
 		private:
@@ -317,7 +494,7 @@ namespace mongooseplus
 				std::regex url_regex;
 				std::set<std::string> request_methods;
 				std::set<std::string> content_types;
-				std::shared_ptr<base_authentication_handler> authentication_handler;
+				boost::shared_ptr<base_authentication_handler> authentication_handler;
 				function_type function;
 
 				route_type(const std::string& _url_regex, function_type _function) :
@@ -341,7 +518,7 @@ namespace mongooseplus
 				template <typename AuthenticationHandler, typename... Types>
 				route_type& set_authentication_handler(Types... values)
 				{
-					authentication_handler = std::make_shared<AuthenticationHandler>(std::forward<Types>(values)...);
+					authentication_handler = boost::make_shared<AuthenticationHandler>(std::forward<Types>(values)...);
 
 					return *this;
 				}
@@ -349,7 +526,7 @@ namespace mongooseplus
 				bool url_matches(const connection&) const;
 				bool request_method_matches(const connection&) const;
 				bool content_type_matches(const connection&) const;
-				void check_authentication(const connection& conn) const
+				void check_authentication(connection& conn) const
 				{
 					if (authentication_handler)
 					{

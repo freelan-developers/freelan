@@ -49,8 +49,11 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/date_time/time_facet.hpp>
 
 #include <cryptoplus/base64.hpp>
+#include <cryptoplus/hash/message_digest.hpp>
+#include <cryptoplus/random/random.hpp>
 
 #include <cassert>
 
@@ -153,6 +156,31 @@ namespace mongooseplus
 		return items;
 	}
 
+	void session_handler_type::clear_expired()
+	{
+		const boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+
+		for (auto&& session_it = m_sessions.begin(); session_it != m_sessions.end();)
+		{
+			if (session_it->second->has_expired(now))
+			{
+				session_it = m_sessions.erase(session_it);
+			}
+			else
+			{
+				++session_it;
+			}
+		}
+	}
+
+	std::string session_handler_type::generate_session_id() const
+	{
+		const auto random_bytes = cryptoplus::random::get_random_bytes(32).to_string();
+		m_last_session_id = cryptoplus::base64_encode(cryptoplus::hash::message_digest(cryptoplus::buffer(m_last_session_id + random_bytes), EVP_sha256()));
+
+		return m_last_session_id;
+	}
+
 	web_server::~web_server() {}
 
 	void web_server::stop()
@@ -185,22 +213,23 @@ namespace mongooseplus
 			return MG_FALSE;
 		}
 
-		static web_server::request_result event_handler_simple(web_server& ws, struct mg_connection* conn, enum mg_event ev)
+		static web_server::request_result event_handler_simple(web_server& ws, struct mg_connection* connp, enum mg_event ev)
 		{
-			web_server::connection connection(conn);
+			connection conn(ws, connp);
 
 			switch (ev)
 			{
 				case MG_AUTH:
-					return ws.handle_auth(connection);
+					return ws.handle_auth(conn);
 				case MG_REQUEST:
-					return ws.handle_request(connection);
+					ws.prepare_request(conn);
+					return ws.handle_request(conn);
 				case MG_POLL:
-					return ws.handle_poll(connection);
+					return ws.handle_poll(conn);
 				case MG_HTTP_ERROR:
-					return ws.handle_http_error(connection);
+					return ws.handle_http_error(conn);
 				case MG_CLOSE:
-					return ws.handle_close(connection);
+					return ws.handle_close(conn);
 				default:
 					return web_server::request_result::ignored;
 			}
@@ -213,6 +242,28 @@ namespace mongooseplus
 
 		std::unique_ptr<mg_server, void(*)(mg_server*)> server;
 	};
+
+	boost::shared_ptr<generic_session> session_handler_type::read_session(const connection& conn) const
+	{
+		const auto header = conn.get_header("cookie");
+
+		if (header)
+		{
+			const auto session_id = header->value("session_id");
+
+			if (session_id)
+			{
+				const auto session_it = m_sessions.find(*session_id);
+
+				if (session_it != m_sessions.end())
+				{
+					return session_it->second;
+				}
+			}
+		}
+
+		return boost::shared_ptr<generic_session>();
+	}
 
 	web_server::web_server() :
 		m_server(new underlying_server_type(this)),
@@ -239,18 +290,37 @@ namespace mongooseplus
 		}
 	}
 
-	web_server::connection::connection(mg_connection* _connection) :
-		m_connection(_connection)
+	void web_server::prepare_request(connection& conn)
 	{
-		assert(_connection);		
+		session_handler().clear_expired();
+
+		boost::shared_ptr<generic_session> session = session_handler().read_session(conn);
+
+		if (!session)
+		{
+			session = handle_session_required(conn);
+		}
+		else
+		{
+			session->expires_in(boost::posix_time::minutes(5));
+		}
+
+		conn.set_session(session);
 	}
 
-	std::string web_server::connection::uri() const
+	connection::connection(web_server& _web_server, mg_connection* _connection) :
+		m_connection(_connection),
+		m_web_server(_web_server)
+	{
+		assert(_connection);
+	}
+
+	std::string connection::uri() const
 	{
 		return m_connection->uri;
 	}
 
-	boost::optional<header_type> web_server::connection::get_header(const std::string& key) const
+	boost::optional<header_type> connection::get_header(const std::string& key) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
 
@@ -262,7 +332,7 @@ namespace mongooseplus
 		return boost::none;
 	}
 
-	header_type web_server::connection::get_header(const std::string& key, const std::string& default_value) const
+	header_type connection::get_header(const std::string& key, const std::string& default_value) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
 
@@ -274,7 +344,7 @@ namespace mongooseplus
 		return header_type(key, value);
 	}
 
-	header_type web_server::connection::get_header(const std::string& key, const std::vector<std::string>& default_values) const
+	header_type connection::get_header(const std::string& key, const std::vector<std::string>& default_values) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
 
@@ -286,102 +356,120 @@ namespace mongooseplus
 		return header_type(key, value);
 	}
 
-	std::string web_server::connection::request_method() const
+	std::string connection::request_method() const
 	{
 		return m_connection->request_method;
 	}
 
-	std::string web_server::connection::http_version() const
+	std::string connection::http_version() const
 	{
 		return m_connection->http_version;
 	}
 
-	std::string web_server::connection::query_string() const
+	std::string connection::query_string() const
 	{
 		return m_connection->query_string;
 	}
 
-	int web_server::connection::status_code() const
+	int connection::status_code() const
 	{
 		return m_connection->status_code;
 	}
 
-	const char* web_server::connection::content() const
+	const char* connection::content() const
 	{
 		return m_connection->content;
 	}
 
-	size_t web_server::connection::content_size() const
+	size_t connection::content_size() const
 	{
 		return m_connection->content_len;
 	}
 
-	boost::asio::ip::address web_server::connection::local_ip() const
+	boost::asio::ip::address connection::local_ip() const
 	{
 		return boost::asio::ip::address::from_string(m_connection->local_ip);
 	}
 
-	uint16_t web_server::connection::local_port() const
+	uint16_t connection::local_port() const
 	{
 		return m_connection->local_port;
 	}
 
-	std::string web_server::connection::local() const
+	std::string connection::local() const
 	{
 		return ip_port_to_string(local_ip(), local_port());
 	}
 
-	boost::asio::ip::address web_server::connection::remote_ip() const
+	boost::asio::ip::address connection::remote_ip() const
 	{
 		return boost::asio::ip::address::from_string(m_connection->remote_ip);
 	}
 
-	uint16_t web_server::connection::remote_port() const
+	uint16_t connection::remote_port() const
 	{
 		return m_connection->remote_port;
 	}
 
-	std::string web_server::connection::remote() const
+	std::string connection::remote() const
 	{
 		return ip_port_to_string(remote_ip(), remote_port());
 	}
 
-	void web_server::connection::set_user_param(void* user_param)
+	void connection::set_user_param(void* user_param)
 	{
 		m_connection->connection_param = user_param;
 	}
 
-	void* web_server::connection::get_user_param() const
+	void* connection::get_user_param() const
 	{
 		return m_connection->connection_param;
 	}
 
-	void web_server::connection::send_status_code(int _status_code)
+	void connection::send_status_code(int _status_code)
 	{
 		mg_send_status(m_connection, _status_code);
 	}
 
-	void web_server::connection::send_header(const header_type& header)
+	void connection::send_header(const header_type& header)
 	{
 		mg_send_header(m_connection, header.key().c_str(), header.value().c_str());
 	}
 
-	void web_server::connection::send_data(const void* data, size_t data_len)
+	void connection::send_session()
+	{
+		boost::shared_ptr<generic_session> session = get_session();
+
+		if (session)
+		{
+			const auto date_format = "%a, %d %b %Y %H:%M:%S GMT";
+
+			static std::locale locale = std::locale(std::cout.getloc(), new boost::posix_time::time_facet(date_format));
+
+			std::ostringstream oss;
+			oss.imbue(locale);
+			oss << "session_id=" << session->session_id() << "; Expires=" << session->expiration_date() << "; HttpOnly";
+
+			send_header("set-cookie", oss.str());
+		}
+	}
+
+	void connection::send_data(const void* data, size_t data_len)
 	{
 		mg_send_data(m_connection, data, data_len);
 	}
 
-	void web_server::connection::write(const void* buf, size_t buf_len)
+	void connection::write(const void* buf, size_t buf_len)
 	{
 		mg_write(m_connection, buf, buf_len);
 	}
 
-	void web_server::connection::set_from_error(const http_error& ex)
+	void connection::set_from_error(const http_error& ex)
 	{
 		send_status_code(static_cast<int>(ex.code().value()));
 	}
 
-	bool basic_authentication_handler::do_authenticate(const header_type& header) const
+	bool basic_authentication_handler::authenticate_from_header(connection& conn, const header_type& header) const
 	{
 		std::vector<std::string> items;
 		boost::split(items, header.value(), boost::is_any_of(" "));
@@ -406,7 +494,12 @@ namespace mongooseplus
 		const std::string username = decoded_value.substr(0, separator_index);
 		const std::string password = (separator_index != std::string::npos) ? decoded_value.substr(separator_index + 1) : "";
 
-		return do_authenticate(username, password);
+		return authenticate_from_username_and_password(conn, username, password);
+	}
+
+	bool basic_authentication_handler::authenticate_from_session(connection&, boost::shared_ptr<generic_session> session) const
+	{
+		return static_cast<bool>(boost::dynamic_pointer_cast<basic_session_type>(session));
 	}
 
 	void basic_authentication_handler::raise_authentication_error() const
@@ -416,12 +509,12 @@ namespace mongooseplus
 		});
 	}
 
-	bool routed_web_server::route_type::url_matches(const web_server::connection& conn) const
+	bool routed_web_server::route_type::url_matches(const connection& conn) const
 	{
 		return (std::regex_match(conn.uri(), url_regex));
 	}
 
-	bool routed_web_server::route_type::request_method_matches(const web_server::connection& conn) const
+	bool routed_web_server::route_type::request_method_matches(const connection& conn) const
 	{
 		if (!request_methods.empty())
 		{
@@ -434,7 +527,7 @@ namespace mongooseplus
 		return true;
 	}
 
-	bool routed_web_server::route_type::content_type_matches(const web_server::connection& conn) const
+	bool routed_web_server::route_type::content_type_matches(const connection& conn) const
 	{
 		if (!content_types.empty())
 		{
@@ -463,6 +556,7 @@ namespace mongooseplus
 			if (route)
 			{
 				route->check_authentication(conn);
+				conn.send_session();
 
 				const auto result = route->function(conn);
 
