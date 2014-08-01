@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\mongoose.c">
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4267;4244;4996</DisableSpecificWarnings>
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4267;4244;4996</DisableSpecificWarnings>
@@ -32,6 +33,7 @@
     <ClCompile Include="src\mongooseplus.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\mongooseplus\error.hpp" />
     <ClInclude Include="include\mongooseplus\mongooseplus.hpp" />
     <ClInclude Include="src\mongoose.h" />
   </ItemGroup>
@@ -120,6 +122,7 @@
       </ShowIncludes>
       <UseFullPaths>
       </UseFullPaths>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,6 +154,7 @@
       </ShowIncludes>
       <UseFullPaths>
       </UseFullPaths>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -184,6 +188,7 @@
       </ShowIncludes>
       <UseFullPaths>
       </UseFullPaths>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -219,6 +224,7 @@
       </ShowIncludes>
       <UseFullPaths>
       </UseFullPaths>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

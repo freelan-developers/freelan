@@ -470,12 +470,12 @@ namespace mongooseplus
 
 	void connection::send_data(const void* data, size_t data_len)
 	{
-		mg_send_data(m_connection, data, data_len);
+		mg_send_data(m_connection, data, static_cast<int>(data_len));
 	}
 
 	void connection::write(const void* buf, size_t buf_len)
 	{
-		mg_write(m_connection, buf, buf_len);
+		mg_write(m_connection, buf, static_cast<int>(buf_len));
 	}
 
 	void connection::set_from_error(const http_error& ex)
