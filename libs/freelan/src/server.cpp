@@ -56,8 +56,8 @@ namespace freelan
 		class session_type : public mongooseplus::generic_session, public mongooseplus::basic_session_type
 		{
 			public:
-				session_type(const std::string& session_id, const std::string& _username) :
-					mongooseplus::generic_session(session_id),
+				session_type(const std::string& _session_id, const std::string& _username) :
+					mongooseplus::generic_session(_session_id),
 					basic_session_type(_username)
 				{
 				}

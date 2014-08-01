@@ -103,12 +103,12 @@ namespace mongooseplus
 		}
 	}
 
-	boost::optional<std::string> header_type::value(const std::string& key) const
+	boost::optional<std::string> header_type::value(const std::string& _key) const
 	{
 		std::string result;
 		result.resize(256);
 
-		const int len = mg_parse_header(value().c_str(), key.c_str(), &result[0], result.size());
+		const int len = mg_parse_header(value().c_str(), _key.c_str(), &result[0], result.size());
 
 		if (len > 0)
 		{

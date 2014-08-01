@@ -97,9 +97,9 @@ namespace mongooseplus
 
 			boost::optional<std::string> value(const std::string& key) const;
 
-			std::string value(const std::string& key, const std::string& default_value) const
+			std::string value(const std::string& _key, const std::string& default_value) const
 			{
-				const auto result = value(key);
+				const auto result = value(_key);
 
 				if (result)
 				{
