@@ -110,7 +110,18 @@ namespace freelan
 
 	web_server::request_result web_server::handle_request(mongooseplus::connection& conn)
 	{
-		m_logger(LL_DEBUG) << "Web server - Received " << conn.request_method() << " request from " << conn.remote() << " for " << conn.uri() << ".";
+		if (m_logger.level() <= LL_DEBUG)
+		{
+			m_logger(LL_DEBUG) << "Web server - Received " << conn.request_method() << " request from " << conn.remote() << " for " << conn.uri() << " (" << conn.content_size() << " byte(s) content).";
+			m_logger(LL_DEBUG) << "--- Headers follow ---";
+
+			for (auto&& header : conn.get_headers())
+			{
+				m_logger(LL_DEBUG) << header.key() << ": " << header.value();
+			}
+
+			m_logger(LL_DEBUG) << "--- End of headers ---";
+		}
 
 		return mongooseplus::routed_web_server::handle_request(conn);
 	}

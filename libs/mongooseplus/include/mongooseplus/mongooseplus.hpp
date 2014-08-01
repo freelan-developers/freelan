@@ -66,6 +66,8 @@ struct mg_connection;
 
 namespace mongooseplus
 {
+	class connection;
+
 	/**
 	 * \brief Represents a HTTP header.
 	 */
@@ -172,8 +174,6 @@ namespace mongooseplus
 
 			friend class session_handler_type;
 	};
-
-	class connection;
 
 	/**
 	 * \brief A session handler class.
@@ -325,6 +325,7 @@ namespace mongooseplus
 				set_session(get_web_server().session_handler().generate_session<SessionType>(std::forward<Types>(values)...));
 			}
 			std::string uri() const;
+			header_list_type get_headers() const;
 			boost::optional<header_type> get_header(const std::string& name) const;
 			header_type get_header(const std::string& name, const std::string& default_value) const;
 			header_type get_header(const std::string& name, const std::vector<std::string>& default_values) const;

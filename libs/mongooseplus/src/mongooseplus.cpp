@@ -320,6 +320,20 @@ namespace mongooseplus
 		return m_connection->uri;
 	}
 
+	header_list_type connection::get_headers() const
+	{
+		size_t index = 0;
+		header_list_type result;
+
+		std::generate_n(std::back_inserter(result), m_connection->num_headers, [this, &index] () {
+			const auto raw_header = m_connection->http_headers[index++];
+
+			return header_type(raw_header.name, raw_header.value);
+		});
+
+		return result;
+	}
+
 	boost::optional<header_type> connection::get_header(const std::string& key) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
