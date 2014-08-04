@@ -530,6 +530,20 @@ namespace mongooseplus
 	void connection::set_from_error(const http_error& ex)
 	{
 		send_status_code(static_cast<int>(ex.code().value()));
+
+		if (const header_list_type* const headers = boost::get_error_info<headers_error_info>(ex))
+		{
+			send_headers(*headers);
+		}
+
+		if (const std::string* const error_content = boost::get_error_info<error_content_error_info>(ex))
+		{
+			send_data(*error_content);
+		}
+		else
+		{
+			send_data("", 0);
+		}
 	}
 
 	bool basic_authentication_handler::authenticate_from_header(connection& conn, const header_type& header) const
@@ -639,20 +653,6 @@ namespace mongooseplus
 		catch (const http_error& ex)
 		{
 			conn.set_from_error(ex);
-
-			if (const header_list_type* const headers = boost::get_error_info<headers_error_info>(ex))
-			{
-				conn.send_headers(*headers);
-			}
-
-			if (const std::string* const error_content = boost::get_error_info<error_content_error_info>(ex))
-			{
-				conn.send_data(*error_content);
-			}
-			else
-			{
-				conn.send_data("", 0);
-			}
 
 			return request_result::handled;
 		}
