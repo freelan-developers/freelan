@@ -51,6 +51,8 @@
 
 namespace freelan
 {
+	using kfather::value_cast;
+
 	namespace
 	{
 		class session_type : public mongooseplus::generic_session, public mongooseplus::basic_session_type
