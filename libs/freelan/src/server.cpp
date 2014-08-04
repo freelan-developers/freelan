@@ -104,8 +104,9 @@ namespace freelan
 		register_route("/", [this](mongooseplus::connection& conn) {
 			m_logger(LL_DEBUG) << "Requested root.";
 
-			conn.send_header("content-type", "application/json");
-			conn.send_data("{\"a\": 1, \"b\": [2, 3]}");
+			const auto json = conn.json();
+			conn.send_json(json);
+
 			return request_result::handled;
 		}).set_authentication_handler<authentication_handler>();
 	}

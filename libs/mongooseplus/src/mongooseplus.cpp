@@ -583,7 +583,7 @@ namespace mongooseplus
 	{
 		throw http_error(mongooseplus_error::http_401_unauthorized) << headers_error_info({
 			{"www-authenticate", scheme() + " realm=" + m_realm}
-		});
+		}) << error_content_error_info("Unauthorized");
 	}
 
 	bool routed_web_server::route_type::url_matches(const connection& conn) const
