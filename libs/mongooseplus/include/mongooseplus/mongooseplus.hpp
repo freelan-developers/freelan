@@ -368,6 +368,7 @@ namespace mongooseplus
 			{
 				send_data(&data[0], data.size());
 			}
+			void send_json(const kfather::value_type& json);
 			void write(const void* buf, size_t buf_len);
 			void set_from_error(const http_error& ex);
 

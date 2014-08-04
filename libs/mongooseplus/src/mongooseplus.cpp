@@ -56,6 +56,7 @@
 #include <cryptoplus/random/random.hpp>
 
 #include <kfather/parser.hpp>
+#include <kfather/formatter.hpp>
 
 #include <cassert>
 
@@ -513,6 +514,12 @@ namespace mongooseplus
 	void connection::send_data(const void* data, size_t data_len)
 	{
 		mg_send_data(m_connection, data, static_cast<int>(data_len));
+	}
+
+	void connection::send_json(const kfather::value_type& json)
+	{
+		send_header("content-type", "application/json");
+		send_data(kfather::compact_formatter().format(json));
 	}
 
 	void connection::write(const void* buf, size_t buf_len)
