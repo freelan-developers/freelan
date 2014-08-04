@@ -55,6 +55,8 @@
 #include <cryptoplus/hash/message_digest.hpp>
 #include <cryptoplus/random/random.hpp>
 
+#include <kfather/parser.hpp>
+
 #include <cassert>
 
 namespace mongooseplus
@@ -390,6 +392,11 @@ namespace mongooseplus
 		return m_connection->status_code;
 	}
 
+	std::string connection::content_type() const
+	{
+		return get_header("content-type", "text/html").value();
+	}
+
 	const char* connection::content() const
 	{
 		return m_connection->content;
@@ -398,6 +405,41 @@ namespace mongooseplus
 	size_t connection::content_size() const
 	{
 		return m_connection->content_len;
+	}
+
+	kfather::value_type connection::json() const
+	{
+		if (content_type() != "application/json")
+		{
+			throw http_error(mongooseplus_error::http_406_not_acceptable);
+		}
+
+		kfather::parser parser;
+		kfather::value_type result;
+
+		const char* error_token = nullptr;
+
+		if (!parser.parse(result, content(), content_size(), &error_token))
+		{
+			const size_t position = error_token - content();
+
+			std::ostringstream oss;
+
+			oss << "Cannot parse JSON: ";
+
+			if (position >= content_size())
+			{
+				oss << "unexpected end of stream at character " << position;
+			}
+			else
+			{
+				oss << "invalid character '" << *error_token << "' at position " << position;
+			}
+
+			throw http_error(mongooseplus_error::http_400_bad_request) << error_content_error_info(oss.str());
+		}
+
+		return result;
 	}
 
 	boost::asio::ip::address connection::local_ip() const
@@ -545,7 +587,7 @@ namespace mongooseplus
 	{
 		if (!content_types.empty())
 		{
-			if (content_types.find(conn.get_header("content-type", "text/html").value()) == content_types.end())
+			if (content_types.find(conn.content_type()) == content_types.end())
 			{
 				return false;
 			}
@@ -596,7 +638,14 @@ namespace mongooseplus
 				conn.send_headers(*headers);
 			}
 
-			conn.send_data("", 0);
+			if (const std::string* const error_content = boost::get_error_info<error_content_error_info>(ex))
+			{
+				conn.send_data(*error_content);
+			}
+			else
+			{
+				conn.send_data("", 0);
+			}
 
 			return request_result::handled;
 		}

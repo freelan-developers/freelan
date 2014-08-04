@@ -33,6 +33,7 @@ elif sys.platform.startswith('darwin'):
     libraries.extend([
         'ldap',
         'z',
+        'iconv',
     ])
 
 env = env.Clone()

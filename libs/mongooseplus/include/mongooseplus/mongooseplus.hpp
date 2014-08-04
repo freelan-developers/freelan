@@ -60,6 +60,8 @@
 #include <boost/exception/all.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <kfather/value.hpp>
+
 #include "error.hpp"
 
 struct mg_connection;
@@ -224,6 +226,7 @@ namespace mongooseplus
 
 	typedef std::vector<header_type> header_list_type;
 	typedef boost::error_info<struct tag_headers, header_list_type> headers_error_info;
+	typedef boost::error_info<struct tag_error_content, std::string> error_content_error_info;
 
 	/**
 	 * \brief A base web server class.
@@ -333,8 +336,10 @@ namespace mongooseplus
 			std::string http_version() const;
 			std::string query_string() const;
 			int status_code() const;
+			std::string content_type() const;
 			const char* content() const;
 			size_t content_size() const;
+			kfather::value_type json() const;
 			boost::asio::ip::address local_ip() const;
 			uint16_t local_port() const;
 			std::string local() const;
