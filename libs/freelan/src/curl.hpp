@@ -124,11 +124,6 @@ namespace freelan
 			curl();
 
 			/**
-			 * \brief Destroy a CURL.
-			 */
-			~curl();
-
-			/**
 			 * \brief Set an option.
 			 * \param option The option.
 			 * \param value The option value.
@@ -334,10 +329,7 @@ namespace freelan
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
 			static size_t write_function(char*, size_t, size_t, void*);
 
-			curl(const curl&);
-			curl& operator=(const curl&);
-
-			CURL* m_curl;
+			std::unique_ptr<CURL, void (*)(CURL*)> m_curl;
 			curl_list m_http_headers;
 			debug_function_t m_debug_function;
 			write_function_t m_write_function;
@@ -358,11 +350,6 @@ namespace freelan
 			curl_multi();
 
 			/**
-			 * \brief Destroy a CURLM.
-			 */
-			~curl_multi();
-
-			/**
 			 * \brief Add a handle to this CURLM.
 			 * \param handle The handle to add.
 			 *
@@ -381,10 +368,7 @@ namespace freelan
 
 		private:
 
-			curl_multi(const curl_multi&);
-			curl_multi& operator=(const curl_multi&);
-
-			CURLM* m_curlm;
+			std::unique_ptr<CURLM, void (*)(CURLM*)> m_curlm;
 	};
 }
 

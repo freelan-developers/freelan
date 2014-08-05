@@ -105,7 +105,7 @@ namespace freelan
 	}
 
 	curl::curl() :
-		m_curl(curl_easy_init()),
+		m_curl(curl_easy_init(), [] (CURL* p) { if (p) curl_easy_cleanup(p); }),
 		m_debug_function()
 	{
 		if (!m_curl)
@@ -114,29 +114,24 @@ namespace freelan
 		}
 	}
 
-	curl::~curl()
-	{
-		curl_easy_cleanup(m_curl);
-	}
-
 	void curl::set_option(CURLoption option, void* value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_option(CURLoption option, long int value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_option(CURLoption option, curl_debug_callback value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_option(CURLoption option, curl_write_callback value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_proxy(const asiotap::endpoint& proxy)
@@ -275,7 +270,7 @@ namespace freelan
 
 	std::string curl::escape(const std::string& url)
 	{
-		char* rstr = curl_easy_escape(m_curl, url.c_str(), static_cast<int>(url.size()));
+		char* rstr = curl_easy_escape(m_curl.get(), url.c_str(), static_cast<int>(url.size()));
 
 		if (!rstr)
 		{
@@ -290,7 +285,7 @@ namespace freelan
 	std::string curl::unescape(const std::string& encoded)
 	{
 		int len = 0;
-		char* rstr = curl_easy_unescape(m_curl, encoded.c_str(), static_cast<int>(encoded.size()), &len);
+		char* rstr = curl_easy_unescape(m_curl.get(), encoded.c_str(), static_cast<int>(encoded.size()), &len);
 
 		if (!rstr)
 		{
@@ -304,14 +299,14 @@ namespace freelan
 
 	void curl::perform()
 	{
-		throw_if_curl_error(curl_easy_perform(m_curl));
+		throw_if_curl_error(curl_easy_perform(m_curl.get()));
 	}
 
 	long curl::get_response_code()
 	{
 		long response_code = 0;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_RESPONSE_CODE, &response_code));
 
 		return response_code;
 	}
@@ -320,7 +315,7 @@ namespace freelan
 	{
 		double content_length = 0.0;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length));
 
 		return (content_length >= 0) ? static_cast<ptrdiff_t>(content_length) : -1;
 	}
@@ -329,7 +324,7 @@ namespace freelan
 	{
 		double content_length = 0.0;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_UPLOAD, &content_length));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_CONTENT_LENGTH_UPLOAD, &content_length));
 
 		return (content_length >= 0) ? static_cast<ptrdiff_t>(content_length) : -1;
 	}
@@ -338,7 +333,7 @@ namespace freelan
 	{
 		char* content_type = NULL;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &content_type));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_CONTENT_TYPE, &content_type));
 
 		return content_type ? content_type : "";
 	}
@@ -364,7 +359,7 @@ namespace freelan
 	}
 
 	curl_multi::curl_multi() :
-		m_curlm(curl_multi_init())
+		m_curlm(curl_multi_init(), [](CURLM* p){ if (p) curl_multi_cleanup(p); })
 	{
 		if (!m_curlm)
 		{
@@ -372,18 +367,13 @@ namespace freelan
 		}
 	}
 
-	curl_multi::~curl_multi()
-	{
-		curl_multi_cleanup(m_curlm);
-	}
-
 	void curl_multi::add_handle(const curl& handle)
 	{
-		throw_if_curlm_error(curl_multi_add_handle(m_curlm, handle.m_curl));
+		throw_if_curlm_error(curl_multi_add_handle(m_curlm.get(), handle.m_curl.get()));
 	}
 
 	void curl_multi::remove_handle(const curl& handle)
 	{
-		throw_if_curlm_error(curl_multi_remove_handle(m_curlm, handle.m_curl));
+		throw_if_curlm_error(curl_multi_remove_handle(m_curlm.get(), handle.m_curl.get()));
 	}
 }
