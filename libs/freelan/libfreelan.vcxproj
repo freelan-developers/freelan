@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\client.cpp" />
     <ClCompile Include="src\configuration.cpp" />
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\curl.cpp" />
@@ -50,6 +51,7 @@
     <ClInclude Include="include\freelan\server.hpp" />
     <ClInclude Include="include\freelan\switch.hpp" />
     <ClInclude Include="include\freelan\tools.hpp" />
+    <ClInclude Include="src\client.hpp" />
     <ClInclude Include="src\curl.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
