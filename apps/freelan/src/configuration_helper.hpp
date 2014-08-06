@@ -59,6 +59,12 @@
 boost::program_options::options_description get_server_options();
 
 /**
+ * \brief Get the client options.
+ * \return The client options.
+ */
+boost::program_options::options_description get_client_options();
+
+/**
  * \brief Get the fscp options.
  * \return The fscp options.
  */

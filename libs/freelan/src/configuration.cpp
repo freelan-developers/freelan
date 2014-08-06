@@ -54,7 +54,16 @@ namespace freelan
 	server_configuration::server_configuration() :
 		enabled(false),
 		listen_on(),
-		protocol(server_protocol_type::https)
+		protocol(server_protocol_type::http)
+	{
+	}
+
+	client_configuration::client_configuration() :
+		enabled(false),
+		server_endpoint(),
+		protocol(client_protocol_type::https),
+		username(),
+		password()
 	{
 	}
 

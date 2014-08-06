@@ -211,11 +211,26 @@ po::options_description get_server_options()
 	result.add_options()
 	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
 	("server.listen_on", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 80)), "The endpoint to listen on.")
-	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::server_protocol_type::https), "The protocol to use to contact the server.")
+	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::server_protocol_type::https), "The protocol to use for clients to contact the server.")
 	("server.server_certificate_file", po::value<fs::path>()->default_value(""), "The server certificate file.")
 	("server.server_private_key_file", po::value<fs::path>()->default_value(""), "The server private key file.")
 	("server.certification_authority_certificate_file", po::value<fs::path>()->default_value(""), "The certification authority certificate file.")
 	("server.certification_authority_private_key_file", po::value<fs::path>()->default_value(""), "The certification authority private key file.")
+	;
+
+	return result;
+}
+
+po::options_description get_client_options()
+{
+	po::options_description result("FreeLAN Client options");
+
+	result.add_options()
+	("client.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the client mechanism.")
+	("client.server_endpoint", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::from_string("127.0.0.1"), 443)), "The endpoint to connect to.")
+	("client.protocol", po::value<fl::client_configuration::client_protocol_type>()->default_value(fl::client_configuration::client_protocol_type::https), "The protocol to use to contact the server.")
+	("client.username", po::value<std::string>()->default_value(""), "The client username.")
+	("client.password", po::value<std::string>()->default_value(""), "The client password.")
 	;
 
 	return result;
@@ -331,6 +346,13 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	load_private_key(configuration.server.server_private_key, "server.server_private_key_file", vm, root);
 	load_trusted_certificate(configuration.server.certification_authority_certificate, "server.certification_authority_certificate_file", vm, root);
 	load_private_key(configuration.server.certification_authority_private_key , "server.certification_authority_private_key_file", vm, root);
+
+	// Client options
+	configuration.client.enabled = vm["client.enabled"].as<bool>();
+	configuration.client.server_endpoint = vm["client.server_endpoint"].as<asiotap::endpoint>();
+	configuration.client.protocol = vm["client.protocol"].as<fl::client_configuration::client_protocol_type>();
+	configuration.client.username = vm["client.username"].as<std::string>();
+	configuration.client.password = vm["client.password"].as<std::string>();
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();

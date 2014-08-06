@@ -146,6 +146,52 @@ namespace freelan
 	};
 
 	/**
+	 * \brief The client configuration.
+	 */
+	struct client_configuration
+	{
+		/**
+		 * \brief The endpoint type.
+		 */
+		typedef asiotap::endpoint endpoint;
+
+		/**
+		 * \brief Create a new client configuration.
+		 */
+		client_configuration();
+
+		/**
+		 * \brief Whether the client mechanism is enabled.
+		 */
+		bool enabled;
+
+		/**
+		 * \brief The endpoint to connect to.
+		 */
+		endpoint server_endpoint;
+
+		/**
+		 * \brief The client protocol type.
+		 */
+		typedef server_configuration::server_protocol_type client_protocol_type;
+
+		/**
+		 * \brief The protocol to use.
+		 */
+		client_protocol_type protocol;
+
+		/**
+		 * \brief The username.
+		 */
+		std::string username;
+
+		/**
+		 * \brief The password.
+		 */
+		std::string password;
+	};
+
+	/**
 	 * \brief The FSCP related options type.
 	 */
 	struct fscp_configuration
@@ -526,6 +572,11 @@ namespace freelan
 		 * \brief The server related options.
 		 */
 		freelan::server_configuration server;
+
+		/**
+		 * \brief The client related options.
+		 */
+		freelan::client_configuration client;
 
 		/**
 		 * \brief The FSCP related options.
