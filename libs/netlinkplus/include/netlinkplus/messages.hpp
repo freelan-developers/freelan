@@ -133,7 +133,7 @@ namespace netlinkplus
 
 					const_attribute_iterator end() const
 					{
-						return {};
+						return const_attribute_iterator();
 					}
 
 					attribute_iterator begin()
