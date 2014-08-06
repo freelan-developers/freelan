@@ -516,10 +516,10 @@ namespace mongooseplus
 		mg_send_data(m_connection, data, static_cast<int>(data_len));
 	}
 
-	void connection::send_json(const kfather::value_type& json)
+	void connection::send_json(const kfather::value_type& _json)
 	{
 		send_header("content-type", "application/json");
-		send_data(kfather::compact_formatter().format(json));
+		send_data(kfather::compact_formatter().format(_json));
 	}
 
 	void connection::write(const void* buf, size_t buf_len)
