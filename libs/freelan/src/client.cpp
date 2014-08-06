@@ -38,28 +38,27 @@
  */
 
 /**
- * \file client.hpp
+ * \file client.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A client implementation.
  */
 
-#pragma once
-
-#include "os.hpp"
-#include "logger.hpp"
-#include "configuration.hpp"
+#include "client.hpp"
 
 namespace freelan
 {
-	class web_client
+	web_client::web_client(freelan::logger& _logger, const freelan::client_configuration& configuration) :
+		m_logger(_logger)
 	{
-		public:
-			web_client(freelan::logger& _logger, const freelan::client_configuration& configuration);
+		static_cast<void>(configuration);
+		static_cast<void>(m_logger);
+	}
 
-			void run();
-			void stop();
+	void web_client::run()
+	{
+	}
 
-		private:
-			freelan::logger& m_logger;
-	};
+	void web_client::stop()
+	{
+	}
 }

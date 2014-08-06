@@ -79,6 +79,7 @@ namespace freelan
 {
 	class routes_request_message;
 	class web_server;
+	class web_client;
 
 	/**
 	 * \brief The core class.
@@ -619,5 +620,13 @@ namespace freelan
 
 			boost::shared_ptr<web_server> m_web_server;
 			boost::thread m_web_server_thread;
+
+		private:
+
+			void open_web_client();
+			void close_web_client();
+
+			boost::shared_ptr<web_client> m_web_client;
+			boost::thread m_web_client_thread;
 	};
 }
