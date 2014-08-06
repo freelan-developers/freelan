@@ -50,6 +50,8 @@
 #include "routes_request_message.hpp"
 #include "routes_message.hpp"
 
+#include "server.hpp"
+
 #include <fscp/server_error.hpp>
 
 #include <asiotap/types/ip_network_address.hpp>

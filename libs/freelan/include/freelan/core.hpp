@@ -43,8 +43,7 @@
  * \brief The freelan core class.
  */
 
-#ifndef FREELAN_CORE_HPP
-#define FREELAN_CORE_HPP
+#pragma once
 
 #include "os.hpp"
 #include "configuration.hpp"
@@ -53,7 +52,6 @@
 #include "router.hpp"
 #include "message.hpp"
 #include "routes_message.hpp"
-#include "server.hpp"
 
 #include <fscp/fscp.hpp>
 
@@ -72,6 +70,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
 
 #include <queue>
 #include <set>
@@ -79,6 +78,7 @@
 namespace freelan
 {
 	class routes_request_message;
+	class web_server;
 
 	/**
 	 * \brief The core class.
@@ -621,5 +621,3 @@ namespace freelan
 			boost::thread m_web_server_thread;
 	};
 }
-
-#endif /* FREELAN_CORE_HPP */

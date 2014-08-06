@@ -49,8 +49,6 @@
 #include "logger.hpp"
 #include "configuration.hpp"
 
-#include <boost/thread.hpp>
-
 #include <mongooseplus/mongooseplus.hpp>
 
 namespace freelan
