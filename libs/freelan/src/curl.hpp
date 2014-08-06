@@ -280,6 +280,18 @@ namespace freelan
 			void enable_cookie_support();
 
 			/**
+			 * \brief Set the username for authentication.
+			 * \param username The username.
+			 */
+			void set_username(const std::string& username);
+
+			/**
+			 * \brief Set the password for authentication.
+			 * \param password The password.
+			 */
+			void set_password(const std::string& password);
+
+			/**
 			 * \brief Escape the specified string using url encoding.
 			 * \param url The url to encode.
 			 * \return The encoded url.

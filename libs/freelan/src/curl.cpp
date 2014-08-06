@@ -268,6 +268,16 @@ namespace freelan
 		set_cookie_file("");
 	}
 
+	void curl::set_username(const std::string& username)
+	{
+		set_option(CURLOPT_USERNAME, username.c_str());
+	}
+
+	void curl::set_password(const std::string& password)
+	{
+		set_option(CURLOPT_PASSWORD, password.c_str());
+	}
+
 	std::string curl::escape(const std::string& url)
 	{
 		char* rstr = curl_easy_escape(m_curl.get(), url.c_str(), static_cast<int>(url.size()));
