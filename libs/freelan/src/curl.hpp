@@ -71,11 +71,6 @@ namespace freelan
 			curl_list();
 
 			/**
-			 * \brief Destroy a CURL slist.
-			 */
-			~curl_list();
-
-			/**
 			 * \brief Append a value to the list.
 			 */
 			void append(const std::string& value);
@@ -93,10 +88,7 @@ namespace freelan
 
 		private:
 
-			curl_list(const curl_slist&);
-			curl_list& operator=(const curl_slist&);
-
-			struct curl_slist* m_slist;
+			std::unique_ptr<curl_slist, void (*)(curl_slist*)> m_slist;
 
 			friend class curl;
 	};

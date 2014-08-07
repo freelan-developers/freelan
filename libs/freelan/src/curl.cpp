@@ -70,38 +70,30 @@ namespace freelan
 	}
 
 	curl_list::curl_list() :
-		m_slist(NULL)
+		m_slist(nullptr, [](curl_slist* p){ if (p) { curl_slist_free_all(p); }})
 	{
-	}
-
-	curl_list::~curl_list()
-	{
-		reset();
 	}
 
 	void curl_list::append(const std::string& value)
 	{
-		struct curl_slist* const new_slist = curl_slist_append(m_slist, value.c_str());
+		struct curl_slist* const new_slist = curl_slist_append(m_slist.get(), value.c_str());
 
 		if (!new_slist)
 		{
 			throw std::runtime_error("Unable to append a value to the list");
 		}
 
-		m_slist = new_slist;
+		m_slist.reset(new_slist);
 	}
 
 	void curl_list::reset()
 	{
-		if (m_slist)
-		{
-			curl_slist_free_all(m_slist);
-		}
+		m_slist.reset();
 	}
 
 	struct curl_slist* curl_list::raw() const
 	{
-		return m_slist;
+		return m_slist.get();
 	}
 
 	curl::curl() :
