@@ -391,6 +391,38 @@ namespace freelan
 			 */
 			void remove_handle(const curl& handle);
 
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLMoption option, void* value);
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLMoption option, curl_multi_timer_callback value);
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLMoption option, curl_socket_callback value);
+
+			/**
+			 * \brief Perform a socket action.
+			 */
+			void socket_action(curl_socket_t sockfd, int ev_bitmask, int* running_handles);
+
 		private:
 
 			std::unique_ptr<CURLM, void (*)(CURLM*)> m_curlm;

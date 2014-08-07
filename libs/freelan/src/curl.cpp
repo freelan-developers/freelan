@@ -388,4 +388,24 @@ namespace freelan
 	{
 		throw_if_curlm_error(curl_multi_remove_handle(m_curlm.get(), handle.m_curl.get()));
 	}
+
+	void curl_multi::set_option(CURLMoption option, void* value)
+	{
+		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
+	}
+
+	void curl_multi::set_option(CURLMoption option, curl_multi_timer_callback value)
+	{
+		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
+	}
+
+	void curl_multi::set_option(CURLMoption option, curl_socket_callback value)
+	{
+		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
+	}
+
+	void curl_multi::socket_action(curl_socket_t sockfd, int ev_bitmask, int* running_handles)
+	{
+		throw_if_curlm_error(curl_multi_socket_action(m_curlm.get(), sockfd, ev_bitmask, running_handles));
+	}
 }
