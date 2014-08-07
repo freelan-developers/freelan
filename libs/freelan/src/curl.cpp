@@ -126,6 +126,16 @@ namespace freelan
 		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
+	void curl::set_option(CURLoption option, curl_open_socket_callback value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
+	}
+
+	void curl::set_option(CURLoption option, curl_close_socket_callback value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
+	}
+
 	void curl::set_proxy(const asiotap::endpoint& proxy)
 	{
 		if (proxy != asiotap::hostname_endpoint::null())

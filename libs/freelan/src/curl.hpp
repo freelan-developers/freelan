@@ -93,6 +93,9 @@ namespace freelan
 			friend class curl;
 	};
 
+	typedef curl_socket_t (*curl_open_socket_callback)(void*, curlsocktype, struct curl_sockaddr*);
+	typedef int (*curl_close_socket_callback)(void*, curl_socket_t);
+
 	/**
 	 * \brief A CURL wrapper class.
 	 */
@@ -159,6 +162,24 @@ namespace freelan
 			 * On error, a std::runtime_error is raised.
 			 */
 			void set_option(CURLoption option, curl_write_callback value);
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLoption option, curl_open_socket_callback value);
+
+			/**
+			 * \brief Set an option.
+			 * \param option The option.
+			 * \param value The option value.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void set_option(CURLoption option, curl_close_socket_callback value);
 
 			/**
 			 * \brief Set the HTTP(S) proxy to use.
