@@ -1992,11 +1992,9 @@ namespace freelan
 	{
 		if (m_configuration.client.enabled)
 		{
-			m_web_client = boost::make_shared<web_client>(m_logger, m_configuration.client);
-
 			m_logger(LL_INFORMATION) << "Starting web client getting its configuration from " << m_configuration.client.server_endpoint << "...";
 
-			m_web_client_thread = boost::thread([this](){ m_web_client->run(); });
+			m_web_client = boost::make_shared<web_client>(m_io_service, m_logger, m_configuration.client);
 
 			m_logger(LL_INFORMATION) << "Web client started.";
 		}
@@ -2008,8 +2006,6 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Closing web client...";
 
-			m_web_client->stop();
-			m_web_client_thread.join();
 			m_web_client.reset();
 
 			m_logger(LL_INFORMATION) << "Web client closed.";

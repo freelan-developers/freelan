@@ -627,6 +627,5 @@ namespace freelan
 			void close_web_client();
 
 			boost::shared_ptr<web_client> m_web_client;
-			boost::thread m_web_client_thread;
 	};
 }

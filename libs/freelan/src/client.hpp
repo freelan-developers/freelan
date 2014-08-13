@@ -45,21 +45,22 @@
 
 #pragma once
 
+#include <boost/asio.hpp>
+
 #include "os.hpp"
 #include "logger.hpp"
 #include "configuration.hpp"
+#include "curl.hpp"
 
 namespace freelan
 {
 	class web_client
 	{
 		public:
-			web_client(freelan::logger& _logger, const freelan::client_configuration& configuration);
-
-			void run();
-			void stop();
+			web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration);
 
 		private:
+			curl_manager m_curl_manager;
 			freelan::logger& m_logger;
 	};
 }

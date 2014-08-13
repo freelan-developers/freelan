@@ -52,6 +52,7 @@
 #include <boost/function.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <asiotap/types/endpoint.hpp>
 
@@ -117,6 +118,15 @@ namespace freelan
 			 * \brief Create a CURL.
 			 */
 			curl();
+
+			/**
+			 * \brief Get the raw pointer.
+			 * \return The raw pointer.
+			 */
+			CURL* raw() const
+			{
+				return m_curl.get();
+			}
 
 			/**
 			 * \brief Set an option.
@@ -375,21 +385,35 @@ namespace freelan
 			curl_multi();
 
 			/**
+			 * \brief Get the raw pointer.
+			 * \return The raw pointer.
+			 */
+			CURLM* raw() const
+			{
+				return m_curlm.get();
+			}
+
+			/**
 			 * \brief Add a handle to this CURLM.
 			 * \param handle The handle to add.
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
-			void add_handle(const curl& handle);
+			void add_handle(boost::shared_ptr<curl> handle);
 
 			/**
 			 * \brief Remove a handle from this CURLM.
-			 * \param handle The handle to remove. Must have been added with
-			 * curl_multi::add_handle() first or the behavior is undefined.
+			 * \param easy_handle The CURL handle to remove.
+			 * \return The curl instance that was first added.
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
-			void remove_handle(const curl& handle);
+			boost::shared_ptr<curl> remove_handle(CURL* easy_handle);
+
+			/**
+			 * \brief Clear all the handles from this CURLM.
+			 */
+			void clear();
 
 			/**
 			 * \brief Set an option.
@@ -423,9 +447,153 @@ namespace freelan
 			 */
 			void socket_action(curl_socket_t sockfd, int ev_bitmask, int* running_handles);
 
+			/**
+			 * \brief Read information from the curl multi handle.
+			 * \param count_left A pointer to an integer that must receive the count of remaining messages.
+			 * \return A pointer to the information structure if any, or nullptr otherwise.
+			 */
+			CURLMsg* info_read(int* count_left = nullptr);
+
 		private:
 
 			std::unique_ptr<CURLM, void (*)(CURLM*)> m_curlm;
+
+			class curl_association
+			{
+				public:
+					curl_association(const curl_multi& _curl_multi, boost::shared_ptr<curl> _curl);
+					~curl_association();
+
+					curl_association(const curl_association&) = delete;
+					curl_association& operator=(const curl_association&) = delete;
+
+					boost::shared_ptr<curl> get_curl() const
+					{
+						return m_curl;
+					}
+
+				private:
+					const curl_multi& m_curl_multi;
+					boost::shared_ptr<curl> m_curl;
+			};
+
+			std::map<CURL*, std::unique_ptr<curl_association>> m_associations;
+	};
+
+	/**
+	 * \brief A CURL multi wrapper class compatible with Boost ASIO.
+	 */
+	class curl_multi_asio : public curl_multi, public boost::enable_shared_from_this<curl_multi_asio>
+	{
+		public:
+			/**
+			 * \brief The connection complete callback.
+			 */
+			typedef boost::function<void (const boost::system::error_code&)> connection_complete_callback;
+
+			/**
+			 * Create a new instance.
+			 */
+			static boost::shared_ptr<curl_multi_asio> create(boost::asio::io_service& io_service)
+			{
+				return boost::shared_ptr<curl_multi_asio>(new curl_multi_asio(io_service));
+			}
+
+			/**
+			 * \brief The destructor.
+			 */
+			~curl_multi_asio();
+
+			/**
+			 * \brief Add a handle to this CURLM.
+			 * \param handle The handle to add.
+			 * \param handler The handler to call upon completion.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void add_handle(boost::shared_ptr<curl> handle, connection_complete_callback handler);
+
+			/**
+			 * \brief Post a handle to this CURLM, asynchronously.
+			 * \param handle The handle to add.
+			 * \param handler The handler to call upon completion. This handler will *NOT* be
+			 * called once the handle was added but when the handle associated operation
+			 * completes.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void post_handle(boost::shared_ptr<curl> handle, connection_complete_callback handler);
+
+			/**
+			 * \brief Remove a handle from this CURLM.
+			 * \param easy_handle The CURL handle to remove.
+			 * \return The curl instance that was first added.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			boost::shared_ptr<curl> remove_handle(CURL* easy_handle);
+
+			/**
+			 * \brief Clear all the handles from this CURLM.
+			 */
+			void clear();
+
+			/**
+			 * \brief Clear all the handles from this CURLM, asynchronously.
+			 */
+			void async_clear(boost::function<void ()> handler = boost::function<void ()>());
+
+		private:
+
+			static int static_timer_callback(CURLM*, long, void*);
+			static int static_socket_callback(CURL*, curl_socket_t, int, void*, void*);
+			static curl_socket_t open_socket_callback(void* _curl_multi_asio, curlsocktype purpose, struct curl_sockaddr* address);
+			static int close_socket_callback(void* _curl_multi_asio, curl_socket_t item);
+
+			curl_multi_asio(boost::asio::io_service& io_service);
+			void timer_callback(const boost::system::error_code& ec);
+			void check_info();
+
+			boost::asio::io_service& m_io_service;
+			boost::asio::strand m_strand;
+			boost::asio::deadline_timer m_timer;
+			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
+			std::map<curl_socket_t, boost::shared_ptr<boost::asio::ip::tcp::socket>> m_socket_map;
+	};
+
+	/**
+	 * \brief A CURL - Boost ASIO interface class.
+	 */
+	class curl_manager
+	{
+		public:
+			/**
+			 * The connection complete callback.
+			 */
+			typedef curl_multi_asio::connection_complete_callback connection_complete_callback;
+
+			/**
+			 * \brief The constructor.
+			 * \param io_service The io_service instance to attach to.
+			 */
+			curl_manager(boost::asio::io_service& io_service);
+
+			/**
+			 * \brief The destructor.
+			 */
+			~curl_manager();
+
+			/**
+			 * \brief Delegate execution of a handle to this curl manager.
+			 * \param _curl The curl instance for which to delegate execution.
+			 * \param handler The handler to call upon completion.
+			 *
+			 * On error, a std::runtime_error is raised.
+			 */
+			void execute(boost::shared_ptr<curl> _curl, connection_complete_callback handler);
+
+		private:
+			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
 	};
 }
 

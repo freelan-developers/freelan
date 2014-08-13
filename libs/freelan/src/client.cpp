@@ -45,20 +45,24 @@
 
 #include "client.hpp"
 
+#include <boost/make_shared.hpp>
+
 namespace freelan
 {
-	web_client::web_client(freelan::logger& _logger, const freelan::client_configuration& configuration) :
+	web_client::web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration) :
+		m_curl_manager(io_service),
 		m_logger(_logger)
 	{
 		static_cast<void>(configuration);
 		static_cast<void>(m_logger);
-	}
 
-	void web_client::run()
-	{
-	}
+		boost::shared_ptr<curl> request = boost::make_shared<curl>();
 
-	void web_client::stop()
-	{
+		request->set_url("http://www.google.fr");
+		request->set_get();
+
+		m_curl_manager.execute(request, [](const boost::system::error_code& ec) {
+			std::cout << "Done: " << ec << std::endl;
+		});
 	}
 }
