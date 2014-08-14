@@ -56,13 +56,16 @@ namespace freelan
 		static_cast<void>(configuration);
 		static_cast<void>(m_logger);
 
-		boost::shared_ptr<curl> request = boost::make_shared<curl>();
+		for (int i = 0; i < 1; ++i)
+		{
+			boost::shared_ptr<curl> request = boost::make_shared<curl>();
 
-		request->set_url("http://www.google.fr");
-		request->set_get();
+			request->set_url("http://www.google.fr");
+			request->set_get();
 
-		m_curl_manager.execute(request, [](const boost::system::error_code& ec) {
-			std::cout << "Done: " << ec << std::endl;
-		});
+			m_curl_manager.execute(request, [i, request] (const boost::system::error_code& ec) {
+				std::cout << "[" << i << "] Done: " << request->get_response_code() << " (" << ec << ")" << std::endl;
+			});
+		}
 	}
 }

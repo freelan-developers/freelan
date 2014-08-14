@@ -115,6 +115,16 @@ namespace freelan
 			typedef boost::function<size_t (boost::asio::const_buffer)> write_function_t;
 
 			/**
+			 * \brief A default write function.
+			 * \param data The data.
+			 * \return The size of data, in bytes.
+			 */
+			static size_t default_write_function(boost::asio::const_buffer data)
+			{
+				return boost::asio::buffer_size(data);
+			}
+
+			/**
 			 * \brief Create a CURL.
 			 */
 			curl();
@@ -412,8 +422,9 @@ namespace freelan
 
 			/**
 			 * \brief Clear all the handles from this CURLM.
+			 * \return All the curl instance previously handled.
 			 */
-			void clear();
+			std::vector<boost::shared_ptr<curl>> clear();
 
 			/**
 			 * \brief Set an option.
@@ -535,8 +546,9 @@ namespace freelan
 
 			/**
 			 * \brief Clear all the handles from this CURLM.
+			 * \return All the curl instance previously associated.
 			 */
-			void clear();
+			std::vector<boost::shared_ptr<curl>> clear();
 
 			/**
 			 * \brief Clear all the handles from this CURLM, asynchronously.
@@ -552,6 +564,8 @@ namespace freelan
 
 			curl_multi_asio(boost::asio::io_service& io_service);
 			void timer_callback(const boost::system::error_code& ec);
+			void continue_network_operation(boost::shared_ptr<boost::asio::ip::tcp::socket>);
+			void socket_callback(const boost::system::error_code& ec, boost::shared_ptr<boost::asio::ip::tcp::socket> socket);
 			void check_info();
 
 			boost::asio::io_service& m_io_service;
@@ -559,6 +573,9 @@ namespace freelan
 			boost::asio::deadline_timer m_timer;
 			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
 			std::map<curl_socket_t, boost::shared_ptr<boost::asio::ip::tcp::socket>> m_socket_map;
+			int m_current_action;
+			bool m_read_operation_pending;
+			bool m_write_operation_pending;
 	};
 
 	/**

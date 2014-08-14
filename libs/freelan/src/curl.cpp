@@ -107,6 +107,8 @@ namespace freelan
 		{
 			throw std::runtime_error("Unable to allocate a CURL structure");
 		}
+
+		set_write_function(&curl::default_write_function);
 	}
 
 	void curl::set_option(CURLoption option, void* value)
@@ -402,9 +404,18 @@ namespace freelan
 		return result;
 	}
 
-	void curl_multi::clear()
+	std::vector<boost::shared_ptr<curl>> curl_multi::clear()
 	{
+		std::vector<boost::shared_ptr<curl>> result;
+
+		for (auto&& pair : m_associations)
+		{
+			result.push_back(pair.second->get_curl());
+		}
+
 		m_associations.clear();
+
+		return result;
 	}
 
 	void curl_multi::set_option(CURLMoption option, void* value)
@@ -482,7 +493,19 @@ namespace freelan
 	{
 		boost::shared_ptr<curl> result = curl_multi::remove_handle(easy_handle);
 
-		m_handler_map.erase(result);
+		const auto handler_it = m_handler_map.find(result);
+
+		if (handler_it != m_handler_map.end())
+		{
+			const auto handler = handler_it->second;
+
+			if (handler)
+			{
+				m_io_service.post(boost::bind(handler, boost::system::error_code()));
+			}
+
+			m_handler_map.erase(handler_it);
+		}
 
 		result->set_option(CURLOPT_CLOSESOCKETDATA, static_cast<void*>(nullptr));
 		result->set_option(CURLOPT_CLOSESOCKETFUNCTION, static_cast<void*>(nullptr));
@@ -492,18 +515,32 @@ namespace freelan
 		return result;
 	}
 
-	void curl_multi_asio::clear()
+	std::vector<boost::shared_ptr<curl>> curl_multi_asio::clear()
 	{
-		curl_multi::clear();
+		const auto result = curl_multi::clear();
+
+		for (auto&& handle : result)
+		{
+			const auto handler = m_handler_map[handle];
+
+			if (handler)
+			{
+				m_io_service.post(boost::bind(handler, boost::system::error_code(boost::asio::error::operation_aborted)));
+			}
+		}
 
 		m_handler_map.clear();
 		m_socket_map.clear();
+
+		return result;
 	}
 
 	void curl_multi_asio::async_clear(boost::function<void ()> handler)
 	{
-		m_strand.post([this, handler] () {
-			clear();
+		const auto self = shared_from_this();
+
+		m_strand.post([self, handler] () {
+			self->clear();
 
 			if (handler)
 			{
@@ -535,9 +572,11 @@ namespace freelan
 
 	int curl_multi_asio::static_socket_callback(CURL*, curl_socket_t socket_fd, int action, void* _curl_multi_asio, void*)
 	{
+		// This method is always called in the strand.
 		assert(_curl_multi_asio);
 
 		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
+		self.m_current_action = action;
 
 		const auto socket = self.m_socket_map[socket_fd];
 
@@ -547,22 +586,14 @@ namespace freelan
 			{
 				case CURL_POLL_REMOVE:
 				{
-					std::cout << "CURL remove: " << socket_fd << std::endl;
+					socket->cancel();
 					break;
 				}
 				case CURL_POLL_IN:
-				{
-					std::cout << "CURL in: " << socket_fd << std::endl;
-					break;
-				}
 				case CURL_POLL_OUT:
-				{
-					std::cout << "CURL out: " << socket_fd << std::endl;
-					break;
-				}
 				case CURL_POLL_INOUT:
 				{
-					std::cout << "CURL in/out: " << socket_fd << std::endl;
+					self.continue_network_operation(socket);
 					break;
 				}
 			}
@@ -607,7 +638,10 @@ namespace freelan
 	curl_multi_asio::curl_multi_asio(boost::asio::io_service& io_service) :
 		m_io_service(io_service),
 		m_strand(m_io_service),
-		m_timer(m_io_service)
+		m_timer(m_io_service),
+		m_current_action(0),
+		m_read_operation_pending(false),
+		m_write_operation_pending(false)
 	{
 		set_option(CURLMOPT_TIMERFUNCTION, &curl_multi_asio::static_timer_callback);
 		set_option(CURLMOPT_TIMERDATA, this);
@@ -626,26 +660,63 @@ namespace freelan
 		}
 	}
 
+	void curl_multi_asio::continue_network_operation(boost::shared_ptr<boost::asio::ip::tcp::socket> socket)
+	{
+		const auto self = shared_from_this();
+
+		if (((m_current_action & CURL_POLL_IN) != 0) && !m_read_operation_pending)
+		{
+			m_read_operation_pending = true;
+
+			socket->async_read_some(
+				boost::asio::null_buffers(),
+				m_strand.wrap([self, socket] (const boost::system::error_code& ec, size_t) {
+					self->m_read_operation_pending = false;
+					self->socket_callback(ec, socket);
+				})
+			);
+		}
+
+		if (((m_current_action & CURL_POLL_OUT) != 0) && !m_write_operation_pending)
+		{
+			m_write_operation_pending = true;
+
+			socket->async_write_some(
+				boost::asio::null_buffers(),
+				m_strand.wrap([self, socket] (const boost::system::error_code& ec, size_t) {
+					self->m_write_operation_pending = false;
+					self->socket_callback(ec, socket);
+				})
+			);
+		}
+	}
+
+	void curl_multi_asio::socket_callback(const boost::system::error_code& ec, boost::shared_ptr<boost::asio::ip::tcp::socket> socket)
+	{
+		if (!ec)
+		{
+			int running_handles = 0;
+
+			// This will likely cause static_socket_callback to be called synchronously so it may update m_current_action.
+			socket_action(socket->native_handle(), m_current_action, &running_handles);
+			check_info();
+			continue_network_operation(socket);
+
+			if (running_handles <= 0)
+			{
+				// No transfer is pending, we can kill the timer.
+				m_timer.cancel();
+			}
+		}
+	}
+
 	void curl_multi_asio::check_info()
 	{
 		for (CURLMsg* msg = info_read(); msg; msg = info_read())
 		{
 			if (msg->msg == CURLMSG_DONE)
 			{
-				boost::shared_ptr<curl> _curl = remove_handle(msg->easy_handle);
-				const auto handler_it = m_handler_map.find(_curl);
-
-				if (handler_it != m_handler_map.end())
-				{
-					const auto handler = handler_it->second;
-
-					if (handler)
-					{
-						m_io_service.post(boost::bind(handler, boost::system::error_code()));
-					}
-
-					m_handler_map.erase(handler_it);
-				}
+				remove_handle(msg->easy_handle);
 			}
 		}
 	}
