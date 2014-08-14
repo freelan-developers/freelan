@@ -549,6 +549,34 @@ namespace freelan
 		});
 	}
 
+	void curl_multi_asio::socket_state::async_read(boost::asio::strand& strand, boost::function<void (const boost::system::error_code&)> handler)
+	{
+		m_read_operation_pending = true;
+
+		m_socket.async_write_some(
+			boost::asio::null_buffers(),
+			strand.wrap([this, handler] (const boost::system::error_code& ec, size_t) {
+				m_read_operation_pending = false;
+
+				handler(ec);
+			})
+		);
+	}
+
+	void curl_multi_asio::socket_state::async_write(boost::asio::strand& strand, boost::function<void (const boost::system::error_code&)> handler)
+	{
+		m_write_operation_pending = true;
+
+		m_socket.async_write_some(
+			boost::asio::null_buffers(),
+			strand.wrap([this, handler] (const boost::system::error_code& ec, size_t) {
+				m_write_operation_pending = false;
+
+				handler(ec);
+			})
+		);
+	}
+
 	int curl_multi_asio::static_timer_callback(CURLM*, long timeout_ms, void* _curl_multi_asio)
 	{
 		assert(_curl_multi_asio);
@@ -610,13 +638,15 @@ namespace freelan
 
 		if ((purpose == CURLSOCKTYPE_IPCXN) && ((address->family == AF_INET) || (address->family == AF_INET6)))
 		{
-			boost::shared_ptr<boost::asio::ip::tcp::socket> tcp_socket = boost::make_shared<boost::asio::ip::tcp::socket>(
-				self.m_io_service,
-				(address->family == AF_INET) ? boost::asio::ip::tcp::v4() : boost::asio::ip::tcp::v6()
+			boost::shared_ptr<socket_state> _socket_state = boost::make_shared<socket_state>(
+				boost::asio::ip::tcp::socket(
+					self.m_io_service,
+					(address->family == AF_INET) ? boost::asio::ip::tcp::v4() : boost::asio::ip::tcp::v6()
+				)
 			);
 
-			const curl_socket_t socket_fd = tcp_socket->native_handle();
-			self.m_socket_map[socket_fd] = tcp_socket;
+			const curl_socket_t socket_fd = _socket_state->socket().native_handle();
+			self.m_socket_map[socket_fd] = _socket_state;
 
 			return socket_fd;
 		}
@@ -639,9 +669,7 @@ namespace freelan
 		m_io_service(io_service),
 		m_strand(m_io_service),
 		m_timer(m_io_service),
-		m_current_action(0),
-		m_read_operation_pending(false),
-		m_write_operation_pending(false)
+		m_current_action(0)
 	{
 		set_option(CURLMOPT_TIMERFUNCTION, &curl_multi_asio::static_timer_callback);
 		set_option(CURLMOPT_TIMERDATA, this);
@@ -660,45 +688,29 @@ namespace freelan
 		}
 	}
 
-	void curl_multi_asio::continue_network_operation(boost::shared_ptr<boost::asio::ip::tcp::socket> socket)
+	void curl_multi_asio::continue_network_operation(boost::shared_ptr<socket_state> socket)
 	{
 		const auto self = shared_from_this();
 
-		if (((m_current_action & CURL_POLL_IN) != 0) && !m_read_operation_pending)
+		if ((m_current_action & CURL_POLL_IN) != 0)
 		{
-			m_read_operation_pending = true;
-
-			socket->async_read_some(
-				boost::asio::null_buffers(),
-				m_strand.wrap([self, socket] (const boost::system::error_code& ec, size_t) {
-					self->m_read_operation_pending = false;
-					self->socket_callback(ec, socket);
-				})
-			);
+			socket->async_read(m_strand, boost::bind(&curl_multi_asio::socket_callback, shared_from_this(), _1, socket));
 		}
 
-		if (((m_current_action & CURL_POLL_OUT) != 0) && !m_write_operation_pending)
+		if ((m_current_action & CURL_POLL_OUT) != 0)
 		{
-			m_write_operation_pending = true;
-
-			socket->async_write_some(
-				boost::asio::null_buffers(),
-				m_strand.wrap([self, socket] (const boost::system::error_code& ec, size_t) {
-					self->m_write_operation_pending = false;
-					self->socket_callback(ec, socket);
-				})
-			);
+			socket->async_write(m_strand, boost::bind(&curl_multi_asio::socket_callback, shared_from_this(), _1, socket));
 		}
 	}
 
-	void curl_multi_asio::socket_callback(const boost::system::error_code& ec, boost::shared_ptr<boost::asio::ip::tcp::socket> socket)
+	void curl_multi_asio::socket_callback(const boost::system::error_code& ec, boost::shared_ptr<socket_state> socket)
 	{
 		if (!ec)
 		{
 			int running_handles = 0;
 
 			// This will likely cause static_socket_callback to be called synchronously so it may update m_current_action.
-			socket_action(socket->native_handle(), m_current_action, &running_handles);
+			socket_action(socket->socket().native_handle(), m_current_action, &running_handles);
 			check_info();
 			continue_network_operation(socket);
 

@@ -557,6 +557,35 @@ namespace freelan
 
 		private:
 
+			class socket_state
+			{
+				public:
+					socket_state(boost::asio::ip::tcp::socket&& _socket) :
+						m_socket(std::move(_socket)),
+						m_read_operation_pending(false),
+						m_write_operation_pending(false)
+					{
+					}
+
+					boost::asio::ip::tcp::socket& socket()
+					{
+						return m_socket;
+					}
+
+					void cancel()
+					{
+						m_socket.cancel();
+					}
+
+					void async_read(boost::asio::strand& strand, boost::function<void (const boost::system::error_code&)> handler);
+					void async_write(boost::asio::strand& strand, boost::function<void (const boost::system::error_code&)> handler);
+
+				private:
+					boost::asio::ip::tcp::socket m_socket;
+					bool m_read_operation_pending;
+					bool m_write_operation_pending;
+			};
+
 			static int static_timer_callback(CURLM*, long, void*);
 			static int static_socket_callback(CURL*, curl_socket_t, int, void*, void*);
 			static curl_socket_t open_socket_callback(void* _curl_multi_asio, curlsocktype purpose, struct curl_sockaddr* address);
@@ -564,18 +593,16 @@ namespace freelan
 
 			curl_multi_asio(boost::asio::io_service& io_service);
 			void timer_callback(const boost::system::error_code& ec);
-			void continue_network_operation(boost::shared_ptr<boost::asio::ip::tcp::socket>);
-			void socket_callback(const boost::system::error_code& ec, boost::shared_ptr<boost::asio::ip::tcp::socket> socket);
+			void continue_network_operation(boost::shared_ptr<socket_state>);
+			void socket_callback(const boost::system::error_code& ec, boost::shared_ptr<socket_state> socket);
 			void check_info();
 
 			boost::asio::io_service& m_io_service;
 			boost::asio::strand m_strand;
 			boost::asio::deadline_timer m_timer;
 			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
-			std::map<curl_socket_t, boost::shared_ptr<boost::asio::ip::tcp::socket>> m_socket_map;
+			std::map<curl_socket_t, boost::shared_ptr<socket_state>> m_socket_map;
 			int m_current_action;
-			bool m_read_operation_pending;
-			bool m_write_operation_pending;
 	};
 
 	/**

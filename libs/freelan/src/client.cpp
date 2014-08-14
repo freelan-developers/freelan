@@ -56,7 +56,7 @@ namespace freelan
 		static_cast<void>(configuration);
 		static_cast<void>(m_logger);
 
-		for (int i = 0; i < 1; ++i)
+		for (int i = 0; i < 10; ++i)
 		{
 			boost::shared_ptr<curl> request = boost::make_shared<curl>();
 
