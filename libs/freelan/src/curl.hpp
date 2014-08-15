@@ -449,6 +449,13 @@ namespace freelan
 			virtual void add_handle(boost::shared_ptr<curl> handle);
 
 			/**
+			 * \brief Get a handle from this CURLM.
+			 * \param easy_handle The CURL handle to get.
+			 * \return The curl instance that was first added.
+			 */
+			virtual boost::shared_ptr<curl> get_handle(CURL* easy_handle) const;
+
+			/**
 			 * \brief Remove a handle from this CURLM.
 			 * \param easy_handle The CURL handle to remove.
 			 * \return The curl instance that was first added.

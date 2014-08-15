@@ -394,6 +394,13 @@ namespace freelan
 		m_associations[handle->raw()] = std::unique_ptr<curl_association>(new curl_association(shared_from_this(), handle));
 	}
 
+	boost::shared_ptr<curl> curl_multi::get_handle(CURL* easy_handle) const
+	{
+		const auto it = m_associations.find(easy_handle);
+
+		return (it != m_associations.end()) ? it->second->get_curl() : boost::shared_ptr<curl>();
+	}
+
 	boost::shared_ptr<curl> curl_multi::remove_handle(CURL* easy_handle)
 	{
 		boost::shared_ptr<curl> result;
