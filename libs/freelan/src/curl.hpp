@@ -578,31 +578,30 @@ namespace freelan
 
 		private:
 
-			class socket_state
+			class curl_socket : private boost::asio::ip::tcp::socket, public enable_shared_from_this<curl_socket>
 			{
 				public:
-					socket_state(boost::asio::ip::tcp::socket&& _socket) :
-						m_socket(std::move(_socket)),
+					template <typename... Values>
+					static boost::shared_ptr<curl_socket> create(Values&&... values)
+					{
+						return boost::shared_ptr<curl_socket>(new curl_socket(std::forward<Values>(values)...));
+					}
+
+					using boost::asio::ip::tcp::socket::cancel;
+					using boost::asio::ip::tcp::socket::native_handle;
+
+					void trigger_read(curl_multi_asio& _curl_multi_asio);
+					void trigger_write(curl_multi_asio& _curl_multi_asio);
+
+				private:
+					template <typename... Values>
+					curl_socket(Values&&... values) :
+						boost::asio::ip::tcp::socket(std::forward<Values>(values)...),
 						m_read_operation_pending(false),
 						m_write_operation_pending(false)
 					{
 					}
 
-					boost::asio::ip::tcp::socket& socket()
-					{
-						return m_socket;
-					}
-
-					void cancel()
-					{
-						m_socket.cancel();
-					}
-
-					void async_read(boost::asio::strand& strand, boost::function<void (const boost::system::error_code&)> handler);
-					void async_write(boost::asio::strand& strand, boost::function<void (const boost::system::error_code&)> handler);
-
-				private:
-					boost::asio::ip::tcp::socket m_socket;
 					bool m_read_operation_pending;
 					bool m_write_operation_pending;
 			};
@@ -614,15 +613,15 @@ namespace freelan
 
 			curl_multi_asio(boost::asio::io_service& io_service);
 			void timer_callback(const boost::system::error_code& ec);
-			void continue_network_operation(boost::shared_ptr<socket_state>);
-			void socket_callback(const boost::system::error_code& ec, boost::shared_ptr<socket_state> socket);
+			void continue_network_operation(boost::shared_ptr<curl_socket>);
+			void socket_callback(const boost::system::error_code& ec, boost::shared_ptr<curl_socket> socket);
 			void check_info();
 
 			boost::asio::io_service& m_io_service;
 			boost::asio::strand m_strand;
 			boost::asio::deadline_timer m_timer;
 			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
-			std::map<curl_socket_t, boost::shared_ptr<socket_state>> m_socket_map;
+			std::map<curl_socket_t, boost::shared_ptr<curl_socket>> m_socket_map;
 			int m_current_action;
 	};
 
