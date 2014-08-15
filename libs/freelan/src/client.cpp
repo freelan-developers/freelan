@@ -55,17 +55,18 @@ namespace freelan
 	{
 		static_cast<void>(configuration);
 		static_cast<void>(m_logger);
+		static boost::asio::strand superstrand(io_service);
 
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < 100; ++i)
 		{
 			boost::shared_ptr<curl> request = boost::make_shared<curl>();
 
 			request->set_url("http://www.google.fr");
 			request->set_get();
 
-			m_curl_manager.execute(request, [i, request] (const boost::system::error_code& ec) {
+			m_curl_manager.execute(request, superstrand.wrap([i, request] (const boost::system::error_code& ec) {
 				std::cout << "[" << i << "] Done: " << request->get_response_code() << " (" << ec << ")" << std::endl;
-			});
+			}));
 		}
 	}
 }
