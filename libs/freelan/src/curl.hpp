@@ -636,6 +636,17 @@ namespace freelan
 					using boost::asio::ip::tcp::socket::cancel;
 					using boost::asio::ip::tcp::socket::native_handle;
 
+					int current_action() const
+					{
+						return m_current_action;
+					}
+
+					void set_current_action(int action)
+					{
+						m_current_action = action;
+					}
+
+					void trigger(curl_multi_asio& _curl_multi_asio);
 					void trigger_read(curl_multi_asio& _curl_multi_asio);
 					void trigger_write(curl_multi_asio& _curl_multi_asio);
 
@@ -643,11 +654,13 @@ namespace freelan
 					template <typename... Values>
 					curl_socket(Values&&... values) :
 						boost::asio::ip::tcp::socket(std::forward<Values>(values)...),
+						m_current_action(0),
 						m_read_operation_pending(false),
 						m_write_operation_pending(false)
 					{
 					}
 
+					int m_current_action;
 					bool m_read_operation_pending;
 					bool m_write_operation_pending;
 			};
@@ -659,7 +672,6 @@ namespace freelan
 
 			curl_multi_asio(boost::asio::io_service& io_service);
 			void timer_callback(const boost::system::error_code& ec);
-			void continue_network_operation(boost::shared_ptr<curl_socket>);
 			void socket_callback(const boost::system::error_code& ec, boost::shared_ptr<curl_socket> socket);
 			void check_info();
 
@@ -669,7 +681,6 @@ namespace freelan
 			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
 			std::map<boost::shared_ptr<curl>, CURLcode> m_result_map;
 			std::map<curl_socket_t, boost::shared_ptr<curl_socket>> m_socket_map;
-			int m_current_action;
 	};
 }
 

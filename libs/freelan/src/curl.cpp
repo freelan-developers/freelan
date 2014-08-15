@@ -581,6 +581,19 @@ namespace freelan
 		handle->set_option(CURLOPT_OPENSOCKETFUNCTION, static_cast<void*>(nullptr));
 	}
 
+	void curl_multi_asio::curl_socket::trigger(curl_multi_asio& _curl_multi_asio)
+	{
+		if ((m_current_action & CURL_POLL_IN) != 0)
+		{
+			trigger_read(_curl_multi_asio);
+		}
+
+		if ((m_current_action & CURL_POLL_OUT) != 0)
+		{
+			trigger_write(_curl_multi_asio);
+		}
+	}
+
 	void curl_multi_asio::curl_socket::trigger_read(curl_multi_asio& _curl_multi_asio)
 	{
 		if (!m_read_operation_pending)
@@ -648,13 +661,13 @@ namespace freelan
 		assert(_curl_multi_asio);
 
 		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
-		self.m_current_action = action;
 
 		const auto socket_it = self.m_socket_map.find(socket_fd);
 
 		if (socket_it != self.m_socket_map.end())
 		{
 			const auto socket = socket_it->second;
+			socket->set_current_action(action);
 
 			switch (action)
 			{
@@ -667,7 +680,7 @@ namespace freelan
 				case CURL_POLL_OUT:
 				case CURL_POLL_INOUT:
 				{
-					self.continue_network_operation(socket);
+					socket->trigger(self);
 					break;
 				}
 			}
@@ -712,8 +725,7 @@ namespace freelan
 	curl_multi_asio::curl_multi_asio(boost::asio::io_service& io_service) :
 		m_io_service(io_service),
 		m_strand(m_io_service),
-		m_timer(m_io_service),
-		m_current_action(0)
+		m_timer(m_io_service)
 	{
 		set_option(CURLMOPT_TIMERFUNCTION, &curl_multi_asio::static_timer_callback);
 		set_option(CURLMOPT_TIMERDATA, this);
@@ -732,27 +744,15 @@ namespace freelan
 		}
 	}
 
-	void curl_multi_asio::continue_network_operation(boost::shared_ptr<curl_socket> socket)
-	{
-		if ((m_current_action & CURL_POLL_IN) != 0)
-		{
-			socket->trigger_read(*this);
-		}
-
-		if ((m_current_action & CURL_POLL_OUT) != 0)
-		{
-			socket->trigger_write(*this);
-		}
-	}
-
 	void curl_multi_asio::socket_callback(const boost::system::error_code& ec, boost::shared_ptr<curl_socket> socket)
 	{
 		if (!ec)
 		{
 			int running_handles = 0;
 
-			// This will likely cause static_socket_callback to be called synchronously so it may update m_current_action.
-			socket_action(socket->native_handle(), m_current_action, &running_handles);
+			// This will likely cause static_socket_callback to be called synchronously
+			// so it may update the socket's current action.
+			socket_action(socket->native_handle(), socket->current_action(), &running_handles);
 			check_info();
 
 			if (running_handles <= 0)
@@ -762,7 +762,7 @@ namespace freelan
 			}
 			else
 			{
-				continue_network_operation(socket);
+				socket->trigger(*this);
 			}
 		}
 	}
