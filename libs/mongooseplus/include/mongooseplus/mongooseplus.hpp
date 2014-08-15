@@ -190,7 +190,7 @@ namespace mongooseplus
 			}
 
 			template <typename SessionType, typename... Types>
-			boost::shared_ptr<SessionType> generate_session(Types... values)
+			boost::shared_ptr<SessionType> generate_session(Types&&... values)
 			{
 				const std::string session_id = generate_session_id();
 				boost::shared_ptr<SessionType> session = boost::make_shared<SessionType>(session_id, std::forward<Types>(values)...);
@@ -323,7 +323,7 @@ namespace mongooseplus
 				m_session = _session;
 			}
 			template <typename SessionType, typename... Types>
-			void set_session(Types... values)
+			void set_session(Types&&... values)
 			{
 				set_session(get_web_server().session_handler().generate_session<SessionType>(std::forward<Types>(values)...));
 			}
@@ -351,7 +351,7 @@ namespace mongooseplus
 			void send_status_code(int status_code);
 			void send_header(const header_type& header);
 			template <typename... Types>
-			void send_header(Types... values)
+			void send_header(Types&&... values)
 			{
 				send_header(header_type(std::forward<Types>(values)...));
 			}
@@ -523,7 +523,7 @@ namespace mongooseplus
 				{}
 
 				template <typename AuthenticationHandler, typename... Types>
-				route_type& set_authentication_handler(Types... values)
+				route_type& set_authentication_handler(Types&&... values)
 				{
 					authentication_handler = boost::make_shared<AuthenticationHandler>(std::forward<Types>(values)...);
 
@@ -545,7 +545,7 @@ namespace mongooseplus
 			route_type& register_route(const route_type& route);
 
 			template <typename... Types>
-			route_type& register_route(Types... values)
+			route_type& register_route(Types&&... values)
 			{
 				return register_route(route_type(std::forward<Types>(values)...));
 			}
