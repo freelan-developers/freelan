@@ -72,6 +72,25 @@ namespace freelan
 			curl_list();
 
 			/**
+			 * \brief The move constructor.
+			 * \param other The other instance to move from.
+			 */
+			curl_list(curl_list&& other) :
+				m_slist(std::move(other.m_slist))
+			{
+			}
+
+			/**
+			* \brief The move assignemnt operator.
+			* \param other The other instance to move from.
+			* \return The current instance.
+			*/
+			curl_list& operator=(curl_list&& other)
+			{
+				m_slist = std::move(other.m_slist);
+			}
+
+			/**
 			 * \brief Append a value to the list.
 			 */
 			void append(const std::string& value);
