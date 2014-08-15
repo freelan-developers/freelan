@@ -492,19 +492,34 @@ namespace freelan
 
 	curl_multi_asio::~curl_multi_asio()
 	{
+		// Some sockets might still be in use: we need to close them explicitely
+		// while it is still valid to access the close_socket_callback().
+
+		int running_handles = 0;
+
+		for (auto&& pair : m_socket_map)
+		{
+			socket_action(pair.second->native_handle(), CURL_POLL_REMOVE, &running_handles);
+		}
+
+		check_info();
+
+		m_socket_map.clear();
+
 		set_option(CURLMOPT_SOCKETDATA, static_cast<void*>(nullptr));
 		set_option(CURLMOPT_SOCKETFUNCTION, static_cast<void*>(nullptr));
 		set_option(CURLMOPT_TIMERDATA, static_cast<void*>(nullptr));
 		set_option(CURLMOPT_TIMERFUNCTION, static_cast<void*>(nullptr));
 	}
 
-	void curl_multi_asio::post_handle(boost::shared_ptr<curl> handle, connection_complete_callback handler)
+	void curl_multi_asio::execute(boost::shared_ptr<curl> handle, connection_complete_callback handler)
 	{
 		const auto self = shared_from_this();
 
 		m_strand.post([self, handle, handler] () {
 			self->add_handle(handle);
 			self->m_handler_map[handle] = handler;
+			self->m_result_map.erase(handle);
 		});
 	}
 
@@ -540,7 +555,16 @@ namespace freelan
 
 			if (handler)
 			{
-				m_io_service.post(boost::bind(handler, handle->get_system_error()));
+				const auto result_it = m_result_map.find(handle);
+
+				if (result_it != m_result_map.end())
+				{
+					m_io_service.post(boost::bind(handler, handle->get_system_error(), result_it->second));
+				}
+				else
+				{
+					m_io_service.post(boost::bind(handler, boost::asio::error::operation_aborted, CURLE_OK));
+				}
 			}
 
 			m_handler_map.erase(handler_it);
@@ -621,10 +645,12 @@ namespace freelan
 		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
 		self.m_current_action = action;
 
-		const auto socket = self.m_socket_map[socket_fd];
+		const auto socket_it = self.m_socket_map.find(socket_fd);
 
-		if (socket)
+		if (socket_it != self.m_socket_map.end())
 		{
+			const auto socket = socket_it->second;
+
 			switch (action)
 			{
 				case CURL_POLL_REMOVE:
@@ -739,23 +765,11 @@ namespace freelan
 		{
 			if (msg->msg == CURLMSG_DONE)
 			{
+				const auto handle = get_handle(msg->easy_handle);
+				m_result_map[handle] = msg->data.result;
+
 				remove_handle(msg->easy_handle);
 			}
 		}
-	}
-
-	curl_manager::curl_manager(boost::asio::io_service& io_service) :
-		m_curl_multi_asio(curl_multi_asio::create(io_service))
-	{
-	}
-
-	curl_manager::~curl_manager()
-	{
-		m_curl_multi_asio->async_clear();
-	}
-
-	void curl_manager::execute(boost::shared_ptr<curl> _curl, connection_complete_callback handler)
-	{
-		m_curl_multi_asio->post_handle(_curl, handler);
 	}
 }

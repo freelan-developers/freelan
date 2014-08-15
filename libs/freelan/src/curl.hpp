@@ -572,7 +572,7 @@ namespace freelan
 			/**
 			 * \brief The connection complete callback.
 			 */
-			typedef boost::function<void (const boost::system::error_code&)> connection_complete_callback;
+			typedef boost::function<void (const boost::system::error_code&, CURLcode result)> connection_complete_callback;
 
 			/**
 			 * Create a new instance.
@@ -601,7 +601,7 @@ namespace freelan
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
-			void post_handle(boost::shared_ptr<curl> handle, connection_complete_callback handler);
+			void execute(boost::shared_ptr<curl> handle, connection_complete_callback handler);
 
 			/**
 			 * \brief Clear all the handles from this CURLM, asynchronously.
@@ -658,43 +658,9 @@ namespace freelan
 			boost::asio::strand m_strand;
 			boost::asio::deadline_timer m_timer;
 			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
+			std::map<boost::shared_ptr<curl>, CURLcode> m_result_map;
 			std::map<curl_socket_t, boost::shared_ptr<curl_socket>> m_socket_map;
 			int m_current_action;
-	};
-
-	/**
-	 * \brief A CURL - Boost ASIO interface class.
-	 */
-	class curl_manager
-	{
-		public:
-			/**
-			 * The connection complete callback.
-			 */
-			typedef curl_multi_asio::connection_complete_callback connection_complete_callback;
-
-			/**
-			 * \brief The constructor.
-			 * \param io_service The io_service instance to attach to.
-			 */
-			curl_manager(boost::asio::io_service& io_service);
-
-			/**
-			 * \brief The destructor.
-			 */
-			~curl_manager();
-
-			/**
-			 * \brief Delegate execution of a handle to this curl manager.
-			 * \param _curl The curl instance for which to delegate execution.
-			 * \param handler The handler to call upon completion.
-			 *
-			 * On error, a std::runtime_error is raised.
-			 */
-			void execute(boost::shared_ptr<curl> _curl, connection_complete_callback handler);
-
-		private:
-			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
 	};
 }
 

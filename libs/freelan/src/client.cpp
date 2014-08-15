@@ -50,7 +50,7 @@
 namespace freelan
 {
 	web_client::web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration) :
-		m_curl_manager(io_service),
+		m_curl_multi_asio(curl_multi_asio::create(io_service)),
 		m_logger(_logger)
 	{
 		static_cast<void>(configuration);
@@ -64,8 +64,8 @@ namespace freelan
 			request->set_url("http://www.google.fr");
 			request->set_get();
 
-			m_curl_manager.execute(request, superstrand.wrap([i, request] (const boost::system::error_code& ec) {
-				std::cout << "[" << i << "] Done: " << request->get_response_code() << " (" << ec << ")" << std::endl;
+			m_curl_multi_asio->execute(request, superstrand.wrap([i, request] (const boost::system::error_code& ec, CURLcode result) {
+				std::cout << "[" << i << "] " << request->get_response_code() << " (" << ec << "): " << result << std::endl;
 			}));
 		}
 	}

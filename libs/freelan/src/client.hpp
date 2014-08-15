@@ -60,7 +60,7 @@ namespace freelan
 			web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration);
 
 		private:
-			curl_manager m_curl_manager;
+			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
 			freelan::logger& m_logger;
 	};
 }
