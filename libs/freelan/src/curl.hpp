@@ -88,6 +88,8 @@ namespace freelan
 			curl_list& operator=(curl_list&& other)
 			{
 				m_slist = std::move(other.m_slist);
+
+				return *this;
 			}
 
 			/**
