@@ -57,7 +57,7 @@ namespace freelan
 		static_cast<void>(m_logger);
 		static boost::asio::strand superstrand(io_service);
 
-		for (int i = 0; i < 100; ++i)
+		for (int i = 0; i < 3; ++i)
 		{
 			boost::shared_ptr<curl> request = boost::make_shared<curl>();
 
