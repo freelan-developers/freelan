@@ -617,9 +617,9 @@ namespace mongooseplus
 		return true;
 	}
 
-	routed_web_server::route_type& routed_web_server::register_route(const route_type& route)
+	routed_web_server::route_type& routed_web_server::register_route(route_type&& route)
 	{
-		m_routes.push_back(route);
+		m_routes.push_back(std::move(route));
 
 		return m_routes.back();
 	}

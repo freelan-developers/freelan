@@ -350,10 +350,10 @@ namespace mongooseplus
 			void* get_user_param() const;
 			void send_status_code(int status_code);
 			void send_header(const header_type& header);
-			template <typename... Types>
-			void send_header(Types&&... values)
+			template <typename Type, typename... Types>
+			void send_header(Type&& value, Types&&... values)
 			{
-				send_header(header_type(std::forward<Types>(values)...));
+				send_header(header_type(std::forward<Type>(value), std::forward<Types>(values)...));
 			}
 			void send_headers(const header_list_type& headers)
 			{
@@ -542,7 +542,7 @@ namespace mongooseplus
 				}
 			};
 
-			route_type& register_route(const route_type& route);
+			route_type& register_route(route_type&& route);
 
 			template <typename... Types>
 			route_type& register_route(Types&&... values)
