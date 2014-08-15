@@ -754,12 +754,15 @@ namespace freelan
 			// This will likely cause static_socket_callback to be called synchronously so it may update m_current_action.
 			socket_action(socket->native_handle(), m_current_action, &running_handles);
 			check_info();
-			continue_network_operation(socket);
 
 			if (running_handles <= 0)
 			{
 				// No transfer is pending, we can kill the timer.
 				m_timer.cancel();
+			}
+			else
+			{
+				continue_network_operation(socket);
 			}
 		}
 	}
