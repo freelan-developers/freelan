@@ -435,6 +435,11 @@ namespace freelan
 		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
 	}
 
+	void curl_multi::set_option(CURLMoption option, long int value)
+	{
+		set_option(option, &value);
+	}
+
 	void curl_multi::set_option(CURLMoption option, curl_multi_timer_callback value)
 	{
 		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
