@@ -403,17 +403,27 @@ namespace freelan
 			friend class curl_multi;
 	};
 
+	class curl_association;
+
 	/**
 	 * \brief A CURLM wrapper class.
 	 */
-	class curl_multi
+	class curl_multi : public boost::enable_shared_from_this<curl_multi>
 	{
 		public:
 
 			/**
 			 * \brief Create a CURLM.
 			 */
-			curl_multi();
+			static boost::shared_ptr<curl_multi> create()
+			{
+				return boost::shared_ptr<curl_multi>(new curl_multi());
+			}
+
+			/**
+			 * \brief Destroy a CURLM.
+			 */
+			virtual ~curl_multi() {};
 
 			/**
 			 * \brief Get the raw pointer.
@@ -430,7 +440,7 @@ namespace freelan
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
-			void add_handle(boost::shared_ptr<curl> handle);
+			virtual void add_handle(boost::shared_ptr<curl> handle);
 
 			/**
 			 * \brief Remove a handle from this CURLM.
@@ -439,13 +449,13 @@ namespace freelan
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
-			boost::shared_ptr<curl> remove_handle(CURL* easy_handle);
+			virtual boost::shared_ptr<curl> remove_handle(CURL* easy_handle);
 
 			/**
 			 * \brief Clear all the handles from this CURLM.
 			 * \return All the curl instance previously handled.
 			 */
-			std::vector<boost::shared_ptr<curl>> clear();
+			virtual std::vector<boost::shared_ptr<curl>> clear();
 
 			/**
 			 * \brief Set an option.
@@ -486,36 +496,64 @@ namespace freelan
 			 */
 			CURLMsg* info_read(int* count_left = nullptr);
 
+		protected:
+			curl_multi();
+
+			virtual void before_associate_handle(boost::shared_ptr<curl>)
+			{
+			}
+
+			virtual void after_associate_handle(boost::shared_ptr<curl>)
+			{
+			}
+
+			virtual void before_disassociate_handle(boost::shared_ptr<curl>)
+			{
+			}
+
+			virtual void after_disassociate_handle(boost::shared_ptr<curl>)
+			{
+			}
+
 		private:
 
 			std::unique_ptr<CURLM, void (*)(CURLM*)> m_curlm;
-
-			class curl_association
-			{
-				public:
-					curl_association(const curl_multi& _curl_multi, boost::shared_ptr<curl> _curl);
-					~curl_association();
-
-					curl_association(const curl_association&) = delete;
-					curl_association& operator=(const curl_association&) = delete;
-
-					boost::shared_ptr<curl> get_curl() const
-					{
-						return m_curl;
-					}
-
-				private:
-					const curl_multi& m_curl_multi;
-					boost::shared_ptr<curl> m_curl;
-			};
-
 			std::map<CURL*, std::unique_ptr<curl_association>> m_associations;
+
+			friend class curl_association;
+	};
+
+	/**
+	 * An association class between a curl and a curl multi.
+	 */
+	class curl_association
+	{
+		public:
+			curl_association(boost::shared_ptr<curl_multi> _curl_multi, boost::shared_ptr<curl> _curl);
+			~curl_association();
+
+			boost::shared_ptr<curl_multi> get_curl_multi() const
+			{
+				return m_curl_multi;
+			}
+
+			boost::shared_ptr<curl> get_curl() const
+			{
+				return m_curl;
+			}
+
+		private:
+			curl_association(const curl_association&) = delete;
+			curl_association& operator=(const curl_association&) = delete;
+
+			boost::shared_ptr<curl_multi> m_curl_multi;
+			boost::shared_ptr<curl> m_curl;
 	};
 
 	/**
 	 * \brief A CURL multi wrapper class compatible with Boost ASIO.
 	 */
-	class curl_multi_asio : public curl_multi, public boost::enable_shared_from_this<curl_multi_asio>
+	class curl_multi_asio : public curl_multi
 	{
 		public:
 			/**
@@ -536,14 +574,10 @@ namespace freelan
 			 */
 			~curl_multi_asio();
 
-			/**
-			 * \brief Add a handle to this CURLM.
-			 * \param handle The handle to add.
-			 * \param handler The handler to call upon completion.
-			 *
-			 * On error, a std::runtime_error is raised.
-			 */
-			void add_handle(boost::shared_ptr<curl> handle, connection_complete_callback handler);
+			boost::shared_ptr<curl_multi_asio> shared_from_this()
+			{
+				return boost::static_pointer_cast<curl_multi_asio>(curl_multi::shared_from_this());
+			}
 
 			/**
 			 * \brief Post a handle to this CURLM, asynchronously.
@@ -557,24 +591,14 @@ namespace freelan
 			void post_handle(boost::shared_ptr<curl> handle, connection_complete_callback handler);
 
 			/**
-			 * \brief Remove a handle from this CURLM.
-			 * \param easy_handle The CURL handle to remove.
-			 * \return The curl instance that was first added.
-			 *
-			 * On error, a std::runtime_error is raised.
-			 */
-			boost::shared_ptr<curl> remove_handle(CURL* easy_handle);
-
-			/**
-			 * \brief Clear all the handles from this CURLM.
-			 * \return All the curl instance previously associated.
-			 */
-			std::vector<boost::shared_ptr<curl>> clear();
-
-			/**
 			 * \brief Clear all the handles from this CURLM, asynchronously.
 			 */
 			void async_clear(boost::function<void ()> handler = boost::function<void ()>());
+
+		protected:
+
+			void before_associate_handle(boost::shared_ptr<curl>) override;
+			void after_disassociate_handle(boost::shared_ptr<curl>) override;
 
 		private:
 
