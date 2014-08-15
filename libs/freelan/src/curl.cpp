@@ -355,6 +355,20 @@ namespace freelan
 		return content_type ? content_type : "";
 	}
 
+	boost::system::error_code curl::get_system_error()
+	{
+		if (get_response_code() == 0)
+		{
+			long error = 0;
+
+			throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_OS_ERRNO, &error));
+
+			return boost::system::error_code(error, boost::system::system_category());
+		}
+
+		return boost::system::error_code();
+	}
+
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
 	{
 		assert(context);
@@ -519,7 +533,7 @@ namespace freelan
 
 			if (handler)
 			{
-				m_io_service.post(boost::bind(handler, boost::system::error_code()));
+				m_io_service.post(boost::bind(handler, handle->get_system_error()));
 			}
 
 			m_handler_map.erase(handler_it);

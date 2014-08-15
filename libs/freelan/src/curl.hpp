@@ -390,6 +390,12 @@ namespace freelan
 			 */
 			std::string get_content_type();
 
+			/**
+			 * \brief Get the system error.
+			 * \return The system error.
+			 */
+			boost::system::error_code get_system_error();
+
 		private:
 
 			static int debug_function(CURL*, curl_infotype, char*, size_t, void*);
