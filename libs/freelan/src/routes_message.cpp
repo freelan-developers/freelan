@@ -112,7 +112,7 @@ namespace freelan
 						throw std::runtime_error("buf_len");
 					}
 
-					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(get_address_type<AddressType>(_gateway)));
+					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(get_address_type<AddressType>(static_cast<bool>(_gateway))));
 					fscp::buffer_tools::set<uint8_t>(m_buf, 1, static_cast<uint8_t>(prefix_length));
 
 					std::copy(bytes.begin(), bytes.end(), m_buf + 2);

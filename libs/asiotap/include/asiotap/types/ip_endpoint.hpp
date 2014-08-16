@@ -128,7 +128,7 @@ namespace asiotap
 			 */
 			bool has_port() const
 			{
-				return m_port;
+				return static_cast<bool>(m_port);
 			}
 
 			/**
