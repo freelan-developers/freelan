@@ -51,6 +51,8 @@
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
 
+#include "curl_error.hpp"
+
 namespace freelan
 {
 	namespace
@@ -59,7 +61,7 @@ namespace freelan
 		{
 			if (errorcode != CURLE_OK)
 			{
-				throw std::runtime_error(curl_easy_strerror(errorcode));
+				throw boost::system::system_error(make_error_code(errorcode));
 			}
 		}
 
@@ -67,7 +69,7 @@ namespace freelan
 		{
 			if (errorcode != CURLM_OK)
 			{
-				throw std::runtime_error(curl_multi_strerror(errorcode));
+				throw boost::system::system_error(make_error_code(errorcode));
 			}
 		}
 	}
@@ -564,11 +566,20 @@ namespace freelan
 
 				if (result_it != m_result_map.end())
 				{
-					m_io_service.post(boost::bind(handler, handle->get_system_error(), result_it->second));
+					const auto system_error = handle->get_system_error();
+
+					if (system_error)
+					{
+						m_io_service.post(boost::bind(handler, system_error));
+					}
+					else
+					{
+						m_io_service.post(boost::bind(handler, make_error_code(result_it->second)));
+					}
 				}
 				else
 				{
-					m_io_service.post(boost::bind(handler, boost::asio::error::operation_aborted, CURLE_OK));
+					m_io_service.post(boost::bind(handler, boost::asio::error::operation_aborted));
 				}
 			}
 

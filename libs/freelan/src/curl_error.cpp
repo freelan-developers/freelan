@@ -38,35 +38,46 @@
  */
 
 /**
- * \file client.cpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A client implementation.
+ * \file curl_error.cpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief The errors.
  */
 
-#include "client.hpp"
-
-#include <boost/make_shared.hpp>
+#include "curl_error.hpp"
 
 namespace freelan
 {
-	web_client::web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration) :
-		m_curl_multi_asio(curl_multi_asio::create(io_service)),
-		m_logger(_logger)
+	const boost::system::error_category& curl_category()
 	{
-		static_cast<void>(configuration);
-		static_cast<void>(m_logger);
-		static boost::asio::strand superstrand(io_service);
+		static curl_category_impl instance;
 
-		for (int i = 0; i < 3; ++i)
-		{
-			boost::shared_ptr<curl> request = boost::make_shared<curl>();
+		return instance;
+	}
 
-			request->set_url("http://www.google.fr");
-			request->set_get();
+	const char* curl_category_impl::name() const throw()
+	{
+		return "curl::error";
+	}
 
-			m_curl_multi_asio->execute(request, superstrand.wrap([i, request] (const boost::system::error_code& ec) {
-				std::cout << "[" << i << "] " << request->get_response_code() << " (" << ec << ": " << ec.message() << ")" << std::endl;
-			}));
-		}
+	std::string curl_category_impl::message(int ev) const
+	{
+		return curl_easy_strerror(static_cast<CURLcode>(ev));
+	}
+
+	const boost::system::error_category& curlm_category()
+	{
+		static curlm_category_impl instance;
+
+		return instance;
+	}
+
+	const char* curlm_category_impl::name() const throw()
+	{
+		return "curlm::error";
+	}
+
+	std::string curlm_category_impl::message(int ev) const
+	{
+		return curl_multi_strerror(static_cast<CURLMcode>(ev));
 	}
 }

@@ -581,7 +581,7 @@ namespace freelan
 			/**
 			 * \brief The connection complete callback.
 			 */
-			typedef boost::function<void (const boost::system::error_code&, CURLcode result)> connection_complete_callback;
+			typedef boost::function<void (const boost::system::error_code&)> connection_complete_callback;
 
 			/**
 			 * Create a new instance.
