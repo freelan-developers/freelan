@@ -95,6 +95,19 @@ namespace freelan
 		return cryptoplus::pkey::pkey::from_rsa_key(cryptoplus::pkey::rsa_key::generate_private_key(size, prime));
 	}
 
+	cryptoplus::x509::certificate_request generate_certificate_request(const cryptoplus::pkey::pkey& private_key, const std::string& common_name)
+	{
+		cryptoplus::x509::certificate_request certificate_request = cryptoplus::x509::certificate_request::create();
+
+		certificate_request.set_version(2);
+		certificate_request.subject().push_back("CN", MBSTRING_ASC, common_name);
+
+		certificate_request.set_public_key(private_key);
+		certificate_request.sign(private_key, cryptoplus::hash::message_digest_algorithm(NID_sha1));
+
+		return certificate_request;
+	}
+
 	cryptoplus::x509::certificate generate_self_signed_certificate(const cryptoplus::pkey::pkey& private_key, const std::string& common_name, unsigned int duration)
 	{
 		cryptoplus::x509::certificate certificate = cryptoplus::x509::certificate::create();

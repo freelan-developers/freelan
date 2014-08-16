@@ -48,6 +48,7 @@
 #include "os.hpp"
 
 #include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/x509/certificate_request.hpp>
 #include <cryptoplus/pkey/pkey.hpp>
 
 namespace freelan
@@ -65,6 +66,15 @@ namespace freelan
 	 * \return The private key.
 	 */
 	cryptoplus::pkey::pkey generate_private_key(unsigned int size = 2048, unsigned int prime = 17);
+
+	/**
+	 * \brief Generate a certificate request.
+	 * \param private_key The private key to use.
+	 * \param common_name The common name to use. Defaults to get_hostname().
+	 * \param The duration of the certificate. Defaults to a year.
+	 * \return The self-signed certificate.
+	 */
+	cryptoplus::x509::certificate_request generate_certificate_request(const cryptoplus::pkey::pkey& private_key, const std::string& common_name = get_hostname());
 
 	/**
 	 * \brief Generate a self-signed certificate.
