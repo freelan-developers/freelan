@@ -62,20 +62,14 @@ namespace freelan
 		request->set_copy_post_fields(boost::asio::buffer(data.data()));
 
 		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const boost::shared_ptr<size_t> count(new size_t(0));
 
-		m_curl_multi_asio->execute(request, [self, request, buffer, handler] (const boost::system::error_code& ec) {
-			size_t count = 0;
-			self->m_logger(LL_DEBUG) << request->get_effective_url() << " | " << ec << " | received " << count << " byte(s)";
-		});
-
-/*		boost::shared_ptr<size_t> count(new size_t(0));
-
-		handle->set_write_function([buffer, count] (boost::asio::const_buffer data) {
+		request->set_write_function([buffer, count] (boost::asio::const_buffer indata) {
 			using boost::asio::buffer_cast;
 			using boost::asio::buffer_size;
 
-			const char* const bytes = buffer_cast<const char*>(data);
-			const size_t bytes_len = buffer_size(data);
+			const char* const bytes = buffer_cast<const char*>(indata);
+			const size_t bytes_len = buffer_size(indata);
 			char* const dest = buffer_cast<char*>(buffer) + *count;
 			const size_t dest_len = buffer_size(buffer) - *count;
 
@@ -95,10 +89,12 @@ namespace freelan
 			}
 		});
 
-		execute(handle, [handler, count] (const boost::system::error_code& ec) {
-			handler(ec, *count);
+		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (const boost::system::error_code& ec) {
+			using boost::asio::buffer_cast;
+			using boost::asio::buffer_size;
+
+			self->m_logger(LL_DEBUG) << request->get_effective_url() << " | " << ec << " | received " << *count << " byte(s) | " << std::string(buffer_cast<const char*>(buffer), *count);
 		});
-*/
 	}
 
 	web_client::web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration) :
