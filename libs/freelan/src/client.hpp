@@ -46,6 +46,13 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/function.hpp>
+#include <boost/enable_shared_from_this.hpp>
+
+#include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/x509/certificate_request.hpp>
+
+#include <fscp/memory_pool.hpp>
 
 #include "os.hpp"
 #include "logger.hpp"
@@ -54,13 +61,39 @@
 
 namespace freelan
 {
-	class web_client
+	class web_client : public boost::enable_shared_from_this<web_client>
 	{
 		public:
-			web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration);
+			typedef boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> request_certificate_callback;
+
+			/**
+			 * \brief Create a new web client.
+			 * \param io_service The io_service to bind to.
+			 * \param _logger The logger to use.
+			 * \param configuration The configuration to use.
+			 */
+			static boost::shared_ptr<web_client> create(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration)
+			{
+				return boost::shared_ptr<web_client>(new web_client(io_service, _logger, configuration));
+			}
+
+			/**
+			 * \brief Request the server for a certificate.
+			 * \param certifcate_request The certificate request to send.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler = request_certificate_callback());
 
 		private:
+			typedef fscp::memory_pool<8192, 2> memory_pool;
+
+			web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration);
+			boost::shared_ptr<curl> make_request(const std::string& path) const;
+
+			memory_pool m_memory_pool;
 			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
 			freelan::logger& m_logger;
+			freelan::client_configuration m_configuration;
+			std::string m_url_prefix;
 	};
 }

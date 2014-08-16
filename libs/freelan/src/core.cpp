@@ -1994,7 +1994,12 @@ namespace freelan
 		{
 			m_logger(LL_INFORMATION) << "Starting web client getting its configuration from " << m_configuration.client.server_endpoint << "...";
 
-			m_web_client = boost::make_shared<web_client>(m_io_service, m_logger, m_configuration.client);
+			m_web_client = web_client::create(m_io_service, m_logger, m_configuration.client);
+
+			const auto private_key = generate_private_key();
+			const auto certificate_request = generate_certificate_request(private_key);
+
+			m_web_client->request_certificate(certificate_request);
 
 			m_logger(LL_INFORMATION) << "Web client started.";
 		}

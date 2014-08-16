@@ -46,27 +46,83 @@
 #include "client.hpp"
 
 #include <boost/make_shared.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <cryptoplus/buffer.hpp>
 
 namespace freelan
 {
+	void web_client::request_certificate(cryptoplus::x509::certificate_request certificate_request, boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> handler)
+	{
+		const auto self = shared_from_this();
+		const auto request = make_request("/request_certificate/");
+		const auto data = certificate_request.write_der();
+
+		request->set_http_header("content-type", "application/octet-stream");
+		request->set_copy_post_fields(boost::asio::buffer(data.data()));
+
+		const auto buffer = m_memory_pool.allocate_shared_buffer();
+
+		m_curl_multi_asio->execute(request, [self, request, buffer, handler] (const boost::system::error_code& ec) {
+			size_t count = 0;
+			self->m_logger(LL_DEBUG) << request->get_effective_url() << " | " << ec << " | received " << count << " byte(s)";
+		});
+
+/*		boost::shared_ptr<size_t> count(new size_t(0));
+
+		handle->set_write_function([buffer, count] (boost::asio::const_buffer data) {
+			using boost::asio::buffer_cast;
+			using boost::asio::buffer_size;
+
+			const char* const bytes = buffer_cast<const char*>(data);
+			const size_t bytes_len = buffer_size(data);
+			char* const dest = buffer_cast<char*>(buffer) + *count;
+			const size_t dest_len = buffer_size(buffer) - *count;
+
+			if (dest_len < bytes_len)
+			{
+				*count = buffer_size(buffer);
+				std::memcpy(dest, bytes, dest_len);
+
+				return dest_len;
+			}
+			else
+			{
+				*count += bytes_len;
+				std::memcpy(dest, bytes, bytes_len);
+
+				return bytes_len;
+			}
+		});
+
+		execute(handle, [handler, count] (const boost::system::error_code& ec) {
+			handler(ec, *count);
+		});
+*/
+	}
+
 	web_client::web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration) :
 		m_curl_multi_asio(curl_multi_asio::create(io_service)),
-		m_logger(_logger)
+		m_logger(_logger),
+		m_configuration(configuration),
+		m_url_prefix(boost::lexical_cast<std::string>(m_configuration.protocol) + "://" + boost::lexical_cast<std::string>(m_configuration.server_endpoint))
 	{
-		static_cast<void>(configuration);
-		static_cast<void>(m_logger);
-		static boost::asio::strand superstrand(io_service);
+		m_logger(LL_DEBUG) << "Web client URL prefix set to: " << m_url_prefix;
+	}
 
-		for (int i = 0; i < 3; ++i)
+	boost::shared_ptr<curl> web_client::make_request(const std::string& path) const
+	{
+		boost::shared_ptr<curl> request = boost::make_shared<curl>();
+
+		request->set_url(m_url_prefix + path);
+		request->enable_cookie_support();
+
+		if (!m_configuration.username.empty() || !m_configuration.password.empty())
 		{
-			boost::shared_ptr<curl> request = boost::make_shared<curl>();
-
-			request->set_url("http://www.google.fr");
-			request->set_get();
-
-			m_curl_multi_asio->execute(request, superstrand.wrap([i, request] (const boost::system::error_code& ec) {
-				std::cout << "[" << i << "] " << request->get_response_code() << " (" << ec << ": " << ec.message() << ")" << std::endl;
-			}));
+			request->set_username(m_configuration.username);
+			request->set_password(m_configuration.password);
 		}
+
+		return request;
 	}
 }
