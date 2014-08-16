@@ -616,7 +616,7 @@ namespace freelan
 			 *
 			 * On error, a std::runtime_error is raised.
 			 */
-			void execute(boost::shared_ptr<curl> handle, connection_complete_callback handler);
+			void execute(boost::shared_ptr<curl> handle, connection_complete_callback handler = connection_complete_callback());
 
 			/**
 			 * \brief Clear all the handles from this CURLM, asynchronously.
