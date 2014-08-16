@@ -493,6 +493,11 @@ namespace mongooseplus
 		mg_send_header(m_connection, header.key().c_str(), header.value().c_str());
 	}
 
+	void connection::send_header(header_type&& header)
+	{
+		mg_send_header(m_connection, header.key().c_str(), header.value().c_str());
+	}
+
 	void connection::send_session()
 	{
 		boost::shared_ptr<generic_session> session = get_session();
