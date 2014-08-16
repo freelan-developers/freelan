@@ -53,6 +53,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
+#include <iostream>
 #include <sstream>
 
 #include <boost/lexical_cast.hpp>
