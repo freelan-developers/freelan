@@ -367,6 +367,12 @@ namespace freelan
 			void perform();
 
 			/**
+			 * \brief Get the effective url.
+			 * \return The effective url.
+			 */
+			std::string get_effective_url();
+
+			/**
 			 * \brief Get the last response code.
 			 * \return The last response code.
 			 */

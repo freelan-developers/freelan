@@ -321,6 +321,15 @@ namespace freelan
 		throw_if_curl_error(curl_easy_perform(m_curl.get()));
 	}
 
+	std::string curl::get_effective_url()
+	{
+		char* effective_url = NULL;
+
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_EFFECTIVE_URL, &effective_url));
+
+		return effective_url ? effective_url : "";
+	}
+
 	long curl::get_response_code()
 	{
 		long response_code = 0;
