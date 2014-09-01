@@ -2469,10 +2469,13 @@ namespace fscp
 		{
 			case server::session_loss_reason::timeout:
 				os << "timeout";
+				break;
 			case server::session_loss_reason::manual_termination:
 				os << "manual termination";
+				break;
 			default:
 				os << "unspecified reason";
+				break;
 		}
 
 		return os;
