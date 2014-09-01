@@ -1539,7 +1539,7 @@ namespace fscp
 
 			if (m_session_lost_handler)
 			{
-				m_session_lost_handler(target);
+				m_session_lost_handler(target, session_loss_reason::manual_termination);
 			}
 		}
 		else
@@ -2395,7 +2395,7 @@ namespace fscp
 					{
 						if (m_session_lost_handler)
 						{
-							m_session_lost_handler(p_session.first);
+							m_session_lost_handler(p_session.first, session_loss_reason::timeout);
 						}
 					}
 				}
@@ -2461,5 +2461,23 @@ namespace fscp
 		{
 			handler(server_error::cryptographic_error);
 		}
+	}
+
+	std::ostream& operator<<(std::ostream& os, server::session_loss_reason value)
+	{
+		switch (value)
+		{
+			case server::session_loss_reason::timeout:
+				os << "timeout";
+				break;
+			case server::session_loss_reason::manual_termination:
+				os << "manual termination";
+				break;
+			default:
+				os << "unspecified reason";
+				break;
+		}
+
+		return os;
 	}
 }

@@ -227,10 +227,19 @@ namespace fscp
 			typedef boost::function<void (const ep_type& host, bool is_new, const cipher_suite_type& cipher_suite, const elliptic_curve_type& elliptic_curve)> session_established_handler_type;
 
 			/**
+			 * \brief A reason for the session loss.
+			 */
+			enum class session_loss_reason
+			{
+				timeout,
+				manual_termination
+			};
+
+			/**
 			 * \brief A handler for when a session was lost.
 			 * \param host The host with which a session was lost.
 			 */
-			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
+			typedef boost::function<void (const ep_type& host, session_loss_reason)> session_lost_handler_type;
 
 			/**
 			 * \brief A handler for when data is available.
@@ -1528,6 +1537,8 @@ namespace fscp
 				return os << "invalid presentation status";
 			}
 	};
+
+	std::ostream& operator<<(std::ostream& os, server::session_loss_reason value);
 }
 
 #endif /* FSCP_SERVER_HPP */

@@ -520,7 +520,7 @@ namespace freelan
 		m_fscp_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
 		m_fscp_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
 		m_fscp_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
-		m_fscp_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1));
+		m_fscp_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1, _2));
 		m_fscp_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
 		resolver_type resolver(m_io_service);
@@ -1146,13 +1146,13 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_session_lost(const ep_type& host)
+	void core::do_handle_session_lost(const ep_type& host, fscp::server::session_loss_reason reason)
 	{
-		m_logger(LL_IMPORTANT) << "Session with " << host << " lost.";
+		m_logger(LL_IMPORTANT) << "Session with " << host << " lost (" << reason << ").";
 
 		if (m_session_lost_callback)
 		{
-			m_session_lost_callback(host);
+			m_session_lost_callback(host, reason);
 		}
 
 		if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)

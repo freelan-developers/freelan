@@ -191,11 +191,11 @@ static void on_session_established(const std::string& name, fscp::server& server
 	}
 }
 
-static void on_session_lost(const std::string& name, fscp::server&, const fscp::server::ep_type& host)
+static void on_session_lost(const std::string& name, fscp::server&, const fscp::server::ep_type& host, fscp::server::session_loss_reason reason)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Session lost with " << host << std::endl;
+	std::cout << "[" << name << "] Session lost with " << host << " (" << reason << ")" << std::endl;
 }
 
 static void on_data(const std::string& name, fscp::server& server, const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type, boost::asio::const_buffer data)
@@ -310,9 +310,9 @@ int main()
 		bob_server.set_session_established_callback(boost::bind(&on_session_established, "bob", boost::ref(bob_server), _1, _2, _3, _4));
 		chris_server.set_session_established_callback(boost::bind(&on_session_established, "chris", boost::ref(chris_server), _1, _2, _3, _4));
 
-		alice_server.set_session_lost_callback(boost::bind(&on_session_lost, "alice", boost::ref(alice_server), _1));
-		bob_server.set_session_lost_callback(boost::bind(&on_session_lost, "bob", boost::ref(bob_server), _1));
-		chris_server.set_session_lost_callback(boost::bind(&on_session_lost, "chris", boost::ref(chris_server), _1));
+		alice_server.set_session_lost_callback(boost::bind(&on_session_lost, "alice", boost::ref(alice_server), _1, _2));
+		bob_server.set_session_lost_callback(boost::bind(&on_session_lost, "bob", boost::ref(bob_server), _1, _2));
+		chris_server.set_session_lost_callback(boost::bind(&on_session_lost, "chris", boost::ref(chris_server), _1, _2));
 
 		alice_server.set_data_received_callback(boost::bind(&on_data, "alice", boost::ref(alice_server), _1, _2, _3, _4));
 		bob_server.set_data_received_callback(boost::bind(&on_data, "bob", boost::ref(bob_server), _1, _2, _3, _4));
