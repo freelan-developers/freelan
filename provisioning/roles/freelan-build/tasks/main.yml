@@ -1,0 +1,21 @@
+---
+- name: Install freelan build dependencies
+  apt: name={{ item }} state=present
+  with_items:
+    - g++
+    - scons
+    - git
+    - libboost-all-dev
+    - libssl-dev
+    - libcurl4-openssl-dev
+  tags:
+    - build
+  sudo: True
+
+- name: Checkout freelan sources
+  git: repo={{ repository_url }} dest={{ sources_root }} version={{ repository_version }} accept_hostkey=yes
+  tags:
+    - build
+
+- name: Build freelan from sources
+  command: chdir={{ sources_root }} scons install/bin/freelan2

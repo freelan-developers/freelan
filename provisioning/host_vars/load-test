@@ -1,0 +1,37 @@
+ca_root: "/home/vagrant/ca"
+nodes_config_root: "/home/vagrant/nodes"
+scripts_root: "/home/vagrant/scripts"
+
+freelan_nodes:
+  - name: alice
+    ipv4: 9.0.0.1
+    port: 12000
+  - name: bob
+    ipv4: 9.0.0.2
+    port: 12001
+  - name: chris
+    ipv4: 9.0.0.3
+    port: 12002
+  - name: denis
+    ipv4: 9.0.0.4
+    port: 12003
+  - name: eleanor
+    ipv4: 9.0.0.5
+    port: 12004
+  - name: fred
+    ipv4: 9.0.0.6
+    port: 12005
+  - name: greg
+    ipv4: 9.0.0.7
+    port: 12006
+  - name: hector
+    ipv4: 9.0.0.8
+    port: 12007
+  - name: ian
+    ipv4: 9.0.0.9
+    port: 12008
+  - name: julien
+    ipv4: 9.0.0.10
+    port: 12009
+
+threads_count: 4

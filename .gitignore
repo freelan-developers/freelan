@@ -17,3 +17,6 @@
 *.sdf
 *.opensdf
 *.vcxproj.user
+
+# Vagrant
+.vagrant
