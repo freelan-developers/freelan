@@ -1,0 +1,8 @@
+---
+- name: Update the APT repository
+  apt: update_cache=yes
+  sudo: True
+
+- name: Upgrade the packages
+  apt: upgrade=full
+  sudo: True

@@ -1,0 +1,6 @@
+---
+- hosts: load-test
+  roles:
+    - apt
+    - freelan-build
+    - freelan-load-test
