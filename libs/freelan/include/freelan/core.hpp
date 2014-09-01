@@ -207,10 +207,15 @@ namespace freelan
 			typedef boost::function<void (const ep_type& host, bool is_new, const fscp::cipher_suite_type& cs, const fscp::elliptic_curve_type& ec)> session_established_handler_type;
 
 			/**
+			 * \brief A reason for the session loss.
+			 */
+			typedef fscp::server::session_loss_reason session_loss_reason;
+
+			/**
 			 * \brief A session lost callback.
 			 * \param host The host with which a session was lost.
 			 */
-			typedef boost::function<void (const ep_type& host)> session_lost_handler_type;
+			typedef boost::function<void (const ep_type& host, session_loss_reason)> session_lost_handler_type;
 
 			/**
 			 * \brief The certificate validation callback type.
@@ -448,7 +453,7 @@ namespace freelan
 			void do_handle_session_failed(const ep_type&, bool);
 			void do_handle_session_error(const ep_type&, bool, const std::exception&);
 			void do_handle_session_established(const ep_type&, bool, const fscp::cipher_suite_type&, const fscp::elliptic_curve_type&);
-			void do_handle_session_lost(const ep_type&);
+			void do_handle_session_lost(const ep_type&, fscp::server::session_loss_reason);
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
 			void do_handle_routes_request(const ep_type&);

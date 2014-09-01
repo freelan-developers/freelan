@@ -160,11 +160,11 @@ static void on_session_established(const fscp::server::ep_type& host, bool is_ne
 	std::cout << "Elliptic curve: " << ec << std::endl;
 }
 
-static void on_session_lost(const fscp::server::ep_type& host)
+static void on_session_lost(const fscp::server::ep_type& host, fscp::server::session_loss_reason reason)
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "Session lost with " << host << std::endl;
+	std::cout << "Session lost with " << host << " (" << reason << ")" << std::endl;
 }
 
 static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type, boost::asio::const_buffer data)
