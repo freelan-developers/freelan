@@ -33,3 +33,5 @@ freelan_nodes:
   - name: julien
     ipv4: 9.0.0.10
     port: 12009
+
+threads_count: 4
