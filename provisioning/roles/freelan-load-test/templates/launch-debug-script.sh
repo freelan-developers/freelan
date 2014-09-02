@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo gdb -- {{ sources_root }}/install/bin/freelan2 -c {{ nodes_config_root }}/{{ item.name }}.cfg -f -d -t {{ threads_count }}
