@@ -377,7 +377,7 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	pkey signature_private_key;
 
 	load_certificate(signature_certificate, "security.signature_certificate_file", vm, root);
-	load_private_key(signature_private_key, "security.signature_private_key", vm, root);
+	load_private_key(signature_private_key, "security.signature_private_key_file", vm, root);
 
 	if (!!signature_certificate && !!signature_private_key)
 	{
