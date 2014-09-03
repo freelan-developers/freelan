@@ -493,6 +493,18 @@ namespace freelan
 	{
 		m_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
+		m_server->set_debug_callback([this] (fscp::server::debug_event event, const std::string& context, const boost::optional<ep_type>& ep) {
+
+			if (ep)
+			{
+				m_logger(LL_TRACE) << context << ": " << event << " (" << *ep << ")";
+			}
+			else
+			{
+				m_logger(LL_TRACE) << context << ": " << event;
+			}
+		});
+
 		m_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
 		m_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
 

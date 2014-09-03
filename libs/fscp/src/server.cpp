@@ -255,6 +255,7 @@ namespace fscp
 
 	server::server(boost::asio::io_service& io_service, const identity_store& identity) :
 		m_identity_store(identity),
+		m_debug_callback(),
 		m_socket(io_service),
 		m_socket_strand(io_service),
 		m_write_queue_strand(io_service),
@@ -1556,12 +1557,16 @@ namespace fscp
 			// No presentation_store for the given host.
 			// We do nothing.
 
+			push_debug_event(debug_event::no_presentation, "handling session request", sender);
+
 			return;
 		}
 
 		// We make sure the signatures matches.
 		if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
 		{
+			push_debug_event(debug_event::invalid_signature, "handling session request", sender);
+
 			return;
 		}
 
@@ -1589,6 +1594,8 @@ namespace fscp
 
 		if (!p_session.set_first_remote_host_identifier(_session_request_message.host_identifier()))
 		{
+			push_debug_event(debug_event::host_identifier_mismatch, "handling session request", sender);
+
 			// The host identifier does not match.
 			return;
 		}
@@ -1601,6 +1608,8 @@ namespace fscp
 		if ((calg == cipher_suite_type::unsupported) || (ec == elliptic_curve_type::unsupported))
 		{
 			// No suitable cipher and/or elliptic curve is available.
+			push_debug_event(debug_event::no_suitable_cipher_suite, "handling session request", sender);
+
 			return;
 		}
 
@@ -1615,6 +1624,8 @@ namespace fscp
 		{
 			if (!p_session.has_current_session())
 			{
+				push_debug_event(debug_event::no_current_session, "handling session request", sender);
+
 				p_session.prepare_session(_session_request_message.session_number(), calg, ec);
 				do_send_session(identity, sender, p_session.next_session_parameters());
 			}
@@ -1622,12 +1633,16 @@ namespace fscp
 			{
 				if (_session_request_message.session_number() > p_session.current_session().parameters.session_number)
 				{
+					push_debug_event(debug_event::new_session_requested, "handling session request", sender);
+
 					// A new session is requested. Sending a new message.
 					p_session.prepare_session(_session_request_message.session_number(), calg, ec);
 					do_send_session(identity, sender, p_session.next_session_parameters());
 				}
 				else
 				{
+					push_debug_event(debug_event::old_session_requested, "handling session request", sender);
+
 					// An old session is requested: sending the same message.
 					do_send_session(identity, sender, p_session.current_session_parameters());
 				}
@@ -1770,6 +1785,7 @@ namespace fscp
 		{
 			// No presentation_store for the given host.
 			// We do nothing.
+			push_debug_event(debug_event::no_presentation, "handling session", sender);
 
 			return;
 		}
@@ -1777,6 +1793,8 @@ namespace fscp
 		// We make sure the signatures matches.
 		if (!_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
 		{
+			push_debug_event(debug_event::invalid_signature, "handling session", sender);
+
 			return;
 		}
 
@@ -1801,16 +1819,15 @@ namespace fscp
 
 		if (!p_session.set_first_remote_host_identifier(_session_message.host_identifier()))
 		{
+			push_debug_event(debug_event::host_identifier_mismatch, "handling session", sender);
+
 			// The host identifier does not match.
 			return;
 		}
 
-		if (_session_message.cipher_suite() == cipher_suite_type::unsupported)
-		{
-			return;
-		}
+		const bool session_is_new = !p_session.has_current_session();
 
-		if (p_session.has_current_session())
+		if (!session_is_new)
 		{
 			if (_session_message.session_number() == p_session.current_session().parameters.session_number)
 			{
@@ -1818,23 +1835,31 @@ namespace fscp
 
 				if (p_session.current_session().parameters.cipher_suite != _session_message.cipher_suite())
 				{
+					push_debug_event(debug_event::different_session_requested, "handling session", sender);
+
 					// The parameters don't match the current session. Requesting a new one.
 					do_request_session(identity, sender, &null_simple_handler);
+				}
+				else
+				{
+					push_debug_event(debug_event::current_session_requested, "handling session", sender);
 				}
 
 				return;
 			}
 			else if (_session_message.session_number() < p_session.current_session().parameters.session_number)
 			{
+				push_debug_event(debug_event::old_session_requested, "handling session", sender);
+
 				// This is an old session message. Ignore it.
 				return;
 			}
 		}
 
-		const bool session_is_new = !p_session.has_current_session();
-
 		if (_session_message.cipher_suite() == cipher_suite_type::unsupported)
 		{
+			push_debug_event(debug_event::no_suitable_cipher_suite, "handling session", sender);
+
 			if (m_session_failed_handler)
 			{
 				m_session_failed_handler(sender, session_is_new);
@@ -1858,6 +1883,8 @@ namespace fscp
 			{
 				if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
 				{
+					push_debug_event(debug_event::preparing_new_session, "handling session", sender);
+
 					// We received a session message but no session was prepared yet: we issue one and retry.
 					p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite(), _session_message.elliptic_curve());
 
@@ -2475,6 +2502,48 @@ namespace fscp
 				break;
 			default:
 				os << "unspecified reason";
+				break;
+		}
+
+		return os;
+	}
+
+	std::ostream& operator<<(std::ostream& os, server::debug_event event)
+	{
+		switch (event)
+		{
+			case server::debug_event::no_presentation:
+				os << "no presentation exists for the given host";
+				break;
+			case server::debug_event::invalid_signature:
+				os << "the presentation signature does not match";
+				break;
+			case server::debug_event::host_identifier_mismatch:
+				os << "the host identifier does not match";
+				break;
+			case server::debug_event::no_suitable_cipher_suite:
+				os << "no acceptable cipher";
+				break;
+			case server::debug_event::no_current_session:
+				os << "no session currently exist";
+				break;
+			case server::debug_event::new_session_requested:
+				os << "a new session was requested";
+				break;
+			case server::debug_event::old_session_requested:
+				os << "an old session was requested";
+				break;
+			case server::debug_event::current_session_requested:
+				os << "the current session was requested";
+				break;
+			case server::debug_event::different_session_requested:
+				os << "a different session was requested";
+				break;
+			case server::debug_event::preparing_new_session:
+				os << "preparing a new session";
+				break;
+			default:
+				os << "unspecified event";
 				break;
 		}
 
