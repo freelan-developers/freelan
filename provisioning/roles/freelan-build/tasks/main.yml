@@ -18,4 +18,4 @@
     - build
 
 - name: Build freelan from sources
-  command: chdir={{ sources_root }} scons install/bin/freelan2
+  command: chdir={{ sources_root }} scons all
