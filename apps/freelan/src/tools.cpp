@@ -65,6 +65,8 @@ int log_level_to_syslog_priority(freelan::log_level level)
 {
 	switch (level)
 	{
+		case freelan::LL_TRACE:
+			return LOG_DEBUG;
 		case freelan::LL_DEBUG:
 			return LOG_DEBUG;
 		case freelan::LL_INFORMATION:
@@ -88,6 +90,8 @@ const char* log_level_to_string(freelan::log_level level)
 {
 	switch (level)
 	{
+		case freelan::LL_TRACE:
+			return "TRACE";
 		case freelan::LL_DEBUG:
 			return "DEBUG";
 		case freelan::LL_INFORMATION:

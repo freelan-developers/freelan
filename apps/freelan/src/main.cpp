@@ -462,7 +462,7 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 
-	const freelan::log_level log_level = configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION;
+	const freelan::log_level log_level = configuration.debug ? fl::LL_TRACE : fl::LL_INFORMATION;
 
 	const freelan::logger logger(log_func, log_level);
 

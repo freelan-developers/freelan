@@ -80,6 +80,8 @@ inline std::string log_level_to_color(freelan::log_level level)
 {
 	switch (level)
 	{
+		case freelan::LL_TRACE:
+			return COLOR_DIM + COLOR_FG_WHITE;
 		case freelan::LL_DEBUG:
 			return COLOR_FG_WHITE;
 		case freelan::LL_INFORMATION:
