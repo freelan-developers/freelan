@@ -1,4 +1,12 @@
 ---
+- name: Install freelan load test dependencies
+  apt: name={{ item }} state=present
+  with_items:
+    - gdb
+    - valgrind
+    - screen
+  sudo: True
+
 - name: Create nodes configuration directory
   file: dest={{ nodes_config_root }} state=directory
 
@@ -20,9 +28,20 @@
   template: src=launch-script.sh dest={{ scripts_root }}/{{ item.name }}.sh mode=755
   with_items: freelan_nodes
 
+- name: Create debug scripts files
+  template: src=launch-debug-script.sh dest={{ scripts_root }}/debug-{{ item.name }}.sh mode=755
+  with_items: freelan_nodes
+
 - name: Create detached scripts files
   template: src=launch-detached-script.sh dest={{ scripts_root }}/detached-{{ item.name }}.sh mode=755
   with_items: freelan_nodes
 
+- name: Create detached debug scripts files
+  template: src=launch-detached-debug-script.sh dest={{ scripts_root }}/detached-debug-{{ item.name }}.sh mode=755
+  with_items: freelan_nodes
+
 - name: Create all detached script file
   template: src=launch-all-script.sh dest={{ scripts_root }}/all.sh mode=755
+
+- name: Create all detached debug script file
+  template: src=launch-all-debug-script.sh dest={{ scripts_root }}/all-debug.sh mode=755

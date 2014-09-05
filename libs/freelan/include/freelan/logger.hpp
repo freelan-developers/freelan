@@ -64,6 +64,7 @@ namespace freelan
 	 */
 	enum log_level
 	{
+		LL_TRACE, /**< \brief The trace log level. */
 		LL_DEBUG, /**< \brief The debug log level. */
 		LL_INFORMATION, /**< \brief The information log level. */
 		LL_IMPORTANT, /**< \brief The important log level. */

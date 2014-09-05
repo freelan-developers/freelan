@@ -508,6 +508,18 @@ namespace freelan
 
 		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
 
+		m_fscp_server->set_debug_callback([this] (fscp::server::debug_event event, const std::string& context, const boost::optional<ep_type>& ep) {
+
+			if (ep)
+			{
+				m_logger(LL_TRACE) << context << ": " << event << " (" << *ep << ")";
+			}
+			else
+			{
+				m_logger(LL_TRACE) << context << ": " << event;
+			}
+		});
+
 		m_fscp_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
 		m_fscp_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
 
@@ -1296,6 +1308,13 @@ namespace freelan
 			return;
 		}
 
+		if (!m_tap_adapter)
+		{
+			m_logger(LL_INFORMATION) << "Ignoring routes message as no tap adapter is currently associated.";
+
+			return;
+		}
+
 		asiotap::ip_route_set filtered_routes;
 
 		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
@@ -1668,9 +1687,16 @@ namespace freelan
 
 	void core::async_get_tap_addresses(ip_network_address_list_handler_type handler)
 	{
-		m_tap_adapter_strand.post([this, handler](){
+		if (m_tap_adapter)
+		{
+			m_tap_adapter_strand.post([this, handler](){
 			handler(m_tap_adapter->get_ip_addresses());
-		});
+			});
+		}
+		else
+		{
+			handler(asiotap::ip_network_address_list {});
+		}
 	}
 
 	void core::async_read_tap()
