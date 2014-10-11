@@ -20,7 +20,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "provisioning/playbook.yml"
     ansible.limit = 'all'
+
+    # Uncomment the line below to get more output from ansible.
     #ansible.verbose = "v"
+
+    # Uncomment the line below to skip tasks that require a connection to the Internet.
+    #
+    # Warning: it is highly recommended not to skip those tasks for at least the initial provisioning.
+    #ansible.skip_tags = "needs_internet_connection"
 
     ansible.groups = {
         "build" => ["load-test"],
