@@ -51,6 +51,7 @@
 #include "memory_pool.hpp"
 #include "presentation_store.hpp"
 #include "peer_session.hpp"
+#include "logger.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -292,9 +293,10 @@ namespace fscp
 			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
+			 * \param _logger The logger to use. It must remain valid during the lifetime of the fscp::server.
 			 * \param identity The identity store.
 			 */
-			server(boost::asio::io_service& io_service, const identity_store& identity);
+			server(boost::asio::io_service& io_service, fscp::logger& _logger, const identity_store& identity);
 
 			/**
 			 * \brief Get the underlying socket.
@@ -1275,6 +1277,9 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			void sync_set_contact_received_callback(contact_received_handler_type callback);
+
+		private:
+			fscp::logger& m_logger;
 
 		private:
 

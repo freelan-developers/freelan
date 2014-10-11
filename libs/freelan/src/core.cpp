@@ -506,7 +506,7 @@ namespace freelan
 			m_logger(fscp::log_level::warning) << "Using a generated temporary certificate (" << certificate.subject().oneline() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
 		}
 
-		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
+		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::ref(m_logger), boost::cref(*m_configuration.security.identity));
 
 		m_fscp_server->set_debug_callback([this] (fscp::server::debug_event event, const std::string& context, const boost::optional<ep_type>& ep) {
 

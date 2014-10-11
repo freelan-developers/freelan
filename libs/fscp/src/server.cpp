@@ -253,7 +253,8 @@ namespace fscp
 
 	// Public methods
 
-	server::server(boost::asio::io_service& io_service, const identity_store& identity) :
+	server::server(boost::asio::io_service& io_service, fscp::logger& _logger, const identity_store& identity) :
+		m_logger(_logger),
 		m_identity_store(identity),
 		m_debug_callback(),
 		m_socket(io_service),
