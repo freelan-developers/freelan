@@ -13,10 +13,9 @@
   sudo: True
 
 - name: Checkout freelan sources
-  git: repo={{ repository_url }} dest={{ sources_root }} version={{ repository_version }} accept_hostkey=yes
+  git: repo={{ local_sources_root }} dest={{ sources_root }} version={{ repository_version }} accept_hostkey=yes
   tags:
     - build
-    - needs_internet_connection
 
 - name: Build freelan from sources
   command: chdir={{ sources_root }} scons all
