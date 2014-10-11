@@ -94,15 +94,15 @@ namespace freelan
 		};
 	}
 
-	web_server::web_server(logger& _logger, const freelan::server_configuration& configuration) :
+	web_server::web_server(fscp::logger& _logger, const freelan::server_configuration& configuration) :
 		m_logger(_logger)
 	{
-		m_logger(LL_DEBUG) << "Web server's listen endpoint set to " << configuration.listen_on << ".";
+		m_logger(fscp::log_level::debug) << "Web server's listen endpoint set to " << configuration.listen_on << ".";
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 
 		// Routes
 		register_route("/", [this](mongooseplus::connection& conn) {
-			m_logger(LL_DEBUG) << "Requested root.";
+			m_logger(fscp::log_level::debug) << "Requested root.";
 
 			const auto json = conn.json();
 			conn.send_json(json);
@@ -113,17 +113,17 @@ namespace freelan
 
 	web_server::request_result web_server::handle_request(mongooseplus::connection& conn)
 	{
-		if (m_logger.level() <= LL_DEBUG)
+		if (m_logger.level() <= fscp::log_level::debug)
 		{
-			m_logger(LL_DEBUG) << "Web server - Received " << conn.request_method() << " request from " << conn.remote() << " for " << conn.uri() << " (" << conn.content_size() << " byte(s) content).";
-			m_logger(LL_DEBUG) << "--- Headers follow ---";
+			m_logger(fscp::log_level::debug) << "Web server - Received " << conn.request_method() << " request from " << conn.remote() << " for " << conn.uri() << " (" << conn.content_size() << " byte(s) content).";
+			m_logger(fscp::log_level::debug) << "--- Headers follow ---";
 
 			for (auto&& header : conn.get_headers())
 			{
-				m_logger(LL_DEBUG) << header.key() << ": " << header.value();
+				m_logger(fscp::log_level::debug) << header.key() << ": " << header.value();
 			}
 
-			m_logger(LL_DEBUG) << "--- End of headers ---";
+			m_logger(fscp::log_level::debug) << "--- End of headers ---";
 		}
 
 		return mongooseplus::routed_web_server::handle_request(conn);
@@ -131,7 +131,7 @@ namespace freelan
 
 	web_server::request_result web_server::handle_http_error(mongooseplus::connection& conn)
 	{
-		m_logger(LL_WARNING) << "Web server - Sending back " << conn.status_code() << " to " << conn.remote() << ".";
+		m_logger(fscp::log_level::warning) << "Web server - Sending back " << conn.status_code() << " to " << conn.remote() << ".";
 
 		return mongooseplus::routed_web_server::handle_http_error(conn);
 	}

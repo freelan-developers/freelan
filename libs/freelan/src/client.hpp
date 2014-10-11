@@ -53,9 +53,9 @@
 #include <cryptoplus/x509/certificate_request.hpp>
 
 #include <fscp/memory_pool.hpp>
+#include <fscp/logger.hpp>
 
 #include "os.hpp"
-#include "logger.hpp"
 #include "configuration.hpp"
 #include "curl.hpp"
 
@@ -72,7 +72,7 @@ namespace freelan
 			 * \param _logger The logger to use.
 			 * \param configuration The configuration to use.
 			 */
-			static boost::shared_ptr<web_client> create(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration)
+			static boost::shared_ptr<web_client> create(boost::asio::io_service& io_service, fscp::logger& _logger, const freelan::client_configuration& configuration)
 			{
 				return boost::shared_ptr<web_client>(new web_client(io_service, _logger, configuration));
 			}
@@ -87,12 +87,12 @@ namespace freelan
 		private:
 			typedef fscp::memory_pool<8192, 2> memory_pool;
 
-			web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration);
+			web_client(boost::asio::io_service& io_service, fscp::logger& _logger, const freelan::client_configuration& configuration);
 			boost::shared_ptr<curl> make_request(const std::string& path) const;
 
 			memory_pool m_memory_pool;
 			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
-			freelan::logger& m_logger;
+			fscp::logger& m_logger;
 			freelan::client_configuration m_configuration;
 			std::string m_url_prefix;
 	};

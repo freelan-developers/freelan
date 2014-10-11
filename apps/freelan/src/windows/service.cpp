@@ -200,7 +200,7 @@ namespace windows
 
 	/* Local functions declarations */
 	void parse_service_options(int argc, LPTSTR* argv, service_configuration& configuration);
-	fl::logger create_logger(const service_configuration& configuration);
+	fscp::logger create_logger(const service_configuration& configuration);
 	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
 	fl::configuration get_freelan_configuration(const service_configuration& configuration);
 	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
@@ -339,17 +339,17 @@ namespace windows
 		}
 	}
 
-	fl::logger create_logger(const service_configuration& configuration)
+	fscp::logger create_logger(const service_configuration& configuration)
 	{
 		if (configuration.log_file.empty())
 		{
-			return fl::logger();
+			return fscp::logger();
 		}
 		else
 		{
 			boost::shared_ptr<std::ostream> log_stream = boost::make_shared<fs::basic_ofstream<char> >(configuration.log_file);
 
-			return fl::logger(boost::bind(&log_function, log_stream, _1, _2, _3), configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
+			return fscp::logger(boost::bind(&log_function, log_stream, _1, _2, _3), configuration.debug ? fscp::log_level::debug : fscp::log_level::information);
 		}
 	}
 
@@ -472,9 +472,9 @@ namespace windows
 
 		parse_service_options(argc, argv, configuration);
 
-		const fl::logger logger = create_logger(configuration);
+		const fscp::logger logger = create_logger(configuration);
 
-		logger(fl::LL_INFORMATION) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+		logger(fscp::log_level::information) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 
 		/* Initializations */
 		cryptoplus::crypto_initializer crypto_initializer;
@@ -556,9 +556,9 @@ namespace windows
 					}
 				}
 
-				logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s).";
+				logger(fscp::log_level::information) << "Using " << thread_count << " thread(s).";
 
-				logger(fl::LL_INFORMATION) << "Execution started.";
+				logger(fscp::log_level::information) << "Execution started.";
 
 				for (std::size_t i = 0; i < thread_count; ++i)
 				{
@@ -567,7 +567,7 @@ namespace windows
 
 				threads.join_all();
 
-				logger(fl::LL_INFORMATION) << "Execution stopped.";
+				logger(fscp::log_level::information) << "Execution stopped.";
 
 				lock.lock();
 
@@ -580,7 +580,7 @@ namespace windows
 				ctx.service_status.dwWin32ExitCode = ex.code().value();
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				logger(fl::LL_ERROR) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
+				logger(fscp::log_level::error) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
 			}
 			catch (std::exception& ex)
 			{
@@ -588,7 +588,7 @@ namespace windows
 				ctx.service_status.dwServiceSpecificExitCode = 1;
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				logger(fl::LL_ERROR) << "Error: " << ex.what();
+				logger(fscp::log_level::error) << "Error: " << ex.what();
 			}
 
 			// Stop
@@ -597,6 +597,6 @@ namespace windows
 			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 		}
 
-		logger(fl::LL_INFORMATION) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+		logger(fscp::log_level::information) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 	}
 }

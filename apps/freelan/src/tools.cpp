@@ -53,7 +53,7 @@
 #include <syslog.h>
 #endif
 
-#include <freelan/logger.hpp>
+#include <fscp/logger.hpp>
 
 #include "system.hpp"
 
@@ -61,23 +61,23 @@ namespace fs = boost::filesystem;
 namespace fl = freelan;
 
 #ifndef WINDOWS
-int log_level_to_syslog_priority(freelan::log_level level)
+int log_level_to_syslog_priority(fscp::log_level level)
 {
 	switch (level)
 	{
-		case freelan::LL_TRACE:
+		case fscp::log_level::trace:
 			return LOG_DEBUG;
-		case freelan::LL_DEBUG:
+		case fscp::log_level::debug:
 			return LOG_DEBUG;
-		case freelan::LL_INFORMATION:
+		case fscp::log_level::information:
 			return LOG_INFO;
-		case freelan::LL_IMPORTANT:
+		case fscp::log_level::important:
 			return LOG_NOTICE;
-		case freelan::LL_WARNING:
+		case fscp::log_level::warning:
 			return LOG_WARNING;
-		case freelan::LL_ERROR:
+		case fscp::log_level::error:
 			return LOG_ERR;
-		case freelan::LL_FATAL:
+		case fscp::log_level::fatal:
 			return LOG_CRIT;
 	}
 
@@ -86,23 +86,23 @@ int log_level_to_syslog_priority(freelan::log_level level)
 }
 #endif
 
-const char* log_level_to_string(freelan::log_level level)
+const char* log_level_to_string(fscp::log_level level)
 {
 	switch (level)
 	{
-		case freelan::LL_TRACE:
+		case fscp::log_level::trace:
 			return "TRACE";
-		case freelan::LL_DEBUG:
+		case fscp::log_level::debug:
 			return "DEBUG";
-		case freelan::LL_INFORMATION:
+		case fscp::log_level::information:
 			return "INFORMATION";
-		case freelan::LL_IMPORTANT:
+		case fscp::log_level::important:
 			return "IMPORTANT";
-		case freelan::LL_WARNING:
+		case fscp::log_level::warning:
 			return "WARNING";
-		case freelan::LL_ERROR:
+		case fscp::log_level::error:
 			return "ERROR";
-		case freelan::LL_FATAL:
+		case fscp::log_level::fatal:
 			return "FATAL";
 	}
 
@@ -110,7 +110,7 @@ const char* log_level_to_string(freelan::log_level level)
 	throw std::logic_error("Unsupported enumeration value");
 }
 
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 #if defined(WINDOWS) && defined(UNICODE)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -122,11 +122,11 @@ void execute_tap_adapter_up_script(const boost::filesystem::path& script, const 
 
 	if (exit_status != 0)
 	{
-		logger(freelan::LL_WARNING) << "Up script exited with a non-zero exit status: " << exit_status;
+		logger(fscp::log_level::warning) << "Up script exited with a non-zero exit status: " << exit_status;
 	}
 }
 
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 #if defined(WINDOWS) && defined(UNICODE)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -138,11 +138,11 @@ void execute_tap_adapter_down_script(const boost::filesystem::path& script, cons
 
 	if (exit_status != 0)
 	{
-		logger(freelan::LL_WARNING) << "Down script exited with a non-zero exit status: " << exit_status;
+		logger(fscp::log_level::warning) << "Down script exited with a non-zero exit status: " << exit_status;
 	}
 }
 
-bool execute_certificate_validation_script(const fs::path& script, const freelan::logger& logger, fl::security_configuration::cert_type cert)
+bool execute_certificate_validation_script(const fs::path& script, const fscp::logger& logger, fl::security_configuration::cert_type cert)
 {
 	static boost::mutex mutex;
 
@@ -153,9 +153,9 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 	{
 		const fs::path filename = get_temporary_directory() / ("freelan_certificate.crt");
 
-		if (logger.level() <= freelan::LL_DEBUG)
+		if (logger.level() <= fscp::log_level::debug)
 		{
-			logger(freelan::LL_DEBUG) << "Writing temporary certificate file at: " << filename;
+			logger(fscp::log_level::debug) << "Writing temporary certificate file at: " << filename;
 		}
 
 #ifdef WINDOWS
@@ -173,9 +173,9 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 #else
 		const int exit_status = execute(script, { filename.string() });
 #endif
-		if (logger.level() <= freelan::LL_DEBUG)
+		if (logger.level() <= fscp::log_level::debug)
 		{
-			logger(freelan::LL_DEBUG) << script << " terminated execution with exit status " << exit_status ;
+			logger(fscp::log_level::debug) << script << " terminated execution with exit status " << exit_status ;
 		}
 
 		fs::remove(filename);
@@ -184,7 +184,7 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 	}
 	catch (std::exception& ex)
 	{
-		logger(freelan::LL_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
+		logger(fscp::log_level::warning) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
 
 		return false;
 	}

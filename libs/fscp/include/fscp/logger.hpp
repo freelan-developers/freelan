@@ -1,16 +1,15 @@
 /*
- * libfreelan - A C++ library to establish peer-to-peer virtual private
- * networks.
- * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * libfscp - C++ portable OpenSSL cryptographic wrapper library.
+ * Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
  *
- * This file is part of libfreelan.
+ * This file is part of libfscp.
  *
- * libfreelan is free software; you can redistribute it and/or modify it
+ * libfscp is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libfreelan is distributed in the hope that it will be useful, but
+ * libfscp is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -32,7 +31,7 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libfreelan in a commercial software, please
+ * If you intend to use libfscp in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
@@ -43,8 +42,7 @@
  * \brief A logger class.
  */
 
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -55,22 +53,22 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/variant.hpp>
 
-namespace freelan
+namespace fscp
 {
 	class logger;
 
 	/**
 	 * \brief Log level type.
 	 */
-	enum log_level
+	enum class log_level
 	{
-		LL_TRACE, /**< \brief The trace log level. */
-		LL_DEBUG, /**< \brief The debug log level. */
-		LL_INFORMATION, /**< \brief The information log level. */
-		LL_IMPORTANT, /**< \brief The important log level. */
-		LL_WARNING, /**< \brief The warning log level. */
-		LL_ERROR, /**< \brief The error log level. */
-		LL_FATAL /**< \brief The fatal log level. */
+		trace, /**< \brief The trace log level. */
+		debug, /**< \brief The debug log level. */
+		information, /**< \brief The information log level. */
+		important, /**< \brief The important log level. */
+		warning, /**< \brief The warning log level. */
+		error, /**< \brief The error log level. */
+		fatal /**< \brief The fatal log level. */
 	};
 
 	/**
@@ -304,7 +302,7 @@ namespace freelan
 			 * \param handler The function to call whenever a log entry must be written.
 			 * \param _level The desired log level of the logger. Any logging below that level will be silently ignored.
 			 */
-			logger(log_handler_type handler = log_handler_type(), log_level _level = LL_INFORMATION) :
+			logger(log_handler_type handler = log_handler_type(), log_level _level = log_level::information) :
 				m_handler(handler),
 				m_level(_level)
 			{
@@ -397,6 +395,3 @@ namespace freelan
 		}
 	}
 }
-
-#endif /* LOGGER_HPP */
-

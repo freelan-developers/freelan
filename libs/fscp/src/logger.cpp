@@ -1,16 +1,16 @@
 /*
- * libfreelan - A C++ library to establish peer-to-peer virtual private
+ * libfscp - A C++ library to establish peer-to-peer virtual private
  * networks.
  * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
- * This file is part of libfreelan.
+ * This file is part of libfscp.
  *
- * libfreelan is free software; you can redistribute it and/or modify it
+ * libfscp is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
- * libfreelan is distributed in the hope that it will be useful, but
+ * libfscp is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -32,7 +32,7 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  *
- * If you intend to use libfreelan in a commercial software, please
+ * If you intend to use libfscp in a commercial software, please
  * contact me : we may arrange this for a small fee or no fee at all,
  * depending on the nature of your project.
  */
@@ -45,6 +45,6 @@
 
 #include "logger.hpp"
 
-namespace freelan
+namespace fscp
 {
 }

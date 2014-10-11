@@ -437,48 +437,48 @@ namespace freelan
 
 		// Setup the route manager.
 		auto route_registration_success_handler = [this](const asiotap::route_manager::route_type& route){
-			m_logger(LL_INFORMATION) << "Added system route: " << route;
+			m_logger(fscp::log_level::information) << "Added system route: " << route;
 		};
 
 		m_route_manager.set_route_registration_success_handler(route_registration_success_handler);
 		m_route_manager.set_route_registration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
-			m_logger(LL_WARNING) << "Unable to add system route (" << route << "): " << ex.what();
+			m_logger(fscp::log_level::warning) << "Unable to add system route (" << route << "): " << ex.what();
 		});
 		m_route_manager.set_route_unregistration_success_handler([this](const asiotap::route_manager::route_type& route){
-			m_logger(LL_INFORMATION) << "Removed system route: " << route;
+			m_logger(fscp::log_level::information) << "Removed system route: " << route;
 		});
 		m_route_manager.set_route_unregistration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
-			m_logger(LL_WARNING) << "Unable to remove system route (" << route << "): " << ex.what();
+			m_logger(fscp::log_level::warning) << "Unable to remove system route (" << route << "): " << ex.what();
 		});
 	}
 
 	void core::open()
 	{
-		m_logger(LL_DEBUG) << "Opening core...";
+		m_logger(fscp::log_level::debug) << "Opening core...";
 
 		open_fscp_server();
 		open_tap_adapter();
 		open_web_server();
 		open_web_client();
 
-		m_logger(LL_DEBUG) << "Core opened.";
+		m_logger(fscp::log_level::debug) << "Core opened.";
 	}
 
 	void core::close()
 	{
-		m_logger(LL_DEBUG) << "Closing core...";
+		m_logger(fscp::log_level::debug) << "Closing core...";
 
 		close_web_client();
 		close_web_server();
 		close_tap_adapter();
 		close_fscp_server();
 
-		m_logger(LL_DEBUG) << "Core closed.";
+		m_logger(fscp::log_level::debug) << "Core closed.";
 	}
 
 	// Private methods
 
-	void core::do_handle_log(log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp)
+	void core::do_handle_log(fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp)
 	{
 		// All do_handle_log() calls are done within the same strand, so the user does not need to protect his callback with a mutex that might slow things down.
 		if (m_log_callback)
@@ -496,14 +496,14 @@ namespace freelan
 	{
 		if (!m_configuration.security.identity)
 		{
-			m_logger(LL_WARNING) << "No user certificate or private key set. Generating temporary ones...";
+			m_logger(fscp::log_level::warning) << "No user certificate or private key set. Generating temporary ones...";
 
 			const auto private_key = generate_private_key();
 			const auto certificate = generate_self_signed_certificate(private_key);
 
 			m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
-			m_logger(LL_WARNING) << "Using a generated temporary certificate (" << certificate.subject().oneline() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
+			m_logger(fscp::log_level::warning) << "Using a generated temporary certificate (" << certificate.subject().oneline() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
 		}
 
 		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::cref(*m_configuration.security.identity));
@@ -512,11 +512,11 @@ namespace freelan
 
 			if (ep)
 			{
-				m_logger(LL_TRACE) << context << ": " << event << " (" << *ep << ")";
+				m_logger(fscp::log_level::trace) << context << ": " << event << " (" << *ep << ")";
 			}
 			else
 			{
-				m_logger(LL_TRACE) << context << ": " << event;
+				m_logger(fscp::log_level::trace) << context << ": " << event;
 			}
 		});
 
@@ -546,7 +546,7 @@ namespace freelan
 			m_configuration.fscp.listen_on
 		);
 
-		m_logger(LL_IMPORTANT) << "Core set to listen on: " << listen_endpoint;
+		m_logger(fscp::log_level::important) << "Core set to listen on: " << listen_endpoint;
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
@@ -583,7 +583,7 @@ namespace freelan
 
 		for(auto&& network_address : m_configuration.fscp.never_contact_list)
 		{
-			m_logger(LL_INFORMATION) << "Configured not to accept requests from: " << network_address;
+			m_logger(fscp::log_level::information) << "Configured not to accept requests from: " << network_address;
 		}
 
 		// Let's open the server.
@@ -597,11 +597,11 @@ namespace freelan
 
 			if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
 			{
-				m_logger(LL_IMPORTANT) << "Restricting VPN traffic on: " << device_name;
+				m_logger(fscp::log_level::important) << "Restricting VPN traffic on: " << device_name;
 			}
 			else
 			{
-				m_logger(LL_WARNING) << "Unable to restrict traffic on: " << device_name << ". Error was: " << boost::system::error_code(errno, boost::system::system_category()).message();
+				m_logger(fscp::log_level::warning) << "Unable to restrict traffic on: " << device_name << ". Error was: " << boost::system::error_code(errno, boost::system::system_category()).message();
 			}
 		}
 #endif
@@ -626,7 +626,7 @@ namespace freelan
 
 	void core::async_contact(const endpoint& target, duration_handler_type handler)
 	{
-		m_logger(LL_DEBUG) << "Resolving " << target << " for potential contact...";
+		m_logger(fscp::log_level::debug) << "Resolving " << target << " for potential contact...";
 
 		// This is a ugly workaround for a bug in Boost::Variant (<1.55)
 		endpoint target1 = target;
@@ -647,13 +647,13 @@ namespace freelan
 					{
 						if (!has_session)
 						{
-							m_logger(LL_DEBUG) << "No session exists with " << target2 << " (at " << host << "). Contacting...";
+							m_logger(fscp::log_level::debug) << "No session exists with " << target2 << " (at " << host << "). Contacting...";
 
 							do_contact(host, handler);
 						}
 						else
 						{
-							m_logger(LL_DEBUG) << "A session already exists with " << target2 << " (at " << host << "). Not contacting again.";
+							m_logger(fscp::log_level::debug) << "A session already exists with " << target2 << " (at " << host << "). Not contacting again.";
 						}
 					}
 				);
@@ -726,7 +726,7 @@ namespace freelan
 	{
 		assert(m_fscp_server);
 
-		m_logger(LL_DEBUG) << "Sending SESSION_REQUEST to " << target << ".";
+		m_logger(fscp::log_level::debug) << "Sending SESSION_REQUEST to " << target << ".";
 
 		m_fscp_server->async_request_session(target, handler);
 	}
@@ -773,7 +773,7 @@ namespace freelan
 	{
 		assert(m_fscp_server);
 
-		m_logger(LL_DEBUG) << "Sending routes request to " << target << ".";
+		m_logger(fscp::log_level::debug) << "Sending routes request to " << target << ".";
 
 		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
 		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
@@ -803,7 +803,7 @@ namespace freelan
 	{
 		assert(m_fscp_server);
 
-		m_logger(LL_DEBUG) << "Sending routes request to all hosts.";
+		m_logger(fscp::log_level::debug) << "Sending routes request to all hosts.";
 
 		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
 		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
@@ -832,7 +832,7 @@ namespace freelan
 	{
 		assert(m_fscp_server);
 
-		m_logger(LL_DEBUG) << "Sending routes to " << target << ": version " << version << " (" << routes << ").";
+		m_logger(fscp::log_level::debug) << "Sending routes to " << target << ": version " << version << " (" << routes << ").";
 
 		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
 
@@ -858,7 +858,7 @@ namespace freelan
 	{
 		assert(m_fscp_server);
 
-		m_logger(LL_DEBUG) << "Sending HELLO to " << address;
+		m_logger(fscp::log_level::debug) << "Sending HELLO to " << address;
 
 		m_fscp_server->async_greet(address, boost::bind(handler, address, _1, _2));
 	}
@@ -867,7 +867,7 @@ namespace freelan
 	{
 		if (!ec)
 		{
-			m_logger(LL_DEBUG) << "Received HELLO_RESPONSE from " << host << " at " << address << ". Latency: " << duration << "";
+			m_logger(fscp::log_level::debug) << "Received HELLO_RESPONSE from " << host << " at " << address << ". Latency: " << duration << "";
 
 			async_introduce_to(address);
 		}
@@ -875,11 +875,11 @@ namespace freelan
 		{
 			if (ec == fscp::server_error::hello_request_timed_out)
 			{
-				m_logger(LL_DEBUG) << "Received no HELLO_RESPONSE from " << host << " at " << address << ": " << ec.message() << " (timeout: " << duration << ")";
+				m_logger(fscp::log_level::debug) << "Received no HELLO_RESPONSE from " << host << " at " << address << ": " << ec.message() << " (timeout: " << duration << ")";
 			}
 			else
 			{
-				m_logger(LL_DEBUG) << "Unable to send HELLO to " << host << ": " << ec.message();
+				m_logger(fscp::log_level::debug) << "Unable to send HELLO to " << host << ": " << ec.message();
 			}
 		}
 	}
@@ -921,7 +921,7 @@ namespace freelan
 	{
 		if (ec)
 		{
-			m_logger(LL_WARNING) << "Error sending contact request to " << target << ": " << ec.message();
+			m_logger(fscp::log_level::warning) << "Error sending contact request to " << target << ": " << ec.message();
 		}
 	}
 
@@ -937,7 +937,7 @@ namespace freelan
 	{
 		if (ec)
 		{
-			m_logger(LL_WARNING) << "Error sending introduction message to " << target << ": " << ec.message();
+			m_logger(fscp::log_level::warning) << "Error sending introduction message to " << target << ": " << ec.message();
 		}
 	}
 
@@ -945,7 +945,7 @@ namespace freelan
 	{
 		if (ec)
 		{
-			m_logger(LL_WARNING) << "Error requesting session to " << target << ": " << ec.message();
+			m_logger(fscp::log_level::warning) << "Error requesting session to " << target << ": " << ec.message();
 		}
 	}
 
@@ -953,7 +953,7 @@ namespace freelan
 	{
 		if (ec)
 		{
-			m_logger(LL_WARNING) << "Error sending routes request to " << target << ": " << ec.message();
+			m_logger(fscp::log_level::warning) << "Error sending routes request to " << target << ": " << ec.message();
 		}
 	}
 
@@ -967,11 +967,11 @@ namespace freelan
 
 	bool core::do_handle_hello_received(const ep_type& sender, bool default_accept)
 	{
-		m_logger(LL_DEBUG) << "Received HELLO_REQUEST from " << sender << ".";
+		m_logger(fscp::log_level::debug) << "Received HELLO_REQUEST from " << sender << ".";
 
 		if (is_banned(sender.address()))
 		{
-			m_logger(LL_WARNING) << "Ignoring HELLO_REQUEST from " << sender << " as it is a banned host.";
+			m_logger(fscp::log_level::warning) << "Ignoring HELLO_REQUEST from " << sender << " as it is a banned host.";
 
 			default_accept = false;
 		}
@@ -988,7 +988,7 @@ namespace freelan
 	{
 		if (m_configuration.fscp.accept_contact_requests)
 		{
-			m_logger(LL_INFORMATION) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << hash << "). Host is at: " << answer;
+			m_logger(fscp::log_level::information) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << hash << "). Host is at: " << answer;
 
 			return true;
 		}
@@ -1005,11 +1005,11 @@ namespace freelan
 			// We check if the contact belongs to the forbidden network list.
 			if (is_banned(answer.address()))
 			{
-				m_logger(LL_WARNING) << "Received forbidden contact from " << sender << ": " << hash << " is at " << answer << " but won't be contacted.";
+				m_logger(fscp::log_level::warning) << "Received forbidden contact from " << sender << ": " << hash << " is at " << answer << " but won't be contacted.";
 			}
 			else
 			{
-				m_logger(LL_INFORMATION) << "Received contact from " << sender << ": " << hash << " is at: " << answer;
+				m_logger(fscp::log_level::information) << "Received contact from " << sender << ": " << hash << " is at: " << answer;
 
 				async_contact(to_endpoint(answer));
 			}
@@ -1018,33 +1018,33 @@ namespace freelan
 
 	bool core::do_handle_presentation_received(const ep_type& sender, cert_type sig_cert, fscp::server::presentation_status_type status, bool has_session)
 	{
-		if (m_logger.level() <= LL_DEBUG)
+		if (m_logger.level() <= fscp::log_level::debug)
 		{
-			m_logger(LL_DEBUG) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject().oneline() << ".";
+			m_logger(fscp::log_level::debug) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject().oneline() << ".";
 		}
 
 		if (is_banned(sender.address()))
 		{
-			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as it is a banned host.";
+			m_logger(fscp::log_level::warning) << "Ignoring PRESENTATION from " << sender << " as it is a banned host.";
 
 			return false;
 		}
 
 		if (has_session)
 		{
-			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as an active session currently exists with this host.";
+			m_logger(fscp::log_level::warning) << "Ignoring PRESENTATION from " << sender << " as an active session currently exists with this host.";
 
 			return false;
 		}
 
 		if (!certificate_is_valid(sig_cert))
 		{
-			m_logger(LL_WARNING) << "Ignoring PRESENTATION from " << sender << " as the signature certificate is invalid.";
+			m_logger(fscp::log_level::warning) << "Ignoring PRESENTATION from " << sender << " as the signature certificate is invalid.";
 
 			return false;
 		}
 
-		m_logger(LL_INFORMATION) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << "): " << status << ".";
+		m_logger(fscp::log_level::information) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << "): " << status << ".";
 
 		async_request_session(sender);
 
@@ -1053,9 +1053,9 @@ namespace freelan
 
 	bool core::do_handle_session_request_received(const ep_type& sender, const fscp::cipher_suite_list_type& cscap, const fscp::elliptic_curve_list_type& eccap, bool default_accept)
 	{
-		m_logger(LL_DEBUG) << "Received SESSION_REQUEST from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
+		m_logger(fscp::log_level::debug) << "Received SESSION_REQUEST from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
 
-		if (m_logger.level() <= LL_DEBUG)
+		if (m_logger.level() <= fscp::log_level::debug)
 		{
 			std::ostringstream oss;
 
@@ -1064,7 +1064,7 @@ namespace freelan
 				oss << " " << cs;
 			}
 
-			m_logger(LL_DEBUG) << "Cipher suites capabilities:" << oss.str();
+			m_logger(fscp::log_level::debug) << "Cipher suites capabilities:" << oss.str();
 
 			oss.str("");
 
@@ -1073,7 +1073,7 @@ namespace freelan
 				oss << " " << ec;
 			}
 
-			m_logger(LL_DEBUG) << "Elliptic curve capabilities:" << oss.str();
+			m_logger(fscp::log_level::debug) << "Elliptic curve capabilities:" << oss.str();
 		}
 
 		return default_accept;
@@ -1081,9 +1081,9 @@ namespace freelan
 
 	bool core::do_handle_session_received(const ep_type& sender, fscp::cipher_suite_type cs, fscp::elliptic_curve_type ec, bool default_accept)
 	{
-		m_logger(LL_DEBUG) << "Received SESSION from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
-		m_logger(LL_DEBUG) << "Cipher suite: " << cs;
-		m_logger(LL_DEBUG) << "Elliptic curve: " << ec;
+		m_logger(fscp::log_level::debug) << "Received SESSION from " << sender << " (default: " << (default_accept ? std::string("accept") : std::string("deny")) << ").";
+		m_logger(fscp::log_level::debug) << "Cipher suite: " << cs;
+		m_logger(fscp::log_level::debug) << "Elliptic curve: " << ec;
 
 		return default_accept;
 	}
@@ -1092,11 +1092,11 @@ namespace freelan
 	{
 		if (is_new)
 		{
-			m_logger(LL_WARNING) << "Session establishment with " << host << " failed.";
+			m_logger(fscp::log_level::warning) << "Session establishment with " << host << " failed.";
 		}
 		else
 		{
-			m_logger(LL_WARNING) << "Session renewal with " << host << " failed.";
+			m_logger(fscp::log_level::warning) << "Session renewal with " << host << " failed.";
 		}
 
 		if (m_session_failed_callback)
@@ -1109,11 +1109,11 @@ namespace freelan
 	{
 		if (is_new)
 		{
-			m_logger(LL_WARNING) << "Session establishment with " << host << " encountered an error: " << error.what();
+			m_logger(fscp::log_level::warning) << "Session establishment with " << host << " encountered an error: " << error.what();
 		}
 		else
 		{
-			m_logger(LL_WARNING) << "Session renewal with " << host << " encountered an error: " << error.what();
+			m_logger(fscp::log_level::warning) << "Session renewal with " << host << " encountered an error: " << error.what();
 		}
 
 		if (m_session_error_callback)
@@ -1126,15 +1126,15 @@ namespace freelan
 	{
 		if (is_new)
 		{
-			m_logger(LL_IMPORTANT) << "Session established with " << host << ".";
+			m_logger(fscp::log_level::important) << "Session established with " << host << ".";
 		}
 		else
 		{
-			m_logger(LL_INFORMATION) << "Session renewed with " << host << ".";
+			m_logger(fscp::log_level::information) << "Session renewed with " << host << ".";
 		}
 
-		m_logger(LL_INFORMATION) << "Cipher suite: " << cs;
-		m_logger(LL_INFORMATION) << "Elliptic curve: " << ec;
+		m_logger(fscp::log_level::information) << "Cipher suite: " << cs;
+		m_logger(fscp::log_level::information) << "Elliptic curve: " << ec;
 
 		if (is_new)
 		{
@@ -1160,7 +1160,7 @@ namespace freelan
 
 	void core::do_handle_session_lost(const ep_type& host, fscp::server::session_loss_reason reason)
 	{
-		m_logger(LL_IMPORTANT) << "Session with " << host << " lost (" << reason << ").";
+		m_logger(fscp::log_level::important) << "Session with " << host << " lost (" << reason << ").";
 
 		if (m_session_lost_callback)
 		{
@@ -1219,12 +1219,12 @@ namespace freelan
 				}
 				catch (std::runtime_error& ex)
 				{
-					m_logger(LL_WARNING) << "Received incorrectly formatted message from " << sender << ". Error was: " << ex.what();
+					m_logger(fscp::log_level::warning) << "Received incorrectly formatted message from " << sender << ". Error was: " << ex.what();
 				}
 
 				break;
 			default:
-				m_logger(LL_WARNING) << "Received unhandled " << buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
+				m_logger(fscp::log_level::warning) << "Received unhandled " << buffer_size(data) << " byte(s) of data on FSCP channel #" << static_cast<int>(channel_number);
 				break;
 		}
 	}
@@ -1252,7 +1252,7 @@ namespace freelan
 				}
 
 			default:
-				m_logger(LL_WARNING) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
+				m_logger(fscp::log_level::warning) << "Received unhandled message of type " << static_cast<int>(msg.type()) << " on the message channel";
 				break;
 		}
 	}
@@ -1262,7 +1262,7 @@ namespace freelan
 		// All calls to do_handle_routes_request() are done within the m_router_strand, so the following is safe.
 		if (!m_configuration.router.accept_routes_requests)
 		{
-			m_logger(LL_DEBUG) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
+			m_logger(fscp::log_level::debug) << "Received routes request from " << sender << " but ignoring as specified in the configuration";
 		}
 		else
 		{
@@ -1274,13 +1274,13 @@ namespace freelan
 				{
 					const auto& routes = local_port->local_routes();
 
-					m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << *m_local_routes_version << ": " << routes;
+					m_logger(fscp::log_level::debug) << "Received routes request from " << sender << ". Replying with version " << *m_local_routes_version << ": " << routes;
 
 					async_send_routes(sender, *m_local_routes_version, routes, &null_simple_write_handler);
 				}
 				else
 				{
-					m_logger(LL_DEBUG) << "Received routes request from " << sender << " but no local routes are set. Not sending anything.";
+					m_logger(fscp::log_level::debug) << "Received routes request from " << sender << " but no local routes are set. Not sending anything.";
 				}
 			}
 			else
@@ -1288,7 +1288,7 @@ namespace freelan
 				const auto routes = m_configuration.router.local_ip_routes;
 				const auto version = 0;
 
-				m_logger(LL_DEBUG) << "Received routes request from " << sender << ". Replying with version " << version << ": " << routes;
+				m_logger(fscp::log_level::debug) << "Received routes request from " << sender << ". Replying with version " << version << ": " << routes;
 
 				async_send_routes(sender, version, routes, &null_simple_write_handler);
 			}
@@ -1303,14 +1303,14 @@ namespace freelan
 
 		if (!client_router_info.is_older_than(version))
 		{
-			m_logger(LL_DEBUG) << "Ignoring old routes message with version " << version << " as current version is " << *client_router_info.version;
+			m_logger(fscp::log_level::debug) << "Ignoring old routes message with version " << version << " as current version is " << *client_router_info.version;
 
 			return;
 		}
 
 		if (!m_tap_adapter)
 		{
-			m_logger(LL_INFORMATION) << "Ignoring routes message as no tap adapter is currently associated.";
+			m_logger(fscp::log_level::information) << "Ignoring routes message as no tap adapter is currently associated.";
 
 			return;
 		}
@@ -1321,7 +1321,7 @@ namespace freelan
 		{
 			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::internal_route_scope_type::none)
 			{
-				m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+				m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
 
 				return;
 			}
@@ -1334,7 +1334,7 @@ namespace freelan
 			{
 				if (filtered_routes.empty() && !routes.empty())
 				{
-					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << routes;
+					m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << routes;
 
 					return;
 				}
@@ -1343,7 +1343,7 @@ namespace freelan
 					asiotap::ip_route_set excluded_routes;
 					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
 
-					m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
+					m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
 				}
 			}
 
@@ -1351,18 +1351,18 @@ namespace freelan
 			{
 				port->set_local_routes(filtered_routes);
 
-				m_logger(LL_INFORMATION) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
+				m_logger(fscp::log_level::information) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
 			}
 			else
 			{
-				m_logger(LL_DEBUG) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
+				m_logger(fscp::log_level::debug) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
 			}
 		}
 		else
 		{
 			if (m_configuration.router.system_route_acceptance_policy == router_configuration::system_route_scope_type::none)
 			{
-				m_logger(LL_WARNING) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+				m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
 
 				return;
 			}
@@ -1390,7 +1390,7 @@ namespace freelan
 		{
 			if (system_routes.empty() && !filtered_system_routes.empty())
 			{
-				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << filtered_system_routes;
+				m_logger(fscp::log_level::warning) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << filtered_system_routes;
 
 				return;
 			}
@@ -1399,7 +1399,7 @@ namespace freelan
 				asiotap::ip_route_set excluded_routes;
 				std::set_difference(filtered_system_routes.begin(), filtered_system_routes.end(), system_routes.begin(), system_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
 
-				m_logger(LL_WARNING) << "Received system routes from " << sender << " (version " << version << ") but some did not match the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
+				m_logger(fscp::log_level::warning) << "Received system routes from " << sender << " (version " << version << ") but some did not match the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
 			}
 		}
 
@@ -1430,11 +1430,11 @@ namespace freelan
 
 		if (!ok)
 		{
-			m_logger(LL_WARNING) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
+			m_logger(fscp::log_level::warning) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
 		}
 		else
 		{
-			m_logger(LL_INFORMATION) << cert.subject().oneline() << " is valid.";
+			m_logger(fscp::log_level::information) << cert.subject().oneline() << " is valid.";
 		}
 
 		return ok;
@@ -1504,12 +1504,12 @@ namespace freelan
 			// The device MTU.
 			tap_config.mtu = compute_mtu(m_configuration.tap_adapter.mtu, get_auto_mtu_value());
 
-			m_logger(LL_IMPORTANT) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << tap_config.mtu;
+			m_logger(fscp::log_level::important) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << tap_config.mtu;
 
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 			{
-				m_logger(LL_INFORMATION) << "IPv4 address: " << m_configuration.tap_adapter.ipv4_address_prefix_length;
+				m_logger(fscp::log_level::information) << "IPv4 address: " << m_configuration.tap_adapter.ipv4_address_prefix_length;
 
 				tap_config.ipv4.network_address = { m_configuration.tap_adapter.ipv4_address_prefix_length.address(), m_configuration.tap_adapter.ipv4_address_prefix_length.prefix_length() };
 			}
@@ -1521,27 +1521,27 @@ namespace freelan
 				}
 				else
 				{
-					m_logger(LL_INFORMATION) << "No IPv4 address configured.";
+					m_logger(fscp::log_level::information) << "No IPv4 address configured.";
 				}
 			}
 
 			// IPv6 address
 			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
 			{
-				m_logger(LL_INFORMATION) << "IPv6 address: " << m_configuration.tap_adapter.ipv6_address_prefix_length;
+				m_logger(fscp::log_level::information) << "IPv6 address: " << m_configuration.tap_adapter.ipv6_address_prefix_length;
 
 				tap_config.ipv6.network_address = { m_configuration.tap_adapter.ipv6_address_prefix_length.address(), m_configuration.tap_adapter.ipv6_address_prefix_length.prefix_length() };
 			}
 			else
 			{
-				m_logger(LL_INFORMATION) << "No IPv6 address configured.";
+				m_logger(fscp::log_level::information) << "No IPv6 address configured.";
 			}
 
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
 			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
-					m_logger(LL_INFORMATION) << "IPv4 remote address: " << m_configuration.tap_adapter.remote_ipv4_address->to_string();
+					m_logger(fscp::log_level::information) << "IPv4 remote address: " << m_configuration.tap_adapter.remote_ipv4_address->to_string();
 
 					tap_config.ipv4.remote_address = *m_configuration.tap_adapter.remote_ipv4_address;
 				}
@@ -1549,7 +1549,7 @@ namespace freelan
 				{
 					const boost::asio::ip::address_v4 remote_ipv4_address = m_configuration.tap_adapter.ipv4_address_prefix_length.get_network_address();
 
-					m_logger(LL_INFORMATION) << "No IPv4 remote address configured. Using a default of: " << remote_ipv4_address.to_string();
+					m_logger(fscp::log_level::information) << "No IPv4 remote address configured. Using a default of: " << remote_ipv4_address.to_string();
 
 					tap_config.ipv4.remote_address = remote_ipv4_address;
 				}
@@ -1562,7 +1562,7 @@ namespace freelan
 
 			if (metric_value)
 			{
-				m_logger(LL_INFORMATION) << "Setting interface metric to: " << *metric_value;
+				m_logger(fscp::log_level::information) << "Setting interface metric to: " << *metric_value;
 
 				m_tap_adapter->set_metric(*metric_value);
 			}
@@ -1631,11 +1631,11 @@ namespace freelan
 
 				if (local_routes.empty())
 				{
-					m_logger(LL_INFORMATION) << "Not advertising any route";
+					m_logger(fscp::log_level::information) << "Not advertising any route";
 				}
 				else
 				{
-					m_logger(LL_INFORMATION) << "Advertising the following routes: " << local_routes;
+					m_logger(fscp::log_level::information) << "Advertising the following routes: " << local_routes;
 				}
 
 				// We don't need any proxies in TUN mode.
@@ -1814,7 +1814,7 @@ namespace freelan
 		}
 		else if (ec != boost::asio::error::operation_aborted)
 		{
-			m_logger(LL_ERROR) << "Read failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
+			m_logger(fscp::log_level::error) << "Read failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
 		}
 	}
 
@@ -1824,7 +1824,7 @@ namespace freelan
 		{
 			if (ec != boost::asio::error::operation_aborted)
 			{
-				m_logger(LL_WARNING) << "Write failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
+				m_logger(fscp::log_level::warning) << "Write failed on " << m_tap_adapter->name() << ". Error: " << ec.message();
 			}
 		}
 	}
@@ -1992,11 +1992,11 @@ namespace freelan
 		{
 			m_web_server = boost::make_shared<web_server>(m_logger, m_configuration.server);
 
-			m_logger(LL_INFORMATION) << "Starting web server on " << m_configuration.server.listen_on << "...";
+			m_logger(fscp::log_level::information) << "Starting web server on " << m_configuration.server.listen_on << "...";
 
 			m_web_server_thread = boost::thread([this](){ m_web_server->run(); });
 
-			m_logger(LL_INFORMATION) << "Web server started.";
+			m_logger(fscp::log_level::information) << "Web server started.";
 		}
 	}
 
@@ -2004,13 +2004,13 @@ namespace freelan
 	{
 		if (m_web_server)
 		{
-			m_logger(LL_INFORMATION) << "Closing web server...";
+			m_logger(fscp::log_level::information) << "Closing web server...";
 
 			m_web_server->stop();
 			m_web_server_thread.join();
 			m_web_server.reset();
 
-			m_logger(LL_INFORMATION) << "Web server closed.";
+			m_logger(fscp::log_level::information) << "Web server closed.";
 		}
 	}
 
@@ -2018,7 +2018,7 @@ namespace freelan
 	{
 		if (m_configuration.client.enabled)
 		{
-			m_logger(LL_INFORMATION) << "Starting web client getting its configuration from " << m_configuration.client.server_endpoint << "...";
+			m_logger(fscp::log_level::information) << "Starting web client getting its configuration from " << m_configuration.client.server_endpoint << "...";
 
 			m_web_client = web_client::create(m_io_service, m_logger, m_configuration.client);
 
@@ -2027,7 +2027,7 @@ namespace freelan
 
 			m_web_client->request_certificate(certificate_request);
 
-			m_logger(LL_INFORMATION) << "Web client started.";
+			m_logger(fscp::log_level::information) << "Web client started.";
 		}
 	}
 
@@ -2035,11 +2035,11 @@ namespace freelan
 	{
 		if (m_web_client)
 		{
-			m_logger(LL_INFORMATION) << "Closing web client...";
+			m_logger(fscp::log_level::information) << "Closing web client...";
 
 			m_web_client.reset();
 
-			m_logger(LL_INFORMATION) << "Web client closed.";
+			m_logger(fscp::log_level::information) << "Web client closed.";
 		}
 	}
 }

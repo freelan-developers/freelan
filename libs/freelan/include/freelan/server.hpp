@@ -46,8 +46,9 @@
 #pragma once
 
 #include "os.hpp"
-#include "logger.hpp"
 #include "configuration.hpp"
+
+#include <fscp/logger.hpp>
 
 #include <mongooseplus/mongooseplus.hpp>
 
@@ -56,14 +57,14 @@ namespace freelan
 	class web_server : public mongooseplus::routed_web_server
 	{
 		public:
-			web_server(freelan::logger& _logger, const freelan::server_configuration& configuration);
+			web_server(fscp::logger& _logger, const freelan::server_configuration& configuration);
 
 		protected:
 			mongooseplus::routed_web_server::request_result handle_request(mongooseplus::connection&) override;
 			mongooseplus::routed_web_server::request_result handle_http_error(mongooseplus::connection&) override;
 
 		private:
-			freelan::logger& m_logger;
+			fscp::logger& m_logger;
 	};
 
 }

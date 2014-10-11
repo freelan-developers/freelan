@@ -47,13 +47,13 @@
 
 #include "os.hpp"
 #include "configuration.hpp"
-#include "logger.hpp"
 #include "switch.hpp"
 #include "router.hpp"
 #include "message.hpp"
 #include "routes_message.hpp"
 
 #include <fscp/fscp.hpp>
+#include <fscp/logger.hpp>
 
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
@@ -172,7 +172,7 @@ namespace freelan
 			/**
 			 * \brief The log callback.
 			 */
-			typedef logger::log_handler_type log_handler_type;
+			typedef fscp::logger::log_handler_type log_handler_type;
 
 			/**
 			 * \brief The core opened callback.
@@ -276,7 +276,7 @@ namespace freelan
 			 * \param level The log level.
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_log_level(log_level level)
+			void set_log_level(fscp::log_level level)
 			{
 				m_logger.set_level(level);
 			}
@@ -389,11 +389,11 @@ namespace freelan
 			boost::asio::io_service& m_io_service;
 			freelan::configuration m_configuration;
 			boost::asio::strand m_logger_strand;
-			freelan::logger m_logger;
+			fscp::logger m_logger;
 
 		private: /* Callbacks */
 
-			void do_handle_log(log_level, const std::string&, const boost::posix_time::ptime&);
+			void do_handle_log(fscp::log_level, const std::string&, const boost::posix_time::ptime&);
 
 			log_handler_type m_log_callback;
 			core_opened_handler_type m_core_opened_callback;

@@ -93,17 +93,17 @@ namespace freelan
 			using boost::asio::buffer_cast;
 			using boost::asio::buffer_size;
 
-			self->m_logger(LL_DEBUG) << request->get_effective_url() << " | " << ec << " | received " << *count << " byte(s) | " << std::string(buffer_cast<const char*>(buffer), *count);
+			self->m_logger(fscp::log_level::debug) << request->get_effective_url() << " | " << ec << " | received " << *count << " byte(s) | " << std::string(buffer_cast<const char*>(buffer), *count);
 		});
 	}
 
-	web_client::web_client(boost::asio::io_service& io_service, freelan::logger& _logger, const freelan::client_configuration& configuration) :
+	web_client::web_client(boost::asio::io_service& io_service, fscp::logger& _logger, const freelan::client_configuration& configuration) :
 		m_curl_multi_asio(curl_multi_asio::create(io_service)),
 		m_logger(_logger),
 		m_configuration(configuration),
 		m_url_prefix(boost::lexical_cast<std::string>(m_configuration.protocol) + "://" + boost::lexical_cast<std::string>(m_configuration.server_endpoint))
 	{
-		m_logger(LL_DEBUG) << "Web client URL prefix set to: " << m_url_prefix;
+		m_logger(fscp::log_level::debug) << "Web client URL prefix set to: " << m_url_prefix;
 	}
 
 	boost::shared_ptr<curl> web_client::make_request(const std::string& path) const

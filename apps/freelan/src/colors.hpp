@@ -47,7 +47,7 @@
 #ifndef COLORS_HPP
 #define COLORS_HPP
 
-#include <freelan/logger.hpp>
+#include <fscp/logger.hpp>
 
 #include <string>
 #include <cassert>
@@ -76,23 +76,23 @@ static const std::string COLOR_BG_MAGENTA = "\x1b[45m";
 static const std::string COLOR_BG_CYAN = "\x1b[46m";
 static const std::string COLOR_BG_WHITE = "\x1b[47m";
 
-inline std::string log_level_to_color(freelan::log_level level)
+inline std::string log_level_to_color(fscp::log_level level)
 {
 	switch (level)
 	{
-		case freelan::LL_TRACE:
+		case fscp::log_level::trace:
 			return COLOR_DIM + COLOR_FG_WHITE;
-		case freelan::LL_DEBUG:
+		case fscp::log_level::debug:
 			return COLOR_FG_WHITE;
-		case freelan::LL_INFORMATION:
+		case fscp::log_level::information:
 			return COLOR_FG_BLUE;
-		case freelan::LL_IMPORTANT:
+		case fscp::log_level::important:
 			return COLOR_BOLD + COLOR_FG_GREEN;
-		case freelan::LL_WARNING:
+		case fscp::log_level::warning:
 			return COLOR_FG_YELLOW;
-		case freelan::LL_ERROR:
+		case fscp::log_level::error:
 			return COLOR_FG_RED;
-		case freelan::LL_FATAL:
+		case fscp::log_level::fatal:
 			return COLOR_BOLD + COLOR_REVERSE + COLOR_FG_RED;
 	}
 
