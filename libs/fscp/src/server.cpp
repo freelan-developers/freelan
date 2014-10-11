@@ -1028,7 +1028,7 @@ namespace fscp
 			return ep;
 		}
 #else
-		static_cast<void>(socket);
+		static_cast<void>(ep);
 
 		return ep;
 #endif
@@ -1503,11 +1503,16 @@ namespace fscp
 
 		try
 		{
+			const auto next_session_number = p_session.next_session_number();
+			const auto local_host_identifier = p_session.local_host_identifier();
+
+			m_logger(log_level::trace) << "Sending session request message to " << target << " (next_session_number: " << next_session_number << ", local_host_identifier: " << local_host_identifier << ")";
+
 			const size_t size = session_request_message::write(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				p_session.next_session_number(),
-				p_session.local_host_identifier(),
+				next_session_number,
+				local_host_identifier,
 				m_cipher_suites,
 				m_elliptic_curves,
 				identity.signature_key()
@@ -1590,6 +1595,8 @@ namespace fscp
 	{
 		// All do_handle_verified_session_request() calls are done in the session strand so the following is thread-safe.
 
+		m_logger(log_level::trace) << "Processing session request from " << sender << " (session_number: " << _session_request_message.session_number() << ", host_identifier: " << _session_request_message.host_identifier() << ")";
+
 		// Get the associated session, creating one if none exists.
 		peer_session& p_session = m_peer_sessions[sender];
 
@@ -1625,6 +1632,8 @@ namespace fscp
 		{
 			if (!p_session.has_current_session())
 			{
+				m_logger(log_level::trace) << "No current session and " << sender << " requests session number " << _session_request_message.session_number();
+
 				push_debug_event(debug_event::no_current_session, "handling session request", sender);
 
 				p_session.prepare_session(_session_request_message.session_number(), calg, ec);
@@ -1632,6 +1641,8 @@ namespace fscp
 			}
 			else
 			{
+				m_logger(log_level::trace) << "Current session has number " << p_session.current_session().parameters.session_number << " and " << sender << " requests session number " << _session_request_message.session_number();
+
 				if (_session_request_message.session_number() > p_session.current_session().parameters.session_number)
 				{
 					push_debug_event(debug_event::new_session_requested, "handling session request", sender);
