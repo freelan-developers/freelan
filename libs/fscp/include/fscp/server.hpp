@@ -156,25 +156,6 @@ namespace fscp
 
 			// Callbacks
 
-			enum class debug_event
-			{
-				no_presentation,
-				invalid_signature,
-				host_identifier_mismatch,
-				no_suitable_cipher_suite,
-				no_current_session,
-				new_session_requested,
-				old_session_requested,
-				current_session_requested,
-				different_session_requested,
-				preparing_new_session
-			};
-
-			/**
-			 * \brief A debug callback.
-			 */
-			typedef boost::function<void (debug_event, const std::string&, const boost::optional<ep_type>&)> debug_callback;
-
 			/**
 			 * \brief A handler for when hello requests are received.
 			 * \param sender The endpoint that sent the hello message.
@@ -369,15 +350,6 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			void sync_set_identity(const identity_store& identity);
-
-			/**
-			 * \brief Set the debug callback.
-			 * \param The debug callback.
-			 */
-			void set_debug_callback(debug_callback callback)
-			{
-				m_debug_callback = callback;
-			}
 
 			/**
 			 * \brief Open the server.
@@ -1290,18 +1262,6 @@ namespace fscp
 
 		private:
 
-			void push_debug_event(debug_event event, const std::string& comment, boost::optional<ep_type> ep = boost::none)
-			{
-				if (m_debug_callback)
-				{
-					m_debug_callback(event, comment, ep);
-				}
-			}
-
-			debug_callback m_debug_callback;
-
-		private:
-
 			void async_receive_from()
 			{
 				m_socket_strand.post(boost::bind(&server::do_async_receive_from, this));
@@ -1584,7 +1544,6 @@ namespace fscp
 	};
 
 	std::ostream& operator<<(std::ostream& os, server::session_loss_reason value);
-	std::ostream& operator<<(std::ostream& os, server::debug_event event);
 }
 
 #endif /* FSCP_SERVER_HPP */
