@@ -60,8 +60,8 @@ namespace freelan
 			web_server(fscp::logger& _logger, const freelan::server_configuration& configuration);
 
 		protected:
-			mongooseplus::routed_web_server::request_result handle_request(mongooseplus::connection&) override;
-			mongooseplus::routed_web_server::request_result handle_http_error(mongooseplus::connection&) override;
+			mongooseplus::routed_web_server::request_result handle_request(mongooseplus::request&) override;
+			mongooseplus::routed_web_server::request_result handle_http_error(mongooseplus::request&) override;
 
 		private:
 			fscp::logger& m_logger;

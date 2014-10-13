@@ -68,7 +68,7 @@ struct mg_connection;
 
 namespace mongooseplus
 {
-	class connection;
+	class request;
 
 	/**
 	 * \brief Represents a HTTP header.
@@ -200,7 +200,7 @@ namespace mongooseplus
 				return session;
 			}
 
-			boost::shared_ptr<generic_session> read_session(const connection& conn) const;
+			boost::shared_ptr<generic_session> read_session(const request& req) const;
 
 			void clear_expired();
 
@@ -260,34 +260,34 @@ namespace mongooseplus
 				expect_more
 			};
 
-			virtual request_result handle_auth(connection&)
+			virtual request_result handle_auth(request&)
 			{
 				return request_result::handled;
 			}
 
-			virtual void prepare_request(connection&);
+			virtual void prepare_request(request&);
 
-			virtual request_result handle_request(connection&)
+			virtual request_result handle_request(request&)
 			{
 				return request_result::ignored;
 			}
 
-			virtual request_result handle_poll(connection&)
+			virtual request_result handle_poll(request&)
 			{
 				return request_result::ignored;
 			};
 
-			virtual request_result handle_http_error(connection&)
+			virtual request_result handle_http_error(request&)
 			{
 				return request_result::ignored;
 			}
 
-			virtual request_result handle_close(connection&)
+			virtual request_result handle_close(request&)
 			{
 				return request_result::ignored;
 			}
 
-			virtual boost::shared_ptr<generic_session> handle_session_required(const connection&)
+			virtual boost::shared_ptr<generic_session> handle_session_required(const request&)
 			{
 				return boost::shared_ptr<generic_session>();
 			}
@@ -296,13 +296,13 @@ namespace mongooseplus
 			session_handler_type m_session_handler;
 
 			friend class base_authentication_handler;
-			friend class connection;
+			friend class request;
 	};
 
 	/**
-	 * \brief A base connection class.
+	 * \brief A base request class.
 	 */
-	class connection
+	class request
 	{
 		public:
 			web_server& get_web_server()
@@ -374,7 +374,7 @@ namespace mongooseplus
 			void set_from_error(const http_error& ex);
 
 		private:
-			connection(web_server&, mg_connection* connection);
+			request(web_server&, mg_connection* connection);
 			mg_connection* m_connection;
 			web_server& m_web_server;
 			boost::shared_ptr<generic_session> m_session;
@@ -396,13 +396,13 @@ namespace mongooseplus
 				return m_scheme;
 			}
 
-			void authenticate(connection& conn) const
+			void authenticate(request& req) const
 			{
-				const auto authorization_header = conn.get_header("authorization");
+				const auto authorization_header = req.get_header("authorization");
 
 				if (authorization_header)
 				{
-					if (authenticate_from_header(conn, *authorization_header))
+					if (authenticate_from_header(req, *authorization_header))
 					{
 						return;
 					}
@@ -411,7 +411,7 @@ namespace mongooseplus
 				}
 				else
 				{
-					if (authenticate_from_session(conn, conn.get_session()))
+					if (authenticate_from_session(req, req.get_session()))
 					{
 						return;
 					}
@@ -427,8 +427,8 @@ namespace mongooseplus
 			{
 			}
 
-			virtual bool authenticate_from_header(connection& conn, const header_type& header) const = 0;
-			virtual bool authenticate_from_session(connection& conn, boost::shared_ptr<generic_session> session) const = 0;
+			virtual bool authenticate_from_header(request& req, const header_type& header) const = 0;
+			virtual bool authenticate_from_session(request& req, boost::shared_ptr<generic_session> session) const = 0;
 			virtual void raise_authentication_error() const = 0;
 
 		private:
@@ -481,9 +481,9 @@ namespace mongooseplus
 
 		protected:
 
-			bool authenticate_from_header(connection& conn, const header_type& header) const override;
-			bool authenticate_from_session(connection& conn, boost::shared_ptr<generic_session> session) const override;
-			virtual bool authenticate_from_username_and_password(connection& conn, const std::string& username, const std::string& password) const = 0;
+			bool authenticate_from_header(request& req, const header_type& header) const override;
+			bool authenticate_from_session(request& req, boost::shared_ptr<generic_session> session) const override;
+			virtual bool authenticate_from_username_and_password(request& req, const std::string& username, const std::string& password) const = 0;
 			void raise_authentication_error() const override;
 
 		private:
@@ -497,7 +497,7 @@ namespace mongooseplus
 
 			struct route_type
 			{
-				typedef std::function<request_result (connection&)> function_type;
+				typedef std::function<request_result (request&)> function_type;
 
 				std::regex url_regex;
 				std::set<std::string> request_methods;
@@ -531,14 +531,14 @@ namespace mongooseplus
 					return *this;
 				}
 
-				bool url_matches(const connection&) const;
-				bool request_method_matches(const connection&) const;
-				bool content_type_matches(const connection&) const;
-				void check_authentication(connection& conn) const
+				bool url_matches(const request&) const;
+				bool request_method_matches(const request&) const;
+				bool content_type_matches(const request&) const;
+				void check_authentication(request& req) const
 				{
 					if (authentication_handler)
 					{
-						authentication_handler->authenticate(conn);
+						authentication_handler->authenticate(req);
 					}
 				}
 			};
@@ -551,58 +551,58 @@ namespace mongooseplus
 				return register_route(route_type(std::forward<Types>(values)...));
 			}
 
-			request_result handle_request(connection& conn) override;
+			request_result handle_request(request& req) override;
 
 		private:
-			const route_type* get_route(const connection&);
+			const route_type* get_route(const request&);
 
 			std::vector<route_type> m_routes;
 	};
 
-	template <typename ConnectionInfoType>
+	template <typename RequestInfoType>
 	class object_web_server : public routed_web_server
 	{
 		protected:
 
-			ConnectionInfoType& get_connection_info(connection& conn)
+			RequestInfoType& get_request_info(request& req)
 			{
-				return *static_cast<ConnectionInfoType*>(conn.get_user_param());
+				return *static_cast<RequestInfoType*>(req.get_user_param());
 			}
 
-			virtual request_result handle_pre_auth(connection& conn)
+			virtual request_result handle_pre_auth(request& req)
 			{
-				return routed_web_server::handle_auth(conn);
+				return routed_web_server::handle_auth(req);
 			}
 
-			virtual void handle_post_auth(connection&)
+			virtual void handle_post_auth(request&)
 			{
 			}
 
 		private:
 
-			request_result handle_auth(connection& conn) override
+			request_result handle_auth(request& req) override
 			{
-				const request_result result = handle_pre_auth(conn);
+				const request_result result = handle_pre_auth(req);
 
 				if (result != request_result::handled)
 				{
-					std::unique_ptr<ConnectionInfoType> connection_info(new ConnectionInfoType());
-					conn.set_user_param(connection_info.get());
+					std::unique_ptr<RequestInfoType> request_info(new RequestInfoType());
+					req.set_user_param(request_info.get());
 
-					handle_post_auth(conn);
+					handle_post_auth(req);
 
-					connection_info.release();
+					request_info.release();
 				}
 
 				return result;
 			}
 
-			request_result handle_close(connection& conn)
+			request_result handle_close(request& req)
 			{
-				std::unique_ptr<ConnectionInfoType> user_data(static_cast<ConnectionInfoType*>(conn.get_user_param()));
-				conn.set_user_param(nullptr);
+				std::unique_ptr<RequestInfoType> user_data(static_cast<RequestInfoType*>(req.get_user_param()));
+				req.set_user_param(nullptr);
 
-				return routed_web_server::handle_close(conn);
+				return routed_web_server::handle_close(req);
 			}
 	};
 }

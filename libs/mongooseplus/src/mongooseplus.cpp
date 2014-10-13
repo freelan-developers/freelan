@@ -193,13 +193,13 @@ namespace mongooseplus
 
 	struct web_server::underlying_server_type
 	{
-		static int event_handler(struct mg_connection* conn, enum mg_event ev)
+		static int event_handler(struct mg_connection* connp, enum mg_event ev)
 		{
-			assert(conn->server_param);
+			assert(connp->server_param);
 
-			web_server& ws = *static_cast<web_server*>(conn->server_param);
+			web_server& ws = *static_cast<web_server*>(connp->server_param);
 
-			const auto result = event_handler_simple(ws, conn, ev);
+			const auto result = event_handler_simple(ws, connp, ev);
 
 			switch (result)
 			{
@@ -218,21 +218,21 @@ namespace mongooseplus
 
 		static web_server::request_result event_handler_simple(web_server& ws, struct mg_connection* connp, enum mg_event ev)
 		{
-			connection conn(ws, connp);
+			request req(ws, connp);
 
 			switch (ev)
 			{
 				case MG_AUTH:
-					return ws.handle_auth(conn);
+					return ws.handle_auth(req);
 				case MG_REQUEST:
-					ws.prepare_request(conn);
-					return ws.handle_request(conn);
+					ws.prepare_request(req);
+					return ws.handle_request(req);
 				case MG_POLL:
-					return ws.handle_poll(conn);
+					return ws.handle_poll(req);
 				case MG_HTTP_ERROR:
-					return ws.handle_http_error(conn);
+					return ws.handle_http_error(req);
 				case MG_CLOSE:
-					return ws.handle_close(conn);
+					return ws.handle_close(req);
 				default:
 					return web_server::request_result::ignored;
 			}
@@ -246,9 +246,9 @@ namespace mongooseplus
 		std::unique_ptr<mg_server, void(*)(mg_server*)> server;
 	};
 
-	boost::shared_ptr<generic_session> session_handler_type::read_session(const connection& conn) const
+	boost::shared_ptr<generic_session> session_handler_type::read_session(const request& req) const
 	{
-		const auto header = conn.get_header("cookie");
+		const auto header = req.get_header("cookie");
 
 		if (header)
 		{
@@ -293,37 +293,37 @@ namespace mongooseplus
 		}
 	}
 
-	void web_server::prepare_request(connection& conn)
+	void web_server::prepare_request(request& req)
 	{
 		session_handler().clear_expired();
 
-		boost::shared_ptr<generic_session> session = session_handler().read_session(conn);
+		boost::shared_ptr<generic_session> session = session_handler().read_session(req);
 
 		if (!session)
 		{
-			session = handle_session_required(conn);
+			session = handle_session_required(req);
 		}
 		else
 		{
 			session->expires_in(boost::posix_time::minutes(5));
 		}
 
-		conn.set_session(session);
+		req.set_session(session);
 	}
 
-	connection::connection(web_server& _web_server, mg_connection* _connection) :
+	request::request(web_server& _web_server, mg_connection* _connection) :
 		m_connection(_connection),
 		m_web_server(_web_server)
 	{
 		assert(_connection);
 	}
 
-	std::string connection::uri() const
+	std::string request::uri() const
 	{
 		return m_connection->uri;
 	}
 
-	header_list_type connection::get_headers() const
+	header_list_type request::get_headers() const
 	{
 		size_t index = 0;
 		header_list_type result;
@@ -337,7 +337,7 @@ namespace mongooseplus
 		return result;
 	}
 
-	boost::optional<header_type> connection::get_header(const std::string& key) const
+	boost::optional<header_type> request::get_header(const std::string& key) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
 
@@ -349,7 +349,7 @@ namespace mongooseplus
 		return boost::none;
 	}
 
-	header_type connection::get_header(const std::string& key, const std::string& default_value) const
+	header_type request::get_header(const std::string& key, const std::string& default_value) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
 
@@ -361,7 +361,7 @@ namespace mongooseplus
 		return header_type(key, value);
 	}
 
-	header_type connection::get_header(const std::string& key, const std::vector<std::string>& default_values) const
+	header_type request::get_header(const std::string& key, const std::vector<std::string>& default_values) const
 	{
 		const char* const value = mg_get_header(m_connection, key.c_str());
 
@@ -373,42 +373,42 @@ namespace mongooseplus
 		return header_type(key, value);
 	}
 
-	std::string connection::request_method() const
+	std::string request::request_method() const
 	{
 		return m_connection->request_method;
 	}
 
-	std::string connection::http_version() const
+	std::string request::http_version() const
 	{
 		return m_connection->http_version;
 	}
 
-	std::string connection::query_string() const
+	std::string request::query_string() const
 	{
 		return m_connection->query_string;
 	}
 
-	int connection::status_code() const
+	int request::status_code() const
 	{
 		return m_connection->status_code;
 	}
 
-	std::string connection::content_type() const
+	std::string request::content_type() const
 	{
 		return get_header("content-type", "text/html").value();
 	}
 
-	const char* connection::content() const
+	const char* request::content() const
 	{
 		return m_connection->content;
 	}
 
-	size_t connection::content_size() const
+	size_t request::content_size() const
 	{
 		return m_connection->content_len;
 	}
 
-	kfather::value_type connection::json() const
+	kfather::value_type request::json() const
 	{
 		if (content_type() != "application/json")
 		{
@@ -443,62 +443,62 @@ namespace mongooseplus
 		return result;
 	}
 
-	boost::asio::ip::address connection::local_ip() const
+	boost::asio::ip::address request::local_ip() const
 	{
 		return boost::asio::ip::address::from_string(m_connection->local_ip);
 	}
 
-	uint16_t connection::local_port() const
+	uint16_t request::local_port() const
 	{
 		return m_connection->local_port;
 	}
 
-	std::string connection::local() const
+	std::string request::local() const
 	{
 		return ip_port_to_string(local_ip(), local_port());
 	}
 
-	boost::asio::ip::address connection::remote_ip() const
+	boost::asio::ip::address request::remote_ip() const
 	{
 		return boost::asio::ip::address::from_string(m_connection->remote_ip);
 	}
 
-	uint16_t connection::remote_port() const
+	uint16_t request::remote_port() const
 	{
 		return m_connection->remote_port;
 	}
 
-	std::string connection::remote() const
+	std::string request::remote() const
 	{
 		return ip_port_to_string(remote_ip(), remote_port());
 	}
 
-	void connection::set_user_param(void* user_param)
+	void request::set_user_param(void* user_param)
 	{
 		m_connection->connection_param = user_param;
 	}
 
-	void* connection::get_user_param() const
+	void* request::get_user_param() const
 	{
 		return m_connection->connection_param;
 	}
 
-	void connection::send_status_code(int _status_code)
+	void request::send_status_code(int _status_code)
 	{
 		mg_send_status(m_connection, _status_code);
 	}
 
-	void connection::send_header(const header_type& header)
+	void request::send_header(const header_type& header)
 	{
 		mg_send_header(m_connection, header.key().c_str(), header.value().c_str());
 	}
 
-	void connection::send_header(header_type&& header)
+	void request::send_header(header_type&& header)
 	{
 		mg_send_header(m_connection, header.key().c_str(), header.value().c_str());
 	}
 
-	void connection::send_session()
+	void request::send_session()
 	{
 		boost::shared_ptr<generic_session> session = get_session();
 
@@ -516,23 +516,23 @@ namespace mongooseplus
 		}
 	}
 
-	void connection::send_data(const void* data, size_t data_len)
+	void request::send_data(const void* data, size_t data_len)
 	{
 		mg_send_data(m_connection, data, static_cast<int>(data_len));
 	}
 
-	void connection::send_json(const kfather::value_type& _json)
+	void request::send_json(const kfather::value_type& _json)
 	{
 		send_header("content-type", "application/json");
 		send_data(kfather::compact_formatter().format(_json));
 	}
 
-	void connection::write(const void* buf, size_t buf_len)
+	void request::write(const void* buf, size_t buf_len)
 	{
 		mg_write(m_connection, buf, static_cast<int>(buf_len));
 	}
 
-	void connection::set_from_error(const http_error& ex)
+	void request::set_from_error(const http_error& ex)
 	{
 		send_status_code(static_cast<int>(ex.code().value()));
 
@@ -551,7 +551,7 @@ namespace mongooseplus
 		}
 	}
 
-	bool basic_authentication_handler::authenticate_from_header(connection& conn, const header_type& header) const
+	bool basic_authentication_handler::authenticate_from_header(request& req, const header_type& header) const
 	{
 		std::vector<std::string> items;
 		boost::split(items, header.value(), boost::is_any_of(" "));
@@ -576,10 +576,10 @@ namespace mongooseplus
 		const std::string username = decoded_value.substr(0, separator_index);
 		const std::string password = (separator_index != std::string::npos) ? decoded_value.substr(separator_index + 1) : "";
 
-		return authenticate_from_username_and_password(conn, username, password);
+		return authenticate_from_username_and_password(req, username, password);
 	}
 
-	bool basic_authentication_handler::authenticate_from_session(connection&, boost::shared_ptr<generic_session> session) const
+	bool basic_authentication_handler::authenticate_from_session(request&, boost::shared_ptr<generic_session> session) const
 	{
 		return static_cast<bool>(boost::dynamic_pointer_cast<basic_session_type>(session));
 	}
@@ -591,16 +591,16 @@ namespace mongooseplus
 		}) << error_content_error_info("Unauthorized");
 	}
 
-	bool routed_web_server::route_type::url_matches(const connection& conn) const
+	bool routed_web_server::route_type::url_matches(const request& req) const
 	{
-		return (std::regex_match(conn.uri(), url_regex));
+		return (std::regex_match(req.uri(), url_regex));
 	}
 
-	bool routed_web_server::route_type::request_method_matches(const connection& conn) const
+	bool routed_web_server::route_type::request_method_matches(const request& req) const
 	{
 		if (!request_methods.empty())
 		{
-			if (request_methods.find(conn.request_method()) == request_methods.end())
+			if (request_methods.find(req.request_method()) == request_methods.end())
 			{
 				return false;
 			}
@@ -609,11 +609,11 @@ namespace mongooseplus
 		return true;
 	}
 
-	bool routed_web_server::route_type::content_type_matches(const connection& conn) const
+	bool routed_web_server::route_type::content_type_matches(const request& req) const
 	{
 		if (!content_types.empty())
 		{
-			if (content_types.find(conn.content_type()) == content_types.end())
+			if (content_types.find(req.content_type()) == content_types.end())
 			{
 				return false;
 			}
@@ -629,27 +629,27 @@ namespace mongooseplus
 		return m_routes.back();
 	}
 
-	routed_web_server::request_result routed_web_server::handle_request(connection& conn)
+	routed_web_server::request_result routed_web_server::handle_request(request& req)
 	{
 		try
 		{
-			const route_type* const route = get_route(conn);
+			const route_type* const route = get_route(req);
 
 			if (route)
 			{
-				route->check_authentication(conn);
-				conn.send_session();
+				route->check_authentication(req);
+				req.send_session();
 
-				const auto result = route->function(conn);
+				const auto result = route->function(req);
 
 				if (result == request_result::handled)
 				{
-					if (conn.status_code() == 0)
+					if (req.status_code() == 0)
 					{
-						conn.send_status_code(200);
+						req.send_status_code(200);
 					}
 
-					conn.send_data("", 0);
+					req.send_data("", 0);
 				}
 
 				return result;
@@ -657,22 +657,22 @@ namespace mongooseplus
 		}
 		catch (const http_error& ex)
 		{
-			conn.set_from_error(ex);
+			req.set_from_error(ex);
 
 			return request_result::handled;
 		}
 
-		return web_server::handle_request(conn);
+		return web_server::handle_request(req);
 	}
 
-	const routed_web_server::route_type* routed_web_server::get_route(const connection& conn)
+	const routed_web_server::route_type* routed_web_server::get_route(const request& req)
 	{
 		const auto routes = to_pointer_list(m_routes);
-		const auto matched_routes = filter(routes, [&conn](const route_type* route){ return route->url_matches(conn); });
+		const auto matched_routes = filter(routes, [&req](const route_type* route){ return route->url_matches(req); });
 
 		if (!matched_routes.empty())
 		{
-			const auto method_matched_routes = filter(matched_routes, [&conn](const route_type* route){ return route->request_method_matches(conn); });
+			const auto method_matched_routes = filter(matched_routes, [&req](const route_type* route){ return route->request_method_matches(req); });
 
 			if (method_matched_routes.empty())
 			{
@@ -681,7 +681,7 @@ namespace mongooseplus
 				});
 			}
 
-			const auto content_matched_routes = filter(method_matched_routes, [&conn](const route_type* route){ return route->content_type_matches(conn); });
+			const auto content_matched_routes = filter(method_matched_routes, [&req](const route_type* route){ return route->content_type_matches(req); });
 
 			if (content_matched_routes.empty())
 			{

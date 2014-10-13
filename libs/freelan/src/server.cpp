@@ -75,18 +75,18 @@ namespace freelan
 
 			protected:
 
-				bool authenticate_from_username_and_password(mongooseplus::connection& conn, const std::string& username, const std::string& password) const override
+				bool authenticate_from_username_and_password(mongooseplus::request& req, const std::string& username, const std::string& password) const override
 				{
 					if ((username != "test") || (password != "password"))
 					{
 						return false;
 					}
 
-					const auto session = conn.get_session<session_type>();
+					const auto session = req.get_session<session_type>();
 
 					if (!session || (session->username() != username))
 					{
-						conn.set_session<session_type>(username);
+						req.set_session<session_type>(username);
 					}
 
 					return true;
@@ -101,24 +101,24 @@ namespace freelan
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 
 		// Routes
-		register_route("/", [this](mongooseplus::connection& conn) {
+		register_route("/", [this](mongooseplus::request& req) {
 			m_logger(fscp::log_level::debug) << "Requested root.";
 
-			const auto json = conn.json();
-			conn.send_json(json);
+			const auto json = req.json();
+			req.send_json(json);
 
 			return request_result::handled;
 		}).set_authentication_handler<authentication_handler>();
 	}
 
-	web_server::request_result web_server::handle_request(mongooseplus::connection& conn)
+	web_server::request_result web_server::handle_request(mongooseplus::request& req)
 	{
 		if (m_logger.level() <= fscp::log_level::debug)
 		{
-			m_logger(fscp::log_level::debug) << "Web server - Received " << conn.request_method() << " request from " << conn.remote() << " for " << conn.uri() << " (" << conn.content_size() << " byte(s) content).";
+			m_logger(fscp::log_level::information) << "Web server - Received " << req.request_method() << " request from " << req.remote() << " for " << req.uri() << " (" << req.content_size() << " byte(s) content).";
 			m_logger(fscp::log_level::debug) << "--- Headers follow ---";
 
-			for (auto&& header : conn.get_headers())
+			for (auto&& header : req.get_headers())
 			{
 				m_logger(fscp::log_level::debug) << header.key() << ": " << header.value();
 			}
@@ -126,13 +126,13 @@ namespace freelan
 			m_logger(fscp::log_level::debug) << "--- End of headers ---";
 		}
 
-		return mongooseplus::routed_web_server::handle_request(conn);
+		return mongooseplus::routed_web_server::handle_request(req);
 	}
 
-	web_server::request_result web_server::handle_http_error(mongooseplus::connection& conn)
+	web_server::request_result web_server::handle_http_error(mongooseplus::request& req)
 	{
-		m_logger(fscp::log_level::warning) << "Web server - Sending back " << conn.status_code() << " to " << conn.remote() << ".";
+		m_logger(fscp::log_level::warning) << "Web server - Sending back " << req.status_code() << " to " << req.remote() << ".";
 
-		return mongooseplus::routed_web_server::handle_http_error(conn);
+		return mongooseplus::routed_web_server::handle_http_error(req);
 	}
 }
