@@ -101,14 +101,19 @@ namespace freelan
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 
 		// Routes
-		register_route("/", [this](mongooseplus::request& req) {
+		register_authenticated_route("/", [this](mongooseplus::request& req) {
 			m_logger(fscp::log_level::debug) << "Requested root.";
 
 			const auto json = req.json();
 			req.send_json(json);
 
 			return request_result::handled;
-		}).set_authentication_handler<authentication_handler>();
+		});
+	}
+
+	web_server::route_type& web_server::register_authenticated_route(route_type&& route)
+	{
+		return register_route(route).set_authentication_handler<authentication_handler>();
 	}
 
 	web_server::request_result web_server::handle_request(mongooseplus::request& req)

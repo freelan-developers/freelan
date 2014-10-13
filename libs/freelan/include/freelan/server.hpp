@@ -60,6 +60,14 @@ namespace freelan
 			web_server(fscp::logger& _logger, const freelan::server_configuration& configuration);
 
 		protected:
+			route_type& register_authenticated_route(route_type&& route);
+
+			template <typename... Types>
+			route_type& register_authenticated_route(Types&&... values)
+			{
+				return register_authenticated_route(route_type(std::forward<Types>(values)...));
+			}
+
 			mongooseplus::routed_web_server::request_result handle_request(mongooseplus::request&) override;
 			mongooseplus::routed_web_server::request_result handle_http_error(mongooseplus::request&) override;
 
