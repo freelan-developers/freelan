@@ -523,12 +523,17 @@ namespace mongooseplus
 					function(_function)
 				{}
 
+				route_type& set_authentication_handler(boost::shared_ptr<base_authentication_handler> auth_handler)
+				{
+					authentication_handler = auth_handler;
+
+					return *this;
+				}
+
 				template <typename AuthenticationHandler, typename... Types>
 				route_type& set_authentication_handler(Types&&... values)
 				{
-					authentication_handler = boost::make_shared<AuthenticationHandler>(std::forward<Types>(values)...);
-
-					return *this;
+					return set_authentication_handler(boost::make_shared<AuthenticationHandler>(std::forward<Types>(values)...));
 				}
 
 				bool url_matches(const request&) const;
