@@ -169,15 +169,22 @@ int execute(const fscp::logger& logger, fs::path script, const std::vector<std::
 		new_env[pair.first] = pair.second;
 	}
 
-	std::ostringstream oss;
-
 	logger(fscp::log_level::debug) << "Calling script " << script.string() << "...";
 
-	const auto return_code = executeplus::execute(real_args, new_env, &oss);
-	const auto log_level = (return_code == 0) ? fscp::log_level::debug : fscp::log_level::warning;
+#if defined(WINDOWS)
+	const auto return_code = executeplus::execute(real_args, new_env);
+#else
+	std::ostringstream oss;
 
+	const auto return_code = executeplus::execute(real_args, new_env, &oss);
+#endif
+
+	const auto log_level = (return_code == 0) ? fscp::log_level::debug : fscp::log_level::warning;
 	logger(log_level) << "Script " << script.string() << " returned " << return_code << ".";
+
+#if !defined(WINDOWS)
 	logger(fscp::log_level::debug) << "Output follows:\n" << oss.str();
+#endif
 
 	return return_code;
 }

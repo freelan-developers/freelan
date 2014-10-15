@@ -63,6 +63,74 @@ namespace executeplus
 {
 	namespace
 	{
+		template <typename CharType>
+		struct argument_helper;
+
+		template <>
+		struct argument_helper<char>
+		{
+			static const char ESCAPE_CHARACTER = '\\';
+			static const char QUOTE_CHARACTER = '"';
+			static const char EQUAL_CHARACTER = '=';
+			static const char NULL_CHARACTER = '\0';
+		};
+
+		template <>
+		struct argument_helper<wchar_t>
+		{
+			static const wchar_t ESCAPE_CHARACTER = L'\\';
+			static const wchar_t QUOTE_CHARACTER = L'"';
+			static const wchar_t EQUAL_CHARACTER = L'=';
+			static const wchar_t NULL_CHARACTER = L'\0';
+		};
+
+		template <typename CharType>
+		void get_environment_strings();
+
+		template <>
+		const std::unique_ptr<wchar_t, [](wchar_t* p){::FreeEnvironmentStringsW(p);}> get_environment_strings<wchar_t>()
+		{
+			return std::unique_ptr<wchar_t, [](wchar_t* p){::FreeEnvironmentStringsW(p);}>(::GetEnvironmentStringsW());
+		}
+
+		template <>
+		const std::unique_ptr<char, [](char* p){::FreeEnvironmentStringsA(p);}> get_environment_strings<char>()
+		{
+			return std::unique_ptr<char, [](char* p){::FreeEnvironmentStringsA(p);}>(::GetEnvironmentStringsA());
+		}
+
+		template <typename CharType>
+		std::map<std::basic_string<CharType>, std::basic_string<CharType>> get_current_environment()
+		{
+			typedef string_type std::basic_string<CharType>;
+
+			std::map<std::basic_string<CharType>, std::basic_string<CharType>> result;
+
+			const auto environment_strings = get_environment_strings<CharType>();
+			const auto ptr = environment_strings.get();
+
+			while (ptr)
+			{
+				const string_type line(ptr);
+				const auto pos = line.find(argument_helper<CharType>::EQUAL_CHARACTER);
+
+				if (pos == std::string::npos)
+				{
+					result[line] = std::string();
+				}
+				else
+				{
+					const std::string key = line.substr(0, pos);
+					const std::string value = line.substr(pos + 1);
+					result[key] = value;
+				}
+
+				ptr += line.size() + 1;
+			}
+
+			return result;
+		}
+
 		class handle_closer
 		{
 			public:
@@ -92,23 +160,6 @@ namespace executeplus
 		{
 			return (str.find_first_of(L" \t\n\v\"") != std::string::npos);
 		}
-
-		template <typename CharType>
-		struct argument_helper;
-
-		template <>
-		struct argument_helper<char>
-		{
-			static const char ESCAPE_CHARACTER = '\\';
-			static const char QUOTE_CHARACTER = '"';
-		};
-
-		template <>
-		struct argument_helper<wchar_t>
-		{
-			static const wchar_t ESCAPE_CHARACTER = L'\\';
-			static const wchar_t QUOTE_CHARACTER = L'"';
-		};
 
 		template <typename CharType>
 		std::basic_string<CharType> escape_argument(const std::basic_string<CharType>& arg)
@@ -160,14 +211,14 @@ namespace executeplus
 			}
 		}
 
-		DWORD do_create_process(const char* application, char* command_line, STARTUPINFOA& si, PROCESS_INFORMATION& pi)
+		DWORD do_create_process(const char* application, char* command_line, char* env, STARTUPINFOA& si, PROCESS_INFORMATION& pi)
 		{
-			return ::CreateProcessA(application, command_line, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+			return ::CreateProcessA(application, command_line, NULL, NULL, FALSE, 0, env, NULL, &si, &pi);
 		}
 
-		DWORD do_create_process(const wchar_t* application, wchar_t* command_line, STARTUPINFOW& si, PROCESS_INFORMATION& pi)
+		DWORD do_create_process(const wchar_t* application, wchar_t* command_line, wchar_t* env, STARTUPINFOW& si, PROCESS_INFORMATION& pi)
 		{
-			return ::CreateProcessW(application, command_line, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+			return ::CreateProcessW(application, command_line, NULL, NULL, FALSE, CREATE_UNICODE_ENVIRONMENT, env, NULL, &si, &pi);
 		}
 
 		template <typename CharType>
@@ -186,7 +237,7 @@ namespace executeplus
 		};
 
 		template <typename CharType>
-		DWORD create_process(const CharType* application, CharType* command_line)
+		DWORD create_process(const CharType* application, CharType* command_line, CharType* env)
 		{
 			DWORD exit_status;
 
@@ -220,7 +271,7 @@ namespace executeplus
 			output(command_line);
 #endif
 
-			if (!do_create_process(application, command_line, si, pi))
+			if (!do_create_process(application, command_line, env, si, pi))
 			{
 				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 			}
@@ -257,7 +308,7 @@ namespace executeplus
 		}
 
 		template <typename CharType>
-		int do_execute(const std::vector<std::basic_string<CharType>>& args, boost::system::error_code& ec)
+		int do_execute(const std::vector<std::basic_string<CharType>>& args, const std::map<std::basic_string<CharType>, std::basic_string<CharType>>& env, boost::system::error_code& ec)
 		{
 			if (args.empty())
 			{
@@ -268,6 +319,7 @@ namespace executeplus
 
 			const std::basic_string<CharType> application = args.front();
 			std::basic_ostringstream<CharType> command_line_buffer;
+			std::basic_ostringstream<CharType> environment_string_buffer;
 
 			for (auto it = args.begin(); it != args.end(); ++it)
 			{
@@ -279,17 +331,23 @@ namespace executeplus
 				command_line_buffer << escape_argument_if_needed(*it);
 			}
 
-			std::basic_string<CharType> command_line = command_line_buffer.str();
+			for (auto&& pair : env)
+			{
+				environment_string_buffer << pair.first << argument_helper<CharType>::EQUAL_CHARACTER << pair.second << argument_helper<CharType>::NULL_CHARACTER;
+			}
 
-			return create_process(application.c_str(), &command_line[0]);
+			const std::basic_string<CharType> command_line = command_line_buffer.str();
+			const std::basic_string<CharType> environment_string = environment_string_buffer.str();
+
+			return create_process(application.c_str(), &command_line[0], &environment_string[0]);
 		}
 
 		template <typename CharType>
-		int do_execute(const std::vector<std::basic_string<CharType>>& args)
+		int do_execute(const std::vector<std::basic_string<CharType>>& args, const std::map<std::basic_string<CharType>, std::basic_string<CharType>>& env)
 		{
 			boost::system::error_code ec;
 
-			const auto result = execute(args, ec);
+			const auto result = do_execute(args, env, ec);
 
 			if (result < 0)
 			{
@@ -300,9 +358,9 @@ namespace executeplus
 		}
 
 		template <typename CharType>
-		void do_checked_execute(const std::vector<std::basic_string<CharType>>& args)
+		void do_checked_execute(const std::vector<std::basic_string<CharType>>& args, const std::map<std::basic_string<CharType>, std::basic_string<CharType>>& env)
 		{
-			if (do_execute(args) != 0)
+			if (do_execute(args, env) != 0)
 			{
 				throw boost::system::system_error(make_error_code(executeplus_error::external_process_failed));
 			}
@@ -310,30 +368,42 @@ namespace executeplus
 	}
 
 #ifdef UNICODE
-	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec)
+	std::map<std::wstring, std::wstring> get_current_environment()
+	{
+		return get_current_environment<wchar_t>();
+	}
 #else
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec)
+	std::map<std::string, std::string> get_current_environment()
+	{
+		return get_current_environment<char>();
+	}
+#endif
+
+#ifdef UNICODE
+	int execute(const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env, boost::system::error_code& ec)
+#else
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, boost::system::error_code& ec)
 #endif
 	{
-		return do_execute(args, ec);
+		return do_execute(args, env, ec);
 	}
 
 #ifdef UNICODE
-	int execute(const std::vector<std::wstring>& args)
+	int execute(const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env)
 #else
-	int execute(const std::vector<std::string>& args)
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env)
 #endif
 	{
-		return do_execute(args);
+		return do_execute(args, env);
 	}
 
 #ifdef UNICODE
-	void checked_execute(const std::vector<std::wstring>& args)
+	void checked_execute(const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env)
 #else
-	void checked_execute(const std::vector<std::string>& args)
+	void checked_execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env)
 #endif
 	{
-		do_checked_execute(args);
+		do_checked_execute(args, env);
 	}
 }
 

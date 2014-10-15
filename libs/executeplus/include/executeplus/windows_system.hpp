@@ -56,13 +56,15 @@
 namespace executeplus
 {
 #ifdef UNICODE
-	int execute(const std::vector<std::wstring>& args, boost::system::error_code& ec);
-	int execute(const std::vector<std::wstring>& args);
-	void checked_execute(const std::vector<std::wstring>& args);
+	std::map<std::wstring, std::wstring> get_current_environment();
+	int execute(const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env, boost::system::error_code& ec);
+	int execute(const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env);
+	void checked_execute(const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env);
 #else
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec);
-	int execute(const std::vector<std::string>& args);
-	void checked_execute(const std::vector<std::string>& args);
+	std::map<std::string, std::string> get_current_environment();
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, boost::system::error_code& ec);
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env);
+	void checked_execute(const std::vector<std::string>& args, const std::map<std::wstring, std::wstring>& env);
 #endif
 }
 
