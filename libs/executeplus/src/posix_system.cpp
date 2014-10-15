@@ -159,12 +159,13 @@ namespace executeplus
 					if (output)
 					{
 						::dup2(output_fd[1], STDOUT_FILENO);
+						::dup2(output_fd[1], STDERR_FILENO);
 						::close(output_fd[1]);
 					}
 
 					for (int n = 0; n < fdlimit; ++n)
 					{
-						if ((n != fd[1]) && (!output || (n != STDOUT_FILENO)))
+						if ((n != fd[1]) && (!output || ((n != STDOUT_FILENO) && (n != STDERR_FILENO))))
 						{
 							::close(n);
 						}
