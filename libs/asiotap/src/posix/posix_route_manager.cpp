@@ -67,7 +67,7 @@ namespace asiotap
 		const std::vector<std::string> real_args { "/sbin/route", "-n", "get", boost::lexical_cast<std::string>(host) };
 
 		std::stringstream ss;
-		executeplus::checked_execute(real_args, &ss);
+		executeplus::checked_execute(real_args, executeplus::get_current_environment(), &ss);
 
 		//The output is like:
 		/*
@@ -118,7 +118,7 @@ namespace asiotap
 		const std::vector<std::string> real_args { "/bin/ip", "route", "get", boost::lexical_cast<std::string>(host) };
 
 		std::stringstream ss;
-		executeplus::checked_execute(real_args, &ss);
+		executeplus::checked_execute(real_args, executeplus::get_current_environment(), &ss);
 
 		// The output is like:
 		/*
@@ -174,7 +174,7 @@ namespace asiotap
 #if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address) };
 
-		executeplus::checked_execute(real_args);
+		executeplus::checked_execute(real_args, executeplus::get_current_environment());
 #else
 		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), ip_address(address), prefix_length(address));
 #endif
@@ -185,7 +185,7 @@ namespace asiotap
 #if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address), boost::lexical_cast<std::string>(remote_address) };
 
-		executeplus::checked_execute(real_args);
+		executeplus::checked_execute(real_args, executeplus::get_current_environment());
 #else
 		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), remote_address, prefix_length(address), ip_address(address));
 #endif
@@ -202,7 +202,7 @@ namespace asiotap
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
 #endif
 
-		executeplus::checked_execute(real_args);
+		executeplus::checked_execute(real_args, executeplus::get_current_environment());
 #else
 		if (action == route_action::add)
 		{
@@ -227,7 +227,7 @@ namespace asiotap
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "gw", boost::lexical_cast<std::string>(gateway), "dev", interface };
 #endif
 
-		executeplus::checked_execute(real_args);
+		executeplus::checked_execute(real_args, executeplus::get_current_environment());
 #else
 		if (action == route_action::add)
 		{

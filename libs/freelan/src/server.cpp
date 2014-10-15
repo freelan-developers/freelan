@@ -65,22 +65,35 @@ namespace freelan
 				}
 		};
 
-		class authentication_handler : public mongooseplus::basic_authentication_handler
+		class external_authentication_handler : public mongooseplus::basic_authentication_handler
 		{
 			public:
 
-				authentication_handler() :
-					mongooseplus::basic_authentication_handler("freelan")
+				external_authentication_handler(fscp::logger& _logger, web_server::authentication_handler_type auth_handler) :
+					mongooseplus::basic_authentication_handler("freelan"),
+					m_logger(_logger),
+					m_authentication_handler(auth_handler)
 				{}
 
 			protected:
 
 				bool authenticate_from_username_and_password(mongooseplus::request& req, const std::string& username, const std::string& password) const override
 				{
-					if ((username != "test") || (password != "password"))
+					if (!m_authentication_handler)
 					{
+						m_logger(fscp::log_level::warning) << "No authentication script defined ! Failing authentication for user \"" << username << "\".";
+
 						return false;
 					}
+
+					if (!m_authentication_handler(username, password, req.remote(), req.remote_port()))
+					{
+						m_logger(fscp::log_level::warning) << "Authentication failed for user \"" << username << "\".";
+
+						return false;
+					}
+
+					m_logger(fscp::log_level::information) << "Authentication succeeded for user \"" << username << "\".";
 
 					const auto session = req.get_session<session_type>();
 
@@ -91,11 +104,16 @@ namespace freelan
 
 					return true;
 				}
+
+			private:
+				fscp::logger& m_logger;
+				web_server::authentication_handler_type m_authentication_handler;
 		};
 	}
 
-	web_server::web_server(fscp::logger& _logger, const freelan::server_configuration& configuration) :
-		m_logger(_logger)
+	web_server::web_server(fscp::logger& _logger, const freelan::server_configuration& configuration, authentication_handler_type authentication_handler) :
+		m_logger(_logger),
+		m_authentication_handler(authentication_handler)
 	{
 		m_logger(fscp::log_level::debug) << "Web server's listen endpoint set to " << configuration.listen_on << ".";
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
@@ -113,7 +131,7 @@ namespace freelan
 
 	web_server::route_type& web_server::register_authenticated_route(route_type&& route)
 	{
-		return register_route(route).set_authentication_handler<authentication_handler>();
+		return register_route(route).set_authentication_handler<external_authentication_handler>(m_logger, m_authentication_handler);
 	}
 
 	web_server::request_result web_server::handle_request(mongooseplus::request& req)

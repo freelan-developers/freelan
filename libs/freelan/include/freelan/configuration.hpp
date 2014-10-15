@@ -143,6 +143,11 @@ namespace freelan
 		 * \brief The CA private key to use to sign certificate requests.
 		 */
 		key_type certification_authority_private_key;
+
+		/**
+		 * \brief The authentication script.
+		 */
+		boost::filesystem::path authentication_script;
 	};
 
 	/**

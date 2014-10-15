@@ -421,6 +421,13 @@ namespace windows
 			fl_configuration.security.certificate_validation_script = certificate_validation_script;
 		}
 
+		const fs::path authentication_script = get_authentication_script(execution_root_directory, vm);
+
+		if (!authentication_script.empty())
+		{
+			configuration.fl_configuration.server.authentication_script = authentication_script;
+		}
+
 		return fl_configuration;
 	}
 
@@ -525,6 +532,11 @@ namespace windows
 				if (!fl_configuration.security.certificate_validation_script.empty())
 				{
 					core.set_certificate_validation_callback(boost::bind(&execute_certificate_validation_script, fl_configuration.security.certificate_validation_script, logger, _1));
+				}
+
+				if (!fl_configuration.server.authentication_script.empty())
+				{
+					core.set_authentication_callback(boost::bind(&execute_authentication_script, fl_configuration.server.authentication_script, logger, _1, _2, _3, _4));
 				}
 
 				core.open();

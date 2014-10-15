@@ -220,6 +220,11 @@ namespace freelan
 			typedef boost::function<void (const ep_type& host, session_loss_reason)> session_lost_handler_type;
 
 			/**
+			 * \brief The authentication callback type.
+			 */
+			typedef boost::function<bool (const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_post)> authentication_handler_type;
+
+			/**
 			 * \brief The certificate validation callback type.
 			 */
 			typedef boost::function<bool (cert_type)> certificate_validation_handler_type;
@@ -344,6 +349,16 @@ namespace freelan
 			}
 
 			/**
+			 * \brief Set the authentication callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_authentication_callback(authentication_handler_type callback)
+			{
+				m_authentication_callback = callback;
+			}
+
+			/**
 			 * \brief Set the certificate validation callback.
 			 * \param callback The callback.
 			 * \warning This method can only be called when the core is NOT running.
@@ -402,6 +417,7 @@ namespace freelan
 			session_error_handler_type m_session_error_callback;
 			session_established_handler_type m_session_established_callback;
 			session_lost_handler_type m_session_lost_callback;
+			authentication_handler_type m_authentication_callback;
 			certificate_validation_handler_type m_certificate_validation_callback;
 			tap_adapter_handler_type m_tap_adapter_up_callback;
 			tap_adapter_handler_type m_tap_adapter_down_callback;

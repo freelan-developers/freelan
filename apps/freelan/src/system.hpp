@@ -49,9 +49,12 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include <boost/filesystem.hpp>
 #include <freelan/os.hpp>
+
+#include <fscp/logger.hpp>
 
 #ifdef WINDOWS
 /**
@@ -89,12 +92,13 @@ boost::filesystem::path get_temporary_directory();
  * \brief Execute a script and get the exit status.
  * \param script The script to execute.
  * \param args The parameters.
+ * \param env Variables to inject into the environment.
  * \return The exit status.
  */
 #if defined(WINDOWS) && defined(UNICODE)
-int execute(boost::filesystem::path script, const std::vector<std::wstring>& args);
+int execute(const fscp::logger& logger, boost::filesystem::path script, const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env = std::map<std::wstring, std::wstring>());
 #else
-int execute(boost::filesystem::path script, const std::vector<std::string>& args);
+int execute(const fscp::logger& logger, boost::filesystem::path script, const std::vector<std::string>& args, const std::map<std::string, std::string>& env = std::map<std::string, std::string>());
 #endif
 
 #endif /* SYSTEM_HPP */

@@ -412,6 +412,7 @@ namespace freelan
 		m_session_error_callback(),
 		m_session_established_callback(),
 		m_session_lost_callback(),
+		m_authentication_callback(),
 		m_certificate_validation_callback(),
 		m_tap_adapter_up_callback(),
 		m_tap_adapter_down_callback(),
@@ -1978,7 +1979,7 @@ namespace freelan
 	{
 		if (m_configuration.server.enabled)
 		{
-			m_web_server = boost::make_shared<web_server>(m_logger, m_configuration.server);
+			m_web_server = boost::make_shared<web_server>(m_logger, m_configuration.server, m_authentication_callback);
 
 			m_logger(fscp::log_level::information) << "Starting web server on " << m_configuration.server.listen_on << "...";
 

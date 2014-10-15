@@ -49,15 +49,17 @@
 #ifdef UNIX
 
 #include <vector>
+#include <map>
 #include <string>
 
 #include <boost/system/system_error.hpp>
 
 namespace executeplus
 {
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec, std::ostream* output = nullptr);
-	int execute(const std::vector<std::string>& args, std::ostream* output = nullptr);
-	void checked_execute(const std::vector<std::string>& args, std::ostream* output = nullptr);
+	std::map<std::string, std::string> get_current_environment();
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, boost::system::error_code& ec, std::ostream* output = nullptr);
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, std::ostream* output = nullptr);
+	void checked_execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, std::ostream* output = nullptr);
 }
 
 #endif

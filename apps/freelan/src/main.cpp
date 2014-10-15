@@ -425,6 +425,13 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 		configuration.fl_configuration.security.certificate_validation_script = certificate_validation_script;
 	}
 
+	const fs::path authentication_script = get_authentication_script(execution_root_directory, vm);
+
+	if (!authentication_script.empty())
+	{
+		configuration.fl_configuration.server.authentication_script = authentication_script;
+	}
+
 	configuration.debug = vm.count("debug") > 0;
 
 	return true;
@@ -484,6 +491,11 @@ void run(const cli_configuration& configuration, int& exit_signal)
 	if (!configuration.fl_configuration.security.certificate_validation_script.empty())
 	{
 		core.set_certificate_validation_callback(boost::bind(&execute_certificate_validation_script, configuration.fl_configuration.security.certificate_validation_script, logger, _1));
+	}
+
+	if (!configuration.fl_configuration.server.authentication_script.empty())
+	{
+		core.set_authentication_callback(boost::bind(&execute_authentication_script, configuration.fl_configuration.server.authentication_script, logger, _1, _2, _3, _4));
 	}
 
 	core.open();

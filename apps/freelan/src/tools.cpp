@@ -53,6 +53,8 @@
 #include <syslog.h>
 #endif
 
+#include <boost/lexical_cast.hpp>
+
 #include <fscp/logger.hpp>
 
 #include "system.hpp"
@@ -115,9 +117,9 @@ void execute_tap_adapter_up_script(const boost::filesystem::path& script, const 
 #if defined(WINDOWS) && defined(UNICODE)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
-	int exit_status = execute(script, { converter.from_bytes(tap_adapter.name()) });
+	int exit_status = execute(logger, script, { converter.from_bytes(tap_adapter.name()) });
 #else
-	int exit_status = execute(script, { tap_adapter.name() });
+	int exit_status = execute(logger, script, { tap_adapter.name() });
 #endif
 
 	if (exit_status != 0)
@@ -131,9 +133,9 @@ void execute_tap_adapter_down_script(const boost::filesystem::path& script, cons
 #if defined(WINDOWS) && defined(UNICODE)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
-	int exit_status = execute(script, { converter.from_bytes(tap_adapter.name()) });
+	int exit_status = execute(logger, script, { converter.from_bytes(tap_adapter.name()) });
 #else
-	int exit_status = execute(script, { tap_adapter.name() });
+	int exit_status = execute(logger, script, { tap_adapter.name() });
 #endif
 
 	if (exit_status != 0)
@@ -169,9 +171,9 @@ bool execute_certificate_validation_script(const fs::path& script, const fscp::l
 #endif
 
 #if defined(WINDOWS) && defined(UNICODE)
-		const int exit_status = execute(script, { filename.wstring() });
+		const int exit_status = execute(logger, script, { filename.wstring() });
 #else
-		const int exit_status = execute(script, { filename.string() });
+		const int exit_status = execute(logger, script, { filename.string() });
 #endif
 		if (logger.level() <= fscp::log_level::debug)
 		{
@@ -188,4 +190,34 @@ bool execute_certificate_validation_script(const fs::path& script, const fscp::l
 
 		return false;
 	}
+}
+
+bool execute_authentication_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_port)
+{
+#if defined(WINDOWS) && defined(UNICODE)
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
+	std::map<std::wstring, std::wstring> env;
+	env[L"FREELAN_USERNAME"] = converter.from_bytes(username);
+	env[L"FREELAN_PASSWORD"] = converter.from_bytes(password);
+	env[L"FREELAN_REMOTE_HOST"] = converter.from_bytes(remote_host);
+	env[L"FREELAN_REMOTE_PORT"] = converter.from_bytes(boost::lexical_cast<std::string>(remote_port));
+
+	int exit_status = execute(logger, script, {}, env);
+#else
+	std::map<std::string, std::string> env;
+	env["FREELAN_USERNAME"] = username;
+	env["FREELAN_PASSWORD"] = password;
+	env["FREELAN_REMOTE_HOST"] = remote_host;
+	env["FREELAN_REMOTE_PORT"] = boost::lexical_cast<std::string>(remote_port);
+
+	int exit_status = execute(logger, script, {}, env);
+#endif
+
+	if (exit_status != 0)
+	{
+		logger(fscp::log_level::warning) << "Authentication script exited with a non-zero exit status: " << exit_status;
+	}
+
+	return (exit_status == 0);
 }

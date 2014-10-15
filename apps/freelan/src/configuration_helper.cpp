@@ -216,6 +216,7 @@ po::options_description get_server_options()
 	("server.server_private_key_file", po::value<fs::path>()->default_value(""), "The server private key file.")
 	("server.certification_authority_certificate_file", po::value<fs::path>()->default_value(""), "The certification authority certificate file.")
 	("server.certification_authority_private_key_file", po::value<fs::path>()->default_value(""), "The certification authority private key file.")
+	("server.authentication_script", po::value<fs::path>()->default_value(""), "The authentication script to use.")
 	;
 
 	return result;
@@ -434,21 +435,28 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<fs::path>();
+	const fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<fs::path>();
 
 	return tap_adapter_up_script_file.empty() ? tap_adapter_up_script_file : fs::absolute(tap_adapter_up_script_file, root);
 }
 
 boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<fs::path>();
+	const fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<fs::path>();
 
 	return tap_adapter_down_script_file.empty() ? tap_adapter_down_script_file : fs::absolute(tap_adapter_down_script_file, root);
 }
 
 boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<fs::path>();
+	const fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<fs::path>();
 
 	return certificate_validation_script_file.empty() ? certificate_validation_script_file : fs::absolute(certificate_validation_script_file, root);
+}
+
+boost::filesystem::path get_authentication_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
+{
+	const fs::path authentication_script_file = vm["server.authentication_script"].as<fs::path>();
+
+	return authentication_script_file.empty() ? authentication_script_file : fs::absolute(authentication_script_file, root);
 }

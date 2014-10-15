@@ -98,4 +98,16 @@ void execute_tap_adapter_down_script(const boost::filesystem::path& script, cons
  */
 bool execute_certificate_validation_script(const boost::filesystem::path& script, const fscp::logger& logger, freelan::security_configuration::cert_type cert);
 
+/**
+ * \brief The authentication function.
+ * \param script The script to call.
+ * \param logger The logger instance.
+ * \param username The username.
+ * \param password The password.
+ * \param remote_host The remote host.
+ * \param remote_port The remote port.
+ * \return The execution result of the specified script.
+ */
+bool execute_authentication_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_port);
+
 #endif /* TOOLS_HPP */

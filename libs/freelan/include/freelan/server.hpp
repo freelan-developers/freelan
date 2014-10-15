@@ -57,7 +57,9 @@ namespace freelan
 	class web_server : public mongooseplus::routed_web_server
 	{
 		public:
-			web_server(fscp::logger& _logger, const freelan::server_configuration& configuration);
+			typedef boost::function<bool (const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_post)> authentication_handler_type;
+
+			web_server(fscp::logger& _logger, const freelan::server_configuration& configuration, authentication_handler_type authentication_handler);
 
 		protected:
 			route_type& register_authenticated_route(route_type&& route);
@@ -73,6 +75,7 @@ namespace freelan
 
 		private:
 			fscp::logger& m_logger;
+			authentication_handler_type m_authentication_handler;
 	};
 
 }

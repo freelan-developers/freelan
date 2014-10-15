@@ -151,9 +151,9 @@ fs::path get_temporary_directory()
 }
 
 #if defined(WINDOWS) && defined(UNICODE)
-int execute(fs::path script, const std::vector<std::wstring>& args)
+int execute(const fscp::logger& logger, fs::path script, const std::vector<std::wstring>& args, const std::map<std::wstring, std::wstring>& env)
 #else
-int execute(fs::path script, const std::vector<std::string>& args)
+int execute(const fscp::logger& logger, fs::path script, const std::vector<std::string>& args, const std::map<std::string, std::string>& env)
 #endif
 {
 #if defined(WINDOWS) && defined(UNICODE)
@@ -162,6 +162,22 @@ int execute(fs::path script, const std::vector<std::string>& args)
 	std::vector<std::string> real_args = { script.string() };
 #endif
 	real_args.insert(real_args.end(), args.begin(), args.end());
+	auto new_env = executeplus::get_current_environment();
 
-	return executeplus::execute(real_args);
+	for (auto&& pair : env)
+	{
+		new_env[pair.first] = pair.second;
+	}
+
+	std::ostringstream oss;
+
+	logger(fscp::log_level::debug) << "Calling script " << script.string() << "...";
+
+	const auto return_code = executeplus::execute(real_args, new_env, &oss);
+	const auto log_level = (return_code == 0) ? fscp::log_level::debug : fscp::log_level::warning;
+
+	logger(log_level) << "Script " << script.string() << " returned " << return_code << ".";
+	logger(fscp::log_level::debug) << "Output follows:\n" << oss.str();
+
+	return return_code;
 }

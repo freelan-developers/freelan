@@ -54,7 +54,8 @@ namespace freelan
 	server_configuration::server_configuration() :
 		enabled(false),
 		listen_on(),
-		protocol(server_protocol_type::http)
+		protocol(server_protocol_type::http),
+		authentication_script()
 	{
 	}
 
