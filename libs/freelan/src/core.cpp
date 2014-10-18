@@ -2014,7 +2014,10 @@ namespace freelan
 			const auto private_key = generate_private_key();
 			const auto certificate_request = generate_certificate_request(private_key);
 
-			m_web_client->request_certificate(certificate_request);
+			m_web_client->request_certificate(certificate_request, [this] (const boost::system::error_code& ec, cryptoplus::x509::certificate cert) {
+				static_cast<void>(cert);
+				m_logger(fscp::log_level::information) << "Requesting certificate: " << ec;
+			});
 
 			m_logger(fscp::log_level::information) << "Web client started.";
 		}

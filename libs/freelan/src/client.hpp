@@ -82,7 +82,7 @@ namespace freelan
 			 * \param certifcate_request The certificate request to send.
 			 * \param handler The handler that will get called when the response is received.
 			 */
-			void request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler = request_certificate_callback());
+			void request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler);
 
 		private:
 			typedef fscp::memory_pool<8192, 2> memory_pool;

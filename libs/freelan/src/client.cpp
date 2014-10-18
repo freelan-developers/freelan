@@ -50,9 +50,11 @@
 
 #include <cryptoplus/buffer.hpp>
 
+#include "web_client_error.hpp"
+
 namespace freelan
 {
-	void web_client::request_certificate(cryptoplus::x509::certificate_request certificate_request, boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> handler)
+	void web_client::request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler)
 	{
 		const auto self = shared_from_this();
 		const auto request = make_request("/request_certificate/");
@@ -89,11 +91,40 @@ namespace freelan
 			}
 		});
 
-		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (const boost::system::error_code& ec) {
+		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
 			using boost::asio::buffer_cast;
 			using boost::asio::buffer_size;
 
-			self->m_logger(fscp::log_level::debug) << request->get_effective_url() << " | " << ec << " | received " << *count << " byte(s) | " << std::string(buffer_cast<const char*>(buffer), *count);
+			cryptoplus::x509::certificate cert;
+
+			if (ec)
+			{
+				self->m_logger(fscp::log_level::error) << "Error while sending HTTP(S) request to " << request->get_effective_url() << ": " << ec.message() << " (" << ec << ")";
+			}
+			else
+			{
+				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+
+				const auto content_type = request->get_content_type();
+
+				if (content_type != "application/x-x509-ca-cert")
+				{
+					try
+					{
+						cert = cryptoplus::x509::certificate::from_der(buffer_cast<const char*>(buffer), *count);
+					}
+					catch(const boost::system::system_error& ex)
+					{
+						ec = ex.code();
+					}
+				}
+				else
+				{
+					ec = make_error_code(web_client_error::unsupported_content_type);
+				}
+			}
+
+			handler(ec, cert);
 		});
 	}
 
