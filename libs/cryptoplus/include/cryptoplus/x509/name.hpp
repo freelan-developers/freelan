@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "name_entry.hpp"
 
@@ -215,7 +215,7 @@ namespace cryptoplus
 				 * \brief Create a new name.
 				 * \return The name.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static name create();
 

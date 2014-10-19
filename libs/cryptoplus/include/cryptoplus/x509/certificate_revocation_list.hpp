@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../pkey/pkey.hpp"
 #include "../asn1/utctime.hpp"
@@ -217,7 +217,7 @@ namespace cryptoplus
 				 * \brief Create a new certificate_revocation_list.
 				 * \return The certificate_revocation_list.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static certificate_revocation_list create();
 

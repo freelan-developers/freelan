@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_PKEY_PKEY_HPP
 
 #include "../pointer_wrapper.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../file.hpp"
 #include "rsa_key.hpp"
 #include "dsa_key.hpp"
@@ -82,7 +82,7 @@ namespace cryptoplus
 				 * \brief Create a new pkey.
 				 * \return The pkey.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static pkey create();
 
@@ -199,7 +199,7 @@ namespace cryptoplus
 				/**
 				 * \brief Get the associated RSA key.
 				 * \return The RSA key.
-				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 * \warning If no key was set, an exception is thrown.
 				 */
 				rsa_key get_rsa_key() const;
 
@@ -218,7 +218,7 @@ namespace cryptoplus
 				/**
 				 * \brief Get the associated DSA key.
 				 * \return The DSA key.
-				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 * \warning If no key was set, an exception is thrown.
 				 */
 				dsa_key get_dsa_key() const;
 
@@ -237,7 +237,7 @@ namespace cryptoplus
 				/**
 				 * \brief Get the associated DH key.
 				 * \return The DH key.
-				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 * \warning If no key was set, an exception is thrown.
 				 */
 				dh_key get_dh_key() const;
 

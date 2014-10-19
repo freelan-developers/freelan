@@ -45,7 +45,7 @@
 #ifndef CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 #define CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "message_digest_algorithm.hpp"
 #include "../pkey/pkey.hpp"
 

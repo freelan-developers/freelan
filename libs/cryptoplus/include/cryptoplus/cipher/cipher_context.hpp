@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_CIPHER_CIPHER_CONTEXT_HPP
 
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "cipher_algorithm.hpp"
 
 #include <openssl/evp.h>

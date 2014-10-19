@@ -44,7 +44,7 @@
 
 #include "asn1/object.hpp"
 
-#include "error/cryptographic_exception.hpp"
+#include "error/helpers.hpp"
 
 #include <cassert>
 

@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../asn1/object.hpp"
 #include "../asn1/string.hpp"
 #include "x509v3_context.hpp"
@@ -76,7 +76,7 @@ namespace cryptoplus
 				 * \brief Create a new extension.
 				 * \return An extension.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static extension create();
 

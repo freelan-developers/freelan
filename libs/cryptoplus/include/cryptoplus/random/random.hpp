@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_RANDOM_RANDOM_HPP
 
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../os.hpp"
 
 #include <openssl/rand.h>
@@ -62,7 +62,7 @@ namespace cryptoplus
 		 * \brief Set the randomization engine.
 		 * \param engine The randomization engine.
 		 *
-		 * On error, a cryptographic_exception is thrown.
+		 * On error, an exception is thrown.
 		 */
 		void set_randomization_engine(ENGINE* engine);
 
@@ -72,7 +72,7 @@ namespace cryptoplus
 		 * \param buf_len The number of random bytes to request. buf must be big enough to hold the data.
 		 * \see get_pseudo_random_bytes
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		void get_random_bytes(void* buf, size_t buf_len);
 
@@ -82,7 +82,7 @@ namespace cryptoplus
 		 * \return The random bytes.
 		 * \see get_pseudo_random_bytes
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		buffer get_random_bytes(size_t cnt);
 
@@ -95,7 +95,7 @@ namespace cryptoplus
 		 *
 		 * Do not use the resulting bytes for critical cryptographic purposes (like key generation). If require truly random bytes, see get_random_bytes().
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		bool get_pseudo_random_bytes(void* buf, size_t buf_len);
 
@@ -107,7 +107,7 @@ namespace cryptoplus
 		 *
 		 * Do not use the resulting bytes for critical cryptographic purposes (like key generation). If require truly random bytes, see get_random_bytes().
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		buffer get_pseudo_random_bytes(size_t cnt);
 
@@ -158,7 +158,7 @@ namespace cryptoplus
 		 * \param buf The buffer to put the seed filename into.
 		 * \param buf_len The size of buf.
 		 * \return buf.
-		 * \warning If buf is not long enough to hold the filename, a cryptographic_exception is thrown.
+		 * \warning If buf is not long enough to hold the filename, an exception is thrown.
 		 */
 		const char* get_seed_filename(char* buf, size_t buf_len);
 

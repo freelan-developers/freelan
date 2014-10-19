@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_HASH_HMAC_CONTEXT_HPP
 
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "message_digest_algorithm.hpp"
 
 #include <openssl/opensslv.h>

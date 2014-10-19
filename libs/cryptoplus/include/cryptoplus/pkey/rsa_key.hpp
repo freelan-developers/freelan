@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../hash/message_digest_algorithm.hpp"
 #include "../file.hpp"
@@ -107,7 +107,7 @@ namespace cryptoplus
 				 * \brief Create a new rsa_key.
 				 * \return The rsa_key.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static rsa_key create();
 
@@ -390,7 +390,7 @@ namespace cryptoplus
 				 * \return The count of bytes written to out. Should be size().
 				 * \see public_decrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				size_t private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
@@ -404,7 +404,7 @@ namespace cryptoplus
 				 * \return The count of bytes written to out. Should be size().
 				 * \see private_encrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				size_t public_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
@@ -418,7 +418,7 @@ namespace cryptoplus
 				 * \return The count of bytes written to out. Should be size().
 				 * \see public_decrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				size_t public_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
@@ -432,7 +432,7 @@ namespace cryptoplus
 				 * \return The count of bytes written to out. Should be size().
 				 * \see private_encrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				size_t private_decrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const;
 
@@ -444,7 +444,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see public_decrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer private_encrypt(const void* buf, size_t buf_len, int padding) const;
 
@@ -456,7 +456,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see private_encrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer public_decrypt(const void* buf, size_t buf_len, int padding) const;
 
@@ -468,7 +468,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see public_decrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer public_encrypt(const void* buf, size_t buf_len, int padding) const;
 
@@ -480,7 +480,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see private_encrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer private_decrypt(const void* buf, size_t buf_len, int padding) const;
 
@@ -491,7 +491,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see public_decrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer private_encrypt(const buffer& buf, int padding) const;
 
@@ -502,7 +502,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see private_encrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer public_decrypt(const buffer& buf, int padding) const;
 
@@ -513,7 +513,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see public_decrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer public_encrypt(const buffer& buf, int padding) const;
 
@@ -524,7 +524,7 @@ namespace cryptoplus
 				 * \return The result.
 				 * \see private_encrypt
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer private_decrypt(const buffer& buf, int padding) const;
 
@@ -538,7 +538,7 @@ namespace cryptoplus
 				 * \return The number of bytes written to out.
 				 * \see verify
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				size_t sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type) const;
 
@@ -550,7 +550,7 @@ namespace cryptoplus
 				 * \return The signature.
 				 * \see verify
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer sign(const void* buf, size_t buf_len, int type) const;
 
@@ -561,7 +561,7 @@ namespace cryptoplus
 				 * \return The signature.
 				 * \see verify
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer sign(const buffer& buf, int type) const;
 
@@ -574,7 +574,7 @@ namespace cryptoplus
 				 * \param type The NID of the message digest algorithm that was used to generate the message digest buffer. Usually one of NID_sha1, NID_ripemd160, NID_md5. See RSA_sign(3) for additional information.
 				 * \see sign
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				void verify(const void* sign, size_t sign_len, const void* buf, size_t buf_len, int type) const;
 
@@ -585,7 +585,7 @@ namespace cryptoplus
 				 * \param type The NID of the message digest algorithm that was used to generate the message digest buffer. Usually one of NID_sha1, NID_ripemd160, NID_md5. See RSA_sign(3) for additional information.
 				 * \see sign
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				void verify(const buffer& sign, const buffer& buf, int type) const;
 

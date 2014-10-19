@@ -37,80 +37,13 @@
  */
 
 /**
- * \file ecdhe.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An Elliptical Curve Diffie-Hellman Ephemeral context class.
+ * \file helpers.cpp
+ * \author Julien Kauffmann <julien.kauffmann@freelan.org>
+ * \brief Error helpers.
  */
 
-#ifndef CRYPTOPLUS_PKEY_ECDHE_HPP
-#define CRYPTOPLUS_PKEY_ECDHE_HPP
-
-#include "pkey.hpp"
-#include "../buffer.hpp"
-#include "../error/helpers.hpp"
-
-#include <openssl/ec.h>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/obj_mac.h>
-
-#include <memory>
+#include "error/helpers.hpp"
 
 namespace cryptoplus
 {
-	namespace pkey
-	{
-		class ecdhe_context
-		{
-			public:
-
-				/**
-				 * \brief Create a new context with the specified elliptic curve NID.
-				 *
-				 * See <openssl/obj_mac.h> for a list of possible NIDs.
-				 */
-				explicit ecdhe_context(int nid);
-
-				ecdhe_context(const ecdhe_context&) = delete;
-				ecdhe_context& operator=(const ecdhe_context&) = delete;
-
-				/**
-				 * \brief Generate new keys for the context.
-				 */
-				void generate_keys();
-
-				/**
-				 * \brief Get the internal public key, generating one if none exists yet.
-				 * \return The public key.
-				 */
-				buffer get_public_key();
-
-				/**
-				 * \brief Derive the secret key from a given peer public key.
-				 * \param peer_key The peer key buffer.
-				 * \param peer_key_len The length of the peer key buffer.
-				 * \return The buffer.
-				 */
-				buffer derive_secret_key(const void* peer_key, size_t peer_key_len);
-
-				/**
-				 * \brief Derive the secret key from a given peer public key.
-				 * \param peer_key The peer key buffer.
-				 * \return The buffer.
-				 */
-				template <typename BufferType>
-				buffer derive_secret_key(const BufferType& peer_key)
-				{
-					return derive_secret_key(buffer_cast<const char*>(peer_key), buffer_size(peer_key));
-				}
-
-			private:
-
-				int m_nid;
-				pkey m_private_key;
-		};
-	}
 }
-
-#endif /* CRYPTOPLUS_PKEY_ECDHE_HPP */
-

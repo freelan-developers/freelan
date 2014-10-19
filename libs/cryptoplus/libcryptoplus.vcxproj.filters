@@ -173,7 +173,7 @@
     <ClInclude Include="include\cryptoplus\cipher\cipher_stream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\cryptoplus\error\cryptographic_exception.hpp">
+    <ClInclude Include="include\cryptoplus\error\helpers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\cryptoplus\error\error.hpp">

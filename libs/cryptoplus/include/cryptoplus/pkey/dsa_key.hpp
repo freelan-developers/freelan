@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../file.hpp"
 #include "dh_key.hpp"
@@ -86,7 +86,7 @@ namespace cryptoplus
 				 * \brief Create a new dsa_key.
 				 * \return The dsa_key.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static dsa_key create();
 
@@ -286,7 +286,7 @@ namespace cryptoplus
 				 * \brief Generate the DSA key, reading its parameters.
 				 * \return The current instance.
 				 *
-				 * On error, a cryptographic_exception is thrown.
+				 * On error, an exception is thrown.
 				 */
 				dsa_key& generate();
 
@@ -294,7 +294,7 @@ namespace cryptoplus
 				 * \brief Generate the DSA key, reading its parameters.
 				 * \return The current instance.
 				 *
-				 * On error, a cryptographic_exception is thrown.
+				 * On error, an exception is thrown.
 				 */
 				const dsa_key& generate() const;
 
@@ -346,7 +346,7 @@ namespace cryptoplus
 				 * \return The number of bytes written to out.
 				 * \see verify
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				size_t sign(void* out, size_t out_len, const void* buf, size_t buf_len, int type) const;
 
@@ -358,7 +358,7 @@ namespace cryptoplus
 				 * \return The signature.
 				 * \see verify
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer sign(const void* buf, size_t buf_len, int type) const;
 
@@ -369,7 +369,7 @@ namespace cryptoplus
 				 * \return The signature.
 				 * \see verify
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				buffer sign(const buffer& buf, int type) const;
 
@@ -382,7 +382,7 @@ namespace cryptoplus
 				 * \param type The type parameter is ignored.
 				 * \see sign
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				void verify(const void* sign, size_t sign_len, const void* buf, size_t buf_len, int type) const;
 
@@ -393,7 +393,7 @@ namespace cryptoplus
 				 * \param type The type parameter is ignored.
 				 * \see sign
 				 *
-				 * In case of failure, a cryptographic_exception is thrown.
+				 * In case of failure, an exception is thrown.
 				 */
 				void verify(const buffer& sign, const buffer& buf, int type) const;
 

@@ -37,31 +37,49 @@
  */
 
 /**
- * \file cryptographic_exception.cpp
+ * \file helpers.hpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief Cryptographic exception class.
+ * \brief Error helpers.
  */
 
-#include "error/cryptographic_exception.hpp"
+#pragma once
 
-#include "error/error_strings.hpp"
+#include "error.hpp"
 
 namespace cryptoplus
 {
-	const boost::system::error_category& cryptoplus_category()
+	/**
+	 * \brief Throw an exception for the first available cryptographic error in the error queue.
+	 */
+	inline void throw_error()
 	{
-		static cryptoplus_category_impl instance;
-
-		return instance;
+		throw boost::system::system_error(make_error_code(error::get_error()));
 	}
 
-	const char* cryptoplus_category_impl::name() const throw()
+	/**
+	 * \brief Throw an exception for the first available cryptographic error in the error queue if the condition succeeds.
+	 * \param condition The condition.
+	 */
+	inline void throw_error_if(bool condition)
 	{
-		return "cryptoplus::error";
+		if (condition) throw_error();
 	}
 
-	std::string cryptoplus_category_impl::message(int ev) const
+	/**
+	 * \brief Throw an exception for the first available cryptographic error in the error queue if the condition fails.
+	 * \param condition The condition.
+	 */
+	inline void throw_error_if_not(bool condition)
 	{
-		return error::get_error_string(static_cast<error::error_type>(ev));
+		if (!condition) throw_error();
+	}
+
+	/**
+	 * \brief Throw an exception for the first available cryptographic error in the error queue if the specified pointer is NULL.
+	 * \param ptr The pointer to test.
+	 */
+	inline void throw_error_if_not(const void* ptr)
+	{
+		if (ptr == NULL) throw_error();
 	}
 }

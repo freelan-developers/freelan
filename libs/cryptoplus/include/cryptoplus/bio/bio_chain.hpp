@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_BIO_BIO_CHAIN_HPP
 
 #include "bio_ptr.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 
 #include <boost/shared_ptr.hpp>
 

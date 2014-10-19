@@ -76,7 +76,7 @@
     <ClInclude Include="include\cryptoplus\cipher\cipher_context.hpp" />
     <ClInclude Include="include\cryptoplus\cipher\cipher_stream.hpp" />
     <ClInclude Include="include\cryptoplus\cryptoplus.hpp" />
-    <ClInclude Include="include\cryptoplus\error\cryptographic_exception.hpp" />
+    <ClInclude Include="include\cryptoplus\error\helpers.hpp" />
     <ClInclude Include="include\cryptoplus\error\error.hpp" />
     <ClInclude Include="include\cryptoplus\error\error_strings.hpp" />
     <ClInclude Include="include\cryptoplus\file.hpp" />
