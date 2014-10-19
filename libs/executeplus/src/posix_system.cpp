@@ -104,7 +104,7 @@ namespace executeplus
 
 		for (auto&& pair : env)
 		{
-			std::cout << env.first << "=" << env.second << std::endl;
+			std::cout << pair.first << "=" << pair.second << std::endl;
 		}
 
 		std::cout << "Environment ends." << std::endl;
