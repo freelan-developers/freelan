@@ -230,6 +230,8 @@ po::options_description get_client_options()
 	("client.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the client mechanism.")
 	("client.server_endpoint", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::from_string("127.0.0.1"), 443)), "The endpoint to connect to.")
 	("client.protocol", po::value<fl::client_configuration::client_protocol_type>()->default_value(fl::client_configuration::client_protocol_type::https), "The protocol to use to contact the server.")
+	("client.disable_peer_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable peer verification.")
+	("client.disable_host_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable host verification.")
 	("client.username", po::value<std::string>()->default_value(""), "The client username.")
 	("client.password", po::value<std::string>()->default_value(""), "The client password.")
 	;
@@ -352,6 +354,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.client.enabled = vm["client.enabled"].as<bool>();
 	configuration.client.server_endpoint = vm["client.server_endpoint"].as<asiotap::endpoint>();
 	configuration.client.protocol = vm["client.protocol"].as<fl::client_configuration::client_protocol_type>();
+	configuration.client.disable_peer_verification = vm["client.disable_peer_verification"].as<bool>();
+	configuration.client.disable_host_verification = vm["client.disable_host_verification"].as<bool>();
 	configuration.client.username = vm["client.username"].as<std::string>();
 	configuration.client.password = vm["client.password"].as<std::string>();
 

@@ -63,6 +63,8 @@ namespace freelan
 		enabled(false),
 		server_endpoint(),
 		protocol(client_protocol_type::https),
+		disable_peer_verification(false),
+		disable_host_verification(false),
 		username(),
 		password()
 	{

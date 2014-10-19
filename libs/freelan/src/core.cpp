@@ -1981,11 +1981,14 @@ namespace freelan
 		{
 			if (m_configuration.server.protocol == server_configuration::server_protocol_type::https)
 			{
+				bool generated = false;
+
 				if (!m_configuration.server.server_private_key)
 				{
 					m_logger(fscp::log_level::warning) << "No private key set for the web server. Generating temporary one...";
 
 					m_configuration.server.server_private_key = generate_private_key();
+					generated = true;
 				}
 
 				if (!m_configuration.server.server_certificate)
@@ -1993,6 +1996,12 @@ namespace freelan
 					m_logger(fscp::log_level::warning) << "No certificate set for the web server. Generating temporary one...";
 
 					m_configuration.server.server_certificate = generate_self_signed_certificate(m_configuration.server.server_private_key);
+					generated = true;
+				}
+
+				if (generated)
+				{
+					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private for the web server key will force web clients to disable peer verification. Is this what you really want ?";
 				}
 			}
 
@@ -2024,7 +2033,7 @@ namespace freelan
 	{
 		if (m_configuration.client.enabled)
 		{
-			m_logger(fscp::log_level::information) << "Starting web client getting its configuration from " << m_configuration.client.server_endpoint << "...";
+			m_logger(fscp::log_level::information) << "Starting web client to contact web server at " << m_configuration.client.protocol << "://" << m_configuration.client.server_endpoint << "...";
 
 			m_web_client = web_client::create(m_io_service, m_logger, m_configuration.client);
 

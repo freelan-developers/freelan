@@ -186,6 +186,16 @@ namespace freelan
 		client_protocol_type protocol;
 
 		/**
+		 * \brief Whether to disable peer verification.
+		 */
+		bool disable_peer_verification;
+
+		/**
+		 * \brief Whether to disable host verification.
+		 */
+		bool disable_host_verification;
+
+		/**
 		 * \brief The username.
 		 */
 		std::string username;

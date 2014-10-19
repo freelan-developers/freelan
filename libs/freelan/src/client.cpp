@@ -134,7 +134,22 @@ namespace freelan
 		m_configuration(configuration),
 		m_url_prefix(boost::lexical_cast<std::string>(m_configuration.protocol) + "://" + boost::lexical_cast<std::string>(m_configuration.server_endpoint))
 	{
-		m_logger(fscp::log_level::debug) << "Web client URL prefix set to: " << m_url_prefix;
+		if (m_configuration.protocol == client_configuration::client_protocol_type::http)
+		{
+			m_logger(fscp::log_level::warning) << "Web client not configured to use HTTPS: your username and password will be readable by anyone !";
+		}
+		else
+		{
+			if (m_configuration.disable_peer_verification)
+			{
+				m_logger(fscp::log_level::warning) << "Web client configured to ignore peer verification: you are vulnerable to man-in-the-middle attacks !";
+			}
+
+			if (m_configuration.disable_host_verification)
+			{
+				m_logger(fscp::log_level::warning) << "Web client configured to ignore host verification: you are vulnerable to man-in-the-middle attacks !";
+			}
+		}
 	}
 
 	boost::shared_ptr<curl> web_client::make_request(const std::string& path) const
@@ -143,6 +158,16 @@ namespace freelan
 
 		request->set_url(m_url_prefix + path);
 		request->enable_cookie_support();
+
+		if (m_configuration.disable_peer_verification)
+		{
+			request->set_ssl_peer_verification(false);
+		}
+
+		if (m_configuration.disable_host_verification)
+		{
+			request->set_ssl_host_verification(false);
+		}
 
 		if (!m_configuration.username.empty() || !m_configuration.password.empty())
 		{
