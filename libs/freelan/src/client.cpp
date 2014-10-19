@@ -107,13 +107,13 @@ namespace freelan
 
 				const auto content_type = request->get_content_type();
 
-				if (content_type != "application/x-x509-ca-cert")
+				if (content_type == "application/x-x509-ca-cert")
 				{
 					try
 					{
 						cert = cryptoplus::x509::certificate::from_der(buffer_cast<const char*>(buffer), *count);
 					}
-					catch(const boost::system::system_error& ex)
+					catch (const boost::system::system_error& ex)
 					{
 						ec = ex.code();
 					}
