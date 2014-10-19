@@ -48,12 +48,20 @@
 
 namespace cryptoplus
 {
-	namespace error
+	const boost::system::error_category& cryptoplus_category()
 	{
-		cryptographic_exception::cryptographic_exception(error_type _err) :
-			std::runtime_error(get_error_string(_err)),
-			m_err(_err)
-		{
-		}
+		static cryptoplus_category_impl instance;
+
+		return instance;
+	}
+
+	const char* cryptoplus_category_impl::name() const throw()
+	{
+		return "cryptoplus::error";
+	}
+
+	std::string cryptoplus_category_impl::message(int ev) const
+	{
+		return error::get_error_string(static_cast<error::error_type>(ev));
 	}
 }

@@ -614,7 +614,7 @@ namespace cryptoplus
 		{
 			int index = RSA_get_ex_new_index(argl, argp, new_func, dup_func, free_func);
 
-			error::throw_error_if(index < 0);
+			throw_error_if(index < 0);
 
 			return index;
 		}
@@ -658,7 +658,7 @@ namespace cryptoplus
 		}
 		inline void rsa_key::set_external_data(int index, void* data)
 		{
-			error::throw_error_if(RSA_set_ex_data(raw(), index, data) == 0);
+			throw_error_if(RSA_set_ex_data(raw(), index, data) == 0);
 		}
 		inline void* rsa_key::get_external_data(int index) const
 		{
@@ -667,39 +667,39 @@ namespace cryptoplus
 		}
 		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void rsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_bio_RSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void rsa_key::write_public_key(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_RSAPublicKey(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_RSAPublicKey(bio.raw(), ptr().get()) != 0);
 		}
 		inline void rsa_key::write_certificate_public_key(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_RSA_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
 		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void rsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_RSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void rsa_key::write_public_key(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_RSAPublicKey(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_RSAPublicKey(_file.raw(), ptr().get()) != 0);
 		}
 		inline void rsa_key::write_certificate_public_key(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_RSA_PUBKEY(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_RSA_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}
 		inline void rsa_key::enable_blinding(BN_CTX* ctx) const
 		{
-			error::throw_error_if_not(RSA_blinding_on(ptr().get(), ctx) != 0);
+			throw_error_if_not(RSA_blinding_on(ptr().get(), ctx) != 0);
 		}
 		inline void rsa_key::disable_blinding() const
 		{
@@ -711,15 +711,15 @@ namespace cryptoplus
 		}
 		inline void rsa_key::check() const
 		{
-			error::throw_error_if_not(RSA_check_key(ptr().get()) > 0);
+			throw_error_if_not(RSA_check_key(ptr().get()) > 0);
 		}
 		inline void rsa_key::print(bio::bio_ptr bio, int offset) const
 		{
-			error::throw_error_if_not(RSA_print(bio.raw(), ptr().get(), offset) != 0);
+			throw_error_if_not(RSA_print(bio.raw(), ptr().get(), offset) != 0);
 		}
 		inline void rsa_key::print(file _file, int offset) const
 		{
-			error::throw_error_if_not(RSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
+			throw_error_if_not(RSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
 		}
 		inline void rsa_key::verify_PKCS1_PSS(const buffer& digest, const buffer& buf, hash::message_digest_algorithm algorithm, int salt_len) const
 		{

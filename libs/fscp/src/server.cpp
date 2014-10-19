@@ -1340,9 +1340,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -1529,9 +1529,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -1782,7 +1782,7 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception& ex)
+		catch (const boost::system::system_error& ex)
 		{
 			m_logger(log_level::error) << "Error sending session to " << target << ": " << ex.what() << ".";
 		}
@@ -2080,9 +2080,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2161,9 +2161,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2242,9 +2242,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2312,7 +2312,7 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception& ex)
+		catch (const boost::system::system_error& ex)
 		{
 			// This can happen if a message is decoded after a session rekeying.
 			m_logger(log_level::error) << "Error deciphering data message from " << sender << ": " << ex.what();
@@ -2509,9 +2509,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 

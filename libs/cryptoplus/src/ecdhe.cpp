@@ -77,21 +77,21 @@ namespace cryptoplus
 		{
 			evp_pkey_context_type parameters_context(EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL));
 
-			error::throw_error_if_not(parameters_context.get());
-			error::throw_error_if(EVP_PKEY_paramgen_init(parameters_context.get()) != 1);
-			error::throw_error_if(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(parameters_context.get(), m_nid) != 1);
+			throw_error_if_not(parameters_context.get());
+			throw_error_if(EVP_PKEY_paramgen_init(parameters_context.get()) != 1);
+			throw_error_if(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(parameters_context.get(), m_nid) != 1);
 
 			EVP_PKEY* cparameters = nullptr;
-			error::throw_error_if_not(EVP_PKEY_paramgen(parameters_context.get(), &cparameters) == 1);
+			throw_error_if_not(EVP_PKEY_paramgen(parameters_context.get(), &cparameters) == 1);
 			pkey parameters = pkey::take_ownership(cparameters);
 
 			evp_pkey_context_type key_generation_context(EVP_PKEY_CTX_new(parameters.raw(), NULL));
 
-			error::throw_error_if_not(key_generation_context.get());
-			error::throw_error_if(EVP_PKEY_keygen_init(key_generation_context.get()) != 1);
+			throw_error_if_not(key_generation_context.get());
+			throw_error_if(EVP_PKEY_keygen_init(key_generation_context.get()) != 1);
 
 			EVP_PKEY* private_key = nullptr;
-			error::throw_error_if(EVP_PKEY_keygen(key_generation_context.get(), &private_key) != 1);
+			throw_error_if(EVP_PKEY_keygen(key_generation_context.get(), &private_key) != 1);
 			m_private_key = pkey::take_ownership(private_key);
 		}
 
@@ -123,18 +123,18 @@ namespace cryptoplus
 
 			evp_pkey_context_type key_derivation_context(::EVP_PKEY_CTX_new(m_private_key.raw(), NULL));
 
-			error::throw_error_if_not(key_derivation_context.get());
-			error::throw_error_if(::EVP_PKEY_derive_init(key_derivation_context.get()) != 1);
+			throw_error_if_not(key_derivation_context.get());
+			throw_error_if(::EVP_PKEY_derive_init(key_derivation_context.get()) != 1);
 
-			error::throw_error_if(::EVP_PKEY_derive_set_peer(key_derivation_context.get(), peer_pkey.raw()) != 1);
+			throw_error_if(::EVP_PKEY_derive_set_peer(key_derivation_context.get(), peer_pkey.raw()) != 1);
 
 			size_t buf_len = 0;
 
-			error::throw_error_if(::EVP_PKEY_derive(key_derivation_context.get(), NULL, &buf_len) != 1);
+			throw_error_if(::EVP_PKEY_derive(key_derivation_context.get(), NULL, &buf_len) != 1);
 
 			buffer buf(buf_len);
 
-			error::throw_error_if(::EVP_PKEY_derive(key_derivation_context.get(), buffer_cast<uint8_t*>(buf), &buf_len) != 1);
+			throw_error_if(::EVP_PKEY_derive(key_derivation_context.get(), buffer_cast<uint8_t*>(buf), &buf_len) != 1);
 
 			return buf;
 		}

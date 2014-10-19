@@ -55,7 +55,7 @@ namespace cryptoplus
 	{
 		name_entry name_entry::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return name_entry(_ptr, deleter);
 		}

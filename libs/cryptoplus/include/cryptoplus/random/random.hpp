@@ -208,12 +208,12 @@ namespace cryptoplus
 
 		inline void set_randomization_engine(ENGINE* engine)
 		{
-			error::throw_error_if_not(RAND_set_rand_engine(engine) != 0);
+			throw_error_if_not(RAND_set_rand_engine(engine) != 0);
 		}
 
 		inline void get_random_bytes(void* buf, size_t buf_len)
 		{
-			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
+			throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
 		}
 
 		inline buffer get_random_bytes(size_t cnt)
@@ -229,7 +229,7 @@ namespace cryptoplus
 		{
 			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
 
-			error::throw_error_if(result < 0);
+			throw_error_if(result < 0);
 
 			return (result == 1);
 		}
@@ -276,7 +276,7 @@ namespace cryptoplus
 		{
 			const char* result = RAND_file_name(buf, buf_len);
 
-			error::throw_error_if_not(result);
+			throw_error_if_not(result);
 
 			return result;
 		}
@@ -285,7 +285,7 @@ namespace cryptoplus
 		{
 			int result = RAND_load_file(file.c_str(), static_cast<long>(cnt));
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -294,7 +294,7 @@ namespace cryptoplus
 		{
 			int result = RAND_write_file(file.c_str());
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -303,7 +303,7 @@ namespace cryptoplus
 		{
 			int result = RAND_egd(path.c_str());
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -312,7 +312,7 @@ namespace cryptoplus
 		{
 			int result = RAND_egd_bytes(path.c_str(), static_cast<int>(cnt));
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -321,7 +321,7 @@ namespace cryptoplus
 		{
 			int result = RAND_query_egd_bytes(path.c_str(), static_cast<unsigned char*>(buf), static_cast<int>(cnt));
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}

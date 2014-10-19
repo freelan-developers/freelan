@@ -119,7 +119,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = new X509V3_CTX();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}

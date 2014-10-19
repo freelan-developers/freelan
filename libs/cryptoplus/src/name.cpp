@@ -55,7 +55,7 @@ namespace cryptoplus
 	{
 		name name::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return name(_ptr, deleter);
 		}

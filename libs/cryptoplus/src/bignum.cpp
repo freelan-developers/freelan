@@ -69,7 +69,7 @@ namespace cryptoplus
 
 		bignum bignum::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return bignum(_ptr, deleter);
 		}
@@ -78,7 +78,7 @@ namespace cryptoplus
 		{
 			BIGNUM* bn = NULL;
 
-			error::throw_error_if_not(BN_hex2bn(&bn, str.c_str()) != 0);
+			throw_error_if_not(BN_hex2bn(&bn, str.c_str()) != 0);
 
 			return take_ownership(bn);
 		}
@@ -87,7 +87,7 @@ namespace cryptoplus
 		{
 			BIGNUM* bn = NULL;
 
-			error::throw_error_if_not(BN_dec2bn(&bn, str.c_str()) != 0);
+			throw_error_if_not(BN_dec2bn(&bn, str.c_str()) != 0);
 
 			return take_ownership(bn);
 		}

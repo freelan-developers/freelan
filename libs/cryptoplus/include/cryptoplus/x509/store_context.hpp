@@ -265,7 +265,7 @@ namespace cryptoplus
 		{
 			int index = X509_STORE_CTX_get_ex_new_index(argl, argp, new_func, dup_func, free_func);
 
-			error::throw_error_if(index < 0);
+			throw_error_if(index < 0);
 
 			return index;
 		}
@@ -277,7 +277,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_STORE_CTX_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -293,7 +293,7 @@ namespace cryptoplus
 		}
 		inline void store_context::initialize(store _store, certificate cert, STACK_OF(X509)* chain)
 		{
-			error::throw_error_if_not(X509_STORE_CTX_init(raw(), _store.raw(), cert.raw(), chain) != 0);
+			throw_error_if_not(X509_STORE_CTX_init(raw(), _store.raw(), cert.raw(), chain) != 0);
 		}
 		inline void store_context::cleanup()
 		{
@@ -301,7 +301,7 @@ namespace cryptoplus
 		}
 		inline void store_context::set_external_data(int index, void* data)
 		{
-			error::throw_error_if(X509_STORE_CTX_set_ex_data(raw(), index, data) == 0);
+			throw_error_if(X509_STORE_CTX_set_ex_data(raw(), index, data) == 0);
 		}
 		inline void* store_context::get_external_data(int index)
 		{
@@ -334,11 +334,11 @@ namespace cryptoplus
 		}
 		inline void store_context::set_default(const char* name)
 		{
-			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name) != 0);
+			throw_error_if_not(X509_STORE_CTX_set_default(raw(), name) != 0);
 		}
 		inline void store_context::set_default(const std::string& name)
 		{
-			error::throw_error_if_not(X509_STORE_CTX_set_default(raw(), name.c_str()) != 0);
+			throw_error_if_not(X509_STORE_CTX_set_default(raw(), name.c_str()) != 0);
 		}
 		inline long store_context::get_error() const
 		{

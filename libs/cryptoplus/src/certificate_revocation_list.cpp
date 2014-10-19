@@ -72,7 +72,7 @@ namespace cryptoplus
 
 		certificate_revocation_list certificate_revocation_list::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return certificate_revocation_list(_ptr, deleter);
 		}

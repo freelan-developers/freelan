@@ -62,7 +62,7 @@ int main()
 
 		std::cout << "Verification: " << (verification ? "OK" : "FAILED") << std::endl;
 	}
-	catch (cryptoplus::error::cryptographic_exception& ex)
+	catch (const boost::system::system_error& ex)
 	{
 		std::cerr << ex.what() << std::endl;
 	}

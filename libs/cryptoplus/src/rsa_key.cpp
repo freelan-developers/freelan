@@ -103,7 +103,7 @@ namespace cryptoplus
 
 		rsa_key rsa_key::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return rsa_key(_ptr, deleter);
 		}
@@ -131,7 +131,7 @@ namespace cryptoplus
 				throw std::invalid_argument("buf_len");
 			}
 
-			error::throw_error_if_not(RSA_padding_add_PKCS1_PSS(ptr().get(), static_cast<unsigned char*>(out), static_cast<const unsigned char*>(buf), algorithm.raw(), salt_len) != 0);
+			throw_error_if_not(RSA_padding_add_PKCS1_PSS(ptr().get(), static_cast<unsigned char*>(out), static_cast<const unsigned char*>(buf), algorithm.raw(), salt_len) != 0);
 		}
 
 		void rsa_key::verify_PKCS1_PSS(const void* digest, size_t digest_len, const void* buf, size_t /*buf_len*/, hash::message_digest_algorithm algorithm, int salt_len) const
@@ -145,7 +145,7 @@ namespace cryptoplus
 
 			//TODO: Use buf_len
 
-			error::throw_error_if_not(RSA_verify_PKCS1_PSS(ptr().get(), static_cast<const unsigned char*>(digest), algorithm.raw(), static_cast<const unsigned char*>(buf), salt_len) != 0);
+			throw_error_if_not(RSA_verify_PKCS1_PSS(ptr().get(), static_cast<const unsigned char*>(digest), algorithm.raw(), static_cast<const unsigned char*>(buf), salt_len) != 0);
 		}
 
 		size_t rsa_key::private_encrypt(void* out, size_t out_len, const void* buf, size_t buf_len, int padding) const
@@ -159,7 +159,7 @@ namespace cryptoplus
 
 			int result = RSA_private_encrypt(static_cast<int>(buf_len), static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -175,7 +175,7 @@ namespace cryptoplus
 
 			int result = RSA_public_decrypt(static_cast<int>(buf_len), static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -191,7 +191,7 @@ namespace cryptoplus
 
 			int result = RSA_public_encrypt(static_cast<int>(buf_len), static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -207,7 +207,7 @@ namespace cryptoplus
 
 			int result = RSA_private_decrypt(static_cast<int>(buf_len), static_cast<const unsigned char*>(buf), static_cast<unsigned char*>(out), ptr().get(), padding);
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -216,7 +216,7 @@ namespace cryptoplus
 		{
 			unsigned int _out_len = static_cast<unsigned int>(out_len);
 
-			error::throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), static_cast<unsigned int>(buf_len), static_cast<unsigned char*>(out), &_out_len, ptr().get()) != 0);
+			throw_error_if_not(RSA_sign(type, static_cast<const unsigned char*>(buf), static_cast<unsigned int>(buf_len), static_cast<unsigned char*>(out), &_out_len, ptr().get()) != 0);
 
 			return _out_len;
 		}
@@ -224,9 +224,9 @@ namespace cryptoplus
 		void rsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type) const
 		{
 #if OPENSSL_VERSION_NUMBER >= 0x01000000
-			error::throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), static_cast<unsigned int>(buf_len), static_cast<const unsigned char*>(_sign), static_cast<unsigned int>(sign_len), ptr().get()) != 0);
+			throw_error_if_not(RSA_verify(type, static_cast<const unsigned char*>(buf), static_cast<unsigned int>(buf_len), static_cast<const unsigned char*>(_sign), static_cast<unsigned int>(sign_len), ptr().get()) != 0);
 #else
-			error::throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), static_cast<unsigned int>(buf_len), static_cast<unsigned char*>(const_cast<void*>(_sign)), static_cast<unsigned int>(sign_len), ptr().get()) != 0);
+			throw_error_if_not(RSA_verify(type, static_cast<unsigned char*>(const_cast<void*>(buf)), static_cast<unsigned int>(buf_len), static_cast<unsigned char*>(const_cast<void*>(_sign)), static_cast<unsigned int>(sign_len), ptr().get()) != 0);
 #endif
 		}
 	}

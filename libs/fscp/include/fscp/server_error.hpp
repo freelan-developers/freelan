@@ -72,8 +72,7 @@ namespace fscp
 			hello_request_timed_out,
 			no_presentation_for_host,
 			session_already_exist,
-			no_session_for_host,
-			cryptographic_error
+			no_session_for_host
 		};
 
 		/**

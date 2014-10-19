@@ -100,7 +100,7 @@ namespace cryptoplus
 
 		dsa_key dsa_key::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return dsa_key(_ptr, deleter);
 		}
@@ -118,7 +118,7 @@ namespace cryptoplus
 		{
 			unsigned int _out_len = static_cast<unsigned int>(out_len);
 
-			error::throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), static_cast<unsigned char*>(out), &_out_len, ptr().get()) != 0);
+			throw_error_if_not(DSA_sign(type, static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), static_cast<unsigned char*>(out), &_out_len, ptr().get()) != 0);
 
 			return _out_len;
 		}

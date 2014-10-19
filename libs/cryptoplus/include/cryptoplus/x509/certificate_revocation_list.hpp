@@ -784,7 +784,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_CRL_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -822,19 +822,19 @@ namespace cryptoplus
 		}
 		inline void certificate_revocation_list::write_der(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(i2d_X509_CRL_bio(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(i2d_X509_CRL_bio(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate_revocation_list::write_certificate_revocation_list(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_X509_CRL(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_X509_CRL(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate_revocation_list::write_der(file _file) const
 		{
-			error::throw_error_if_not(i2d_X509_CRL_fp(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(i2d_X509_CRL_fp(_file.raw(), ptr().get()) != 0);
 		}
 		inline void certificate_revocation_list::write_certificate_revocation_list(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_X509_CRL(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_X509_CRL(_file.raw(), ptr().get()) != 0);
 		}
 		inline size_t certificate_revocation_list::write_der(void* buf) const
 		{
@@ -843,7 +843,7 @@ namespace cryptoplus
 
 			int result = i2d_X509_CRL(ptr().get(), pout);
 
-			error::throw_error_if(result < 0);
+			throw_error_if(result < 0);
 
 			return result;
 		}
@@ -861,7 +861,7 @@ namespace cryptoplus
 		}
 		inline void certificate_revocation_list::print(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(X509_CRL_print(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(X509_CRL_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline int certificate_revocation_list::count() const
 		{
@@ -1007,13 +1007,13 @@ namespace cryptoplus
 		}
 		inline void certificate_revocation_list::push_back(wrapped_value_type ext) const
 		{
-			error::throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), -1) != 0);
+			throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), -1) != 0);
 		}
 		inline certificate_revocation_list::const_iterator certificate_revocation_list::insert(const_iterator position, wrapped_value_type ext) const
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
+			throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
 
 			return position;
 		}
@@ -1021,13 +1021,13 @@ namespace cryptoplus
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
+			throw_error_if_not(X509_CRL_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
 
 			return position;
 		}
 		inline void certificate_revocation_list::set_issuer(name _name) const
 		{
-			error::throw_error_if_not(X509_CRL_set_issuer_name(ptr().get(), _name.raw()) != 0);
+			throw_error_if_not(X509_CRL_set_issuer_name(ptr().get(), _name.raw()) != 0);
 		}
 		inline long certificate_revocation_list::version() const
 		{
@@ -1035,7 +1035,7 @@ namespace cryptoplus
 		}
 		inline void certificate_revocation_list::set_version(long _version) const
 		{
-			error::throw_error_if_not(X509_CRL_set_version(ptr().get(), _version) != 0);
+			throw_error_if_not(X509_CRL_set_version(ptr().get(), _version) != 0);
 		}
 		inline bool certificate_revocation_list::verify_public_key(pkey::pkey pkey) const
 		{
@@ -1043,7 +1043,7 @@ namespace cryptoplus
 		}
 		inline void certificate_revocation_list::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const
 		{
-			error::throw_error_if_not(X509_CRL_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
+			throw_error_if_not(X509_CRL_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
 		}
 		inline certificate_revocation_list::certificate_revocation_list(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

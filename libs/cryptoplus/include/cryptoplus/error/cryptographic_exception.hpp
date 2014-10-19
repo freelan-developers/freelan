@@ -42,97 +42,105 @@
  * \brief Cryptographic exception class.
  */
 
-#ifndef CRYPTOPLUS_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP
-#define CRYPTOPLUS_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP
+#pragma once
 
 #include "error.hpp"
 
-#include <stdexcept>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 
 namespace cryptoplus
 {
-	namespace error
+	/**
+	 * @brief Get the default cryptoplus error category.
+	 * @return The default cryptoplus error category instance.
+	 *
+	 * @warning The first call to this function is thread-safe only starting with C++11.
+	 */
+	const boost::system::error_category& cryptoplus_category();
+
+	/**
+	 * @brief Create an error_code instance for the given error.
+	 * @param error The error.
+	 * @return The error_code instance.
+	 */
+	inline boost::system::error_code make_error_code(error::error_type error)
 	{
-		/**
-		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue.
-		 */
-		void throw_error();
+		return boost::system::error_code(static_cast<int>(error), cryptoplus_category());
+	}
 
-		/**
-		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition succeeds.
-		 * \param condition The condition.
-		 */
-		void throw_error_if(bool condition);
+	/**
+	 * @brief Create an error_condition instance for the given error.
+	 * @param error The error.
+	 * @return The error_condition instance.
+	 */
+	inline boost::system::error_condition make_error_condition(error::error_type error)
+	{
+		return boost::system::error_condition(static_cast<int>(error), cryptoplus_category());
+	}
 
-		/**
-		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition fails.
-		 * \param condition The condition.
-		 */
-		void throw_error_if_not(bool condition);
+	/**
+	 * @brief A cryptoplus error category.
+	 */
+	class cryptoplus_category_impl : public boost::system::error_category
+	{
+		public:
+			/**
+			 * @brief Get the name of the category.
+			 * @return The name of the category.
+			 */
+			virtual const char* name() const throw();
 
-		/**
-		 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the specified pointer is NULL.
-		 * \param ptr The pointer to test.
-		 */
-		void throw_error_if_not(const void* ptr);
+			/**
+			 * @brief Get the error message for a given error.
+			 * @param ev The error numeric value.
+			 * @return The message associated to the error.
+			 */
+			virtual std::string message(int ev) const;
+	};
 
-		/**
-		 * \brief A cryptographic exception class.
-		 *
-		 * Instances of cryptographic_exception are thrown whenever a cryptographic function fails.
-		 */
-		class cryptographic_exception : public std::runtime_error
-		{
-			public:
+	/**
+	 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue.
+	 */
+	inline void throw_error()
+	{
+		throw boost::system::system_error(make_error_code(error::get_error()));
+	}
 
-				/**
-				 * \brief Create a cryptographic_exception from the first available cryptographic error in the error queue.
-				 * \return A cryptographic_exception.
-				 */
-				static cryptographic_exception from_error();
+	/**
+	 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition succeeds.
+	 * \param condition The condition.
+	 */
+	inline void throw_error_if(bool condition)
+	{
+		if (condition) throw_error();
+	}
 
-				/**
-				 * \brief Create a new cryptographic_exception from the specified error code.
-				 * \param err The error code.
-				 */
-				cryptographic_exception(error_type err);
+	/**
+	 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the condition fails.
+	 * \param condition The condition.
+	 */
+	inline void throw_error_if_not(bool condition)
+	{
+		if (!condition) throw_error();
+	}
 
-				/**
-				 * \brief Get the associated error code.
-				 * \return The associated error code.
-				 */
-				error_type err() const;
-
-			private:
-
-				error_type m_err;
-		};
-
-		inline void throw_error()
-		{
-			throw cryptographic_exception::from_error();
-		}
-		inline void throw_error_if(bool condition)
-		{
-			if (condition) throw_error();
-		}
-		inline void throw_error_if_not(bool condition)
-		{
-			if (!condition) throw_error();
-		}
-		inline void throw_error_if_not(const void* ptr)
-		{
-			if (ptr == NULL) throw_error();
-		}
-		inline cryptographic_exception cryptographic_exception::from_error()
-		{
-			return cryptographic_exception(get_error());
-		}
-		inline error_type cryptographic_exception::err() const
-		{
-			return m_err;
-		}
+	/**
+	 * \brief Throw a cryptographic_exception for the first available cryptographic error in the error queue if the specified pointer is NULL.
+	 * \param ptr The pointer to test.
+	 */
+	inline void throw_error_if_not(const void* ptr)
+	{
+		if (ptr == NULL) throw_error();
 	}
 }
 
-#endif /* CRYPTOPLUS_ERROR_CRYPTOGRAPHIC_EXCEPTION_HPP */
+namespace boost
+{
+	namespace system
+	{
+		template <>
+		struct is_error_code_enum<cryptoplus::error::error_type> : public boost::true_type {};
+	}
+}

@@ -47,7 +47,7 @@ void cipher(const std::string& name)
 
 		std::cout << "Result: " << stream.result() << std::endl;
 	}
-	catch (cryptoplus::error::cryptographic_exception& ex)
+	catch (const boost::system::system_error& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}

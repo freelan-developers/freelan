@@ -222,7 +222,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_EXTENSION_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -261,7 +261,7 @@ namespace cryptoplus
 
 			int result = i2d_X509_EXTENSION(ptr().get(), pout);
 
-			error::throw_error_if(result < 0);
+			throw_error_if(result < 0);
 
 			return result;
 		}
@@ -283,7 +283,7 @@ namespace cryptoplus
 		}
 		inline void extension::set_object(asn1::object obj) const
 		{
-			error::throw_error_if_not(X509_EXTENSION_set_object(ptr().get(), obj.raw()) != 0);
+			throw_error_if_not(X509_EXTENSION_set_object(ptr().get(), obj.raw()) != 0);
 		}
 		inline bool extension::critical() const
 		{
@@ -291,7 +291,7 @@ namespace cryptoplus
 		}
 		inline void extension::set_critical(bool _critical) const
 		{
-			error::throw_error_if_not(X509_EXTENSION_set_critical(ptr().get(), _critical ? 1 : 0) != 0);
+			throw_error_if_not(X509_EXTENSION_set_critical(ptr().get(), _critical ? 1 : 0) != 0);
 		}
 		inline asn1::string extension::data() const
 		{
@@ -299,7 +299,7 @@ namespace cryptoplus
 		}
 		inline void extension::set_data(asn1::string _data) const
 		{
-			error::throw_error_if_not(X509_EXTENSION_set_data(ptr().get(), _data.raw()) != 0);
+			throw_error_if_not(X509_EXTENSION_set_data(ptr().get(), _data.raw()) != 0);
 		}
 		inline extension::extension(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

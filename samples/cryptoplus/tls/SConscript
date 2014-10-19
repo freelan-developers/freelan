@@ -4,6 +4,7 @@ import os
 libraries = [
     'cryptoplus',
     'crypto',
+    'boost_system',
 ]
 
 Import('env dirs name')

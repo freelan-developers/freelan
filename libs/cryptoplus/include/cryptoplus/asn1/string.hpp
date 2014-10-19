@@ -260,7 +260,7 @@ namespace cryptoplus
 		}
 		inline void string::set_data(const void* _data, size_t data_len) const
 		{
-			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, static_cast<int>(data_len)) != 0);
+			throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, static_cast<int>(data_len)) != 0);
 		}
 		inline void string::set_data(const buffer& _data) const
 		{
@@ -268,7 +268,7 @@ namespace cryptoplus
 		}
 		inline void string::set_data(const char* _data) const
 		{
-			error::throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, -1) != 0);
+			throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, -1) != 0);
 		}
 		inline void string::set_data(const std::string& _data) const
 		{

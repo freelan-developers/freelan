@@ -909,7 +909,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -955,27 +955,27 @@ namespace cryptoplus
 		}
 		inline void certificate::write_der(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(i2d_X509_bio(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(i2d_X509_bio(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate::write_certificate(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_X509(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_X509(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate::write_trusted_certificate(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_X509_AUX(bio.raw(), ptr().get()) != 0);
 		}
 		inline void certificate::write_der(file _file) const
 		{
-			error::throw_error_if_not(i2d_X509_fp(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(i2d_X509_fp(_file.raw(), ptr().get()) != 0);
 		}
 		inline void certificate::write_certificate(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_X509(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_X509(_file.raw(), ptr().get()) != 0);
 		}
 		inline void certificate::write_trusted_certificate(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_X509_AUX(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_X509_AUX(_file.raw(), ptr().get()) != 0);
 		}
 		inline size_t certificate::write_der(void* buf) const
 		{
@@ -984,7 +984,7 @@ namespace cryptoplus
 
 			int result = i2d_X509(ptr().get(), pout);
 
-			error::throw_error_if(result < 0);
+			throw_error_if(result < 0);
 
 			return result;
 		}
@@ -1002,7 +1002,7 @@ namespace cryptoplus
 		}
 		inline void certificate::print(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(X509_print(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(X509_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline int certificate::count() const
 		{
@@ -1148,13 +1148,13 @@ namespace cryptoplus
 		}
 		inline void certificate::push_back(wrapped_value_type ext) const
 		{
-			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), -1) != 0);
+			throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), -1) != 0);
 		}
 		inline certificate::const_iterator certificate::insert(const_iterator position, wrapped_value_type ext) const
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
+			throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
 
 			return position;
 		}
@@ -1162,7 +1162,7 @@ namespace cryptoplus
 		{
 			assert(position.m_owner == this);
 
-			error::throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
+			throw_error_if_not(X509_add_ext(ptr().get(), ext.raw(), position.m_index) != 0);
 
 			return position;
 		}
@@ -1172,7 +1172,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_public_key(pkey::pkey pkey) const
 		{
-			error::throw_error_if_not(X509_set_pubkey(ptr().get(), pkey.raw()) != 0);
+			throw_error_if_not(X509_set_pubkey(ptr().get(), pkey.raw()) != 0);
 		}
 		inline name certificate::subject() const
 		{
@@ -1180,7 +1180,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_subject(name _name) const
 		{
-			error::throw_error_if_not(X509_set_subject_name(ptr().get(), _name.raw()) != 0);
+			throw_error_if_not(X509_set_subject_name(ptr().get(), _name.raw()) != 0);
 		}
 		inline name certificate::issuer() const
 		{
@@ -1188,7 +1188,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_issuer(name _name) const
 		{
-			error::throw_error_if_not(X509_set_issuer_name(ptr().get(), _name.raw()) != 0);
+			throw_error_if_not(X509_set_issuer_name(ptr().get(), _name.raw()) != 0);
 		}
 		inline long certificate::version() const
 		{
@@ -1196,7 +1196,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_version(long _version) const
 		{
-			error::throw_error_if_not(X509_set_version(ptr().get(), _version) != 0);
+			throw_error_if_not(X509_set_version(ptr().get(), _version) != 0);
 		}
 		inline asn1::integer certificate::serial_number() const
 		{
@@ -1204,7 +1204,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_serial_number(asn1::integer _serial_number) const
 		{
-			error::throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number.raw()) != 0);
+			throw_error_if_not(X509_set_serialNumber(ptr().get(), _serial_number.raw()) != 0);
 		}
 		inline asn1::utctime certificate::not_before() const
 		{
@@ -1212,7 +1212,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_not_before(asn1::utctime _not_before) const
 		{
-			error::throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before.raw()) != 0);
+			throw_error_if_not(X509_set_notBefore(ptr().get(), _not_before.raw()) != 0);
 		}
 		inline asn1::utctime certificate::not_after() const
 		{
@@ -1220,7 +1220,7 @@ namespace cryptoplus
 		}
 		inline void certificate::set_not_after(asn1::utctime _not_after) const
 		{
-			error::throw_error_if_not(X509_set_notAfter(ptr().get(), _not_after.raw()) != 0);
+			throw_error_if_not(X509_set_notAfter(ptr().get(), _not_after.raw()) != 0);
 		}
 		inline bool certificate::verify_public_key(pkey::pkey pkey) const
 		{
@@ -1228,7 +1228,7 @@ namespace cryptoplus
 		}
 		inline void certificate::sign(pkey::pkey pkey, hash::message_digest_algorithm algorithm) const
 		{
-			error::throw_error_if_not(X509_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
+			throw_error_if_not(X509_sign(ptr().get(), pkey.raw(), algorithm.raw()) != 0);
 		}
 		inline bool certificate::verify_private_key(pkey::pkey pkey) const
 		{

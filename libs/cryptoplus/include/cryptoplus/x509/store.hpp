@@ -174,7 +174,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_STORE_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -201,20 +201,20 @@ namespace cryptoplus
 		inline X509_LOOKUP* store::add_lookup_method(X509_LOOKUP_METHOD* lookup_method)
 		{
 			X509_LOOKUP* lookup = X509_STORE_add_lookup(raw(), lookup_method);
-			error::throw_error_if_not(lookup != NULL);
+			throw_error_if_not(lookup != NULL);
 			return lookup;
 		}
 		inline void store::load_locations(const char* file, const char* dir)
 		{
-			error::throw_error_if_not(X509_STORE_load_locations(raw(), const_cast<char*>(file), const_cast<char*>(dir)) != 0);
+			throw_error_if_not(X509_STORE_load_locations(raw(), const_cast<char*>(file), const_cast<char*>(dir)) != 0);
 		}
 		inline void store::add_certificate(certificate cert)
 		{
-			error::throw_error_if_not(X509_STORE_add_cert(raw(), cert.raw()) != 0);
+			throw_error_if_not(X509_STORE_add_cert(raw(), cert.raw()) != 0);
 		}
 		inline void store::add_certificate_revocation_list(certificate_revocation_list crl)
 		{
-			error::throw_error_if_not(X509_STORE_add_crl(raw(), crl.raw()) != 0);
+			throw_error_if_not(X509_STORE_add_crl(raw(), crl.raw()) != 0);
 		}
 		inline store::store(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

@@ -82,7 +82,7 @@ namespace cryptoplus
 
 				int iout_len = static_cast<int>(out_len);
 
-				error::throw_error_if_not(update_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len, static_cast<const unsigned char*>(in), static_cast<int>(in_len)) != 0);
+				throw_error_if_not(update_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len, static_cast<const unsigned char*>(in), static_cast<int>(in_len)) != 0);
 
 				return iout_len;
 			}
@@ -94,7 +94,7 @@ namespace cryptoplus
 
 				int iout_len = static_cast<int>(out_len);
 
-				error::throw_error_if_not(finalize_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len) != 0);
+				throw_error_if_not(finalize_func(&ctx.raw(), static_cast<unsigned char*>(out), &iout_len) != 0);
 
 				return iout_len;
 			}
@@ -112,7 +112,7 @@ namespace cryptoplus
 
 			// Doing the same test on the IV is wrong because for some algorithms, the IV size is dynamic.
 
-			error::throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
+			throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
 		}
 
 		buffer cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, pkey::pkey pkey)
@@ -132,7 +132,7 @@ namespace cryptoplus
 
 			// Doing the same test on the IV is wrong because for some algorithms, the IV size is dynamic.
 
-			error::throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
+			throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
 		}
 
 		size_t cipher_context::add_iso_10126_padding(void* buf, size_t buf_len, size_t max_buf_len) const

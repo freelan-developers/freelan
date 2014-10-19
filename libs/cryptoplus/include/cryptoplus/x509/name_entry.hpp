@@ -224,7 +224,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_NAME_ENTRY_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -258,7 +258,7 @@ namespace cryptoplus
 		}
 		inline void name_entry::set_object(asn1::object _object)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()) != 0);
+			throw_error_if_not(X509_NAME_ENTRY_set_object(ptr().get(), _object.raw()) != 0);
 		}
 		inline asn1::string name_entry::data() const
 		{
@@ -266,7 +266,7 @@ namespace cryptoplus
 		}
 		inline void name_entry::set_data(int type, const void* _data, size_t data_len)
 		{
-			error::throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), static_cast<int>(data_len)) != 0);
+			throw_error_if_not(X509_NAME_ENTRY_set_data(ptr().get(), type, static_cast<const unsigned char*>(_data), static_cast<int>(data_len)) != 0);
 		}
 		inline int name_entry::nid() const
 		{
@@ -287,7 +287,7 @@ namespace cryptoplus
 
 			int result = i2d_X509_NAME_ENTRY(ptr().get(), pout);
 
-			error::throw_error_if(result < 0);
+			throw_error_if(result < 0);
 
 			return result;
 		}

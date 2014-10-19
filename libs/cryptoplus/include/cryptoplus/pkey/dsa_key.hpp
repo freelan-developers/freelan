@@ -464,45 +464,45 @@ namespace cryptoplus
 		}
 		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void dsa_key::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_bio_DSAPrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void dsa_key::write_parameters(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_DSAparams(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_DSAparams(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dsa_key::write_certificate_public_key(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_DSA_PUBKEY(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_DSA_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_DSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void dsa_key::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_DSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_DSAPrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void dsa_key::write_parameters(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_DSAparams(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_DSAparams(_file.raw(), ptr().get()) != 0);
 		}
 		inline void dsa_key::write_certificate_public_key(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_DSA_PUBKEY(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_DSA_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}
 		inline dsa_key& dsa_key::generate()
 		{
-			error::throw_error_if_not(DSA_generate_key(ptr().get()) != 0);
+			throw_error_if_not(DSA_generate_key(ptr().get()) != 0);
 
 			return *this;
 		}
 		inline const dsa_key& dsa_key::generate() const
 		{
-			error::throw_error_if_not(DSA_generate_key(ptr().get()) != 0);
+			throw_error_if_not(DSA_generate_key(ptr().get()) != 0);
 
 			return *this;
 		}
@@ -512,19 +512,19 @@ namespace cryptoplus
 		}
 		inline void dsa_key::print(bio::bio_ptr bio, int offset) const
 		{
-			error::throw_error_if_not(DSA_print(bio.raw(), ptr().get(), offset) != 0);
+			throw_error_if_not(DSA_print(bio.raw(), ptr().get(), offset) != 0);
 		}
 		inline void dsa_key::print(file _file, int offset) const
 		{
-			error::throw_error_if_not(DSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
+			throw_error_if_not(DSA_print_fp(_file.raw(), ptr().get(), offset) != 0);
 		}
 		inline void dsa_key::print_parameters(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(DSAparams_print(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(DSAparams_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dsa_key::print_parameters(file _file) const
 		{
-			error::throw_error_if_not(DSAparams_print_fp(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(DSAparams_print_fp(_file.raw(), ptr().get()) != 0);
 		}
 		inline buffer dsa_key::sign(const void* buf, size_t buf_len, int type) const
 		{
@@ -540,7 +540,7 @@ namespace cryptoplus
 		}
 		inline void dsa_key::verify(const void* _sign, size_t sign_len, const void* buf, size_t buf_len, int type) const
 		{
-			error::throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), static_cast<const unsigned char*>(_sign), static_cast<int>(sign_len), ptr().get()) != 0);
+			throw_error_if_not(DSA_verify(type, static_cast<const unsigned char*>(buf), static_cast<int>(buf_len), static_cast<const unsigned char*>(_sign), static_cast<int>(sign_len), ptr().get()) != 0);
 		}
 		inline void dsa_key::verify(const buffer& _sign, const buffer& buf, int type) const
 		{
