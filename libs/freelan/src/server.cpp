@@ -118,6 +118,11 @@ namespace freelan
 		m_logger(fscp::log_level::debug) << "Web server's listen endpoint set to " << configuration.listen_on << ".";
 		set_option("listening_port", boost::lexical_cast<std::string>(configuration.listen_on));
 
+		if (configuration.protocol == server_configuration::server_protocol_type::https)
+		{
+			set_certificate_and_private_key(configuration.server_certificate, configuration.server_private_key);
+		}
+
 		// Routes
 		register_authenticated_route("/", [this](mongooseplus::request& req) {
 			m_logger(fscp::log_level::debug) << "Requested root.";

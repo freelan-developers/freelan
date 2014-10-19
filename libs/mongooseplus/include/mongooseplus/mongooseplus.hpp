@@ -60,6 +60,9 @@
 #include <boost/exception/all.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/pkey/pkey.hpp>
+
 #include <kfather/value.hpp>
 
 #include "error.hpp"
@@ -252,6 +255,7 @@ namespace mongooseplus
 			}
 
 			void set_option(const std::string& name, const std::string& value);
+			void set_certificate_and_private_key(cryptoplus::x509::certificate cert, cryptoplus::pkey::pkey private_key);
 
 			enum class request_result
 			{

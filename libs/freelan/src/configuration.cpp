@@ -53,8 +53,8 @@ namespace freelan
 {
 	server_configuration::server_configuration() :
 		enabled(false),
-		listen_on(),
-		protocol(server_protocol_type::http),
+		listen_on(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 443)),
+		protocol(server_protocol_type::https),
 		authentication_script()
 	{
 	}

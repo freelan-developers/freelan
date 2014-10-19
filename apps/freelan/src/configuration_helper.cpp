@@ -210,7 +210,7 @@ po::options_description get_server_options()
 
 	result.add_options()
 	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
-	("server.listen_on", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 80)), "The endpoint to listen on.")
+	("server.listen_on", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 443)), "The endpoint to listen on.")
 	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::server_protocol_type::https), "The protocol to use for clients to contact the server.")
 	("server.server_certificate_file", po::value<fs::path>()->default_value(""), "The server certificate file.")
 	("server.server_private_key_file", po::value<fs::path>()->default_value(""), "The server private key file.")

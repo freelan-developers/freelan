@@ -80,6 +80,7 @@ const char **mg_get_valid_option_names(void);
 const char *mg_get_option(const struct mg_server *server, const char *name);
 void mg_set_listening_socket(struct mg_server *, int sock);
 int mg_get_listening_socket(struct mg_server *);
+int mg_set_certificate_and_private_key(struct mg_server*, X509*, EVP_PKEY*); // Added for freelan
 void mg_iterate_over_connections(struct mg_server *, mg_handler_t);
 void mg_wakeup_server(struct mg_server *);
 struct mg_connection *mg_connect(struct mg_server *, const char *, int, int);

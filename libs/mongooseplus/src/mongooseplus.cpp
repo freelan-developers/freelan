@@ -293,6 +293,30 @@ namespace mongooseplus
 		}
 	}
 
+	void web_server::set_certificate_and_private_key(cryptoplus::x509::certificate cert, cryptoplus::pkey::pkey private_key)
+	{
+		assert(cert);
+		assert(private_key);
+
+		const int result = ::mg_set_certificate_and_private_key(m_server->server.get(), cert.raw(), private_key.raw());
+
+		switch (result)
+		{
+			case 0:
+				return;
+			case 1:
+				throw std::runtime_error("SSL not enabled");
+			case 2:
+				throw std::runtime_error("Unable to create a SSL context");
+			case 3:
+				throw std::runtime_error("Unable to load the certificate in the SSL context");
+			case 4:
+				throw std::runtime_error("Unable to load the private key in the SSL context");
+			default:
+				throw std::runtime_error("Unknown error");
+		}
+	}
+
 	void web_server::prepare_request(request& req)
 	{
 		session_handler().clear_expired();

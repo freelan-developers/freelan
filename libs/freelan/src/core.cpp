@@ -1979,9 +1979,26 @@ namespace freelan
 	{
 		if (m_configuration.server.enabled)
 		{
+			if (m_configuration.server.protocol == server_configuration::server_protocol_type::https)
+			{
+				if (!m_configuration.server.server_private_key)
+				{
+					m_logger(fscp::log_level::warning) << "No private key set for the web server. Generating temporary one...";
+
+					m_configuration.server.server_private_key = generate_private_key();
+				}
+
+				if (!m_configuration.server.server_certificate)
+				{
+					m_logger(fscp::log_level::warning) << "No certificate set for the web server. Generating temporary one...";
+
+					m_configuration.server.server_certificate = generate_self_signed_certificate(m_configuration.server.server_private_key);
+				}
+			}
+
 			m_web_server = boost::make_shared<web_server>(m_logger, m_configuration.server, m_authentication_callback);
 
-			m_logger(fscp::log_level::information) << "Starting web server on " << m_configuration.server.listen_on << "...";
+			m_logger(fscp::log_level::information) << "Starting " << m_configuration.server.protocol << " web server on " << m_configuration.server.listen_on << "...";
 
 			m_web_server_thread = boost::thread([this](){ m_web_server->run(); });
 

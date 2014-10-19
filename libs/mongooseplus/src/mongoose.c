@@ -131,6 +131,8 @@ typedef int sock_t;
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 #include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
 #else
 typedef void *SSL;
 typedef void *SSL_CTX;
@@ -4808,6 +4810,35 @@ void mg_set_listening_socket(struct mg_server *server, int sock) {
 
 int mg_get_listening_socket(struct mg_server *server) {
   return server->ns_server.listening_sock;
+}
+
+// Added for freelan
+int mg_set_certificate_and_private_key(struct mg_server* server, X509* cert, EVP_PKEY* private_key) {
+#ifdef NS_ENABLE_SSL
+    server->ns_server.ssl_ctx = SSL_CTX_new(SSLv23_server_method());
+
+    if (server->ns_server.ssl_ctx == NULL)
+    {
+      return 2;
+    }
+
+    if (SSL_CTX_use_certificate(server->ns_server.ssl_ctx, cert) == 0)
+    {
+      return 3;
+    }
+
+    if (SSL_CTX_use_PrivateKey(server->ns_server.ssl_ctx, private_key) == 0)
+    {
+      return 4;
+    }
+
+    return 0;
+#else
+    (void)(cert);
+    (void)(private_key);
+
+    return 1;
+#endif
 }
 
 const char *mg_get_option(const struct mg_server *server, const char *name) {
