@@ -183,7 +183,12 @@ int execute(const fscp::logger& logger, fs::path script, const std::vector<std::
 	logger(log_level) << "Script " << script.string() << " returned " << return_code << ".";
 
 #if !defined(WINDOWS)
-	logger(fscp::log_level::debug) << "Output follows:\n" << oss.str();
+	const auto output = oss.str();
+
+	if (!output.empty())
+	{
+		logger(fscp::log_level::debug) << "Output follows:\n" << output;
+	}
 #endif
 
 	return return_code;

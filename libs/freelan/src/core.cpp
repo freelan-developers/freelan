@@ -1985,7 +1985,7 @@ namespace freelan
 
 				if (!m_configuration.server.server_private_key)
 				{
-					m_logger(fscp::log_level::warning) << "No private key set for the web server. Generating temporary one...";
+					m_logger(fscp::log_level::warning) << "No private key set for the web server. Generating a temporary one...";
 
 					m_configuration.server.server_private_key = generate_private_key();
 					generated = true;
@@ -1993,7 +1993,7 @@ namespace freelan
 
 				if (!m_configuration.server.server_certificate)
 				{
-					m_logger(fscp::log_level::warning) << "No certificate set for the web server. Generating temporary one...";
+					m_logger(fscp::log_level::warning) << "No certificate set for the web server. Generating a temporary one...";
 
 					m_configuration.server.server_certificate = generate_self_signed_certificate(m_configuration.server.server_private_key);
 					generated = true;
@@ -2001,7 +2001,7 @@ namespace freelan
 
 				if (generated)
 				{
-					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private for the web server will force web clients to disable peer verification. Is this what you really want ?";
+					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private key for the web server will force web clients to disable peer verification. Is this what you really want ?";
 				}
 			}
 
@@ -2011,7 +2011,7 @@ namespace freelan
 
 				if (!m_configuration.server.certification_authority_private_key)
 				{
-					m_logger(fscp::log_level::warning) << "No private key set for the web server's CA. Generating temporary one...";
+					m_logger(fscp::log_level::warning) << "No private key set for the web server's CA. Generating a temporary one...";
 
 					m_configuration.server.certification_authority_private_key = generate_private_key();
 					generated = true;
@@ -2019,7 +2019,7 @@ namespace freelan
 
 				if (!m_configuration.server.certification_authority_certificate)
 				{
-					m_logger(fscp::log_level::warning) << "No certificate set for the web server's CA. Generating temporary one...";
+					m_logger(fscp::log_level::warning) << "No certificate set for the web server's CA. Generating a temporary one...";
 
 					m_configuration.server.certification_authority_certificate = generate_self_signed_certificate(m_configuration.server.certification_authority_private_key);
 					generated = true;
@@ -2027,7 +2027,7 @@ namespace freelan
 
 				if (generated)
 				{
-					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private for the web server's CA will cause the session lifecycle to be tied to the one of the server.";
+					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private key for the web server's CA will cause the session lifecycle to be tied to the one of the server.";
 				}
 			}
 
@@ -2067,8 +2067,14 @@ namespace freelan
 			const auto certificate_request = generate_certificate_request(private_key);
 
 			m_web_client->request_certificate(certificate_request, [this] (const boost::system::error_code& ec, cryptoplus::x509::certificate cert) {
-				static_cast<void>(cert);
-				m_logger(fscp::log_level::information) << "Requesting certificate: " << ec;
+				if (ec)
+				{
+					m_logger(fscp::log_level::error) << "The certificate request to the web server failed: " << ec.message() << " (" << ec << ")";
+				}
+				else
+				{
+					m_logger(fscp::log_level::information) << "Received certificate from server: " << cert.subject().oneline();
+				}
 			});
 
 			m_logger(fscp::log_level::information) << "Web client started.";
