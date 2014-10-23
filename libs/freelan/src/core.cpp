@@ -2001,7 +2001,33 @@ namespace freelan
 
 				if (generated)
 				{
-					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private for the web server key will force web clients to disable peer verification. Is this what you really want ?";
+					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private for the web server will force web clients to disable peer verification. Is this what you really want ?";
+				}
+			}
+
+			// CA certificate check.
+			{
+				bool generated = false;
+
+				if (!m_configuration.server.certification_authority_private_key)
+				{
+					m_logger(fscp::log_level::warning) << "No private key set for the web server's CA. Generating temporary one...";
+
+					m_configuration.server.certification_authority_private_key = generate_private_key();
+					generated = true;
+				}
+
+				if (!m_configuration.server.certification_authority_certificate)
+				{
+					m_logger(fscp::log_level::warning) << "No certificate set for the web server's CA. Generating temporary one...";
+
+					m_configuration.server.certification_authority_certificate = generate_self_signed_certificate(m_configuration.server.certification_authority_private_key);
+					generated = true;
+				}
+
+				if (generated)
+				{
+					m_logger(fscp::log_level::warning) << "Using a dynamically generated certificate/private for the web server's CA will cause the session lifecycle to be tied to the one of the server.";
 				}
 			}
 

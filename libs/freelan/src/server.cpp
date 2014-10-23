@@ -45,6 +45,11 @@
 
 #include "server.hpp"
 
+#include "tools.hpp"
+
+#include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/x509/certificate_request.hpp>
+
 #include <boost/lexical_cast.hpp>
 
 #include <cassert>
@@ -123,12 +128,17 @@ namespace freelan
 			set_certificate_and_private_key(configuration.server_certificate, configuration.server_private_key);
 		}
 
-		// Routes
-		register_authenticated_route("/", [this](mongooseplus::request& req) {
-			m_logger(fscp::log_level::debug) << "Requested root.";
+		register_authenticated_route("/request_certificate/", [this, configuration](mongooseplus::request& req) {
+			const auto session = req.get_session<session_type>();
 
-			const auto json = req.json();
-			req.send_json(json);
+			m_logger(fscp::log_level::debug) << session->username() << " (" << req.remote() << ") requested a certificate.";
+
+			const cryptoplus::x509::certificate_request cert_req = cryptoplus::x509::certificate_request::from_der(req.content(), req.content_size());
+			const auto certificate = sign_certificate_request(cert_req, configuration.certification_authority_certificate, configuration.certification_authority_private_key, session->username());
+			const auto certificate_buffer = certificate.write_der();
+
+			req.send_header("content-type", "application/x-x509-cert");
+			req.send_data(&certificate_buffer.data()[0], certificate_buffer.data().size());
 
 			return request_result::handled;
 		});

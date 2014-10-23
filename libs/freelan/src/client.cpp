@@ -107,7 +107,7 @@ namespace freelan
 
 				const auto content_type = request->get_content_type();
 
-				if (content_type == "application/x-x509-ca-cert")
+				if (content_type == "application/x-x509-cert")
 				{
 					try
 					{

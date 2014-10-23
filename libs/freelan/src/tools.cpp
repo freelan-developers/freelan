@@ -129,4 +129,26 @@ namespace freelan
 
 		return certificate;
 	}
+
+	cryptoplus::x509::certificate sign_certificate_request(const cryptoplus::x509::certificate_request& req, const cryptoplus::x509::certificate& ca_certificate, const cryptoplus::pkey::pkey& private_key, const std::string& common_name, unsigned int duration)
+	{
+		cryptoplus::x509::certificate certificate = cryptoplus::x509::certificate::create();
+
+		certificate.set_version(2);
+		certificate.subject().push_back("CN", MBSTRING_ASC, common_name);
+		certificate.set_issuer(ca_certificate.subject());
+		certificate.set_serial_number(cryptoplus::asn1::integer::from_long(1));
+		certificate.push_back(cryptoplus::x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:FALSE"));
+
+		const cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::days(1));
+		const cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::gregorian::days(duration));
+
+		certificate.set_not_before(not_before);
+		certificate.set_not_after(not_after);
+
+		certificate.set_public_key(req.public_key());
+		certificate.sign(private_key, cryptoplus::hash::message_digest_algorithm(NID_sha1));
+
+		return certificate;
+	}
 }

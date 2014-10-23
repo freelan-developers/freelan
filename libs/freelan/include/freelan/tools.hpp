@@ -84,4 +84,15 @@ namespace freelan
 	 * \return The self-signed certificate.
 	 */
 	cryptoplus::x509::certificate generate_self_signed_certificate(const cryptoplus::pkey::pkey& private_key, const std::string& common_name = get_hostname(), unsigned int duration = 365);
+
+	/**
+	 * \brief Sign a certificate request.
+	 * \param req The certificate request to sign.
+	 * \param ca_certificate The CA certificate to use.
+	 * \param private_key The private key that matches the CA certificate.
+	 * \param common_name The common name to use. Will override the common name in the certificate request.
+	 * \param The duration of the certificate. Defaults to a day.
+	 * \return The signed certificate.
+	 */
+	cryptoplus::x509::certificate sign_certificate_request(const cryptoplus::x509::certificate_request& req, const cryptoplus::x509::certificate& ca_certificate, const cryptoplus::pkey::pkey& private_key, const std::string& common_name, unsigned int duration = 1);
 }
