@@ -52,21 +52,12 @@
 
 #include "web_client_error.hpp"
 
-namespace freelan
+namespace
 {
-	void web_client::request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler)
+	template <typename BufferType, typename BufferSizeType>
+	boost::function<size_t (boost::asio::const_buffer)> get_write_function(BufferType buffer, BufferSizeType count)
 	{
-		const auto self = shared_from_this();
-		const auto request = make_request("/request_certificate/");
-		const auto data = certificate_request.write_der();
-
-		request->set_http_header("content-type", "application/octet-stream");
-		request->set_copy_post_fields(boost::asio::buffer(data.data()));
-
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
-		const boost::shared_ptr<size_t> count(new size_t(0));
-
-		request->set_write_function([buffer, count] (boost::asio::const_buffer indata) {
+		const auto result = [buffer, count] (boost::asio::const_buffer indata) {
 			using boost::asio::buffer_cast;
 			using boost::asio::buffer_size;
 
@@ -89,7 +80,27 @@ namespace freelan
 
 				return bytes_len;
 			}
-		});
+		};
+
+		return result;
+	}
+}
+
+namespace freelan
+{
+	void web_client::request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler)
+	{
+		const auto self = shared_from_this();
+		const auto request = make_request("/request_certificate/");
+		const auto data = certificate_request.write_der();
+
+		request->set_http_header("content-type", "application/octet-stream");
+		request->set_copy_post_fields(boost::asio::buffer(data.data()));
+
+		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const boost::shared_ptr<size_t> count(new size_t(0));
+
+		request->set_write_function(get_write_function(buffer, count));
 
 		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
 			using boost::asio::buffer_cast;
