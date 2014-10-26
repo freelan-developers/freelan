@@ -252,6 +252,11 @@ namespace freelan
 			static const boost::posix_time::time_duration ROUTES_REQUEST_PERIOD;
 
 			/**
+			 * \brief The request certificate period.
+			 */
+			static const boost::posix_time::time_duration REQUEST_CERTIFICATE_PERIOD;
+
+			/**
 			 * \brief The default service.
 			 */
 			static const std::string DEFAULT_SERVICE;
@@ -646,7 +651,9 @@ namespace freelan
 
 			void open_web_client();
 			void close_web_client();
+			void request_certificate();
 
 			boost::shared_ptr<web_client> m_web_client;
+			boost::asio::deadline_timer m_request_certificate_timer;
 	};
 }

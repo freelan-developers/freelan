@@ -397,6 +397,7 @@ namespace freelan
 	const boost::posix_time::time_duration core::CONTACT_PERIOD = boost::posix_time::seconds(30);
 	const boost::posix_time::time_duration core::DYNAMIC_CONTACT_PERIOD = boost::posix_time::seconds(45);
 	const boost::posix_time::time_duration core::ROUTES_REQUEST_PERIOD = boost::posix_time::seconds(180);
+	const boost::posix_time::time_duration core::REQUEST_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -431,7 +432,8 @@ namespace freelan
 		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
-		m_route_manager(m_io_service)
+		m_route_manager(m_io_service),
+		m_request_certificate_timer(m_io_service, REQUEST_CERTIFICATE_PERIOD)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -457,10 +459,15 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::debug) << "Opening core...";
 
-		open_fscp_server();
+		open_web_client();
+
+		if (m_configuration.security.identity || !m_configuration.client.enabled)
+		{
+			open_fscp_server();
+		}
+
 		open_tap_adapter();
 		open_web_server();
-		open_web_client();
 
 		m_logger(fscp::log_level::debug) << "Core opened.";
 	}
@@ -469,10 +476,10 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::debug) << "Closing core...";
 
-		close_web_client();
 		close_web_server();
 		close_tap_adapter();
 		close_fscp_server();
+		close_web_client();
 
 		m_logger(fscp::log_level::debug) << "Core closed.";
 	}
@@ -605,12 +612,15 @@ namespace freelan
 
 	void core::close_fscp_server()
 	{
-		// Stop the contact loop timers.
-		m_routes_request_timer.cancel();
-		m_dynamic_contact_timer.cancel();
-		m_contact_timer.cancel();
+		if (m_fscp_server)
+		{
+			// Stop the contact loop timers.
+			m_routes_request_timer.cancel();
+			m_dynamic_contact_timer.cancel();
+			m_contact_timer.cancel();
 
-		m_fscp_server->close();
+			m_fscp_server->close();
+		}
 	}
 
 	void core::async_contact(const endpoint& target, duration_handler_type handler)
@@ -2063,21 +2073,14 @@ namespace freelan
 
 			m_web_client = web_client::create(m_io_service, m_logger, m_configuration.client);
 
-			const auto private_key = generate_private_key();
-			const auto certificate_request = generate_certificate_request(private_key);
-
-			m_web_client->request_certificate(certificate_request, [this] (const boost::system::error_code& ec, cryptoplus::x509::certificate cert) {
-				if (ec)
-				{
-					m_logger(fscp::log_level::error) << "The certificate request to the web server failed: " << ec.message() << " (" << ec << ")";
-				}
-				else
-				{
-					m_logger(fscp::log_level::information) << "Received certificate from server: " << cert.subject().oneline();
-				}
-			});
-
 			m_logger(fscp::log_level::information) << "Web client started.";
+
+			if (!m_configuration.security.identity)
+			{
+				m_logger(fscp::log_level::information) << "No user or private key set. Requesting one from web server...";
+
+				request_certificate();
+			}
 		}
 	}
 
@@ -2087,9 +2090,39 @@ namespace freelan
 		{
 			m_logger(fscp::log_level::information) << "Closing web client...";
 
+			m_request_certificate_timer.cancel();
 			m_web_client.reset();
 
 			m_logger(fscp::log_level::information) << "Web client closed.";
 		}
+	}
+
+	void core::request_certificate()
+	{
+		const auto private_key = generate_private_key();
+		const auto certificate_request = generate_certificate_request(private_key);
+
+		m_web_client->request_certificate(certificate_request, [this, private_key] (const boost::system::error_code& ec, cryptoplus::x509::certificate certificate) {
+			if (ec)
+			{
+				m_logger(fscp::log_level::error) << "The certificate request to the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << REQUEST_CERTIFICATE_PERIOD << "...";
+
+				m_request_certificate_timer.expires_from_now(REQUEST_CERTIFICATE_PERIOD);
+				m_request_certificate_timer.async_wait([this] (const boost::system::error_code& ec2) {
+					if (ec2 != boost::asio::error::operation_aborted)
+					{
+						request_certificate();
+					}
+				});
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Received certificate from server: " << certificate.subject().oneline();
+
+				m_configuration.security.identity = fscp::identity_store(certificate, private_key);
+
+				open_fscp_server();
+			}
+		});
 	}
 }
