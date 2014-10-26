@@ -399,6 +399,7 @@ namespace freelan
 	const boost::posix_time::time_duration core::ROUTES_REQUEST_PERIOD = boost::posix_time::seconds(180);
 	const boost::posix_time::time_duration core::REQUEST_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
 	const boost::posix_time::time_duration core::REQUEST_CA_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
+	const boost::posix_time::time_duration core::RENEW_CERTIFICATE_WARNING_PERIOD = boost::posix_time::hours(6);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -435,7 +436,8 @@ namespace freelan
 		m_router(m_configuration.router),
 		m_route_manager(m_io_service),
 		m_request_certificate_timer(m_io_service, REQUEST_CERTIFICATE_PERIOD),
-		m_request_ca_certificate_timer(m_io_service, REQUEST_CA_CERTIFICATE_PERIOD)
+		m_request_ca_certificate_timer(m_io_service, REQUEST_CA_CERTIFICATE_PERIOD),
+		m_renew_certificate_timer(m_io_service)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -2122,6 +2124,7 @@ namespace freelan
 
 			m_request_certificate_timer.cancel();
 			m_request_ca_certificate_timer.cancel();
+			m_renew_certificate_timer.cancel();
 			m_web_client.reset();
 
 			m_logger(fscp::log_level::information) << "Web client closed.";
@@ -2152,7 +2155,28 @@ namespace freelan
 
 				m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
-				open_fscp_server();
+				if (m_fscp_server)
+				{
+					m_fscp_server->async_set_identity(*m_configuration.security.identity, [this] () {
+						m_logger(fscp::log_level::important) << "Renewed identity. Existing connections will be reset.";
+					});
+				}
+				else
+				{
+					open_fscp_server();
+				}
+
+				const auto renew_timestamp = certificate.not_after().to_ptime() - RENEW_CERTIFICATE_WARNING_PERIOD;
+
+				m_logger(fscp::log_level::information) << "Certificate expires on " << certificate.not_after().to_ptime() << ". Renewing on " << renew_timestamp << ".";
+
+				m_renew_certificate_timer.expires_at(renew_timestamp);
+				m_renew_certificate_timer.async_wait([this] (const boost::system::error_code& ec2) {
+					if (ec2 != boost::asio::error::operation_aborted)
+					{
+						request_certificate();
+					}
+				});
 			}
 		});
 	}

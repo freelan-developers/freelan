@@ -262,6 +262,11 @@ namespace freelan
 			static const boost::posix_time::time_duration REQUEST_CA_CERTIFICATE_PERIOD;
 
 			/**
+			 * \brief The renew certificate warning period.
+			 */
+			static const boost::posix_time::time_duration RENEW_CERTIFICATE_WARNING_PERIOD;
+
+			/**
 			 * \brief The default service.
 			 */
 			static const std::string DEFAULT_SERVICE;
@@ -669,6 +674,7 @@ namespace freelan
 			boost::shared_ptr<web_client> m_web_client;
 			boost::asio::deadline_timer m_request_certificate_timer;
 			boost::asio::deadline_timer m_request_ca_certificate_timer;
+			boost::asio::deadline_timer m_renew_certificate_timer;
 			cert_list_type m_client_certificate_authority_list;
 	};
 }
