@@ -369,7 +369,7 @@ namespace fscp
 			 * \param msg The message to log.
 			 * \param timestamp The timestamp.
 			 */
-			void log(log_level level_, const std::string& msg, timestamp_type timestamp = boost::posix_time::microsec_clock::universal_time()) const
+			void log(log_level level_, const std::string& msg, timestamp_type timestamp = boost::posix_time::microsec_clock::local_time()) const
 			{
 				if (m_handler && (level_ >= m_level))
 				{

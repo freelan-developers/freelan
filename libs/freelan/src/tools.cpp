@@ -118,8 +118,8 @@ namespace freelan
 		certificate.set_serial_number(cryptoplus::asn1::integer::from_long(1));
 		certificate.push_back(cryptoplus::x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
 
-		const cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::days(1));
-		const cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::gregorian::days(duration));
+		const cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::universal_time() - boost::gregorian::days(1));
+		const cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::universal_time() + boost::gregorian::days(duration));
 
 		certificate.set_not_before(not_before);
 		certificate.set_not_after(not_after);
@@ -140,8 +140,8 @@ namespace freelan
 		certificate.set_serial_number(cryptoplus::asn1::integer::from_long(1));
 		certificate.push_back(cryptoplus::x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:FALSE"));
 
-		const cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::days(1));
-		const cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::gregorian::days(duration));
+		const cryptoplus::asn1::utctime not_before = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::universal_time() - boost::gregorian::days(1));
+		const cryptoplus::asn1::utctime not_after = cryptoplus::asn1::utctime::from_ptime(boost::posix_time::second_clock::universal_time() + boost::gregorian::days(duration));
 
 		certificate.set_not_before(not_before);
 		certificate.set_not_after(not_after);

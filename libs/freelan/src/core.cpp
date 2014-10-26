@@ -67,6 +67,7 @@
 #include <boost/foreach.hpp>
 #include <boost/thread/future.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
 
 #include <cassert>
 
@@ -2168,7 +2169,9 @@ namespace freelan
 
 				const auto renew_timestamp = certificate.not_after().to_ptime() - RENEW_CERTIFICATE_WARNING_PERIOD;
 
-				m_logger(fscp::log_level::information) << "Certificate expires on " << certificate.not_after().to_ptime() << ". Renewing on " << renew_timestamp << ".";
+				typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
+
+				m_logger(fscp::log_level::information) << "Certificate expires on " << local_adjustor::utc_to_local(certificate.not_after().to_ptime()) << ". Renewing on " << local_adjustor::utc_to_local(renew_timestamp) << ".";
 
 				m_renew_certificate_timer.expires_at(renew_timestamp);
 				m_renew_certificate_timer.async_wait([this] (const boost::system::error_code& ec2) {
