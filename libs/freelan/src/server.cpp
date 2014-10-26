@@ -142,6 +142,19 @@ namespace freelan
 
 			return request_result::handled;
 		});
+
+		register_authenticated_route("/request_ca_certificate/", [this, configuration](mongooseplus::request& req) {
+			const auto session = req.get_session<session_type>();
+
+			m_logger(fscp::log_level::debug) << session->username() << " (" << req.remote() << ") requested the CA certificate.";
+
+			const auto certificate_buffer = configuration.certification_authority_certificate.write_der();
+
+			req.send_header("content-type", "application/x-x509-ca-cert");
+			req.send_data(&certificate_buffer.data()[0], certificate_buffer.data().size());
+
+			return request_result::handled;
+		});
 	}
 
 	web_server::route_type& web_server::register_authenticated_route(route_type&& route)

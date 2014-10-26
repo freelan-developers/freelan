@@ -257,6 +257,11 @@ namespace freelan
 			static const boost::posix_time::time_duration REQUEST_CERTIFICATE_PERIOD;
 
 			/**
+			 * \brief The request CA certificate period.
+			 */
+			static const boost::posix_time::time_duration REQUEST_CA_CERTIFICATE_PERIOD;
+
+			/**
 			 * \brief The default service.
 			 */
 			static const std::string DEFAULT_SERVICE;
@@ -492,6 +497,13 @@ namespace freelan
 			static const int ex_data_index;
 			static int certificate_validation_callback(int, X509_STORE_CTX*);
 
+			enum class build_ca_store_when
+			{
+				it_doesnt_exist,
+				always
+			};
+
+			void build_ca_store(build_ca_store_when);
 			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
 			bool certificate_is_valid(cert_type);
 
@@ -652,8 +664,11 @@ namespace freelan
 			void open_web_client();
 			void close_web_client();
 			void request_certificate();
+			void request_ca_certificate();
 
 			boost::shared_ptr<web_client> m_web_client;
 			boost::asio::deadline_timer m_request_certificate_timer;
+			boost::asio::deadline_timer m_request_ca_certificate_timer;
+			cert_list_type m_client_certificate_authority_list;
 	};
 }

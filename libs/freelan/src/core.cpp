@@ -398,6 +398,7 @@ namespace freelan
 	const boost::posix_time::time_duration core::DYNAMIC_CONTACT_PERIOD = boost::posix_time::seconds(45);
 	const boost::posix_time::time_duration core::ROUTES_REQUEST_PERIOD = boost::posix_time::seconds(180);
 	const boost::posix_time::time_duration core::REQUEST_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
+	const boost::posix_time::time_duration core::REQUEST_CA_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -433,7 +434,8 @@ namespace freelan
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
 		m_route_manager(m_io_service),
-		m_request_certificate_timer(m_io_service, REQUEST_CERTIFICATE_PERIOD)
+		m_request_certificate_timer(m_io_service, REQUEST_CERTIFICATE_PERIOD),
+		m_request_ca_certificate_timer(m_io_service, REQUEST_CA_CERTIFICATE_PERIOD)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -546,35 +548,7 @@ namespace freelan
 
 		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
 		{
-			m_ca_store = cryptoplus::x509::store::create();
-
-			BOOST_FOREACH(const cert_type& cert, m_configuration.security.certificate_authority_list)
-			{
-				m_ca_store.add_certificate(cert);
-			}
-
-			BOOST_FOREACH(const crl_type& crl, m_configuration.security.certificate_revocation_list_list)
-			{
-				m_ca_store.add_certificate_revocation_list(crl);
-			}
-
-			switch (m_configuration.security.certificate_revocation_validation_method)
-			{
-				case security_configuration::CRVM_LAST:
-					{
-						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK);
-						break;
-					}
-				case security_configuration::CRVM_ALL:
-					{
-						m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
-						break;
-					}
-				case security_configuration::CRVM_NONE:
-					{
-						break;
-					}
-			}
+			build_ca_store(build_ca_store_when::it_doesnt_exist);
 		}
 
 		for(auto&& network_address : m_configuration.fscp.never_contact_list)
@@ -1423,6 +1397,60 @@ namespace freelan
 		return (_this->certificate_validation_method(ok != 0, store_context)) ? 1 : 0;
 	}
 
+	void core::build_ca_store(build_ca_store_when condition)
+	{
+		// We can't easily ensure m_ca_store is used only in one strand, so we protect it with a mutex instead.
+		boost::mutex::scoped_lock lock(m_ca_store_mutex);
+
+		if (m_ca_store)
+		{
+			if (condition == build_ca_store_when::it_doesnt_exist)
+			{
+				return;
+			}
+
+			m_logger(fscp::log_level::information) << "Rebuilding CA store...";
+		}
+		else
+		{
+			m_logger(fscp::log_level::information) << "Building CA store...";
+		}
+
+		m_ca_store = cryptoplus::x509::store::create();
+
+		for (const cert_type& cert : m_configuration.security.certificate_authority_list)
+		{
+			m_ca_store.add_certificate(cert);
+		}
+
+		for (const cert_type& cert : m_client_certificate_authority_list)
+		{
+			m_ca_store.add_certificate(cert);
+		}
+
+		for (const crl_type& crl : m_configuration.security.certificate_revocation_list_list)
+		{
+			m_ca_store.add_certificate_revocation_list(crl);
+		}
+
+		switch (m_configuration.security.certificate_revocation_validation_method)
+		{
+			case security_configuration::CRVM_LAST:
+				{
+					m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK);
+					break;
+				}
+			case security_configuration::CRVM_ALL:
+				{
+					m_ca_store.set_verification_flags(X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
+					break;
+				}
+			case security_configuration::CRVM_NONE:
+				{
+					break;
+				}
+		}
+	}
 	bool core::certificate_validation_method(bool ok, cryptoplus::x509::store_context store_context)
 	{
 		cert_type cert = store_context.get_current_certificate();
@@ -2081,6 +2109,8 @@ namespace freelan
 
 				request_certificate();
 			}
+
+			request_ca_certificate();
 		}
 	}
 
@@ -2091,6 +2121,7 @@ namespace freelan
 			m_logger(fscp::log_level::information) << "Closing web client...";
 
 			m_request_certificate_timer.cancel();
+			m_request_ca_certificate_timer.cancel();
 			m_web_client.reset();
 
 			m_logger(fscp::log_level::information) << "Web client closed.";
@@ -2122,6 +2153,33 @@ namespace freelan
 				m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
 				open_fscp_server();
+			}
+		});
+	}
+
+	void core::request_ca_certificate()
+	{
+		m_web_client->request_ca_certificate([this] (const boost::system::error_code& ec, cryptoplus::x509::certificate certificate) {
+			if (ec)
+			{
+				m_logger(fscp::log_level::error) << "The CA certificate request to the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << REQUEST_CA_CERTIFICATE_PERIOD << "...";
+
+				m_request_ca_certificate_timer.expires_from_now(REQUEST_CA_CERTIFICATE_PERIOD);
+				m_request_ca_certificate_timer.async_wait([this] (const boost::system::error_code& ec2) {
+					if (ec2 != boost::asio::error::operation_aborted)
+					{
+						request_ca_certificate();
+					}
+				});
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Received CA certificate from server: " << certificate.subject().oneline();
+
+				m_client_certificate_authority_list.clear();
+				m_client_certificate_authority_list.push_back(certificate);
+
+				build_ca_store(build_ca_store_when::always);
 			}
 		});
 	}

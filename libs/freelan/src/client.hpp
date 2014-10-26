@@ -84,6 +84,12 @@ namespace freelan
 			 */
 			void request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler);
 
+			/**
+			 * \brief Request the server's CA certificate.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void request_ca_certificate(request_certificate_callback handler);
+
 		private:
 			typedef fscp::memory_pool<8192, 2> memory_pool;
 
