@@ -73,6 +73,8 @@
 
 namespace freelan
 {
+	typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
+
 	using boost::asio::buffer;
 	using boost::asio::buffer_cast;
 	using boost::asio::buffer_size;
@@ -401,6 +403,8 @@ namespace freelan
 	const boost::posix_time::time_duration core::REQUEST_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
 	const boost::posix_time::time_duration core::REQUEST_CA_CERTIFICATE_PERIOD = boost::posix_time::seconds(90);
 	const boost::posix_time::time_duration core::RENEW_CERTIFICATE_WARNING_PERIOD = boost::posix_time::hours(6);
+	const boost::posix_time::time_duration core::REGISTRATION_RETRY_PERIOD = boost::posix_time::seconds(30);
+	const boost::posix_time::time_duration core::REGISTRATION_WARNING_PERIOD = boost::posix_time::minutes(5);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -438,7 +442,8 @@ namespace freelan
 		m_route_manager(m_io_service),
 		m_request_certificate_timer(m_io_service, REQUEST_CERTIFICATE_PERIOD),
 		m_request_ca_certificate_timer(m_io_service, REQUEST_CA_CERTIFICATE_PERIOD),
-		m_renew_certificate_timer(m_io_service)
+		m_renew_certificate_timer(m_io_service),
+		m_registration_retry_timer(m_io_service)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -2112,6 +2117,12 @@ namespace freelan
 
 				request_certificate();
 			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Registering onto the server...";
+
+				register_();
+			}
 
 			request_ca_certificate();
 		}
@@ -2123,9 +2134,11 @@ namespace freelan
 		{
 			m_logger(fscp::log_level::information) << "Closing web client...";
 
+			unregister();
 			m_request_certificate_timer.cancel();
 			m_request_ca_certificate_timer.cancel();
 			m_renew_certificate_timer.cancel();
+			m_registration_retry_timer.cancel();
 			m_web_client.reset();
 
 			m_logger(fscp::log_level::information) << "Web client closed.";
@@ -2169,8 +2182,6 @@ namespace freelan
 
 				const auto renew_timestamp = certificate.not_after().to_ptime() - RENEW_CERTIFICATE_WARNING_PERIOD;
 
-				typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
-
 				m_logger(fscp::log_level::information) << "Certificate expires on " << local_adjustor::utc_to_local(certificate.not_after().to_ptime()) << ". Renewing on " << local_adjustor::utc_to_local(renew_timestamp) << ".";
 
 				m_renew_certificate_timer.expires_at(renew_timestamp);
@@ -2180,6 +2191,10 @@ namespace freelan
 						request_certificate();
 					}
 				});
+
+				m_logger(fscp::log_level::information) << "Registering to the server...";
+
+				register_();
 			}
 		});
 	}
@@ -2207,6 +2222,61 @@ namespace freelan
 				m_client_certificate_authority_list.push_back(certificate);
 
 				build_ca_store(build_ca_store_when::always);
+			}
+		});
+	}
+
+	void core::register_()
+	{
+		if (!m_configuration.security.identity)
+		{
+			m_logger(fscp::log_level::error) << "Cannot register onto the web server right now as no identity is currently set. Retrying in " << REGISTRATION_RETRY_PERIOD << "...";
+			m_registration_retry_timer.expires_from_now(REGISTRATION_RETRY_PERIOD);
+			m_registration_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
+				if (ec2 != boost::asio::error::operation_aborted)
+				{
+					register_();
+				}
+			});
+		}
+		else
+		{
+			m_web_client->register_(m_configuration.security.identity->signature_certificate(), [this] (const boost::system::error_code& ec, const boost::posix_time::ptime& expiration_timestamp) {
+				if (ec)
+				{
+					m_logger(fscp::log_level::error) << "The registration onto the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << REGISTRATION_RETRY_PERIOD << "...";
+					m_registration_retry_timer.expires_from_now(REGISTRATION_RETRY_PERIOD);
+				}
+				else
+				{
+					const auto local_expiration_timestamp = local_adjustor::utc_to_local(expiration_timestamp);
+					const auto registration_update_timestamp = expiration_timestamp - REGISTRATION_WARNING_PERIOD;
+					const auto local_registration_update_timestamp = local_adjustor::utc_to_local(registration_update_timestamp);
+
+					m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". Registration update planned at " << local_registration_update_timestamp << ".";
+					m_registration_retry_timer.expires_at(registration_update_timestamp);
+				}
+
+				m_registration_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
+					if (ec2 != boost::asio::error::operation_aborted)
+					{
+						register_();
+					}
+				});
+			});
+		}
+	}
+
+	void core::unregister()
+	{
+		m_web_client->unregister([this] (const boost::system::error_code& ec) {
+			if (ec)
+			{
+				m_logger(fscp::log_level::error) << "The unregistration from the web server failed: " << ec.message() << " (" << ec << "). Not retrying to avoid delaying shutdown.";
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Unregistered from the web server.";
 			}
 		});
 	}

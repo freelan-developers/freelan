@@ -411,7 +411,7 @@ namespace freelan
 			curl_list m_http_headers;
 			debug_function_t m_debug_function;
 			write_function_t m_write_function;
-			
+
 			friend class curl_multi;
 	};
 

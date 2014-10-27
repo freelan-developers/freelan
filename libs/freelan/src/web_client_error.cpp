@@ -67,6 +67,10 @@ namespace freelan
 			{
 				return "Unsupported content type";
 			}
+			case web_client_error::invalid_json_stream:
+			{
+				return "Invalid JSON stream";
+			}
 			default:
 			{
 				return "Unknown freelan web client error";

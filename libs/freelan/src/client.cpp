@@ -50,6 +50,8 @@
 
 #include <cryptoplus/buffer.hpp>
 
+#include <kfather/parser.hpp>
+
 #include "web_client_error.hpp"
 
 namespace
@@ -183,6 +185,107 @@ namespace freelan
 			}
 
 			handler(ec, cert);
+		});
+	}
+
+	void web_client::register_(cryptoplus::x509::certificate certificate, registration_callback handler)
+	{
+		const auto self = shared_from_this();
+		const auto request = make_request("/register/");
+		const auto data = certificate.write_der();
+
+		request->set_http_header("content-type", "application/x-x509-cert");
+		request->set_copy_post_fields(boost::asio::buffer(data.data()));
+
+		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const boost::shared_ptr<size_t> count(new size_t(0));
+
+		request->set_write_function(get_write_function(buffer, count));
+
+		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
+			using boost::asio::buffer_cast;
+			using boost::asio::buffer_size;
+
+			boost::posix_time::ptime expiration_timestamp;
+
+			if (ec)
+			{
+				self->m_logger(fscp::log_level::error) << "Error while sending HTTP(S) request to " << request->get_effective_url() << ": " << ec.message() << " (" << ec << ")";
+			}
+			else
+			{
+				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+
+				const auto content_type = request->get_content_type();
+
+				if (content_type == "application/json")
+				{
+					self->m_logger(fscp::log_level::debug) << "Received JSON data: " << std::string(buffer_cast<const char*>(buffer), *count);
+
+					kfather::parser parser;
+					kfather::value_type result;
+
+					if (!parser.parse(result, buffer_cast<const char*>(buffer), *count))
+					{
+						ec = make_error_code(web_client_error::invalid_json_stream);
+					}
+					else
+					{
+						const kfather::object_type value = kfather::value_cast<kfather::object_type>(result);
+
+						if (kfather::is_falsy(value))
+						{
+							ec = make_error_code(web_client_error::invalid_json_stream);
+						}
+						else
+						{
+							const std::string expiration_timestamp_str = kfather::value_cast<kfather::string_type>(value.get("expiration_timestamp"));
+
+							boost::posix_time::time_input_facet* tif = new boost::posix_time::time_input_facet;
+							tif->set_iso_extended_format();
+							std::istringstream iss(expiration_timestamp_str);
+							iss.imbue(std::locale(std::locale::classic(), tif));
+							iss >> expiration_timestamp;
+
+							if (expiration_timestamp.is_not_a_date_time())
+							{
+								ec = make_error_code(web_client_error::invalid_json_stream);
+							}
+						}
+					}
+				}
+				else
+				{
+					ec = make_error_code(web_client_error::unsupported_content_type);
+				}
+			}
+
+			handler(ec, expiration_timestamp);
+		});
+	}
+
+	void web_client::unregister(unregistration_callback handler)
+	{
+		const auto self = shared_from_this();
+		const auto request = make_request("/unregister/");
+
+		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const boost::shared_ptr<size_t> count(new size_t(0));
+
+		request->set_write_function(get_write_function(buffer, count));
+
+		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
+
+			if (ec)
+			{
+				self->m_logger(fscp::log_level::error) << "Error while sending HTTP(S) request to " << request->get_effective_url() << ": " << ec.message() << " (" << ec << ")";
+			}
+			else
+			{
+				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+			}
+
+			handler(ec);
 		});
 	}
 

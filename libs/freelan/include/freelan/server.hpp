@@ -48,7 +48,13 @@
 #include "os.hpp"
 #include "configuration.hpp"
 
+#include <map>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <fscp/logger.hpp>
+
+#include <cryptoplus/x509/certificate.hpp>
 
 #include <mongooseplus/mongooseplus.hpp>
 
@@ -74,8 +80,29 @@ namespace freelan
 			mongooseplus::routed_web_server::request_result handle_http_error(mongooseplus::request&) override;
 
 		private:
+			struct client_information_type
+			{
+				cryptoplus::x509::certificate certificate;
+				boost::posix_time::ptime expiration_timestamp;
+
+				bool has_expired() const
+				{
+					const auto now = boost::posix_time::microsec_clock::universal_time();
+
+					return (expiration_timestamp > now);
+				}
+
+				void expires_from_now(const boost::posix_time::time_duration& duration)
+				{
+					const auto now = boost::posix_time::microsec_clock::universal_time();
+
+					expiration_timestamp = now + duration;
+				}
+			};
+
 			fscp::logger& m_logger;
 			authentication_handler_type m_authentication_handler;
+			std::map<std::string, client_information_type> m_client_information_map;
 	};
 
 }

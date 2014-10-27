@@ -65,6 +65,8 @@ namespace freelan
 	{
 		public:
 			typedef boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> request_certificate_callback;
+			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::ptime&)> registration_callback;
+			typedef boost::function<void (const boost::system::error_code&)> unregistration_callback;
 
 			/**
 			 * \brief Create a new web client.
@@ -89,6 +91,19 @@ namespace freelan
 			 * \param handler The handler that will get called when the response is received.
 			 */
 			void request_ca_certificate(request_certificate_callback handler);
+
+			/**
+			 * \brief Register upon the server.
+			 * \param certifcate The certificate to send.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void register_(cryptoplus::x509::certificate certificate, registration_callback handler);
+
+			/**
+			 * \brief Unregister from the server.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void unregister(unregistration_callback handler);
 
 		private:
 			typedef fscp::memory_pool<8192, 2> memory_pool;

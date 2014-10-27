@@ -148,6 +148,11 @@ namespace freelan
 		 * \brief The authentication script.
 		 */
 		boost::filesystem::path authentication_script;
+
+		/**
+		 * \brief The registration validity duration.
+		 */
+		boost::posix_time::time_duration registration_validity_duration;
 	};
 
 	/**

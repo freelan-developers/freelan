@@ -47,10 +47,10 @@
 
 #include "tools.hpp"
 
-#include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/x509/certificate_request.hpp>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
 
 #include <cassert>
 
@@ -152,6 +152,62 @@ namespace freelan
 
 			req.send_header("content-type", "application/x-x509-ca-cert");
 			req.send_data(&certificate_buffer.data()[0], certificate_buffer.data().size());
+
+			return request_result::handled;
+		});
+
+		register_authenticated_route("/register/", [this, configuration](mongooseplus::request& req) {
+			const auto session = req.get_session<session_type>();
+			const bool registered = (m_client_information_map.find(session->username()) != m_client_information_map.end());
+
+			if (registered)
+			{
+				m_logger(fscp::log_level::debug) << session->username() << " (" << req.remote() << ") asked to update his registration.";
+			}
+			else
+			{
+				m_logger(fscp::log_level::debug) << session->username() << " (" << req.remote() << ") asked to be registered.";
+			}
+
+			const cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_der(req.content(), req.content_size());
+
+			auto& cinfo = m_client_information_map[session->username()];
+			cinfo.certificate = cert;
+			cinfo.expires_from_now(configuration.registration_validity_duration);
+
+			typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
+
+			if (registered)
+			{
+				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") registration extended until: " << local_adjustor::utc_to_local(cinfo.expiration_timestamp) << ".";
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") registered until: " << local_adjustor::utc_to_local(cinfo.expiration_timestamp) << ".";
+			}
+
+			kfather::object_type result;
+			result.items["expiration_timestamp"] = boost::posix_time::to_iso_extended_string(cinfo.expiration_timestamp);
+
+			req.send_json(result);
+
+			return request_result::handled;
+		});
+
+		register_authenticated_route("/unregister/", [this, configuration](mongooseplus::request& req) {
+			const auto session = req.get_session<session_type>();
+			const bool registered = (m_client_information_map.find(session->username()) != m_client_information_map.end());
+
+			if (registered)
+			{
+				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") asked to be unregistered.";
+
+				m_client_information_map.erase(session->username());
+			}
+			else
+			{
+				m_logger(fscp::log_level::warning) << session->username() << " (" << req.remote() << ") asked to be unregistered but is not currently registered. Doing nothing.";
+			}
 
 			return request_result::handled;
 		});
