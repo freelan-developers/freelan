@@ -71,6 +71,10 @@ namespace freelan
 			{
 				return "Invalid JSON stream";
 			}
+			case web_client_error::unexpected_response:
+			{
+				return "Unexpected response";
+			}
 			default:
 			{
 				return "Unknown freelan web client error";

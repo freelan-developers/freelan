@@ -67,7 +67,8 @@ namespace freelan
 		disable_peer_verification(false),
 		disable_host_verification(false),
 		username(),
-		password()
+		password(),
+		public_endpoint_list()
 	{
 	}
 

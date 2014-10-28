@@ -45,6 +45,8 @@
 
 #pragma once
 
+#include <set>
+
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -54,6 +56,8 @@
 
 #include <fscp/memory_pool.hpp>
 #include <fscp/logger.hpp>
+
+#include <asiotap/types/endpoint.hpp>
 
 #include "os.hpp"
 #include "configuration.hpp"
@@ -67,6 +71,7 @@ namespace freelan
 			typedef boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> request_certificate_callback;
 			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::ptime&)> registration_callback;
 			typedef boost::function<void (const boost::system::error_code&)> unregistration_callback;
+			typedef boost::function<void (const boost::system::error_code&)> set_contact_information_callback;
 
 			/**
 			 * \brief Create a new web client.
@@ -104,6 +109,13 @@ namespace freelan
 			 * \param handler The handler that will get called when the response is received.
 			 */
 			void unregister(unregistration_callback handler);
+
+			/**
+			 * \brief Set contact information on the server.
+			 * \param public_endpoints The public endpoints.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void set_contact_information(const std::set<asiotap::endpoint>& public_endpoints, set_contact_information_callback handler);
 
 		private:
 			typedef fscp::memory_pool<8192, 2> memory_pool;

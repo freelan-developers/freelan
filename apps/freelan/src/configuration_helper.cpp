@@ -234,6 +234,7 @@ po::options_description get_client_options()
 	("client.disable_host_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable host verification.")
 	("client.username", po::value<std::string>()->default_value(""), "The client username.")
 	("client.password", po::value<std::string>()->default_value(""), "The client password.")
+	("client.public_endpoint", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "A hostname or IP address to advertise.")
 	;
 
 	return result;
@@ -358,6 +359,9 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.client.disable_host_verification = vm["client.disable_host_verification"].as<bool>();
 	configuration.client.username = vm["client.username"].as<std::string>();
 	configuration.client.password = vm["client.password"].as<std::string>();
+
+	const std::vector<asiotap::endpoint> public_endpoint = vm["client.public_endpoint"].as<std::vector<asiotap::endpoint> >();
+	configuration.client.public_endpoint_list.insert(public_endpoint.begin(), public_endpoint.end());
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();

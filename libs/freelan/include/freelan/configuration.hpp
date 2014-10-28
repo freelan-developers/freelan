@@ -166,6 +166,11 @@ namespace freelan
 		typedef asiotap::endpoint endpoint;
 
 		/**
+		 * \brief The endpoint list type.
+		 */
+		typedef std::set<endpoint> endpoint_list;
+
+		/**
 		 * \brief Create a new client configuration.
 		 */
 		client_configuration();
@@ -209,6 +214,11 @@ namespace freelan
 		 * \brief The password.
 		 */
 		std::string password;
+
+		/**
+		 * \brief The public endpoints to advertise.
+		 */
+		endpoint_list public_endpoint_list;
 	};
 
 	/**

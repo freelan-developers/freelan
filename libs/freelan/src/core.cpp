@@ -405,6 +405,7 @@ namespace freelan
 	const boost::posix_time::time_duration core::RENEW_CERTIFICATE_WARNING_PERIOD = boost::posix_time::hours(6);
 	const boost::posix_time::time_duration core::REGISTRATION_RETRY_PERIOD = boost::posix_time::seconds(30);
 	const boost::posix_time::time_duration core::REGISTRATION_WARNING_PERIOD = boost::posix_time::minutes(5);
+	const boost::posix_time::time_duration core::SET_CONTACT_INFORMATION_RETRY_PERIOD = boost::posix_time::seconds(35);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -443,7 +444,8 @@ namespace freelan
 		m_request_certificate_timer(m_io_service, REQUEST_CERTIFICATE_PERIOD),
 		m_request_ca_certificate_timer(m_io_service, REQUEST_CA_CERTIFICATE_PERIOD),
 		m_renew_certificate_timer(m_io_service),
-		m_registration_retry_timer(m_io_service)
+		m_registration_retry_timer(m_io_service),
+		m_set_contact_information_retry_timer(m_io_service)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -2139,6 +2141,7 @@ namespace freelan
 			m_request_ca_certificate_timer.cancel();
 			m_renew_certificate_timer.cancel();
 			m_registration_retry_timer.cancel();
+			m_set_contact_information_retry_timer.cancel();
 			m_web_client.reset();
 
 			m_logger(fscp::log_level::information) << "Web client closed.";
@@ -2193,7 +2196,6 @@ namespace freelan
 				});
 
 				m_logger(fscp::log_level::information) << "Registering to the server...";
-
 				register_();
 			}
 		});
@@ -2230,7 +2232,7 @@ namespace freelan
 	{
 		if (!m_configuration.security.identity)
 		{
-			m_logger(fscp::log_level::error) << "Cannot register onto the web server right now as no identity is currently set. Retrying in " << REGISTRATION_RETRY_PERIOD << "...";
+			m_logger(fscp::log_level::warning) << "Cannot register onto the web server right now as no identity is currently set. Retrying in " << REGISTRATION_RETRY_PERIOD << "...";
 			m_registration_retry_timer.expires_from_now(REGISTRATION_RETRY_PERIOD);
 			m_registration_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
 				if (ec2 != boost::asio::error::operation_aborted)
@@ -2255,6 +2257,9 @@ namespace freelan
 
 					m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". Registration update planned at " << local_registration_update_timestamp << ".";
 					m_registration_retry_timer.expires_at(registration_update_timestamp);
+
+					m_logger(fscp::log_level::information) << "Setting contact information on the web server...";
+					set_contact_information();
 				}
 
 				m_registration_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
@@ -2279,5 +2284,50 @@ namespace freelan
 				m_logger(fscp::log_level::information) << "Unregistered from the web server.";
 			}
 		});
+	}
+
+	void core::set_contact_information()
+	{
+		if (!m_fscp_server)
+		{
+			m_logger(fscp::log_level::warning) << "Cannot set contact information right now as the FSCP server is not started yet.";
+
+			m_set_contact_information_retry_timer.expires_from_now(SET_CONTACT_INFORMATION_RETRY_PERIOD);
+			m_set_contact_information_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
+				if (ec2 != boost::asio::error::operation_aborted)
+				{
+					set_contact_information();
+				}
+			});
+		}
+		else
+		{
+			const auto local_port = m_fscp_server->get_socket().local_endpoint().port();
+			std::set<asiotap::endpoint> public_endpoints;
+
+			for (auto&& public_endpoint : m_configuration.client.public_endpoint_list)
+			{
+				public_endpoints.insert(asiotap::get_default_port_endpoint(public_endpoint, local_port));
+			}
+
+			m_web_client->set_contact_information(public_endpoints, [this] (const boost::system::error_code& ec) {
+				if (ec)
+				{
+					m_logger(fscp::log_level::error) << "Failed to set contact information on the web server: " << ec.message() << " (" << ec << ").";
+
+					m_set_contact_information_retry_timer.expires_from_now(SET_CONTACT_INFORMATION_RETRY_PERIOD);
+					m_set_contact_information_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
+						if (ec2 != boost::asio::error::operation_aborted)
+						{
+							set_contact_information();
+						}
+					});
+				}
+				else
+				{
+					m_logger(fscp::log_level::information) << "The web server acknowledged our contact information.";
+				}
+			});
+		}
 	}
 }

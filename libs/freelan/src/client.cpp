@@ -51,6 +51,7 @@
 #include <cryptoplus/buffer.hpp>
 
 #include <kfather/parser.hpp>
+#include <kfather/formatter.hpp>
 
 #include "web_client_error.hpp"
 
@@ -86,6 +87,18 @@ namespace
 
 		return result;
 	}
+
+	kfather::array_type to_json(const std::set<asiotap::endpoint>& public_endpoints)
+	{
+		kfather::array_type result;
+
+		for (auto&& public_endpoint : public_endpoints)
+		{
+			result.items.push_back(boost::lexical_cast<std::string>(public_endpoint));
+		}
+
+		return result;
+	}
 }
 
 namespace freelan
@@ -116,24 +129,32 @@ namespace freelan
 			}
 			else
 			{
-				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
-
-				const auto content_type = request->get_content_type();
-
-				if (content_type == "application/x-x509-cert")
+				if (request->get_response_code() != 200)
 				{
-					try
-					{
-						cert = cryptoplus::x509::certificate::from_der(buffer_cast<const char*>(buffer), *count);
-					}
-					catch (const boost::system::system_error& ex)
-					{
-						ec = ex.code();
-					}
+					self->m_logger(fscp::log_level::debug) << "Received unexpected HTTP return code: " << request->get_response_code();
+					ec = make_error_code(web_client_error::unexpected_response);
 				}
 				else
 				{
-					ec = make_error_code(web_client_error::unsupported_content_type);
+					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+
+					const auto content_type = request->get_content_type();
+
+					if (content_type == "application/x-x509-cert")
+					{
+						try
+						{
+							cert = cryptoplus::x509::certificate::from_der(buffer_cast<const char*>(buffer), *count);
+						}
+						catch (const boost::system::system_error& ex)
+						{
+							ec = ex.code();
+						}
+					}
+					else
+					{
+						ec = make_error_code(web_client_error::unsupported_content_type);
+					}
 				}
 			}
 
@@ -163,24 +184,32 @@ namespace freelan
 			}
 			else
 			{
-				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
-
-				const auto content_type = request->get_content_type();
-
-				if (content_type == "application/x-x509-ca-cert")
+				if (request->get_response_code() != 200)
 				{
-					try
-					{
-						cert = cryptoplus::x509::certificate::from_der(buffer_cast<const char*>(buffer), *count);
-					}
-					catch (const boost::system::system_error& ex)
-					{
-						ec = ex.code();
-					}
+					self->m_logger(fscp::log_level::debug) << "Received unexpected HTTP return code: " << request->get_response_code();
+					ec = make_error_code(web_client_error::unexpected_response);
 				}
 				else
 				{
-					ec = make_error_code(web_client_error::unsupported_content_type);
+					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+
+					const auto content_type = request->get_content_type();
+
+					if (content_type == "application/x-x509-ca-cert")
+					{
+						try
+						{
+							cert = cryptoplus::x509::certificate::from_der(buffer_cast<const char*>(buffer), *count);
+						}
+						catch (const boost::system::system_error& ex)
+						{
+							ec = ex.code();
+						}
+					}
+					else
+					{
+						ec = make_error_code(web_client_error::unsupported_content_type);
+					}
 				}
 			}
 
@@ -214,49 +243,57 @@ namespace freelan
 			}
 			else
 			{
-				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
-
-				const auto content_type = request->get_content_type();
-
-				if (content_type == "application/json")
+				if (request->get_response_code() != 200)
 				{
-					self->m_logger(fscp::log_level::debug) << "Received JSON data: " << std::string(buffer_cast<const char*>(buffer), *count);
+					self->m_logger(fscp::log_level::debug) << "Received unexpected HTTP return code: " << request->get_response_code();
+					ec = make_error_code(web_client_error::unexpected_response);
+				}
+				else
+				{
+					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
 
-					kfather::parser parser;
-					kfather::value_type result;
+					const auto content_type = request->get_content_type();
 
-					if (!parser.parse(result, buffer_cast<const char*>(buffer), *count))
+					if (content_type == "application/json")
 					{
-						ec = make_error_code(web_client_error::invalid_json_stream);
-					}
-					else
-					{
-						const kfather::object_type value = kfather::value_cast<kfather::object_type>(result);
+						self->m_logger(fscp::log_level::debug) << "Received JSON data: " << std::string(buffer_cast<const char*>(buffer), *count);
 
-						if (kfather::is_falsy(value))
+						kfather::parser parser;
+						kfather::value_type result;
+
+						if (!parser.parse(result, buffer_cast<const char*>(buffer), *count))
 						{
 							ec = make_error_code(web_client_error::invalid_json_stream);
 						}
 						else
 						{
-							const std::string expiration_timestamp_str = kfather::value_cast<kfather::string_type>(value.get("expiration_timestamp"));
+							const kfather::object_type value = kfather::value_cast<kfather::object_type>(result);
 
-							boost::posix_time::time_input_facet* tif = new boost::posix_time::time_input_facet;
-							tif->set_iso_extended_format();
-							std::istringstream iss(expiration_timestamp_str);
-							iss.imbue(std::locale(std::locale::classic(), tif));
-							iss >> expiration_timestamp;
-
-							if (expiration_timestamp.is_not_a_date_time())
+							if (kfather::is_falsy(value))
 							{
 								ec = make_error_code(web_client_error::invalid_json_stream);
 							}
+							else
+							{
+								const std::string expiration_timestamp_str = kfather::value_cast<kfather::string_type>(value.get("expiration_timestamp"));
+
+								boost::posix_time::time_input_facet* tif = new boost::posix_time::time_input_facet;
+								tif->set_iso_extended_format();
+								std::istringstream iss(expiration_timestamp_str);
+								iss.imbue(std::locale(std::locale::classic(), tif));
+								iss >> expiration_timestamp;
+
+								if (expiration_timestamp.is_not_a_date_time())
+								{
+									ec = make_error_code(web_client_error::invalid_json_stream);
+								}
+							}
 						}
 					}
-				}
-				else
-				{
-					ec = make_error_code(web_client_error::unsupported_content_type);
+					else
+					{
+						ec = make_error_code(web_client_error::unsupported_content_type);
+					}
 				}
 			}
 
@@ -282,7 +319,62 @@ namespace freelan
 			}
 			else
 			{
-				self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+				if (request->get_response_code() != 200)
+				{
+					self->m_logger(fscp::log_level::debug) << "Received unexpected HTTP return code: " << request->get_response_code();
+					ec = make_error_code(web_client_error::unexpected_response);
+				}
+				else
+				{
+					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+				}
+			}
+
+			handler(ec);
+		});
+	}
+
+	void web_client::set_contact_information(const std::set<asiotap::endpoint>& public_endpoints, set_contact_information_callback handler)
+	{
+		const auto self = shared_from_this();
+		const auto request = make_request("/set_contact_information/");
+
+		const kfather::object_type value {
+			{
+				{"public_endpoints", to_json(public_endpoints)}
+			}
+		};
+
+		std::ostringstream oss;
+		kfather::compact_formatter().format(oss, value);
+
+		request->set_http_header("content-type", "application/json");
+		request->set_copy_post_fields(boost::asio::buffer(oss.str()));
+
+		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const boost::shared_ptr<size_t> count(new size_t(0));
+
+		request->set_write_function(get_write_function(buffer, count));
+
+		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
+			using boost::asio::buffer_cast;
+			using boost::asio::buffer_size;
+
+			if (ec)
+			{
+				self->m_logger(fscp::log_level::error) << "Error while sending HTTP(S) request to " << request->get_effective_url() << ": " << ec.message() << " (" << ec << ")";
+			}
+			else
+			{
+				if (request->get_response_code() != 200)
+				{
+					self->m_logger(fscp::log_level::debug) << "Received unexpected HTTP return code: " << request->get_response_code();
+					ec = make_error_code(web_client_error::unexpected_response);
+				}
+				else
+				{
+					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+				}
 			}
 
 			handler(ec);

@@ -98,7 +98,7 @@ namespace freelan
 						return false;
 					}
 
-					m_logger(fscp::log_level::information) << "Authentication succeeded for user \"" << username << "\".";
+					m_logger(fscp::log_level::debug) << "Authentication succeeded for user \"" << username << "\".";
 
 					const auto session = req.get_session<session_type>();
 

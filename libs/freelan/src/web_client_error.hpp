@@ -67,7 +67,8 @@ namespace freelan
 	enum class web_client_error
 	{
 		unsupported_content_type = 1,
-		invalid_json_stream = 2
+		invalid_json_stream = 2,
+		unexpected_response = 3
 	};
 
 	/**
