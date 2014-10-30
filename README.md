@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/freelan-developers/freelan-all.png?label=ready&title=Ready)](https://waffle.io/freelan-developers/freelan-all)
 freelan-all
 ===========
 
