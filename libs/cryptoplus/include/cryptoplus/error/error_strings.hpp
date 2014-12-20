@@ -110,15 +110,15 @@ namespace cryptoplus
 
 		inline std::string get_library_error_string(error_type err)
 		{
-			return ERR_lib_error_string(err);
+			return ERR_lib_error_string(err.error_code);
 		}
 		inline std::string get_function_error_string(error_type err)
 		{
-			return ERR_func_error_string(err);
+			return ERR_func_error_string(err.error_code);
 		}
 		inline std::string get_reason_error_string(error_type err)
 		{
-			return ERR_reason_error_string(err);
+			return ERR_reason_error_string(err.error_code);
 		}
 		inline void print_errors(BIO* bp)
 		{

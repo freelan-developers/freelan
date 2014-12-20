@@ -57,7 +57,10 @@ namespace cryptoplus
 		/**
 		 * \brief The error type.
 		 */
-		typedef unsigned long error_type;
+		struct error_type
+		{
+			unsigned long error_code;
+		};
 
 		/**
 		 * \brief The error info structure.
@@ -197,51 +200,51 @@ namespace cryptoplus
 		}
 		inline error_type get_error()
 		{
-			return ERR_get_error();
+			return error_type{ ERR_get_error() };
 		}
 		inline error_type peek_error()
 		{
-			return ERR_peek_error();
+			return error_type{ ERR_peek_error() };
 		}
 		inline error_type peek_last_error()
 		{
-			return ERR_peek_last_error();
+			return error_type{ ERR_peek_last_error() };
 		}
 		inline error_type get_error_line(error_info& info)
 		{
-			return ERR_get_error_line(&info.file, &info.line);
+			return error_type{ ERR_get_error_line(&info.file, &info.line) };
 		}
 		inline error_type peek_error_line(error_info& info)
 		{
-			return ERR_peek_error_line(&info.file, &info.line);
+			return error_type{ ERR_peek_error_line(&info.file, &info.line) };
 		}
 		inline error_type peek_last_error_line(error_info& info)
 		{
-			return ERR_peek_last_error_line(&info.file, &info.line);
+			return error_type{ ERR_peek_last_error_line(&info.file, &info.line) };
 		}
 		inline error_type get_error_line_data(error_info& info, error_data& data)
 		{
-			return ERR_get_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+			return error_type{ ERR_get_error_line_data(&info.file, &info.line, &data.data, &data.flags) };
 		}
 		inline error_type peek_error_line_data(error_info& info, error_data& data)
 		{
-			return ERR_peek_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+			return error_type{ ERR_peek_error_line_data(&info.file, &info.line, &data.data, &data.flags) };
 		}
 		inline error_type peek_last_error_line_data(error_info& info, error_data& data)
 		{
-			return ERR_peek_last_error_line_data(&info.file, &info.line, &data.data, &data.flags);
+			return error_type{ ERR_peek_last_error_line_data(&info.file, &info.line, &data.data, &data.flags) };
 		}
 		inline int get_library_error(error_type err)
 		{
-			return ERR_GET_LIB(err);
+			return ERR_GET_LIB(err.error_code);
 		}
 		inline int get_function_error(error_type err)
 		{
-			return ERR_GET_FUNC(err);
+			return ERR_GET_FUNC(err.error_code);
 		}
 		inline int get_reason_error(error_type err)
 		{
-			return ERR_GET_REASON(err);
+			return ERR_GET_REASON(err.error_code);
 		}
 	}
 
@@ -260,7 +263,7 @@ namespace cryptoplus
 	 */
 	inline boost::system::error_code make_error_code(error::error_type error)
 	{
-		return boost::system::error_code(static_cast<int>(error), cryptoplus_category());
+		return boost::system::error_code(static_cast<int>(error.error_code), cryptoplus_category());
 	}
 
 	/**
@@ -270,7 +273,7 @@ namespace cryptoplus
 	 */
 	inline boost::system::error_condition make_error_condition(error::error_type error)
 	{
-		return boost::system::error_condition(static_cast<int>(error), cryptoplus_category());
+		return boost::system::error_condition(static_cast<int>(error.error_code), cryptoplus_category());
 	}
 
 	/**

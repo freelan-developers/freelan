@@ -23,8 +23,8 @@
     <ClCompile Include="src\configuration.cpp" />
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\curl.cpp" />
+    <ClCompile Include="src\curl_error.cpp" />
     <ClCompile Include="src\freelan.cpp" />
-    <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\message.cpp" />
     <ClCompile Include="src\metric.cpp" />
     <ClCompile Include="src\mtu.cpp" />
@@ -34,12 +34,12 @@
     <ClCompile Include="src\server.cpp" />
     <ClCompile Include="src\switch.cpp" />
     <ClCompile Include="src\tools.cpp" />
+    <ClCompile Include="src\web_client_error.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\freelan\configuration.hpp" />
     <ClInclude Include="include\freelan\core.hpp" />
     <ClInclude Include="include\freelan\freelan.hpp" />
-    <ClInclude Include="include\freelan\logger.hpp" />
     <ClInclude Include="include\freelan\message.hpp" />
     <ClInclude Include="include\freelan\metric.hpp" />
     <ClInclude Include="include\freelan\mtu.hpp" />
@@ -53,6 +53,8 @@
     <ClInclude Include="include\freelan\tools.hpp" />
     <ClInclude Include="src\client.hpp" />
     <ClInclude Include="src\curl.hpp" />
+    <ClInclude Include="src\curl_error.hpp" />
+    <ClInclude Include="src\web_client_error.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3BCC24B5-D624-47BC-AFED-BF540AFA29F8}</ProjectGuid>

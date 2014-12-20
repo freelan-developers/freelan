@@ -222,8 +222,9 @@ namespace asiotap
 #endif
 
 		real_args.insert(real_args.end(), args.begin(), args.end());
+		const auto env = executeplus::get_current_environment();
 
-		executeplus::checked_execute(real_args);
+		executeplus::checked_execute(real_args, env);
 	}
 
 	void windows_route_manager::netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)

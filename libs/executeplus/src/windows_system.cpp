@@ -84,44 +84,59 @@ namespace executeplus
 			static const wchar_t NULL_CHARACTER = L'\0';
 		};
 
+		struct EnvironmentStringsDeleter
+		{
+			void operator()(wchar_t* p)
+			{
+				::FreeEnvironmentStringsW(p);
+			}
+
+			void operator()(char* p)
+			{
+				::FreeEnvironmentStringsA(p);
+			}
+		};
+
 		template <typename CharType>
-		void get_environment_strings();
-
+		const std::unique_ptr<CharType, EnvironmentStringsDeleter> get_environment_strings();
+		
 		template <>
-		const std::unique_ptr<wchar_t, [](wchar_t* p){::FreeEnvironmentStringsW(p);}> get_environment_strings<wchar_t>()
+		const std::unique_ptr<wchar_t, EnvironmentStringsDeleter> get_environment_strings<wchar_t>()
 		{
-			return std::unique_ptr<wchar_t, [](wchar_t* p){::FreeEnvironmentStringsW(p);}>(::GetEnvironmentStringsW());
+			return std::unique_ptr<wchar_t, EnvironmentStringsDeleter>(::GetEnvironmentStringsW());
 		}
 
+#ifndef UNICODE
 		template <>
-		const std::unique_ptr<char, [](char* p){::FreeEnvironmentStringsA(p);}> get_environment_strings<char>()
+		const std::unique_ptr<char, EnvironmentStringsDeleter> get_environment_strings<char>()
 		{
-			return std::unique_ptr<char, [](char* p){::FreeEnvironmentStringsA(p);}>(::GetEnvironmentStringsA());
+			return std::unique_ptr<char, EnvironmentStringsDeleter>(::GetEnvironmentStringsA());
 		}
+#endif
 
 		template <typename CharType>
 		std::map<std::basic_string<CharType>, std::basic_string<CharType>> get_current_environment()
 		{
-			typedef string_type std::basic_string<CharType>;
+			typedef std::basic_string<CharType> string_type;
 
-			std::map<std::basic_string<CharType>, std::basic_string<CharType>> result;
+			std::map<string_type, string_type> result;
 
 			const auto environment_strings = get_environment_strings<CharType>();
-			const auto ptr = environment_strings.get();
+			auto ptr = environment_strings.get();
 
 			while (ptr)
 			{
 				const string_type line(ptr);
 				const auto pos = line.find(argument_helper<CharType>::EQUAL_CHARACTER);
 
-				if (pos == std::string::npos)
+				if (pos == string_type::npos)
 				{
-					result[line] = std::string();
+					result[line] = string_type();
 				}
 				else
 				{
-					const std::string key = line.substr(0, pos);
-					const std::string value = line.substr(pos + 1);
+					const string_type key = line.substr(0, pos);
+					const string_type value = line.substr(pos + 1);
 					result[key] = value;
 				}
 
@@ -336,10 +351,10 @@ namespace executeplus
 				environment_string_buffer << pair.first << argument_helper<CharType>::EQUAL_CHARACTER << pair.second << argument_helper<CharType>::NULL_CHARACTER;
 			}
 
-			const std::basic_string<CharType> command_line = command_line_buffer.str();
-			const std::basic_string<CharType> environment_string = environment_string_buffer.str();
+			std::basic_string<CharType> command_line = command_line_buffer.str();
+			std::basic_string<CharType> environment_string = environment_string_buffer.str();
 
-			return create_process(application.c_str(), &command_line[0], &environment_string[0]);
+			return create_process<CharType>(application.c_str(), &command_line[0], &environment_string[0]);
 		}
 
 		template <typename CharType>

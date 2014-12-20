@@ -50,6 +50,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include <boost/system/system_error.hpp>
 

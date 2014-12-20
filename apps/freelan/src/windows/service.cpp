@@ -201,7 +201,7 @@ namespace windows
 	/* Local functions declarations */
 	void parse_service_options(int argc, LPTSTR* argv, service_configuration& configuration);
 	fscp::logger create_logger(const service_configuration& configuration);
-	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
+	void log_function(boost::shared_ptr<std::ostream> os, fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
 	fl::configuration get_freelan_configuration(const service_configuration& configuration);
 	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
 	VOID WINAPI service_main(DWORD argc, LPTSTR* argv);
@@ -353,7 +353,7 @@ namespace windows
 		}
 	}
 
-	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
+	void log_function(boost::shared_ptr<std::ostream> os, fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 	{
 		if (os)
 		{
@@ -425,7 +425,7 @@ namespace windows
 
 		if (!authentication_script.empty())
 		{
-			configuration.fl_configuration.server.authentication_script = authentication_script;
+			fl_configuration.server.authentication_script = authentication_script;
 		}
 
 		return fl_configuration;

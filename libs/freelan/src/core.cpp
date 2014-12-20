@@ -1412,7 +1412,7 @@ namespace freelan
 		// We can't easily ensure m_ca_store is used only in one strand, so we protect it with a mutex instead.
 		boost::mutex::scoped_lock lock(m_ca_store_mutex);
 
-		if (m_ca_store)
+		if (!!m_ca_store)
 		{
 			if (condition == build_ca_store_when::it_doesnt_exist)
 			{

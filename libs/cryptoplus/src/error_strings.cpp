@@ -52,7 +52,7 @@ namespace cryptoplus
 		{
 			char buf[120];
 
-			return std::string(ERR_error_string(err, buf));
+			return std::string(ERR_error_string(err.error_code, buf));
 		}
 
 		std::string get_error_string_n(error_type err, size_t len)
@@ -61,7 +61,7 @@ namespace cryptoplus
 
 			if (len > 120) len = 120;
 
-			ERR_error_string_n(err, buf, len);
+			ERR_error_string_n(err.error_code, buf, len);
 
 			return std::string(buf, len);
 		}

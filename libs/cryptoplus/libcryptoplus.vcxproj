@@ -30,8 +30,6 @@
     <ClCompile Include="src\cipher_algorithm.cpp" />
     <ClCompile Include="src\cipher_context.cpp" />
     <ClCompile Include="src\cipher_stream.cpp" />
-    <ClCompile Include="src\cryptographic_exception.cpp" />
-    <ClCompile Include="src\cryptoplus.cpp" />
     <ClCompile Include="src\dh_key.cpp" />
     <ClCompile Include="src\dsa_key.cpp" />
     <ClCompile Include="src\ecdhe.cpp" />
