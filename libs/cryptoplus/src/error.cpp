@@ -66,6 +66,6 @@ namespace cryptoplus
 
 	std::string cryptoplus_category_impl::message(int ev) const
 	{
-		return error::get_error_string(error::error_type{ ev });
+		return error::get_error_string(error::error_type{ static_cast<unsigned long>(ev) });
 	}
 }
