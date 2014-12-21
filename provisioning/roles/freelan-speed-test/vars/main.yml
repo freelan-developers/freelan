@@ -1,0 +1,6 @@
+---
+config_root: '/home/vagrant/config'
+scripts_root: '/home/vagrant/scripts'
+config_path: '{{ config_root }}/configuration.cfg'
+cert_path: '{{ config_root }}/local.crt'
+key_path: '{{ config_root }}/local.key'
