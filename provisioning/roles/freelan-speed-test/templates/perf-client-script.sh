@@ -1,3 +1,3 @@
 #!/bin/bash
 
-iperf -c {{ item.vpn_ipv4_address }}
+iperf -c {{ item.ipv4_address }}
