@@ -37,3 +37,7 @@
 - name: Create client VPN performance test script files
   template: src=perf-client-vpn-script.sh dest={{ scripts_root }}/perf-client-vpn-{{ item.name }}.sh mode=755
   with_items: contacts
+
+- name: Create client VPN performance comparison test script files
+  template: src=perf-client-comparison-script.sh dest={{ scripts_root }}/perf-client-comparison-{{ item.name }}.sh mode=755
+  with_items: contacts
