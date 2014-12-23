@@ -52,6 +52,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
 
+#include <kfather/formatter.hpp>
+
 #include <cassert>
 
 namespace freelan
@@ -207,6 +209,70 @@ namespace freelan
 			else
 			{
 				m_logger(fscp::log_level::warning) << session->username() << " (" << req.remote() << ") asked to be unregistered but is not currently registered. Doing nothing.";
+			}
+
+			return request_result::handled;
+		});
+
+		register_authenticated_route("/set_contact_information/", [this, configuration](mongooseplus::request& req) {
+			const auto session = req.get_session<session_type>();
+			const auto cinfop = m_client_information_map.find(session->username());
+
+			if (cinfop == m_client_information_map.end())
+			{
+				m_logger(fscp::log_level::warning) << session->username() << " (" << req.remote() << ") tried to set his contact information without an active registration. Denying.";
+
+				throw mongooseplus::http_error(mongooseplus::mongooseplus_error::http_400_bad_request) << mongooseplus::error_content_error_info("No active registration");
+			}
+			else
+			{
+				auto& cinfo = cinfop->second;
+				auto info = req.json();
+
+				m_logger(fscp::log_level::debug) << "Raw client information: " << kfather::inline_formatter().format(info);
+
+				const auto public_endpoints = kfather::value_cast<kfather::object_type>(info).get<kfather::array_type>("public_endpoints");
+
+				cinfo.endpoints = std::set<asiotap::endpoint>();
+
+				for (auto&& endpoint_obj : public_endpoints.items)
+				{
+					const auto endpoint_str = kfather::value_cast<kfather::string_type>(endpoint_obj);
+					try
+					{
+						auto endpoint = boost::lexical_cast<asiotap::endpoint>(endpoint_str);
+						endpoint = asiotap::get_default_ip_endpoint(endpoint, req.remote_ip());
+
+						if (asiotap::is_endpoint_complete(endpoint))
+						{
+							cinfo.endpoints.insert(endpoint);
+						}
+						else
+						{
+							m_logger(fscp::log_level::warning) << "Not adding \"" << endpoint << "\" as a public endpoint: the endpoint is not complete.";
+						}
+					}
+					catch (std::exception& ex)
+					{
+						m_logger(fscp::log_level::warning) << "Unable to parse \"" << endpoint_str << "\": " << ex.what();
+					}
+				}
+
+				if (cinfo.endpoints.empty())
+				{
+					m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") set his contact information and has no public endpoints.";
+				}
+				else
+				{
+					std::ostringstream oss;
+
+					for (auto&& ep : cinfo.endpoints)
+					{
+						oss << ", " << ep;
+					}
+
+					m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") set his contact information and can be joined at: " << oss.str().substr(2);
+				}
 			}
 
 			return request_result::handled;

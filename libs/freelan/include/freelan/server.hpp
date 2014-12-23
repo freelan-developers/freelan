@@ -56,6 +56,8 @@
 
 #include <cryptoplus/x509/certificate.hpp>
 
+#include <asiotap/types/endpoint.hpp>
+
 #include <mongooseplus/mongooseplus.hpp>
 
 namespace freelan
@@ -84,6 +86,7 @@ namespace freelan
 			{
 				cryptoplus::x509::certificate certificate;
 				boost::posix_time::ptime expiration_timestamp;
+				std::set<asiotap::endpoint> endpoints;
 
 				bool has_expired() const
 				{

@@ -114,6 +114,15 @@ namespace asiotap
 			}
 
 			/**
+			 * \brief Check if the ip_endpoint has a null IP address.
+			 * \return true if the ip_endpoint has a null IP address.
+			 */
+			bool has_null_address() const
+			{
+				return address().is_unspecified();
+			}
+
+			/**
 			 * \brief Get the address.
 			 * \return The address.
 			 */
