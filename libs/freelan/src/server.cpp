@@ -116,6 +116,18 @@ namespace freelan
 				fscp::logger& m_logger;
 				web_server::authentication_handler_type m_authentication_handler;
 		};
+
+		kfather::array_type to_json(const std::set<asiotap::endpoint>& public_endpoints)
+		{
+			kfather::array_type result;
+
+			for (auto&& public_endpoint : public_endpoints)
+			{
+				result.items.push_back(boost::lexical_cast<std::string>(public_endpoint));
+			}
+
+			return result;
+		}
 	}
 
 	web_server::web_server(fscp::logger& _logger, const freelan::server_configuration& configuration, authentication_handler_type authentication_handler) :
@@ -234,10 +246,12 @@ namespace freelan
 				const auto public_endpoints = kfather::value_cast<kfather::object_type>(info).get<kfather::array_type>("public_endpoints");
 
 				cinfo.endpoints = std::set<asiotap::endpoint>();
+				std::set<asiotap::endpoint> rejected_endpoints;
 
 				for (auto&& endpoint_obj : public_endpoints.items)
 				{
 					const auto endpoint_str = kfather::value_cast<kfather::string_type>(endpoint_obj);
+
 					try
 					{
 						auto endpoint = boost::lexical_cast<asiotap::endpoint>(endpoint_str);
@@ -250,6 +264,8 @@ namespace freelan
 						else
 						{
 							m_logger(fscp::log_level::warning) << "Not adding \"" << endpoint << "\" as a public endpoint: the endpoint is not complete.";
+
+							rejected_endpoints.insert(endpoint);
 						}
 					}
 					catch (std::exception& ex)
@@ -273,9 +289,15 @@ namespace freelan
 
 					m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") set his contact information and can be joined at: " << oss.str().substr(2);
 				}
-			}
 
-			return request_result::handled;
+				kfather::object_type result;
+				result.items["accepted_endpoints"] = to_json(cinfo.endpoints);
+				result.items["rejected_endpoints"] = to_json(rejected_endpoints);
+
+				req.send_json(result);
+
+				return request_result::handled;
+			}
 		});
 	}
 

@@ -71,7 +71,7 @@ namespace freelan
 			typedef boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> request_certificate_callback;
 			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::ptime&)> registration_callback;
 			typedef boost::function<void (const boost::system::error_code&)> unregistration_callback;
-			typedef boost::function<void (const boost::system::error_code&)> set_contact_information_callback;
+			typedef boost::function<void (const boost::system::error_code&, const std::set<asiotap::endpoint>&, const std::set<asiotap::endpoint>&)> set_contact_information_callback;
 
 			/**
 			 * \brief Create a new web client.

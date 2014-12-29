@@ -99,6 +99,32 @@ namespace
 
 		return result;
 	}
+
+	template <typename ResultType>
+	ResultType from_json(const kfather::array_type&);
+
+	template <>
+	std::set<asiotap::endpoint> from_json<std::set<asiotap::endpoint>>(const kfather::array_type& endpoints)
+	{
+		std::set<asiotap::endpoint> result;
+
+		for (auto&& endpoint_obj : endpoints.items)
+		{
+			const auto endpoint_str = kfather::value_cast<kfather::string_type>(endpoint_obj);
+
+			try
+			{
+				auto endpoint = boost::lexical_cast<asiotap::endpoint>(endpoint_str);
+				result.insert(endpoint);
+			}
+			catch (const std::exception&)
+			{
+				// If parsing fail, we discard the value silently.
+			}
+		}
+
+		return result;
+	}
 }
 
 namespace freelan
@@ -339,14 +365,15 @@ namespace freelan
 		const auto self = shared_from_this();
 		const auto request = make_request("/set_contact_information/");
 
-		const kfather::object_type value {
-			{
-				{"public_endpoints", to_json(public_endpoints)}
-			}
-		};
-
 		std::ostringstream oss;
-		kfather::compact_formatter().format(oss, value);
+		kfather::compact_formatter().format(
+			oss,
+			kfather::object_type {
+				{
+					{"public_endpoints", to_json(public_endpoints)}
+				}
+			}
+		);
 
 		request->set_http_header("content-type", "application/json");
 		request->set_copy_post_fields(boost::asio::buffer(oss.str()));
@@ -359,6 +386,9 @@ namespace freelan
 		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
 			using boost::asio::buffer_cast;
 			using boost::asio::buffer_size;
+
+			std::set<asiotap::endpoint> accepted_endpoints;
+			std::set<asiotap::endpoint> rejected_endpoints;
 
 			if (ec)
 			{
@@ -374,10 +404,43 @@ namespace freelan
 				else
 				{
 					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+
+					const auto content_type = request->get_content_type();
+
+					if (content_type == "application/json")
+					{
+						self->m_logger(fscp::log_level::debug) << "Received JSON data: " << std::string(buffer_cast<const char*>(buffer), *count);
+
+						kfather::parser parser;
+						kfather::value_type result;
+
+						if (!parser.parse(result, buffer_cast<const char*>(buffer), *count))
+						{
+							ec = make_error_code(web_client_error::invalid_json_stream);
+						}
+						else
+						{
+							const kfather::object_type value = kfather::value_cast<kfather::object_type>(result);
+
+							if (kfather::is_falsy(value))
+							{
+								ec = make_error_code(web_client_error::invalid_json_stream);
+							}
+							else
+							{
+								accepted_endpoints = from_json<std::set<asiotap::endpoint>>(value.get<kfather::array_type>("accepted_endpoints"));
+								rejected_endpoints = from_json<std::set<asiotap::endpoint>>(value.get<kfather::array_type>("rejected_endpoints"));
+							}
+						}
+					}
+					else
+					{
+						ec = make_error_code(web_client_error::unsupported_content_type);
+					}
 				}
 			}
 
-			handler(ec);
+			handler(ec, accepted_endpoints, rejected_endpoints);
 		});
 	}
 

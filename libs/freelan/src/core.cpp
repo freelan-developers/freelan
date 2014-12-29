@@ -2257,8 +2257,6 @@ namespace freelan
 
 					m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". Registration update planned at " << local_registration_update_timestamp << ".";
 					m_registration_retry_timer.expires_at(registration_update_timestamp);
-
-					m_logger(fscp::log_level::information) << "Setting contact information on the web server...";
 					set_contact_information();
 				}
 
@@ -2310,7 +2308,28 @@ namespace freelan
 				public_endpoints.insert(asiotap::get_default_port_endpoint(public_endpoint, local_port));
 			}
 
-			m_web_client->set_contact_information(public_endpoints, [this] (const boost::system::error_code& ec) {
+			if (public_endpoints.empty())
+			{
+				m_logger(fscp::log_level::information) << "Setting contact information on the web server with no public endpoints...";
+			}
+			else
+			{
+				std::ostringstream oss;
+
+				for (auto&& endpoint : public_endpoints)
+				{
+					if (!oss.str().empty())
+					{
+						oss << ", ";
+					}
+
+					oss << endpoint;
+				}
+
+				m_logger(fscp::log_level::information) << "Setting contact information on the web server with " << public_endpoints.size() << " public endpoint(s) (" << oss.str() << ")...";
+			}
+
+			m_web_client->set_contact_information(public_endpoints, [this] (const boost::system::error_code& ec, const std::set<asiotap::endpoint>& accepted_endpoints, const std::set<asiotap::endpoint>& rejected_endpoints) {
 				if (ec)
 				{
 					m_logger(fscp::log_level::error) << "Failed to set contact information on the web server: " << ec.message() << " (" << ec << ").";
@@ -2326,6 +2345,44 @@ namespace freelan
 				else
 				{
 					m_logger(fscp::log_level::information) << "The web server acknowledged our contact information.";
+
+					if (accepted_endpoints.empty())
+					{
+						m_logger(fscp::log_level::information) << "No public endpoints will be advertised.";
+					}
+					else
+					{
+						std::ostringstream oss;
+
+						for (auto&& endpoint : accepted_endpoints)
+						{
+							if (!oss.str().empty())
+							{
+								oss << ", ";
+							}
+
+							oss << endpoint;
+						}
+
+						m_logger(fscp::log_level::information) << "Server will advertise the following endpoints: " << oss.str();
+					}
+
+					if (!rejected_endpoints.empty())
+					{
+						std::ostringstream oss;
+
+						for (auto&& endpoint : rejected_endpoints)
+						{
+							if (!oss.str().empty())
+							{
+								oss << ", ";
+							}
+
+							oss << endpoint;
+						}
+
+						m_logger(fscp::log_level::warning) << "Server refused to advertise the following endpoints: " << oss.str();
+					}
 				}
 			});
 		}
