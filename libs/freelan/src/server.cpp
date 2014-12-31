@@ -190,7 +190,8 @@ namespace freelan
 
 		register_authenticated_route("/register/", [this, configuration](mongooseplus::request& req) {
 			const auto session = req.get_session<session_type>();
-			const bool registered = (m_client_information_map.find(session->username()) != m_client_information_map.end());
+			const auto cinfop = get_client_information(req);
+			const bool registered = (cinfop != nullptr);
 
 			if (registered)
 			{
@@ -203,23 +204,22 @@ namespace freelan
 
 			const cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_der(req.content(), req.content_size());
 
-			auto& cinfo = m_client_information_map[session->username()];
-			cinfo.presentation = fscp::presentation_store(cert);
-			cinfo.expires_from_now(configuration.registration_validity_duration);
+			cinfop->presentation = fscp::presentation_store(cert);
+			cinfop->expires_from_now(configuration.registration_validity_duration);
 
 			typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
 
 			if (registered)
 			{
-				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") registration extended until: " << local_adjustor::utc_to_local(cinfo.expiration_timestamp) << ".";
+				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") registration extended until: " << local_adjustor::utc_to_local(cinfop->expiration_timestamp) << ".";
 			}
 			else
 			{
-				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") registered until: " << local_adjustor::utc_to_local(cinfo.expiration_timestamp) << ".";
+				m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") registered until: " << local_adjustor::utc_to_local(cinfop->expiration_timestamp) << ".";
 			}
 
 			kfather::object_type result;
-			result.items["expiration_timestamp"] = boost::posix_time::to_iso_extended_string(cinfo.expiration_timestamp);
+			result.items["expiration_timestamp"] = boost::posix_time::to_iso_extended_string(cinfop->expiration_timestamp);
 
 			req.send_json(result);
 
@@ -228,7 +228,8 @@ namespace freelan
 
 		register_authenticated_route("/unregister/", [this, configuration](mongooseplus::request& req) {
 			const auto session = req.get_session<session_type>();
-			const bool registered = (m_client_information_map.find(session->username()) != m_client_information_map.end());
+			const auto cinfop = get_client_information(req);
+			const bool registered = (cinfop != nullptr);
 
 			if (registered)
 			{
@@ -246,9 +247,9 @@ namespace freelan
 
 		register_authenticated_route("/set_contact_information/", [this, configuration](mongooseplus::request& req) {
 			const auto session = req.get_session<session_type>();
-			const auto cinfop = m_client_information_map.find(session->username());
+			const auto cinfop = get_client_information(req);
 
-			if (cinfop == m_client_information_map.end())
+			if (cinfop == nullptr)
 			{
 				m_logger(fscp::log_level::warning) << session->username() << " (" << req.remote() << ") tried to set his contact information without an active registration. Denying.";
 
@@ -256,14 +257,13 @@ namespace freelan
 			}
 			else
 			{
-				auto& cinfo = cinfop->second;
 				auto info = req.json();
 
 				m_logger(fscp::log_level::debug) << "Raw client information: " << kfather::inline_formatter().format(info);
 
 				const auto public_endpoints = kfather::value_cast<kfather::object_type>(info).get<kfather::array_type>("public_endpoints");
 
-				cinfo.endpoints = std::set<asiotap::endpoint>();
+				cinfop->endpoints = std::set<asiotap::endpoint>();
 				std::set<asiotap::endpoint> rejected_endpoints;
 
 				for (auto&& endpoint_obj : public_endpoints.items)
@@ -277,7 +277,7 @@ namespace freelan
 
 						if (asiotap::is_endpoint_complete(endpoint))
 						{
-							cinfo.endpoints.insert(endpoint);
+							cinfop->endpoints.insert(endpoint);
 						}
 						else
 						{
@@ -292,7 +292,7 @@ namespace freelan
 					}
 				}
 
-				if (cinfo.endpoints.empty())
+				if (cinfop->endpoints.empty())
 				{
 					m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") set his contact information and has no public endpoints.";
 				}
@@ -300,7 +300,7 @@ namespace freelan
 				{
 					std::ostringstream oss;
 
-					for (auto&& ep : cinfo.endpoints)
+					for (auto&& ep : cinfop->endpoints)
 					{
 						oss << ", " << ep;
 					}
@@ -309,7 +309,7 @@ namespace freelan
 				}
 
 				kfather::object_type result;
-				result.items["accepted_endpoints"] = to_json(cinfo.endpoints);
+				result.items["accepted_endpoints"] = to_json(cinfop->endpoints);
 				result.items["rejected_endpoints"] = to_json(rejected_endpoints);
 
 				req.send_json(result);
@@ -320,9 +320,9 @@ namespace freelan
 
 		register_authenticated_route("/get_contact_information/", [this, configuration](mongooseplus::request& req) {
 			const auto session = req.get_session<session_type>();
-			const auto cinfop = m_client_information_map.find(session->username());
+			const auto cinfop = get_client_information(req);
 
-			if (cinfop == m_client_information_map.end())
+			if (cinfop == nullptr)
 			{
 				m_logger(fscp::log_level::warning) << session->username() << " (" << req.remote() << ") asked for contact information without an active registration. Denying.";
 
@@ -437,5 +437,25 @@ namespace freelan
 		m_logger(fscp::log_level::warning) << "Web server - Sending back " << req.status_code() << " to " << req.remote() << ".";
 
 		return mongooseplus::routed_web_server::handle_http_error(req);
+	}
+
+	web_server::client_information_type* web_server::get_client_information(mongooseplus::request& req)
+	{
+		const auto session = req.get_session<session_type>();
+		const auto cinfop = m_client_information_map.find(session->username());
+
+		if (cinfop != m_client_information_map.end())
+		{
+			if (cinfop->second.has_expired())
+			{
+				m_client_information_map.erase(cinfop);
+			}
+			else
+			{
+				return &cinfop->second;
+			}
+		}
+
+		return nullptr;
 	}
 }

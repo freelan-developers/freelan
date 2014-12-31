@@ -102,6 +102,8 @@ namespace freelan
 				}
 			};
 
+			client_information_type* get_client_information(mongooseplus::request&);
+
 			fscp::logger& m_logger;
 			authentication_handler_type m_authentication_handler;
 			std::map<std::string, client_information_type> m_client_information_map;
