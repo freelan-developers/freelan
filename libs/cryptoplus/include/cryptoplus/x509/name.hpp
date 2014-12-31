@@ -293,6 +293,12 @@ namespace cryptoplus
 				void print(bio::bio_ptr bio, int obase = 0) const;
 
 				/**
+				 * \brief Get a complete string representation of the name.
+				 * \return The string representation.
+				 */
+				std::string to_string() const;
+
+				/**
 				 * \brief Get the count of entries.
 				 * \return The count of entries.
 				 */
@@ -764,6 +770,14 @@ namespace cryptoplus
 		 */
 		int compare(const name& lhs, const name& rhs);
 
+		/**
+		 * \brief Output the name to an output stream.
+		 * \param os The output stream.
+		 * \param value The value instance..
+		 * \return The output stream.
+		 */
+		std::ostream& operator<<(std::ostream& os, const name& value);
+
 		template <typename IteratorValueType>
 		inline name::base_iterator<IteratorValueType>::base_iterator() : m_owner(NULL), m_index(0)
 		{
@@ -1199,6 +1213,10 @@ namespace cryptoplus
 		inline int compare(const name& lhs, const name& rhs)
 		{
 			return X509_NAME_cmp(lhs.raw(), rhs.raw());
+		}
+		inline std::ostream& operator<<(std::ostream& os, const name& value)
+		{
+			return os << value.to_string();
 		}
 	}
 }

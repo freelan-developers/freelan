@@ -59,6 +59,17 @@ namespace cryptoplus
 
 			return name(_ptr, deleter);
 		}
+
+		std::string name::to_string() const
+		{
+			bio::bio_ptr bio(BIO_new(BIO_s_mem()));
+
+			this->print(bio);
+
+			BUF_MEM* const str = bio.get_mem_buf();
+
+			return std::string(str->data, str->length);
+		}
 	}
 }
 

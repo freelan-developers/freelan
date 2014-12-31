@@ -7,7 +7,6 @@
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/x509/extension.hpp>
-#include <cryptoplus/bio/bio_chain.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 #include <cryptoplus/asn1/utctime.hpp>
 #include <cryptoplus/pkey/rsa_key.hpp>
@@ -51,8 +50,12 @@ int main()
 		certificate.subject().push_back("C", MBSTRING_ASC, "FR");
 		certificate.subject().push_back("O", MBSTRING_ASC, "My organization");
 
+		std::cout << "Setting subject to: " << certificate.subject() << std::endl;
+
 		// We copy the data from subject() to issuer().
 		certificate.set_issuer(certificate.subject());
+
+		std::cout << "Setting issuer to: " << certificate.issuer() << std::endl;
 
 		// Serial number
 		certificate.set_serial_number(asn1::integer::from_long(42));
@@ -97,9 +100,7 @@ int main()
 		}
 
 		// Let's print the result
-		bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
-
-		certificate.print(bio_chain.first());
+		std::cout << certificate << std::endl;
 	}
 	catch (std::exception& ex)
 	{

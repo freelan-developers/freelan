@@ -393,6 +393,12 @@ namespace cryptoplus
 				void print(bio::bio_ptr bio) const;
 
 				/**
+				 * \brief Get a complete string representation of the certificate.
+				 * \return The string representation.
+				 */
+				std::string to_string() const;
+
+				/**
 				 * \brief Get the count of entries.
 				 * \return The count of entries.
 				 */
@@ -835,6 +841,14 @@ namespace cryptoplus
 		 * \return true if the two certificate instances do not share the same underlying pointer.
 		 */
 		bool operator!=(const certificate& lhs, const certificate& rhs);
+
+		/**
+		 * \brief Output the certificate to an output stream.
+		 * \param os The output stream.
+		 * \param value The value instance..
+		 * \return The output stream.
+		 */
+		std::ostream& operator<<(std::ostream& os, const certificate& value);
 
 		template <typename IteratorValueType>
 		inline certificate::base_iterator<IteratorValueType>::base_iterator() : m_owner(NULL), m_index(0)
@@ -1315,6 +1329,10 @@ namespace cryptoplus
 		inline bool operator!=(const certificate& lhs, const certificate& rhs)
 		{
 			return lhs.raw() != rhs.raw();
+		}
+		inline std::ostream& operator<<(std::ostream& os, const certificate& value)
+		{
+			return os << value.to_string();
 		}
 	}
 }
