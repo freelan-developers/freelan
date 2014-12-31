@@ -122,7 +122,7 @@ static bool on_presentation(const std::string& name, fscp::server& server, const
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << status << std::endl;
+	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject() << ") - " << status << std::endl;
 
 	server.async_request_session(sender, boost::bind(&simple_handler, name, "async_request_session()", _1));
 
@@ -240,7 +240,7 @@ static bool on_contact_request_message(const std::string& name, fscp::server& se
 
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject().oneline() << " ? (Answer: " << hash << " is at " << target << ")" << std::endl;
+	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject() << " ? (Answer: " << hash << " is at " << target << ")" << std::endl;
 
 	return true;
 }

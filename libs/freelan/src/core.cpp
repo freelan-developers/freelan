@@ -523,7 +523,7 @@ namespace freelan
 
 			m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
-			m_logger(fscp::log_level::warning) << "Using a generated temporary certificate (" << certificate.subject().oneline() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
+			m_logger(fscp::log_level::warning) << "Using a generated temporary certificate (" << certificate.subject() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
 		}
 
 		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::ref(m_logger), boost::cref(*m_configuration.security.identity));
@@ -971,7 +971,7 @@ namespace freelan
 	{
 		if (m_configuration.fscp.accept_contact_requests)
 		{
-			m_logger(fscp::log_level::information) << "Received contact request from " << sender << " for " << cert.subject().oneline() << " (" << hash << "). Host is at: " << answer;
+			m_logger(fscp::log_level::information) << "Received contact request from " << sender << " for " << cert.subject() << " (" << hash << "). Host is at: " << answer;
 
 			return true;
 		}
@@ -1003,7 +1003,7 @@ namespace freelan
 	{
 		if (m_logger.level() <= fscp::log_level::debug)
 		{
-			m_logger(fscp::log_level::debug) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject().oneline() << ".";
+			m_logger(fscp::log_level::debug) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject() << ".";
 		}
 
 		if (is_banned(sender.address()))
@@ -1027,7 +1027,7 @@ namespace freelan
 			return false;
 		}
 
-		m_logger(fscp::log_level::information) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << "): " << status << ".";
+		m_logger(fscp::log_level::information) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject() << "): " << status << ".";
 
 		async_request_session(sender);
 
@@ -1467,11 +1467,11 @@ namespace freelan
 
 		if (!ok)
 		{
-			m_logger(fscp::log_level::warning) << "Error when validating " << cert.subject().oneline() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
+			m_logger(fscp::log_level::warning) << "Error when validating " << cert.subject() << ": " << store_context.get_error_string() << " (depth: " << store_context.get_error_depth() << ")";
 		}
 		else
 		{
-			m_logger(fscp::log_level::information) << cert.subject().oneline() << " is valid.";
+			m_logger(fscp::log_level::information) << cert.subject() << " is valid.";
 		}
 
 		return ok;
@@ -2168,7 +2168,7 @@ namespace freelan
 			}
 			else
 			{
-				m_logger(fscp::log_level::information) << "Received certificate from server: " << certificate.subject().oneline();
+				m_logger(fscp::log_level::information) << "Received certificate from server: " << certificate.subject();
 
 				m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
@@ -2218,7 +2218,7 @@ namespace freelan
 			}
 			else
 			{
-				m_logger(fscp::log_level::information) << "Received CA certificate from server: " << certificate.subject().oneline();
+				m_logger(fscp::log_level::information) << "Received CA certificate from server: " << certificate.subject();
 
 				m_client_certificate_authority_list.clear();
 				m_client_certificate_authority_list.push_back(certificate);

@@ -117,7 +117,7 @@ static bool on_presentation(fscp::server& server, const fscp::server::ep_type& s
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << status << std::endl;
+	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject() << ") - " << status << std::endl;
 
 	server.async_request_session(sender, boost::bind(&simple_handler, "async_request_session()", _1));
 
