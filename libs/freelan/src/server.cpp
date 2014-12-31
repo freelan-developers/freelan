@@ -48,6 +48,7 @@
 #include "tools.hpp"
 
 #include <cryptoplus/x509/certificate_request.hpp>
+#include <cryptoplus/base64.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
@@ -124,6 +125,23 @@ namespace freelan
 			for (auto&& public_endpoint : public_endpoints)
 			{
 				result.items.push_back(boost::lexical_cast<std::string>(public_endpoint));
+			}
+
+			return result;
+		}
+
+		kfather::string_type to_json(const fscp::hash_type& hash)
+		{
+			return cryptoplus::base64_encode(cryptoplus::buffer(&hash.data[0], hash.data.size()));
+		}
+
+		kfather::object_type to_json(const std::map<fscp::hash_type, std::set<asiotap::endpoint>>& contacts)
+		{
+			kfather::object_type result;
+
+			for (auto&& contact : contacts)
+			{
+				result.items[to_json(contact.first)] = to_json(contact.second);
 			}
 
 			return result;
@@ -293,6 +311,96 @@ namespace freelan
 				kfather::object_type result;
 				result.items["accepted_endpoints"] = to_json(cinfo.endpoints);
 				result.items["rejected_endpoints"] = to_json(rejected_endpoints);
+
+				req.send_json(result);
+
+				return request_result::handled;
+			}
+		});
+
+		register_authenticated_route("/get_contact_information/", [this, configuration](mongooseplus::request& req) {
+			const auto session = req.get_session<session_type>();
+			const auto cinfop = m_client_information_map.find(session->username());
+
+			if (cinfop == m_client_information_map.end())
+			{
+				m_logger(fscp::log_level::warning) << session->username() << " (" << req.remote() << ") asked for contact information without an active registration. Denying.";
+
+				throw mongooseplus::http_error(mongooseplus::mongooseplus_error::http_400_bad_request) << mongooseplus::error_content_error_info("No active registration");
+			}
+			else
+			{
+				auto info = req.json();
+
+				m_logger(fscp::log_level::debug) << "Raw client information: " << kfather::inline_formatter().format(info);
+
+				std::set<fscp::hash_type> requested_contacts;
+
+				for(auto&& hash_obj : kfather::value_cast<kfather::object_type>(info).get<kfather::array_type>("requested_contacts").items)
+				{
+					const std::string hash_b64 = kfather::value_cast<std::string>(hash_obj);
+
+					try
+					{
+						const auto hash_buf = cryptoplus::base64_decode(hash_b64);
+
+						if (hash_buf.data().size() != sizeof(fscp::hash_type))
+						{
+							throw std::runtime_error("Invalid hash size");
+						}
+
+						fscp::hash_type hash;
+						std::copy_n(hash_buf.data().begin(), sizeof(hash.data), hash.data.begin());
+						requested_contacts.insert(hash);
+					}
+					catch (std::exception& ex)
+					{
+						m_logger(fscp::log_level::warning) << "Unable to read base 64 encoded DER certificate hash from \"" << hash_b64 << "\": " << ex.what();
+					}
+				}
+
+				std::map<fscp::hash_type, std::set<asiotap::endpoint>> contacts;
+
+				if (requested_contacts.empty())
+				{
+					m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") requested all contact information.";
+
+					for (auto&& cinfo_pair : m_client_information_map)
+					{
+						if (cinfo_pair.first != session->username())
+						{
+							const auto& hash = cinfo_pair.second.presentation.signature_certificate_hash();
+							contacts[hash] = cinfo_pair.second.endpoints;
+						}
+					}
+				}
+				else
+				{
+					std::ostringstream oss;
+
+					for (auto&& hash : requested_contacts)
+					{
+						oss << ", " << hash;
+					}
+
+					m_logger(fscp::log_level::information) << session->username() << " (" << req.remote() << ") requested contact information for: " << oss.str().substr(2);
+
+					for (auto&& cinfo_pair : m_client_information_map)
+					{
+						if (cinfo_pair.first != session->username())
+						{
+							const auto& hash = cinfo_pair.second.presentation.signature_certificate_hash();
+							if (requested_contacts.find(hash) != requested_contacts.end())
+							{
+								contacts[hash] = cinfo_pair.second.endpoints;
+							}
+						}
+					}
+				}
+
+				kfather::object_type result;
+
+				result.items["contacts"] = to_json(contacts);
 
 				req.send_json(result);
 
