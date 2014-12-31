@@ -186,7 +186,7 @@ namespace freelan
 			const cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_der(req.content(), req.content_size());
 
 			auto& cinfo = m_client_information_map[session->username()];
-			cinfo.certificate = cert;
+			cinfo.presentation = fscp::presentation_store(cert);
 			cinfo.expires_from_now(configuration.registration_validity_duration);
 
 			typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;

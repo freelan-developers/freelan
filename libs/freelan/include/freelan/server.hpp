@@ -53,8 +53,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <fscp/logger.hpp>
-
-#include <cryptoplus/x509/certificate.hpp>
+#include <fscp/presentation_store.hpp>
 
 #include <asiotap/types/endpoint.hpp>
 
@@ -84,7 +83,7 @@ namespace freelan
 		private:
 			struct client_information_type
 			{
-				cryptoplus::x509::certificate certificate;
+				fscp::presentation_store presentation;
 				boost::posix_time::ptime expiration_timestamp;
 				std::set<asiotap::endpoint> endpoints;
 
