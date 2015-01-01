@@ -91,7 +91,7 @@ namespace freelan
 				{
 					const auto now = boost::posix_time::microsec_clock::universal_time();
 
-					return (expiration_timestamp > now);
+					return (expiration_timestamp < now);
 				}
 
 				void expires_from_now(const boost::posix_time::time_duration& duration)
