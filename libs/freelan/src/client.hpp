@@ -72,6 +72,7 @@ namespace freelan
 			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::ptime&)> registration_callback;
 			typedef boost::function<void (const boost::system::error_code&)> unregistration_callback;
 			typedef boost::function<void (const boost::system::error_code&, const std::set<asiotap::endpoint>&, const std::set<asiotap::endpoint>&)> set_contact_information_callback;
+			typedef boost::function<void (const boost::system::error_code&, const std::map<fscp::hash_type, std::set<asiotap::endpoint>>&)> get_contact_information_callback;
 
 			/**
 			 * \brief Create a new web client.
@@ -116,6 +117,13 @@ namespace freelan
 			 * \param handler The handler that will get called when the response is received.
 			 */
 			void set_contact_information(const std::set<asiotap::endpoint>& public_endpoints, set_contact_information_callback handler);
+
+			/**
+			 * \brief Get contact information from the server.
+			 * \param requested_contacts The hashes of the contacts to request.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void get_contact_information(const std::set<fscp::hash_type>& requested_contacts, get_contact_information_callback handler);
 
 		private:
 			typedef fscp::memory_pool<8192, 2> memory_pool;

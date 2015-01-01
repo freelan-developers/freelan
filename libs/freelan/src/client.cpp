@@ -49,6 +49,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <cryptoplus/buffer.hpp>
+#include <cryptoplus/base64.hpp>
 
 #include <kfather/parser.hpp>
 #include <kfather/formatter.hpp>
@@ -100,6 +101,23 @@ namespace
 		return result;
 	}
 
+	kfather::string_type to_json(const fscp::hash_type& hash)
+	{
+		return cryptoplus::base64_encode(cryptoplus::buffer(&hash.data[0], hash.data.size()));
+	}
+
+	kfather::array_type to_json(const std::set<fscp::hash_type>& hashes)
+	{
+		kfather::array_type result;
+
+		for (auto&& hash : hashes)
+		{
+			result.items.push_back(to_json(hash));
+		}
+
+		return result;
+	}
+
 	template <typename ResultType>
 	ResultType from_json(const kfather::array_type&);
 
@@ -116,6 +134,51 @@ namespace
 			{
 				auto endpoint = boost::lexical_cast<asiotap::endpoint>(endpoint_str);
 				result.insert(endpoint);
+			}
+			catch (const std::exception&)
+			{
+				// If parsing fail, we discard the value silently.
+			}
+		}
+
+		return result;
+	}
+
+	template <typename ResultType>
+	ResultType from_json(const kfather::string_type&);
+
+	template <>
+	fscp::hash_type from_json<fscp::hash_type>(const kfather::string_type& hash_b64)
+	{
+		const auto hash_buf = cryptoplus::base64_decode(hash_b64);
+
+		if (hash_buf.data().size() != sizeof(fscp::hash_type))
+		{
+			throw std::runtime_error("Invalid hash size");
+		}
+
+		fscp::hash_type hash;
+		std::copy_n(hash_buf.data().begin(), sizeof(hash.data), hash.data.begin());
+
+		return hash;
+	}
+
+	template <typename ResultType>
+	ResultType from_json(const kfather::object_type&);
+
+	template <>
+	std::map<fscp::hash_type, std::set<asiotap::endpoint>> from_json<std::map<fscp::hash_type, std::set<asiotap::endpoint>>>(const kfather::object_type& contacts)
+	{
+		std::map<fscp::hash_type, std::set<asiotap::endpoint>> result;
+
+		for (auto&& item : contacts.items)
+		{
+			try
+			{
+				const auto hash = from_json<fscp::hash_type>(item.first);
+				const auto endpoints = from_json<std::set<asiotap::endpoint>>(kfather::value_cast<kfather::array_type>(item.second));
+
+				result[hash] = endpoints;
 			}
 			catch (const std::exception&)
 			{
@@ -441,6 +504,88 @@ namespace freelan
 			}
 
 			handler(ec, accepted_endpoints, rejected_endpoints);
+		});
+	}
+
+	void web_client::get_contact_information(const std::set<fscp::hash_type>& requested_contacts, get_contact_information_callback handler)
+	{
+		const auto self = shared_from_this();
+		const auto request = make_request("/get_contact_information/");
+
+		std::ostringstream oss;
+		kfather::compact_formatter().format(
+			oss,
+			kfather::object_type {
+				{
+					{"requested_contacts", to_json(requested_contacts)}
+				}
+			}
+		);
+
+		request->set_http_header("content-type", "application/json");
+		request->set_copy_post_fields(boost::asio::buffer(oss.str()));
+
+		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const boost::shared_ptr<size_t> count(new size_t(0));
+
+		request->set_write_function(get_write_function(buffer, count));
+
+		m_curl_multi_asio->execute(request, [self, request, buffer, count, handler] (boost::system::error_code ec) {
+			using boost::asio::buffer_cast;
+			using boost::asio::buffer_size;
+
+			std::map<fscp::hash_type, std::set<asiotap::endpoint>> contacts;
+
+			if (ec)
+			{
+				self->m_logger(fscp::log_level::error) << "Error while sending HTTP(S) request to " << request->get_effective_url() << ": " << ec.message() << " (" << ec << ")";
+			}
+			else
+			{
+				if (request->get_response_code() != 200)
+				{
+					self->m_logger(fscp::log_level::debug) << "Received unexpected HTTP return code: " << request->get_response_code();
+					ec = make_error_code(web_client_error::unexpected_response);
+				}
+				else
+				{
+					self->m_logger(fscp::log_level::debug) << "Sending HTTP(S) request to " << request->get_effective_url() << ": " << request->get_response_code();
+
+					const auto content_type = request->get_content_type();
+
+					if (content_type == "application/json")
+					{
+						self->m_logger(fscp::log_level::debug) << "Received JSON data: " << std::string(buffer_cast<const char*>(buffer), *count);
+
+						kfather::parser parser;
+						kfather::value_type result;
+
+						if (!parser.parse(result, buffer_cast<const char*>(buffer), *count))
+						{
+							ec = make_error_code(web_client_error::invalid_json_stream);
+						}
+						else
+						{
+							const kfather::object_type value = kfather::value_cast<kfather::object_type>(result);
+
+							if (kfather::is_falsy(value))
+							{
+								ec = make_error_code(web_client_error::invalid_json_stream);
+							}
+							else
+							{
+								contacts = from_json<std::map<fscp::hash_type, std::set<asiotap::endpoint>>>(value.get<kfather::object_type>("contacts"));
+							}
+						}
+					}
+					else
+					{
+						ec = make_error_code(web_client_error::unsupported_content_type);
+					}
+				}
+			}
+
+			handler(ec, contacts);
 		});
 	}
 

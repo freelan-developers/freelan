@@ -190,7 +190,7 @@ namespace freelan
 
 		register_authenticated_route("/register/", [this, configuration](mongooseplus::request& req) {
 			const auto session = req.get_session<session_type>();
-			const auto cinfop = get_client_information(req);
+			auto cinfop = get_client_information(req);
 			const bool registered = (cinfop != nullptr);
 
 			if (registered)
@@ -200,6 +200,8 @@ namespace freelan
 			else
 			{
 				m_logger(fscp::log_level::debug) << session->username() << " (" << req.remote() << ") asked to be registered.";
+
+				cinfop = &m_client_information_map[session->username()];
 			}
 
 			const cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_der(req.content(), req.content_size());
@@ -449,6 +451,8 @@ namespace freelan
 			if (cinfop->second.has_expired())
 			{
 				m_client_information_map.erase(cinfop);
+
+				m_logger(fscp::log_level::warning) << "Registration for " << req.remote() << " (" << session->username() << ") just expired.";
 			}
 			else
 			{

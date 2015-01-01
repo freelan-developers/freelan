@@ -282,6 +282,16 @@ namespace freelan
 			static const boost::posix_time::time_duration SET_CONTACT_INFORMATION_RETRY_PERIOD;
 
 			/**
+			 * \brief The get contact information retry period.
+			 */
+			static const boost::posix_time::time_duration GET_CONTACT_INFORMATION_RETRY_PERIOD;
+
+			/**
+			 * \brief The get contact information update period.
+			 */
+			static const boost::posix_time::time_duration GET_CONTACT_INFORMATION_UPDATE_PERIOD;
+
+			/**
 			 * \brief The default service.
 			 */
 			static const std::string DEFAULT_SERVICE;
@@ -688,6 +698,7 @@ namespace freelan
 			void register_();
 			void unregister();
 			void set_contact_information();
+			void get_contact_information();
 
 			boost::shared_ptr<web_client> m_web_client;
 			boost::asio::deadline_timer m_request_certificate_timer;
@@ -695,6 +706,7 @@ namespace freelan
 			boost::asio::deadline_timer m_renew_certificate_timer;
 			boost::asio::deadline_timer m_registration_retry_timer;
 			boost::asio::deadline_timer m_set_contact_information_retry_timer;
+			boost::asio::deadline_timer m_get_contact_information_retry_timer;
 			cert_list_type m_client_certificate_authority_list;
 	};
 }

@@ -406,6 +406,9 @@ namespace freelan
 	const boost::posix_time::time_duration core::REGISTRATION_RETRY_PERIOD = boost::posix_time::seconds(30);
 	const boost::posix_time::time_duration core::REGISTRATION_WARNING_PERIOD = boost::posix_time::minutes(5);
 	const boost::posix_time::time_duration core::SET_CONTACT_INFORMATION_RETRY_PERIOD = boost::posix_time::seconds(35);
+	const boost::posix_time::time_duration core::GET_CONTACT_INFORMATION_RETRY_PERIOD = boost::posix_time::seconds(35);
+	//TODO: Implement the logic for this timer.
+	const boost::posix_time::time_duration core::GET_CONTACT_INFORMATION_UPDATE_PERIOD = boost::posix_time::minutes(5);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
 
@@ -445,7 +448,8 @@ namespace freelan
 		m_request_ca_certificate_timer(m_io_service, REQUEST_CA_CERTIFICATE_PERIOD),
 		m_renew_certificate_timer(m_io_service),
 		m_registration_retry_timer(m_io_service),
-		m_set_contact_information_retry_timer(m_io_service)
+		m_set_contact_information_retry_timer(m_io_service),
+		m_get_contact_information_retry_timer(m_io_service)
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
@@ -2142,6 +2146,7 @@ namespace freelan
 			m_renew_certificate_timer.cancel();
 			m_registration_retry_timer.cancel();
 			m_set_contact_information_retry_timer.cancel();
+			m_get_contact_information_retry_timer.cancel();
 			m_web_client.reset();
 
 			m_logger(fscp::log_level::information) << "Web client closed.";
@@ -2258,6 +2263,7 @@ namespace freelan
 					m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". Registration update planned at " << local_registration_update_timestamp << ".";
 					m_registration_retry_timer.expires_at(registration_update_timestamp);
 					set_contact_information();
+					get_contact_information();
 				}
 
 				m_registration_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
@@ -2382,6 +2388,70 @@ namespace freelan
 						}
 
 						m_logger(fscp::log_level::warning) << "Server refused to advertise the following endpoints: " << oss.str();
+					}
+				}
+			});
+		}
+	}
+
+	void core::get_contact_information()
+	{
+		if (!m_fscp_server)
+		{
+			m_logger(fscp::log_level::warning) << "Cannot get contact information right now as the FSCP server is not started yet.";
+
+			m_get_contact_information_retry_timer.expires_from_now(GET_CONTACT_INFORMATION_RETRY_PERIOD);
+			m_get_contact_information_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
+				if (ec2 != boost::asio::error::operation_aborted)
+				{
+					get_contact_information();
+				}
+			});
+		}
+		else
+		{
+			// The requested contacts list is empty, meaning we want them all.
+			std::set<fscp::hash_type> requested_contacts;
+
+			m_web_client->get_contact_information(requested_contacts, [this] (const boost::system::error_code& ec, const std::map<fscp::hash_type, std::set<asiotap::endpoint>>& contacts) {
+				if (ec)
+				{
+					m_logger(fscp::log_level::error) << "Failed to get contact information from the web server: " << ec.message() << " (" << ec << ").";
+
+					m_get_contact_information_retry_timer.expires_from_now(SET_CONTACT_INFORMATION_RETRY_PERIOD);
+					m_get_contact_information_retry_timer.async_wait([this] (const boost::system::error_code& ec2) {
+						if (ec2 != boost::asio::error::operation_aborted)
+						{
+							get_contact_information();
+						}
+					});
+				}
+				else
+				{
+					m_logger(fscp::log_level::information) << "The web server replied to our contact information request.";
+
+					if (contacts.empty())
+					{
+						m_logger(fscp::log_level::information) << "No contacts were provided.";
+					}
+					else
+					{
+						for (auto&& contact : contacts)
+						{
+							std::ostringstream oss;
+
+							for (auto&& endpoint : contact.second)
+							{
+								if (!oss.str().empty())
+								{
+									oss << ", ";
+								}
+
+								oss << endpoint;
+							}
+
+							m_logger(fscp::log_level::information) << "Contact information for " << contact.first << ": " << oss.str();
+						}
 					}
 				}
 			});
