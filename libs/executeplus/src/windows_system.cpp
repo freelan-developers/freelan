@@ -124,23 +124,31 @@ namespace executeplus
 			const auto environment_strings = get_environment_strings<CharType>();
 			auto ptr = environment_strings.get();
 
-			while (ptr)
+			if (ptr)
 			{
-				const string_type line(ptr);
-				const auto pos = line.find(argument_helper<CharType>::EQUAL_CHARACTER);
-
-				if (pos == string_type::npos)
+				while (*ptr)
 				{
-					result[line] = string_type();
-				}
-				else
-				{
-					const string_type key = line.substr(0, pos);
-					const string_type value = line.substr(pos + 1);
-					result[key] = value;
-				}
+					const string_type line(ptr);
 
-				ptr += line.size() + 1;
+					// Environment variables that start with an equal sign are private to the shell and should be ignored.
+					if (*ptr != argument_helper<CharType>::EQUAL_CHARACTER)
+					{
+						const auto pos = line.find(argument_helper<CharType>::EQUAL_CHARACTER);
+
+						if (pos == string_type::npos)
+						{
+							// Discard the result.
+						}
+						else
+						{
+							const string_type key = line.substr(0, pos);
+							const string_type value = line.substr(pos + 1);
+							result[key] = value;
+						}
+					}
+
+					ptr += line.size() + 1;
+				}
 			}
 
 			return result;
