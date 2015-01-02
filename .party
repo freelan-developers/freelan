@@ -46,6 +46,7 @@ Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86',
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
     r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
@@ -53,6 +54,7 @@ Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64',
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
     r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
