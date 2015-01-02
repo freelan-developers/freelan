@@ -12,18 +12,22 @@ Attendee('iconv', filter='msvc').add_source('folder://third-party/source/libicon
 Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('iconv').get_build('msvc-x86').commands = [
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"',
+    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=DebugStatic /p:Platform="Win32"',
     r'md {{prefix}}\lib || echo',
     r'md {{prefix}}\include || echo',
     r'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    r'copy DebugStatic_Win32\libiconvStaticD.lib {{prefix}}\lib\libiconvd.lib',
     r'xcopy include\* {{prefix}}\include\ /S /Y',
 ]
 
 Attendee('iconv').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('iconv').get_build('msvc-x64').commands = [
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"',
+    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=DebugStatic /p:Platform="x64"',
     r'md {{prefix}}\lib || echo',
     r'md {{prefix}}\include || echo',
     r'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    r'copy DebugStatic_x64\libiconvStaticD.lib {{prefix}}\lib\libiconvd.lib',
     r'xcopy include\* {{prefix}}\include\ /S /Y',
 ]
 
