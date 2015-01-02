@@ -75,7 +75,7 @@ Attendee('openssl').get_build('msvc-x86').commands = [
     r'ms\do_ms',
     r'nmake -f ms\nt.mak',
     r'nmake -f ms\nt.mak install',
-    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\",
+    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\ /S /Y",
 ]
 
 Attendee('openssl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
@@ -84,7 +84,7 @@ Attendee('openssl').get_build('msvc-x64').commands = [
     r'ms\do_win64a',
     r'nmake -f ms\nt.mak',
     r'nmake -f ms\nt.mak install',
-    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\",
+    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\ /S /Y",
 ]
 
 # cURL
