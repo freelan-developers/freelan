@@ -58,7 +58,7 @@
 
 #include <executeplus/error.hpp>
 
-#include "../../windows/common.h"
+#include "../../windows/tap-windows.h"
 
 namespace asiotap
 {
@@ -72,7 +72,7 @@ namespace asiotap
 		{
 			guid_array_type tap_adapters_list;
 
-			const std::string tap_component_id(TAP_COMPONENT_ID);
+			const std::string tap_component_id(TAP_ID);
 			const registry_key adapter_key(HKEY_LOCAL_MACHINE, ADAPTER_KEY);
 
 			for (registry_key network_adapter_key : adapter_key.available_keys())
@@ -234,7 +234,7 @@ namespace asiotap
 				if (adapter.first == std::string(pi->AdapterName))
 				{
 					const HANDLE handle = CreateFileA(
-						(USERMODEDEVICEDIR + adapter.first + TAPSUFFIX).c_str(),
+						(USERMODEDEVICEDIR + adapter.first + TAP_WIN_SUFFIX).c_str(),
 						GENERIC_READ | GENERIC_WRITE,
 						0,
 						0,
@@ -285,7 +285,7 @@ namespace asiotap
 					DWORD read_mtu;
 					DWORD len;
 
-					if (!DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_GET_MTU, &read_mtu, sizeof(read_mtu), &read_mtu, sizeof(read_mtu), &len, NULL))
+					if (!DeviceIoControl(descriptor().native_handle(), TAP_WIN_IOCTL_GET_MTU, &read_mtu, sizeof(read_mtu), &read_mtu, sizeof(read_mtu), &len, NULL))
 					{
 						ec = boost::system::error_code(::GetLastError(), boost::system::system_category());
 
@@ -328,7 +328,7 @@ namespace asiotap
 		ULONG status = connected ? TRUE : FALSE;
 		DWORD len;
 
-		if (!::DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
+		if (!::DeviceIoControl(descriptor().native_handle(), TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
 		{
 			throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 		}
@@ -438,7 +438,7 @@ namespace asiotap
 			// netmask
 			std::memcpy(param + 2 * sizeof(uint32_t), &netmask, sizeof(uint32_t));
 
-			if (!::DeviceIoControl(descriptor().native_handle(), TAP_IOCTL_CONFIG_TUN, param, sizeof(param), param, sizeof(param), &len, NULL))
+			if (!::DeviceIoControl(descriptor().native_handle(), TAP_WIN_IOCTL_CONFIG_POINT_TO_POINT, param, sizeof(param), param, sizeof(param), &len, NULL))
 			{
 				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 			}
