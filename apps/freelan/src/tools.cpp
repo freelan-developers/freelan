@@ -46,16 +46,14 @@
 
 #include "tools.hpp"
 
-#ifdef WINDOWS
-#include <locale>
-#include <codecvt>
-#else
+#ifndef WINDOWS
 #include <syslog.h>
 #endif
 
 #include <boost/lexical_cast.hpp>
 
 #include <fscp/logger.hpp>
+#include <iconvplus/converter.hpp>
 
 #include "system.hpp"
 
@@ -86,6 +84,20 @@ int log_level_to_syslog_priority(fscp::log_level level)
 	assert(false);
 	throw std::logic_error("Unsupported enumeration value");
 }
+#else
+	namespace
+	{
+		std::wstring to_wstring(const std::string& str)
+		{
+			iconvplus::iconv_instance iconv("utf-16", "");
+			iconvplus::converter<char, wchar_t> converter(iconv);
+			std::wostringstream out;
+			std::istringstream in(str);
+			converter.convert(in, out);
+			
+			return out.str();
+		}
+	}
 #endif
 
 const char* log_level_to_string(fscp::log_level level)
@@ -115,9 +127,7 @@ const char* log_level_to_string(fscp::log_level level)
 void execute_tap_adapter_up_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 #if defined(WINDOWS) && defined(UNICODE)
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-
-	int exit_status = execute(logger, script, { converter.from_bytes(tap_adapter.name()) });
+	int exit_status = execute(logger, script, { to_wstring(tap_adapter.name()) });
 #else
 	int exit_status = execute(logger, script, { tap_adapter.name() });
 #endif
@@ -131,9 +141,7 @@ void execute_tap_adapter_up_script(const boost::filesystem::path& script, const 
 void execute_tap_adapter_down_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 #if defined(WINDOWS) && defined(UNICODE)
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-
-	int exit_status = execute(logger, script, { converter.from_bytes(tap_adapter.name()) });
+	int exit_status = execute(logger, script, { to_wstring(tap_adapter.name()) });
 #else
 	int exit_status = execute(logger, script, { tap_adapter.name() });
 #endif
@@ -195,13 +203,11 @@ bool execute_certificate_validation_script(const fs::path& script, const fscp::l
 bool execute_authentication_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_port)
 {
 #if defined(WINDOWS) && defined(UNICODE)
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-
 	std::map<std::wstring, std::wstring> env;
-	env[L"FREELAN_USERNAME"] = converter.from_bytes(username);
-	env[L"FREELAN_PASSWORD"] = converter.from_bytes(password);
-	env[L"FREELAN_REMOTE_HOST"] = converter.from_bytes(remote_host);
-	env[L"FREELAN_REMOTE_PORT"] = converter.from_bytes(boost::lexical_cast<std::string>(remote_port));
+	env[L"FREELAN_USERNAME"] = to_wstring(username);
+	env[L"FREELAN_PASSWORD"] = to_wstring(password);
+	env[L"FREELAN_REMOTE_HOST"] = to_wstring(remote_host);
+	env[L"FREELAN_REMOTE_PORT"] = to_wstring(boost::lexical_cast<std::string>(remote_port));
 
 	int exit_status = execute(logger, script, {}, env);
 #else
