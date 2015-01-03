@@ -115,7 +115,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;_WIN32_WINNT=0x0501;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;_WIN32_WINNT=0x0501;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\mongooseplus</AdditionalIncludeDirectories>
       <ShowIncludes>
@@ -147,7 +147,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;_WIN32_WINNT=0x0501;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;MONGOOSE_NO_FILESYSTEM;NS_ENABLE_SSL;WIN32;_WIN32_WINNT=0x0501;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\mongooseplus</AdditionalIncludeDirectories>
       <ShowIncludes>
