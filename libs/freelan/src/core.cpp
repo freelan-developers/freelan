@@ -1609,6 +1609,7 @@ namespace freelan
 			}
 #endif
 
+			m_logger(fscp::log_level::information) << "Putting interface into the connected state.";
 			m_tap_adapter->set_connected_state(true);
 
 			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
