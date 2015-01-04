@@ -530,84 +530,104 @@ namespace freelan
 			m_logger(fscp::log_level::warning) << "Using a generated temporary certificate (" << certificate.subject() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
 		}
 
+		m_logger(fscp::log_level::information) << "Starting FSCP server...";
+
 		m_fscp_server = boost::make_shared<fscp::server>(boost::ref(m_io_service), boost::ref(m_logger), boost::cref(*m_configuration.security.identity));
 
-		m_fscp_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
-		m_fscp_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
-
-		m_fscp_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
-		m_fscp_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
-		m_fscp_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
-		m_fscp_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
-		m_fscp_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3, _4));
-		m_fscp_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3, _4));
-		m_fscp_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
-		m_fscp_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
-		m_fscp_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
-		m_fscp_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1, _2));
-		m_fscp_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
-
-		resolver_type resolver(m_io_service);
-
-		const ep_type listen_endpoint = boost::apply_visitor(
-			asiotap::endpoint_resolve_visitor(
-				resolver,
-				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
-				resolver_query::address_configured | resolver_query::passive, DEFAULT_SERVICE
-			),
-			m_configuration.fscp.listen_on
-		);
-
-		m_logger(fscp::log_level::important) << "Core set to listen on: " << listen_endpoint;
-
-		if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
+		try
 		{
-			build_ca_store(build_ca_store_when::it_doesnt_exist);
-		}
+			m_fscp_server->set_cipher_suites(m_configuration.fscp.cipher_suite_capabilities);
+			m_fscp_server->set_elliptic_curves(m_configuration.fscp.elliptic_curve_capabilities);
 
-		for(auto&& network_address : m_configuration.fscp.never_contact_list)
-		{
-			m_logger(fscp::log_level::information) << "Configured not to accept requests from: " << network_address;
-		}
+			m_fscp_server->set_hello_message_received_callback(boost::bind(&core::do_handle_hello_received, this, _1, _2));
+			m_fscp_server->set_contact_request_received_callback(boost::bind(&core::do_handle_contact_request_received, this, _1, _2, _3, _4));
+			m_fscp_server->set_contact_received_callback(boost::bind(&core::do_handle_contact_received, this, _1, _2, _3));
+			m_fscp_server->set_presentation_message_received_callback(boost::bind(&core::do_handle_presentation_received, this, _1, _2, _3, _4));
+			m_fscp_server->set_session_request_message_received_callback(boost::bind(&core::do_handle_session_request_received, this, _1, _2, _3, _4));
+			m_fscp_server->set_session_message_received_callback(boost::bind(&core::do_handle_session_received, this, _1, _2, _3, _4));
+			m_fscp_server->set_session_failed_callback(boost::bind(&core::do_handle_session_failed, this, _1, _2));
+			m_fscp_server->set_session_error_callback(boost::bind(&core::do_handle_session_error, this, _1, _2, _3));
+			m_fscp_server->set_session_established_callback(boost::bind(&core::do_handle_session_established, this, _1, _2, _3, _4));
+			m_fscp_server->set_session_lost_callback(boost::bind(&core::do_handle_session_lost, this, _1, _2));
+			m_fscp_server->set_data_received_callback(boost::bind(&core::do_handle_data_received, this, _1, _2, _3, _4));
 
-		// Let's open the server.
-		m_fscp_server->open(listen_endpoint);
+			resolver_type resolver(m_io_service);
+
+			const ep_type listen_endpoint = boost::apply_visitor(
+				asiotap::endpoint_resolve_visitor(
+					resolver,
+					to_protocol(m_configuration.fscp.hostname_resolution_protocol),
+					resolver_query::address_configured | resolver_query::passive, DEFAULT_SERVICE
+				),
+				m_configuration.fscp.listen_on
+			);
+
+			m_logger(fscp::log_level::important) << "Core set to listen on: " << listen_endpoint;
+
+			if (m_configuration.security.certificate_validation_method == security_configuration::CVM_DEFAULT)
+			{
+				build_ca_store(build_ca_store_when::it_doesnt_exist);
+			}
+
+			for(auto&& network_address : m_configuration.fscp.never_contact_list)
+			{
+				m_logger(fscp::log_level::information) << "Configured not to accept requests from: " << network_address;
+			}
+
+			// Let's open the server.
+			m_fscp_server->open(listen_endpoint);
 
 #ifdef LINUX
-		if (!m_configuration.fscp.listen_on_device.empty())
-		{
-			const auto socket_fd = m_fscp_server->get_socket().native();
-			const std::string device_name = m_configuration.fscp.listen_on_device;
+			if (!m_configuration.fscp.listen_on_device.empty())
+			{
+				const auto socket_fd = m_fscp_server->get_socket().native();
+				const std::string device_name = m_configuration.fscp.listen_on_device;
 
-			if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
-			{
-				m_logger(fscp::log_level::important) << "Restricting VPN traffic on: " << device_name;
+				if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
+				{
+					m_logger(fscp::log_level::important) << "Restricting VPN traffic on: " << device_name;
+				}
+				else
+				{
+					m_logger(fscp::log_level::warning) << "Unable to restrict traffic on: " << device_name << ". Error was: " << boost::system::error_code(errno, boost::system::system_category()).message();
+				}
 			}
-			else
-			{
-				m_logger(fscp::log_level::warning) << "Unable to restrict traffic on: " << device_name << ". Error was: " << boost::system::error_code(errno, boost::system::system_category()).message();
-			}
-		}
 #endif
 
-		// We start the contact loop.
-		async_contact_all();
+			// We start the contact loop.
+			async_contact_all();
 
-		m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
-		m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
-		m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
+			m_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_contact, this, boost::asio::placeholders::error));
+			m_dynamic_contact_timer.async_wait(boost::bind(&core::do_handle_periodic_dynamic_contact, this, boost::asio::placeholders::error));
+			m_routes_request_timer.async_wait(boost::bind(&core::do_handle_periodic_routes_request, this, boost::asio::placeholders::error));
+
+			m_logger(fscp::log_level::information) << "FSCP server started.";
+		}
+		catch (std::exception& ex)
+		{
+			m_logger(fscp::log_level::error) << "Unable to start the FSCP server: " << ex.what();
+
+			close_fscp_server();
+
+			throw;
+		}
 	}
 
 	void core::close_fscp_server()
 	{
 		if (m_fscp_server)
 		{
+			m_logger(fscp::log_level::information) << "Closing FSCP server...";
+
 			// Stop the contact loop timers.
 			m_routes_request_timer.cancel();
 			m_dynamic_contact_timer.cancel();
 			m_contact_timer.cancel();
 
 			m_fscp_server->close();
+			m_fscp_server.reset();
+
+			m_logger(fscp::log_level::information) << "FSCP server closed.";
 		}
 	}
 
@@ -1724,6 +1744,7 @@ namespace freelan
 			m_tap_adapter->set_connected_state(false);
 
 			m_tap_adapter->close();
+			m_tap_adapter.reset();
 		}
 	}
 

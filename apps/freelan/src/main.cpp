@@ -524,7 +524,21 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	for (std::size_t i = 0; i < thread_count; ++i)
 	{
-		threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		threads.create_thread([&io_service, &core, &logger, &signals](){
+			try
+			{
+				io_service.run();
+			}
+			catch (std::exception& ex)
+			{
+				logger(fscp::log_level::error) << "Fatal exception occured in thread: " << ex.what();
+
+				core.close();
+				signals.cancel();
+			}
+
+			logger(fscp::log_level::debug) << "Thread stopped.";
+		});
 	}
 
 	threads.join_all();
