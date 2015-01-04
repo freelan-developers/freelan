@@ -575,12 +575,7 @@ int main(int argc, char** argv)
 	{
 		do_log(fscp::log_level::error, ex.what());
 
-#ifdef NDEBUG
 		return EXIT_FAILURE;
-#else
-		// We want the program to crash in debug in case of an uncaught exception.
-		throw;
-#endif
 	}
 
 #ifndef WINDOWS
