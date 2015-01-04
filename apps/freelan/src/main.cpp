@@ -524,20 +524,22 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	for (std::size_t i = 0; i < thread_count; ++i)
 	{
-		threads.create_thread([&io_service, &core, &logger, &signals](){
+		threads.create_thread([i, &io_service, &core, &logger, &signals](){
+			logger(fscp::log_level::debug) << "Thread #" << i << " started.";
+
 			try
 			{
 				io_service.run();
 			}
 			catch (std::exception& ex)
 			{
-				logger(fscp::log_level::error) << "Fatal exception occured in thread: " << ex.what();
+				logger(fscp::log_level::error) << "Fatal exception occured in thread #" << i << ": " << ex.what();
 
 				core.close();
 				signals.cancel();
 			}
 
-			logger(fscp::log_level::debug) << "Thread stopped.";
+			logger(fscp::log_level::debug) << "Thread #" << i << " stopped.";
 		});
 	}
 
