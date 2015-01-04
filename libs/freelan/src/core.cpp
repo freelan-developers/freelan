@@ -625,7 +625,6 @@ namespace freelan
 			m_contact_timer.cancel();
 
 			m_fscp_server->close();
-			m_fscp_server.reset();
 
 			m_logger(fscp::log_level::information) << "FSCP server closed.";
 		}
@@ -1744,7 +1743,6 @@ namespace freelan
 			m_tap_adapter->set_connected_state(false);
 
 			m_tap_adapter->close();
-			m_tap_adapter.reset();
 		}
 	}
 
