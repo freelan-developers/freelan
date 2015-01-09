@@ -53,6 +53,7 @@
 #include <locale>
 #include <codecvt>
 #include <algorithm>
+#include <memory>
 
 #include <boost/lexical_cast.hpp>
 
