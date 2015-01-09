@@ -407,7 +407,6 @@ namespace freelan
 	const boost::posix_time::time_duration core::REGISTRATION_WARNING_PERIOD = boost::posix_time::minutes(5);
 	const boost::posix_time::time_duration core::SET_CONTACT_INFORMATION_RETRY_PERIOD = boost::posix_time::seconds(35);
 	const boost::posix_time::time_duration core::GET_CONTACT_INFORMATION_RETRY_PERIOD = boost::posix_time::seconds(35);
-	//TODO: Implement the logic for this timer.
 	const boost::posix_time::time_duration core::GET_CONTACT_INFORMATION_UPDATE_PERIOD = boost::posix_time::minutes(5);
 
 	const std::string core::DEFAULT_SERVICE = "12000";
@@ -689,7 +688,7 @@ namespace freelan
 
 	void core::async_contact_all()
 	{
-		BOOST_FOREACH(const endpoint& contact, m_configuration.fscp.contact_list)
+		for (auto&& contact : m_configuration.fscp.contact_list)
 		{
 			async_contact(contact);
 		}
@@ -2448,6 +2447,15 @@ namespace freelan
 				}
 				else
 				{
+					// We got contact information lets trigger an update later.
+					m_get_contact_information_retry_timer.expires_from_now(GET_CONTACT_INFORMATION_UPDATE_PERIOD);
+					m_get_contact_information_retry_timer.async_wait([this](const boost::system::error_code& ec2) {
+						if (ec2 != boost::asio::error::operation_aborted)
+						{
+							get_contact_information();
+						}
+					});
+
 					m_logger(fscp::log_level::information) << "The web server replied to our contact information request.";
 
 					if (contacts.empty())
@@ -2462,6 +2470,8 @@ namespace freelan
 
 							for (auto&& endpoint : contact.second)
 							{
+								async_contact(endpoint);
+
 								if (!oss.str().empty())
 								{
 									oss << ", ";
