@@ -39,7 +39,7 @@ class Defines(object):
                     self._repository_root = self.local_path
                 else:
                     self._repository_root = os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip())
-            except CalledProcessError, OSError:
+            except (CalledProcessError, OSError):
                 self._repository_root = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
         return self._repository_root
@@ -49,13 +49,13 @@ class Defines(object):
         if self._repository_version is None:
             try:
                 if self.no_git:
-                    if not 'FREELAN_NO_GIT_VERSION' in os.environ:
+                    if 'FREELAN_NO_GIT_VERSION' not in os.environ:
                         raise RuntimeError(errstr='You must specify FREELAN_NO_GIT_VERSION when FREELAN_NO_GIT is specified.')
 
                     self._repository_version = os.environ['FREELAN_NO_GIT_VERSION'].rstrip()
                 else:
                     self._repository_version = check_output(['git', 'describe', '--dirty=-modified']).rstrip()
-            except CalledProcessError, OSError:
+            except (CalledProcessError, OSError):
                 self._repository_version = "<unspecified version>"
 
         return self._repository_version
