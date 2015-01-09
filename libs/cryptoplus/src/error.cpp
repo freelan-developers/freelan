@@ -44,9 +44,28 @@
 
 #include "error/error.hpp"
 
+#include "error/error_strings.hpp"
+
 namespace cryptoplus
 {
 	namespace error
 	{
+	}
+
+	const boost::system::error_category& cryptoplus_category()
+	{
+		static cryptoplus_category_impl instance;
+
+		return instance;
+	}
+
+	const char* cryptoplus_category_impl::name() const throw()
+	{
+		return "cryptoplus::error";
+	}
+
+	std::string cryptoplus_category_impl::message(int ev) const
+	{
+		return error::get_error_string(error::error_type{ static_cast<unsigned long>(ev) });
 	}
 }

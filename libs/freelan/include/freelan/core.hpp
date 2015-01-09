@@ -43,18 +43,17 @@
  * \brief The freelan core class.
  */
 
-#ifndef FREELAN_CORE_HPP
-#define FREELAN_CORE_HPP
+#pragma once
 
 #include "os.hpp"
 #include "configuration.hpp"
-#include "logger.hpp"
 #include "switch.hpp"
 #include "router.hpp"
 #include "message.hpp"
 #include "routes_message.hpp"
 
 #include <fscp/fscp.hpp>
+#include <fscp/logger.hpp>
 
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
@@ -71,6 +70,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
 
 #include <queue>
 #include <set>
@@ -78,6 +78,8 @@
 namespace freelan
 {
 	class routes_request_message;
+	class web_server;
+	class web_client;
 
 	/**
 	 * \brief The core class.
@@ -170,7 +172,7 @@ namespace freelan
 			/**
 			 * \brief The log callback.
 			 */
-			typedef logger::log_handler_type log_handler_type;
+			typedef fscp::logger::log_handler_type log_handler_type;
 
 			/**
 			 * \brief The core opened callback.
@@ -218,6 +220,11 @@ namespace freelan
 			typedef boost::function<void (const ep_type& host, session_loss_reason)> session_lost_handler_type;
 
 			/**
+			 * \brief The authentication callback type.
+			 */
+			typedef boost::function<bool (const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_post)> authentication_handler_type;
+
+			/**
 			 * \brief The certificate validation callback type.
 			 */
 			typedef boost::function<bool (cert_type)> certificate_validation_handler_type;
@@ -243,6 +250,46 @@ namespace freelan
 			 * \brief The routes request period.
 			 */
 			static const boost::posix_time::time_duration ROUTES_REQUEST_PERIOD;
+
+			/**
+			 * \brief The request certificate period.
+			 */
+			static const boost::posix_time::time_duration REQUEST_CERTIFICATE_PERIOD;
+
+			/**
+			 * \brief The request CA certificate period.
+			 */
+			static const boost::posix_time::time_duration REQUEST_CA_CERTIFICATE_PERIOD;
+
+			/**
+			 * \brief The renew certificate warning period.
+			 */
+			static const boost::posix_time::time_duration RENEW_CERTIFICATE_WARNING_PERIOD;
+
+			/**
+			 * \brief The registration retry period.
+			 */
+			static const boost::posix_time::time_duration REGISTRATION_RETRY_PERIOD;
+
+			/**
+			 * \brief The registration warning period.
+			 */
+			static const boost::posix_time::time_duration REGISTRATION_WARNING_PERIOD;
+
+			/**
+			 * \brief The set contact information retry period.
+			 */
+			static const boost::posix_time::time_duration SET_CONTACT_INFORMATION_RETRY_PERIOD;
+
+			/**
+			 * \brief The get contact information retry period.
+			 */
+			static const boost::posix_time::time_duration GET_CONTACT_INFORMATION_RETRY_PERIOD;
+
+			/**
+			 * \brief The get contact information update period.
+			 */
+			static const boost::posix_time::time_duration GET_CONTACT_INFORMATION_UPDATE_PERIOD;
 
 			/**
 			 * \brief The default service.
@@ -274,7 +321,7 @@ namespace freelan
 			 * \param level The log level.
 			 * \warning This method can only be called when the core is NOT running.
 			 */
-			void set_log_level(log_level level)
+			void set_log_level(fscp::log_level level)
 			{
 				m_logger.set_level(level);
 			}
@@ -342,6 +389,16 @@ namespace freelan
 			}
 
 			/**
+			 * \brief Set the authentication callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_authentication_callback(authentication_handler_type callback)
+			{
+				m_authentication_callback = callback;
+			}
+
+			/**
 			 * \brief Set the certificate validation callback.
 			 * \param callback The callback.
 			 * \warning This method can only be called when the core is NOT running.
@@ -385,13 +442,13 @@ namespace freelan
 		private:
 
 			boost::asio::io_service& m_io_service;
-			const freelan::configuration m_configuration;
+			freelan::configuration m_configuration;
 			boost::asio::strand m_logger_strand;
-			freelan::logger m_logger;
+			fscp::logger m_logger;
 
 		private: /* Callbacks */
 
-			void do_handle_log(log_level, const std::string&, const boost::posix_time::ptime&);
+			void do_handle_log(fscp::log_level, const std::string&, const boost::posix_time::ptime&);
 
 			log_handler_type m_log_callback;
 			core_opened_handler_type m_core_opened_callback;
@@ -400,6 +457,7 @@ namespace freelan
 			session_error_handler_type m_session_error_callback;
 			session_established_handler_type m_session_established_callback;
 			session_lost_handler_type m_session_lost_callback;
+			authentication_handler_type m_authentication_callback;
 			certificate_validation_handler_type m_certificate_validation_callback;
 			tap_adapter_handler_type m_tap_adapter_up_callback;
 			tap_adapter_handler_type m_tap_adapter_down_callback;
@@ -410,8 +468,8 @@ namespace freelan
 
 		private: /* FSCP server */
 
-			void open_server();
-			void close_server();
+			void open_fscp_server();
+			void close_fscp_server();
 
 			void async_contact(const endpoint& target, duration_handler_type handler);
 			void async_contact(const endpoint& target);
@@ -459,7 +517,7 @@ namespace freelan
 			void do_handle_routes_request(const ep_type&);
 			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_route_set&);
 
-			boost::shared_ptr<fscp::server> m_server;
+			boost::shared_ptr<fscp::server> m_fscp_server;
 			boost::asio::deadline_timer m_contact_timer;
 			boost::asio::deadline_timer m_dynamic_contact_timer;
 			boost::asio::deadline_timer m_routes_request_timer;
@@ -469,6 +527,13 @@ namespace freelan
 			static const int ex_data_index;
 			static int certificate_validation_callback(int, X509_STORE_CTX*);
 
+			enum class build_ca_store_when
+			{
+				it_doesnt_exist,
+				always
+			};
+
+			void build_ca_store(build_ca_store_when);
 			bool certificate_validation_method(bool, cryptoplus::x509::store_context);
 			bool certificate_is_valid(cert_type);
 
@@ -615,7 +680,33 @@ namespace freelan
 			asiotap::route_manager m_route_manager;
 			boost::optional<routes_message::version_type> m_local_routes_version;
 			client_router_info_map_type m_client_router_info_map;
+
+		private:
+
+			void open_web_server();
+			void close_web_server();
+
+			boost::shared_ptr<web_server> m_web_server;
+			boost::thread m_web_server_thread;
+
+		private:
+
+			void open_web_client();
+			void close_web_client();
+			void request_certificate();
+			void request_ca_certificate();
+			void register_();
+			void unregister();
+			void set_contact_information();
+			void get_contact_information();
+
+			boost::shared_ptr<web_client> m_web_client;
+			boost::asio::deadline_timer m_request_certificate_timer;
+			boost::asio::deadline_timer m_request_ca_certificate_timer;
+			boost::asio::deadline_timer m_renew_certificate_timer;
+			boost::asio::deadline_timer m_registration_retry_timer;
+			boost::asio::deadline_timer m_set_contact_information_retry_timer;
+			boost::asio::deadline_timer m_get_contact_information_retry_timer;
+			cert_list_type m_client_certificate_authority_list;
 	};
 }
-
-#endif /* FREELAN_CORE_HPP */

@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_HASH_HMAC_CONTEXT_HPP
 
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "message_digest_algorithm.hpp"
 
 #include <openssl/opensslv.h>
@@ -157,7 +157,7 @@ namespace cryptoplus
 #if OPENSSL_VERSION_NUMBER < 0x01000000
 			HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
 #else
-			error::throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
+			throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
 #endif
 		}
 

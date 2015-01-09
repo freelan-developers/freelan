@@ -77,7 +77,7 @@ namespace cryptoplus
 
 		dh_key dh_key::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return dh_key(_ptr, deleter);
 		}
@@ -93,7 +93,7 @@ namespace cryptoplus
 
 			int result = DH_compute_key(static_cast<unsigned char*>(out), pub_key.raw(), ptr().get());
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}

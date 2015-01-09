@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 
 #include <openssl/bn.h>
 
@@ -79,7 +79,7 @@ namespace cryptoplus
 				 * \brief Create a new bignum.
 				 * \return The bignum.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static bignum create();
 
@@ -96,7 +96,7 @@ namespace cryptoplus
 				 * \param buf_len The length of buf.
 				 * \return A bignum.
 				 *
-				 * On error a cryptographic_exception is thrown.
+				 * On error an exception is thrown.
 				 */
 				static bignum from_bin(const void* buf, size_t buf_len);
 
@@ -291,31 +291,31 @@ namespace cryptoplus
 		}
 		inline const bignum& bignum::operator+=(const bignum& bn) const
 		{
-			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
+			throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
 		inline bignum& bignum::operator+=(const bignum& bn)
 		{
-			error::throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
+			throw_error_if_not(BN_add(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
 		inline const bignum& bignum::operator-=(const bignum& bn) const
 		{
-			error::throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()) != 0);
+			throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
 		inline bignum& bignum::operator-=(const bignum& bn)
 		{
-			error::throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()) != 0);
+			throw_error_if_not(BN_sub(ptr().get(), ptr().get(), bn.raw()) != 0);
 
 			return *this;
 		}
 		inline void bignum::copy(const bignum& bn)
 		{
-			error::throw_error_if_not(BN_copy(ptr().get(), bn.raw()) != 0);
+			throw_error_if_not(BN_copy(ptr().get(), bn.raw()) != 0);
 		}
 		inline size_t bignum::size() const
 		{
@@ -339,7 +339,7 @@ namespace cryptoplus
 		}
 		inline void bignum::set_value(unsigned long ul) const
 		{
-			error::throw_error_if_not(BN_set_word(ptr().get(), ul) != 0);
+			throw_error_if_not(BN_set_word(ptr().get(), ul) != 0);
 		}
 		inline bignum::bignum(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

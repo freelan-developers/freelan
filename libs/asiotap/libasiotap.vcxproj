@@ -141,6 +141,7 @@
     <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp" />
     <ClInclude Include="src\windows\registry.hpp" />
+    <ClInclude Include="windows\tap-windows.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9173624C-FFF7-4431-BB4A-FC30B13AD742}</ProjectGuid>
@@ -191,25 +192,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
@@ -220,10 +221,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -246,10 +247,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -277,7 +278,7 @@
       <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -307,7 +308,7 @@
       <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

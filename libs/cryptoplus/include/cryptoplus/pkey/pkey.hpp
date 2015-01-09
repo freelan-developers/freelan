@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_PKEY_PKEY_HPP
 
 #include "../pointer_wrapper.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../file.hpp"
 #include "rsa_key.hpp"
 #include "dsa_key.hpp"
@@ -82,7 +82,7 @@ namespace cryptoplus
 				 * \brief Create a new pkey.
 				 * \return The pkey.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static pkey create();
 
@@ -199,7 +199,7 @@ namespace cryptoplus
 				/**
 				 * \brief Get the associated RSA key.
 				 * \return The RSA key.
-				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 * \warning If no key was set, an exception is thrown.
 				 */
 				rsa_key get_rsa_key() const;
 
@@ -218,7 +218,7 @@ namespace cryptoplus
 				/**
 				 * \brief Get the associated DSA key.
 				 * \return The DSA key.
-				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 * \warning If no key was set, an exception is thrown.
 				 */
 				dsa_key get_dsa_key() const;
 
@@ -237,7 +237,7 @@ namespace cryptoplus
 				/**
 				 * \brief Get the associated DH key.
 				 * \return The DH key.
-				 * \warning If no key was set, a cryptographic_exception is thrown.
+				 * \warning If no key was set, an exception is thrown.
 				 */
 				dh_key get_dh_key() const;
 
@@ -471,7 +471,7 @@ namespace cryptoplus
 		}
 		inline void pkey::set_rsa_key(rsa_key rsa) const
 		{
-			error::throw_error_if_not(EVP_PKEY_set1_RSA(ptr().get(), rsa.raw()) != 0);
+			throw_error_if_not(EVP_PKEY_set1_RSA(ptr().get(), rsa.raw()) != 0);
 		}
 		inline rsa_key pkey::get_rsa_key() const
 		{
@@ -479,11 +479,11 @@ namespace cryptoplus
 		}
 		inline void pkey::assign_rsa_key(RSA* rsa) const
 		{
-			error::throw_error_if_not(EVP_PKEY_assign_RSA(ptr().get(), rsa) != 0);
+			throw_error_if_not(EVP_PKEY_assign_RSA(ptr().get(), rsa) != 0);
 		}
 		inline void pkey::set_dsa_key(dsa_key dsa) const
 		{
-			error::throw_error_if_not(EVP_PKEY_set1_DSA(ptr().get(), dsa.raw()) != 0);
+			throw_error_if_not(EVP_PKEY_set1_DSA(ptr().get(), dsa.raw()) != 0);
 		}
 		inline dsa_key pkey::get_dsa_key() const
 		{
@@ -491,11 +491,11 @@ namespace cryptoplus
 		}
 		inline void pkey::assign_dsa_key(DSA* dsa) const
 		{
-			error::throw_error_if_not(EVP_PKEY_assign_DSA(ptr().get(), dsa) != 0);
+			throw_error_if_not(EVP_PKEY_assign_DSA(ptr().get(), dsa) != 0);
 		}
 		inline void pkey::set_dh_key(dh_key dh) const
 		{
-			error::throw_error_if_not(EVP_PKEY_set1_DH(ptr().get(), dh.raw()) != 0);
+			throw_error_if_not(EVP_PKEY_set1_DH(ptr().get(), dh.raw()) != 0);
 		}
 		inline dh_key pkey::get_dh_key() const
 		{
@@ -503,63 +503,63 @@ namespace cryptoplus
 		}
 		inline void pkey::assign_dh_key(DH* dh) const
 		{
-			error::throw_error_if_not(EVP_PKEY_assign_DH(ptr().get(), dh) != 0);
+			throw_error_if_not(EVP_PKEY_assign_DH(ptr().get(), dh) != 0);
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_bio_PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8(bio::bio_ptr bio, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_bio_PKCS8PrivateKey(bio.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8_nid(bio::bio_ptr bio, int nid, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_bio_PKCS8PrivateKey_nid(bio.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void pkey::write_certificate_public_key(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_PUBKEY(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_PUBKEY(bio.raw(), ptr().get()) != 0);
 		}
 		inline void pkey::write_private_key(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<unsigned char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8(file _file, cipher::cipher_algorithm algorithm, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_PKCS8PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8(file _file, cipher::cipher_algorithm algorithm, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_PKCS8PrivateKey(_file.raw(), ptr().get(), algorithm.raw(), NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8_nid(file _file, int nid, const void* passphrase, size_t passphrase_len) const
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(_file.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
+			throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(_file.raw(), ptr().get(), nid, static_cast<char*>(const_cast<void*>(passphrase)), static_cast<int>(passphrase_len), NULL, NULL) != 0);
 		}
 		inline void pkey::write_private_key_pkcs8_nid(file _file, int nid, pem_passphrase_callback_type callback, void* callback_arg) const
 		{
-			error::throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(_file.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg) != 0);
+			throw_error_if_not(PEM_write_PKCS8PrivateKey_nid(_file.raw(), ptr().get(), nid, NULL, 0, callback, callback_arg) != 0);
 		}
 		inline void pkey::write_certificate_public_key(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_PUBKEY(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_PUBKEY(_file.raw(), ptr().get()) != 0);
 		}
 		inline size_t pkey::size() const
 		{

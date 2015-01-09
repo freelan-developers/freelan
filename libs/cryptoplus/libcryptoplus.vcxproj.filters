@@ -48,12 +48,6 @@
     <ClCompile Include="src\cipher_stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cryptographic_exception.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cryptoplus.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\dh_key.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -173,7 +167,7 @@
     <ClInclude Include="include\cryptoplus\cipher\cipher_stream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\cryptoplus\error\cryptographic_exception.hpp">
+    <ClInclude Include="include\cryptoplus\error\helpers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\cryptoplus\error\error.hpp">

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libiconvplus", "libs\iconvplus\libiconvplus.vcxproj", "{ACD7B910-1594-4192-9AE1-E805B2F5DB59}"
 EndProject
@@ -31,6 +31,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfreelan", "libs\freelan\
 		{9173624C-FFF7-4431-BB4A-FC30B13AD742} = {9173624C-FFF7-4431-BB4A-FC30B13AD742}
 		{FCBBDD58-4EF6-4EEF-8405-49E06F61364B} = {FCBBDD58-4EF6-4EEF-8405-49E06F61364B}
 		{D2906D5F-3E94-4376-814D-299B8F81E195} = {D2906D5F-3E94-4376-814D-299B8F81E195}
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD} = {70266482-33AC-449F-8356-0EC6FA0C1BBD}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freelan", "apps\freelan\freelan.vcxproj", "{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}"
@@ -40,6 +41,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freelan", "apps\freelan\fre
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libexecuteplus", "libs\executeplus\libexecuteplus.vcxproj", "{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmongooseplus", "libs\mongooseplus\libmongooseplus.vcxproj", "{70266482-33AC-449F-8356-0EC6FA0C1BBD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BABD5FDD-D2DC-44FE-B2A4-A21D3DD1F6C2} = {BABD5FDD-D2DC-44FE-B2A4-A21D3DD1F6C2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,6 +119,14 @@ Global
 		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|Win32.Build.0 = Release|Win32
 		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|x64.ActiveCfg = Release|x64
 		{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}.Release|x64.Build.0 = Release|x64
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Debug|Win32.Build.0 = Debug|Win32
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Debug|x64.ActiveCfg = Debug|x64
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Debug|x64.Build.0 = Debug|x64
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Release|Win32.ActiveCfg = Release|Win32
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Release|Win32.Build.0 = Release|Win32
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Release|x64.ActiveCfg = Release|x64
+		{70266482-33AC-449F-8356-0EC6FA0C1BBD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

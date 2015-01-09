@@ -47,7 +47,7 @@
 
 #include "../pointer_wrapper.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../bn/bignum.hpp"
 #include "../file.hpp"
@@ -86,7 +86,7 @@ namespace cryptoplus
 				 * \brief Create a new dh_key.
 				 * \return The dh_key.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static dh_key create();
 
@@ -181,7 +181,7 @@ namespace cryptoplus
 				 * \brief Validates the Diffie-Hellman parameters.
 				 * \param codes An integer whose content is updated according to the success or failure of the check operation. For more information, take a look a the DH_generate_parameters(3) man page.
 				 *
-				 * On failure, a cryptographic_exception is thrown.
+				 * On failure, an exception is thrown.
 				 */
 				void check(int& codes) const;
 
@@ -189,7 +189,7 @@ namespace cryptoplus
 				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
 				 * \return *this
 				 *
-				 * On failure, a cryptographic_exception is thrown.
+				 * On failure, an exception is thrown.
 				 */
 				dh_key& generate_key();
 
@@ -197,7 +197,7 @@ namespace cryptoplus
 				 * \brief Performs the first step of a Diffie-Hellman key exchange by generating private and public DH values.
 				 * \return *this
 				 *
-				 * On failure, a cryptographic_exception is thrown.
+				 * On failure, an exception is thrown.
 				 */
 				const dh_key& generate_key() const;
 
@@ -208,7 +208,7 @@ namespace cryptoplus
 				 * \param pub_key The other party's public key.
 				 * \return The number of bytes written to out.
 				 *
-				 * On failure, a cryptographic_exception is thrown.
+				 * On failure, an exception is thrown.
 				 */
 				size_t compute_key(void* out, size_t out_len, bn::bignum pub_key) const;
 
@@ -217,7 +217,7 @@ namespace cryptoplus
 				 * \param pub_key The other party's public key.
 				 * \return The shared secret.
 				 *
-				 * On failure, a cryptographic_exception is thrown.
+				 * On failure, an exception is thrown.
 				 */
 				buffer compute_key(bn::bignum pub_key) const;
 
@@ -274,11 +274,11 @@ namespace cryptoplus
 		}
 		inline void dh_key::write_parameters(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_bio_DHparams(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dh_key::write_parameters(file _file) const
 		{
-			error::throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
 		}
 		inline bn::bignum dh_key::private_key() const
 		{
@@ -294,17 +294,17 @@ namespace cryptoplus
 		}
 		inline void dh_key::check(int& codes) const
 		{
-			error::throw_error_if_not(DH_check(ptr().get(), &codes) != 0);
+			throw_error_if_not(DH_check(ptr().get(), &codes) != 0);
 		}
 		inline dh_key& dh_key::generate_key()
 		{
-			error::throw_error_if_not(DH_generate_key(ptr().get()) != 0);
+			throw_error_if_not(DH_generate_key(ptr().get()) != 0);
 
 			return *this;
 		}
 		inline const dh_key& dh_key::generate_key() const
 		{
-			error::throw_error_if_not(DH_generate_key(ptr().get()) != 0);
+			throw_error_if_not(DH_generate_key(ptr().get()) != 0);
 
 			return *this;
 		}
@@ -318,11 +318,11 @@ namespace cryptoplus
 		}
 		inline void dh_key::print_parameters(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(DHparams_print(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(DHparams_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline void dh_key::print_parameters(file _file) const
 		{
-			error::throw_error_if_not(DHparams_print_fp(_file.raw(), ptr().get()) != 0);
+			throw_error_if_not(DHparams_print_fp(_file.raw(), ptr().get()) != 0);
 		}
 		inline bool operator==(const dh_key& lhs, const dh_key& rhs)
 		{

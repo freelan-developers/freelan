@@ -46,14 +46,14 @@
 
 #include "tools.hpp"
 
-#ifdef WINDOWS
-#include <locale>
-#include <codecvt>
-#else
+#ifndef WINDOWS
 #include <syslog.h>
 #endif
 
-#include <freelan/logger.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <fscp/logger.hpp>
+#include <iconvplus/converter.hpp>
 
 #include "system.hpp"
 
@@ -61,48 +61,62 @@ namespace fs = boost::filesystem;
 namespace fl = freelan;
 
 #ifndef WINDOWS
-int log_level_to_syslog_priority(freelan::log_level level)
+int log_level_to_syslog_priority(fscp::log_level level)
 {
 	switch (level)
 	{
-		case freelan::LL_TRACE:
+		case fscp::log_level::trace:
 			return LOG_DEBUG;
-		case freelan::LL_DEBUG:
+		case fscp::log_level::debug:
 			return LOG_DEBUG;
-		case freelan::LL_INFORMATION:
+		case fscp::log_level::information:
 			return LOG_INFO;
-		case freelan::LL_IMPORTANT:
+		case fscp::log_level::important:
 			return LOG_NOTICE;
-		case freelan::LL_WARNING:
+		case fscp::log_level::warning:
 			return LOG_WARNING;
-		case freelan::LL_ERROR:
+		case fscp::log_level::error:
 			return LOG_ERR;
-		case freelan::LL_FATAL:
+		case fscp::log_level::fatal:
 			return LOG_CRIT;
 	}
 
 	assert(false);
 	throw std::logic_error("Unsupported enumeration value");
 }
+#else
+	namespace
+	{
+		std::wstring to_wstring(const std::string& str)
+		{
+			iconvplus::iconv_instance iconv("utf-16", "");
+			iconvplus::converter<char, wchar_t> converter(iconv);
+			std::wostringstream out;
+			std::istringstream in(str);
+			converter.convert(in, out);
+			
+			return out.str();
+		}
+	}
 #endif
 
-const char* log_level_to_string(freelan::log_level level)
+const char* log_level_to_string(fscp::log_level level)
 {
 	switch (level)
 	{
-		case freelan::LL_TRACE:
+		case fscp::log_level::trace:
 			return "TRACE";
-		case freelan::LL_DEBUG:
+		case fscp::log_level::debug:
 			return "DEBUG";
-		case freelan::LL_INFORMATION:
+		case fscp::log_level::information:
 			return "INFORMATION";
-		case freelan::LL_IMPORTANT:
+		case fscp::log_level::important:
 			return "IMPORTANT";
-		case freelan::LL_WARNING:
+		case fscp::log_level::warning:
 			return "WARNING";
-		case freelan::LL_ERROR:
+		case fscp::log_level::error:
 			return "ERROR";
-		case freelan::LL_FATAL:
+		case fscp::log_level::fatal:
 			return "FATAL";
 	}
 
@@ -110,39 +124,35 @@ const char* log_level_to_string(freelan::log_level level)
 	throw std::logic_error("Unsupported enumeration value");
 }
 
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 #if defined(WINDOWS) && defined(UNICODE)
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-
-	int exit_status = execute(script, { converter.from_bytes(tap_adapter.name()) });
+	int exit_status = execute(logger, script, { to_wstring(tap_adapter.name()) });
 #else
-	int exit_status = execute(script, { tap_adapter.name() });
+	int exit_status = execute(logger, script, { tap_adapter.name() });
 #endif
 
 	if (exit_status != 0)
 	{
-		logger(freelan::LL_WARNING) << "Up script exited with a non-zero exit status: " << exit_status;
+		logger(fscp::log_level::warning) << "Up script exited with a non-zero exit status: " << exit_status;
 	}
 }
 
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter)
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter)
 {
 #if defined(WINDOWS) && defined(UNICODE)
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-
-	int exit_status = execute(script, { converter.from_bytes(tap_adapter.name()) });
+	int exit_status = execute(logger, script, { to_wstring(tap_adapter.name()) });
 #else
-	int exit_status = execute(script, { tap_adapter.name() });
+	int exit_status = execute(logger, script, { tap_adapter.name() });
 #endif
 
 	if (exit_status != 0)
 	{
-		logger(freelan::LL_WARNING) << "Down script exited with a non-zero exit status: " << exit_status;
+		logger(fscp::log_level::warning) << "Down script exited with a non-zero exit status: " << exit_status;
 	}
 }
 
-bool execute_certificate_validation_script(const fs::path& script, const freelan::logger& logger, fl::security_configuration::cert_type cert)
+bool execute_certificate_validation_script(const fs::path& script, const fscp::logger& logger, fl::security_configuration::cert_type cert)
 {
 	static boost::mutex mutex;
 
@@ -153,9 +163,9 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 	{
 		const fs::path filename = get_temporary_directory() / ("freelan_certificate.crt");
 
-		if (logger.level() <= freelan::LL_DEBUG)
+		if (logger.level() <= fscp::log_level::debug)
 		{
-			logger(freelan::LL_DEBUG) << "Writing temporary certificate file at: " << filename;
+			logger(fscp::log_level::debug) << "Writing temporary certificate file at: " << filename;
 		}
 
 #ifdef WINDOWS
@@ -169,13 +179,13 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 #endif
 
 #if defined(WINDOWS) && defined(UNICODE)
-		const int exit_status = execute(script, { filename.wstring() });
+		const int exit_status = execute(logger, script, { filename.wstring() });
 #else
-		const int exit_status = execute(script, { filename.string() });
+		const int exit_status = execute(logger, script, { filename.string() });
 #endif
-		if (logger.level() <= freelan::LL_DEBUG)
+		if (logger.level() <= fscp::log_level::debug)
 		{
-			logger(freelan::LL_DEBUG) << script << " terminated execution with exit status " << exit_status ;
+			logger(fscp::log_level::debug) << script << " terminated execution with exit status " << exit_status ;
 		}
 
 		fs::remove(filename);
@@ -184,8 +194,36 @@ bool execute_certificate_validation_script(const fs::path& script, const freelan
 	}
 	catch (std::exception& ex)
 	{
-		logger(freelan::LL_WARNING) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
+		logger(fscp::log_level::warning) << "Error while executing certificate validation script (" << script << "): " << ex.what() ;
 
 		return false;
 	}
+}
+
+bool execute_authentication_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_port)
+{
+#if defined(WINDOWS) && defined(UNICODE)
+	std::map<std::wstring, std::wstring> env;
+	env[L"FREELAN_USERNAME"] = to_wstring(username);
+	env[L"FREELAN_PASSWORD"] = to_wstring(password);
+	env[L"FREELAN_REMOTE_HOST"] = to_wstring(remote_host);
+	env[L"FREELAN_REMOTE_PORT"] = to_wstring(boost::lexical_cast<std::string>(remote_port));
+
+	int exit_status = execute(logger, script, {}, env);
+#else
+	std::map<std::string, std::string> env;
+	env["FREELAN_USERNAME"] = username;
+	env["FREELAN_PASSWORD"] = password;
+	env["FREELAN_REMOTE_HOST"] = remote_host;
+	env["FREELAN_REMOTE_PORT"] = boost::lexical_cast<std::string>(remote_port);
+
+	int exit_status = execute(logger, script, {}, env);
+#endif
+
+	if (exit_status != 0)
+	{
+		logger(fscp::log_level::warning) << "Authentication script exited with a non-zero exit status: " << exit_status;
+	}
+
+	return (exit_status == 0);
 }

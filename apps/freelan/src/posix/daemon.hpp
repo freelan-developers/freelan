@@ -49,7 +49,7 @@
 
 #include <string>
 
-#include <freelan/logger.hpp>
+#include <fscp/logger.hpp>
 
 namespace posix
 {
@@ -63,7 +63,7 @@ namespace posix
 	 * \param level The freelan level.
 	 * \param msg The message to log.
 	 */
-	void syslog(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime&);
+	void syslog(fscp::log_level level, const std::string& msg, const boost::posix_time::ptime&);
 }
 
 #endif /* POSIX_DAEMON_HPP */

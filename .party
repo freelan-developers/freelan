@@ -12,25 +12,29 @@ Attendee('iconv', filter='msvc').add_source('folder://third-party/source/libicon
 Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('iconv').get_build('msvc-x86').commands = [
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"',
+    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=DebugStatic /p:Platform="Win32"',
     r'md {{prefix}}\lib || echo',
     r'md {{prefix}}\include || echo',
     r'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    r'copy DebugStatic_Win32\libiconvStaticD.lib {{prefix}}\lib\libiconvd.lib',
     r'xcopy include\* {{prefix}}\include\ /S /Y',
 ]
 
 Attendee('iconv').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('iconv').get_build('msvc-x64').commands = [
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"',
+    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=DebugStatic /p:Platform="x64"',
     r'md {{prefix}}\lib || echo',
     r'md {{prefix}}\include || echo',
     r'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
+    r'copy DebugStatic_x64\libiconvStaticD.lib {{prefix}}\lib\libiconvd.lib',
     r'xcopy include\* {{prefix}}\include\ /S /Y',
 ]
 
 # boost
 Attendee('boost', filter=~f('linux'))
-Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.bz2/download', filter=~f('windows'), mimetype='application/x-bzip2')
-Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.zip/download', filter='windows', mimetype='application/zip')
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.bz2/download', filter=~f('windows'), mimetype='application/x-bzip2')
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download', filter='windows', mimetype='application/zip')
 
 Attendee('boost').add_post_unpack_command('cp -r {{root}}/third-party/patches/boost/* boost/', filter='darwin')
 
@@ -45,20 +49,22 @@ Attendee('boost').get_build('osx').commands = [
 Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
 Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}} --layout=system --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
 ]
 
 # OpenSSL
 Attendee('openssl', filter=~f('linux'))
-Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.1i.tar.gz')
+Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.1j.tar.gz')
 
 Attendee('openssl').add_build('osx', environment='system', filter='darwin')
 Attendee('openssl').get_build('osx').commands = [
@@ -73,6 +79,7 @@ Attendee('openssl').get_build('msvc-x86').commands = [
     r'ms\do_ms',
     r'nmake -f ms\nt.mak',
     r'nmake -f ms\nt.mak install',
+    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\ /S /Y",
 ]
 
 Attendee('openssl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
@@ -81,11 +88,13 @@ Attendee('openssl').get_build('msvc-x64').commands = [
     r'ms\do_win64a',
     r'nmake -f ms\nt.mak',
     r'nmake -f ms\nt.mak install',
+    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\ /S /Y",
 ]
 
 # cURL
+Attendee('curl', filter=~f('linux'))
 Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.32.0.zip', filter='windows')
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter='darwin')
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter=~f('windows'))
 
 Attendee('curl').depends_on('openssl')
 

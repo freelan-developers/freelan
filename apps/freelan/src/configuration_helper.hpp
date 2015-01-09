@@ -59,6 +59,12 @@
 boost::program_options::options_description get_server_options();
 
 /**
+ * \brief Get the client options.
+ * \return The client options.
+ */
+boost::program_options::options_description get_client_options();
+
+/**
  * \brief Get the fscp options.
  * \return The fscp options.
  */
@@ -120,5 +126,13 @@ boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::pat
  * \return The certificate validation script.
  */
 boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
+
+/**
+ * \brief Get the authentication script.
+ * \param root The root directory for file operations.
+ * \param vm The variables map.
+ * \return The authentication script.
+ */
+boost::filesystem::path get_authentication_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
 
 #endif /* CONFIGURATION_HELPER_HPP */

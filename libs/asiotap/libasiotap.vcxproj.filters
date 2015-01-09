@@ -377,5 +377,8 @@
     <ClInclude Include="include\asiotap\types\ip_route.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\tap-windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

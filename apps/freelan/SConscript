@@ -8,10 +8,11 @@ libraries = [
     'freelan',
     'asiotap',
     'fscp',
+    'mongooseplus',
     'cryptoplus',
     'executeplus',
-    'iconvplus',
     'kfather',
+    'iconvplus',
     'boost_system',
     'boost_thread',
     'boost_filesystem',
@@ -32,6 +33,7 @@ elif sys.platform.startswith('darwin'):
     libraries.extend([
         'ldap',
         'z',
+        'iconv',
     ])
 
 env = env.Clone()

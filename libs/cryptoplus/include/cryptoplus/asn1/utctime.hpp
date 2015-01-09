@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_ASN1_UTCTIME_HPP
 
 #include "../pointer_wrapper.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 
 #include <openssl/crypto.h>
@@ -77,7 +77,7 @@ namespace cryptoplus
 				 * \brief Create a new utctime.
 				 * \return The utctime.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static utctime create();
 
@@ -227,11 +227,11 @@ namespace cryptoplus
 		}
 		inline void utctime::set_time(time_t time) const
 		{
-			error::throw_error_if_not(ASN1_UTCTIME_set(ptr().get(), time));
+			throw_error_if_not(ASN1_UTCTIME_set(ptr().get(), time));
 		}
 		inline void utctime::set_time(const std::string& str) const
 		{
-			error::throw_error_if_not(ASN1_UTCTIME_set_string(ptr().get(), str.c_str()) != 0);
+			throw_error_if_not(ASN1_UTCTIME_set_string(ptr().get(), str.c_str()) != 0);
 		}
 		inline bool utctime::check() const
 		{
@@ -239,7 +239,7 @@ namespace cryptoplus
 		}
 		inline void utctime::print(bio::bio_ptr bio) const
 		{
-			error::throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), ptr().get()) != 0);
+			throw_error_if_not(ASN1_UTCTIME_print(bio.raw(), ptr().get()) != 0);
 		}
 		inline utctime::utctime(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

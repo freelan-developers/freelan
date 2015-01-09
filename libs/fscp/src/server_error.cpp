@@ -86,10 +86,6 @@ namespace fscp
 			{
 				return "No session is available for the specified host";
 			}
-			case server_error::cryptographic_error:
-			{
-				return "A cryptographic error occured";
-			}
 			default:
 			{
 				return "Unknown FSCP error";

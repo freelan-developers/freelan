@@ -200,8 +200,8 @@ namespace windows
 
 	/* Local functions declarations */
 	void parse_service_options(int argc, LPTSTR* argv, service_configuration& configuration);
-	fl::logger create_logger(const service_configuration& configuration);
-	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
+	fscp::logger create_logger(const service_configuration& configuration);
+	void log_function(boost::shared_ptr<std::ostream> os, fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
 	fl::configuration get_freelan_configuration(const service_configuration& configuration);
 	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
 	VOID WINAPI service_main(DWORD argc, LPTSTR* argv);
@@ -339,21 +339,21 @@ namespace windows
 		}
 	}
 
-	fl::logger create_logger(const service_configuration& configuration)
+	fscp::logger create_logger(const service_configuration& configuration)
 	{
 		if (configuration.log_file.empty())
 		{
-			return fl::logger();
+			return fscp::logger();
 		}
 		else
 		{
 			boost::shared_ptr<std::ostream> log_stream = boost::make_shared<fs::basic_ofstream<char> >(configuration.log_file);
 
-			return fl::logger(boost::bind(&log_function, log_stream, _1, _2, _3), configuration.debug ? fl::LL_DEBUG : fl::LL_INFORMATION);
+			return fscp::logger(boost::bind(&log_function, log_stream, _1, _2, _3), configuration.debug ? fscp::log_level::debug : fscp::log_level::information);
 		}
 	}
 
-	void log_function(boost::shared_ptr<std::ostream> os, fl::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
+	void log_function(boost::shared_ptr<std::ostream> os, fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 	{
 		if (os)
 		{
@@ -367,10 +367,12 @@ namespace windows
 
 		po::options_description configuration_options("Configuration");
 		configuration_options.add(get_server_options());
+		configuration_options.add(get_client_options());
 		configuration_options.add(get_fscp_options());
 		configuration_options.add(get_security_options());
 		configuration_options.add(get_tap_adapter_options());
 		configuration_options.add(get_switch_options());
+		configuration_options.add(get_router_options());
 
 		const fs::path execution_root_directory = get_execution_root_directory();
 
@@ -417,6 +419,13 @@ namespace windows
 		if (!certificate_validation_script.empty())
 		{
 			fl_configuration.security.certificate_validation_script = certificate_validation_script;
+		}
+
+		const fs::path authentication_script = get_authentication_script(execution_root_directory, vm);
+
+		if (!authentication_script.empty())
+		{
+			fl_configuration.server.authentication_script = authentication_script;
 		}
 
 		return fl_configuration;
@@ -470,9 +479,9 @@ namespace windows
 
 		parse_service_options(argc, argv, configuration);
 
-		const fl::logger logger = create_logger(configuration);
+		const fscp::logger logger = create_logger(configuration);
 
-		logger(fl::LL_INFORMATION) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+		logger(fscp::log_level::information) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 
 		/* Initializations */
 		cryptoplus::crypto_initializer crypto_initializer;
@@ -525,6 +534,11 @@ namespace windows
 					core.set_certificate_validation_callback(boost::bind(&execute_certificate_validation_script, fl_configuration.security.certificate_validation_script, logger, _1));
 				}
 
+				if (!fl_configuration.server.authentication_script.empty())
+				{
+					core.set_authentication_callback(boost::bind(&execute_authentication_script, fl_configuration.server.authentication_script, logger, _1, _2, _3, _4));
+				}
+
 				core.open();
 
 				boost::unique_lock<boost::mutex> lock(ctx.stop_function_mutex);
@@ -554,9 +568,9 @@ namespace windows
 					}
 				}
 
-				logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s).";
+				logger(fscp::log_level::information) << "Using " << thread_count << " thread(s).";
 
-				logger(fl::LL_INFORMATION) << "Execution started.";
+				logger(fscp::log_level::information) << "Execution started.";
 
 				for (std::size_t i = 0; i < thread_count; ++i)
 				{
@@ -565,7 +579,7 @@ namespace windows
 
 				threads.join_all();
 
-				logger(fl::LL_INFORMATION) << "Execution stopped.";
+				logger(fscp::log_level::information) << "Execution stopped.";
 
 				lock.lock();
 
@@ -578,7 +592,7 @@ namespace windows
 				ctx.service_status.dwWin32ExitCode = ex.code().value();
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				logger(fl::LL_ERROR) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
+				logger(fscp::log_level::error) << "Error: " << ex.code() << ":" << ex.code().message() << ":" << ex.what();
 			}
 			catch (std::exception& ex)
 			{
@@ -586,7 +600,7 @@ namespace windows
 				ctx.service_status.dwServiceSpecificExitCode = 1;
 				::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 
-				logger(fl::LL_ERROR) << "Error: " << ex.what();
+				logger(fscp::log_level::error) << "Error: " << ex.what();
 			}
 
 			// Stop
@@ -595,6 +609,6 @@ namespace windows
 			::SetServiceStatus(ctx.service_status_handle, &ctx.service_status);
 		}
 
-		logger(fl::LL_INFORMATION) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+		logger(fscp::log_level::information) << "Log stops at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
 	}
 }

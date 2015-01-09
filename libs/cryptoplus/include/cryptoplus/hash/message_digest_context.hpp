@@ -45,7 +45,7 @@
 #ifndef CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 #define CRYPTOPLUS_HASH_MESSAGE_DIGEST_CONTEXT_HPP
 
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "message_digest_algorithm.hpp"
 #include "../pkey/pkey.hpp"
 
@@ -363,52 +363,52 @@ namespace cryptoplus
 
 		inline void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
+			throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
 		inline void message_digest_context::sign_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_SignInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
+			throw_error_if_not(EVP_SignInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
 		inline void message_digest_context::verify_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_VerifyInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
+			throw_error_if_not(EVP_VerifyInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
 		inline void message_digest_context::digest_sign_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
+			throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
 		}
 
 		inline void message_digest_context::digest_verify_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
 		{
-			error::throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
+			throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
 		}
 
 		inline void message_digest_context::update(const void* data, size_t len)
 		{
-			error::throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::sign_update(const void* data, size_t len)
 		{
-			error::throw_error_if_not(EVP_SignUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_SignUpdate(&m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::verify_update(const void* data, size_t len)
 		{
-			error::throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::digest_sign_update(const void* data, size_t len)
 		{
-			error::throw_error_if_not(EVP_DigestSignUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_DigestSignUpdate(&m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::digest_verify_update(const void* data, size_t len)
 		{
-			error::throw_error_if_not(EVP_DigestVerifyUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_DigestVerifyUpdate(&m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::update(const buffer& buf)
@@ -475,7 +475,7 @@ namespace cryptoplus
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)
 		{
-			error::throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx) != 0);
+			throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx) != 0);
 		}
 
 		inline void message_digest_context::set_flags(int flags)

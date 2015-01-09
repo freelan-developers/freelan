@@ -65,7 +65,7 @@ namespace cryptoplus
 
 		string string::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return string(_ptr, deleter);
 		}
@@ -76,7 +76,7 @@ namespace cryptoplus
 
 			const int _size = ASN1_STRING_to_UTF8(&out, ptr().get());
 
-			error::throw_error_if(_size < 0);
+			throw_error_if(_size < 0);
 
 			const boost::shared_ptr<unsigned char> pout(out, _OPENSSL_free);
 

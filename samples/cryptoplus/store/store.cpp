@@ -43,7 +43,7 @@ int verification_callback(int ok, X509_STORE_CTX* ctx)
 	// Get the currently verified certificate
 	x509::certificate current_cert = store_context.get_current_certificate();
 
-	std::cout << "Verifying \"" << current_cert.subject().oneline() << "\"..." << std::endl;
+	std::cout << "Verifying \"" << current_cert.subject() << "\"..." << std::endl;
 
 	if (!ok)
 	{

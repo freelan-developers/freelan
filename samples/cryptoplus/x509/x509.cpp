@@ -7,7 +7,6 @@
 #include <cryptoplus/cryptoplus.hpp>
 #include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/x509/extension.hpp>
-#include <cryptoplus/bio/bio_chain.hpp>
 #include <cryptoplus/error/error_strings.hpp>
 #include <cryptoplus/asn1/utctime.hpp>
 #include <cryptoplus/pkey/rsa_key.hpp>
@@ -44,28 +43,24 @@ int main()
 		x509::certificate certificate = x509::certificate::create();
 
 		// Set the version
-
 		certificate.set_version(2);
 
 		// Subject and issuer names
+		certificate.subject().push_back("CN", MBSTRING_ASC, "My common name");
+		certificate.subject().push_back("C", MBSTRING_ASC, "FR");
+		certificate.subject().push_back("O", MBSTRING_ASC, "My organization");
 
-		const char cn[] = "My common name";
-		const char c[] = "FR";
-		const char o[] = "My organization";
-
-		certificate.subject().push_back("CN", MBSTRING_ASC, cn, sizeof(cn) - 1);
-		certificate.subject().push_back("C", MBSTRING_ASC, c, sizeof(c) - 1);
-		certificate.subject().push_back("O", MBSTRING_ASC, o, sizeof(o) - 1);
+		std::cout << "Setting subject to: " << certificate.subject() << std::endl;
 
 		// We copy the data from subject() to issuer().
 		certificate.set_issuer(certificate.subject());
 
-		// Serial number
+		std::cout << "Setting issuer to: " << certificate.issuer() << std::endl;
 
+		// Serial number
 		certificate.set_serial_number(asn1::integer::from_long(42));
 
 		// Validity
-
 		asn1::utctime not_before = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() - boost::gregorian::years(12));
 		asn1::utctime not_after = asn1::utctime::from_ptime(boost::posix_time::second_clock::local_time() + boost::posix_time::hours(1));
 
@@ -73,7 +68,6 @@ int main()
 		certificate.set_not_after(not_after);
 
 		// Public key
-
 		cryptoplus::pkey::rsa_key rsa_key = cryptoplus::pkey::rsa_key::generate_private_key(1024, 17);
 
 		certificate.set_public_key(pkey::pkey::from_rsa_key(rsa_key));
@@ -95,11 +89,9 @@ int main()
 		//certificate.push_back(x509::extension::from_nconf_nid(NID_basic_constraints, "critical,CA:TRUE"));
 
 		// Sign the certificate
-
 		certificate.sign(pkey::pkey::from_rsa_key(rsa_key), hash::message_digest_algorithm(NID_sha1));
 
 		// Save the certificate
-
 		boost::shared_ptr<FILE> certificate_file(fopen("certificate.crt", "w"), fclose);
 
 		if (certificate_file)
@@ -108,10 +100,7 @@ int main()
 		}
 
 		// Let's print the result
-
-		bio::bio_chain bio_chain(BIO_new_fd(STDOUT_FILENO, BIO_NOCLOSE));
-
-		certificate.print(bio_chain.first());
+		std::cout << certificate << std::endl;
 	}
 	catch (std::exception& ex)
 	{

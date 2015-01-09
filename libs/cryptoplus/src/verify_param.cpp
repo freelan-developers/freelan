@@ -55,7 +55,7 @@ namespace cryptoplus
 	{
 		verify_param verify_param::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return verify_param(_ptr, deleter);
 		}

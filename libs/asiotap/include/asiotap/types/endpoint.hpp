@@ -243,6 +243,106 @@ namespace asiotap
 	};
 
 	/**
+	 * \brief A visitor that fills the IP address part of a endpoint if is null.
+	 */
+	template <typename AddressType>
+	class default_ip_endpoint_visitor : public boost::static_visitor<endpoint>
+	{
+		public:
+
+			/**
+			 * \brief Create the visitor with a default IP address.
+			 * \param default_ip
+			 */
+			default_ip_endpoint_visitor(const AddressType& default_ip) :
+				m_default_ip(default_ip)
+			{
+			}
+
+			/**
+			 * \brief Get the endpoint with a default endpoint if needed.
+			 * \tparam AddressType The address type.
+			 * \param ep The endpoint.
+			 * \return The new endpoint.
+			 */
+			result_type operator()(const ip_endpoint<AddressType>& ep) const
+			{
+				if (ep.has_null_address())
+				{
+					if (ep.has_port())
+					{
+						return ip_endpoint<AddressType>(m_default_ip, ep.port());
+					}
+					else
+					{
+						return ip_endpoint<AddressType>(m_default_ip);
+					}
+				}
+				else
+				{
+					return ep;
+				}
+			}
+
+			/**
+			 * \brief Get the endpoint with a default endpoint if needed.
+			 * \tparam AddressType The address type.
+			 * \param ep The endpoint.
+			 * \return The new endpoint.
+			 */
+			template <typename AddressType2>
+			result_type operator()(const ip_endpoint<AddressType2>& ep) const
+			{
+				return ep;
+			}
+
+			/**
+			 * \brief Get the endpoint with a default endpoint if needed.
+			 * \param ep The endpoint.
+			 * \return The new endpoint.
+			 */
+			result_type operator()(const hostname_endpoint& ep) const
+			{
+				return ep;
+			}
+
+		private:
+
+			AddressType m_default_ip;
+	};
+
+	/**
+	 * \brief A visitor that checks if the endpoint is complete.
+	 */
+	class is_endpoint_complete_visitor : public boost::static_visitor<bool>
+	{
+		public:
+
+			/**
+			 * \brief Check if the endpoint is complete.
+			 * \tparam AddressType The address type.
+			 * \param ep The endpoint.
+			 * \return The validity state.
+			 */
+			template <typename AddressType>
+			result_type operator()(const ip_endpoint<AddressType>& ep) const
+			{
+				return (!ep.has_null_address() && ep.has_port());
+			}
+
+			/**
+			 * \brief Check if the endpoint is complete.
+			 * \tparam AddressType The address type.
+			 * \param ep The endpoint.
+			 * \return The validity state.
+			 */
+			result_type operator()(const hostname_endpoint& ep) const
+			{
+				return (!ep.service().empty());
+			}
+	};
+
+	/**
 	 * \brief Read an endpoint from an input stream.
 	 * \param is The input stream.
 	 * \param value The value.
@@ -270,6 +370,47 @@ namespace asiotap
 	inline endpoint get_default_port_endpoint(const endpoint& ep, uint16_t default_port)
 	{
 		return boost::apply_visitor(default_port_endpoint_visitor(default_port), ep);
+	}
+
+	/**
+	 * \brief Get an endpoint with a default IP.
+	 * \param ep The endpoint.
+	 * \param default_ip The default ip.
+	 * \return The endpoint with the specified default port if it hadn't one yet.
+	 */
+	template <typename AddressType>
+	inline endpoint get_default_ip_endpoint(const endpoint& ep, const AddressType& default_ip)
+	{
+		return boost::apply_visitor(default_ip_endpoint_visitor<AddressType>(default_ip), ep);
+	}
+
+	/**
+	 * \brief Get an endpoint with a default IP.
+	 * \param ep The endpoint.
+	 * \param default_ip The default ip.
+	 * \return The endpoint with the specified default port if it hadn't one yet.
+	 */
+	inline endpoint get_default_ip_endpoint(const endpoint& ep, const boost::asio::ip::address& default_ip)
+	{
+		if (default_ip.is_v4())
+		{
+			return boost::apply_visitor(default_ip_endpoint_visitor<boost::asio::ip::address_v4>(default_ip.to_v4()), ep);
+		}
+		else
+		{
+			return boost::apply_visitor(default_ip_endpoint_visitor<boost::asio::ip::address_v6>(default_ip.to_v6()), ep);
+		}
+	}
+
+	/**
+	 * \brief Check if an endpoint is complete.
+	 * \param ep The endpoint.
+	 * \param default_ip The default ip.
+	 * \return The endpoint completion state.
+	 */
+	inline bool is_endpoint_complete(const endpoint& ep)
+	{
+		return boost::apply_visitor(is_endpoint_complete_visitor(), ep);
 	}
 }
 

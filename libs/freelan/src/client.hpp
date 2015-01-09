@@ -43,129 +43,98 @@
  * \brief A client implementation.
  */
 
-#ifndef FREELAN_CLIENT_HPP
-#define FREELAN_CLIENT_HPP
+#pragma once
 
-#include <string>
-#include <map>
+#include <set>
 
 #include <boost/asio.hpp>
+#include <boost/function.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
-#include <kfather/kfather.hpp>
-#include <kfather/value.hpp>
+#include <cryptoplus/x509/certificate.hpp>
+#include <cryptoplus/x509/certificate_request.hpp>
 
-#include <asiotap/types/ip_network_address.hpp>
+#include <fscp/memory_pool.hpp>
+#include <fscp/logger.hpp>
 
+#include <asiotap/types/endpoint.hpp>
+
+#include "os.hpp"
+#include "configuration.hpp"
 #include "curl.hpp"
-
-namespace cryptoplus
-{
-	namespace x509
-	{
-		class certificate;
-		class certificate_request;
-	}
-}
 
 namespace freelan
 {
-	struct configuration;
-	class logger;
-	
-	/**
-	 * \brief A network information class.
-	 */
-	struct network_info
-	{
-		asiotap::ipv4_network_address ipv4_address_prefix_length;
-		asiotap::ipv6_network_address ipv6_address_prefix_length;
-		std::vector<cryptoplus::x509::certificate> users_certificates;
-		std::vector<asiotap::endpoint> users_endpoints;
-	};
-
-	/**
-	 * \brief The generic network info type.
-	 */
-	typedef network_info network_info_v1;
-
-	/**
-	 * \brief A class that handles connection to a freelan server.
-	 */
-	class client
+	class web_client : public boost::enable_shared_from_this<web_client>
 	{
 		public:
+			typedef boost::function<void (const boost::system::error_code&, cryptoplus::x509::certificate)> request_certificate_callback;
+			typedef boost::function<void (const boost::system::error_code&, const boost::posix_time::ptime&)> registration_callback;
+			typedef boost::function<void (const boost::system::error_code&)> unregistration_callback;
+			typedef boost::function<void (const boost::system::error_code&, const std::set<asiotap::endpoint>&, const std::set<asiotap::endpoint>&)> set_contact_information_callback;
+			typedef boost::function<void (const boost::system::error_code&, const std::map<fscp::hash_type, std::set<asiotap::endpoint>>&)> get_contact_information_callback;
 
 			/**
-			 * \brief A values type.
-			 */
-			typedef json::object_type values_type;
-
-			/**
-			 * \brief Create a client instance.
-			 * \param configuration The configuration to use.
+			 * \brief Create a new web client.
+			 * \param io_service The io_service to bind to.
 			 * \param _logger The logger to use.
+			 * \param configuration The configuration to use.
 			 */
-			client(const freelan::configuration& configuration, freelan::logger& _logger);
+			static boost::shared_ptr<web_client> create(boost::asio::io_service& io_service, fscp::logger& _logger, const freelan::client_configuration& configuration)
+			{
+				return boost::shared_ptr<web_client>(new web_client(io_service, _logger, configuration));
+			}
 
 			/**
-			 * \brief Perform an authentication.
+			 * \brief Request the server for a certificate.
+			 * \param certifcate_request The certificate request to send.
+			 * \param handler The handler that will get called when the response is received.
 			 */
-			void authenticate();
+			void request_certificate(cryptoplus::x509::certificate_request certificate_request, request_certificate_callback handler);
 
 			/**
-			 * \brief Get the authority certificate.
+			 * \brief Request the server's CA certificate.
+			 * \param handler The handler that will get called when the response is received.
 			 */
-			cryptoplus::x509::certificate get_authority_certificate();
+			void request_ca_certificate(request_certificate_callback handler);
 
 			/**
-			 * \brief Join a network.
-			 * \param network The network name.
-			 * \param endpoints The endpoints to publish.
-			 * \return The network authority certificate.
+			 * \brief Register upon the server.
+			 * \param certifcate The certificate to send.
+			 * \param handler The handler that will get called when the response is received.
 			 */
-			network_info join_network(const std::string& network, const std::vector<asiotap::endpoint>& endpoints);
+			void register_(cryptoplus::x509::certificate certificate, registration_callback handler);
 
 			/**
-			 * \brief Renew the certificate.
+			 * \brief Unregister from the server.
+			 * \param handler The handler that will get called when the response is received.
 			 */
-			cryptoplus::x509::certificate renew_certificate(const cryptoplus::x509::certificate_request& csr);
+			void unregister(unregistration_callback handler);
+
+			/**
+			 * \brief Set contact information on the server.
+			 * \param public_endpoints The public endpoints.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void set_contact_information(const std::set<asiotap::endpoint>& public_endpoints, set_contact_information_callback handler);
+
+			/**
+			 * \brief Get contact information from the server.
+			 * \param requested_contacts The hashes of the contacts to request.
+			 * \param handler The handler that will get called when the response is received.
+			 */
+			void get_contact_information(const std::set<fscp::hash_type>& requested_contacts, get_contact_information_callback handler);
 
 		private:
+			typedef fscp::memory_pool<8192, 2> memory_pool;
 
-			client(const client&);
-			client& operator=(const client&);
+			web_client(boost::asio::io_service& io_service, fscp::logger& _logger, const freelan::client_configuration& configuration);
+			boost::shared_ptr<curl> make_request(const std::string& path) const;
 
-			void perform_request(curl&, const std::string&, values_type&);
-			void perform_get_request(curl&, const std::string&, values_type&);
-			void perform_post_request(curl&, const std::string&, const values_type&, values_type&);
-			void get_server_information(curl&, std::string&, unsigned int&, unsigned int&, std::string&, std::string&, std::string&, std::string&);
-
-			// Version 1 methods
-			void v1_authenticate(curl&, const std::string&);
-			cryptoplus::x509::certificate v1_get_authority_certificate(curl&, const std::string&);
-			network_info_v1 v1_join_network(curl&, const std::string&, const std::string&, const std::vector<asiotap::endpoint>&);
-			cryptoplus::x509::certificate v1_sign_certificate_request(curl&, const std::string&, const cryptoplus::x509::certificate_request&);
-
-			// Version 1 sub-methods
-			void v1_get_server_login(curl&, const std::string&, std::string&);
-			void v1_post_server_login(curl&, const std::string&, const std::string&);
-
-			size_t read_data(boost::asio::const_buffer buf);
-
-			const configuration& m_configuration;
-			logger& m_logger;
-			std::string m_server_name;
-			unsigned int m_server_version_major;
-			unsigned int m_server_version_minor;
-			std::string m_login_url;
-			std::string m_get_authority_certificate_url;
-			std::string m_join_network_url;
-			std::string m_sign_url;
-			curl m_request;
-			const std::string m_scheme;
-			std::string m_data;
+			memory_pool m_memory_pool;
+			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
+			fscp::logger& m_logger;
+			freelan::client_configuration m_configuration;
+			std::string m_url_prefix;
 	};
-
 }
-
-#endif /* FREELAN_CLIENT_HPP */

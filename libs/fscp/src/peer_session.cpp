@@ -142,6 +142,8 @@ namespace fscp
 		m_next_session.reset();
 		swap(m_current_session, _current_session);
 
+		keep_alive();
+
 		return true;
 	}
 

@@ -51,8 +51,9 @@
 #include <boost/filesystem.hpp>
 
 #include <freelan/os.hpp>
-#include <freelan/logger.hpp>
 #include <freelan/core.hpp>
+
+#include <fscp/logger.hpp>
 
 #include <asiotap/tap_adapter.hpp>
 
@@ -62,7 +63,7 @@
  * \param level The log level.
  * \return The syslog equivalent priority.
  */
-int log_level_to_syslog_priority(freelan::log_level level);
+int log_level_to_syslog_priority(fscp::log_level level);
 #endif
 
 /**
@@ -70,7 +71,7 @@ int log_level_to_syslog_priority(freelan::log_level level);
  * \param level The log level.
  * \return The string representation of level.
  */
-const char* log_level_to_string(freelan::log_level level);
+const char* log_level_to_string(fscp::log_level level);
 
 /**
  * \brief The tap adapter up function.
@@ -78,7 +79,7 @@ const char* log_level_to_string(freelan::log_level level);
  * \param logger The logger instance.
  * \param tap_adapter The tap_adapter instance.
  */
-void execute_tap_adapter_up_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter);
+void execute_tap_adapter_up_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The tap adapter down function.
@@ -86,7 +87,7 @@ void execute_tap_adapter_up_script(const boost::filesystem::path& script, const 
  * \param logger The logger instance.
  * \param tap_adapter The tap_adapter instance.
  */
-void execute_tap_adapter_down_script(const boost::filesystem::path& script, const freelan::logger& logger, const asiotap::tap_adapter& tap_adapter);
+void execute_tap_adapter_down_script(const boost::filesystem::path& script, const fscp::logger& logger, const asiotap::tap_adapter& tap_adapter);
 
 /**
  * \brief The certificate validation function.
@@ -95,6 +96,18 @@ void execute_tap_adapter_down_script(const boost::filesystem::path& script, cons
  * \param cert The certificate.
  * \return The execution result of the specified script.
  */
-bool execute_certificate_validation_script(const boost::filesystem::path& script, const freelan::logger& logger, freelan::security_configuration::cert_type cert);
+bool execute_certificate_validation_script(const boost::filesystem::path& script, const fscp::logger& logger, freelan::security_configuration::cert_type cert);
+
+/**
+ * \brief The authentication function.
+ * \param script The script to call.
+ * \param logger The logger instance.
+ * \param username The username.
+ * \param password The password.
+ * \param remote_host The remote host.
+ * \param remote_port The remote port.
+ * \return The execution result of the specified script.
+ */
+bool execute_authentication_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_port);
 
 #endif /* TOOLS_HPP */

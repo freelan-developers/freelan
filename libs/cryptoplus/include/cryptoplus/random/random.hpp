@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_RANDOM_RANDOM_HPP
 
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../os.hpp"
 
 #include <openssl/rand.h>
@@ -62,7 +62,7 @@ namespace cryptoplus
 		 * \brief Set the randomization engine.
 		 * \param engine The randomization engine.
 		 *
-		 * On error, a cryptographic_exception is thrown.
+		 * On error, an exception is thrown.
 		 */
 		void set_randomization_engine(ENGINE* engine);
 
@@ -72,7 +72,7 @@ namespace cryptoplus
 		 * \param buf_len The number of random bytes to request. buf must be big enough to hold the data.
 		 * \see get_pseudo_random_bytes
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		void get_random_bytes(void* buf, size_t buf_len);
 
@@ -82,7 +82,7 @@ namespace cryptoplus
 		 * \return The random bytes.
 		 * \see get_pseudo_random_bytes
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		buffer get_random_bytes(size_t cnt);
 
@@ -95,7 +95,7 @@ namespace cryptoplus
 		 *
 		 * Do not use the resulting bytes for critical cryptographic purposes (like key generation). If require truly random bytes, see get_random_bytes().
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		bool get_pseudo_random_bytes(void* buf, size_t buf_len);
 
@@ -107,7 +107,7 @@ namespace cryptoplus
 		 *
 		 * Do not use the resulting bytes for critical cryptographic purposes (like key generation). If require truly random bytes, see get_random_bytes().
 		 *
-		 * If the PRNG was not seeded with enough randomness, the call fails and a cryptographic_exception is thrown.
+		 * If the PRNG was not seeded with enough randomness, the call fails and an exception is thrown.
 		 */
 		buffer get_pseudo_random_bytes(size_t cnt);
 
@@ -158,7 +158,7 @@ namespace cryptoplus
 		 * \param buf The buffer to put the seed filename into.
 		 * \param buf_len The size of buf.
 		 * \return buf.
-		 * \warning If buf is not long enough to hold the filename, a cryptographic_exception is thrown.
+		 * \warning If buf is not long enough to hold the filename, an exception is thrown.
 		 */
 		const char* get_seed_filename(char* buf, size_t buf_len);
 
@@ -208,12 +208,12 @@ namespace cryptoplus
 
 		inline void set_randomization_engine(ENGINE* engine)
 		{
-			error::throw_error_if_not(RAND_set_rand_engine(engine) != 0);
+			throw_error_if_not(RAND_set_rand_engine(engine) != 0);
 		}
 
 		inline void get_random_bytes(void* buf, size_t buf_len)
 		{
-			error::throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
+			throw_error_if_not(RAND_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len)) == 1);
 		}
 
 		inline buffer get_random_bytes(size_t cnt)
@@ -229,7 +229,7 @@ namespace cryptoplus
 		{
 			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
 
-			error::throw_error_if(result < 0);
+			throw_error_if(result < 0);
 
 			return (result == 1);
 		}
@@ -276,7 +276,7 @@ namespace cryptoplus
 		{
 			const char* result = RAND_file_name(buf, buf_len);
 
-			error::throw_error_if_not(result);
+			throw_error_if_not(result);
 
 			return result;
 		}
@@ -285,7 +285,7 @@ namespace cryptoplus
 		{
 			int result = RAND_load_file(file.c_str(), static_cast<long>(cnt));
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -294,7 +294,7 @@ namespace cryptoplus
 		{
 			int result = RAND_write_file(file.c_str());
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -303,7 +303,7 @@ namespace cryptoplus
 		{
 			int result = RAND_egd(path.c_str());
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -312,7 +312,7 @@ namespace cryptoplus
 		{
 			int result = RAND_egd_bytes(path.c_str(), static_cast<int>(cnt));
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -321,7 +321,7 @@ namespace cryptoplus
 		{
 			int result = RAND_query_egd_bytes(path.c_str(), static_cast<unsigned char*>(buf), static_cast<int>(cnt));
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}

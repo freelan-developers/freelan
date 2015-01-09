@@ -47,7 +47,7 @@
 
 #include "pkey.hpp"
 #include "../buffer.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 
 #include <openssl/ec.h>
 #include <openssl/evp.h>

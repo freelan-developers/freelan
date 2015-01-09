@@ -1,6 +1,14 @@
 ---
-- hosts: load-test
+- name: "Load testing machines"
+  hosts: load-test-group
   roles:
     - apt
     - freelan-build
     - freelan-load-test
+
+- name: "Speed testing machines"
+  hosts: speed-test-group
+  roles:
+    - apt
+    - freelan-build
+    - freelan-speed-test

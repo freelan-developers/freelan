@@ -38,7 +38,7 @@ void hmac(const std::string& name, const std::string& key, const std::string& da
 	{
 		std::cerr << name << ": " << "Unsupported algorithm" << std::endl;
 	}
-	catch (cryptoplus::error::cryptographic_exception& ex)
+	catch (const boost::system::system_error& ex)
 	{
 		std::cerr << name << ": " << ex.what() << std::endl;
 	}

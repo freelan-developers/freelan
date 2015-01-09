@@ -48,8 +48,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <locale>
-#include <codecvt>
 #include <algorithm>
 
 #include <boost/lexical_cast.hpp>
@@ -57,6 +55,7 @@
 #include <Iphlpapi.h>
 
 #include <executeplus/windows_system.hpp>
+#include <iconvplus/converter.hpp>
 
 namespace asiotap
 {
@@ -222,8 +221,9 @@ namespace asiotap
 #endif
 
 		real_args.insert(real_args.end(), args.begin(), args.end());
+		const auto env = executeplus::get_current_environment();
 
-		executeplus::checked_execute(real_args);
+		executeplus::checked_execute(real_args, env);
 	}
 
 	void windows_route_manager::netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)
@@ -258,13 +258,17 @@ namespace asiotap
 		}
 
 #ifdef UNICODE
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		iconvplus::iconv_instance iconv("utf-16", "");
+		iconvplus::converter<char, wchar_t> converter(iconv);
 
 		std::vector<std::wstring> wargs;
 
 		for (auto&& arg : args)
 		{
-			wargs.push_back(converter.from_bytes(arg));
+			std::wostringstream out;
+			std::istringstream in(arg);
+			converter.convert(in, out);
+			wargs.push_back(out.str());
 		}
 
 		netsh(wargs);

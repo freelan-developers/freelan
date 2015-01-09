@@ -23,21 +23,23 @@
     <ClCompile Include="src\configuration.cpp" />
     <ClCompile Include="src\core.cpp" />
     <ClCompile Include="src\curl.cpp" />
+    <ClCompile Include="src\curl_error.cpp" />
     <ClCompile Include="src\freelan.cpp" />
-    <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\message.cpp" />
     <ClCompile Include="src\metric.cpp" />
     <ClCompile Include="src\mtu.cpp" />
     <ClCompile Include="src\router.cpp" />
     <ClCompile Include="src\routes_message.cpp" />
     <ClCompile Include="src\routes_request_message.cpp" />
+    <ClCompile Include="src\server.cpp" />
     <ClCompile Include="src\switch.cpp" />
+    <ClCompile Include="src\tools.cpp" />
+    <ClCompile Include="src\web_client_error.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\freelan\configuration.hpp" />
     <ClInclude Include="include\freelan\core.hpp" />
     <ClInclude Include="include\freelan\freelan.hpp" />
-    <ClInclude Include="include\freelan\logger.hpp" />
     <ClInclude Include="include\freelan\message.hpp" />
     <ClInclude Include="include\freelan\metric.hpp" />
     <ClInclude Include="include\freelan\mtu.hpp" />
@@ -46,9 +48,13 @@
     <ClInclude Include="include\freelan\router.hpp" />
     <ClInclude Include="include\freelan\routes_message.hpp" />
     <ClInclude Include="include\freelan\routes_request_message.hpp" />
+    <ClInclude Include="include\freelan\server.hpp" />
     <ClInclude Include="include\freelan\switch.hpp" />
+    <ClInclude Include="include\freelan\tools.hpp" />
     <ClInclude Include="src\client.hpp" />
     <ClInclude Include="src\curl.hpp" />
+    <ClInclude Include="src\curl_error.hpp" />
+    <ClInclude Include="src\web_client_error.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3BCC24B5-D624-47BC-AFED-BF540AFA29F8}</ProjectGuid>
@@ -101,25 +107,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,10 +134,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4345;4800;4996;4267</DisableSpecificWarnings>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -155,10 +161,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4345;4800;4996;4267</DisableSpecificWarnings>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -184,10 +190,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4345;4800;4996;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -214,10 +220,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB ;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\freelan</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4345;4800;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4345;4800;4996;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

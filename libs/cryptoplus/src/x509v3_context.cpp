@@ -60,7 +60,7 @@ namespace cryptoplus
 	{
 		x509v3_context x509v3_context::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return x509v3_context(_ptr, deleter);
 		}

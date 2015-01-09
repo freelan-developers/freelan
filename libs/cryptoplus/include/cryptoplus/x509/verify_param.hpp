@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_X509_VERIFY_PARAM_HPP
 
 #include "../pointer_wrapper.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../asn1/object.hpp"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -73,7 +73,7 @@ namespace cryptoplus
 				 * \brief Create a new verify_param.
 				 * \return The verify_param.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static verify_param create();
 
@@ -181,7 +181,7 @@ namespace cryptoplus
 		{
 			pointer _ptr = X509_VERIFY_PARAM_new();
 
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return take_ownership(_ptr);
 		}
@@ -193,11 +193,11 @@ namespace cryptoplus
 		}
 		inline void verify_param::set_flags(unsigned long _flags)
 		{
-			error::throw_error_if_not(X509_VERIFY_PARAM_set_flags(raw(), _flags) != 0);
+			throw_error_if_not(X509_VERIFY_PARAM_set_flags(raw(), _flags) != 0);
 		}
 		inline void verify_param::clear_flags(unsigned long _flags)
 		{
-			error::throw_error_if_not(X509_VERIFY_PARAM_clear_flags(raw(), _flags) != 0);
+			throw_error_if_not(X509_VERIFY_PARAM_clear_flags(raw(), _flags) != 0);
 		}
 		inline unsigned long verify_param::flags() const
 		{
@@ -205,11 +205,11 @@ namespace cryptoplus
 		}
 		inline void verify_param::set_purpose(int purpose)
 		{
-			error::throw_error_if_not(X509_VERIFY_PARAM_set_purpose(raw(), purpose) != 0);
+			throw_error_if_not(X509_VERIFY_PARAM_set_purpose(raw(), purpose) != 0);
 		}
 		inline void verify_param::set_trust(int trust)
 		{
-			error::throw_error_if_not(X509_VERIFY_PARAM_set_trust(raw(), trust) != 0);
+			throw_error_if_not(X509_VERIFY_PARAM_set_trust(raw(), trust) != 0);
 		}
 		inline void verify_param::set_time(boost::posix_time::ptime time)
 		{
@@ -218,11 +218,11 @@ namespace cryptoplus
 		}
 		inline void verify_param::add_policy(asn1::object policy)
 		{
-			error::throw_error_if_not(X509_VERIFY_PARAM_add0_policy(raw(), policy.raw()) != 0);
+			throw_error_if_not(X509_VERIFY_PARAM_add0_policy(raw(), policy.raw()) != 0);
 		}
 		inline void verify_param::set_policies(STACK_OF(ASN1_OBJECT)* policies)
 		{
-			error::throw_error_if_not(X509_VERIFY_PARAM_set1_policies(raw(), policies) != 0);
+			throw_error_if_not(X509_VERIFY_PARAM_set1_policies(raw(), policies) != 0);
 		}
 		inline void verify_param::set_depth(int _depth)
 		{

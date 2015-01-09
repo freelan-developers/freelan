@@ -46,7 +46,7 @@
 #define CRYPTOPLUS_ASN1_INTEGER_HPP
 
 #include "../pointer_wrapper.hpp"
-#include "../error/cryptographic_exception.hpp"
+#include "../error/helpers.hpp"
 #include "../bio/bio_ptr.hpp"
 #include "../bn/bignum.hpp"
 
@@ -78,7 +78,7 @@ namespace cryptoplus
 				 * \brief Create a new integer.
 				 * \return The integer.
 				 *
-				 * If allocation fails, a cryptographic_exception is thrown.
+				 * If allocation fails, an exception is thrown.
 				 */
 				static integer create();
 
@@ -225,11 +225,11 @@ namespace cryptoplus
 		}
 		inline void integer::set_value(long l) const
 		{
-			error::throw_error_if_not(ASN1_INTEGER_set(ptr().get(), l) != 0);
+			throw_error_if_not(ASN1_INTEGER_set(ptr().get(), l) != 0);
 		}
 		inline void integer::set_value(bn::bignum bn) const
 		{
-			error::throw_error_if_not(BN_to_ASN1_INTEGER(bn.raw(), ptr().get()) != 0);
+			throw_error_if_not(BN_to_ASN1_INTEGER(bn.raw(), ptr().get()) != 0);
 		}
 		inline long integer::to_long() const
 		{
@@ -243,7 +243,7 @@ namespace cryptoplus
 		{
 			int result = i2a_ASN1_INTEGER(bio.raw(), ptr().get());
 
-			error::throw_error_if_not(result >= 0);
+			throw_error_if_not(result >= 0);
 
 			return result;
 		}
@@ -260,7 +260,7 @@ namespace cryptoplus
 		}
 		inline void integer::read(bio::bio_ptr bio, const void* buf, size_t buf_len) const
 		{
-			error::throw_error_if_not(a2i_ASN1_INTEGER(bio.raw(), ptr().get(), static_cast<char*>(const_cast<void*>(buf)), static_cast<int>(buf_len)) != 0);
+			throw_error_if_not(a2i_ASN1_INTEGER(bio.raw(), ptr().get(), static_cast<char*>(const_cast<void*>(buf)), static_cast<int>(buf_len)) != 0);
 		}
 		inline integer::integer(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{

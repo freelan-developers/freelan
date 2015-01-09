@@ -91,7 +91,7 @@ namespace posix
 		::close(STDERR_FILENO);
 	}
 
-	void syslog(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime&)
+	void syslog(fscp::log_level level, const std::string& msg, const boost::posix_time::ptime&)
 	{
 		// We ignore the timestamp.
 

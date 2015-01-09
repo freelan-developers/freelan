@@ -53,16 +53,22 @@ namespace freelan
 {
 	server_configuration::server_configuration() :
 		enabled(false),
-		host(),
+		listen_on(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 443)),
+		protocol(server_protocol_type::https),
+		authentication_script(),
+		registration_validity_duration(boost::posix_time::minutes(30))
+	{
+	}
+
+	client_configuration::client_configuration() :
+		enabled(false),
+		server_endpoint(),
+		protocol(client_protocol_type::https),
+		disable_peer_verification(false),
+		disable_host_verification(false),
 		username(),
 		password(),
-		network(),
-		https_proxy(),
-		user_agent(),
-		protocol(SP_HTTPS),
-		ca_info(),
-		disable_peer_verification(false),
-		disable_host_verification(false)
+		public_endpoint_list()
 	{
 	}
 
@@ -135,9 +141,9 @@ namespace freelan
 		is >> value;
 
 		if (value == "http")
-			v = server_configuration::SP_HTTP;
+			v = server_configuration::server_protocol_type::http;
 		else if (value == "https")
-			v = server_configuration::SP_HTTPS;
+			v = server_configuration::server_protocol_type::https;
 		else
 			throw boost::bad_lexical_cast();
 
@@ -148,9 +154,9 @@ namespace freelan
 	{
 		switch (value)
 		{
-			case server_configuration::SP_HTTP:
+			case server_configuration::server_protocol_type::http:
 				return os << "http";
-			case server_configuration::SP_HTTPS:
+			case server_configuration::server_protocol_type::https:
 				return os << "https";
 		}
 

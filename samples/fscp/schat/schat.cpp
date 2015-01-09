@@ -117,7 +117,7 @@ static bool on_presentation(fscp::server& server, const fscp::server::ep_type& s
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << status << std::endl;
+	std::cout << "Received PRESENTATION from " << sender << " (" << sig_cert.subject() << ") - " << status << std::endl;
 
 	server.async_request_session(sender, boost::bind(&simple_handler, "async_request_session()", _1));
 
@@ -267,6 +267,7 @@ int main(int argc, char** argv)
 		cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 		boost::asio::io_service io_service;
+		fscp::logger _logger;
 
 		boost::asio::ip::udp::resolver listen_resolver(io_service);
 		boost::asio::ip::udp::resolver::query listen_query(listen_host, listen_port);
@@ -277,7 +278,7 @@ int main(int argc, char** argv)
 
 		const std::string local_name = certificate.subject().find(NID_commonName)->data().str();
 
-		fscp::server server(io_service, fscp::identity_store(certificate, private_key));
+		fscp::server server(io_service, _logger, fscp::identity_store(certificate, private_key));
 
 		server.open(listen_ep);
 

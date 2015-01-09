@@ -10,7 +10,6 @@ import datetime
 from subprocess import check_output, CalledProcessError
 from distutils.version import StrictVersion
 from collections import namedtuple
-from SCons.Errors import BuildError
 
 
 class Defines(object):
@@ -51,7 +50,7 @@ class Defines(object):
             try:
                 if self.no_git:
                     if not 'FREELAN_NO_GIT_VERSION' in os.environ:
-                        raise BuildError(errstr='You must specify FREELAN_NO_GIT_VERSION when FREELAN_NO_GIT is specified.')
+                        raise RuntimeError(errstr='You must specify FREELAN_NO_GIT_VERSION when FREELAN_NO_GIT is specified.')
 
                     self._repository_version = os.environ['FREELAN_NO_GIT_VERSION'].rstrip()
                 else:

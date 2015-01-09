@@ -79,9 +79,20 @@ namespace cryptoplus
 
 		certificate certificate::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return certificate(_ptr, deleter);
+		}
+
+		std::string certificate::to_string() const
+		{
+			bio::bio_ptr bio(BIO_new(BIO_s_mem()));
+
+			this->print(bio);
+
+			BUF_MEM* const str = bio.get_mem_buf();
+
+			return std::string(str->data, str->length);
 		}
 	}
 }

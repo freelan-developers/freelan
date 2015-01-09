@@ -86,11 +86,6 @@ namespace freelan
 		typedef asiotap::endpoint endpoint;
 
 		/**
-		 * \brief The endpoint list type.
-		 */
-		typedef std::set<endpoint> endpoint_list;
-
-		/**
 		 * \brief Create a new server configuration.
 		 */
 		server_configuration();
@@ -101,9 +96,114 @@ namespace freelan
 		bool enabled;
 
 		/**
-		 * \brief The server host name.
+		 * \brief The endpoint to listen on.
 		 */
-		endpoint host;
+		endpoint listen_on;
+
+		/**
+		 * \brief The server protocol type.
+		 */
+		enum class server_protocol_type
+		{
+			http, /**< \brief HTTP. */
+			https /**< \brief HTTPS. */
+		};
+
+		/**
+		 * \brief The protocol to use.
+		 */
+		server_protocol_type protocol;
+
+		/**
+		 * \brief The certificate type.
+		 */
+		typedef cryptoplus::x509::certificate cert_type;
+
+		/**
+		 * \brief The key type.
+		 */
+		typedef cryptoplus::pkey::pkey key_type;
+
+		/**
+		 * \brief The server certificate to use for the web server.
+		 */
+		cert_type server_certificate;
+
+		/**
+		 * \brief The server private key to use for the web server.
+		 */
+		key_type server_private_key;
+
+		/**
+		 * \brief The CA certificate to use to sign certificate requests.
+		 */
+		cert_type certification_authority_certificate;
+
+		/**
+		 * \brief The CA private key to use to sign certificate requests.
+		 */
+		key_type certification_authority_private_key;
+
+		/**
+		 * \brief The authentication script.
+		 */
+		boost::filesystem::path authentication_script;
+
+		/**
+		 * \brief The registration validity duration.
+		 */
+		boost::posix_time::time_duration registration_validity_duration;
+	};
+
+	/**
+	 * \brief The client configuration.
+	 */
+	struct client_configuration
+	{
+		/**
+		 * \brief The endpoint type.
+		 */
+		typedef asiotap::endpoint endpoint;
+
+		/**
+		 * \brief The endpoint list type.
+		 */
+		typedef std::set<endpoint> endpoint_list;
+
+		/**
+		 * \brief Create a new client configuration.
+		 */
+		client_configuration();
+
+		/**
+		 * \brief Whether the client mechanism is enabled.
+		 */
+		bool enabled;
+
+		/**
+		 * \brief The endpoint to connect to.
+		 */
+		endpoint server_endpoint;
+
+		/**
+		 * \brief The client protocol type.
+		 */
+		typedef server_configuration::server_protocol_type client_protocol_type;
+
+		/**
+		 * \brief The protocol to use.
+		 */
+		client_protocol_type protocol;
+
+		/**
+		 * \brief Whether to disable peer verification.
+		 */
+		bool disable_peer_verification;
+
+		/**
+		 * \brief Whether to disable host verification.
+		 */
+		bool disable_host_verification;
 
 		/**
 		 * \brief The username.
@@ -116,53 +216,9 @@ namespace freelan
 		std::string password;
 
 		/**
-		 * \brief The network.
-		 */
-		std::string network;
-
-		/**
-		 * \brief The public endpoint list.
+		 * \brief The public endpoints to advertise.
 		 */
 		endpoint_list public_endpoint_list;
-
-		/**
-		 * \brief The https proxy host name.
-		 */
-		boost::optional<endpoint> https_proxy;
-
-		/**
-		 * \brief The user agent.
-		 */
-		std::string user_agent;
-
-		/**
-		 * \brief The server protocol type.
-		 */
-		enum server_protocol_type
-		{
-			SP_HTTP = 0x00, /**< \brief HTTP. */
-			SP_HTTPS = 0x01 /**< \brief HTTPS. */
-		};
-
-		/**
-		 * \brief The protocol to use.
-		 */
-		server_protocol_type protocol;
-
-		/**
-		 * \brief The CA info file.
-		 */
-		boost::filesystem::path ca_info;
-
-		/**
-		 * \brief Disable peer verification.
-		 */
-		bool disable_peer_verification;
-
-		/**
-		 * \brief Disable host verification.
-		 */
-		bool disable_host_verification;
 	};
 
 	/**
@@ -546,6 +602,11 @@ namespace freelan
 		 * \brief The server related options.
 		 */
 		freelan::server_configuration server;
+
+		/**
+		 * \brief The client related options.
+		 */
+		freelan::client_configuration client;
 
 		/**
 		 * \brief The FSCP related options.

@@ -253,9 +253,9 @@ namespace fscp
 
 	// Public methods
 
-	server::server(boost::asio::io_service& io_service, const identity_store& identity) :
+	server::server(boost::asio::io_service& io_service, fscp::logger& _logger, const identity_store& identity) :
+		m_logger(_logger),
 		m_identity_store(identity),
-		m_debug_callback(),
 		m_socket(io_service),
 		m_socket_strand(io_service),
 		m_write_queue_strand(io_service),
@@ -1027,7 +1027,7 @@ namespace fscp
 			return ep;
 		}
 #else
-		static_cast<void>(socket);
+		static_cast<void>(ep);
 
 		return ep;
 #endif
@@ -1340,9 +1340,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -1502,11 +1502,16 @@ namespace fscp
 
 		try
 		{
+			const auto next_session_number = p_session.next_session_number();
+			const auto local_host_identifier = p_session.local_host_identifier();
+
+			m_logger(log_level::trace) << "Sending session request message to " << target << " (next_session_number: " << next_session_number << ", local_host_identifier: " << local_host_identifier << ")";
+
 			const size_t size = session_request_message::write(
 				buffer_cast<uint8_t*>(send_buffer),
 				buffer_size(send_buffer),
-				p_session.next_session_number(),
-				p_session.local_host_identifier(),
+				next_session_number,
+				local_host_identifier,
 				m_cipher_suites,
 				m_elliptic_curves,
 				identity.signature_key()
@@ -1524,9 +1529,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -1556,8 +1561,7 @@ namespace fscp
 		{
 			// No presentation_store for the given host.
 			// We do nothing.
-
-			push_debug_event(debug_event::no_presentation, "handling session request", sender);
+			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but no presentation is available. Ignoring.";
 
 			return;
 		}
@@ -1565,7 +1569,7 @@ namespace fscp
 		// We make sure the signatures matches.
 		if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
 		{
-			push_debug_event(debug_event::invalid_signature, "handling session request", sender);
+			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with an invalid signature. Ignoring.";
 
 			return;
 		}
@@ -1594,7 +1598,7 @@ namespace fscp
 
 		if (!p_session.set_first_remote_host_identifier(_session_request_message.host_identifier()))
 		{
-			push_debug_event(debug_event::host_identifier_mismatch, "handling session request", sender);
+			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but the host identifier does not match (Received: " << _session_request_message.host_identifier() << ". Expected: " << *p_session.remote_host_identifier() << "). Ignoring.";
 
 			// The host identifier does not match.
 			return;
@@ -1608,7 +1612,7 @@ namespace fscp
 		if ((calg == cipher_suite_type::unsupported) || (ec == elliptic_curve_type::unsupported))
 		{
 			// No suitable cipher and/or elliptic curve is available.
-			push_debug_event(debug_event::no_suitable_cipher_suite, "handling session request", sender);
+			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use (Cipher algorithm: " << calg  << ". Elliptic curve: " << ec << "). Ignoring";
 
 			return;
 		}
@@ -1620,20 +1624,26 @@ namespace fscp
 			can_reply = m_session_request_message_received_handler(sender, cipher_suites, elliptic_curves, m_accept_session_request_messages_default);
 		}
 
-		if (can_reply)
+		if (!can_reply)
+		{
+			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but not allowed to reply (`m_accept_session_request_messages_default` is " << m_accept_session_request_messages_default << ").";
+		}
+		else
 		{
 			if (!p_session.has_current_session())
 			{
-				push_debug_event(debug_event::no_current_session, "handling session request", sender);
+				m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with session number " << _session_request_message.session_number() << " and cipher suite " << calg << "_" << ec << ". No current session exist: preparing one and sending it.";
 
 				p_session.prepare_session(_session_request_message.session_number(), calg, ec);
 				do_send_session(identity, sender, p_session.next_session_parameters());
 			}
 			else
 			{
+				m_logger(log_level::trace) << "Current session has number " << p_session.current_session().parameters.session_number << " and " << sender << " requests session number " << _session_request_message.session_number();
+
 				if (_session_request_message.session_number() > p_session.current_session().parameters.session_number)
 				{
-					push_debug_event(debug_event::new_session_requested, "handling session request", sender);
+					m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with session number " << _session_request_message.session_number() << " and cipher suite " << calg << "_" << ec << ". A current session exists but has the number " << p_session.current_session().parameters.session_number << ": preparing a new session and sending it.";
 
 					// A new session is requested. Sending a new message.
 					p_session.prepare_session(_session_request_message.session_number(), calg, ec);
@@ -1641,7 +1651,7 @@ namespace fscp
 				}
 				else
 				{
-					push_debug_event(debug_event::old_session_requested, "handling session request", sender);
+					m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with session number " << _session_request_message.session_number() << " and cipher suite " << calg << "_" << ec << ". A current session exists and has the number " << p_session.current_session().parameters.session_number << ": sending the current session.";
 
 					// An old session is requested: sending the same message.
 					do_send_session(identity, sender, p_session.current_session_parameters());
@@ -1738,6 +1748,7 @@ namespace fscp
 	void server::do_send_session(const identity_store& identity, const ep_type& target, const peer_session::session_parameters& parameters)
 	{
 		// All do_send_session() calls are done in the session strand so the following is thread-safe.
+		m_logger(log_level::trace) << "Sending session message to " << target << " (session number: " << parameters.session_number << ", cipher suite: " << parameters.cipher_suite << ", elliptic curve: " << parameters.elliptic_curve << ").";
 
 		peer_session& p_session = m_peer_sessions[target];
 
@@ -1771,9 +1782,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			// Do nothing.
+			m_logger(log_level::error) << "Error sending session to " << target << ": " << ex.what() << ".";
 		}
 	}
 
@@ -1785,7 +1796,7 @@ namespace fscp
 		{
 			// No presentation_store for the given host.
 			// We do nothing.
-			push_debug_event(debug_event::no_presentation, "handling session", sender);
+			m_logger(log_level::trace) << "Received a SESSION from " << sender << " but no presentation is available. Ignoring.";
 
 			return;
 		}
@@ -1793,7 +1804,7 @@ namespace fscp
 		// We make sure the signatures matches.
 		if (!_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
 		{
-			push_debug_event(debug_event::invalid_signature, "handling session", sender);
+			m_logger(log_level::trace) << "Received a SESSION from " << sender << " with an invalid signature. Ignoring.";
 
 			return;
 		}
@@ -1819,7 +1830,7 @@ namespace fscp
 
 		if (!p_session.set_first_remote_host_identifier(_session_message.host_identifier()))
 		{
-			push_debug_event(debug_event::host_identifier_mismatch, "handling session", sender);
+			m_logger(log_level::trace) << "Received a SESSION from " << sender << " but the host identifier does not match (Received: " << _session_message.host_identifier() << ". Expected: " << *p_session.remote_host_identifier() << "). Ignoring.";
 
 			// The host identifier does not match.
 			return;
@@ -1832,24 +1843,23 @@ namespace fscp
 			if (_session_message.session_number() == p_session.current_session().parameters.session_number)
 			{
 				// The session number matches the current session.
-
 				if (p_session.current_session().parameters.cipher_suite != _session_message.cipher_suite())
 				{
-					push_debug_event(debug_event::different_session_requested, "handling session", sender);
+					m_logger(log_level::trace) << "Received a SESSION from " << sender << " with session number " << _session_message.session_number() << " and cipher suite " << _session_message.cipher_suite() << ". A session currently exists and has the same number but its cipher suite does not match (" << p_session.current_session().parameters.cipher_suite << "): requesting a new session.";
 
 					// The parameters don't match the current session. Requesting a new one.
 					do_request_session(identity, sender, &null_simple_handler);
 				}
 				else
 				{
-					push_debug_event(debug_event::current_session_requested, "handling session", sender);
+					m_logger(log_level::trace) << "Received a SESSION from " << sender << " with session number " << _session_message.session_number() << " and cipher suite " << _session_message.cipher_suite() << ". A session currently exists and has the same number and cipher suite. Ignoring.";
 				}
 
 				return;
 			}
 			else if (_session_message.session_number() < p_session.current_session().parameters.session_number)
 			{
-				push_debug_event(debug_event::old_session_requested, "handling session", sender);
+				m_logger(log_level::trace) << "Received a SESSION from " << sender << " with session number " << _session_message.session_number() << " and cipher suite " << _session_message.cipher_suite() << ". A session currently exists and has a higher number (" << p_session.current_session().parameters.session_number << "). Ignoring.";
 
 				// This is an old session message. Ignore it.
 				return;
@@ -1858,7 +1868,7 @@ namespace fscp
 
 		if (_session_message.cipher_suite() == cipher_suite_type::unsupported)
 		{
-			push_debug_event(debug_event::no_suitable_cipher_suite, "handling session", sender);
+			m_logger(log_level::trace) << "Received a SESSION from " << sender << " with session number " << _session_message.session_number() << " but an unsupported cipher suite. Failing session handshake.";
 
 			if (m_session_failed_handler)
 			{
@@ -1875,7 +1885,11 @@ namespace fscp
 			can_accept = m_session_message_received_handler(sender, _session_message.cipher_suite(), _session_message.elliptic_curve(), can_accept);
 		}
 
-		if (can_accept)
+		if (!can_accept)
+		{
+			m_logger(log_level::trace) << "Received a SESSION from " << sender << " but not allowed to accept (`m_accept_session_messages_default` is " << m_accept_session_messages_default << ").";
+		}
+		else
 		{
 			bool session_completed = true;
 
@@ -1883,7 +1897,7 @@ namespace fscp
 			{
 				if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
 				{
-					push_debug_event(debug_event::preparing_new_session, "handling session", sender);
+					m_logger(log_level::trace) << "Received a SESSION from " << sender << " with session number " << _session_message.session_number() << " but no session was prepared yet. Preparing a new one.";
 
 					// We received a session message but no session was prepared yet: we issue one and retry.
 					p_session.prepare_session(_session_message.session_number(), _session_message.cipher_suite(), _session_message.elliptic_curve());
@@ -1891,6 +1905,8 @@ namespace fscp
 					if (!p_session.complete_session(_session_message.public_key(), _session_message.public_key_size()))
 					{
 						// Unable to complete the session.
+						m_logger(log_level::warning) << "Unable to compute the session keys with " << sender << ".";
+
 						return;
 					}
 				}
@@ -1898,6 +1914,8 @@ namespace fscp
 			catch (const std::exception& ex)
 			{
 				session_completed = false;
+
+				m_logger(log_level::error) << "Exception while computing the session keys with " << sender << ": " << ex.what() << ".";
 
 				if (m_session_error_handler)
 				{
@@ -1907,6 +1925,8 @@ namespace fscp
 
 			if (session_completed)
 			{
+				m_logger(log_level::trace) << "Session established with " << sender << ". Sending acknowledgement session message back.";
+
 				do_send_session(identity, sender, p_session.current_session_parameters());
 
 				if (m_session_established_handler)
@@ -2060,9 +2080,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2141,9 +2161,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2222,9 +2242,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2235,12 +2255,16 @@ namespace fscp
 
 		if (!p_session.has_current_session())
 		{
+			m_logger(log_level::trace) << "Received a data message from " << sender << " but no session exists. Ignoring.";
+
 			return;
 		}
 
 		if (_data_message.sequence_number() <= p_session.current_session().remote_sequence_number)
 		{
 			// The message is outdated: we ignore it.
+			m_logger(log_level::trace) << "Received a data message from " << sender << " but its sequence number is outdated (received: " << _data_message.sequence_number() << ", expecting: " << p_session.current_session().remote_sequence_number << "). Ignoring.";
+
 			return;
 		}
 
@@ -2288,9 +2312,10 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
 			// This can happen if a message is decoded after a session rekeying.
+			m_logger(log_level::error) << "Error deciphering data message from " << sender << ": " << ex.what();
 		}
 	}
 
@@ -2484,9 +2509,9 @@ namespace fscp
 				)
 			);
 		}
-		catch (const cryptoplus::error::cryptographic_exception&)
+		catch (const boost::system::system_error& ex)
 		{
-			handler(server_error::cryptographic_error);
+			handler(ex.code());
 		}
 	}
 
@@ -2502,48 +2527,6 @@ namespace fscp
 				break;
 			default:
 				os << "unspecified reason";
-				break;
-		}
-
-		return os;
-	}
-
-	std::ostream& operator<<(std::ostream& os, server::debug_event event)
-	{
-		switch (event)
-		{
-			case server::debug_event::no_presentation:
-				os << "no presentation exists for the given host";
-				break;
-			case server::debug_event::invalid_signature:
-				os << "the presentation signature does not match";
-				break;
-			case server::debug_event::host_identifier_mismatch:
-				os << "the host identifier does not match";
-				break;
-			case server::debug_event::no_suitable_cipher_suite:
-				os << "no acceptable cipher";
-				break;
-			case server::debug_event::no_current_session:
-				os << "no session currently exist";
-				break;
-			case server::debug_event::new_session_requested:
-				os << "a new session was requested";
-				break;
-			case server::debug_event::old_session_requested:
-				os << "an old session was requested";
-				break;
-			case server::debug_event::current_session_requested:
-				os << "the current session was requested";
-				break;
-			case server::debug_event::different_session_requested:
-				os << "a different session was requested";
-				break;
-			case server::debug_event::preparing_new_session:
-				os << "preparing a new session";
-				break;
-			default:
-				os << "unspecified event";
 				break;
 		}
 

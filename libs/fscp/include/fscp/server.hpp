@@ -51,6 +51,7 @@
 #include "memory_pool.hpp"
 #include "presentation_store.hpp"
 #include "peer_session.hpp"
+#include "logger.hpp"
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -154,25 +155,6 @@ namespace fscp
 			typedef boost::function<void (const std::set<ep_type>&)> endpoints_handler_type;
 
 			// Callbacks
-
-			enum class debug_event
-			{
-				no_presentation,
-				invalid_signature,
-				host_identifier_mismatch,
-				no_suitable_cipher_suite,
-				no_current_session,
-				new_session_requested,
-				old_session_requested,
-				current_session_requested,
-				different_session_requested,
-				preparing_new_session
-			};
-
-			/**
-			 * \brief A debug callback.
-			 */
-			typedef boost::function<void (debug_event, const std::string&, const boost::optional<ep_type>&)> debug_callback;
 
 			/**
 			 * \brief A handler for when hello requests are received.
@@ -292,9 +274,10 @@ namespace fscp
 			/**
 			 * \brief Create a new FSCP server.
 			 * \param io_service The Boost Asio io_service instance to associate with the server.
+			 * \param _logger The logger to use. It must remain valid during the lifetime of the fscp::server.
 			 * \param identity The identity store.
 			 */
-			server(boost::asio::io_service& io_service, const identity_store& identity);
+			server(boost::asio::io_service& io_service, fscp::logger& _logger, const identity_store& identity);
 
 			/**
 			 * \brief Get the underlying socket.
@@ -367,15 +350,6 @@ namespace fscp
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
 			void sync_set_identity(const identity_store& identity);
-
-			/**
-			 * \brief Set the debug callback.
-			 * \param The debug callback.
-			 */
-			void set_debug_callback(debug_callback callback)
-			{
-				m_debug_callback = callback;
-			}
 
 			/**
 			 * \brief Open the server.
@@ -1277,23 +1251,14 @@ namespace fscp
 			void sync_set_contact_received_callback(contact_received_handler_type callback);
 
 		private:
+			fscp::logger& m_logger;
+
+		private:
 
 			identity_store m_identity_store;
 
 			void do_get_identity(identity_handler_type);
 			void do_set_identity(const identity_store&, void_handler_type);
-
-		private:
-
-			void push_debug_event(debug_event event, const std::string& comment, boost::optional<ep_type> ep = boost::none)
-			{
-				if (m_debug_callback)
-				{
-					m_debug_callback(event, comment, ep);
-				}
-			}
-
-			debug_callback m_debug_callback;
 
 		private:
 
@@ -1579,7 +1544,6 @@ namespace fscp
 	};
 
 	std::ostream& operator<<(std::ostream& os, server::session_loss_reason value);
-	std::ostream& operator<<(std::ostream& os, server::debug_event event);
 }
 
 #endif /* FSCP_SERVER_HPP */

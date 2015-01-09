@@ -137,6 +137,12 @@ namespace fscp
 			void clear_remote_host_identifier() { m_remote_host_identifier = boost::none; }
 
 			/**
+			 * \brief Get the remote host identifier, if any.
+			 * \return The remote host identifier.
+			 */
+			boost::optional<host_identifier_type> remote_host_identifier() const { return m_remote_host_identifier; }
+
+			/**
 			 * \brief Check if the session has timed out.
 			 * \param timeout The timeout value.
 			 * \return true if the session has timed out, false otherwise.

@@ -33,4 +33,15 @@
 
 namespace kfather
 {
+	object_type::item_type object_type::get(const key_type& key, item_type def) const
+	{
+		const auto it = items.find(key);
+
+		if (it != items.end())
+		{
+			return it->second;
+		}
+
+		return def;
+	}
 }

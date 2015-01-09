@@ -48,6 +48,11 @@
 #include <cassert>
 #include <stdexcept>
 
+#include <boost/bind.hpp>
+#include <boost/make_shared.hpp>
+
+#include "curl_error.hpp"
+
 namespace freelan
 {
 	namespace
@@ -56,7 +61,7 @@ namespace freelan
 		{
 			if (errorcode != CURLE_OK)
 			{
-				throw std::runtime_error(curl_easy_strerror(errorcode));
+				throw boost::system::system_error(make_error_code(errorcode));
 			}
 		}
 
@@ -64,79 +69,78 @@ namespace freelan
 		{
 			if (errorcode != CURLM_OK)
 			{
-				throw std::runtime_error(curl_multi_strerror(errorcode));
+				throw boost::system::system_error(make_error_code(errorcode));
 			}
 		}
 	}
 
 	curl_list::curl_list() :
-		m_slist(NULL)
+		m_slist(nullptr, [](curl_slist* p){ if (p) { curl_slist_free_all(p); }})
 	{
-	}
-
-	curl_list::~curl_list()
-	{
-		reset();
 	}
 
 	void curl_list::append(const std::string& value)
 	{
-		struct curl_slist* const new_slist = curl_slist_append(m_slist, value.c_str());
+		struct curl_slist* const new_slist = curl_slist_append(m_slist.get(), value.c_str());
 
 		if (!new_slist)
 		{
 			throw std::runtime_error("Unable to append a value to the list");
 		}
 
-		m_slist = new_slist;
+		m_slist.reset(new_slist);
 	}
 
 	void curl_list::reset()
 	{
-		if (m_slist)
-		{
-			curl_slist_free_all(m_slist);
-		}
+		m_slist.reset();
 	}
 
 	struct curl_slist* curl_list::raw() const
 	{
-		return m_slist;
+		return m_slist.get();
 	}
 
 	curl::curl() :
-		m_curl(curl_easy_init()),
+		m_curl(curl_easy_init(), [] (CURL* p) { if (p) curl_easy_cleanup(p); }),
 		m_debug_function()
 	{
 		if (!m_curl)
 		{
 			throw std::runtime_error("Unable to allocate a CURL structure");
 		}
-	}
 
-	curl::~curl()
-	{
-		curl_easy_cleanup(m_curl);
+		set_write_function(&curl::default_write_function);
 	}
 
 	void curl::set_option(CURLoption option, void* value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_option(CURLoption option, long int value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_option(CURLoption option, curl_debug_callback value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_option(CURLoption option, curl_write_callback value)
 	{
-		throw_if_curl_error(curl_easy_setopt(m_curl, option, value));
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
+	}
+
+	void curl::set_option(CURLoption option, curl_open_socket_callback value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
+	}
+
+	void curl::set_option(CURLoption option, curl_close_socket_callback value)
+	{
+		throw_if_curl_error(curl_easy_setopt(m_curl.get(), option, value));
 	}
 
 	void curl::set_proxy(const asiotap::endpoint& proxy)
@@ -273,9 +277,19 @@ namespace freelan
 		set_cookie_file("");
 	}
 
+	void curl::set_username(const std::string& username)
+	{
+		set_option(CURLOPT_USERNAME, username.c_str());
+	}
+
+	void curl::set_password(const std::string& password)
+	{
+		set_option(CURLOPT_PASSWORD, password.c_str());
+	}
+
 	std::string curl::escape(const std::string& url)
 	{
-		char* rstr = curl_easy_escape(m_curl, url.c_str(), static_cast<int>(url.size()));
+		char* rstr = curl_easy_escape(m_curl.get(), url.c_str(), static_cast<int>(url.size()));
 
 		if (!rstr)
 		{
@@ -290,7 +304,7 @@ namespace freelan
 	std::string curl::unescape(const std::string& encoded)
 	{
 		int len = 0;
-		char* rstr = curl_easy_unescape(m_curl, encoded.c_str(), static_cast<int>(encoded.size()), &len);
+		char* rstr = curl_easy_unescape(m_curl.get(), encoded.c_str(), static_cast<int>(encoded.size()), &len);
 
 		if (!rstr)
 		{
@@ -304,14 +318,23 @@ namespace freelan
 
 	void curl::perform()
 	{
-		throw_if_curl_error(curl_easy_perform(m_curl));
+		throw_if_curl_error(curl_easy_perform(m_curl.get()));
+	}
+
+	std::string curl::get_effective_url()
+	{
+		char* effective_url = NULL;
+
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_EFFECTIVE_URL, &effective_url));
+
+		return effective_url ? effective_url : "";
 	}
 
 	long curl::get_response_code()
 	{
 		long response_code = 0;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_RESPONSE_CODE, &response_code));
 
 		return response_code;
 	}
@@ -320,7 +343,7 @@ namespace freelan
 	{
 		double content_length = 0.0;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length));
 
 		return (content_length >= 0) ? static_cast<ptrdiff_t>(content_length) : -1;
 	}
@@ -329,7 +352,7 @@ namespace freelan
 	{
 		double content_length = 0.0;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_LENGTH_UPLOAD, &content_length));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_CONTENT_LENGTH_UPLOAD, &content_length));
 
 		return (content_length >= 0) ? static_cast<ptrdiff_t>(content_length) : -1;
 	}
@@ -338,9 +361,23 @@ namespace freelan
 	{
 		char* content_type = NULL;
 
-		throw_if_curl_error(curl_easy_getinfo(m_curl, CURLINFO_CONTENT_TYPE, &content_type));
+		throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_CONTENT_TYPE, &content_type));
 
 		return content_type ? content_type : "";
+	}
+
+	boost::system::error_code curl::get_system_error()
+	{
+		if (get_response_code() == 0)
+		{
+			long error = 0;
+
+			throw_if_curl_error(curl_easy_getinfo(m_curl.get(), CURLINFO_OS_ERRNO, &error));
+
+			return boost::system::error_code(error, boost::system::system_category());
+		}
+
+		return boost::system::error_code();
 	}
 
 	int curl::debug_function(CURL*, curl_infotype infotype, char* data, size_t datalen, void* context)
@@ -363,8 +400,86 @@ namespace freelan
 		return func(boost::asio::buffer(data, size * nmemb));
 	}
 
+	void curl_multi::add_handle(boost::shared_ptr<curl> handle)
+	{
+		m_associations[handle->raw()] = std::unique_ptr<curl_association>(new curl_association(shared_from_this(), handle));
+	}
+
+	boost::shared_ptr<curl> curl_multi::get_handle(CURL* easy_handle) const
+	{
+		const auto it = m_associations.find(easy_handle);
+
+		return (it != m_associations.end()) ? it->second->get_curl() : boost::shared_ptr<curl>();
+	}
+
+	boost::shared_ptr<curl> curl_multi::remove_handle(CURL* easy_handle)
+	{
+		boost::shared_ptr<curl> result;
+		const auto it = m_associations.find(easy_handle);
+
+		if (it != m_associations.end())
+		{
+			result = it->second->get_curl();
+
+			m_associations.erase(it);
+		}
+
+		return result;
+	}
+
+	std::vector<boost::shared_ptr<curl>> curl_multi::clear()
+	{
+		std::vector<boost::shared_ptr<curl>> result;
+
+		for (auto&& pair : m_associations)
+		{
+			result.push_back(pair.second->get_curl());
+		}
+
+		m_associations.clear();
+
+		return result;
+	}
+
+	void curl_multi::set_option(CURLMoption option, void* value)
+	{
+		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
+	}
+
+	void curl_multi::set_option(CURLMoption option, long int value)
+	{
+		set_option(option, &value);
+	}
+
+	void curl_multi::set_option(CURLMoption option, curl_multi_timer_callback value)
+	{
+		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
+	}
+
+	void curl_multi::set_option(CURLMoption option, curl_socket_callback value)
+	{
+		throw_if_curlm_error(curl_multi_setopt(m_curlm.get(), option, value));
+	}
+
+	void curl_multi::socket_action(curl_socket_t sockfd, int ev_bitmask, int* running_handles)
+	{
+		throw_if_curlm_error(curl_multi_socket_action(m_curlm.get(), sockfd, ev_bitmask, running_handles));
+	}
+
+	CURLMsg* curl_multi::info_read(int* count_left)
+	{
+		int local_counter = 0;
+
+		if (!count_left)
+		{
+			count_left = &local_counter;
+		}
+
+		return curl_multi_info_read(m_curlm.get(), count_left);
+	}
+
 	curl_multi::curl_multi() :
-		m_curlm(curl_multi_init())
+		m_curlm(curl_multi_init(), [](CURLM* p){ if (p) curl_multi_cleanup(p); })
 	{
 		if (!m_curlm)
 		{
@@ -372,18 +487,317 @@ namespace freelan
 		}
 	}
 
-	curl_multi::~curl_multi()
+	curl_association::curl_association(boost::shared_ptr<curl_multi> _curl_multi, boost::shared_ptr<curl> _curl) :
+		m_curl_multi(_curl_multi),
+		m_curl(_curl)
 	{
-		curl_multi_cleanup(m_curlm);
+		assert(m_curl_multi);
+		assert(m_curl);
+
+		m_curl_multi->before_associate_handle(m_curl);
+		throw_if_curlm_error(::curl_multi_add_handle(m_curl_multi->raw(), m_curl->raw()));
+		m_curl_multi->after_associate_handle(m_curl);
 	}
 
-	void curl_multi::add_handle(const curl& handle)
+	curl_association::~curl_association()
 	{
-		throw_if_curlm_error(curl_multi_add_handle(m_curlm, handle.m_curl));
+		m_curl_multi->before_disassociate_handle(m_curl);
+		throw_if_curlm_error(::curl_multi_remove_handle(m_curl_multi->raw(), m_curl->raw()));
+		m_curl_multi->after_disassociate_handle(m_curl);
 	}
 
-	void curl_multi::remove_handle(const curl& handle)
+	curl_multi_asio::~curl_multi_asio()
 	{
-		throw_if_curlm_error(curl_multi_remove_handle(m_curlm, handle.m_curl));
+		// Some sockets might still be in use: we need to close them explicitely
+		// while it is still valid to access the close_socket_callback().
+
+		int running_handles = 0;
+
+		for (auto&& pair : m_socket_map)
+		{
+			socket_action(pair.second->native_handle(), CURL_POLL_REMOVE, &running_handles);
+		}
+
+		check_info();
+
+		m_socket_map.clear();
+
+		set_option(CURLMOPT_SOCKETDATA, static_cast<void*>(nullptr));
+		set_option(CURLMOPT_SOCKETFUNCTION, static_cast<void*>(nullptr));
+		set_option(CURLMOPT_TIMERDATA, static_cast<void*>(nullptr));
+		set_option(CURLMOPT_TIMERFUNCTION, static_cast<void*>(nullptr));
+	}
+
+	void curl_multi_asio::execute(boost::shared_ptr<curl> handle, connection_complete_callback handler)
+	{
+		const auto self = shared_from_this();
+
+		m_strand.post([self, handle, handler] () {
+			self->add_handle(handle);
+			self->m_handler_map[handle] = handler;
+			self->m_result_map.erase(handle);
+		});
+	}
+
+	void curl_multi_asio::async_clear(boost::function<void ()> handler)
+	{
+		const auto self = shared_from_this();
+
+		m_strand.post([self, handler] () {
+			self->clear();
+
+			if (handler)
+			{
+				handler();
+			}
+		});
+	}
+
+	void curl_multi_asio::before_associate_handle(boost::shared_ptr<curl> handle)
+	{
+		handle->set_option(CURLOPT_OPENSOCKETFUNCTION, &curl_multi_asio::open_socket_callback);
+		handle->set_option(CURLOPT_OPENSOCKETDATA, this);
+		handle->set_option(CURLOPT_CLOSESOCKETFUNCTION, &curl_multi_asio::close_socket_callback);
+		handle->set_option(CURLOPT_CLOSESOCKETDATA, this);
+	}
+
+	void curl_multi_asio::after_disassociate_handle(boost::shared_ptr<curl> handle)
+	{
+		const auto handler_it = m_handler_map.find(handle);
+
+		if (handler_it != m_handler_map.end())
+		{
+			const auto handler = handler_it->second;
+
+			if (handler)
+			{
+				const auto result_it = m_result_map.find(handle);
+
+				if (result_it != m_result_map.end())
+				{
+					const auto system_error = handle->get_system_error();
+
+					if (system_error)
+					{
+						m_io_service.post(boost::bind(handler, system_error));
+					}
+					else
+					{
+						m_io_service.post(boost::bind(handler, make_error_code(result_it->second)));
+					}
+				}
+				else
+				{
+					m_io_service.post(boost::bind(handler, boost::asio::error::operation_aborted));
+				}
+			}
+
+			m_handler_map.erase(handler_it);
+		}
+
+		handle->set_option(CURLOPT_CLOSESOCKETDATA, static_cast<void*>(nullptr));
+		handle->set_option(CURLOPT_CLOSESOCKETFUNCTION, static_cast<void*>(nullptr));
+		handle->set_option(CURLOPT_OPENSOCKETDATA, static_cast<void*>(nullptr));
+		handle->set_option(CURLOPT_OPENSOCKETFUNCTION, static_cast<void*>(nullptr));
+	}
+
+	void curl_multi_asio::curl_socket::trigger(curl_multi_asio& _curl_multi_asio)
+	{
+		if ((m_current_action & CURL_POLL_IN) != 0)
+		{
+			trigger_read(_curl_multi_asio);
+		}
+
+		if ((m_current_action & CURL_POLL_OUT) != 0)
+		{
+			trigger_write(_curl_multi_asio);
+		}
+	}
+
+	void curl_multi_asio::curl_socket::trigger_read(curl_multi_asio& _curl_multi_asio)
+	{
+		if (!m_read_operation_pending)
+		{
+			m_read_operation_pending = true;
+
+			const auto self = shared_from_this();
+			const auto handler = boost::bind(&curl_multi_asio::socket_callback, _curl_multi_asio.shared_from_this(), _1, self);
+
+			async_read_some(
+				boost::asio::null_buffers(),
+				_curl_multi_asio.m_strand.wrap([self, handler] (const boost::system::error_code& ec, size_t) {
+					self->m_read_operation_pending = false;
+
+					handler(ec);
+				})
+			);
+		}
+	}
+
+	void curl_multi_asio::curl_socket::trigger_write(curl_multi_asio& _curl_multi_asio)
+	{
+		if (!m_write_operation_pending)
+		{
+			m_write_operation_pending = true;
+
+			const auto self = shared_from_this();
+			const auto handler = boost::bind(&curl_multi_asio::socket_callback, _curl_multi_asio.shared_from_this(), _1, self);
+
+			async_write_some(
+				boost::asio::null_buffers(),
+				_curl_multi_asio.m_strand.wrap([self, handler] (const boost::system::error_code& ec, size_t) {
+					self->m_write_operation_pending = false;
+
+					handler(ec);
+				})
+			);
+		}
+	}
+
+	int curl_multi_asio::static_timer_callback(CURLM*, long timeout_ms, void* _curl_multi_asio)
+	{
+		assert(_curl_multi_asio);
+
+		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
+
+		self.m_timer.cancel();
+
+		if (timeout_ms > 0)
+		{
+			self.m_timer.expires_from_now(boost::posix_time::millisec(timeout_ms));
+			self.m_timer.async_wait(self.m_strand.wrap(boost::bind(&curl_multi_asio::timer_callback, self.shared_from_this(), _1)));
+		}
+		else
+		{
+			self.m_strand.post(boost::bind(&curl_multi_asio::timer_callback, self.shared_from_this(), boost::system::error_code()));
+		}
+
+		return 0;
+	}
+
+	int curl_multi_asio::static_socket_callback(CURL*, curl_socket_t socket_fd, int action, void* _curl_multi_asio, void*)
+	{
+		// This method is always called in the strand.
+		assert(_curl_multi_asio);
+
+		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
+
+		const auto socket_it = self.m_socket_map.find(socket_fd);
+
+		if (socket_it != self.m_socket_map.end())
+		{
+			const auto socket = socket_it->second;
+			socket->set_current_action(action);
+
+			switch (action)
+			{
+				case CURL_POLL_REMOVE:
+				{
+					socket->cancel();
+					break;
+				}
+				case CURL_POLL_IN:
+				case CURL_POLL_OUT:
+				case CURL_POLL_INOUT:
+				{
+					socket->trigger(self);
+					break;
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	curl_socket_t curl_multi_asio::open_socket_callback(void* _curl_multi_asio, curlsocktype purpose, struct curl_sockaddr* address)
+	{
+		assert(_curl_multi_asio);
+
+		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
+
+		if ((purpose == CURLSOCKTYPE_IPCXN) && ((address->family == AF_INET) || (address->family == AF_INET6)))
+		{
+			const auto socket = curl_socket::create(
+				self.m_io_service,
+				(address->family == AF_INET) ? boost::asio::ip::tcp::v4() : boost::asio::ip::tcp::v6()
+			);
+
+			const curl_socket_t socket_fd = socket->native_handle();
+			self.m_socket_map[socket_fd] = socket;
+
+			return socket_fd;
+		}
+
+		return CURL_SOCKET_BAD;
+	}
+
+	int curl_multi_asio::close_socket_callback(void* _curl_multi_asio, curl_socket_t socket_fd)
+	{
+		assert(_curl_multi_asio);
+
+		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
+
+		self.m_socket_map.erase(socket_fd);
+
+		return 0;
+	}
+
+	curl_multi_asio::curl_multi_asio(boost::asio::io_service& io_service) :
+		m_io_service(io_service),
+		m_strand(m_io_service),
+		m_timer(m_io_service)
+	{
+		set_option(CURLMOPT_TIMERFUNCTION, &curl_multi_asio::static_timer_callback);
+		set_option(CURLMOPT_TIMERDATA, this);
+		set_option(CURLMOPT_SOCKETFUNCTION, &curl_multi_asio::static_socket_callback);
+		set_option(CURLMOPT_SOCKETDATA, this);
+	}
+
+	void curl_multi_asio::timer_callback(const boost::system::error_code& ec)
+	{
+		if (!ec)
+		{
+			int running_handles = 0;
+
+			socket_action(CURL_SOCKET_TIMEOUT, 0, &running_handles);
+			check_info();
+		}
+	}
+
+	void curl_multi_asio::socket_callback(const boost::system::error_code& ec, boost::shared_ptr<curl_socket> socket)
+	{
+		if (!ec)
+		{
+			int running_handles = 0;
+
+			// This will likely cause static_socket_callback to be called synchronously
+			// so it may update the socket's current action.
+			socket_action(socket->native_handle(), socket->current_action(), &running_handles);
+			check_info();
+
+			if (running_handles <= 0)
+			{
+				// No transfer is pending, we can kill the timer.
+				m_timer.cancel();
+			}
+			else
+			{
+				socket->trigger(*this);
+			}
+		}
+	}
+
+	void curl_multi_asio::check_info()
+	{
+		for (CURLMsg* msg = info_read(); msg; msg = info_read())
+		{
+			if (msg->msg == CURLMSG_DONE)
+			{
+				const auto handle = get_handle(msg->easy_handle);
+				m_result_map[handle] = msg->data.result;
+
+				remove_handle(msg->easy_handle);
+			}
+		}
 	}
 }

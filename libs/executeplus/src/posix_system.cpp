@@ -60,9 +60,35 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 
+extern char** environ;
+
 namespace executeplus
 {
-	int execute(const std::vector<std::string>& args, boost::system::error_code& ec, std::ostream* output)
+	std::map<std::string, std::string> get_current_environment()
+	{
+		std::map<std::string, std::string> result;
+
+		for (size_t count = 0; environ[count]; ++count)
+		{
+			const std::string line = std::string(environ[count]);
+			const auto pos = line.find('=');
+
+			if (pos == std::string::npos)
+			{
+				result[line] = std::string();
+			}
+			else
+			{
+				const std::string key = line.substr(0, pos);
+				const std::string value = line.substr(pos + 1);
+				result[key] = value;
+			}
+		}
+
+		return result;
+	}
+
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, boost::system::error_code& ec, std::ostream* output)
 	{
 #if FREELAN_DEBUG
 		std::cout << "Executing:";
@@ -73,6 +99,15 @@ namespace executeplus
 		}
 
 		std::cout << std::endl;
+
+		std::cout << "Environment starts:" << std::endl;
+
+		for (auto&& pair : env)
+		{
+			std::cout << pair.first << "=" << pair.second << std::endl;
+		}
+
+		std::cout << "Environment ends." << std::endl;
 #endif
 
 		int fd[2] = {0, 0};
@@ -124,12 +159,13 @@ namespace executeplus
 					if (output)
 					{
 						::dup2(output_fd[1], STDOUT_FILENO);
+						::dup2(output_fd[1], STDERR_FILENO);
 						::close(output_fd[1]);
 					}
 
 					for (int n = 0; n < fdlimit; ++n)
 					{
-						if ((n != fd[1]) && (!output || (n != STDOUT_FILENO)))
+						if ((n != fd[1]) && (!output || ((n != STDOUT_FILENO) && (n != STDERR_FILENO))))
 						{
 							::close(n);
 						}
@@ -138,29 +174,63 @@ namespace executeplus
 					fcntl(fd[1], F_SETFD, FD_CLOEXEC);
 
 					// Estimate the required size for the argv buffer.
-					// One null-terminated byte per arg.
-					size_t buffer_size = args.size();
+					std::vector<char> argv_buffer;
+					std::vector<char*> argv(args.size() + 1, nullptr);
 
-					for (auto&& arg : args)
 					{
-						buffer_size += arg.size();
+						// One null-terminated byte per arg.
+						size_t buffer_size = args.size();
+
+						for (auto&& arg : args)
+						{
+							buffer_size += arg.size();
+						}
+
+						argv_buffer.resize(buffer_size, 0x00);
+						auto offset = argv_buffer.begin();
+
+						for (size_t i = 0; i != args.size(); ++i)
+						{
+							const auto& arg = args[i];
+
+							argv[i] = &*offset;
+							offset = std::copy(arg.begin(), arg.end(), offset);
+							*(offset++) = '\0';
+						}
 					}
 
-					std::vector<char> buffer(buffer_size, 0x00);
-					std::vector<char*> argv(args.size() + 1, nullptr);
-					auto offset = buffer.begin();
+					// Estimate the required size for the envp buffer.
+					std::vector<char> envp_buffer;
+					std::vector<char*> envp(env.size() + 1, nullptr);
 
-					for (size_t i = 0; i != args.size(); ++i)
 					{
-						const auto& arg = args[i];
+						// One null-terminated byte per arg.
+						size_t buffer_size = env.size();
 
-						argv[i] = &*offset;
-						offset = std::copy(arg.begin(), arg.end(), offset);
-						*(offset++) = '\0';
+						for (auto&& pair : env)
+						{
+							buffer_size += pair.first.size() + 1 + pair.second.size();
+						}
+
+						envp_buffer.resize(buffer_size, 0x00);
+						auto offset = envp_buffer.begin();
+
+						for (size_t i = 0; i != env.size(); ++i)
+						{
+							auto it = env.begin();
+							std::advance(it, i);
+							const auto& pair = *it;
+
+							envp[i] = &*offset;
+							offset = std::copy(pair.first.begin(), pair.first.end(), offset);
+							*(offset++) = '=';
+							offset = std::copy(pair.second.begin(), pair.second.end(), offset);
+							*(offset++) = '\0';
+						}
 					}
 
 					// Execute the file specified
-					::execv(argv[0], &argv[0]);
+					::execve(argv[0], &argv[0], &envp[0]);
 
 					// Something went wrong. Sending back errno to parent process then exiting.
 					if (::write(fd[1], &errno, sizeof(errno))) {}
@@ -236,11 +306,11 @@ namespace executeplus
 		return EXIT_FAILURE;
 	}
 
-	int execute(const std::vector<std::string>& args, std::ostream* output)
+	int execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, std::ostream* output)
 	{
 		boost::system::error_code ec;
 
-		const auto result = execute(args, ec, output);
+		const auto result = execute(args, env, ec, output);
 
 		if (result < 0)
 		{
@@ -250,9 +320,9 @@ namespace executeplus
 		return result;
 	}
 
-	void checked_execute(const std::vector<std::string>& args, std::ostream* output)
+	void checked_execute(const std::vector<std::string>& args, const std::map<std::string, std::string>& env, std::ostream* output)
 	{
-		if (execute(args, output) != 0)
+		if (execute(args, env, output) != 0)
 		{
 			throw boost::system::system_error(make_error_code(executeplus_error::external_process_failed));
 		}

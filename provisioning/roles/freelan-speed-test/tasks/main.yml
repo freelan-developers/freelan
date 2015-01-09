@@ -1,0 +1,43 @@
+---
+- name: Install freelan load test dependencies
+  apt: name={{ item }} state=present
+  with_items:
+    - screen
+    - iperf
+  sudo: True
+
+- name: Create configuration directory
+  file: dest={{ config_root }} state=directory
+
+- name: Create scripts directory
+  file: dest={{ scripts_root }} state=directory
+
+- name: Create the certificate and private key
+  command: openssl req -new -nodes -x509 -subj "/CN={{ ansible_hostname }}" -days 3650 -keyout {{ key_path }} -out {{ cert_path }} -extensions v3_ca creates={{ cert_path }}
+
+- name: Create the configuration file
+  template: src=configuration.cfg dest={{ config_path }}
+
+- name: Create launch script file
+  template: src=launch-script.sh dest={{ scripts_root }}/launch.sh mode=755
+
+- name: Create detached launch script file
+  template: src=launch-detached-script.sh dest={{ scripts_root }}/launch-detached.sh mode=755
+
+- name: Create server performance test script file
+  template: src=perf-server-script.sh dest={{ scripts_root }}/perf-server.sh mode=755
+
+- name: Create server detached performance test script file
+  template: src=perf-server-detached-script.sh dest={{ scripts_root }}/perf-server-detached.sh mode=755
+
+- name: Create client performance test script files
+  template: src=perf-client-script.sh dest={{ scripts_root }}/perf-client-{{ item.name }}.sh mode=755
+  with_items: contacts
+
+- name: Create client VPN performance test script files
+  template: src=perf-client-vpn-script.sh dest={{ scripts_root }}/perf-client-vpn-{{ item.name }}.sh mode=755
+  with_items: contacts
+
+- name: Create client VPN performance comparison test script files
+  template: src=perf-client-comparison-script.sh dest={{ scripts_root }}/perf-client-comparison-{{ item.name }}.sh mode=755
+  with_items: contacts

@@ -44,7 +44,7 @@
 
 #include "asn1/object.hpp"
 
-#include "error/cryptographic_exception.hpp"
+#include "error/helpers.hpp"
 
 #include <cassert>
 
@@ -57,7 +57,7 @@ namespace cryptoplus
 	{
 		object object::take_ownership(pointer _ptr)
 		{
-			error::throw_error_if_not(_ptr);
+			throw_error_if_not(_ptr);
 
 			return object(_ptr, deleter);
 		}

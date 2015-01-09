@@ -122,7 +122,7 @@ static bool on_presentation(const std::string& name, fscp::server& server, const
 {
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject().oneline() << ") - " << status << std::endl;
+	std::cout << "[" << name << "] Received PRESENTATION from " << sender << " (" << sig_cert.subject() << ") - " << status << std::endl;
 
 	server.async_request_session(sender, boost::bind(&simple_handler, name, "async_request_session()", _1));
 
@@ -240,7 +240,7 @@ static bool on_contact_request_message(const std::string& name, fscp::server& se
 
 	mutex::scoped_lock lock(output_mutex);
 
-	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject().oneline() << " ? (Answer: " << hash << " is at " << target << ")" << std::endl;
+	std::cout << "[" << name << "] Received CONTACT_REQUEST from " << sender << ": Where is " << cert.subject() << " ? (Answer: " << hash << " is at " << target << ")" << std::endl;
 
 	return true;
 }
@@ -268,6 +268,7 @@ int main()
 	try
 	{
 		boost::asio::io_service _io_service;
+		fscp::logger _logger;
 
 		using cryptoplus::file;
 
@@ -278,9 +279,9 @@ int main()
 		cryptoplus::x509::certificate chris_cert = cryptoplus::x509::certificate::from_certificate(file::open("chris.crt", "r"));
 		cryptoplus::pkey::pkey chris_key = cryptoplus::pkey::pkey::from_private_key(file::open("chris.key", "r"));
 
-		fscp::server alice_server(_io_service, fscp::identity_store(alice_cert, alice_key));
-		fscp::server bob_server(_io_service, fscp::identity_store(bob_cert, bob_key));
-		fscp::server chris_server(_io_service, fscp::identity_store(chris_cert, chris_key));
+		fscp::server alice_server(_io_service, _logger, fscp::identity_store(alice_cert, alice_key));
+		fscp::server bob_server(_io_service, _logger, fscp::identity_store(bob_cert, bob_key));
+		fscp::server chris_server(_io_service, _logger, fscp::identity_store(chris_cert, chris_key));
 
 		alice_server.set_hello_message_received_callback(boost::bind(&on_hello, "alice", boost::ref(alice_server), _1, _2));
 		bob_server.set_hello_message_received_callback(boost::bind(&on_hello, "bob", boost::ref(bob_server), _1, _2));

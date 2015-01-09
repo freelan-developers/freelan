@@ -120,7 +120,7 @@ std::vector<fs::path> get_configuration_files()
 
 static bool DISABLE_COLOR = false;
 
-std::string log_level_to_string_extended(freelan::log_level level)
+std::string log_level_to_string_extended(fscp::log_level level)
 {
 #ifdef WINDOWS
 	// No color support on Windows.
@@ -138,7 +138,7 @@ std::string log_level_to_string_extended(freelan::log_level level)
 #endif
 }
 
-void do_log(freelan::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
+void do_log(fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp = boost::posix_time::microsec_clock::local_time())
 {
 	boost::mutex::scoped_lock lock(log_mutex);
 
@@ -149,7 +149,7 @@ void signal_handler(const boost::system::error_code& error, int signal_number, f
 {
 	if (!error)
 	{
-		do_log(fl::LL_WARNING, "Signal caught (" + boost::lexical_cast<std::string>(signal_number) + "): exiting...");
+		do_log(fscp::log_level::warning, "Signal caught (" + boost::lexical_cast<std::string>(signal_number) + "): exiting...");
 
 		core.close();
 
@@ -178,6 +178,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	po::options_description configuration_options("Configuration");
 	configuration_options.add(get_server_options());
+	configuration_options.add(get_client_options());
 	configuration_options.add(get_fscp_options());
 	configuration_options.add(get_security_options());
 	configuration_options.add(get_tap_adapter_options());
@@ -387,12 +388,12 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 		if (!configuration_read)
 		{
-			std::cerr << "Warning ! No configuration file specified and none found in the environment." << std::endl;
-			std::cerr << "Looked up locations were:" << std::endl;
+			do_log(fscp::log_level::warning, "Warning ! No configuration file specified and none found in the environment.");
+			do_log(fscp::log_level::warning, "Looked up locations were:");
 
-			BOOST_FOREACH(const fs::path& conf, configuration_files)
+			for (auto&& conf : configuration_files)
 			{
-				std::cerr << "- " << conf << std::endl;
+				do_log(fscp::log_level::warning, "- " + conf.string());
 			}
 		}
 	}
@@ -422,6 +423,13 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	if (!certificate_validation_script.empty())
 	{
 		configuration.fl_configuration.security.certificate_validation_script = certificate_validation_script;
+	}
+
+	const fs::path authentication_script = get_authentication_script(execution_root_directory, vm);
+
+	if (!authentication_script.empty())
+	{
+		configuration.fl_configuration.server.authentication_script = authentication_script;
 	}
 
 	configuration.debug = vm.count("debug") > 0;
@@ -462,9 +470,8 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 
-	const freelan::log_level log_level = configuration.debug ? fl::LL_TRACE : fl::LL_INFORMATION;
-
-	const freelan::logger logger(log_func, log_level);
+	const fscp::log_level log_level = configuration.debug ? fscp::log_level::trace : fscp::log_level::information;
+	const fscp::logger logger(log_func, log_level);
 
 	fl::core core(io_service, configuration.fl_configuration);
 
@@ -484,6 +491,11 @@ void run(const cli_configuration& configuration, int& exit_signal)
 	if (!configuration.fl_configuration.security.certificate_validation_script.empty())
 	{
 		core.set_certificate_validation_callback(boost::bind(&execute_certificate_validation_script, configuration.fl_configuration.security.certificate_validation_script, logger, _1));
+	}
+
+	if (!configuration.fl_configuration.server.authentication_script.empty())
+	{
+		core.set_authentication_callback(boost::bind(&execute_authentication_script, configuration.fl_configuration.server.authentication_script, logger, _1, _2, _3, _4));
 	}
 
 	core.open();
@@ -506,18 +518,34 @@ void run(const cli_configuration& configuration, int& exit_signal)
 		}
 	}
 
-	logger(fl::LL_INFORMATION) << "Using " << thread_count << " thread(s).";
+	logger(fscp::log_level::information) << "Using " << thread_count << " thread(s).";
 
-	logger(fl::LL_IMPORTANT) << "Execution started.";
+	logger(fscp::log_level::important) << "Execution started.";
 
 	for (std::size_t i = 0; i < thread_count; ++i)
 	{
-		threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+		threads.create_thread([i, &io_service, &core, &logger, &signals](){
+			logger(fscp::log_level::debug) << "Thread #" << i << " started.";
+
+			try
+			{
+				io_service.run();
+			}
+			catch (std::exception& ex)
+			{
+				logger(fscp::log_level::error) << "Fatal exception occured in thread #" << i << ": " << ex.what();
+
+				core.close();
+				signals.cancel();
+			}
+
+			logger(fscp::log_level::debug) << "Thread #" << i << " stopped.";
+		});
 	}
 
 	threads.join_all();
 
-	logger(fl::LL_IMPORTANT) << "Execution stopped.";
+	logger(fscp::log_level::important) << "Execution stopped.";
 }
 
 int main(int argc, char** argv)
@@ -547,7 +575,7 @@ int main(int argc, char** argv)
 	}
 	catch (std::exception& ex)
 	{
-		std::cerr << "Error: " << ex.what() << std::endl;
+		do_log(fscp::log_level::error, ex.what());
 
 		return EXIT_FAILURE;
 	}
@@ -555,7 +583,7 @@ int main(int argc, char** argv)
 #ifndef WINDOWS
 	if (exit_signal != 0)
 	{
-		do_log(fl::LL_ERROR, "Execution aborted because of a signal (" + boost::lexical_cast<std::string>(exit_signal) + ").");
+		do_log(fscp::log_level::error, "Execution aborted because of a signal (" + boost::lexical_cast<std::string>(exit_signal) + ").");
 
 		// We kill ourselves with the signal to ensure the process exits with the proprer state.
 		//

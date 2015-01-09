@@ -62,39 +62,145 @@ namespace fl = freelan;
 
 namespace
 {
-	cryptoplus::file load_file(const fs::path& filename)
+	struct trusted_cert_type
 	{
-		if (filename.empty())
+		typedef fl::security_configuration::cert_type cert_type;
+
+		trusted_cert_type() {}
+		trusted_cert_type(cert_type& c) : cert(c) {}
+		operator cert_type() const { return cert; }
+
+		cert_type cert;
+	};
+
+	void from_file(fl::security_configuration::cert_type& value, const cryptoplus::file& file)
+	{
+		value = fl::security_configuration::cert_type::from_certificate(file);
+	}
+
+	void from_file(cryptoplus::pkey::pkey& value, const cryptoplus::file& file)
+	{
+		value = cryptoplus::pkey::pkey::from_private_key(file);
+	}
+
+	void from_file(trusted_cert_type& value, const cryptoplus::file& file)
+	{
+		value.cert = fl::security_configuration::cert_type::from_trusted_certificate(file);
+	}
+
+	void from_file(fl::security_configuration::crl_type& value, const cryptoplus::file& file)
+	{
+		value = fl::security_configuration::crl_type::from_certificate_revocation_list(file);
+	}
+
+	template <typename ValueType>
+	bool load_file(const std::string& file_type, ValueType& value, const std::string& name, const fs::path& filename)
+	{
+		try
 		{
-			throw std::runtime_error("Cannot load file: filename is empty");
+			const cryptoplus::file file = cryptoplus::file::open(filename.native());
+			from_file(value, file);
+		}
+		catch (const std::exception& ex)
+		{
+			po::error_with_option_name error("in %canonical_option%: unable to load %file_type% at \"%filename%\" (%error%)", name, filename.string());
+			error.set_substitute("file_type", file_type);
+			error.set_substitute("filename", filename.string());
+			error.set_substitute("error", ex.what());
+
+			throw error;
 		}
 
-		if (!is_regular_file(filename))
+		return true;
+	}
+
+	template <typename ValueType>
+	bool load_file(const std::string& file_type, ValueType& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	{
+		if (!vm.count(name))
 		{
-			throw std::runtime_error("No such file: " + filename.string());
+			return false;
 		}
 
-		return cryptoplus::file::open(filename.native());
+		const fs::path path = vm[name].as<fs::path>();
+
+		if (path.native().empty())
+		{
+			return false;
+		}
+
+		const fs::path filename = fs::absolute(path, root);
+
+		return load_file(file_type, value, name, filename);
 	}
 
-	fl::security_configuration::cert_type load_certificate(const fs::path& filename)
+	template <typename ValueType>
+	bool load_file_list(const std::string& file_type, std::vector<ValueType>& values, const std::string& name, const po::variables_map& vm, const fs::path& root)
 	{
-		return fl::security_configuration::cert_type::from_certificate(load_file(filename));
+		values.clear();
+
+		const auto paths = vm[name].as<std::vector<fs::path> >();
+
+		for (auto&& path : paths)
+		{
+			if (path.native().empty())
+			{
+				continue;
+			}
+
+			ValueType value;
+
+			const fs::path filename = fs::absolute(path, root);
+
+			if (load_file(file_type, value, name, filename))
+			{
+				values.push_back(value);
+			}
+		}
+
+		return !values.empty();
 	}
 
-	cryptoplus::pkey::pkey load_private_key(const fs::path& filename)
+	bool load_certificate(fl::security_configuration::cert_type& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
 	{
-		return cryptoplus::pkey::pkey::from_private_key(load_file(filename));
+		return load_file("certificate", value, name, vm, root);
 	}
 
-	fl::security_configuration::cert_type load_trusted_certificate(const fs::path& filename)
+	bool load_private_key(cryptoplus::pkey::pkey& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
 	{
-		return fl::security_configuration::cert_type::from_trusted_certificate(load_file(filename));
+		return load_file("private key", value, name, vm, root);
 	}
 
-	fl::security_configuration::crl_type load_crl(const fs::path& filename)
+	bool load_trusted_certificate(fl::security_configuration::cert_type& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
 	{
-		return fl::security_configuration::crl_type::from_certificate_revocation_list(load_file(filename));
+		trusted_cert_type xvalue;
+
+		const bool result = load_file("trusted certificate", xvalue, name, vm, root);
+
+		value = xvalue;
+
+		return result;
+	}
+
+	bool load_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	{
+		return load_file_list("certificate", value, name, vm, root);
+	}
+
+	bool load_trusted_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	{
+		std::vector<trusted_cert_type> xvalue;
+
+		const bool result = load_file_list("trusted certificate", xvalue, name, vm, root);
+
+		value.assign(xvalue.begin(), xvalue.end());
+
+		return result;
+	}
+
+	bool load_crl_list(std::vector<fl::security_configuration::crl_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	{
+		return load_file_list("certificate revocation list", value, name, vm, root);
 	}
 }
 
@@ -104,17 +210,31 @@ po::options_description get_server_options()
 
 	result.add_options()
 	("server.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the server mechanism.")
-	("server.host", po::value<asiotap::endpoint>(), "The server host.")
-	("server.https_proxy", po::value<asiotap::endpoint>(), "The HTTP proxy host.")
-	("server.username", po::value<std::string>(), "The username.")
-	("server.password", po::value<std::string>(), "The password. If no password is specified, it will be taken from the FREELAN_SERVER_PASSWORD environment variable.")
-	("server.network", po::value<std::string>(), "The network. If no network is specified, it will be taken from the FREELAN_SERVER_NETWORK environment variable.")
-	("server.public_endpoint", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "A public endpoint to publish to others hosts.")
-	("server.user_agent", po::value<std::string>(), "The user agent. If no user agent is specified, \"" FREELAN_USER_AGENT "\" will be used.")
-	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::SP_HTTPS), "The protocol to use to contact the server.")
-	("server.ca_info_file", po::value<fs::path>()->default_value(""), "The CA info file.")
-	("server.disable_peer_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable peer verification.")
-	("server.disable_host_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable host verification.")
+	("server.listen_on", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::any(), 443)), "The endpoint to listen on.")
+	("server.protocol", po::value<fl::server_configuration::server_protocol_type>()->default_value(fl::server_configuration::server_protocol_type::https), "The protocol to use for clients to contact the server.")
+	("server.server_certificate_file", po::value<fs::path>()->default_value(""), "The server certificate file.")
+	("server.server_private_key_file", po::value<fs::path>()->default_value(""), "The server private key file.")
+	("server.certification_authority_certificate_file", po::value<fs::path>()->default_value(""), "The certification authority certificate file.")
+	("server.certification_authority_private_key_file", po::value<fs::path>()->default_value(""), "The certification authority private key file.")
+	("server.authentication_script", po::value<fs::path>()->default_value(""), "The authentication script to use.")
+	;
+
+	return result;
+}
+
+po::options_description get_client_options()
+{
+	po::options_description result("FreeLAN Client options");
+
+	result.add_options()
+	("client.enabled", po::value<bool>()->default_value(false, "no"), "Whether to enable the client mechanism.")
+	("client.server_endpoint", po::value<asiotap::endpoint>()->default_value(asiotap::ipv4_endpoint(boost::asio::ip::address_v4::from_string("127.0.0.1"), 443)), "The endpoint to connect to.")
+	("client.protocol", po::value<fl::client_configuration::client_protocol_type>()->default_value(fl::client_configuration::client_protocol_type::https), "The protocol to use to contact the server.")
+	("client.disable_peer_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable peer verification.")
+	("client.disable_host_verification", po::value<bool>()->default_value(false, "no"), "Whether to disable host verification.")
+	("client.username", po::value<std::string>()->default_value(""), "The client username.")
+	("client.password", po::value<std::string>()->default_value(""), "The client password.")
+	("client.public_endpoint", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "A hostname or IP address to advertise.")
 	;
 
 	return result;
@@ -132,7 +252,7 @@ po::options_description get_fscp_options()
 	("fscp.contact", po::value<std::vector<asiotap::endpoint> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::endpoint>(), ""), "The address of an host to contact.")
 	("fscp.accept_contact_requests", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT-REQUEST messages.")
 	("fscp.accept_contacts", po::value<bool>()->default_value(true, "yes"), "Whether to accept CONTACT messages.")
-	("fscp.dynamic_contact_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "The certificate of an host to dynamically contact.")
+	("fscp.dynamic_contact_file", po::value<std::vector<fs::path> >()->multitoken()->zero_tokens()->default_value(std::vector<fs::path>(), ""), "The certificate of an host to dynamically contact.")
 	("fscp.never_contact", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
 	("fscp.cipher_suite_capability", po::value<std::vector<fscp::cipher_suite_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_cipher_suites(), ""), "A cipher suite to allow.")
 	("fscp.elliptic_curve_capability", po::value<std::vector<fscp::elliptic_curve_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_elliptic_curves(), ""), "A elliptic curve to allow.")
@@ -150,9 +270,9 @@ po::options_description get_security_options()
 	("security.signature_private_key_file", po::value<fs::path>(), "The private key file to use for signing.")
 	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT), "The certificate validation method.")
 	("security.certificate_validation_script", po::value<fs::path>()->default_value(""), "The certificate validation script to use.")
-	("security.authority_certificate_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "An authority certificate file to use.")
+	("security.authority_certificate_file", po::value<std::vector<fs::path> >()->multitoken()->zero_tokens()->default_value(std::vector<fs::path>(), ""), "An authority certificate file to use.")
 	("security.certificate_revocation_validation_method", po::value<fl::security_configuration::certificate_revocation_validation_method_type>()->default_value(fl::security_configuration::CRVM_NONE), "The certificate revocation validation method.")
-	("security.certificate_revocation_list_file", po::value<std::vector<std::string> >()->multitoken()->zero_tokens()->default_value(std::vector<std::string>(), ""), "A certificate revocation list file to use.")
+	("security.certificate_revocation_list_file", po::value<std::vector<fs::path> >()->multitoken()->zero_tokens()->default_value(std::vector<fs::path>(), ""), "A certificate revocation list file to use.")
 	;
 
 	return result;
@@ -223,95 +343,25 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	// Server options
 	configuration.server.enabled = vm["server.enabled"].as<bool>();
-
-	if (vm.count("server.host"))
-	{
-		configuration.server.host = vm["server.host"].as<asiotap::endpoint>();
-	}
-
-	if (vm.count("server.https_proxy"))
-	{
-		configuration.server.https_proxy = vm["server.https_proxy"].as<asiotap::endpoint>();
-	}
-
-	if (vm.count("server.username"))
-	{
-		configuration.server.username = vm["server.username"].as<std::string>();
-	}
-
-	if (vm.count("server.password"))
-	{
-		configuration.server.password = vm["server.password"].as<std::string>();
-	}
-	else
-	{
-#ifdef _MSC_VER
-		std::string value(256, '\0');
-
-		DWORD value_size = GetEnvironmentVariableA("FREELAN_SERVER_PASSWORD", &value[0], static_cast<DWORD>(value.size()));
-
-		const char* default_password = NULL;
-
-		if (value_size > 0)
-		{
-			value.resize(value_size);
-			default_password = value.c_str();
-		}
-#else
-		const char* default_password = getenv("FREELAN_SERVER_PASSWORD");
-#endif
-
-		if (default_password)
-		{
-			configuration.server.password = default_password;
-		}
-	}
-
-	if (vm.count("server.network"))
-	{
-		configuration.server.network= vm["server.network"].as<std::string>();
-	}
-	else
-	{
-#ifdef _MSC_VER
-		std::string value(256, '\0');
-
-		DWORD value_size = GetEnvironmentVariableA("FREELAN_SERVER_NETWORK", &value[0], static_cast<DWORD>(value.size()));
-
-		const char* default_network = NULL;
-
-		if (value_size > 0)
-		{
-			value.resize(value_size);
-			default_network = value.c_str();
-		}
-#else
-		const char* default_network = getenv("FREELAN_SERVER_NETWORK");
-#endif
-
-		if (default_network)
-		{
-			configuration.server.network = default_network;
-		}
-	}
-
-	const std::vector<asiotap::endpoint> public_endpoint_list = vm["server.public_endpoint"].as<std::vector<asiotap::endpoint> >();
-	configuration.server.public_endpoint_list.insert(public_endpoint_list.begin(), public_endpoint_list.end());
-
-	if (vm.count("server.user_agent"))
-	{
-		configuration.server.user_agent = vm["server.user_agent"].as<std::string>();
-	}
-	else
-	{
-		configuration.server.user_agent = FREELAN_USER_AGENT;
-	}
-
+	configuration.server.listen_on = vm["server.listen_on"].as<asiotap::endpoint>();
 	configuration.server.protocol = vm["server.protocol"].as<fl::server_configuration::server_protocol_type>();
-	configuration.server.ca_info = vm["server.ca_info_file"].as<fs::path>().empty() ? fs::path() : fs::absolute(vm["server.ca_info_file"].as<fs::path>(), root);
 
-	configuration.server.disable_peer_verification = vm["server.disable_peer_verification"].as<bool>();
-	configuration.server.disable_host_verification = vm["server.disable_host_verification"].as<bool>();
+	load_certificate(configuration.server.server_certificate, "server.server_certificate_file", vm, root);
+	load_private_key(configuration.server.server_private_key, "server.server_private_key_file", vm, root);
+	load_trusted_certificate(configuration.server.certification_authority_certificate, "server.certification_authority_certificate_file", vm, root);
+	load_private_key(configuration.server.certification_authority_private_key , "server.certification_authority_private_key_file", vm, root);
+
+	// Client options
+	configuration.client.enabled = vm["client.enabled"].as<bool>();
+	configuration.client.server_endpoint = vm["client.server_endpoint"].as<asiotap::endpoint>();
+	configuration.client.protocol = vm["client.protocol"].as<fl::client_configuration::client_protocol_type>();
+	configuration.client.disable_peer_verification = vm["client.disable_peer_verification"].as<bool>();
+	configuration.client.disable_host_verification = vm["client.disable_host_verification"].as<bool>();
+	configuration.client.username = vm["client.username"].as<std::string>();
+	configuration.client.password = vm["client.password"].as<std::string>();
+
+	const std::vector<asiotap::endpoint> public_endpoint = vm["client.public_endpoint"].as<std::vector<asiotap::endpoint> >();
+	configuration.client.public_endpoint_list.insert(public_endpoint.begin(), public_endpoint.end());
 
 	// FSCP options
 	configuration.fscp.hostname_resolution_protocol = vm["fscp.hostname_resolution_protocol"].as<fl::fscp_configuration::hostname_resolution_protocol_type>();
@@ -324,14 +374,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	configuration.fscp.accept_contact_requests = vm["fscp.accept_contact_requests"].as<bool>();
 	configuration.fscp.accept_contacts = vm["fscp.accept_contacts"].as<bool>();
-	const std::vector<std::string> dynamic_contact_file_list = vm["fscp.dynamic_contact_file"].as<std::vector<std::string> >();
 
-	configuration.fscp.dynamic_contact_list.clear();
-
-	BOOST_FOREACH(const fs::path& dynamic_contact_file, dynamic_contact_file_list)
-	{
-		configuration.fscp.dynamic_contact_list.push_back(load_certificate(fs::absolute(dynamic_contact_file, root)));
-	}
+	load_certificate_list(configuration.fscp.dynamic_contact_list, "fscp.dynamic_contact_file", vm, root);
 
 	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<asiotap::ip_network_address>>();
 	configuration.fscp.cipher_suite_capabilities = vm["fscp.cipher_suite_capability"].as<std::vector<fscp::cipher_suite_type>>();
@@ -341,15 +385,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	cert_type signature_certificate;
 	pkey signature_private_key;
 
-	if (vm.count("security.signature_certificate_file"))
-	{
-		signature_certificate = load_certificate(fs::absolute(vm["security.signature_certificate_file"].as<fs::path>(), root));
-	}
-
-	if (vm.count("security.signature_private_key_file"))
-	{
-		signature_private_key = load_private_key(fs::absolute(vm["security.signature_private_key_file"].as<fs::path>(), root));
-	}
+	load_certificate(signature_certificate, "security.signature_certificate_file", vm, root);
+	load_private_key(signature_private_key, "security.signature_private_key_file", vm, root);
 
 	if (!!signature_certificate && !!signature_private_key)
 	{
@@ -358,25 +395,11 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	configuration.security.certificate_validation_method = vm["security.certificate_validation_method"].as<fl::security_configuration::certificate_validation_method_type>();
 
-	const std::vector<std::string> authority_certificate_file_list = vm["security.authority_certificate_file"].as<std::vector<std::string> >();
-
-	configuration.security.certificate_authority_list.clear();
-
-	BOOST_FOREACH(const std::string& authority_certificate_file, authority_certificate_file_list)
-	{
-		configuration.security.certificate_authority_list.push_back(load_trusted_certificate(fs::absolute(authority_certificate_file, root)));
-	}
+	load_trusted_certificate_list(configuration.security.certificate_authority_list, "security.authority_certificate_file", vm, root);
 
 	configuration.security.certificate_revocation_validation_method = vm["security.certificate_revocation_validation_method"].as<fl::security_configuration::certificate_revocation_validation_method_type>();
 
-	const std::vector<std::string> crl_file_list = vm["security.certificate_revocation_list_file"].as<std::vector<std::string> >();
-
-	configuration.security.certificate_revocation_list_list.clear();
-
-	BOOST_FOREACH(const std::string& crl_file, crl_file_list)
-	{
-		configuration.security.certificate_revocation_list_list.push_back(load_crl(fs::absolute(crl_file, root)));
-	}
+	load_crl_list(configuration.security.certificate_revocation_list_list, "security.certificate_revocation_list_file", vm, root);
 
 	// Tap adapter options
 	configuration.tap_adapter.type = vm["tap_adapter.type"].as<fl::tap_adapter_configuration::tap_adapter_type>();
@@ -420,21 +443,28 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<fs::path>();
+	const fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<fs::path>();
 
 	return tap_adapter_up_script_file.empty() ? tap_adapter_up_script_file : fs::absolute(tap_adapter_up_script_file, root);
 }
 
 boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<fs::path>();
+	const fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<fs::path>();
 
 	return tap_adapter_down_script_file.empty() ? tap_adapter_down_script_file : fs::absolute(tap_adapter_down_script_file, root);
 }
 
 boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
 {
-	fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<fs::path>();
+	const fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<fs::path>();
 
 	return certificate_validation_script_file.empty() ? certificate_validation_script_file : fs::absolute(certificate_validation_script_file, root);
+}
+
+boost::filesystem::path get_authentication_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
+{
+	const fs::path authentication_script_file = vm["server.authentication_script"].as<fs::path>();
+
+	return authentication_script_file.empty() ? authentication_script_file : fs::absolute(authentication_script_file, root);
 }

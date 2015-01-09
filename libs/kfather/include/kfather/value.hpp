@@ -75,6 +75,9 @@ namespace kfather
 	 */
 	typedef boost::variant<null_type, boolean_type, number_type, string_type, boost::recursive_wrapper<array_type>, boost::recursive_wrapper<object_type>> value_type;
 
+	template <typename Type>
+	Type value_cast(const value_type& value);
+
 	/**
 	 * \brief The array type.
 	 */
@@ -145,6 +148,26 @@ namespace kfather
 			 * \param _items The items.
 			 */
 			object_type(const items_type& _items) : items(_items) {}
+
+			/**
+			 * \brief Get a value.
+			 * \param key The key.
+			 * \param def The default value.
+			 * \return The value, if it exists or default otherwise.
+			 */
+			item_type get(const key_type& key, item_type def = null_type()) const;
+
+			/**
+			 * \brief Get a value.
+			 * \param key The key.
+			 * \param def The default value.
+			 * \return The value, if it exists or default otherwise.
+			 */
+			template <typename ValueType>
+			ValueType get(const key_type& key, item_type def = null_type()) const
+			{
+				return value_cast<ValueType>(get(key, def));
+			}
 
 			/**
 			 * \brief The items.
@@ -429,6 +452,17 @@ namespace kfather
 	inline bool is(const value_type& value)
 	{
 		return boost::apply_visitor(check_type_visitor<Type>(), value);
+	}
+
+	/**
+	 * \brief Output a JSON value to a string stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	inline std::ostream& operator<<(std::ostream& os, const value_type& value)
+	{
+		return os << value_cast<std::string>(value);
 	}
 }
 
