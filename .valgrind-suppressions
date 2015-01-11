@@ -8,3 +8,15 @@
    Memcheck:Value8
    obj:*libcrypto.so*
 }
+{
+   Enthropy source
+   Memcheck:Value8
+   ...
+   fun:RSA_generate_key
+}
+{
+   Enthropy source
+   Memcheck:Cond
+   ...
+   fun:RSA_generate_key
+}
