@@ -93,7 +93,7 @@ Attendee('openssl').get_build('msvc-x64').commands = [
 
 # cURL
 Attendee('curl', filter=~f('linux'))
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.32.0.zip', filter='windows')
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.zip', filter='windows')
 Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter=~f('windows'))
 
 Attendee('curl').depends_on('openssl')
