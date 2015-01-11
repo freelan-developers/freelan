@@ -21,52 +21,21 @@
 #include <csignal>
 #include <iostream>
 
-static boost::function<void ()> stop_function = 0;
 static boost::mutex output_mutex;
 
 using boost::mutex;
 
-static void signal_handler(int code)
+void signal_handler(const boost::system::error_code& error, int signal_number, boost::function<void ()> stop_function)
 {
-	switch (code)
+	if (!error)
 	{
-		case SIGTERM:
-		case SIGINT:
-		case SIGABRT:
-			if (stop_function)
-			{
-				std::cerr << "Signal caught: stopping..." << std::endl;
+		{
+			mutex::scoped_lock lock(output_mutex);
+			std::cerr << "Signal caught (" << signal_number << "): exiting..." << std::endl;
+		}
 
-				stop_function();
-				stop_function = 0;
-			}
-			break;
-		default:
-			break;
+		stop_function();
 	}
-}
-
-static bool register_signal_handlers()
-{
-	if (signal(SIGTERM, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGTERM signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGINT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGINT signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGABRT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGABRT signals." << std::endl;
-		return false;
-	}
-
-	return true;
 }
 
 static void simple_handler(const std::string& name, const std::string& msg, const boost::system::error_code& ec)
@@ -260,14 +229,10 @@ int main()
 	cryptoplus::algorithms_initializer algorithms_initializer;
 	cryptoplus::error::error_strings_initializer error_strings_initializer;
 
-	if (!register_signal_handlers())
-	{
-		return EXIT_FAILURE;
-	}
-
 	try
 	{
 		boost::asio::io_service _io_service;
+		boost::asio::signal_set signals(_io_service, SIGINT, SIGTERM);
 		fscp::logger _logger;
 
 		using cryptoplus::file;
@@ -346,12 +311,13 @@ int main()
 		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));
 
-		stop_function = [&](){
+		auto stop_function = [&](){
 			alice_server.close();
 			bob_server.close();
 			chris_server.close();
 		};
 
+		signals.async_wait(boost::bind(signal_handler, _1, _2, stop_function));
 		boost::thread_group threads;
 
 		const unsigned int THREAD_COUNT = boost::thread::hardware_concurrency();
@@ -360,12 +326,33 @@ int main()
 
 		for (std::size_t i = 0; i < THREAD_COUNT; ++i)
 		{
-			threads.create_thread(boost::bind(&boost::asio::io_service::run, &_io_service));
+			threads.create_thread([&_io_service, i, &stop_function, &signals] () {
+				{
+					mutex::scoped_lock lock(output_mutex);
+					std::cout << "Thread #" << i << " started." << std::endl;
+				}
+
+				try
+				{
+					_io_service.run();
+				}
+				catch (std::exception& ex)
+				{
+					mutex::scoped_lock lock(output_mutex);
+					std::cout << "Fatal exception occured in thread #" << i << ": " << ex.what() << std::endl;
+
+					stop_function();
+					signals.cancel();
+				}
+
+				{
+					mutex::scoped_lock lock(output_mutex);
+					std::cout << "Thread #" << i << " stopped." << std::endl;
+				}
+			});
 		}
 
 		threads.join_all();
-
-		stop_function = 0;
 	}
 	catch (std::exception& ex)
 	{

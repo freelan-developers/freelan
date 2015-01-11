@@ -19,52 +19,25 @@
 #include <sstream>
 #include <csignal>
 
-static boost::function<void ()> stop_function = 0;
+using boost::asio::buffer;
+using boost::asio::buffer_cast;
+using boost::asio::buffer_size;
+
 static boost::mutex output_mutex;
 
 using boost::mutex;
 
-static void signal_handler(int code)
+void signal_handler(const boost::system::error_code& error, int signal_number, boost::function<void ()> stop_function)
 {
-	switch (code)
+	if (!error)
 	{
-		case SIGTERM:
-		case SIGINT:
-		case SIGABRT:
-			if (stop_function)
-			{
-				std::cerr << "Signal caught: stopping..." << std::endl;
+		{
+			mutex::scoped_lock lock(output_mutex);
+			std::cerr << "Signal caught (" << signal_number << "): exiting..." << std::endl;
+		}
 
-				stop_function();
-				stop_function = 0;
-			}
-			break;
-		default:
-			break;
+		stop_function();
 	}
-}
-
-static bool register_signal_handlers()
-{
-	if (signal(SIGTERM, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGTERM signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGINT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGINT signals." << std::endl;
-		return false;
-	}
-
-	if (signal(SIGABRT, signal_handler) == SIG_ERR)
-	{
-		std::cerr << "Failed to catch SIGABRT signals." << std::endl;
-		return false;
-	}
-
-	return true;
 }
 
 static void simple_handler(const std::string& msg, const boost::system::error_code& ec)
@@ -72,16 +45,6 @@ static void simple_handler(const std::string& msg, const boost::system::error_co
 	mutex::scoped_lock lock(output_mutex);
 
 	std::cout << msg << ": " << ec.message() << std::endl;
-}
-
-static void multiple_handler(const std::map<fscp::server::ep_type, boost::system::error_code>& results)
-{
-	mutex::scoped_lock lock(output_mutex);
-
-	for (std::map<fscp::server::ep_type, boost::system::error_code>::const_iterator result = results.begin(); result != results.end(); ++result)
-	{
-		std::cout << result->first << ": " << result->second.message() << std::endl;
-	}
 }
 
 static bool on_hello(fscp::server& server, const fscp::server::ep_type& sender, bool default_accept)
@@ -173,7 +136,7 @@ static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_ty
 	{
 		mutex::scoped_lock lock(output_mutex);
 
-		std::cout << sender << " (" << static_cast<int>(channel_number) << "): " << std::string(boost::asio::buffer_cast<const char*>(data), boost::asio::buffer_size(data)) << std::endl;
+		std::cout << sender << " (" << static_cast<int>(channel_number) << "): " << std::string(buffer_cast<const char*>(data), buffer_size(data)) << std::endl;
 	}
 	catch (std::exception&)
 	{
@@ -218,7 +181,24 @@ void handle_read_line(fscp::server& server, std::string line)
 		}
 	} else
 	{
-		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, boost::asio::buffer(line), multiple_handler);
+		fscp::SharedBuffer buf(line.size());
+		std::memcpy(buffer_cast<char*>(buf), &line[0], line.size());
+
+		server.async_send_data_to_all(fscp::CHANNEL_NUMBER_0, buffer(buf), [buf] (const std::map<fscp::server::ep_type, boost::system::error_code>& results) {
+			mutex::scoped_lock lock(output_mutex);
+
+			for (std::map<fscp::server::ep_type, boost::system::error_code>::const_iterator result = results.begin(); result != results.end(); ++result)
+			{
+				if (result->second)
+				{
+					std::cout << result->first << ": " << result->second.message() << std::endl;
+				}
+				else
+				{
+					std::cout << result->first << ": message sent successfully." << std::endl;
+				}
+			}
+		});
 	}
 }
 
@@ -246,11 +226,9 @@ void handle_read_input(fscp::server& server, boost::asio::posix::stream_descript
 
 int main(int argc, char** argv)
 {
-	register_signal_handlers();
-
 	try
 	{
-		if (argc != 7)
+		if (argc != 5)
 		{
 			std::cerr << "Usage: schat <certificate> <private_key> <listen_host> <listen_port>" << std::endl;
 
@@ -267,6 +245,7 @@ int main(int argc, char** argv)
 		cryptoplus::error::error_strings_initializer error_strings_initializer;
 
 		boost::asio::io_service io_service;
+		boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 		fscp::logger _logger;
 
 		boost::asio::ip::udp::resolver listen_resolver(io_service);
@@ -293,27 +272,20 @@ int main(int argc, char** argv)
 
 		std::cout << "Chat started. Type !quit to exit." << std::endl;
 
-		boost::thread_group threads;
-
-		const unsigned int THREAD_COUNT = boost::thread::hardware_concurrency();
-
-		std::cout << "Starting client with " << THREAD_COUNT << " thread(s)." << std::endl;
-
-		for (std::size_t i = 0; i < THREAD_COUNT; ++i)
-		{
-			threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
-		}
-
 #ifdef BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
 		boost::asio::streambuf input_buffer(512);
 		boost::asio::posix::stream_descriptor input(io_service, ::dup(STDIN_FILENO));
 		boost::asio::async_read_until(input, input_buffer, '\n', boost::bind(&handle_read_input, boost::ref(server), boost::ref(input), boost::asio::placeholders::error, boost::ref(input_buffer), boost::asio::placeholders::bytes_transferred));
 
-		stop_function = boost::bind(&boost::asio::posix::stream_descriptor::close, &input);
+		auto stop_function = [&](){
+			input.close();
+		};
 
 #else
 
-		stop_function = boost::bind(&fscp::server::close, &server);
+		auto stop_function = [&](){
+			server.close();
+		};
 
 		std::cout << "No POSIX stream descriptors available. Press Ctrl+C twice to exit." << std::endl;
 
@@ -326,9 +298,42 @@ int main(int argc, char** argv)
 
 #endif
 
-		threads.join_all();
+		signals.async_wait(boost::bind(signal_handler, _1, _2, stop_function));
+		boost::thread_group threads;
 
-		stop_function = 0;
+		const unsigned int THREAD_COUNT = boost::thread::hardware_concurrency();
+
+		std::cout << "Starting client with " << THREAD_COUNT << " thread(s)." << std::endl;
+
+		for (std::size_t i = 0; i < THREAD_COUNT; ++i)
+		{
+			threads.create_thread([&io_service, i, &stop_function, &signals] () {
+				{
+					mutex::scoped_lock lock(output_mutex);
+					std::cout << "Thread #" << i << " started." << std::endl;
+				}
+
+				try
+				{
+					io_service.run();
+				}
+				catch (std::exception& ex)
+				{
+					mutex::scoped_lock lock(output_mutex);
+					std::cout << "Fatal exception occured in thread #" << i << ": " << ex.what() << std::endl;
+
+					stop_function();
+					signals.cancel();
+				}
+
+				{
+					mutex::scoped_lock lock(output_mutex);
+					std::cout << "Thread #" << i << " stopped." << std::endl;
+				}
+			});
+		}
+
+		threads.join_all();
 
 		std::cout << "Chat closing..." << std::endl;
 	}
