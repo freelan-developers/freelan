@@ -90,47 +90,6 @@ namespace fscp
 			return result;
 		}
 
-		template <typename SharedBufferType, typename Handler>
-		class shared_buffer_handler
-		{
-			public:
-
-				typedef void result_type;
-
-				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
-					m_buffer(_buffer),
-					m_handler(_handler)
-				{}
-
-				result_type operator()()
-				{
-					m_handler();
-				}
-
-				template <typename Arg1>
-				result_type operator()(Arg1 arg1)
-				{
-					m_handler(arg1);
-				}
-
-				template <typename Arg1, typename Arg2>
-				result_type operator()(Arg1 arg1, Arg2 arg2)
-				{
-					m_handler(arg1, arg2);
-				}
-
-			private:
-
-				SharedBufferType m_buffer;
-				Handler m_handler;
-		};
-
-		template <typename SharedBufferType, typename Handler>
-		inline shared_buffer_handler<SharedBufferType, Handler> make_shared_buffer_handler(SharedBufferType _buffer, Handler _handler)
-		{
-			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
-		}
-
 		template <typename Handler, typename CausalHandler>
 		class causal_handler
 		{
@@ -849,7 +808,7 @@ namespace fscp
 		// do_async_receive_from() is executed within the socket strand so this is safe.
 		boost::shared_ptr<ep_type> sender = boost::make_shared<ep_type>();
 
-		socket_memory_pool::shared_buffer_type receive_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto receive_buffer = SharedBuffer(65536);
 
 		m_socket.async_receive_from(
 			buffer(receive_buffer),
@@ -866,7 +825,7 @@ namespace fscp
 		);
 	}
 
-	void server::handle_receive_from(const identity_store& identity, boost::shared_ptr<ep_type> sender, socket_memory_pool::shared_buffer_type data, const boost::system::error_code& ec, size_t bytes_received)
+	void server::handle_receive_from(const identity_store& identity, boost::shared_ptr<ep_type> sender, SharedBuffer data, const boost::system::error_code& ec, size_t bytes_received)
 	{
 		assert(sender);
 
@@ -1119,9 +1078,7 @@ namespace fscp
 		ep_hello_context_type& ep_hello_context = m_ep_hello_contexts[target];
 
 		const uint32_t hello_unique_number = ep_hello_context.next_hello_unique_number();
-
-		greet_memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
-
+		const auto send_buffer = SharedBuffer(16);
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 		async_send_to(
@@ -1243,8 +1200,7 @@ namespace fscp
 
 		if (can_reply)
 		{
-			greet_memory_pool::shared_buffer_type send_buffer = m_greet_memory_pool.allocate_shared_buffer();
-
+			const auto send_buffer = SharedBuffer(16);
 			const size_t size = hello_message::write_response(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 			async_send_to(
@@ -1317,8 +1273,7 @@ namespace fscp
 		}
 
 		const identity_store& identity = get_identity();
-
-		const presentation_memory_pool::shared_buffer_type send_buffer = m_presentation_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(4096);
 
 		try
 		{
@@ -1498,7 +1453,7 @@ namespace fscp
 			return;
 		}
 
-		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(65536);
 
 		try
 		{
@@ -1554,7 +1509,7 @@ namespace fscp
 		}
 	}
 
-	void server::do_handle_session_request(socket_memory_pool::shared_buffer_type data, const identity_store& identity, const ep_type& sender, const session_request_message& _session_request_message)
+	void server::do_handle_session_request(SharedBuffer data, const identity_store& identity, const ep_type& sender, const session_request_message& _session_request_message)
 	{
 		// All do_handle_session_request() calls are done in the presentation strand so the following is thread-safe.
 		if (!has_presentation_store_for(sender))
@@ -1751,8 +1706,7 @@ namespace fscp
 		m_logger(log_level::trace) << "Sending session message to " << target << " (session number: " << parameters.session_number << ", cipher suite: " << parameters.cipher_suite << ", elliptic curve: " << parameters.elliptic_curve << ").";
 
 		peer_session& p_session = m_peer_sessions[target];
-
-		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(65536);
 
 		try
 		{
@@ -1788,7 +1742,7 @@ namespace fscp
 		}
 	}
 
-	void server::do_handle_session(socket_memory_pool::shared_buffer_type data, const identity_store& identity, const ep_type& sender, const session_message& _session_message)
+	void server::do_handle_session(SharedBuffer data, const identity_store& identity, const ep_type& sender, const session_message& _session_message)
 	{
 		// All do_handle_session() calls are done in the same strand so the following is thread-safe.
 
@@ -2050,7 +2004,7 @@ namespace fscp
 			return;
 		}
 
-		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(65536);
 
 		try
 		{
@@ -2133,7 +2087,7 @@ namespace fscp
 			return;
 		}
 
-		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(65536);
 
 		try
 		{
@@ -2214,7 +2168,7 @@ namespace fscp
 			return;
 		}
 
-		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(65536);
 
 		try
 		{
@@ -2268,7 +2222,7 @@ namespace fscp
 			return;
 		}
 
-		socket_memory_pool::shared_buffer_type cleartext_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto cleartext_buffer = SharedBuffer(65536);
 
 		try
 		{
@@ -2319,7 +2273,7 @@ namespace fscp
 		}
 	}
 
-	void server::do_handle_data_message(const ep_type& sender, message_type type, shared_buffer_type buffer, boost::asio::const_buffer data)
+	void server::do_handle_data_message(const ep_type& sender, message_type type, SharedBuffer buffer, boost::asio::const_buffer data)
 	{
 		// All do_handle_data_message() calls are done in the same strand so the following is thread-safe.
 		if (is_data_message_type(type))
@@ -2481,7 +2435,7 @@ namespace fscp
 			return;
 		}
 
-		const socket_memory_pool::shared_buffer_type send_buffer = m_socket_memory_pool.allocate_shared_buffer();
+		const auto send_buffer = SharedBuffer(1024);
 
 		try
 		{

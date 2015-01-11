@@ -48,7 +48,7 @@
     <ClCompile Include="src\session_request_message.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\memory_pool.cpp">
+    <ClCompile Include="src\shared_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\server_error.cpp">
@@ -95,7 +95,7 @@
     <ClInclude Include="include\fscp\session_request_message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\fscp\memory_pool.hpp">
+    <ClInclude Include="include\fscp\shared_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fscp\server_error.hpp">

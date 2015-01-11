@@ -58,6 +58,8 @@
 
 namespace
 {
+	using fscp::SharedBuffer;
+
 	template <typename BufferType, typename BufferSizeType>
 	boost::function<size_t (boost::asio::const_buffer)> get_write_function(BufferType buffer, BufferSizeType count)
 	{
@@ -201,7 +203,7 @@ namespace freelan
 		request->set_http_header("content-type", "application/octet-stream");
 		request->set_copy_post_fields(boost::asio::buffer(data.data()));
 
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const auto buffer = SharedBuffer(8192);
 		const boost::shared_ptr<size_t> count(new size_t(0));
 
 		request->set_write_function(get_write_function(buffer, count));
@@ -256,7 +258,7 @@ namespace freelan
 		const auto self = shared_from_this();
 		const auto request = make_request("/request_ca_certificate/");
 
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const auto buffer = SharedBuffer(8192);
 		const boost::shared_ptr<size_t> count(new size_t(0));
 
 		request->set_write_function(get_write_function(buffer, count));
@@ -315,7 +317,7 @@ namespace freelan
 		request->set_http_header("content-type", "application/x-x509-cert");
 		request->set_copy_post_fields(boost::asio::buffer(data.data()));
 
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const auto buffer = SharedBuffer(8192);
 		const boost::shared_ptr<size_t> count(new size_t(0));
 
 		request->set_write_function(get_write_function(buffer, count));
@@ -395,7 +397,7 @@ namespace freelan
 		const auto self = shared_from_this();
 		const auto request = make_request("/unregister/");
 
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const auto buffer = SharedBuffer(8192);
 		const boost::shared_ptr<size_t> count(new size_t(0));
 
 		request->set_write_function(get_write_function(buffer, count));
@@ -441,7 +443,7 @@ namespace freelan
 		request->set_http_header("content-type", "application/json");
 		request->set_copy_post_fields(boost::asio::buffer(oss.str()));
 
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const auto buffer = SharedBuffer(8192);
 		const boost::shared_ptr<size_t> count(new size_t(0));
 
 		request->set_write_function(get_write_function(buffer, count));
@@ -525,7 +527,7 @@ namespace freelan
 		request->set_http_header("content-type", "application/json");
 		request->set_copy_post_fields(boost::asio::buffer(oss.str()));
 
-		const auto buffer = m_memory_pool.allocate_shared_buffer();
+		const auto buffer = SharedBuffer(8192);
 		const boost::shared_ptr<size_t> count(new size_t(0));
 
 		request->set_write_function(get_write_function(buffer, count));

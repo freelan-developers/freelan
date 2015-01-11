@@ -167,7 +167,7 @@ static void on_session_lost(const fscp::server::ep_type& host, fscp::server::ses
 	std::cout << "Session lost with " << host << " (" << reason << ")" << std::endl;
 }
 
-static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type, boost::asio::const_buffer data)
+static void on_data(const fscp::server::ep_type& sender, fscp::channel_number_type channel_number, fscp::SharedBuffer, boost::asio::const_buffer data)
 {
 	try
 	{

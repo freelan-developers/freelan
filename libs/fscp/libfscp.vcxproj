@@ -24,7 +24,7 @@
     <ClCompile Include="src\data_message.cpp" />
     <ClCompile Include="src\hello_message.cpp" />
     <ClCompile Include="src\identity_store.cpp" />
-    <ClCompile Include="src\memory_pool.cpp" />
+    <ClCompile Include="src\shared_buffer.cpp" />
     <ClCompile Include="src\message.cpp" />
     <ClCompile Include="src\peer_session.cpp" />
     <ClCompile Include="src\presentation_message.cpp" />
@@ -41,7 +41,7 @@
     <ClInclude Include="include\fscp\fscp.hpp" />
     <ClInclude Include="include\fscp\hello_message.hpp" />
     <ClInclude Include="include\fscp\identity_store.hpp" />
-    <ClInclude Include="include\fscp\memory_pool.hpp" />
+    <ClInclude Include="include\fscp\shared_buffer.hpp" />
     <ClInclude Include="include\fscp\message.hpp" />
     <ClInclude Include="include\fscp\peer_session.hpp" />
     <ClInclude Include="include\fscp\presentation_message.hpp" />

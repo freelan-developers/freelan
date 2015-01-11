@@ -73,6 +73,8 @@
 
 namespace freelan
 {
+	using fscp::SharedBuffer;
+
 	typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;
 
 	using boost::asio::buffer;
@@ -103,47 +105,6 @@ namespace freelan
 			{
 				return asiotap::ipv6_endpoint(host.address().to_v6(), host.port());
 			}
-		}
-
-		template <typename SharedBufferType, typename Handler>
-		class shared_buffer_handler
-		{
-			public:
-
-				typedef void result_type;
-
-				shared_buffer_handler(SharedBufferType _buffer, Handler _handler) :
-					m_buffer(_buffer),
-					m_handler(_handler)
-				{}
-
-				result_type operator()()
-				{
-					m_handler();
-				}
-
-				template <typename Arg1>
-				result_type operator()(Arg1 arg1)
-				{
-					m_handler(arg1);
-				}
-
-				template <typename Arg1, typename Arg2>
-				result_type operator()(Arg1 arg1, Arg2 arg2)
-				{
-					m_handler(arg1, arg2);
-				}
-
-			private:
-
-				SharedBufferType m_buffer;
-				Handler m_handler;
-		};
-
-		template <typename SharedBufferType, typename Handler>
-		inline shared_buffer_handler<SharedBufferType, Handler> make_shared_buffer_handler(SharedBufferType _buffer, Handler _handler)
-		{
-			return shared_buffer_handler<SharedBufferType, Handler>(_buffer, _handler);
 		}
 
 		template <typename Handler, typename CausalHandler>
@@ -780,9 +741,7 @@ namespace freelan
 
 		m_logger(fscp::log_level::debug) << "Sending routes request to " << target << ".";
 
-		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
-		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
-
+		const auto data_buffer = SharedBuffer(2048);
 		const size_t size = routes_request_message::write(
 			buffer_cast<uint8_t*>(data_buffer),
 			buffer_size(data_buffer)
@@ -810,9 +769,7 @@ namespace freelan
 
 		m_logger(fscp::log_level::debug) << "Sending routes request to all hosts.";
 
-		// We take the proxy memory because we don't need much place and the tap_adapter_memory_pool is way more critical.
-		const proxy_memory_pool::shared_buffer_type data_buffer = m_proxy_memory_pool.allocate_shared_buffer();
-
+		const auto data_buffer = SharedBuffer(2048);
 		const size_t size = routes_request_message::write(
 			buffer_cast<uint8_t*>(data_buffer),
 			buffer_size(data_buffer)
@@ -839,8 +796,7 @@ namespace freelan
 
 		m_logger(fscp::log_level::debug) << "Sending routes to " << target << ": version " << version << " (" << routes << ").";
 
-		const tap_adapter_memory_pool::shared_buffer_type data_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
-
+		const auto data_buffer = SharedBuffer(8192);
 		const size_t size = routes_message::write(
 			buffer_cast<uint8_t*>(data_buffer),
 			buffer_size(data_buffer),
@@ -1184,7 +1140,7 @@ namespace freelan
 		async_clear_client_router_info(host, void_handler_type());
 	}
 
-	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, fscp::server::shared_buffer_type buffer, boost::asio::const_buffer data)
+	void core::do_handle_data_received(const ep_type& sender, fscp::channel_number_type channel_number, fscp::SharedBuffer buffer, boost::asio::const_buffer data)
 	{
 		switch (channel_number)
 		{
@@ -1234,7 +1190,7 @@ namespace freelan
 		}
 	}
 
-	void core::do_handle_message(const ep_type& sender, fscp::server::shared_buffer_type, const message& msg)
+	void core::do_handle_message(const ep_type& sender, fscp::SharedBuffer, const message& msg)
 	{
 		switch (msg.type())
 		{
@@ -1792,7 +1748,7 @@ namespace freelan
 		// All calls to do_read_tap() are done within the m_tap_adapter_strand, so the following is safe.
 		assert(m_tap_adapter);
 
-		const tap_adapter_memory_pool::shared_buffer_type receive_buffer = m_tap_adapter_memory_pool.allocate_shared_buffer();
+		const auto receive_buffer = SharedBuffer(65536);
 
 		m_tap_adapter->async_read(
 			buffer(receive_buffer),
@@ -1808,7 +1764,7 @@ namespace freelan
 		);
 	}
 
-	void core::do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type receive_buffer, const boost::system::error_code& ec, size_t count)
+	void core::do_handle_tap_adapter_read(SharedBuffer receive_buffer, const boost::system::error_code& ec, size_t count)
 	{
 		// All calls to do_read_tap() are done within the m_proxies_strand, so the following is safe.
 		if (ec != boost::asio::error::operation_aborted)
@@ -1893,8 +1849,7 @@ namespace freelan
 	{
 		if (m_arp_proxy)
 		{
-			const proxy_memory_pool::shared_buffer_type response_buffer = m_proxy_memory_pool.allocate_shared_buffer();
-
+			const auto response_buffer = SharedBuffer(2048);
 			const boost::optional<boost::asio::const_buffer> data = m_arp_proxy->process_frame(
 				*m_arp_filter.parent().get_last_helper(),
 				helper,
@@ -1922,8 +1877,7 @@ namespace freelan
 	{
 		if (m_dhcp_proxy)
 		{
-			const proxy_memory_pool::shared_buffer_type response_buffer = m_proxy_memory_pool.allocate_shared_buffer();
-
+			const auto response_buffer = SharedBuffer(2048);
 			const boost::optional<boost::asio::const_buffer> data = m_dhcp_proxy->process_frame(
 				*m_dhcp_filter.parent().parent().parent().parent().get_last_helper(),
 				*m_dhcp_filter.parent().parent().parent().get_last_helper(),

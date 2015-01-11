@@ -54,6 +54,7 @@
 
 #include <fscp/fscp.hpp>
 #include <fscp/logger.hpp>
+#include <fscp/shared_buffer.hpp>
 
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
@@ -512,8 +513,8 @@ namespace freelan
 			void do_handle_session_error(const ep_type&, bool, const std::exception&);
 			void do_handle_session_established(const ep_type&, bool, const fscp::cipher_suite_type&, const fscp::elliptic_curve_type&);
 			void do_handle_session_lost(const ep_type&, fscp::server::session_loss_reason);
-			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::server::shared_buffer_type, boost::asio::const_buffer);
-			void do_handle_message(const ep_type&, fscp::server::shared_buffer_type, const message&);
+			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::SharedBuffer, boost::asio::const_buffer);
+			void do_handle_message(const ep_type&, fscp::SharedBuffer, const message&);
 			void do_handle_routes_request(const ep_type&);
 			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_route_set&);
 
@@ -552,8 +553,6 @@ namespace freelan
 			typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame> dhcp_helper_type;
 			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
 			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
-			typedef fscp::memory_pool<65536, 8> tap_adapter_memory_pool;
-			typedef fscp::memory_pool<2048, 2> proxy_memory_pool;
 
 			void open_tap_adapter();
 			void close_tap_adapter();
@@ -574,7 +573,7 @@ namespace freelan
 
 			void do_read_tap();
 
-			void do_handle_tap_adapter_read(tap_adapter_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
+			void do_handle_tap_adapter_read(fscp::SharedBuffer, const boost::system::error_code&, size_t);
 			void do_handle_tap_adapter_write(const boost::system::error_code&);
 			void do_handle_arp_frame(const arp_helper_type&);
 			void do_handle_dhcp_frame(const dhcp_helper_type&);
@@ -583,7 +582,6 @@ namespace freelan
 			boost::shared_ptr<asiotap::tap_adapter> m_tap_adapter;
 			boost::asio::strand m_tap_adapter_strand;
 			boost::asio::strand m_proxies_strand;
-			tap_adapter_memory_pool m_tap_adapter_memory_pool;
 			std::queue<void_handler_type> m_tap_write_queue;
 			boost::asio::strand m_tap_write_queue_strand;
 
@@ -596,7 +594,6 @@ namespace freelan
 
 			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
 			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
-			proxy_memory_pool m_proxy_memory_pool;
 
 		private: /* Switch & router */
 

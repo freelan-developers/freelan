@@ -48,7 +48,7 @@
 #include <boost/asio.hpp>
 
 #include "identity_store.hpp"
-#include "memory_pool.hpp"
+#include "shared_buffer.hpp"
 #include "presentation_store.hpp"
 #include "peer_session.hpp"
 #include "logger.hpp"
@@ -84,10 +84,6 @@ namespace fscp
 	 */
 	class server
 	{
-		private:
-
-			typedef memory_pool<65536, 32> socket_memory_pool;
-
 		public:
 
 			// General purpose type definitions
@@ -106,11 +102,6 @@ namespace fscp
 			 * \brief The socket type.
 			 */
 			typedef boost::asio::ip::udp::socket socket_type;
-
-			/**
-			 * \brief The shared buffer type.
-			 */
-			typedef socket_memory_pool::shared_buffer_type shared_buffer_type;
 
 			// Handlers
 
@@ -249,7 +240,7 @@ namespace fscp
 			 * \param buffer The buffer that own the data. Must be release as soon as possible to avoid memory starvation.
 			 * \param data The sent data.
 			 */
-			typedef boost::function<void (const ep_type& sender, channel_number_type channel_number, shared_buffer_type buffer, boost::asio::const_buffer data)> data_received_handler_type;
+			typedef boost::function<void (const ep_type& sender, channel_number_type channel_number, SharedBuffer buffer, boost::asio::const_buffer data)> data_received_handler_type;
 
 			/**
 			 * \brief A handler for when contact requests are received.
@@ -1268,7 +1259,7 @@ namespace fscp
 			}
 
 			void do_async_receive_from();
-			void handle_receive_from(const identity_store&, boost::shared_ptr<ep_type>, socket_memory_pool::shared_buffer_type, const boost::system::error_code&, size_t);
+			void handle_receive_from(const identity_store&, boost::shared_ptr<ep_type>, SharedBuffer, const boost::system::error_code&, size_t);
 
 			ep_type to_socket_format(const ep_type& ep);
 
@@ -1299,7 +1290,6 @@ namespace fscp
 
 			socket_type m_socket;
 			boost::asio::strand m_socket_strand;
-			socket_memory_pool m_socket_memory_pool;
 			std::queue<void_handler_type> m_write_queue;
 			boost::asio::strand m_write_queue_strand;
 
@@ -1389,7 +1379,6 @@ namespace fscp
 					pending_requests_map m_pending_requests;
 			};
 
-			typedef memory_pool<16> greet_memory_pool;
 			typedef std::map<ep_type, ep_hello_context_type> ep_hello_context_map;
 
 			void do_greet(const ep_type&, duration_handler_type, const boost::posix_time::time_duration&);
@@ -1406,14 +1395,11 @@ namespace fscp
 
 			ep_hello_context_map m_ep_hello_contexts;
 			boost::asio::strand m_greet_strand;
-			greet_memory_pool m_greet_memory_pool;
-
 			bool m_accept_hello_messages_default;
 			hello_message_received_handler_type m_hello_message_received_handler;
 
 		private: // PRESENTATION messages
 
-			typedef memory_pool<4096, 4> presentation_memory_pool;
 			typedef std::map<ep_type, presentation_store> presentation_store_map;
 
 			bool has_presentation_store_for(const ep_type&) const;
@@ -1429,10 +1415,7 @@ namespace fscp
 
 			// This strand is also used by session requests and session messages during the cipherment/decipherment phase.
 			boost::asio::strand m_presentation_strand;
-			presentation_memory_pool m_presentation_memory_pool;
-
 			presentation_store_map m_presentation_store_map;
-
 			presentation_message_received_handler_type m_presentation_message_received_handler;
 
 		private: // SESSION_REQUEST messages
@@ -1444,7 +1427,7 @@ namespace fscp
 
 			void do_request_session(const identity_store&, const ep_type&, simple_handler_type);
 			void do_close_session(const ep_type&, simple_handler_type);
-			void do_handle_session_request(socket_memory_pool::shared_buffer_type, const identity_store&, const ep_type&, const session_request_message&);
+			void do_handle_session_request(SharedBuffer, const identity_store&, const ep_type&, const session_request_message&);
 			void do_handle_verified_session_request(const identity_store&, const ep_type&, const session_request_message&);
 
 			std::set<ep_type> get_session_endpoints() const;
@@ -1469,7 +1452,7 @@ namespace fscp
 		private: // SESSION messages
 
 			void do_send_session(const identity_store&, const ep_type&, const peer_session::session_parameters&);
-			void do_handle_session(socket_memory_pool::shared_buffer_type, const identity_store&, const ep_type&, const session_message&);
+			void do_handle_session(SharedBuffer, const identity_store&, const ep_type&, const session_message&);
 			void do_handle_verified_session(const identity_store&, const ep_type&, const session_message&);
 
 			void do_set_accept_session_messages_default(bool, void_handler_type);
@@ -1500,9 +1483,9 @@ namespace fscp
 			void do_send_contact_to_list(const std::set<ep_type>&, const contact_map_type&, multiple_endpoints_handler_type);
 			void do_send_contact_to_all(const contact_map_type&, multiple_endpoints_handler_type);
 			void do_send_contact_to_session(peer_session&, const ep_type&, const contact_map_type&, simple_handler_type);
-			void handle_data_message_from(const identity_store&, socket_memory_pool::shared_buffer_type, const data_message&, const ep_type&);
+			void handle_data_message_from(const identity_store&, SharedBuffer, const data_message&, const ep_type&);
 			void do_handle_data(const identity_store&, const ep_type&, const data_message&);
-			void do_handle_data_message(const ep_type&, message_type, shared_buffer_type, boost::asio::const_buffer);
+			void do_handle_data_message(const ep_type&, message_type, SharedBuffer, boost::asio::const_buffer);
 			void do_handle_contact_request(const ep_type&, const std::set<hash_type>&);
 			void do_handle_contact(const ep_type&, const contact_map_type&);
 

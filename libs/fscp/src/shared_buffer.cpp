@@ -37,12 +37,12 @@
  */
 
 /**
- * \file memory_pool.cpp
+ * \file shared_buffer.cpp
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
- * \brief A memory pool class.
+ * \brief A shared buffer class.
  */
 
-#include "memory_pool.hpp"
+#include "shared_buffer.hpp"
 
 namespace fscp
 {

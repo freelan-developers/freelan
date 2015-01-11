@@ -54,7 +54,6 @@
 #include <cryptoplus/x509/certificate.hpp>
 #include <cryptoplus/x509/certificate_request.hpp>
 
-#include <fscp/memory_pool.hpp>
 #include <fscp/logger.hpp>
 
 #include <asiotap/types/endpoint.hpp>
@@ -126,12 +125,9 @@ namespace freelan
 			void get_contact_information(const std::set<fscp::hash_type>& requested_contacts, get_contact_information_callback handler);
 
 		private:
-			typedef fscp::memory_pool<8192, 2> memory_pool;
-
 			web_client(boost::asio::io_service& io_service, fscp::logger& _logger, const freelan::client_configuration& configuration);
 			boost::shared_ptr<curl> make_request(const std::string& path) const;
 
-			memory_pool m_memory_pool;
 			boost::shared_ptr<curl_multi_asio> m_curl_multi_asio;
 			fscp::logger& m_logger;
 			freelan::client_configuration m_configuration;
