@@ -1,0 +1,10 @@
+{
+   Enthropy source
+   Memcheck:Cond
+   obj:*libcrypto.so*
+}
+{
+   Enthropy source
+   Memcheck:Value8
+   obj:*libcrypto.so*
+}
