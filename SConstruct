@@ -84,6 +84,7 @@ class FreelanEnvironment(Environment):
         self.Append(CXXFLAGS=['-Werror'])
         self.Append(CXXFLAGS=['-pedantic'])
         self.Append(CXXFLAGS=['-Wshadow'])
+        self.Append(LDFLAGS=['--std=c++11'])
 
         if 'OPENWRT_BUILD' in os.environ:
             self['ENV'] = os.environ
@@ -92,6 +93,8 @@ class FreelanEnvironment(Environment):
             if sys.platform.startswith('darwin'):
                 self.Append(CXXFLAGS=['-arch', 'x86_64'])
                 self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
+                self.Append(CXXFLAGS=['--stdlib=libc++'])
+                self.Append(LDFLAGS=['--stdlib=libc++'])
 
             if self.debug:
                 self.Append(CXXFLAGS=['-g'])
