@@ -402,7 +402,10 @@ namespace freelan
 
 	void curl_multi::add_handle(boost::shared_ptr<curl> handle)
 	{
-		m_associations[handle->raw()] = std::unique_ptr<curl_association>(new curl_association(shared_from_this(), handle));
+		const auto self = shared_from_this();
+		assert(self);
+
+		m_associations[handle->raw()] = std::unique_ptr<curl_association>(new curl_association(self, handle));
 	}
 
 	boost::shared_ptr<curl> curl_multi::get_handle(CURL* easy_handle) const
@@ -531,6 +534,7 @@ namespace freelan
 	void curl_multi_asio::execute(boost::shared_ptr<curl> handle, connection_complete_callback handler)
 	{
 		const auto self = shared_from_this();
+		assert(self);
 
 		m_strand.post([self, handle, handler] () {
 			self->add_handle(handle);
@@ -542,6 +546,7 @@ namespace freelan
 	void curl_multi_asio::async_clear(boost::function<void ()> handler)
 	{
 		const auto self = shared_from_this();
+		assert(self);
 
 		m_strand.post([self, handler] () {
 			self->clear();
@@ -621,7 +626,12 @@ namespace freelan
 			m_read_operation_pending = true;
 
 			const auto self = shared_from_this();
-			const auto handler = boost::bind(&curl_multi_asio::socket_callback, _curl_multi_asio.shared_from_this(), _1, self);
+			const auto cm_self = _curl_multi_asio.shared_from_this();
+
+			assert(self);
+			assert(cm_self);
+
+			const auto handler = boost::bind(&curl_multi_asio::socket_callback, cm_self, _1, self);
 
 			async_read_some(
 				boost::asio::null_buffers(),
@@ -641,7 +651,12 @@ namespace freelan
 			m_write_operation_pending = true;
 
 			const auto self = shared_from_this();
-			const auto handler = boost::bind(&curl_multi_asio::socket_callback, _curl_multi_asio.shared_from_this(), _1, self);
+			const auto cm_self = _curl_multi_asio.shared_from_this();
+
+			assert(self);
+			assert(cm_self);
+
+			const auto handler = boost::bind(&curl_multi_asio::socket_callback, cm_self, _1, self);
 
 			async_write_some(
 				boost::asio::null_buffers(),
@@ -658,18 +673,20 @@ namespace freelan
 	{
 		assert(_curl_multi_asio);
 
-		curl_multi_asio& self = *static_cast<curl_multi_asio*>(_curl_multi_asio);
+		curl_multi_asio& pself = *static_cast<curl_multi_asio*>(_curl_multi_asio);
 
-		self.m_timer.cancel();
+		pself.m_timer.cancel();
+		const auto self = pself.shared_from_this();
+		assert(self);
 
 		if (timeout_ms > 0)
 		{
-			self.m_timer.expires_from_now(boost::posix_time::millisec(timeout_ms));
-			self.m_timer.async_wait(self.m_strand.wrap(boost::bind(&curl_multi_asio::timer_callback, self.shared_from_this(), _1)));
+			pself.m_timer.expires_from_now(boost::posix_time::millisec(timeout_ms));
+			pself.m_timer.async_wait(pself.m_strand.wrap(boost::bind(&curl_multi_asio::timer_callback, self, _1)));
 		}
 		else
 		{
-			self.m_strand.post(boost::bind(&curl_multi_asio::timer_callback, self.shared_from_this(), boost::system::error_code()));
+			pself.m_strand.post(boost::bind(&curl_multi_asio::timer_callback, self, boost::system::error_code()));
 		}
 
 		return 0;
