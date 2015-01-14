@@ -111,7 +111,7 @@ namespace freelan
 		}
 
 		set_write_function(&curl::default_write_function);
-		set_option(CURLOPT_NOSIGNAL, 1);
+		set_connect_timeout(boost::posix_time::seconds(15));
 	}
 
 	void curl::set_option(CURLoption option, void* value)
