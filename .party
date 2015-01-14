@@ -93,8 +93,8 @@ Attendee('openssl').get_build('msvc-x64').commands = [
 
 # cURL
 Attendee('curl', filter=~f('linux'))
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.zip', filter='windows')
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.33.0.tar.bz2', filter=~f('windows'))
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.40.0.zip', filter='windows')
+Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.40.0.tar.bz2', filter=~f('windows'))
 
 Attendee('curl').depends_on('openssl')
 
@@ -108,11 +108,11 @@ Attendee('curl').get_build('osx').commands = [
 Attendee('curl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86', subdir='winbuild')
 Attendee('curl').get_build('msvc-x86').commands = [
     r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no GEN_PDB=yes MACHINE=x86',
-    r'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
+    r'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi {{prefix}}\ /S /Y',
 ]
 
 Attendee('curl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64', subdir='winbuild')
 Attendee('curl').get_build('msvc-x64').commands = [
     r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no GEN_PDB=yes MACHINE=x64',
-    r'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi-spnego {{prefix}}\ /S /Y',
+    r'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi {{prefix}}\ /S /Y',
 ]
