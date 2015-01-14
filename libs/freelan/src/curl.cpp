@@ -111,6 +111,7 @@ namespace freelan
 		}
 
 		set_write_function(&curl::default_write_function);
+		set_option(CURLOPT_NOSIGNAL, 1);
 	}
 
 	void curl::set_option(CURLoption option, void* value)
