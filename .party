@@ -107,12 +107,16 @@ Attendee('curl').get_build('osx').commands = [
 
 Attendee('curl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86', subdir='winbuild')
 Attendee('curl').get_build('msvc-x86').commands = [
-    r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no GEN_PDB=yes MACHINE=x86',
-    r'xcopy ..\\builds\libcurl-vc-x86-release-static-ssl-static-ipv6-sspi {{prefix}}\ /S /Y',
+    r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=no GEN_PDB=yes MACHINE=x86',
+    r'xcopy ..\\builds\libcurl-vc12-x86-release-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
+    r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=yes GEN_PDB=yes MACHINE=x86',
+    r'xcopy ..\\builds\libcurl-vc12-x86-debug-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
 ]
 
 Attendee('curl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64', subdir='winbuild')
 Attendee('curl').get_build('msvc-x64').commands = [
-    r'nmake /f Makefile.vc mode=static WITH_DEVEL={{prefix}} WITH_SSL=static ENABLE_WINSSL=no DEBUG=no GEN_PDB=yes MACHINE=x64',
-    r'xcopy ..\builds\libcurl-vc-x64-release-static-ssl-static-ipv6-sspi {{prefix}}\ /S /Y',
+    r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=no GEN_PDB=yes MACHINE=x64',
+    r'xcopy ..\builds\libcurl-vc12-x64-release-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
+    r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=yes GEN_PDB=yes MACHINE=x64',
+    r'xcopy ..\builds\libcurl-vc12-x64-debug-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
 ]
