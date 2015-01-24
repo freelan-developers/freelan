@@ -225,6 +225,11 @@ namespace freelan
 		set_option(CURLOPT_CONNECTTIMEOUT_MS, static_cast<long>(timeout.total_milliseconds()));
 	}
 
+	void curl::set_timeout(const boost::posix_time::time_duration& timeout)
+	{
+		set_option(CURLOPT_TIMEOUT_MS, static_cast<long>(timeout.total_milliseconds()));
+	}
+
 	void curl::set_http_header(const std::string& header, const std::string& value)
 	{
 		m_http_headers.append(header + ": " + value);

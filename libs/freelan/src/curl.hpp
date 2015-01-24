@@ -277,6 +277,12 @@ namespace freelan
 			void set_connect_timeout(const boost::posix_time::time_duration& timeout);
 
 			/**
+			* \brief Set the timeout.
+			* \param timeout The timeout.
+			*/
+			void set_timeout(const boost::posix_time::time_duration& timeout);
+
+			/**
 			 * \brief Set a HTTP header.
 			 * \param header The header.
 			 * \param value The value.
