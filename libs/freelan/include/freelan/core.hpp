@@ -716,5 +716,10 @@ namespace freelan
 			boost::asio::deadline_timer m_set_contact_information_retry_timer;
 			boost::asio::deadline_timer m_get_contact_information_retry_timer;
 			cert_list_type m_client_certificate_authority_list;
+
+		private:
+
+			void open_python_thread();
+			void close_python_thread();
 	};
 }

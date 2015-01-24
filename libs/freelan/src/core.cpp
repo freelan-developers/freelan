@@ -68,6 +68,7 @@
 #include <boost/thread/future.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
+#include <boost/python.hpp>
 
 #include <cassert>
 
@@ -437,6 +438,7 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::debug) << "Opening core...";
 
+		open_python_thread();
 		open_web_client();
 
 		if (m_configuration.security.identity || !m_configuration.client.enabled)
@@ -458,6 +460,7 @@ namespace freelan
 		close_tap_adapter();
 		close_fscp_server();
 		close_web_client();
+		close_python_thread();
 
 		m_logger(fscp::log_level::debug) << "Core closed.";
 	}
@@ -2560,5 +2563,14 @@ namespace freelan
 				}
 			});
 		}
+	}
+
+	void core::open_python_thread()
+	{
+		Py_Initialize();
+	}
+
+	void core::close_python_thread()
+	{
 	}
 }
