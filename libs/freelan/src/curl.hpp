@@ -81,7 +81,7 @@ namespace freelan
 			}
 
 			/**
-			* \brief The move assignemnt operator.
+			* \brief The move assignment operator.
 			* \param other The other instance to move from.
 			* \return The current instance.
 			*/
