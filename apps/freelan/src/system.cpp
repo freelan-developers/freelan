@@ -157,14 +157,17 @@ fs::path get_python_directory()
 	DWORD result = ::GetEnvironmentVariableW(L"PYTHONPATH", python_path, sizeof(python_path));
 
 	if ((result == 0) && (result < sizeof(python_path)))
+	{
+		return get_execution_root_directory() / "python";
+	}
 #else
 	char* python_path = getenv("PYTHONPATH");
 
 	if (python_path == NULL)
-#endif
 	{
-		return get_application_directory() / "python";
+		return "/opt/" FREELAN_NAME_VERSION_MAJOR "/python";
 	}
+#endif
 
 	return python_path;
 }
