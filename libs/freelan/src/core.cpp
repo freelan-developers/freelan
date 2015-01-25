@@ -438,7 +438,9 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::debug) << "Opening core...";
 
+#ifndef FREELAN_NO_PYTHON
 		open_python_thread();
+#endif
 		open_web_client();
 
 		if (m_configuration.security.identity || !m_configuration.client.enabled)
@@ -460,7 +462,9 @@ namespace freelan
 		close_tap_adapter();
 		close_fscp_server();
 		close_web_client();
+#ifndef FREELAN_NO_PYTHON
 		close_python_thread();
+#endif
 
 		m_logger(fscp::log_level::debug) << "Core closed.";
 	}
@@ -2565,12 +2569,97 @@ namespace freelan
 		}
 	}
 
+#ifndef FREELAN_NO_PYTHON
+
+	BOOST_PYTHON_MODULE(freelan_instance)
+	{
+		namespace py = boost::python;
+
+		py::def("log", &core::fi_log, py::args("level", "msg"), "Add a message to the logging queue.");
+	}
+
 	void core::open_python_thread()
 	{
-		Py_Initialize();
+		m_logger(fscp::log_level::information) << "Initializing Python sub-system...";
+
+		::PyImport_AppendInittab("freelan_instance", &BOOST_PP_CAT(init, freelan_instance));
+
+		m_logger(fscp::log_level::debug) << "Python thread starting...";
+
+		m_python_thread = boost::thread([this](){
+			run_python();
+		});
+
+		m_logger(fscp::log_level::information) << "Python thread started.";
 	}
 
 	void core::close_python_thread()
 	{
+		m_logger(fscp::log_level::debug) << "Python thread stopping...";
+
+		Py_AddPendingCall(&core::quit_python, nullptr);
+
+		m_python_thread.join();
+
+		m_logger(fscp::log_level::information) << "Python thread stopped.";
 	}
+
+	void core::run_python()
+	{
+		// The 0 here means we don't want Python to eat up the signals.
+		::Py_InitializeEx(0);
+		::PyEval_InitThreads();
+
+		namespace py = boost::python;
+
+		try
+		{
+			py::object module_main = py::import("__main__");
+			py::object globals = module_main.attr("__dict__");
+			PyObject* core_instance = ::PyCapsule_New(this, "__main__._FREELAN_CORE_INSTANCE", NULL);
+			::PyModule_AddObject(module_main.ptr(), "_FREELAN_CORE_INSTANCE", core_instance);
+			py::exec_file("python/freelan.py", globals);
+		}
+		catch (py::error_already_set)
+		{
+			PyObject* exception;
+			PyObject* value;
+			PyObject* traceback;
+
+			::PyErr_Fetch(&exception, &value, &traceback);
+
+			py::handle<> hexception(exception);
+			py::handle<> hvalue(py::allow_null(value));
+			py::handle<> htraceback(py::allow_null(traceback));
+
+			py::object module_traceback(py::import("traceback"));
+			py::object function_format_exception(module_traceback.attr("format_exception"));
+			py::object formatted_list = function_format_exception(hexception, hvalue, htraceback);
+			std::string msg{py::extract<std::string>(py::str("\n").join(formatted_list))};
+
+			//TODO: Do not trace if the exception is of the special kind: FreelanShuttingDownError
+			m_logger(fscp::log_level::error) << "A Python exception occured: " << msg;
+		}
+
+		m_logger(fscp::log_level::debug) << "Python thread about to exit.";
+	}
+
+	int core::quit_python(void*)
+	{
+		::Py_Exit(0);
+
+		return 0;
+	}
+
+	void core::fi_log(int level, const std::string& msg)
+	{
+		namespace py = boost::python;
+
+		py::object module_main = py::import("__main__");
+		core* const self = static_cast<core*>(::PyCapsule_Import("__main__._FREELAN_CORE_INSTANCE", 0));
+
+		self->m_logger(static_cast<fscp::log_level>(level)) << msg;
+	}
+
+#endif
 }

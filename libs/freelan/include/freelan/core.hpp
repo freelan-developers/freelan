@@ -717,9 +717,18 @@ namespace freelan
 			boost::asio::deadline_timer m_get_contact_information_retry_timer;
 			cert_list_type m_client_certificate_authority_list;
 
+#ifndef FREELAN_NO_PYTHON
 		private:
 
 			void open_python_thread();
 			void close_python_thread();
+			void run_python();
+			static int quit_python(void*);
+			static void fi_log(int level, const std::string& msg);
+
+			boost::thread m_python_thread;
+
+			friend void init_module_freelan_instance();
+#endif
 	};
 }
