@@ -604,6 +604,11 @@ namespace freelan
 		python_configuration();
 
 		/**
+		* \brief The Python home.
+		*/
+		boost::filesystem::path python_home;
+
+		/**
 		 * \brief The Python path.
 		 */
 		boost::filesystem::path python_path;

@@ -2584,14 +2584,28 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::information) << "Initializing Python sub-system...";
 
+		m_logger(fscp::log_level::information) << "Python version: " << ::Py_GetVersion();
+
 		static char freelan_name[] = FREELAN_NAME_VERSION_MAJOR;
 		::Py_SetProgramName(freelan_name);
-		const auto python_home_p = ::Py_GetPythonHome();
-		const auto python_home = python_home_p ? std::string(python_home_p) : std::string("<default>");
-
-		m_logger(fscp::log_level::information) << "Python version: " << ::Py_GetVersion();
 		m_logger(fscp::log_level::information) << "Python program name: " << ::Py_GetProgramName();
-		m_logger(fscp::log_level::information) << "Python home: " << python_home;
+
+		if (!m_configuration.python.python_home.empty())
+		{
+			static std::string python_home = m_configuration.python.python_home.string();
+			Py_SetPythonHome(&python_home[0]);
+		}
+
+		const auto python_home_p = ::Py_GetPythonHome();
+
+		if (python_home_p)
+		{
+			m_logger(fscp::log_level::information) << "Python home: " << python_home_p;
+		}
+		else
+		{
+			m_logger(fscp::log_level::information) << "Using system's default Python.";
+		}
 
 		::PyImport_AppendInittab("_freelan", &BOOST_PP_CAT(init, _freelan));
 

@@ -149,7 +149,7 @@ fs::path get_configuration_directory()
 #endif
 }
 
-fs::path get_python_directory()
+fs::path get_python_path_directory()
 {
 #ifdef WINDOWS
 	TCHAR python_path[MAX_PATH] = {};
@@ -170,6 +170,29 @@ fs::path get_python_directory()
 #endif
 
 	return python_path;
+}
+
+fs::path get_python_home_directory()
+{
+#ifdef WINDOWS
+	TCHAR python_home[MAX_PATH] = {};
+
+	DWORD result = ::GetEnvironmentVariableW(L"PYTHONHOME", python_home, sizeof(python_home));
+
+	if ((result == 0) && (result < sizeof(python_home)))
+	{
+		return get_execution_root_directory() / "bin";
+	}
+#else
+	char* python_home = getenv("PYTHONHOME");
+
+	if (python_home == NULL)
+	{
+		return fs::path();
+	}
+#endif
+
+	return python_home;
 }
 
 fs::path get_temporary_directory()
