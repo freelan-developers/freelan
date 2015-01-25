@@ -2635,7 +2635,7 @@ namespace freelan
 			py::object module_traceback(py::import("traceback"));
 			py::object function_format_exception(module_traceback.attr("format_exception"));
 			py::object formatted_list = function_format_exception(hexception, hvalue, htraceback);
-			std::string msg{py::extract<std::string>(py::str("\n").join(formatted_list))};
+			const std::string msg = py::extract<std::string>(py::str("\n").join(formatted_list));
 
 			//TODO: Do not trace if the exception is of the special kind: FreelanShuttingDownError
 			m_logger(fscp::log_level::error) << "A Python exception occured: " << msg;
