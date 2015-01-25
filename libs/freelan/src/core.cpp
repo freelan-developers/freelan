@@ -2577,7 +2577,22 @@ namespace freelan
 	{
 		namespace py = boost::python;
 
-		py::def("log", &core::fi_log, py::args("level", "msg"), "Add a message to the logging queue.");
+		py::object module_main = py::import("__main__");
+		core* const _FREELAN_CORE_INSTANCE_POINTER = static_cast<core*>(::PyCapsule_Import("__main__._FREELAN_CORE_INSTANCE_POINTER", 0));
+
+		py::class_<core::python_core>("Core", py::init<intptr_t>())
+			.def("log", &core::python_core::log, py::args("level", "msg"), "Add a message to the logging queue.");
+
+		py::enum_<fscp::log_level>("LogLevel")
+			.value("trace", fscp::log_level::trace)
+			.value("debug", fscp::log_level::debug)
+			.value("information", fscp::log_level::information)
+			.value("important", fscp::log_level::important)
+			.value("warning", fscp::log_level::warning)
+			.value("error", fscp::log_level::error)
+			.value("fatal", fscp::log_level::fatal);
+
+		py::scope().attr("_FREELAN_CORE_INSTANCE_POINTER") = reinterpret_cast<intptr_t>(_FREELAN_CORE_INSTANCE_POINTER);
 	}
 
 	void core::open_python_thread()
@@ -2652,8 +2667,8 @@ namespace freelan
 		{
 			py::object module_main = py::import("__main__");
 			py::object globals = module_main.attr("__dict__");
-			PyObject* core_instance = ::PyCapsule_New(this, "__main__._FREELAN_CORE_INSTANCE", NULL);
-			::PyModule_AddObject(module_main.ptr(), "_FREELAN_CORE_INSTANCE", core_instance);
+			PyObject* core_instance = ::PyCapsule_New(this, "__main__._FREELAN_CORE_INSTANCE_POINTER", NULL);
+			::PyModule_AddObject(module_main.ptr(), "_FREELAN_CORE_INSTANCE_POINTER", core_instance);
 			py::exec("from freelan_integration import main; main()", globals);
 		}
 		catch (py::error_already_set)
@@ -2685,16 +2700,6 @@ namespace freelan
 		::Py_Exit(0);
 
 		return 0;
-	}
-
-	void core::fi_log(int level, const std::string& msg)
-	{
-		namespace py = boost::python;
-
-		py::object module_main = py::import("__main__");
-		core* const self = static_cast<core*>(::PyCapsule_Import("__main__._FREELAN_CORE_INSTANCE", 0));
-
-		self->m_logger(static_cast<fscp::log_level>(level)) << msg;
 	}
 
 #endif

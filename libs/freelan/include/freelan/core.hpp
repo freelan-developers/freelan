@@ -720,11 +720,27 @@ namespace freelan
 #ifndef FREELAN_NO_PYTHON
 		private:
 
+			class python_core
+			{
+				public:
+					python_core(intptr_t _core) :
+						m_core(reinterpret_cast<core*>(_core))
+					{
+					}
+
+					void log(fscp::log_level level, const std::string& msg)
+					{
+						m_core->m_logger(level) << msg;
+					}
+
+				private:
+					core* m_core;
+			};
+
 			void open_python_thread();
 			void close_python_thread();
 			void run_python();
 			static int quit_python(void*);
-			static void fi_log(int level, const std::string& msg);
 
 			boost::thread m_python_thread;
 
