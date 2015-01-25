@@ -73,6 +73,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
+#include <boost/python.hpp>
 
 #include <queue>
 #include <set>
@@ -730,7 +731,23 @@ namespace freelan
 
 					void log(fscp::log_level level, const std::string& msg)
 					{
+						Py_BEGIN_ALLOW_THREADS;
 						m_core->m_logger(level) << msg;
+						Py_END_ALLOW_THREADS;
+					}
+
+					void async_contact(const endpoint& target)
+					{
+						Py_BEGIN_ALLOW_THREADS;
+						m_core->async_contact(target);
+						Py_END_ALLOW_THREADS;
+					}
+
+					void async_contact_all()
+					{
+						Py_BEGIN_ALLOW_THREADS;
+						m_core->async_contact_all();
+						Py_END_ALLOW_THREADS;
 					}
 
 				private:

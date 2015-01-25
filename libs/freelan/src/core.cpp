@@ -70,7 +70,6 @@
 #include <boost/thread/future.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
-#include <boost/python.hpp>
 
 #include <cassert>
 
@@ -2573,15 +2572,58 @@ namespace freelan
 
 #ifndef FREELAN_NO_PYTHON
 
+	namespace
+	{
+		namespace py = boost::python;
+
+		struct endpoint_to_python_converter
+		{
+			static PyObject* convert(const asiotap::endpoint& endpoint)
+			{
+				const std::string str = boost::lexical_cast<std::string>(endpoint);
+				return ::PyString_FromString(str.c_str());
+			}
+		};
+
+		struct endpoint_from_python_converter
+		{
+			static void* is_convertible(PyObject* obj_ptr)
+			{
+				assert(obj_ptr);
+
+				if (!PyString_Check(obj_ptr))
+				{
+					return nullptr;
+				}
+
+				return obj_ptr;
+			}
+
+			static void convert(PyObject* obj_ptr, py::converter::rvalue_from_python_stage1_data* data)
+			{
+				assert(obj_ptr);
+
+				const std::string str = ::PyString_AsString(obj_ptr);
+				void* const storage = reinterpret_cast<py::converter::rvalue_from_python_storage<asiotap::endpoint>*>(data)->storage.bytes;
+				new (storage) asiotap::endpoint(boost::lexical_cast<asiotap::endpoint>(str));
+				data->convertible = storage;
+			}
+		};
+	}
+
 	BOOST_PYTHON_MODULE(_freelan)
 	{
 		namespace py = boost::python;
+		py::to_python_converter<asiotap::endpoint, endpoint_to_python_converter>();
+		py::converter::registry::push_back(&endpoint_from_python_converter::is_convertible, &endpoint_from_python_converter::convert, py::type_id<asiotap::endpoint>());
 
 		py::object module_main = py::import("__main__");
 		core* const _FREELAN_CORE_INSTANCE_POINTER = static_cast<core*>(::PyCapsule_Import("__main__._FREELAN_CORE_INSTANCE_POINTER", 0));
 
 		py::class_<core::python_core>("Core", py::init<intptr_t>())
-			.def("log", &core::python_core::log, py::args("level", "msg"), "Add a message to the logging queue.");
+			.def("log", &core::python_core::log, py::args("level", "msg"), "Add a message to the logging queue.")
+			.def("async_contact", &core::python_core::async_contact, py::args("endpoint"), "Asynchronously contact the specified `endpoint`.")
+			.def("async_contact_all", &core::python_core::async_contact_all, "Asynchronously contact all the knowns endpoints.");
 
 		py::enum_<fscp::log_level>("LogLevel")
 			.value("trace", fscp::log_level::trace)
