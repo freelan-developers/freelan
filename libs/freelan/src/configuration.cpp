@@ -124,13 +124,19 @@ namespace freelan
 	{
 	}
 
+	python_configuration::python_configuration() :
+		python_path()
+	{
+	}
+
 	configuration::configuration() :
 		server(),
 		fscp(),
 		security(),
 		tap_adapter(),
 		switch_(),
-		router()
+		router(),
+		python()
 	{
 	}
 

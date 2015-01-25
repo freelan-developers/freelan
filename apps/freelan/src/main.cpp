@@ -184,6 +184,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	configuration_options.add(get_tap_adapter_options());
 	configuration_options.add(get_switch_options());
 	configuration_options.add(get_router_options());
+	configuration_options.add(get_python_options());
 
 	visible_options.add(configuration_options);
 	all_options.add(configuration_options);

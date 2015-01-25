@@ -728,7 +728,7 @@ namespace freelan
 
 			boost::thread m_python_thread;
 
-			friend void init_module_freelan_instance();
+			friend void init_module__freelan();
 #endif
 	};
 }

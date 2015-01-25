@@ -20,3 +20,6 @@
 
 # Vagrant
 .vagrant
+
+# Python environment
+.freelan

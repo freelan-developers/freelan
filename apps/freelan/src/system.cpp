@@ -149,6 +149,26 @@ fs::path get_configuration_directory()
 #endif
 }
 
+fs::path get_python_directory()
+{
+#ifdef WINDOWS
+	TCHAR python_path[MAX_PATH] = {};
+
+	DWORD result = ::GetEnvironmentVariableW(L"PYTHONPATH", python_path, sizeof(python_path));
+
+	if ((result == 0) && (result < sizeof(python_path)))
+#else
+	char* python_path = getenv("PYTHONPATH");
+
+	if (python_path == NULL)
+#endif
+	{
+		return get_application_directory() / "python";
+	}
+
+	return python_path;
+}
+
 fs::path get_temporary_directory()
 {
 #ifdef WINDOWS

@@ -594,6 +594,22 @@ namespace freelan
 	};
 
 	/**
+	 * \brief The python configuration.
+	 */
+	struct python_configuration
+	{
+		/**
+		 * \brief Constructor.
+		 */
+		python_configuration();
+
+		/**
+		 * \brief The Python path.
+		 */
+		boost::filesystem::path python_path;
+	};
+
+	/**
 	 * \brief The configuration structure.
 	 */
 	struct configuration
@@ -632,6 +648,11 @@ namespace freelan
 		 * \brief The router related options.
 		 */
 		freelan::router_configuration router;
+
+		/**
+		 * \brief The Python configuration.
+		 */
+		freelan::python_configuration python;
 
 		/**
 		 * \brief The constructor.

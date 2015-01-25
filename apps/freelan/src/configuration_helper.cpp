@@ -52,6 +52,7 @@
 #include <boost/foreach.hpp>
 
 #include "configuration_types.hpp"
+#include "system.hpp"
 
 #include <cryptoplus/hash/pbkdf2.hpp>
 #include <cryptoplus/hash/message_digest_algorithm.hpp>
@@ -391,6 +392,19 @@ void make_paths_absolute(boost::program_options::variables_map& vm, const boost:
 	make_path_absolute("tap_adapter.down_script", vm, root);
 }
 
+po::options_description get_python_options()
+{
+	po::options_description result("Python options");
+
+	const fs::path python_path_default = get_python_directory();
+
+	result.add_options()
+	("python.python_path", po::value<fs::path>()->default_value(python_path_default.string()), "The PYTHONPATH to use.")
+	;
+
+	return result;
+}
+
 void setup_configuration(const fscp::logger& logger, fl::configuration& configuration, const po::variables_map& vm)
 {
 	typedef fl::security_configuration::cert_type cert_type;
@@ -420,7 +434,7 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 	{
 		logger(fscp::log_level::information) << "Loaded server CA private key from: " << vm["server.certification_authority_private_key_file"].as<fs::path>();
 	}
-	
+
 	configuration.server.authentication_script = vm["server.authentication_script"].as<fs::path>();
 
 	// Client options
@@ -528,7 +542,7 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 	{
 		configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<asiotap::ipv4_network_address>();
 	}
-	
+
 	if (vm.count("tap_adapter.ipv6_address_prefix_length"))
 	{
 		configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<asiotap::ipv6_network_address>();
@@ -560,4 +574,7 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 	configuration.router.internal_route_acceptance_policy = vm["router.internal_route_acceptance_policy"].as<fl::router_configuration::internal_route_scope_type>();
 	configuration.router.system_route_acceptance_policy = vm["router.system_route_acceptance_policy"].as<fl::router_configuration::system_route_scope_type>();
 	configuration.router.maximum_routes_limit = vm["router.maximum_routes_limit"].as<unsigned int>();
+
+	// Python
+	configuration.python.python_path = vm["python.python_path"].as<fs::path>();
 }

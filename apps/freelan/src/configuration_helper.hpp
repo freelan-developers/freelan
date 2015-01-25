@@ -97,6 +97,12 @@ boost::program_options::options_description get_switch_options();
 boost::program_options::options_description get_router_options();
 
 /**
+ * \brief Get the python options.
+ * \return The python options.
+ */
+boost::program_options::options_description get_python_options();
+
+/**
  * \brief Set the paths options relative to the specified root.
  * \param vm The variables map.
  * \param root The root directory for relative paths.

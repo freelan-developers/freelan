@@ -2573,7 +2573,7 @@ namespace freelan
 
 #ifndef FREELAN_NO_PYTHON
 
-	BOOST_PYTHON_MODULE(freelan_instance)
+	BOOST_PYTHON_MODULE(_freelan)
 	{
 		namespace py = boost::python;
 
@@ -2593,7 +2593,7 @@ namespace freelan
 		m_logger(fscp::log_level::information) << "Python program name: " << ::Py_GetProgramName();
 		m_logger(fscp::log_level::information) << "Python home: " << python_home;
 
-		::PyImport_AppendInittab("freelan_instance", &BOOST_PP_CAT(init, freelan_instance));
+		::PyImport_AppendInittab("_freelan", &BOOST_PP_CAT(init, _freelan));
 
 		m_logger(fscp::log_level::debug) << "Python thread starting...";
 
@@ -2623,6 +2623,15 @@ namespace freelan
 		// The 0 here means we don't want Python to eat up the signals.
 		::Py_InitializeEx(0);
 
+#ifdef WINDOWS
+		const char SEPARATOR = ';';
+#else
+		const char SEPARATOR = ':';
+#endif
+		const std::string python_path = std::string(::Py_GetPath()) + SEPARATOR + m_configuration.python.python_path.string();
+		m_logger(fscp::log_level::information) << "Python path: " << python_path;
+		::PySys_SetPath(const_cast<char*>(python_path.c_str()));
+
 		namespace py = boost::python;
 
 		try
@@ -2631,7 +2640,7 @@ namespace freelan
 			py::object globals = module_main.attr("__dict__");
 			PyObject* core_instance = ::PyCapsule_New(this, "__main__._FREELAN_CORE_INSTANCE", NULL);
 			::PyModule_AddObject(module_main.ptr(), "_FREELAN_CORE_INSTANCE", core_instance);
-			py::exec_file("python/freelan.py", globals);
+			py::exec("from freelan_integration import main; main()", globals);
 		}
 		catch (py::error_already_set)
 		{
