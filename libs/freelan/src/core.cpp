@@ -2586,9 +2586,12 @@ namespace freelan
 
 		static char freelan_name[] = FREELAN_NAME_VERSION_MAJOR;
 		::Py_SetProgramName(freelan_name);
+		const auto python_home_p = ::Py_GetPythonHome();
+		const auto python_home = python_home_p ? std::string(python_home_p) : std::string();
+
 		m_logger(fscp::log_level::information) << "Python version: " << ::Py_GetVersion();
 		m_logger(fscp::log_level::information) << "Python program name: " << ::Py_GetProgramName();
-		m_logger(fscp::log_level::information) << "Python home: " << ::Py_GetPythonHome();
+		m_logger(fscp::log_level::information) << "Python home: " << python_home;
 
 		::PyImport_AppendInittab("freelan_instance", &BOOST_PP_CAT(init, freelan_instance));
 
