@@ -53,6 +53,8 @@
 #include "server.hpp"
 #include "client.hpp"
 
+#include <defines.hpp>
+
 #include <fscp/server_error.hpp>
 
 #include <asiotap/types/ip_network_address.hpp>
@@ -2582,6 +2584,12 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::information) << "Initializing Python sub-system...";
 
+		static char freelan_name[] = FREELAN_NAME_VERSION_MAJOR;
+		::Py_SetProgramName(freelan_name);
+		m_logger(fscp::log_level::information) << "Python version: " << ::Py_GetVersion();
+		m_logger(fscp::log_level::information) << "Python program name: " << ::Py_GetProgramName();
+		m_logger(fscp::log_level::information) << "Python home: " << ::Py_GetPythonHome();
+
 		::PyImport_AppendInittab("freelan_instance", &BOOST_PP_CAT(init, freelan_instance));
 
 		m_logger(fscp::log_level::debug) << "Python thread starting...";
@@ -2606,9 +2614,11 @@ namespace freelan
 
 	void core::run_python()
 	{
+		// This is Python's main thread.
+		::PyEval_InitThreads();
+
 		// The 0 here means we don't want Python to eat up the signals.
 		::Py_InitializeEx(0);
-		::PyEval_InitThreads();
 
 		namespace py = boost::python;
 
