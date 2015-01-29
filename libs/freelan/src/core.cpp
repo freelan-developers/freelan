@@ -2691,6 +2691,8 @@ namespace freelan
 		// This is Python's main thread.
 		::PyEval_InitThreads();
 
+		m_logger(fscp::log_level::debug) << "Now initializing Python. If this is the last thing you see, make sure PYTHONHOME is set.";
+
 		// The 0 here means we don't want Python to eat up the signals.
 		::Py_InitializeEx(0);
 
