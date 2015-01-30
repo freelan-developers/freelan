@@ -604,8 +604,13 @@ namespace freelan
 		python_configuration();
 
 		/**
-		* \brief The Python home.
-		*/
+		 * \brief Whether to enable Python.
+		 */
+		bool enabled;
+
+		/**
+		 * \brief The Python home.
+		 */
 		boost::filesystem::path python_home;
 
 		/**

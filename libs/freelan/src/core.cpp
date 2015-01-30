@@ -2639,40 +2639,43 @@ namespace freelan
 
 	void core::open_python_thread()
 	{
-		m_logger(fscp::log_level::information) << "Initializing Python sub-system...";
-
-		m_logger(fscp::log_level::information) << "Python version: " << ::Py_GetVersion();
-
-		static char freelan_name[] = FREELAN_NAME_VERSION_MAJOR;
-		::Py_SetProgramName(freelan_name);
-		m_logger(fscp::log_level::information) << "Python program name: " << ::Py_GetProgramName();
-
-		if (!m_configuration.python.python_home.empty())
+		if (m_configuration.python.enabled)
 		{
-			static std::string python_home = m_configuration.python.python_home.string();
-			Py_SetPythonHome(&python_home[0]);
+			m_logger(fscp::log_level::information) << "Initializing Python sub-system...";
+
+			m_logger(fscp::log_level::information) << "Python version: " << ::Py_GetVersion();
+
+			static char freelan_name[] = FREELAN_NAME_VERSION_MAJOR;
+			::Py_SetProgramName(freelan_name);
+			m_logger(fscp::log_level::information) << "Python program name: " << ::Py_GetProgramName();
+
+			if (!m_configuration.python.python_home.empty())
+			{
+				static std::string python_home = m_configuration.python.python_home.string();
+				Py_SetPythonHome(&python_home[0]);
+			}
+
+			const auto python_home_p = ::Py_GetPythonHome();
+
+			if (python_home_p)
+			{
+				m_logger(fscp::log_level::information) << "Python home: " << python_home_p;
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Using system's default Python.";
+			}
+
+			::PyImport_AppendInittab("_freelan", &BOOST_PP_CAT(init, _freelan));
+
+			m_logger(fscp::log_level::debug) << "Python thread starting...";
+
+			m_python_thread = boost::thread([this](){
+				run_python();
+			});
+
+			m_logger(fscp::log_level::information) << "Python thread started.";
 		}
-
-		const auto python_home_p = ::Py_GetPythonHome();
-
-		if (python_home_p)
-		{
-			m_logger(fscp::log_level::information) << "Python home: " << python_home_p;
-		}
-		else
-		{
-			m_logger(fscp::log_level::information) << "Using system's default Python.";
-		}
-
-		::PyImport_AppendInittab("_freelan", &BOOST_PP_CAT(init, _freelan));
-
-		m_logger(fscp::log_level::debug) << "Python thread starting...";
-
-		m_python_thread = boost::thread([this](){
-			run_python();
-		});
-
-		m_logger(fscp::log_level::information) << "Python thread started.";
 	}
 
 	void core::close_python_thread()

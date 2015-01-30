@@ -125,6 +125,7 @@ namespace freelan
 	}
 
 	python_configuration::python_configuration() :
+		enabled(true),
 		python_home(),
 		python_path()
 	{
