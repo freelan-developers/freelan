@@ -442,15 +442,12 @@ namespace freelan
 #ifndef FREELAN_NO_PYTHON
 		open_python_thread();
 #endif
-		open_web_client();
-
 		if (m_configuration.security.identity || !m_configuration.client.enabled)
 		{
 			open_fscp_server();
 		}
 
 		open_tap_adapter();
-		open_web_server();
 
 		m_logger(fscp::log_level::debug) << "Core opened.";
 	}
@@ -459,10 +456,8 @@ namespace freelan
 	{
 		m_logger(fscp::log_level::debug) << "Closing core...";
 
-		close_web_server();
 		close_tap_adapter();
 		close_fscp_server();
-		close_web_client();
 #ifndef FREELAN_NO_PYTHON
 		close_python_thread();
 #endif
@@ -2739,7 +2734,7 @@ namespace freelan
 			m_logger(fscp::log_level::error) << "A Python exception occured: " << msg;
 		}
 
-		m_logger(fscp::log_level::debug) << "Python thread about to exit.";
+		m_logger(fscp::log_level::debug) << "Python thread about to exit. HTTP(S) client/server won't be available anymore.";
 	}
 
 	int core::quit_python(void*)
