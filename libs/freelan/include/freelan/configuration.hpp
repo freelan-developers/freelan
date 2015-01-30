@@ -617,6 +617,11 @@ namespace freelan
 		 * \brief The Python path.
 		 */
 		boost::filesystem::path python_path;
+
+		/**
+		* \brief The virtual env path.
+		*/
+		boost::filesystem::path virtual_environment_path;
 	};
 
 	/**

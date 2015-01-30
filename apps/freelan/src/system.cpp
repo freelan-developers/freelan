@@ -156,7 +156,7 @@ fs::path get_python_path_directory()
 
 	DWORD result = ::GetEnvironmentVariableW(L"PYTHONPATH", python_path, sizeof(python_path));
 
-	if ((result == 0) && (result < sizeof(python_path)))
+	if ((result == 0) || (result == sizeof(python_path)))
 	{
 		return get_execution_root_directory() / "python";
 	}
@@ -172,6 +172,29 @@ fs::path get_python_path_directory()
 	return python_path;
 }
 
+fs::path get_python_virtual_environment_directory()
+{
+#ifdef WINDOWS
+	TCHAR virtual_environment_directory[MAX_PATH] = {};
+
+	DWORD result = ::GetEnvironmentVariableW(L"VIRTUAL_ENV", virtual_environment_directory, sizeof(virtual_environment_directory));
+
+	if ((result == 0) || (result == sizeof(virtual_environment_directory)))
+	{
+		return fs::path();
+	}
+#else
+	char* virtual_environment_directory = getenv("VIRTUAL_ENV");
+
+	if (virtual_environment_directory == NULL)
+	{
+		return fs::path();
+	}
+#endif
+
+	return virtual_environment_directory;
+}
+
 fs::path get_python_home_directory()
 {
 #ifdef WINDOWS
@@ -179,7 +202,7 @@ fs::path get_python_home_directory()
 
 	DWORD result = ::GetEnvironmentVariableW(L"PYTHONHOME", python_home, sizeof(python_home));
 
-	if ((result == 0) && (result < sizeof(python_home)))
+	if ((result == 0) || (result == sizeof(python_home)))
 	{
 		return get_execution_root_directory() / "bin";
 	}

@@ -2708,7 +2708,36 @@ namespace freelan
 		try
 		{
 			py::object module_main = py::import("__main__");
-			py::object globals = module_main.attr("__dict__");
+			py::dict globals = py::extract<py::dict>(module_main.attr("__dict__"));
+
+			if (!m_configuration.python.virtual_environment_path.empty())
+			{
+				if (!boost::filesystem::is_directory(m_configuration.python.virtual_environment_path))
+				{
+					m_logger(fscp::log_level::warning) << "Won't try to enable Python virtual environment at " << m_configuration.python.virtual_environment_path << " as the directory does not exist.";
+				}
+				else
+				{
+					m_logger(fscp::log_level::information) << "Enabling Python virtual environment at: " << m_configuration.python.virtual_environment_path;
+
+					py::dict inner_globals = globals.copy();
+#ifdef WINDOWS
+					const boost::filesystem::path activate_this_path = m_configuration.python.virtual_environment_path / "Scripts" / "activate_this.py";
+					const py::str py_activate_this_path(activate_this_path.wstring());
+#else
+					const boost::filesystem::path activate_this_path = m_configuration.python.virtual_environment_path / "bin" / "activate_this.py";
+					const py::str py_activate_this_path(activate_this_path.string());
+#endif
+					if (!boost::filesystem::exists(activate_this_path))
+					{
+						m_logger(fscp::log_level::warning) << "activate_this.py not found at " << activate_this_path << ". Activation of the virtual environment will likely fail.";
+					}
+
+					inner_globals["__file__"] = py_activate_this_path;
+					py::exec_file(py_activate_this_path, inner_globals);
+				}
+			}
+
 			PyObject* core_instance = ::PyCapsule_New(this, "__main__._FREELAN_CORE_INSTANCE_POINTER", NULL);
 			::PyModule_AddObject(module_main.ptr(), "_FREELAN_CORE_INSTANCE_POINTER", core_instance);
 			py::exec("from freelan_integration import main; main()", globals);

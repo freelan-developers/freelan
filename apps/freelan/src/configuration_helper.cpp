@@ -398,11 +398,13 @@ po::options_description get_python_options()
 
 	const fs::path python_home_default = get_python_home_directory();
 	const fs::path python_path_default = get_python_path_directory();
+	const fs::path virtual_environment_path_default = get_python_virtual_environment_directory();
 
 	result.add_options()
 	("python.enabled", po::value<bool>()->default_value(true, "yes"), "Whether to enable Python support.")
 	("python.python_home", po::value<fs::path>()->default_value(python_home_default.string()), "The PYTHONHOME to use.")
 	("python.python_path", po::value<fs::path>()->default_value(python_path_default.string()), "The PYTHONPATH to use.")
+	("python.virtual_environment_path", po::value<fs::path>()->default_value(virtual_environment_path_default.string()), "The virtual environment to use.")
 	;
 
 	return result;
@@ -582,4 +584,5 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 	configuration.python.enabled = vm["python.enabled"].as<bool>();
 	configuration.python.python_home = vm["python.python_home"].as<fs::path>();
 	configuration.python.python_path = vm["python.python_path"].as<fs::path>();
+	configuration.python.virtual_environment_path = vm["python.virtual_environment_path"].as<fs::path>();
 }

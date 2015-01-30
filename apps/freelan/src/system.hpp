@@ -107,6 +107,12 @@ boost::filesystem::path get_python_home_directory();
 boost::filesystem::path get_python_path_directory();
 
 /**
+ * \brief Get the python virtual environment directory.
+ * \return The python virtual environment directory.
+ */
+boost::filesystem::path get_python_virtual_environment_directory();
+
+/**
  * \brief Get the temporary directory.
  * \return The temporary directory.
  */
