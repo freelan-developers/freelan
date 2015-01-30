@@ -2,8 +2,6 @@
 The main Python script called by FreeLAN.
 """
 
-import sys
-
 from freelan import (
     Core,
     LOGGER,
@@ -17,6 +15,6 @@ def main():
     try:
         from pyfreelan import run
     except ImportError:
-        LOGGER.fatal('Unable to find `pyfreelan`. You can install it with `pip install pyfreelan` in the Python environment at %s.', sys.exec_prefix)
+        LOGGER.fatal('Unable to find `pyfreelan`. You can install it with `pip install pyfreelan` in the Python environment.')
     else:
         run(core=Core())
