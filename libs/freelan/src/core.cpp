@@ -1532,7 +1532,7 @@ namespace freelan
 			{
 				if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
 				{
-					throw std::runtime_error("No IPv4 address configured but we are in tun mode: unable to continue");
+				//	throw std::runtime_error("No IPv4 address configured but we are in tun mode: unable to continue");
 				}
 				else
 				{
