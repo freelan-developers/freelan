@@ -28,7 +28,7 @@ It contains the following projects:
 Building
 --------
 
-### Third-party
+### Third-party (Windows Only)
 
 The build relies on several third-parties. To build those, install the Python command `teapot` using the following command:
 
