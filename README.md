@@ -28,9 +28,11 @@ It contains the following projects:
 Building
 --------
 
-### Third-party (Windows Only)
+### Third-party
 
-The build relies on several third-parties. To build those, install the Python command `teapot` using the following command:
+The build relies on several third-parties. Generally Linux users won't need these, but other platforms such as MacOS or Windows may need these.
+
+To build those, install the Python command `teapot` using the following command:
 
 > pip install teapot
 
