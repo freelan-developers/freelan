@@ -1550,7 +1550,7 @@ namespace freelan
 			{
 				if (m_configuration.tap_adapter.ipv4_address_prefix_length.is_null() && m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
 				{
-					throw std::runtime_error("Running in tun mode, but no IPv4 or IPv6 address provided. Unable to continue without IPv4 and/or IPv6 address being configured.");
+					throw std::runtime_error("Running in tun mode, but no IPv4 or IPv6 address was provided. Please configure at least one IPv4 or IPv6 address.");
 				}
 			}
 
