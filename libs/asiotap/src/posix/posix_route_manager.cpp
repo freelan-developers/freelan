@@ -195,10 +195,11 @@ namespace asiotap
 	{
 #if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
-		const std::string command = action == route_action::add ? "add" : "del";
 #ifdef MACINTOSH
+		const std::string command = action == route_action::add ? "add" : "delete";
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
 #else
+		const std::string command = action == route_action::add ? "add" : "del";
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
 #endif
 
