@@ -86,7 +86,7 @@ namespace netlinkplus
 
 			::nlmsghdr& header()
 			{
-				return *reinterpret_cast<::nlmsghdr*>(m_data.data());
+				return *reinterpret_cast< ::nlmsghdr*>(m_data.data());
 			}
 
 			const ::nlmsghdr& header() const

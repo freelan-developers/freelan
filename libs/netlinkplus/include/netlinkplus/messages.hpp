@@ -119,7 +119,7 @@ namespace netlinkplus
 					friend class attribute_message;
 			};
 
-			typedef base_attribute_iterator<::rtattr> attribute_iterator;
+			typedef base_attribute_iterator< ::rtattr> attribute_iterator;
 			typedef base_attribute_iterator<const ::rtattr> const_attribute_iterator;
 
 			class attributes_type
@@ -210,7 +210,7 @@ namespace netlinkplus
 
 			::rtattr* first_attribute()
 			{
-				return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->payload());
+				return reinterpret_cast< ::rtattr*>(static_cast<Type*>(this)->payload());
 			}
 
 			const ::rtattr* first_attribute() const
@@ -220,7 +220,7 @@ namespace netlinkplus
 
 			::rtattr* next_attribute()
 			{
-				return reinterpret_cast<::rtattr*>(static_cast<Type*>(this)->end());
+				return reinterpret_cast< ::rtattr*>(static_cast<Type*>(this)->end());
 			}
 
 			const ::rtattr* next_attribute() const
@@ -251,11 +251,11 @@ namespace netlinkplus
 	};
 
 	template <size_t DataSize>
-	class route_message_type : public generic_message_type<::rtmsg, DataSize>, public attribute_message<route_message_type<DataSize>>
+	class route_message_type : public generic_message_type< ::rtmsg, DataSize>, public attribute_message<route_message_type<DataSize>>
 	{
 		public:
 			explicit route_message_type(uint16_t type = 0, uint16_t flags = 0) :
-				generic_message_type<::rtmsg, DataSize>(type, flags)
+				generic_message_type< ::rtmsg, DataSize>(type, flags)
 			{
 			}
 
@@ -410,11 +410,11 @@ namespace netlinkplus
 	};
 
 	template <size_t DataSize>
-	class address_message_type : public generic_message_type<::ifaddrmsg, DataSize>, public attribute_message<address_message_type<DataSize>>
+	class address_message_type : public generic_message_type< ::ifaddrmsg, DataSize>, public attribute_message<address_message_type<DataSize>>
 	{
 		public:
 			explicit address_message_type(uint16_t type = 0, uint16_t flags = 0) :
-				generic_message_type<::ifaddrmsg, DataSize>(type, flags)
+				generic_message_type< ::ifaddrmsg, DataSize>(type, flags)
 			{
 				set_flags(IFA_F_PERMANENT | IFA_F_SECONDARY);
 				set_scope(RT_SCOPE_UNIVERSE);
@@ -488,11 +488,11 @@ namespace netlinkplus
 	{
 	};
 
-	class error_message_type : public generic_message_type<::nlmsgerr, 1024>
+	class error_message_type : public generic_message_type< ::nlmsgerr, 1024>
 	{
 		public:
 			explicit error_message_type(uint16_t type = 0, uint16_t flags = 0) :
-				generic_message_type<::nlmsgerr, 1024>(type, flags)
+				generic_message_type< ::nlmsgerr, 1024>(type, flags)
 			{
 			}
 	};
