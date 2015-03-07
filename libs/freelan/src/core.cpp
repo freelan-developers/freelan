@@ -1530,14 +1530,7 @@ namespace freelan
 			}
 			else
 			{
-				if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
-				{
-					throw std::runtime_error("No IPv4 address configured but we are in tun mode: unable to continue");
-				}
-				else
-				{
-					m_logger(fscp::log_level::information) << "No IPv4 address configured.";
-				}
+				m_logger(fscp::log_level::information) << "No IPv4 address configured.";
 			}
 
 			// IPv6 address
@@ -1550,6 +1543,15 @@ namespace freelan
 			else
 			{
 				m_logger(fscp::log_level::information) << "No IPv6 address configured.";
+			}
+
+			// If we are running in tun mode, we need at least one
+			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
+			{
+				if (m_configuration.tap_adapter.ipv4_address_prefix_length.is_null() && m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
+				{
+					throw std::runtime_error("Running in tun mode, but no IPv4 or IPv6 address was provided. Please configure at least one IPv4 or IPv6 address.");
+				}
 			}
 
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
