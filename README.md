@@ -64,6 +64,15 @@ You will need Microsoft Visual Studio 2013 to compile freelan. All projects come
 
 The root directory also contains a solution file (`.sln`) that references all the sub-projects.
 
+### Debugging
+
+If the debug-level logging exposed with the `-d` parameter to freelan does not expose enough information to assist development or bug finding, it is possible to enable additional debug information at build time with:
+
+> scons all --mode=debug
+
+Be aware that this will produce a significant amount of logging information and is not intended for general use.
+
+
 Graphical User Interface
 ------------------------
 
