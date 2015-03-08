@@ -1767,14 +1767,24 @@ namespace freelan
 		// All calls to do_read_tap() are done within the m_tap_adapter_io_service, so the following is safe.
 		assert(m_tap_adapter);
 
-		const auto receive_buffer = SharedBuffer(65536);
+		// Get either a new buffer or an old, recycled one if possible.
+		const SharedBuffer receive_buffer = m_tap_adapter_buffers.empty() ? SharedBuffer(65536) : [this] () {
+			const auto result = m_tap_adapter_buffers.front();
+			m_tap_adapter_buffers.pop_front();
+
+			return result;
+		}();
 
 		m_tap_adapter->async_read(
 			buffer(receive_buffer),
 			boost::bind(
 				&core::do_handle_tap_adapter_read,
 				this,
-				receive_buffer,
+				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
+					m_tap_adapter_io_service.post([this, buffer] () {
+						m_tap_adapter_buffers.push_back(buffer);
+					});
+				}),
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
@@ -1783,11 +1793,11 @@ namespace freelan
 
 	void core::do_handle_tap_adapter_read(SharedBuffer receive_buffer, const boost::system::error_code& ec, size_t count)
 	{
-		// All calls to do_read_tap() are done within the m_tap_adapter_io_service, so the following is safe.
+		// All calls to do_handle_tap_adapter_read() are done within the m_tap_adapter_io_service, so the following is safe.
 		if (ec != boost::asio::error::operation_aborted)
 		{
 			// We try to read again, as soon as possible.
-			async_read_tap();
+			do_read_tap();
 		}
 
 		if (!ec)

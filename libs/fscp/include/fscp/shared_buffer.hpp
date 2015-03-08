@@ -46,6 +46,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/function.hpp>
 
 #include <cmath>
 #include <stdint.h>
@@ -67,29 +68,68 @@ namespace fscp
 				m_data(new uint8_t[size])
 			{}
 
+			template <typename Handler>
+			SharedBuffer(const SharedBuffer& buffer, Handler handler) :
+				m_buffer(new SharedBuffer(buffer), [handler] (SharedBuffer* buf) {
+					handler(*buf);
+
+					delete buf;
+				})
+			{
+			}
+
 		private:
 			size_t m_size;
 			boost::shared_array<uint8_t> m_data;
+			boost::shared_ptr<SharedBuffer> m_buffer;
 
 			friend inline boost::asio::mutable_buffers_1 buffer(const SharedBuffer& buf)
 			{
-				return boost::asio::buffer(buf.m_data.get(), buf.m_size);
+				if (buf.m_buffer)
+				{
+					return buffer(*(buf.m_buffer));
+				}
+				else
+				{
+					return boost::asio::buffer(buf.m_data.get(), buf.m_size);
+				}
 			}
 
 			friend inline boost::asio::mutable_buffers_1 buffer(const SharedBuffer& buf, size_t size)
 			{
-				return boost::asio::buffer(buf.m_data.get(), std::min(size, buf.m_size));
+				if (buf.m_buffer)
+				{
+					return buffer(*(buf.m_buffer), size);
+				}
+				else
+				{
+					return boost::asio::buffer(buf.m_data.get(), std::min(size, buf.m_size));
+				}
 			}
 
 			template <typename Type>
 			friend inline Type buffer_cast(const SharedBuffer& buf)
 			{
-				return boost::asio::buffer_cast<Type>(buffer(buf));
+				if (buf.m_buffer)
+				{
+					return buffer_cast<Type>(*(buf.m_buffer));
+				}
+				else
+				{
+					return boost::asio::buffer_cast<Type>(buffer(buf));
+				}
 			}
 
 			friend inline size_t buffer_size(const SharedBuffer& buf)
 			{
-				return boost::asio::buffer_size(buffer(buf));
+				if (buf.m_buffer)
+				{
+					return buffer_size((*buf.m_buffer));
+				}
+				else
+				{
+					return boost::asio::buffer_size(buffer(buf));
+				}
 			}
 	};
 

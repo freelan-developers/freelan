@@ -584,6 +584,7 @@ namespace freelan
 			boost::thread m_tap_adapter_thread;
 			boost::asio::io_service m_tap_adapter_io_service;
 			std::queue<void_handler_type> m_tap_write_queue;
+			std::list<fscp::SharedBuffer> m_tap_adapter_buffers;
 
 			ethernet_filter_type m_ethernet_filter;
 			arp_filter_type m_arp_filter;
