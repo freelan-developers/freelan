@@ -560,15 +560,16 @@ namespace freelan
 			void async_get_tap_addresses(ip_network_address_list_handler_type);
 			void async_read_tap();
 
-			template <typename ConstBufferSequence, typename WriteHandler>
-			void async_write_tap(const ConstBufferSequence& data, WriteHandler handler)
+			template <typename ConstBufferSequence>
+			void async_write_tap(const ConstBufferSequence& data, simple_handler_type handler)
 			{
-				void_handler_type write_handler = [this, data, handler](){ m_tap_adapter->async_write(data, handler); };
-
-				m_tap_write_queue_strand.post(boost::bind(&core::push_tap_write, this, write_handler));
+				m_tap_adapter_io_service.post([this, data, handler] () {
+					push_tap_write(data, handler);
+				});
 			}
 
-			void push_tap_write(void_handler_type);
+			template <typename ConstBufferSequence>
+			void push_tap_write(const ConstBufferSequence&, simple_handler_type);
 			void pop_tap_write();
 
 			void do_read_tap();
@@ -580,10 +581,9 @@ namespace freelan
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
 
 			boost::shared_ptr<asiotap::tap_adapter> m_tap_adapter;
-			boost::asio::strand m_tap_adapter_strand;
-			boost::asio::strand m_proxies_strand;
+			boost::thread m_tap_adapter_thread;
+			boost::asio::io_service m_tap_adapter_io_service;
 			std::queue<void_handler_type> m_tap_write_queue;
-			boost::asio::strand m_tap_write_queue_strand;
 
 			ethernet_filter_type m_ethernet_filter;
 			arp_filter_type m_arp_filter;

@@ -392,9 +392,8 @@ namespace freelan
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
 		m_routes_request_timer(m_io_service, ROUTES_REQUEST_PERIOD),
-		m_tap_adapter_strand(m_io_service),
-		m_proxies_strand(m_io_service),
-		m_tap_write_queue_strand(m_io_service),
+		m_tap_adapter_thread(),
+		m_tap_adapter_io_service(),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
@@ -1504,12 +1503,10 @@ namespace freelan
 		{
 			const asiotap::tap_adapter_layer tap_adapter_type = (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap) ? asiotap::tap_adapter_layer::ethernet : asiotap::tap_adapter_layer::ip;
 
-			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_io_service), tap_adapter_type);
+			m_tap_adapter = boost::make_shared<asiotap::tap_adapter>(boost::ref(m_tap_adapter_io_service), tap_adapter_type);
 
 			const auto write_func = [this] (boost::asio::const_buffer data, simple_handler_type handler) {
-				async_write_tap(buffer(data), [handler](const boost::system::error_code& ec, size_t) {
-					handler(ec);
-				});
+				async_write_tap(buffer(data), m_io_service.wrap(handler));
 			};
 
 			m_tap_adapter->open(m_configuration.tap_adapter.name);
@@ -1667,6 +1664,12 @@ namespace freelan
 			}
 
 			async_read_tap();
+
+			m_tap_adapter_thread = boost::thread([this](){
+				m_logger(fscp::log_level::information) << "Starting tap adapter's thread...";
+				m_tap_adapter_io_service.run();
+				m_logger(fscp::log_level::information) << "Tap adapter's thread is now stopped.";
+			});
 		}
 		else
 		{
@@ -1700,6 +1703,8 @@ namespace freelan
 			m_tap_adapter->set_connected_state(false);
 
 			m_tap_adapter->close();
+
+			m_tap_adapter_thread.join();
 		}
 	}
 
@@ -1707,7 +1712,7 @@ namespace freelan
 	{
 		if (m_tap_adapter)
 		{
-			m_tap_adapter_strand.post([this, handler](){
+			m_tap_adapter_io_service.post([this, handler](){
 			handler(m_tap_adapter->get_ip_addresses());
 			});
 		}
@@ -1719,56 +1724,66 @@ namespace freelan
 
 	void core::async_read_tap()
 	{
-		m_tap_adapter_strand.post(boost::bind(&core::do_read_tap, this));
+		m_tap_adapter_io_service.post(boost::bind(&core::do_read_tap, this));
 	}
 
-	void core::push_tap_write(void_handler_type handler)
+	template <typename ConstBufferSequence>
+	void core::push_tap_write(const ConstBufferSequence& data, simple_handler_type handler)
 	{
-		// All push_write() calls are done in the same strand so the following is thread-safe.
+		// All push_tap_write() calls are done in the m_tap_adapter_io_service so the following is thread-safe.
+		const auto write_call = [this, data, handler] () {
+			m_tap_adapter->async_write(data, [this, handler] (const boost::system::error_code& ec, size_t) {
+				pop_tap_write();
+
+				handler(ec);
+			});
+		};
+
 		if (m_tap_write_queue.empty())
 		{
 			// Nothing is being written, lets start the write immediately.
-			m_tap_adapter_strand.post(make_causal_handler(handler, m_tap_write_queue_strand.wrap(boost::bind(&core::pop_tap_write, this))));
+			write_call();
 		}
 
-		m_tap_write_queue.push(handler);
+		// We need to push it always, even if it was called immediately as it
+		// will be popped-out when the write ends and also serves as a marker
+		// that a write is in progress.
+		m_tap_write_queue.push(write_call);
 	}
 
 	void core::pop_tap_write()
 	{
-		// All pop_write() calls are done in the same strand so the following is thread-safe.
+		// All pop_tap_write() calls are done in the m_tap_adapter_io_service so the following is thread-safe.
 		m_tap_write_queue.pop();
 
 		if (!m_tap_write_queue.empty())
 		{
-			m_tap_adapter_strand.post(make_causal_handler(m_tap_write_queue.front(), m_tap_write_queue_strand.wrap(boost::bind(&core::pop_tap_write, this))));
+			m_tap_write_queue.front()();
 		}
 	}
 
 	void core::do_read_tap()
 	{
-		// All calls to do_read_tap() are done within the m_tap_adapter_strand, so the following is safe.
+		// All calls to do_read_tap() are done within the m_tap_adapter_io_service, so the following is safe.
 		assert(m_tap_adapter);
 
 		const auto receive_buffer = SharedBuffer(65536);
 
 		m_tap_adapter->async_read(
 			buffer(receive_buffer),
-			m_proxies_strand.wrap(
-				boost::bind(
-					&core::do_handle_tap_adapter_read,
-					this,
-					receive_buffer,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred
-				)
+			boost::bind(
+				&core::do_handle_tap_adapter_read,
+				this,
+				receive_buffer,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred
 			)
 		);
 	}
 
 	void core::do_handle_tap_adapter_read(SharedBuffer receive_buffer, const boost::system::error_code& ec, size_t count)
 	{
-		// All calls to do_read_tap() are done within the m_proxies_strand, so the following is safe.
+		// All calls to do_read_tap() are done within the m_tap_adapter_io_service, so the following is safe.
 		if (ec != boost::asio::error::operation_aborted)
 		{
 			// We try to read again, as soon as possible.
