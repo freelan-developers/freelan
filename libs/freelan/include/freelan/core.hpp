@@ -580,9 +580,9 @@ namespace freelan
 			void do_handle_dhcp_frame(const dhcp_helper_type&);
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
 
-			boost::shared_ptr<asiotap::tap_adapter> m_tap_adapter;
-			boost::thread m_tap_adapter_thread;
 			boost::asio::io_service m_tap_adapter_io_service;
+			boost::thread m_tap_adapter_thread;
+			boost::shared_ptr<asiotap::tap_adapter> m_tap_adapter;
 			std::queue<void_handler_type> m_tap_write_queue;
 			std::list<fscp::SharedBuffer> m_tap_adapter_buffers;
 
