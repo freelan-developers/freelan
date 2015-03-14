@@ -807,7 +807,13 @@ namespace fscp
 		// do_async_receive_from() is executed within the socket strand so this is safe.
 		boost::shared_ptr<ep_type> sender = boost::make_shared<ep_type>();
 
-		const auto receive_buffer = SharedBuffer(65536);
+		// Get either a new buffer or an old, recycled one if possible.
+		const SharedBuffer receive_buffer = m_socket_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_socket_buffers.front();
+			m_socket_buffers.pop_front();
+
+			return result;
+		}();
 
 		m_socket.async_receive_from(
 			buffer(receive_buffer),
@@ -817,7 +823,11 @@ namespace fscp
 				this,
 				get_identity(),
 				sender,
-				receive_buffer,
+				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
+					m_socket_strand.post([this, buffer]() {
+						m_socket_buffers.push_back(buffer);
+					});
+				}),
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
@@ -1081,31 +1091,17 @@ namespace fscp
 		const size_t size = hello_message::write_request(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 		async_send_to(
-			buffer(send_buffer, size),
+			send_buffer,
+			size,
 			target,
-			m_greet_strand.wrap(
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						&server::do_greet_handler,
-						this,
-						target,
-						hello_unique_number,
-						handler,
-						timeout,
-						boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred
-					)
-				)
-			)
+			m_greet_strand.wrap([this, target, hello_unique_number, handler, timeout](const boost::system::error_code& ec) {
+				do_greet_handler(target, hello_unique_number, handler, timeout, ec);
+			})
 		);
 	}
 
-	void server::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, duration_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec, size_t bytes_transferred)
+	void server::do_greet_handler(const ep_type& target, uint32_t hello_unique_number, duration_handler_type handler, const boost::posix_time::time_duration& timeout, const boost::system::error_code& ec)
 	{
-		// We don't care what the bytes_transferred value is: if an incomplete frame was sent, it is exactly the same as a network loss and we just wait for the timer expiration silently.
-		static_cast<void>(bytes_transferred);
-
 		if (ec)
 		{
 			handler(ec, boost::posix_time::time_duration());
@@ -1203,17 +1199,10 @@ namespace fscp
 			const size_t size = hello_message::write_response(buffer_cast<uint8_t*>(send_buffer), buffer_size(send_buffer), hello_unique_number);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				send_buffer,
+				size,
 				sender,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						&server::handle_send_to,
-						this,
-						boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred
-					)
-				)
+				[](const boost::system::error_code&) {}
 			);
 		}
 	}
@@ -1283,15 +1272,10 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				send_buffer,
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						handler,
-						_1
-					)
-				)
+				handler
 			);
 		}
 		catch (const boost::system::system_error& ex)
@@ -1452,7 +1436,12 @@ namespace fscp
 			return;
 		}
 
-		const auto send_buffer = SharedBuffer(65536);
+		const SharedBuffer send_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
 
 		try
 		{
@@ -1472,15 +1461,14 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer]() {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						handler,
-						boost::asio::placeholders::error
-					)
-				)
+				handler
 			);
 		}
 		catch (const boost::system::system_error& ex)
@@ -1705,7 +1693,13 @@ namespace fscp
 		m_logger(log_level::trace) << "Sending session message to " << target << " (session number: " << parameters.session_number << ", cipher suite: " << parameters.cipher_suite << ", elliptic curve: " << parameters.elliptic_curve << ").";
 
 		peer_session& p_session = m_peer_sessions[target];
-		const auto send_buffer = SharedBuffer(65536);
+		const SharedBuffer send_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
+
 
 		try
 		{
@@ -1722,17 +1716,14 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer]() {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						&server::handle_send_to,
-						this,
-						boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred
-					)
-				)
+				[] (const boost::system::error_code&) {}
 			);
 		}
 		catch (const boost::system::system_error& ex)
@@ -2003,7 +1994,13 @@ namespace fscp
 			return;
 		}
 
-		const auto send_buffer = SharedBuffer(65536);
+		// Get either a new buffer or an old, recycled one if possible.
+		const SharedBuffer send_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
 
 		try
 		{
@@ -2022,15 +2019,14 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer]() {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						handler,
-						boost::asio::placeholders::error
-					)
-				)
+				handler
 			);
 		}
 		catch (const boost::system::system_error& ex)
@@ -2103,15 +2099,10 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				send_buffer,
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						handler,
-						boost::asio::placeholders::error
-					)
-				)
+				handler
 			);
 		}
 		catch (const boost::system::system_error& ex)
@@ -2184,15 +2175,10 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				send_buffer,
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						handler,
-						boost::asio::placeholders::error
-					)
-				)
+				handler
 			);
 		}
 		catch (const boost::system::system_error& ex)
@@ -2221,7 +2207,13 @@ namespace fscp
 			return;
 		}
 
-		const auto cleartext_buffer = SharedBuffer(65536);
+		// Get either a new buffer or an old, recycled one if possible.
+		const SharedBuffer cleartext_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
 
 		try
 		{
@@ -2254,7 +2246,16 @@ namespace fscp
 			}
 
 			// This call is fast so we hold on to the data_message a bit longer.
-			do_handle_data_message(sender, type, cleartext_buffer, buffer(cleartext_buffer, cleartext_len));
+			do_handle_data_message(
+				sender,
+				type,
+				SharedBuffer(cleartext_buffer, [this] (const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer] () {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
+				buffer(cleartext_buffer, cleartext_len)
+			);
 		}
 		catch (const boost::system::system_error& ex)
 		{
@@ -2444,15 +2445,10 @@ namespace fscp
 			);
 
 			async_send_to(
-				buffer(send_buffer, size),
+				send_buffer,
+				size,
 				target,
-				make_shared_buffer_handler(
-					send_buffer,
-					boost::bind(
-						handler,
-						boost::asio::placeholders::error
-					)
-				)
+				handler
 			);
 		}
 		catch (const boost::system::system_error& ex)

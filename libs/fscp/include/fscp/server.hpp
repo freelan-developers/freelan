@@ -1263,22 +1263,13 @@ namespace fscp
 
 			ep_type to_socket_format(const ep_type& ep);
 
-			class async_sender
+			void async_send_to(const SharedBuffer& data, const size_t size, const ep_type& target, simple_handler_type handler)
 			{
-				public:
-					template <typename ConstBufferSequence, typename WriteHandler>
-					void operator()(boost::asio::ip::udp::socket* socket, const ConstBufferSequence& data, const ep_type& target, int flags, WriteHandler handler)
-					{
-						assert(socket);
-
-						socket->async_send_to(data, target, flags, handler);
-					}
-			};
-
-			template <typename ConstBufferSequence, typename WriteHandler>
-			void async_send_to(const ConstBufferSequence& data, const ep_type& target, WriteHandler handler)
-			{
-				const void_handler_type write_handler = boost::bind<void>(async_sender(), &m_socket, data, to_socket_format(target), 0, handler);
+				const void_handler_type write_handler = [this, data, size, target, handler] () {
+					m_socket.async_send_to(buffer(data, size), target, 0, [data, handler] (const boost::system::error_code& ec, size_t) {
+						handler(ec);
+					});
+				};
 
 				m_write_queue_strand.post(boost::bind(&server::push_write, this, write_handler));
 			}
@@ -1286,12 +1277,11 @@ namespace fscp
 			void push_write(void_handler_type);
 			void pop_write();
 
-			void handle_send_to(const boost::system::error_code&, size_t) {};
-
 			socket_type m_socket;
 			boost::asio::strand m_socket_strand;
 			std::queue<void_handler_type> m_write_queue;
 			boost::asio::strand m_write_queue_strand;
+			std::list<SharedBuffer> m_socket_buffers;
 
 		private: // HELLO messages
 
@@ -1382,7 +1372,7 @@ namespace fscp
 			typedef std::map<ep_type, ep_hello_context_type> ep_hello_context_map;
 
 			void do_greet(const ep_type&, duration_handler_type, const boost::posix_time::time_duration&);
-			void do_greet_handler(const ep_type&, uint32_t, duration_handler_type, const boost::posix_time::time_duration&, const boost::system::error_code&, size_t);
+			void do_greet_handler(const ep_type&, uint32_t, duration_handler_type, const boost::posix_time::time_duration&, const boost::system::error_code&);
 			void do_greet_timeout(const ep_type&, uint32_t, duration_handler_type, const boost::system::error_code&);
 			void do_cancel_all_greetings();
 
@@ -1443,6 +1433,7 @@ namespace fscp
 			boost::asio::strand m_session_strand;
 
 			peer_session_map_type m_peer_sessions;
+			std::list<SharedBuffer> m_session_buffers;
 
 			bool m_accept_session_request_messages_default;
 			cipher_suite_list_type m_cipher_suites;
