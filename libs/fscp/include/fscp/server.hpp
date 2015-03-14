@@ -1174,7 +1174,7 @@ namespace fscp
 			 */
 			void async_set_data_received_callback(data_received_handler_type callback, void_handler_type handler = void_handler_type())
 			{
-				m_data_strand.post(boost::bind(&server::do_set_data_received_callback, this, callback, handler));
+				m_session_strand.post(boost::bind(&server::do_set_data_received_callback, this, callback, handler));
 			}
 
 			/**
@@ -1493,7 +1493,6 @@ namespace fscp
 			void do_set_contact_request_received_callback(contact_request_received_handler_type, void_handler_type);
 			void do_set_contact_received_callback(contact_received_handler_type, void_handler_type);
 
-			boost::asio::strand m_data_strand;
 			boost::asio::strand m_contact_strand;
 
 			data_received_handler_type m_data_received_handler;

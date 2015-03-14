@@ -234,7 +234,6 @@ namespace fscp
 		m_session_error_handler(),
 		m_session_established_handler(),
 		m_session_lost_handler(),
-		m_data_strand(io_service),
 		m_contact_strand(io_service),
 		m_data_received_handler(),
 		m_contact_request_message_received_handler(),
@@ -2254,17 +2253,8 @@ namespace fscp
 				return;
 			}
 
-			// We don't need the original buffer at this point, so we just defer handling in another call so that it will free the buffer sooner and that it will allow parallel processing.
-			m_data_strand.post(
-				boost::bind(
-					&server::do_handle_data_message,
-					this,
-					sender,
-					type,
-					cleartext_buffer,
-					buffer(cleartext_buffer, cleartext_len)
-				)
-			);
+			// This call is fast so we hold on to the data_message a bit longer.
+			do_handle_data_message(sender, type, cleartext_buffer, buffer(cleartext_buffer, cleartext_len));
 		}
 		catch (const boost::system::system_error& ex)
 		{
@@ -2275,7 +2265,9 @@ namespace fscp
 
 	void server::do_handle_data_message(const ep_type& sender, message_type type, SharedBuffer buffer, boost::asio::const_buffer data)
 	{
-		// All do_handle_data_message() calls are done in the same strand so the following is thread-safe.
+		// All do_handle_data_message() calls are done in the same strand as do_handle_data() so the following is thread-safe.
+		// This call should remain *FAST*. That ims, it should only discard the message or trigger some deferred handling by another task.
+
 		if (is_data_message_type(type))
 		{
 			// This is safe only because type is a DATA message type.
