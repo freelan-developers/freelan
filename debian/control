@@ -1,0 +1,20 @@
+Source: freelan
+Section: net
+Priority: optional
+Maintainer: Julien Kauffmann <julien.kauffmann@freelan.org>
+Build-Depends: debhelper (>= 8.0.0), freelan-buildtools (>= 1.2), libfreelan-dev (>= 2.0), libfscp-dev (>= 2.1), libasiotap-dev (>= 2.0), libcryptoplus-dev (>= 2.0), libssl-dev, libboost-system-dev (>= 1.49), libboost-thread-dev (>= 1.49), libboost-program-options-dev (>= 1.49), libboost-filesystem-dev (>= 1.49)
+Standards-Version: 3.9.4
+Homepage: http://www.freelan.org
+Vcs-Git: git@github.com:freelan-developers/freelan.git
+Vcs-Browser: https://github.com/freelan-developers/freelan
+
+Package: freelan
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libssl1.0.0, libboost-system1.49.0, libboost-thread1.49.0, libboost-program-options1.49.0, libboost-filesystem1.49.0, libfreelan2 (>= 2.0), libcryptoplus2 (>= 2.0), libasiotap2 (>= 2.0), libfscp2 (>= 2.1)
+Suggests: openssl
+Description: Peer-to-peer virtual private network daemon
+ Freelan is an application to create secure ethernet tunnels over a single UDP port. It can be used to create virtual LANs ("Local Area Network"), hence the name: "freelan".
+ .
+ Freelan may create peer-to-peer tunnel connections or rely on a more classic client/server layout. The virtual network can be shaped to fit exactly the bandwidth or topology constraints, providing an optimal virtual private network.
+ .
+ Freelan is particularly useful for remote sites interconnection or gaming.

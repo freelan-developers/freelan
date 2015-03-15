@@ -1,0 +1,13 @@
+Index: freelan.debian/SConstruct
+===================================================================
+--- freelan.debian.orig/SConstruct	2013-08-02 16:14:44.000000000 +0200
++++ freelan.debian/SConstruct	2013-08-02 16:16:40.000000000 +0200
+@@ -6,6 +6,8 @@
+ 
+ env = Environment(ENV=os.environ.copy(), ARGUMENTS=ARGUMENTS)
+ 
++env.bindir = 'sbin'
++
+ targets = SConscript('SConscript', variant_dir=env.get_variant_dir(Dir('.')), exports='env')
+ 
+ for name, target in targets.items():
