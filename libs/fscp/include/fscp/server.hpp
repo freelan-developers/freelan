@@ -485,26 +485,29 @@ namespace fscp
 			 * \brief Set the presentation for the given host.
 			 * \param target The host to set the presentation for.
 			 * \param signature_certificate The signature certificate.
+			 * \param pre_shared_key The pre-shared key to use for this host.
 			 * \warning This method is *NOT* thread-safe and should be called only before the server is started.
 			 */
-			void set_presentation(const ep_type& target, cert_type signature_certificate);
+			void set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key);
 
 			/**
 			 * \brief Set the presentation for the given host.
 			 * \param target The host to set the presentation for.
 			 * \param signature_certificate The signature certificate.
+			 * \param pre_shared_key The pre-shared key to use for this host.
 			 * \param handler The handler to call when the presentation was set for the given host.
 			 */
-			void async_set_presentation(const ep_type& target, cert_type signature_certificate, void_handler_type handler = void_handler_type());
+			void async_set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key, void_handler_type handler = void_handler_type());
 
 			/**
 			 * \brief Set the presentation for the given host.
 			 * \param target The host to set the presentation for.
 			 * \param signature_certificate The signature certificate.
+			 * \param pre_shared_key The pre-shared key to use for this host.
 			 * \warning If the io_service is not being run, the call will block undefinitely.
 			 * \warning This function must **NEVER** be called from inside a thread that runs one of the server's handlers.
 			 */
-			void sync_set_presentation(const ep_type& target, cert_type signature_certificate);
+			void sync_set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key);
 
 			/**
 			 * \brief Clear the presentation for the given host.
@@ -1396,10 +1399,10 @@ namespace fscp
 			void do_introduce_to(const ep_type&, simple_handler_type);
 			void do_reintroduce_to_all(multiple_endpoints_handler_type);
 			void do_get_presentation(const ep_type&, optional_presentation_store_handler_type);
-			void do_set_presentation(const ep_type&, cert_type, void_handler_type);
+			void do_set_presentation(const ep_type&, cert_type, const cryptoplus::buffer&, void_handler_type);
 			void do_clear_presentation(const ep_type&, void_handler_type);
-			void handle_presentation_message_from(const presentation_message&, const ep_type&);
-			void do_handle_presentation(const ep_type&, bool, cert_type);
+			void handle_presentation_message_from(const identity_store&, const presentation_message&, const ep_type&);
+			void do_handle_presentation(const identity_store& identity, const ep_type&, bool, cert_type);
 
 			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
 

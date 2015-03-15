@@ -73,10 +73,10 @@ namespace fscp
 
 			/**
 			 * \brief Create a new presentation store.
-			 * \param sig_cert The signature certificate. Cannot be null.
-			 * \param enc_cert The encryption certificate. If enc_cert is null, sig_cert is taken instead.
+			 * \param sig_cert The signature certificate.
+			 * \param pre_shared_key The pre-shared key.
 			 */
-			explicit presentation_store(cert_type sig_cert);
+			explicit presentation_store(cert_type sig_cert, const cryptoplus::buffer& pre_shared_key);
 
 			/**
 			 * \brief Check if the presentation store is empty.
@@ -84,7 +84,7 @@ namespace fscp
 			 */
 			bool empty() const
 			{
-				return !m_sig_cert;
+				return !m_sig_cert && !m_pre_shared_key;
 			}
 
 			/**
@@ -105,10 +105,20 @@ namespace fscp
 				return m_sig_hash;
 			}
 
+			/**
+			* \brief Get the pre-shared key.
+			* \return The pre-shared key.
+			*/
+			const cryptoplus::buffer& pre_shared_key() const
+			{
+				return m_pre_shared_key;
+			}
+
 		private:
 
 			cert_type m_sig_cert;
 			hash_type m_sig_hash;
+			cryptoplus::buffer m_pre_shared_key;
 	};
 }
 

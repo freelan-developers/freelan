@@ -90,7 +90,14 @@ namespace fscp
 	{
 		uint16_t sig_len = ntohs(buffer_tools::get<uint16_t>(payload(), 0));
 
-		return cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
+		if (sig_len == 0)
+		{
+			return cert_type();
+		}
+		else
+		{
+			return cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
+		}
 	}
 
 	void presentation_message::check_format() const
@@ -102,12 +109,11 @@ namespace fscp
 
 		uint16_t sig_len = ntohs(buffer_tools::get<uint16_t>(payload(), 0));
 
-		if (sig_len == 0)
+		if (sig_len != 0)
 		{
-			throw std::runtime_error("invalid sig_len");
+			// Test that the certificate can be parsed.
+			cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
 		}
-
-		cert_type sig_cert = cert_type::from_der(payload() + sizeof(uint16_t), sig_len);
 
 		if (length() < MIN_BODY_LENGTH + sig_len)
 		{

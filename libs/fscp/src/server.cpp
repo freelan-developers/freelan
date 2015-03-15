@@ -203,10 +203,14 @@ namespace fscp
 
 		bool compare_certificates(const server::cert_type& lhs, const server::cert_type& rhs)
 		{
-			assert(!!lhs);
-			assert(!!rhs);
-
-			return (lhs.write_der() == rhs.write_der());
+			if (!!lhs && !!rhs)
+			{
+				return (lhs.write_der() == rhs.write_der());
+			}
+			else
+			{
+				return (!lhs && !rhs);
+			}
 		}
 	}
 
@@ -384,22 +388,22 @@ namespace fscp
 		return promise.get_future().get();
 	}
 
-	void server::set_presentation(const ep_type& target, cert_type signature_certificate)
+	void server::set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key)
 	{
-		m_presentation_store_map[target] = presentation_store(signature_certificate);
+		m_presentation_store_map[target] = presentation_store(signature_certificate, pre_shared_key);
 	}
 
-	void server::async_set_presentation(const ep_type& target, cert_type signature_certificate, void_handler_type handler)
+	void server::async_set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key, void_handler_type handler)
 	{
-		m_presentation_strand.post(boost::bind(&server::do_set_presentation, this, normalize(target), signature_certificate, handler));
+		m_presentation_strand.post(boost::bind(&server::do_set_presentation, this, normalize(target), signature_certificate, pre_shared_key, handler));
 	}
 
-	void server::sync_set_presentation(const ep_type& target, cert_type signature_certificate)
+	void server::sync_set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key)
 	{
 		typedef boost::promise<void> promise_type;
 		promise_type promise;
 
-		async_set_presentation(target, signature_certificate, boost::bind(&promise_type::set_value, &promise));
+		async_set_presentation(target, signature_certificate, pre_shared_key, boost::bind(&promise_type::set_value, &promise));
 
 		return promise.get_future().wait();
 	}
@@ -903,7 +907,7 @@ namespace fscp
 						{
 							presentation_message presentation_message(message);
 
-							handle_presentation_message_from(presentation_message, *sender);
+							handle_presentation_message_from(identity, presentation_message, *sender);
 
 							break;
 						}
@@ -1310,10 +1314,10 @@ namespace fscp
 		handler(get_presentation(target));
 	}
 
-	void server::do_set_presentation(const ep_type& target, cert_type signature_certificate, void_handler_type handler)
+	void server::do_set_presentation(const ep_type& target, cert_type signature_certificate, const cryptoplus::buffer& pre_shared_key, void_handler_type handler)
 	{
 		// All do_set_presentation() calls are done in the same strand so the following is thread-safe.
-		set_presentation(target, signature_certificate);
+		set_presentation(target, signature_certificate, pre_shared_key);
 
 		if (handler)
 		{
@@ -1332,15 +1336,16 @@ namespace fscp
 		}
 	}
 
-	void server::handle_presentation_message_from(const presentation_message& _presentation_message, const ep_type& sender)
+	void server::handle_presentation_message_from(const identity_store& identity, const presentation_message& _presentation_message, const ep_type& sender)
 	{
 		const auto signature_certificate = _presentation_message.signature_certificate();
 
-		async_has_session_with_endpoint(sender, [this, sender, signature_certificate](bool has_session) {
+		async_has_session_with_endpoint(sender, [this, identity, sender, signature_certificate](bool has_session) {
 			m_presentation_strand.post(
 				boost::bind(
 					&server::do_handle_presentation,
 					this,
+					identity,
 					sender,
 					has_session,
 					signature_certificate
@@ -1349,7 +1354,7 @@ namespace fscp
 		});
 	}
 
-	void server::do_handle_presentation(const ep_type& sender, bool has_session, cert_type signature_certificate)
+	void server::do_handle_presentation(const identity_store& identity, const ep_type& sender, bool has_session, cert_type signature_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
 		presentation_status_type presentation_status = PS_FIRST;
@@ -1376,7 +1381,7 @@ namespace fscp
 			}
 		}
 
-		m_presentation_store_map[sender] = presentation_store(signature_certificate);
+		m_presentation_store_map[sender] = presentation_store(signature_certificate, identity.pre_shared_key());
 	}
 
 	void server::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)
@@ -1449,16 +1454,33 @@ namespace fscp
 			const auto local_host_identifier = p_session.local_host_identifier();
 
 			m_logger(log_level::trace) << "Sending session request message to " << target << " (next_session_number: " << next_session_number << ", local_host_identifier: " << local_host_identifier << ")";
+			size_t size = 0;
 
-			const size_t size = session_request_message::write(
-				buffer_cast<uint8_t*>(send_buffer),
-				buffer_size(send_buffer),
-				next_session_number,
-				local_host_identifier,
-				m_cipher_suites,
-				m_elliptic_curves,
-				identity.signature_key()
-			);
+			if (!!identity.signature_key())
+			{
+				size = session_request_message::write(
+					buffer_cast<uint8_t*>(send_buffer),
+					buffer_size(send_buffer),
+					next_session_number,
+					local_host_identifier,
+					m_cipher_suites,
+					m_elliptic_curves,
+					identity.signature_key()
+				);
+			}
+			else
+			{
+				size = session_request_message::write(
+					buffer_cast<uint8_t*>(send_buffer),
+					buffer_size(send_buffer),
+					next_session_number,
+					local_host_identifier,
+					m_cipher_suites,
+					m_elliptic_curves,
+					buffer_cast<const uint8_t*>(identity.pre_shared_key()),
+					buffer_size(identity.pre_shared_key())
+					);
+			}
 
 			async_send_to(
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
@@ -1509,7 +1531,19 @@ namespace fscp
 		}
 
 		// We make sure the signatures matches.
-		if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+		bool check_ok = false;
+
+		if (!!m_presentation_store_map[sender].signature_certificate())
+		{
+			check_ok = _session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+		}
+		else
+		{
+			const auto psk = m_presentation_store_map[sender].pre_shared_key();
+			check_ok = _session_request_message.check_signature(buffer_cast<const uint8_t*>(psk), buffer_size(psk));
+		}
+
+		if (!check_ok)
 		{
 			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with an invalid signature. Ignoring.";
 
@@ -1703,17 +1737,37 @@ namespace fscp
 
 		try
 		{
-			const size_t size = session_message::write(
-				buffer_cast<uint8_t*>(send_buffer),
-				buffer_size(send_buffer),
-				parameters.session_number,
-				p_session.local_host_identifier(),
-				parameters.cipher_suite,
-				parameters.elliptic_curve,
-				buffer_cast<const void*>(parameters.public_key),
-				buffer_size(parameters.public_key),
-				identity.signature_key()
-			);
+			size_t size = 0;
+
+			if (!!identity.signature_key())
+			{
+				size = session_message::write(
+					buffer_cast<uint8_t*>(send_buffer),
+					buffer_size(send_buffer),
+					parameters.session_number,
+					p_session.local_host_identifier(),
+					parameters.cipher_suite,
+					parameters.elliptic_curve,
+					buffer_cast<const void*>(parameters.public_key),
+					buffer_size(parameters.public_key),
+					identity.signature_key()
+				);
+			}
+			else
+			{
+				size = session_message::write(
+					buffer_cast<uint8_t*>(send_buffer),
+					buffer_size(send_buffer),
+					parameters.session_number,
+					p_session.local_host_identifier(),
+					parameters.cipher_suite,
+					parameters.elliptic_curve,
+					buffer_cast<const void*>(parameters.public_key),
+					buffer_size(parameters.public_key),
+					buffer_cast<const uint8_t*>(identity.pre_shared_key()),
+					buffer_size(identity.pre_shared_key())
+				);
+			}
 
 			async_send_to(
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
@@ -1746,7 +1800,19 @@ namespace fscp
 		}
 
 		// We make sure the signatures matches.
-		if (!_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+		bool check_ok = false;
+
+		if (!!m_presentation_store_map[sender].signature_certificate())
+		{
+			check_ok = _session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+		}
+		else
+		{
+			const auto psk = m_presentation_store_map[sender].pre_shared_key();
+			check_ok = _session_message.check_signature(buffer_cast<const uint8_t*>(psk), buffer_size(psk));
+		}
+
+		if (!check_ok)
 		{
 			m_logger(log_level::trace) << "Received a SESSION from " << sender << " with an invalid signature. Ignoring.";
 
@@ -2316,6 +2382,12 @@ namespace fscp
 		{
 			for (presentation_store_map::const_iterator it = m_presentation_store_map.begin(); it != m_presentation_store_map.end(); ++it)
 			{
+				// Contact requests do not work for PSK authenticated hosts.
+				if (!it->second.signature_certificate())
+				{
+					continue;
+				}
+
 				const hash_type hash = it->second.signature_certificate_hash();
 
 				if (hash == *hash_it)

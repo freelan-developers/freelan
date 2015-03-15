@@ -48,6 +48,7 @@
 #include <vector>
 #include <stdint.h>
 #include <iostream>
+#include <algorithm>
 
 namespace cryptoplus
 {
@@ -135,9 +136,23 @@ namespace cryptoplus
 				return std::string(m_data.begin(), m_data.end());
 			}
 
+			/**
+			 * \brief Check if the buffer is empty.
+			 * \return true if the buffer is empty, false otherwise.
+			 */
+			bool empty() const
+			{
+				return m_data.empty();
+			}
+
 		private:
 
 			std::vector<uint8_t> m_data;
+
+			friend bool operator!(const buffer& buf)
+			{
+				return buf.empty();
+			}
 	};
 
 	/**
@@ -212,12 +227,29 @@ namespace cryptoplus
 
 	inline bool operator==(const buffer& lhs, const buffer& rhs)
 	{
-		return lhs.data() == rhs.data();
+		// Optimization-free implementation to prevent timing attacks.
+		bool result = true;
+		const auto len = std::min(lhs.data().size(), rhs.data().size());
+
+		for (size_t i = 0; i < len; ++i)
+		{
+			if (lhs.data()[i] != rhs.data()[i])
+			{
+				result = false;
+			}
+		}
+
+		if (lhs.data().size() != rhs.data().size())
+		{
+			result = false;
+		}
+
+		return result;
 	}
 
 	inline bool operator!=(const buffer& lhs, const buffer& rhs)
 	{
-		return lhs.data() != rhs.data();
+		return !(lhs == rhs);
 	}
 
 	inline bool operator<(const buffer& lhs, const buffer& rhs)

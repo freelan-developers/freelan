@@ -48,6 +48,7 @@
 #include <stdexcept>
 
 #include <cryptoplus/hash/message_digest_context.hpp>
+#include <cryptoplus/hash/hmac_context.hpp>
 
 namespace fscp
 {
@@ -63,41 +64,8 @@ namespace fscp
 
 	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap, cryptoplus::pkey::pkey sig_key)
 	{
-		using cryptoplus::buffer_cast;
-		using cryptoplus::buffer_size;
-
-		const size_t unsigned_payload_size = MIN_BODY_LENGTH + cs_cap.size() + ec_cap.size();
-
-		if (buf_len < HEADER_LENGTH + unsigned_payload_size)
-		{
-			throw std::runtime_error("buf_len");
-		}
-
 		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
-
-		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
-		std::copy(_host_identifier.data.begin(), _host_identifier.data.end(), payload + sizeof(_session_number));
-		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::data_type::static_size, htons(static_cast<uint16_t>(cs_cap.size())));
-
-		{
-			uint8_t* cs_buf = payload + sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t);
-
-			for (auto&& cs: cs_cap)
-			{
-				*cs_buf++ = cs.value();
-			}
-		}
-
-		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cs_cap.size(), htons(static_cast<uint16_t>(ec_cap.size())));
-
-		{
-			uint8_t* ec_buf = payload + sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cs_cap.size() + sizeof(uint16_t);
-
-			for (auto&& ec: ec_cap)
-			{
-				*ec_buf++ = ec.value();
-			}
-		}
+		const size_t unsigned_payload_size = write_unsigned(payload, buf_len - HEADER_LENGTH, _session_number, _host_identifier, cs_cap, ec_cap);
 
 		cryptoplus::hash::message_digest_context mdctx;
 		EVP_PKEY_CTX* evp_ctx = nullptr;
@@ -116,6 +84,31 @@ namespace fscp
 
 		mdctx.digest_sign_finalize(payload + unsigned_payload_size + sizeof(uint16_t), signature_size);
 		buffer_tools::set<uint16_t>(payload, unsigned_payload_size, htons(static_cast<uint16_t>(signature_size)));
+
+		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION_REQUEST, signed_payload_size) + signed_payload_size;
+	}
+
+	size_t session_request_message::write(void* buf, size_t buf_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap, const void* pre_shared_key, size_t pre_shared_key_len)
+	{
+		using cryptoplus::buffer_cast;
+		using cryptoplus::buffer_size;
+		const auto mdalg = get_default_digest_algorithm();
+
+		uint8_t* const payload = static_cast<uint8_t*>(buf) + HEADER_LENGTH;
+		const size_t unsigned_payload_size = write_unsigned(payload, buf_len - HEADER_LENGTH, _session_number, _host_identifier, cs_cap, ec_cap);
+
+		if (buf_len < HEADER_LENGTH + unsigned_payload_size + mdalg.result_size())
+		{
+			throw std::runtime_error("buf_len");
+		}
+
+		cryptoplus::hash::hmac_context hmctx;
+		hmctx.initialize(pre_shared_key, pre_shared_key_len, &mdalg);
+		hmctx.update(static_cast<const uint8_t*>(payload), unsigned_payload_size);
+		hmctx.finalize(payload + unsigned_payload_size + sizeof(uint16_t), mdalg.result_size());
+		buffer_tools::set<uint16_t>(payload, unsigned_payload_size, htons(static_cast<uint16_t>(mdalg.result_size())));
+
+		const size_t signed_payload_size = unsigned_payload_size + sizeof(uint16_t) + mdalg.result_size();
 
 		return message::write(buf, buf_len, CURRENT_PROTOCOL_VERSION, MESSAGE_TYPE_SESSION_REQUEST, signed_payload_size) + signed_payload_size;
 	}
@@ -183,5 +176,57 @@ namespace fscp
 		mdctx.digest_verify_update(payload(), header_size());
 
 		return mdctx.digest_verify_finalize(header_signature(), header_signature_size());
+	}
+
+	bool session_request_message::check_signature(const void* pre_shared_key, size_t pre_shared_key_len) const
+	{
+		const auto mdalg = get_default_digest_algorithm();
+
+		cryptoplus::hash::hmac_context hmctx;
+		hmctx.initialize(pre_shared_key, pre_shared_key_len, &mdalg);
+		hmctx.update(payload(), header_size());
+		const auto verified_signature = hmctx.finalize();
+		const cryptoplus::buffer signature(header_signature(), header_signature_size());
+
+		return (signature == verified_signature);
+	}
+
+	size_t session_request_message::write_unsigned(uint8_t* payload, size_t payload_len, session_number_type _session_number, const host_identifier_type& _host_identifier, const cipher_suite_list_type& cs_cap, const elliptic_curve_list_type& ec_cap)
+	{
+		using cryptoplus::buffer_cast;
+		using cryptoplus::buffer_size;
+
+		const size_t unsigned_payload_size = MIN_BODY_LENGTH + cs_cap.size() + ec_cap.size();
+
+		if (payload_len < unsigned_payload_size)
+		{
+			throw std::runtime_error("payload_len");
+		}
+
+		buffer_tools::set<session_number_type>(payload, 0, htonl(_session_number));
+		std::copy(_host_identifier.data.begin(), _host_identifier.data.end(), payload + sizeof(_session_number));
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::data_type::static_size, htons(static_cast<uint16_t>(cs_cap.size())));
+
+		{
+			uint8_t* cs_buf = payload + sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t);
+
+			for (auto&& cs : cs_cap)
+			{
+				*cs_buf++ = cs.value();
+			}
+		}
+
+		buffer_tools::set<uint16_t>(payload, sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cs_cap.size(), htons(static_cast<uint16_t>(ec_cap.size())));
+
+		{
+			uint8_t* ec_buf = payload + sizeof(_session_number) + host_identifier_type::data_type::static_size + sizeof(uint16_t) + cs_cap.size() + sizeof(uint16_t);
+
+			for (auto&& ec : ec_cap)
+			{
+				*ec_buf++ = ec.value();
+			}
+		}
+
+		return unsigned_payload_size;
 	}
 }

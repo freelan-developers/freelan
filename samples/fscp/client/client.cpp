@@ -301,12 +301,12 @@ int main()
 		const boost::asio::ip::udp::endpoint bob_endpoint = *resolver.resolve(bob_query);
 		const boost::asio::ip::udp::endpoint chris_endpoint = *resolver.resolve(chris_query);
 
-		alice_server.set_presentation(bob_endpoint, bob_cert);
-		alice_server.set_presentation(chris_endpoint, chris_cert);
-		bob_server.set_presentation(alice_endpoint, alice_cert);
-		bob_server.set_presentation(chris_endpoint, chris_cert);
-		chris_server.set_presentation(bob_endpoint, bob_cert);
-		chris_server.set_presentation(chris_endpoint, chris_cert);
+		alice_server.set_presentation(bob_endpoint, bob_cert, cryptoplus::buffer());
+		alice_server.set_presentation(chris_endpoint, chris_cert, cryptoplus::buffer());
+		bob_server.set_presentation(alice_endpoint, alice_cert, cryptoplus::buffer());
+		bob_server.set_presentation(chris_endpoint, chris_cert, cryptoplus::buffer());
+		chris_server.set_presentation(bob_endpoint, bob_cert, cryptoplus::buffer());
+		chris_server.set_presentation(chris_endpoint, chris_cert, cryptoplus::buffer());
 
 		alice_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "alice", boost::ref(alice_server), bob_endpoint, _1, _2));
 		chris_server.async_greet(bob_endpoint, boost::bind(&on_hello_response, "chris", boost::ref(chris_server), bob_endpoint, _1, _2));

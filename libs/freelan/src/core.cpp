@@ -479,7 +479,7 @@ namespace freelan
 	{
 		if (!m_configuration.security.identity)
 		{
-			m_logger(fscp::log_level::warning) << "No user certificate or private key set. Generating temporary ones...";
+			m_logger(fscp::log_level::warning) << "No user certificate/private key or pre-shared key set. Generating a temporary certificate/private key pair...";
 
 			const auto private_key = generate_private_key();
 			const auto certificate = generate_self_signed_certificate(private_key);
@@ -487,6 +487,18 @@ namespace freelan
 			m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
 			m_logger(fscp::log_level::warning) << "Using a generated temporary certificate (" << certificate.subject() << ") prevents reliable authentication ! Generate and specify a static certificate/key pair for use in production.";
+		}
+		else
+		{
+			if (!!m_configuration.security.identity->signature_certificate())
+			{
+				m_logger(fscp::log_level::information) << "Enabling certificate-based authentication.";
+			}
+
+			if (!m_configuration.security.identity->pre_shared_key().empty())
+			{
+				m_logger(fscp::log_level::information) << "Enabling pre-shared key authentication.";
+			}
 		}
 
 		m_logger(fscp::log_level::information) << "Starting FSCP server...";
@@ -980,7 +992,14 @@ namespace freelan
 	{
 		if (m_logger.level() <= fscp::log_level::debug)
 		{
-			m_logger(fscp::log_level::debug) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject() << ".";
+			if (!!sig_cert)
+			{
+				m_logger(fscp::log_level::debug) << "Received PRESENTATION from " << sender << ": " << sig_cert.subject() << ".";
+			}
+			else
+			{
+				m_logger(fscp::log_level::debug) << "Received PRESENTATION from " << sender << " using pre-shared key authentication.";
+			}
 		}
 
 		if (is_banned(sender.address()))
@@ -997,14 +1016,21 @@ namespace freelan
 			return false;
 		}
 
-		if (!certificate_is_valid(sig_cert))
+		if (!!sig_cert)
 		{
-			m_logger(fscp::log_level::warning) << "Ignoring PRESENTATION from " << sender << " as the signature certificate is invalid.";
+			if (!certificate_is_valid(sig_cert))
+			{
+				m_logger(fscp::log_level::warning) << "Ignoring PRESENTATION from " << sender << " as the signature certificate is invalid.";
 
-			return false;
+				return false;
+			}
+
+			m_logger(fscp::log_level::information) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject() << "): " << status << ".";
 		}
-
-		m_logger(fscp::log_level::information) << "Accepting PRESENTATION from " << sender << " (" << sig_cert.subject() << "): " << status << ".";
+		else
+		{
+			m_logger(fscp::log_level::information) << "Accepting PRESENTATION from " << sender << " for pre-shared key authentication: " << status << ".";
+		}
 
 		async_request_session(sender);
 

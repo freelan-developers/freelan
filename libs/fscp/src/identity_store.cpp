@@ -49,16 +49,21 @@
 
 namespace fscp
 {
-	identity_store::identity_store(identity_store::cert_type sig_cert, identity_store::key_type sig_key) :
+	identity_store::identity_store(identity_store::cert_type sig_cert, identity_store::key_type sig_key, const cryptoplus::buffer& psk) :
 		m_sig_cert(sig_cert),
-		m_sig_key(sig_key)
+		m_sig_key(sig_key),
+		m_pre_shared_key(psk)
 	{
-		assert(m_sig_cert);
-		assert(m_sig_key);
+		assert(!!m_pre_shared_key || !!m_sig_cert);
 
-		if (!m_sig_cert.verify_private_key(m_sig_key))
+		if (!!m_sig_cert)
 		{
-			throw std::runtime_error("sig_key mismatch");
+			assert(!!m_sig_key);
+
+			if (!m_sig_cert.verify_private_key(m_sig_key))
+			{
+				throw std::runtime_error("sig_key mismatch");
+			}
 		}
 	}
 }

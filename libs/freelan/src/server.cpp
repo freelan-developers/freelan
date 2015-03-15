@@ -206,7 +206,7 @@ namespace freelan
 
 			const cryptoplus::x509::certificate cert = cryptoplus::x509::certificate::from_der(req.content(), req.content_size());
 
-			cinfop->presentation = fscp::presentation_store(cert);
+			cinfop->presentation = fscp::presentation_store(cert, cryptoplus::buffer());
 			cinfop->expires_from_now(configuration.registration_validity_duration);
 
 			typedef boost::date_time::c_local_adjustor<boost::posix_time::ptime> local_adjustor;

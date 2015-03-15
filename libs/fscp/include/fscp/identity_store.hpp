@@ -69,38 +69,45 @@ namespace fscp
 
 			/**
 			 * \brief Create a new identity store.
-			 * \param sig_cert The signature certificate. Cannot be null.
-			 * \param sig_key The signature key. Cannot be null.
+			 * \param sig_cert The signature certificate.
+			 * \param sig_key The signature key.
+			 * \param pre_shared_key The pre-shared key.
 			 */
-			identity_store(cert_type sig_cert, key_type sig_key);
+			identity_store(cert_type sig_cert, key_type sig_key, const cryptoplus::buffer& pre_shared_key = cryptoplus::buffer());
 
 			/**
 			 * \brief Get the signature certificate.
 			 * \return The signature certificate.
 			 */
-			cert_type signature_certificate() const;
+			cert_type signature_certificate() const
+			{
+				return m_sig_cert;
+			}
 
 			/**
 			 * \brief Get the signature key.
 			 * \return The signature key.
 			 */
-			key_type signature_key() const;
+			key_type signature_key() const
+			{
+				return m_sig_key;
+			}
+
+			/**
+			 * \brief Get the pre-shared key.
+			 * \return The pre-shared key.
+			 */
+			const cryptoplus::buffer& pre_shared_key() const
+			{
+				return m_pre_shared_key;
+			}
 
 		private:
 
 			cert_type m_sig_cert;
 			key_type m_sig_key;
+			cryptoplus::buffer m_pre_shared_key;
 	};
-
-	inline identity_store::cert_type identity_store::signature_certificate() const
-	{
-		return m_sig_cert;
-	}
-
-	inline identity_store::key_type identity_store::signature_key() const
-	{
-		return m_sig_key;
-	}
 }
 
 #endif /* FSCP_IDENTITY_STORE_HPP */

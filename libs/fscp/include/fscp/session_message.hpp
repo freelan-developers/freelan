@@ -81,6 +81,22 @@ namespace fscp
 			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, cipher_suite_type cs, elliptic_curve_type ec, const void* pub_key, size_t pub_key_len, cryptoplus::pkey::pkey sig_key);
 
 			/**
+			 * \brief Write a session message to a buffer using a pre-shared key.
+			 * \param buf The buffer to write to.
+			 * \param buf_len The length of buf.
+			 * \param session_number The session number.
+			 * \param host_identifier The host identifier.
+			 * \param cs The cipher suite.
+			 * \param ec The elliptic curve.
+			 * \param pub_key The public key.
+			 * \param pub_key_len The public key length.
+			 * \param pre_shared_key The pre-shared key used to sign the session message.
+			 * \param pre_shared_key_len The pre-shared key length.
+			 * \return The count of bytes written.
+			 */
+			static size_t write(void* buf, size_t buf_len, session_number_type session_number, const host_identifier_type& host_identifier, cipher_suite_type cs, elliptic_curve_type ec, const void* pub_key, size_t pub_key_len, const void* pre_shared_key, size_t pre_shared_key_len);
+
+			/**
 			 * \brief Create a session_message from a message.
 			 * \param message The message.
 			 */
@@ -147,12 +163,34 @@ namespace fscp
 			 */
 			bool check_signature(cryptoplus::pkey::pkey key) const;
 
+			/**
+			* \brief Check if the signature matches with a given public key.
+			* \param pre_shared_key The pre-shared key used to sign the session message.
+			* \param pre_shared_key_len The pre-shared key length.
+			* \return If the check fails, false is returned.
+			*/
+			bool check_signature(const void* pre_shared_key, size_t pre_shared_key_len) const;
+
 		protected:
 
 			/**
 			 * \brief The min length of the body.
 			 */
 			static const size_t MIN_BODY_LENGTH = sizeof(session_number_type) + host_identifier_type::data_type::static_size + sizeof(uint8_t) * 4 + sizeof(uint16_t);
+
+			/**
+			 * \brief Write an unsigned session message to a buffer.
+			 * \param payload The buffer to write to.
+			 * \param payload_len The length of buf.
+			 * \param session_number The session number.
+			 * \param host_identifier The host identifier.
+			 * \param cs The cipher suite.
+			 * \param ec The elliptic curve.
+			 * \param pub_key The public key.
+			 * \param pub_key_len The public key length.
+			 * \return The count of bytes written.
+			 */
+			static size_t write_unsigned(uint8_t* payload, size_t payload_len, session_number_type session_number, const host_identifier_type& host_identifier, cipher_suite_type cs, elliptic_curve_type ec, const void* pub_key, size_t pub_key_len);
 	};
 
 	inline session_number_type session_message::session_number() const

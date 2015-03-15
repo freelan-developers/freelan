@@ -53,6 +53,9 @@
 
 #include "configuration_types.hpp"
 
+#include <cryptoplus/hash/pbkdf2.hpp>
+#include <cryptoplus/hash/message_digest_algorithm.hpp>
+
 // This file is generated locally.
 #include <defines.hpp>
 
@@ -266,6 +269,9 @@ po::options_description get_security_options()
 	po::options_description result("Security options");
 
 	result.add_options()
+	("security.passphrase", po::value<std::string>()->default_value(""), "A passphrase to generate the pre - shared key from.")
+	("security.passphrase_salt", po::value<std::string>()->default_value("freelan"), "The salt to use during the pre-shared key derivation.")
+	("security.passphrase_iterations_count", po::value<unsigned int>()->default_value(2000, "2000"), "The number of iterations to use during the pre-shared key derivation.")
 	("security.signature_certificate_file", po::value<fs::path>(), "The certificate file to use for signing.")
 	("security.signature_private_key_file", po::value<fs::path>(), "The private key file to use for signing.")
 	("security.certificate_validation_method", po::value<fl::security_configuration::certificate_validation_method_type>()->default_value(fl::security_configuration::CVM_DEFAULT), "The certificate validation method.")
@@ -382,15 +388,26 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.fscp.elliptic_curve_capabilities = vm["fscp.elliptic_curve_capability"].as<std::vector<fscp::elliptic_curve_type>>();
 
 	// Security options
+	const std::string passphrase = vm["security.passphrase"].as<std::string>();
+	const std::string passphrase_salt = vm["security.passphrase_salt"].as<std::string>();
+	const unsigned int passphrase_iterations_count = vm["security.passphrase_iterations_count"].as<unsigned int>();
+	cryptoplus::buffer pre_shared_key;
+
+	if (!passphrase.empty())
+	{
+		const auto mdalg = cryptoplus::hash::message_digest_algorithm(NID_sha256);
+		pre_shared_key = cryptoplus::hash::pbkdf2(&passphrase[0], passphrase.size(), &passphrase_salt[0], passphrase_salt.size(), mdalg, passphrase_iterations_count);
+	}
+
 	cert_type signature_certificate;
 	pkey signature_private_key;
 
 	load_certificate(signature_certificate, "security.signature_certificate_file", vm, root);
 	load_private_key(signature_private_key, "security.signature_private_key_file", vm, root);
 
-	if (!!signature_certificate && !!signature_private_key)
+	if ((!!signature_certificate && !!signature_private_key) || !!pre_shared_key)
 	{
-		configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key);
+		configuration.security.identity = fscp::identity_store(signature_certificate, signature_private_key, pre_shared_key);
 	}
 
 	configuration.security.certificate_validation_method = vm["security.certificate_validation_method"].as<fl::security_configuration::certificate_validation_method_type>();
