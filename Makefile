@@ -2,11 +2,20 @@
 #
 # To compile on Linux or Mac OSX, use `scons` (SConstruct).
 
-default: build
+UNAME := $(shell uname)
 
-build: build_x64 build_x86
-
+ifeq ($(UNAME), Linux)
+default: build_linux
+clean:
+else
+default: build_windows
 clean: clean_x64 clean_x86
+endif
+
+build_linux:
+	scons all
+
+build_windows: build_x64 build_x86
 
 build_x64:
 	msbuild freelan-all.sln /p:Configuration=Release /p:Platform=x64 /t:Build
