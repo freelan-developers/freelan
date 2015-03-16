@@ -1,5 +1,0 @@
-etc/freelan
-etc/network/if-up.d
-etc/network/if-down.d
-usr/sbin
-usr/share/doc/freelan

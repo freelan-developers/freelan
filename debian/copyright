@@ -1,13 +1,14 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: freelan
-Source: https://github.com/freelan-developers/freelan
+Source: https://github.com/freelan-developers/freelan-all
 
 Files: *
 Copyright: 2012 Julien Kauffmann <julien.kauffmann@freelan.org>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2012 Julien Kauffmann <julien.kauffmann@freelan.org>
+Copyright: 2015 Rolf Leggewie <foss@rolf.leggewe.biz>
+           2012 Julien Kauffmann <julien.kauffmann@freelan.org>
 License: GPL-3.0+
 
 License: GPL-3.0+
@@ -23,6 +24,12 @@ License: GPL-3.0+
  .
  You should have received a copy of the GNU General Public License
  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ .
+ As a special exception, upstream grants for certain source files to be
+ linked against the OpenSSL library (http://www.openssl.org), which
+ otherwise wouldn't be allowed under the GPL.  See LICENSE and
+ libs/cryptoplus/LICENSE.OpenSSL files in the original tarball for further
+ information.
  .
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
