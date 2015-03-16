@@ -1,6 +1,0 @@
-BINDMOUNTS="%repository_path%"
-OTHERMIRROR="deb file:%repository_path% unstable main"
-BUILDRESULT="%build_path%/binaries"
-APTKEYRINGS=(%repository_path%/key.gpg)
-ARCHITECTURE="i386"
-DISTRIBUTION="unstable"
