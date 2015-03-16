@@ -36,8 +36,6 @@ Attendee('boost', filter=~f('linux'))
 Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.bz2/download', filter=~f('windows'), mimetype='application/x-bzip2')
 Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download', filter='windows', mimetype='application/zip')
 
-Attendee('boost').add_post_unpack_command('cp -r {{root}}/third-party/patches/boost/* boost/', filter='darwin')
-
 Attendee('boost').add_build('osx', environment='system', filter='darwin')
 Attendee('boost').get_build('osx').commands = [
     './bootstrap.sh',
