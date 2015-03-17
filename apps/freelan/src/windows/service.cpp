@@ -202,7 +202,7 @@ namespace windows
 	void parse_service_options(int argc, LPTSTR* argv, service_configuration& configuration);
 	fscp::logger create_logger(const service_configuration& configuration);
 	void log_function(boost::shared_ptr<std::ostream> os, fscp::log_level level, const std::string& msg, const boost::posix_time::ptime& timestamp);
-	fl::configuration get_freelan_configuration(const service_configuration& configuration);
+	fl::configuration get_freelan_configuration(const fscp::logger& logger, const service_configuration& configuration);
 	DWORD WINAPI handler_ex(DWORD control, DWORD event_type, void* event_data, void* context);
 	VOID WINAPI service_main(DWORD argc, LPTSTR* argv);
 
@@ -337,10 +337,6 @@ namespace windows
 		{
 			configuration.log_file = installation_directory / "log" / "freelan.log";
 		}
-
-		// Make sure the log directory exists.
-		boost::system::error_code ec;
-		fs::create_directories(configuration.log_file.parent_path(), ec);
 	}
 
 	fscp::logger create_logger(const service_configuration& configuration)
@@ -351,6 +347,10 @@ namespace windows
 		}
 		else
 		{
+			// Make sure the log directory exists.
+			boost::system::error_code ec;
+			fs::create_directories(configuration.log_file.parent_path(), ec);
+
 			boost::shared_ptr<std::ostream> log_stream = boost::make_shared<fs::basic_ofstream<char> >(configuration.log_file);
 
 			return fscp::logger(boost::bind(&log_function, log_stream, _1, _2, _3), configuration.debug ? fscp::log_level::debug : fscp::log_level::information);
@@ -365,7 +365,7 @@ namespace windows
 		}
 	}
 
-	fl::configuration get_freelan_configuration(const service_configuration& configuration)
+	fl::configuration get_freelan_configuration(const fscp::logger& logger, const service_configuration& configuration)
 	{
 		namespace po = boost::program_options;
 
@@ -378,51 +378,22 @@ namespace windows
 		configuration_options.add(get_switch_options());
 		configuration_options.add(get_router_options());
 
-		const fs::path installation_directory = get_installation_directory();
-
 		fl::configuration fl_configuration;
 		po::variables_map vm;
-		fs::path configuration_file = configuration.configuration_file;
+		const fs::path configuration_file = configuration.configuration_file;
+		const fs::path root_directory = configuration_file.parent_path();
 		fs::basic_ifstream<char> ifs(configuration_file);
 
 		if (!ifs)
 		{
-			throw std::runtime_error("Unable to open the specified configuration file: " + configuration_file.string());
+			throw po::reading_file(configuration_file.string().c_str());
 		}
 
 		po::store(po::parse_config_file(ifs, configuration_options, true), vm);
-
+		make_paths_absolute(vm, root_directory);
 		po::notify(vm);
 
-		setup_configuration(fl_configuration, installation_directory, vm);
-
-		const fs::path tap_adapter_up_script = get_tap_adapter_up_script(installation_directory, vm);
-
-		if (!tap_adapter_up_script.empty())
-		{
-			fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
-		}
-
-		const fs::path tap_adapter_down_script = get_tap_adapter_down_script(installation_directory, vm);
-
-		if (!tap_adapter_down_script.empty())
-		{
-			fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
-		}
-
-		const fs::path certificate_validation_script = get_certificate_validation_script(installation_directory, vm);
-
-		if (!certificate_validation_script.empty())
-		{
-			fl_configuration.security.certificate_validation_script = certificate_validation_script;
-		}
-
-		const fs::path authentication_script = get_authentication_script(installation_directory, vm);
-
-		if (!authentication_script.empty())
-		{
-			fl_configuration.server.authentication_script = authentication_script;
-		}
+		setup_configuration(logger, fl_configuration, vm);
 
 		return fl_configuration;
 	}
@@ -517,7 +488,7 @@ namespace windows
 			{
 				boost::asio::io_service io_service;
 
-				fl::configuration fl_configuration = get_freelan_configuration(configuration);
+				fl::configuration fl_configuration = get_freelan_configuration(logger, configuration);
 
 				fl::core core(io_service, fl_configuration);
 

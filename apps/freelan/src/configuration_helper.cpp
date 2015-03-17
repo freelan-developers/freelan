@@ -118,7 +118,7 @@ namespace
 	}
 
 	template <typename ValueType>
-	bool load_file(const std::string& file_type, ValueType& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_file(const std::string& file_type, ValueType& value, const std::string& name, const po::variables_map& vm)
 	{
 		if (!vm.count(name))
 		{
@@ -132,13 +132,11 @@ namespace
 			return false;
 		}
 
-		const fs::path filename = fs::absolute(path, root);
-
-		return load_file(file_type, value, name, filename);
+		return load_file(file_type, value, name, path);
 	}
 
 	template <typename ValueType>
-	bool load_file_list(const std::string& file_type, std::vector<ValueType>& values, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_file_list(const std::string& file_type, std::vector<ValueType>& values, const std::string& name, const po::variables_map& vm)
 	{
 		values.clear();
 
@@ -153,9 +151,7 @@ namespace
 
 			ValueType value;
 
-			const fs::path filename = fs::absolute(path, root);
-
-			if (load_file(file_type, value, name, filename))
+			if (load_file(file_type, value, name, path))
 			{
 				values.push_back(value);
 			}
@@ -164,46 +160,82 @@ namespace
 		return !values.empty();
 	}
 
-	bool load_certificate(fl::security_configuration::cert_type& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_certificate(fl::security_configuration::cert_type& value, const std::string& name, const po::variables_map& vm)
 	{
-		return load_file("certificate", value, name, vm, root);
+		return load_file("certificate", value, name, vm);
 	}
 
-	bool load_private_key(cryptoplus::pkey::pkey& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_private_key(cryptoplus::pkey::pkey& value, const std::string& name, const po::variables_map& vm)
 	{
-		return load_file("private key", value, name, vm, root);
+		return load_file("private key", value, name, vm);
 	}
 
-	bool load_trusted_certificate(fl::security_configuration::cert_type& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_trusted_certificate(fl::security_configuration::cert_type& value, const std::string& name, const po::variables_map& vm)
 	{
 		trusted_cert_type xvalue;
 
-		const bool result = load_file("trusted certificate", xvalue, name, vm, root);
+		const bool result = load_file("trusted certificate", xvalue, name, vm);
 
 		value = xvalue;
 
 		return result;
 	}
 
-	bool load_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm)
 	{
-		return load_file_list("certificate", value, name, vm, root);
+		return load_file_list("certificate", value, name, vm);
 	}
 
-	bool load_trusted_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_trusted_certificate_list(std::vector<fl::security_configuration::cert_type>& value, const std::string& name, const po::variables_map& vm)
 	{
 		std::vector<trusted_cert_type> xvalue;
 
-		const bool result = load_file_list("trusted certificate", xvalue, name, vm, root);
+		const bool result = load_file_list("trusted certificate", xvalue, name, vm);
 
 		value.assign(xvalue.begin(), xvalue.end());
 
 		return result;
 	}
 
-	bool load_crl_list(std::vector<fl::security_configuration::crl_type>& value, const std::string& name, const po::variables_map& vm, const fs::path& root)
+	bool load_crl_list(std::vector<fl::security_configuration::crl_type>& value, const std::string& name, const po::variables_map& vm)
 	{
-		return load_file_list("certificate revocation list", value, name, vm, root);
+		return load_file_list("certificate revocation list", value, name, vm);
+	}
+
+	void make_path_absolute(const std::string& name, po::variables_map& vm, const fs::path& root)
+	{
+		if (vm.count(name) > 0)
+		{
+			const auto path = vm[name].as<fs::path>();
+
+			if (!path.empty())
+			{
+				vm.at(name).value() = fs::absolute(path, root);
+			}
+		}
+	}
+
+	void make_path_list_absolute(const std::string& name, po::variables_map& vm, const fs::path& root)
+	{
+		if (vm.count(name) > 0)
+		{
+			const auto paths = vm[name].as<std::vector<fs::path> >();
+			std::vector<fs::path> new_paths;
+
+			for (auto& path : paths)
+			{
+				if (path.empty())
+				{
+					new_paths.push_back(path);
+				}
+				else
+				{
+					new_paths.push_back(fs::absolute(path, root));
+				}
+			}
+
+			vm.at(name).value() = new_paths;
+		}
 	}
 }
 
@@ -342,7 +374,24 @@ po::options_description get_router_options()
 	return result;
 }
 
-void setup_configuration(fl::configuration& configuration, const boost::filesystem::path& root, const po::variables_map& vm)
+void make_paths_absolute(boost::program_options::variables_map& vm, const boost::filesystem::path& root)
+{
+	make_path_absolute("server.server_certificate_file", vm, root);
+	make_path_absolute("server.server_private_key_file", vm, root);
+	make_path_absolute("server.certification_authority_certificate_file", vm, root);
+	make_path_absolute("server.certification_authority_private_key_file", vm, root);
+	make_path_absolute("server.authentication_script", vm, root);
+	make_path_list_absolute("fscp.dynamic_contact_file", vm, root);
+	make_path_absolute("security.signature_certificate_file", vm, root);
+	make_path_absolute("security.signature_private_key_file", vm, root);
+	make_path_absolute("security.certificate_validation_script", vm, root);
+	make_path_list_absolute("security.authority_certificate_file", vm, root);
+	make_path_list_absolute("security.certificate_revocation_list_file", vm, root);
+	make_path_absolute("tap_adapter.up_script", vm, root);
+	make_path_absolute("tap_adapter.down_script", vm, root);
+}
+
+void setup_configuration(const fscp::logger& logger, fl::configuration& configuration, const po::variables_map& vm)
 {
 	typedef fl::security_configuration::cert_type cert_type;
 	typedef cryptoplus::pkey::pkey pkey;
@@ -352,10 +401,27 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.server.listen_on = vm["server.listen_on"].as<asiotap::endpoint>();
 	configuration.server.protocol = vm["server.protocol"].as<fl::server_configuration::server_protocol_type>();
 
-	load_certificate(configuration.server.server_certificate, "server.server_certificate_file", vm, root);
-	load_private_key(configuration.server.server_private_key, "server.server_private_key_file", vm, root);
-	load_trusted_certificate(configuration.server.certification_authority_certificate, "server.certification_authority_certificate_file", vm, root);
-	load_private_key(configuration.server.certification_authority_private_key , "server.certification_authority_private_key_file", vm, root);
+	if (load_certificate(configuration.server.server_certificate, "server.server_certificate_file", vm))
+	{
+		logger(fscp::log_level::information) << "Loaded server certificate from: " << vm["server.server_certificate_file"].as<fs::path>();
+	}
+
+	if (load_private_key(configuration.server.server_private_key, "server.server_private_key_file", vm))
+	{
+		logger(fscp::log_level::information) << "Loaded server private key from: " << vm["server.server_private_key_file"].as<fs::path>();
+	}
+
+	if (load_trusted_certificate(configuration.server.certification_authority_certificate, "server.certification_authority_certificate_file", vm))
+	{
+		logger(fscp::log_level::information) << "Loaded server CA certificate from: " << vm["server.certification_authority_certificate_file"].as<fs::path>();
+	}
+
+	if (load_private_key(configuration.server.certification_authority_private_key, "server.certification_authority_private_key_file", vm))
+	{
+		logger(fscp::log_level::information) << "Loaded server CA private key from: " << vm["server.certification_authority_private_key_file"].as<fs::path>();
+	}
+	
+	configuration.server.authentication_script = vm["server.authentication_script"].as<fs::path>();
 
 	// Client options
 	configuration.client.enabled = vm["client.enabled"].as<bool>();
@@ -381,7 +447,13 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.fscp.accept_contact_requests = vm["fscp.accept_contact_requests"].as<bool>();
 	configuration.fscp.accept_contacts = vm["fscp.accept_contacts"].as<bool>();
 
-	load_certificate_list(configuration.fscp.dynamic_contact_list, "fscp.dynamic_contact_file", vm, root);
+	if (load_certificate_list(configuration.fscp.dynamic_contact_list, "fscp.dynamic_contact_file", vm))
+	{
+		for (auto _file : vm["fscp.dynamic_contact_file"].as<std::vector<fs::path>>())
+		{
+			logger(fscp::log_level::information) << "Loaded dynamic contact certificate from: " << _file;
+		}
+	}
 
 	configuration.fscp.never_contact_list = vm["fscp.never_contact"].as<std::vector<asiotap::ip_network_address>>();
 	configuration.fscp.cipher_suite_capabilities = vm["fscp.cipher_suite_capability"].as<std::vector<fscp::cipher_suite_type>>();
@@ -395,6 +467,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 
 	if (!passphrase.empty())
 	{
+		logger(fscp::log_level::information) << "Deriving pre-shared key from passphrase...";
+
 		const auto mdalg = cryptoplus::hash::message_digest_algorithm(NID_sha256);
 		pre_shared_key = cryptoplus::hash::pbkdf2(&passphrase[0], passphrase.size(), &passphrase_salt[0], passphrase_salt.size(), mdalg, passphrase_iterations_count);
 	}
@@ -402,8 +476,15 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	cert_type signature_certificate;
 	pkey signature_private_key;
 
-	load_certificate(signature_certificate, "security.signature_certificate_file", vm, root);
-	load_private_key(signature_private_key, "security.signature_private_key_file", vm, root);
+	if (load_certificate(signature_certificate, "security.signature_certificate_file", vm))
+	{
+		logger(fscp::log_level::information) << "Loaded signature certificate from: " << vm["security.signature_certificate_file"].as<fs::path>();
+	}
+
+	if (load_private_key(signature_private_key, "security.signature_private_key_file", vm))
+	{
+		logger(fscp::log_level::information) << "Loaded signature private key from: " << vm["security.signature_private_key_file"].as<fs::path>();
+	}
 
 	if ((!!signature_certificate && !!signature_private_key) || !!pre_shared_key)
 	{
@@ -411,12 +492,25 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	}
 
 	configuration.security.certificate_validation_method = vm["security.certificate_validation_method"].as<fl::security_configuration::certificate_validation_method_type>();
+	configuration.security.certificate_validation_script = vm["security.certificate_validation_script"].as<fs::path>();
 
-	load_trusted_certificate_list(configuration.security.certificate_authority_list, "security.authority_certificate_file", vm, root);
+	if (load_trusted_certificate_list(configuration.security.certificate_authority_list, "security.authority_certificate_file", vm))
+	{
+		for (auto _file : vm["security.authority_certificate_file"].as<std::vector<fs::path>>())
+		{
+			logger(fscp::log_level::information) << "Loaded authority certificate from: " << _file;
+		}
+	}
 
 	configuration.security.certificate_revocation_validation_method = vm["security.certificate_revocation_validation_method"].as<fl::security_configuration::certificate_revocation_validation_method_type>();
 
-	load_crl_list(configuration.security.certificate_revocation_list_list, "security.certificate_revocation_list_file", vm, root);
+	if (load_crl_list(configuration.security.certificate_revocation_list_list, "security.certificate_revocation_list_file", vm))
+	{
+		for (auto _file : vm["security.certificate_revocation_list_file"].as<std::vector<fs::path>>())
+		{
+			logger(fscp::log_level::information) << "Loaded certificate revocation file from: " << _file;
+		}
+	}
 
 	// Tap adapter options
 	configuration.tap_adapter.type = vm["tap_adapter.type"].as<fl::tap_adapter_configuration::tap_adapter_type>();
@@ -450,6 +544,8 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.tap_adapter.dhcp_proxy_enabled = vm["tap_adapter.dhcp_proxy_enabled"].as<bool>();
 	configuration.tap_adapter.dhcp_server_ipv4_address_prefix_length = vm["tap_adapter.dhcp_server_ipv4_address_prefix_length"].as<asiotap::ipv4_network_address>();
 	configuration.tap_adapter.dhcp_server_ipv6_address_prefix_length = vm["tap_adapter.dhcp_server_ipv6_address_prefix_length"].as<asiotap::ipv6_network_address>();
+	configuration.tap_adapter.up_script = vm["tap_adapter.up_script"].as<fs::path>();
+	configuration.tap_adapter.down_script = vm["tap_adapter.down_script"].as<fs::path>();
 
 	// Switch options
 	configuration.switch_.routing_method = vm["switch.routing_method"].as<fl::switch_configuration::routing_method_type>();
@@ -464,32 +560,4 @@ void setup_configuration(fl::configuration& configuration, const boost::filesyst
 	configuration.router.internal_route_acceptance_policy = vm["router.internal_route_acceptance_policy"].as<fl::router_configuration::internal_route_scope_type>();
 	configuration.router.system_route_acceptance_policy = vm["router.system_route_acceptance_policy"].as<fl::router_configuration::system_route_scope_type>();
 	configuration.router.maximum_routes_limit = vm["router.maximum_routes_limit"].as<unsigned int>();
-}
-
-boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
-{
-	const fs::path tap_adapter_up_script_file = vm["tap_adapter.up_script"].as<fs::path>();
-
-	return tap_adapter_up_script_file.empty() ? tap_adapter_up_script_file : fs::absolute(tap_adapter_up_script_file, root);
-}
-
-boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
-{
-	const fs::path tap_adapter_down_script_file = vm["tap_adapter.down_script"].as<fs::path>();
-
-	return tap_adapter_down_script_file.empty() ? tap_adapter_down_script_file : fs::absolute(tap_adapter_down_script_file, root);
-}
-
-boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
-{
-	const fs::path certificate_validation_script_file = vm["security.certificate_validation_script"].as<fs::path>();
-
-	return certificate_validation_script_file.empty() ? certificate_validation_script_file : fs::absolute(certificate_validation_script_file, root);
-}
-
-boost::filesystem::path get_authentication_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm)
-{
-	const fs::path authentication_script_file = vm["server.authentication_script"].as<fs::path>();
-
-	return authentication_script_file.empty() ? authentication_script_file : fs::absolute(authentication_script_file, root);
 }

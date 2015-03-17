@@ -157,7 +157,7 @@ void signal_handler(const boost::system::error_code& error, int signal_number, f
 	}
 }
 
-bool parse_options(int argc, char** argv, cli_configuration& configuration)
+bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuration& configuration)
 {
 	namespace po = boost::program_options;
 
@@ -219,6 +219,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, all_options), vm);
+	make_paths_absolute(vm, fs::current_path());
 
 	if (vm.count("help"))
 	{
@@ -245,11 +246,11 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 		{
 			if (windows::install_service())
 			{
-				std::cout << "Service installed." << std::endl;
+				logger(fscp::log_level::important) << "Service installed.";
 			}
 			else
 			{
-				std::cerr << "The service was already installed." << std::endl;
+				logger(fscp::log_level::error) << "The service was already installed.";
 			}
 
 			return false;
@@ -259,11 +260,11 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	{
 		if (windows::uninstall_service())
 		{
-			std::cout << "Service uninstalled." << std::endl;
+			logger(fscp::log_level::important) << "Service uninstalled.";
 		}
 		else
 		{
-			std::cerr << "The service has already been deleted." << std::endl;
+			logger(fscp::log_level::error) << "The service has already been deleted.";
 		}
 
 		return false;
@@ -272,20 +273,20 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 	{
 		if (windows::uninstall_service())
 		{
-			std::cout << "Service uninstalled." << std::endl;
+			logger(fscp::log_level::important) << "Service uninstalled.";
 		}
 		else
 		{
-			std::cerr << "The service has already been deleted." << std::endl;
+			logger(fscp::log_level::error) << "The service has already been deleted.";
 		}
 
 		if (windows::install_service())
 		{
-			std::cout << "Service installed." << std::endl;
+			logger(fscp::log_level::important) << "Service installed.";
 		}
 		else
 		{
-			std::cerr << "The service was already installed." << std::endl;
+			logger(fscp::log_level::error) << "The service was already installed.";
 		}
 
 		return false;
@@ -351,7 +352,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 	if (!configuration_file.empty())
 	{
-		std::cout << "Reading configuration file at: " << configuration_file << std::endl;
+		logger(fscp::log_level::information) << "Reading configuration file at: " << configuration_file;
 
 		fs::basic_ifstream<char> ifs(configuration_file);
 
@@ -374,7 +375,7 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 			if (ifs)
 			{
-				std::cout << "Reading configuration file at: " << conf << std::endl;
+				logger(fscp::log_level::information) << "Reading configuration file at: " << conf << std::endl;
 
 				po::store(po::parse_config_file(ifs, configuration_options, true), vm);
 
@@ -388,63 +389,39 @@ bool parse_options(int argc, char** argv, cli_configuration& configuration)
 
 		if (!configuration_read)
 		{
-			do_log(fscp::log_level::warning, "Warning ! No configuration file specified and none found in the environment.");
-			do_log(fscp::log_level::warning, "Looked up locations were:");
+			logger(fscp::log_level::warning) << "Warning ! No configuration file specified and none found in the environment.";
+			logger(fscp::log_level::warning) << "Looked up locations were:";
 
 			for (auto&& conf : configuration_files)
 			{
-				do_log(fscp::log_level::warning, "- " + conf.string());
+				logger(fscp::log_level::warning) << "- "  << conf;
 			}
 		}
 	}
-
+	
+	make_paths_absolute(vm, configuration_file.parent_path());
 	po::notify(vm);
 
-	const fs::path execution_root_directory = fs::current_path();
-
-	setup_configuration(configuration.fl_configuration, execution_root_directory, vm);
-
-	const fs::path tap_adapter_up_script = get_tap_adapter_up_script(execution_root_directory, vm);
-
-	if (!tap_adapter_up_script.empty())
-	{
-		configuration.fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
-	}
-
-	const fs::path tap_adapter_down_script = get_tap_adapter_down_script(execution_root_directory, vm);
-
-	if (!tap_adapter_down_script.empty())
-	{
-		configuration.fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
-	}
-
-	const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
-
-	if (!certificate_validation_script.empty())
-	{
-		configuration.fl_configuration.security.certificate_validation_script = certificate_validation_script;
-	}
-
-	const fs::path authentication_script = get_authentication_script(execution_root_directory, vm);
-
-	if (!authentication_script.empty())
-	{
-		configuration.fl_configuration.server.authentication_script = authentication_script;
-	}
-
 	configuration.debug = vm.count("debug") > 0;
+
+	if (configuration.debug)
+	{
+		logger.set_level(fscp::log_level::trace);
+	}
+
+	setup_configuration(logger, configuration.fl_configuration, vm);
 
 	return true;
 }
 
-void run(const cli_configuration& configuration, int& exit_signal)
+void run(fscp::logger& logger, const cli_configuration& configuration, int& exit_signal)
 {
 #ifndef WINDOWS
 	boost::shared_ptr<posix::locked_pid_file> pid_file;
 
 	if (!configuration.pid_file.empty())
 	{
-		std::cout << "Creating PID file at: " << configuration.pid_file << std::endl;
+		logger(fscp::log_level::information) << "Creating PID file at: " << configuration.pid_file << std::endl;
 
 		pid_file.reset(new posix::locked_pid_file(configuration.pid_file));
 	}
@@ -470,12 +447,9 @@ void run(const cli_configuration& configuration, int& exit_signal)
 
 	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 
-	const fscp::log_level log_level = configuration.debug ? fscp::log_level::trace : fscp::log_level::information;
-	const fscp::logger logger(log_func, log_level);
-
 	fl::core core(io_service, configuration.fl_configuration);
 
-	core.set_log_level(log_level);
+	core.set_log_level(logger.level());
 	core.set_log_callback(log_func);
 
 	if (!configuration.fl_configuration.tap_adapter.up_script.empty())
@@ -519,7 +493,6 @@ void run(const cli_configuration& configuration, int& exit_signal)
 	}
 
 	logger(fscp::log_level::information) << "Using " << thread_count << " thread(s).";
-
 	logger(fscp::log_level::important) << "Execution started.";
 
 	for (std::size_t i = 0; i < thread_count; ++i)
@@ -567,10 +540,11 @@ int main(int argc, char** argv)
 		freelan::initializer freelan_initializer;
 
 		cli_configuration configuration;
+		fscp::logger logger(&do_log, fscp::log_level::information);
 
-		if (parse_options(argc, argv, configuration))
+		if (parse_options(logger, argc, argv, configuration))
 		{
-			run(configuration, exit_signal);
+			run(logger, configuration, exit_signal);
 		}
 	}
 	catch (std::exception& ex)

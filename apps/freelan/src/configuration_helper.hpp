@@ -49,6 +49,8 @@
 
 #include <freelan/configuration.hpp>
 
+#include <fscp/logger.hpp>
+
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -95,44 +97,19 @@ boost::program_options::options_description get_switch_options();
 boost::program_options::options_description get_router_options();
 
 /**
+ * \brief Set the paths options relative to the specified root.
+ * \param vm The variables map.
+ * \param root The root directory for relative paths.
+ */
+void make_paths_absolute(boost::program_options::variables_map& vm, const boost::filesystem::path& root);
+
+/**
  * \brief Setup a freelan configuration from a variables map.
+ * \param logger The logger to use.
  * \param configuration The configuration to setup.
- * \param root The root directory for file operations.
  * \param vm The variables map.
  * \warning On error, a boost::program_options::error might be thrown.
  */
-void setup_configuration(freelan::configuration& configuration, const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
-
-/**
- * \brief Get the tap adapter up script.
- * \param root The root directory for file operations.
- * \param vm The variables map.
- * \return The tap adapter up script.
- */
-boost::filesystem::path get_tap_adapter_up_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
-
-/**
- * \brief Get the tap adapter down script.
- * \param root The root directory for file operations.
- * \param vm The variables map.
- * \return The tap adapter down script.
- */
-boost::filesystem::path get_tap_adapter_down_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
-
-/**
- * \brief Get the certificate validation script.
- * \param root The root directory for file operations.
- * \param vm The variables map.
- * \return The certificate validation script.
- */
-boost::filesystem::path get_certificate_validation_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
-
-/**
- * \brief Get the authentication script.
- * \param root The root directory for file operations.
- * \param vm The variables map.
- * \return The authentication script.
- */
-boost::filesystem::path get_authentication_script(const boost::filesystem::path& root, const boost::program_options::variables_map& vm);
+void setup_configuration(const fscp::logger& logger, freelan::configuration& configuration, const boost::program_options::variables_map& vm);
 
 #endif /* CONFIGURATION_HELPER_HPP */
