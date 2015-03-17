@@ -341,9 +341,6 @@
     <ClInclude Include="include\asiotap\error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\windows\registry.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\asiotap\tap_adapter_configuration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -378,6 +375,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\tap-windows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\windows\registry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

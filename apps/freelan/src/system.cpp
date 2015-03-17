@@ -56,6 +56,7 @@
 
 #ifdef WINDOWS
 #include <executeplus/windows_system.hpp>
+#include <asiotap/windows/registry.hpp>
 
 #include <shlobj.h>
 #else
@@ -78,16 +79,21 @@ fs::path get_module_filename()
 		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
 	}
 }
-#endif
 
-boost::filesystem::path get_execution_root_directory()
+boost::filesystem::path get_installation_directory()
 {
-#ifdef WINDOWS
-	return get_module_filename().parent_path().parent_path();
-#else
-	return "/etc/" FREELAN_NAME_VERSION_MAJOR;
-#endif
+	try
+	{
+		asiotap::registry_key installation_key(HKEY_LOCAL_MACHINE, "SOFTWARE\\FreeLAN");
+
+		return installation_key.query_path("installation_path");
+	}
+	catch (const boost::system::system_error&)
+	{
+		return get_module_filename().parent_path().parent_path();
+	}
 }
+#endif
 
 fs::path get_home_directory()
 {

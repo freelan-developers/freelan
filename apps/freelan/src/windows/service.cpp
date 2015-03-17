@@ -320,23 +320,27 @@ namespace windows
 		po::store(po::parse_command_line(argc, argv, service_options), vm);
 		po::notify(vm);
 
-		const fs::path execution_root_directory = get_execution_root_directory();
+		const fs::path installation_directory = get_installation_directory();
 
 		if (vm.count("configuration_file"))
 		{
-			configuration.configuration_file = fs::absolute(vm["configuration_file"].as<std::string>(), execution_root_directory);
+			configuration.configuration_file = fs::absolute(vm["configuration_file"].as<std::string>(), installation_directory);
 		}
 
 		configuration.debug = (vm.count("debug") > 0);
 
 		if (vm.count("log_file"))
 		{
-			configuration.log_file = fs::absolute(vm["log_file"].as<std::string>(), execution_root_directory);
+			configuration.log_file = fs::absolute(vm["log_file"].as<std::string>(), installation_directory);
 		}
 		else
 		{
-			configuration.log_file = execution_root_directory / "log" / "freelan.log";
+			configuration.log_file = installation_directory / "log" / "freelan.log";
 		}
+
+		// Make sure the log directory exists.
+		boost::system::error_code ec;
+		fs::create_directories(configuration.log_file.parent_path(), ec);
 	}
 
 	fscp::logger create_logger(const service_configuration& configuration)
@@ -374,7 +378,7 @@ namespace windows
 		configuration_options.add(get_switch_options());
 		configuration_options.add(get_router_options());
 
-		const fs::path execution_root_directory = get_execution_root_directory();
+		const fs::path installation_directory = get_installation_directory();
 
 		fl::configuration fl_configuration;
 
@@ -384,7 +388,7 @@ namespace windows
 
 		if (configuration_file.empty())
 		{
-			configuration_file = execution_root_directory / "config" / "freelan.cfg";
+			configuration_file = installation_directory / "config" / "freelan.cfg";
 		}
 
 		fs::basic_ifstream<char> ifs(configuration_file);
@@ -398,30 +402,30 @@ namespace windows
 
 		po::notify(vm);
 
-		setup_configuration(fl_configuration, execution_root_directory, vm);
+		setup_configuration(fl_configuration, installation_directory, vm);
 
-		const fs::path tap_adapter_up_script = get_tap_adapter_up_script(execution_root_directory, vm);
+		const fs::path tap_adapter_up_script = get_tap_adapter_up_script(installation_directory, vm);
 
 		if (!tap_adapter_up_script.empty())
 		{
 			fl_configuration.tap_adapter.up_script = tap_adapter_up_script;
 		}
 
-		const fs::path tap_adapter_down_script = get_tap_adapter_down_script(execution_root_directory, vm);
+		const fs::path tap_adapter_down_script = get_tap_adapter_down_script(installation_directory, vm);
 
 		if (!tap_adapter_down_script.empty())
 		{
 			fl_configuration.tap_adapter.down_script = tap_adapter_down_script;
 		}
 
-		const fs::path certificate_validation_script = get_certificate_validation_script(execution_root_directory, vm);
+		const fs::path certificate_validation_script = get_certificate_validation_script(installation_directory, vm);
 
 		if (!certificate_validation_script.empty())
 		{
 			fl_configuration.security.certificate_validation_script = certificate_validation_script;
 		}
 
-		const fs::path authentication_script = get_authentication_script(execution_root_directory, vm);
+		const fs::path authentication_script = get_authentication_script(installation_directory, vm);
 
 		if (!authentication_script.empty())
 		{

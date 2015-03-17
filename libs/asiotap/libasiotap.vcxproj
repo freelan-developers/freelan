@@ -138,9 +138,9 @@
     <ClInclude Include="include\asiotap\types\ip_network_address.hpp" />
     <ClInclude Include="include\asiotap\types\ip_route.hpp" />
     <ClInclude Include="include\asiotap\types\stream_operations.hpp" />
+    <ClInclude Include="include\asiotap\windows\registry.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_tap_adapter.hpp" />
-    <ClInclude Include="src\windows\registry.hpp" />
     <ClInclude Include="windows\tap-windows.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

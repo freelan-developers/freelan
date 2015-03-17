@@ -62,13 +62,13 @@
  * \return The current module filename.
  */
 boost::filesystem::path get_module_filename();
-#endif
 
 /**
- * \brief Get the execution root directory for configuration, log files and stuff.
- * \return The execution root directory for configuration, log files and stuff.
+ * \brief Get the installation directory.
+ * \return The installation directory.
  */
-boost::filesystem::path get_execution_root_directory();
+boost::filesystem::path get_installation_directory();
+#endif
 
 /**
  * \brief Get the home directory for the current user.

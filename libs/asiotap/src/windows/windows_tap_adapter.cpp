@@ -44,7 +44,7 @@
 
 #include "windows/windows_tap_adapter.hpp"
 
-#include "registry.hpp"
+#include "windows/registry.hpp"
 
 #include <boost/optional.hpp>
 

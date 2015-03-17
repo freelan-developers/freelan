@@ -50,11 +50,12 @@
 #include <boost/system/system_error.hpp>
 #include <boost/optional.hpp>
 #include <boost/array.hpp>
+#include <boost/filesystem.hpp>
 
 #include <string>
 #include <iterator>
 
-#include "error.hpp"
+#include "../error.hpp"
 
 namespace asiotap
 {
@@ -176,6 +177,43 @@ namespace asiotap
 				boost::system::error_code ec;
 
 				const std::string result = query_string(value_name, ec);
+
+				if (ec)
+				{
+					throw boost::system::system_error(ec);
+				}
+
+				return result;
+			}
+
+			boost::filesystem::path query_path(const std::string& value_name, boost::system::error_code& ec) const
+			{
+				boost::array<char, 4096> value;
+
+				DWORD type = REG_NONE;
+
+				size_t value_size = value.size();
+
+				query_value(value_name, type, value.data(), value_size, ec);
+
+				if (ec)
+				{
+					return std::string();
+				}
+
+				if (type != REG_SZ)
+				{
+					ec = make_error_code(asiotap_error::invalid_type);
+				}
+
+				return boost::filesystem::path(value.begin(), value.begin() + value_size - 1);
+			}
+
+			boost::filesystem::path query_path(const std::string& value_name) const
+			{
+				boost::system::error_code ec;
+
+				const boost::filesystem::path result = query_path(value_name, ec);
 
 				if (ec)
 				{
