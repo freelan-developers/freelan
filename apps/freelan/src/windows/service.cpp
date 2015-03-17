@@ -310,7 +310,7 @@ namespace windows
 
 		po::options_description service_options("Service options");
 		service_options.add_options()
-		("configuration_file,c", po::value<std::string>(), "The configuration file to use.")
+		("configuration_file,c", po::value<std::string>()->default_value("config\\freelan.cfg"), "The configuration file to use.")
 		("debug,d", "Enables debug output.")
 		("threads,t", po::value<unsigned int>(&configuration.thread_count)->default_value(0), "The number of threads to use.")
 		("log_file,l", po::value<std::string>(), "The log file to use.")
@@ -381,16 +381,8 @@ namespace windows
 		const fs::path installation_directory = get_installation_directory();
 
 		fl::configuration fl_configuration;
-
 		po::variables_map vm;
-
 		fs::path configuration_file = configuration.configuration_file;
-
-		if (configuration_file.empty())
-		{
-			configuration_file = installation_directory / "config" / "freelan.cfg";
-		}
-
 		fs::basic_ifstream<char> ifs(configuration_file);
 
 		if (!ifs)
@@ -486,6 +478,15 @@ namespace windows
 		const fscp::logger logger = create_logger(configuration);
 
 		logger(fscp::log_level::information) << "Log starts at " << boost::posix_time::to_simple_string(boost::posix_time::second_clock::local_time());
+
+		if (configuration.configuration_file.empty())
+		{
+			logger(fscp::log_level::warning) << "No configuration specified.";
+		}
+		else
+		{
+			logger(fscp::log_level::information) << "Reading configuration at: " << configuration.configuration_file;
+		}
 
 		/* Initializations */
 		cryptoplus::crypto_initializer crypto_initializer;
