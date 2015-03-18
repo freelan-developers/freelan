@@ -33,7 +33,7 @@ Name: spanish; MessagesFile: compiler:Languages\Spanish.isl
 Name: german; MessagesFile: compiler:Languages\German.isl
 
 [Files]
-Source: ..\..\install\{#XARCH}\Release\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
+Source: ..\..\install\{#XARCH}\Release\bin\freelan2.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
 Source: ..\..\apps\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
 Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
@@ -66,3 +66,6 @@ Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing
 [UninstallRun]
 Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service; Flags: runhidden
 Filename: {app}\bin\tap-setup.exe; Parameters: "remove {#TAP}"; StatusMsg: "Uninstalling all tap adapters..."; Tasks: install_tap
+
+[Registry]
+Root: HKLM; Subkey: "Software\FreeLAN"; ValueType: string; ValueName: "installation_path"; ValueData: "{app}"; Flags: uninsdeletekey
