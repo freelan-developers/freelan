@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2007-2013 OpenWrt.org
+# Copyright (C) 2015 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -7,214 +7,82 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=freelan
-PKG_VERSION:=2013-02-20
+PKG_NAME:=freelan2
+PKG_VERSION:=2014-06-22
 PKG_RELEASE=$(PKG_SOURCE_VERSION)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git://github.com/freelan-developers/freelan-all.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=97b07df88267ba12e42111be261de5cf188f2a70
+PKG_SOURCE_VERSION:=22873e1c85
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_LICENSE:=GPLv3+
 PKG_LICENSE_FILES:=
 
-PKG_MAINTAINER:=Etienne CHAMPETIER <etienne.champetier <at> free.fr>
+PKG_BUILD_PARALLEL:=1
+PKG_USE_MIPS16:=0
+
+PKG_MAINTAINER:=
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
 
-define Package/freelan
+define Package/freelan2
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=VPN
-  DEPENDS:=+libfreelan +boost-filesystem +boost-program_options 
+  DEPENDS:=+boost-date_time +boost-filesystem +boost-iostreams +boost-program_options +boost-system +boost-thread +kmod-tun +libopenssl +libstdcpp +libiconv +libcurl
   TITLE:=highly-configurable peer-to-peer VPN software
   URL:=http://www.freelan.org
 endef
 
-define Package/freelan/description
-    A free, open-source, multi-platform, highly-configurable and peer-to-peer VPN software, designed to easily connect remote hosts and mainly focused on security and performance.
-endef
-
-define Package/freelanlibs/Default
-  SECTION:=libs
-  CATEGORY:=Libraries
-  URL:=http://www.freelan.org
-endef
-
-define Package/libasiotap
-  $(call Package/freelanlibs/Default)
-  TITLE:=TAP adapters C++ wrapper (FreeLAN)
-  DEPENDS:= <at> !USE_UCLIBC +kmod-tun +boost-system +librt +libpthread
-endef
-
-define Package/libcryptoplus
-  $(call Package/freelanlibs/Default)
-  TITLE:=OpenSSL C++ wrapper (FreeLAN)
-  DEPENDS:=+libopenssl +libstdcpp
-endef
-
-define Package/libfreelan
-  $(call Package/freelanlibs/Default)
-  TITLE:=The FreeLAN C++ library
-  DEPENDS:=+libasiotap +libfscp +boost-thread +libcurl +libkfather
-endef
-
-define Package/libfscp
-  $(call Package/freelanlibs/Default)
-  TITLE:=FreeLAN Secure Channel protocol library
-  DEPENDS:=+libcryptoplus +boost-system +boost-date_time +libpthread
-endef
-
-define Package/libiconvplus
-  $(call Package/freelanlibs/Default)
-  TITLE:=C++ wrapper for iconv (FreeLAN)
-  DEPENDS:=+boost-system
-endef
-
-define Package/libkfather
-  $(call Package/freelanlibs/Default)
-  TITLE:=A C++ JSON lib (FreeLAN)
-  DEPENDS:=+libiconvplus
+define Package/freelan2/description
+	A free, open-source, multi-platform, highly-configurable and peer-to-peer VPN software, designed to easily connect remote hosts and mainly focused on security and performance.
 endef
 
 export PLATFORM=posix
 
 SCONS_VARS = \
-    PYTHONPATH="$(PKG_BUILD_DIR)/freelan-buildtools" \
-    FREELAN_ARCH=$(ARCH) \
-    CXX=$(TARGET_CXX_NOCACHE) \
-    FREELAN_INSTALL_PREFIX="$(PKG_INSTALL_DIR)/usr" \
-    CPLUS_INCLUDE_PATH="$(PKG_INSTALL_DIR)/usr/include:$(PKG_BUILD_DIR)/lib*/include" \
-    CXXFLAGS="$(TARGET_CFLAGS) $(EXTRA_CFLAGS)"
+	ARCH=$(ARCH) \
+	CXX=$(TARGET_CXX_NOCACHE) \
+	CXXFLAGS="$(TARGET_CFLAGS) $(EXTRA_CFLAGS) -I$(PKG_INSTALL_DIR)/usr/include" \
+	FREELAN_NO_GIT=1 \
+	FREELAN_NO_GIT_VERSION="$(PKG_VERSION)-$(PKG_SOURCE_VERSION)"
 
-
-ifneq ($(CONFIG_PACKAGE_freelan),)
- define Build/Configure/freelan
-    cd $(PKG_BUILD_DIR)/freelan
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/freelan install
- endef
-endif
-
-ifneq ($(CONFIG_PACKAGE_libasiotap),)
- define Build/Configure/libasiotap
-    cd $(PKG_BUILD_DIR)/libasiotap
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/libasiotap install
- endef
-endif
-
-ifneq ($(CONFIG_PACKAGE_libcryptoplus),)
- define Build/Configure/libcryptoplus
-    cd $(PKG_BUILD_DIR)/libcryptoplus
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/libcryptoplus install
- endef
-endif
-
-ifneq ($(CONFIG_PACKAGE_libfreelan),)
- define Build/Configure/libfreelan
-    cd $(PKG_BUILD_DIR)/libfreelan
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/libfreelan install
- endef
-endif
-
-ifneq ($(CONFIG_PACKAGE_libfscp),)
- define Build/Configure/libfscp
-    cd $(PKG_BUILD_DIR)/libfscp
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/libfscp install
- endef
-endif
-
-ifneq ($(CONFIG_PACKAGE_libiconvplus),)
- define Build/Configure/libiconvplus
-    cd $(PKG_BUILD_DIR)/libiconvplus
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/libiconvplus install
- endef
-endif
-
-ifneq ($(CONFIG_PACKAGE_libkfather),)
- define Build/Configure/libkfather
-    cd $(PKG_BUILD_DIR)/libkfather
-    $(SCONS_VARS) scons -C $(PKG_BUILD_DIR)/libkfather install
- endef
-endif
+#        DESTDIR="$(PKG_INSTALL_DIR)"
 
 define Build/Configure
-    $(call Build/Configure/libiconvplus)
-    $(call Build/Configure/libkfather)
-    $(call Build/Configure/libcryptoplus)
-    $(call Build/Configure/libasiotap)
-    $(call Build/Configure/libfscp)
-    $(call Build/Configure/libfreelan)
-    $(call Build/Configure/freelan)
 endef
 
 define Build/Compile
+	cd $(PKG_BUILD_DIR); $(SCONS_VARS) scons --mode=release --prefix=$(PKG_INSTALL_DIR)/usr install
 endef
 
-define Package/freelan/install
-    $(INSTALL_DIR) \
-        $(1)/usr/sbin \
-        $(1)/etc/freelan \
-        $(1)/etc/init.d   
+define Package/freelan2/install
+	$(INSTALL_DIR) \
+		$(1)/usr/sbin \
+		$(1)/etc/freelan2 \
+		$(1)/etc/init.d
 
-    # copying binary
-    $(INSTALL_BIN) \
-        $(PKG_INSTALL_DIR)/usr/bin/freelan \
-        $(1)/usr/sbin/freelan
+	# copying binary
+	$(INSTALL_BIN) \
+		$(PKG_INSTALL_DIR)/usr/bin/freelan2 \
+		$(1)/usr/sbin/freelan2
 
-    # copying configuration
-    $(INSTALL_CONF) \
-        $(PKG_BUILD_DIR)/freelan/config/* \
-        $(1)/etc/freelan
+	# copying configuration
+	#$(INSTALL_CONF) \
+	#	$(PKG_BUILD_DIR)/freelan/config/* \
+	#	$(1)/etc/freelan2
 
-    # creatign service
-    $(INSTALL_BIN) \
-        files/freelan.init \
-        $(1)/etc/init.d/freelan
+	# creating service
+	$(INSTALL_BIN) \
+		files/freelan2.init \
+		$(1)/etc/init.d/freelan2
 endef
 
-define Package/freelanlibs/Default/install
-    $(INSTALL_DIR) \
-        $(1)/usr/lib
-    $(CP) \
-        $(PKG_INSTALL_DIR)/usr/lib/$(2).so.*.* \
-        $(1)/usr/lib/
-    cd $(1)/usr/lib/;LIB=`ls $(2).so.*.*`;ln -s $$$${LIB} $$$${LIB%.*};ln -s $$$${LIB} $$$${LIB%.*.*};
+define Package/freelan2/conffiles
+  /etc/freelan2
 endef
 
-define Package/libasiotap/install
-  $(call Package/freelanlibs/Default/install,$(1),libasiotap)
-endef
-
-define Package/libcryptoplus/install
-  $(call Package/freelanlibs/Default/install,$(1),libcryptoplus)
-endef
-
-define Package/libfreelan/install
-  $(call Package/freelanlibs/Default/install,$(1),libfreelan)
-endef
-
-define Package/libfscp/install
-  $(call Package/freelanlibs/Default/install,$(1),libfscp)
-endef
-
-define Package/libiconvplus/install
-  $(call Package/freelanlibs/Default/install,$(1),libiconvplus)
-endef
-
-define Package/libkfather/install
-  $(call Package/freelanlibs/Default/install,$(1),libkfather)
-endef
-
-define Package/freelan/conffiles
-  /etc/freelan
-endef
-
-$(eval $(call BuildPackage,freelan))
-$(eval $(call BuildPackage,libasiotap))
-$(eval $(call BuildPackage,libcryptoplus))
-$(eval $(call BuildPackage,libfreelan))
-$(eval $(call BuildPackage,libfscp))
-$(eval $(call BuildPackage,libiconvplus))
-$(eval $(call BuildPackage,libkfather))
+$(eval $(call BuildPackage,freelan2))
