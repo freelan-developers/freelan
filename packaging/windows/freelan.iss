@@ -61,10 +61,10 @@ Type: files; Name: {app}\log\freelan.log
 
 [Run]
 Filename: {app}\bin\tap-setup.exe; Parameters: "install ..\driver\{#TAPINF}.inf {#TAP}"; StatusMsg: "Installing the tap adapter..."; Tasks: install_tap
-Filename: {app}\bin\freelan.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service; Flags: runhidden
+Filename: {app}\bin\freelan2.exe; Parameters: "--install"; StatusMsg: "Installing Windows Service..."; Tasks: install_service; Flags: runhidden
 
 [UninstallRun]
-Filename: {app}\bin\freelan.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service; Flags: runhidden
+Filename: {app}\bin\freelan2.exe; Parameters: "--uninstall"; StatusMsg: "Uninstalling Windows Service..."; Tasks: install_service; Flags: runhidden
 Filename: {app}\bin\tap-setup.exe; Parameters: "remove {#TAP}"; StatusMsg: "Uninstalling all tap adapters..."; Tasks: install_tap
 
 [Registry]
