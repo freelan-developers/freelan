@@ -3,7 +3,7 @@ Thank you for installing FreeLAN !
 
 Your FreeLAN installation was successful. Congratulations !
 
-Freelan runs as a Windows service transparently in the background. You can lookfor it in the Control Panel > System and Security > Administrative Tools > Services menu.
+Freelan runs as a Windows service transparently in the background. You can look for it in the Control Panel > System and Security > Administrative Tools > Services menu.
 
 There is currently no graphical user interface for FreeLAN: FreeLAN will automatically connect to the configured network when your computer starts and will gracefully disconnect when it shuts down.
 
