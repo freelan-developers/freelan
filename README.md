@@ -28,6 +28,8 @@ It contains the following projects:
 Building
 --------
 
+See the README file specific to your host environment for general setup instructions.
+
 ### Third-party
 
 The build relies on several third-parties. Generally Linux users won't need these, but other platforms such as MacOS or Windows may need these.
