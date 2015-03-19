@@ -1,93 +1,49 @@
-[![Stories in Ready](https://badge.waffle.io/freelan-developers/freelan-all.png?label=ready&title=Ready)](https://waffle.io/freelan-developers/freelan-all)
-freelan-all
-===========
+FreeLAN
+=======
 
-A super-project that includes all FreeLAN related projects and provides scripts to generate installers.
+A peer-to-peer, secure, easy-to-setup, multi-platform, open-source, highly-configurable VPN software.
 
-For help regarding the configuration, take a look at the [wiki](https://github.com/freelan-developers/freelan-all/wiki).
+Installation
+------------
 
-Binaries
---------
+FreeLAN is available on Windows, Mac OSX and Linux (Debian-based distributions). Check the [official website](http://www.freelan.org) for installers.
 
-It contains the following binaries:
+If your platform is not officially supported, dot not despair and try to build-it yourself ! Check the [build instructions](BUILD.md) for details on how to do that.
 
-- freelan - The FreeLAN binary (acts as a service on Windows and as a daemon on Linux/Mac OSX)
+Quick-start
+-----------
 
-Libraries
----------
+FreeLAN can be configured to support any network topology, be it a traditional client-server structure or a full-mesh one. The emulated network can operate at the Ethernet or at the IPv4/IPv6 levels. Security can be achieved through the use of certificates or via a simple shared passphrase.
 
-It contains the following projects:
+For instance, creating a simple VPN node can be done with:
 
- - cryptoplus - A C++ wrapper around the OpenSSL cryptographic library.
- - iconvplus - A C++ wrapper around the iconv library.
- - fscp - The FreeLAN Secure Channel protocol and its C++ implementation.
- - asiotap - A C++ library to control virtual network interfaces also known as "TAP adapters".
- - freelan - The FreeLAN C++ library.
- - kfather - A C++ JSON parser/producer with a terrible name.
+> freelan --security.passphrase "my secret"
 
-Building
---------
+This will start a VPN node, listening for connections on all interfaces on the port UDP:12000. The node will pick the default 9.0.0.1 IPv4 address inside the emulated network.
 
-See the README file specific to your host environment for general setup instructions.
+To specify the IPv4 address inside the emulated network, you can specify the `tap_adapter.ipv4_address_prefix_length` option, like so:
 
-### Third-party
+> freelan --security.passphrase "my secret" --tap_adapter.ipv4_address_prefix_length=9.0.0.2/24
 
-The build relies on several third-parties. Generally Linux users won't need these, but other platforms such as MacOS or Windows may need these.
+It is important that all nodes have different virtual IP addresses.
 
-To build those, install the Python command `teapot` using the following command:
+Frequently Asked Questions
+--------------------------
 
-> pip install teapot
-
-Once you have `teapot` in your `PATH` (should be the case automatically), just type:
-
-> teapot build
-
-To build everything inside `third-party`. Once that is done, you can proceed with the next steps.
-
-### Common code
-
-This directory contains a `SConstruct` file to build the contained projects.
-
-The default target (`install`) builds and installs all the main FreeLAN binary.
-
-To do that, just type:
-
-> scons
-
-To build everything in the directory (all samples), type instead:
-
-> scons samples
-
-To build then install everything into a specific directory, type instead:
-
-> scons install --prefix=/usr/local/
-
-### Windows
-
-You will need Microsoft Visual Studio 2013 to compile freelan. All projects come with a `.vcxproj` file for all the targets (debug/release and x86/x64).
-
-The root directory also contains a solution file (`.sln`) that references all the sub-projects.
-
-### Debugging
-
-If the debug-level logging exposed with the `-d` parameter to freelan does not expose enough information to assist development or bug finding, it is possible to enable additional debug information at build time with:
-
-> scons all --mode=debug
-
-Be aware that this will produce a significant amount of logging information and is not intended for general use.
-
-
-Graphical User Interface
-------------------------
+## Is there a graphical interface ?
 
 A graphical user interface is planned but nothing is made public yet. You will just have to be patient :)
+
+## Can I use FreeLAN to access forbidden websites/websites in other countries with restrictions ?
+
+FreeLAN is not a service, it's a software. You can configure it to reach that goal easily, but you'll need an exit-point (a server, a friendly-computer at the right location) on which you can run FreeLAN too. **It will always take a minimum of 2 nodes to create a VPN network**.
+
+Contributions
+-------------
+
+Check the [contributions guidelines](CONTRIBUTING.md).
 
 Packaging
 ---------
 
-See the `README.md` file into the `packaging` directory.
-
-Does the project have a website ?
----------------------------------
-
-You may find the [git repository](https://github.com/freelan-developers/freelan-all) on github.
+Check the [packaging instructions](packaging/README.md).
