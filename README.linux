@@ -26,7 +26,7 @@ building for Debian, Ubuntu and derivates
 
 There is work going on to have proper Debian packaging available.  Please check back soon.
 
-To install the compile-time dependencies install "debhelper libssl-dev libcurl4-openssl-dev libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-filesystem-dev libboost-iostreams-dev scons python-argparse" packages as root.
+Install "debhelper libssl-dev libcurl4-openssl-dev libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-filesystem-dev libboost-iostreams-dev scons python-argparse" packages as root to satisfy compile-time dependencies.
 
 
 building for other distros
