@@ -1,0 +1,35 @@
+Building on a Linux host
+========================
+
+build-time requirements
+-----------------------
+
+Make sure you have the necessary build-time requirements installed
+
+- scons
+- python-argparse or python >= 2.7
+- libssl-dev
+- libcurl4-openssl-dev
+- libboost-system-dev
+- libboost-thread-dev,
+- libboost-program-options-dev
+- libboost-filesystem-dev,
+- libboost-iostreams-dev
+
+building from source
+--------------------
+
+check out the git master branch of freelan-all and issue the "scons all" command
+
+building for Debian, Ubuntu and derivates
+-----------------------------------------
+
+There is work going on to have proper Debian packaging available.  Please check back soon.
+
+To install the compile-time dependencies install "debhelper libssl-dev libcurl4-openssl-dev libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-filesystem-dev libboost-iostreams-dev scons python-argparse" packages as root.
+
+
+building for other distros
+--------------------------
+
+Packaging patches and instructions will be gladly accepted
