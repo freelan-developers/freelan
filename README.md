@@ -30,11 +30,11 @@ It is important that all nodes have different virtual IP addresses.
 Frequently Asked Questions
 --------------------------
 
-## Is there a graphical interface ?
+#### Is there a graphical interface ?
 
 A graphical user interface is planned but nothing is made public yet. You will just have to be patient :)
 
-## Can I use FreeLAN to access forbidden websites/websites in other countries with restrictions ?
+#### Can I use FreeLAN to access forbidden websites/websites in other countries with restrictions ?
 
 FreeLAN is not a service, it's a software. You can configure it to reach that goal easily, but you'll need an exit-point (a server, a friendly-computer at the right location) on which you can run FreeLAN too. **It will always take a minimum of 2 nodes to create a VPN network**.
 
