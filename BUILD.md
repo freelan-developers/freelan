@@ -28,7 +28,7 @@ To install the required dependencies on Debian Linux (Or Ubuntu), type the follo
 Building FreeLAN
 ----------------
 
-FreeLAN is written in C++11. Make sure your C++ compiler is recent enough and supports this standard. On Linux for instance, you need at least `gcc 4.9.2` for things to go fine.
+FreeLAN is written in C++11. Make sure your C++ compiler is recent enough and supports this standard. On Linux for instance, you need at least `gcc >= 4.8` for things to go fine.
 
 FreeLAN uses [scons](http://www.scons.org/) as its build system on POSIX-like systems (basically everything except Windows).
 
