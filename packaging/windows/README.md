@@ -1,5 +1,4 @@
-Installers
-----------
+# Installers
 
 To build the Windows installer, you will need to install the Freelan build tools Python/SCons scripts.
 

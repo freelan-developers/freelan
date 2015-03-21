@@ -1,12 +1,10 @@
-libcryptoplus
-=============
+# What is libcryptoplus?
 
 libcryptoplus stands as a lightweight, simple, yet complete, C++ wrapper around the OpenSSL cryptographic library. libcryptoplus is portable across all operating systems and architectures : as long as OpenSSL compiles and runs on your system, libcryptoplus should compile and run too.
 
 It provides exception safe classes and functions to deal with symmetric ciphers, public key cryptography, certificates, authentication codes, hash functions and data encoding.
 
-Which parts of the OpenSSL crypto library does it provide ?
------------------------------------------------------------
+# Which parts of the OpenSSL crypto library does it provide ?
 
 Here is what is currently implemented:
 
@@ -33,8 +31,7 @@ Here is what is currently implemented:
 
 Note: Support for SSL/TLS/DTLS is **NOT** planned as they do not belong to the OpenSSL crypto library.
 
-Why would I use it when I can directly use OpenSSL ?
-----------------------------------------------------
+# Why would I use it when I can directly use OpenSSL ?
 
 Before answering this question, I have to say that I have a mixed relationship with OpenSSL: I love it and hate it at the same time.
 
@@ -58,8 +55,7 @@ Using libcryptoplus, you will:
 
 So sure, you can always use OpenSSL directly, that is what I did the past few years as well. But how many time did I wish there was a more C++ alternative ? Now, there is. And it is free ! :)
 
-You claim that almost everything is supported, but [some functionality] is missing !
-------------------------------------------------------------------------------------
+# You claim that almost everything is supported, but [some functionality] is missing !
 
 I tried to implement everything I could but surely, some parts remain unimplemented.
 
@@ -69,8 +65,7 @@ In any case, feel free to submit your requests: my intent is that this library b
 
 You may also submit patches, features, bug fixes (please use: push requests) and I would be glad to add your name to the contributors list if you want to. The only requirement regarding new features is that they remain of general utility. So, a feature like "Patch to ease certificate generation by automatically setting the subject name domain to mycompany.com" will obviously be rejected, and its author will have to buy me a cake. (Blame me, but I love cake).
 
-What about all the ugly `const_cast<>` ?
-----------------------------------------
+# What about all the ugly `const_cast<>` ?
 
 This is probably what I hate the most when I need to interface my const-correct code with OpenSSL: you must either copy the data to a writable buffer or `const_cast<>` it (with all the risks that comes along) before issuing the call.
 
@@ -78,15 +73,13 @@ Doing a `const_cast<>` is not that bad as long as you have the guarantee that th
 
 However, if you find any evidence that some `const_cast<>` is not legitimate, please tell-me: I chose the "casting way" for performance's sake, but not at the cost of leading to *undefined behavior*.
 
-Licensing
----------
+# Licensing
 
 All code is licensed under the GPLv3. See gpl-3.0.txt.
 
 If you are interested in using this project under a different license, please [contact me](mailto:julien.kauffmann__AT__freelan.org). I don't bite and I probably won't charge (at least, not much).
 
-Does the project have a website ?
----------------------------------
+# Does the project have a website ?
 
 Yes, it does. And [here](http://www.freelan.org) it is. 
 

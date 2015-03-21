@@ -1,5 +1,4 @@
-libiconv for Visual Studio
-==========================
+# libiconv for Visual Studio
 
 This code comes from [codeproject](http://www.codeproject.com/Articles/302012/How-to-Build-libiconv-with-Microsoft-Visual-Studio).
 
