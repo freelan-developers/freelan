@@ -34,7 +34,7 @@ Name: german; MessagesFile: compiler:Languages\German.isl
 
 [Files]
 Source: ..\..\install\{#XARCH}\Release\bin\freelan2.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
-Source: ..\..\apps\freelan\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
+Source: ..\..\install\{#XARCH}\Release\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
 Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.sys; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
