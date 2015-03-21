@@ -310,7 +310,7 @@ namespace windows
 
 		po::options_description service_options("Service options");
 		service_options.add_options()
-		("configuration_file,c", po::value<std::string>()->default_value("config\\freelan.cfg"), "The configuration file to use.")
+		("configuration_file,c", po::value<std::string>()->default_value(get_configuration_directory() / "freelan.cfg"), "The configuration file to use.")
 		("debug,d", "Enables debug output.")
 		("threads,t", po::value<unsigned int>(&configuration.thread_count)->default_value(0), "The number of threads to use.")
 		("log_file,l", po::value<std::string>(), "The log file to use.")

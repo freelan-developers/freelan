@@ -40,13 +40,14 @@ class FreelanEnvironment(Environment):
     A freelan specific environment class.
     """
 
-    def __init__(self, debug, **kwargs):
+    def __init__(self, debug, prefix, **kwargs):
         """
         Initialize the environment.
 
-        `debug` is a boolean value that indicates whether to set debug flags in the environment.
+        :param debug: A boolean value that indicates whether to set debug flags
+        in the environment.
+        :param prefix: The installation prefix.
         """
-
         super(FreelanEnvironment, self).__init__(**kwargs)
 
         self.defines = Defines()
@@ -71,6 +72,7 @@ class FreelanEnvironment(Environment):
                 self[flag] = Split(os.environ[flag])
 
         self.debug = debug
+        self.prefix = prefix
 
         if os.path.basename(self['CXX']) == 'clang++':
             self.Append(CXXFLAGS=['-Qunused-arguments'])
@@ -101,6 +103,8 @@ class FreelanEnvironment(Environment):
                 self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
             else:
                 self.Append(CXXFLAGS='-O3')
+
+        self.Append(CPPDEFINES=r'FREELAN_INSTALL_PREFIX="\"%s\""' % self.prefix)
 
     def RGlob(self, path, patterns=None):
         """
@@ -144,20 +148,21 @@ class FreelanEnvironment(Environment):
 
 
 mode = GetOption('mode')
-prefix = GetOption('prefix')
+prefix = os.path.abspath(GetOption('prefix'))
 
 if mode in ('all', 'release'):
-    env = FreelanEnvironment(debug=False)
-    libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'release'))
+    env = FreelanEnvironment(debug=False, prefix=prefix)
+    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'release'))
     install = env.Install(os.path.join(prefix, 'bin'), apps)
+    install.extend(env.Install(os.path.join(prefix, 'etc', 'freelan'), configurations))
     Alias('install', install)
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', install + apps + samples)
 
 if mode in ('all', 'debug'):
-    env = FreelanEnvironment(debug=True)
-    libraries, includes, apps, samples = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'debug'))
+    env = FreelanEnvironment(debug=True, prefix=prefix)
+    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'debug'))
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', apps + samples)

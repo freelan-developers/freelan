@@ -44,13 +44,16 @@ for x in Glob('libs/*'):
         includes.extend(library_includes)
 
 apps = []
+configurations = []
 
 for x in Glob('apps/*'):
     sconscript_path = x.File('SConscript')
 
     if sconscript_path.exists():
         name = os.path.basename(str(x))
-        apps.extend(SConscript(sconscript_path, exports='env dirs name'))
+        app, configuration = SConscript(sconscript_path, exports='env dirs name')
+        apps.extend(app)
+        configurations.extend(configuration)
 
 samples = []
 
@@ -74,4 +77,4 @@ for x in Glob('samples/*'):
             else:
                 samples.extend(env.SymLink(y.File(os.path.basename(str(y))).srcnode(), sample))
 
-Return('libraries includes apps samples')
+Return('libraries includes apps samples configurations')

@@ -112,8 +112,8 @@ std::vector<fs::path> get_configuration_files()
 {
 	std::vector<fs::path> configuration_files;
 
-	configuration_files.push_back(get_home_directory() / "." FREELAN_NAME_VERSION_MAJOR "/freelan.cfg");
-	configuration_files.push_back(get_application_directory() / "freelan.cfg");
+	configuration_files.push_back(get_home_directory() / "freelan.cfg");
+	configuration_files.push_back(get_configuration_directory() / "freelan.cfg");
 
 	return configuration_files;
 }

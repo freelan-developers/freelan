@@ -62,13 +62,13 @@
  * \return The current module filename.
  */
 boost::filesystem::path get_module_filename();
+#endif
 
 /**
  * \brief Get the installation directory.
  * \return The installation directory.
  */
 boost::filesystem::path get_installation_directory();
-#endif
 
 /**
  * \brief Get the home directory for the current user.
@@ -77,10 +77,16 @@ boost::filesystem::path get_installation_directory();
 boost::filesystem::path get_home_directory();
 
 /**
- * \brief Get the application directory.
- * \return The application directory.
+ * \brief Get the application data directory.
+ * \return The application data directory.
  */
-boost::filesystem::path get_application_directory();
+boost::filesystem::path get_data_directory();
+
+/**
+ * \brief Get the application configuration directory.
+ * \return The application configuration directory.
+ */
+boost::filesystem::path get_configuration_directory();
 
 /**
  * \brief Get the temporary directory.

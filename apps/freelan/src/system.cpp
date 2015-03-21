@@ -79,9 +79,11 @@ fs::path get_module_filename()
 		throw boost::system::system_error(::GetLastError(), boost::system::system_category(), "GetModuleFileName()");
 	}
 }
+#endif
 
 boost::filesystem::path get_installation_directory()
 {
+#ifdef WINDOWS
 	try
 	{
 		asiotap::registry_key installation_key(HKEY_LOCAL_MACHINE, "SOFTWARE\\FreeLAN");
@@ -92,8 +94,10 @@ boost::filesystem::path get_installation_directory()
 	{
 		return get_module_filename().parent_path().parent_path();
 	}
-}
+#else
+	return FREELAN_INSTALL_PREFIX;
 #endif
+}
 
 fs::path get_home_directory()
 {
@@ -106,8 +110,6 @@ fs::path get_home_directory()
 	{
 		throw std::runtime_error("Unable to determine the home directory");
 	}
-
-	return path;
 #else
 	char* path = getenv("HOME");
 
@@ -115,12 +117,12 @@ fs::path get_home_directory()
 	{
 		throw std::runtime_error("Unable to determine the home directory");
 	}
-
-	return path;
 #endif
+
+	return fs::path(path) / "." FREELAN_NAME;
 }
 
-fs::path get_application_directory()
+fs::path get_data_directory()
 {
 #ifdef WINDOWS
 	TCHAR path[MAX_PATH] = {};
@@ -132,9 +134,18 @@ fs::path get_application_directory()
 		throw std::runtime_error("Unable to determine the application directory");
 	}
 
-	return fs::path(path) / FREELAN_NAME_VERSION_MAJOR;
+	return fs::path(path) / FREELAN_NAME;
 #else
-	return "/etc/" FREELAN_NAME_VERSION_MAJOR;
+	return FREELAN_INSTALL_PREFIX "/var/" FREELAN_NAME;
+#endif
+}
+
+fs::path get_configuration_directory()
+{
+#ifdef WINDOWS
+	return get_installation_directory() / "/config/";
+#else
+	return get_installation_directory() / "/etc/" FREELAN_NAME;
 #endif
 }
 
