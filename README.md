@@ -21,11 +21,15 @@ For instance, creating a simple VPN node can be done with:
 
 This will start a VPN node, listening for connections on all interfaces on the port UDP:12000. The node will pick the default 9.0.0.1 IPv4 address inside the emulated network.
 
-To specify the IPv4 address inside the emulated network, you can specify the `tap_adapter.ipv4_address_prefix_length` option, like so:
+To connect to another node, just specify the `fscp.contact` option, like so:
 
-> freelan --security.passphrase "my secret" --tap_adapter.ipv4_address_prefix_length=9.0.0.2/24
+> freelan --security.passphrase "my secret" --fscp.contact 1.2.3.4:12000
 
-It is important that all nodes have different virtual IP addresses.
+Each node should have a different virtual IP address: you can specify the IPv4 address to use with the `tap_adapter.ipv4_address_prefix_length` option, like so:
+
+> freelan --security.passphrase "my secret" --tap_adapter.ipv4_address_prefix_length 9.0.0.2/24
+
+Check out the [configuration file](apps/freelan/config/freelan.cfg) for details !
 
 Frequently Asked Questions
 --------------------------
