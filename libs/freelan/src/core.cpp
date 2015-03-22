@@ -1575,10 +1575,7 @@ namespace freelan
 				{
 					throw std::runtime_error("Running in tun mode, but no IPv4 or IPv6 address was provided. Please configure at least one IPv4 or IPv6 address.");
 				}
-			}
 
-			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tun)
-			{
 				if (m_configuration.tap_adapter.remote_ipv4_address)
 				{
 					m_logger(fscp::log_level::information) << "IPv4 remote address: " << m_configuration.tap_adapter.remote_ipv4_address->to_string();

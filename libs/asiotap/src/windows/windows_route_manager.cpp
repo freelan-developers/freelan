@@ -55,7 +55,6 @@
 #include <Iphlpapi.h>
 
 #include <executeplus/windows_system.hpp>
-#include <iconvplus/converter.hpp>
 
 namespace asiotap
 {
@@ -196,6 +195,27 @@ namespace asiotap
 
 			return entry;
 		}
+
+		std::wstring multi_byte_to_wide_char(const std::string& str)
+		{
+			size_t required_size = ::MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, &str[0], str.size(), nullptr, 0);
+
+			if (required_size == 0)
+			{
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			}
+
+			std::wstring result(required_size, '\0');
+			required_size = ::MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, &str[0], str.size(), &result[0], result.capacity());
+
+			if (required_size == 0)
+			{
+				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
+			}
+
+			result.resize(required_size);
+			return result;
+		}
 	}
 
 	void windows_route_manager::register_route(const route_type& route_entry)
@@ -258,17 +278,11 @@ namespace asiotap
 		}
 
 #ifdef UNICODE
-		iconvplus::iconv_instance iconv("utf-16", "");
-		iconvplus::converter<char, wchar_t> converter(iconv);
-
 		std::vector<std::wstring> wargs;
 
 		for (auto&& arg : args)
 		{
-			std::wostringstream out;
-			std::istringstream in(arg);
-			converter.convert(in, out);
-			wargs.push_back(out.str());
+			wargs.push_back(multi_byte_to_wide_char(arg));
 		}
 
 		netsh(wargs);
