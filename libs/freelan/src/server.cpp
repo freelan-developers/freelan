@@ -372,7 +372,11 @@ namespace freelan
 						if (cinfo_pair.first != session->username())
 						{
 							const auto& hash = cinfo_pair.second.presentation.signature_certificate_hash();
-							contacts[hash] = cinfo_pair.second.endpoints;
+
+							if (hash)
+							{
+								contacts[*hash] = cinfo_pair.second.endpoints;
+							}
 						}
 					}
 				}
@@ -392,9 +396,10 @@ namespace freelan
 						if (cinfo_pair.first != session->username())
 						{
 							const auto& hash = cinfo_pair.second.presentation.signature_certificate_hash();
-							if (requested_contacts.find(hash) != requested_contacts.end())
+
+							if (hash && (requested_contacts.find(*hash) != requested_contacts.end()))
 							{
-								contacts[hash] = cinfo_pair.second.endpoints;
+								contacts[*hash] = cinfo_pair.second.endpoints;
 							}
 						}
 					}

@@ -85,6 +85,9 @@ namespace fscp
 
 	void get_certificate_hash(void* buf, size_t buflen, cryptoplus::x509::certificate cert)
 	{
+		assert(!!buf);
+		assert(!!cert);
+
 		cryptoplus::hash::message_digest_context mdctx;
 		mdctx.initialize(get_default_digest_algorithm());
 		mdctx.update(cert.write_der());

@@ -51,7 +51,7 @@ namespace fscp
 {
 	presentation_store::presentation_store(presentation_store::cert_type sig_cert, const cryptoplus::buffer& psk) :
 		m_sig_cert(sig_cert),
-		m_sig_hash(get_certificate_hash(m_sig_cert)),
+		m_sig_hash(m_sig_cert.is_null() ? boost::none : boost::optional<hash_type>(get_certificate_hash(m_sig_cert))),
 		m_pre_shared_key(psk)
 	{
 	}

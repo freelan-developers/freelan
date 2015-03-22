@@ -2388,11 +2388,11 @@ namespace fscp
 					continue;
 				}
 
-				const hash_type hash = it->second.signature_certificate_hash();
+				const boost::optional<hash_type> hash = it->second.signature_certificate_hash();
 
-				if (hash == *hash_it)
+				if (hash && (*hash == *hash_it))
 				{
-					if (!m_contact_request_message_received_handler || m_contact_request_message_received_handler(sender, it->second.signature_certificate(), hash, it->first))
+					if (!m_contact_request_message_received_handler || m_contact_request_message_received_handler(sender, it->second.signature_certificate(), *hash, it->first))
 					{
 						contact_map[*hash_it] = it->first;
 					}

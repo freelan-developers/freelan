@@ -100,7 +100,7 @@ namespace fscp
 			 * \brief Get the signature certificate hash.
 			 * \return The signature certificate hash.
 			 */
-			const hash_type& signature_certificate_hash() const
+			const boost::optional<hash_type>& signature_certificate_hash() const
 			{
 				return m_sig_hash;
 			}
@@ -117,7 +117,7 @@ namespace fscp
 		private:
 
 			cert_type m_sig_cert;
-			hash_type m_sig_hash;
+			boost::optional<hash_type> m_sig_hash;
 			cryptoplus::buffer m_pre_shared_key;
 	};
 }
