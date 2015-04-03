@@ -147,7 +147,10 @@
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
@@ -182,7 +185,10 @@
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
@@ -221,7 +227,10 @@
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
@@ -260,7 +269,10 @@
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
