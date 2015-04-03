@@ -13,22 +13,28 @@ Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86',
 Attendee('iconv').get_build('msvc-x86').commands = [
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="Win32"',
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=DebugStatic /p:Platform="Win32"',
-    r'md {{prefix}}\lib || echo',
-    r'md {{prefix}}\include || echo',
-    r'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
-    r'copy DebugStatic_Win32\libiconvStaticD.lib {{prefix}}\lib\libiconvd.lib',
-    r'xcopy include\* {{prefix}}\include\ /S /Y',
+    r'md {{prefix}}\Release\lib || echo',
+    r'md {{prefix}}\Release\include || echo',
+    r'md {{prefix}}\Debug\lib || echo',
+    r'md {{prefix}}\Debug\include || echo',
+    r'copy ReleaseStatic_Win32\libiconvStatic.lib {{prefix}}\Release\lib\libiconv.lib',
+    r'copy DebugStatic_Win32\libiconvStaticD.lib {{prefix}}\Debug\lib\libiconvd.lib',
+    r'xcopy include\* {{prefix}}\Release\include\ /S /Y',
+    r'xcopy include\* {{prefix}}\Debug\include\ /S /Y',
 ]
 
 Attendee('iconv').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('iconv').get_build('msvc-x64').commands = [
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=ReleaseStatic /p:Platform="x64"',
     r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:Configuration=DebugStatic /p:Platform="x64"',
-    r'md {{prefix}}\lib || echo',
-    r'md {{prefix}}\include || echo',
-    r'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\lib\libiconv.lib',
-    r'copy DebugStatic_x64\libiconvStaticD.lib {{prefix}}\lib\libiconvd.lib',
-    r'xcopy include\* {{prefix}}\include\ /S /Y',
+    r'md {{prefix}}\Release\lib || echo',
+    r'md {{prefix}}\Release\include || echo',
+    r'md {{prefix}}\Debug\lib || echo',
+    r'md {{prefix}}\Debug\include || echo',
+    r'copy ReleaseStatic_x64\libiconvStatic.lib {{prefix}}\Release\lib\libiconv.lib',
+    r'copy DebugStatic_x64\libiconvStaticD.lib {{prefix}}\Debug\lib\libiconvd.lib',
+    r'xcopy include\* {{prefix}}\Release\include\ /S /Y',
+    r'xcopy include\* {{prefix}}\Debug\include\ /S /Y',
 ]
 
 # boost
@@ -47,17 +53,19 @@ Attendee('boost').get_build('osx').commands = [
 Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
-    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared install',
-    r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
+    r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
+    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared install',
+    r'xcopy bjam.exe {{prefix}}\Debug\bin\ /S /Y',
 ]
 
 Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
-    r'b2 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
-    r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
+    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
+    r'xcopy bjam.exe {{prefix}}\Debug\bin\ /S /Y',
 ]
 
 # OpenSSL
@@ -71,22 +79,45 @@ Attendee('openssl').get_build('osx').commands = [
     'make install',
 ]
 
-Attendee('openssl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
+Attendee('openssl').add_post_unpack_command(r'xcopy {{root}}\third-party\patches\openssl1.0.2a\* . /S /Y', filter='windows')
+
+Attendee('openssl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86/Release')
 Attendee('openssl').get_build('msvc-x86').commands = [
     r'perl Configure VC-WIN32 no-asm --prefix={{prefix}}',
     r'ms\do_ms',
-    r'nmake -f ms\nt.mak',
-    r'nmake -f ms\nt.mak install',
-    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\ /S /Y",
+    r'nmake -f ms\ntdll.mak',
+    r'nmake -f ms\ntdll.mak install',
+    r'xcopy out32dll\libeay32.pdb {{prefix}}\bin\ /S /Y',
+    r'xcopy out32dll\ssleay32.pdb {{prefix}}\bin\ /S /Y',
+]
+Attendee('openssl').add_build('msvc-x86-debug', environment='system', filter='msvc-x86', prefix='x86/Debug')
+Attendee('openssl').get_build('msvc-x86-debug').commands = [
+    r'perl Configure debug-VC-WIN32 no-asm --prefix={{prefix}}',
+    r'ms\do_ms',
+    r'nmake -f ms\ntdll.mak',
+    r'nmake -f ms\ntdll.mak install',
+    r'xcopy out32dll.dbg\libeay32.pdb {{prefix}}\bin\ /S /Y',
+    r'xcopy out32dll.dbg\ssleay32.pdb {{prefix}}\bin\ /S /Y',
 ]
 
-Attendee('openssl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
+Attendee('openssl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64/Release')
 Attendee('openssl').get_build('msvc-x64').commands = [
     r'perl Configure VC-WIN64A no-asm --prefix={{prefix}}',
     r'ms\do_win64a',
-    r'nmake -f ms\nt.mak',
-    r'nmake -f ms\nt.mak install',
-    "xcopy tmp32\\lib.pdb {{prefix}}\\lib\\ /S /Y",
+    r'nmake -f ms\ntdll.mak',
+    r'nmake -f ms\ntdll.mak install',
+    r'xcopy out32dll\libeay32.pdb {{prefix}}\bin\ /S /Y',
+    r'xcopy out32dll\ssleay32.pdb {{prefix}}\bin\ /S /Y',
+]
+
+Attendee('openssl').add_build('msvc-x64-debug', environment='system', filter='msvc-x64', prefix='x64/Debug')
+Attendee('openssl').get_build('msvc-x64-debug').commands = [
+    r'perl Configure debug-VC-WIN64A no-asm --prefix={{prefix}}',
+    r'ms\do_win64a',
+    r'nmake -f ms\ntdll.mak',
+    r'nmake -f ms\ntdll.mak install',
+    r'xcopy out32dll.dbg\libeay32.pdb {{prefix}}\bin\ /S /Y',
+    r'xcopy out32dll.dbg\ssleay32.pdb {{prefix}}\bin\ /S /Y',
 ]
 
 # cURL
@@ -106,15 +137,15 @@ Attendee('curl').get_build('osx').commands = [
 Attendee('curl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86', subdir='winbuild')
 Attendee('curl').get_build('msvc-x86').commands = [
     r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=no GEN_PDB=yes MACHINE=x86',
-    r'xcopy ..\\builds\libcurl-vc12-x86-release-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
+    r'xcopy ..\\builds\libcurl-vc12-x86-release-static-ipv6-sspi-winssl {{prefix}}\Release\ /S /Y',
     r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=yes GEN_PDB=yes MACHINE=x86',
-    r'xcopy ..\\builds\libcurl-vc12-x86-debug-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
+    r'xcopy ..\\builds\libcurl-vc12-x86-debug-static-ipv6-sspi-winssl {{prefix}}\Debug\ /S /Y',
 ]
 
 Attendee('curl').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64', subdir='winbuild')
 Attendee('curl').get_build('msvc-x64').commands = [
     r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=no GEN_PDB=yes MACHINE=x64',
-    r'xcopy ..\builds\libcurl-vc12-x64-release-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
+    r'xcopy ..\builds\libcurl-vc12-x64-release-static-ipv6-sspi-winssl {{prefix}}\Release\ /S /Y',
     r'nmake /f Makefile.vc mode=static VC=12 WITH_DEVEL={{prefix}} DEBUG=yes GEN_PDB=yes MACHINE=x64',
-    r'xcopy ..\builds\libcurl-vc12-x64-debug-static-ipv6-sspi-winssl {{prefix}}\ /S /Y',
+    r'xcopy ..\builds\libcurl-vc12-x64-debug-static-ipv6-sspi-winssl {{prefix}}\Debug\ /S /Y',
 ]
