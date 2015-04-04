@@ -40,6 +40,10 @@ A graphical user interface is planned but nothing is made public yet. You will j
 
 FreeLAN is not a service, it's a software. You can configure it to reach that goal easily, but you'll need an exit-point (a server, a friendly-computer at the right location) on which you can run FreeLAN too. **It will always take a minimum of 2 nodes to create a VPN network**.
 
+### Donations
+
+You like FreeLAN and you would like to show your support and help development of next releases ? Check out the [donate page](http://freelan.org/donate.html#) !
+
 ### Contributions
 
 Check the [contributions guidelines](CONTRIBUTING.md).
