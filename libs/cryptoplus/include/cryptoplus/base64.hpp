@@ -109,7 +109,10 @@ namespace cryptoplus
 	{
 		std::string result(((inputlen + 2) / 3) * 4, '\0');
 
-		result.resize(base64_encode(&result[0], result.size(), input, inputlen));
+		if (!result.empty())
+		{
+			result.resize(base64_encode(&result[0], result.size(), input, inputlen));
+		}
 
 		return result;
 	}

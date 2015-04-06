@@ -198,6 +198,11 @@ namespace asiotap
 
 		std::wstring multi_byte_to_wide_char(const std::string& str)
 		{
+			if (str.empty())
+			{
+				return std::wstring();
+			}
+
 			size_t required_size = ::MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, &str[0], str.size(), nullptr, 0);
 
 			if (required_size == 0)

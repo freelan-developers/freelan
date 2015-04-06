@@ -480,7 +480,7 @@ namespace cryptoplus
 				*/
 				void push_back(const std::string& field, int type, const std::string& data, int set = 0) const
 				{
-					push_back(field, type, &data[0], data.size(), set);
+					push_back(field, type, data.empty() ? nullptr : &data[0], data.size(), set);
 				}
 
 				/**
@@ -503,7 +503,7 @@ namespace cryptoplus
 				*/
 				void push_back(asn1::object object, int type, const std::string& data, int set = 0) const
 				{
-					push_back(object, type, &data[0], data.size(), set);
+					push_back(object, type, data.empty() ? nullptr : &data[0], data.size(), set);
 				}
 
 				/**
@@ -525,7 +525,7 @@ namespace cryptoplus
 				*/
 				void push_back(int nid, int type, const std::string& data, int set = 0) const
 				{
-					push_back(nid, type, &data[0], data.size(), set);
+					push_back(nid, type, data.empty() ? nullptr : &data[0], data.size(), set);
 				}
 
 				/**

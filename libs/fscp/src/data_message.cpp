@@ -93,7 +93,7 @@ namespace fscp
 	{
 		const std::vector<hash_type::data_type> hash_vec(make_transform_iterator(hash_list.begin(), hash_to_data), make_transform_iterator(hash_list.end(), hash_to_data));
 
-		return raw_write(buf, buf_len, sequence_number, cipher_algorithm, reinterpret_cast<const char*>(&hash_vec[0]), hash_vec.size() * hash_type::data_type::static_size, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT_REQUEST);
+		return raw_write(buf, buf_len, sequence_number, cipher_algorithm, hash_vec.empty() ? nullptr : reinterpret_cast<const char*>(&hash_vec[0]), hash_vec.size() * hash_type::data_type::static_size, enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT_REQUEST);
 	}
 
 	size_t data_message::write_contact(void* buf, size_t buf_len, sequence_number_type _sequence_number, data_message::calg_t cipher_algorithm, const contact_map_type& contact_map, const void* enc_key, size_t enc_key_len, const void* nonce_prefix, size_t nonce_prefix_len)
@@ -136,7 +136,7 @@ namespace fscp
 
 		cleartext.resize(std::distance(cleartext.begin(), ptr));
 
-		return raw_write(buf, buf_len, _sequence_number, cipher_algorithm, &cleartext[0], cleartext.size(), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT);
+		return raw_write(buf, buf_len, _sequence_number, cipher_algorithm, cleartext.empty() ? nullptr : &cleartext[0], cleartext.size(), enc_key, enc_key_len, nonce_prefix, nonce_prefix_len, MESSAGE_TYPE_CONTACT);
 	}
 
 	hash_list_type data_message::parse_hash_list(const void* buf, size_t buflen)

@@ -369,34 +369,37 @@ namespace cryptoplus
 			pubk.reserve(pkeys_count);
 			result.reserve(pkeys_count);
 
-			try
+			if (pkeys_count > 0)
 			{
-				for (T pkey = pkeys_begin; pkey != pkeys_end; ++pkey)
+				try
 				{
-					ek.push_back(new unsigned char[pkey->size()]);
-					pubk.push_back(pkey->raw());
+					for (T pkey = pkeys_begin; pkey != pkeys_end; ++pkey)
+					{
+						ek.push_back(new unsigned char[pkey->size()]);
+						pubk.push_back(pkey->raw());
+					}
+
+					throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
+
+					for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
+					{
+						result.push_back(buffer(*p, *p + ekl[std::distance(ek.begin(), p)]));
+					}
+				}
+				catch (...)
+				{
+					for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
+					{
+						delete[] *p;
+					}
+
+					throw;
 				}
 
-				throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
-
-				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
-				{
-					result.push_back(buffer(*p, *p + ekl[std::distance(ek.begin(), p)]));
-				}
-			}
-			catch (...)
-			{
 				for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
 				{
 					delete[] *p;
 				}
-
-				throw;
-			}
-
-			for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
-			{
-				delete[] *p;
 			}
 
 			return result;

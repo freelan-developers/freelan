@@ -51,6 +51,9 @@ namespace iconvplus
 	template <typename InputCharType, typename OutputCharType>
 	bool converter<InputCharType, OutputCharType>::convert(input_stream_type& is, output_stream_type& os, boost::system::error_code& ec, size_t* non_reversible_conversions)
 	{
+		assert(m_output_buffer.size() > 0);
+		assert(m_input_buffer.size() > 0);
+
 		size_t counter = 0;
 
 		if (!non_reversible_conversions) non_reversible_conversions = &counter;

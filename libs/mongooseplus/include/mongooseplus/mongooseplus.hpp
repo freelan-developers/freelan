@@ -371,7 +371,7 @@ namespace mongooseplus
 			void send_data(const void* data, size_t data_len);
 			void send_data(const std::string& data)
 			{
-				send_data(&data[0], data.size());
+				send_data(data.empty() ? nullptr : &data[0], data.size());
 			}
 			void send_json(const kfather::value_type& json);
 			void write(const void* buf, size_t buf_len);

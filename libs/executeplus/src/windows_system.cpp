@@ -363,7 +363,7 @@ namespace executeplus
 			std::basic_string<CharType> command_line = command_line_buffer.str();
 			std::basic_string<CharType> environment_string = environment_string_buffer.str();
 
-			return create_process<CharType>(application.c_str(), &command_line[0], &environment_string[0]);
+			return create_process<CharType>(application.c_str(), command_line.empty() ? nullptr : &command_line[0], environment_string.empty() ? nullptr : &environment_string[0]);
 		}
 
 		template <typename CharType>

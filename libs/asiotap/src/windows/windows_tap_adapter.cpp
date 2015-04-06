@@ -211,6 +211,8 @@ namespace asiotap
 			return;
 		}
 
+		assert(size > 0);
+
 		std::vector<unsigned char> piai_data(size);
 		piai = reinterpret_cast<PIP_ADAPTER_INFO>(&piai_data[0]);
 
