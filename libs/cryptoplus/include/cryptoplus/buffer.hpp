@@ -188,7 +188,7 @@ namespace cryptoplus
 	template<typename T>
 	T buffer_cast(buffer& buf)
 	{
-		return reinterpret_cast<T>(&buf.data()[0]);
+		return buf.data().empty() ? nullptr : reinterpret_cast<T>(&buf.data()[0]);
 	}
 
 	/**
@@ -200,7 +200,7 @@ namespace cryptoplus
 	template<typename T>
 	T buffer_cast(const buffer& buf)
 	{
-		return reinterpret_cast<T>(&buf.data()[0]);
+		return buf.data().empty() ? nullptr : reinterpret_cast<T>(&buf.data()[0]);
 	}
 
 	/**
