@@ -102,16 +102,21 @@ namespace asiotap
 
 		std::ostream& operator<<(std::ostream& os, const ethernet_address& value)
 		{
+#ifdef WINDOWS
+			// This is needed for netsh commands.
+			const char separator = '-';
+#else
+			const char separator = ':';
+#endif
 			// This will save the flags and restore them when the function exits.
 			boost::io::ios_flags_saver ifs(os);
 
 			os << std::hex << std::setfill('0') << std::setw(2);
-
 			os << static_cast<unsigned int>(value.data()[0]);
 
 			for (size_t i = 1; i < value.data().size(); ++i)
 			{
-				os << ':' << std::setw(2) << static_cast<unsigned int>(value.data()[i]);
+				os << separator << std::setw(2) << static_cast<unsigned int>(value.data()[i]);
 			}
 
 			return os;

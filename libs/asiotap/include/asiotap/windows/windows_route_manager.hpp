@@ -53,6 +53,7 @@
 
 #include "../os.hpp"
 #include "../types/ip_route.hpp"
+#include "../osi/ethernet_address.hpp"
 
 // These are not provided by Microsoft, so we implement them.
 
@@ -90,10 +91,12 @@ namespace asiotap
 			void netsh(const std::vector<std::string>& args);
 #endif
 			void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent = false);
+			void netsh_interface_ipv6_add_neighbor(const std::string& interface_name, const boost::asio::ip::address_v6& address, const osi::ethernet_address& neighbor = osi::ethernet_address::null(), bool persistent = false);
+			void netsh_interface_ipv6_delete_neighbor(const std::string& interface_name, const boost::asio::ip::address_v6& address, const osi::ethernet_address& neighbor = osi::ethernet_address::null(), bool persistent = false);
 
-			windows_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric);
-			void unregister_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric);
+			windows_route_manager::route_type get_route_for(const boost::asio::ip::address& host, tap_adapter_layer layer);
+			void register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric, tap_adapter_layer layer);
+			void unregister_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric, tap_adapter_layer layer);
 			void set_unicast_address(const NET_LUID& interface_luid, const ip_network_address& network_address);
 
 		protected:

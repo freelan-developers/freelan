@@ -221,16 +221,30 @@ namespace asiotap
 			result.resize(required_size);
 			return result;
 		}
+
+		std::string convert_interface_luid_to_name(const NET_LUID& interface_luid)
+		{
+			char result[NDIS_IF_MAX_STRING_SIZE + 1] = {};
+
+			const auto status = ConvertInterfaceLuidToNameA(&interface_luid, result, sizeof(result));
+
+			if (!NETIO_SUCCESS(status))
+			{
+				throw std::invalid_argument("Unable to get interface's name from it's LUID");
+			}
+
+			return std::string(result);
+		}
 	}
 
 	void windows_route_manager::register_route(const route_type& route_entry)
 	{
-		register_route(route_entry.interface, route_entry.route, route_entry.metric);
+		register_route(route_entry.interface, route_entry.route, route_entry.metric, route_entry.layer);
 	}
 
 	void windows_route_manager::unregister_route(const route_type& route_entry)
 	{
-		unregister_route(route_entry.interface, route_entry.route, route_entry.metric);
+		unregister_route(route_entry.interface, route_entry.route, route_entry.metric, route_entry.layer);
 	}
 
 #ifdef UNICODE
@@ -296,7 +310,61 @@ namespace asiotap
 #endif
 	}
 
-	windows_route_manager::route_type windows_route_manager::get_route_for(const boost::asio::ip::address& host)
+	void windows_route_manager::netsh_interface_ipv6_add_neighbor(const std::string& interface_name, const boost::asio::ip::address_v6& address, const osi::ethernet_address& neighbor, bool persistent)
+	{
+		std::vector<std::string> args = {
+			"interface",
+			"ipv6",
+			"add",
+			"neighbor",
+			"interface=" + interface_name,
+			"address=" + boost::lexical_cast<std::string>(address),
+			"neighbor=" + boost::lexical_cast<std::string>(neighbor),
+			persistent ? "store=persistent" : "store=active"
+		};
+
+#ifdef UNICODE
+		std::vector<std::wstring> wargs;
+
+		for (auto&& arg : args)
+		{
+			wargs.push_back(multi_byte_to_wide_char(arg));
+		}
+
+		netsh(wargs);
+#else
+		netsh(args);
+#endif
+	}
+
+	void windows_route_manager::netsh_interface_ipv6_delete_neighbor(const std::string& interface_name, const boost::asio::ip::address_v6& address, const osi::ethernet_address& neighbor, bool persistent)
+	{
+		std::vector<std::string> args = {
+			"interface",
+			"ipv6",
+			"delete",
+			"neighbor",
+			"interface=" + interface_name,
+			"address=" + boost::lexical_cast<std::string>(address),
+			"neighbor=" + boost::lexical_cast<std::string>(neighbor),
+			persistent ? "store=persistent" : "store=active"
+		};
+
+#ifdef UNICODE
+		std::vector<std::wstring> wargs;
+
+		for (auto&& arg : args)
+		{
+			wargs.push_back(multi_byte_to_wide_char(arg));
+		}
+
+		netsh(wargs);
+#else
+		netsh(args);
+#endif
+	}
+
+	windows_route_manager::route_type windows_route_manager::get_route_for(const boost::asio::ip::address& host, tap_adapter_layer layer)
 	{
 		SOCKADDR_INET dest_addr {};
 		set_sockaddr_inet(dest_addr, host);
@@ -314,12 +382,12 @@ namespace asiotap
 
 		const auto gw = from_sockaddr_inet(best_route.NextHop);
 		const auto route = to_ip_route(to_network_address(host), gw);
-		const windows_route_manager::route_type route_entry = { best_route.InterfaceLuid, route, 0 };
+		const windows_route_manager::route_type route_entry = { best_route.InterfaceLuid, route, 0, layer };
 
 		return route_entry;
 	}
 
-	void windows_route_manager::register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric)
+	void windows_route_manager::register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric, tap_adapter_layer layer)
 	{
 		const auto row = make_ip_forward_row(interface_luid, route, metric);
 
@@ -329,9 +397,33 @@ namespace asiotap
 		{
 			throw boost::system::system_error(result, boost::system::system_category());
 		}
+
+		// For IPv6 in tun mode, we need to add an IPv6 neighbor.
+		if (layer == tap_adapter_layer::ip)
+		{
+			const auto ina = network_address(route);
+			const auto ip_address_ = ip_address(ina);
+
+			if (ip_address_.is_v6())
+			{
+				const auto ipv6_address = ip_address_.to_v6();
+
+				try
+				{
+					const auto interface_name = convert_interface_luid_to_name(interface_luid);
+					netsh_interface_ipv6_add_neighbor(interface_name, ipv6_address);
+				}
+				catch (...)
+				{
+					::DeleteIpForwardEntry2(&row);
+
+					throw;
+				}
+			}
+		}
 	}
 
-	void windows_route_manager::unregister_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric)
+	void windows_route_manager::unregister_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric, tap_adapter_layer layer)
 	{
 		const auto row = make_ip_forward_row(interface_luid, route, metric);
 
@@ -340,6 +432,20 @@ namespace asiotap
 		if (result != NO_ERROR)
 		{
 			throw boost::system::system_error(result, boost::system::system_category());
+		}
+
+		// For IPv6 in tun mode, we need to remove an IPv6 neighbor.
+		if (layer == tap_adapter_layer::ip)
+		{
+			const auto ina = network_address(route);
+			const auto ip_address_ = ip_address(ina);
+
+			if (ip_address_.is_v6())
+			{
+				const auto ipv6_address = ip_address_.to_v6();
+				const auto interface_name = convert_interface_luid_to_name(interface_luid);
+				netsh_interface_ipv6_delete_neighbor(interface_name, ipv6_address);
+			}
 		}
 	}
 

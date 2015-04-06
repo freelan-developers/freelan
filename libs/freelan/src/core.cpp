@@ -1127,15 +1127,16 @@ namespace freelan
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
 			{
 				async_register_switch_port(host, void_handler_type());
+				const auto route = m_route_manager.get_route_for(host.address(), asiotap::tap_adapter_layer::ethernet);
+				async_save_system_route(host, route, void_handler_type());
 			}
 			else
 			{
 				// We register the router port without any routes, at first.
 				async_register_router_port(host, boost::bind(&core::async_send_routes_request, this, host));
+				const auto route = m_route_manager.get_route_for(host.address(), asiotap::tap_adapter_layer::ip);
+				async_save_system_route(host, route, void_handler_type());
 			}
-
-			const auto route = m_route_manager.get_route_for(host.address());
-			async_save_system_route(host, route, void_handler_type());
 		}
 
 		if (m_session_established_callback)

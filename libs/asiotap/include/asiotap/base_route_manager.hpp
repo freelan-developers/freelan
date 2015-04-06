@@ -57,6 +57,7 @@
 #include <boost/system/system_error.hpp>
 
 #include "types/ip_route.hpp"
+#include "tap_adapter_layer.hpp"
 
 namespace asiotap
 {
@@ -71,6 +72,7 @@ namespace asiotap
 		InterfaceType interface;
 		ip_route route;
 		unsigned int metric;
+		tap_adapter_layer layer;
 
 		friend bool operator==(const base_routing_table_entry& lhs, const base_routing_table_entry& rhs)
 		{
@@ -91,7 +93,7 @@ namespace asiotap
 
 		friend std::ostream& operator<<(std::ostream& os, const base_routing_table_entry& value)
 		{
-			return os << value.interface << " - " << value.route << " - metric " << value.metric;
+			return os << value.interface << " - " << value.route << " - metric " << value.metric << " - layer: " << value.layer;
 		}
 	};
 

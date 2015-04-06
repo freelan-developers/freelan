@@ -72,7 +72,7 @@ namespace asiotap
 			{
 			}
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
+			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host, tap_adapter_layer layer);
 			void ifconfig(const std::string& interface, const ip_network_address& address);
 			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
 

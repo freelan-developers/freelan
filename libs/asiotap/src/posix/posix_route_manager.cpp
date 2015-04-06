@@ -61,7 +61,7 @@
 
 namespace asiotap
 {
-	posix_route_manager::route_type posix_route_manager::get_route_for(const boost::asio::ip::address& host)
+	posix_route_manager::route_type posix_route_manager::get_route_for(const boost::asio::ip::address& host, tap_adapter_layer layer)
 	{
 #ifdef MACINTOSH
 		const std::vector<std::string> real_args { "/sbin/route", "-n", "get", boost::lexical_cast<std::string>(host) };
@@ -164,7 +164,7 @@ namespace asiotap
 #endif
 
 		const auto route = to_ip_route(to_network_address(host), gw);
-		const posix_route_manager::route_type route_entry = { interface, route, 0 };
+		const posix_route_manager::route_type route_entry = { interface, route, 0, layer };
 
 		return route_entry;
 	}
