@@ -99,6 +99,8 @@ namespace asiotap
 		 */
 		inline bool check_frame(const_helper<icmpv6_frame> frame)
 		{
+			static_cast<void>(frame);
+
 			return true;
 		}
 	}
