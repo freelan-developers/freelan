@@ -146,7 +146,7 @@ namespace asiotap
 			 */
 			windows_routing_table_entry get_route(const ip_route& route)
 			{
-				return { m_interface_luid, route, 0, layer() };
+				return { m_interface_luid, route, 0 };
 			}
 
 			/**

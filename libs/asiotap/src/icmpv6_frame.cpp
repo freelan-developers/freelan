@@ -37,63 +37,16 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file icmpv6_frame.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An ICMPv6 frame structure.
  */
 
-#pragma once
-
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
-
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include "osi/icmpv6_frame.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
-
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
-
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
-
-			enum class route_action {
-				add,
-				remove
-			};
-
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+	}
 }

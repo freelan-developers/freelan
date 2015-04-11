@@ -37,63 +37,57 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file ipv6_builder.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An IPV6 frame builder class.
  */
 
 #pragma once
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
+#include "builder.hpp"
+#include "ipv6_frame.hpp"
 
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include <boost/asio.hpp>
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		/**
+		 * \brief An ipv4 frame builder class.
+		 */
+		template <>
+		class builder<ipv6_frame> : public _base_builder<ipv6_frame>
+		{
+			public:
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
+				/**
+				 * \brief Create a builder.
+				 * \param buf The buffer to use.
+				 * \param payload_size The size of the payload.
+				 */
+				builder(boost::asio::mutable_buffer buf, size_t payload_size) :
+					_base_builder<ipv6_frame>(buf, payload_size)
+				{}
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
-
-			enum class route_action {
-				add,
-				remove
-			};
-
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+				/**
+				 * \brief Write the frame.
+				 * \param _class The class.
+				 * \param label The label.
+				 * \param next_header The next header.
+				 * \param hop_limit The hop limit.
+				 * \param source The source address.
+				 * \param destination The destination address.
+				 * \return The total size of the written frame, including its payload.
+				 */
+				size_t write(
+				    uint8_t _class,
+				    uint32_t label,
+				    uint8_t next_header,
+				    uint8_t hop_limit,
+				    boost::asio::ip::address_v6 source,
+				    boost::asio::ip::address_v6 destination
+				) const;
+		};
+	}
 }

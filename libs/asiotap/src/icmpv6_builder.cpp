@@ -37,63 +37,47 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file ipv6_builder.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An IPv6 frame builder class.
  */
 
-#pragma once
+#include "osi/icmpv6_builder.hpp"
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
-
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include "osi/icmpv6_helper.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		size_t builder<icmpv6_frame>::write(
+			uint8_t type,
+			uint8_t code,
+			bool router_flag,
+			bool solicited_flag,
+			bool override_flag,
+			boost::asio::ip::address_v6 target
+		) const
+		{
+			helper_type helper = get_helper();
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
+			helper.set_type(type);
+			helper.set_code(code);
+			helper.reset_flags();
+			helper.set_router_flag(router_flag);
+			helper.set_solicited_flag(solicited_flag);
+			helper.set_override_flag(override_flag);
+			helper.set_target(target);
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+			return helper.header_length() + boost::asio::buffer_size(payload());
+		}
 
-			enum class route_action {
-				add,
-				remove
-			};
+		void builder<icmpv6_frame>::update_checksum(const_helper<ipv6_frame> parent_frame)
+		{
+			helper_type helper = get_helper();
 
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+			helper.set_checksum(0x0000);
+			helper.set_checksum(helper.compute_checksum(parent_frame));
+		}
+	}
 }

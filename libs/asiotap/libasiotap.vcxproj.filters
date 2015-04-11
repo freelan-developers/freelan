@@ -183,6 +183,24 @@
     <ClCompile Include="src\ip_route.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\icmpv6_proxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icmpv6_frame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icmpv6_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icmpv6_filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ipv6_builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icmpv6_builder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp">
@@ -378,6 +396,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\windows\registry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\osi\icmpv6_proxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\osi\icmpv6_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\osi\icmpv6_helper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\osi\icmpv6_filter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\osi\ipv6_builder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\osi\icmpv6_builder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

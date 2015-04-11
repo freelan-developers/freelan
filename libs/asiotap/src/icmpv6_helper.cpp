@@ -37,63 +37,56 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file icmpv6_helper.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An ICMPv6 helper class.
  */
 
-#pragma once
+#include "osi/icmpv6_helper.hpp"
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
-
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include "osi/checksum_helper.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
-
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
+		namespace
+		{
+			icmpv6_ipv6_pseudo_header parent_frame_to_pseudo_header(const_helper<ipv6_frame> parent_frame)
 			{
+				icmpv6_ipv6_pseudo_header pseudo_header = {};
+
+				pseudo_header.ipv6_source = parent_frame.frame().source;
+				pseudo_header.ipv6_destination = parent_frame.frame().destination;
+				pseudo_header.upper_layer_length = htonl(parent_frame.payload_length());
+				pseudo_header.ipv6_next_header = ICMPV6_HEADER; // Must be this value, not the parent frame next-header as it could be different.
+
+				return pseudo_header;
 			}
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+			template <typename HelperType>
+			uint16_t compute_icmpv6_checksum(const_helper<ipv6_frame> parent_frame, HelperType icmpv6_frame)
+			{
+				const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(icmpv6_frame.buffer());
+				size_t buf_len = boost::asio::buffer_size(icmpv6_frame.buffer());
 
-			enum class route_action {
-				add,
-				remove
-			};
+				const auto pseudo_header = parent_frame_to_pseudo_header(parent_frame);
 
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
+				checksum_helper chk;
+				chk.update(reinterpret_cast<const uint16_t*>(&pseudo_header), sizeof(pseudo_header));
+				chk.update(buf, buf_len);
 
-		protected:
+				return chk.compute();
+			}
+		}
 
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
+		template <class HelperTag>
+		uint16_t _base_helper_impl<HelperTag, icmpv6_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
+		{
+			return compute_icmpv6_checksum(parent_frame, *this);
+		}
 
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+		template uint16_t _base_helper_impl<const_helper_tag, icmpv6_frame>::compute_checksum(const_helper<ipv6_frame>) const;
+		template uint16_t _base_helper_impl<mutable_helper_tag, icmpv6_frame>::compute_checksum(const_helper<ipv6_frame>) const;
+	}
 }

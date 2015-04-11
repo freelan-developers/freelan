@@ -37,63 +37,64 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file ipv6_builder.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An IPV6 frame builder class.
  */
 
 #pragma once
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
+#include "builder.hpp"
+#include "icmpv6_frame.hpp"
+#include "ipv6_helper.hpp"
 
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include <boost/asio.hpp>
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		/**
+		 * \brief An ipv4 frame builder class.
+		 */
+		template <>
+		class builder<icmpv6_frame> : public _base_builder<icmpv6_frame>
+		{
+			public:
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
+				/**
+				 * \brief Create a builder.
+				 * \param buf The buffer to use.
+				 * \param payload_size The size of the payload.
+				 */
+				builder(boost::asio::mutable_buffer buf, size_t payload_size) :
+					_base_builder<icmpv6_frame>(buf, payload_size)
+				{}
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+				/**
+				 * \brief Write the frame.
+				 * \param type The message type.
+				 * \param code The code.
+				 * \param router_flag The router flag.
+				 * \param solicited_flag The solicited flag.
+				 * \param override_flag The override flag.
+				 * \param target The target address.
+				 * \return The total size of the written frame, including its payload.
+				 */
+				size_t write(
+					uint8_t type,
+					uint8_t code,
+					bool router_flag,
+					bool solicited_flag,
+					bool override_flag,
+					boost::asio::ip::address_v6 target
+				) const;
 
-			enum class route_action {
-				add,
-				remove
-			};
-
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+				/**
+				 * \brief Update the checksum.
+				 * \param parent_frame The parent frame.
+				 */
+				void update_checksum(const_helper<ipv6_frame> parent_frame);
+		};
+	}
 }

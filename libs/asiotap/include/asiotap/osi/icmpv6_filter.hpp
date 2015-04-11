@@ -37,63 +37,69 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file ipv6_filter.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An IPv6 filter class.
  */
 
 #pragma once
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
+#include "filter.hpp"
+#include "icmpv6_frame.hpp"
 
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include "ipv6_helper.hpp"
+#include "icmpv6_helper.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		/**
+		 * \brief The ICMPv6 filter.
+		 */
+		template <>
+		class filter<icmpv6_frame> : public _filter<icmpv6_frame>
+		{
+		};
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
+		/**
+		 * \brief The ICMPv6 filter, depending on an IPv6 parent frame.
+		 */
+		template <typename ParentFilterType>
+		class filter<icmpv6_frame, ParentFilterType> : public _filter<icmpv6_frame, ParentFilterType>
+		{
+			public:
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+				/**
+				 * \brief Constructor.
+				 * \param _parent The parent filter.
+				 */
+				filter(ParentFilterType& _parent) :
+					_filter<icmpv6_frame, ParentFilterType>(_parent)
+				{}
+		};
 
-			enum class route_action {
-				add,
-				remove
-			};
+		/**
+		 * \brief The frame parent match function.
+		 * \param parent The parent frame.
+		 * \return true if the frame matches the parent frame.
+		 */
+		template <>
+		inline bool frame_parent_match<icmpv6_frame>(const_helper<ipv6_frame> parent)
+		{
+			// Okay, things might be a little more complex if we wanted to handle things perfectly.
+			// TODO: Handle the cases were the ICMPV6_HEADER is not the first and sole next-header.
+			return (parent.next_header() == ICMPV6_HEADER);
+		}
 
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+		/**
+		 * \brief Check if a frame is valid.
+		 * \param frame The frame.
+		 * \return true on success.
+		 */
+		inline bool check_frame(const_helper<icmpv6_frame> frame)
+		{
+			return true;
+		}
+	}
 }

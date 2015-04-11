@@ -53,6 +53,10 @@
     <ClCompile Include="src\frame.cpp" />
     <ClCompile Include="src\helper.cpp" />
     <ClCompile Include="src\hostname_endpoint.cpp" />
+    <ClCompile Include="src\icmpv6_builder.cpp" />
+    <ClCompile Include="src\icmpv6_filter.cpp" />
+    <ClCompile Include="src\icmpv6_frame.cpp" />
+    <ClCompile Include="src\icmpv6_helper.cpp" />
     <ClCompile Include="src\icmp_builder.cpp" />
     <ClCompile Include="src\icmp_filter.cpp" />
     <ClCompile Include="src\icmp_frame.cpp" />
@@ -61,9 +65,11 @@
     <ClCompile Include="src\ipv4_filter.cpp" />
     <ClCompile Include="src\ipv4_frame.cpp" />
     <ClCompile Include="src\ipv4_helper.cpp" />
+    <ClCompile Include="src\ipv6_builder.cpp" />
     <ClCompile Include="src\ipv6_filter.cpp" />
     <ClCompile Include="src\ipv6_frame.cpp" />
     <ClCompile Include="src\ipv6_helper.cpp" />
+    <ClCompile Include="src\icmpv6_proxy.cpp" />
     <ClCompile Include="src\ip_endpoint.cpp" />
     <ClCompile Include="src\ip_network_address.cpp" />
     <ClCompile Include="src\ip_route.cpp" />
@@ -111,6 +117,10 @@
     <ClInclude Include="include\asiotap\osi\filter.hpp" />
     <ClInclude Include="include\asiotap\osi\frame.hpp" />
     <ClInclude Include="include\asiotap\osi\helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_builder.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_filter.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_frame.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_helper.hpp" />
     <ClInclude Include="include\asiotap\osi\icmp_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\icmp_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\icmp_frame.hpp" />
@@ -119,9 +129,11 @@
     <ClInclude Include="include\asiotap\osi\ipv4_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv4_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv4_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv6_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_proxy.hpp" />
     <ClInclude Include="include\asiotap\osi\proxy.hpp" />
     <ClInclude Include="include\asiotap\osi\udp_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\udp_filter.hpp" />

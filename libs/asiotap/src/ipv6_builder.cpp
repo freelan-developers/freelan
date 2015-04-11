@@ -37,63 +37,40 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file ipv6_builder.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An IPv6 frame builder class.
  */
 
-#pragma once
+#include "osi/ipv6_builder.hpp"
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
-
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include "osi/ipv6_helper.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		size_t builder<ipv6_frame>::write(
+			uint8_t _class,
+			uint32_t label,
+			uint8_t next_header,
+			uint8_t hop_limit,
+			boost::asio::ip::address_v6 source,
+			boost::asio::ip::address_v6 destination
+		) const
+		{
+			helper_type helper = get_helper();
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
+			helper.set_version(IP_PROTOCOL_VERSION_6);
+			helper.set_class(_class);
+			helper.set_label(label);
+			helper.set_payload_length(boost::asio::buffer_size(payload()));
+			helper.set_next_header(next_header);
+			helper.set_hop_limit(hop_limit);
+			helper.set_source(source);
+			helper.set_destination(destination);
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
-
-			enum class route_action {
-				add,
-				remove
-			};
-
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+			return helper.header_length() + helper.payload_length();
+		}
+	}
 }

@@ -37,63 +37,72 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file icmpv6_proxy.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An ICMPv6 proxy class.
  */
 
 #pragma once
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
+#include "proxy.hpp"
 
-#include <string>
+#include "ipv6_filter.hpp"
+#include "icmpv6_filter.hpp"
+#include "ethernet_address.hpp"
 
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include <boost/optional.hpp>
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		/**
+		 * \brief An ARP proxy class.
+		 */
+		template <>
+		class proxy<icmpv6_frame> : public _base_proxy<icmpv6_frame>
+		{
+			public:
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
-#endif
-			{
-			}
+				/**
+				 * \brief The Ethernet address type.
+				 */
+				typedef ethernet_address ethernet_address_type;
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+				/**
+				 * \brief The neighbor sollicitation request callback type.
+				 */
+				typedef boost::function<bool (const boost::asio::ip::address_v6&, ethernet_address_type&)> neighbor_solicitation_callback_type;
 
-			enum class route_action {
-				add,
-				remove
-			};
+				/**
+				 * \brief Create an ARP proxy.
+				 */
+				proxy() :
+					m_neighbor_solicitation_callback()
+				{
+				}
 
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
+				/**
+				 * \brief Set the callback function when a neighbor sollicitation is received.
+				 * \param callback The callback function.
+				 */
+				void set_neighbor_solicitation_callback(neighbor_solicitation_callback_type callback)
+				{
+					m_neighbor_solicitation_callback = callback;
+				}
 
-		protected:
+				/**
+				 * \brief Process a frame.
+				 * \param ipv6_helper The IPv6 layer.
+				 * \param icmpv6_helper The ICMPv6 layer.
+				 * \param response_buffer The buffer to write the response to.
+				 * \return The buffer that contains the answer, if there is one.
+				 */
+				boost::optional<boost::asio::const_buffer> process_frame(const_helper<ipv6_frame> ipv6_helper, const_helper<icmpv6_frame> icmpv6_helper,  boost::asio::mutable_buffer response_buffer) const;
 
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
+			private:
 
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
-#endif
-	};
+				neighbor_solicitation_callback_type m_neighbor_solicitation_callback;
+		};
+	}
 }

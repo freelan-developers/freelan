@@ -37,63 +37,74 @@
  */
 
 /**
- * \file posix_route_manager.hpp
+ * \file icmpv6_frame.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX route manager class.
+ * \brief An ICMPv6 frame structure.
  */
 
 #pragma once
 
-#include "../os.hpp"
-#include "../base_route_manager.hpp"
-#include "../types/ip_network_address.hpp"
-
-#include <string>
-
-#ifdef LINUX
-#include <netlinkplus/manager.hpp>
-#endif
+#include "frame.hpp"
 
 namespace asiotap
 {
-	typedef base_routing_table_entry<std::string> posix_routing_table_entry;
-
-	class posix_route_manager : public base_route_manager<posix_route_manager, posix_routing_table_entry>
+	namespace osi
 	{
-		public:
+		/**
+		 * \brief The ICMPv6 header.
+		 */
+		const uint8_t ICMPV6_HEADER = 0x3A;
 
-			explicit posix_route_manager(boost::asio::io_service& io_service_) :
-#ifndef LINUX
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_)
-#else
-				base_route_manager<posix_route_manager, posix_routing_table_entry>(io_service_),
-				m_netlink_manager(io_service_)
+		/**
+		 * \brief The neighbor solicitation type.
+		 */
+		const uint8_t ICMPV6_NEIGHBOR_SOLICITATION = 0x87;
+
+		/**
+		 * \brief The neighbor advertisement type.
+		 */
+		const uint8_t ICMPV6_NEIGHBOR_ADVERTISEMENT = 0x88;
+
+		/**
+		* \brief The source link-layer address option.
+		*/
+		const uint8_t ICMPV6_OPTION_SOURCE_LINK_LAYER_ADDRESS = 0x01;
+
+		/**
+		* \brief The target link-layer address option.
+		*/
+		const uint8_t ICMPV6_OPTION_TARGET_LINK_LAYER_ADDRESS = 0x02;
+
+#ifdef MSV
+#pragma pack(push, 1)
 #endif
-			{
-			}
 
-			posix_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void ifconfig(const std::string& interface, const ip_network_address& address);
-			void ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address);
+		/**
+		 * \brief An ICMPv6 frame structure.
+		 */
+		struct icmpv6_frame
+		{
+			uint8_t type; /**< Type */
+			uint8_t code; /**< Code */
+			uint16_t checksum; /**< Checksum */
+			uint32_t flags; /**< Flags */
+			struct in6_addr target; /**< Target */
+		} PACKED;
 
-			enum class route_action {
-				add,
-				remove
-			};
-
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest);
-			void set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway);
-
-		protected:
-
-			void register_route(const route_type& route);
-			void unregister_route(const route_type& route);
-
-		friend class base_route_manager<posix_route_manager, posix_routing_table_entry>;
-
-#ifdef LINUX
-		private:
-			netlinkplus::manager m_netlink_manager;
+		/**
+		 * \brief An ICMPv6-IPv6 pseudo-header structure.
+		 */
+		struct icmpv6_ipv6_pseudo_header
+		{
+			struct in6_addr ipv6_source; /**< Source IPv6 address */
+			struct in6_addr ipv6_destination; /**< Source IPv6 address */
+			uint32_t upper_layer_length; /**< The upper-layer length */
+			uint16_t zero; /**< 16 bits reserved field (must be zero) */
+			uint8_t zero2; /**< 8 bits reserved field (must be zero) */
+			uint8_t ipv6_next_header; /**< The IPv6 next header */
+		} PACKED;
+#ifdef MSV
+#pragma pack(pop)
 #endif
-	};
+	}
 }
