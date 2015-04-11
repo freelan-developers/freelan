@@ -69,6 +69,7 @@
     <ClCompile Include="src\ipv6_filter.cpp" />
     <ClCompile Include="src\ipv6_frame.cpp" />
     <ClCompile Include="src\ipv6_helper.cpp" />
+    <ClCompile Include="src\icmpv6_proxy.cpp" />
     <ClCompile Include="src\ip_endpoint.cpp" />
     <ClCompile Include="src\ip_network_address.cpp" />
     <ClCompile Include="src\ip_route.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="include\asiotap\osi\ipv6_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_proxy.hpp" />
     <ClInclude Include="include\asiotap\osi\proxy.hpp" />
     <ClInclude Include="include\asiotap\osi\udp_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\udp_filter.hpp" />
