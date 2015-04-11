@@ -272,7 +272,15 @@ namespace asiotap
 		template <typename OSIFrameType>
 		inline bool _base_filter<OSIFrameType>::filter_frame(const_helper<OSIFrameType> helper) const
 		{
-			return (std::find_if(m_filters.begin(), m_filters.end(), !boost::bind(&frame_filter_callback::operator(), _1, helper)) == m_filters.end());
+			for (auto&& filter : m_filters)
+			{
+				if (!filter(helper))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		template <typename OSIFrameType>
@@ -280,7 +288,10 @@ namespace asiotap
 		{
 			m_last_helper = helper;
 
-			std::for_each(m_handlers.begin(), m_handlers.end(), boost::bind(&frame_handler_callback::operator(), _1, *m_last_helper));
+			for (auto&& handler : m_handlers)
+			{
+				handler(*m_last_helper);
+			}
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
@@ -333,7 +344,15 @@ namespace asiotap
 		template <typename OSIFrameType, typename ParentFilterType>
 		inline bool _filter<OSIFrameType, ParentFilterType>::bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const
 		{
-			return (std::find_if(m_bridge_filters.begin(), m_bridge_filters.end(), !boost::bind(&frame_bridge_filter_callback::operator(), _1, parent_helper, helper)) == m_bridge_filters.end());
+			for (auto&& bridge_filter : m_bridge_filters)
+			{
+				if (!bridge_filter(parent_helper, helper))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		template <typename OSIFrameType>
