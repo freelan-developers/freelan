@@ -121,7 +121,7 @@ namespace asiotap
 				 * \return true if the checksum is valid.
 				 */
 				bool verify_checksum(const_helper<ipv6_frame> parent_frame) const {
-					return (checksum() == 0x0000);
+					return (compute_checksum(parent_frame) == 0x0000);
 				}
 
 				/**
