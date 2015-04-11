@@ -269,17 +269,17 @@ namespace asiotap
 
 		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_version(uint8_t _version) const
 		{
-			this->frame().version_class_label = (this->frame().version_class_label & 0x0FFFFFFF) | ((_version & 0x0FL) << 28);
+			this->frame().version_class_label = htonl((this->frame().version_class_label & 0x0FFFFFFF) | ((_version & 0x0FL) << 28));
 		}
 
 		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_class(uint8_t __class) const
 		{
-			this->frame().version_class_label = (this->frame().version_class_label & 0xF00FFFFF) | ((__class & 0xFFL) << 20);
+			this->frame().version_class_label = htonl((this->frame().version_class_label & 0xF00FFFFF) | ((__class & 0xFFL) << 20));
 		}
 
 		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_label(uint32_t _label) const
 		{
-			this->frame().version_class_label = (this->frame().version_class_label & 0xFFF00000) | (_label & 0x000FFFFFL);
+			this->frame().version_class_label = htonl((this->frame().version_class_label & 0xFFF00000) | (_label & 0x000FFFFFL));
 		}
 
 		inline void _helper_impl<mutable_helper_tag, ipv6_frame>::set_payload_length(size_t _payload_length) const
