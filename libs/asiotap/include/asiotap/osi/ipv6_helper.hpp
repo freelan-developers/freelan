@@ -200,13 +200,13 @@ namespace asiotap
 		template <class HelperTag>
 		inline uint8_t _base_helper_impl<HelperTag, ipv6_frame>::version() const
 		{
-			return (ntohl(this->frame().version_class_label) & 0xF0000000) >> 28;
+			return static_cast<uint8_t>((ntohl(this->frame().version_class_label) & 0xF0000000) >> 28);
 		}
 
 		template <class HelperTag>
 		inline uint8_t _base_helper_impl<HelperTag, ipv6_frame>::_class() const
 		{
-			return (ntohl(this->frame().version_class_label) & 0x0FF00000) >> 20;
+			return static_cast<uint8_t>((ntohl(this->frame().version_class_label) & 0x0FF00000) >> 20);
 		}
 
 		template <class HelperTag>
