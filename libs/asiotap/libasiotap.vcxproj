@@ -64,6 +64,7 @@
     <ClCompile Include="src\ipv4_filter.cpp" />
     <ClCompile Include="src\ipv4_frame.cpp" />
     <ClCompile Include="src\ipv4_helper.cpp" />
+    <ClCompile Include="src\ipv6_builder.cpp" />
     <ClCompile Include="src\ipv6_filter.cpp" />
     <ClCompile Include="src\ipv6_frame.cpp" />
     <ClCompile Include="src\ipv6_helper.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="include\asiotap\osi\ipv4_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv4_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv4_helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\ipv6_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\ipv6_helper.hpp" />
