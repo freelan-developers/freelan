@@ -399,6 +399,8 @@ namespace freelan
 		m_udp_filter(m_ipv4_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
+		m_ipv6_filter(),
+		m_icmpv6_filter(m_ipv6_filter),
 		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
@@ -412,6 +414,7 @@ namespace freelan
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
+		m_icmpv6_filter.add_handler(boost::bind(&core::do_handle_icmpv6_frame, this, _1));
 
 		// Setup the route manager.
 		auto route_registration_success_handler = [this](const asiotap::route_manager::route_type& route){
@@ -1648,6 +1651,9 @@ namespace freelan
 				{
 					m_dhcp_proxy.reset();
 				}
+
+				// We don't need those proxies in TAP mode.
+				m_icmpv6_proxy.reset();
 			}
 			else
 			{
@@ -1676,7 +1682,11 @@ namespace freelan
 					m_logger(fscp::log_level::information) << "Advertising the following routes: " << local_routes;
 				}
 
-				// We don't need any proxies in TUN mode.
+				// Handle ICMPv6 neighbor solicitations. This is required for Windows.
+				m_icmpv6_proxy.reset(new icmpv6_proxy_type());
+				m_icmpv6_proxy->set_neighbor_solicitation_callback(boost::bind(&core::do_handle_icmpv6_neighbor_solicitation, this, _1, _2));
+
+				// We don't need those proxies in TUN mode.
 				m_arp_proxy.reset();
 				m_dhcp_proxy.reset();
 			}
@@ -1709,6 +1719,7 @@ namespace freelan
 
 		m_dhcp_proxy.reset();
 		m_arp_proxy.reset();
+		m_icmpv6_proxy.reset();
 
 		if (m_tap_adapter)
 		{
@@ -1831,10 +1842,10 @@ namespace freelan
 			std::cerr << "Read " << buffer_size(data) << " byte(s) on " << *m_tap_adapter << std::endl;
 #endif
 
+			bool handled = false;
+
 			if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ethernet)
 			{
-				bool handled = false;
-
 				if (m_arp_proxy || m_dhcp_proxy)
 				{
 					// This line will eventually call the filters callbacks.
@@ -1867,15 +1878,31 @@ namespace freelan
 			}
 			else
 			{
-				// This is a TUN interface. We receive either IPv4 or IPv6 frames.
-				async_write_router(
-					make_port_index(m_tap_adapter),
-					data,
-					make_shared_buffer_handler(
-						receive_buffer,
-						&null_router_write_handler
-					)
-				);
+				if (m_icmpv6_proxy)
+				{
+					// This line will eventually call the filters callbacks.
+					m_ipv6_filter.parse(data);
+
+					if (m_icmpv6_filter.get_last_helper())
+					{
+						// We don't want to catch ICMP echo requests or other stuff yet.
+						handled = m_icmpv6_filter.get_last_helper()->type() == asiotap::osi::ICMPV6_NEIGHBOR_SOLICITATION;
+						m_icmpv6_filter.clear_last_helper();
+					}
+				}
+
+				if (!handled)
+				{
+					// This is a TUN interface. We receive either IPv4 or IPv6 frames.
+					async_write_router(
+						make_port_index(m_tap_adapter),
+						data,
+						make_shared_buffer_handler(
+							receive_buffer,
+							&null_router_write_handler
+						)
+					);
+				}
 			}
 		}
 		else if (ec != boost::asio::error::operation_aborted)
@@ -1954,11 +1981,54 @@ namespace freelan
 		}
 	}
 
+	void core::do_handle_icmpv6_frame(const icmpv6_helper_type& helper)
+	{
+		if (m_icmpv6_proxy)
+		{
+			const auto response_buffer = SharedBuffer(2048);
+			const boost::optional<boost::asio::const_buffer> data = m_icmpv6_proxy->process_frame(
+				*m_icmpv6_filter.parent().get_last_helper(),
+				helper,
+				buffer(response_buffer)
+			);
+
+			if (data)
+			{
+				async_write_tap(
+					buffer(*data),
+					make_shared_buffer_handler(
+					response_buffer,
+					boost::bind(
+						&core::do_handle_tap_adapter_write,
+						this,
+						boost::asio::placeholders::error
+					)
+					)
+				);
+			}
+		}
+	}
+
 	bool core::do_handle_arp_request(const boost::asio::ip::address_v4& logical_address, ethernet_address_type& ethernet_address)
 	{
 		if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 		{
 			if (logical_address != m_configuration.tap_adapter.ipv4_address_prefix_length.address())
+			{
+				ethernet_address = m_configuration.tap_adapter.arp_proxy_fake_ethernet_address;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool core::do_handle_icmpv6_neighbor_solicitation(const boost::asio::ip::address_v6& logical_address, ethernet_address_type& ethernet_address)
+	{
+		if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
+		{
+			if (logical_address != m_configuration.tap_adapter.ipv6_address_prefix_length.address())
 			{
 				ethernet_address = m_configuration.tap_adapter.arp_proxy_fake_ethernet_address;
 

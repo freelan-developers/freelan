@@ -59,6 +59,7 @@
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
 #include <asiotap/osi/dhcp_proxy.hpp>
+#include <asiotap/osi/icmpv6_proxy.hpp>
 #include <asiotap/osi/complex_filter.hpp>
 #include <asiotap/route_manager.hpp>
 #include <asiotap/types/ip_route.hpp>
@@ -549,10 +550,14 @@ namespace freelan
 			typedef asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type udp_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type bootp_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type dhcp_filter_type;
+			typedef asiotap::osi::filter<asiotap::osi::ipv6_frame> ipv6_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::icmpv6_frame, asiotap::osi::ipv6_frame>::type icmpv6_filter_type;
 			typedef asiotap::osi::const_helper<asiotap::osi::arp_frame> arp_helper_type;
 			typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame> dhcp_helper_type;
+			typedef asiotap::osi::const_helper<asiotap::osi::icmpv6_frame> icmpv6_helper_type;
 			typedef asiotap::osi::proxy<asiotap::osi::arp_frame> arp_proxy_type;
 			typedef asiotap::osi::proxy<asiotap::osi::dhcp_frame> dhcp_proxy_type;
+			typedef asiotap::osi::proxy<asiotap::osi::icmpv6_frame> icmpv6_proxy_type;
 
 			void open_tap_adapter();
 			void close_tap_adapter();
@@ -578,7 +583,9 @@ namespace freelan
 			void do_handle_tap_adapter_write(const boost::system::error_code&);
 			void do_handle_arp_frame(const arp_helper_type&);
 			void do_handle_dhcp_frame(const dhcp_helper_type&);
+			void do_handle_icmpv6_frame(const icmpv6_helper_type&);
 			bool do_handle_arp_request(const boost::asio::ip::address_v4&, ethernet_address_type&);
+			bool do_handle_icmpv6_neighbor_solicitation(const boost::asio::ip::address_v6&, ethernet_address_type&);
 
 			boost::asio::io_service m_tap_adapter_io_service;
 			boost::thread m_tap_adapter_thread;
@@ -592,9 +599,12 @@ namespace freelan
 			udp_filter_type m_udp_filter;
 			bootp_filter_type m_bootp_filter;
 			dhcp_filter_type m_dhcp_filter;
+			ipv6_filter_type m_ipv6_filter;
+			icmpv6_filter_type m_icmpv6_filter;
 
 			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
 			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
+			boost::scoped_ptr<icmpv6_proxy_type> m_icmpv6_proxy;
 
 		private: /* Switch & router */
 
