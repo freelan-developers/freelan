@@ -53,6 +53,7 @@
     <ClCompile Include="src\frame.cpp" />
     <ClCompile Include="src\helper.cpp" />
     <ClCompile Include="src\hostname_endpoint.cpp" />
+    <ClCompile Include="src\icmpv6_builder.cpp" />
     <ClCompile Include="src\icmpv6_filter.cpp" />
     <ClCompile Include="src\icmpv6_frame.cpp" />
     <ClCompile Include="src\icmpv6_helper.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="include\asiotap\osi\filter.hpp" />
     <ClInclude Include="include\asiotap\osi\frame.hpp" />
     <ClInclude Include="include\asiotap\osi\helper.hpp" />
+    <ClInclude Include="include\asiotap\osi\icmpv6_builder.hpp" />
     <ClInclude Include="include\asiotap\osi\icmpv6_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\icmpv6_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\icmpv6_helper.hpp" />
