@@ -37,74 +37,56 @@
  */
 
 /**
- * \file icmpv6_frame.hpp
+ * \file icmpv6_helper.cpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief An ICMPv6 frame structure.
+ * \brief An ICMPv6 helper class.
  */
 
-#pragma once
+#include "osi/icmpv6_helper.hpp"
 
-#include "frame.hpp"
+#include "osi/checksum_helper.hpp"
 
 namespace asiotap
 {
 	namespace osi
 	{
-		/**
-		 * \brief The ICMPv6 header.
-		 */
-		const uint8_t ICMPV6_HEADER = 0x3A;
-
-		/**
-		 * \brief The neighbor solicitation type.
-		 */
-		const uint8_t ICMPV6_NEIGHBOR_SOLICITATION = 0x87;
-
-		/**
-		 * \brief The neighbor advertisement type.
-		 */
-		const uint8_t ICMPV6_NEIGHBOR_ADVERTISEMENT = 0x88;
-
-		/**
-		* \brief The source link-layer address option.
-		*/
-		const uint8_t ICMPV6_OPTION_SOURCE_LINK_LAYER_ADDRESS = 0x01;
-
-		/**
-		* \brief The target link-layer address option.
-		*/
-		const uint8_t ICMPV6_OPTION_TARGET_LINK_LAYER_ADDRESS = 0x02;
-
-#ifdef MSV
-#pragma pack(push, 1)
-#endif
-
-		/**
-		 * \brief An ICMPv6 frame structure.
-		 */
-		struct icmpv6_frame
+		namespace
 		{
-			uint8_t type; /**< Type */
-			uint8_t code; /**< Code */
-			uint16_t checksum; /**< Checksum */
-			uint32_t flags; /**< Flags */
-			struct in6_addr target; /**< Target */
-		} PACKED;
+			icmpv6_ipv6_pseudo_header parent_frame_to_pseudo_header(const_helper<ipv6_frame> parent_frame)
+			{
+				icmpv6_ipv6_pseudo_header pseudo_header = {};
 
-		/**
-		 * \brief An ICMPv6-IPv6 pseudo-header structure.
-		 */
-		struct icmpv6_ipv6_pseudo_header
+				pseudo_header.ipv6_source = parent_frame.frame().source;
+				pseudo_header.ipv6_destination = parent_frame.frame().destination;
+				pseudo_header.upper_layer_length = htonl(parent_frame.payload_length());
+				pseudo_header.ipv6_next_header = ICMPV6_HEADER; // Must be this value, not the parent frame next-header as it could be different.
+
+				return pseudo_header;
+			}
+
+			template <typename HelperType>
+			uint16_t compute_icmpv6_checksum(const_helper<ipv6_frame> parent_frame, HelperType icmpv6_frame)
+			{
+				const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(icmpv6_frame.buffer());
+				size_t buf_len = boost::asio::buffer_size(icmpv6_frame.buffer());
+
+				const auto pseudo_header = parent_frame_to_pseudo_header(parent_frame);
+
+				checksum_helper chk;
+				chk.update(reinterpret_cast<const uint16_t*>(&pseudo_header), sizeof(pseudo_header));
+				chk.update(buf, buf_len);
+
+				return chk.compute();
+			}
+		}
+
+		template <class HelperTag>
+		uint16_t _base_helper_impl<HelperTag, icmpv6_frame>::compute_checksum(const_helper<ipv6_frame> parent_frame) const
 		{
-			struct in6_addr ipv6_source; /**< Source IPv6 address */
-			struct in6_addr ipv6_destination; /**< Source IPv6 address */
-			uint32_t upper_layer_length; /**< The upper-layer length */
-			uint16_t zero; /**< 16 bits reserved field (must be zero) */
-			uint8_t zero2; /**< 8 bits reserved field (must be zero) */
-			uint8_t ipv6_next_header; /**< The IPv6 next header */
-		} PACKED;
-#ifdef MSV
-#pragma pack(pop)
-#endif
+			return compute_icmpv6_checksum(parent_frame, *this);
+		}
+
+		template uint16_t _base_helper_impl<const_helper_tag, icmpv6_frame>::compute_checksum(const_helper<ipv6_frame>) const;
+		template uint16_t _base_helper_impl<mutable_helper_tag, icmpv6_frame>::compute_checksum(const_helper<ipv6_frame>) const;
 	}
 }
