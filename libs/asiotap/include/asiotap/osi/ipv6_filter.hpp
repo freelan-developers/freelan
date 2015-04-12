@@ -42,8 +42,7 @@
  * \brief An IPv6 filter class.
  */
 
-#ifndef ASIOTAP_OSI_IPV6_FILTER_HPP
-#define ASIOTAP_OSI_IPV6_FILTER_HPP
+#pragma once
 
 #include "filter.hpp"
 #include "ipv6_frame.hpp"
@@ -73,9 +72,11 @@ namespace asiotap
 
 				/**
 				 * \brief Constructor.
-				 * \param parent The parent filter.
+				 * \param _parent The parent filter.
 				 */
-				filter(ParentFilterType& parent);
+				filter(ParentFilterType& _parent) :
+					_filter<ipv6_frame, ParentFilterType>(_parent)
+				{};
 		};
 
 		/**
@@ -84,33 +85,17 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<ipv6_frame>(const_helper<ethernet_frame> parent);
+		inline bool frame_parent_match<ipv6_frame>(const_helper<ethernet_frame> parent) {
+			return (parent.protocol() == IPV6_PROTOCOL);
+		}
 
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
 		 * \return true on success.
 		 */
-		bool check_frame(const_helper<ipv6_frame> frame);
-
-		template <typename ParentFilterType>
-		inline filter<ipv6_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<ipv6_frame, ParentFilterType>(_parent)
-		{
-		}
-
-		template <>
-		inline bool frame_parent_match<ipv6_frame>(const_helper<ethernet_frame> parent)
-		{
-			return (parent.protocol() == IPV6_PROTOCOL);
-		}
-
-		inline bool check_frame(const_helper<ipv6_frame> frame)
-		{
+		inline bool check_frame(const_helper<ipv6_frame> frame) {
 			return (frame.version() == IP_PROTOCOL_VERSION_6);
 		}
-
 	}
 }
-
-#endif /* ASIOTAP_OSI_IPV6_FILTER_HPP */
-

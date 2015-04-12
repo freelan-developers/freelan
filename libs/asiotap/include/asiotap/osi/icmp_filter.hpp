@@ -42,8 +42,7 @@
  * \brief An ICMP filter class.
  */
 
-#ifndef ASIOTAP_OSI_ICMP_FILTER_HPP
-#define ASIOTAP_OSI_ICMP_FILTER_HPP
+#pragma once
 
 #include "filter.hpp"
 #include "icmp_frame.hpp"
@@ -69,7 +68,9 @@ namespace asiotap
 				 * \param helper The current frame.
 				 * \return true if the ICMP checksum is correct.
 				 */
-				static bool checksum_filter(const_helper<icmp_frame> helper);
+				static bool checksum_filter(const_helper<icmp_frame> helper) {
+					return helper.verify_checksum();
+				}
 
 				/**
 				 * \brief Constructor.
@@ -99,19 +100,6 @@ namespace asiotap
 		template <>
 		bool frame_parent_match<icmp_frame>(const_helper<ipv6_frame> parent);
 
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_helper<icmp_frame> frame);
-
-		template <typename ParentFilterType>
-		inline bool filter<icmp_frame, ParentFilterType>::checksum_filter(const_helper<icmp_frame> helper)
-		{
-			return helper.verify_checksum();
-		}
-
 		template <typename ParentFilterType>
 		inline filter<icmp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<icmp_frame, ParentFilterType>(_parent)
 		{
@@ -137,14 +125,5 @@ namespace asiotap
 
 			return false;
 		}
-
-		inline bool check_frame(const_helper<icmp_frame>)
-		{
-			return true;
-		}
-
 	}
 }
-
-#endif /* ASIOTAP_OSI_ICMP_FILTER_HPP */
-

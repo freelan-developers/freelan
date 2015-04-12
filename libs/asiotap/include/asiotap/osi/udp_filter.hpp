@@ -42,8 +42,7 @@
  * \brief An UDP filter class.
  */
 
-#ifndef ASIOTAP_OSI_UDP_FILTER_HPP
-#define ASIOTAP_OSI_UDP_FILTER_HPP
+#pragma once
 
 #include "filter.hpp"
 #include "udp_frame.hpp"
@@ -70,18 +69,24 @@ namespace asiotap
 				 * \param helper The current frame.
 				 * \return true if the UDP checksum is correct.
 				 */
-				static bool checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<udp_frame> helper);
+				static bool checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<udp_frame> helper) {
+					return helper.verify_checksum(parent_helper);
+				}
 
 				/**
 				 * \brief Constructor.
-				 * \param parent The parent filter.
+				 * \param _parent The parent filter.
 				 */
-				filter(ParentFilterType& parent);
+				filter(ParentFilterType& _parent) :
+					_filter<udp_frame, ParentFilterType>(_parent)
+				{}
 
 				/**
 				 * \brief Add the checksum bridge filter.
 				 */
-				void add_checksum_bridge_filter();
+				void add_checksum_bridge_filter() {
+					this->add_bridge_filter(checksum_bridge_filter);
+				}
 		};
 
 		/**
@@ -90,7 +95,9 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<udp_frame>(const_helper<ipv4_frame> parent);
+		inline bool frame_parent_match<udp_frame>(const_helper<ipv4_frame> parent) {
+			return (parent.protocol() == UDP_PROTOCOL);
+		}
 
 		/**
 		 * \brief The frame parent match function.
@@ -98,53 +105,19 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<udp_frame>(const_helper<ipv6_frame> parent);
+		inline bool frame_parent_match<udp_frame>(const_helper<ipv6_frame> parent) {
+			return (parent.next_header() == UDP_PROTOCOL);
+		}
 
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
 		 * \return true on success.
 		 */
-		bool check_frame(const_helper<udp_frame> frame);
+		inline bool check_frame(const_helper<udp_frame> frame) {
+			static_cast<void>(frame);
 
-		template <typename ParentFilterType>
-		inline bool filter<udp_frame, ParentFilterType>::checksum_bridge_filter(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<udp_frame> helper)
-		{
-			return helper.verify_checksum(parent_helper);
-		}
-
-		template <typename ParentFilterType>
-		inline filter<udp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<udp_frame, ParentFilterType>(_parent)
-		{
-		}
-
-		template <typename ParentFilterType>
-		inline void filter<udp_frame, ParentFilterType>::add_checksum_bridge_filter()
-		{
-			this->add_bridge_filter(checksum_bridge_filter);
-		}
-
-		template <>
-		inline bool frame_parent_match<udp_frame>(const_helper<ipv4_frame> parent)
-		{
-			return (parent.protocol() == UDP_PROTOCOL);
-		}
-
-		template <>
-		inline bool frame_parent_match<udp_frame>(const_helper<ipv6_frame> parent)
-		{
-			//TODO: Implement this
-			(void)parent;
-
-			return false;
-		}
-
-		inline bool check_frame(const_helper<udp_frame>)
-		{
 			return true;
 		}
 	}
 }
-
-#endif /* ASIOTAP_OSI_UDP_FILTER_HPP */
-

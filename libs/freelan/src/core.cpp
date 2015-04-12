@@ -1886,7 +1886,7 @@ namespace freelan
 
 		if (!ec)
 		{
-			const boost::asio::const_buffer data = buffer(receive_buffer, count);
+			const boost::asio::mutable_buffer data = buffer(receive_buffer, count);
 
 #ifdef FREELAN_DEBUG
 			std::cerr << "Read " << buffer_size(data) << " byte(s) on " << *m_tap_adapter << std::endl;

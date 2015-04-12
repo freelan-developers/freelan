@@ -65,9 +65,11 @@ namespace asiotap
 
 				/**
 				 * \brief Constructor.
-				 * \param parent The parent filter.
+				 * \param _parent The parent filter.
 				 */
-				filter(ParentFilterType& parent);
+				filter(ParentFilterType& _parent) :
+					_filter<arp_frame, ParentFilterType>(_parent)
+				{};
 		};
 
 		/**
@@ -76,7 +78,9 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<arp_frame>(const_helper<ethernet_frame> parent);
+		inline bool frame_parent_match<arp_frame>(const_helper<ethernet_frame> parent) {
+			return (parent.protocol() == ARP_PROTOCOL);
+		}
 
 		/**
 		 * \brief Check if a frame is valid.
@@ -84,17 +88,6 @@ namespace asiotap
 		 * \return true on success.
 		 */
 		bool check_frame(const_helper<arp_frame> frame);
-
-		template <typename ParentFilterType>
-		inline filter<arp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<arp_frame, ParentFilterType>(_parent)
-		{
-		}
-
-		template <>
-		inline bool frame_parent_match<arp_frame>(const_helper<ethernet_frame> parent)
-		{
-			return (parent.protocol() == ARP_PROTOCOL);
-		}
 	}
 }
 

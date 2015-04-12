@@ -42,8 +42,7 @@
  * \brief An IPv4 filter class.
  */
 
-#ifndef ASIOTAP_OSI_IPV4_FILTER_HPP
-#define ASIOTAP_OSI_IPV4_FILTER_HPP
+#pragma once
 
 #include "filter.hpp"
 #include "ipv4_frame.hpp"
@@ -60,7 +59,9 @@ namespace asiotap
 		 * \param helper The current frame.
 		 * \return true if the IP checksum is correct.
 		 */
-		bool check_ipv4_checksum(const_helper<ipv4_frame> helper);
+		inline bool check_ipv4_checksum(const_helper<ipv4_frame> helper) {
+			return helper.verify_checksum();
+		}
 
 		/**
 		 * \brief The IPv4 filter.
@@ -73,7 +74,9 @@ namespace asiotap
 				/**
 				 * \brief Add the checksum filter.
 				 */
-				void add_checksum_filter();
+				void add_checksum_filter() {
+					add_filter(check_ipv4_checksum);
+				}
 		};
 
 		/**
@@ -86,14 +89,18 @@ namespace asiotap
 
 				/**
 				 * \brief Constructor.
-				 * \param parent The parent filter.
+				 * \param _parent The parent filter.
 				 */
-				filter(ParentFilterType& parent);
+				filter(ParentFilterType& _parent) :
+					_filter<ipv4_frame, ParentFilterType>(_parent)
+				{}
 
 				/**
 				 * \brief Add the checksum filter.
 				 */
-				void add_checksum_filter();
+				void add_checksum_filter() {
+					this->add_filter(check_ipv4_checksum);
+				}
 		};
 
 		/**
@@ -102,48 +109,17 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<ipv4_frame>(const_helper<ethernet_frame> parent);
+		inline bool frame_parent_match<ipv4_frame>(const_helper<ethernet_frame> parent) {
+			return (parent.protocol() == IP_PROTOCOL);
+		}
 
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
 		 * \return true on success.
 		 */
-		bool check_frame(const_helper<ipv4_frame> frame);
-
-		inline bool check_ipv4_checksum(const_helper<ipv4_frame> helper)
-		{
-			return helper.verify_checksum();
-		}
-
-		inline void filter<ipv4_frame>::add_checksum_filter()
-		{
-			this->add_filter(check_ipv4_checksum);
-		}
-
-		template <typename ParentFilterType>
-		inline filter<ipv4_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<ipv4_frame, ParentFilterType>(_parent)
-		{
-		}
-
-		template <typename ParentFilterType>
-		inline void filter<ipv4_frame, ParentFilterType>::add_checksum_filter()
-		{
-			this->add_filter(check_ipv4_checksum);
-		}
-
-		template <>
-		inline bool frame_parent_match<ipv4_frame>(const_helper<ethernet_frame> parent)
-		{
-			return (parent.protocol() == IP_PROTOCOL);
-		}
-
-		inline bool check_frame(const_helper<ipv4_frame> frame)
-		{
+		inline bool check_frame(const_helper<ipv4_frame> frame) {
 			return ((frame.version() == IP_PROTOCOL_VERSION_4) && (frame.ihl() >= 5));
 		}
 	}
 }
-
-#endif /* ASIOTAP_OSI_IPV4_FILTER_HPP */
-

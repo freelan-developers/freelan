@@ -68,6 +68,16 @@ namespace asiotap
 		bool frame_parent_match(const_helper<ParentOSIFrameType> parent);
 
 		/**
+		 * \brief The base template function to check for frame encapsulation.
+		 * \param parent The parent frame.
+		 * \return true if the parent frame should contain a frame of the specified type.
+		 */
+		template <typename OSIFrameType, typename ParentOSIFrameType>
+		inline bool frame_parent_match(mutable_helper<ParentOSIFrameType> parent) {
+			return frame_parent_match<OSIFrameType, ParentOSIFrameType>(const_helper<ParentOSIFrameType>(parent));
+		}
+
+		/**
 		 * \brief A base filter class.
 		 */
 		template <typename OSIFrameType>
@@ -88,30 +98,60 @@ namespace asiotap
 				/**
 				 * \brief The frame handler callback.
 				 */
-				typedef boost::function<void (const_helper<frame_type>)> frame_handler_callback;
+				typedef boost::function<void (mutable_helper<frame_type>)> frame_handler_callback;
+
+				/**
+				* \brief The frame const handler callback.
+				*/
+				typedef boost::function<void(const_helper<frame_type>)> frame_const_handler_callback;
 
 				/**
 				 * \brief Add a filter function.
 				 * \param callback The filter function to add.
 				 */
-				void add_filter(frame_filter_callback callback);
+				void add_filter(frame_filter_callback callback) {
+					m_filters.push_back(callback);
+				}
 
 				/**
 				 * \brief Add a handler function.
 				 * \param callback The handler function to add.
 				 */
-				void add_handler(frame_handler_callback callback);
+				void add_handler(frame_handler_callback callback) {
+					m_handlers.push_back(callback);
+				}
+
+				/**
+				* \brief Add a const handler function.
+				* \param callback The const handler function to add.
+				*/
+				void add_const_handler(frame_const_handler_callback callback) {
+					m_const_handlers.push_back(callback);
+				}
 
 				/**
 				 * \brief Get the last helper.
 				 * \return The last helper, if any.
 				 */
-				boost::optional<const_helper<frame_type> > get_last_helper() const;
+				boost::optional<mutable_helper<frame_type> > get_last_helper() const {
+					return m_last_helper;
+				}
+
+				/**
+				* \brief Get the last const helper.
+				* \return The last const helper, if any.
+				*/
+				boost::optional<const_helper<frame_type> > get_last_const_helper() const {
+					return m_last_const_helper;
+				}
 
 				/**
 				 * \brief Clear the last helper.
 				 */
-				void clear_last_helper() const;
+				void clear_last_helper() const {
+					m_last_helper = boost::none;
+					m_last_const_helper = boost::none;
+				}
 
 			protected:
 
@@ -122,23 +162,61 @@ namespace asiotap
 				void do_parse(boost::asio::const_buffer buf) const;
 
 				/**
+				 * \brief Do the parsing.
+				 * \param buf buffer to parse.
+				 */
+				void do_parse(boost::asio::mutable_buffer buf) const;
+
+				/**
 				 * \brief Check if the frame has to be handled.
 				 * \param helper frame type helper.
 				 * \return true if the frame type belongs to the filter.
 				 */
-				bool filter_frame(const_helper<frame_type>) const;
+				bool filter_frame(const_helper<frame_type> helper) const {
+					for (auto&& filter : m_filters)
+					{
+						if (!filter(helper))
+						{
+							return false;
+						}
+					}
+
+					return true;
+				}
 
 				/**
 				 * \brief Handle the frame by the filter functions.
 				 * \param helper frame type helper.
 				 */
-				void frame_handled(const_helper<frame_type>) const;
+				void frame_handled(const_helper<frame_type> helper) const {
+					m_last_const_helper = helper;
+
+					for (auto&& handler : m_const_handlers)
+					{
+						handler(*m_last_const_helper);
+					}
+				}
+
+				/**
+				 * \brief Handle the frame by the filter functions.
+				 * \param helper frame type helper.
+				 */
+				void frame_handled(mutable_helper<frame_type> helper) const {
+					m_last_helper = helper;
+
+					for (auto&& handler : m_handlers)
+					{
+						handler(*m_last_helper);
+					}
+				}
 
 			private:
 
 				std::vector<frame_filter_callback> m_filters;
 				std::vector<frame_handler_callback> m_handlers;
-				mutable boost::optional<const_helper<frame_type> > m_last_helper;
+				std::vector<frame_const_handler_callback> m_const_handlers;
+				mutable boost::optional<mutable_helper<frame_type> > m_last_helper;
+				mutable boost::optional<const_helper<frame_type> > m_last_const_helper;
 		};
 
 		/**
@@ -178,9 +256,25 @@ namespace asiotap
 				 */
 				void parse(const_helper<typename ParentFilterType::frame_type> parent) const;
 
+				/**
+				 * \brief Parse a frame.
+				 * \param parent The parent frame.
+				 */
+				void parse(mutable_helper<typename ParentFilterType::frame_type> parent) const;
+
 			protected:
 
-				bool bridge_filter_frame(const_helper<typename ParentFilterType::frame_type>, const_helper<OSIFrameType>) const;
+				bool bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const {
+					for (auto&& bridge_filter : m_bridge_filters)
+					{
+						if (!bridge_filter(parent_helper, helper))
+						{
+							return false;
+						}
+					}
+
+					return true;
+				}
 
 			private:
 
@@ -201,6 +295,12 @@ namespace asiotap
 				 * \param buf The buffer to parse.
 				 */
 				void parse(boost::asio::const_buffer buf) const;
+
+				/**
+				 * \brief Parse the specified buffer.
+				 * \param buf The buffer to parse.
+				 */
+				void parse(boost::asio::mutable_buffer buf) const;
 		};
 
 		/**
@@ -215,7 +315,11 @@ namespace asiotap
 		 * \return true on success.
 		 */
 		template <typename OSIFrameType>
-		bool check_frame(mutable_helper<OSIFrameType> frame);
+		inline bool check_frame(const_helper<OSIFrameType> frame) {
+			static_cast<void>(frame);
+
+			return true;
+		}
 
 		/**
 		 * \brief Check if a frame is valid.
@@ -223,30 +327,8 @@ namespace asiotap
 		 * \return true on success.
 		 */
 		template <typename OSIFrameType>
-		bool check_frame(const_helper<OSIFrameType> frame);
-
-		template <typename OSIFrameType>
-		inline void _base_filter<OSIFrameType>::add_filter(frame_filter_callback callback)
-		{
-			m_filters.push_back(callback);
-		}
-
-		template <typename OSIFrameType>
-		inline void _base_filter<OSIFrameType>::add_handler(frame_handler_callback callback)
-		{
-			m_handlers.push_back(callback);
-		}
-
-		template <typename OSIFrameType>
-		inline boost::optional<const_helper<OSIFrameType> > _base_filter<OSIFrameType>::get_last_helper() const
-		{
-			return m_last_helper;
-		}
-
-		template <typename OSIFrameType>
-		inline void _base_filter<OSIFrameType>::clear_last_helper() const
-		{
-			m_last_helper = boost::none;
+		inline bool check_frame(mutable_helper<OSIFrameType> frame) {
+			return check_frame<OSIFrameType>(const_helper<OSIFrameType>(frame));
 		}
 
 		template <typename OSIFrameType>
@@ -270,27 +352,22 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline bool _base_filter<OSIFrameType>::filter_frame(const_helper<OSIFrameType> helper) const
+		inline void _base_filter<OSIFrameType>::do_parse(boost::asio::mutable_buffer buf) const
 		{
-			for (auto&& filter : m_filters)
+			try
 			{
-				if (!filter(helper))
+				mutable_helper<OSIFrameType> helper(buf);
+
+				if (check_frame(helper))
 				{
-					return false;
+					if (_base_filter<OSIFrameType>::filter_frame(helper))
+					{
+						_base_filter<OSIFrameType>::frame_handled(helper);
+					}
 				}
 			}
-
-			return true;
-		}
-
-		template <typename OSIFrameType>
-		inline void _base_filter<OSIFrameType>::frame_handled(const_helper<OSIFrameType> helper) const
-		{
-			m_last_helper = helper;
-
-			for (auto&& handler : m_handlers)
+			catch (std::logic_error&)
 			{
-				handler(*m_last_helper);
 			}
 		}
 
@@ -298,7 +375,8 @@ namespace asiotap
 		inline _filter<OSIFrameType, ParentFilterType>::_filter(ParentFilterType& _parent) :
 			m_parent(_parent)
 		{
-			m_parent.add_handler(boost::bind(&_filter<OSIFrameType, ParentFilterType>::parse, this, _1));
+			m_parent.add_handler([this](mutable_helper<typename ParentFilterType::frame_type> helper) { parse(helper); });
+			m_parent.add_const_handler([this](const_helper<typename ParentFilterType::frame_type> helper) { parse(helper); });
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
@@ -342,17 +420,31 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
-		inline bool _filter<OSIFrameType, ParentFilterType>::bridge_filter_frame(const_helper<typename ParentFilterType::frame_type> parent_helper, const_helper<OSIFrameType> helper) const
+		inline void _filter<OSIFrameType, ParentFilterType>::parse(mutable_helper<typename ParentFilterType::frame_type> parent_helper) const
 		{
-			for (auto&& bridge_filter : m_bridge_filters)
+			_base_filter<OSIFrameType>::clear_last_helper();
+
+			if (frame_parent_match<OSIFrameType, typename ParentFilterType::frame_type>(parent_helper))
 			{
-				if (!bridge_filter(parent_helper, helper))
+				try
 				{
-					return false;
+					mutable_helper<OSIFrameType> helper(parent_helper.payload());
+
+					if (check_frame(helper))
+					{
+						if (_base_filter<OSIFrameType>::filter_frame(helper))
+						{
+							if (bridge_filter_frame(parent_helper, helper))
+							{
+								_base_filter<OSIFrameType>::frame_handled(helper);
+							}
+						}
+					}
+				}
+				catch (std::logic_error&)
+				{
 				}
 			}
-
-			return true;
 		}
 
 		template <typename OSIFrameType>
@@ -364,9 +456,11 @@ namespace asiotap
 		}
 
 		template <typename OSIFrameType>
-		inline bool check_frame(mutable_helper<OSIFrameType> frame)
+		inline void _filter<OSIFrameType, void>::parse(boost::asio::mutable_buffer buf) const
 		{
-			return check_frame(const_helper<OSIFrameType>(frame));
+			_base_filter<OSIFrameType>::clear_last_helper();
+
+			_base_filter<OSIFrameType>::do_parse(buf);
 		}
 	}
 }

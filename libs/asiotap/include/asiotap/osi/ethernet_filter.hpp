@@ -42,8 +42,7 @@
  * \brief An Ethernet filter class.
  */
 
-#ifndef ASIOTAP_OSI_ETHERNET_FILTER_HPP
-#define ASIOTAP_OSI_ETHERNET_FILTER_HPP
+#pragma once
 
 #include "filter.hpp"
 #include "ethernet_frame.hpp"
@@ -61,20 +60,5 @@ namespace asiotap
 		class filter<ethernet_frame> : public _filter<ethernet_frame>
 		{
 		};
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		bool check_frame(const_helper<ethernet_frame> frame);
-
-		inline bool check_frame(const_helper<ethernet_frame>)
-		{
-			return true;
-		}
 	}
 }
-
-#endif /* ASIOTAP_OSI_ETHERNET_FILTER_HPP */
-

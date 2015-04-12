@@ -42,8 +42,7 @@
  * \brief A DHCP filter class.
  */
 
-#ifndef ASIOTAP_OSI_DHCP_FILTER_HPP
-#define ASIOTAP_OSI_DHCP_FILTER_HPP
+#pragma once
 
 #include "filter.hpp"
 #include "dhcp_frame.hpp"
@@ -65,9 +64,11 @@ namespace asiotap
 
 				/**
 				 * \brief Constructor.
-				 * \param parent The parent filter.
+				 * \param _parent The parent filter.
 				 */
-				filter(ParentFilterType& parent);
+				filter(ParentFilterType& _parent) :
+					_filter<dhcp_frame, ParentFilterType>(_parent)
+				{}
 		};
 
 		/**
@@ -76,32 +77,17 @@ namespace asiotap
 		 * \return true if the frame matches the parent frame.
 		 */
 		template <>
-		bool frame_parent_match<dhcp_frame>(const_helper<bootp_frame> parent);
+		inline bool frame_parent_match<dhcp_frame>(const_helper<bootp_frame> parent) {
+			return (boost::asio::buffer_size(parent.options()) >= sizeof(DHCP_MAGIC_COOKIE));
+		}
 
 		/**
 		 * \brief Check if a frame is valid.
 		 * \param frame The frame.
 		 * \return true on success.
 		 */
-		bool check_frame(const_helper<dhcp_frame> frame);
-
-		template <typename ParentFilterType>
-		inline filter<dhcp_frame, ParentFilterType>::filter(ParentFilterType& _parent) : _filter<dhcp_frame, ParentFilterType>(_parent)
-		{
-		}
-
-		template <>
-		inline bool frame_parent_match<dhcp_frame>(const_helper<bootp_frame> parent)
-		{
-			return (boost::asio::buffer_size(parent.options()) >= sizeof(DHCP_MAGIC_COOKIE));
-		}
-
-		inline bool check_frame(const_helper<dhcp_frame> frame)
-		{
+		inline bool check_frame(const_helper<dhcp_frame> frame) {
 			return (frame.magic_cookie() == DHCP_MAGIC_COOKIE) && frame.check_options();
 		}
 	}
 }
-
-#endif /* ASIOTAP_OSI_DHCP_FILTER_HPP */
-

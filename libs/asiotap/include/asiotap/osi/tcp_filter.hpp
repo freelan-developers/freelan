@@ -108,14 +108,5 @@ namespace asiotap
 		inline bool frame_parent_match<tcp_frame>(const_helper<ipv6_frame> parent) {
 			return (parent.next_header() == TCP_PROTOCOL);
 		}
-
-		/**
-		 * \brief Check if a frame is valid.
-		 * \param frame The frame.
-		 * \return true on success.
-		 */
-		inline bool check_frame(const_helper<tcp_frame> frame) {
-			return true;
-		}
 	}
 }
