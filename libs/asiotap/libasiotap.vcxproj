@@ -75,6 +75,7 @@
     <ClCompile Include="src\ip_route.cpp" />
     <ClCompile Include="src\proxy.cpp" />
     <ClCompile Include="src\stream_operations.cpp" />
+    <ClCompile Include="src\tcp_filter.cpp" />
     <ClCompile Include="src\tcp_frame.cpp" />
     <ClCompile Include="src\tcp_helper.cpp" />
     <ClCompile Include="src\tcp_mss_morpher.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="include\asiotap\osi\ipv6_helper.hpp" />
     <ClInclude Include="include\asiotap\osi\icmpv6_proxy.hpp" />
     <ClInclude Include="include\asiotap\osi\proxy.hpp" />
+    <ClInclude Include="include\asiotap\osi\tcp_filter.hpp" />
     <ClInclude Include="include\asiotap\osi\tcp_frame.hpp" />
     <ClInclude Include="include\asiotap\osi\tcp_helper.hpp" />
     <ClInclude Include="include\asiotap\osi\tcp_mss_morpher.hpp" />
