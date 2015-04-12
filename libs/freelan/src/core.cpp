@@ -183,6 +183,13 @@ namespace freelan
 			return default_mtu_value - static_payload_size;
 		}
 
+		size_t get_auto_mss_value(size_t mtu)
+		{
+			// This somehow is the magic number.
+			const size_t static_payload_size = 20 + 8 + 4 + 22; // IP + UDP + FSCP HEADER + FSCP DATA HEADER
+			return mtu - static_payload_size;
+		}
+
 		static const unsigned int TAP_ADAPTERS_GROUP = 0;
 		static const unsigned int ENDPOINTS_GROUP = 1;
 
@@ -396,11 +403,17 @@ namespace freelan
 		m_tap_adapter_thread(),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
+		m_ipv6_filter(m_ethernet_filter),
 		m_udp_filter(m_ipv4_filter),
+		m_tcpv4_filter(m_ipv4_filter),
+		m_tcpv6_filter(m_ipv6_filter),
 		m_bootp_filter(m_udp_filter),
 		m_dhcp_filter(m_bootp_filter),
-		m_ipv6_filter(),
-		m_icmpv6_filter(m_ipv6_filter),
+		m_tun_ipv4_filter(),
+		m_tun_ipv6_filter(),
+		m_tun_tcpv4_filter(m_tun_ipv4_filter),
+		m_tun_tcpv6_filter(m_tun_ipv6_filter),
+		m_tun_icmpv6_filter(m_tun_ipv6_filter),
 		m_router_strand(m_io_service),
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
@@ -414,7 +427,27 @@ namespace freelan
 	{
 		m_arp_filter.add_handler(boost::bind(&core::do_handle_arp_frame, this, _1));
 		m_dhcp_filter.add_handler(boost::bind(&core::do_handle_dhcp_frame, this, _1));
-		m_icmpv6_filter.add_handler(boost::bind(&core::do_handle_icmpv6_frame, this, _1));
+		m_tun_icmpv6_filter.add_handler(boost::bind(&core::do_handle_icmpv6_frame, this, _1));
+		m_tcpv4_filter.add_handler([this](asiotap::osi::mutable_helper<asiotap::osi::tcp_frame> tcp_helper){
+			if (m_tcp_mss_morpher) {
+				m_tcp_mss_morpher->handle(*m_tcpv4_filter.parent().get_last_helper(), tcp_helper);
+			}
+		});
+		m_tcpv6_filter.add_handler([this](asiotap::osi::mutable_helper<asiotap::osi::tcp_frame> tcp_helper){
+			if (m_tcp_mss_morpher) {
+				m_tcp_mss_morpher->handle(*m_tcpv6_filter.parent().get_last_helper(), tcp_helper);
+			}
+		});
+		m_tun_tcpv4_filter.add_handler([this](asiotap::osi::mutable_helper<asiotap::osi::tcp_frame> tcp_helper){
+			if (m_tcp_mss_morpher) {
+				m_tcp_mss_morpher->handle(*m_tun_tcpv4_filter.parent().get_last_helper(), tcp_helper);
+			}
+		});
+		m_tun_tcpv6_filter.add_handler([this](asiotap::osi::mutable_helper<asiotap::osi::tcp_frame> tcp_helper){
+			if (m_tcp_mss_morpher) {
+				m_tcp_mss_morpher->handle(*m_tun_tcpv6_filter.parent().get_last_helper(), tcp_helper);
+			}
+		});
 
 		// Setup the route manager.
 		auto route_registration_success_handler = [this](const asiotap::route_manager::route_type& route){
@@ -1547,6 +1580,17 @@ namespace freelan
 
 			m_logger(fscp::log_level::important) << "Tap adapter \"" << *m_tap_adapter << "\" opened in mode " << m_configuration.tap_adapter.type << " with a MTU set to: " << tap_config.mtu;
 
+			// The MSS override.
+			const size_t max_mss = compute_mss(m_configuration.tap_adapter.mss_override, get_auto_mss_value(tap_config.mtu));
+
+			if (max_mss > 0) {
+				m_tcp_mss_morpher.reset(new asiotap::osi::tcp_mss_morpher(max_mss));
+				m_logger(fscp::log_level::important) << "MSS override enabled with a value of: " << max_mss;
+			} else {
+				m_tcp_mss_morpher.reset();
+				m_logger(fscp::log_level::warning) << "MSS override disabled. You may experience IP fragmentation for encapsulated TCP connections.";
+			}
+
 			// IPv4 address
 			if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null())
 			{
@@ -1725,6 +1769,8 @@ namespace freelan
 		m_arp_proxy.reset();
 		m_icmpv6_proxy.reset();
 
+		m_tcp_mss_morpher.reset();
+
 		if (m_tap_adapter)
 		{
 			if (m_tap_adapter_down_callback)
@@ -1850,11 +1896,11 @@ namespace freelan
 
 			if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ethernet)
 			{
+				// This line will eventually call the filters callbacks and the mss morpher.
+				m_ethernet_filter.parse(data);
+
 				if (m_arp_proxy || m_dhcp_proxy)
 				{
-					// This line will eventually call the filters callbacks.
-					m_ethernet_filter.parse(data);
-
 					if (m_arp_proxy && m_arp_filter.get_last_helper())
 					{
 						handled = true;
@@ -1882,16 +1928,16 @@ namespace freelan
 			}
 			else
 			{
+				// This line will eventually call the filters callbacks and the mss override.
+				m_tun_ipv6_filter.parse(data);
+
 				if (m_icmpv6_proxy)
 				{
-					// This line will eventually call the filters callbacks.
-					m_ipv6_filter.parse(data);
-
-					if (m_icmpv6_filter.get_last_helper())
+					if (m_tun_icmpv6_filter.get_last_helper())
 					{
 						// We don't want to catch ICMP echo requests or other stuff yet.
-						handled = m_icmpv6_filter.get_last_helper()->type() == asiotap::osi::ICMPV6_NEIGHBOR_SOLICITATION;
-						m_icmpv6_filter.clear_last_helper();
+						handled = m_tun_icmpv6_filter.get_last_helper()->type() == asiotap::osi::ICMPV6_NEIGHBOR_SOLICITATION;
+						m_tun_icmpv6_filter.clear_last_helper();
 					}
 				}
 
@@ -1991,7 +2037,7 @@ namespace freelan
 		{
 			const auto response_buffer = SharedBuffer(2048);
 			const boost::optional<boost::asio::const_buffer> data = m_icmpv6_proxy->process_frame(
-				*m_icmpv6_filter.parent().get_last_helper(),
+				*m_tun_icmpv6_filter.parent().get_last_helper(),
 				helper,
 				buffer(response_buffer)
 			);

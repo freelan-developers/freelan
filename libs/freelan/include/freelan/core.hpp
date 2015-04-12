@@ -58,6 +58,7 @@
 
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_proxy.hpp>
+#include <asiotap/osi/tcp_mss_morpher.hpp>
 #include <asiotap/osi/dhcp_proxy.hpp>
 #include <asiotap/osi/icmpv6_proxy.hpp>
 #include <asiotap/osi/complex_filter.hpp>
@@ -547,11 +548,17 @@ namespace freelan
 			typedef asiotap::osi::filter<asiotap::osi::ethernet_frame> ethernet_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::arp_frame, asiotap::osi::ethernet_frame>::type arp_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type ipv4_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::ipv6_frame, asiotap::osi::ethernet_frame>::type ipv6_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type udp_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::tcp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type tcpv4_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::tcp_frame, asiotap::osi::ipv6_frame, asiotap::osi::ethernet_frame>::type tcpv6_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type bootp_filter_type;
 			typedef asiotap::osi::complex_filter<asiotap::osi::dhcp_frame, asiotap::osi::bootp_frame, asiotap::osi::udp_frame, asiotap::osi::ipv4_frame, asiotap::osi::ethernet_frame>::type dhcp_filter_type;
-			typedef asiotap::osi::filter<asiotap::osi::ipv6_frame> ipv6_filter_type;
-			typedef asiotap::osi::complex_filter<asiotap::osi::icmpv6_frame, asiotap::osi::ipv6_frame>::type icmpv6_filter_type;
+			typedef asiotap::osi::filter<asiotap::osi::ipv4_frame> tun_ipv4_filter_type;
+			typedef asiotap::osi::filter<asiotap::osi::ipv6_frame> tun_ipv6_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::tcp_frame, asiotap::osi::ipv4_frame>::type tun_tcpv4_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::tcp_frame, asiotap::osi::ipv6_frame>::type tun_tcpv6_filter_type;
+			typedef asiotap::osi::complex_filter<asiotap::osi::icmpv6_frame, asiotap::osi::ipv6_frame>::type tun_icmpv6_filter_type;
 			typedef asiotap::osi::const_helper<asiotap::osi::arp_frame> arp_helper_type;
 			typedef asiotap::osi::const_helper<asiotap::osi::dhcp_frame> dhcp_helper_type;
 			typedef asiotap::osi::const_helper<asiotap::osi::icmpv6_frame> icmpv6_helper_type;
@@ -596,15 +603,23 @@ namespace freelan
 			ethernet_filter_type m_ethernet_filter;
 			arp_filter_type m_arp_filter;
 			ipv4_filter_type m_ipv4_filter;
+			ipv6_filter_type m_ipv6_filter;
 			udp_filter_type m_udp_filter;
+			tcpv4_filter_type m_tcpv4_filter;
+			tcpv6_filter_type m_tcpv6_filter;
 			bootp_filter_type m_bootp_filter;
 			dhcp_filter_type m_dhcp_filter;
-			ipv6_filter_type m_ipv6_filter;
-			icmpv6_filter_type m_icmpv6_filter;
+			tun_ipv4_filter_type m_tun_ipv4_filter;
+			tun_ipv6_filter_type m_tun_ipv6_filter;
+			tun_tcpv4_filter_type m_tun_tcpv4_filter;
+			tun_tcpv6_filter_type m_tun_tcpv6_filter;
+			tun_icmpv6_filter_type m_tun_icmpv6_filter;
 
 			boost::scoped_ptr<arp_proxy_type> m_arp_proxy;
 			boost::scoped_ptr<dhcp_proxy_type> m_dhcp_proxy;
 			boost::scoped_ptr<icmpv6_proxy_type> m_icmpv6_proxy;
+
+			boost::scoped_ptr<asiotap::osi::tcp_mss_morpher> m_tcp_mss_morpher;
 
 		private: /* Switch & router */
 

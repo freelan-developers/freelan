@@ -69,6 +69,7 @@
 #include <asiotap/types/endpoint.hpp>
 
 #include "mtu.hpp"
+#include "mss.hpp"
 #include "metric.hpp"
 
 namespace freelan
@@ -439,6 +440,11 @@ namespace freelan
 		 * \brief The tap adapter's MTU.
 		 */
 		mtu_type mtu;
+
+		/**
+		* \brief The MSS override.
+		*/
+		mss_type mss_override;
 
 		/**
 		 * \brief The tap adapter's metric.
