@@ -1619,6 +1619,8 @@ namespace freelan
 				// The ARP proxy
 				if (m_configuration.tap_adapter.arp_proxy_enabled)
 				{
+					m_logger(fscp::log_level::warning) << "The ARP proxy is enabled and this is NOT recommended ! You will face IPv4 connectivity issues !";
+
 					m_arp_proxy.reset(new arp_proxy_type());
 					m_arp_proxy->set_arp_request_callback(boost::bind(&core::do_handle_arp_request, this, _1, _2));
 				}
@@ -1630,6 +1632,8 @@ namespace freelan
 				// The DHCP proxy
 				if (m_configuration.tap_adapter.dhcp_proxy_enabled)
 				{
+					m_logger(fscp::log_level::information) << "The DHCP proxy is enabled.";
+
 					m_dhcp_proxy.reset(new dhcp_proxy_type());
 					m_dhcp_proxy->set_hardware_address(m_tap_adapter->ethernet_address().data());
 
