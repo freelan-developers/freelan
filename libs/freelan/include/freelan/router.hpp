@@ -295,10 +295,10 @@ namespace freelan
 
 		private:
 
-			port_list_type::const_iterator get_target_for(port_index_type, boost::asio::const_buffer);
+			std::vector<const port_type*> get_targets_for(port_index_type, boost::asio::const_buffer);
 
 			template <typename AddressType>
-			port_list_type::const_iterator get_target_for(port_index_type, const AddressType&);
+			std::vector<const port_type*> get_targets_for(port_index_type, const AddressType&);
 
 			router_configuration m_configuration;
 

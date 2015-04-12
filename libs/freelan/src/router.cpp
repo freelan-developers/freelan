@@ -54,28 +54,29 @@
 
 namespace freelan
 {
-	void router::async_write(port_index_type index, boost::asio::const_buffer data, port_type::write_handler_type handler)
+	namespace
 	{
-		const port_list_type::const_iterator port_entry = get_target_for(index, data);
-
-#if FREELAN_DEBUG
-		if (port_entry != m_ports.end())
-		{
-			std::cerr << "Routing " << buffer_size(data) << " byte(s) of data from " << index << " to " << port_entry->first << std::endl;
+		bool is_multicast(const boost::asio::ip::address_v4&) {
+			return false;
 		}
-		else
-		{
-			std::cerr << "Routing " << buffer_size(data) << " byte(s) of data from " << index << ": no route." << std::endl;
-		}
-#endif
 
-		if (port_entry != m_ports.end())
-		{
-			port_entry->second.async_write(data, handler);
+		bool is_multicast(const boost::asio::ip::address_v6& addr) {
+			static asiotap::ipv6_network_address solicited_node_multicast_address(boost::asio::ip::address_v6::from_string("ff02::1:ff00:0"), 104);
+
+			return solicited_node_multicast_address.has_address(addr);
 		}
 	}
 
-	router::port_list_type::const_iterator router::get_target_for(port_index_type index, boost::asio::const_buffer data)
+	void router::async_write(port_index_type index, boost::asio::const_buffer data, port_type::write_handler_type handler)
+	{
+		const auto port_entries = get_targets_for(index, data);
+
+		for (auto&& port_entry : port_entries) {
+			port_entry->async_write(data, handler);
+		}
+	}
+
+	std::vector<const router::port_type*> router::get_targets_for(port_index_type index, boost::asio::const_buffer data)
 	{
 		// Try IPv4 first because it is more likely.
 
@@ -87,7 +88,7 @@ namespace freelan
 
 			m_ipv4_filter.clear_last_helper();
 
-			return get_target_for(index, destination);
+			return get_targets_for(index, destination);
 		}
 		else
 		{
@@ -99,39 +100,54 @@ namespace freelan
 
 				m_ipv6_filter.clear_last_helper();
 
-				return get_target_for(index, destination);
+				return get_targets_for(index, destination);
 			}
 		}
 
 		// Frame of other types than IPv4 or IPv6 are silently dropped.
-		return m_ports.end();
+		return {};
 	}
 
 	template <typename AddressType>
-	router::port_list_type::const_iterator router::get_target_for(port_index_type index, const AddressType& dest_addr)
+	std::vector<const router::port_type*> router::get_targets_for(port_index_type index, const AddressType& dest_addr)
 	{
 		const router::port_list_type::const_iterator source_port_entry = m_ports.find(index);
 
 		if (source_port_entry != m_ports.end())
 		{
-			const auto& routes_ports = routes();
+			std::vector<const router::port_type*> result;
 
-			for (auto&& route_port : routes_ports)
-			{
-				if (has_address(route_port.first, dest_addr))
-				{
-					const port_list_type::const_iterator port_entry = m_ports.find(route_port.second);
+			if (is_multicast(dest_addr)) {
+				result.reserve(m_ports.size());
 
-					if (m_configuration.client_routing_enabled || (source_port_entry->second.group() != port_entry->second.group()))
-					{
-						return port_entry;
+				for (auto port_entry = m_ports.begin(); port_entry != m_ports.end(); ++port_entry) {
+					// Make sure we don't route multicast back packets to the source.
+					if (source_port_entry != port_entry) {
+						if (m_configuration.client_routing_enabled || (source_port_entry->second.group() != port_entry->second.group())) {
+							result.push_back(&port_entry->second);
+						}
+					}
+				}
+			} else {
+				const auto& routes_ports = routes();
+
+				for (auto&& route_port : routes_ports) {
+					if (has_address(route_port.first, dest_addr)) {
+						const port_list_type::const_iterator port_entry = m_ports.find(route_port.second);
+
+						if (m_configuration.client_routing_enabled || (source_port_entry->second.group() != port_entry->second.group())) {
+							result.push_back(&port_entry->second);
+							break;
+						}
 					}
 				}
 			}
+
+			return result;
 		}
 
-		// No route for the current frame so we return an invalid iterator.
-		return m_ports.end();
+		// No route for the current frame so we return an empty list.
+		return {};
 	}
 
 	const router::routes_port_type& router::routes() const
