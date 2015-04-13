@@ -82,9 +82,9 @@ namespace freelan
 
 		m_ipv4_filter.parse(data);
 
-		if (m_ipv4_filter.get_last_helper())
+		if (m_ipv4_filter.get_last_const_helper())
 		{
-			const boost::asio::ip::address_v4 destination = m_ipv4_filter.get_last_helper()->destination();
+			const boost::asio::ip::address_v4 destination = m_ipv4_filter.get_last_const_helper()->destination();
 
 			m_ipv4_filter.clear_last_helper();
 
@@ -94,9 +94,9 @@ namespace freelan
 		{
 			m_ipv6_filter.parse(data);
 
-			if (m_ipv6_filter.get_last_helper())
+			if (m_ipv6_filter.get_last_const_helper())
 			{
-				const boost::asio::ip::address_v6 destination = m_ipv6_filter.get_last_helper()->destination();
+				const boost::asio::ip::address_v6 destination = m_ipv6_filter.get_last_const_helper()->destination();
 
 				m_ipv6_filter.clear_last_helper();
 
