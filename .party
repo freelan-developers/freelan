@@ -122,8 +122,8 @@ Attendee('openssl').get_build('msvc-x64-debug').commands = [
 
 # cURL
 Attendee('curl', filter=~f('linux'))
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.40.0.zip', filter='windows')
-Attendee('curl').add_source('http://curl.haxx.se/download/curl-7.40.0.tar.bz2', filter=~f('windows'))
+Attendee('curl').add_source('http://curl.askapache.com/download/curl-7.41.0.zip', filter='windows', mimetype='application/zip')
+Attendee('curl').add_source('http://curl.askapache.com/download/curl-7.41.0.tar.bz2', filter=~f('windows'), mimetype='application/x-bzip2')
 
 Attendee('curl').depends_on('openssl')
 
