@@ -375,8 +375,23 @@ namespace asiotap
 		inline _filter<OSIFrameType, ParentFilterType>::_filter(ParentFilterType& _parent) :
 			m_parent(_parent)
 		{
+			typedef _filter<OSIFrameType, ParentFilterType> filter_type;
+			typedef typename ParentFilterType::frame_type frame_type;
+
+			const auto mutable_parse = static_cast<void (filter_type::*)(mutable_helper<frame_type>) const>(&filter_type::parse);
+			const auto const_parse = static_cast<void (filter_type::*)(const_helper<frame_type>) const>(&filter_type::parse);
+
+			m_parent.add_handler(boost::bind(mutable_parse, this, _1));
+			m_parent.add_const_handler(boost::bind(const_parse, this, _1));
+
+#if 0
+			// The previous lines could be simplified using lambdas, like
+			// below. But there is a compiler bug in gcc 4.7 which makes this
+			// impossible. And we have to support it to be able to backport on
+			// Debian wheezy.
 			m_parent.add_handler([this](mutable_helper<typename ParentFilterType::frame_type> helper) { parse(helper); });
 			m_parent.add_const_handler([this](const_helper<typename ParentFilterType::frame_type> helper) { parse(helper); });
+#endif
 		}
 
 		template <typename OSIFrameType, typename ParentFilterType>
