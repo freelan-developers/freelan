@@ -173,6 +173,10 @@ namespace asiotap
 	{
 		const guid_map_type tap_adapters_map = enumerate_tap_adapters();
 
+		if (tap_adapters_map.empty()) {
+			throw std::runtime_error("No tap adapter found. You may want to relaunch the installer to install one.");
+		}
+
 		for (auto&& tap_adapter : tap_adapters_map)
 		{
 			if (!tap_adapter.first.empty())
@@ -185,6 +189,8 @@ namespace asiotap
 				}
 			}
 		}
+
+		throw std::runtime_error("Some tap adapters were found but none could be opened. Are they all in use already ?");
 	}
 
 	void windows_tap_adapter::open(const std::string& _name, boost::system::error_code& ec)
@@ -193,9 +199,7 @@ namespace asiotap
 
 		if (_name.empty())
 		{
-			open(ec);
-
-			return;
+			return open(ec);
 		}
 
 		PIP_ADAPTER_INFO piai = NULL;
