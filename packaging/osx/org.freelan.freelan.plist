@@ -6,7 +6,7 @@
   <string>org.freelan.freelan</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/sbin/freelan</string>
+    <string>/usr/local/bin/freelan</string>
     <string>-c</string>
     <string>/usr/local/etc/freelan/freelan.cfg</string>
     <string>-f</string>
