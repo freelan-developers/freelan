@@ -63,10 +63,10 @@ env.Install(
     root.Dir(relative(etc_freelan_path)),
     configurations,
 )
-env.GenerateScript(
+env.AddPostAction(env.GenerateScript(
     root.File(relative(uninstall_script)),
     uninstall_script_source,
-)
+), Action("chmod 0755 $TARGET"))
 env.Plist(
     root.File(relative(launch_daemon_script)),
     launch_daemon_script_source,
@@ -98,7 +98,7 @@ final_package = env.ProductBuild(
         'version': env.defines.version_str,
     }),
     PRODUCTBUILD_RESOURCES=resources,
-    PRODUCTBUILD_PACKAGE_PATH=[env.Dir('.')],
+    PRODUCTBUILD_PACKAGE_PATH=[env.Dir('.'), env.Dir('third-party')],
 )
 
 Return('final_package')

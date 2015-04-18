@@ -44,8 +44,10 @@ def productbuild_scanner(node, env, paths):
     for package in packages:
         for path in paths:
             package_file = env.Dir(path).File(package)
-            result.append(package_file)
-            break
+
+            if package_file.exists() or package_file.has_builder():
+                result.append(package_file)
+                break
 
     return result
 

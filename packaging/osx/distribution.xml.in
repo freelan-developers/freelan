@@ -3,22 +3,32 @@
 	<title>FreeLAN {version}</title>
 	<organization>org.freelan</organization>
 	<domains enable_localSystem="true"/>
-	<options customize="never" require-scripts="true" rootVolumeOnly="true" />
+	<options customize="always" require-scripts="true" rootVolumeOnly="true" />
 
 	<!-- Define documents displayed at various steps -->
 	<license    file="license.html"    mime-type="text/html" />
 	<conclusion file="conclusion.html" mime-type="text/html" />
 
 	<!-- List all component packages -->
-	<pkg-ref id="org.freelan.freelan" version="1" auth="root">org.freelan.freelan.pkg</pkg-ref>
+	<pkg-ref id="org.freelan.freelan" auth="root">org.freelan.freelan.pkg</pkg-ref>
+	<pkg-ref id="tap" auth="root">tap.pkg</pkg-ref>
+	<pkg-ref id="tun" auth="root">tun.pkg</pkg-ref>
 
 	<!-- List them again here. They can now be organized as a hierarchy if you want. -->
 	<choices-outline>
 		<line choice="org.freelan.freelan"/>
+		<line choice="tap"/>
+		<line choice="tun"/>
 	</choices-outline>
 
 	<!-- Define each choice above -->
-	<choice id="org.freelan.freelan" visible="false" title="FreeLAN" description="The FreeLAN binary" start_selected="true">
+	<choice id="org.freelan.freelan" enabled="false" title="FreeLAN" description="The FreeLAN binary" start_selected="true">
 		<pkg-ref id="org.freelan.freelan"/>
+	</choice>
+	<choice id="tap" visible="true" title="TAP kernel driver" description="Install the TAP kernel driver for OS X by Mattias Nissler - TunTap OS X" start_selected="true">
+		<pkg-ref id="tap"/>
+	</choice>
+	<choice id="tun" visible="true" title="TUN kernel driver" description="Install the TUN kernel driver for OS X by Mattias Nissler - TunTap OS X" start_selected="true">
+		<pkg-ref id="tun"/>
 	</choice>
 </installer-gui-script>
