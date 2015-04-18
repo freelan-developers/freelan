@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <installer-gui-script minSpecVersion="1">
-	<title>freelan 1.1</title>
+	<title>FreeLAN {version}</title>
 	<organization>org.freelan</organization>
 	<domains enable_localSystem="true"/>
 	<options customize="never" require-scripts="true" rootVolumeOnly="true" />
@@ -18,7 +18,7 @@
 	</choices-outline>
 
 	<!-- Define each choice above -->
-	<choice id="org.freelan.freelan" visible="false" title="freelan" description="The freelan daemon" start_selected="true">
+	<choice id="org.freelan.freelan" visible="false" title="FreeLAN" description="The FreeLAN binary" start_selected="true">
 		<pkg-ref id="org.freelan.freelan"/>
 	</choice>
 </installer-gui-script>

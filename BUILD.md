@@ -59,3 +59,11 @@ You will need Microsoft Visual Studio 2013 to compile freelan. All projects come
 The root directory also contains a solution file (`.sln`) that references all the sub-projects.
 
 The resulting binaries will be located in the [install](install) directory.
+
+### Mac OSX
+
+On Mac OSX, an additional SCons target exists to build the freelan installation package:
+
+> scons package
+
+The package will be generated at the root of the repository.

@@ -1,0 +1,104 @@
+import os
+import pkgbuild
+import productbuild
+import plist
+import generate_script
+import template
+
+
+def relative(path):
+    return path.lstrip('/')
+
+
+Import('env apps configurations retail_prefix')
+
+env = env.Clone()
+
+for module in [pkgbuild, productbuild, plist, generate_script, template]:
+    module.generate(env)
+
+root = env.Dir('root')
+scripts = env.Dir('scripts')
+options = {
+    'identifier': 'org.freelan.freelan',
+    'version': env.defines.version_str,
+    'ownership': 'recommended',
+}
+resources = env.Dir('resources')
+distribution_template = env.File('distribution.xml.in')
+conclusion_template = resources.File('conclusion.html.in')
+
+bin_path = os.path.join(retail_prefix, 'bin')
+etc_freelan_path = os.path.join(retail_prefix, 'etc/freelan')
+share_freelan_path = os.path.join(retail_prefix, 'share/freelan')
+uninstall_script = os.path.join(share_freelan_path, 'uninstall.sh')
+launch_daemon_script = os.path.join(
+    '/Library/LaunchDaemons',
+    options['identifier'] + '.plist',
+)
+
+uninstall_script_source = env.Value([
+    '/bin/launchctl unload ' + launch_daemon_script,
+    'rm -f ' + launch_daemon_script,
+    'rm -f ' + os.path.join(bin_path, apps[0].name),
+    'rm -rf ' + etc_freelan_path,
+])
+launch_daemon_script_source = env.Value({
+    'Label': options['identifier'],
+    'ProgramArguments': [
+        os.path.join(bin_path, apps[0].name),
+        '-c',
+        os.path.join(etc_freelan_path, configurations[0].name),
+        '-f',
+    ],
+    'RunAtLoad': True,
+    'KeepAlive': True,
+})
+
+env.Install(
+    root.Dir(relative(bin_path)),
+    apps,
+)
+env.Install(
+    root.Dir(relative(etc_freelan_path)),
+    configurations,
+)
+env.GenerateScript(
+    root.File(relative(uninstall_script)),
+    uninstall_script_source,
+)
+env.Plist(
+    root.File(relative(launch_daemon_script)),
+    launch_daemon_script_source,
+)
+
+package = env.PkgBuild(
+    target=options['identifier'] + '.pkg',
+    source=root,
+    PKGBUILD_OPTIONS=env.Value(options),
+    PKGBUILD_SCRIPTS=scripts,
+)
+distribution_file = env.Template(
+    source=distribution_template,
+    TEMPLATE_DICT=env.Value({'version': env.defines.version_str}),
+)
+conclusion_file = env.Template(
+    source=conclusion_template,
+    TEMPLATE_DICT=env.Value({
+        'configuration_file': os.path.join(
+            etc_freelan_path,
+            configurations[0].name,
+        )
+    }),
+)
+final_package = env.ProductBuild(
+    target='freelan_{version}.pkg'.format(version=env.defines.version_str),
+    source=distribution_file,
+    PRODUCTBUILD_OPTIONS=env.Value({
+        'version': env.defines.version_str,
+    }),
+    PRODUCTBUILD_RESOURCES=resources,
+    PRODUCTBUILD_PACKAGE_PATH=[env.Dir('.')],
+)
+
+Return('final_package')

@@ -72,6 +72,10 @@ class Defines(object):
         return self._version
 
     @property
+    def version_str(self):
+        return '%s.%s' % (self.version.major, self.version.minor)
+
+    @property
     def date(self):
         if self._date is None:
             self._date = datetime.date.today().strftime('%a %d %b %Y')
@@ -125,6 +129,7 @@ class Defines(object):
             action=self.action,
             emitter=self.emitter,
         )})
+        env.defines = self
 
     def generate_defines(self, target):
         """

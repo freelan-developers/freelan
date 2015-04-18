@@ -1,0 +1,9 @@
+<html>
+	<head>
+	</head>
+	<body style="font-family: sans-serif;">
+		<h1>Installation complete !</h1>
+		<p>Go and edit the configuration file at <code>{configuration_file}</code> to get started !</p>
+		<p>You may also check <a href="http://www.freelan.org/download#osx">the official website</a> for detailed configuration instructions.</p>
+	</body>
+</html>

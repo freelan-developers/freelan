@@ -57,24 +57,25 @@ for x in Glob('apps/*'):
 
 samples = []
 
-for x in Glob('samples/*'):
-    libname = os.path.basename(str(x))
+if env.mode != 'retail':
+    for x in Glob('samples/*'):
+        libname = os.path.basename(str(x))
 
-    if not sys.platform.startswith('linux'):
-        if libname in 'netlinkplus':
-            continue
+        if not sys.platform.startswith('linux'):
+            if libname in 'netlinkplus':
+                continue
 
-    for y in x.glob('*'):
-        sconscript_path = y.File('SConscript')
+        for y in x.glob('*'):
+            sconscript_path = y.File('SConscript')
 
-        if sconscript_path.exists():
-            name = 'sample_%s_%s' % (libname, os.path.basename(str(y)))
-            sample = SConscript(sconscript_path, exports='env dirs name')
-            samples.extend(sample)
+            if sconscript_path.exists():
+                name = 'sample_%s_%s' % (libname, os.path.basename(str(y)))
+                sample = SConscript(sconscript_path, exports='env dirs name')
+                samples.extend(sample)
 
-            if env.debug:
-                samples.extend(env.SymLink(y.File('%sd' % os.path.basename(str(y))).srcnode(), sample))
-            else:
-                samples.extend(env.SymLink(y.File(os.path.basename(str(y))).srcnode(), sample))
+                if env.mode == 'release':
+                    samples.extend(env.SymLink(y.File('%sd' % os.path.basename(str(y))).srcnode(), sample))
+                else:
+                    samples.extend(env.SymLink(y.File(os.path.basename(str(y))).srcnode(), sample))
 
 Return('libraries includes apps samples configurations')

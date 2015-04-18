@@ -20,3 +20,6 @@
 
 # Vagrant
 .vagrant
+
+# Package files
+*.pkg

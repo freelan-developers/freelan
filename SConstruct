@@ -40,12 +40,11 @@ class FreelanEnvironment(Environment):
     A freelan specific environment class.
     """
 
-    def __init__(self, debug, prefix, **kwargs):
+    def __init__(self, mode, prefix, **kwargs):
         """
         Initialize the environment.
 
-        :param debug: A boolean value that indicates whether to set debug flags
-        in the environment.
+        :param mode: The compilation mode.
         :param prefix: The installation prefix.
         """
         super(FreelanEnvironment, self).__init__(**kwargs)
@@ -71,7 +70,7 @@ class FreelanEnvironment(Environment):
             if flag in os.environ:
                 self[flag] = Split(os.environ[flag])
 
-        self.debug = debug
+        self.mode = mode
         self.prefix = prefix
 
         if os.path.basename(self['CXX']) == 'clang++':
@@ -98,7 +97,7 @@ class FreelanEnvironment(Environment):
                 self.Append(CXXFLAGS=['--stdlib=libc++'])
                 self.Append(LDFLAGS=['--stdlib=libc++'])
 
-            if self.debug:
+            if self.mode == 'debug':
                 self.Append(CXXFLAGS=['-g'])
                 self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
             else:
@@ -151,20 +150,29 @@ mode = GetOption('mode')
 prefix = os.path.abspath(GetOption('prefix'))
 
 if mode in ('all', 'release'):
-    env = FreelanEnvironment(debug=False, prefix=prefix)
-    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'release'))
+    env = FreelanEnvironment(mode='release', prefix=prefix)
+    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     install = env.Install(os.path.join(prefix, 'bin'), apps)
     install.extend(env.Install(os.path.join(prefix, 'etc', 'freelan'), configurations))
+
     Alias('install', install)
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', install + apps + samples)
 
 if mode in ('all', 'debug'):
-    env = FreelanEnvironment(debug=True, prefix=prefix)
-    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', 'debug'))
+    env = FreelanEnvironment(mode='debug', prefix=prefix)
+    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', apps + samples)
+
+if sys.platform.startswith('darwin'):
+    retail_prefix = '/usr/local'
+    env = FreelanEnvironment(mode='retail', prefix=retail_prefix)
+    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    package = SConscript('packaging/osx/SConscript', exports='env apps configurations retail_prefix')
+    install_package = env.Install('.', package)
+    Alias('package', install_package)
 
 Default('install')
