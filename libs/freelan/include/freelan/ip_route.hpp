@@ -93,7 +93,7 @@ namespace freelan
 	/**
 	 * \brief The IP route type.
 	 */
-	typedef boost::variant<asiotap::ip_route, default_ipv4_gateway_type, default_ipv6_gateway_type> ip_route;
+	typedef boost::variant<default_ipv4_gateway_type, default_ipv6_gateway_type, asiotap::ip_route> ip_route;
 
 	/**
 	 * \brief A visitor that get the route.
