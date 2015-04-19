@@ -64,11 +64,6 @@ class FreelanEnvironment(Environment):
             if flag in os.environ:
                 self[flag] = Split(os.environ[flag])
 
-        #TODO: Remove these lines
-        print '#####################'
-        print '\n'.join("%s: %s" % x for x in os.environ.iteritems())
-        print '#####################'
-
         self.mode = mode
         self.prefix = prefix
         self.destdir = self['ENV'].get('DESTDIR', '')
@@ -79,10 +74,6 @@ class FreelanEnvironment(Environment):
             ) + self.prefix
         else:
             self.install_prefix = self.prefix
-
-        print self.prefix
-        print self.destdir
-        print self.install_prefix
 
         if os.path.basename(self['CXX']) == 'clang++':
             self.Append(CXXFLAGS=['-Qunused-arguments'])
