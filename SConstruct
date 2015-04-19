@@ -12,18 +12,6 @@ from fnmatch import fnmatch
 # This file is local.
 from defines import Defines
 
-
-AddOption(
-    '--prefix',
-    dest='prefix',
-    default='./install',
-    type='string',
-    nargs=1,
-    action='store',
-    metavar='DIR',
-    help='The installation prefix.',
-)
-
 AddOption(
     '--mode',
     dest='mode',
@@ -49,12 +37,15 @@ class FreelanEnvironment(Environment):
         """
         super(FreelanEnvironment, self).__init__(**kwargs)
 
+        # Inherit the environment from the context.
+        self['ENV'] = os.environ
+
         self.defines = Defines()
         self.defines.register_into(self)
 
         for flag in [
-            'CXX',
             'CC',
+            'CXX',
             'AR',
             'LINK',
         ]:
@@ -62,16 +53,36 @@ class FreelanEnvironment(Environment):
                 self[flag] = os.environ[flag]
 
         for flag in [
+            'CFLAGS',
             'CXXFLAGS',
-            'CCFLAGS',
+            'CPPFLAGS',
             'ARFLAGS',
+            'LDFLAGS',
             'LINKFLAGS',
+            'LIBS',
         ]:
             if flag in os.environ:
                 self[flag] = Split(os.environ[flag])
 
+        #TODO: Remove these lines
+        print '#####################'
+        print '\n'.join("%s: %s" % x for x in os.environ.iteritems())
+        print '#####################'
+
         self.mode = mode
         self.prefix = prefix
+        self.destdir = self['ENV'].get('DESTDIR', '')
+
+        if self.destdir:
+            self.install_prefix = os.path.normpath(
+                os.path.abspath(self.destdir),
+            ) + self.prefix
+        else:
+            self.install_prefix = self.prefix
+
+        print self.prefix
+        print self.destdir
+        print self.install_prefix
 
         if os.path.basename(self['CXX']) == 'clang++':
             self.Append(CXXFLAGS=['-Qunused-arguments'])
@@ -87,21 +98,17 @@ class FreelanEnvironment(Environment):
         self.Append(CXXFLAGS=['-Wshadow'])
         self.Append(LDFLAGS=['--std=c++11'])
 
-        if 'OPENWRT_BUILD' in os.environ:
-            self['ENV'] = os.environ
-            self.arch = os.environ['ARCH']
-        else:
-            if sys.platform.startswith('darwin'):
-                self.Append(CXXFLAGS=['-arch', 'x86_64'])
-                self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
-                self.Append(CXXFLAGS=['--stdlib=libc++'])
-                self.Append(LDFLAGS=['--stdlib=libc++'])
+        if sys.platform.startswith('darwin'):
+            self.Append(CXXFLAGS=['-arch', 'x86_64'])
+            self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
+            self.Append(CXXFLAGS=['--stdlib=libc++'])
+            self.Append(LDFLAGS=['--stdlib=libc++'])
 
-            if self.mode == 'debug':
-                self.Append(CXXFLAGS=['-g'])
-                self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
-            else:
-                self.Append(CXXFLAGS='-O3')
+        if self.mode == 'debug':
+            self.Append(CXXFLAGS=['-g'])
+            self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')
+        else:
+            self.Append(CXXFLAGS='-O3')
 
         self.Append(CPPDEFINES=r'FREELAN_INSTALL_PREFIX="\"%s\""' % self.prefix)
 
@@ -147,13 +154,13 @@ class FreelanEnvironment(Environment):
 
 
 mode = GetOption('mode')
-prefix = os.path.abspath(GetOption('prefix'))
+prefix = os.path.normpath(os.path.abspath(ARGUMENTS.get('prefix', './install')))
 
 if mode in ('all', 'release'):
     env = FreelanEnvironment(mode='release', prefix=prefix)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
-    install = env.Install(os.path.join(prefix, 'bin'), apps)
-    install.extend(env.Install(os.path.join(prefix, 'etc', 'freelan'), configurations))
+    install = env.Install(os.path.join(env.install_prefix, 'bin'), apps)
+    install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
     Alias('install', install)
     Alias('apps', apps)

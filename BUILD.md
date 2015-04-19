@@ -42,7 +42,7 @@ To build everything in the directory (including samples), type instead:
 
 To build then install everything into a specific directory, type instead:
 
-> scons install --prefix=/usr/local/
+> scons install prefix=/usr/local/
 
 ### Debugging
 
