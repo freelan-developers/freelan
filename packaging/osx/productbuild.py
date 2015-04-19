@@ -35,19 +35,20 @@ def get_nodes(element, path):
 
 
 def productbuild_scanner(node, env, paths):
-    document = minidom.parseString(node.get_contents())
-    xnodes = get_nodes(document, '/installer-gui-script/pkg-ref')
-    packages = [xnode.childNodes[0].nodeValue for xnode in xnodes]
-
     result = []
 
-    for package in packages:
-        for path in paths:
-            package_file = env.Dir(path).File(package)
+    if node.exists():
+        document = minidom.parseString(node.get_contents())
+        xnodes = get_nodes(document, '/installer-gui-script/pkg-ref')
+        packages = [xnode.childNodes[0].nodeValue for xnode in xnodes]
 
-            if package_file.exists() or package_file.has_builder():
-                result.append(package_file)
-                break
+        for package in packages:
+            for path in paths:
+                package_file = env.Dir(path).File(package)
+
+                if package_file.exists() or package_file.has_builder():
+                    result.append(package_file)
+                    break
 
     return result
 
