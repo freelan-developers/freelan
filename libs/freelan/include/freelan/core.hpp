@@ -255,39 +255,14 @@ namespace freelan
 			static const boost::posix_time::time_duration ROUTES_REQUEST_PERIOD;
 
 			/**
-			 * \brief The request certificate period.
-			 */
-			static const boost::posix_time::time_duration REQUEST_CERTIFICATE_PERIOD;
-
-			/**
-			 * \brief The request CA certificate period.
-			 */
-			static const boost::posix_time::time_duration REQUEST_CA_CERTIFICATE_PERIOD;
-
-			/**
 			 * \brief The renew certificate warning period.
 			 */
 			static const boost::posix_time::time_duration RENEW_CERTIFICATE_WARNING_PERIOD;
 
 			/**
-			 * \brief The registration retry period.
-			 */
-			static const boost::posix_time::time_duration REGISTRATION_RETRY_PERIOD;
-
-			/**
 			 * \brief The registration warning period.
 			 */
 			static const boost::posix_time::time_duration REGISTRATION_WARNING_PERIOD;
-
-			/**
-			 * \brief The set contact information retry period.
-			 */
-			static const boost::posix_time::time_duration SET_CONTACT_INFORMATION_RETRY_PERIOD;
-
-			/**
-			 * \brief The get contact information retry period.
-			 */
-			static const boost::posix_time::time_duration GET_CONTACT_INFORMATION_RETRY_PERIOD;
 
 			/**
 			 * \brief The get contact information update period.
@@ -724,12 +699,32 @@ namespace freelan
 			void get_contact_information();
 
 			boost::shared_ptr<web_client> m_web_client;
-			boost::asio::deadline_timer m_request_certificate_timer;
-			boost::asio::deadline_timer m_request_ca_certificate_timer;
+
+			struct timer_period {
+				timer_period(boost::asio::io_service& _io_service, boost::posix_time::time_duration _min, boost::posix_time::time_duration _max) :
+					timer(_io_service),
+					min(_min),
+					max(_max),
+					period(_min)
+				{}
+
+				void reset() {
+					period = min;
+				}
+				void exponential_backoff();
+
+				boost::asio::deadline_timer timer;
+				const boost::posix_time::time_duration min;
+				const boost::posix_time::time_duration max;
+				boost::posix_time::time_duration period;
+			};
+
+			timer_period m_request_certificate;
+			timer_period m_request_ca_certificate;
 			boost::asio::deadline_timer m_renew_certificate_timer;
-			boost::asio::deadline_timer m_registration_retry_timer;
-			boost::asio::deadline_timer m_set_contact_information_retry_timer;
-			boost::asio::deadline_timer m_get_contact_information_retry_timer;
+			timer_period m_registration_retry;
+			timer_period m_set_contact_information_retry;
+			timer_period m_get_contact_information_retry;
 			cert_list_type m_client_certificate_authority_list;
 	};
 }
