@@ -2304,321 +2304,276 @@ namespace freelan
 
 	void core::request_certificate()
 	{
-		const auto private_key = generate_private_key();
-		const auto certificate_request = generate_certificate_request(private_key);
+		if (m_web_client) {
+			m_logger(fscp::log_level::information) << "Requesting a client certificate from the web server...";
 
-		m_logger(fscp::log_level::information) << "Requesting a client certificate from the web server...";
+			const auto private_key = generate_private_key();
+			const auto certificate_request = generate_certificate_request(private_key);
 
-		m_web_client->request_certificate(certificate_request, [this, private_key] (const boost::system::error_code& ec, cryptoplus::x509::certificate certificate) {
-			if (ec)
-			{
-				m_logger(fscp::log_level::error) << "The certificate request to the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << m_request_certificate.period << "...";
-
-				m_request_certificate.exponential_backoff();
-				m_request_certificate.timer.async_wait([this](const boost::system::error_code& ec2) {
-					if (ec2 != boost::asio::error::operation_aborted)
-					{
-						request_certificate();
-					}
-				});
-			}
-			else
-			{
-				m_request_certificate.reset();
-				m_logger(fscp::log_level::information) << "Received certificate from server: " << certificate.subject();
-
-				m_configuration.security.identity = fscp::identity_store(certificate, private_key);
-
-				if (m_fscp_server)
+			m_web_client->request_certificate(certificate_request, [this, private_key](const boost::system::error_code& ec, cryptoplus::x509::certificate certificate) {
+				if (ec)
 				{
-					m_fscp_server->async_set_identity(*m_configuration.security.identity, [this] () {
-						m_logger(fscp::log_level::important) << "Renewed identity. Existing connections will be reset.";
-					});
+					if (m_web_client) {
+						m_logger(fscp::log_level::error) << "The certificate request to the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << m_request_certificate.period << "...";
+
+						m_request_certificate.exponential_backoff();
+						m_request_certificate.timer.async_wait([this](const boost::system::error_code& ec2) {
+							if (ec2 != boost::asio::error::operation_aborted)
+							{
+								request_certificate();
+							}
+						});
+					}
+					else {
+						m_logger(fscp::log_level::error) << "The certificate request to the web server failed: " << ec.message() << " (" << ec << "). Not retrying as the web client was shut down.";
+					}
 				}
 				else
 				{
-					open_fscp_server();
-				}
+					m_request_certificate.reset();
+					m_logger(fscp::log_level::information) << "Received certificate from server: " << certificate.subject();
 
-				const auto renew_timestamp = certificate.not_after().to_ptime() - RENEW_CERTIFICATE_WARNING_PERIOD;
+					m_configuration.security.identity = fscp::identity_store(certificate, private_key);
 
-				m_logger(fscp::log_level::information) << "Certificate expires on " << local_adjustor::utc_to_local(certificate.not_after().to_ptime()) << ". Renewing on " << local_adjustor::utc_to_local(renew_timestamp) << ".";
-
-				m_renew_certificate_timer.expires_at(renew_timestamp);
-				m_renew_certificate_timer.async_wait([this] (const boost::system::error_code& ec2) {
-					if (ec2 != boost::asio::error::operation_aborted)
+					if (m_fscp_server)
 					{
-						request_certificate();
+						m_fscp_server->async_set_identity(*m_configuration.security.identity, [this]() {
+							m_logger(fscp::log_level::important) << "Renewed identity. Existing connections will be reset.";
+						});
 					}
-				});
+					else
+					{
+						open_fscp_server();
+					}
 
-				m_logger(fscp::log_level::information) << "Registering to the server...";
-				register_();
-			}
-		});
+					const auto renew_timestamp = certificate.not_after().to_ptime() - RENEW_CERTIFICATE_WARNING_PERIOD;
+
+					m_logger(fscp::log_level::information) << "Certificate expires on " << local_adjustor::utc_to_local(certificate.not_after().to_ptime()) << ". Renewing on " << local_adjustor::utc_to_local(renew_timestamp) << ".";
+
+					m_renew_certificate_timer.expires_at(renew_timestamp);
+					m_renew_certificate_timer.async_wait([this](const boost::system::error_code& ec2) {
+						if (ec2 != boost::asio::error::operation_aborted)
+						{
+							request_certificate();
+						}
+					});
+
+					m_logger(fscp::log_level::information) << "Registering to the server...";
+					register_();
+				}
+			});
+		} else {
+			m_logger(fscp::log_level::information) << "Not requesting a client certificate from the web server as the web client was shut down.";
+		}
 	}
 
 	void core::request_ca_certificate()
 	{
-		m_logger(fscp::log_level::information) << "Requesting the CA certificate from the web server...";
+		if (m_web_client) {
+			m_logger(fscp::log_level::information) << "Requesting the CA certificate from the web server...";
 
-		m_web_client->request_ca_certificate([this](const boost::system::error_code& ec, cryptoplus::x509::certificate certificate) {
-			if (ec)
-			{
-				m_logger(fscp::log_level::error) << "The CA certificate request to the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << m_request_ca_certificate.period << "...";
+			m_web_client->request_ca_certificate([this](const boost::system::error_code& ec, cryptoplus::x509::certificate certificate) {
+				if (ec)
+				{
+					if (m_web_client) {
+						m_logger(fscp::log_level::error) << "The CA certificate request to the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << m_request_ca_certificate.period << "...";
 
-				m_request_ca_certificate.exponential_backoff();
-				m_request_ca_certificate.timer.async_wait([this] (const boost::system::error_code& ec2) {
-					if (ec2 != boost::asio::error::operation_aborted)
-					{
-						request_ca_certificate();
+						m_request_ca_certificate.exponential_backoff();
+						m_request_ca_certificate.timer.async_wait([this](const boost::system::error_code& ec2) {
+							if (ec2 != boost::asio::error::operation_aborted)
+							{
+								request_ca_certificate();
+							}
+						});
 					}
-				});
-			}
-			else
-			{
-				m_request_ca_certificate.reset();
-				m_logger(fscp::log_level::information) << "Received CA certificate from server: " << certificate.subject();
+					else {
+						m_logger(fscp::log_level::error) << "The CA certificate request to the web server failed: " << ec.message() << " (" << ec << "). Not retrying as the web client was shut down.";
+					}
+				}
+				else
+				{
+					m_request_ca_certificate.reset();
+					m_logger(fscp::log_level::information) << "Received CA certificate from server: " << certificate.subject();
 
-				m_client_certificate_authority_list.clear();
-				m_client_certificate_authority_list.push_back(certificate);
+					m_client_certificate_authority_list.clear();
+					m_client_certificate_authority_list.push_back(certificate);
 
-				build_ca_store(build_ca_store_when::always);
-			}
-		});
+					build_ca_store(build_ca_store_when::always);
+				}
+			});
+		} else {
+			m_logger(fscp::log_level::information) << "Not requesting the CA certificate from the web server as the web client was shut down.";
+		}
 	}
 
 	void core::register_()
 	{
-		if (!m_configuration.security.identity)
-		{
-			m_logger(fscp::log_level::warning) << "Cannot register onto the web server right now as no identity is currently set. Retrying in " << m_registration_retry.period << "...";
-			m_registration_retry.exponential_backoff();
-			m_registration_retry.timer.async_wait([this] (const boost::system::error_code& ec2) {
-				if (ec2 != boost::asio::error::operation_aborted)
-				{
-					register_();
-				}
-			});
-		}
-		else
-		{
-			m_logger(fscp::log_level::information) << "Registering at the web server...";
-
-			m_web_client->register_(m_configuration.security.identity->signature_certificate(), [this](const boost::system::error_code& ec, const boost::posix_time::ptime& expiration_timestamp) {
-				if (ec)
-				{
-					m_logger(fscp::log_level::error) << "The registration onto the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << m_registration_retry.period << "...";
+		if (m_web_client) {
+			if (!m_configuration.security.identity)
+			{
+				if (m_web_client) {
+					m_logger(fscp::log_level::warning) << "Cannot register onto the web server right now as no identity is currently set. Retrying in " << m_registration_retry.period << "...";
 					m_registration_retry.exponential_backoff();
+					m_registration_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+						if (ec2 != boost::asio::error::operation_aborted)
+						{
+							register_();
+						}
+					});
+				} else {
+					m_logger(fscp::log_level::warning) << "Cannot register onto the web server right now as no identity is currently set. Won't retry as the web client was shut down.";
 				}
-				else
-				{
-					m_registration_retry.reset();
-					const auto local_expiration_timestamp = local_adjustor::utc_to_local(expiration_timestamp);
-					const auto registration_update_timestamp = expiration_timestamp - REGISTRATION_WARNING_PERIOD;
-					const auto local_registration_update_timestamp = local_adjustor::utc_to_local(registration_update_timestamp);
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Registering at the web server...";
 
-					m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". Registration update planned at " << local_registration_update_timestamp << ".";
-					m_registration_retry.timer.expires_at(registration_update_timestamp);
-					set_contact_information();
-					get_contact_information();
-				}
-
-				m_registration_retry.timer.async_wait([this] (const boost::system::error_code& ec2) {
-					if (ec2 != boost::asio::error::operation_aborted)
+				m_web_client->register_(m_configuration.security.identity->signature_certificate(), [this](const boost::system::error_code& ec, const boost::posix_time::ptime& expiration_timestamp) {
+					if (ec)
 					{
-						register_();
+						if (m_web_client) {
+							m_logger(fscp::log_level::error) << "The registration onto the web server failed: " << ec.message() << " (" << ec << "). Retrying in " << m_registration_retry.period << "...";
+							m_registration_retry.exponential_backoff();
+							m_registration_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+								if (ec2 != boost::asio::error::operation_aborted)
+								{
+									register_();
+								}
+							});
+						}
+						else {
+							m_logger(fscp::log_level::error) << "The registration onto the web server failed: " << ec.message() << " (" << ec << "). Not retrying as the web client was shut down.";
+						}
+					}
+					else
+					{
+						const auto local_expiration_timestamp = local_adjustor::utc_to_local(expiration_timestamp);
+
+						if (m_web_client) {
+							m_registration_retry.reset();
+
+							const auto registration_update_timestamp = expiration_timestamp - REGISTRATION_WARNING_PERIOD;
+							const auto local_registration_update_timestamp = local_adjustor::utc_to_local(registration_update_timestamp);
+
+							m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". Registration update planned at " << local_registration_update_timestamp << ".";
+							m_registration_retry.timer.expires_at(registration_update_timestamp);
+							m_registration_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+								if (ec2 != boost::asio::error::operation_aborted)
+								{
+									register_();
+								}
+							});
+
+							set_contact_information();
+							get_contact_information();
+						}
+						else {
+							m_logger(fscp::log_level::information) << "Registered onto the web server until " << local_expiration_timestamp << ". However, no registration update was planned as the web client was shut down already.";
+						}
 					}
 				});
-			});
+			}
+		} else {
+			m_logger(fscp::log_level::information) << "Not registering at the web server as the web client was shut down.";
 		}
 	}
 
 	void core::unregister()
 	{
-		m_logger(fscp::log_level::information) << "Unregistering from the web server...";
+		if (m_web_client) {
+			m_logger(fscp::log_level::information) << "Unregistering from the web server...";
 
-		m_web_client->unregister([this](const boost::system::error_code& ec) {
-			if (ec)
-			{
-				m_logger(fscp::log_level::error) << "The unregistration from the web server failed: " << ec.message() << " (" << ec << "). Not retrying to avoid delaying shutdown.";
-			}
-			else
-			{
-				m_logger(fscp::log_level::information) << "Unregistered from the web server.";
-			}
-		});
+			m_web_client->unregister([this](const boost::system::error_code& ec) {
+				if (ec)
+				{
+					m_logger(fscp::log_level::error) << "The unregistration from the web server failed: " << ec.message() << " (" << ec << "). Not retrying to avoid delaying shutdown.";
+				}
+				else
+				{
+					m_logger(fscp::log_level::information) << "Unregistered from the web server.";
+				}
+			});
+		} else {
+			m_logger(fscp::log_level::information) << "Not unregistering from the web server as the web client was shut down.";
+		}
 	}
 
 	void core::set_contact_information()
 	{
-		m_logger(fscp::log_level::information) << "Setting contact information on the web server...";
+		if (m_web_client) {
+			m_logger(fscp::log_level::information) << "Setting contact information on the web server...";
 
-		if (!m_fscp_server)
-		{
-			m_logger(fscp::log_level::warning) << "Cannot set contact information right now as the FSCP server is not started yet.";
-
-			m_set_contact_information_retry.exponential_backoff();
-			m_set_contact_information_retry.timer.async_wait([this] (const boost::system::error_code& ec2) {
-				if (ec2 != boost::asio::error::operation_aborted)
-				{
-					set_contact_information();
-				}
-			});
-		}
-		else
-		{
-			const auto local_port = m_fscp_server->get_socket().local_endpoint().port();
-			std::set<asiotap::endpoint> public_endpoints;
-
-			for (auto&& public_endpoint : m_configuration.client.public_endpoint_list)
+			if (!m_fscp_server)
 			{
-				public_endpoints.insert(asiotap::get_default_port_endpoint(public_endpoint, local_port));
-			}
+				m_logger(fscp::log_level::warning) << "Cannot set contact information right now as the FSCP server is not started yet.";
 
-			if (public_endpoints.empty())
-			{
-				m_logger(fscp::log_level::information) << "Setting contact information on the web server with no public endpoints...";
+				m_set_contact_information_retry.exponential_backoff();
+				m_set_contact_information_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+					if (ec2 != boost::asio::error::operation_aborted)
+					{
+						set_contact_information();
+					}
+				});
 			}
 			else
 			{
-				std::ostringstream oss;
+				const auto local_port = m_fscp_server->get_socket().local_endpoint().port();
+				std::set<asiotap::endpoint> public_endpoints;
 
-				for (auto&& endpoint : public_endpoints)
+				for (auto&& public_endpoint : m_configuration.client.public_endpoint_list)
 				{
-					if (!oss.str().empty())
-					{
-						oss << ", ";
-					}
-
-					oss << endpoint;
+					public_endpoints.insert(asiotap::get_default_port_endpoint(public_endpoint, local_port));
 				}
 
-				m_logger(fscp::log_level::information) << "Setting contact information on the web server with " << public_endpoints.size() << " public endpoint(s) (" << oss.str() << ")...";
-			}
-
-			m_web_client->set_contact_information(public_endpoints, [this] (const boost::system::error_code& ec, const std::set<asiotap::endpoint>& accepted_endpoints, const std::set<asiotap::endpoint>& rejected_endpoints) {
-				if (ec)
+				if (public_endpoints.empty())
 				{
-					m_logger(fscp::log_level::error) << "Failed to set contact information on the web server: " << ec.message() << " (" << ec << ").";
-
-					m_set_contact_information_retry.exponential_backoff();
-					m_set_contact_information_retry.timer.async_wait([this] (const boost::system::error_code& ec2) {
-						if (ec2 != boost::asio::error::operation_aborted)
-						{
-							set_contact_information();
-						}
-					});
+					m_logger(fscp::log_level::information) << "Setting contact information on the web server with no public endpoints...";
 				}
 				else
 				{
-					m_set_contact_information_retry.reset();
-					m_logger(fscp::log_level::information) << "The web server acknowledged our contact information.";
+					std::ostringstream oss;
 
-					if (accepted_endpoints.empty())
+					for (auto&& endpoint : public_endpoints)
 					{
-						m_logger(fscp::log_level::information) << "No public endpoints will be advertised.";
+						if (!oss.str().empty())
+						{
+							oss << ", ";
+						}
+
+						oss << endpoint;
+					}
+
+					m_logger(fscp::log_level::information) << "Setting contact information on the web server with " << public_endpoints.size() << " public endpoint(s) (" << oss.str() << ")...";
+				}
+
+				m_web_client->set_contact_information(public_endpoints, [this](const boost::system::error_code& ec, const std::set<asiotap::endpoint>& accepted_endpoints, const std::set<asiotap::endpoint>& rejected_endpoints) {
+					if (ec)
+					{
+						m_logger(fscp::log_level::error) << "Failed to set contact information on the web server: " << ec.message() << " (" << ec << ").";
+
+						m_set_contact_information_retry.exponential_backoff();
+						m_set_contact_information_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+							if (ec2 != boost::asio::error::operation_aborted)
+							{
+								set_contact_information();
+							}
+						});
 					}
 					else
 					{
-						std::ostringstream oss;
+						m_set_contact_information_retry.reset();
+						m_logger(fscp::log_level::information) << "The web server acknowledged our contact information.";
 
-						for (auto&& endpoint : accepted_endpoints)
+						if (accepted_endpoints.empty())
 						{
-							if (!oss.str().empty())
-							{
-								oss << ", ";
-							}
-
-							oss << endpoint;
+							m_logger(fscp::log_level::information) << "No public endpoints will be advertised.";
 						}
-
-						m_logger(fscp::log_level::information) << "Server will advertise the following endpoints: " << oss.str();
-					}
-
-					if (!rejected_endpoints.empty())
-					{
-						std::ostringstream oss;
-
-						for (auto&& endpoint : rejected_endpoints)
-						{
-							if (!oss.str().empty())
-							{
-								oss << ", ";
-							}
-
-							oss << endpoint;
-						}
-
-						m_logger(fscp::log_level::warning) << "Server refused to advertise the following endpoints: " << oss.str();
-					}
-				}
-			});
-		}
-	}
-
-	void core::get_contact_information()
-	{
-		if (!m_fscp_server)
-		{
-			m_logger(fscp::log_level::warning) << "Cannot get contact information right now as the FSCP server is not started yet.";
-
-			m_get_contact_information_retry.exponential_backoff();
-			m_get_contact_information_retry.timer.async_wait([this] (const boost::system::error_code& ec2) {
-				if (ec2 != boost::asio::error::operation_aborted)
-				{
-					get_contact_information();
-				}
-			});
-		}
-		else
-		{
-			// The requested contacts list is empty, meaning we want them all.
-			std::set<fscp::hash_type> requested_contacts;
-
-			m_logger(fscp::log_level::information) << "Getting contact information from the web server...";
-
-			m_web_client->get_contact_information(requested_contacts, [this](const boost::system::error_code& ec, const std::map<fscp::hash_type, std::set<asiotap::endpoint>>& contacts) {
-				if (ec)
-				{
-					m_logger(fscp::log_level::error) << "Failed to get contact information from the web server: " << ec.message() << " (" << ec << ").";
-
-					m_get_contact_information_retry.exponential_backoff();
-					m_get_contact_information_retry.timer.async_wait([this] (const boost::system::error_code& ec2) {
-						if (ec2 != boost::asio::error::operation_aborted)
-						{
-							get_contact_information();
-						}
-					});
-				}
-				else
-				{
-					// We got contact information lets trigger an update later.
-					m_get_contact_information_retry.reset();
-					m_get_contact_information_retry.timer.expires_from_now(GET_CONTACT_INFORMATION_UPDATE_PERIOD);
-					m_get_contact_information_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
-						if (ec2 != boost::asio::error::operation_aborted)
-						{
-							get_contact_information();
-						}
-					});
-
-					m_logger(fscp::log_level::information) << "The web server replied to our contact information request.";
-
-					if (contacts.empty())
-					{
-						m_logger(fscp::log_level::information) << "No contacts were provided.";
-					}
-					else
-					{
-						for (auto&& contact : contacts)
+						else
 						{
 							std::ostringstream oss;
 
-							for (auto&& endpoint : contact.second)
+							for (auto&& endpoint : accepted_endpoints)
 							{
-								async_contact(endpoint);
-
 								if (!oss.str().empty())
 								{
 									oss << ", ";
@@ -2627,11 +2582,112 @@ namespace freelan
 								oss << endpoint;
 							}
 
-							m_logger(fscp::log_level::information) << "Contact information for " << contact.first << ": " << oss.str();
+							m_logger(fscp::log_level::information) << "Server will advertise the following endpoints: " << oss.str();
+						}
+
+						if (!rejected_endpoints.empty())
+						{
+							std::ostringstream oss;
+
+							for (auto&& endpoint : rejected_endpoints)
+							{
+								if (!oss.str().empty())
+								{
+									oss << ", ";
+								}
+
+								oss << endpoint;
+							}
+
+							m_logger(fscp::log_level::warning) << "Server refused to advertise the following endpoints: " << oss.str();
 						}
 					}
-				}
-			});
+				});
+			}
+		} else {
+			m_logger(fscp::log_level::information) << "Not setting contact information on the web server as the web client was shut down.";
+		}
+	}
+
+	void core::get_contact_information()
+	{
+		if (m_web_client) {
+			if (!m_fscp_server)
+			{
+				m_logger(fscp::log_level::warning) << "Cannot get contact information right now as the FSCP server is not started yet.";
+
+				m_get_contact_information_retry.exponential_backoff();
+				m_get_contact_information_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+					if (ec2 != boost::asio::error::operation_aborted)
+					{
+						get_contact_information();
+					}
+				});
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Getting contact information from the web server...";
+
+				// The requested contacts list is empty, meaning we want them all.
+				std::set<fscp::hash_type> requested_contacts;
+
+				m_web_client->get_contact_information(requested_contacts, [this](const boost::system::error_code& ec, const std::map<fscp::hash_type, std::set<asiotap::endpoint>>& contacts) {
+					if (ec)
+					{
+						m_logger(fscp::log_level::error) << "Failed to get contact information from the web server: " << ec.message() << " (" << ec << ").";
+
+						m_get_contact_information_retry.exponential_backoff();
+						m_get_contact_information_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+							if (ec2 != boost::asio::error::operation_aborted)
+							{
+								get_contact_information();
+							}
+						});
+					}
+					else
+					{
+						// We got contact information lets trigger an update later.
+						m_get_contact_information_retry.reset();
+						m_get_contact_information_retry.timer.expires_from_now(GET_CONTACT_INFORMATION_UPDATE_PERIOD);
+						m_get_contact_information_retry.timer.async_wait([this](const boost::system::error_code& ec2) {
+							if (ec2 != boost::asio::error::operation_aborted)
+							{
+								get_contact_information();
+							}
+						});
+
+						m_logger(fscp::log_level::information) << "The web server replied to our contact information request.";
+
+						if (contacts.empty())
+						{
+							m_logger(fscp::log_level::information) << "No contacts were provided.";
+						}
+						else
+						{
+							for (auto&& contact : contacts)
+							{
+								std::ostringstream oss;
+
+								for (auto&& endpoint : contact.second)
+								{
+									async_contact(endpoint);
+
+									if (!oss.str().empty())
+									{
+										oss << ", ";
+									}
+
+									oss << endpoint;
+								}
+
+								m_logger(fscp::log_level::information) << "Contact information for " << contact.first << ": " << oss.str();
+							}
+						}
+					}
+				});
+			}
+		} else {
+			m_logger(fscp::log_level::information) << "Not getting contact information from the web server as the web client was shut down.";
 		}
 	}
 
