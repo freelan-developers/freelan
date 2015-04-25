@@ -93,6 +93,7 @@ struct cli_configuration
 #ifndef WINDOWS
 		thread_count(0),
 		foreground(false),
+		syslog(false),
 		pid_file()
 #else
 		thread_count(0)
@@ -104,6 +105,7 @@ struct cli_configuration
 	unsigned int thread_count;
 #ifndef WINDOWS
 	bool foreground;
+	bool syslog;
 	fs::path pid_file;
 #endif
 };
@@ -202,6 +204,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	po::options_description daemon_options("Daemon");
 	daemon_options.add_options()
 	("foreground,f", "Do not run as a daemon.")
+	("syslog,s", "Alwats log to syslog (useful when running with --foreground on OSX with launchd).")
 	("pid_file,p", po::value<std::string>(), "A pid file to use.")
 	;
 
@@ -293,6 +296,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	}
 #else
 	configuration.foreground = (vm.count("foreground") > 0);
+	configuration.syslog = (vm.count("syslog") > 0);
 
 	if (vm.count("nocolor") > 0)
 	{
@@ -434,6 +438,8 @@ void run(fscp::logger& logger, const cli_configuration& configuration, int& exit
 	{
 		posix::daemonize();
 
+		log_func = &posix::syslog;
+	} else if (configuration.syslog) {
 		log_func = &posix::syslog;
 	}
 

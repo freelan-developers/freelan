@@ -50,6 +50,7 @@ launch_daemon_script_source = env.Value({
         '-c',
         os.path.join(etc_freelan_path, configurations[0].name),
         '-f',
+        '-s',
     ],
     'RunAtLoad': True,
     'KeepAlive': True,
