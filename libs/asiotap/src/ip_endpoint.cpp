@@ -129,14 +129,14 @@ namespace asiotap
 	}
 
 	template <typename AddressType>
-	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value)
+	std::istream& operator>>(std::istream& is, base_ip_endpoint<AddressType>& value)
 	{
 		std::string ip_address;
 		std::string port;
 
 		if (read_ip_address_port<AddressType>(is, ip_address, port))
 		{
-			value = ip_endpoint<AddressType>(AddressType::from_string(ip_address), port.empty() ? boost::none : boost::optional<uint16_t>(boost::lexical_cast<uint16_t>(port)));
+			value = base_ip_endpoint<AddressType>(AddressType::from_string(ip_address), port.empty() ? boost::none : boost::optional<uint16_t>(boost::lexical_cast<uint16_t>(port)));
 		}
 
 		return is;

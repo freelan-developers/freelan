@@ -208,7 +208,7 @@ namespace asiotap
 			 * \return The new endpoint.
 			 */
 			template <typename AddressType>
-			result_type operator()(const ip_endpoint<AddressType>& ep) const
+			result_type operator()(const base_ip_endpoint<AddressType>& ep) const
 			{
 				if (ep.has_port())
 				{
@@ -216,7 +216,7 @@ namespace asiotap
 				}
 				else
 				{
-					return ip_endpoint<AddressType>(ep.address(), m_default_port);
+					return base_ip_endpoint<AddressType>(ep.address(), m_default_port);
 				}
 			}
 
@@ -265,17 +265,17 @@ namespace asiotap
 			 * \param ep The endpoint.
 			 * \return The new endpoint.
 			 */
-			result_type operator()(const ip_endpoint<AddressType>& ep) const
+			result_type operator()(const base_ip_endpoint<AddressType>& ep) const
 			{
 				if (ep.has_null_address())
 				{
 					if (ep.has_port())
 					{
-						return ip_endpoint<AddressType>(m_default_ip, ep.port());
+						return base_ip_endpoint<AddressType>(m_default_ip, ep.port());
 					}
 					else
 					{
-						return ip_endpoint<AddressType>(m_default_ip);
+						return base_ip_endpoint<AddressType>(m_default_ip);
 					}
 				}
 				else
@@ -291,7 +291,7 @@ namespace asiotap
 			 * \return The new endpoint.
 			 */
 			template <typename AddressType2>
-			result_type operator()(const ip_endpoint<AddressType2>& ep) const
+			result_type operator()(const base_ip_endpoint<AddressType2>& ep) const
 			{
 				return ep;
 			}
@@ -325,7 +325,7 @@ namespace asiotap
 			 * \return The validity state.
 			 */
 			template <typename AddressType>
-			result_type operator()(const ip_endpoint<AddressType>& ep) const
+			result_type operator()(const base_ip_endpoint<AddressType>& ep) const
 			{
 				return (!ep.has_null_address() && ep.has_port());
 			}

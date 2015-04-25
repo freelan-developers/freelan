@@ -42,15 +42,16 @@
  * \brief IP endpoint classes.
  */
 
-#ifndef ASIOTAP_IP_ENDPOINT_HPP
-#define ASIOTAP_IP_ENDPOINT_HPP
+#pragma once
 
 #include <string>
+#include <set>
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/variant.hpp>
 
 namespace asiotap
 {
@@ -58,7 +59,7 @@ namespace asiotap
 	 * \brief A generic IP endpoint template class.
 	 */
 	template <typename AddressType>
-	class ip_endpoint
+	class base_ip_endpoint
 	{
 		public:
 
@@ -66,9 +67,9 @@ namespace asiotap
 			 * \brief Get a null IP endpoint.
 			 * \return A null IP endpoint.
 			 */
-			static ip_endpoint null()
+			static base_ip_endpoint null()
 			{
-				return ip_endpoint();
+				return base_ip_endpoint();
 			}
 
 			/**
@@ -84,25 +85,25 @@ namespace asiotap
 			/**
 			 * \brief The handler type.
 			 */
-			typedef boost::function<void (const boost::system::error_code&, resolver::iterator)> handler;
+			typedef boost::function<void(const boost::system::error_code&, resolver::iterator)> handler;
 
 			/**
 			 * \brief Create an IP endpoint.
 			 */
-			ip_endpoint() {};
+			base_ip_endpoint() {};
 
 			/**
 			 * \brief Create an IP endpoint.
 			 * \param _address The address.
 			 */
-			ip_endpoint(const address_type& _address) : m_address(_address) {};
+			base_ip_endpoint(const address_type& _address) : m_address(_address) {};
 
 			/**
 			 * \brief Create an IP endpoint.
 			 * \param _address The address.
 			 * \param _port The port number.
 			 */
-			ip_endpoint(const address_type& _address, boost::optional<uint16_t> _port) : m_address(_address), m_port(_port) {};
+			base_ip_endpoint(const address_type& _address, boost::optional<uint16_t> _port) : m_address(_address), m_port(_port) {};
 
 			/**
 			 * \brief Check if the instance is null.
@@ -155,7 +156,7 @@ namespace asiotap
 			address_type m_address;
 			boost::optional<uint16_t> m_port;
 
-			friend bool operator<(const ip_endpoint& lhs, const ip_endpoint& rhs)
+			friend bool operator<(const base_ip_endpoint& lhs, const base_ip_endpoint& rhs)
 			{
 				if (lhs.m_address == rhs.m_address)
 				{
@@ -174,12 +175,12 @@ namespace asiotap
 				}
 			}
 
-			friend bool operator==(const ip_endpoint& lhs, const ip_endpoint& rhs)
+			friend bool operator==(const base_ip_endpoint& lhs, const base_ip_endpoint& rhs)
 			{
 				return (lhs.address() == rhs.address()) && (lhs.m_port == rhs.m_port);
 			}
 
-			friend bool operator!=(const ip_endpoint& lhs, const ip_endpoint& rhs)
+			friend bool operator!=(const base_ip_endpoint& lhs, const base_ip_endpoint& rhs)
 			{
 				return !(lhs == rhs);
 			}
@@ -196,7 +197,7 @@ namespace asiotap
 	 * \return The endpoint.
 	 */
 	template <typename AddressType>
-	inline boost::asio::ip::udp::endpoint resolve(const ip_endpoint<AddressType>& ep, typename ip_endpoint<AddressType>::resolver& resolver, typename ip_endpoint<AddressType>::resolver::protocol_type protocol, typename ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service)
+	inline boost::asio::ip::udp::endpoint resolve(const base_ip_endpoint<AddressType>& ep, typename base_ip_endpoint<AddressType>::resolver& resolver, typename base_ip_endpoint<AddressType>::resolver::protocol_type protocol, typename base_ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service)
 	{
 		(void)resolver;
 		(void)protocol;
@@ -223,19 +224,19 @@ namespace asiotap
 	 * \param handler The handler.
 	 */
 	template <typename AddressType>
-	inline void async_resolve(const ip_endpoint<AddressType>& ep, typename ip_endpoint<AddressType>::resolver& resolver, typename ip_endpoint<AddressType>::resolver::protocol_type protocol, typename ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service, typename ip_endpoint<AddressType>::handler handler)
+	inline void async_resolve(const base_ip_endpoint<AddressType>& ep, typename base_ip_endpoint<AddressType>::resolver& resolver, typename base_ip_endpoint<AddressType>::resolver::protocol_type protocol, typename base_ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service, typename base_ip_endpoint<AddressType>::handler handler)
 	{
 		try
 		{
 			boost::asio::ip::udp::endpoint result = resolve(ep, resolver, protocol, flags, default_service);
 
-			typename ip_endpoint<AddressType>::resolver::iterator it = ip_endpoint<AddressType>::resolver::iterator::create(result, result.address().to_string(), boost::lexical_cast<std::string>(result.port()));
+			auto it = base_ip_endpoint<AddressType>::resolver::iterator::create(result, result.address().to_string(), boost::lexical_cast<std::string>(result.port()));
 
 			handler(boost::system::error_code(), it);
 		}
 		catch (boost::system::system_error& ex)
 		{
-			typename ip_endpoint<AddressType>::resolver::iterator it;
+			typename base_ip_endpoint<AddressType>::resolver::iterator it;
 
 			handler(ex.code(), it);
 		}
@@ -249,7 +250,7 @@ namespace asiotap
 	 * \return os.
 	 */
 	template <typename AddressType>
-	std::ostream& operator<<(std::ostream& os, const ip_endpoint<AddressType>& value);
+	std::ostream& operator<<(std::ostream& os, const base_ip_endpoint<AddressType>& value);
 
 	/**
 	 * \brief Read an endpoint from an input stream.
@@ -259,18 +260,25 @@ namespace asiotap
 	 * \return is.
 	 */
 	template <typename AddressType>
-	std::istream& operator>>(std::istream& is, ip_endpoint<AddressType>& value);
+	std::istream& operator>>(std::istream& is, base_ip_endpoint<AddressType>& value);
 
 	/**
 	 * \brief The IPv4 instantiation.
 	 */
-	typedef ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;
+	typedef base_ip_endpoint<boost::asio::ip::address_v4> ipv4_endpoint;
 
 	/**
 	 * \brief The IPv6 instantiation.
 	 */
-	typedef ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
+	typedef base_ip_endpoint<boost::asio::ip::address_v6> ipv6_endpoint;
+
+	/**
+	 * \brief The generic IP endpoint.
+	 */
+	typedef boost::variant<ipv4_endpoint, ipv6_endpoint> ip_endpoint;
+
+	/**
+	 * \brief An IP endpoint set.
+	 */
+	typedef std::set<ip_endpoint> ip_endpoint_set;
 }
-
-#endif /* ASIOTAP_IP_ENDPOINT_HPP */
-
