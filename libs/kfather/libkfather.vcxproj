@@ -79,26 +79,26 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_57;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
@@ -118,13 +118,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
-      <Message>Installing header files</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -144,13 +146,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
-      <Message>Installing header files</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -174,13 +178,15 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
-      <Message>Installing header files</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -204,13 +210,15 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\include $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\</Command>
-      <Message>Installing header files</Message>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
