@@ -1330,6 +1330,9 @@ namespace freelan
 
 	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_route_set& routes, const asiotap::ip_address_set& dns_servers)
 	{
+		//TODO: Handle this parameter.
+		static_cast<void>(dns_servers);
+
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 
 		client_router_info_type& client_router_info = m_client_router_info_map[sender];

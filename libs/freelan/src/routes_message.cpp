@@ -410,6 +410,8 @@ namespace freelan
 						result.dns_servers.insert(dns_server);
 						break;
 					}
+					default:
+						break;
 				}
 			}
 
