@@ -184,11 +184,21 @@ namespace asiotap
 
 	std::istream& operator>>(std::istream& is, ip_address& value)
 	{
-		std::string addr_str;
-		if (read_ip_address<boost::asio::ip::address_v4>(is, addr_str)) {
-			value = boost::asio::ip::address_v4::from_string(addr_str);
-		} else if (read_ip_address<boost::asio::ip::address_v6>(is, addr_str)) {
-			value = boost::asio::ip::address_v6::from_string(addr_str);
+		if (is) {
+			std::string addr_str;
+
+			// Fun fact: since "127" is for instance a valid IPv4 address
+			// representation (127.0.0.0), we have to test for IPv6 addresses
+			// first.
+			if (read_ip_address<boost::asio::ip::address_v6>(is, addr_str)) {
+				value = boost::asio::ip::address_v6::from_string(addr_str);
+			} else {
+				is.clear();
+
+				if (read_ip_address<boost::asio::ip::address_v4>(is, addr_str)) {
+					value = boost::asio::ip::address_v4::from_string(addr_str);
+				}
+			}
 		}
 
 		return is;

@@ -1306,7 +1306,7 @@ namespace freelan
 					const auto routes = local_port->local_routes();
 					const auto dns_servers = local_port->local_dns_servers();
 
-					m_logger(fscp::log_level::debug) << "Received routes request from " << sender << ". Replying with version " << *m_local_routes_version << ": " << routes;
+					m_logger(fscp::log_level::debug) << "Received routes request from " << sender << ". Replying with version " << *m_local_routes_version << ": " << routes << ". DNS: " << dns_servers;
 
 					async_send_routes(sender, *m_local_routes_version, routes, dns_servers, &null_simple_write_handler);
 				}
@@ -1666,6 +1666,9 @@ namespace freelan
 			m_logger(fscp::log_level::information) << "Putting interface into the connected state.";
 			m_tap_adapter->set_connected_state(true);
 
+			auto local_routes = m_configuration.router.local_ip_routes;
+			auto local_dns_servers = m_configuration.router.local_dns_servers;
+
 			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
 			{
 				// Registers the switch port.
@@ -1719,10 +1722,7 @@ namespace freelan
 				// Registers the router port.
 				m_router.register_port(make_port_index(m_tap_adapter), router::port_type(write_func, TAP_ADAPTERS_GROUP));
 
-				// Add the routes.
-				auto local_routes = m_configuration.router.local_ip_routes;
-				auto local_dns_servers = m_configuration.router.local_dns_servers;
-
+				// Add the routes from the TAP adapter.
 				const auto tap_ip_addresses = m_tap_adapter->get_ip_addresses();
 
 				for (auto&& ip_address : tap_ip_addresses)
@@ -1734,15 +1734,6 @@ namespace freelan
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(local_routes);
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_dns_servers(local_dns_servers);
 
-				if (local_routes.empty())
-				{
-					m_logger(fscp::log_level::information) << "Not advertising any route";
-				}
-				else
-				{
-					m_logger(fscp::log_level::information) << "Advertising the following routes: " << local_routes;
-				}
-
 				// Handle ICMPv6 neighbor solicitations. This is required for Windows.
 				m_icmpv6_proxy.reset(new icmpv6_proxy_type());
 				m_icmpv6_proxy->set_neighbor_solicitation_callback(boost::bind(&core::do_handle_icmpv6_neighbor_solicitation, this, _1, _2));
@@ -1750,6 +1741,24 @@ namespace freelan
 				// We don't need those proxies in TUN mode.
 				m_arp_proxy.reset();
 				m_dhcp_proxy.reset();
+			}
+
+			if (local_routes.empty())
+			{
+				m_logger(fscp::log_level::information) << "Not advertising any routes.";
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Advertising the following routes: " << local_routes;
+			}
+
+			if (local_dns_servers.empty())
+			{
+				m_logger(fscp::log_level::information) << "Not advertising any DNS servers.";
+			}
+			else
+			{
+				m_logger(fscp::log_level::information) << "Advertising the following DNS servers: " << local_dns_servers;
 			}
 
 			if (m_tap_adapter_up_callback)
