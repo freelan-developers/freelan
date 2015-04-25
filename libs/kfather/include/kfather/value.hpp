@@ -37,7 +37,15 @@
 #include <map>
 #include <vector>
 
+#ifdef WIN32
+#pragma warning(push)
+#pragma warning(disable: 4800)
+#endif
 #include <boost/variant.hpp>
+#ifdef WIN32
+#pragma warning(pop)
+#endif
+
 #include <boost/lexical_cast.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -439,7 +447,7 @@ namespace kfather
 	 */
 	inline bool is_falsy(const value_type& value)
 	{
-		return !value_cast<boolean_type>(value);
+		return !is_truthy(value);
 	}
 
 	/**
