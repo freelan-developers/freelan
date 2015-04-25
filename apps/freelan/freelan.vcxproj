@@ -135,13 +135,13 @@
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -173,13 +173,13 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -215,13 +215,13 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -257,13 +257,13 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
+      <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
     </CustomBuildStep>
     <CustomBuildStep>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
