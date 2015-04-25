@@ -773,8 +773,9 @@ namespace freelan
 	{
 		const auto version = msg.version();
 		const auto routes = msg.routes();
+		const auto dns_servers = msg.dns_servers();
 
-		async_get_tap_addresses([this, sender, version, routes](const asiotap::ip_network_address_list& ip_addresses){
+		async_get_tap_addresses([this, sender, version, routes, dns_servers](const asiotap::ip_network_address_list& ip_addresses){
 			m_router_strand.post(
 				boost::bind(
 					&core::do_handle_routes,
@@ -782,7 +783,8 @@ namespace freelan
 					ip_addresses,
 					sender,
 					version,
-					routes
+					routes,
+					dns_servers
 				)
 			);
 		});
@@ -843,18 +845,19 @@ namespace freelan
 		async_send_routes_request_to_all(boost::bind(&core::do_handle_send_routes_request_to_all, this, _1));
 	}
 
-	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const asiotap::ip_route_set& routes, simple_handler_type handler)
+	void core::async_send_routes(const ep_type& target, routes_message::version_type version, const asiotap::ip_route_set& routes, const asiotap::ip_address_set& dns_servers, simple_handler_type handler)
 	{
 		assert(m_fscp_server);
 
-		m_logger(fscp::log_level::debug) << "Sending routes to " << target << ": version " << version << " (" << routes << ").";
+		m_logger(fscp::log_level::debug) << "Sending routes to " << target << ": version " << version << " (" << routes << "), (" << dns_servers << ").";
 
 		const auto data_buffer = SharedBuffer(8192);
 		const size_t size = routes_message::write(
 			buffer_cast<uint8_t*>(data_buffer),
 			buffer_size(data_buffer),
 			version,
-			routes
+			routes,
+			dns_servers
 		);
 
 		m_fscp_server->async_send_data(
@@ -1300,11 +1303,12 @@ namespace freelan
 
 				if (m_local_routes_version.is_initialized())
 				{
-					const auto& routes = local_port->local_routes();
+					const auto routes = local_port->local_routes();
+					const auto dns_servers = local_port->local_dns_servers();
 
 					m_logger(fscp::log_level::debug) << "Received routes request from " << sender << ". Replying with version " << *m_local_routes_version << ": " << routes;
 
-					async_send_routes(sender, *m_local_routes_version, routes, &null_simple_write_handler);
+					async_send_routes(sender, *m_local_routes_version, routes, dns_servers, &null_simple_write_handler);
 				}
 				else
 				{
@@ -1314,16 +1318,17 @@ namespace freelan
 			else
 			{
 				const auto routes = m_configuration.router.local_ip_routes;
+				const auto dns_servers = m_configuration.router.local_dns_servers;
 				const auto version = 0;
 
 				m_logger(fscp::log_level::debug) << "Received routes request from " << sender << ". Replying with version " << version << ": " << routes;
 
-				async_send_routes(sender, version, routes, &null_simple_write_handler);
+				async_send_routes(sender, version, routes, dns_servers, &null_simple_write_handler);
 			}
 		}
 	}
 
-	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_route_set& routes)
+	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_route_set& routes, const asiotap::ip_address_set& dns_servers)
 	{
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 
@@ -1716,16 +1721,18 @@ namespace freelan
 
 				// Add the routes.
 				auto local_routes = m_configuration.router.local_ip_routes;
+				auto local_dns_servers = m_configuration.router.local_dns_servers;
 
 				const auto tap_ip_addresses = m_tap_adapter->get_ip_addresses();
 
 				for (auto&& ip_address : tap_ip_addresses)
 				{
-					local_routes.insert(asiotap::to_network_address(asiotap::ip_address(ip_address)));
+					local_routes.insert(asiotap::to_network_address(asiotap::to_ip_address(ip_address)));
 				}
 
 				m_local_routes_version = routes_message::version_type();
 				m_router.get_port(make_port_index(m_tap_adapter))->set_local_routes(local_routes);
+				m_router.get_port(make_port_index(m_tap_adapter))->set_local_dns_servers(local_dns_servers);
 
 				if (local_routes.empty())
 				{

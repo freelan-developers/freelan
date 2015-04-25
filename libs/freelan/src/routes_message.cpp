@@ -53,14 +53,32 @@ namespace freelan
 	{
 		enum ip_network_address_type
 		{
+			INAT_INVALID = 0x00,
 			INAT_IPV4 = 0x01,
 			INAT_IPV4_GATEWAY = 0x02,
 			INAT_IPV6 = 0x03,
-			INAT_IPV6_GATEWAY = 0x04
+			INAT_IPV6_GATEWAY = 0x04,
+			INAT_DNS_SERVER_IPV4 = 0x05,
+			INAT_DNS_SERVER_IPV6 = 0x06
 		};
 
 		template <typename AddressType>
+		ip_network_address_type get_address_type();
+
+		template <typename AddressType>
 		ip_network_address_type get_address_type(bool has_gateway);
+
+		template <>
+		ip_network_address_type get_address_type<boost::asio::ip::address_v4>()
+		{
+			return INAT_DNS_SERVER_IPV4;
+		}
+
+		template <>
+		ip_network_address_type get_address_type<boost::asio::ip::address_v6>()
+		{
+			return INAT_DNS_SERVER_IPV6;
+		}
 
 		template <>
 		ip_network_address_type get_address_type<boost::asio::ip::address_v4>(bool has_gateway)
@@ -78,7 +96,7 @@ namespace freelan
 		 * \brief A visitor that writes the representation of a network address to a buffer.
 		 */
 		template <typename BufferType>
-		class ip_network_address_representation : public boost::static_visitor<size_t>
+		class routes_helper : public boost::static_visitor<size_t>
 		{
 			public:
 
@@ -87,7 +105,7 @@ namespace freelan
 				 * \param buf The buffer to write the representation to.
 				 * \param buf_len The length of buf.
 				 */
-				ip_network_address_representation(BufferType buf, size_t buf_len) :
+				routes_helper(BufferType buf, size_t buf_len) :
 					m_buf(buf),
 					m_buf_len(buf_len)
 				{}
@@ -134,9 +152,33 @@ namespace freelan
 				}
 
 				/**
+				 * \brief Get the representation size of the DNS server address.
+				 * \param dns_server The IP address of the DNS server.
+				 * \return The representation size.
+				 */
+				template <typename AddressType>
+				result_type operator()(const AddressType& dns_server) const
+				{
+					const auto bytes = dns_server.to_bytes();
+
+					size_t result_size = 1 + bytes.size();
+
+					if (m_buf_len < result_size)
+					{
+						throw std::runtime_error("buf_len");
+					}
+
+					fscp::buffer_tools::set<uint8_t>(m_buf, 0, static_cast<uint8_t>(get_address_type<AddressType>()));
+
+					std::copy(bytes.begin(), bytes.end(), m_buf + 1);
+
+					return result_size;
+				}
+				
+				/**
 				 * \brief Read the next ip_route contained in the buffer.
-				 * \param ir The route to read.
 				 * \param has_gateway Whether the function must read a gateway or not.
+				 * \return The IP route.
 				 */
 				template <typename AddressType>
 				asiotap::base_ip_route<AddressType> read_next_ip_route(bool has_gateway)
@@ -186,15 +228,38 @@ namespace freelan
 				}
 
 				/**
-				 * \brief Read the next ip_route contained in the buffer.
-				 * \param ir The route to read.
-				 * \return True if a route was read.
+				 * \brief Read the next DNS server address contained in the buffer.
+				 * \return The DNS server address.
 				 */
-				bool read_next_ip_route(asiotap::ip_route& ir)
+				template <typename AddressType>
+				AddressType read_next_dns_server()
+				{
+					typename AddressType::bytes_type bytes;
+
+					if (m_buf_len < bytes.size())
+					{
+						throw std::runtime_error("Not enough bytes for the expected IP address");
+					}
+
+					std::copy(m_buf, m_buf + bytes.size(), bytes.begin());
+
+					m_buf += bytes.size();
+					m_buf_len -= bytes.size();
+
+					return AddressType(bytes);
+				}
+
+				/**
+				 * \brief Read the next ip_route or dns server address contained in the buffer.
+				 * \param ir The route to read.
+				 * \param dns_server The DNS server address to read.
+				 * \return The type that was read.
+				 */
+				ip_network_address_type read_next(asiotap::ip_route& ir, asiotap::ip_address& dns_server)
 				{
 					if (m_buf_len == 0)
 					{
-						return false;
+						return INAT_INVALID;
 					}
 
 					const auto _type = *m_buf;
@@ -213,15 +278,27 @@ namespace freelan
 						case INAT_IPV6:
 						case INAT_IPV6_GATEWAY:
 						{
-							ir = read_next_ip_route<boost::asio::ip::address_v6>(_type == INAT_IPV4_GATEWAY);
+							ir = read_next_ip_route<boost::asio::ip::address_v6>(_type == INAT_IPV6_GATEWAY);
 
 							break;
 						}
+						case INAT_DNS_SERVER_IPV4:
+						{
+							dns_server = read_next_dns_server<boost::asio::ip::address_v4>();
+							break;
+						}
+						case INAT_DNS_SERVER_IPV6:
+						{
+							dns_server = read_next_dns_server<boost::asio::ip::address_v6>();
+							break;
+						}
 						default:
+						{
 							throw std::runtime_error("Unknown route type in message");
+						}
 					}
 
-					return true;
+					return static_cast<ip_network_address_type>(_type);
 				}
 
 			private:
@@ -231,7 +308,7 @@ namespace freelan
 		};
 	}
 
-	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const asiotap::ip_route_set& routes)
+	size_t routes_message::write(void* buf, size_t buf_len, version_type _version, const asiotap::ip_route_set& routes, const asiotap::ip_address_set& dns_servers)
 	{
 		if (buf_len < HEADER_LENGTH)
 		{
@@ -250,7 +327,16 @@ namespace freelan
 
 		for (auto&& route : routes)
 		{
-			const size_t count = boost::apply_visitor(ip_network_address_representation<uint8_t*>(pbuf, pbuf_len), route);
+			const size_t count = boost::apply_visitor(routes_helper<uint8_t*>(pbuf, pbuf_len), route);
+
+			required_size += count;
+			pbuf += count;
+			pbuf_len -= count;
+		}
+
+		for (auto&& dns_server : dns_servers)
+		{
+			const size_t count = boost::apply_visitor(routes_helper<uint8_t*>(pbuf, pbuf_len), dns_server.value());
 
 			required_size += count;
 			pbuf += count;
@@ -267,26 +353,16 @@ namespace freelan
 
 	const asiotap::ip_route_set& routes_message::routes() const
 	{
-		if (!m_routes_cache)
-		{
-			asiotap::ip_route_set result;
+		read_and_cache_results();
 
-			const uint8_t* pbuf = payload() + sizeof(uint32_t);
-			size_t pbuf_len = length() - sizeof(uint32_t);
+		return m_results->routes;
+	}
 
-			ip_network_address_representation<const uint8_t*> deserializer(pbuf, pbuf_len);
+	const asiotap::ip_address_set& routes_message::dns_servers() const
+	{
+		read_and_cache_results();
 
-			asiotap::ip_route ir;
-
-			while (deserializer.read_next_ip_route(ir))
-			{
-				result.insert(ir);
-			}
-
-			m_routes_cache = result;
-		}
-
-		return *m_routes_cache;
+		return m_results->dns_servers;
 	}
 
 	routes_message::routes_message(const void* buf, size_t buf_len) :
@@ -299,5 +375,45 @@ namespace freelan
 		message(_message)
 	{
 		routes();
+	}
+
+	void routes_message::read_and_cache_results() const
+	{
+		if (!m_results)
+		{
+			routes_and_dns_servers result;
+
+			const uint8_t* pbuf = payload() + sizeof(uint32_t);
+			size_t pbuf_len = length() - sizeof(uint32_t);
+
+			routes_helper<const uint8_t*> deserializer(pbuf, pbuf_len);
+
+			asiotap::ip_route ir;
+			asiotap::ip_address dns_server;
+
+			for (
+				ip_network_address_type _type = deserializer.read_next(ir, dns_server);
+				_type != INAT_INVALID;
+				_type = deserializer.read_next(ir, dns_server)
+			)
+			{
+				switch (_type) {
+					case INAT_IPV4:
+					case INAT_IPV4_GATEWAY:
+					case INAT_IPV6:
+					case INAT_IPV6_GATEWAY: {
+						result.routes.insert(ir);
+						break;
+					}
+					case INAT_DNS_SERVER_IPV4:
+					case INAT_DNS_SERVER_IPV6: {
+						result.dns_servers.insert(dns_server);
+						break;
+					}
+				}
+			}
+
+			m_results = result;
+		}
 	}
 }

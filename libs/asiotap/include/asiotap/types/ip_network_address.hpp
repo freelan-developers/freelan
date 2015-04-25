@@ -584,7 +584,7 @@ namespace asiotap
 	* \param ina the ip_network_address.
 	* \return The network address IP address.
 	*/
-	inline boost::asio::ip::address ip_address(const ip_network_address& ina)
+	inline boost::asio::ip::address to_ip_address(const ip_network_address& ina)
 	{
 		return boost::apply_visitor(ip_network_address_ip_address_visitor(), ina);
 	}
@@ -614,7 +614,7 @@ namespace asiotap
 	 * \param ina the ip_network_address.
 	 * \return The network address prefix length.
 	 */
-	inline unsigned int prefix_length(const ip_network_address& ina)
+	inline unsigned int to_prefix_length(const ip_network_address& ina)
 	{
 		return boost::apply_visitor(ip_network_address_prefix_len_visitor(), ina);
 	}

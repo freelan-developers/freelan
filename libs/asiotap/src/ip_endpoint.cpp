@@ -126,6 +126,15 @@ namespace asiotap
 
 			return is;
 		}
+
+		class ip_address_to_string_visitor : public boost::static_visitor < std::string >
+		{
+			public:
+				template <typename AddressType>
+				result_type operator()(const AddressType& value) const {
+					return value.to_string();
+				}
+		};
 	}
 
 	template <typename AddressType>
@@ -168,6 +177,37 @@ namespace asiotap
 		else
 		{
 			os << value.address().to_string();
+		}
+
+		return os;
+	}
+
+	std::istream& operator>>(std::istream& is, ip_address& value)
+	{
+		std::string addr_str;
+		if (read_ip_address<boost::asio::ip::address_v4>(is, addr_str)) {
+			value = boost::asio::ip::address_v4::from_string(addr_str);
+		} else if (read_ip_address<boost::asio::ip::address_v6>(is, addr_str)) {
+			value = boost::asio::ip::address_v6::from_string(addr_str);
+		}
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const ip_address& value)
+	{
+		return os << boost::apply_visitor(ip_address_to_string_visitor(), value.value());
+	}
+
+	std::ostream& operator<<(std::ostream& os, const ip_address_set& values)
+	{
+		for (auto it = values.begin(); it != values.end(); ++it) {
+			if (it == values.begin()) {
+				os << *it;
+			}
+			else {
+				os << ", " << *it;
+			}
 		}
 
 		return os;

@@ -116,6 +116,7 @@ namespace freelan
 
 	router_configuration::router_configuration() :
 		local_ip_routes(),
+		local_dns_servers(),
 		client_routing_enabled(false),
 		accept_routes_requests(true),
 		internal_route_acceptance_policy(internal_route_scope_type::unicast_in_network),

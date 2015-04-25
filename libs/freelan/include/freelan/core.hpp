@@ -64,6 +64,7 @@
 #include <asiotap/osi/complex_filter.hpp>
 #include <asiotap/route_manager.hpp>
 #include <asiotap/types/ip_route.hpp>
+#include <asiotap/types/ip_endpoint.hpp>
 
 #include <cryptoplus/x509/store.hpp>
 #include <cryptoplus/x509/store_context.hpp>
@@ -465,7 +466,7 @@ namespace freelan
 			void async_send_routes_request(const ep_type&);
 			void async_send_routes_request_to_all(multiple_endpoints_handler_type);
 			void async_send_routes_request_to_all();
-			void async_send_routes(const ep_type&, routes_message::version_type, const asiotap::ip_route_set&, simple_handler_type);
+			void async_send_routes(const ep_type&, routes_message::version_type, const asiotap::ip_route_set&, const asiotap::ip_address_set& dns_servers, simple_handler_type);
 
 			void do_contact(const ep_type&, duration_handler_type);
 
@@ -493,7 +494,7 @@ namespace freelan
 			void do_handle_data_received(const ep_type&, fscp::channel_number_type, fscp::SharedBuffer, boost::asio::const_buffer);
 			void do_handle_message(const ep_type&, fscp::SharedBuffer, const message&);
 			void do_handle_routes_request(const ep_type&);
-			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_route_set&);
+			void do_handle_routes(const asiotap::ip_network_address_list&, const ep_type&, routes_message::version_type, const asiotap::ip_route_set&, const asiotap::ip_address_set&);
 
 			boost::shared_ptr<fscp::server> m_fscp_server;
 			boost::asio::deadline_timer m_contact_timer;

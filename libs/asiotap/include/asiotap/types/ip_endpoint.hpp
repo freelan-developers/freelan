@@ -281,4 +281,70 @@ namespace asiotap
 	 * \brief An IP endpoint set.
 	 */
 	typedef std::set<ip_endpoint> ip_endpoint_set;
+
+	/**
+	* \brief The generic IP address.
+	*
+	* Needs to be a class and not a typedef or ADL won't work.
+	*/
+	class ip_address {
+		public:
+			typedef boost::variant<boost::asio::ip::address_v4, boost::asio::ip::address_v6> value_type;
+
+			ip_address() {}
+
+			template <typename AnyType>
+			ip_address(const AnyType& value) : m_value(value) {}
+
+			template <typename AnyType>
+			ip_address& operator=(const AnyType& value) {
+				m_value = value;
+
+				return *this;
+			}
+
+			const value_type& value() const {
+				return m_value;
+			}
+
+		private:
+			friend bool operator<(const ip_address& lhs, const ip_address& rhs) {
+				return (lhs.m_value < rhs.m_value);
+			}
+
+			friend bool operator==(const ip_address& lhs, const ip_address& rhs) {
+				return (lhs.m_value == rhs.m_value);
+			}
+
+			value_type m_value;
+	};
+
+	/**
+	 * \brief Read an IP address from an input stream.
+	 * \param is The input stream.
+	 * \param value The value.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, ip_address& value);
+
+	/**
+	 * \brief Write an IP address to an output stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const ip_address& value);
+
+	/**
+	 * \brief An IP address set.
+	 */
+	typedef std::set<ip_address> ip_address_set;
+
+	/**
+	 * \brief Write an IP address set to an output stream.
+	 * \param os The output stream.
+	 * \param values The values.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const ip_address_set& values);
 }

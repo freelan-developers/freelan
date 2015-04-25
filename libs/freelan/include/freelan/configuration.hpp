@@ -550,6 +550,13 @@ namespace freelan
 		asiotap::ip_route_set local_ip_routes;
 
 		/**
+		* \brief The local DNS servers.
+		*
+		* These DNS servers are sent to the other hosts.
+		*/
+		asiotap::ip_address_set local_dns_servers;
+
+		/**
 		 * \brief Whether to enable client routing.
 		 */
 		bool client_routing_enabled;

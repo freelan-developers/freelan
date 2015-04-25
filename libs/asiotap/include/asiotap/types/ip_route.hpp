@@ -300,7 +300,7 @@ namespace asiotap
 	inline ip_route to_ip_route(const ip_network_address& ina, const boost::optional<boost::asio::ip::address>& gateway)
 	{
 		const auto addr = get_network_address(ina);
-		const auto prefix_len = prefix_length(ina);
+		const auto prefix_len = to_prefix_length(ina);
 
 		if (gateway)
 		{

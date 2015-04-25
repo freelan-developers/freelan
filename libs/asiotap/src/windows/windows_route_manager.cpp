@@ -170,8 +170,8 @@ namespace asiotap
 				set_sockaddr_inet(entry.NextHop, *gw);
 			}
 
-			const auto network_ip_address = ip_address(ina);
-			const auto network_prefix_length = prefix_length(ina);
+			const auto network_ip_address = to_ip_address(ina);
+			const auto network_prefix_length = to_prefix_length(ina);
 
 			set_sockaddr_inet(entry.DestinationPrefix.Prefix, network_ip_address);
 			entry.DestinationPrefix.PrefixLength = network_prefix_length;
@@ -187,8 +187,8 @@ namespace asiotap
 
 			entry.InterfaceLuid = interface_luid;
 
-			const auto network_ip_address = ip_address(network_address);
-			const auto network_prefix_length = prefix_length(network_address);
+			const auto network_ip_address = to_ip_address(network_address);
+			const auto network_prefix_length = to_prefix_length(network_address);
 
 			set_sockaddr_inet(entry.Address, network_ip_address);
 			entry.OnLinkPrefixLength = network_prefix_length;
@@ -255,7 +255,7 @@ namespace asiotap
 	{
 		std::vector<std::string> args;
 
-		if (ip_address(address).is_v4())
+		if (to_ip_address(address).is_v4())
 		{
 			args = {
 				"interface",

@@ -168,6 +168,11 @@ namespace freelan
 						return m_local_routes;
 					}
 
+					const asiotap::ip_address_set& local_dns_servers() const
+					{
+						return m_local_dns_servers;
+					}
+
 					void set_local_routes(const asiotap::ip_route_set& _local_routes)
 					{
 						m_local_routes = _local_routes;
@@ -176,6 +181,11 @@ namespace freelan
 						{
 							m_router->invalidate_routes();
 						}
+					}
+
+					void set_local_dns_servers(const asiotap::ip_address_set& _local_dns_servers)
+					{
+						m_local_dns_servers = _local_dns_servers;
 					}
 
 					port_group_type group() const
@@ -209,6 +219,7 @@ namespace freelan
 
 					write_function_type m_write_function;
 					asiotap::ip_route_set m_local_routes;
+					asiotap::ip_address_set m_local_dns_servers;
 					port_group_type m_group;
 					router* m_router;
 			};
