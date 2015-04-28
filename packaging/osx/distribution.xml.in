@@ -2,6 +2,7 @@
 <installer-gui-script minSpecVersion="1">
 	<title>FreeLAN {version}</title>
 	<organization>org.freelan</organization>
+	<background file="background.png" alignment="bottomleft" scaling="none"/>
 	<domains enable_localSystem="true"/>
 	<options customize="always" require-scripts="true" rootVolumeOnly="true" />
 
