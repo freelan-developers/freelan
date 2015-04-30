@@ -849,7 +849,7 @@ namespace freelan
 	{
 		assert(m_fscp_server);
 
-		m_logger(fscp::log_level::debug) << "Sending routes to " << target << ": version " << version << " (" << routes << "), (" << dns_servers << ").";
+		m_logger(fscp::log_level::debug) << "Sending routes and DNS servers to " << target << ": version " << version << " (" << routes << "), (" << dns_servers << ").";
 
 		const auto data_buffer = SharedBuffer(8192);
 		const size_t size = routes_message::write(

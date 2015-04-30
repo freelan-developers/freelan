@@ -604,6 +604,21 @@ namespace freelan
 		 * \brief The maximum routes count to accept from a given peer.
 		 */
 		unsigned int maximum_routes_limit;
+
+		/**
+		 * \brief The DNS servers scope type.
+		 */
+		enum class dns_servers_scope_type
+		{
+			none, /**< \brief Don't accept DNS servers. */
+			in_network, /**< \brief Accept only DNS server addresses that belong to the network. */
+			any /**< \brief Accept any DNS server. */
+		};
+
+		/**
+		 * \brief The DNS servers acceptance policy.
+		 */
+		dns_servers_scope_type dns_servers_acceptance_policy;
 	};
 
 	/**
@@ -786,6 +801,22 @@ namespace freelan
 	 * \return os.
 	 */
 	std::ostream& operator<<(std::ostream& os, const router_configuration::system_route_scope_type& value);
+
+	/**
+	 * \brief Input a DNS servers scope.
+	 * \param is The input stream.
+	 * \param value The value to read.
+	 * \return is.
+	 */
+	std::istream& operator>>(std::istream& is, router_configuration::dns_servers_scope_type& value);
+
+	/**
+	 * \brief Output a DNS servers scope to a stream.
+	 * \param os The output stream.
+	 * \param value The value.
+	 * \return os.
+	 */
+	std::ostream& operator<<(std::ostream& os, const router_configuration::dns_servers_scope_type& value);
 }
 
 #endif /* FREELAN_CONFIGURATION_HPP */

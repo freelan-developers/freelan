@@ -416,4 +416,38 @@ namespace freelan
 		assert(false);
 		throw std::logic_error("Unexpected value");
 	}
+
+	std::istream& operator>>(std::istream& is, router_configuration::dns_servers_scope_type& v)
+	{
+		std::string value;
+
+		is >> value;
+
+		if (value == "none")
+			v = router_configuration::dns_servers_scope_type::none;
+		else if (value == "in_network")
+			v = router_configuration::dns_servers_scope_type::in_network;
+		else if (value == "any")
+			v = router_configuration::dns_servers_scope_type::any;
+		else
+			throw boost::bad_lexical_cast();
+
+		return is;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const router_configuration::dns_servers_scope_type& value)
+	{
+		switch (value)
+		{
+		case router_configuration::dns_servers_scope_type::none:
+			return os << "none";
+		case router_configuration::dns_servers_scope_type::in_network:
+			return os << "in_network";
+		case router_configuration::dns_servers_scope_type::any:
+			return os << "any";
+		}
+
+		assert(false);
+		throw std::logic_error("Unexpected value");
+	}
 }

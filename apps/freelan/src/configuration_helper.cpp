@@ -371,6 +371,7 @@ po::options_description get_router_options()
 	("router.internal_route_acceptance_policy", po::value<fl::router_configuration::internal_route_scope_type>()->default_value(fl::router_configuration::internal_route_scope_type::unicast_in_network), "The internal route acceptance policy.")
 	("router.system_route_acceptance_policy", po::value<fl::router_configuration::system_route_scope_type>()->default_value(fl::router_configuration::system_route_scope_type::none), "The system route acceptance policy.")
 	("router.maximum_routes_limit", po::value<unsigned int>()->default_value(1), "The maximum count of routes to accept for a given host.")
+	("router.dns_servers_acceptance_policy", po::value<fl::router_configuration::dns_servers_scope_type>()->default_value(fl::router_configuration::dns_servers_scope_type::in_network), "The DNS servers acceptance policy.")
 	;
 
 	return result;
@@ -565,4 +566,5 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 	configuration.router.internal_route_acceptance_policy = vm["router.internal_route_acceptance_policy"].as<fl::router_configuration::internal_route_scope_type>();
 	configuration.router.system_route_acceptance_policy = vm["router.system_route_acceptance_policy"].as<fl::router_configuration::system_route_scope_type>();
 	configuration.router.maximum_routes_limit = vm["router.maximum_routes_limit"].as<unsigned int>();
+	configuration.router.dns_servers_acceptance_policy = vm["router.dns_servers_acceptance_policy"].as<fl::router_configuration::dns_servers_scope_type>();
 }
