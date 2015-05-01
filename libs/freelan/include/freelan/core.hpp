@@ -63,6 +63,7 @@
 #include <asiotap/osi/icmpv6_proxy.hpp>
 #include <asiotap/osi/complex_filter.hpp>
 #include <asiotap/route_manager.hpp>
+#include <asiotap/dns_servers_manager.hpp>
 #include <asiotap/types/ip_route.hpp>
 #include <asiotap/types/ip_endpoint.hpp>
 
@@ -617,6 +618,7 @@ namespace freelan
 				boost::optional<routes_message::version_type> version;
 				std::vector<asiotap::route_manager::entry_type> system_route_entries;
 				asiotap::route_manager::entry_type saved_system_route;
+				std::vector<asiotap::dns_servers_manager::entry_type> dns_servers_entries;
 			};
 
 			typedef std::map<ep_type, client_router_info_type> client_router_info_map_type;
@@ -677,6 +679,7 @@ namespace freelan
 			switch_ m_switch;
 			router m_router;
 			asiotap::route_manager m_route_manager;
+			asiotap::dns_servers_manager m_dns_servers_manager;
 			boost::optional<routes_message::version_type> m_local_routes_version;
 			client_router_info_map_type m_client_router_info_map;
 

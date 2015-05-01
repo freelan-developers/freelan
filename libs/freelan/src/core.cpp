@@ -359,6 +359,39 @@ namespace freelan
 			return result;
 		}
 
+		asiotap::ip_address_set filter_dns_servers(const asiotap::ip_address_set& dns_servers, router_configuration::dns_servers_scope_type scope, const asiotap::ip_network_address_list& network_addresses)
+		{
+			asiotap::ip_address_set result;
+
+			switch (scope)
+			{
+				case router_configuration::dns_servers_scope_type::none:
+					break;
+				case router_configuration::dns_servers_scope_type::in_network:
+				{
+					for (auto&& ina : network_addresses)
+					{
+						for (auto&& dns_server : dns_servers)
+						{
+							if (has_address(ina, dns_server.value()))
+							{
+								result.insert(dns_server);
+							}
+						}
+					}
+
+					break;
+				}
+				case router_configuration::dns_servers_scope_type::any:
+				{
+					result = dns_servers;
+					break;
+				}
+			}
+
+			return result;
+		}
+
 		void exponential_backoff_value(boost::posix_time::time_duration& value, const boost::posix_time::time_duration& min, const boost::posix_time::time_duration& max, float min_factor = 1.5f, float max_factor = 2.5f) {
 			const auto factor = (static_cast<float>(::rand()) / static_cast<float>(RAND_MAX)) * (max_factor - min_factor) + min_factor;
 			value = boost::posix_time::milliseconds(static_cast<int>(value.total_milliseconds() * factor));
@@ -424,6 +457,7 @@ namespace freelan
 		m_switch(m_configuration.switch_),
 		m_router(m_configuration.router),
 		m_route_manager(m_io_service),
+		m_dns_servers_manager(m_io_service),
 		m_request_certificate(m_io_service, boost::posix_time::seconds(5), boost::posix_time::seconds(90)),
 		m_request_ca_certificate(m_io_service, boost::posix_time::seconds(5), boost::posix_time::seconds(90)),
 		m_renew_certificate_timer(m_io_service),
@@ -456,11 +490,9 @@ namespace freelan
 		});
 
 		// Setup the route manager.
-		auto route_registration_success_handler = [this](const asiotap::route_manager::route_type& route){
+		m_route_manager.set_route_registration_success_handler([this](const asiotap::route_manager::route_type& route){
 			m_logger(fscp::log_level::information) << "Added system route: " << route;
-		};
-
-		m_route_manager.set_route_registration_success_handler(route_registration_success_handler);
+		});
 		m_route_manager.set_route_registration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
 			m_logger(fscp::log_level::warning) << "Unable to add system route (" << route << "): " << ex.what();
 		});
@@ -469,6 +501,20 @@ namespace freelan
 		});
 		m_route_manager.set_route_unregistration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
 			m_logger(fscp::log_level::warning) << "Unable to remove system route (" << route << "): " << ex.what();
+		});
+		
+		// Setup the DNS servers manager.
+		m_dns_servers_manager.set_dns_server_registration_success_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server){
+			m_logger(fscp::log_level::information) << "Added DNS server: " << dns_server;
+		});
+		m_dns_servers_manager.set_dns_server_registration_failure_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server, const boost::system::system_error& ex){
+			m_logger(fscp::log_level::warning) << "Unable to add DNS server (" << dns_server << "): " << ex.what();
+		});
+		m_dns_servers_manager.set_dns_server_unregistration_success_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server){
+			m_logger(fscp::log_level::information) << "Removed DNS server: " << dns_server;
+		});
+		m_dns_servers_manager.set_dns_server_unregistration_failure_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server, const boost::system::system_error& ex){
+			m_logger(fscp::log_level::warning) << "Unable to remove DNS server (" << dns_server << "): " << ex.what();
 		});
 	}
 
@@ -1330,9 +1376,6 @@ namespace freelan
 
 	void core::do_handle_routes(const asiotap::ip_network_address_list& tap_addresses, const ep_type& sender, routes_message::version_type version, const asiotap::ip_route_set& routes, const asiotap::ip_address_set& dns_servers)
 	{
-		//TODO: Handle this parameter.
-		static_cast<void>(dns_servers);
-
 		// All calls to do_handle_routes() are done within the m_router_strand, so the following is safe.
 
 		client_router_info_type& client_router_info = m_client_router_info_map[sender];
@@ -1351,6 +1394,51 @@ namespace freelan
 			return;
 		}
 
+		asiotap::ip_address_set filtered_dns_servers;
+
+		if (m_configuration.router.dns_servers_acceptance_policy == router_configuration::dns_servers_scope_type::none)
+		{
+			m_logger(fscp::log_level::warning) << "Received DNS servers from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << dns_servers;
+		}
+		else
+		{
+			filtered_dns_servers = filter_dns_servers(dns_servers, m_configuration.router.dns_servers_acceptance_policy, tap_addresses);
+
+			if (filtered_dns_servers != dns_servers)
+			{
+				if (filtered_dns_servers.empty())
+				{
+					m_logger(fscp::log_level::warning) << "Received DNS servers from " << sender << " (version " << version << ") but none matched the DNS servers acceptance policy (" << m_configuration.router.dns_servers_acceptance_policy << "): " << dns_servers;
+				}
+				else
+				{
+					asiotap::ip_address_set excluded_dns_servers;
+					std::set_difference(dns_servers.begin(), dns_servers.end(), filtered_dns_servers.begin(), filtered_dns_servers.end(), std::inserter(excluded_dns_servers, excluded_dns_servers.end()));
+
+					m_logger(fscp::log_level::warning) << "Received DNS servers from " << sender << " (version " << version << ") but some did not match the DNS servers acceptance policy (" << m_configuration.router.dns_servers_acceptance_policy << "): " << excluded_dns_servers;
+				}
+			}
+
+			if (!filtered_dns_servers.empty())
+			{
+				if ((m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip))
+				{
+					const auto port = m_router.get_port(make_port_index(sender));
+
+					if (port)
+					{
+						port->set_local_dns_servers(filtered_dns_servers);
+
+						m_logger(fscp::log_level::information) << "Received DNS servers from " << sender << " (version " << version << ") were saved: " << filtered_dns_servers;
+					}
+					else
+					{
+						m_logger(fscp::log_level::debug) << "Received DNS servers from " << sender << " but unable to get the associated router port. Doing nothing";
+					}
+				}
+			}
+		}
+
 		asiotap::ip_route_set filtered_routes;
 
 		if (m_tap_adapter->layer() == asiotap::tap_adapter_layer::ip)
@@ -1358,40 +1446,41 @@ namespace freelan
 			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::internal_route_scope_type::none)
 			{
 				m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
-
-				return;
-			}
-
-			const auto port = m_router.get_port(make_port_index(sender));
-
-			filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
-
-			if (filtered_routes != routes)
-			{
-				if (filtered_routes.empty() && !routes.empty())
-				{
-					m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << routes;
-
-					return;
-				}
-				else
-				{
-					asiotap::ip_route_set excluded_routes;
-					std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
-
-					m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
-				}
-			}
-
-			if (port)
-			{
-				port->set_local_routes(filtered_routes);
-
-				m_logger(fscp::log_level::information) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
 			}
 			else
 			{
-				m_logger(fscp::log_level::debug) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
+				filtered_routes = filter_routes(routes, m_configuration.router.internal_route_acceptance_policy, m_configuration.router.maximum_routes_limit, tap_addresses);
+
+				if (filtered_routes != routes)
+				{
+					if (filtered_routes.empty())
+					{
+						m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") but none matched the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << routes;
+					}
+					else
+					{
+						asiotap::ip_route_set excluded_routes;
+						std::set_difference(routes.begin(), routes.end(), filtered_routes.begin(), filtered_routes.end(), std::inserter(excluded_routes, excluded_routes.end()));
+
+						m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") but some did not match the internal route acceptance policy (" << m_configuration.router.internal_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << excluded_routes;
+					}
+				}
+
+				if (!filtered_routes.empty())
+				{
+					const auto port = m_router.get_port(make_port_index(sender));
+
+					if (port)
+					{
+						port->set_local_routes(filtered_routes);
+
+						m_logger(fscp::log_level::information) << "Received routes from " << sender << " (version " << version << ") were applied: " << filtered_routes;
+					}
+					else
+					{
+						m_logger(fscp::log_level::debug) << "Received routes from " << sender << " but unable to get the associated router port. Doing nothing";
+					}
+				}
 			}
 		}
 		else
@@ -1399,11 +1488,11 @@ namespace freelan
 			if (m_configuration.router.system_route_acceptance_policy == router_configuration::system_route_scope_type::none)
 			{
 				m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
-
-				return;
 			}
-
-			filtered_routes = routes;
+			else
+			{
+				filtered_routes = routes;
+			}
 		}
 
 		// Silently filter out routes that are already covered by the default interface routing table entries (aka. routes that belong to the interface's network).
@@ -1427,8 +1516,6 @@ namespace freelan
 			if (system_routes.empty() && !filtered_system_routes.empty())
 			{
 				m_logger(fscp::log_level::warning) << "Received system routes from " << sender << " (version " << version << ") but none matched the system route acceptance policy (" << m_configuration.router.system_route_acceptance_policy << ", limit " << m_configuration.router.maximum_routes_limit << "): " << filtered_system_routes;
-
-				return;
 			}
 			else
 			{
@@ -1446,6 +1533,10 @@ namespace freelan
 		for (auto&& route : filtered_system_routes)
 		{
 			new_client_router_info.system_route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
+		}
+		for (auto&& dns_server : filtered_dns_servers)
+		{
+			new_client_router_info.dns_servers_entries.push_back(m_dns_servers_manager.get_dns_server_entry(dns_server));
 		}
 
 		client_router_info = new_client_router_info;

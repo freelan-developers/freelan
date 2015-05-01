@@ -126,15 +126,6 @@ namespace asiotap
 
 			return is;
 		}
-
-		class ip_address_to_string_visitor : public boost::static_visitor < std::string >
-		{
-			public:
-				template <typename AddressType>
-				result_type operator()(const AddressType& value) const {
-					return value.to_string();
-				}
-		};
 	}
 
 	template <typename AddressType>
@@ -206,7 +197,7 @@ namespace asiotap
 
 	std::ostream& operator<<(std::ostream& os, const ip_address& value)
 	{
-		return os << boost::apply_visitor(ip_address_to_string_visitor(), value.value());
+		return os << value.value().to_string();
 	}
 
 	std::ostream& operator<<(std::ostream& os, const ip_address_set& values)

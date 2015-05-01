@@ -156,6 +156,20 @@ namespace freelan
 				 * \param dns_server The IP address of the DNS server.
 				 * \return The representation size.
 				 */
+				result_type write_dns_server(const boost::asio::ip::address& dns_server) const
+				{
+					if (dns_server.is_v4()) {
+						return operator()(dns_server.to_v4());
+					} else {
+						return operator()(dns_server.to_v6());
+					}
+				}
+
+				/**
+				 * \brief Get the representation size of the DNS server address.
+				 * \param dns_server The IP address of the DNS server.
+				 * \return The representation size.
+				 */
 				template <typename AddressType>
 				result_type operator()(const AddressType& dns_server) const
 				{
@@ -336,7 +350,7 @@ namespace freelan
 
 		for (auto&& dns_server : dns_servers)
 		{
-			const size_t count = boost::apply_visitor(routes_helper<uint8_t*>(pbuf, pbuf_len), dns_server.value());
+			const size_t count = routes_helper<uint8_t*>(pbuf, pbuf_len).write_dns_server(dns_server.value());
 
 			required_size += count;
 			pbuf += count;

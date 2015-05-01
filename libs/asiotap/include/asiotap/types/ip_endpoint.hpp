@@ -288,6 +288,16 @@ namespace asiotap
 	* Needs to be a class and not a typedef or ADL won't work.
 	*/
 	class ip_address {
+		private:
+			class to_generic_ip_address_visitor : public boost::static_visitor<boost::asio::ip::address>
+			{
+				public:
+					template <typename AddressType>
+					result_type operator()(const AddressType& addr) const {
+						return addr;
+					}
+			};
+
 		public:
 			typedef boost::variant<boost::asio::ip::address_v4, boost::asio::ip::address_v6> value_type;
 
@@ -303,8 +313,8 @@ namespace asiotap
 				return *this;
 			}
 
-			const value_type& value() const {
-				return m_value;
+			const boost::asio::ip::address& value() const {
+				return boost::apply_visitor(to_generic_ip_address_visitor(), m_value);
 			}
 
 		private:
