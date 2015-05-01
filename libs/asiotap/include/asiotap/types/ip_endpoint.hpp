@@ -313,7 +313,7 @@ namespace asiotap
 				return *this;
 			}
 
-			const boost::asio::ip::address& value() const {
+			boost::asio::ip::address value() const {
 				return boost::apply_visitor(to_generic_ip_address_visitor(), m_value);
 			}
 
