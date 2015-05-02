@@ -44,8 +44,43 @@
 
 #include "windows/windows_dns_servers_manager.hpp"
 
+#include "windows/netsh.hpp"
+
+#include <executeplus/windows_system.hpp>
+
 namespace asiotap
 {
+	namespace
+	{
+		void netsh_interface_ip_set_dns(const std::string& interface_name, const windows_dns_servers_manager::dns_server_type& dns_server)
+		{
+			std::vector<std::string> args;
+
+			args = {
+				"interface",
+				dns_server.value().is_v4() ? "ipv4" : "ipv6",
+				"set",
+				"dnsservers",
+				"name=" + interface_name,
+				"source=static",
+				"address=" + boost::lexical_cast<std::string>(dns_server.value().to_string())
+			};
+
+#ifdef UNICODE
+			std::vector<std::wstring> wargs;
+
+			for (auto&& arg : args)
+			{
+				wargs.push_back(multi_byte_to_wide_char(arg));
+			}
+
+			netsh(wargs);
+#else
+			netsh(args);
+#endif
+		}
+	}
+
 	void windows_dns_servers_manager::register_dns_server(const dns_server_type& dns_server_entry)
 	{
 		//TODO: Implement.

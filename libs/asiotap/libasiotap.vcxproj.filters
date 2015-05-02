@@ -216,6 +216,9 @@
     <ClCompile Include="src\windows\windows_dns_servers_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\windows\netsh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\asiotap\osi\arp_builder.hpp">
@@ -450,6 +453,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\asiotap\windows\windows_dns_servers_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asiotap\windows\netsh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

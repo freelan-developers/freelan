@@ -44,6 +44,7 @@
 
 #include "windows/windows_route_manager.hpp"
 
+#include "windows/netsh.hpp"
 #include "error.hpp"
 
 #include <iostream>
@@ -60,44 +61,6 @@ namespace asiotap
 {
 	namespace
 	{
-		size_t get_system_directory(char* buf, size_t buf_len)
-		{
-			return static_cast<size_t>(::GetSystemDirectoryA(buf, static_cast<UINT>(buf_len)));
-		}
-
-		size_t get_system_directory(wchar_t* buf, size_t buf_len)
-		{
-			return static_cast<size_t>(::GetSystemDirectoryW(buf, static_cast<UINT>(buf_len)));
-		}
-
-		template <typename CharType>
-		std::basic_string<CharType> get_system_directory()
-		{
-			const size_t required_size = get_system_directory(static_cast<CharType*>(NULL), 0);
-
-			if (required_size == 0)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			std::basic_string<CharType> result;
-
-			// We make room for the content and the trailing NULL character.
-			result.resize(required_size + 1);
-
-			const size_t new_size = get_system_directory(&result[0], result.size());
-
-			if (new_size == 0)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			// Get rid of the trailing NULL character.
-			result.resize(new_size);
-
-			return result;
-		}
-
 		void set_sockaddr_inet(SOCKADDR_INET& result, const boost::asio::ip::address& address)
 		{
 			if (address.is_v4())
@@ -195,32 +158,6 @@ namespace asiotap
 
 			return entry;
 		}
-
-		std::wstring multi_byte_to_wide_char(const std::string& str)
-		{
-			if (str.empty())
-			{
-				return std::wstring();
-			}
-
-			size_t required_size = ::MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, &str[0], str.size(), nullptr, 0);
-
-			if (required_size == 0)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			std::wstring result(required_size, '\0');
-			required_size = ::MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, &str[0], str.size(), &result[0], result.capacity());
-
-			if (required_size == 0)
-			{
-				throw boost::system::system_error(::GetLastError(), boost::system::system_category());
-			}
-
-			result.resize(required_size);
-			return result;
-		}
 	}
 
 	void windows_route_manager::register_route(const route_type& route_entry)
@@ -231,24 +168,6 @@ namespace asiotap
 	void windows_route_manager::unregister_route(const route_type& route_entry)
 	{
 		unregister_route(route_entry.interface, route_entry.route, route_entry.metric);
-	}
-
-#ifdef UNICODE
-	void windows_route_manager::netsh(const std::vector<std::wstring>& args)
-#else
-	void windows_route_manager::netsh(const std::vector<std::string>& args)
-#endif
-	{
-#ifdef UNICODE
-		std::vector<std::wstring> real_args = { get_system_directory<wchar_t>() + L"\\netsh.exe" };
-#else
-		std::vector<std::string> real_args = { get_system_directory<char>() + "\\netsh.exe" };
-#endif
-
-		real_args.insert(real_args.end(), args.begin(), args.end());
-		const auto env = executeplus::get_current_environment();
-
-		executeplus::checked_execute(real_args, env);
 	}
 
 	void windows_route_manager::netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)

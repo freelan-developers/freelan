@@ -83,6 +83,7 @@
     <ClCompile Include="src\udp_filter.cpp" />
     <ClCompile Include="src\udp_frame.cpp" />
     <ClCompile Include="src\udp_helper.cpp" />
+    <ClCompile Include="src\windows\netsh.cpp" />
     <ClCompile Include="src\windows\windows_dns_servers_manager.cpp" />
     <ClCompile Include="src\windows\windows_route_manager.cpp" />
     <ClCompile Include="src\windows\windows_tap_adapter.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="include\asiotap\types\ip_network_address.hpp" />
     <ClInclude Include="include\asiotap\types\ip_route.hpp" />
     <ClInclude Include="include\asiotap\types\stream_operations.hpp" />
+    <ClInclude Include="include\asiotap\windows\netsh.hpp" />
     <ClInclude Include="include\asiotap\windows\registry.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_dns_servers_manager.hpp" />
     <ClInclude Include="include\asiotap\windows\windows_route_manager.hpp" />

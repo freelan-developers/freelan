@@ -37,65 +37,23 @@
  */
 
 /**
- * \file windows_route_manager.hpp
+ * \file netsh.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The Windaps route manager class.
+ * \brief netsh commands.
  */
 
 #pragma once
 
-#include "../base_route_manager.hpp"
-
 #include <vector>
 #include <string>
 
-#include <ifdef.h>
-
-#include "../os.hpp"
-#include "../types/ip_route.hpp"
-
-// These are not provided by Microsoft, so we implement them.
-
-inline bool operator==(const NET_LUID& lhs, const NET_LUID& rhs)
-{
-	return (lhs.Value == rhs.Value);
-}
-
-inline bool operator<(const NET_LUID& lhs, const NET_LUID& rhs)
-{
-	return (lhs.Value < rhs.Value);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const NET_LUID& value)
-{
-	return os << "Network interface #" << value.Info.NetLuidIndex;
-}
-
 namespace asiotap
 {
-	typedef base_routing_table_entry<NET_LUID> windows_routing_table_entry;
+	std::wstring multi_byte_to_wide_char(const std::string& str);
 
-	class windows_route_manager : public base_route_manager<windows_route_manager, windows_routing_table_entry>
-	{
-		public:
-
-			explicit windows_route_manager(boost::asio::io_service& io_service_) :
-				base_route_manager<windows_route_manager, windows_routing_table_entry>(io_service_)
-			{
-			}
-
-			void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent = false);
-
-			windows_route_manager::route_type get_route_for(const boost::asio::ip::address& host);
-			void register_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric);
-			void unregister_route(const NET_LUID& interface_luid, const ip_route& route, unsigned int metric);
-			void set_unicast_address(const NET_LUID& interface_luid, const ip_network_address& network_address);
-
-		protected:
-
-			void register_route(const route_type& route_entry);
-			void unregister_route(const route_type& route_entry);
-
-		friend class base_route_manager<windows_route_manager, windows_routing_table_entry>;
-	};
+#ifdef UNICODE
+	void netsh(const std::vector<std::wstring>& args);
+#else
+	void netsh(const std::vector<std::string>& args);
+#endif
 }
