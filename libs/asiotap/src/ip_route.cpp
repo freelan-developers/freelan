@@ -126,8 +126,6 @@ namespace asiotap
 				value = ir;
 				return is;
 			}
-
-			is.clear();
 		}
 
 		return is;
