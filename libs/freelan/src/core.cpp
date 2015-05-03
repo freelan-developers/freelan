@@ -1491,7 +1491,9 @@ namespace freelan
 		{
 			if (m_configuration.router.system_route_acceptance_policy == router_configuration::system_route_scope_type::none)
 			{
-				m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+				if (!routes.empty()) {
+					m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+				}
 			}
 			else
 			{
