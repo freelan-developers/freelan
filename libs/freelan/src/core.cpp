@@ -1217,7 +1217,7 @@ namespace freelan
 		{
 			if (m_configuration.tap_adapter.type == tap_adapter_configuration::tap_adapter_type::tap)
 			{
-				async_register_switch_port(host, void_handler_type());
+				async_register_switch_port(host, boost::bind(&core::async_send_routes_request, this, host));
 			}
 			else
 			{
