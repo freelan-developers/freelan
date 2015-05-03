@@ -180,7 +180,7 @@ namespace asiotap
 			{
 				return { name(), route, 0 };
 			}
-			
+
 			/**
 			 * \brief Build a DNS server entry associated to this tap adapter.
 			 * \param dns_server The DNS server IP address.
@@ -188,7 +188,7 @@ namespace asiotap
 			 */
 			posix_dns_servers_manager::dns_server_type get_dns_server(const ip_address& dns_server)
 			{
-				return { m_display_name, dns_server };
+				return { name(), dns_server };
 			}
 
 		private:
