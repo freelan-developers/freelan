@@ -1398,7 +1398,9 @@ namespace freelan
 
 		if (m_configuration.router.dns_servers_acceptance_policy == router_configuration::dns_servers_scope_type::none)
 		{
-			m_logger(fscp::log_level::warning) << "Received DNS servers from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << dns_servers;
+			if (!dns_servers.empty()) {
+				m_logger(fscp::log_level::warning) << "Received DNS servers from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << dns_servers;
+			}
 		}
 		else
 		{
@@ -1445,7 +1447,9 @@ namespace freelan
 		{
 			if (m_configuration.router.internal_route_acceptance_policy == router_configuration::internal_route_scope_type::none)
 			{
-				m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+				if (!routes.empty()) {
+					m_logger(fscp::log_level::warning) << "Received routes from " << sender << " (version " << version << ") will be ignored, as the configuration requires: " << routes;
+				}
 			}
 			else
 			{
