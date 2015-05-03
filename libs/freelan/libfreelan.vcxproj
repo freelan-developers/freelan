@@ -25,6 +25,7 @@
     <ClCompile Include="src\curl.cpp" />
     <ClCompile Include="src\curl_error.cpp" />
     <ClCompile Include="src\freelan.cpp" />
+    <ClCompile Include="src\ip_route.cpp" />
     <ClCompile Include="src\message.cpp" />
     <ClCompile Include="src\metric.cpp" />
     <ClCompile Include="src\mss.cpp" />
@@ -41,6 +42,7 @@
     <ClInclude Include="include\freelan\configuration.hpp" />
     <ClInclude Include="include\freelan\core.hpp" />
     <ClInclude Include="include\freelan\freelan.hpp" />
+    <ClInclude Include="include\freelan\ip_route.hpp" />
     <ClInclude Include="include\freelan\message.hpp" />
     <ClInclude Include="include\freelan\metric.hpp" />
     <ClInclude Include="include\freelan\mss.hpp" />

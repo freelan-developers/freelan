@@ -730,5 +730,9 @@ namespace freelan
 			timer_period m_set_contact_information_retry;
 			timer_period m_get_contact_information_retry;
 			cert_list_type m_client_certificate_authority_list;
+
+		private:
+
+			asiotap::ip_route_set translate_ip_routes(const std::set<ip_route>& routes) const;
 	};
 }

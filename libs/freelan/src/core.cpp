@@ -1363,7 +1363,7 @@ namespace freelan
 			}
 			else
 			{
-				const auto routes = m_configuration.router.local_ip_routes;
+				const auto routes = translate_ip_routes(m_configuration.router.local_ip_routes);
 				const auto dns_servers = m_configuration.router.local_dns_servers;
 				const auto version = 0;
 
@@ -1764,7 +1764,7 @@ namespace freelan
 			m_logger(fscp::log_level::information) << "Putting interface into the connected state.";
 			m_tap_adapter->set_connected_state(true);
 
-			auto local_routes = m_configuration.router.local_ip_routes;
+			auto local_routes = translate_ip_routes(m_configuration.router.local_ip_routes);
 			auto local_dns_servers = m_configuration.router.local_dns_servers;
 
 			if (tap_adapter_type == asiotap::tap_adapter_layer::ethernet)
@@ -2808,5 +2808,23 @@ namespace freelan
 	void freelan::core::timer_period::exponential_backoff() {
 		timer.expires_from_now(period);
 		exponential_backoff_value(period, min, max);
+	}
+
+	asiotap::ip_route_set core::translate_ip_routes(const std::set<ip_route>& routes) const
+	{
+		boost::optional<boost::asio::ip::address_v4> ipv4_gateway;
+		boost::optional<boost::asio::ip::address_v6> ipv6_gateway;
+
+		if (m_configuration.tap_adapter.ipv4_address_prefix_length.is_null()) {
+			ipv4_gateway = m_configuration.tap_adapter.ipv4_address_prefix_length.address();
+		}
+		if (m_configuration.tap_adapter.ipv4_address_prefix_length.is_null()) {
+			ipv6_gateway = m_configuration.tap_adapter.ipv6_address_prefix_length.address();
+		}
+
+		const auto ipv4_default_route = asiotap::ipv4_route(asiotap::ipv4_network_address::null(), ipv4_gateway);
+		const auto ipv6_default_route = asiotap::ipv6_route(asiotap::ipv6_network_address::null(), ipv6_gateway);
+
+		return to_ip_routes(routes, ipv4_default_route, ipv6_default_route);
 	}
 }

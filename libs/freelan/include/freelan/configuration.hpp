@@ -71,6 +71,7 @@
 #include "mtu.hpp"
 #include "mss.hpp"
 #include "metric.hpp"
+#include "ip_route.hpp"
 
 namespace freelan
 {
@@ -547,7 +548,7 @@ namespace freelan
 		 *
 		 * These routes are sent to the other hosts for VPN routing.
 		 */
-		asiotap::ip_route_set local_ip_routes;
+		std::set<ip_route> local_ip_routes;
 
 		/**
 		* \brief The local DNS servers.
