@@ -2815,10 +2815,10 @@ namespace freelan
 		boost::optional<boost::asio::ip::address_v4> ipv4_gateway;
 		boost::optional<boost::asio::ip::address_v6> ipv6_gateway;
 
-		if (m_configuration.tap_adapter.ipv4_address_prefix_length.is_null()) {
+		if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null()) {
 			ipv4_gateway = m_configuration.tap_adapter.ipv4_address_prefix_length.address();
 		}
-		if (m_configuration.tap_adapter.ipv4_address_prefix_length.is_null()) {
+		if (!m_configuration.tap_adapter.ipv4_address_prefix_length.is_null()) {
 			ipv6_gateway = m_configuration.tap_adapter.ipv6_address_prefix_length.address();
 		}
 
