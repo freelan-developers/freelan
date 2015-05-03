@@ -176,7 +176,7 @@ namespace asiotap
 
 		executeplus::checked_execute(real_args, executeplus::get_current_environment());
 #else
-		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), ip_address(address), prefix_length(address));
+		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), to_ip_address(address), to_prefix_length(address));
 #endif
 	}
 
@@ -187,7 +187,7 @@ namespace asiotap
 
 		executeplus::checked_execute(real_args, executeplus::get_current_environment());
 #else
-		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), remote_address, prefix_length(address), ip_address(address));
+		m_netlink_manager.add_interface_address(netlinkplus::interface_entry(interface), remote_address, to_prefix_length(address), to_ip_address(address));
 #endif
 	}
 
@@ -207,11 +207,11 @@ namespace asiotap
 #else
 		if (action == route_action::add)
 		{
-			m_netlink_manager.add_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest));
+			m_netlink_manager.add_route(netlinkplus::interface_entry(interface), to_ip_address(dest), to_prefix_length(dest));
 		}
 		else
 		{
-			m_netlink_manager.remove_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest));
+			m_netlink_manager.remove_route(netlinkplus::interface_entry(interface), to_ip_address(dest), to_prefix_length(dest));
 		}
 #endif
 	}
@@ -232,11 +232,11 @@ namespace asiotap
 #else
 		if (action == route_action::add)
 		{
-			m_netlink_manager.add_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest), gateway);
+			m_netlink_manager.add_route(netlinkplus::interface_entry(interface), to_ip_address(dest), to_prefix_length(dest), gateway);
 		}
 		else
 		{
-			m_netlink_manager.remove_route(netlinkplus::interface_entry(interface), ip_address(dest), prefix_length(dest), gateway);
+			m_netlink_manager.remove_route(netlinkplus::interface_entry(interface), to_ip_address(dest), to_prefix_length(dest), gateway);
 		}
 #endif
 	}
