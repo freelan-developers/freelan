@@ -52,8 +52,12 @@ namespace freelan
 
 	std::istream& operator>>(std::istream& is, ip_route& value)
 	{
-		if (!(is >> value))
+		asiotap::ip_route new_value;
+
+		if (is >> new_value)
 		{
+			value = new_value;
+		} else {
 			if (!is.eof())
 			{
 				is.clear();
