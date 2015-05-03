@@ -2822,8 +2822,8 @@ namespace freelan
 			ipv6_gateway = m_configuration.tap_adapter.ipv6_address_prefix_length.address();
 		}
 
-		const auto ipv4_default_route = asiotap::ipv4_route(asiotap::ipv4_network_address::null(), ipv4_gateway);
-		const auto ipv6_default_route = asiotap::ipv6_route(asiotap::ipv6_network_address::null(), ipv6_gateway);
+		const auto ipv4_default_route = asiotap::ipv4_route(asiotap::ipv4_network_address::any(), ipv4_gateway);
+		const auto ipv6_default_route = asiotap::ipv6_route(asiotap::ipv6_network_address::any(), ipv6_gateway);
 
 		return to_ip_routes(routes, ipv4_default_route, ipv6_default_route);
 	}

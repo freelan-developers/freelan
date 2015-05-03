@@ -63,6 +63,11 @@ namespace asiotap
 		public:
 
 			/**
+			 * \brief The address type.
+			 */
+			typedef AddressType address_type;
+
+			/**
 			 * \brief Get a null network address.
 			 * \return A null network address.
 			 */
@@ -72,9 +77,13 @@ namespace asiotap
 			}
 
 			/**
-			 * \brief The address type.
-			 */
-			typedef AddressType address_type;
+			* \brief Get a network address that represents all addresses.
+			* \return A network address.
+			*/
+			static base_ip_network_address any()
+			{
+				return base_ip_network_address(address_type(), 0);
+			}
 
 			/**
 			 * \brief The single address prefix length.
