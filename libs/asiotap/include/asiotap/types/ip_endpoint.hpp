@@ -304,11 +304,11 @@ namespace asiotap
 			ip_address() {}
 
 			template <typename AnyType>
-			ip_address(const AnyType& value) : m_value(value) {}
+			ip_address(const AnyType& _value) : m_value(_value) {}
 
 			template <typename AnyType>
-			ip_address& operator=(const AnyType& value) {
-				m_value = value;
+			ip_address& operator=(const AnyType& _value) {
+				m_value = _value;
 
 				return *this;
 			}
