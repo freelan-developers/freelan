@@ -64,7 +64,27 @@ namespace asiotap
 	class base_dns_servers_manager
 	{
 		public:
-			typedef ip_address dns_server_type;
+			struct dns_server_type
+			{
+				std::string interface_name;
+				ip_address dns_server_address;
+
+				friend bool operator<(const dns_server_type& lhs, const dns_server_type& rhs) {
+					if (lhs.interface_name == rhs.interface_name) {
+						return (lhs.dns_server_address < rhs.dns_server_address);
+					} else {
+						return (lhs.interface_name < rhs.interface_name);
+					}
+				}
+
+				friend bool operator==(const dns_server_type& lhs, const dns_server_type& rhs) {
+					return ((lhs.interface_name == rhs.interface_name) && (lhs.dns_server_address == rhs.dns_server_address));
+				}
+
+				friend std::ostream& operator<<(std::ostream& os, const dns_server_type& value) {
+					return os << value.interface_name << " - " << value.dns_server_address;
+				}
+			};
 
 			class entry_type_impl
 			{

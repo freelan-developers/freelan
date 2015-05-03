@@ -52,19 +52,23 @@ namespace asiotap
 {
 	namespace
 	{
-		void netsh_interface_ip_set_dns(const std::string& interface_name, const windows_dns_servers_manager::dns_server_type& dns_server)
+		void netsh_interface_ip_generic_dns(const std::string& verb, const std::string& interface_name, const boost::asio::ip::address& dns_server)
 		{
 			std::vector<std::string> args;
 
 			args = {
 				"interface",
-				dns_server.value().is_v4() ? "ipv4" : "ipv6",
-				"set",
+				dns_server.is_v4() ? "ipv4" : "ipv6",
+				verb,
 				"dnsservers",
-				"name=" + interface_name,
-				"source=static",
-				"address=" + boost::lexical_cast<std::string>(dns_server.value().to_string())
+				"name=" + interface_name
 			};
+
+			if (verb != "delete") {
+				args.push_back("source=static");
+			}
+			
+			args.push_back("address=" + boost::lexical_cast<std::string>(dns_server.to_string()));
 
 #ifdef UNICODE
 			std::vector<std::wstring> wargs;
@@ -79,17 +83,49 @@ namespace asiotap
 			netsh(args);
 #endif
 		}
+
+		void netsh_interface_ip_set_dnsservers(const std::string& interface_name, const boost::asio::ip::address& dns_server)
+		{
+			return netsh_interface_ip_generic_dns("set", interface_name, dns_server);
+		}
+
+		void netsh_interface_ip_add_dnsservers(const std::string& interface_name, const boost::asio::ip::address& dns_server)
+		{
+			return netsh_interface_ip_generic_dns("add", interface_name, dns_server);
+		}
+		
+		void netsh_interface_ip_delete_dnsservers(const std::string& interface_name, const boost::asio::ip::address& dns_server)
+		{
+			return netsh_interface_ip_generic_dns("delete", interface_name, dns_server);
+		}
 	}
 
 	void windows_dns_servers_manager::register_dns_server(const dns_server_type& dns_server_entry)
 	{
-		//TODO: Implement.
-		static_cast<void>(dns_server_entry);
+		auto& ip_addresses = m_references[dns_server_entry.interface_name];
+
+		if (ip_addresses.empty()) {
+			netsh_interface_ip_set_dnsservers(dns_server_entry.interface_name, dns_server_entry.dns_server_address.value());
+		} else {
+			netsh_interface_ip_add_dnsservers(dns_server_entry.interface_name, dns_server_entry.dns_server_address.value());
+		}
+
+		ip_addresses.insert(dns_server_entry.dns_server_address);
 	}
 
 	void windows_dns_servers_manager::unregister_dns_server(const dns_server_type& dns_server_entry)
 	{
-		//TODO: Implement.
-		static_cast<void>(dns_server_entry);
+		auto& ip_addresses = m_references[dns_server_entry.interface_name];
+
+		const auto index = ip_addresses.find(dns_server_entry.dns_server_address);
+
+		if (index == ip_addresses.end()) {
+			// Okay, we try to delete an address that was never added by us. This doesn't seem too good.
+			assert(false);
+		} else {
+			netsh_interface_ip_delete_dnsservers(dns_server_entry.interface_name, dns_server_entry.dns_server_address.value());
+
+			ip_addresses.erase(index);
+		}
 	}
 }

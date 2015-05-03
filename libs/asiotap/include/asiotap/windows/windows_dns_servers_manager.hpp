@@ -46,6 +46,9 @@
 
 #include "../base_dns_servers_manager.hpp"
 
+#include <map>
+#include <string>
+
 namespace asiotap
 {
 	class windows_dns_servers_manager : public base_dns_servers_manager<windows_dns_servers_manager>
@@ -61,6 +64,8 @@ namespace asiotap
 
 			void register_dns_server(const dns_server_type& dns_server);
 			void unregister_dns_server(const dns_server_type& dns_server);
+
+			std::map<std::string, ip_address_set> m_references;
 
 		friend class base_dns_servers_manager<windows_dns_servers_manager>;
 	};

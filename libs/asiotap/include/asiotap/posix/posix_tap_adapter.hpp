@@ -48,6 +48,7 @@
 #include "../base_tap_adapter.hpp"
 
 #include "posix_route_manager.hpp"
+#include "posix_dns_servers_manager.hpp"
 
 #include <map>
 #include <string>
@@ -178,6 +179,16 @@ namespace asiotap
 			posix_routing_table_entry get_route(const ip_route& route)
 			{
 				return { name(), route, 0 };
+			}
+			
+			/**
+			 * \brief Build a DNS server entry associated to this tap adapter.
+			 * \param dns_server The DNS server IP address.
+			 * \return The DNS server entry.
+			 */
+			posix_dns_servers_manager::dns_server_type get_dns_server(const ip_address& dns_server)
+			{
+				return { m_display_name, dns_server };
 			}
 
 		private:

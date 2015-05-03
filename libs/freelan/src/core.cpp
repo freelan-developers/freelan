@@ -1536,7 +1536,7 @@ namespace freelan
 		}
 		for (auto&& dns_server : filtered_dns_servers)
 		{
-			new_client_router_info.dns_servers_entries.push_back(m_dns_servers_manager.get_dns_server_entry(dns_server));
+			new_client_router_info.dns_servers_entries.push_back(m_dns_servers_manager.get_dns_server_entry(m_tap_adapter->get_dns_server(dns_server)));
 		}
 
 		client_router_info = new_client_router_info;
