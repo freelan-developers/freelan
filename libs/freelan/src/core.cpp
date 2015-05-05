@@ -1538,7 +1538,33 @@ namespace freelan
 
 		for (auto&& route : filtered_system_routes)
 		{
+			// Mac OSX doesn't support duplicate default gateways.
+#ifdef MACINTOSH
+			const auto address = to_ip_address(network_address(route));
+			const auto prefix_length = to_prefix_length(network_address(route));
+
+			if ((address == boost::asio::ip::address_v4::any()) && (prefix_length == 0)) {
+				m_logger(fscp::log_level::warning) << "Received a default IPv4 route: splitting it as Mac OS X doesn't support duplicate default routes.";
+
+				const auto gateway = asiotap::gateway(route);
+
+				boost::optional<boost::asio::ip::address_v4> ipv4_gateway;
+
+				if (gateway && gateway->is_v4()) {
+					ipv4_gateway = gateway->to_v4();
+				}
+
+				const auto route1 = asiotap::ipv4_route(asiotap::ipv4_network_address(boost::asio::ip::address_v4::from_string("0.0.0.0"), 1), ipv4_gateway);
+				const auto route2 = asiotap::ipv4_route(asiotap::ipv4_network_address(boost::asio::ip::address_v4::from_string("128.0.0.0"), 1), ipv4_gateway);
+
+				new_client_router_info.system_route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route1)));
+				new_client_router_info.system_route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route2)));
+			} else {
+				new_client_router_info.system_route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
+			}
+#else
 			new_client_router_info.system_route_entries.push_back(m_route_manager.get_route_entry(m_tap_adapter->get_route(route)));
+#endif
 		}
 		for (auto&& dns_server : filtered_dns_servers)
 		{
