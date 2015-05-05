@@ -121,7 +121,9 @@ namespace freelan
 		accept_routes_requests(true),
 		internal_route_acceptance_policy(internal_route_scope_type::unicast_in_network),
 		system_route_acceptance_policy(system_route_scope_type::none),
-		maximum_routes_limit(1)
+		maximum_routes_limit(1),
+		dns_servers_acceptance_policy(dns_servers_scope_type::in_network),
+		dns_script()
 	{
 	}
 

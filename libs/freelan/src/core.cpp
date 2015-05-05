@@ -434,6 +434,7 @@ namespace freelan
 		m_certificate_validation_callback(),
 		m_tap_adapter_up_callback(),
 		m_tap_adapter_down_callback(),
+		m_dns_callback(),
 		m_fscp_server(),
 		m_contact_timer(m_io_service, CONTACT_PERIOD),
 		m_dynamic_contact_timer(m_io_service, DYNAMIC_CONTACT_PERIOD),
@@ -502,8 +503,40 @@ namespace freelan
 		m_route_manager.set_route_unregistration_failure_handler([this](const asiotap::route_manager::route_type& route, const boost::system::system_error& ex){
 			m_logger(fscp::log_level::warning) << "Unable to remove system route (" << route << "): " << ex.what();
 		});
-		
+
 		// Setup the DNS servers manager.
+		m_dns_servers_manager.set_dns_server_add_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server) -> bool {
+			if (m_dns_callback) {
+				if (!m_dns_callback(dns_server.interface_name, DnsAction::Add, dns_server.dns_server_address.value())) {
+					throw boost::system::system_error(make_error_code(asiotap::asiotap_error::external_process_execution_failed));
+				}
+
+				return true;
+			} else {
+#ifndef WINDOWS
+				throw boost::system::system_error(make_error_code(asiotap::asiotap_error::no_dns_script_provided));
+#endif
+			}
+
+			return false;
+		});
+		m_dns_servers_manager.set_dns_server_remove_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server) -> bool {
+			if (m_dns_callback) {
+				if (!m_dns_callback(dns_server.interface_name, DnsAction::Remove, dns_server.dns_server_address.value())) {
+					throw boost::system::system_error(make_error_code(asiotap::asiotap_error::external_process_execution_failed));
+				}
+
+				return true;
+			}
+			else {
+#ifndef WINDOWS
+				m_logger(fscp::log_level::warning) << "Should have added a DNS server but no DNS script was configured.";
+				throw boost::system::system_error(make_error_code(asiotap::asiotap_error::no_dns_script_provided));
+#endif
+			}
+
+			return false;
+		});
 		m_dns_servers_manager.set_dns_server_registration_success_handler([this](const asiotap::dns_servers_manager::dns_server_type& dns_server){
 			m_logger(fscp::log_level::information) << "Added DNS server: " << dns_server;
 		});

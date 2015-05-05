@@ -131,6 +131,16 @@ namespace asiotap
 			typedef boost::shared_ptr<entry_type_impl> entry_type;
 
 			/**
+			 * \brief The add handler type.
+			 */
+			typedef boost::function<bool (const dns_server_type&)> dns_server_add_handler_type;
+
+			/**
+			 * \brief The remove handler type.
+			 */
+			typedef boost::function<bool (const dns_server_type&)> dns_server_remove_handler_type;
+
+			/**
 			 * \brief The registration success handler type.
 			 */
 			typedef boost::function<void(const dns_server_type&)> dns_server_registration_success_handler_type;
@@ -151,7 +161,13 @@ namespace asiotap
 			typedef boost::function<void(const dns_server_type&, const boost::system::system_error&)> dns_server_unregistration_failure_handler_type;
 
 			explicit base_dns_servers_manager(boost::asio::io_service& io_service_) :
-				m_io_service(io_service_)
+				m_io_service(io_service_),
+				m_dns_server_add_handler(),
+				m_dns_server_remove_handler(),
+				m_dns_server_registration_success_handler(),
+				m_dns_server_registration_failure_handler(),
+				m_dns_server_unregistration_success_handler(),
+				m_dns_server_unregistration_failure_handler()
 			{
 			}
 
@@ -164,6 +180,16 @@ namespace asiotap
 			boost::asio::io_service& io_service()
 			{
 				return m_io_service;
+			}
+
+			void set_dns_server_add_handler(dns_server_add_handler_type handler)
+			{
+				m_dns_server_add_handler = handler;
+			}
+
+			void set_dns_server_remove_handler(dns_server_remove_handler_type handler)
+			{
+				m_dns_server_remove_handler = handler;
 			}
 
 			void set_dns_server_registration_success_handler(dns_server_registration_success_handler_type handler)
@@ -190,7 +216,15 @@ namespace asiotap
 			{
 				try
 				{
-					static_cast<DNSServersManagerType*>(this)->register_dns_server(dns_server);
+					bool result = false;
+
+					if (m_dns_server_add_handler) {
+						result = m_dns_server_add_handler(dns_server);
+					}
+
+					if (!result) {
+						static_cast<DNSServersManagerType*>(this)->register_dns_server(dns_server);
+					}
 
 					if (m_dns_server_registration_success_handler)
 					{
@@ -214,7 +248,15 @@ namespace asiotap
 			{
 				try
 				{
-					static_cast<DNSServersManagerType*>(this)->unregister_dns_server(dns_server);
+					bool result = false;
+
+					if (m_dns_server_remove_handler) {
+						result = m_dns_server_remove_handler(dns_server);
+					}
+
+					if (!result) {
+						static_cast<DNSServersManagerType*>(this)->unregister_dns_server(dns_server);
+					}
 
 					if (m_dns_server_unregistration_success_handler)
 					{
@@ -256,6 +298,8 @@ namespace asiotap
 
 			boost::asio::io_service& m_io_service;
 			entry_table_type m_entry_table;
+			dns_server_add_handler_type m_dns_server_add_handler;
+			dns_server_remove_handler_type m_dns_server_remove_handler;
 			dns_server_registration_success_handler_type m_dns_server_registration_success_handler;
 			dns_server_registration_failure_handler_type m_dns_server_registration_failure_handler;
 			dns_server_unregistration_success_handler_type m_dns_server_unregistration_success_handler;

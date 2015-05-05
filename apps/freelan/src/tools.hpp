@@ -110,4 +110,15 @@ bool execute_certificate_validation_script(const boost::filesystem::path& script
  */
 bool execute_authentication_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& username, const std::string& password, const std::string& remote_host, uint16_t remote_port);
 
+/**
+ * \brief The DNS function.
+ * \param script The script to call.
+ * \param logger The logger instance.
+ * \param tap_adapter The tap_adapter instance.
+ * \param action A flag that indicates the action.
+ * \param dns_server The DNS server address to add or remove.
+ * \return The execution result of the specified script.
+ */
+bool execute_dns_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& tap_adapter, freelan::core::DnsAction action, const boost::asio::ip::address& dns_server);
+
 #endif /* TOOLS_HPP */

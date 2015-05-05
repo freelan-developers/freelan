@@ -94,6 +94,14 @@ namespace asiotap
 			{
 				return "The specified IP configuration is invalid";
 			}
+			case asiotap_error::external_process_execution_failed:
+			{
+				return "The execution of the external process failed";
+			}
+			case asiotap_error::no_dns_script_provided:
+			{
+				return "No DNS script was provided";
+			}
 			default:
 			{
 				return "Unknown asiotap error";

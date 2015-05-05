@@ -227,3 +227,21 @@ bool execute_authentication_script(const boost::filesystem::path& script, const 
 
 	return (exit_status == 0);
 }
+
+bool execute_dns_script(const boost::filesystem::path& script, const fscp::logger& logger, const std::string& tap_adapter, freelan::core::DnsAction action, const boost::asio::ip::address& dns_server)
+{
+	const std::string str_action = (action == freelan::core::DnsAction::Add) ? "add" : "remove";
+
+#if defined(WINDOWS) && defined(UNICODE)
+	int exit_status = execute(logger, script, { to_wstring(tap_adapter), to_wstring(str_action), to_wstring(dns_server.to_string()) });
+#else
+	int exit_status = execute(logger, script, { tap_adapter, str_action, dns_server.to_string() });
+#endif
+
+	if (exit_status != 0)
+	{
+		logger(fscp::log_level::warning) << "DNS script exited with a non-zero exit status: " << exit_status;
+	}
+
+	return (exit_status == 0);
+}

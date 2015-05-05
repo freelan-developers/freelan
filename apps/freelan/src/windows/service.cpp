@@ -515,6 +515,11 @@ namespace windows
 					core.set_authentication_callback(boost::bind(&execute_authentication_script, fl_configuration.server.authentication_script, logger, _1, _2, _3, _4));
 				}
 
+				if (!fl_configuration.router.dns_script.empty())
+				{
+					core.set_dns_callback(boost::bind(&execute_dns_script, fl_configuration.router.dns_script, logger, _1, _2, _3));
+				}
+
 				core.open();
 
 				boost::unique_lock<boost::mutex> lock(ctx.stop_function_mutex);

@@ -239,6 +239,16 @@ namespace freelan
 			 */
 			typedef boost::function<void (const asiotap::tap_adapter&)> tap_adapter_handler_type;
 
+			enum class DnsAction {
+				Add,
+				Remove
+			};
+
+			/**
+			 * \brief The up callback type.
+			 */
+			typedef boost::function<bool (const std::string&, DnsAction, const boost::asio::ip::address&)> dns_handler_type;
+			
 			// Public constants
 
 			/**
@@ -409,6 +419,16 @@ namespace freelan
 			}
 
 			/**
+			 * \brief Set the DNS callback.
+			 * \param callback The callback.
+			 * \warning This method can only be called when the core is NOT running.
+			 */
+			void set_dns_callback(dns_handler_type callback)
+			{
+				m_dns_callback = callback;
+			}
+
+			/**
 			 * \brief Open the core.
 			 * \see close
 			 */
@@ -441,6 +461,7 @@ namespace freelan
 			certificate_validation_handler_type m_certificate_validation_callback;
 			tap_adapter_handler_type m_tap_adapter_up_callback;
 			tap_adapter_handler_type m_tap_adapter_down_callback;
+			dns_handler_type m_dns_callback;
 
 		private: /* General purpose */
 

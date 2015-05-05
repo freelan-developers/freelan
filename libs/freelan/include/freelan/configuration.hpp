@@ -620,6 +620,11 @@ namespace freelan
 		 * \brief The DNS servers acceptance policy.
 		 */
 		dns_servers_scope_type dns_servers_acceptance_policy;
+
+		/**
+		 * \brief The DNS script.
+		 */
+		boost::filesystem::path dns_script;
 	};
 
 	/**

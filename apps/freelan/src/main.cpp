@@ -478,6 +478,11 @@ void run(fscp::logger& logger, const cli_configuration& configuration, int& exit
 		core.set_authentication_callback(boost::bind(&execute_authentication_script, configuration.fl_configuration.server.authentication_script, logger, _1, _2, _3, _4));
 	}
 
+	if (!configuration.fl_configuration.router.dns_script.empty())
+	{
+		core.set_dns_callback(boost::bind(&execute_dns_script, configuration.fl_configuration.router.dns_script, logger, _1, _2, _3));
+	}
+
 	core.open();
 
 	signals.async_wait(boost::bind(signal_handler, _1, _2, boost::ref(core), boost::ref(exit_signal)));

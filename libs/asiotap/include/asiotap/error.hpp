@@ -72,7 +72,9 @@ namespace asiotap
 		process_handle_expected,
 		external_process_output_parsing_error,
 		no_such_tap_adapter,
-		invalid_ip_configuration
+		invalid_ip_configuration,
+		external_process_execution_failed,
+		no_dns_script_provided
 	};
 
 	/**
