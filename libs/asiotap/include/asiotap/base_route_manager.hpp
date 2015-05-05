@@ -114,11 +114,6 @@ namespace asiotap
 						{
 							m_route_manager.unregister_route(m_route);
 						}
-
-						if (m_system_success)
-						{
-							m_route_manager.register_route(*m_system_route);
-						}
 					}
 
 					entry_type_impl(const entry_type_impl&) = delete;
@@ -134,18 +129,14 @@ namespace asiotap
 
 				private:
 
-					entry_type_impl(base_route_manager& route_manager, const route_type& _route, boost::optional<route_type> system_route = boost::none) :
+					entry_type_impl(base_route_manager& route_manager, const route_type& _route) :
 						m_route_manager(route_manager),
-						m_system_route(system_route),
-						m_system_success(m_system_route ? m_route_manager.unregister_route(*m_system_route) : false),
 						m_route(_route),
 						m_success(m_route_manager.register_route(m_route))
 					{
 					}
 
 					base_route_manager& m_route_manager;
-					boost::optional<route_type> m_system_route;
-					bool m_system_success;
 					route_type m_route;
 					bool m_success;
 
@@ -267,16 +258,7 @@ namespace asiotap
 
 				if (!entry)
 				{
-					boost::optional<route_type> system_route;
-					const auto route_ip_address = to_ip_address(network_address(route.route));
-
-					if (route_ip_address == boost::asio::ip::address_v4::any())
-					{
-						system_route = static_cast<RouteManagerType*>(this)->get_route_for(route_ip_address);
-						system_route->route = to_ip_route(ipv4_network_address::any(), gateway(system_route->route));
-					}
-
-					entry = boost::shared_ptr<entry_type_impl>(new entry_type_impl(*this, route, system_route));
+					entry = boost::shared_ptr<entry_type_impl>(new entry_type_impl(*this, route));
 
 					m_entry_table[route] = entry;
 				}
