@@ -53,7 +53,6 @@ launch_daemon_script_source = env.Value({
         '-s',
     ],
     'RunAtLoad': True,
-    'KeepAlive': True,
 })
 
 env.Install(
