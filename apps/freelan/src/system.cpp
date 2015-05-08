@@ -136,16 +136,16 @@ fs::path get_data_directory()
 
 	return fs::path(path) / FREELAN_NAME;
 #else
-	return FREELAN_INSTALL_PREFIX "/var/" FREELAN_NAME;
+	return get_installation_directory() / "var/" FREELAN_NAME;
 #endif
 }
 
 fs::path get_configuration_directory()
 {
 #ifdef WINDOWS
-	return get_installation_directory() / "/config/";
+	return get_installation_directory() / "config/";
 #else
-	return get_installation_directory() / "/etc/" FREELAN_NAME;
+	return get_installation_directory() / "etc/" FREELAN_NAME;
 #endif
 }
 
