@@ -25,6 +25,8 @@ OutputBaseFilename={#NAME}-{#VERSION}-{#ARCH}-install
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
+WizardSmallImageFile=images\wizard_small.bmp
+WizardImageFile=images\wizard.bmp
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl

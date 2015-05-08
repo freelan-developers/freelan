@@ -108,6 +108,12 @@ def get_files(source, env):
         if f:
             result.append(env.File(f))
 
+    config = get_config(source, env)
+
+    for images in {'WizardSmallImageFile', 'WizardImageFile'}:
+        image_file = config.get('Setup', 'WizardSmallImageFile')
+        result.append(env.File(image_file))
+
     return result
 
 
