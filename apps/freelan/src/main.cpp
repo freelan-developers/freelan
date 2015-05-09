@@ -204,7 +204,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	po::options_description daemon_options("Daemon");
 	daemon_options.add_options()
 	("foreground,f", "Do not run as a daemon.")
-	("syslog,s", "Alwats log to syslog (useful when running with --foreground on OSX with launchd).")
+	("syslog,s", "Always log to syslog (useful when running with --foreground on OSX with launchd).")
 	("pid_file,p", po::value<std::string>(), "A pid file to use.")
 	;
 
