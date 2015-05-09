@@ -408,7 +408,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 			}
 		}
 	}
-	
+
 	make_paths_absolute(vm, configuration_file.parent_path());
 	po::notify(vm);
 
