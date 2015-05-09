@@ -13,15 +13,15 @@ RUN apt-get clean
 # Get FreeLAN sources
 ENV FREELAN_BRANCH master
 
-RUN git clone https://github.com/freelan-developers/freelan-all.git
-RUN cd freelan-all && git checkout $FREELAN_BRANCH
+RUN git clone https://github.com/freelan-developers/freelan.git
+RUN cd freelan && git checkout $FREELAN_BRANCH
 
 # Compile FreeLAN
 ENV CXX=g++
-RUN cd freelan-all && scons install prefix=/
+RUN cd freelan && scons install prefix=/
 
 # Remove sources and dependencies
-RUN rm -r freelan-all
+RUN rm -r freelan
 RUN apt-get autoremove -y --purge $BUILD_DEPENDENCIES
 RUN apt-get clean
 
