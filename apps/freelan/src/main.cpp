@@ -110,11 +110,17 @@ struct cli_configuration
 #endif
 };
 
-std::vector<fs::path> get_configuration_files()
+std::vector<fs::path> get_configuration_files(fscp::logger& logger)
 {
 	std::vector<fs::path> configuration_files;
 
-	configuration_files.push_back(get_home_directory() / "freelan.cfg");
+	try {
+		configuration_files.push_back(get_home_directory() / "freelan.cfg");
+	}
+	catch (const std::runtime_error& ex) {
+		logger(fscp::log_level::warning) << "Not considering the home directory configuration file: " << ex.what();
+	}
+
 	configuration_files.push_back(get_configuration_directory() / "freelan.cfg");
 
 	return configuration_files;
@@ -371,7 +377,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	{
 		bool configuration_read = false;
 
-		const std::vector<fs::path> configuration_files = get_configuration_files();
+		const std::vector<fs::path> configuration_files = get_configuration_files(logger);
 
 		BOOST_FOREACH(const fs::path& conf, configuration_files)
 		{
