@@ -1,30 +1,3 @@
-[submodule "libcryptoplus"]
-	path = libcryptoplus
-	url = ../libcryptoplus.git
-[submodule "libiconvplus"]
-	path = libiconvplus
-	url = ../libiconvplus.git
-[submodule "libfscp"]
-	path = libfscp
-	url = ../libfscp.git
-[submodule "libasiotap"]
-	path = libasiotap
-	url = ../libasiotap.git
-[submodule "libfreelan"]
-	path = libfreelan
-	url = ../libfreelan.git
-[submodule "freelan"]
-	path = freelan
-	url = ../freelan.git
-[submodule "freelan-buildtools"]
-	path = freelan-buildtools
-	url = ../freelan-buildtools.git
-[submodule "freelan-server"]
-	path = freelan-server
-	url = ../freelan-server.git
-[submodule "libkfather"]
-	path = libkfather
-	url = ../libkfather.git
-[submodule "freelan-gui"]
-	path = freelan-gui
-	url = ../freelan-gui
+[submodule "packaging/debian"]
+	path = packaging/debian
+	url = ../freelan-debian.git
