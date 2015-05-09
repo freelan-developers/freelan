@@ -28,7 +28,7 @@ class FreelanEnvironment(Environment):
     A freelan specific environment class.
     """
 
-    def __init__(self, mode, prefix, **kwargs):
+    def __init__(self, mode, prefix, bin_prefix=None, **kwargs):
         """
         Initialize the environment.
 
@@ -66,14 +66,19 @@ class FreelanEnvironment(Environment):
 
         self.mode = mode
         self.prefix = prefix
+        self.bin_prefix = bin_prefix if bin_prefix else prefix
         self.destdir = self['ENV'].get('DESTDIR', '')
 
         if self.destdir:
             self.install_prefix = os.path.normpath(
                 os.path.abspath(self.destdir),
             ) + self.prefix
+            self.bin_install_prefix = os.path.normpath(
+                os.path.abspath(self.destdir),
+            ) + self.bin_prefix
         else:
             self.install_prefix = self.prefix
+            self.bin_install_prefix = self.bin_prefix
 
         if os.path.basename(self['CXX']) == 'clang++':
             self.Append(CXXFLAGS=['-Qunused-arguments'])
@@ -147,10 +152,15 @@ class FreelanEnvironment(Environment):
 mode = GetOption('mode')
 prefix = os.path.normpath(os.path.abspath(ARGUMENTS.get('prefix', './install')))
 
+if 'bin_prefix' in ARGUMENTS:
+    bin_prefix = os.path.normpath(os.path.abspath(ARGUMENTS['bin_prefix']))
+else:
+    bin_prefix = None
+
 if mode in ('all', 'release'):
-    env = FreelanEnvironment(mode='release', prefix=prefix)
+    env = FreelanEnvironment(mode='release', prefix=prefix, bin_prefix=bin_prefix)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
-    install = env.Install(os.path.join(env.install_prefix, 'bin'), apps)
+    install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
     Alias('install', install)
