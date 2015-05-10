@@ -63,6 +63,12 @@ namespace fscp
 	class SharedBuffer
 	{
 		public:
+			SharedBuffer() :
+				m_size(0),
+				m_data(),
+				m_buffer()
+			{}
+
 			SharedBuffer(size_t size) :
 				m_size(size),
 				m_data(new uint8_t[size])
@@ -76,6 +82,10 @@ namespace fscp
 					delete buf;
 				})
 			{
+			}
+
+			bool empty() const {
+				return ((m_size == 0) && !m_data && !m_buffer);
 			}
 
 		private:
@@ -173,4 +183,74 @@ namespace fscp
 	{
 		return SharedBufferHandler<Handler>(buf, handler);
 	}
+
+	class SharedMemoryPool {
+		public:
+
+			SharedMemoryPool(size_t _block_size, size_t _min_count, size_t _max_count) :
+				m_block_size(_block_size),
+				m_min_count(_min_count),
+				m_max_count(_max_count),
+				m_buffers(_max_count)
+			{
+				// Allocate the minimal amount of buffers requested.
+				for (size_t i = 0; i < m_min_count; ++i) {
+					m_buffers[i] = SharedBuffer(m_block_size);
+				}
+			}
+
+			SharedBuffer abandon_buffer() {
+				const auto it = std::find_if_not(m_buffers.begin(), m_buffers.end(), is_empty);
+
+				if (it != m_buffers.end()) {
+					const auto result = *it;
+					*it = SharedBuffer();
+					return result;
+				} else {
+					return SharedBuffer(m_block_size);
+				}
+			}
+
+			void adopt_buffer(const SharedBuffer& buf) {
+				const auto it = std::find_if(m_buffers.begin(), m_buffers.end(), is_empty);
+
+				// If we are full already, we only pretend we adopt the buffer but let it to die, alone.
+				if (it != m_buffers.end()) {
+					*it = buf;
+				}
+			}
+
+			template <typename IOServiceType>
+			SharedBuffer borrow_buffer(IOServiceType& io_service) {
+				const auto buffer = abandon_buffer();
+
+				return SharedBuffer(buffer, [this, &io_service](const SharedBuffer& buf) {
+					io_service.post([this, buf] () {
+						adopt_buffer(buf);
+					});
+				});
+			}
+
+			void clear_buffers() {
+				auto it = std::remove_if(m_buffers.begin(), m_buffers.end(), is_empty);
+
+				if (static_cast<size_t>(std::distance(m_buffers.begin(), it)) >= m_min_count) {
+					it = m_buffers.begin() + m_min_count;
+				}
+
+				for (; it != m_buffers.end(); ++it) {
+					*it = SharedBuffer();
+				}
+			}
+
+		private:
+			static bool is_empty(const SharedBuffer& buf) {
+				return !buf.empty();
+			}
+
+			size_t m_block_size;
+			size_t m_min_count;
+			size_t m_max_count;
+			std::vector<SharedBuffer> m_buffers;
+	};
 }
