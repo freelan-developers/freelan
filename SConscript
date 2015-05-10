@@ -74,8 +74,8 @@ if env.mode != 'retail':
                 samples.extend(sample)
 
                 if env.mode == 'release':
-                    samples.extend(env.SymLink(y.File('%sd' % os.path.basename(str(y))).srcnode(), sample))
-                else:
                     samples.extend(env.SymLink(y.File(os.path.basename(str(y))).srcnode(), sample))
+                else:
+                    samples.extend(env.SymLink(y.File('%sd' % os.path.basename(str(y))).srcnode(), sample))
 
 Return('libraries includes apps samples configurations')
