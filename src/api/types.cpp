@@ -44,6 +44,8 @@
 
 #include <boost/asio.hpp>
 
+#include <freelan/memory.h>
+
 struct IPv4Address* freelan_IPv4Address_from_string(const char* str) {
 
 	using boost::asio::ip::address_v4;
@@ -70,5 +72,5 @@ char* freelan_IPv4Address_to_string(struct IPv4Address* inst) {
 
 	const address_v4* const value = reinterpret_cast<address_v4*>(inst);
 
-	return ::strdup(value->to_string().c_str());
+	return ::freelan_strdup(value->to_string().c_str());
 }

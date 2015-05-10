@@ -79,15 +79,24 @@ FREELAN_API void* freelan_realloc(void* ptr, size_t size);
 FREELAN_API void freelan_free(void* ptr);
 
 /**
+ * \brief Duplicate a string.
+ * \param str The NULL-terminated string to duplicate.
+ * \return A duplicated string. If it the caller responsibility to free the
+ * resulting string by calling \c freelan_free.
+ */
+FREELAN_API char* freelan_strdup(const char* str);
+
+/**
  * \brief Override the memory functions.
  * \param malloc_func The allocation function.
  * \param realloc_func The reallocation function.
  * \param free_func The free function.
+ * \param strdup_func The strdup function.
  *
  * \warning This function MUST be called once before using any other part of
  * the API and never after that.
  */
-FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t), void* (*realloc_func)(void*, size_t), void (*free_func)(void*));
+FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t), void* (*realloc_func)(void*, size_t), void (*free_func)(void*), char* (*strdup_func)(const char*));
 
 #ifdef __cplusplus
 }

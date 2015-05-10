@@ -40,7 +40,10 @@
 
 #include <freelan/memory.h>
 
+#include <cassert>
 #include <cstdlib>
+#include <cstring>
+#include <new>
 
 namespace {
 	static void* default_malloc(size_t size) {
@@ -55,9 +58,14 @@ namespace {
 		return ::free(ptr);
 	}
 
+	static char* default_strdup(const char* str) {
+		return ::strdup(str);
+	}
+
 	void* (*freelan_malloc_func)(size_t) = &default_malloc;
 	void* (*freelan_realloc_func)(void*, size_t) = &default_realloc;
 	void (*freelan_free_func)(void*) = &default_free;
+	char* (*freelan_strdup_func)(const char*) = &default_strdup;
 }
 
 FREELAN_API void* freelan_malloc(size_t size) {
@@ -72,12 +80,38 @@ FREELAN_API void freelan_free(void* ptr) {
 	return freelan_free_func(ptr);
 }
 
+FREELAN_API char* freelan_strdup(const char* str) {
+	assert(str);
+
+	const size_t len = ::strlen(str);
+	char* const newstr = static_cast<char*>(freelan_malloc(len + 1));
+	::memcpy(newstr, str, len);
+
+	return newstr;
+}
+
 FREELAN_API void freelan_register_memory_functions(
 	void* (*malloc_func)(size_t),
 	void* (*realloc_func)(void*, size_t),
-	void (*free_func)(void*)
+	void (*free_func)(void*),
+	char* (*strdup_func)(const char*)
 ) {
 	freelan_malloc_func = malloc_func;
 	freelan_realloc_func = realloc_func;
 	freelan_free_func = free_func;
+	freelan_strdup_func = strdup_func;
+}
+
+void* operator new(std::size_t n) throw(std::bad_alloc) {
+	void* const result = freelan_malloc(n);
+
+	if (result == nullptr) {
+		throw std::bad_alloc();
+	}
+
+	return result;
+}
+
+void operator delete(void* p) throw() {
+	freelan_free(p);
 }
