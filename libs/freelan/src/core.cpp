@@ -441,7 +441,6 @@ namespace freelan
 		m_routes_request_timer(m_io_service, ROUTES_REQUEST_PERIOD),
 		m_tap_adapter_io_service(),
 		m_tap_adapter_thread(),
-		m_tap_adapter_buffers(65535, 2, 10),
 		m_arp_filter(m_ethernet_filter),
 		m_ipv4_filter(m_ethernet_filter),
 		m_ipv6_filter(m_ethernet_filter),
@@ -2034,14 +2033,23 @@ namespace freelan
 		assert(m_tap_adapter);
 
 		// Get either a new buffer or an old, recycled one if possible.
-		const SharedBuffer receive_buffer = m_tap_adapter_buffers.borrow_buffer(m_tap_adapter_io_service);
+		const SharedBuffer receive_buffer = m_tap_adapter_buffers.empty() ? SharedBuffer(65536) : [this] () {
+			const auto result = m_tap_adapter_buffers.front();
+			m_tap_adapter_buffers.pop_front();
+
+			return result;
+		}();
 
 		m_tap_adapter->async_read(
 			buffer(receive_buffer),
 			boost::bind(
 				&core::do_handle_tap_adapter_read,
 				this,
-				receive_buffer,
+				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
+					m_tap_adapter_io_service.post([this, buffer] () {
+						m_tap_adapter_buffers.push_back(buffer);
+					});
+				}),
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)

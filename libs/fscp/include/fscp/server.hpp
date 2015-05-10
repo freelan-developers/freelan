@@ -1284,7 +1284,7 @@ namespace fscp
 			boost::asio::strand m_socket_strand;
 			std::queue<void_handler_type> m_write_queue;
 			boost::asio::strand m_write_queue_strand;
-			SharedMemoryPool m_socket_buffers;
+			std::list<SharedBuffer> m_socket_buffers;
 
 		private: // HELLO messages
 
@@ -1436,7 +1436,7 @@ namespace fscp
 			boost::asio::strand m_session_strand;
 
 			peer_session_map_type m_peer_sessions;
-			SharedMemoryPool m_session_buffers;
+			std::list<SharedBuffer> m_session_buffers;
 
 			bool m_accept_session_request_messages_default;
 			cipher_suite_list_type m_cipher_suites;

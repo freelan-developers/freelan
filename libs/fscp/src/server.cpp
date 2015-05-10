@@ -222,14 +222,12 @@ namespace fscp
 		m_socket(io_service),
 		m_socket_strand(io_service),
 		m_write_queue_strand(io_service),
-		m_socket_buffers(65536, 2, 10),
 		m_greet_strand(io_service),
 		m_accept_hello_messages_default(true),
 		m_hello_message_received_handler(),
 		m_presentation_strand(io_service),
 		m_presentation_message_received_handler(),
 		m_session_strand(io_service),
-		m_session_buffers(65536, 2, 10),
 		m_accept_session_request_messages_default(true),
 		m_cipher_suites(get_default_cipher_suites()),
 		m_elliptic_curves(get_default_elliptic_curves()),
@@ -814,7 +812,12 @@ namespace fscp
 		boost::shared_ptr<ep_type> sender = boost::make_shared<ep_type>();
 
 		// Get either a new buffer or an old, recycled one if possible.
-		const SharedBuffer receive_buffer = m_socket_buffers.borrow_buffer(m_socket_strand);
+		const SharedBuffer receive_buffer = m_socket_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_socket_buffers.front();
+			m_socket_buffers.pop_front();
+
+			return result;
+		}();
 
 		m_socket.async_receive_from(
 			buffer(receive_buffer),
@@ -824,7 +827,11 @@ namespace fscp
 				this,
 				get_identity(),
 				sender,
-				receive_buffer,
+				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
+					m_socket_strand.post([this, buffer]() {
+						m_socket_buffers.push_back(buffer);
+					});
+				}),
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
@@ -1434,7 +1441,12 @@ namespace fscp
 			return;
 		}
 
-		const SharedBuffer send_buffer = m_session_buffers.borrow_buffer(m_session_strand);
+		const SharedBuffer send_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
 
 		try
 		{
@@ -1471,7 +1483,11 @@ namespace fscp
 			}
 
 			async_send_to(
-				send_buffer,
+				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer]() {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
 				size,
 				target,
 				handler
@@ -1711,7 +1727,13 @@ namespace fscp
 		m_logger(log_level::trace) << "Sending session message to " << target << " (session number: " << parameters.session_number << ", cipher suite: " << parameters.cipher_suite << ", elliptic curve: " << parameters.elliptic_curve << ").";
 
 		peer_session& p_session = m_peer_sessions[target];
-		const SharedBuffer send_buffer = m_session_buffers.borrow_buffer(m_session_strand);
+		const SharedBuffer send_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
+
 
 		try
 		{
@@ -1748,7 +1770,11 @@ namespace fscp
 			}
 
 			async_send_to(
-				send_buffer,
+				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer]() {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
 				size,
 				target,
 				[] (const boost::system::error_code&) {}
@@ -2035,7 +2061,12 @@ namespace fscp
 		}
 
 		// Get either a new buffer or an old, recycled one if possible.
-		const SharedBuffer send_buffer = m_session_buffers.borrow_buffer(m_session_strand);
+		const SharedBuffer send_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
 
 		try
 		{
@@ -2054,7 +2085,11 @@ namespace fscp
 			);
 
 			async_send_to(
-				send_buffer,
+				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer]() {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
 				size,
 				target,
 				handler
@@ -2239,7 +2274,12 @@ namespace fscp
 		}
 
 		// Get either a new buffer or an old, recycled one if possible.
-		const SharedBuffer cleartext_buffer = m_session_buffers.borrow_buffer(m_session_strand);
+		const SharedBuffer cleartext_buffer = m_session_buffers.empty() ? SharedBuffer(65536) : [this]() {
+			const auto result = m_session_buffers.front();
+			m_session_buffers.pop_front();
+
+			return result;
+		}();
 
 		try
 		{
@@ -2275,7 +2315,11 @@ namespace fscp
 			do_handle_data_message(
 				sender,
 				type,
-				cleartext_buffer,
+				SharedBuffer(cleartext_buffer, [this] (const SharedBuffer& buffer) {
+					m_session_strand.post([this, buffer] () {
+						m_session_buffers.push_back(buffer);
+					});
+				}),
 				buffer(cleartext_buffer, cleartext_len)
 			);
 		}
