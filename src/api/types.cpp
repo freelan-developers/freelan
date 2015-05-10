@@ -45,12 +45,13 @@
 #include <boost/asio.hpp>
 
 struct IPv4Address* freelan_IPv4Address_from_string(const char* str) {
+
+	using boost::asio::ip::address_v4;
+
 	assert(str);
 
 	try
 	{
-		using boost::asio::ip::address_v4;
-
 		address_v4* value = new address_v4(address_v4::from_string(str));
 
 		return reinterpret_cast<IPv4Address*>(value);
@@ -62,7 +63,12 @@ struct IPv4Address* freelan_IPv4Address_from_string(const char* str) {
 }
 
 char* freelan_IPv4Address_to_string(struct IPv4Address* inst) {
+
+	using boost::asio::ip::address_v4;
+
 	assert(inst);
 
-	return nullptr;
+	const address_v4* const value = reinterpret_cast<address_v4*>(inst);
+
+	return ::strdup(value->to_string().c_str());
 }

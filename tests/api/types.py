@@ -27,3 +27,10 @@ class APITypesTests(TestCase):
         result = native.freelan_IPv4Address_from_string("")
 
         self.assertEqual(ffi.NULL, result)
+
+    def test_IPv4Address_to_string_simple(self):
+        str_value = "1.2.4.8"
+        value = native.freelan_IPv4Address_from_string(str_value)
+        result = native.freelan_IPv4Address_to_string(value)
+
+        self.assertEqual(str_value, ffi.string(result))
