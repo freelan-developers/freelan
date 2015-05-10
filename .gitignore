@@ -23,3 +23,7 @@
 
 # Package files
 *.pkg
+
+# Python files
+*.egg-info
+pyfreelan/api/__pycache__

@@ -78,4 +78,36 @@ if env.mode != 'retail':
                 else:
                     samples.extend(env.SymLink(y.File('%sd' % os.path.basename(str(y))).srcnode(), sample))
 
-Return('libraries includes apps samples configurations')
+# API
+libraries = [
+    'boost_system',
+    'boost_thread',
+    'boost_filesystem',
+    'boost_date_time',
+    'boost_program_options',
+    'boost_iostreams',
+    'curl',
+    'ssl',
+    'crypto',
+]
+
+if sys.platform.startswith('linux'):
+    libraries.extend([
+        'pthread',
+        'netlinkplus',
+    ])
+elif sys.platform.startswith('darwin'):
+    libraries.extend([
+        'ldap',
+        'z',
+        'iconv',
+    ])
+
+env = env.Clone()
+env.Prepend(LIBS=libraries)
+env.Append(CPPDEFINES="FREELAN_API_EXPORTS")
+api_sources = env.RGlob('src', '*.cpp')
+api_includes = env.RGlob('include/freelan', '*.h')
+api_libraries = env.SharedLibrary(target=os.path.join(str(dirs['lib']), 'freelan'), source=api_sources)
+
+Return('libraries includes apps samples configurations api_includes api_libraries')
