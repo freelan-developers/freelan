@@ -2047,7 +2047,9 @@ namespace freelan
 				this,
 				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
 					m_tap_adapter_io_service.post([this, buffer] () {
-						m_tap_adapter_buffers.push_back(buffer);
+						if (m_tap_adapter_buffers.size() < 10) {
+							m_tap_adapter_buffers.push_back(buffer);
+						}
 					});
 				}),
 				boost::asio::placeholders::error,

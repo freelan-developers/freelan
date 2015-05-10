@@ -829,7 +829,9 @@ namespace fscp
 				sender,
 				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
 					m_socket_strand.post([this, buffer]() {
-						m_socket_buffers.push_back(buffer);
+						if (m_socket_buffers.size() < 10) {
+							m_socket_buffers.push_back(buffer);
+						}
 					});
 				}),
 				boost::asio::placeholders::error,
@@ -1485,7 +1487,9 @@ namespace fscp
 			async_send_to(
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer]() {
-						m_session_buffers.push_back(buffer);
+						if (m_session_buffers.size() < 10) {
+							m_session_buffers.push_back(buffer);
+						}
 					});
 				}),
 				size,
@@ -1772,7 +1776,9 @@ namespace fscp
 			async_send_to(
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer]() {
-						m_session_buffers.push_back(buffer);
+						if (m_session_buffers.size() < 10) {
+							m_session_buffers.push_back(buffer);
+						}
 					});
 				}),
 				size,
@@ -2087,7 +2093,9 @@ namespace fscp
 			async_send_to(
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer]() {
-						m_session_buffers.push_back(buffer);
+						if (m_session_buffers.size() < 10) {
+							m_session_buffers.push_back(buffer);
+						}
 					});
 				}),
 				size,
@@ -2317,7 +2325,9 @@ namespace fscp
 				type,
 				SharedBuffer(cleartext_buffer, [this] (const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer] () {
-						m_session_buffers.push_back(buffer);
+						if (m_session_buffers.size() < 10) {
+							m_session_buffers.push_back(buffer);
+						}
 					});
 				}),
 				buffer(cleartext_buffer, cleartext_len)
