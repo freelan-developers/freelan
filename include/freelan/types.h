@@ -61,6 +61,9 @@ struct IPv4Address;
  * \brief Create an IPv4Address instance from its string representation.
  * \param str The string representation.
  * \return The IPv4 address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4Address_free()
+ * on the returned instance when it is no longer needed.
  */
 FREELAN_API struct IPv4Address* freelan_IPv4Address_from_string(const char* str);
 
@@ -73,6 +76,12 @@ FREELAN_API struct IPv4Address* freelan_IPv4Address_from_string(const char* str)
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPv4Address_to_string(struct IPv4Address* inst);
+
+/**
+ * \brief Delete an IPv4Address instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPv4Address_free(struct IPv4Address* inst);
 
 /* API END */
 

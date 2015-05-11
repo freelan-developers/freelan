@@ -85,7 +85,7 @@ FREELAN_API char* freelan_strdup(const char* str) {
 
 	const size_t len = ::strlen(str);
 	char* const newstr = static_cast<char*>(freelan_malloc(len + 1));
-	::memcpy(newstr, str, len);
+	::memcpy(newstr, str, len + 1);
 
 	return newstr;
 }
