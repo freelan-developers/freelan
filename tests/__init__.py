@@ -44,4 +44,4 @@ class MemoryTests(TestCase):
         del self._deleters[value]
 
 
-from .api import *
+from .api import *  # noqa

@@ -101,9 +101,9 @@ def unregister_memory_functions():
     )
 
 
-def api_wrapper(typename):
+def NativeType(typename):
     """
-    Create a API wrapper base class around the specified type.
+    Create a API wrapper base class around the specified native type.
 
     :param typename: The name of the native type to wrap.
     :returns: An API wrapper class.
@@ -131,7 +131,11 @@ def api_wrapper(typename):
 
             :returns: The string representation.
             """
-            return ffi.string(to_string(self._opaque_ptr))
+            value_ptr = to_string(self._opaque_ptr)
+            value = ffi.string(value_ptr)
+            native.freelan_free(value_ptr)
+
+            return value
 
         def __repr__(self):
             return '{classname}({ptr})'.format(

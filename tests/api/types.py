@@ -4,10 +4,16 @@ Types API tests.
 
 from .. import MemoryTests
 
-from pyfreelan.api import native, ffi
+from pyfreelan.api import (
+    native,
+    ffi,
+)
+from pyfreelan.api.types import (
+    IPv4Address,
+)
 
 
-class APITypesTests(MemoryTests):
+class APINativeTypesTests(MemoryTests):
     def test_IPv4Address_from_string_simple(self):
         result = self.smartptr(
             native.freelan_IPv4Address_from_string("1.2.4.8"),
@@ -41,3 +47,9 @@ class APITypesTests(MemoryTests):
             native.freelan_free,
         )
         self.assertEqual(str_value, ffi.string(result))
+
+
+class APITypesTests(MemoryTests):
+    def test_IPv4Address_wrapper(self):
+        value = IPv4Address("9.0.0.1")
+        self.assertEqual("9.0.0.1", str(value))

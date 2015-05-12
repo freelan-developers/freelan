@@ -1,2 +1,2 @@
-from .types import *
-from .memory import *
+from .types import *  # noqa
+from .memory import *  # noqa
