@@ -5,7 +5,6 @@ Types API tests.
 from .. import MemoryTests
 
 from pyfreelan.api import native, ffi
-from contextlib import contextmanager
 
 
 class APITypesTests(MemoryTests):
