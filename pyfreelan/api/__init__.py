@@ -35,12 +35,20 @@ native = ffi.verify(
 )
 
 memory_map = {}
+memory_usage = {
+    'current': 0,
+    'max': 0,
+    'sum': 0,
+}
 
 
 @ffi.callback("void* (size_t)")
 def malloc(size):
     result = native.malloc(size)
     memory_map[result] = size
+    memory_usage['sum'] += size
+    memory_usage['current'] += size
+    memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
 
     return result
 
@@ -52,6 +60,8 @@ def realloc(ptr, size):
     if result != ffi.NULL:
         del memory_map[ptr]
         memory_map[result] = size
+        memory_usage['sum'] += size
+        memory_usage['current'] += size
 
     return result
 
@@ -59,6 +69,7 @@ def realloc(ptr, size):
 @ffi.callback("void (void*)")
 def free(ptr):
     result = native.free(ptr)
+    memory_usage['current'] -= memory_map[ptr]
     del memory_map[ptr]
 
     return result
