@@ -74,7 +74,8 @@ FREELAN_API void* freelan_realloc(void* ptr, size_t size);
 
 /**
  * \brief Free a chunk of memory.
- * \param ptr The memory chunk to free. If ptr is a null pointer, nothing is done.
+ * \param ptr The memory chunk to free. If ptr is a null pointer, nothing is
+ * done.
  */
 FREELAN_API void freelan_free(void* ptr);
 
@@ -88,10 +89,14 @@ FREELAN_API char* freelan_strdup(const char* str);
 
 /**
  * \brief Override the memory functions.
- * \param malloc_func The allocation function.
- * \param realloc_func The reallocation function.
- * \param free_func The free function.
- * \param strdup_func The strdup function.
+ * \param malloc_func The allocation function. If NULL, the default
+ * implementation is used.
+ * \param realloc_func The reallocation function. If NULL, the default
+ * implementation is used.
+ * \param free_func The free function. If NULL, the default implementation is
+ * used.
+ * \param strdup_func The strdup function. If NULL, the default implementation
+ * is used.
  *
  * \warning This function MUST be called once before using any other part of
  * the API and never after that.

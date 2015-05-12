@@ -96,13 +96,13 @@ FREELAN_API void freelan_register_memory_functions(
 	void (*free_func)(void*),
 	char* (*strdup_func)(const char*)
 ) {
-	freelan_malloc_func = malloc_func;
-	freelan_realloc_func = realloc_func;
-	freelan_free_func = free_func;
-	freelan_strdup_func = strdup_func;
+	freelan_malloc_func = malloc_func ? malloc_func : &default_malloc;
+	freelan_realloc_func = realloc_func ? realloc_func : &default_realloc;
+	freelan_free_func = free_func ? free_func : &default_free;
+	freelan_strdup_func = strdup_func ? strdup_func : &default_strdup;
 }
 
-void* operator new(std::size_t n) throw(std::bad_alloc) {
+void* operator new(std::size_t n) {
 	void* const result = freelan_malloc(n);
 
 	if (result == nullptr) {

@@ -2,26 +2,19 @@
 Types API tests.
 """
 
-from unittest import TestCase
+from .. import MemoryTests
 
 from pyfreelan.api import native, ffi
 from contextlib import contextmanager
 
 
-@contextmanager
-def free(value, method):
-    try:
-        yield
-    finally:
-        method(value)
-
-
-class APITypesTests(TestCase):
+class APITypesTests(MemoryTests):
     def test_IPv4Address_from_string_simple(self):
-        result = native.freelan_IPv4Address_from_string("1.2.4.8")
-
-        with free(result, native.freelan_IPv4Address_free):
-            self.assertNotEqual(ffi.NULL, result)
+        result = self.smartptr(
+            native.freelan_IPv4Address_from_string("1.2.4.8"),
+            native.freelan_IPv4Address_free,
+        )
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv4Address_from_string_truncated(self):
         result = native.freelan_IPv4Address_from_string("127.1")
@@ -40,10 +33,12 @@ class APITypesTests(TestCase):
 
     def test_IPv4Address_to_string_simple(self):
         str_value = "1.2.4.8"
-        value = native.freelan_IPv4Address_from_string(str_value)
-
-        with free(value, native.freelan_IPv4Address_free):
-            result = native.freelan_IPv4Address_to_string(value)
-
-            with free(result, native.freelan_free):
-                self.assertEqual(str_value, ffi.string(result))
+        value = self.smartptr(
+            native.freelan_IPv4Address_from_string(str_value),
+            native.freelan_IPv4Address_free,
+        )
+        result = self.smartptr(
+            native.freelan_IPv4Address_to_string(value),
+            native.freelan_free,
+        )
+        self.assertEqual(str_value, ffi.string(result))

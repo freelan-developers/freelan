@@ -8,6 +8,11 @@ ffi = cffi.FFI()
 
 ffi.cdef(
     """
+    /* Misc */
+    void* malloc(size_t size);
+    void* realloc(void* ptr, size_t size);
+    void free(void* ptr);
+
     /* Memory */
     void* freelan_malloc(size_t size);
     void* freelan_realloc(void* ptr, size_t size);
@@ -28,6 +33,61 @@ native = ffi.verify(
     libraries=['freelan'],
     include_dirs=['./include'],
 )
+
+memory_map = {}
+
+
+@ffi.callback("void* (size_t)")
+def malloc(size):
+    result = native.malloc(size)
+    memory_map[result] = size
+
+    return result
+
+
+@ffi.callback("void* (void*, size_t)")
+def realloc(ptr, size):
+    result = native.realloc(ptr, size)
+
+    if result != ffi.NULL:
+        del memory_map[ptr]
+        memory_map[result] = size
+
+    return result
+
+
+@ffi.callback("void (void*)")
+def free(ptr):
+    result = native.free(ptr)
+    del memory_map[ptr]
+
+    return result
+
+
+def register_memory_functions():
+    """
+    Instructs libfreelan to use the Python memory functions.
+
+    Use only for debugging as it has a huge performance cost.
+    """
+    native.freelan_register_memory_functions(
+        malloc,
+        realloc,
+        free,
+        ffi.NULL,
+    )
+
+
+def unregister_memory_functions():
+    """
+    Instructs libfreelan to use the default memory functions.
+    """
+    native.freelan_register_memory_functions(
+        ffi.NULL,
+        ffi.NULL,
+        ffi.NULL,
+        ffi.NULL,
+    )
 
 
 def api_wrapper(typename):
