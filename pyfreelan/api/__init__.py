@@ -6,8 +6,7 @@ import cffi
 
 ffi = cffi.FFI()
 
-ffi.cdef(
-    """
+api = """
     /* Misc */
     void* malloc(size_t size);
     void* realloc(void* ptr, size_t size);
@@ -25,11 +24,12 @@ ffi.cdef(
     struct IPv4Address* freelan_IPv4Address_from_string(const char* str);
     char* freelan_IPv4Address_to_string(struct IPv4Address* inst);
     void freelan_IPv4Address_free(struct IPv4Address* inst);
-    """
-)
+"""
+
+ffi.cdef(api)
 
 native = ffi.verify(
-    source='#include <freelan/freelan.h>',
+    source=api,
     libraries=['freelan'],
     include_dirs=['./include'],
 )
