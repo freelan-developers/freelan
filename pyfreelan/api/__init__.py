@@ -39,6 +39,9 @@ memory_usage = {
     'current': 0,
     'max': 0,
     'sum': 0,
+    'allocs': 0,
+    'reallocs': 0,
+    'deallocs': 0,
 }
 
 
@@ -49,6 +52,7 @@ def malloc(size):
     memory_usage['sum'] += size
     memory_usage['current'] += size
     memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
+    memory_usage['allocs'] += 1
 
     return result
 
@@ -62,6 +66,7 @@ def realloc(ptr, size):
         memory_map[result] = size
         memory_usage['sum'] += size
         memory_usage['current'] += size
+        memory_usage['reallocs'] += 1
 
     return result
 
@@ -69,6 +74,7 @@ def realloc(ptr, size):
 @ffi.callback("void (void*)")
 def free(ptr):
     result = native.free(ptr)
+    memory_usage['deallocs'] += 1
     memory_usage['current'] -= memory_map[ptr]
     del memory_map[ptr]
 

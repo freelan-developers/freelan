@@ -9,4 +9,9 @@ setup(
         'pyfreelan.api',
     ],
     test_suite='tests',
+    entry_points={
+        'nose.plugins.0.10': [
+            'fmemory = pyfreelan.nose_plugin:FreeLANMemory',
+        ],
+    },
 )

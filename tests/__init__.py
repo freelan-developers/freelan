@@ -2,6 +2,7 @@ from pyfreelan.api import (
     native,
     ffi,
     memory_map,
+    memory_usage,
     register_memory_functions,
     unregister_memory_functions,
 )
@@ -13,6 +14,10 @@ def setUpModule():
 
 def tearDownModule():
     unregister_memory_functions()
+
+    from pyfreelan.nose_plugin import FreeLANMemory
+
+    FreeLANMemory.feed_memory_information(**memory_usage)
 
 
 from unittest import TestCase
