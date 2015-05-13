@@ -13,11 +13,11 @@ api = """
     void free(void* ptr);
 
     /* Memory */
-    void* freelan_malloc(size_t size);
-    void* freelan_realloc(void* ptr, size_t size);
+    void* freelan_malloc(size_t size, const char*, unsigned int);
+    void* freelan_realloc(void* ptr, size_t size, const char*, unsigned int);
     void freelan_free(void* ptr);
     char* freelan_strdup(const char* str);
-    void freelan_register_memory_functions(void* (*malloc_func)(size_t), void* (*realloc_func)(void*, size_t), void (*free_func)(void*), char* (*strdup_func)(const char*));
+    void freelan_register_memory_functions(void* (*malloc_func)(size_t, const char*, unsigned int), void* (*realloc_func)(void*, size_t, const char*, unsigned int), void (*free_func)(void*), char* (*strdup_func)(const char*));
 
     /* Types */
     struct IPv4Address;
@@ -45,8 +45,8 @@ memory_usage = {
 }
 
 
-@ffi.callback("void* (size_t)")
-def malloc(size):
+@ffi.callback("void* (size_t, const char*, unsigned int)")
+def malloc(size, file, line):
     result = native.malloc(size)
     memory_map[result] = size
     memory_usage['sum'] += size
@@ -57,8 +57,8 @@ def malloc(size):
     return result
 
 
-@ffi.callback("void* (void*, size_t)")
-def realloc(ptr, size):
+@ffi.callback("void* (void*, size_t, const char*, unsigned int)")
+def realloc(ptr, size, file, line):
     result = native.realloc(ptr, size)
 
     if result != ffi.NULL:

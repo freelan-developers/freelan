@@ -55,22 +55,31 @@ extern "C" {
 
 #include "common.h"
 
+#define FREELAN_MALLOC(size) freelan_malloc(size, __FILE__, __LINE__)
+#define FREELAN_REALLOC(ptr,size) freelan_realloc(ptr, size, __FILE__, __LINE__)
+
 /**
  * \brief Allocate a chunk of memory.
  * \param size The size of the memory chunk to allocate.
+ * \param file The file at which the allocation took place. Can be NULL if that
+ * information is not available.
+ * \param line The line at which the allocation took place.
  * \return The memory chunk. If no memory can be allocated, a null pointer is
  * returned instead.
  */
-FREELAN_API void* freelan_malloc(size_t size);
+FREELAN_API void* freelan_malloc(size_t size, const char* file, unsigned int line);
 
 /**
  * \brief Reallocate a chunk of memory.
  * \param ptr The memory chunk to reallocate.
  * \param size The new size of the memory chunk to reallocate.
+ * \param file The file at which the allocation took place. Can be NULL if that
+ * information is not available.
+ * \param line The line at which the allocation took place.
  * \return The memory chunk. If no memory can be reallocated, a null pointer is
  * returned and buf remains unchanged.
  */
-FREELAN_API void* freelan_realloc(void* ptr, size_t size);
+FREELAN_API void* freelan_realloc(void* ptr, size_t size, const char* file, unsigned int line);
 
 /**
  * \brief Free a chunk of memory.
@@ -101,7 +110,7 @@ FREELAN_API char* freelan_strdup(const char* str);
  * \warning This function MUST be called once before using any other part of
  * the API and never after that.
  */
-FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t), void* (*realloc_func)(void*, size_t), void (*free_func)(void*), char* (*strdup_func)(const char*));
+FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t, const char*, unsigned int), void* (*realloc_func)(void*, size_t, const char*, unsigned int), void (*free_func)(void*), char* (*strdup_func)(const char*));
 
 #ifdef __cplusplus
 }
