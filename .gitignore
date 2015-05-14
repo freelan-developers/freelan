@@ -27,3 +27,5 @@
 # Python files
 *.egg-info
 pyfreelan/api/__pycache__
+.tox/*
+MANIFEST
