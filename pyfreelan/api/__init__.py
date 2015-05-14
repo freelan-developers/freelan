@@ -43,12 +43,63 @@ memory_usage = {
     'reallocs': 0,
     'deallocs': 0,
 }
+memory_sequence = []
+
+
+class PointerInfo(object):
+    def __init__(self, pointer, size, file, line):
+        self.pointer = pointer
+        self.size = size
+        self._file = file
+        self.line = line
+
+    @property
+    def file(self):
+        if self._file == ffi.NULL:
+            return "<unknown file>"
+        else:
+            return ffi.string(self._file)
+
+    def __str__(self):
+        return (
+            "{self.pointer} ({self.size} bytes) allocated at "
+            "{self.file}:{self.line}".format(self=self)
+        )
+
+
+class Allocation(object):
+    def __init__(self, ptrinfo):
+        self.ptrinfo = ptrinfo
+
+    def __str__(self):
+        return "Allocation: {self.ptrinfo}".format(self=self)
+
+
+class Deallocation(object):
+    def __init__(self, ptrinfo):
+        self.ptrinfo = ptrinfo
+
+    def __str__(self):
+        return "Deallocation: {self.ptrinfo}".format(self=self)
+
+
+class Reallocation(object):
+    def __init__(self, old_ptrinfo, new_ptrinfo):
+        self.old_ptrinfo = old_ptrinfo
+        self.new_ptrinfo = new_ptrinfo
+
+    def __str__(self):
+        return "Reallocation: {self.old_ptrinfo} => {self.new_ptrinfo}".format(
+            self=self,
+        )
 
 
 @ffi.callback("void* (size_t, const char*, unsigned int)")
 def malloc(size, file, line):
     result = native.malloc(size)
-    memory_map[result] = size
+    ptrinfo = PointerInfo(result, size, file, line)
+    memory_sequence.append(Allocation(ptrinfo))
+    memory_map[result] = ptrinfo
     memory_usage['sum'] += size
     memory_usage['current'] += size
     memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
@@ -60,10 +111,13 @@ def malloc(size, file, line):
 @ffi.callback("void* (void*, size_t, const char*, unsigned int)")
 def realloc(ptr, size, file, line):
     result = native.realloc(ptr, size)
+    old_ptrinfo = memory_map[ptr]
+    new_ptrinfo = PointerInfo(result, size, file, line)
+    memory_sequence.append(Reallocation(old_ptrinfo, new_ptrinfo))
 
     if result != ffi.NULL:
         del memory_map[ptr]
-        memory_map[result] = size
+        memory_map[result] = new_ptrinfo
         memory_usage['sum'] += size
         memory_usage['current'] += size
         memory_usage['reallocs'] += 1
@@ -73,9 +127,11 @@ def realloc(ptr, size, file, line):
 
 @ffi.callback("void (void*)")
 def free(ptr):
+    ptrinfo = memory_map[ptr]
+    memory_sequence.append(Deallocation(ptrinfo))
     result = native.free(ptr)
     memory_usage['deallocs'] += 1
-    memory_usage['current'] -= memory_map[ptr]
+    memory_usage['current'] -= memory_map[ptr].size
     del memory_map[ptr]
 
     return result
