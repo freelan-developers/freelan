@@ -107,27 +107,3 @@ FREELAN_API void freelan_register_memory_functions(
 	freelan_free_func = free_func ? free_func : &default_free;
 	freelan_strdup_func = strdup_func ? strdup_func : &default_strdup;
 }
-
-void* operator new(std::size_t n, const char* file, unsigned int line) {
-	void* const result = freelan_malloc(n, file, line);
-
-	if (result == NULL) {
-		throw std::bad_alloc();
-	}
-
-	return result;
-}
-
-void* operator new(std::size_t n) {
-	void* const result = freelan_malloc(n, NULL, 0);
-
-	if (result == NULL) {
-		throw std::bad_alloc();
-	}
-
-	return result;
-}
-
-void operator delete(void* p) throw() {
-	freelan_free(p);
-}

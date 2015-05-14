@@ -38,24 +38,33 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file types.h
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Value-types using throughout FreeLAN.
- */
+#include <freelan/memory.h>
 
-#ifndef FREELAN_FREELAN_H
-#define FREELAN_FREELAN_H
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <new>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void* operator new(std::size_t n, const char* file, unsigned int line) {
+	void* const result = freelan_malloc(n, file, line);
 
-#include "freelan/memory.h"
-#include "freelan/types.h"
+	if (result == NULL) {
+		throw std::bad_alloc();
+	}
 
-#ifdef __cplusplus
+	return result;
 }
-#endif
 
-#endif
+void* operator new(std::size_t n) {
+	void* const result = freelan_malloc(n, NULL, 0);
+
+	if (result == NULL) {
+		throw std::bad_alloc();
+	}
+
+	return result;
+}
+
+void operator delete(void* p) throw() {
+	freelan_free(p);
+}

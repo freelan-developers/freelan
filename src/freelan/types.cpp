@@ -46,6 +46,8 @@
 
 #include <freelan/memory.h>
 
+#include "../internal/memory.hpp"
+
 struct IPv4Address* freelan_IPv4Address_from_string(const char* str) {
 	using boost::asio::ip::address_v4;
 
@@ -53,7 +55,7 @@ struct IPv4Address* freelan_IPv4Address_from_string(const char* str) {
 
 	try
 	{
-		address_v4* value = new address_v4(address_v4::from_string(str));
+		address_v4* value = FREELAN_NEW address_v4(address_v4::from_string(str));
 
 		return reinterpret_cast<IPv4Address*>(value);
 	}
@@ -76,5 +78,5 @@ char* freelan_IPv4Address_to_string(struct IPv4Address* inst) {
 void freelan_IPv4Address_free(struct IPv4Address* inst) {
 	using boost::asio::ip::address_v4;
 
-	delete reinterpret_cast<address_v4*>(inst);
+	FREELAN_DELETE reinterpret_cast<address_v4*>(inst);
 }
