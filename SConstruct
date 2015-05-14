@@ -168,7 +168,7 @@ if mode in ('all', 'release'):
     env['ENV']['LD_LIBRARY_PATH'] = lib_path
     api_install = env.Install(os.path.join(env.install_prefix, 'include', 'freelan'), api_includes)
     api_install.extend(env.Install(lib_path, api_libraries))
-    api_runtests = env.Command(None, api_install, "nosetests -v")
+    api_runtests = env.Command(None, api_install, "pip install -e . && nosetests -v --with-fmemory")
 
     Alias('install', install)
     Alias('apps', apps)
