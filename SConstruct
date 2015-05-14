@@ -163,18 +163,14 @@ if mode in ('all', 'release'):
     install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
-    lib_path = os.path.join(env.install_prefix, 'lib')
-    env['ENV']['LIBRARY_PATH'] = lib_path
-    env['ENV']['LD_LIBRARY_PATH'] = lib_path
     api_install = env.Install(os.path.join(env.install_prefix, 'include', 'freelan'), api_includes)
-    api_install.extend(env.Install(lib_path, api_libraries))
-    api_runtests = env.Command(None, api_install, "pip install -e . && nosetests -v --with-fmemory")
+    api_install.extend(env.Install(os.path.join(env.install_prefix, 'lib'), api_libraries))
 
     Alias('install', install)
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', install + apps + samples)
-    Alias('api', api_runtests)
+    Alias('api', api_install)
 
 if mode in ('all', 'debug'):
     env = FreelanEnvironment(mode='debug', prefix=prefix)
