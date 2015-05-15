@@ -94,7 +94,6 @@ libraries = [
 if sys.platform.startswith('linux'):
     libraries.extend([
         'pthread',
-        'netlinkplus',
     ])
 elif sys.platform.startswith('darwin'):
     libraries.extend([
