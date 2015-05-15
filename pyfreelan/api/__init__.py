@@ -60,7 +60,7 @@ class PointerInfo(object):
         else:
             return ffi.string(self._file)
 
-    def __str__(self):
+    def __repr__(self):
         return (
             "{self.pointer} ({self.size} bytes) allocated at "
             "{self.file}:{self.line}".format(self=self)
@@ -70,26 +70,29 @@ class PointerInfo(object):
 class Allocation(object):
     def __init__(self, ptrinfo):
         self.ptrinfo = ptrinfo
+        self.action = "malloc"
 
-    def __str__(self):
-        return "Allocation: {self.ptrinfo}".format(self=self)
+    def __repr__(self):
+        return "Allocation({self.ptrinfo})".format(self=self)
 
 
 class Deallocation(object):
     def __init__(self, ptrinfo):
         self.ptrinfo = ptrinfo
+        self.action = "malloc"
 
-    def __str__(self):
-        return "Deallocation: {self.ptrinfo}".format(self=self)
+    def __repr__(self):
+        return "Deallocation({self.ptrinfo})".format(self=self)
 
 
 class Reallocation(object):
     def __init__(self, old_ptrinfo, new_ptrinfo):
         self.old_ptrinfo = old_ptrinfo
         self.new_ptrinfo = new_ptrinfo
+        self.action = "realloc"
 
-    def __str__(self):
-        return "Reallocation: {self.old_ptrinfo} => {self.new_ptrinfo}".format(
+    def __repr__(self):
+        return "Reallocation({self.old_ptrinfo} => {self.new_ptrinfo})".format(
             self=self,
         )
 

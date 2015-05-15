@@ -1,8 +1,6 @@
 from pyfreelan.api import (
     native,
     ffi,
-    memory_map,
-    memory_usage,
     register_memory_functions,
     unregister_memory_functions,
 )
@@ -15,10 +13,6 @@ def setUpModule():
 def tearDownModule():
     unregister_memory_functions()
 
-    from pyfreelan.nose_plugin import FreeLANMemory
-
-    FreeLANMemory.feed_memory_information(**memory_usage)
-
 
 from unittest import TestCase
 
@@ -28,14 +22,11 @@ class MemoryTests(TestCase):
     ffi = ffi
 
     def setUp(self):
-        self._memory_map = memory_map.copy()
         self._deleters = {}
 
     def tearDown(self):
         for value, deleter in self._deleters.iteritems():
             deleter(value)
-
-        self.assertEqual(self._memory_map, memory_map)
 
     def smartptr(self, value, deleter):
         if value != ffi.NULL:

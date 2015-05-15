@@ -12,7 +12,8 @@ setup(
     test_suite='tests',
     entry_points={
         'nose.plugins.0.10': [
-            'fmemory = pyfreelan.nose_plugin:FreeLANMemory',
+            'flmemstats = pyfreelan.nosefmemory:FreeLANMemoryStats',
+            'flmemleak = pyfreelan.nosefmemory:FreeLANMemoryLeak',
         ],
     },
 )
