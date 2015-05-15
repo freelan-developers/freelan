@@ -15,11 +15,11 @@ from pyfreelan.api.types import (
 
 class APINativeTypesTests(MemoryTests):
     def test_IPv4Address_from_string_simple(self):
-        result = self.smartptr(
-            native.freelan_IPv4Address_from_string("1.2.4.8"),
-            native.freelan_IPv4Address_free,
-        )
+        result = native.freelan_IPv4Address_from_string("1.2.4.8")
+
         self.assertNotEqual(ffi.NULL, result)
+
+        native.freelan_IPv4Address_free(result)
 
     def test_IPv4Address_from_string_truncated(self):
         result = native.freelan_IPv4Address_from_string("127.1")
@@ -38,15 +38,13 @@ class APINativeTypesTests(MemoryTests):
 
     def test_IPv4Address_to_string_simple(self):
         str_value = "1.2.4.8"
-        value = self.smartptr(
-            native.freelan_IPv4Address_from_string(str_value),
-            native.freelan_IPv4Address_free,
-        )
-        result = self.smartptr(
-            native.freelan_IPv4Address_to_string(value),
-            native.freelan_free,
-        )
+        value = native.freelan_IPv4Address_from_string(str_value),
+        result = native.freelan_IPv4Address_to_string(value)
+        native.freelan_IPv4Address_free(value)
+
         self.assertEqual(str_value, ffi.string(result))
+
+        native.freelan_free(result)
 
 
 class APITypesTests(MemoryTests):

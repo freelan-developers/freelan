@@ -4,6 +4,8 @@ from nose.plugins.errorclass import ErrorClass, ErrorClassPlugin
 from tabulate import tabulate
 
 from .api import (
+    register_memory_functions,
+    unregister_memory_functions,
     memory_map,
     memory_usage,
     memory_sequence,
@@ -88,6 +90,16 @@ class FreeLANMemoryLeak(ErrorClassPlugin):
     name = 'flmemleak'
     score = 1
     leaking = ErrorClass(MemoryLeak, label='LEAKING', isfailure=True)
+
+    def begin(self):
+        if self.enabled:
+            print "=== Registering memory functions ==="
+            register_memory_functions()
+
+    def finalize(self, result):
+        if self.enabled:
+            unregister_memory_functions()
+            print "=== Unregistered memory functions ==="
 
     def startTest(self, test):
         self.memory_map = memory_map.copy()

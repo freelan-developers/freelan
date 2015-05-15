@@ -65,6 +65,10 @@ void* operator new(std::size_t n) {
 	return result;
 }
 
-void operator delete(void* p) throw() {
-	freelan_free(p);
+void operator delete(void* ptr) noexcept {
+	freelan_free(ptr);
+}
+
+void operator delete(void* ptr, const std::nothrow_t&) noexcept {
+	freelan_free(ptr);
 }

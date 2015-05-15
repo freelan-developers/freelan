@@ -5,36 +5,27 @@ Types API tests.
 from .. import MemoryTests
 
 from pyfreelan.api import native, ffi
-from contextlib import contextmanager
 
 
 class APIMemoryTests(MemoryTests):
     def test_malloc(self):
-        result = self.smartptr(
-            native.freelan_malloc(6, ffi.NULL, 0),
-            native.freelan_free,
-        )
+        result = native.freelan_malloc(6, ffi.NULL, 0)
+
         self.assertNotEqual(ffi.NULL, result)
 
+        native.freelan_free(result)
+
     def test_realloc(self):
-        buf = self.smartptr(
-            native.freelan_malloc(6, ffi.NULL, 0),
-            native.freelan_free,
-        )
+        buf = native.freelan_malloc(6, ffi.NULL, 0)
         result = native.freelan_realloc(buf, 12, ffi.NULL, 0)
 
         self.assertNotEqual(ffi.NULL, result)
 
-        if result != buf:
-            self.disown(buf)
-            self.smartptr(
-                result,
-                native.freelan_free,
-            )
+        native.freelan_free(result)
 
     def test_strdup(self):
-        result = self.smartptr(
-            native.freelan_strdup("freelan"),
-            native.freelan_free,
-        )
+        result = native.freelan_strdup("freelan")
+
         self.assertEqual("freelan", ffi.string(result))
+
+        native.freelan_free(result)

@@ -47,8 +47,10 @@
 #pragma once
 
 #define FREELAN_NEW new(__FILE__, __LINE__)
+#define FREELAN_PLACEMENT_NEW(...) new(__VA_ARGS__)
 #define FREELAN_DELETE delete
 
 void* operator new(std::size_t n, const char* file, unsigned int line);
 void* operator new(std::size_t n);
-void operator delete(void* p) throw();
+void operator delete(void* ptr) noexcept;
+void operator delete(void* ptr, const std::nothrow_t&) noexcept;
