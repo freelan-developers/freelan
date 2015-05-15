@@ -38,7 +38,7 @@ class APINativeTypesTests(MemoryTests):
 
     def test_IPv4Address_to_string_simple(self):
         str_value = "1.2.4.8"
-        value = native.freelan_IPv4Address_from_string(str_value),
+        value = native.freelan_IPv4Address_from_string(str_value)
         result = native.freelan_IPv4Address_to_string(value)
         native.freelan_IPv4Address_free(value)
 
