@@ -79,7 +79,7 @@ class Allocation(object):
 class Deallocation(object):
     def __init__(self, ptrinfo):
         self.ptrinfo = ptrinfo
-        self.action = "malloc"
+        self.action = "free"
 
     def __repr__(self):
         return "Deallocation({self.ptrinfo})".format(self=self)
