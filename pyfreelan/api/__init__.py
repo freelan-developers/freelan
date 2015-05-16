@@ -122,7 +122,7 @@ def realloc(ptr, size, file, line):
         del memory_map[ptr]
         memory_map[result] = new_ptrinfo
         memory_usage['sum'] += size
-        memory_usage['current'] += size
+        memory_usage['current'] += (size - old_ptrinfo.size)
         memory_usage['reallocs'] += 1
 
     return result
