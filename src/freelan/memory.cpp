@@ -46,17 +46,11 @@
 #include <new>
 
 namespace {
-	static void* default_malloc(size_t size, const char* file, unsigned int line) {
-		static_cast<void>(file);
-		static_cast<void>(line);
-
+	static void* default_malloc(size_t size) {
 		return ::malloc(size);
 	}
 
-	static void* default_realloc(void* ptr, size_t size, const char* file, unsigned int line) {
-		static_cast<void>(file);
-		static_cast<void>(line);
-
+	static void* default_realloc(void* ptr, size_t size) {
 		return ::realloc(ptr, size);
 	}
 
@@ -68,18 +62,23 @@ namespace {
 		return ::strdup(str);
 	}
 
-	void* (*freelan_malloc_func)(size_t, const char*, unsigned int) = &default_malloc;
-	void* (*freelan_realloc_func)(void*, size_t, const char*, unsigned int) = &default_realloc;
+	static void* default_mark_pointer(void* ptr, const char*, unsigned int) {
+		return ptr;
+	}
+
+	void* (*freelan_malloc_func)(size_t) = &default_malloc;
+	void* (*freelan_realloc_func)(void*, size_t) = &default_realloc;
 	void (*freelan_free_func)(void*) = &default_free;
 	char* (*freelan_strdup_func)(const char*) = &default_strdup;
+	void* (*freelan_mark_pointer_func)(void*, const char*, unsigned int) = &default_mark_pointer;
 }
 
-FREELAN_API void* freelan_malloc(size_t size, const char* file, unsigned int line) {
-	return freelan_malloc_func(size, file, line);
+FREELAN_API void* freelan_malloc(size_t size) {
+	return freelan_malloc_func(size);
 }
 
-FREELAN_API void* freelan_realloc(void* ptr, size_t size, const char* file, unsigned int line) {
-	return freelan_realloc_func(ptr, size, file, line);
+FREELAN_API void* freelan_realloc(void* ptr, size_t size) {
+	return freelan_realloc_func(ptr, size);
 }
 
 FREELAN_API void freelan_free(void* ptr) {
@@ -97,8 +96,8 @@ FREELAN_API char* freelan_strdup(const char* str) {
 }
 
 FREELAN_API void freelan_register_memory_functions(
-	void* (*malloc_func)(size_t, const char*, unsigned int),
-	void* (*realloc_func)(void*, size_t, const char*, unsigned int),
+	void* (*malloc_func)(size_t),
+	void* (*realloc_func)(void*, size_t),
 	void (*free_func)(void*),
 	char* (*strdup_func)(const char*)
 ) {
@@ -106,4 +105,12 @@ FREELAN_API void freelan_register_memory_functions(
 	freelan_realloc_func = realloc_func ? realloc_func : &default_realloc;
 	freelan_free_func = free_func ? free_func : &default_free;
 	freelan_strdup_func = strdup_func ? strdup_func : &default_strdup;
+}
+
+FREELAN_API void* freelan_mark_pointer(void* ptr, const char* file, unsigned int line) {
+	return freelan_mark_pointer_func(ptr, file, line);
+}
+
+FREELAN_API void freelan_register_memory_debug_functions(void* (*mark_pointer_func)(void*, const char*, unsigned int)) {
+	freelan_mark_pointer_func = mark_pointer_func ? mark_pointer_func : &default_mark_pointer;
 }

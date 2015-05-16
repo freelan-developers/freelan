@@ -9,15 +9,15 @@ from pyfreelan.api import native, ffi
 
 class APIMemoryTests(MemoryTests):
     def test_malloc(self):
-        result = native.freelan_malloc(6, ffi.NULL, 0)
+        result = native.freelan_malloc(6)
 
         self.assertNotEqual(ffi.NULL, result)
 
         native.freelan_free(result)
 
     def test_realloc(self):
-        buf = native.freelan_malloc(6, ffi.NULL, 0)
-        result = native.freelan_realloc(buf, 12, ffi.NULL, 0)
+        buf = native.freelan_malloc(6)
+        result = native.freelan_realloc(buf, 12)
 
         self.assertNotEqual(ffi.NULL, result)
 

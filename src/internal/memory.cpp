@@ -45,18 +45,8 @@
 #include <cstring>
 #include <new>
 
-void* operator new(std::size_t n, const char* file, unsigned int line) {
-	void* const result = freelan_malloc(n, file, line);
-
-	if (result == NULL) {
-		throw std::bad_alloc();
-	}
-
-	return result;
-}
-
-void* operator new(std::size_t n) {
-	void* const result = freelan_malloc(n, NULL, 0);
+void* operator new(std::size_t n) throw(std::bad_alloc) {
+	void* const result = freelan_malloc(n);
 
 	if (result == NULL) {
 		throw std::bad_alloc();
@@ -66,9 +56,5 @@ void* operator new(std::size_t n) {
 }
 
 void operator delete(void* ptr) noexcept {
-	freelan_free(ptr);
-}
-
-void operator delete(void* ptr, const std::nothrow_t&) noexcept {
 	freelan_free(ptr);
 }

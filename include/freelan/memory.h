@@ -55,31 +55,25 @@ extern "C" {
 
 #include "common.h"
 
-#define FREELAN_MALLOC(size) freelan_malloc(size, __FILE__, __LINE__)
-#define FREELAN_REALLOC(ptr,size) freelan_realloc(ptr, size, __FILE__, __LINE__)
+#define FREELAN_MALLOC(size) freelan_mark_pointer(freelan_malloc(size), __FILE__, __LINE__)
+#define FREELAN_REALLOC(ptr,size) freelan_mark_pointer(freelan_realloc(ptr, size), __FILE__, __LINE__)
 
 /**
  * \brief Allocate a chunk of memory.
  * \param size The size of the memory chunk to allocate.
- * \param file The file at which the allocation took place. Can be NULL if that
- * information is not available.
- * \param line The line at which the allocation took place.
  * \return The memory chunk. If no memory can be allocated, a null pointer is
  * returned instead.
  */
-FREELAN_API void* freelan_malloc(size_t size, const char* file, unsigned int line);
+FREELAN_API void* freelan_malloc(size_t size);
 
 /**
  * \brief Reallocate a chunk of memory.
  * \param ptr The memory chunk to reallocate.
  * \param size The new size of the memory chunk to reallocate.
- * \param file The file at which the allocation took place. Can be NULL if that
- * information is not available.
- * \param line The line at which the allocation took place.
  * \return The memory chunk. If no memory can be reallocated, a null pointer is
  * returned and buf remains unchanged.
  */
-FREELAN_API void* freelan_realloc(void* ptr, size_t size, const char* file, unsigned int line);
+FREELAN_API void* freelan_realloc(void* ptr, size_t size);
 
 /**
  * \brief Free a chunk of memory.
@@ -110,7 +104,27 @@ FREELAN_API char* freelan_strdup(const char* str);
  * \warning This function MUST be called once before using any other part of
  * the API and never after that.
  */
-FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t, const char*, unsigned int), void* (*realloc_func)(void*, size_t, const char*, unsigned int), void (*free_func)(void*), char* (*strdup_func)(const char*));
+FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t), void* (*realloc_func)(void*, size_t), void (*free_func)(void*), char* (*strdup_func)(const char*));
+
+/**
+ * \brief Mark the origin of a memory allocation.
+ * \param ptr The pointer to mark.
+ * \param file The file at which the allocation took place. Can be NULL if that
+ * information is not available.
+ * \param line The line at which the allocation took place.
+ * \return ptr, unchanged.
+ */
+FREELAN_API void* freelan_mark_pointer(void* ptr, const char* file, unsigned int line);
+
+/**
+ * \brief Override the memory debug functions.
+ * \param mark_pointer_func The marking pointer function. If NULL, the default
+ * implementation (which does nothing) is used.
+ *
+ * \warning This function MUST be called once before using any other part of
+ * the API and never after that.
+ */
+FREELAN_API void freelan_register_memory_debug_functions(void* (*mark_pointer_func)(void*, const char*, unsigned int));
 
 #ifdef __cplusplus
 }
