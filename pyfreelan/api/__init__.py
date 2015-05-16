@@ -123,6 +123,7 @@ def realloc(ptr, size, file, line):
         memory_map[result] = new_ptrinfo
         memory_usage['sum'] += size
         memory_usage['current'] += (size - old_ptrinfo.size)
+        memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
         memory_usage['reallocs'] += 1
 
     return result
