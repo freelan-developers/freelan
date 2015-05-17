@@ -61,7 +61,7 @@ class ErrorContext(object):
     def line(self):
         return native.freelan_error_context_get_error_line(self._opaque_ptr)
 
-    def __bool__(self):
+    def __nonzero__(self):
         return self.category is not None
 
     def __enter__(self):
@@ -73,7 +73,7 @@ class ErrorContext(object):
         return False
 
     def raise_for_error(self):
-        if not self:
+        if self:
             raise FreeLANException(error_context=self)
 
 

@@ -138,14 +138,14 @@ def realloc(ptr, size):
 
 @ffi.callback("void (void*)")
 def free(ptr):
-    ptrinfo = memory_map[ptr]
-    memory_sequence.append(Deallocation(ptrinfo))
-    result = native.free(ptr)
-    memory_usage['deallocs'] += 1
-    memory_usage['current'] -= memory_map[ptr].size
-    del memory_map[ptr]
+    if ptr != ffi.NULL:
+        ptrinfo = memory_map[ptr]
+        memory_sequence.append(Deallocation(ptrinfo))
+        memory_usage['deallocs'] += 1
+        memory_usage['current'] -= memory_map[ptr].size
+        del memory_map[ptr]
 
-    return result
+    return native.free(ptr)
 
 
 @ffi.callback("void* (void*, const char*, unsigned int)")
