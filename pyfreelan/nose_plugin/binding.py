@@ -23,7 +23,7 @@ class PointerInfo(object):
     def __init__(self, pointer, size):
         self.pointer = pointer
         self.size = size
-        self._file = None
+        self._file = ffi.NULL
         self._line = None
 
     def mark_pointer(self, file, line):
