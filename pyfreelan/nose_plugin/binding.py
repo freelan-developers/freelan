@@ -38,7 +38,7 @@ class PointerInfo(object):
     def __init__(self, pointer, size):
         self.pointer = pointer
         self.size = size
-        self._file = ffi.NULL
+        self._file = None
         self._line = None
 
     def mark_pointer(self, file, line):
@@ -47,7 +47,9 @@ class PointerInfo(object):
 
     @property
     def file(self):
-        if self._file == ffi.NULL:
+        if self._file is None:
+            return "<no file information>"
+        elif self._file == ffi.NULL:
             return "<unknown file>"
         else:
             return ffi.string(self._file)
@@ -55,9 +57,15 @@ class PointerInfo(object):
     @property
     def line(self):
         if self._line is None:
+            return "<no line information>"
+        elif not self._line:
             return "<unknown line>"
         else:
             return self._line
+
+    @property
+    def has_debug_info(self):
+        return self._line is not None or self._file is not None
 
     def __repr__(self):
         return (

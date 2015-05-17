@@ -39,38 +39,68 @@
  */
 
 /**
- * \file memory.hpp
+ * \file error.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Memory functions.
+ * \brief Error functions.
  */
 
 #pragma once
 
-#include <cstddef>
+#include <boost/system/system_error.hpp>
 
-#include <freelan/memory.h>
+#define FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx) reinterpret_cast<freelan::ErrorContext*>(ectx)->reset(); try {
+#define FREELAN_END_USE_ERROR_CONTEXT(ectx) } catch (const boost::system::system_error& ex) { reinterpret_cast<freelan::ErrorContext*>(ectx)->assign_from_exception(ex, __FILE__, __LINE__); }
 
-#define FREELAN_NEW MarkPointer(__FILE__, __LINE__) * new
-#define FREELAN_DELETE delete
+namespace freelan {
 
-class MarkPointer {
+class ErrorContext {
 	public:
-		MarkPointer(const char* _file, unsigned int line) :
-			m_file(_file),
-			m_line(line)
+		ErrorContext() :
+			m_error_code(),
+			m_description(),
+			m_file(),
+			m_line()
 		{}
 
-		template <typename T>
-		T* operator*(T* ptr) {
-			freelan_mark_pointer(ptr, m_file, m_line);
+		const boost::system::error_code& error_code() const {
+			return m_error_code;
+		}
 
-			return ptr;
+		const std::string& description() const {
+			return m_description;
+		}
+
+		const char* file() const {
+			return m_file;
+		}
+
+		unsigned int line() const {
+			return m_line;
+		}
+
+		void reset() {
+			m_error_code = boost::system::error_code();
+			m_description.clear();
+			m_file = nullptr;
+			m_line = 0;
+		}
+
+		void assign(const boost::system::error_code& ec, const char* _file = nullptr, unsigned int _line = 0) {
+			m_error_code = ec;
+			m_description = ec.message();
+			m_file = _file;
+			m_line = _line;
+		}
+
+		void assign_from_exception(const boost::system::system_error& ex, const char* _file = nullptr, unsigned int _line = 0) {
+			assign(ex.code(), _file, _line);
 		}
 
 	private:
+		boost::system::error_code m_error_code;
+		std::string m_description;
 		const char* m_file;
 		unsigned int m_line;
 };
 
-void* operator new(std::size_t n);
-void operator delete(void* ptr) noexcept;
+}

@@ -80,10 +80,12 @@ class FreeLANMemory(ErrorClassPlugin):
                 leaks = {
                     ptrinfo
                     for ptr, ptrinfo in memory_map.iteritems()
-                    if ptr not in self.memory_map
+                    if ptr not in self.memory_map and ptrinfo.has_debug_info
                 }
-                sequence = memory_sequence[self.memory_sequence_offset:]
-                raise MemoryLeak(leaks, sequence)
+
+                if leaks:
+                    sequence = memory_sequence[self.memory_sequence_offset:]
+                    raise MemoryLeak(leaks, sequence)
 
     def formatError(self, test, err):
         if isinstance(err[1], MemoryLeak):

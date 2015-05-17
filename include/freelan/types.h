@@ -52,6 +52,7 @@ extern "C" {
 #endif
 
 #include "common.h"
+#include "error.h"
 
 /* API BEGIN */
 
@@ -59,23 +60,25 @@ struct IPv4Address;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
+ * \param ectx The error context.
  * \param str The string representation.
  * \return The IPv4 address instance. On error, a null pointer is returned.
  *
  * \warning The caller is responsible for calling \c freelan_IPv4Address_free()
  * on the returned instance when it is no longer needed.
  */
-FREELAN_API struct IPv4Address* freelan_IPv4Address_from_string(const char* str);
+FREELAN_API struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str);
 
 /**
  * \brief Get the string representation of an IPv4Address instance.
+ * \param ectx The error context.
  * \param inst The instance.
  * \return The string representation, as a NULL terminated string.
  *
  * \warning The caller is responsible for calling \c freelan_free() on the
  * returned string when it is no longer needed.
  */
-FREELAN_API char* freelan_IPv4Address_to_string(struct IPv4Address* inst);
+FREELAN_API char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const struct IPv4Address* inst);
 
 /**
  * \brief Delete an IPv4Address instance.

@@ -2,12 +2,12 @@
 Types API tests.
 """
 
-from .. import MemoryTests
+from .. import NativeTests
 
 from pyfreelan.api import native, ffi
 
 
-class APIMemoryTests(MemoryTests):
+class APIMemoryTests(NativeTests):
     def test_malloc(self):
         result = native.freelan_malloc(6)
 

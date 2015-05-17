@@ -1,14 +1,14 @@
 from .types import *  # noqa
 from .memory import *  # noqa
 
-from . import MemoryTests
+from unittest import TestCase
 
 from pyfreelan.api import NativeType
 
 from mock import patch
 
 
-class NativeTypeTests(MemoryTests):
+class NativeTypeTests(TestCase):
     def setUp(self):
         super(NativeTypeTests, self).setUp()
 

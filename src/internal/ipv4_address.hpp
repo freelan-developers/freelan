@@ -39,38 +39,61 @@
  */
 
 /**
- * \file memory.hpp
+ * \file ipv4_address.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Memory functions.
+ * \brief An IPv4 address.
  */
 
 #pragma once
 
-#include <cstddef>
+#include <boost/asio.hpp>
 
-#include <freelan/memory.h>
+namespace freelan {
 
-#define FREELAN_NEW MarkPointer(__FILE__, __LINE__) * new
-#define FREELAN_DELETE delete
+template <typename T>
+inline T from_string(const std::string& str) {
+	return T::from_string(str);
+}
 
-class MarkPointer {
+template <typename T>
+inline std::string to_string(const T& value) {
+	return value.to_string();
+}
+
+class IPv4Address {
 	public:
-		MarkPointer(const char* _file, unsigned int line) :
-			m_file(_file),
-			m_line(line)
+		typedef boost::asio::ip::address_v4 value_type;
+
+		IPv4Address() :
+			m_value()
 		{}
 
-		template <typename T>
-		T* operator*(T* ptr) {
-			freelan_mark_pointer(ptr, m_file, m_line);
+		IPv4Address(value_type&& value) :
+			m_value(std::move(value))
+		{}
 
-			return ptr;
+		IPv4Address(const value_type& value) :
+			m_value(value)
+		{}
+
+		static IPv4Address from_string(const std::string& str) {
+			return value_type::from_string(str);
+		}
+
+		static IPv4Address from_string(const std::string& str, boost::system::error_code& ec) {
+			return value_type::from_string(str, ec);
+		}
+
+		std::string to_string() const {
+			return m_value.to_string();
+		}
+
+		std::string to_string(boost::system::error_code& ec) const {
+			return m_value.to_string(ec);
 		}
 
 	private:
-		const char* m_file;
-		unsigned int m_line;
+		value_type m_value;
 };
 
-void* operator new(std::size_t n);
-void operator delete(void* ptr) noexcept;
+}
