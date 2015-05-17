@@ -2,6 +2,8 @@
 The binding between FreeLAN's memory function and the nose plugin.
 """
 
+from struct import calcsize
+
 from pyfreelan.api import (
     native,
     ffi,
@@ -17,6 +19,19 @@ memory_usage = {
     'deallocs': 0,
 }
 memory_sequence = []
+
+
+def get_pointer_size():
+    return calcsize('P')
+
+
+def pointer_to_address(pointer):
+    format_string = "0x%0" + str(get_pointer_size()) + "x"
+    return format_string % int(ffi.cast('unsigned long', pointer))
+
+
+def pointer_to_type(pointer):
+    return ffi.typeof(pointer).cname
 
 
 class PointerInfo(object):

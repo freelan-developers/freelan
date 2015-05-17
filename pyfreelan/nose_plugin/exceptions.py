@@ -4,6 +4,11 @@ Exceptions classes.
 
 from tabulate import tabulate
 
+from .binding import (
+    pointer_to_address,
+    pointer_to_type,
+)
+
 
 class MemoryLeak(RuntimeError):
     """Indicates that a unit test leaks memory."""
@@ -18,7 +23,8 @@ class MemoryLeak(RuntimeError):
             tabulate(
                 [
                     (
-                        pi.pointer,
+                        pointer_to_address(pi.pointer),
+                        pointer_to_type(pi.pointer),
                         pi.size,
                         pi.file,
                         pi.line,
@@ -27,6 +33,7 @@ class MemoryLeak(RuntimeError):
                 ],
                 headers=[
                     "Address",
+                    "Type",
                     "Size (bytes)",
                     "File",
                     "Line",
@@ -36,8 +43,10 @@ class MemoryLeak(RuntimeError):
             tabulate(
                 [
                     [
+                        "*" if entry.ptrinfo in self.leaks else "",
                         entry.action,
-                        entry.ptrinfo.pointer,
+                        pointer_to_address(entry.ptrinfo.pointer),
+                        pointer_to_type(entry.ptrinfo.pointer),
                         entry.ptrinfo.size,
                         entry.ptrinfo.file,
                         entry.ptrinfo.line,
@@ -45,8 +54,10 @@ class MemoryLeak(RuntimeError):
                     for entry in self.sequence
                 ],
                 headers=[
+                    "Leaking",
                     "Action",
                     "Address",
+                    "Type",
                     "Size (bytes)",
                     "File",
                     "Line",
