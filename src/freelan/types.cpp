@@ -55,7 +55,7 @@ struct IPv4Address* freelan_IPv4Address_from_string(const char* str) {
 
 	try
 	{
-		address_v4* value = new address_v4(address_v4::from_string(str));
+		address_v4* value = FREELAN_NEW address_v4(address_v4::from_string(str));
 
 		return reinterpret_cast<IPv4Address*>(value);
 	}

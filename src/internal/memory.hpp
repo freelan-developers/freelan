@@ -46,9 +46,27 @@
 
 #pragma once
 
-#define FREELAN_NEW new(__FILE__, __LINE__)
-#define FREELAN_PLACEMENT_NEW(...) new(__VA_ARGS__)
+#define FREELAN_NEW MarkPointer(__FILE__, __LINE__) * new
 #define FREELAN_DELETE delete
+
+class MarkPointer {
+	public:
+		MarkPointer(const char* _file, unsigned int line) :
+			m_file(_file),
+			m_line(line)
+		{}
+
+		template <typename T>
+		T* operator*(T* ptr) {
+			freelan_mark_pointer(ptr, m_file, m_line);
+
+			return ptr;
+		}
+
+	private:
+		const char* m_file;
+		unsigned int m_line;
+};
 
 void* operator new(std::size_t n);
 void operator delete(void* ptr) noexcept;
