@@ -50,5 +50,5 @@
 #define FREELAN_PLACEMENT_NEW(...) new(__VA_ARGS__)
 #define FREELAN_DELETE delete
 
-void* operator new(std::size_t n) throw(std::bad_alloc);
+void* operator new(std::size_t n);
 void operator delete(void* ptr) noexcept;

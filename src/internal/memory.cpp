@@ -45,7 +45,7 @@
 #include <cstring>
 #include <new>
 
-void* operator new(std::size_t n) throw(std::bad_alloc) {
+void* operator new(std::size_t n) {
 	void* const result = freelan_malloc(n);
 
 	if (result == NULL) {
