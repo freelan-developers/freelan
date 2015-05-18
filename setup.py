@@ -8,11 +8,12 @@ setup(
     packages=[
         'pyfreelan',
         'pyfreelan.api',
+        'pyfreelan_nose_plugin',
     ],
     test_suite='tests',
     entry_points={
         'nose.plugins.0.10': [
-            'flmem = pyfreelan.nose_plugin:FreeLANMemory',
+            'flmem = pyfreelan_nose_plugin:FreeLANMemory',
         ],
     },
 )
