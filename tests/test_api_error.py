@@ -52,7 +52,7 @@ class ConvertNativeStringTests(TestCase):
 
         result = myfunc()
 
-        self.assertEqual(ffi.NULL, result)
+        self.assertEqual(None, result)
 
 
 class ErrorContextTests(TestCase):

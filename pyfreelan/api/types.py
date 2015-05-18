@@ -2,6 +2,8 @@
 FreeLAN types.
 """
 
+from functools import wraps
+
 from . import (
     native,
     ffi,
@@ -9,54 +11,85 @@ from . import (
 from .error import check_error_context
 
 
-def NativeType(typename):
+def swallow_native_string(func):
     """
-    Create a API wrapper base class around the specified native type.
+    Decorator that swallow native strings from function
+    results and converts them in Python strings.
 
-    :param typename: The name of the native type to wrap.
-    :returns: An API wrapper class.
+    :param func: The function to decorate.
+    :returns: The decorated function.
     """
-    from_string = getattr(native, 'freelan_%s_from_string' % typename)
-    to_string = getattr(native, 'freelan_%s_to_string' % typename)
-    free = getattr(native, 'freelan_%s_free' % typename)
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
 
-    class Wrapper(object):
-        @check_error_context
-        def __init__(self, _str, ectx):
-            """
-            Create an instance from its string representation.
-
-            :param _str: The string representation.
-            """
-            self._opaque_ptr = from_string(ectx, _str)
-
-        def __del__(self):
-            free(self._opaque_ptr)
-            self._opaque_ptr = None
-
-        @check_error_context
-        def __str__(self, ectx):
-            """
-            Get the string representation of.
-
-            :returns: The string representation.
-            """
-            value_ptr = to_string(ectx, self._opaque_ptr)
-            value = ffi.string(value_ptr)
-            native.freelan_free(value_ptr)
+        if result != ffi.NULL:
+            value = ffi.string(result)
+            native.freelan_free(result)
 
             return value
 
-        def __repr__(self):
-            return '{classname}({ptr})'.format(
-                classname=self.__class__.__name__,
-                ptr=self._opaque_ptr,
-            )
+    wrapper.func = func
 
-    return Wrapper
+    return wrapper
 
 
-class IPv4Address(NativeType('IPv4Address')):
+class NativeType(object):
+    wrapper_cache = {}
+
+    @classmethod
+    def from_typename(cls, typename):
+        if typename not in cls.wrapper_cache:
+            cls.wrapper_cache[typename] = cls.create_wrapper(typename)
+
+        return cls.wrapper_cache[typename]
+
+    @classmethod
+    def create_wrapper(cls, typename):
+        """
+        Create a API wrapper base class around the specified native type.
+
+        :param typename: The name of the native type to wrap.
+        :returns: An API wrapper class.
+        """
+        from_string = getattr(native, 'freelan_%s_from_string' % typename)
+        to_string = getattr(native, 'freelan_%s_to_string' % typename)
+        free = getattr(native, 'freelan_%s_free' % typename)
+
+        class Wrapper(object):
+            @check_error_context
+            def __init__(self, _str, ectx):
+                """
+                Create an instance from its string representation.
+
+                :param _str: The string representation.
+                """
+                self._opaque_ptr = from_string(ectx, _str)
+
+            def __del__(self):
+                free(self._opaque_ptr)
+                self._opaque_ptr = None
+
+            @check_error_context
+            @swallow_native_string
+            def __str__(self, ectx):
+                """
+                Get the string representation of.
+
+                :returns: The string representation.
+                """
+                return to_string(ectx, self._opaque_ptr)
+
+            def __repr__(self):
+                return '{classname}({ptr})'.format(
+                    classname=self.__class__.__name__,
+                    ptr=self._opaque_ptr,
+                )
+
+        return Wrapper
+
+
+class IPv4Address(NativeType.from_typename('IPv4Address')):
     """
     An IPv4 address.
     """

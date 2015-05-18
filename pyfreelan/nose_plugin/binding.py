@@ -8,6 +8,7 @@ from pyfreelan.api import (
     native,
     ffi,
 )
+from pyfreelan.api.error import ErrorContext
 
 memory_map = {}
 memory_usage = {
@@ -185,3 +186,12 @@ def unregister_memory_functions():
         ffi.NULL,
         ffi.NULL,
     )
+
+
+def cleanup_memory_cache():
+    """
+    Cleans memory caches to complete malloc-free pending cycles.
+
+    Mainly used to ensure thread-local error context are destroyed.
+    """
+    ErrorContext.clear_current()

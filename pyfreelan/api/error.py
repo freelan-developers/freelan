@@ -23,8 +23,6 @@ def convert_native_string(func):
         if result != ffi.NULL:
             return ffi.string(result)
 
-        return result
-
     wrapper.func = func
 
     return wrapper

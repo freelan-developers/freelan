@@ -5,6 +5,7 @@ from tabulate import tabulate
 from .binding import (
     register_memory_functions,
     unregister_memory_functions,
+    cleanup_memory_cache,
     memory_map,
     memory_usage,
     memory_sequence,
@@ -76,6 +77,8 @@ class FreeLANMemory(ErrorClassPlugin):
 
     def stopTest(self, test):
         if self.memLeaks:
+            cleanup_memory_cache()
+
             if memory_map != self.memory_map:
                 leaks = {
                     ptrinfo
