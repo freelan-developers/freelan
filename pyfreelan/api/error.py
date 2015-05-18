@@ -12,15 +12,19 @@ class ErrorContext(object):
     """
     Wraps the error context logic.
     """
+    thread_local_data = threading.local()
 
     @classmethod
     def get_current(cls):
-        data = threading.local()
+        if not hasattr(cls.thread_local_data, 'freelan_error_context'):
+            cls.thread_local_data.freelan_error_context = cls()
 
-        if not hasattr(data, 'freelan_error_context'):
-            data.freelan_error_context = cls()
+        return cls.thread_local_data.freelan_error_context
 
-        return data.freelan_error_context
+    @classmethod
+    def clear_current(cls):
+        if hasattr(cls.thread_local_data, 'freelan_error_context'):
+            del cls.thread_local_data.freelan_error_context
 
     def __init__(self):
         self._opaque_ptr = native.freelan_acquire_error_context()
