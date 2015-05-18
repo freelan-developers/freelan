@@ -121,3 +121,15 @@ class NativeTypeTests(TestCase):
 
         to_string.assert_called_once_with(ectx, native_ptr)
         self.assertEqual(to_string(ectx, native_ptr), result)
+
+    def test_wrapper_repr(self):
+        wrapper = NativeType.create_wrapper('foo')
+        instance = MagicMock(spec=wrapper)
+        instance.__class__.__name__ = 'MyClass'
+        native_ptr = MagicMock()
+        native_ptr.__str__.return_value = '0x12345678'
+        instance._opaque_ptr = native_ptr
+
+        result = wrapper.__repr__(instance)
+
+        self.assertEqual('MyClass(0x12345678)', result)
