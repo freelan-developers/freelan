@@ -4,12 +4,6 @@ The binding between FreeLAN's memory function and the nose plugin.
 
 from struct import calcsize
 
-from pyfreelan.api import (
-    native,
-    ffi,
-)
-from pyfreelan.api.error import ErrorContext
-
 memory_map = {}
 memory_usage = {
     'current': 0,
@@ -27,11 +21,15 @@ def get_pointer_size():
 
 
 def pointer_to_address(pointer):
+    from pyfreelan.api import ffi
+
     format_string = "0x%0" + str(get_pointer_size()) + "x"
     return format_string % int(ffi.cast('unsigned long', pointer))
 
 
 def pointer_to_type(pointer):
+    from pyfreelan.api import ffi
+
     return ffi.typeof(pointer).cname
 
 
@@ -48,6 +46,8 @@ class PointerInfo(object):
 
     @property
     def file(self):
+        from pyfreelan.api import ffi
+
         if self._file is None:
             return "<no file information>"
         elif self._file == ffi.NULL:
@@ -105,55 +105,12 @@ class Reallocation(object):
         )
 
 
-@ffi.callback("void* (size_t)")
-def malloc(size):
-    result = native.malloc(size)
-    ptrinfo = PointerInfo(result, size)
-    memory_sequence.append(Allocation(ptrinfo))
-    memory_map[result] = ptrinfo
-    memory_usage['sum'] += size
-    memory_usage['current'] += size
-    memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
-    memory_usage['allocs'] += 1
-
-    return result
+callbacks = []
 
 
-@ffi.callback("void* (void*, size_t)")
-def realloc(ptr, size):
-    result = native.realloc(ptr, size)
-    old_ptrinfo = memory_map[ptr]
-    new_ptrinfo = PointerInfo(result, size)
-    memory_sequence.append(Reallocation(old_ptrinfo, new_ptrinfo))
-
-    if result != ffi.NULL:
-        del memory_map[ptr]
-        memory_map[result] = new_ptrinfo
-        memory_usage['sum'] += size
-        memory_usage['current'] += (size - old_ptrinfo.size)
-        memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
-        memory_usage['reallocs'] += 1
-
-    return result
-
-
-@ffi.callback("void (void*)")
-def free(ptr):
-    if ptr != ffi.NULL:
-        ptrinfo = memory_map[ptr]
-        memory_sequence.append(Deallocation(ptrinfo))
-        memory_usage['deallocs'] += 1
-        memory_usage['current'] -= memory_map[ptr].size
-        del memory_map[ptr]
-
-    return native.free(ptr)
-
-
-@ffi.callback("void* (void*, const char*, unsigned int)")
-def mark_pointer(ptr, file, line):
-    memory_map[ptr].mark_pointer(file, line)
-
-    return ptr
+def save(func):
+    callbacks.append(func)
+    return func
 
 
 def register_memory_functions():
@@ -162,12 +119,69 @@ def register_memory_functions():
 
     Use only for debugging as it has a huge performance cost.
     """
+    from pyfreelan.api import (
+        native,
+        ffi,
+    )
+
+    @save
+    @ffi.callback("void* (size_t)")
+    def malloc(size):
+        result = native.malloc(size)
+        ptrinfo = PointerInfo(result, size)
+        memory_sequence.append(Allocation(ptrinfo))
+        memory_map[result] = ptrinfo
+        memory_usage['sum'] += size
+        memory_usage['current'] += size
+        memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
+        memory_usage['allocs'] += 1
+
+        return result
+
+    @save
+    @ffi.callback("void* (void*, size_t)")
+    def realloc(ptr, size):
+        result = native.realloc(ptr, size)
+        old_ptrinfo = memory_map[ptr]
+        new_ptrinfo = PointerInfo(result, size)
+        memory_sequence.append(Reallocation(old_ptrinfo, new_ptrinfo))
+
+        if result != ffi.NULL:
+            del memory_map[ptr]
+            memory_map[result] = new_ptrinfo
+            memory_usage['sum'] += size
+            memory_usage['current'] += (size - old_ptrinfo.size)
+            memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
+            memory_usage['reallocs'] += 1
+
+        return result
+
+    @save
+    @ffi.callback("void (void*)")
+    def free(ptr):
+        if ptr != ffi.NULL:
+            ptrinfo = memory_map[ptr]
+            memory_sequence.append(Deallocation(ptrinfo))
+            memory_usage['deallocs'] += 1
+            memory_usage['current'] -= memory_map[ptr].size
+            del memory_map[ptr]
+
+        return native.free(ptr)
+
     native.freelan_register_memory_functions(
         malloc,
         realloc,
         free,
         ffi.NULL,
     )
+
+    @save
+    @ffi.callback("void* (void*, const char*, unsigned int)")
+    def mark_pointer(ptr, file, line):
+        memory_map[ptr].mark_pointer(file, line)
+
+        return ptr
+
     native.freelan_register_memory_debug_functions(
         mark_pointer,
     )
@@ -177,6 +191,11 @@ def unregister_memory_functions():
     """
     Instructs libfreelan to use the default memory functions.
     """
+    from pyfreelan.api import (
+        native,
+        ffi,
+    )
+
     native.freelan_register_memory_debug_functions(
         ffi.NULL,
     )
@@ -186,6 +205,7 @@ def unregister_memory_functions():
         ffi.NULL,
         ffi.NULL,
     )
+    callbacks[:] = []
 
 
 def cleanup_memory_cache():
@@ -194,4 +214,6 @@ def cleanup_memory_cache():
 
     Mainly used to ensure thread-local error context are destroyed.
     """
+    from pyfreelan.api.error import ErrorContext
+
     ErrorContext.clear_current()
