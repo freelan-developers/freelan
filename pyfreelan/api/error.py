@@ -8,6 +8,28 @@ from . import (
 )
 
 
+def convert_native_string(func):
+    """
+    Decorator that converts native strings in Python strings from function
+    results.
+
+    :param func: The function to decorate.
+    :returns: The decorated function.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+
+        if result != ffi.NULL:
+            return ffi.string(result)
+
+        return result
+
+    wrapper.func = func
+
+    return wrapper
+
+
 class ErrorContext(object):
     """
     Wraps the error context logic.
@@ -37,29 +59,23 @@ class ErrorContext(object):
         native.freelan_error_context_reset(self._opaque_ptr)
 
     @property
+    @convert_native_string
     def category(self):
-        value = native.freelan_error_context_get_error_category(self._opaque_ptr)
-
-        if value != ffi.NULL:
-            return ffi.string(value)
+        return native.freelan_error_context_get_error_category(self._opaque_ptr)
 
     @property
     def code(self):
         return native.freelan_error_context_get_error_code(self._opaque_ptr)
 
     @property
+    @convert_native_string
     def description(self):
-        value = native.freelan_error_context_get_error_description(self._opaque_ptr)
-
-        if value != ffi.NULL:
-            return ffi.string(value)
+        return native.freelan_error_context_get_error_description(self._opaque_ptr)
 
     @property
+    @convert_native_string
     def file(self):
-        value = native.freelan_error_context_get_error_file(self._opaque_ptr)
-
-        if value != ffi.NULL:
-            return ffi.string(value)
+        return native.freelan_error_context_get_error_file(self._opaque_ptr)
 
     @property
     def line(self):
@@ -74,7 +90,6 @@ class ErrorContext(object):
 
     def __exit__(self, type, value, traceback):
         self.raise_for_error()
-        return False
 
     def raise_for_error(self):
         if self:
@@ -87,20 +102,19 @@ class FreeLANException(RuntimeError):
         self.error_context = error_context
 
     def __str__(self):
-        if self:
-            file, line = self.error_context.file, self.error_context.line
-            file_line_suffix = " from {file}:{line}".format(
-                file=file,
-                line=line,
-            ) if file and line else ""
+        file, line = self.error_context.file, self.error_context.line
+        file_line_suffix = " ({file}:{line})".format(
+            file=file,
+            line=line,
+        ) if file and line else ""
 
-            return (
-                "{ectx.category}-{ectx.code}: "
-                "{ectx.description}{suffix}"
-            ).format(
-                ectx=self.error_context,
-                suffix=file_line_suffix,
-            )
+        return (
+            "{ectx.category}:{ectx.code} - "
+            "{ectx.description}{suffix}"
+        ).format(
+            ectx=self.error_context,
+            suffix=file_line_suffix,
+        )
 
 
 def check_error_context(func):
@@ -117,5 +131,7 @@ def check_error_context(func):
         with ErrorContext.get_current() as ectx:
             kwargs['ectx'] = ectx
             return func(*args, **kwargs)
+
+    wrapper.func = func
 
     return wrapper
