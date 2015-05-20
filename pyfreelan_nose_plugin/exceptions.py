@@ -38,7 +38,7 @@ class MemoryLeak(RuntimeError):
                     "File",
                     "Line",
                 ],
-                tablefmt='plain',
+                tablefmt='simple',
             ),
             tabulate(
                 [
@@ -62,6 +62,6 @@ class MemoryLeak(RuntimeError):
                     "File",
                     "Line",
                 ],
-                tablefmt='plain',
+                tablefmt='simple',
             ),
         )

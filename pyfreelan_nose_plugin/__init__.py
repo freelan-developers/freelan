@@ -59,7 +59,7 @@ class FreeLANMemory(ErrorClassPlugin):
                     ["Cumulated memory usage", memory_usage['sum']],
                 ],
                 headers="firstrow",
-                tablefmt='grid',
+                tablefmt='simple',
             ))
 
     def begin(self):
