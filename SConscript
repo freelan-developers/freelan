@@ -104,9 +104,39 @@ elif sys.platform.startswith('darwin'):
 
 env = env.Clone()
 env.Prepend(LIBS=libraries)
-env.Append(CPPDEFINES="FREELAN_API_EXPORTS")
-api_sources = env.RGlob('src', '*.cpp')
-api_includes = env.RGlob('include/freelan', '*.h')
-api_libraries = env.SharedLibrary(target=os.path.join(str(dirs['lib']), 'freelan'), source=api_sources)
 
-Return('libraries includes apps samples configurations api_includes api_libraries')
+api_env = env.Clone()
+api_env.Append(CPPDEFINES="FREELAN_API_EXPORTS")
+
+api_sources = api_env.RGlob('src/internal', '*.cpp')
+api_sources += api_env.RGlob('src/freelan', '*.cpp')
+api_includes = api_env.RGlob('include/freelan', '*.h')
+api_libraries = api_env.SharedLibrary(
+    target=os.path.join(str(dirs['lib']), 'freelan'),
+    source=api_sources,
+)
+
+tests_env = env.Clone()
+tests_env.Append(CPPPATH=[
+    'extra/gtest-1.7.0/include',
+    'extra/gtest-1.7.0',
+])
+
+tests_sources = tests_env.RGlob('src/tests', '*.cpp')
+tests_sources.append(tests_env.File('extra/gtest-1.7.0/src/gtest-all.cc'))
+tests_sources.append(tests_env.File('extra/gtest-1.7.0/src/gtest_main.cc'))
+tests_binaries = tests_env.Program(
+    target=os.path.join(str(dirs['bin']), 'freelan_tests'),
+    source=tests_sources,
+)
+
+Return(' '.join([
+    'libraries',
+    'includes',
+    'apps',
+    'samples',
+    'configurations',
+    'api_includes',
+    'api_libraries',
+    'tests_binaries',
+]))

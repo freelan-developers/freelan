@@ -159,12 +159,26 @@ else:
 
 if mode in ('all', 'release'):
     env = FreelanEnvironment(mode='release', prefix=prefix, bin_prefix=bin_prefix)
-    libraries, includes, apps, samples, configurations, api_includes, api_libraries = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    (
+        libraries,
+        includes,
+        apps,
+        samples,
+        configurations,
+        api_includes,
+        api_libraries,
+        tests_binaries,
+    ) = SConscript(
+        'SConscript',
+        exports='env',
+        variant_dir=os.path.join('build', env.mode),
+    )
     install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
     api_install = env.Install(os.path.join(env.install_prefix, 'include', 'freelan'), api_includes)
     api_install.extend(env.Install(os.path.join(env.install_prefix, 'lib'), api_libraries))
+    api_install.extend(env.Install(os.path.join(env.install_prefix, 'bin'), tests_binaries))
 
     Alias('install', install)
     Alias('apps', apps)
@@ -174,7 +188,20 @@ if mode in ('all', 'release'):
 
 if mode in ('all', 'debug'):
     env = FreelanEnvironment(mode='debug', prefix=prefix)
-    libraries, includes, apps, samples, configurations, _, _ = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    (
+        libraries,
+        includes,
+        apps,
+        samples,
+        configurations,
+        _,
+        _,
+        _,
+    ) = SConscript(
+        'SConscript',
+        exports='env',
+        variant_dir=os.path.join('build', env.mode),
+    )
     api_install = env.Install(os.path.join('tests', 'lib'), api_libraries)
     api_install.extend(env.Install(os.path.join('tests', 'include', 'freelan'), api_includes))
 
@@ -185,7 +212,20 @@ if mode in ('all', 'debug'):
 if sys.platform.startswith('darwin'):
     retail_prefix = '/usr/local'
     env = FreelanEnvironment(mode='retail', prefix=retail_prefix)
-    libraries, includes, apps, samples, configurations, _, _ = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    (
+        libraries,
+        includes,
+        apps,
+        samples,
+        configurations,
+        _,
+        _,
+        _,
+    ) = SConscript(
+        'SConscript',
+        exports='env',
+        variant_dir=os.path.join('build', env.mode),
+    )
     package = SConscript('packaging/osx/SConscript', exports='env apps configurations retail_prefix')
     install_package = env.Install('.', package)
     Alias('package', install_package)
