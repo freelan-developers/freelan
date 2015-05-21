@@ -41,6 +41,7 @@
 #include <gtest/gtest.h>
 
 #include "../internal/ipv4_address.hpp"
+#include "../internal/common.hpp"
 
 using boost::asio::ip::address_v4;
 
