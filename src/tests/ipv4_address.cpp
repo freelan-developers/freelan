@@ -40,14 +40,34 @@
 
 #include <gtest/gtest.h>
 
-TEST(Coucou, Foo) {
-	EXPECT_EQ(1, 1);
+#include "../internal/ipv4_address.hpp"
+
+using boost::asio::ip::address_v4;
+
+using freelan::IPv4Address;
+using freelan::from_string;
+
+TEST(IPv4Address, default_instanciation) {
+	const IPv4Address value {};
 }
 
-TEST(Coucou, Fu) {
-	EXPECT_EQ(1, 1);
+TEST(IPv4Address, boost_asio_ip_address_v4_instanciation) {
+	const address_v4 raw_value;
+	const IPv4Address value { raw_value };
+
+	ASSERT_EQ(raw_value, value.to_raw_value());
 }
 
-TEST(Coucou, Fa) {
-	EXPECT_EQ(2, 2);
+TEST(IPv4Address, string_instanciation) {
+	const std::string str_value = "9.0.0.1";
+	const auto value = IPv4Address::from_string(str_value);
+
+	ASSERT_EQ(str_value, value.to_string());
+}
+
+TEST(IPv4Address, implicit_string_conversion) {
+	const std::string str_value = "9.0.0.1";
+	const auto value = from_string<IPv4Address>(str_value);
+
+	ASSERT_EQ(str_value, to_string(value));
 }

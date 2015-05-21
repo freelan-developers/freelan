@@ -76,6 +76,10 @@ class IPv4Address {
 			m_value(value)
 		{}
 
+		const value_type& to_raw_value() const {
+			return m_value;
+		}
+
 		static IPv4Address from_string(const std::string& str) {
 			return value_type::from_string(str);
 		}
