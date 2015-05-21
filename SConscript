@@ -123,8 +123,12 @@ tests_env.Append(CPPPATH=[
 ])
 
 tests_sources = tests_env.RGlob('src/tests', '*.cpp')
+
+# This is needed on OS X.
+tests_env.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
 tests_sources.append(tests_env.File('extra/gtest-1.7.0/src/gtest-all.cc'))
 tests_sources.append(tests_env.File('extra/gtest-1.7.0/src/gtest_main.cc'))
+
 tests_binaries = tests_env.Program(
     target=os.path.join(str(dirs['bin']), 'freelan_tests'),
     source=tests_sources,
