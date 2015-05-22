@@ -38,77 +38,55 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/types.h>
+/**
+ * \file generic_ip_address.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief A generic IP address.
+ */
 
-#include <cassert>
+#pragma once
 
-#include <freelan/memory.h>
+namespace freelan {
 
-#include "../internal/memory.hpp"
-#include "../internal/error.hpp"
-#include "../internal/ipv4_address.hpp"
-#include "../internal/ipv6_address.hpp"
+template <typename ValueType>
+class GenericIPAddress {
+	public:
+		typedef ValueType value_type;
 
-struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str) {
-	assert(str);
+		GenericIPAddress() :
+			m_value()
+		{}
 
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+		GenericIPAddress(value_type&& value) :
+			m_value(std::move(value))
+		{}
 
-	return reinterpret_cast<IPv4Address*>(
-		FREELAN_NEW freelan::IPv4Address(freelan::IPv4Address::from_string(str))
-	);
+		GenericIPAddress(const value_type& value) :
+			m_value(value)
+		{}
 
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+		const value_type& to_raw_value() const {
+			return m_value;
+		}
 
-	return nullptr;
-}
+		static GenericIPAddress from_string(const std::string& str) {
+			return value_type::from_string(str);
+		}
 
-char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const struct IPv4Address* inst) {
-	assert(inst);
+		static GenericIPAddress from_string(const std::string& str, boost::system::error_code& ec) {
+			return value_type::from_string(str, ec);
+		}
 
-	auto value = reinterpret_cast<const freelan::IPv4Address*>(inst);
+		std::string to_string() const {
+			return m_value.to_string();
+		}
 
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+		std::string to_string(boost::system::error_code& ec) const {
+			return m_value.to_string(ec);
+		}
 
-	return ::freelan_strdup(value->to_string().c_str());
+	private:
+		value_type m_value;
+};
 
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
-}
-
-void freelan_IPv4Address_free(struct IPv4Address* inst) {
-	FREELAN_DELETE reinterpret_cast<freelan::IPv4Address*>(inst);
-}
-
-struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorContext* ectx, const char* str) {
-	assert(str);
-
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
-
-	return reinterpret_cast<IPv6Address*>(
-		FREELAN_NEW freelan::IPv6Address(freelan::IPv6Address::from_string(str))
-	);
-
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
-}
-
-char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const struct IPv6Address* inst) {
-	assert(inst);
-
-	auto value = reinterpret_cast<const freelan::IPv6Address*>(inst);
-
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
-
-	return ::freelan_strdup(value->to_string().c_str());
-
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
-}
-
-void freelan_IPv6Address_free(struct IPv6Address* inst) {
-	FREELAN_DELETE reinterpret_cast<freelan::IPv6Address*>(inst);
 }

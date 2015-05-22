@@ -38,77 +38,37 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/types.h>
+#include <gtest/gtest.h>
 
-#include <cassert>
-
-#include <freelan/memory.h>
-
-#include "../internal/memory.hpp"
-#include "../internal/error.hpp"
-#include "../internal/ipv4_address.hpp"
 #include "../internal/ipv6_address.hpp"
+#include "../internal/common.hpp"
 
-struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str) {
-	assert(str);
+using boost::asio::ip::address_v6;
 
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+using freelan::IPv6Address;
+using freelan::from_string;
 
-	return reinterpret_cast<IPv4Address*>(
-		FREELAN_NEW freelan::IPv4Address(freelan::IPv4Address::from_string(str))
-	);
-
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
+TEST(IPv6Address, default_instantiation) {
+	const IPv6Address value {};
 }
 
-char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const struct IPv4Address* inst) {
-	assert(inst);
+TEST(IPv6Address, boost_asio_ip_address_v6_instantiation) {
+	const address_v6 raw_value;
+	const IPv6Address value { raw_value };
 
-	auto value = reinterpret_cast<const freelan::IPv4Address*>(inst);
-
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
-
-	return ::freelan_strdup(value->to_string().c_str());
-
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
+	ASSERT_EQ(raw_value, value.to_raw_value());
 }
 
-void freelan_IPv4Address_free(struct IPv4Address* inst) {
-	FREELAN_DELETE reinterpret_cast<freelan::IPv4Address*>(inst);
+TEST(IPv6Address, string_instantiation) {
+	const std::string str_value = "ff02:1001::e0:abcd";
+	const auto value = IPv6Address::from_string(str_value);
+
+	ASSERT_EQ(str_value, value.to_string());
 }
 
-struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorContext* ectx, const char* str) {
-	assert(str);
+TEST(IPv6Address, implicit_string_conversion) {
+	const std::string str_value = "ff02:1001::e0:abcd";
+	const auto value = from_string<IPv6Address>(str_value);
 
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
-
-	return reinterpret_cast<IPv6Address*>(
-		FREELAN_NEW freelan::IPv6Address(freelan::IPv6Address::from_string(str))
-	);
-
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
-}
-
-char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const struct IPv6Address* inst) {
-	assert(inst);
-
-	auto value = reinterpret_cast<const freelan::IPv6Address*>(inst);
-
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
-
-	return ::freelan_strdup(value->to_string().c_str());
-
-	FREELAN_END_USE_ERROR_CONTEXT(ectx);
-
-	return nullptr;
-}
-
-void freelan_IPv6Address_free(struct IPv6Address* inst) {
-	FREELAN_DELETE reinterpret_cast<freelan::IPv6Address*>(inst);
+	ASSERT_EQ(str_value, to_string(value));
 }

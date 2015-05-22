@@ -34,9 +34,13 @@ api = """
 
     /* Types */
     struct IPv4Address;
+    struct IPv6Address;
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
     void freelan_IPv4Address_free(struct IPv4Address* inst);
+    struct IPv6Address* freelan_IPv6Address_from_string(const struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv6Address_to_string(const struct ErrorContext* ectx, struct IPv6Address* inst);
+    void freelan_IPv6Address_free(struct IPv6Address* inst);
 """
 
 ffi.cdef(api)

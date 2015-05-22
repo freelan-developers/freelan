@@ -38,7 +38,20 @@
  * depending on the nature of your project.
  */
 
-#include "ipv4_address.hpp"
+/**
+ * \file ipv6_address.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief An IPv6 address.
+ */
+
+#pragma once
+
+#include <boost/asio.hpp>
+
+#include "generic_ip_address.hpp"
 
 namespace freelan {
+
+typedef GenericIPAddress<boost::asio::ip::address_v6> IPv6Address;
+
 }

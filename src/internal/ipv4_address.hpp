@@ -48,46 +48,10 @@
 
 #include <boost/asio.hpp>
 
+#include "generic_ip_address.hpp"
+
 namespace freelan {
 
-class IPv4Address {
-	public:
-		typedef boost::asio::ip::address_v4 value_type;
-
-		IPv4Address() :
-			m_value()
-		{}
-
-		IPv4Address(value_type&& value) :
-			m_value(std::move(value))
-		{}
-
-		IPv4Address(const value_type& value) :
-			m_value(value)
-		{}
-
-		const value_type& to_raw_value() const {
-			return m_value;
-		}
-
-		static IPv4Address from_string(const std::string& str) {
-			return value_type::from_string(str);
-		}
-
-		static IPv4Address from_string(const std::string& str, boost::system::error_code& ec) {
-			return value_type::from_string(str, ec);
-		}
-
-		std::string to_string() const {
-			return m_value.to_string();
-		}
-
-		std::string to_string(boost::system::error_code& ec) const {
-			return m_value.to_string(ec);
-		}
-
-	private:
-		value_type m_value;
-};
+typedef GenericIPAddress<boost::asio::ip::address_v4> IPv4Address;
 
 }

@@ -57,6 +57,7 @@ extern "C" {
 /* API BEGIN */
 
 struct IPv4Address;
+struct IPv6Address;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -85,6 +86,34 @@ FREELAN_API char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const
  * \param inst The instance.
  */
 FREELAN_API void freelan_IPv4Address_free(struct IPv4Address* inst);
+
+/**
+ * \brief Create an IPv6Address instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IPv6 address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Address_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Get the string representation of an IPv6Address instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const struct IPv6Address* inst);
+
+/**
+ * \brief Delete an IPv6Address instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPv6Address_free(struct IPv6Address* inst);
 
 /* API END */
 

@@ -93,3 +93,9 @@ class IPv4Address(NativeType.from_typename('IPv4Address')):
     """
     An IPv4 address.
     """
+
+
+class IPv6Address(NativeType.from_typename('IPv6Address')):
+    """
+    An IPv6 address.
+    """

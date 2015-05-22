@@ -48,18 +48,18 @@ using boost::asio::ip::address_v4;
 using freelan::IPv4Address;
 using freelan::from_string;
 
-TEST(IPv4Address, default_instanciation) {
+TEST(IPv4Address, default_instantiation) {
 	const IPv4Address value {};
 }
 
-TEST(IPv4Address, boost_asio_ip_address_v4_instanciation) {
+TEST(IPv4Address, boost_asio_ip_address_v4_instantiation) {
 	const address_v4 raw_value;
 	const IPv4Address value { raw_value };
 
 	ASSERT_EQ(raw_value, value.to_raw_value());
 }
 
-TEST(IPv4Address, string_instanciation) {
+TEST(IPv4Address, string_instantiation) {
 	const std::string str_value = "9.0.0.1";
 	const auto value = IPv4Address::from_string(str_value);
 

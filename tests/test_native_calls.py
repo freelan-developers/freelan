@@ -114,3 +114,30 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6Address_from_string_simple(self):
+        result = native.freelan_IPv6Address_from_string(self.ectx, "ffe0::abcd")
+        self.addCleanup(native.freelan_IPv6Address_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6Address_from_string_incorrect_value(self):
+        result = native.freelan_IPv6Address_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv6Address_from_string_empty_value(self):
+        result = native.freelan_IPv6Address_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv6Address_to_string_simple(self):
+        str_value = "ffe0::abcd"
+
+        value = native.freelan_IPv6Address_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPv6Address_free, value)
+
+        result = native.freelan_IPv6Address_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
