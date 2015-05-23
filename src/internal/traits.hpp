@@ -46,9 +46,9 @@
 
 #pragma once
 
-namespace freelan {
-
 #include <type_traits>
+
+namespace freelan {
 
 template <typename T>
 struct enable_stream_output : public std::false_type {};
