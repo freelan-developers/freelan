@@ -38,47 +38,22 @@
  * depending on the nature of your project.
  */
 
-#include <gtest/gtest.h>
+/**
+ * \file traits.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief Type traits.
+ */
 
-#include "../internal/ipv6_address.hpp"
-#include "../internal/common.hpp"
+#pragma once
 
-using boost::asio::ip::address_v6;
+namespace freelan {
 
-using freelan::IPv6Address;
-using freelan::from_string;
+#include <type_traits>
 
-TEST(IPv6Address, default_instantiation) {
-	const IPv6Address value {};
-}
+template <typename T>
+struct enable_stream_output : public std::false_type {};
 
-TEST(IPv6Address, boost_asio_ip_address_v6_instantiation) {
-	const address_v6 raw_value;
-	const IPv6Address value { raw_value };
+template <typename T, typename R>
+using enable_if_has_stream_output = typename std::enable_if<enable_stream_output<T>::value, R>::type;
 
-	ASSERT_EQ(raw_value, value.to_raw_value());
-}
-
-TEST(IPv6Address, string_instantiation) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value = IPv6Address::from_string(str_value);
-
-	ASSERT_EQ(str_value, value.to_string());
-}
-
-TEST(IPv6Address, implicit_string_conversion) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value = from_string<IPv6Address>(str_value);
-
-	ASSERT_EQ(str_value, to_string(value));
-}
-
-TEST(IPv6Address, stream_output) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value = from_string<IPv6Address>(str_value);
-
-	std::ostringstream oss;
-	oss << value;
-
-	ASSERT_EQ(str_value, oss.str());
 }

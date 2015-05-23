@@ -46,6 +46,8 @@
 
 #pragma once
 
+#include "traits.hpp"
+
 namespace freelan {
 
 template <typename ValueType>
@@ -88,5 +90,9 @@ class GenericIPAddress {
 	private:
 		value_type m_value;
 };
+
+template <>
+template <typename T>
+struct enable_stream_output<GenericIPAddress<T>> : public std::true_type {};
 
 }

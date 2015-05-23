@@ -40,6 +40,8 @@
 
 #include <gtest/gtest.h>
 
+#include <sstream>
+
 #include "../internal/ipv4_address.hpp"
 #include "../internal/common.hpp"
 
@@ -71,4 +73,14 @@ TEST(IPv4Address, implicit_string_conversion) {
 	const auto value = from_string<IPv4Address>(str_value);
 
 	ASSERT_EQ(str_value, to_string(value));
+}
+
+TEST(IPv4Address, stream_output) {
+	const std::string str_value = "9.0.0.1";
+	const auto value = from_string<IPv4Address>(str_value);
+
+	std::ostringstream oss;
+	oss << value;
+
+	ASSERT_EQ(str_value, oss.str());
 }

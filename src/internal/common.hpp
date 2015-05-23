@@ -46,6 +46,11 @@
 
 #pragma once
 
+#include <iostream>
+#include <string>
+
+#include "traits.hpp"
+
 namespace freelan {
 
 template <typename T>
@@ -56,6 +61,11 @@ inline T from_string(const std::string& str) {
 template <typename T>
 inline std::string to_string(const T& value) {
 	return value.to_string();
+}
+
+template <typename T>
+inline enable_if_has_stream_output<T, std::ostream>& operator<<(std::ostream& os, const T& value) {
+	return os << freelan::to_string(value);
 }
 
 }
