@@ -88,6 +88,22 @@ FREELAN_API char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const
 FREELAN_API void freelan_IPv4Address_free(struct IPv4Address* inst);
 
 /**
+ * \brief Compare two IPv4Address instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPv4Address_less_than(const struct IPv4Address* lhs, const struct IPv4Address* rhs);
+
+/**
+ * \brief Compare two IPv4Address instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPv4Address_equal(const struct IPv4Address* lhs, const struct IPv4Address* rhs);
+
+/**
  * \brief Create an IPv6Address instance from its string representation.
  * \param ectx The error context.
  * \param str The string representation.
@@ -114,6 +130,22 @@ FREELAN_API char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const
  * \param inst The instance.
  */
 FREELAN_API void freelan_IPv6Address_free(struct IPv6Address* inst);
+
+/**
+ * \brief Compare two IPv6Address instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPv6Address_less_than(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
+
+/**
+ * \brief Compare two IPv6Address instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
 
 /* API END */
 

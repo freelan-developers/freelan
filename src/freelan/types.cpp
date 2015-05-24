@@ -66,7 +66,7 @@ struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, c
 char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const struct IPv4Address* inst) {
 	assert(inst);
 
-	auto value = reinterpret_cast<const freelan::IPv4Address*>(inst);
+	const auto value = reinterpret_cast<const freelan::IPv4Address*>(inst);
 
 	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
@@ -79,6 +79,26 @@ char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const struct IPv4
 
 void freelan_IPv4Address_free(struct IPv4Address* inst) {
 	FREELAN_DELETE reinterpret_cast<freelan::IPv4Address*>(inst);
+}
+
+int freelan_IPv4Address_less_than(const struct IPv4Address* lhs, const struct IPv4Address* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv4Address*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv4Address*>(rhs);
+
+	return (ilhs < irhs) ? 1 : 0;
+}
+
+int freelan_IPv4Address_equal(const struct IPv4Address* lhs, const struct IPv4Address* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv4Address*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv4Address*>(rhs);
+
+	return (ilhs == irhs) ? 1 : 0;
 }
 
 struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorContext* ectx, const char* str) {
@@ -98,7 +118,7 @@ struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorContext* ectx, c
 char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const struct IPv6Address* inst) {
 	assert(inst);
 
-	auto value = reinterpret_cast<const freelan::IPv6Address*>(inst);
+	const auto value = reinterpret_cast<const freelan::IPv6Address*>(inst);
 
 	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
@@ -111,4 +131,24 @@ char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const struct IPv6
 
 void freelan_IPv6Address_free(struct IPv6Address* inst) {
 	FREELAN_DELETE reinterpret_cast<freelan::IPv6Address*>(inst);
+}
+
+int freelan_IPv6Address_less_than(const struct IPv6Address* lhs, const struct IPv6Address* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv6Address*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv6Address*>(rhs);
+
+	return (ilhs < irhs) ? 1 : 0;
+}
+
+int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Address* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv6Address*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv6Address*>(rhs);
+
+	return (ilhs == irhs) ? 1 : 0;
 }

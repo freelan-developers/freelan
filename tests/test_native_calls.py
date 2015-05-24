@@ -115,6 +115,32 @@ class NativeCallsTests(TestCase):
 
         self.assertEqual(str_value, ffi.string(result))
 
+    def test_IPv4Address_less_than(self):
+        str_values = ("1.2.4.8", "1.2.4.9")
+
+        values = (
+            native.freelan_IPv4Address_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv4Address_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv4Address_free, values[0])
+        self.addCleanup(native.freelan_IPv4Address_free, values[1])
+
+        result = native.freelan_IPv4Address_less_than(self.ectx, *values)
+        self.assertNotEqual(0, result)
+
+    def test_IPv4Address_equal(self):
+        str_values = ("1.2.4.8", "1.2.4.9")
+
+        values = (
+            native.freelan_IPv4Address_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv4Address_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv4Address_free, values[0])
+        self.addCleanup(native.freelan_IPv4Address_free, values[1])
+
+        result = native.freelan_IPv4Address_equal(self.ectx, *values)
+        self.assertEqual(0, result)
+
     def test_IPv6Address_from_string_simple(self):
         result = native.freelan_IPv6Address_from_string(self.ectx, "ffe0::abcd")
         self.addCleanup(native.freelan_IPv6Address_free, result)
@@ -141,3 +167,29 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6Address_less_than(self):
+        str_values = ("ffe0::abcd", "ffe0::abce")
+
+        values = (
+            native.freelan_IPv6Address_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv6Address_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv6Address_free, values[0])
+        self.addCleanup(native.freelan_IPv6Address_free, values[1])
+
+        result = native.freelan_IPv6Address_less_than(self.ectx, *values)
+        self.assertNotEqual(0, result)
+
+    def test_IPv6Address_equal(self):
+        str_values = ("ffe0::abcd", "ffe0::abce")
+
+        values = (
+            native.freelan_IPv6Address_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv6Address_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv6Address_free, values[0])
+        self.addCleanup(native.freelan_IPv6Address_free, values[1])
+
+        result = native.freelan_IPv6Address_equal(self.ectx, *values)
+        self.assertEqual(0, result)
