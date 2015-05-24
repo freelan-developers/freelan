@@ -39,28 +39,18 @@
  */
 
 /**
- * \file common.hpp
+ * \file stream_parsers.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Common functions for all types.
+ * \brief Stream parsing functions.
  */
 
 #pragma once
 
-#include <string>
-#include <type_traits>
-
-#include "traits.hpp"
+#include <iostream>
 
 namespace freelan {
 
-template <typename T>
-inline T from_string(const std::string& str) {
-	return T::from_string(str);
-}
-
-template <typename T, typename std::enable_if<has_to_string<T>::value, int>::type = 0>
-inline std::string to_string(const T& value) {
-	return value.to_string();
-}
+template <typename AddressType>
+std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
 
 }

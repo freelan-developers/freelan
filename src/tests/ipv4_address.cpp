@@ -75,6 +75,54 @@ TEST(IPv4Address, implicit_string_conversion) {
 	ASSERT_EQ(str_value, to_string(value));
 }
 
+TEST(IPv4Address, compare_to_same_instance) {
+	const auto value = from_string<IPv4Address>("9.0.0.1");
+
+	ASSERT_TRUE(value == value);
+	ASSERT_FALSE(value != value);
+	ASSERT_FALSE(value < value);
+	ASSERT_TRUE(value <= value);
+	ASSERT_FALSE(value > value);
+	ASSERT_TRUE(value >= value);
+}
+
+TEST(IPv4Address, compare_to_same_value) {
+	const auto value_a = from_string<IPv4Address>("9.0.0.1");
+	const auto value_b = from_string<IPv4Address>("9.0.0.1");
+
+	ASSERT_TRUE(value_a == value_b);
+	ASSERT_FALSE(value_a != value_b);
+	ASSERT_FALSE(value_a < value_b);
+	ASSERT_TRUE(value_a <= value_b);
+	ASSERT_FALSE(value_a > value_b);
+	ASSERT_TRUE(value_a >= value_b);
+}
+
+TEST(IPv4Address, compare_to_different_values) {
+	const auto value_a = from_string<IPv4Address>("9.0.0.1");
+	const auto value_b = from_string<IPv4Address>("9.0.0.2");
+
+	ASSERT_FALSE(value_a == value_b);
+	ASSERT_TRUE(value_a != value_b);
+	ASSERT_TRUE(value_a < value_b);
+	ASSERT_TRUE(value_a <= value_b);
+	ASSERT_FALSE(value_a > value_b);
+	ASSERT_FALSE(value_a >= value_b);
+}
+
+TEST(IPv4Address, stream_input) {
+	const std::string str_value = "9.0.0.1";
+	const auto value_ref = from_string<IPv4Address>(str_value);
+
+	std::istringstream iss(str_value);
+	IPv4Address value;
+
+	iss >> value;
+
+	ASSERT_EQ(value_ref, value);
+	ASSERT_TRUE(iss);
+}
+
 TEST(IPv4Address, stream_output) {
 	const std::string str_value = "9.0.0.1";
 	const auto value = from_string<IPv4Address>(str_value);

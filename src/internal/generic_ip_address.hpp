@@ -46,12 +46,16 @@
 
 #pragma once
 
-#include "traits.hpp"
+#include <iostream>
+
+#include <boost/operators.hpp>
+
+#include "stream_parsers.hpp"
 
 namespace freelan {
 
 template <typename ValueType>
-class GenericIPAddress {
+class GenericIPAddress : public boost::operators<GenericIPAddress<ValueType> > {
 	public:
 		typedef ValueType value_type;
 
@@ -79,6 +83,10 @@ class GenericIPAddress {
 			return value_type::from_string(str, ec);
 		}
 
+		static std::istream& read_from(std::istream& is, GenericIPAddress& value) {
+			return read_generic_ip_address(is, value.m_value, nullptr);
+		}
+
 		std::string to_string() const {
 			return m_value.to_string();
 		}
@@ -87,12 +95,28 @@ class GenericIPAddress {
 			return m_value.to_string(ec);
 		}
 
+		std::ostream& write_to(std::ostream& os) const {
+			return os << to_string();
+		}
+
 	private:
 		value_type m_value;
-};
 
-template <>
-template <typename T>
-struct enable_stream_output<GenericIPAddress<T>> : public std::true_type {};
+		friend bool operator<(const GenericIPAddress& lhs, const GenericIPAddress& rhs) {
+			return (lhs.m_value < rhs.m_value);
+		}
+
+		friend bool operator==(const GenericIPAddress& lhs, const GenericIPAddress& rhs) {
+			return (lhs.m_value == rhs.m_value);
+		}
+
+		friend std::istream& operator>>(std::istream& is, GenericIPAddress& value) {
+			return GenericIPAddress::read_from(is, value);
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const GenericIPAddress& value) {
+			return value.write_to(os);
+		}
+};
 
 }

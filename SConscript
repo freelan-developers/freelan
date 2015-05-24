@@ -126,6 +126,7 @@ tests_sources = tests_env.RGlob('src/tests', '*.cpp')
 
 # This is needed on OS X.
 tests_env.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
+tests_env.Append(LIBS=api_libraries)
 tests_sources.append(tests_env.File('extra/gtest-1.7.0/src/gtest-all.cc'))
 tests_sources.append(tests_env.File('extra/gtest-1.7.0/src/gtest_main.cc'))
 

@@ -73,6 +73,54 @@ TEST(IPv6Address, implicit_string_conversion) {
 	ASSERT_EQ(str_value, to_string(value));
 }
 
+TEST(IPv6Address, compare_to_same_instance) {
+	const auto value = from_string<IPv6Address>("ff02:1001::e0:abcd");
+
+	ASSERT_TRUE(value == value);
+	ASSERT_FALSE(value != value);
+	ASSERT_FALSE(value < value);
+	ASSERT_TRUE(value <= value);
+	ASSERT_FALSE(value > value);
+	ASSERT_TRUE(value >= value);
+}
+
+TEST(IPv6Address, compare_to_same_value) {
+	const auto value_a = from_string<IPv6Address>("ff02:1001::e0:abcd");
+	const auto value_b = from_string<IPv6Address>("ff02:1001::e0:abcd");
+
+	ASSERT_TRUE(value_a == value_b);
+	ASSERT_FALSE(value_a != value_b);
+	ASSERT_FALSE(value_a < value_b);
+	ASSERT_TRUE(value_a <= value_b);
+	ASSERT_FALSE(value_a > value_b);
+	ASSERT_TRUE(value_a >= value_b);
+}
+
+TEST(IPv6Address, compare_to_different_values) {
+	const auto value_a = from_string<IPv6Address>("ff02:1001::e0:abcd");
+	const auto value_b = from_string<IPv6Address>("ff02:1001::e0:abce");
+
+	ASSERT_FALSE(value_a == value_b);
+	ASSERT_TRUE(value_a != value_b);
+	ASSERT_TRUE(value_a < value_b);
+	ASSERT_TRUE(value_a <= value_b);
+	ASSERT_FALSE(value_a > value_b);
+	ASSERT_FALSE(value_a >= value_b);
+}
+
+TEST(IPv6Address, stream_input) {
+	const std::string str_value = "ff02:1001::e0:abcd";
+	const auto value_ref = from_string<IPv6Address>(str_value);
+
+	std::istringstream iss(str_value);
+	IPv6Address value;
+
+	iss >> value;
+
+	ASSERT_EQ(value_ref, value);
+	ASSERT_TRUE(iss);
+}
+
 TEST(IPv6Address, stream_output) {
 	const std::string str_value = "ff02:1001::e0:abcd";
 	const auto value = from_string<IPv6Address>(str_value);

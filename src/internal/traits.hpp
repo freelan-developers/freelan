@@ -46,14 +46,25 @@
 
 #pragma once
 
-#include <type_traits>
-
 namespace freelan {
 
+/**
+ * \brief Make sure the specified type has a to_string() const method.
+ */
 template <typename T>
-struct enable_stream_output : public std::false_type {};
+class has_to_string {
+	private:
+		template <typename U, U>
+		class check {};
 
-template <typename T, typename R>
-using enable_if_has_stream_output = typename std::enable_if<enable_stream_output<T>::value, R>::type;
+		template <typename C>
+			static char f(check<std::string (C::*)() const, &T::to_string>*);
+
+		template <typename C>
+			static long f(...);
+
+	public:
+		static const bool value = (sizeof(f<T>(0)) == sizeof(char));
+};
 
 }

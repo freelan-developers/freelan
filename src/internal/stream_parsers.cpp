@@ -38,29 +38,89 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file common.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Common functions for all types.
- */
+#include "stream_parsers.hpp"
 
-#pragma once
+#include <sstream>
 
-#include <string>
-#include <type_traits>
-
-#include "traits.hpp"
+#include <boost/asio.hpp>
 
 namespace freelan {
 
-template <typename T>
-inline T from_string(const std::string& str) {
-	return T::from_string(str);
+namespace {
+	template <typename AddressType>
+	bool is_ip_address_character(char c);
+
+	template <>
+	inline bool is_ip_address_character<boost::asio::ip::address_v4>(char c)
+	{
+		return (std::isdigit(c) || (c == '.'));
+	}
+
+	template <>
+	inline bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
+	{
+		return (std::isxdigit(c) || (c == ':'));
+	}
+
+	std::istream& putback(std::istream& is, const std::string& str)
+	{
+		std::ios::iostate state = is.rdstate();
+		is.clear();
+
+		std::for_each(str.rbegin(), str.rend(), [&is] (char c) { is.putback(c); });
+
+		is.setstate(state);
+
+		return is;
+	}
 }
 
-template <typename T, typename std::enable_if<has_to_string<T>::value, int>::type = 0>
-inline std::string to_string(const T& value) {
-	return value.to_string();
+template <typename AddressType>
+std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf)
+{
+	if (is.good())
+	{
+		if (!is_ip_address_character<AddressType>(is.peek()))
+		{
+			is.setstate(std::ios_base::failbit);
+		}
+		else
+		{
+			std::ostringstream oss;
+
+			do
+			{
+				oss.put(static_cast<char>(is.get()));
+			}
+			while (is.good() && is_ip_address_character<AddressType>(is.peek()));
+
+			if (is)
+			{
+				const std::string& result = oss.str();
+				boost::system::error_code ec;
+
+				value = AddressType::from_string(result, ec);
+
+				if (ec)
+				{
+					// Unable to parse the IP address: putting back characters.
+					putback(is, result);
+					is.setstate(std::ios_base::failbit);
+				}
+				else
+				{
+					if (buf != nullptr) {
+						*buf = result;
+					}
+				}
+			}
+		}
+	}
+
+	return is;
 }
+
+template std::istream& read_generic_ip_address<boost::asio::ip::address_v4>(std::istream&, boost::asio::ip::address_v4&, std::string*);
+template std::istream& read_generic_ip_address<boost::asio::ip::address_v6>(std::istream&, boost::asio::ip::address_v6&, std::string*);
 
 }
