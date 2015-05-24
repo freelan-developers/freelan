@@ -118,7 +118,9 @@ TEST(IPv6Address, stream_input) {
 	iss >> value;
 
 	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss);
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.fail());
 }
 
 TEST(IPv6Address, stream_output) {

@@ -120,7 +120,9 @@ TEST(IPv4Address, stream_input) {
 	iss >> value;
 
 	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss);
+	ASSERT_TRUE(iss.eof());
+	ASSERT_TRUE(!iss.good());
+	ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPv4Address, stream_output) {
