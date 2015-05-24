@@ -54,11 +54,11 @@
 namespace freelan {
 
 template <typename ValueType>
-class GenericIPAddress : public GenericValueType<ValueType> {
+class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<ValueType>> {
 	public:
 		GenericIPAddress() = default;
-		GenericIPAddress(typename GenericIPAddress::value_type&& value) : GenericValueType<ValueType>(std::move(value)) {}
-		GenericIPAddress(const typename GenericIPAddress::value_type& value) : GenericValueType<ValueType>(value) {}
+		GenericIPAddress(typename GenericIPAddress::value_type&& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(std::move(value)) {}
+		GenericIPAddress(const typename GenericIPAddress::value_type& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(value) {}
 
 		static GenericIPAddress from_string(const std::string& str) {
 			return GenericIPAddress::value_type::from_string(str);
@@ -82,15 +82,6 @@ class GenericIPAddress : public GenericValueType<ValueType> {
 
 		std::ostream& write_to(std::ostream& os) const {
 			return os << to_string();
-		}
-
-	private:
-		friend std::istream& operator>>(std::istream& is, GenericIPAddress& value) {
-			return GenericIPAddress::read_from(is, value);
-		}
-
-		friend std::ostream& operator<<(std::ostream& os, const GenericIPAddress& value) {
-			return value.write_to(os);
 		}
 };
 

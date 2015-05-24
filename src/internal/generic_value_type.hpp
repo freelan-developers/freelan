@@ -50,8 +50,8 @@
 
 namespace freelan {
 
-template <typename ValueType>
-class GenericValueType : public boost::operators<GenericValueType<ValueType> > {
+template <typename ValueType, typename SelfType>
+class GenericValueType : public boost::operators<GenericValueType<ValueType, SelfType> > {
 	public:
 		typedef ValueType value_type;
 
@@ -89,6 +89,14 @@ class GenericValueType : public boost::operators<GenericValueType<ValueType> > {
 
 		friend bool operator==(const GenericValueType& lhs, const GenericValueType& rhs) {
 			return (lhs.m_value == rhs.m_value);
+		}
+
+		friend std::istream& operator>>(std::istream& is, SelfType& value) {
+			return SelfType::read_from(is, value);
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const SelfType& value) {
+			return value.write_to(os);
 		}
 };
 
