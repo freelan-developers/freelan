@@ -39,58 +39,56 @@
  */
 
 /**
- * \file generic_ip_address.hpp
+ * \file generic_value_type.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A generic IP address.
+ * \brief A generic value type.
  */
 
 #pragma once
 
-#include <iostream>
-
-#include "generic_value_type.hpp"
-#include "stream_parsers.hpp"
+#include <boost/operators.hpp>
 
 namespace freelan {
 
 template <typename ValueType>
-class GenericIPAddress : public GenericValueType<ValueType> {
+class GenericValueType : public boost::operators<GenericValueType<ValueType> > {
 	public:
-		GenericIPAddress() = default;
-		GenericIPAddress(typename GenericIPAddress::value_type&& value) : GenericValueType<ValueType>(std::move(value)) {}
-		GenericIPAddress(const typename GenericIPAddress::value_type& value) : GenericValueType<ValueType>(value) {}
+		typedef ValueType value_type;
 
-		static GenericIPAddress from_string(const std::string& str) {
-			return GenericIPAddress::value_type::from_string(str);
+		GenericValueType() :
+			m_value()
+		{}
+
+		GenericValueType(value_type&& value) :
+			m_value(std::move(value))
+		{}
+
+		GenericValueType(const value_type& value) :
+			m_value(value)
+		{}
+
+		const value_type& to_raw_value() const {
+			return m_value;
 		}
 
-		static GenericIPAddress from_string(const std::string& str, boost::system::error_code& ec) {
-			return GenericIPAddress::value_type::from_string(str, ec);
+	protected:
+		value_type& to_raw_value() {
+			return m_value;
 		}
 
-		static std::istream& read_from(std::istream& is, GenericIPAddress& value) {
-			return read_generic_ip_address(is, value.to_raw_value(), nullptr);
-		}
-
-		std::string to_string() const {
-			return this->to_raw_value().to_string();
-		}
-
-		std::string to_string(boost::system::error_code& ec) const {
-			return this->to_raw_value().to_string(ec);
-		}
-
-		std::ostream& write_to(std::ostream& os) const {
-			return os << to_string();
+		void set_raw_value(const value_type& value) {
+			m_value = value;
 		}
 
 	private:
-		friend std::istream& operator>>(std::istream& is, GenericIPAddress& value) {
-			return GenericIPAddress::read_from(is, value);
+		value_type m_value;
+
+		friend bool operator<(const GenericValueType& lhs, const GenericValueType& rhs) {
+			return (lhs.m_value < rhs.m_value);
 		}
 
-		friend std::ostream& operator<<(std::ostream& os, const GenericIPAddress& value) {
-			return value.write_to(os);
+		friend bool operator==(const GenericValueType& lhs, const GenericValueType& rhs) {
+			return (lhs.m_value == rhs.m_value);
 		}
 };
 
