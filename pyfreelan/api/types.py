@@ -55,6 +55,8 @@ class NativeType(object):
         from_string = getattr(native, 'freelan_%s_from_string' % typename)
         to_string = getattr(native, 'freelan_%s_to_string' % typename)
         free = getattr(native, 'freelan_%s_free' % typename)
+        less_than = getattr(native, 'freelan_%s_less_than' % typename)
+        equal = getattr(native, 'freelan_%s_equal' % typename)
 
         class Wrapper(object):
             @check_error_context
@@ -79,6 +81,12 @@ class NativeType(object):
                 :returns: The string representation.
                 """
                 return to_string(ectx, self._opaque_ptr)
+
+            def __eq__(self, other):
+                return equal(self._opaque_ptr, other._opaque_ptr)
+
+            def __lt__(self, other):
+                return less_than(self._opaque_ptr, other._opaque_ptr)
 
             def __repr__(self):
                 return '{classname}({ptr})'.format(

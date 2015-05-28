@@ -122,6 +122,36 @@ class NativeTypeTests(TestCase):
         to_string.assert_called_once_with(ectx, native_ptr)
         self.assertEqual(to_string(ectx, native_ptr), result)
 
+    def test_wrapper_eq_calls_equal(self):
+        wrapper = NativeType.create_wrapper('foo')
+        instance_a = MagicMock(spec=wrapper)
+        instance_b = MagicMock(spec=wrapper)
+        native_ptr_a = MagicMock()
+        native_ptr_b = MagicMock()
+        instance_a._opaque_ptr = native_ptr_a
+        instance_b._opaque_ptr = native_ptr_b
+        equal = self.native.freelan_foo_equal
+
+        result = wrapper.__eq__(instance_a, instance_b)
+
+        equal.assert_called_once_with(native_ptr_a, native_ptr_b)
+        self.assertEqual(equal(native_ptr_a, native_ptr_b), result)
+
+    def test_wrapper_lt_calls_less_than(self):
+        wrapper = NativeType.create_wrapper('foo')
+        instance_a = MagicMock(spec=wrapper)
+        instance_b = MagicMock(spec=wrapper)
+        native_ptr_a = MagicMock()
+        native_ptr_b = MagicMock()
+        instance_a._opaque_ptr = native_ptr_a
+        instance_b._opaque_ptr = native_ptr_b
+        less_than = self.native.freelan_foo_less_than
+
+        result = wrapper.__lt__(instance_a, instance_b)
+
+        less_than.assert_called_once_with(native_ptr_a, native_ptr_b)
+        self.assertEqual(less_than(native_ptr_a, native_ptr_b), result)
+
     def test_wrapper_repr(self):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
