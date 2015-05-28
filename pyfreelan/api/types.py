@@ -29,7 +29,7 @@ def swallow_native_string(func):
 
             return value
 
-    wrapper.func = func
+    wrapper.wrapped = func
 
     return wrapper
 

@@ -23,7 +23,7 @@ def convert_native_string(func):
         if result != ffi.NULL:
             return ffi.string(result)
 
-    wrapper.func = func
+    wrapper.wrapped = func
 
     return wrapper
 
@@ -130,6 +130,6 @@ def check_error_context(func):
             kwargs['ectx'] = ectx
             return func(*args, **kwargs)
 
-    wrapper.func = func
+    wrapper.wrapped = func
 
     return wrapper

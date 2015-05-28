@@ -28,7 +28,7 @@ class ConvertNativeStringTests(TestCase):
             pass
 
         decorated = convert_native_string(myfunc)
-        self.assertEqual(decorated.func, myfunc)
+        self.assertEqual(decorated.wrapped, myfunc)
 
     def test_non_null_value(self):
         value = MagicMock()
@@ -171,7 +171,7 @@ class ErrorContextTests(TestCase):
             'pyfreelan.api.error.native.'
             'freelan_error_context_get_error_category',
         ) as freelan_error_context_get_error_category_mock:
-            result = ErrorContext.category.fget.func(instance)
+            result = ErrorContext.category.fget.wrapped(instance)
 
         freelan_error_context_get_error_category_mock.assert_called_once_with(
             native_ptr,
@@ -209,7 +209,7 @@ class ErrorContextTests(TestCase):
             'pyfreelan.api.error.native.'
             'freelan_error_context_get_error_description',
         ) as freelan_error_context_get_error_description_mock:
-            result = ErrorContext.description.fget.func(instance)
+            result = ErrorContext.description.fget.wrapped(instance)
 
         freelan_error_context_get_error_description_mock.assert_called_once_with(
             native_ptr,
@@ -228,7 +228,7 @@ class ErrorContextTests(TestCase):
             'pyfreelan.api.error.native.'
             'freelan_error_context_get_error_file',
         ) as freelan_error_context_get_error_file_mock:
-            result = ErrorContext.file.fget.func(instance)
+            result = ErrorContext.file.fget.wrapped(instance)
 
         freelan_error_context_get_error_file_mock.assert_called_once_with(
             native_ptr,
@@ -355,7 +355,7 @@ class CheckErrorContextTests(TestCase):
             pass
 
         decorated = check_error_context(myfunc)
-        self.assertEqual(decorated.func, myfunc)
+        self.assertEqual(decorated.wrapped, myfunc)
 
     def test_wrapped_function_calls_the_context_manager(self):
         value = MagicMock()

@@ -23,7 +23,7 @@ class SwallowNativeStringTests(TestCase):
             pass
 
         decorated = swallow_native_string(myfunc)
-        self.assertEqual(decorated.func, myfunc)
+        self.assertEqual(decorated.wrapped, myfunc)
 
     def test_non_null_value(self):
         value = MagicMock()
@@ -92,7 +92,7 @@ class NativeTypeTests(TestCase):
         ectx = MagicMock(spec=ErrorContext)
         from_string = self.native.freelan_foo_from_string
 
-        wrapper.__init__.func(instance, "mystr", ectx)
+        wrapper.__init__.wrapped(instance, "mystr", ectx)
 
         from_string.assert_called_once_with(ectx, "mystr")
         self.assertEqual(from_string("mystr"), instance._opaque_ptr)
@@ -117,7 +117,7 @@ class NativeTypeTests(TestCase):
         ectx = MagicMock(spec=ErrorContext)
         to_string = self.native.freelan_foo_to_string
 
-        result = wrapper.__str__.func.func(instance, ectx)
+        result = wrapper.__str__.wrapped.wrapped(instance, ectx)
 
         to_string.assert_called_once_with(ectx, native_ptr)
         self.assertEqual(to_string(ectx, native_ptr), result)
