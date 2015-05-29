@@ -3,6 +3,8 @@ Types API tests.
 """
 
 from unittest import TestCase
+from functools import wraps
+from contextlib import contextmanager
 
 from mock import (
     patch,
@@ -17,41 +19,74 @@ from pyfreelan.api.types import (
 from pyfreelan.api.error import ErrorContext
 
 
+def disable_error_context_checks(func):
+    """
+    Mocks out the error context checks.
+
+    :param func: The function that must run without error context checks.
+    :returns: A decorated function that runs withouts error context checks.
+    """
+    ectx = MagicMock(spec=ErrorContext)
+
+    @contextmanager
+    def passthrough(name, kwargs):
+        kwargs = kwargs.copy()
+        kwargs[name] = ectx
+
+        yield kwargs
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with patch(
+            'pyfreelan.api.error.inject_error_context',
+            passthrough,
+        ):
+            kwargs['ectx'] = ectx
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
 class SwallowNativeStringTests(TestCase):
+    def test_from_native_string_is_called(self):
+        value = MagicMock()
+
+        @swallow_native_string
+        def func(*args, **kwargs):
+            return value
+
+        with patch(
+            'pyfreelan.api.types.from_native_string',
+        ) as from_native_string_mock:
+            func()
+
+        from_native_string_mock.assert_called_once_with(
+            value,
+            free_on_success=True,
+        )
+
+    def test_all_arguments_pass_through(self):
+        value = MagicMock()
+
+        @swallow_native_string
+        def func(*args, **kwargs):
+            self.assertEqual((42,), args)
+            self.assertEqual({'foo': 'bar'}, kwargs)
+            return value
+
+        with patch(
+            'pyfreelan.api.types.from_native_string',
+        ) as from_native_string_mock:
+            result = func(42, foo='bar')
+
+        self.assertEqual(from_native_string_mock(value), result)
+
     def test_wrapped_function_is_accessible(self):
         def myfunc():
             pass
 
         decorated = swallow_native_string(myfunc)
         self.assertEqual(decorated.wrapped, myfunc)
-
-    def test_non_null_value(self):
-        value = MagicMock()
-
-        @swallow_native_string
-        def myfunc(*args, **kwargs):
-            self.assertEqual((1,), args)
-            self.assertEqual({'b': 2}, kwargs)
-            return value
-
-        with patch('pyfreelan.api.error.ffi.string') as string_mock:
-            with patch(
-                'pyfreelan.api.error.native.freelan_free',
-            ) as freelan_free_mock:
-                result = myfunc(1, b=2)
-
-        string_mock.assert_called_once_with(value)
-        freelan_free_mock.assert_called_once_with(value)
-        self.assertEqual(string_mock(value), result)
-
-    def test_null_value(self):
-        @swallow_native_string
-        def myfunc():
-            return ffi.NULL
-
-        result = myfunc()
-
-        self.assertEqual(None, result)
 
 
 class NativeTypeTests(TestCase):
@@ -86,13 +121,13 @@ class NativeTypeTests(TestCase):
         self.assertEqual({'foo': wrapper}, klass.wrapper_cache)
         self.assertEqual(wrapper, result)
 
-    def test_wrapper_init_calls_from_string(self):
+    @disable_error_context_checks
+    def test_wrapper_init_calls_from_string(self, ectx):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
-        ectx = MagicMock(spec=ErrorContext)
         from_string = self.native.freelan_foo_from_string
 
-        wrapper.__init__.wrapped(instance, "mystr", ectx)
+        wrapper.__init__(instance, "mystr")
 
         from_string.assert_called_once_with(ectx, "mystr")
         self.assertEqual(from_string("mystr"), instance._opaque_ptr)
@@ -109,15 +144,15 @@ class NativeTypeTests(TestCase):
         free.assert_called_once_with(native_ptr)
         self.assertEqual(None, instance._opaque_ptr)
 
-    def test_wrapper_str_calls_to_string(self):
+    @disable_error_context_checks
+    def test_wrapper_str_calls_to_string(self, ectx):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
-        ectx = MagicMock(spec=ErrorContext)
         to_string = self.native.freelan_foo_to_string
 
-        result = wrapper.__str__.wrapped.wrapped(instance, ectx)
+        result = wrapper.__str__.wrapped(instance)
 
         to_string.assert_called_once_with(ectx, native_ptr)
         self.assertEqual(to_string(ectx, native_ptr), result)

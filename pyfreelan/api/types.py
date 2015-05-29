@@ -4,11 +4,12 @@ FreeLAN types.
 
 from functools import wraps
 
-from . import (
-    native,
-    ffi,
+from . import native
+
+from .error import (
+    from_native_string,
+    check_error_context,
 )
-from .error import check_error_context
 
 
 def swallow_native_string(func):
@@ -21,13 +22,7 @@ def swallow_native_string(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-
-        if result != ffi.NULL:
-            value = ffi.string(result)
-            native.freelan_free(result)
-
-            return value
+        return from_native_string(func(*args, **kwargs), free_on_success=True)
 
     wrapper.wrapped = func
 
@@ -72,8 +67,8 @@ class NativeType(object):
                 free(self._opaque_ptr)
                 self._opaque_ptr = None
 
-            @check_error_context
             @swallow_native_string
+            @check_error_context
             def __str__(self, ectx):
                 """
                 Get the string representation of.

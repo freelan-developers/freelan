@@ -1,11 +1,31 @@
 import threading
 
 from functools import wraps
+from contextlib import contextmanager
 
 from . import (
     native,
     ffi,
 )
+
+
+def from_native_string(native_str, free_on_success=False):
+    """
+    Convert a native string into a Python string.
+
+    :param native_str: The native string to convert to a Python string.
+    :param free_on_success: If set, the native string will be freed before the
+    call returns.
+    :returns: A Python string if ``native_str`` is a valid string, None
+    otherwise.
+    """
+    if native_str != ffi.NULL:
+        result = ffi.string(native_str)
+
+        if free_on_success:
+            native.freelan_free(native_str)
+
+        return result
 
 
 def convert_native_string(func):
@@ -18,10 +38,7 @@ def convert_native_string(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-
-        if result != ffi.NULL:
-            return ffi.string(result)
+        return from_native_string(func(*args, **kwargs), free_on_success=False)
 
     wrapper.wrapped = func
 
@@ -115,6 +132,23 @@ class FreeLANException(RuntimeError):
         )
 
 
+@contextmanager
+def inject_error_context(name, kwargs):
+    """
+    Context manager that injects the current error context in a dict of
+    arguments.
+
+    :param name: The name of the argument to add.
+    :param kwargs: The arguments dict.
+    :yields: The modified arguments dict with the extra keyword.
+    """
+    new_kwargs = kwargs.copy()
+
+    with ErrorContext.get_current() as ectx:
+        new_kwargs[name] = ectx
+        yield new_kwargs
+
+
 def check_error_context(func):
     """
     Decorator that automatically adds an error context to native calls
@@ -126,9 +160,8 @@ def check_error_context(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        with ErrorContext.get_current() as ectx:
-            kwargs['ectx'] = ectx
-            return func(*args, **kwargs)
+        with inject_error_context('ectx', kwargs) as new_kwargs:
+            return func(*args, **new_kwargs)
 
     wrapper.wrapped = func
 
