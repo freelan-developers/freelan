@@ -11,7 +11,6 @@ from mock import (
     MagicMock,
 )
 
-from pyfreelan.api import ffi
 from pyfreelan.api.types import (
     swallow_native_string,
     NativeType,
@@ -198,3 +197,30 @@ class NativeTypeTests(TestCase):
         result = wrapper.__repr__(instance)
 
         self.assertEqual('MyClass(0x12345678)', result)
+
+    def test_wrapper_comparison(self):
+        def from_string(_, s):
+            return s
+
+        def equal(lhs, rhs):
+            self.assertEqual({"a", "b"}, {lhs, rhs})
+            return lhs == rhs
+
+        def less_than(lhs, rhs):
+            self.assertEqual({"a", "b"}, {lhs, rhs})
+            return lhs < rhs
+
+        self.native.freelan_foo_from_string = from_string
+        self.native.freelan_foo_equal = equal
+        self.native.freelan_foo_less_than = less_than
+
+        wrapper = NativeType.create_wrapper('foo')
+        instance_a = wrapper("a")
+        instance_b = wrapper("b")
+
+        self.assertFalse(instance_a == instance_b)
+        self.assertTrue(instance_a != instance_b)
+        self.assertFalse(instance_a > instance_b)
+        self.assertFalse(instance_a >= instance_b)
+        self.assertTrue(instance_a < instance_b)
+        self.assertTrue(instance_a <= instance_b)

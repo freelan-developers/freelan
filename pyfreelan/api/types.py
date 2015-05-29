@@ -2,7 +2,10 @@
 FreeLAN types.
 """
 
-from functools import wraps
+from functools import (
+    wraps,
+    total_ordering,
+)
 
 from . import native
 
@@ -53,6 +56,7 @@ class NativeType(object):
         less_than = getattr(native, 'freelan_%s_less_than' % typename)
         equal = getattr(native, 'freelan_%s_equal' % typename)
 
+        @total_ordering
         class Wrapper(object):
             @check_error_context
             def __init__(self, _str, ectx):
