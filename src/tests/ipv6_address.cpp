@@ -66,6 +66,22 @@ TEST(IPv6Address, string_instantiation) {
 	ASSERT_EQ(str_value, value.to_string());
 }
 
+TEST(IPv6Address, string_instantiation_failure) {
+	try {
+		IPv6Address::from_string("invalid");
+	} catch (boost::system::system_error& ex) {
+		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+	}
+}
+
+TEST(IPv6Address, string_instantiation_failure_no_throw) {
+	boost::system::error_code ec;
+	const auto value = IPv6Address::from_string("invalid", ec);
+
+	ASSERT_EQ(IPv6Address(), value);
+	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+}
+
 TEST(IPv6Address, bytes_instantiation) {
 	const IPv6Address::bytes_type bytes_value {
 		0xff, 0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00,

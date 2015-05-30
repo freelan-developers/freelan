@@ -42,64 +42,48 @@
 
 #include <sstream>
 
-#include "../internal/ipv4_address.hpp"
+#include "../internal/hostname.hpp"
 #include "../internal/common.hpp"
 
-using boost::asio::ip::address_v4;
-
-using freelan::IPv4Address;
+using freelan::Hostname;
 using freelan::from_string;
 
-TEST(IPv4Address, default_instantiation) {
-	const IPv4Address value {};
+TEST(Hostname, default_instantiation) {
+	const Hostname value {};
 }
 
-TEST(IPv4Address, boost_asio_ip_address_v4_instantiation) {
-	const address_v4 raw_value;
-	const IPv4Address value { raw_value };
-
-	ASSERT_EQ(raw_value, value.to_raw_value());
-}
-
-TEST(IPv4Address, string_instantiation) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = IPv4Address::from_string(str_value);
+TEST(Hostname, string_instantiation) {
+	const std::string str_value = "my.little-host.com";
+	const auto value = Hostname::from_string(str_value);
 
 	ASSERT_EQ(str_value, value.to_string());
 }
 
-TEST(IPv4Address, string_instantiation_failure) {
+TEST(Hostname, string_instantiation_failure) {
 	try {
-		IPv4Address::from_string("invalid");
+		Hostname::from_string("dot.invalid-");
 	} catch (boost::system::system_error& ex) {
 		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
 	}
 }
 
-TEST(IPv4Address, string_instantiation_failure_no_throw) {
+TEST(Hostname, string_instantiation_failure_no_throw) {
 	boost::system::error_code ec;
-	const auto value = IPv4Address::from_string("invalid", ec);
+	const auto value = Hostname::from_string("dot.invalid-", ec);
 
-	ASSERT_EQ(IPv4Address(), value);
+	ASSERT_EQ(Hostname(), value);
 	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
-TEST(IPv4Address, bytes_instantiation) {
-	const IPv4Address::bytes_type bytes_value { 0x07, 0x00, 0x00, 0x01 };
-	const auto value = IPv4Address::from_bytes(bytes_value);
-
-	ASSERT_EQ(bytes_value, value.to_bytes());
-}
-
-TEST(IPv4Address, implicit_string_conversion) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = from_string<IPv4Address>(str_value);
+TEST(Hostname, implicit_string_conversion) {
+	const std::string str_value = "my.little-host.com";
+	const auto value = from_string<Hostname>(str_value);
 
 	ASSERT_EQ(str_value, to_string(value));
 }
 
-TEST(IPv4Address, compare_to_same_instance) {
-	const auto value = from_string<IPv4Address>("9.0.0.1");
+TEST(Hostname, compare_to_same_instance) {
+	const auto value = from_string<Hostname>("my.little-host.com");
 
 	ASSERT_TRUE(value == value);
 	ASSERT_FALSE(value != value);
@@ -109,9 +93,9 @@ TEST(IPv4Address, compare_to_same_instance) {
 	ASSERT_TRUE(value >= value);
 }
 
-TEST(IPv4Address, compare_to_same_value) {
-	const auto value_a = from_string<IPv4Address>("9.0.0.1");
-	const auto value_b = from_string<IPv4Address>("9.0.0.1");
+TEST(Hostname, compare_to_same_value) {
+	const auto value_a = from_string<Hostname>("my.little-host.com");
+	const auto value_b = from_string<Hostname>("my.little-host.com");
 
 	ASSERT_TRUE(value_a == value_b);
 	ASSERT_FALSE(value_a != value_b);
@@ -121,9 +105,9 @@ TEST(IPv4Address, compare_to_same_value) {
 	ASSERT_TRUE(value_a >= value_b);
 }
 
-TEST(IPv4Address, compare_to_different_values) {
-	const auto value_a = from_string<IPv4Address>("9.0.0.1");
-	const auto value_b = from_string<IPv4Address>("9.0.0.2");
+TEST(Hostname, compare_to_different_values) {
+	const auto value_a = from_string<Hostname>("my.little-host.com");
+	const auto value_b = from_string<Hostname>("my.little-host.org");
 
 	ASSERT_FALSE(value_a == value_b);
 	ASSERT_TRUE(value_a != value_b);
@@ -133,12 +117,12 @@ TEST(IPv4Address, compare_to_different_values) {
 	ASSERT_FALSE(value_a >= value_b);
 }
 
-TEST(IPv4Address, stream_input) {
-	const std::string str_value = "9.0.0.1";
-	const auto value_ref = from_string<IPv4Address>(str_value);
+TEST(Hostname, stream_input) {
+	const std::string str_value = "my.little-host.com";
+	const auto value_ref = from_string<Hostname>(str_value);
 
 	std::istringstream iss(str_value);
-	IPv4Address value;
+	Hostname value;
 
 	iss >> value;
 
@@ -148,9 +132,9 @@ TEST(IPv4Address, stream_input) {
 	ASSERT_TRUE(!iss.fail());
 }
 
-TEST(IPv4Address, stream_output) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = from_string<IPv4Address>(str_value);
+TEST(Hostname, stream_output) {
+	const std::string str_value = "my.little-host.com";
+	const auto value = from_string<Hostname>(str_value);
 
 	std::ostringstream oss;
 	oss << value;

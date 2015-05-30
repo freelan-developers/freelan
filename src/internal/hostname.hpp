@@ -39,9 +39,9 @@
  */
 
 /**
- * \file stream_parsers.hpp
+ * \file hostname.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Stream parsing functions.
+ * \brief A hostname container.
  */
 
 #pragma once
@@ -49,10 +49,58 @@
 #include <iostream>
 #include <string>
 
+#include <boost/system/system_error.hpp>
+
+#include "generic_value_type.hpp"
+#include "stream_parsers.hpp"
+
 namespace freelan {
 
-template <typename AddressType>
-std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
-std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf = nullptr);
+class Hostname : public GenericValueType<std::string, Hostname> {
+	public:
+		Hostname() = default;
+
+		static Hostname from_string(const std::string& str) {
+			boost::system::error_code ec;
+			const Hostname result = from_string(str, ec);
+
+			if (ec) {
+				throw boost::system::system_error(ec);
+			}
+
+			return result;
+		}
+
+		static Hostname from_string(const std::string& str, boost::system::error_code& ec) {
+			std::istringstream iss(str);
+			Hostname result;
+
+			if (!read_from(iss, result) || !iss.eof()) {
+				ec = make_error_code(boost::system::errc::invalid_argument);
+			}
+
+			return result;
+		}
+
+		static std::istream& read_from(std::istream& is, Hostname& value) {
+			return read_hostname(is, value.to_raw_value(), nullptr);
+		}
+
+		std::string to_string() const {
+			return this->to_raw_value();
+		}
+
+		std::string to_string(boost::system::error_code&) const {
+			return this->to_raw_value();
+		}
+
+		std::ostream& write_to(std::ostream& os) const {
+			return os << to_string();
+		}
+
+	private:
+		Hostname(typename Hostname::value_type&& value) : GenericValueType<std::string, Hostname>(std::move(value)) {}
+		Hostname(const typename Hostname::value_type& value) : GenericValueType<std::string, Hostname>(value) {}
+};
+
 }

@@ -64,7 +64,7 @@ namespace {
 
 	std::istream& putback(std::istream& is, const std::string& str)
 	{
-		std::ios::iostate state = is.rdstate();
+		const std::ios::iostate state = is.rdstate() & ~std::ios::eofbit;
 		is.clear();
 
 		std::for_each(str.rbegin(), str.rend(), [&is] (char c) { is.putback(c); });
@@ -122,5 +122,128 @@ std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std:
 
 template std::istream& read_generic_ip_address<boost::asio::ip::address_v4>(std::istream&, boost::asio::ip::address_v4&, std::string*);
 template std::istream& read_generic_ip_address<boost::asio::ip::address_v6>(std::istream&, boost::asio::ip::address_v6&, std::string*);
+
+// Hostname labels are 63 characters long at most
+const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
+
+// Hostnames are at most 255 characters long
+const size_t HOSTNAME_MAX_SIZE = 255;
+
+bool is_hostname_label_regular_character(char c) {
+	return (std::isalnum(c) != 0);
+}
+
+bool is_hostname_label_special_character(char c) {
+	return (c == '-');
+}
+
+bool is_hostname_label_character(char c) {
+	return is_hostname_label_regular_character(c) || is_hostname_label_special_character(c);
+}
+
+std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf)
+{
+	// Parse hostname labels according to RFC1123.
+	if (is.good())
+	{
+		if (!is_hostname_label_regular_character(is.peek()))
+		{
+			is.setstate(std::ios_base::failbit);
+		}
+		else
+		{
+			std::ostringstream oss;
+
+			do
+			{
+				oss.put(static_cast<char>(is.get()));
+			}
+			while (is.good() && is_hostname_label_character(is.peek()));
+
+			if (is)
+			{
+				const std::string& result = oss.str();
+
+				// Check if the label is too long, if the last character is not a regular character or if it contains only digits
+				if ((result.size() > HOSTNAME_LABEL_MAX_SIZE) || (!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
+				{
+					putback(is, result);
+					is.setstate(std::ios_base::failbit);
+				}
+				else
+				{
+					value = result;
+
+					if (buf != nullptr) {
+						*buf = value;
+					}
+				}
+			}
+		}
+	}
+
+	return is;
+}
+
+std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf)
+{
+	// Parse hostnames labels according to RFC952 and RFC1123.
+	std::string label;
+
+	if (read_hostname_label(is, label))
+	{
+		if (is.eof())
+		{
+			// There is nothing more to read: lets use the content of the first label
+			std::swap(value, label);
+
+			if (buf != nullptr) {
+				*buf = value;
+			}
+		}
+		else
+		{
+			std::ostringstream oss(label);
+			oss.seekp(0, std::ios::end);
+
+			while (is.good() && (is.peek() == '.'))
+			{
+				is.ignore();
+				oss.put('.');
+
+				if (!read_hostname_label(is, label))
+				{
+					putback(is, oss.str());
+					is.setstate(std::ios_base::failbit);
+				}
+				else
+				{
+					oss << label;
+				}
+			}
+
+			if (is)
+			{
+				const std::string& result = oss.str();
+
+				if (result.size() > HOSTNAME_MAX_SIZE)
+				{
+					putback(is, result);
+					is.setstate(std::ios_base::failbit);
+				}
+				else
+				{
+					value = result;
+
+					if (buf != nullptr) {
+						*buf = value;
+					}
+				}
+			}
+		}
+	}
+
+	return is;
+}
 
 }
