@@ -56,6 +56,8 @@ namespace freelan {
 template <typename ValueType>
 class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<ValueType>> {
 	public:
+		typedef typename ValueType::bytes_type bytes_type;
+
 		GenericIPAddress() = default;
 		GenericIPAddress(typename GenericIPAddress::value_type&& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(std::move(value)) {}
 		GenericIPAddress(const typename GenericIPAddress::value_type& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(value) {}
@@ -68,6 +70,10 @@ class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<Val
 			return GenericIPAddress::value_type::from_string(str, ec);
 		}
 
+		static GenericIPAddress from_bytes(const bytes_type& bytes) {
+			return typename GenericIPAddress::value_type(bytes);
+		}
+
 		static std::istream& read_from(std::istream& is, GenericIPAddress& value) {
 			return read_generic_ip_address(is, value.to_raw_value(), nullptr);
 		}
@@ -78,6 +84,10 @@ class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<Val
 
 		std::string to_string(boost::system::error_code& ec) const {
 			return this->to_raw_value().to_string(ec);
+		}
+
+		bytes_type to_bytes() const {
+			return this->to_raw_value().to_bytes();
 		}
 
 		std::ostream& write_to(std::ostream& os) const {

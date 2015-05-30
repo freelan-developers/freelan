@@ -66,6 +66,16 @@ TEST(IPv6Address, string_instantiation) {
 	ASSERT_EQ(str_value, value.to_string());
 }
 
+TEST(IPv6Address, bytes_instantiation) {
+	const IPv6Address::bytes_type bytes_value {
+		0xff, 0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0xe0, 0xab, 0xcd,
+	};
+	const auto value = IPv6Address::from_bytes(bytes_value);
+
+	ASSERT_EQ(bytes_value, value.to_bytes());
+}
+
 TEST(IPv6Address, implicit_string_conversion) {
 	const std::string str_value = "ff02:1001::e0:abcd";
 	const auto value = from_string<IPv6Address>(str_value);

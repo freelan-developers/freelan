@@ -68,6 +68,13 @@ TEST(IPv4Address, string_instantiation) {
 	ASSERT_EQ(str_value, value.to_string());
 }
 
+TEST(IPv4Address, bytes_instantiation) {
+	const IPv4Address::bytes_type bytes_value { 0x07, 0x00, 0x00, 0x01 };
+	const auto value = IPv4Address::from_bytes(bytes_value);
+
+	ASSERT_EQ(bytes_value, value.to_bytes());
+}
+
 TEST(IPv4Address, implicit_string_conversion) {
 	const std::string str_value = "9.0.0.1";
 	const auto value = from_string<IPv4Address>(str_value);
