@@ -125,7 +125,7 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv4Address_free, values[0])
         self.addCleanup(native.freelan_IPv4Address_free, values[1])
 
-        result = native.freelan_IPv4Address_less_than(self.ectx, *values)
+        result = native.freelan_IPv4Address_less_than(*values)
         self.assertNotEqual(0, result)
 
     def test_IPv4Address_equal(self):
@@ -138,7 +138,7 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv4Address_free, values[0])
         self.addCleanup(native.freelan_IPv4Address_free, values[1])
 
-        result = native.freelan_IPv4Address_equal(self.ectx, *values)
+        result = native.freelan_IPv4Address_equal(*values)
         self.assertEqual(0, result)
 
     def test_IPv6Address_from_string_simple(self):
@@ -178,7 +178,7 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv6Address_free, values[0])
         self.addCleanup(native.freelan_IPv6Address_free, values[1])
 
-        result = native.freelan_IPv6Address_less_than(self.ectx, *values)
+        result = native.freelan_IPv6Address_less_than(*values)
         self.assertNotEqual(0, result)
 
     def test_IPv6Address_equal(self):
@@ -191,5 +191,5 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv6Address_free, values[0])
         self.addCleanup(native.freelan_IPv6Address_free, values[1])
 
-        result = native.freelan_IPv6Address_equal(self.ectx, *values)
+        result = native.freelan_IPv6Address_equal(*values)
         self.assertEqual(0, result)

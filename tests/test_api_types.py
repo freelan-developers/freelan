@@ -14,6 +14,8 @@ from mock import (
 from pyfreelan.api.types import (
     swallow_native_string,
     NativeType,
+    IPv4Address,
+    IPv6Address,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -224,3 +226,21 @@ class NativeTypeTests(TestCase):
         self.assertFalse(instance_a >= instance_b)
         self.assertTrue(instance_a < instance_b)
         self.assertTrue(instance_a <= instance_b)
+
+
+class FinalTypesTests(TestCase):
+    def test_IPv4Address(self):
+        a = IPv4Address("0.0.0.1")
+        b = IPv4Address("0.0.0.2")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+
+    def test_IPv6Address(self):
+        a = IPv6Address("ffe0::abcd")
+        b = IPv6Address("ffe0::abce")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)

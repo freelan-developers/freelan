@@ -38,13 +38,13 @@ api = """
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
     void freelan_IPv4Address_free(struct IPv4Address* inst);
-    int freelan_IPv4Address_less_than(struct ErrorContext* ectx, const struct IPv4Address* lhs, const struct IPv4Address* rhs);
-    int freelan_IPv4Address_equal(struct ErrorContext* ectx, const struct IPv4Address* lhs, const struct IPv4Address* rhs);
+    int freelan_IPv4Address_less_than(const struct IPv4Address* lhs, const struct IPv4Address* rhs);
+    int freelan_IPv4Address_equal(const struct IPv4Address* lhs, const struct IPv4Address* rhs);
     struct IPv6Address* freelan_IPv6Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv6Address_to_string(const struct ErrorContext* ectx, struct IPv6Address* inst);
     void freelan_IPv6Address_free(struct IPv6Address* inst);
-    int freelan_IPv6Address_less_than(struct ErrorContext* ectx, const struct IPv6Address* lhs, const struct IPv6Address* rhs);
-    int freelan_IPv6Address_equal(struct ErrorContext* ectx, const struct IPv6Address* lhs, const struct IPv6Address* rhs);
+    int freelan_IPv6Address_less_than(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
+    int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
 """
 
 ffi.cdef(api)
