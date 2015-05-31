@@ -229,6 +229,14 @@ class NativeTypeTests(TestCase):
         self.assertTrue(instance_a < instance_b)
         self.assertTrue(instance_a <= instance_b)
 
+    def test_wrapper_invalid_comparison(self):
+        wrapper = NativeType.create_wrapper('foo')
+        instance = wrapper("instance")
+
+        # Wrapper types can only be compared to instances of the same class.
+        self.assertFalse(instance == "instance")
+        self.assertTrue(instance < "instance")
+
     def test_wrapper_hash(self):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)

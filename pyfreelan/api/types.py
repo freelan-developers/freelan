@@ -82,9 +82,15 @@ class NativeType(object):
                 return to_string(ectx, self._opaque_ptr)
 
             def __eq__(self, other):
+                if not isinstance(other, Wrapper):
+                    return NotImplemented
+
                 return equal(self._opaque_ptr, other._opaque_ptr)
 
             def __lt__(self, other):
+                if not isinstance(other, Wrapper):
+                    return NotImplemented
+
                 return less_than(self._opaque_ptr, other._opaque_ptr)
 
             def __repr__(self):
