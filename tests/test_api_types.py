@@ -229,6 +229,21 @@ class NativeTypeTests(TestCase):
         self.assertTrue(instance_a < instance_b)
         self.assertTrue(instance_a <= instance_b)
 
+    def test_wrapper_hash(self):
+        wrapper = NativeType.create_wrapper('foo')
+        instance = MagicMock(spec=wrapper)
+        native_ptr = MagicMock()
+        instance._opaque_ptr = native_ptr
+        instance.__str__ = MagicMock(
+            spec=instance.__str__,
+            return_value="fooooo",
+        )
+
+        result = wrapper.__hash__(instance)
+
+        instance.__str__.assert_called_once_with()
+        self.assertEqual(hash(instance.__str__()), result)
+
 
 class FinalTypesTests(TestCase):
     def test_IPv4Address(self):
@@ -236,32 +251,44 @@ class FinalTypesTests(TestCase):
         b = IPv4Address("0.0.0.2")
 
         self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
         self.assertNotEqual(a, b)
         self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
 
     def test_IPv6Address(self):
         a = IPv6Address("ffe0::abcd")
         b = IPv6Address("ffe0::abce")
 
         self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
         self.assertNotEqual(a, b)
         self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
 
     def test_Hostname(self):
         a = Hostname("my.host.name1")
         b = Hostname("my.host.name2")
 
         self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
         self.assertNotEqual(a, b)
         self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
 
     def test_PortNumber(self):
         a = PortNumber("12000")
         b = PortNumber("12001")
 
         self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
         self.assertNotEqual(a, b)
         self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
 
     def test_PortNumber_from_integer(self):
         a = PortNumber("12000")

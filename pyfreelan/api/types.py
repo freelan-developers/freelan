@@ -93,6 +93,9 @@ class NativeType(object):
                     ptr=self._opaque_ptr,
                 )
 
+            def __hash__(self):
+                return hash(str(self))
+
         return Wrapper
 
 
@@ -126,3 +129,6 @@ class PortNumber(NativeType.from_typename('PortNumber')):
 
     def __int__(self):
         return int(str(self))
+
+    def __hash__(self):
+        return int(self)
