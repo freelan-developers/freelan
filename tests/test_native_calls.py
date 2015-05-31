@@ -193,3 +193,56 @@ class NativeCallsTests(TestCase):
 
         result = native.freelan_IPv6Address_equal(*values)
         self.assertEqual(0, result)
+
+    def test_Hostname_from_string_simple(self):
+        result = native.freelan_Hostname_from_string(self.ectx, "my.host.name")
+        self.addCleanup(native.freelan_Hostname_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_Hostname_from_string_incorrect_value(self):
+        result = native.freelan_Hostname_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_Hostname_from_string_empty_value(self):
+        result = native.freelan_Hostname_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_Hostname_to_string_simple(self):
+        str_value = "my.host.name"
+
+        value = native.freelan_Hostname_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_Hostname_free, value)
+
+        result = native.freelan_Hostname_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_Hostname_less_than(self):
+        str_values = ("my.host.name1", "my.host.name2")
+
+        values = (
+            native.freelan_Hostname_from_string(self.ectx, str_values[0]),
+            native.freelan_Hostname_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_Hostname_free, values[0])
+        self.addCleanup(native.freelan_Hostname_free, values[1])
+
+        result = native.freelan_Hostname_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_Hostname_equal(self):
+        str_values = ("my.host.name1", "my.host.name2")
+
+        values = (
+            native.freelan_Hostname_from_string(self.ectx, str_values[0]),
+            native.freelan_Hostname_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_Hostname_free, values[0])
+        self.addCleanup(native.freelan_Hostname_free, values[1])
+
+        result = native.freelan_Hostname_equal(*values)
+        self.assertEqual(0, result)

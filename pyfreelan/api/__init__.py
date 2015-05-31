@@ -45,6 +45,11 @@ api = """
     void freelan_IPv6Address_free(struct IPv6Address* inst);
     int freelan_IPv6Address_less_than(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
     int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
+    struct Hostname* freelan_Hostname_from_string(const struct ErrorContext* ectx, const char* str);
+    char* freelan_Hostname_to_string(const struct ErrorContext* ectx, struct Hostname* inst);
+    void freelan_Hostname_free(struct Hostname* inst);
+    int freelan_Hostname_less_than(const struct Hostname* lhs, const struct Hostname* rhs);
+    int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rhs);
 """
 
 ffi.cdef(api)

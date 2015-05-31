@@ -48,6 +48,7 @@
 #include "../internal/error.hpp"
 #include "../internal/ipv4_address.hpp"
 #include "../internal/ipv6_address.hpp"
+#include "../internal/hostname.hpp"
 
 struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str) {
 	assert(str);
@@ -149,6 +150,58 @@ int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Ad
 
 	const auto ilhs = *reinterpret_cast<const freelan::IPv6Address*>(lhs);
 	const auto irhs = *reinterpret_cast<const freelan::IPv6Address*>(rhs);
+
+	return (ilhs == irhs) ? 1 : 0;
+}
+
+struct Hostname* freelan_Hostname_from_string(struct ErrorContext* ectx, const char* str) {
+	assert(str);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return reinterpret_cast<Hostname*>(
+		FREELAN_NEW freelan::Hostname(freelan::Hostname::from_string(str))
+	);
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+char* freelan_Hostname_to_string(struct ErrorContext* ectx, const struct Hostname* inst) {
+	assert(inst);
+
+	const auto value = reinterpret_cast<const freelan::Hostname*>(inst);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return ::freelan_strdup(value->to_string().c_str());
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+void freelan_Hostname_free(struct Hostname* inst) {
+	FREELAN_DELETE reinterpret_cast<freelan::Hostname*>(inst);
+}
+
+int freelan_Hostname_less_than(const struct Hostname* lhs, const struct Hostname* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::Hostname*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::Hostname*>(rhs);
+
+	return (ilhs < irhs) ? 1 : 0;
+}
+
+int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::Hostname*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::Hostname*>(rhs);
 
 	return (ilhs == irhs) ? 1 : 0;
 }

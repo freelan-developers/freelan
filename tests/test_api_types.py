@@ -16,6 +16,7 @@ from pyfreelan.api.types import (
     NativeType,
     IPv4Address,
     IPv6Address,
+    Hostname,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -240,6 +241,14 @@ class FinalTypesTests(TestCase):
     def test_IPv6Address(self):
         a = IPv6Address("ffe0::abcd")
         b = IPv6Address("ffe0::abce")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+
+    def test_Hostname(self):
+        a = Hostname("my.host.name1")
+        b = Hostname("my.host.name2")
 
         self.assertIsNot(a, b)
         self.assertNotEqual(a, b)

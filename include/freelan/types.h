@@ -147,6 +147,50 @@ FREELAN_API int freelan_IPv6Address_less_than(const struct IPv6Address* lhs, con
  */
 FREELAN_API int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
 
+/**
+ * \brief Create a Hostname instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The Hostname instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_Hostname_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Hostname* freelan_Hostname_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Get the string representation of an Hostname instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_Hostname_to_string(struct ErrorContext* ectx, const struct Hostname* inst);
+
+/**
+ * \brief Delete an Hostname instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_Hostname_free(struct Hostname* inst);
+
+/**
+ * \brief Compare two Hostname instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_Hostname_less_than(const struct Hostname* lhs, const struct Hostname* rhs);
+
+/**
+ * \brief Compare two Hostname instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rhs);
+
 /* API END */
 
 #ifdef __cplusplus
