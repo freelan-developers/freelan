@@ -17,6 +17,7 @@ from pyfreelan.api.types import (
     IPv4Address,
     IPv6Address,
     Hostname,
+    PortNumber,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -249,6 +250,14 @@ class FinalTypesTests(TestCase):
     def test_Hostname(self):
         a = Hostname("my.host.name1")
         b = Hostname("my.host.name2")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+
+    def test_PortNumber(self):
+        a = PortNumber("12000")
+        b = PortNumber("12001")
 
         self.assertIsNot(a, b)
         self.assertNotEqual(a, b)

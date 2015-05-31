@@ -23,6 +23,7 @@ api = """
 
     /* Error */
     struct ErrorContext;
+
     struct ErrorContext* freelan_acquire_error_context(void);
     void freelan_release_error_context(struct ErrorContext* ectx);
     void freelan_error_context_reset(struct ErrorContext* ectx);
@@ -35,6 +36,9 @@ api = """
     /* Types */
     struct IPv4Address;
     struct IPv6Address;
+    struct Hostname;
+    struct PortNumber;
+
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
     void freelan_IPv4Address_free(struct IPv4Address* inst);
@@ -50,6 +54,11 @@ api = """
     void freelan_Hostname_free(struct Hostname* inst);
     int freelan_Hostname_less_than(const struct Hostname* lhs, const struct Hostname* rhs);
     int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rhs);
+    struct PortNumber* freelan_PortNumber_from_string(const struct ErrorContext* ectx, const char* str);
+    char* freelan_PortNumber_to_string(const struct ErrorContext* ectx, struct PortNumber* inst);
+    void freelan_PortNumber_free(struct PortNumber* inst);
+    int freelan_PortNumber_less_than(const struct PortNumber* lhs, const struct PortNumber* rhs);
+    int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumber* rhs);
 """
 
 ffi.cdef(api)

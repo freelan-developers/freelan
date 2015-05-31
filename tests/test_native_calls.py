@@ -246,3 +246,56 @@ class NativeCallsTests(TestCase):
 
         result = native.freelan_Hostname_equal(*values)
         self.assertEqual(0, result)
+
+    def test_PortNumber_from_string_simple(self):
+        result = native.freelan_PortNumber_from_string(self.ectx, "12000")
+        self.addCleanup(native.freelan_PortNumber_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_PortNumber_from_string_incorrect_value(self):
+        result = native.freelan_PortNumber_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_PortNumber_from_string_empty_value(self):
+        result = native.freelan_PortNumber_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_PortNumber_to_string_simple(self):
+        str_value = "12000"
+
+        value = native.freelan_PortNumber_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_PortNumber_free, value)
+
+        result = native.freelan_PortNumber_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_PortNumber_less_than(self):
+        str_values = ("12000", "12001")
+
+        values = (
+            native.freelan_PortNumber_from_string(self.ectx, str_values[0]),
+            native.freelan_PortNumber_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_PortNumber_free, values[0])
+        self.addCleanup(native.freelan_PortNumber_free, values[1])
+
+        result = native.freelan_PortNumber_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_PortNumber_equal(self):
+        str_values = ("12000", "12001")
+
+        values = (
+            native.freelan_PortNumber_from_string(self.ectx, str_values[0]),
+            native.freelan_PortNumber_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_PortNumber_free, values[0])
+        self.addCleanup(native.freelan_PortNumber_free, values[1])
+
+        result = native.freelan_PortNumber_equal(*values)
+        self.assertEqual(0, result)

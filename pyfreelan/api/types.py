@@ -112,3 +112,9 @@ class Hostname(NativeType.from_typename('Hostname')):
     """
     A hostname.
     """
+
+
+class PortNumber(NativeType.from_typename('PortNumber')):
+    """
+    A port number.
+    """

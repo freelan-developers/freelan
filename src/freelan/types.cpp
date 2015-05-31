@@ -49,6 +49,7 @@
 #include "../internal/ipv4_address.hpp"
 #include "../internal/ipv6_address.hpp"
 #include "../internal/hostname.hpp"
+#include "../internal/port_number.hpp"
 
 struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str) {
 	assert(str);
@@ -202,6 +203,58 @@ int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rh
 
 	const auto ilhs = *reinterpret_cast<const freelan::Hostname*>(lhs);
 	const auto irhs = *reinterpret_cast<const freelan::Hostname*>(rhs);
+
+	return (ilhs == irhs) ? 1 : 0;
+}
+
+struct PortNumber* freelan_PortNumber_from_string(struct ErrorContext* ectx, const char* str) {
+	assert(str);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return reinterpret_cast<PortNumber*>(
+		FREELAN_NEW freelan::PortNumber(freelan::PortNumber::from_string(str))
+	);
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+char* freelan_PortNumber_to_string(struct ErrorContext* ectx, const struct PortNumber* inst) {
+	assert(inst);
+
+	const auto value = reinterpret_cast<const freelan::PortNumber*>(inst);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return ::freelan_strdup(value->to_string().c_str());
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+void freelan_PortNumber_free(struct PortNumber* inst) {
+	FREELAN_DELETE reinterpret_cast<freelan::PortNumber*>(inst);
+}
+
+int freelan_PortNumber_less_than(const struct PortNumber* lhs, const struct PortNumber* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::PortNumber*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::PortNumber*>(rhs);
+
+	return (ilhs < irhs) ? 1 : 0;
+}
+
+int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumber* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::PortNumber*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::PortNumber*>(rhs);
 
 	return (ilhs == irhs) ? 1 : 0;
 }

@@ -191,6 +191,50 @@ FREELAN_API int freelan_Hostname_less_than(const struct Hostname* lhs, const str
  */
 FREELAN_API int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rhs);
 
+/**
+ * \brief Create a PortNumber instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The PortNumber instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_PortNumber_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct PortNumber* freelan_PortNumber_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Get the string representation of an PortNumber instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_PortNumber_to_string(struct ErrorContext* ectx, const struct PortNumber* inst);
+
+/**
+ * \brief Delete an PortNumber instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_PortNumber_free(struct PortNumber* inst);
+
+/**
+ * \brief Compare two PortNumber instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_PortNumber_less_than(const struct PortNumber* lhs, const struct PortNumber* rhs);
+
+/**
+ * \brief Compare two PortNumber instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumber* rhs);
+
 /* API END */
 
 #ifdef __cplusplus
