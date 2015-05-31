@@ -39,30 +39,34 @@
  */
 
 /**
- * \file hostname.hpp
+ * \file port_number.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A hostname container.
+ * \brief A port number container.
  */
 
 #pragma once
 
 #include <iostream>
 #include <string>
+#include <cstdint>
 
 #include <boost/system/system_error.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "generic_value_type.hpp"
 #include "stream_parsers.hpp"
 
 namespace freelan {
 
-class Hostname : public GenericValueType<std::string, Hostname> {
+class PortNumber : public GenericValueType<uint16_t, PortNumber> {
 	public:
-		Hostname() = default;
+		PortNumber() = default;
+		PortNumber(typename PortNumber::value_type&& value) : GenericValueType<uint16_t, PortNumber>(std::move(value)) {}
+		PortNumber(const typename PortNumber::value_type& value) : GenericValueType<uint16_t, PortNumber>(value) {}
 
-		static Hostname from_string(const std::string& str) {
+		static PortNumber from_string(const std::string& str) {
 			boost::system::error_code ec;
-			const Hostname result = from_string(str, ec);
+			const PortNumber result = from_string(str, ec);
 
 			if (ec) {
 				throw boost::system::system_error(ec);
@@ -71,9 +75,9 @@ class Hostname : public GenericValueType<std::string, Hostname> {
 			return result;
 		}
 
-		static Hostname from_string(const std::string& str, boost::system::error_code& ec) {
+		static PortNumber from_string(const std::string& str, boost::system::error_code& ec) {
 			std::istringstream iss(str);
-			Hostname result;
+			PortNumber result;
 
 			if (!read_from(iss, result) || !iss.eof()) {
 				ec = make_error_code(boost::system::errc::invalid_argument);
@@ -84,25 +88,21 @@ class Hostname : public GenericValueType<std::string, Hostname> {
 			return result;
 		}
 
-		static std::istream& read_from(std::istream& is, Hostname& value) {
-			return read_hostname(is, value.to_raw_value(), nullptr);
+		static std::istream& read_from(std::istream& is, PortNumber& value) {
+			return read_port_number(is, value.to_raw_value(), nullptr);
 		}
 
 		std::string to_string() const {
-			return this->to_raw_value();
+			return boost::lexical_cast<std::string>(this->to_raw_value());
 		}
 
 		std::string to_string(boost::system::error_code&) const {
-			return this->to_raw_value();
+			return boost::lexical_cast<std::string>(this->to_raw_value());
 		}
 
 		std::ostream& write_to(std::ostream& os) const {
-			return os << to_string();
+			return os << this->to_raw_value();
 		}
-
-	private:
-		Hostname(typename Hostname::value_type&& value) : GenericValueType<std::string, Hostname>(std::move(value)) {}
-		Hostname(const typename Hostname::value_type& value) : GenericValueType<std::string, Hostname>(value) {}
 };
 
 }

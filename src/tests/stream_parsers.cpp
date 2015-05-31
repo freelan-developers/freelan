@@ -51,6 +51,7 @@ using boost::asio::ip::address_v6;
 using freelan::read_generic_ip_address;
 using freelan::read_hostname_label;
 using freelan::read_hostname;
+using freelan::read_port_number;
 
 TEST(stream_parsers, read_ipv4_address_success) {
 	const std::string str_value = "9.0.0.1";
@@ -343,4 +344,65 @@ TEST(stream_parsers, read_hostname_end_with_dot) {
 	iss >> parsed_str;
 
 	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_port_number_within_range) {
+	const std::string str_value = "17";
+	uint16_t value;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_port_number(iss, value, &parsed_str);
+
+	ASSERT_EQ(iss, result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(std::stoi(str_value), value);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_port_number_too_big) {
+	const std::string str_value = "65536";
+	uint16_t value;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_port_number(iss, value, &parsed_str);
+
+	ASSERT_EQ(iss, result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ(uint8_t(), value);
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_port_number_extra) {
+	const std::string str_value = "31";
+	const std::string extra = "foo";
+	uint16_t value;
+	std::istringstream iss(str_value + extra);
+	std::string parsed_str;
+
+	auto&& result = read_port_number(iss, value, &parsed_str);
+
+	ASSERT_EQ(iss, result);
+	ASSERT_TRUE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(std::stoi(str_value), value);
+	ASSERT_EQ(str_value, parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(extra, parsed_str);
 }

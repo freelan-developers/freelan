@@ -41,6 +41,7 @@
 #include "stream_parsers.hpp"
 
 #include <sstream>
+#include <limits>
 
 #include <boost/asio.hpp>
 
@@ -60,6 +61,41 @@ namespace {
 	inline bool is_ip_address_character<boost::asio::ip::address_v6>(char c)
 	{
 		return (std::isxdigit(c) || (c == ':'));
+	}
+
+	template <typename AddressType>
+	constexpr uint8_t get_ip_max_prefix_length();
+
+	template <>
+	constexpr uint8_t get_ip_max_prefix_length<boost::asio::ip::address_v4>() {
+		return 32;
+	}
+
+	template <>
+	constexpr uint8_t get_ip_max_prefix_length<boost::asio::ip::address_v6>() {
+		return 128;
+	}
+
+	// Hostname labels are 63 characters long at most
+	const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
+
+	// Hostnames are at most 255 characters long
+	const size_t HOSTNAME_MAX_SIZE = 255;
+
+	bool is_hostname_label_regular_character(char c) {
+		return (std::isalnum(c) != 0);
+	}
+
+	bool is_hostname_label_special_character(char c) {
+		return (c == '-');
+	}
+
+	bool is_hostname_label_character(char c) {
+		return is_hostname_label_regular_character(c) || is_hostname_label_special_character(c);
+	}
+
+	bool is_unsigned_integer_character(char c) {
+		return std::isdigit(c);
 	}
 
 	std::istream& putback(std::istream& is, const std::string& str)
@@ -122,24 +158,6 @@ std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std:
 
 template std::istream& read_generic_ip_address<boost::asio::ip::address_v4>(std::istream&, boost::asio::ip::address_v4&, std::string*);
 template std::istream& read_generic_ip_address<boost::asio::ip::address_v6>(std::istream&, boost::asio::ip::address_v6&, std::string*);
-
-// Hostname labels are 63 characters long at most
-const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
-
-// Hostnames are at most 255 characters long
-const size_t HOSTNAME_MAX_SIZE = 255;
-
-bool is_hostname_label_regular_character(char c) {
-	return (std::isalnum(c) != 0);
-}
-
-bool is_hostname_label_special_character(char c) {
-	return (c == '-');
-}
-
-bool is_hostname_label_character(char c) {
-	return is_hostname_label_regular_character(c) || is_hostname_label_special_character(c);
-}
 
 std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf)
 {
@@ -246,4 +264,56 @@ std::istream& read_hostname(std::istream& is, std::string& value, std::string* b
 	return is;
 }
 
+template <typename IntegerType, IntegerType MinValue = std::numeric_limits<IntegerType>::min(), IntegerType MaxValue = std::numeric_limits<IntegerType>::max()>
+std::istream& read_unsigned_integer(std::istream& is, IntegerType& value, std::string* buf) {
+	if (is.good())
+	{
+		if (!is_unsigned_integer_character(is.peek()))
+		{
+			is.setstate(std::ios_base::failbit);
+		}
+		else
+		{
+			std::stringstream oss;
+
+			do
+			{
+				oss.put(static_cast<char>(is.get()));
+			}
+			while (is.good() && is_unsigned_integer_character(is.peek()));
+
+			if (is)
+			{
+				const std::string& result = oss.str();
+				uint32_t tmp_value;
+				oss >> tmp_value;
+
+				if (!oss || (tmp_value < MinValue) || (tmp_value > MaxValue)) {
+					putback(is, result);
+					is.setstate(std::ios_base::failbit);
+				} else {
+					value = tmp_value;
+
+					if (buf != nullptr) {
+						*buf = result;
+					}
+				}
+			}
+		}
+	}
+
+	return is;
+}
+
+std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf) {
+	return read_unsigned_integer<uint16_t>(is, value, buf);
+}
+
+template <typename AddressType>
+std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf) {
+	return read_unsigned_integer<uint8_t, 0, get_ip_max_prefix_length<AddressType>()>(is, value, buf);
+}
+
+template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v4>(std::istream&, uint8_t&, std::string*);
+template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v6>(std::istream&, uint8_t&, std::string*);
 }

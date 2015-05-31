@@ -55,4 +55,7 @@ template <typename AddressType>
 std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
 std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf = nullptr);
 std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf = nullptr);
+std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf = nullptr);
+template <typename AddressType>
+std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf = nullptr);
 }
