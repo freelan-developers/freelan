@@ -262,3 +262,9 @@ class FinalTypesTests(TestCase):
         self.assertIsNot(a, b)
         self.assertNotEqual(a, b)
         self.assertLess(a, b)
+
+    def test_PortNumber_from_integer(self):
+        a = PortNumber("12000")
+        b = PortNumber(12000)
+
+        self.assertEqual(a, b)

@@ -118,3 +118,8 @@ class PortNumber(NativeType.from_typename('PortNumber')):
     """
     A port number.
     """
+    def __init__(self, value):
+        if not isinstance(value, basestring):
+            value = str(value)
+
+        super(PortNumber, self).__init__(value)
