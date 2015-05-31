@@ -104,6 +104,10 @@ class Reallocation(object):
             self=self,
         )
 
+    @property
+    def ptrinfo(self):
+        return self.new_ptrinfo
+
 
 callbacks = []
 
