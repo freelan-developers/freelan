@@ -268,3 +268,8 @@ class FinalTypesTests(TestCase):
         b = PortNumber(12000)
 
         self.assertEqual(a, b)
+
+    def test_PortNumber_to_integer(self):
+        instance = PortNumber("12000")
+
+        self.assertEqual(12000, int(instance))

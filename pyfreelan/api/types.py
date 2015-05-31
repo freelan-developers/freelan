@@ -123,3 +123,6 @@ class PortNumber(NativeType.from_typename('PortNumber')):
             value = str(value)
 
         super(PortNumber, self).__init__(value)
+
+    def __int__(self):
+        return int(str(self))
