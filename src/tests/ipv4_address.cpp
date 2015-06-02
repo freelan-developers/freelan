@@ -85,7 +85,7 @@ TEST(IPv4Address, string_instantiation_failure_no_throw) {
 }
 
 TEST(IPv4Address, bytes_instantiation) {
-	const IPv4Address::bytes_type bytes_value { 0x07, 0x00, 0x00, 0x01 };
+	const IPv4Address::bytes_type bytes_value {{ 0x07, 0x00, 0x00, 0x01 }};
 	const auto value = IPv4Address::from_bytes(bytes_value);
 
 	ASSERT_EQ(bytes_value, value.to_bytes());

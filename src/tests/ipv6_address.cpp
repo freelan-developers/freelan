@@ -83,10 +83,10 @@ TEST(IPv6Address, string_instantiation_failure_no_throw) {
 }
 
 TEST(IPv6Address, bytes_instantiation) {
-	const IPv6Address::bytes_type bytes_value {
+	const IPv6Address::bytes_type bytes_value {{
 		0xff, 0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0xe0, 0xab, 0xcd,
-	};
+	}};
 	const auto value = IPv6Address::from_bytes(bytes_value);
 
 	ASSERT_EQ(bytes_value, value.to_bytes());
