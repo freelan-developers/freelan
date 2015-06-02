@@ -61,7 +61,7 @@ TEST(stream_parsers, read_ipv4_address_success) {
 
 	auto&& result = read_generic_ip_address<address_v4>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_TRUE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -78,7 +78,7 @@ TEST(stream_parsers, read_ipv4_address_extra) {
 
 	auto&& result = read_generic_ip_address<address_v4>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_TRUE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -99,7 +99,7 @@ TEST(stream_parsers, read_ipv4_address_invalid) {
 
 	auto&& result = read_generic_ip_address<address_v4>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -120,7 +120,7 @@ TEST(stream_parsers, read_ipv4_address_truncated) {
 
 	auto&& result = read_generic_ip_address<address_v4>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -141,7 +141,7 @@ TEST(stream_parsers, read_ipv6_address_success) {
 
 	auto&& result = read_generic_ip_address<address_v6>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_TRUE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -158,7 +158,7 @@ TEST(stream_parsers, read_ipv6_address_extra) {
 
 	auto&& result = read_generic_ip_address<address_v6>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_TRUE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -179,7 +179,7 @@ TEST(stream_parsers, read_ipv6_address_invalid) {
 
 	auto&& result = read_generic_ip_address<address_v6>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -200,7 +200,7 @@ TEST(stream_parsers, read_ipv6_address_truncated) {
 
 	auto&& result = read_generic_ip_address<address_v6>(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -221,7 +221,7 @@ TEST(stream_parsers, read_hostname_label_success) {
 
 	auto&& result = read_hostname_label(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_TRUE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -236,7 +236,7 @@ TEST(stream_parsers, read_hostname_label_too_long) {
 
 	auto&& result = read_hostname_label(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -251,7 +251,7 @@ TEST(stream_parsers, read_hostname_label_only_digits) {
 
 	auto&& result = read_hostname_label(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -266,7 +266,7 @@ TEST(stream_parsers, read_hostname_label_last_character_invalid) {
 
 	auto&& result = read_hostname_label(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -282,7 +282,7 @@ TEST(stream_parsers, read_hostname_label_extra) {
 
 	auto&& result = read_hostname_label(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_TRUE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -303,7 +303,7 @@ TEST(stream_parsers, read_hostname_single_label) {
 
 	auto&& result = read_hostname(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_TRUE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -318,7 +318,7 @@ TEST(stream_parsers, read_hostname_multiple_labels) {
 
 	auto&& result = read_hostname(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_TRUE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -333,7 +333,7 @@ TEST(stream_parsers, read_hostname_end_with_dot) {
 
 	auto&& result = read_hostname(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -354,7 +354,7 @@ TEST(stream_parsers, read_port_number_within_range) {
 
 	auto&& result = read_port_number(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_TRUE(iss.eof());
 	ASSERT_FALSE(iss.fail());
@@ -370,7 +370,7 @@ TEST(stream_parsers, read_port_number_too_big) {
 
 	auto&& result = read_port_number(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_TRUE(iss.fail());
@@ -393,7 +393,7 @@ TEST(stream_parsers, read_port_number_extra) {
 
 	auto&& result = read_port_number(iss, value, &parsed_str);
 
-	ASSERT_EQ(iss, result);
+	ASSERT_EQ(&iss, &result);
 	ASSERT_TRUE(iss.good());
 	ASSERT_FALSE(iss.eof());
 	ASSERT_FALSE(iss.fail());
