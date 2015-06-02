@@ -58,6 +58,9 @@ extern "C" {
 
 struct IPv4Address;
 struct IPv6Address;
+struct PortNumber;
+struct IPv4PrefixLength;
+struct IPv6PrefixLength;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -234,6 +237,94 @@ FREELAN_API int freelan_PortNumber_less_than(const struct PortNumber* lhs, const
  * \return A non-zero value if the lhs == rhs.
  */
 FREELAN_API int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumber* rhs);
+
+/**
+ * \brief Create a IPv4PrefixLength instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IPv4PrefixLength instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4PrefixLength_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4PrefixLength* freelan_IPv4PrefixLength_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Get the string representation of an IPv4PrefixLength instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPv4PrefixLength_to_string(struct ErrorContext* ectx, const struct IPv4PrefixLength* inst);
+
+/**
+ * \brief Delete an IPv4PrefixLength instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPv4PrefixLength_free(struct IPv4PrefixLength* inst);
+
+/**
+ * \brief Compare two IPv4PrefixLength instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPv4PrefixLength_less_than(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs);
+
+/**
+ * \brief Compare two IPv4PrefixLength instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPv4PrefixLength_equal(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs);
+
+/**
+ * \brief Create a IPv6PrefixLength instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IPv6PrefixLength instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6PrefixLength_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6PrefixLength* freelan_IPv6PrefixLength_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Get the string representation of an IPv6PrefixLength instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPv6PrefixLength_to_string(struct ErrorContext* ectx, const struct IPv6PrefixLength* inst);
+
+/**
+ * \brief Delete an IPv6PrefixLength instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPv6PrefixLength_free(struct IPv6PrefixLength* inst);
+
+/**
+ * \brief Compare two IPv6PrefixLength instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPv6PrefixLength_less_than(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
+
+/**
+ * \brief Compare two IPv6PrefixLength instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPv6PrefixLength_equal(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
 
 /* API END */
 

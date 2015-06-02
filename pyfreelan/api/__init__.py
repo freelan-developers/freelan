@@ -38,6 +38,8 @@ api = """
     struct IPv6Address;
     struct Hostname;
     struct PortNumber;
+    struct IPv4PrefixLength;
+    struct IPv6PrefixLength;
 
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
@@ -59,6 +61,16 @@ api = """
     void freelan_PortNumber_free(struct PortNumber* inst);
     int freelan_PortNumber_less_than(const struct PortNumber* lhs, const struct PortNumber* rhs);
     int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumber* rhs);
+    struct IPv4PrefixLength* freelan_IPv4PrefixLength_from_string(const struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv4PrefixLength_to_string(const struct ErrorContext* ectx, struct IPv4PrefixLength* inst);
+    void freelan_IPv4PrefixLength_free(struct IPv4PrefixLength* inst);
+    int freelan_IPv4PrefixLength_less_than(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs);
+    int freelan_IPv4PrefixLength_equal(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs);
+    struct IPv6PrefixLength* freelan_IPv6PrefixLength_from_string(const struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv6PrefixLength_to_string(const struct ErrorContext* ectx, struct IPv6PrefixLength* inst);
+    void freelan_IPv6PrefixLength_free(struct IPv6PrefixLength* inst);
+    int freelan_IPv6PrefixLength_less_than(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
+    int freelan_IPv6PrefixLength_equal(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
 """
 
 ffi.cdef(api)

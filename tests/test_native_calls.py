@@ -299,3 +299,109 @@ class NativeCallsTests(TestCase):
 
         result = native.freelan_PortNumber_equal(*values)
         self.assertEqual(0, result)
+
+    def test_IPv4PrefixLength_from_string_simple(self):
+        result = native.freelan_IPv4PrefixLength_from_string(self.ectx, "12")
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv4PrefixLength_from_string_incorrect_value(self):
+        result = native.freelan_IPv4PrefixLength_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv4PrefixLength_from_string_empty_value(self):
+        result = native.freelan_IPv4PrefixLength_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv4PrefixLength_to_string_simple(self):
+        str_value = "12"
+
+        value = native.freelan_IPv4PrefixLength_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, value)
+
+        result = native.freelan_IPv4PrefixLength_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv4PrefixLength_less_than(self):
+        str_values = ("12", "13")
+
+        values = (
+            native.freelan_IPv4PrefixLength_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv4PrefixLength_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, values[0])
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, values[1])
+
+        result = native.freelan_IPv4PrefixLength_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPv4PrefixLength_equal(self):
+        str_values = ("12", "13")
+
+        values = (
+            native.freelan_IPv4PrefixLength_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv4PrefixLength_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, values[0])
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, values[1])
+
+        result = native.freelan_IPv4PrefixLength_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_IPv6PrefixLength_from_string_simple(self):
+        result = native.freelan_IPv6PrefixLength_from_string(self.ectx, "12")
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6PrefixLength_from_string_incorrect_value(self):
+        result = native.freelan_IPv6PrefixLength_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv6PrefixLength_from_string_empty_value(self):
+        result = native.freelan_IPv6PrefixLength_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv6PrefixLength_to_string_simple(self):
+        str_value = "12"
+
+        value = native.freelan_IPv6PrefixLength_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, value)
+
+        result = native.freelan_IPv6PrefixLength_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6PrefixLength_less_than(self):
+        str_values = ("12", "13")
+
+        values = (
+            native.freelan_IPv6PrefixLength_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv6PrefixLength_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, values[0])
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, values[1])
+
+        result = native.freelan_IPv6PrefixLength_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPv6PrefixLength_equal(self):
+        str_values = ("12", "13")
+
+        values = (
+            native.freelan_IPv6PrefixLength_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv6PrefixLength_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, values[0])
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, values[1])
+
+        result = native.freelan_IPv6PrefixLength_equal(*values)
+        self.assertEqual(0, result)

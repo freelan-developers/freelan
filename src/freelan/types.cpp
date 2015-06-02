@@ -50,6 +50,8 @@
 #include "../internal/ipv6_address.hpp"
 #include "../internal/hostname.hpp"
 #include "../internal/port_number.hpp"
+#include "../internal/ipv4_prefix_length.hpp"
+#include "../internal/ipv6_prefix_length.hpp"
 
 struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str) {
 	assert(str);
@@ -255,6 +257,110 @@ int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumb
 
 	const auto ilhs = *reinterpret_cast<const freelan::PortNumber*>(lhs);
 	const auto irhs = *reinterpret_cast<const freelan::PortNumber*>(rhs);
+
+	return (ilhs == irhs) ? 1 : 0;
+}
+
+struct IPv4PrefixLength* freelan_IPv4PrefixLength_from_string(struct ErrorContext* ectx, const char* str) {
+	assert(str);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return reinterpret_cast<IPv4PrefixLength*>(
+		FREELAN_NEW freelan::IPv4PrefixLength(freelan::IPv4PrefixLength::from_string(str))
+	);
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+char* freelan_IPv4PrefixLength_to_string(struct ErrorContext* ectx, const struct IPv4PrefixLength* inst) {
+	assert(inst);
+
+	const auto value = reinterpret_cast<const freelan::IPv4PrefixLength*>(inst);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return ::freelan_strdup(value->to_string().c_str());
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+void freelan_IPv4PrefixLength_free(struct IPv4PrefixLength* inst) {
+	FREELAN_DELETE reinterpret_cast<freelan::IPv4PrefixLength*>(inst);
+}
+
+int freelan_IPv4PrefixLength_less_than(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv4PrefixLength*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv4PrefixLength*>(rhs);
+
+	return (ilhs < irhs) ? 1 : 0;
+}
+
+int freelan_IPv4PrefixLength_equal(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv4PrefixLength*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv4PrefixLength*>(rhs);
+
+	return (ilhs == irhs) ? 1 : 0;
+}
+
+struct IPv6PrefixLength* freelan_IPv6PrefixLength_from_string(struct ErrorContext* ectx, const char* str) {
+	assert(str);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return reinterpret_cast<IPv6PrefixLength*>(
+		FREELAN_NEW freelan::IPv6PrefixLength(freelan::IPv6PrefixLength::from_string(str))
+	);
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+char* freelan_IPv6PrefixLength_to_string(struct ErrorContext* ectx, const struct IPv6PrefixLength* inst) {
+	assert(inst);
+
+	const auto value = reinterpret_cast<const freelan::IPv6PrefixLength*>(inst);
+
+	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+	return ::freelan_strdup(value->to_string().c_str());
+
+	FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+	return nullptr;
+}
+
+void freelan_IPv6PrefixLength_free(struct IPv6PrefixLength* inst) {
+	FREELAN_DELETE reinterpret_cast<freelan::IPv6PrefixLength*>(inst);
+}
+
+int freelan_IPv6PrefixLength_less_than(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv6PrefixLength*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv6PrefixLength*>(rhs);
+
+	return (ilhs < irhs) ? 1 : 0;
+}
+
+int freelan_IPv6PrefixLength_equal(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs) {
+	assert(lhs);
+	assert(rhs);
+
+	const auto ilhs = *reinterpret_cast<const freelan::IPv6PrefixLength*>(lhs);
+	const auto irhs = *reinterpret_cast<const freelan::IPv6PrefixLength*>(rhs);
 
 	return (ilhs == irhs) ? 1 : 0;
 }
