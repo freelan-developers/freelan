@@ -86,7 +86,7 @@ class NativeCallsTests(TestCase):
 
     def test_set_logging_callback(self):
         @ffi.callback(
-            "int (unsigned int, uint64_t, char *, char *, size_t, "
+            "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
             "struct FreeLANLogPayload *, char *, unsigned int)",
         )
         def callback(
@@ -117,7 +117,7 @@ class NativeCallsTests(TestCase):
 
         callback = MagicMock(return_value=1)
         c_callback = ffi.callback(
-            "int (unsigned int, uint64_t, char *, char *, size_t, "
+            "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
             "struct FreeLANLogPayload *, char *, unsigned int)",
         )(callback)
 
@@ -157,7 +157,7 @@ class NativeCallsTests(TestCase):
         p_file = ffi.new("char[]", "myfile")
 
         @ffi.callback(
-            "int (unsigned int, uint64_t, char *, char *, size_t, "
+            "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
             "struct FreeLANLogPayload *, char *, unsigned int)",
         )
         def callback(

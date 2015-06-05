@@ -35,7 +35,7 @@ api = """
 
     /* Log */
     typedef unsigned int FreeLANLogLevel;
-    typedef uint64_t FreeLANTimestamp;
+    typedef double FreeLANTimestamp;
     typedef unsigned int FreeLANLogPayloadType;
     struct FreeLANLog;
 

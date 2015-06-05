@@ -64,7 +64,7 @@ typedef unsigned int FreeLANLogLevel;
 /**
  * \brief The log timestamp type.
  */
-typedef uint64_t FreeLANTimestamp;
+typedef double FreeLANTimestamp;
 
 /**
  * \brief The log entry payload types type.
