@@ -89,7 +89,7 @@ FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, c
 }
 
 FREELAN_API struct FreeLANLog* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line) {
-	auto log = FREELAN_NEW LogEntry{ level, timestamp, domain, code, file, line };
+	auto log = FREELAN_NEW LogEntry{ level, timestamp, domain, code, file, line, {} };
 
 	return reinterpret_cast<struct FreeLANLog*>(log);
 }
@@ -98,7 +98,7 @@ FREELAN_API void freelan_log_attach_string(struct FreeLANLog* log, const char* k
 	assert(log);
 
 	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_STRING, nullptr };
+	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_STRING, { nullptr } };
 	item.value.as_string = value;
 
 	entry.payload.push_back(item);
@@ -108,7 +108,7 @@ FREELAN_API void freelan_log_attach_integer(struct FreeLANLog* log, const char* 
 	assert(log);
 
 	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, nullptr };
+	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
 	item.value.as_integer = value;
 
 	entry.payload.push_back(item);
@@ -118,7 +118,7 @@ FREELAN_API void freelan_log_attach_float(struct FreeLANLog* log, const char* ke
 	assert(log);
 
 	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_FLOAT, nullptr };
+	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_FLOAT, { nullptr } };
 	item.value.as_float = value;
 
 	entry.payload.push_back(item);
@@ -128,7 +128,7 @@ FREELAN_API void freelan_log_attach_boolean(struct FreeLANLog* log, const char* 
 	assert(log);
 
 	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, nullptr };
+	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, { nullptr } };
 	item.value.as_boolean = value;
 
 	entry.payload.push_back(item);
