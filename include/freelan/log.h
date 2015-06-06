@@ -109,11 +109,6 @@ const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 60;
 const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 70;
 
 /**
- * The log domains.
- */
-const char* FREELAN_LOG_DOMAIN_GENERIC = "generic";
-
-/**
  * The log payload types.
  */
 const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_STRING = 1;

@@ -16,7 +16,6 @@ from pyfreelan.api import (
 )
 from pyfreelan.api.log import (
     LogLevel,
-    LogDomain,
     utc_datetime_to_utc_timestamp,
     utc_timestamp_to_utc_datetime,
     log_attach,
@@ -156,12 +155,12 @@ class LogTests(TestCase):
             "pyfreelan.api.log.native.freelan_log",
             return_value=True,
         ) as _log:
-            result = log(LogLevel.information, 3.14, LogDomain.generic, "mycode")
+            result = log(LogLevel.information, 3.14, "generic", "mycode")
 
         _log.called_once_with(
             LogLevel.information,
             3.14,
-            LogDomain.generic,
+            "generic",
             "mycode",
             0,
             ffi.NULL,
@@ -178,7 +177,7 @@ class LogTests(TestCase):
             result = log(
                 LogLevel.information,
                 3.14,
-                LogDomain.generic,
+                "generic",
                 "mycode",
                 file="myfile",
                 line=123,
@@ -187,7 +186,7 @@ class LogTests(TestCase):
         _log.called_once_with(
             LogLevel.information,
             3.14,
-            LogDomain.generic,
+            "generic",
             "mycode",
             0,
             ffi.NULL,
@@ -231,7 +230,7 @@ class LogTests(TestCase):
         result = log(
             LogLevel.information,
             3.14,
-            LogDomain.generic,
+            "generic",
             "mycode",
             payload=payload,
         )
@@ -239,7 +238,7 @@ class LogTests(TestCase):
         mock_log_start.assert_called_once_with(
             LogLevel.information,
             3.14,
-            LogDomain.generic,
+            "generic",
             "mycode",
             ffi.NULL,
             0,

@@ -38,45 +38,33 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file traits.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Type traits.
- */
-
-#pragma once
-
-#include <type_traits>
+#include "log.hpp"
 
 namespace freelan {
 
-/**
- * \brief Make sure the specified type has a to_string() const method.
- */
-template <typename T>
-class has_to_string {
-	private:
-		template <typename U, U>
-		class check {};
+namespace {
+	static LogFunction log_function;
 
-		template <typename C>
-			static char f(check<std::string (C::*)() const, &T::to_string>*);
+	static int on_log_callback(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line) {
+		if (log_function) {
+			static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
+			const boost::posix_time::ptime ts = epoch + boost::posix_time::microseconds(static_cast<unsigned int>(timestamp * 1000000.0f));
 
-		template <typename C>
-			static long f(...);
+			return log_function(static_cast<LogLevel>(level), ts, domain, code, payload_size, payload, file, line) ? 1 : 0;
+		}
 
-	public:
-		static const bool value = (sizeof(f<T>(0)) == sizeof(char));
-};
+		return 0;
+	}
+}
 
-/**
- * \brief Variant for std::enable_if that has a default value.
- */
-template <bool B, typename TrueType, typename FalseType>
-struct enable_if_else { typedef FalseType type; };
+void set_log_function(LogFunction function) {
+	log_function = function;
 
-template <typename TrueType, typename FalseType>
-struct enable_if_else<true, TrueType, FalseType> { typedef TrueType type; };
-
+	if (log_function) {
+		::freelan_set_logging_callback(&on_log_callback);
+	} else {
+		::freelan_set_logging_callback(nullptr);
+	}
+}
 
 }

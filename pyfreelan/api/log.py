@@ -1,13 +1,11 @@
 from enum import Enum
-from datetime import (
-    datetime,
-    timedelta,
-)
+from datetime import datetime
 
 from . import (
     native,
     ffi,
 )
+
 
 class LogLevel(Enum):
     fatal = native.FREELAN_LOG_LEVEL_FATAL
@@ -17,10 +15,6 @@ class LogLevel(Enum):
     information = native.FREELAN_LOG_LEVEL_INFORMATION
     debug = native.FREELAN_LOG_LEVEL_DEBUG
     trace = native.FREELAN_LOG_LEVEL_TRACE
-
-
-class LogDomain(Enum):
-    generic = native.FREELAN_LOG_DOMAIN_GENERIC
 
 
 def utc_datetime_to_utc_timestamp(dt):
@@ -80,8 +74,7 @@ def log(level, timestamp, domain, code, payload=None, file=None, line=0):
 
     :param level: The log level.
     :param timestamp: The timestamp attached to this log entry.
-    :param domain: The log domain. Can be a value of ``LogDomain`` or a custom
-    string.
+    :param domain: The log domain, as a string.
     :param code: The log entry code. A code only has meaning for a given
     domain.
     :payload: A dictionary of payload values. Keys must be string and values
