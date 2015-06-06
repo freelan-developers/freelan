@@ -60,6 +60,16 @@ class LogTest : public ::testing::Test {
 
 		virtual void TearDown() {
 			::freelan_set_logging_callback(nullptr);
+
+			return_value = false;
+			last_level = LogLevel::INFORMATION;
+			last_timestamp = boost::posix_time::ptime();
+			last_domain = nullptr;
+			last_code = nullptr;
+			last_payload_size = 0;
+			last_payload = nullptr;
+			last_file = nullptr;
+			last_line = 0;
 		}
 
 		bool on_log(LogLevel level, const boost::posix_time::ptime& timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line) {
@@ -87,7 +97,9 @@ class LogTest : public ::testing::Test {
 };
 
 TEST_F(LogTest, logger_simple_failure) {
-	const auto result = Logger(LogLevel::INFORMATION, "foo", "bar").commit();
+	bool result;
+
+	Logger(result, LogLevel::INFORMATION, "foo", "bar");
 
 	ASSERT_FALSE(result);
 }
@@ -95,7 +107,9 @@ TEST_F(LogTest, logger_simple_failure) {
 TEST_F(LogTest, logger_simple_success) {
 	return_value = true;
 
-	const auto result = Logger(LogLevel::INFORMATION, "foo", "bar").commit();
+	bool result;
+
+	Logger(result, LogLevel::INFORMATION, "foo", "bar");
 
 	ASSERT_TRUE(result);
 	ASSERT_EQ(LogLevel::INFORMATION, last_level);
@@ -111,16 +125,16 @@ TEST_F(LogTest, logger_simple_success) {
 TEST_F(LogTest, logger_payload) {
 	return_value = true;
 
-	const auto result = (
-		Logger(LogLevel::INFORMATION, "foo", "bar")
-		<< to_payload("a", "one")
-		<< to_payload("b", std::string("two"))
-		<< to_payload(std::string("c"), "three")
-		<< to_payload(std::string("d"), std::string("four"))
-		<< to_payload("e", 5)
-		<< to_payload("f", 6.0f)
-		<< to_payload("g", true)
-	).commit();
+	bool result;
+
+	Logger(result, LogLevel::INFORMATION, "foo", "bar")
+	<< to_payload("a", "one")
+	<< to_payload("b", std::string("two"))
+	<< to_payload(std::string("c"), "three")
+	<< to_payload(std::string("d"), std::string("four"))
+	<< to_payload("e", 5)
+	<< to_payload("f", 6.0f)
+	<< to_payload("g", true);
 
 	ASSERT_TRUE(result);
 	ASSERT_EQ(LogLevel::INFORMATION, last_level);
@@ -154,4 +168,30 @@ TEST_F(LogTest, logger_payload) {
 	ASSERT_EQ(string("g"), string(last_payload[6].key));
 	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, last_payload[6].type);
 	ASSERT_EQ(1, last_payload[6].value.as_boolean);
+}
+
+TEST_F(LogTest, logger_complete_success) {
+	return_value = true;
+
+	Logger(LogLevel::INFORMATION, "foo", "bar", "myfile.cpp", 123);
+
+	ASSERT_EQ(string("myfile.cpp"), string(last_file));
+	ASSERT_EQ(static_cast<unsigned int>(123), last_line);
+}
+
+TEST_F(LogTest, log_success) {
+	return_value = true;
+
+	LOG(LogLevel::INFORMATION, "foo", "bar") << PAYLOAD("a", "foo");
+
+	ASSERT_EQ(LogLevel::INFORMATION, last_level);
+	ASSERT_EQ(static_cast<size_t>(1), last_payload_size);
+	ASSERT_NE(nullptr, last_payload);
+	ASSERT_FALSE(string(last_file).empty());
+	ASSERT_EQ(static_cast<unsigned int>(185), last_line);
+
+	// Test the payload values.
+	ASSERT_EQ(string("a"), string(last_payload[0].key));
+	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_STRING, last_payload[0].type);
+	ASSERT_EQ(string("foo"), string(last_payload[0].value.as_string));
 }

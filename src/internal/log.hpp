@@ -99,13 +99,25 @@ inline FreeLANLogPayload to_raw_payload(const char* key, const std::string& valu
 
 inline FreeLANLogPayload to_raw_payload(const char* key, int value) {
 	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	result.value.as_integer = value;
+	result.value.as_integer = static_cast<int64_t>(value);
+	return result;
+}
+
+inline FreeLANLogPayload to_raw_payload(const char* key, unsigned int value) {
+	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
+	result.value.as_integer = static_cast<int64_t>(value);
 	return result;
 }
 
 inline FreeLANLogPayload to_raw_payload(const char* key, int64_t value) {
 	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	result.value.as_integer = value;
+	result.value.as_integer = static_cast<int64_t>(value);
+	return result;
+}
+
+inline FreeLANLogPayload to_raw_payload(const char* key, uint64_t value) {
+	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
+	result.value.as_integer = static_cast<int64_t>(value);
 	return result;
 }
 
@@ -153,6 +165,17 @@ inline FreeLANLogPayload to_raw_payload(const Payload<KeyType, ValueType>& paylo
 class Logger {
 	public:
 		Logger(LogLevel level, const char* domain, const char* code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
+			m_result(nullptr),
+			m_level(level),
+			m_timestamp(timestamp),
+			m_domain(domain),
+			m_code(code),
+			m_file(file),
+			m_line(line)
+		{}
+
+		Logger(bool& result, LogLevel level, const char* domain, const char* code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
+			m_result(&result),
 			m_level(level),
 			m_timestamp(timestamp),
 			m_domain(domain),
@@ -162,7 +185,7 @@ class Logger {
 		{}
 
 		Logger(const Logger&) = delete;
-		Logger(Logger&&) = default;
+		Logger(Logger&&) = delete;
 
 		template <typename KeyType, typename ValueType>
 		Logger& operator<<(const Payload<KeyType, ValueType>& payload) {
@@ -171,12 +194,12 @@ class Logger {
 			return *this;
 		}
 
-		bool commit() const {
+		~Logger() {
 			static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
 
 			const FreeLANLogPayload* const p_payload = m_payload.empty() ? nullptr : &m_payload[0];
 
-			return (
+			const bool result = (
 				::freelan_log(
 					static_cast<FreeLANLogLevel>(m_level),
 					(m_timestamp - epoch).total_microseconds() / 1000000.0f,
@@ -188,9 +211,14 @@ class Logger {
 					m_line
 				) != 0
 			);
+
+			if (m_result) {
+				*m_result = result;
+			}
 		}
 
 	private:
+		bool* m_result;
 		LogLevel m_level;
 		boost::posix_time::ptime m_timestamp;
 		const char* m_domain;
@@ -200,4 +228,18 @@ class Logger {
 		std::vector<FreeLANLogPayload> m_payload;
 };
 
+/**
+ * \brief A logging macro.
+ * \param level The log level.
+ * \param domain The log domain.
+ * \param code The log domain-specific code.
+ */
+#define LOG(level,domain,code) freelan::Logger(level, domain, code, __FILE__, __LINE__)
+
+/**
+ * \brief A logging payload.
+ * \param key The key.
+ * \param value The value.
+ */
+#define PAYLOAD(key,value) freelan::to_payload(key, value)
 }
