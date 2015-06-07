@@ -49,7 +49,9 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <typeinfo>
 
+#include <boost/any.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <freelan/log.h>
@@ -81,101 +83,103 @@ inline LogLevel get_log_level() {
 	return static_cast<LogLevel>(::freelan_get_log_level());
 }
 
-inline const char* to_raw_payload_key(const char* value) {
-	return value;
-}
-
-inline const char* to_raw_payload_key(const std::string& value) {
-	return value.c_str();
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, const char* value) {
-	return { key, FREELAN_LOG_PAYLOAD_TYPE_STRING, { value } };
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, const std::string& value) {
-	return { key, FREELAN_LOG_PAYLOAD_TYPE_STRING, { value.c_str() } };
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, int value) {
-	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	result.value.as_integer = static_cast<int64_t>(value);
-	return result;
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, unsigned int value) {
-	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	result.value.as_integer = static_cast<int64_t>(value);
-	return result;
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, int64_t value) {
-	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	result.value.as_integer = static_cast<int64_t>(value);
-	return result;
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, uint64_t value) {
-	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	result.value.as_integer = static_cast<int64_t>(value);
-	return result;
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, double value) {
-	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_FLOAT, { nullptr } };
-	result.value.as_float = value;
-	return result;
-}
-
-inline FreeLANLogPayload to_raw_payload(const char* key, bool value) {
-	FreeLANLogPayload result { key, FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, { nullptr } };
-	result.value.as_boolean = value ? 1 : 0;
-	return result;
-}
-
-template <typename Type>
-using reference_type_for = typename enable_if_else<
-	std::is_array<Type>::value,
-	const typename std::remove_all_extents<Type>::type*,
-	Type
->::type;
-
-template <typename KeyType, typename ValueType>
 class Payload {
 	public:
-		Payload(const KeyType& _key, const ValueType& _value) :
+		static Payload from_native_payload(const FreeLANLogPayload& native_payload) {
+			switch (native_payload.type) {
+				case FREELAN_LOG_PAYLOAD_TYPE_NULL:
+					return { native_payload.key };
+				case FREELAN_LOG_PAYLOAD_TYPE_STRING:
+					return { native_payload.key, native_payload.value.as_string };
+				case FREELAN_LOG_PAYLOAD_TYPE_INTEGER:
+					return { native_payload.key, native_payload.value.as_integer };
+				case FREELAN_LOG_PAYLOAD_TYPE_FLOAT:
+					return { native_payload.key, native_payload.value.as_float };
+				case FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN:
+					return { native_payload.key, native_payload.value.as_boolean != 0 };
+				default:
+					assert(false);
+					std::terminate();
+			}
+		}
+
+		Payload(const std::string& _key) :
+			key(_key),
+			value()
+		{}
+
+		Payload(const std::string& _key, const std::string& _value) :
 			key(_key),
 			value(_value)
 		{}
 
-		reference_type_for<KeyType> key;
-		reference_type_for<ValueType> value;
+		Payload(const std::string& _key, const char* _value) :
+			key(_key),
+			value(std::string(_value))
+		{}
+
+		Payload(const std::string& _key, int _value) :
+			key(_key),
+			value(static_cast<int64_t>(_value))
+		{}
+
+		Payload(const std::string& _key, int64_t _value) :
+			key(_key),
+			value(_value)
+		{}
+
+		Payload(const std::string& _key, double _value) :
+			key(_key),
+			value(_value)
+		{}
+
+		Payload(const std::string& _key, bool _value) :
+			key(_key),
+			value(_value)
+		{}
+
+		FreeLANLogPayload to_native_payload() const {
+			using boost::any_cast;
+
+			FreeLANLogPayload result { key.c_str(), FREELAN_LOG_PAYLOAD_TYPE_NULL, { nullptr } };
+
+			if (value.type() == typeid(std::string)) {
+				result.type = FREELAN_LOG_PAYLOAD_TYPE_STRING;
+				result.value.as_string = any_cast<std::string>(value).c_str();
+			} else if (value.type() == typeid(int64_t)) {
+				result.type = FREELAN_LOG_PAYLOAD_TYPE_INTEGER;
+				result.value.as_integer = any_cast<int64_t>(value);
+			} else if (value.type() == typeid(double)) {
+				result.type = FREELAN_LOG_PAYLOAD_TYPE_FLOAT;
+				result.value.as_float = any_cast<double>(value);
+			} else if (value.type() == typeid(bool)) {
+				result.type = FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN;
+				result.value.as_boolean = any_cast<bool>(value) ? 1 : 0;
+			}
+
+			return result;
+		}
+
+		std::string key;
+		boost::any value;
 };
 
-template <typename KeyType, typename ValueType>
-inline Payload<KeyType, ValueType> to_payload(const KeyType& key, const ValueType& value) {
-	return { key, value };
-}
+template <typename IteratorType>
+inline std::vector<FreeLANLogPayload> to_native_payload(IteratorType begin, IteratorType end) {
+	std::vector<FreeLANLogPayload> result;
+	result.reserve(std::distance(begin, end));
 
-template <typename KeyType, typename ValueType>
-inline FreeLANLogPayload to_raw_payload(const Payload<KeyType, ValueType>& payload) {
-	return to_raw_payload(to_raw_payload_key(payload.key), payload.value);
+	for (IteratorType it = begin; it != end; ++it) {
+		result.push_back(it->to_native_payload());
+	}
+
+	return result;
 }
 
 class Logger {
 	public:
-		Logger(LogLevel level, const char* domain, const char* code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
-			m_result(nullptr),
-			m_level(level),
-			m_timestamp(timestamp),
-			m_domain(domain),
-			m_code(code),
-			m_file(file),
-			m_line(line)
-		{}
-
-		Logger(bool& result, LogLevel level, const char* domain, const char* code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
-			m_result(&result),
+		Logger(LogLevel level, const std::string& domain, const std::string& code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
+			m_ok(level <= get_log_level()),
 			m_level(level),
 			m_timestamp(timestamp),
 			m_domain(domain),
@@ -185,47 +189,63 @@ class Logger {
 		{}
 
 		Logger(const Logger&) = delete;
-		Logger(Logger&&) = delete;
+		Logger(Logger&& other) :
+			m_ok(std::move(other.m_ok)),
+			m_level(std::move(other.m_level)),
+			m_timestamp(std::move(other.m_timestamp)),
+			m_domain(std::move(other.m_domain)),
+			m_code(std::move(other.m_code)),
+			m_file(std::move(other.m_file)),
+			m_line(std::move(other.m_line))
+		{
+			other.m_ok = false;
+		};
 
-		template <typename KeyType, typename ValueType>
-		Logger& operator<<(const Payload<KeyType, ValueType>& payload) {
-			m_payload.push_back(to_raw_payload(payload));
+		template <typename ValueType>
+		Logger& attach(const std::string& key, const ValueType& value) {
+			m_payload.push_back(Payload(key, value));
 
 			return *this;
 		}
 
 		~Logger() {
-			static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
+			commit();
+		}
 
-			const FreeLANLogPayload* const p_payload = m_payload.empty() ? nullptr : &m_payload[0];
+		bool commit() {
+			if (m_ok) {
+				m_ok = false;
 
-			const bool result = (
-				::freelan_log(
-					static_cast<FreeLANLogLevel>(m_level),
-					(m_timestamp - epoch).total_microseconds() / 1000000.0f,
-					m_domain,
-					m_code,
-					m_payload.size(),
-					p_payload,
-					m_file,
-					m_line
-				) != 0
-			);
+				static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
+				const std::vector<FreeLANLogPayload> payload = to_native_payload(m_payload.begin(), m_payload.end());
+				const FreeLANLogPayload* const p_payload = payload.empty() ? nullptr : &payload.front();
 
-			if (m_result) {
-				*m_result = result;
+				return (
+					::freelan_log(
+						static_cast<FreeLANLogLevel>(m_level),
+						(m_timestamp - epoch).total_microseconds() / 1000000.0f,
+						m_domain.c_str(),
+						m_code.c_str(),
+						payload.size(),
+						p_payload,
+						m_file,
+						m_line
+					) != 0
+				);
 			}
+
+			return false;
 		}
 
 	private:
-		bool* m_result;
+		bool m_ok;
 		LogLevel m_level;
 		boost::posix_time::ptime m_timestamp;
-		const char* m_domain;
-		const char* m_code;
+		std::string m_domain;
+		std::string m_code;
 		const char* m_file;
 		unsigned int m_line;
-		std::vector<FreeLANLogPayload> m_payload;
+		std::vector<Payload> m_payload;
 };
 
 /**
@@ -235,11 +255,4 @@ class Logger {
  * \param code The log domain-specific code.
  */
 #define LOG(level,domain,code) freelan::Logger(level, domain, code, __FILE__, __LINE__)
-
-/**
- * \brief A logging payload.
- * \param key The key.
- * \param value The value.
- */
-#define PAYLOAD(key,value) freelan::to_payload(key, value)
 }

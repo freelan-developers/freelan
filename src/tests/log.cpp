@@ -42,12 +42,15 @@
 
 #include <functional>
 
+#include <boost/any.hpp>
+
 #include "../internal/log.hpp"
 
 using freelan::LogLevel;
-using freelan::to_payload;
 using freelan::Logger;
+using freelan::Payload;
 using std::string;
+using boost::any_cast;
 
 class LogTest : public ::testing::Test {
 	protected:
@@ -64,10 +67,9 @@ class LogTest : public ::testing::Test {
 			return_value = false;
 			last_level = LogLevel::INFORMATION;
 			last_timestamp = boost::posix_time::ptime();
-			last_domain = nullptr;
-			last_code = nullptr;
-			last_payload_size = 0;
-			last_payload = nullptr;
+			last_domain.clear();
+			last_code.clear();
+			last_payload.clear();
 			last_file = nullptr;
 			last_line = 0;
 		}
@@ -77,10 +79,12 @@ class LogTest : public ::testing::Test {
 			last_timestamp = timestamp;
 			last_domain = domain;
 			last_code = code;
-			last_payload_size = payload_size;
-			last_payload = payload;
 			last_file = file;
 			last_line = line;
+
+			for (size_t i = 0; i < payload_size; ++i) {
+				last_payload.push_back(Payload::from_native_payload(payload[i]));
+			}
 
 			return return_value;
 		}
@@ -88,18 +92,25 @@ class LogTest : public ::testing::Test {
 		bool return_value = false;
 		LogLevel last_level = LogLevel::INFORMATION;
 		boost::posix_time::ptime last_timestamp;
-		const char* last_domain = nullptr;
-		const char* last_code = nullptr;
-		size_t last_payload_size = 0;
-		const FreeLANLogPayload* last_payload = nullptr;
+		string last_domain;
+		string last_code;
+		std::vector<Payload> last_payload;
 		const char* last_file = nullptr;
 		unsigned int last_line = 0;
 };
 
 TEST_F(LogTest, logger_simple_failure) {
-	bool result;
+	const bool result = Logger(LogLevel::INFORMATION, "foo", "bar")
+		.commit();
 
-	Logger(result, LogLevel::INFORMATION, "foo", "bar");
+	ASSERT_FALSE(result);
+}
+
+TEST_F(LogTest, logger_simple_level_failure) {
+	return_value = true;
+
+	const bool result = Logger(LogLevel::DEBUG, "foo", "bar")
+		.commit();
 
 	ASSERT_FALSE(result);
 }
@@ -107,17 +118,15 @@ TEST_F(LogTest, logger_simple_failure) {
 TEST_F(LogTest, logger_simple_success) {
 	return_value = true;
 
-	bool result;
-
-	Logger(result, LogLevel::INFORMATION, "foo", "bar");
+	const bool result = Logger(LogLevel::INFORMATION, "foo", "bar")
+		.commit();
 
 	ASSERT_TRUE(result);
 	ASSERT_EQ(LogLevel::INFORMATION, last_level);
 	ASSERT_FALSE(last_timestamp.is_special());
-	ASSERT_EQ(string("foo"), string(last_domain));
-	ASSERT_EQ(string("bar"), string(last_code));
-	ASSERT_EQ(static_cast<size_t>(0), last_payload_size);
-	ASSERT_EQ(nullptr, last_payload);
+	ASSERT_EQ("foo", last_domain);
+	ASSERT_EQ("bar", last_code);
+	ASSERT_EQ(static_cast<size_t>(0), last_payload.size());
 	ASSERT_EQ(nullptr, last_file);
 	ASSERT_EQ(static_cast<unsigned int>(0), last_line);
 }
@@ -125,49 +134,40 @@ TEST_F(LogTest, logger_simple_success) {
 TEST_F(LogTest, logger_payload) {
 	return_value = true;
 
-	bool result;
-
-	Logger(result, LogLevel::INFORMATION, "foo", "bar")
-	<< to_payload("a", "one")
-	<< to_payload("b", std::string("two"))
-	<< to_payload(std::string("c"), "three")
-	<< to_payload(std::string("d"), std::string("four"))
-	<< to_payload("e", 5)
-	<< to_payload("f", 6.0f)
-	<< to_payload("g", true);
+	const bool result = Logger(LogLevel::INFORMATION, "foo", "bar")
+		.attach("a", "one")
+		.attach("b", string("two"))
+		.attach(string("c"), "three")
+		.attach(string("d"), string("four"))
+		.attach("e", 5)
+		.attach("f", 6.0f)
+		.attach("g", true)
+		.commit();
 
 	ASSERT_TRUE(result);
 	ASSERT_EQ(LogLevel::INFORMATION, last_level);
 	ASSERT_FALSE(last_timestamp.is_special());
-	ASSERT_EQ(string("foo"), string(last_domain));
-	ASSERT_EQ(string("bar"), string(last_code));
-	ASSERT_EQ(static_cast<size_t>(7), last_payload_size);
-	ASSERT_NE(nullptr, last_payload);
+	ASSERT_EQ("foo", last_domain);
+	ASSERT_EQ("bar", last_code);
+	ASSERT_EQ(static_cast<size_t>(7), last_payload.size());
 	ASSERT_EQ(nullptr, last_file);
 	ASSERT_EQ(static_cast<unsigned int>(0), last_line);
 
 	// Test the payload values.
-	ASSERT_EQ(string("a"), string(last_payload[0].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_STRING, last_payload[0].type);
-	ASSERT_EQ(string("one"), string(last_payload[0].value.as_string));
-	ASSERT_EQ(string("b"), string(last_payload[1].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_STRING, last_payload[1].type);
-	ASSERT_EQ(string("two"), string(last_payload[1].value.as_string));
-	ASSERT_EQ(string("c"), string(last_payload[2].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_STRING, last_payload[2].type);
-	ASSERT_EQ(string("three"), string(last_payload[2].value.as_string));
-	ASSERT_EQ(string("d"), string(last_payload[3].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_STRING, last_payload[3].type);
-	ASSERT_EQ(string("four"), string(last_payload[3].value.as_string));
-	ASSERT_EQ(string("e"), string(last_payload[4].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_INTEGER, last_payload[4].type);
-	ASSERT_EQ(5, last_payload[4].value.as_integer);
-	ASSERT_EQ(string("f"), string(last_payload[5].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_FLOAT, last_payload[5].type);
-	ASSERT_EQ(6.0f, last_payload[5].value.as_float);
-	ASSERT_EQ(string("g"), string(last_payload[6].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, last_payload[6].type);
-	ASSERT_EQ(1, last_payload[6].value.as_boolean);
+	ASSERT_EQ("a", last_payload[0].key);
+	ASSERT_EQ("one", any_cast<string>(last_payload[0].value));
+	ASSERT_EQ("b", last_payload[1].key);
+	ASSERT_EQ("two", any_cast<string>(last_payload[1].value));
+	ASSERT_EQ("c", last_payload[2].key);
+	ASSERT_EQ("three",any_cast<string>(last_payload[2].value));
+	ASSERT_EQ("d", last_payload[3].key);
+	ASSERT_EQ("four",any_cast<string>(last_payload[3].value));
+	ASSERT_EQ("e", last_payload[4].key);
+	ASSERT_EQ(5, any_cast<int64_t>(last_payload[4].value));
+	ASSERT_EQ("f", last_payload[5].key);
+	ASSERT_EQ(6.0f, any_cast<double>(last_payload[5].value));
+	ASSERT_EQ("g", last_payload[6].key);
+	ASSERT_EQ(1, any_cast<bool>(last_payload[6].value));
 }
 
 TEST_F(LogTest, logger_complete_success) {
@@ -182,16 +182,14 @@ TEST_F(LogTest, logger_complete_success) {
 TEST_F(LogTest, log_success) {
 	return_value = true;
 
-	LOG(LogLevel::INFORMATION, "foo", "bar") << PAYLOAD("a", "foo");
+	LOG(LogLevel::INFORMATION, "foo", "bar").attach("a", "foo");
 
 	ASSERT_EQ(LogLevel::INFORMATION, last_level);
-	ASSERT_EQ(static_cast<size_t>(1), last_payload_size);
-	ASSERT_NE(nullptr, last_payload);
+	ASSERT_EQ(static_cast<size_t>(1), last_payload.size());
 	ASSERT_FALSE(string(last_file).empty());
 	ASSERT_EQ(static_cast<unsigned int>(185), last_line);
 
 	// Test the payload values.
-	ASSERT_EQ(string("a"), string(last_payload[0].key));
-	ASSERT_EQ(FREELAN_LOG_PAYLOAD_TYPE_STRING, last_payload[0].type);
-	ASSERT_EQ(string("foo"), string(last_payload[0].value.as_string));
+	ASSERT_EQ("a", last_payload[0].key);
+	ASSERT_EQ("foo", any_cast<string>(last_payload[0].value));
 }

@@ -60,6 +60,7 @@ api = """
     const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 60;
     const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 70;
 
+    const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_NULL = 0;
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_STRING = 1;
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_INTEGER = 2;
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_FLOAT = 3;

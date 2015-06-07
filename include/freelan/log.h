@@ -78,6 +78,7 @@ struct FreeLANLogPayload {
 	const char* key;
 	FreeLANLogPayloadType type;
 	union {
+		void* as_null;
 		const char* as_string;
 		int64_t as_integer;
 		double as_float;
@@ -111,6 +112,7 @@ const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 70;
 /**
  * The log payload types.
  */
+const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_NULL = 0;
 const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_STRING = 1;
 const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_INTEGER = 2;
 const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_FLOAT = 3;
