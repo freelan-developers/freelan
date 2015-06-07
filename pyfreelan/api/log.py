@@ -125,3 +125,79 @@ def log(level, timestamp, domain, code, payload=None, file=None, line=0):
                 log_attach(entry, key, value)
         finally:
             return native.freelan_log_complete(entry) != 0
+
+
+CALLBACKS = {}
+
+
+def set_logging_function(func):
+    """
+    Set the logging function.
+
+    :param func: The logging function to call whenever a log entry is emitted.
+    If `None`, no logging function is set.
+    """
+    CALLBACKS['logging_function'] = func
+
+    if func is None:
+        native.freelan_set_logging_callback(ffi.NULL)
+    else:
+        native.freelan_set_logging_callback(c_logging_callback)
+
+
+def from_native_payload(payload):
+    """
+    Return a tuple (key, value) from a native log payload.
+
+    :param payload: The native payload to read.
+    :returns: A tuple (key, value).
+    """
+    key = ffi.string(payload.key)
+
+    if payload.type == native.FREELAN_LOG_PAYLOAD_TYPE_STRING:
+        value = ffi.string(payload.value['as_string']).decode('utf-8')
+    elif payload.type == native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER:
+        value = payload.value['as_integer']
+    elif payload.type == native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT:
+        value = payload.value['as_float']
+    elif payload.type == native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN:
+        value = payload.value['as_boolean'] != 0
+    else:
+        value = None
+
+    return key, value
+
+
+def logging_callback(level, timestamp, domain, code, payload_size, payload, file, line):
+    """
+    The default logging callback.
+
+    This callback acts as a translator from the C world to the Python realm.
+
+    You should not need to call it directly.
+    """
+    logging_function = CALLBACKS.get('logging_function')
+
+    if logging_function:
+        return 1 if logging_function(
+            level=LogLevel(level),
+            timestamp=utc_timestamp_to_utc_datetime(timestamp),
+            domain=ffi.string(domain),
+            code=ffi.string(code),
+            payload={
+                key: value
+                for key, value in (
+                    from_native_payload(payload[i])
+                    for i in xrange(payload_size)
+                )
+            },
+            file=ffi.string(file) if file != ffi.NULL else None,
+            line=line if file != ffi.NULL else 0,
+        ) else 0
+
+    return 0
+
+c_logging_callback = ffi.callback(
+    "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
+    "struct FreeLANLogPayload *, char *, unsigned int)",
+)(logging_callback)

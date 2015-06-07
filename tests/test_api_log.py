@@ -21,6 +21,10 @@ from pyfreelan.api.log import (
     utc_timestamp_to_utc_datetime,
     log_attach,
     log,
+    set_logging_function,
+    from_native_payload,
+    logging_callback,
+    c_logging_callback,
 )
 
 
@@ -271,3 +275,177 @@ class LogTests(TestCase):
         )
         mock_log_complete.assert_called_once_with(entry)
         self.assertTrue(result)
+
+
+class LoggingCallbackTests(TestCase):
+    def setUp(self):
+        patcher = patch(
+            "pyfreelan.api.log.ffi.string",
+            lambda x: x,
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_set_logging_callback(self):
+        func = MagicMock()
+        callbacks = {}
+
+        with patch(
+            "pyfreelan.api.log.CALLBACKS",
+            callbacks,
+        ):
+            with patch(
+                "pyfreelan.api.log.native.freelan_set_logging_callback",
+            ) as set_logging_callback_mock:
+                set_logging_function(func)
+
+        set_logging_callback_mock.assert_called_once_with(c_logging_callback)
+        self.assertEqual(func, callbacks['logging_function'])
+
+    def test_reset_logging_callback(self):
+        callbacks = {}
+
+        with patch(
+            "pyfreelan.api.log.CALLBACKS",
+            callbacks,
+        ):
+            with patch(
+                "pyfreelan.api.log.native.freelan_set_logging_callback",
+            ) as set_logging_callback_mock:
+                set_logging_function(None)
+
+        set_logging_callback_mock.assert_called_once_with(ffi.NULL)
+        self.assertEqual(None, callbacks['logging_function'])
+
+    def test_logging_callback_no_logging_function(self):
+        payload = MagicMock()
+
+        with patch(
+            "pyfreelan.api.log.from_native_payload",
+        ) as from_native_payload_func:
+            result = logging_callback(
+                native.FREELAN_LOG_LEVEL_ERROR,
+                0.0,
+                "mydomain",
+                "mycode",
+                3,
+                payload,
+                "myfile",
+                123,
+            )
+
+        self.assertEqual(0, result)
+        self.assertEqual([], from_native_payload_func.mock_calls)
+
+    def test_logging_callback_with_logging_function(self):
+        payload = [
+            ("a", "one"),
+            ("b", 2),
+            ("c", 3.0),
+            ("d", False),
+        ]
+
+        def local_from_native_payload(payload):
+            return payload
+
+        logging_function = MagicMock()
+
+        with patch(
+            "pyfreelan.api.log.CALLBACKS",
+            {'logging_function': logging_function},
+        ):
+            with patch(
+                "pyfreelan.api.log.from_native_payload",
+                side_effect=local_from_native_payload,
+            ) as from_native_payload_func:
+                result = logging_callback(
+                    native.FREELAN_LOG_LEVEL_ERROR,
+                    0.0,
+                    "mydomain",
+                    "mycode",
+                    len(payload),
+                    payload,
+                    "myfile",
+                    123,
+                )
+
+        self.assertEqual(1, result)
+        self.assertEqual(
+            [call(p) for p in payload],
+            from_native_payload_func.mock_calls,
+        )
+        logging_function.assert_called_once_with(
+            domain='mydomain',
+            code='mycode',
+            level=LogLevel.error,
+            timestamp=datetime(1970, 1, 1, 0, 0),
+            file='myfile',
+            line=123,
+            payload=dict(payload),
+        )
+
+    def test_from_native_payload_string(self):
+        payload = MagicMock()
+        payload.key = "foo"
+        payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_STRING
+        payload.value = {'as_string': "bar"}
+
+        key, value = from_native_payload(payload)
+
+        self.assertEqual("foo", key)
+        self.assertEqual(u"bar", value)
+
+    def test_from_native_payload_unicode_string(self):
+        payload = MagicMock()
+        payload.key = "foo"
+        payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_STRING
+        payload.value = {'as_string': u"éléphant".encode('utf-8')}
+
+        key, value = from_native_payload(payload)
+
+        self.assertEqual("foo", key)
+        self.assertEqual(u"éléphant", value)
+
+    def test_from_native_payload_integer(self):
+        payload = MagicMock()
+        payload.key = "foo"
+        payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER
+        payload.value = {'as_integer': 42}
+
+        key, value = from_native_payload(payload)
+
+        self.assertEqual("foo", key)
+        self.assertEqual(42, value)
+
+    def test_from_native_payload_float(self):
+        payload = MagicMock()
+        payload.key = "foo"
+        payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT
+        payload.value = {'as_float': 3.14}
+
+        key, value = from_native_payload(payload)
+
+        self.assertEqual("foo", key)
+        self.assertEqual(3.14, value)
+
+    def test_from_native_payload_boolean(self):
+        payload = MagicMock()
+        payload.key = "foo"
+        payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN
+        payload.value = {'as_boolean': 1}
+
+        key, value = from_native_payload(payload)
+
+        self.assertEqual("foo", key)
+        self.assertEqual(True, value)
+
+    def test_from_native_payload_null(self):
+        payload = MagicMock()
+        payload.key = "foo"
+        payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_NULL
+        payload.value = {'as_null': ffi.NULL}
+
+        key, value = from_native_payload(payload)
+
+        self.assertEqual("foo", key)
+        self.assertIsNone(value)
