@@ -57,13 +57,18 @@ def log_attach(entry, key, value):
         value = value.encode('utf-8')
 
     if isinstance(value, str):
-        native.freelan_log_attach_string(entry, key, value)
+        # We must create a store a new const char* value so that the references
+        # remains valid until entry expires. The safest way to achieve that is
+        # to attach the string-owning object to entry itself.
+        str_value = ffi.new("const char[]", value)
+        entry.owned_pointers.append(str_value)
+        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_STRING, {'as_string': str_value})
     elif isinstance(value, bool):
-        native.freelan_log_attach_boolean(entry, key, value)
+        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, {'as_boolean': value})
     elif isinstance(value, int):
-        native.freelan_log_attach_integer(entry, key, value)
+        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER, {'as_integer': value})
     elif isinstance(value, float):
-        native.freelan_log_attach_float(entry, key, value)
+        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT, {'as_float': value})
     else:
         raise TypeError("value must be either a string, an integer, a float or a boolean value")
 
@@ -110,6 +115,10 @@ def log(level, timestamp, domain, code, payload=None, file=None, line=0):
             ffi.NULL if not file else file,
             line if file else 0,
         )
+
+        # This list is used to store native pointers so that they don't expire
+        # until entry is deleted.
+        entry.owned_pointers = []
 
         try:
             for key, value in payload.iteritems():

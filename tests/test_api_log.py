@@ -13,6 +13,7 @@ from mock import (
 
 from pyfreelan.api import (
     ffi,
+    native,
 )
 from pyfreelan.api.log import (
     LogLevel,
@@ -54,14 +55,18 @@ class LogAttachTests(TestCase):
         entry = MagicMock()
 
         with patch(
-            "pyfreelan.api.log.native.freelan_log_attach_string",
-        ) as log_attach_string:
-            log_attach(entry=entry, key=some_french, value="foo")
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
+            with patch(
+                "pyfreelan.api.log.ffi.new",
+            ) as ffi_new_mock:
+                log_attach(entry=entry, key=some_french, value="foo")
 
-        log_attach_string.assert_called_once_with(
+        log_attach_mock.assert_called_once_with(
             entry,
             some_encoded_french,
-            "foo",
+            native.FREELAN_LOG_PAYLOAD_TYPE_STRING,
+            {'as_string': ffi_new_mock("const char[]", "foo")},
         )
 
     def test_attach_non_string_key(self):
@@ -76,70 +81,83 @@ class LogAttachTests(TestCase):
         entry = MagicMock()
 
         with patch(
-            "pyfreelan.api.log.native.freelan_log_attach_string",
-        ) as log_attach_string:
-            log_attach(entry=entry, key="foo", value=some_french)
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
+            with patch(
+                "pyfreelan.api.log.ffi.new",
+            ) as ffi_new_mock:
+                log_attach(entry=entry, key="foo", value=some_french)
 
-        log_attach_string.assert_called_once_with(
+        ffi_new_mock.assert_called_once_with("const char[]", some_encoded_french)
+        log_attach_mock.assert_called_once_with(
             entry,
             "foo",
-            some_encoded_french,
+            native.FREELAN_LOG_PAYLOAD_TYPE_STRING,
+            {'as_string': ffi_new_mock("const char[]", some_encoded_french)},
         )
 
     def test_attach_string_value(self):
         entry = MagicMock()
 
         with patch(
-            "pyfreelan.api.log.native.freelan_log_attach_string",
-        ) as log_attach_string:
-            log_attach(entry=entry, key="foo", value="bar")
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
+            with patch(
+                "pyfreelan.api.log.ffi.new",
+            ) as ffi_new_mock:
+                log_attach(entry=entry, key="foo", value="bar")
 
-        log_attach_string.assert_called_once_with(
+        ffi_new_mock.assert_called_once_with("const char[]", "bar")
+        log_attach_mock.assert_called_once_with(
             entry,
             "foo",
-            "bar",
+            native.FREELAN_LOG_PAYLOAD_TYPE_STRING,
+            {'as_string': ffi_new_mock("const char[]", "bar")},
         )
 
     def test_attach_boolean_value(self):
         entry = MagicMock()
 
         with patch(
-            "pyfreelan.api.log.native.freelan_log_attach_boolean",
-        ) as log_attach_boolean:
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
             log_attach(entry=entry, key="foo", value=True)
 
-        log_attach_boolean.assert_called_once_with(
+        log_attach_mock.assert_called_once_with(
             entry,
             "foo",
-            True,
+            native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN,
+            {'as_boolean': True},
         )
 
     def test_attach_integer_value(self):
         entry = MagicMock()
 
         with patch(
-            "pyfreelan.api.log.native.freelan_log_attach_integer",
-        ) as log_attach_integer:
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
             log_attach(entry=entry, key="foo", value=42)
 
-        log_attach_integer.assert_called_once_with(
+        log_attach_mock.assert_called_once_with(
             entry,
             "foo",
-            42,
+            native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER,
+            {'as_integer': 42},
         )
 
     def test_attach_float_value(self):
         entry = MagicMock()
 
         with patch(
-            "pyfreelan.api.log.native.freelan_log_attach_float",
-        ) as log_attach_float:
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
             log_attach(entry=entry, key="foo", value=3.14)
 
-        log_attach_float.assert_called_once_with(
+        log_attach_mock.assert_called_once_with(
             entry,
             "foo",
-            3.14,
+            native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT,
+            {'as_float': 3.14},
         )
 
     def test_attach_invalid_value(self):

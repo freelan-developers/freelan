@@ -221,10 +221,11 @@ class NativeCallsTests(TestCase):
             p_file,
             123,
         )
-        native.freelan_log_attach_string(log, "a", "hello")
-        native.freelan_log_attach_integer(log, "b", 42)
-        native.freelan_log_attach_float(log, "c", 3.14)
-        native.freelan_log_attach_boolean(log, "d", True)
+        hello_str = ffi.new("const char[]", "hello")
+        native.freelan_log_attach(log, "a", native.FREELAN_LOG_PAYLOAD_TYPE_STRING, {"as_string": hello_str})
+        native.freelan_log_attach(log, "b", native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER, {"as_integer": 42})
+        native.freelan_log_attach(log, "c", native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT, {"as_float": 3.14})
+        native.freelan_log_attach(log, "d", native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, {"as_boolean": True})
         result = native.freelan_log_complete(log)
 
         self.assertEqual(1, context['call_count'])

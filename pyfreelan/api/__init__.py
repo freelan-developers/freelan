@@ -39,15 +39,18 @@ api = """
     typedef unsigned int FreeLANLogPayloadType;
     struct FreeLANLog;
 
+    typedef union {
+        void* as_null;
+        const char* as_string;
+        int64_t as_integer;
+        double as_float;
+        int as_boolean;
+    } FreeLANLogPayloadValue;
+
     struct FreeLANLogPayload {
         const char* key;
         FreeLANLogPayloadType type;
-        union {
-            const char* as_string;
-            int64_t as_integer;
-            double as_float;
-            int as_boolean;
-        } value;
+        FreeLANLogPayloadValue value;
     };
 
     typedef int (*FreeLANLoggingCallback)(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
@@ -71,10 +74,7 @@ api = """
     FreeLANLogLevel freelan_get_log_level(void);
     int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
     struct FreeLANLog* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line);
-    void freelan_log_attach_string(struct FreeLANLog* log, const char* key, const char* value);
-    void freelan_log_attach_integer(struct FreeLANLog* log, const char* key, uint64_t value);
-    void freelan_log_attach_float(struct FreeLANLog* log, const char* key, double value);
-    void freelan_log_attach_boolean(struct FreeLANLog* log, const char* key, int value);
+    void freelan_log_attach(struct FreeLANLog* log, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
     int freelan_log_complete(struct FreeLANLog* log);
 
     /* Types */

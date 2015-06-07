@@ -72,18 +72,23 @@ typedef double FreeLANTimestamp;
 typedef unsigned int FreeLANLogPayloadType;
 
 /**
+ * \brief A log entry payload value type.
+ */
+typedef union {
+	void* as_null;
+	const char* as_string;
+	int64_t as_integer;
+	double as_float;
+	int as_boolean;
+} FreeLANLogPayloadValue;
+
+/**
  * \brief A log entry payload structure.
  */
 struct FreeLANLogPayload {
 	const char* key;
 	FreeLANLogPayloadType type;
-	union {
-		void* as_null;
-		const char* as_string;
-		int64_t as_integer;
-		double as_float;
-		int as_boolean;
-	} value;
+	FreeLANLogPayloadValue value;
 };
 
 /**
@@ -191,36 +196,13 @@ FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, c
 FREELAN_API struct FreeLANLog* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file = NULL, unsigned int line = 0);
 
 /**
- * \brief Attach a string to the the current log entry.
+ * \brief Attach a payload to the the current log entry.
  * \param log The log entry, as returned by \c freelan_log_start.
  * \param key The name of payload value to attach.
+ * \param type The type of the payload value to attach.
  * \param value The value to attach.
  */
-FREELAN_API void freelan_log_attach_string(struct FreeLANLog* log, const char* key, const char* value);
-
-/**
- * \brief Attach a string to the the current log entry.
- * \param log The log entry, as returned by \c freelan_log_start.
- * \param key The name of payload value to attach.
- * \param value The value to attach.
- */
-FREELAN_API void freelan_log_attach_integer(struct FreeLANLog* log, const char* key, uint64_t value);
-
-/**
- * \brief Attach a string to the the current log entry.
- * \param log The log entry, as returned by \c freelan_log_start.
- * \param key The name of payload value to attach.
- * \param value The value to attach.
- */
-FREELAN_API void freelan_log_attach_float(struct FreeLANLog* log, const char* key, double value);
-
-/**
- * \brief Attach a string to the the current log entry.
- * \param log The log entry, as returned by \c freelan_log_start.
- * \param key The name of payload value to attach.
- * \param value The value to attach.
- */
-FREELAN_API void freelan_log_attach_boolean(struct FreeLANLog* log, const char* key, int value);
+FREELAN_API void freelan_log_attach(struct FreeLANLog* log, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
 
 /**
  * \brief Completes the current log entry.

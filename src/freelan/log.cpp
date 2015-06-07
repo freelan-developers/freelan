@@ -94,44 +94,12 @@ FREELAN_API struct FreeLANLog* freelan_log_start(FreeLANLogLevel level, FreeLANT
 	return reinterpret_cast<struct FreeLANLog*>(log);
 }
 
-FREELAN_API void freelan_log_attach_string(struct FreeLANLog* log, const char* key, const char* value) {
+FREELAN_API void freelan_log_attach(struct FreeLANLog* log, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value) {
 	assert(log);
 
 	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_STRING, { nullptr } };
-	item.value.as_string = value;
 
-	entry.payload.push_back(item);
-}
-
-FREELAN_API void freelan_log_attach_integer(struct FreeLANLog* log, const char* key, uint64_t value) {
-	assert(log);
-
-	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_INTEGER, { nullptr } };
-	item.value.as_integer = value;
-
-	entry.payload.push_back(item);
-}
-
-FREELAN_API void freelan_log_attach_float(struct FreeLANLog* log, const char* key, double value) {
-	assert(log);
-
-	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_FLOAT, { nullptr } };
-	item.value.as_float = value;
-
-	entry.payload.push_back(item);
-}
-
-FREELAN_API void freelan_log_attach_boolean(struct FreeLANLog* log, const char* key, int value) {
-	assert(log);
-
-	LogEntry& entry = *reinterpret_cast<LogEntry*>(log);
-	FreeLANLogPayload item { key, FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, { nullptr } };
-	item.value.as_boolean = value;
-
-	entry.payload.push_back(item);
+	entry.payload.push_back(FreeLANLogPayload { key, type, value });
 }
 
 FREELAN_API int freelan_log_complete(struct FreeLANLog* log) {
