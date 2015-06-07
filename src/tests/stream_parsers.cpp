@@ -348,7 +348,7 @@ TEST(stream_parsers, read_hostname_end_with_dot) {
 
 TEST(stream_parsers, read_port_number_within_range) {
 	const std::string str_value = "17";
-	uint16_t value;
+	uint16_t value = 0;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
@@ -364,7 +364,7 @@ TEST(stream_parsers, read_port_number_within_range) {
 
 TEST(stream_parsers, read_port_number_too_big) {
 	const std::string str_value = "65536";
-	uint16_t value;
+	uint16_t value = 0;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
@@ -387,7 +387,7 @@ TEST(stream_parsers, read_port_number_too_big) {
 TEST(stream_parsers, read_port_number_extra) {
 	const std::string str_value = "31";
 	const std::string extra = "foo";
-	uint16_t value;
+	uint16_t value = 0;
 	std::istringstream iss(str_value + extra);
 	std::string parsed_str;
 
