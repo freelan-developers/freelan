@@ -203,7 +203,9 @@ class Logger {
 
 		template <typename ValueType>
 		Logger& attach(const std::string& key, const ValueType& value) {
-			m_payload.push_back(Payload(key, value));
+			if (m_ok) {
+				m_payload.push_back(Payload(key, value));
+			}
 
 			return *this;
 		}
