@@ -43,24 +43,24 @@
 namespace freelan {
 
 namespace {
-	static LogFunction log_function;
+	static LogFunction logging_function;
 
 	static int on_log_callback(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line) {
-		if (log_function) {
+		if (logging_function) {
 			static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
 			const boost::posix_time::ptime ts = epoch + boost::posix_time::microseconds(static_cast<unsigned int>(timestamp * 1000000.0f));
 
-			return log_function(static_cast<LogLevel>(level), ts, domain, code, payload_size, payload, file, line) ? 1 : 0;
+			return logging_function(static_cast<LogLevel>(level), ts, domain, code, payload_size, payload, file, line) ? 1 : 0;
 		}
 
 		return 0;
 	}
 }
 
-void set_log_function(LogFunction function) {
-	log_function = function;
+void set_logging_function(LogFunction function) {
+	logging_function = function;
 
-	if (log_function) {
+	if (logging_function) {
 		::freelan_set_logging_callback(&on_log_callback);
 	} else {
 		::freelan_set_logging_callback(nullptr);

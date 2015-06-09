@@ -57,12 +57,12 @@ class LogTest : public ::testing::Test {
 		virtual void SetUp() {
 			using namespace std::placeholders;
 
-			freelan::set_log_function(std::bind(&LogTest::on_log, this, _1, _2, _3, _4, _5, _6, _7, _8));
+			freelan::set_logging_function(std::bind(&LogTest::on_log, this, _1, _2, _3, _4, _5, _6, _7, _8));
 			freelan::set_log_level(LogLevel::INFORMATION);
 		}
 
 		virtual void TearDown() {
-			::freelan_set_logging_callback(nullptr);
+			freelan::set_logging_function();
 
 			return_value = false;
 			last_level = LogLevel::INFORMATION;

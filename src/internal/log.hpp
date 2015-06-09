@@ -73,7 +73,7 @@ enum class LogLevel : ::FreeLANLogLevel {
 
 typedef std::function<bool (LogLevel level, const boost::posix_time::ptime& timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line)> LogFunction;
 
-void set_log_function(LogFunction function);
+void set_logging_function(LogFunction function = LogFunction());
 
 inline void set_log_level(LogLevel level) {
 	::freelan_set_log_level(static_cast<FreeLANLogLevel>(level));
