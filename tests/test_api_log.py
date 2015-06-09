@@ -19,6 +19,8 @@ from pyfreelan.api.log import (
     LogLevel,
     utc_datetime_to_utc_timestamp,
     utc_timestamp_to_utc_datetime,
+    to_c,
+    from_c,
     log_attach,
     log,
     set_logging_function,
@@ -52,11 +54,46 @@ class UTCTimestampToUTCDatetimeTests(TestCase):
         self.assertEqual(date, result)
 
 
+class ToCTests(TestCase):
+    def test_string(self):
+        value = "foo"
+        result = to_c(value)
+        self.assertEqual(value, result)
+
+    def test_unicode(self):
+        value = u"éléphant"
+        result = to_c(value)
+        self.assertEqual(value.encode('utf-8'), result)
+
+    def test_integer(self):
+        value = 42
+        result = to_c(value)
+        self.assertEqual(value, result)
+
+
+class FromCTests(TestCase):
+    def test_string(self):
+        value = "foo"
+        result = from_c(value)
+        self.assertEqual(value, result)
+
+    def test_unicode(self):
+        value = u"éléphant"
+        result = from_c(value.encode('utf-8'))
+        self.assertEqual(value, result)
+
+    def test_integer(self):
+        value = 42
+        result = from_c(value)
+        self.assertEqual(value, result)
+
+
 class LogAttachTests(TestCase):
     def test_attach_unicode_key(self):
         some_french = u"éléphant"
         some_encoded_french = some_french.encode('utf-8')
         entry = MagicMock()
+        registry = []
 
         with patch(
             "pyfreelan.api.log.native.freelan_log_attach",
@@ -64,8 +101,15 @@ class LogAttachTests(TestCase):
             with patch(
                 "pyfreelan.api.log.ffi.new",
             ) as ffi_new_mock:
-                log_attach(entry=entry, key=some_french, value="foo")
+                log_attach(
+                    registry=registry,
+                    entry=entry,
+                    key=some_french,
+                    value="foo",
+                )
 
+        ffi_new_mock.assert_called_once_with("const char[]", "foo")
+        self.assertEqual([ffi_new_mock("const char[]", "foo")], registry)
         log_attach_mock.assert_called_once_with(
             entry,
             some_encoded_french,
@@ -77,12 +121,13 @@ class LogAttachTests(TestCase):
         entry = MagicMock()
 
         with self.assertRaises(TypeError):
-            log_attach(entry=entry, key=42, value="foo")
+            log_attach(registry=[], entry=entry, key=42, value="foo")
 
     def test_attach_unicode_value(self):
         some_french = u"éléphant"
         some_encoded_french = some_french.encode('utf-8')
         entry = MagicMock()
+        registry = []
 
         with patch(
             "pyfreelan.api.log.native.freelan_log_attach",
@@ -90,9 +135,21 @@ class LogAttachTests(TestCase):
             with patch(
                 "pyfreelan.api.log.ffi.new",
             ) as ffi_new_mock:
-                log_attach(entry=entry, key="foo", value=some_french)
+                log_attach(
+                    registry=registry,
+                    entry=entry,
+                    key="foo",
+                    value=some_french,
+                )
 
-        ffi_new_mock.assert_called_once_with("const char[]", some_encoded_french)
+        ffi_new_mock.assert_called_once_with(
+            "const char[]",
+            some_encoded_french,
+        )
+        self.assertEqual(
+            [ffi_new_mock("const char[]", some_encoded_french)],
+            registry,
+        )
         log_attach_mock.assert_called_once_with(
             entry,
             "foo",
@@ -102,6 +159,7 @@ class LogAttachTests(TestCase):
 
     def test_attach_string_value(self):
         entry = MagicMock()
+        registry = []
 
         with patch(
             "pyfreelan.api.log.native.freelan_log_attach",
@@ -109,9 +167,15 @@ class LogAttachTests(TestCase):
             with patch(
                 "pyfreelan.api.log.ffi.new",
             ) as ffi_new_mock:
-                log_attach(entry=entry, key="foo", value="bar")
+                log_attach(
+                    registry=registry,
+                    entry=entry,
+                    key="foo",
+                    value="bar",
+                )
 
         ffi_new_mock.assert_called_once_with("const char[]", "bar")
+        self.assertEqual([ffi_new_mock("const char[]", "bar")], registry)
         log_attach_mock.assert_called_once_with(
             entry,
             "foo",
@@ -121,12 +185,14 @@ class LogAttachTests(TestCase):
 
     def test_attach_boolean_value(self):
         entry = MagicMock()
+        registry = []
 
         with patch(
             "pyfreelan.api.log.native.freelan_log_attach",
         ) as log_attach_mock:
-            log_attach(entry=entry, key="foo", value=True)
+            log_attach(registry=registry, entry=entry, key="foo", value=True)
 
+        self.assertEqual([], registry)
         log_attach_mock.assert_called_once_with(
             entry,
             "foo",
@@ -136,12 +202,14 @@ class LogAttachTests(TestCase):
 
     def test_attach_integer_value(self):
         entry = MagicMock()
+        registry = []
 
         with patch(
             "pyfreelan.api.log.native.freelan_log_attach",
         ) as log_attach_mock:
-            log_attach(entry=entry, key="foo", value=42)
+            log_attach(registry=registry, entry=entry, key="foo", value=42)
 
+        self.assertEqual([], registry)
         log_attach_mock.assert_called_once_with(
             entry,
             "foo",
@@ -151,12 +219,14 @@ class LogAttachTests(TestCase):
 
     def test_attach_float_value(self):
         entry = MagicMock()
+        registry = []
 
         with patch(
             "pyfreelan.api.log.native.freelan_log_attach",
         ) as log_attach_mock:
-            log_attach(entry=entry, key="foo", value=3.14)
+            log_attach(registry=registry, entry=entry, key="foo", value=3.14)
 
+        self.assertEqual([], registry)
         log_attach_mock.assert_called_once_with(
             entry,
             "foo",
@@ -168,7 +238,7 @@ class LogAttachTests(TestCase):
         entry = MagicMock()
 
         with self.assertRaises(TypeError):
-            log_attach(entry=entry, key="foo", value=MagicMock())
+            log_attach(registry=[], entry=entry, key="foo", value=MagicMock())
 
 
 class LogTests(TestCase):
@@ -177,11 +247,16 @@ class LogTests(TestCase):
             "pyfreelan.api.log.native.freelan_log",
             return_value=True,
         ) as _log:
-            result = log(LogLevel.information, 3.14, "generic", "mycode")
+            result = log(
+                LogLevel.information,
+                "generic",
+                "mycode",
+                timestamp=datetime(1970, 1, 1),
+            )
 
         _log.called_once_with(
             LogLevel.information,
-            3.14,
+            0.0,
             "generic",
             "mycode",
             0,
@@ -198,16 +273,16 @@ class LogTests(TestCase):
         ) as _log:
             result = log(
                 LogLevel.information,
-                3.14,
                 "generic",
                 "mycode",
+                timestamp=datetime(1970, 1, 1),
                 file="myfile",
                 line=123,
             )
 
         _log.called_once_with(
             LogLevel.information,
-            3.14,
+            0.0,
             "generic",
             "mycode",
             0,
@@ -251,15 +326,15 @@ class LogTests(TestCase):
         }
         result = log(
             LogLevel.information,
-            3.14,
             "generic",
             "mycode",
             payload=payload,
+            timestamp=datetime(1970, 1, 1),
         )
 
         mock_log_start.assert_called_once_with(
-            LogLevel.information,
-            3.14,
+            LogLevel.information.value,
+            0.0,
             "generic",
             "mycode",
             ffi.NULL,
@@ -268,7 +343,7 @@ class LogTests(TestCase):
         entry = mock_log_start.return_value
         self.assertEqual(
             [
-                call(entry, key, value)
+                call([], entry, key, value)
                 for key, value in payload.iteritems()
             ],
             mock_log_attach.mock_calls,
@@ -388,7 +463,8 @@ class LoggingCallbackTests(TestCase):
         payload = MagicMock()
         payload.key = "foo"
         payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_STRING
-        payload.value = {'as_string': "bar"}
+        payload.value = MagicMock()
+        setattr(payload.value, 'as_string', "bar")
 
         key, value = from_native_payload(payload)
 
@@ -399,7 +475,8 @@ class LoggingCallbackTests(TestCase):
         payload = MagicMock()
         payload.key = "foo"
         payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_STRING
-        payload.value = {'as_string': u"éléphant".encode('utf-8')}
+        payload.value = MagicMock()
+        setattr(payload.value, 'as_string', u"éléphant".encode('utf-8'))
 
         key, value = from_native_payload(payload)
 
@@ -410,7 +487,8 @@ class LoggingCallbackTests(TestCase):
         payload = MagicMock()
         payload.key = "foo"
         payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER
-        payload.value = {'as_integer': 42}
+        payload.value = MagicMock()
+        setattr(payload.value, 'as_integer', 42)
 
         key, value = from_native_payload(payload)
 
@@ -421,7 +499,8 @@ class LoggingCallbackTests(TestCase):
         payload = MagicMock()
         payload.key = "foo"
         payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT
-        payload.value = {'as_float': 3.14}
+        payload.value = MagicMock()
+        setattr(payload.value, 'as_float', 3.14)
 
         key, value = from_native_payload(payload)
 
@@ -432,7 +511,8 @@ class LoggingCallbackTests(TestCase):
         payload = MagicMock()
         payload.key = "foo"
         payload.type = native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN
-        payload.value = {'as_boolean': 1}
+        payload.value = MagicMock()
+        setattr(payload.value, 'as_boolean', 1)
 
         key, value = from_native_payload(payload)
 
@@ -449,3 +529,40 @@ class LoggingCallbackTests(TestCase):
 
         self.assertEqual("foo", key)
         self.assertIsNone(value)
+
+
+class IntegrationTests(TestCase):
+    def test_full_logging_sequence(self):
+        func = MagicMock()
+
+        set_logging_function(func)
+        self.addCleanup(set_logging_function, None)
+
+        log(
+            LogLevel.error,
+            u"télé",
+            u"éléphant",
+            payload={
+                'a': 'alpha',
+                'b': u"nénuphar",
+                'c': 42,
+                'd': 3.14,
+                'e': False,
+            },
+            timestamp=datetime(1970, 1, 2),
+        )
+        func.assert_called_once_with(
+            level=LogLevel.error,
+            domain=u"télé",
+            code=u"éléphant",
+            payload={
+                'a': 'alpha',
+                'b': u"nénuphar",
+                'c': 42,
+                'd': 3.14,
+                'e': False,
+            },
+            timestamp=datetime(1970, 1, 2),
+            file=None,
+            line=0,
+        )
