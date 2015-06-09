@@ -234,6 +234,23 @@ class LogAttachTests(TestCase):
             {'as_float': 3.14},
         )
 
+    def test_attach_none_value(self):
+        entry = MagicMock()
+        registry = []
+
+        with patch(
+            "pyfreelan.api.log.native.freelan_log_attach",
+        ) as log_attach_mock:
+            log_attach(registry=registry, entry=entry, key="foo", value=None)
+
+        self.assertEqual([], registry)
+        log_attach_mock.assert_called_once_with(
+            entry,
+            "foo",
+            native.FREELAN_LOG_PAYLOAD_TYPE_NULL,
+            {'as_null': ffi.NULL},
+        )
+
     def test_attach_invalid_value(self):
         entry = MagicMock()
 
@@ -548,6 +565,7 @@ class IntegrationTests(TestCase):
                 'c': 42,
                 'd': 3.14,
                 'e': False,
+                'f': None,
             },
             timestamp=datetime(1970, 1, 2),
         )
@@ -561,6 +579,7 @@ class IntegrationTests(TestCase):
                 'c': 42,
                 'd': 3.14,
                 'e': False,
+                'f': None,
             },
             timestamp=datetime(1970, 1, 2),
             file=None,

@@ -91,6 +91,8 @@ def log_attach(registry, entry, key, value):
         native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER, {'as_integer': value})
     elif isinstance(value, float):
         native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT, {'as_float': value})
+    elif value is None:
+        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_NULL, {'as_null': ffi.NULL})
     else:
         raise TypeError("value must be either a string, an integer, a float or a boolean value")
 
