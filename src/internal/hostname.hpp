@@ -84,8 +84,8 @@ class Hostname : public GenericValueType<std::string, Hostname> {
 			return result;
 		}
 
-		static std::istream& read_from(std::istream& is, Hostname& value) {
-			return read_hostname(is, value.to_raw_value(), nullptr);
+		static std::istream& read_from(std::istream& is, Hostname& value, std::string* buf = nullptr) {
+			return read_hostname(is, value.to_raw_value(), buf);
 		}
 
 		std::string to_string() const {

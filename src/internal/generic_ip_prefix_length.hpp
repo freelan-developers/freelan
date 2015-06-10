@@ -91,8 +91,8 @@ class GenericIPPrefixLength : public GenericValueType<uint8_t, GenericIPPrefixLe
 			return result;
 		}
 
-		static std::istream& read_from(std::istream& is, GenericIPPrefixLength& value) {
-			return read_generic_ip_prefix_length<AddressType>(is, value.to_raw_value(), nullptr);
+		static std::istream& read_from(std::istream& is, GenericIPPrefixLength& value, std::string* buf = nullptr) {
+			return read_generic_ip_prefix_length<AddressType>(is, value.to_raw_value(), buf);
 		}
 
 		std::string to_string() const {

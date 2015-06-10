@@ -74,8 +74,8 @@ class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<Val
 			return typename GenericIPAddress::value_type(bytes);
 		}
 
-		static std::istream& read_from(std::istream& is, GenericIPAddress& value) {
-			return read_generic_ip_address(is, value.to_raw_value(), nullptr);
+		static std::istream& read_from(std::istream& is, GenericIPAddress& value, std::string* buf = nullptr) {
+			return read_generic_ip_address(is, value.to_raw_value(), buf);
 		}
 
 		std::string to_string() const {

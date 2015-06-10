@@ -88,8 +88,8 @@ class PortNumber : public GenericValueType<uint16_t, PortNumber> {
 			return result;
 		}
 
-		static std::istream& read_from(std::istream& is, PortNumber& value) {
-			return read_port_number(is, value.to_raw_value(), nullptr);
+		static std::istream& read_from(std::istream& is, PortNumber& value, std::string* buf = nullptr) {
+			return read_port_number(is, value.to_raw_value(), buf);
 		}
 
 		std::string to_string() const {
