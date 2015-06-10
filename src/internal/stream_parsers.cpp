@@ -45,6 +45,10 @@
 
 #include <boost/asio.hpp>
 
+#include "ipv4_address.hpp"
+#include "ipv6_address.hpp"
+#include "port_number.hpp"
+
 namespace freelan {
 
 namespace {
@@ -96,6 +100,10 @@ namespace {
 
 	bool is_unsigned_integer_character(char c) {
 		return std::isdigit(c);
+	}
+
+	bool is_endpoint_separator(char c) {
+		return (c == ':');
 	}
 
 	std::istream& putback(std::istream& is, const std::string& str)
@@ -316,4 +324,39 @@ std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, st
 
 template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v4>(std::istream&, uint8_t&, std::string*);
 template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v6>(std::istream&, uint8_t&, std::string*);
+
+template <typename IPAddressType>
+std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& port_number, std::string* buf)
+{
+	if (is.good())
+	{
+		std::string ip_address_buf;
+
+		if (IPAddressType::read_from(is, ip_address, &ip_address_buf))
+		{
+			if (!is_endpoint_separator(is.peek())) {
+				putback(is, ip_address_buf);
+				is.setstate(std::ios_base::failbit);
+			} else {
+				is.ignore();
+				std::string port_number_buf;
+
+				if (!PortNumber::read_from(is, port_number, &port_number_buf)) {
+					putback(is, ip_address_buf + ':');
+					is.setstate(std::ios_base::failbit);
+				} else {
+					if (buf) {
+						*buf = ip_address_buf + ':' + port_number_buf;
+					}
+				}
+			}
+		}
+	}
+
+	return is;
+}
+
+template std::istream& read_generic_ip_endpoint<IPv4Address>(std::istream&, IPv4Address&, PortNumber&, std::string*);
+template std::istream& read_generic_ip_endpoint<IPv6Address>(std::istream&, IPv6Address&, PortNumber&, std::string*);
+
 }

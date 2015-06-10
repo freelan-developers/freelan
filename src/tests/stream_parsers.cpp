@@ -45,6 +45,8 @@
 #include <boost/asio.hpp>
 
 #include "../internal/stream_parsers.hpp"
+#include "../internal/ipv4_address.hpp"
+#include "../internal/port_number.hpp"
 
 using boost::asio::ip::address_v4;
 using boost::asio::ip::address_v6;
@@ -52,6 +54,9 @@ using freelan::read_generic_ip_address;
 using freelan::read_hostname_label;
 using freelan::read_hostname;
 using freelan::read_port_number;
+using freelan::read_generic_ip_endpoint;
+using freelan::IPv4Address;
+using freelan::PortNumber;
 
 TEST(stream_parsers, read_ipv4_address_success) {
 	const std::string str_value = "9.0.0.1";
@@ -405,4 +410,122 @@ TEST(stream_parsers, read_port_number_extra) {
 	iss >> parsed_str;
 
 	ASSERT_EQ(extra, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_endpoint_success) {
+	const std::string str_ip_address = "9.0.0.1";
+	const std::string str_port_number = "12000";
+	const std::string str_value = str_ip_address + ':' + str_port_number;
+	IPv4Address ip_address;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_endpoint<IPv4Address>(iss, ip_address, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
+	ASSERT_EQ(PortNumber::from_string(str_port_number), port_number);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_endpoint_extra) {
+	const std::string str_ip_address = "9.0.0.1";
+	const std::string str_port_number = "12000";
+	const std::string str_value = str_ip_address + ':' + str_port_number;
+	const std::string extra = "roo";
+	IPv4Address ip_address;
+	PortNumber port_number;
+	std::istringstream iss(str_value + extra);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_endpoint<IPv4Address>(iss, ip_address, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_TRUE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
+	ASSERT_EQ(PortNumber::from_string(str_port_number), port_number);
+	ASSERT_EQ(str_value, parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss >> parsed_str;
+
+	ASSERT_EQ(extra, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_endpoint_invalid_ip_address) {
+	const std::string str_ip_address = "9.0.f0.1";
+	const std::string str_port_number = "12000";
+	const std::string str_value = str_ip_address + ':' + str_port_number;
+	IPv4Address ip_address;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_endpoint<IPv4Address>(iss, ip_address, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_endpoint_invalid_port_number) {
+	const std::string str_ip_address = "9.0.0.1";
+	const std::string str_port_number = "g12000";
+	const std::string str_value = str_ip_address + ':' + str_port_number;
+	IPv4Address ip_address;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_endpoint<IPv4Address>(iss, ip_address, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_endpoint_truncated) {
+	const std::string str_ip_address = "9.0.0.1";
+	const std::string str_port_number = "";
+	const std::string str_value = str_ip_address + ':' + str_port_number;
+	IPv4Address ip_address;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_endpoint<IPv4Address>(iss, ip_address, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
 }
