@@ -145,7 +145,7 @@ class Payload {
 
 			if (value.type() == typeid(std::string)) {
 				result.type = FREELAN_LOG_PAYLOAD_TYPE_STRING;
-				result.value.as_string = any_cast<std::string>(value).c_str();
+				result.value.as_string = any_cast<const std::string&>(value).c_str();
 			} else if (value.type() == typeid(int64_t)) {
 				result.type = FREELAN_LOG_PAYLOAD_TYPE_INTEGER;
 				result.value.as_integer = any_cast<int64_t>(value);
