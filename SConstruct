@@ -165,9 +165,9 @@ if mode in ('all', 'release'):
         apps,
         samples,
         configurations,
-        api_includes,
-        api_libraries,
-        tests_binaries,
+        _,
+        _,
+        _,
     ) = SConscript(
         'SConscript',
         exports='env',
@@ -176,15 +176,10 @@ if mode in ('all', 'release'):
     install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
-    api_install = env.Install(os.path.join(env.install_prefix, 'include', 'freelan'), api_includes)
-    api_install.extend(env.Install(os.path.join(env.install_prefix, 'lib'), api_libraries))
-    api_install.extend(env.Install(os.path.join(env.install_prefix, 'bin'), tests_binaries))
-
     Alias('install', install)
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', install + apps + samples)
-    Alias('api', api_install)
 
 if mode in ('all', 'debug'):
     env = FreelanEnvironment(mode='debug', prefix=prefix)
@@ -194,20 +189,23 @@ if mode in ('all', 'debug'):
         apps,
         samples,
         configurations,
-        _,
-        _,
-        _,
+        api_includes,
+        api_libraries,
+        tests_binaries,
     ) = SConscript(
         'SConscript',
         exports='env',
         variant_dir=os.path.join('build', env.mode),
     )
-    api_install = env.Install(os.path.join('tests', 'lib'), api_libraries)
-    api_install.extend(env.Install(os.path.join('tests', 'include', 'freelan'), api_includes))
+
+    api_install = env.Install(os.path.join(env.install_prefix, 'include', 'freelan'), api_includes)
+    api_install.extend(env.Install(os.path.join(env.install_prefix, 'lib'), api_libraries))
+    api_install.extend(env.Install(os.path.join(env.install_prefix, 'bin'), tests_binaries))
 
     Alias('apps', apps)
     Alias('samples', samples)
     Alias('all', apps + samples)
+    Alias('api', api_install)
 
 if sys.platform.startswith('darwin'):
     retail_prefix = '/usr/local'
