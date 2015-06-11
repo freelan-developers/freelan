@@ -104,13 +104,7 @@ class GenericIPEndpoint : public boost::operators<GenericIPEndpoint<AddressType>
 			return oss.str();
 		}
 
-		std::ostream& write_to(std::ostream& os) const {
-			m_ip_address.write_to(os);
-			os << ":";
-			m_port_number.write_to(os);
-
-			return os;
-		}
+		std::ostream& write_to(std::ostream& os) const;
 
 	private:
 		IPAddressType m_ip_address;

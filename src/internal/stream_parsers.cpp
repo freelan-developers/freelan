@@ -106,6 +106,14 @@ namespace {
 		return (c == ':');
 	}
 
+	bool is_ipv6_endpoint_address_start_delimiter(char c) {
+		return (c == '[');
+	}
+
+	bool is_ipv6_endpoint_address_stop_delimiter(char c) {
+		return (c == ']');
+	}
+
 	std::istream& putback(std::istream& is, const std::string& str)
 	{
 		const std::ios::iostate state = is.rdstate() & ~std::ios::eofbit;
@@ -175,35 +183,35 @@ std::istream& read_hostname_label(std::istream& is, std::string& value, std::str
 		if (!is_hostname_label_regular_character(is.peek()))
 		{
 			is.setstate(std::ios_base::failbit);
+
+			return is;
 		}
-		else
+
+		std::ostringstream oss;
+
+		do
 		{
-			std::ostringstream oss;
+			oss.put(static_cast<char>(is.get()));
+		}
+		while (is.good() && is_hostname_label_character(is.peek()));
 
-			do
+		if (is)
+		{
+			const std::string& result = oss.str();
+
+			// Check if the label is too long, if the last character is not a regular character or if it contains only digits
+			if ((result.size() > HOSTNAME_LABEL_MAX_SIZE) || (!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
 			{
-				oss.put(static_cast<char>(is.get()));
+				putback(is, result);
+				is.setstate(std::ios_base::failbit);
+
+				return is;
 			}
-			while (is.good() && is_hostname_label_character(is.peek()));
 
-			if (is)
-			{
-				const std::string& result = oss.str();
+			value = result;
 
-				// Check if the label is too long, if the last character is not a regular character or if it contains only digits
-				if ((result.size() > HOSTNAME_LABEL_MAX_SIZE) || (!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
-				{
-					putback(is, result);
-					is.setstate(std::ios_base::failbit);
-				}
-				else
-				{
-					value = result;
-
-					if (buf != nullptr) {
-						*buf = value;
-					}
-				}
+			if (buf != nullptr) {
+				*buf = value;
 			}
 		}
 	}
@@ -241,11 +249,11 @@ std::istream& read_hostname(std::istream& is, std::string& value, std::string* b
 				{
 					putback(is, oss.str());
 					is.setstate(std::ios_base::failbit);
+
+					return is;
 				}
-				else
-				{
-					oss << label;
-				}
+
+				oss << label;
 			}
 
 			if (is)
@@ -256,14 +264,14 @@ std::istream& read_hostname(std::istream& is, std::string& value, std::string* b
 				{
 					putback(is, result);
 					is.setstate(std::ios_base::failbit);
-				}
-				else
-				{
-					value = result;
 
-					if (buf != nullptr) {
-						*buf = value;
-					}
+					return is;
+				}
+
+				value = result;
+
+				if (buf != nullptr) {
+					*buf = value;
 				}
 			}
 		}
@@ -279,33 +287,35 @@ std::istream& read_unsigned_integer(std::istream& is, IntegerType& value, std::s
 		if (!is_unsigned_integer_character(is.peek()))
 		{
 			is.setstate(std::ios_base::failbit);
+
+			return is;
 		}
-		else
+
+		std::stringstream oss;
+
+		do
 		{
-			std::stringstream oss;
+			oss.put(static_cast<char>(is.get()));
+		}
+		while (is.good() && is_unsigned_integer_character(is.peek()));
 
-			do
-			{
-				oss.put(static_cast<char>(is.get()));
+		if (is)
+		{
+			const std::string& result = oss.str();
+			uint32_t tmp_value;
+			oss >> tmp_value;
+
+			if (!oss || (tmp_value < MinValue) || (tmp_value > MaxValue)) {
+				putback(is, result);
+				is.setstate(std::ios_base::failbit);
+
+				return is;
 			}
-			while (is.good() && is_unsigned_integer_character(is.peek()));
 
-			if (is)
-			{
-				const std::string& result = oss.str();
-				uint32_t tmp_value;
-				oss >> tmp_value;
+			value = tmp_value;
 
-				if (!oss || (tmp_value < MinValue) || (tmp_value > MaxValue)) {
-					putback(is, result);
-					is.setstate(std::ios_base::failbit);
-				} else {
-					value = tmp_value;
-
-					if (buf != nullptr) {
-						*buf = result;
-					}
-				}
+			if (buf != nullptr) {
+				*buf = result;
 			}
 		}
 	}
@@ -326,29 +336,36 @@ template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v4
 template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v6>(std::istream&, uint8_t&, std::string*);
 
 template <typename IPAddressType>
-std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& port_number, std::string* buf)
+std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& port_number, std::string* buf);
+
+template <>
+std::istream& read_generic_ip_endpoint<IPv4Address>(std::istream& is, IPv4Address& ip_address, PortNumber& port_number, std::string* buf)
 {
 	if (is.good())
 	{
 		std::string ip_address_buf;
 
-		if (IPAddressType::read_from(is, ip_address, &ip_address_buf))
+		if (IPv4Address::read_from(is, ip_address, &ip_address_buf))
 		{
 			if (!is_endpoint_separator(is.peek())) {
 				putback(is, ip_address_buf);
 				is.setstate(std::ios_base::failbit);
-			} else {
-				is.ignore();
-				std::string port_number_buf;
 
-				if (!PortNumber::read_from(is, port_number, &port_number_buf)) {
-					putback(is, ip_address_buf + ':');
-					is.setstate(std::ios_base::failbit);
-				} else {
-					if (buf) {
-						*buf = ip_address_buf + ':' + port_number_buf;
-					}
-				}
+				return is;
+			}
+
+			is.ignore();
+			std::string port_number_buf;
+
+			if (!PortNumber::read_from(is, port_number, &port_number_buf)) {
+				putback(is, ip_address_buf + ':');
+				is.setstate(std::ios_base::failbit);
+
+				return is;
+			}
+
+			if (buf) {
+				*buf = ip_address_buf + ':' + port_number_buf;
 			}
 		}
 	}
@@ -356,7 +373,60 @@ std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_addre
 	return is;
 }
 
-template std::istream& read_generic_ip_endpoint<IPv4Address>(std::istream&, IPv4Address&, PortNumber&, std::string*);
-template std::istream& read_generic_ip_endpoint<IPv6Address>(std::istream&, IPv6Address&, PortNumber&, std::string*);
+template <>
+std::istream& read_generic_ip_endpoint<IPv6Address>(std::istream& is, IPv6Address& ip_address, PortNumber& port_number, std::string* buf)
+{
+	if (is.good())
+	{
+		if (!is_ipv6_endpoint_address_start_delimiter(is.peek())) {
+			is.setstate(std::ios_base::failbit);
+
+			return is;
+		}
+
+		is.ignore();
+		std::string ip_address_buf;
+
+		if (!IPv6Address::read_from(is, ip_address, &ip_address_buf))
+		{
+			putback(is, "[");
+			is.setstate(std::ios_base::failbit);
+
+			return is;
+		}
+
+		if (!is.good() || !is_ipv6_endpoint_address_stop_delimiter(is.peek())) {
+			putback(is, '[' + ip_address_buf);
+			is.setstate(std::ios_base::failbit);
+
+			return is;
+		}
+
+		is.ignore();
+
+		if (!is.good() || !is_endpoint_separator(is.peek())) {
+			putback(is, '[' + ip_address_buf + ']');
+			is.setstate(std::ios_base::failbit);
+
+			return is;
+		}
+
+		is.ignore();
+		std::string port_number_buf;
+
+		if (!PortNumber::read_from(is, port_number, &port_number_buf)) {
+			putback(is, '[' + ip_address_buf + ']' + ':');
+			is.setstate(std::ios_base::failbit);
+
+			return is;
+		}
+
+		if (buf) {
+			*buf = '[' + ip_address_buf + ']' + ':' + port_number_buf;
+		}
+	}
+
+	return is;
+}
 
 }
