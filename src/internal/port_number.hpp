@@ -61,8 +61,8 @@ namespace freelan {
 class PortNumber : public GenericValueType<uint16_t, PortNumber> {
 	public:
 		PortNumber() = default;
-		PortNumber(typename PortNumber::value_type&& value) : GenericValueType<uint16_t, PortNumber>(std::move(value)) {}
-		PortNumber(const typename PortNumber::value_type& value) : GenericValueType<uint16_t, PortNumber>(value) {}
+		PortNumber(PortNumber::value_type&& value) : GenericValueType<uint16_t, PortNumber>(std::move(value)) {}
+		PortNumber(const PortNumber::value_type& value) : GenericValueType<uint16_t, PortNumber>(value) {}
 
 		static PortNumber from_string(const std::string& str) {
 			boost::system::error_code ec;
