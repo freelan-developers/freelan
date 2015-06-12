@@ -101,8 +101,8 @@ class Hostname : public GenericValueType<std::string, Hostname> {
 		}
 
 	private:
-		Hostname(typename Hostname::value_type&& value) : GenericValueType<std::string, Hostname>(std::move(value)) {}
-		Hostname(const typename Hostname::value_type& value) : GenericValueType<std::string, Hostname>(value) {}
+		Hostname(Hostname::value_type&& value) : GenericValueType<std::string, Hostname>(std::move(value)) {}
+		Hostname(const Hostname::value_type& value) : GenericValueType<std::string, Hostname>(value) {}
 };
 
 }
