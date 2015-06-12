@@ -59,7 +59,11 @@ namespace {
 	}
 
 	static char* default_strdup(const char* str) {
+#if _MSC_VER
+		return ::_strdup(str);
+#else
 		return ::strdup(str);
+#endif
 	}
 
 	static void* default_mark_pointer(void* ptr, const char*, unsigned int) {
