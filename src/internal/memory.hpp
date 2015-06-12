@@ -73,4 +73,11 @@ class MarkPointer {
 };
 
 void* operator new(std::size_t n);
-void operator delete(void* ptr);
+
+#if __cplusplus <= 199711L
+#define DELETE_NOEXCEPT
+#else
+#define DELETE_NOEXCEPT noexcept
+#endif
+
+void operator delete(void* ptr) DELETE_NOEXCEPT;
