@@ -73,4 +73,4 @@ class MarkPointer {
 };
 
 void* operator new(std::size_t n);
-void operator delete(void* ptr) noexcept;
+void operator delete(void* ptr);
