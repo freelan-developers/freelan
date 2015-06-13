@@ -5,6 +5,7 @@ language: python
 cache: apt
 compiler:
   - gcc
+  - clang
 env:
   - TOXENV=py27
 before_install:
@@ -16,7 +17,10 @@ install:
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
   - sudo apt-get install libboost1.55-all-dev libssl-dev libcurl4-openssl-dev
+  - sudo apt-get install ninja-build
 script:
+  - mkdir build && cd build && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=../install ..
+  - ninja -C build install
   - tox
 branches:
   only:
