@@ -38,7 +38,7 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/memory.h>
+#include "memory.hpp"
 
 #include <cassert>
 #include <cstdlib>
@@ -55,6 +55,6 @@ void* operator new(std::size_t n) {
 	return result;
 }
 
-void operator delete(void* ptr) noexcept {
+void operator delete(void* ptr) DELETE_NOEXCEPT {
 	freelan_free(ptr);
 }

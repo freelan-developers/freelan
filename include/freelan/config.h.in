@@ -1,9 +1,4 @@
-/*
- * freelan - An open, multi-platform software to establish peer-to-peer virtual
- * private networks.
- *
- * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
- *
+/**
  * This file is part of freelan.
  *
  * freelan is free software; you can redistribute it and/or modify it
@@ -39,29 +34,27 @@
  */
 
 /**
- * \file stream_parsers.hpp
+ * \file config.h
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Stream parsing functions.
+ * \brief Configuration.
  */
 
-#pragma once
+#ifndef FREELAN_CONFIG_H
+#define FREELAN_CONFIG_H
 
-#include <iostream>
-#include <string>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "stdint.hpp"
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
-namespace freelan {
+#define FREELAN_VERSION_MAJOR @FreeLAN_VERSION_MAJOR@
+#define FREELAN_VERSION_MINOR @FreeLAN_VERSION_MINOR@
+#define FREELAN_VERSION TOSTRING(FREELAN_VERSION_MAJOR) "." TOSTRING(FREELAN_VERSION_MINOR)
 
-class PortNumber;
-
-template <typename AddressType>
-std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
-std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf = nullptr);
-template <typename AddressType>
-std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf = nullptr);
-template <typename IPAddressType>
-std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& value, std::string* buf = nullptr);
+#ifdef __cplusplus
 }
+#endif
+
+#endif

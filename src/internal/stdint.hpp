@@ -39,29 +39,13 @@
  */
 
 /**
- * \file stream_parsers.hpp
+ * \file stdint.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Stream parsing functions.
+ * \brief stdint cross-platform abstraction.
  */
 
 #pragma once
 
-#include <iostream>
-#include <string>
-
-#include "stdint.hpp"
-
-namespace freelan {
-
-class PortNumber;
-
-template <typename AddressType>
-std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
-std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf = nullptr);
-template <typename AddressType>
-std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf = nullptr);
-template <typename IPAddressType>
-std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& value, std::string* buf = nullptr);
-}
+#ifdef _MSC_VER
+#include <stdint.h>
+#endif

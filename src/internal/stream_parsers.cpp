@@ -68,17 +68,17 @@ namespace {
 	}
 
 	template <typename AddressType>
-	constexpr uint8_t get_ip_max_prefix_length();
+	struct get_ip_max_prefix_length;
 
 	template <>
-	constexpr uint8_t get_ip_max_prefix_length<boost::asio::ip::address_v4>() {
-		return 32;
-	}
+	struct get_ip_max_prefix_length<boost::asio::ip::address_v4> {
+		static const uint8_t value = 32;
+	};
 
 	template <>
-	constexpr uint8_t get_ip_max_prefix_length<boost::asio::ip::address_v6>() {
-		return 128;
-	}
+	struct get_ip_max_prefix_length<boost::asio::ip::address_v6> {
+		static const uint8_t value = 128;
+	};
 
 	// Hostname labels are 63 characters long at most
 	const size_t HOSTNAME_LABEL_MAX_SIZE = 63;
@@ -99,7 +99,7 @@ namespace {
 	}
 
 	bool is_unsigned_integer_character(char c) {
-		return std::isdigit(c);
+		return (std::isdigit(c) != 0);
 	}
 
 	bool is_endpoint_separator(char c) {
@@ -324,12 +324,12 @@ std::istream& read_unsigned_integer(std::istream& is, IntegerType& value, std::s
 }
 
 std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf) {
-	return read_unsigned_integer<uint16_t>(is, value, buf);
+	return read_unsigned_integer<uint16_t, 0, 65535>(is, value, buf);
 }
 
 template <typename AddressType>
 std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf) {
-	return read_unsigned_integer<uint8_t, 0, get_ip_max_prefix_length<AddressType>()>(is, value, buf);
+	return read_unsigned_integer<uint8_t, 0, get_ip_max_prefix_length<AddressType>::value>(is, value, buf);
 }
 
 template std::istream& read_generic_ip_prefix_length<boost::asio::ip::address_v4>(std::istream&, uint8_t&, std::string*);
