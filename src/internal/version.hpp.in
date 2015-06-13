@@ -34,13 +34,12 @@
  */
 
 /**
- * \file config.h
+ * \file version.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Configuration.
+ * \brief Version information.
  */
 
-#ifndef FREELAN_CONFIG_H
-#define FREELAN_CONFIG_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,10 +50,9 @@ extern "C" {
 
 #define FREELAN_VERSION_MAJOR @FreeLAN_VERSION_MAJOR@
 #define FREELAN_VERSION_MINOR @FreeLAN_VERSION_MINOR@
-#define FREELAN_VERSION TOSTRING(FREELAN_VERSION_MAJOR) "." TOSTRING(FREELAN_VERSION_MINOR)
+#define FREELAN_VERSION FREELAN_VERSION_MAJOR * 256 + FREELAN_VERSION_MINOR
+#define FREELAN_VERSION_STRING TOSTRING(FREELAN_VERSION_MAJOR) "." TOSTRING(FREELAN_VERSION_MINOR)
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
