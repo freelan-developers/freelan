@@ -3,7 +3,6 @@ Test direct calling of the C methods.
 """
 
 from unittest import TestCase
-from mock import MagicMock
 from pyfreelan.api import (
     native,
     ffi,
@@ -36,6 +35,11 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual("freelan", ffi.string(result))
+
+    def test_get_version_string(self):
+        result = native.freelan_get_version_string()
+        self.assertNotEqual(ffi.NULL, result)
+        self.assertRegexpMatches(ffi.string(result), r'^\d+\.\d+\.\d+$')
 
     def test_acquire_error_context(self):
         result = native.freelan_acquire_error_context()

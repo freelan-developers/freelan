@@ -12,6 +12,9 @@ api = """
     void* realloc(void* ptr, size_t size);
     void free(void* ptr);
 
+    /* Version */
+    const char* freelan_get_version_string(void);
+
     /* Memory */
     void* freelan_malloc(size_t size);
     void* freelan_realloc(void* ptr, size_t size);
