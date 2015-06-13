@@ -1,0 +1,139 @@
+cmake_minimum_required (VERSION 2.6)
+
+project(FreeLAN)
+
+# Includes.
+include(CTest)
+
+# Version number.
+set(FreeLAN_VERSION_MAJOR 3)
+set(FreeLAN_VERSION_MINOR 0)
+
+# The configuration file.
+configure_file(
+    "${PROJECT_SOURCE_DIR}/include/freelan/config.h.in"
+    "${PROJECT_BINARY_DIR}/include/freelan/config.h"
+)
+
+# Third-party include paths.
+if (WIN32)
+    include_directories("${PROJECT_SOURCE_DIR}/extra/msstdint/include")
+
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(ARCHITECTURE "x64")
+    else()
+        set(ARCHITECTURE "x86")
+    endif()
+
+    set(THIRD_PARTY_ROOT ${PROJECT_SOURCE_DIR}/third-party/install/${ARCHITECTURE})
+    string(REGEX REPLACE "/" "\\\\" THIRD_PARTY_ROOT ${THIRD_PARTY_ROOT})
+    set(BOOST_SUFFIX "1_57")
+
+    # Debug
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /I${THIRD_PARTY_ROOT}\\Debug\\include")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /I${THIRD_PARTY_ROOT}\\Debug\\include\\boost-${BOOST_SUFFIX}")
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /LIBPATH:${THIRD_PARTY_ROOT}\\Debug\\lib")
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /LIBPATH:${THIRD_PARTY_ROOT}\\Debug\\lib")
+
+    # Release
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /I${THIRD_PARTY_ROOT}\\Release\\include")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /I${THIRD_PARTY_ROOT}\\Release\\include\\boost-${BOOST_SUFFIX}")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LIBPATH:${THIRD_PARTY_ROOT}\\Release\\lib")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LIBPATH:${THIRD_PARTY_ROOT}\\Release\\lib")
+
+    add_definitions("-D_WIN32_WINNT=0x0600")
+endif()
+
+# The internal library.
+set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
+    src/internal/common.hpp
+    src/internal/error.hpp
+    src/internal/generic_ip_address.hpp
+    src/internal/generic_ip_endpoint.hpp
+    src/internal/generic_ip_prefix_length.hpp
+    src/internal/generic_value_type.hpp
+    src/internal/hostname.hpp
+    src/internal/ipv4_address.hpp
+    src/internal/ipv4_endpoint.cpp
+    src/internal/ipv4_endpoint.hpp
+    src/internal/ipv4_prefix_length.hpp
+    src/internal/ipv6_address.hpp
+    src/internal/ipv6_endpoint.cpp
+    src/internal/ipv6_endpoint.hpp
+    src/internal/ipv6_prefix_length.hpp
+    src/internal/log.cpp
+    src/internal/log.hpp
+    src/internal/memory.cpp
+    src/internal/memory.hpp
+    src/internal/port_number.hpp
+    src/internal/stdint.hpp
+    src/internal/stream_parsers.cpp
+    src/internal/stream_parsers.hpp
+    src/internal/traits.hpp
+)
+source_group(internal FILES ${INTERNAL_SRC_FILES})
+
+add_library(FreeLANInternalLibrary ${INTERNAL_SRC_FILES})
+target_include_directories(FreeLANInternalLibrary PUBLIC "${PROJECT_SOURCE_DIR}/src/internal")
+target_include_directories(FreeLANInternalLibrary PRIVATE "${PROJECT_SOURCE_DIR}/include")
+target_include_directories(FreeLANInternalLibrary PRIVATE "${PROJECT_BINARY_DIR}/include")
+set_target_properties(FreeLANInternalLibrary PROPERTIES PROJECT_LABEL "FreeLAN internal library")
+
+# The main library.
+set (API_SRC_FILES ${API_SRC_FILES}
+    include/freelan/common.h
+    include/freelan/config.h.in
+    include/freelan/error.h
+    include/freelan/log.h
+    include/freelan/memory.h
+    include/freelan/types.h
+    src/freelan/error.cpp
+    src/freelan/log.cpp
+    src/freelan/memory.cpp
+    src/freelan/types.cpp
+)
+source_group(api FILES ${API_SRC_FILES})
+
+add_library(FreeLANLibrary SHARED ${API_SRC_FILES})
+target_include_directories(FreeLANLibrary PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_include_directories(FreeLANLibrary PUBLIC "${PROJECT_BINARY_DIR}/include")
+target_link_libraries(FreeLANLibrary PRIVATE FreeLANInternalLibrary)
+set_target_properties(FreeLANLibrary PROPERTIES PROJECT_LABEL "FreeLAN library")
+target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
+
+# The tests
+if (BUILD_TESTING)
+    set (GTEST_VERSION "1.7.0")
+    set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
+
+    set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+        src/tests/hostname.cpp
+        src/tests/ipv4_address.cpp
+        src/tests/ipv4_endpoint.cpp
+        src/tests/ipv4_prefix_length.cpp
+        src/tests/ipv6_address.cpp
+        src/tests/ipv6_endpoint.cpp
+        src/tests/ipv6_prefix_length.cpp
+        src/tests/log.cpp
+        src/tests/port_number.cpp
+        src/tests/stream_parsers.cpp
+    )
+
+    set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
+        ${GTEST_ROOT}/src/gtest-all.cc
+        ${GTEST_ROOT}/src/gtest_main.cc
+    )
+    source_group(gtest FILES ${GTEST_SRC_FILES})
+
+    add_executable(FreeLANTests ${TESTS_SRC_FILES} ${GTEST_SRC_FILES})
+    target_include_directories(FreeLANTests PRIVATE "${GTEST_ROOT}")
+    target_include_directories(FreeLANTests PRIVATE "${GTEST_ROOT}/include")
+    target_link_libraries(FreeLANTests PRIVATE FreeLANInternalLibrary FreeLANLibrary)
+    set_target_properties(FreeLANTests PROPERTIES PROJECT_LABEL "FreeLAN tests")
+
+    if (WIN32)
+        target_compile_options(FreeLANTests PRIVATE "/wd4805")
+    endif()
+
+    add_test(NAME "C++ tests" COMMAND FreeLANTests)
+endif()
