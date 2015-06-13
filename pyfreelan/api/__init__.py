@@ -37,7 +37,6 @@ api = """
     typedef unsigned int FreeLANLogLevel;
     typedef double FreeLANTimestamp;
     typedef unsigned int FreeLANLogPayloadType;
-    struct FreeLANLog;
 
     typedef union {
         void* as_null;
@@ -53,15 +52,17 @@ api = """
         FreeLANLogPayloadValue value;
     };
 
-    typedef int (*FreeLANLoggingCallback)(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
+    struct FreeLANLogger;
 
-    const FreeLANLogLevel FREELAN_LOG_LEVEL_FATAL = 10;
-    const FreeLANLogLevel FREELAN_LOG_LEVEL_ERROR = 20;
-    const FreeLANLogLevel FREELAN_LOG_LEVEL_WARNING = 30;
+    typedef int (*FreeLANLogFunctionCallback)(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
+
+    const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 10;
+    const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 20;
+    const FreeLANLogLevel FREELAN_LOG_LEVEL_INFORMATION = 30;
     const FreeLANLogLevel FREELAN_LOG_LEVEL_IMPORTANT = 40;
-    const FreeLANLogLevel FREELAN_LOG_LEVEL_INFORMATION = 50;
-    const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 60;
-    const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 70;
+    const FreeLANLogLevel FREELAN_LOG_LEVEL_WARNING = 50;
+    const FreeLANLogLevel FREELAN_LOG_LEVEL_ERROR = 60;
+    const FreeLANLogLevel FREELAN_LOG_LEVEL_FATAL = 70;
 
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_NULL = 0;
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_STRING = 1;
@@ -69,13 +70,13 @@ api = """
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_FLOAT = 3;
     const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN = 4;
 
-    void freelan_set_logging_callback(FreeLANLoggingCallback cb);
+    void freelan_set_log_function(FreeLANLogFunctionCallback cb);
     void freelan_set_log_level(FreeLANLogLevel level);
     FreeLANLogLevel freelan_get_log_level(void);
     int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
-    struct FreeLANLog* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line);
-    void freelan_log_attach(struct FreeLANLog* log, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
-    int freelan_log_complete(struct FreeLANLog* log);
+    struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line);
+    void freelan_log_attach(struct FreeLANLogger* logger, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
+    int freelan_log_complete(struct FreeLANLogger* logger);
 
     /* Types */
     struct IPv4Address;

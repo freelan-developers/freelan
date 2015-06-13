@@ -66,6 +66,27 @@ enum class LogLevel : unsigned int {
 	FATAL = 70
 };
 
+inline std::ostream& operator<<(std::ostream& os, LogLevel level) {
+	switch (level) {
+		case LogLevel::TRACE:
+			return os << "trace";
+		case LogLevel::DEBUG:
+			return os << "debug";
+		case LogLevel::INFORMATION:
+			return os << "information";
+		case LogLevel::IMPORTANT:
+			return os << "important";
+		case LogLevel::WARNING:
+			return os << "warning";
+		case LogLevel::ERROR:
+			return os << "error";
+		case LogLevel::FATAL:
+			return os << "fatal";
+		default:
+			return os << "<unspecified log level " << static_cast<unsigned int>(level) << ">";
+	}
+}
+
 class LogPayload {
 	public:
 		LogPayload(const std::string& _key) :

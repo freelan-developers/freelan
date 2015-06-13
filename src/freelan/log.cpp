@@ -97,7 +97,7 @@ namespace {
 	}
 
 freelan::Logger create_logger(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line) {
-	const boost::posix_time::ptime ts = epoch + boost::posix_time::microseconds(static_cast<unsigned int>(timestamp * 1000000.0f));
+	const boost::posix_time::ptime ts = epoch + boost::posix_time::microseconds(static_cast<uint64_t>(timestamp * 1000000.0f));
 
 	return freelan::Logger(static_cast<freelan::LogLevel>(level), domain, code, file, line, ts);
 }

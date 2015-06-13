@@ -23,10 +23,10 @@ from pyfreelan.api.log import (
     from_c,
     log_attach,
     log,
-    set_logging_function,
+    set_log_function,
     from_native_payload,
-    logging_callback,
-    c_logging_callback,
+    log_function,
+    c_log_function,
 )
 
 
@@ -378,7 +378,7 @@ class LoggingCallbackTests(TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def test_set_logging_callback(self):
+    def test_set_log_function(self):
         func = MagicMock()
         callbacks = {}
 
@@ -387,14 +387,14 @@ class LoggingCallbackTests(TestCase):
             callbacks,
         ):
             with patch(
-                "pyfreelan.api.log.native.freelan_set_logging_callback",
-            ) as set_logging_callback_mock:
-                set_logging_function(func)
+                "pyfreelan.api.log.native.freelan_set_log_function",
+            ) as set_log_function_mock:
+                set_log_function(func)
 
-        set_logging_callback_mock.assert_called_once_with(c_logging_callback)
-        self.assertEqual(func, callbacks['logging_function'])
+        set_log_function_mock.assert_called_once_with(c_log_function)
+        self.assertEqual(func, callbacks['log_function'])
 
-    def test_reset_logging_callback(self):
+    def test_reset_log_function(self):
         callbacks = {}
 
         with patch(
@@ -402,20 +402,20 @@ class LoggingCallbackTests(TestCase):
             callbacks,
         ):
             with patch(
-                "pyfreelan.api.log.native.freelan_set_logging_callback",
-            ) as set_logging_callback_mock:
-                set_logging_function(None)
+                "pyfreelan.api.log.native.freelan_set_log_function",
+            ) as set_log_function_mock:
+                set_log_function(None)
 
-        set_logging_callback_mock.assert_called_once_with(ffi.NULL)
-        self.assertEqual(None, callbacks['logging_function'])
+        set_log_function_mock.assert_called_once_with(ffi.NULL)
+        self.assertEqual(None, callbacks['log_function'])
 
-    def test_logging_callback_no_logging_function(self):
+    def test_log_function_no_log_function(self):
         payload = MagicMock()
 
         with patch(
             "pyfreelan.api.log.from_native_payload",
         ) as from_native_payload_func:
-            result = logging_callback(
+            result = log_function(
                 native.FREELAN_LOG_LEVEL_ERROR,
                 0.0,
                 "mydomain",
@@ -429,7 +429,7 @@ class LoggingCallbackTests(TestCase):
         self.assertEqual(0, result)
         self.assertEqual([], from_native_payload_func.mock_calls)
 
-    def test_logging_callback_with_logging_function(self):
+    def test_log_function_with_log_function(self):
         payload = [
             ("a", "one"),
             ("b", 2),
@@ -440,17 +440,17 @@ class LoggingCallbackTests(TestCase):
         def local_from_native_payload(payload):
             return payload
 
-        logging_function = MagicMock()
+        log_f = MagicMock()
 
         with patch(
             "pyfreelan.api.log.CALLBACKS",
-            {'logging_function': logging_function},
+            {'log_function': log_f},
         ):
             with patch(
                 "pyfreelan.api.log.from_native_payload",
                 side_effect=local_from_native_payload,
             ) as from_native_payload_func:
-                result = logging_callback(
+                result = log_function(
                     native.FREELAN_LOG_LEVEL_ERROR,
                     0.0,
                     "mydomain",
@@ -466,7 +466,7 @@ class LoggingCallbackTests(TestCase):
             [call(p) for p in payload],
             from_native_payload_func.mock_calls,
         )
-        logging_function.assert_called_once_with(
+        log_f.assert_called_once_with(
             domain='mydomain',
             code='mycode',
             level=LogLevel.error,
@@ -552,8 +552,8 @@ class IntegrationTests(TestCase):
     def test_full_logging_sequence(self):
         func = MagicMock()
 
-        set_logging_function(func)
-        self.addCleanup(set_logging_function, None)
+        set_log_function(func)
+        self.addCleanup(set_log_function, None)
 
         log(
             LogLevel.error,

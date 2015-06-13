@@ -84,7 +84,7 @@ class NativeCallsTests(TestCase):
         result = native.freelan_error_context_get_error_line(ectx)
         self.assertEqual(0, result)
 
-    def test_set_logging_callback(self):
+    def test_set_log_function(self):
         @ffi.callback(
             "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
             "struct FreeLANLogPayload *, char *, unsigned int)",
@@ -101,9 +101,9 @@ class NativeCallsTests(TestCase):
         ):
             return 1
 
-        self.addCleanup(native.freelan_set_logging_callback, ffi.NULL)
+        self.addCleanup(native.freelan_set_log_function, ffi.NULL)
 
-        native.freelan_set_logging_callback(callback)
+        native.freelan_set_log_function(callback)
 
     def test_log_level(self):
         level = native.FREELAN_LOG_LEVEL_DEBUG
@@ -113,7 +113,7 @@ class NativeCallsTests(TestCase):
         self.assertEqual(level, result)
 
     def test_log_simple(self):
-        self.addCleanup(native.freelan_set_logging_callback, ffi.NULL)
+        self.addCleanup(native.freelan_set_log_function, ffi.NULL)
 
         callback = MagicMock(return_value=1)
         c_callback = ffi.callback(
@@ -121,7 +121,7 @@ class NativeCallsTests(TestCase):
             "struct FreeLANLogPayload *, char *, unsigned int)",
         )(callback)
 
-        native.freelan_set_logging_callback(c_callback)
+        native.freelan_set_log_function(c_callback)
 
         domain = ffi.new("char[]", "mydomain")
         code = ffi.new("char[]", "mycode")
@@ -136,20 +136,22 @@ class NativeCallsTests(TestCase):
             file,
             123,
         )
-        callback.assert_called_once_with(
-            native.FREELAN_LOG_LEVEL_IMPORTANT,
-            42,
-            domain,
-            code,
-            0,
-            ffi.NULL,
-            file,
-            123,
-        )
+        self.assertEqual(1, len(callback.mock_calls))
+
+        args = callback.mock_calls[0][1]
+
+        self.assertEqual(native.FREELAN_LOG_LEVEL_IMPORTANT, args[0])
+        self.assertEqual(42.0, args[1])
+        self.assertEqual("mydomain", ffi.string(args[2]))
+        self.assertEqual("mycode", ffi.string(args[3]))
+        self.assertEqual(0, args[4])
+        self.assertEqual(ffi.NULL, args[5])
+        self.assertEqual(file, args[6])
+        self.assertEqual(123, args[7])
         self.assertEqual(1, result)
 
     def test_log_extended(self):
-        self.addCleanup(native.freelan_set_logging_callback, ffi.NULL)
+        self.addCleanup(native.freelan_set_log_function, ffi.NULL)
 
         context = {'call_count': 0}
         p_domain = ffi.new("char[]", "mydomain")
@@ -172,8 +174,8 @@ class NativeCallsTests(TestCase):
         ):
             self.assertEqual(native.FREELAN_LOG_LEVEL_IMPORTANT, level)
             self.assertEqual(42, timestamp)
-            self.assertEqual(p_domain, domain)
-            self.assertEqual(p_code, code)
+            self.assertEqual(ffi.string(p_domain), ffi.string(domain))
+            self.assertEqual(ffi.string(p_code), ffi.string(code))
             self.assertEqual(4, payload_size)
             self.assertNotEqual(ffi.NULL, payload)
             self.assertEqual(p_file, file)
@@ -211,7 +213,7 @@ class NativeCallsTests(TestCase):
 
             return 1
 
-        native.freelan_set_logging_callback(callback)
+        native.freelan_set_log_function(callback)
 
         log = native.freelan_log_start(
             native.FREELAN_LOG_LEVEL_IMPORTANT,

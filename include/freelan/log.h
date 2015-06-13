@@ -106,13 +106,13 @@ typedef int (*FreeLANLogFunctionCallback)(FreeLANLogLevel level, FreeLANTimestam
 /**
  * The log levels.
  */
-const FreeLANLogLevel FREELAN_LOG_LEVEL_FATAL = 10;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_ERROR = 20;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_WARNING = 30;
+const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 10;
+const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 20;
+const FreeLANLogLevel FREELAN_LOG_LEVEL_INFORMATION = 30;
 const FreeLANLogLevel FREELAN_LOG_LEVEL_IMPORTANT = 40;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_INFORMATION = 50;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 60;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 70;
+const FreeLANLogLevel FREELAN_LOG_LEVEL_WARNING = 50;
+const FreeLANLogLevel FREELAN_LOG_LEVEL_ERROR = 60;
+const FreeLANLogLevel FREELAN_LOG_LEVEL_FATAL = 70;
 
 /**
  * The log payload types.

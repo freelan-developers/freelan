@@ -8,13 +8,13 @@ from . import (
 
 
 class LogLevel(Enum):
-    fatal = native.FREELAN_LOG_LEVEL_FATAL
-    error = native.FREELAN_LOG_LEVEL_ERROR
-    warning = native.FREELAN_LOG_LEVEL_WARNING
-    important = native.FREELAN_LOG_LEVEL_IMPORTANT
-    information = native.FREELAN_LOG_LEVEL_INFORMATION
-    debug = native.FREELAN_LOG_LEVEL_DEBUG
     trace = native.FREELAN_LOG_LEVEL_TRACE
+    debug = native.FREELAN_LOG_LEVEL_DEBUG
+    information = native.FREELAN_LOG_LEVEL_INFORMATION
+    important = native.FREELAN_LOG_LEVEL_IMPORTANT
+    warning = native.FREELAN_LOG_LEVEL_WARNING
+    error = native.FREELAN_LOG_LEVEL_ERROR
+    fatal = native.FREELAN_LOG_LEVEL_FATAL
 
 
 def utc_datetime_to_utc_timestamp(dt):
@@ -160,19 +160,19 @@ def log(level, domain, code, payload=None, timestamp=datetime.utcnow(), file=Non
 CALLBACKS = {}
 
 
-def set_logging_function(func):
+def set_log_function(func):
     """
-    Set the logging function.
+    Set the log function.
 
     :param func: The logging function to call whenever a log entry is emitted.
     If `None`, no logging function is set.
     """
-    CALLBACKS['logging_function'] = func
+    CALLBACKS['log_function'] = func
 
     if func is None:
-        native.freelan_set_logging_callback(ffi.NULL)
+        native.freelan_set_log_function(ffi.NULL)
     else:
-        native.freelan_set_logging_callback(c_logging_callback)
+        native.freelan_set_log_function(c_log_function)
 
 
 def from_native_payload(payload):
@@ -198,7 +198,7 @@ def from_native_payload(payload):
     return key, value
 
 
-def logging_callback(level, timestamp, domain, code, payload_size, payload, file, line):
+def log_function(level, timestamp, domain, code, payload_size, payload, file, line):
     """
     The default logging callback.
 
@@ -206,10 +206,10 @@ def logging_callback(level, timestamp, domain, code, payload_size, payload, file
 
     You should not need to call it directly.
     """
-    logging_function = CALLBACKS.get('logging_function')
+    log_function = CALLBACKS.get('log_function')
 
-    if logging_function:
-        return 1 if logging_function(
+    if log_function:
+        return 1 if log_function(
             level=LogLevel(level),
             timestamp=utc_timestamp_to_utc_datetime(timestamp),
             domain=from_c(ffi.string(domain)),
@@ -227,7 +227,7 @@ def logging_callback(level, timestamp, domain, code, payload_size, payload, file
 
     return 0
 
-c_logging_callback = ffi.callback(
+c_log_function = ffi.callback(
     "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
     "struct FreeLANLogPayload *, char *, unsigned int)",
-)(logging_callback)
+)(log_function)
