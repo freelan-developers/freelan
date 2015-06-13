@@ -2,9 +2,6 @@ cmake_minimum_required (VERSION 2.6)
 
 project(FreeLAN)
 
-# Includes.
-include(CTest)
-
 # Version number.
 set(FreeLAN_VERSION_MAJOR 3)
 set(FreeLAN_VERSION_MINOR 0)
@@ -102,38 +99,34 @@ set_target_properties(FreeLANLibrary PROPERTIES PROJECT_LABEL "FreeLAN library")
 target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
 
 # The tests
-if (BUILD_TESTING)
-    set (GTEST_VERSION "1.7.0")
-    set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
+set (GTEST_VERSION "1.7.0")
+set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
-    set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
-        src/tests/hostname.cpp
-        src/tests/ipv4_address.cpp
-        src/tests/ipv4_endpoint.cpp
-        src/tests/ipv4_prefix_length.cpp
-        src/tests/ipv6_address.cpp
-        src/tests/ipv6_endpoint.cpp
-        src/tests/ipv6_prefix_length.cpp
-        src/tests/log.cpp
-        src/tests/port_number.cpp
-        src/tests/stream_parsers.cpp
-    )
+set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+    src/tests/hostname.cpp
+    src/tests/ipv4_address.cpp
+    src/tests/ipv4_endpoint.cpp
+    src/tests/ipv4_prefix_length.cpp
+    src/tests/ipv6_address.cpp
+    src/tests/ipv6_endpoint.cpp
+    src/tests/ipv6_prefix_length.cpp
+    src/tests/log.cpp
+    src/tests/port_number.cpp
+    src/tests/stream_parsers.cpp
+)
 
-    set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
-        ${GTEST_ROOT}/src/gtest-all.cc
-        ${GTEST_ROOT}/src/gtest_main.cc
-    )
-    source_group(gtest FILES ${GTEST_SRC_FILES})
+set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
+    ${GTEST_ROOT}/src/gtest-all.cc
+    ${GTEST_ROOT}/src/gtest_main.cc
+)
+source_group(gtest FILES ${GTEST_SRC_FILES})
 
-    add_executable(FreeLANTests ${TESTS_SRC_FILES} ${GTEST_SRC_FILES})
-    target_include_directories(FreeLANTests PRIVATE "${GTEST_ROOT}")
-    target_include_directories(FreeLANTests PRIVATE "${GTEST_ROOT}/include")
-    target_link_libraries(FreeLANTests PRIVATE FreeLANInternalLibrary FreeLANLibrary)
-    set_target_properties(FreeLANTests PROPERTIES PROJECT_LABEL "FreeLAN tests")
+add_executable(FreeLANTests ${TESTS_SRC_FILES} ${GTEST_SRC_FILES})
+target_include_directories(FreeLANTests PRIVATE "${GTEST_ROOT}")
+target_include_directories(FreeLANTests PRIVATE "${GTEST_ROOT}/include")
+target_link_libraries(FreeLANTests PRIVATE FreeLANInternalLibrary FreeLANLibrary)
+set_target_properties(FreeLANTests PROPERTIES PROJECT_LABEL "FreeLAN tests")
 
-    if (WIN32)
-        target_compile_options(FreeLANTests PRIVATE "/wd4805")
-    endif()
-
-    add_test(NAME "C++ tests" COMMAND FreeLANTests)
+if (WIN32)
+    target_compile_options(FreeLANTests PRIVATE "/wd4805")
 endif()

@@ -120,7 +120,7 @@ TEST(stream_parsers, read_ipv4_address_invalid) {
 }
 
 TEST(stream_parsers, read_ipv4_address_truncated) {
-	const std::string str_value = "9.0.0";
+	const std::string str_value = "9.0.";
 	address_v4 value;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
