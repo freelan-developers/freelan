@@ -40,31 +40,43 @@
 
 #include "log.hpp"
 
+#include <atomic>
+
 namespace freelan {
 
 namespace {
-	static LogFunction logging_function;
-
-	static int on_log_callback(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line) {
-		if (logging_function) {
-			static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-			const boost::posix_time::ptime ts = epoch + boost::posix_time::microseconds(static_cast<unsigned int>(timestamp * 1000000.0f));
-
-			return logging_function(static_cast<LogLevel>(level), ts, domain, code, payload_size, payload, file, line) ? 1 : 0;
-		}
-
-		return 0;
-	}
+	static LogFunction log_function;
+	static std::atomic<LogLevel> freelan_log_level(LogLevel::INFORMATION);
 }
 
-void set_logging_function(LogFunction function) {
-	logging_function = function;
+void set_log_function(LogFunction function) {
+	log_function = function;
+}
 
-	if (logging_function) {
-		::freelan_set_logging_callback(&on_log_callback);
-	} else {
-		::freelan_set_logging_callback(nullptr);
+LogFunction get_log_function() {
+	return log_function;
+}
+
+void set_log_level(LogLevel level) {
+	freelan_log_level = level;
+}
+
+LogLevel get_log_level() {
+	return freelan_log_level;
+}
+
+bool Logger::commit() {
+	if (m_ok) {
+		m_ok = false;
+
+		const auto log_f = get_log_function();
+
+		if (log_f) {
+			return log_f(m_level, m_timestamp, m_domain, m_code, m_payload, m_file, m_line);
+		}
 	}
+
+	return false;
 }
 
 }

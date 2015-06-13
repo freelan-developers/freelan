@@ -94,14 +94,14 @@ struct FreeLANLogPayload {
 /**
  * \brief A pending log entry.
  */
-struct FreeLANLog;
+struct FreeLANLogger;
 
 /**
  * \brief The logging callback type.
  *
  * \note The entry is deleted automatically when the callback returns.
  */
-typedef int (*FreeLANLoggingCallback)(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
+typedef int (*FreeLANLogFunctionCallback)(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
 
 /**
  * The log levels.
@@ -124,20 +124,20 @@ const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_FLOAT = 3;
 const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN = 4;
 
 /**
- * \brief Set the logging function callback.
- * \param cb The logging function callback. If set to NULL, the logging
- * callback is disabled.
+ * \brief Set the log function callback.
+ * \param cb The log function callback. If set to NULL, the log callback is
+ * disabled.
  *
- * \warning The logging callback can (and will) be called simultaneously from
- * different threads in an unspecified order. It is the caller responsibility
- * to ensure that the logging callback is thread-safe.
+ * \warning The log function callback can (and will) be called simultaneously
+ * from different threads in an unspecified order. It is the caller
+ * responsibility to ensure that the log callback is thread-safe.
  *
- * \warning The logging callback will be called in a blocking-manner by the
- * library code meaning that calls must be as fast as possible. Performing
- * long-lived operations in the logging callback will result in dramatically
- * poor performances.
+ * \warning The log function callback will be called in a blocking-manner by
+ * the library code meaning that calls must be as fast as possible. Performing
+ * long-lived operations in the log callback will result in dramatically poor
+ * performances.
  */
-FREELAN_API void freelan_set_logging_callback(FreeLANLoggingCallback cb);
+FREELAN_API void freelan_set_log_function(FreeLANLogFunctionCallback cb);
 
 /**
  * \brief Set the log level.
@@ -193,24 +193,24 @@ FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, c
  * \note It is the caller responsibility to make sure \c freelan_log_complete()
  * is called on the returned value or memory leaks will occur.
  */
-FREELAN_API struct FreeLANLog* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file = NULL, unsigned int line = 0);
+FREELAN_API struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file = NULL, unsigned int line = 0);
 
 /**
  * \brief Attach a payload to the the current log entry.
- * \param log The log entry, as returned by \c freelan_log_start.
+ * \param logger The log entry, as returned by \c freelan_log_start.
  * \param key The name of payload value to attach.
  * \param type The type of the payload value to attach.
  * \param value The value to attach.
  */
-FREELAN_API void freelan_log_attach(struct FreeLANLog* log, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
+FREELAN_API void freelan_log_attach(struct FreeLANLogger* logger, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
 
 /**
  * \brief Completes the current log entry.
- * \param log The log entry, as returned by \c freelan_log_start. \c log is no
+ * \param logger The log entry, as returned by \c freelan_log_start. \c log is no
  * longer valid after the call.
  * \return A non-zero value if the log entry was handled.
  */
-FREELAN_API int freelan_log_complete(struct FreeLANLog* log);
+FREELAN_API int freelan_log_complete(struct FreeLANLogger* logger);
 
 #ifdef __cplusplus
 }

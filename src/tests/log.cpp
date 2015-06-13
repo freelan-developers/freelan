@@ -47,8 +47,8 @@
 #include "../internal/log.hpp"
 
 using freelan::LogLevel;
+using freelan::LogPayload;
 using freelan::Logger;
-using freelan::Payload;
 using std::string;
 using boost::any_cast;
 
@@ -57,12 +57,12 @@ class LogTest : public ::testing::Test {
 		virtual void SetUp() {
 			using namespace std::placeholders;
 
-			freelan::set_logging_function(std::bind(&LogTest::on_log, this, _1, _2, _3, _4, _5, _6, _7, _8));
+			freelan::set_log_function(std::bind(&LogTest::on_log, this, _1, _2, _3, _4, _5, _6, _7));
 			freelan::set_log_level(LogLevel::INFORMATION);
 		}
 
 		virtual void TearDown() {
-			freelan::set_logging_function();
+			freelan::set_log_function();
 
 			return_value = false;
 			last_level = LogLevel::INFORMATION;
@@ -74,17 +74,14 @@ class LogTest : public ::testing::Test {
 			last_line = 0;
 		}
 
-		bool on_log(LogLevel level, const boost::posix_time::ptime& timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line) {
+		bool on_log(LogLevel level, const boost::posix_time::ptime& timestamp, const std::string& domain, const std::string& code, const std::vector<LogPayload>& payload, const char* file, unsigned int line) {
 			last_level = level;
 			last_timestamp = timestamp;
 			last_domain = domain;
 			last_code = code;
 			last_file = file;
 			last_line = line;
-
-			for (size_t i = 0; i < payload_size; ++i) {
-				last_payload.push_back(Payload::from_native_payload(payload[i]));
-			}
+			last_payload = payload;
 
 			return return_value;
 		}
@@ -94,7 +91,7 @@ class LogTest : public ::testing::Test {
 		boost::posix_time::ptime last_timestamp;
 		string last_domain;
 		string last_code;
-		std::vector<Payload> last_payload;
+		std::vector<LogPayload> last_payload;
 		const char* last_file = nullptr;
 		unsigned int last_line = 0;
 };
@@ -182,12 +179,12 @@ TEST_F(LogTest, logger_complete_success) {
 TEST_F(LogTest, log_success) {
 	return_value = true;
 
-	LOG(LogLevel::INFORMATION, "foo", "bar").attach("a", "foo");
+	LOG(LogLevel::INFORMATION, "foo", "bar").attach("a", "foo"); const auto line = __LINE__;
 
 	ASSERT_EQ(LogLevel::INFORMATION, last_level);
 	ASSERT_EQ(static_cast<size_t>(1), last_payload.size());
 	ASSERT_FALSE(string(last_file).empty());
-	ASSERT_EQ(static_cast<unsigned int>(185), last_line);
+	ASSERT_EQ(static_cast<unsigned int>(line), last_line);
 
 	// Test the payload values.
 	ASSERT_EQ("a", last_payload[0].key);
