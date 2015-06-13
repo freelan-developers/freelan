@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 project(FreeLAN)
 
 find_package(Threads)
+find_package(Boost)
 
 # Version number.
 set(FreeLAN_VERSION_MAJOR 3)
@@ -123,6 +124,7 @@ target_link_libraries(FreeLANLibrary PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(FreeLANLibrary PUBLIC "boost_system")
 set_target_properties(FreeLANLibrary PROPERTIES PROJECT_LABEL "FreeLAN library")
 set_target_properties(FreeLANLibrary PROPERTIES OUTPUT_NAME "freelan")
+set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH ON)
 target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
 
 install(TARGETS FreeLANLibrary DESTINATION lib)
