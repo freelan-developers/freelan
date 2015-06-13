@@ -50,7 +50,22 @@
 
 #include <freelan/memory.h>
 
-#define FREELAN_NEW MarkPointer(__FILE__, __LINE__) * new
+namespace freelan {
+
+void* internal_malloc(size_t size);
+void* internal_realloc(void* ptr, size_t size);
+void internal_free(void* ptr);
+char* internal_strdup(const char* str);
+void internal_register_memory_functions(
+	void* (*malloc_func)(size_t),
+	void* (*realloc_func)(void*, size_t),
+	void (*free_func)(void*),
+	char* (*strdup_func)(const char*)
+);
+void* internal_mark_pointer(void* ptr, const char* file, unsigned int line);
+void internal_register_memory_debug_functions(void* (*mark_pointer_func)(void*, const char*, unsigned int));
+
+#define FREELAN_NEW freelan::MarkPointer(__FILE__, __LINE__) * new
 #define FREELAN_DELETE delete
 
 class MarkPointer {
@@ -62,7 +77,7 @@ class MarkPointer {
 
 		template <typename T>
 		T* operator*(T* ptr) {
-			freelan_mark_pointer(ptr, m_file, m_line);
+			internal_mark_pointer(ptr, m_file, m_line);
 
 			return ptr;
 		}
@@ -71,6 +86,8 @@ class MarkPointer {
 		const char* m_file;
 		unsigned int m_line;
 };
+
+}
 
 void* operator new(std::size_t n);
 
