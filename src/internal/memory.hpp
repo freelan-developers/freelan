@@ -48,8 +48,6 @@
 
 #include <cstddef>
 
-#include <freelan/memory.h>
-
 namespace freelan {
 
 void* internal_malloc(size_t size);

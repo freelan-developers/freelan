@@ -95,7 +95,7 @@ char* internal_strdup(const char* str) {
 	assert(str);
 
 	const size_t len = ::strlen(str);
-	char* const newstr = static_cast<char*>(FREELAN_MALLOC(len + 1));
+	char* const newstr = static_cast<char*>(internal_malloc(len + 1));
 	::memcpy(newstr, str, len + 1);
 
 	return newstr;
@@ -124,7 +124,7 @@ void internal_register_memory_debug_functions(void* (*mark_pointer_func)(void*, 
 }
 
 void* operator new(std::size_t n) {
-	void* const result = freelan_malloc(n);
+	void* const result = freelan::internal_malloc(n);
 
 	if (result == NULL) {
 		throw std::bad_alloc();
@@ -134,5 +134,5 @@ void* operator new(std::size_t n) {
 }
 
 void operator delete(void* ptr) DELETE_NOEXCEPT {
-	freelan_free(ptr);
+	freelan::internal_free(ptr);
 }
