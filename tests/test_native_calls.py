@@ -115,7 +115,34 @@ class NativeCallsTests(TestCase):
     def test_log_simple(self):
         self.addCleanup(native.freelan_set_log_function, ffi.NULL)
 
-        callback = MagicMock(return_value=1)
+        context = {'call_count': 0}
+        p_domain = ffi.new("char[]", "mydomain")
+        p_code = ffi.new("char[]", "mycode")
+        p_file = ffi.new("char[]", "myfile")
+
+        def callback(
+            level,
+            timestamp,
+            domain,
+            code,
+            payload_size,
+            payload,
+            file,
+            line,
+        ):
+            self.assertEqual(native.FREELAN_LOG_LEVEL_IMPORTANT, level)
+            self.assertEqual(42, timestamp)
+            self.assertEqual(ffi.string(p_domain), ffi.string(domain))
+            self.assertEqual(ffi.string(p_code), ffi.string(code))
+            self.assertEqual(0, payload_size)
+            self.assertEqual(ffi.NULL, payload)
+            self.assertEqual(p_file, file)
+            self.assertEqual(123, line)
+
+            context['call_count'] += 1
+
+            return 1
+
         c_callback = ffi.callback(
             "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
             "struct FreeLANLogPayload *, char *, unsigned int)",
@@ -123,31 +150,18 @@ class NativeCallsTests(TestCase):
 
         native.freelan_set_log_function(c_callback)
 
-        domain = ffi.new("char[]", "mydomain")
-        code = ffi.new("char[]", "mycode")
-        file = ffi.new("char[]", "myfile")
         result = native.freelan_log(
             native.FREELAN_LOG_LEVEL_IMPORTANT,
             42,
-            domain,
-            code,
+            p_domain,
+            p_code,
             0,
             ffi.NULL,
-            file,
+            p_file,
             123,
         )
-        self.assertEqual(1, len(callback.mock_calls))
 
-        args = callback.mock_calls[0][1]
-
-        self.assertEqual(native.FREELAN_LOG_LEVEL_IMPORTANT, args[0])
-        self.assertEqual(42.0, args[1])
-        self.assertEqual("mydomain", ffi.string(args[2]))
-        self.assertEqual("mycode", ffi.string(args[3]))
-        self.assertEqual(0, args[4])
-        self.assertEqual(ffi.NULL, args[5])
-        self.assertEqual(file, args[6])
-        self.assertEqual(123, args[7])
+        self.assertEqual(1, context['call_count'])
         self.assertEqual(1, result)
 
     def test_log_extended(self):
