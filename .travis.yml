@@ -19,6 +19,7 @@ install:
   - sudo apt-get install libboost1.55-all-dev libssl-dev libcurl4-openssl-dev
   - sudo apt-get install ninja-build
 script:
+  - cmake -h
   - mkdir build && cd build && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=../install ..
   - ninja -C build install
   - tox
