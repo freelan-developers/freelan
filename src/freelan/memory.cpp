@@ -38,14 +38,14 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/memory.h>
+#include "memory.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <new>
 
-#include "../internal/memory.hpp"
+#include "memory.hpp"
 
 FREELAN_API void* freelan_malloc(size_t size) {
 	return freelan::internal_malloc(size);

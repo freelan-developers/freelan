@@ -1,4 +1,9 @@
-/**
+/*
+ * freelan - An open, multi-platform software to establish peer-to-peer virtual
+ * private networks.
+ *
+ * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ *
  * This file is part of freelan.
  *
  * freelan is free software; you can redistribute it and/or modify it
@@ -33,26 +38,10 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file version.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Version information.
- */
+#include "version.h"
 
-#pragma once
+#include "version.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
-#define FREELAN_VERSION_MAJOR @FreeLAN_VERSION_MAJOR@
-#define FREELAN_VERSION_MINOR @FreeLAN_VERSION_MINOR@
-#define FREELAN_VERSION_PATCH @FreeLAN_VERSION_PATCH@
-#define FREELAN_VERSION_STRING TOSTRING(FREELAN_VERSION_MAJOR) "." TOSTRING(FREELAN_VERSION_MINOR) "." TOSTRING(FREELAN_VERSION_PATCH)
-
-#ifdef __cplusplus
+FREELAN_API const char* freelan_get_version_string(void) {
+    return FREELAN_VERSION_STRING;
 }
-#endif

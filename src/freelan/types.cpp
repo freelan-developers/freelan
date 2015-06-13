@@ -38,20 +38,20 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/types.h>
+#include "types.h"
 
 #include <cassert>
 
-#include <freelan/memory.h>
+#include "memory.h"
 
-#include "../internal/memory.hpp"
-#include "../internal/error.hpp"
-#include "../internal/ipv4_address.hpp"
-#include "../internal/ipv6_address.hpp"
-#include "../internal/hostname.hpp"
-#include "../internal/port_number.hpp"
-#include "../internal/ipv4_prefix_length.hpp"
-#include "../internal/ipv6_prefix_length.hpp"
+#include "memory.hpp"
+#include "error.hpp"
+#include "ipv4_address.hpp"
+#include "ipv6_address.hpp"
+#include "hostname.hpp"
+#include "port_number.hpp"
+#include "ipv4_prefix_length.hpp"
+#include "ipv6_prefix_length.hpp"
 
 /*
  * I'm usually not to fond of C macros, especially those that span accross

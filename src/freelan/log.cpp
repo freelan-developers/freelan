@@ -38,7 +38,7 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/log.h>
+#include "log.h"
 
 #include <cassert>
 #include <atomic>
@@ -47,8 +47,8 @@
 #include <vector>
 #include <typeinfo>
 
-#include "../internal/memory.hpp"
-#include "../internal/log.hpp"
+#include "memory.hpp"
+#include "log.hpp"
 
 using boost::any_cast;
 

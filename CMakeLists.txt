@@ -7,6 +7,7 @@ find_package(Threads)
 # Version number.
 set(FreeLAN_VERSION_MAJOR 3)
 set(FreeLAN_VERSION_MINOR 0)
+set(FreeLAN_VERSION_PATCH 0)
 
 # Third-party include paths.
 if (WIN32)
@@ -103,18 +104,20 @@ set (API_HEADER_FILES ${API_HEADER_FILES}
     include/freelan/log.h
     include/freelan/memory.h
     include/freelan/types.h
+    include/freelan/version.h
 )
 set (API_SRC_FILES ${API_SRC_FILES}
     src/freelan/error.cpp
     src/freelan/log.cpp
     src/freelan/memory.cpp
     src/freelan/types.cpp
+    src/freelan/version.cpp
 )
 source_group(api FILES ${API_HEADER_FILES} ${API_SRC_FILES})
 
 add_library(FreeLANLibrary SHARED ${API_SRC_FILES})
-target_include_directories(FreeLANLibrary PUBLIC "${PROJECT_SOURCE_DIR}/include")
-target_include_directories(FreeLANLibrary PUBLIC "${PROJECT_BINARY_DIR}/include")
+target_include_directories(FreeLANLibrary INTERFACE "${PROJECT_SOURCE_DIR}/include")
+target_include_directories(FreeLANLibrary PRIVATE "${PROJECT_SOURCE_DIR}/include/freelan")
 target_link_libraries(FreeLANLibrary PRIVATE FreeLANInternalLibrary)
 target_link_libraries(FreeLANLibrary PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(FreeLANLibrary PUBLIC "boost_system")

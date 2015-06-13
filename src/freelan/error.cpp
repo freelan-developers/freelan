@@ -38,10 +38,10 @@
  * depending on the nature of your project.
  */
 
-#include <freelan/error.h>
+#include "error.h"
 
-#include "../internal/memory.hpp"
-#include "../internal/error.hpp"
+#include "memory.hpp"
+#include "error.hpp"
 
 FREELAN_API struct ErrorContext* freelan_acquire_error_context(void) {
 	try {
