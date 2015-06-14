@@ -15,21 +15,19 @@ env:
 before_install:
   - sudo add-apt-repository ppa:boost-latest/ppa -y
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo add-apt-repository ppa:kalakris/cmake -y
   - sudo apt-get update -qq
 
 install:
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
   - sudo apt-get install libboost1.55-all-dev libssl-dev libcurl4-openssl-dev
-  - sudo apt-get install cmake
+  - wget -O /tmp/cmake.sh http://www.cmake.org/files/v3.2/cmake-3.2.3-Linux-x86_64.sh
+  - sudo sh /tmp/cmake.sh --skip-license --prefix=/usr
+  - sudo pip install tox
 
 script:
   - cmake -G "Unix Makefiles" .
   - make VERBOSE=1 install
-  - virtualenv .freelan
-  - . .freelan/bin/activate
-  - pip install tox
   - tox
 
 branches:
