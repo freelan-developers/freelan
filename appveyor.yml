@@ -3,6 +3,10 @@ version: 3.0-{build}
 environment:
   BOOST_ROOT: C:\Libraries\Boost
 
+configuration:
+  - Debug
+  - Release
+
 before_build:
   - cmd: cmake -G "Visual Studio 12 2013" -DBOOST_ROOT=%BOOST_ROOT% .
 
@@ -10,3 +14,7 @@ build:
   project: FreeLAN.sln
   parallel: true
   verbosity: normal
+  target: INSTALL
+
+test_script:
+  - install\bin\freelan_tests
