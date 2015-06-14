@@ -15,6 +15,7 @@ configuration:
 
 install:
   - appveyor DownloadFile %BOOST_DOWNLOAD_URL%
+  - dir
   - 7z x %BOOST_ARCHIVE_NAME%
 
 before_build:
