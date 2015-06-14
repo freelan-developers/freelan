@@ -1,4 +1,5 @@
 from teapot import *  # noqa
+from teapot.filters.filter import named_filter
 
 # General settings
 set_option('cache_root', 'third-party/cache')
