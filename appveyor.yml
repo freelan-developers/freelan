@@ -3,6 +3,10 @@ version: 3.0-{build}
 environment:
   BOOST_ROOT: C:\Libraries\Boost
 
+platform:
+  - x86
+  - x64
+
 configuration:
   - Debug
   - Release
