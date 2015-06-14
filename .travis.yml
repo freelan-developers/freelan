@@ -10,9 +10,8 @@ compiler:
 cache: apt
 
 env:
-  - TOXENV=py27
-  - CMAKE_BUILD_TYPE=DEBUG
-  - CMAKE_BUILD_TYPE=RELEASE
+  - TOXENV=py27 CMAKE_BUILD_TYPE=DEBUG
+  - TOXENV=py27 CMAKE_BUILD_TYPE=RELEASE
 
 before_install:
   - sudo add-apt-repository ppa:boost-latest/ppa -y
@@ -28,6 +27,7 @@ install:
   - sudo pip install tox
 
 script:
+  - cmake -h
   - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
   - make VERBOSE=1 install
   - tox
