@@ -17,7 +17,7 @@ configuration:
 
 install:
   - C:\Python27\Scripts\pip install teapot
-  - C:\Python27\Scripts\teapot build boost
+  - C:\Python27\Scripts\teapot -d -v build boost
 
 cache:
   - third-party
