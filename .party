@@ -39,8 +39,8 @@ Attendee('iconv').get_build('msvc-x64').commands = [
 
 # boost
 Attendee('boost', filter=~f('linux'))
-Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.bz2/download', filter=~f('windows'), mimetype='application/x-bzip2')
-Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.zip/download', filter='windows', mimetype='application/zip')
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2/download', filter=~f('windows'), mimetype='application/x-bzip2')
+Attendee('boost').add_source('http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip/download', filter='windows', mimetype='application/zip')
 
 Attendee('boost').add_build('osx', environment='system', filter='darwin')
 Attendee('boost').get_build('osx').commands = [
@@ -53,19 +53,17 @@ Attendee('boost').get_build('osx').commands = [
 Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared install',
-    r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
-    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared install',
-    r'xcopy bjam.exe {{prefix}}\Debug\bin\ /S /Y',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=release link=static threading=multi runtime-link=shared install',
+    r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=debug link=static threading=multi runtime-link=shared install',
 ]
 
 Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=release link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
-    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
-    r'xcopy bjam.exe {{prefix}}\Debug\bin\ /S /Y',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
 ]
 
 # OpenSSL

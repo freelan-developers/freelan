@@ -2,8 +2,24 @@ cmake_minimum_required (VERSION 2.6)
 
 project(FreeLAN)
 
+# On Windows third-parties are manually provided.
+if (WIN32)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(ARCHITECTURE "x64")
+    else()
+        set(ARCHITECTURE "x86")
+    endif()
+
+    set(THIRD_PARTY_ROOT ${PROJECT_SOURCE_DIR}/third-party/install/${ARCHITECTURE})
+
+    set(BOOST_ROOT "${THIRD_PARTY_ROOT}")
+    set(Boost_USE_STATIC_LIBS ON)
+    set(Boost_USE_MULTITHREADED ON)
+    set(Boost_USE_STATIC_RUNTIME OFF)
+endif()
+
 find_package(Threads)
-find_package(Boost COMPONENTS system REQUIRED)
+find_package(Boost COMPONENTS system date_time regex REQUIRED)
 
 # Default install path
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -15,37 +31,13 @@ set(FreeLAN_VERSION_MAJOR 3)
 set(FreeLAN_VERSION_MINOR 0)
 set(FreeLAN_VERSION_PATCH 0)
 
-# Third-party include paths.
-if (WIN32)
-    include_directories("${PROJECT_SOURCE_DIR}/extra/msstdint/include")
-
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(ARCHITECTURE "x64")
-    else()
-        set(ARCHITECTURE "x86")
-    endif()
-
-    set(THIRD_PARTY_ROOT ${PROJECT_SOURCE_DIR}/third-party/install/${ARCHITECTURE})
-    string(REGEX REPLACE "/" "\\\\" THIRD_PARTY_ROOT ${THIRD_PARTY_ROOT})
-    set(BOOST_SUFFIX "1_57")
-
-    # Debug
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /I${THIRD_PARTY_ROOT}\\Debug\\include")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /I${THIRD_PARTY_ROOT}\\Debug\\include\\boost-${BOOST_SUFFIX}")
-    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /LIBPATH:${THIRD_PARTY_ROOT}\\Debug\\lib")
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /LIBPATH:${THIRD_PARTY_ROOT}\\Debug\\lib")
-
-    # Release
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /I${THIRD_PARTY_ROOT}\\Release\\include")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /I${THIRD_PARTY_ROOT}\\Release\\include\\boost-${BOOST_SUFFIX}")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LIBPATH:${THIRD_PARTY_ROOT}\\Release\\lib")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LIBPATH:${THIRD_PARTY_ROOT}\\Release\\lib")
-
-    add_definitions("-D_WIN32_WINNT=0x0600")
-endif()
-
 # Global include directories.
 include_directories("${Boost_INCLUDE_DIRS}")
+
+if (WIN32)
+    include_directories("${PROJECT_SOURCE_DIR}/extra/msstdint/include")
+    add_definitions("-D_WIN32_WINNT=0x0600")
+endif()
 
 # Specific compiler flags.
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
