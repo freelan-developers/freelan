@@ -5,6 +5,11 @@ project(FreeLAN)
 find_package(Threads)
 find_package(Boost)
 
+# Default install path
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set (CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "Default installation path" FORCE)
+endif()
+
 # Version number.
 set(FreeLAN_VERSION_MAJOR 3)
 set(FreeLAN_VERSION_MINOR 0)
