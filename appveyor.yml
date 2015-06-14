@@ -1,7 +1,5 @@
 version: 3.0-{build}
 
-os: unstable
-
 environment:
   BOOST_ROOT: C:\local\boost_1_58_0
   BOOST_DOWNLOAD_URL: http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip/download
