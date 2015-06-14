@@ -5,3 +5,8 @@ environment:
 
 before_build:
   - cmd: cmake -G "Visual Studio 12 2013" -DBOOST_ROOT=%BOOST_ROOT% .
+
+build:
+  project: FreeLAN.sln
+  parallel: true
+  verbosity: normal
