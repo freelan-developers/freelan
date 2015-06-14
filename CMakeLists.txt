@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
+cmake_policy(SET CMP0022 NEW)
+
 project(FreeLAN)
 
 # On Windows third-parties are manually provided.
@@ -16,6 +18,9 @@ if (WIN32)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_MULTITHREADED ON)
     set(Boost_USE_STATIC_RUNTIME OFF)
+
+    # Disable Boost's auto-link feature
+    add_definitions(/DBOOST_ALL_NO_LIB)
 endif()
 
 find_package(Threads)
