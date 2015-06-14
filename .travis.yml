@@ -26,7 +26,10 @@ install:
 
 script:
   - cmake -G "Unix Makefiles" .
-  - make install
+  - make VERBOSE=1 install
+  - virtualenv .freelan
+  - . .freelan/bin/activate
+  - pip install tox
   - tox
 
 branches:
