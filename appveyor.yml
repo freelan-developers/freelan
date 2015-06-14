@@ -3,8 +3,5 @@ version: 3.0-{build}
 environment:
   BOOST_ROOT: C:\Libraries\Boost
 
-install:
-  - cinst: cmake
-
 before_build:
   - cmd: cmake -G "Visual Studio 12 2013" -DBOOST_ROOT=%BOOST_ROOT% .
