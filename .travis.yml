@@ -19,11 +19,11 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - pip install tox
   - sudo apt-get install gcc-4.9 g++-4.9
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
   - sudo apt-get install libboost1.55-all-dev libssl-dev libcurl4-openssl-dev
   - sudo apt-get install cmake
+  - sudo apt-get install python-tox
 
 script:
   - cmake -G "Unix Makefiles" .
