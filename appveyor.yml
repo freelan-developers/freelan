@@ -3,7 +3,9 @@ version: 3.0-{build}
 os: unstable
 
 environment:
-  BOOST_ROOT: C:\Libraries\Boost
+  BOOST_ROOT: C:\local\boost_1_58_0
+  BOOST_DOWNLOAD_URL: http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip/download
+  BOOST_ARCHIVE_NAME: boost_1_58_0.zip
 
   matrix:
     - CMAKE_GENERATOR: "Visual Studio 12 2013"
@@ -12,6 +14,10 @@ environment:
 configuration:
   - Debug
   - Release
+
+install:
+  - appveyor DownloadFile %BOOST_DOWNLOAD_URL%
+  - 7z x %BOOST_ARCHIVE_NAME%
 
 before_build:
   - cmd: cmake -G "%CMAKE_GENERATOR%" -DBOOST_ROOT=%BOOST_ROOT% .
