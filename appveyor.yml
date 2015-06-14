@@ -2,4 +2,4 @@ version: 3.0-{build}
 install:
   - cinst: cmake
 before_build:
-  - cmd: cmake -G "Visual Studio 12 2013" ..
+  - cmd: cmake -G "Visual Studio 12 2013" .
