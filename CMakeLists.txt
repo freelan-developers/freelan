@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 
 cmake_policy(SET CMP0022 NEW)
 
@@ -14,7 +14,10 @@ if (WIN32)
 
     set(THIRD_PARTY_ROOT ${PROJECT_SOURCE_DIR}/third-party/install/${ARCHITECTURE})
 
-    set(BOOST_ROOT "${THIRD_PARTY_ROOT}")
+    if (NOT BOOST_ROOT)
+        set(BOOST_ROOT "${THIRD_PARTY_ROOT}")
+    endif()
+
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_MULTITHREADED ON)
     set(Boost_USE_STATIC_RUNTIME OFF)

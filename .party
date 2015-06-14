@@ -62,7 +62,7 @@ Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64',
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
     r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=release link=static threading=multi runtime-link=shared address-model=64 install',
-    r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
+    r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
     r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
 ]
 
