@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 project(FreeLAN)
 
 find_package(Threads)
-find_package(Boost)
+find_package(Boost COMPONENTS system REQUIRED)
 
 # Default install path
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -43,6 +43,9 @@ if (WIN32)
 
     add_definitions("-D_WIN32_WINNT=0x0600")
 endif()
+
+# Global include directories.
+include_directories("${Boost_INCLUDE_DIRS}")
 
 # Specific compiler flags.
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -126,7 +129,7 @@ target_include_directories(FreeLANLibrary INTERFACE "${PROJECT_SOURCE_DIR}/inclu
 target_include_directories(FreeLANLibrary PRIVATE "${PROJECT_SOURCE_DIR}/include/freelan")
 target_link_libraries(FreeLANLibrary PRIVATE FreeLANInternalLibrary)
 target_link_libraries(FreeLANLibrary PUBLIC ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(FreeLANLibrary PUBLIC "boost_system")
+target_link_libraries(FreeLANLibrary PUBLIC ${Boost_LIBRARIES})
 set_target_properties(FreeLANLibrary PROPERTIES PROJECT_LABEL "FreeLAN library")
 set_target_properties(FreeLANLibrary PROPERTIES OUTPUT_NAME "freelan")
 set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH ON)
@@ -158,7 +161,7 @@ set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
 )
 source_group(gtest FILES ${GTEST_SRC_FILES})
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     set_property(SOURCE ${GTEST_SRC_FILES} APPEND_STRING PROPERTY COMPILE_FLAGS "-Wno-missing-field-initializers")
 endif()
 
