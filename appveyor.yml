@@ -14,7 +14,9 @@ build:
   project: FreeLAN.sln
   parallel: true
   verbosity: normal
-  target: INSTALL
+
+after_build:
+  - msbuild INSTALL.vcxproj
 
 test_script:
   - install\bin\freelan_tests
