@@ -1,5 +1,9 @@
 version: 3.0-{build}
 
+branches:
+  only:
+    - api
+
 environment:
   matrix:
     - CMAKE_GENERATOR: "Visual Studio 12 2013"
