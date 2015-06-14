@@ -3,16 +3,16 @@ version: 3.0-{build}
 environment:
   BOOST_ROOT: C:\Libraries\Boost
 
-platform:
-  - x86
-  - x64
+  matrix:
+    - CMAKE_GENERATOR: "Visual Studio 12 2013"
+    - CMAKE_GENERATOR: "Visual Studio 12 2013 Win64"
 
 configuration:
   - Debug
   - Release
 
 before_build:
-  - cmd: cmake -G "Visual Studio 12 2013" -DBOOST_ROOT=%BOOST_ROOT% .
+  - cmd: cmake -G "%CMAKE_GENERATOR%" -DBOOST_ROOT=%BOOST_ROOT% .
 
 build:
   project: FreeLAN.sln
