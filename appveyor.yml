@@ -1,5 +1,7 @@
 version: 3.0-{build}
 
+os: unstable
+
 environment:
   BOOST_ROOT: C:\Libraries\Boost
 
