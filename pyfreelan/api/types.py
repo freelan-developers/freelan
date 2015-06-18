@@ -7,7 +7,10 @@ from functools import (
     total_ordering,
 )
 
-from . import native
+from . import (
+    native,
+    ffi,
+)
 
 from .error import (
     from_native_string,
@@ -65,6 +68,12 @@ class NativeType(object):
                 :param opaque_ptr: The opaque pointer to the underlying C
                 instance.
                 """
+                if not isinstance(opaque_ptr, ffi.CData):
+                    raise TypeError(
+                        "opaque_ptr must be a low-level opaque pointer. Are "
+                        "you missing a .from_string() call ?",
+                    )
+
                 self._opaque_ptr = opaque_ptr
 
             @classmethod
@@ -78,8 +87,9 @@ class NativeType(object):
                 return cls(opaque_ptr=from_string(ectx, _str))
 
             def __del__(self):
-                free(self._opaque_ptr)
-                self._opaque_ptr = None
+                if hasattr(self, '_opaque_ptr'):
+                    free(self._opaque_ptr)
+                    self._opaque_ptr = None
 
             @swallow_native_string
             @check_error_context

@@ -11,6 +11,7 @@ from mock import (
     MagicMock,
 )
 
+from pyfreelan.api import ffi
 from pyfreelan.api.types import (
     swallow_native_string,
     NativeType,
@@ -129,16 +130,23 @@ class NativeTypeTests(TestCase):
     def test_wrapper_init_stores_pointer(self):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
-        opaque_ptr = MagicMock()
+        opaque_ptr = MagicMock(spec=ffi.CData)
 
         wrapper.__init__(instance, opaque_ptr)
 
         self.assertEqual(opaque_ptr, instance._opaque_ptr)
 
+    def test_wrapper_init_checks_pointer_type(self):
+        wrapper = NativeType.create_wrapper('foo')
+
+        with self.assertRaises(TypeError):
+            wrapper("bar")
+
     @disable_error_context_checks
     def test_wrapper_from_string(self, ectx):
         wrapper = NativeType.create_wrapper('foo')
         from_string = self.native.freelan_foo_from_string
+        from_string.return_value = MagicMock(spec=ffi.CData)
 
         instance = wrapper.from_string("mystr")
 
@@ -214,23 +222,25 @@ class NativeTypeTests(TestCase):
 
     def test_wrapper_comparison(self):
         def from_string(_, s):
-            return s
+            result = MagicMock(spec=ffi.CData)
+            result.value = s
+            return result
 
         def equal(lhs, rhs):
-            self.assertEqual({"a", "b"}, {lhs, rhs})
-            return lhs == rhs
+            self.assertEqual({"a", "b"}, {lhs.value, rhs.value})
+            return lhs.value == rhs.value
 
         def less_than(lhs, rhs):
-            self.assertEqual({"a", "b"}, {lhs, rhs})
-            return lhs < rhs
+            self.assertEqual({"a", "b"}, {lhs.value, rhs.value})
+            return lhs.value < rhs.value
 
         self.native.freelan_foo_from_string = from_string
         self.native.freelan_foo_equal = equal
         self.native.freelan_foo_less_than = less_than
 
         wrapper = NativeType.create_wrapper('foo')
-        instance_a = wrapper("a")
-        instance_b = wrapper("b")
+        instance_a = wrapper.from_string("a")
+        instance_b = wrapper.from_string("b")
 
         self.assertFalse(instance_a == instance_b)
         self.assertTrue(instance_a != instance_b)
@@ -241,7 +251,9 @@ class NativeTypeTests(TestCase):
 
     def test_wrapper_invalid_comparison(self):
         wrapper = NativeType.create_wrapper('foo')
-        instance = wrapper("instance")
+        from_string = self.native.freelan_foo_from_string
+        from_string.return_value = MagicMock(spec=ffi.CData)
+        instance = wrapper.from_string("instance")
 
         # Wrapper types can only be compared to instances of the same class.
         self.assertFalse(instance == "instance")
