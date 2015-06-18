@@ -53,69 +53,81 @@
 #include "ipv4_prefix_length.hpp"
 #include "ipv6_prefix_length.hpp"
 
+namespace {
+	template <typename Type, typename InternalType>
+	Type* from_string_generic(struct ErrorContext* ectx, const char* str) {
+		assert(str);
+
+		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+		return reinterpret_cast<Type*>(
+			FREELAN_NEW InternalType(InternalType::from_string(str))
+		);
+
+		FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+		return nullptr;
+	}
+
+	template <typename Type, typename InternalType>
+	char* to_string_generic(struct ErrorContext* ectx, const Type* inst) {
+		assert(inst);
+
+		const auto value = reinterpret_cast<const InternalType*>(inst);
+
+		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+		return ::freelan_strdup(value->to_string().c_str());
+
+		FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+		return nullptr;
+	}
+
+	template <typename Type, typename InternalType>
+	int less_than_generic(const Type* lhs, const Type* rhs) {
+		assert(lhs);
+		assert(rhs);
+
+		const auto ilhs = *reinterpret_cast<const InternalType*>(lhs);
+		const auto irhs = *reinterpret_cast<const InternalType*>(rhs);
+
+		return (ilhs < irhs) ? 1 : 0;
+	}
+
+	template <typename Type, typename InternalType>
+	int equal_generic(const Type* lhs, const Type* rhs) {
+		assert(lhs);
+		assert(rhs);
+
+		const auto ilhs = *reinterpret_cast<const InternalType*>(lhs);
+		const auto irhs = *reinterpret_cast<const InternalType*>(rhs);
+
+		return (ilhs == irhs) ? 1 : 0;
+	}
+}
+
 /*
- * I'm usually not to fond of C macros, especially those that span accross
+ * I'm usually not too fond of C macros, especially those that span accross
  * several lines and try to do smart things. In this case, the alternative is
  * having duplicate and exactly similar function definitions which is error
  * prone and ridiculous.
  */
 
 #define IMPLEMENT_from_string(TYPE) \
-struct TYPE* freelan_ ## TYPE ## _from_string(struct ErrorContext* ectx, const char* str) { \
-	assert(str); \
-\
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx); \
-\
-	return reinterpret_cast<TYPE*>( \
-		FREELAN_NEW freelan::TYPE(freelan::TYPE::from_string(str)) \
-	); \
-\
-	FREELAN_END_USE_ERROR_CONTEXT(ectx); \
-\
-	return nullptr; \
-}
+struct TYPE* freelan_ ## TYPE ## _from_string(struct ErrorContext* ectx, const char* str) { return from_string_generic<TYPE, freelan::TYPE>(ectx, str); }
 
 #define IMPLEMENT_to_string(TYPE) \
-char* freelan_ ## TYPE ## _to_string(struct ErrorContext* ectx, const struct TYPE* inst) { \
-	assert(inst); \
-\
-	const auto value = reinterpret_cast<const freelan::TYPE*>(inst); \
-\
-	FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx); \
-\
-	return ::freelan_strdup(value->to_string().c_str()); \
-\
-	FREELAN_END_USE_ERROR_CONTEXT(ectx); \
-\
-	return nullptr; \
-}
+char* freelan_ ## TYPE ## _to_string(struct ErrorContext* ectx, const struct TYPE* inst) { return to_string_generic<TYPE, freelan::TYPE>(ectx, inst); }
 
 #define IMPLEMENT_free(TYPE) \
-void freelan_ ## TYPE ## _free(struct TYPE* inst) { \
-	FREELAN_DELETE reinterpret_cast<freelan::TYPE*>(inst); \
-}
+void freelan_ ## TYPE ## _free(struct TYPE* inst) { FREELAN_DELETE reinterpret_cast<freelan::TYPE*>(inst); }
 
 #define IMPLEMENT_less_than(TYPE) \
-int freelan_ ## TYPE ## _less_than(const struct TYPE* lhs, const struct TYPE* rhs) { \
-	assert(lhs); \
-	assert(rhs); \
-\
-	const auto ilhs = *reinterpret_cast<const freelan::TYPE*>(lhs); \
-	const auto irhs = *reinterpret_cast<const freelan::TYPE*>(rhs); \
-\
-	return (ilhs < irhs) ? 1 : 0; \
-}
+int freelan_ ## TYPE ## _less_than(const struct TYPE* lhs, const struct TYPE* rhs) { return less_than_generic<TYPE, freelan::TYPE>(lhs, rhs); }
 
 #define IMPLEMENT_equal(TYPE) \
-int freelan_ ## TYPE ## _equal(const struct TYPE* lhs, const struct TYPE* rhs) { \
-	assert(lhs); \
-	assert(rhs); \
-\
-	const auto ilhs = *reinterpret_cast<const freelan::TYPE*>(lhs); \
-	const auto irhs = *reinterpret_cast<const freelan::TYPE*>(rhs); \
-\
-	return (ilhs == irhs) ? 1 : 0; \
-}
+int freelan_ ## TYPE ## _equal(const struct TYPE* lhs, const struct TYPE* rhs) { return equal_generic<TYPE, freelan::TYPE>(lhs, rhs); }
 
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
