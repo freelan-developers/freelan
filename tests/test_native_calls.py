@@ -573,3 +573,161 @@ class NativeCallsTests(TestCase):
 
         result = native.freelan_IPv6PrefixLength_equal(*values)
         self.assertEqual(0, result)
+
+    def test_IPv4Endpoint_from_string_simple(self):
+        result = native.freelan_IPv4Endpoint_from_string(self.ectx, "9.0.0.1:12000")
+        self.addCleanup(native.freelan_IPv4Endpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv4Endpoint_from_string_incorrect_value(self):
+        result = native.freelan_IPv4Endpoint_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv4Endpoint_from_string_empty_value(self):
+        result = native.freelan_IPv4Endpoint_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv4Endpoint_from_parts(self):
+        ip_address = native.freelan_IPv4Address_from_string(self.ectx, "9.0.0.1")
+        self.addCleanup(native.freelan_IPv4Address_free, ip_address)
+        port_number = native.freelan_PortNumber_from_string(self.ectx, "12000")
+        self.addCleanup(native.freelan_PortNumber_free, port_number)
+        result = native.freelan_IPv4Endpoint_from_parts(ip_address, port_number)
+        self.addCleanup(native.freelan_IPv4Endpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv4Endpoint_to_string_simple(self):
+        str_value = "9.0.0.1:12000"
+
+        value = native.freelan_IPv4Endpoint_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPv4Endpoint_free, value)
+
+        result = native.freelan_IPv4Endpoint_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv4Endpoint_less_than(self):
+        str_values = ("9.0.0.1:12000", "9.0.0.2:11000")
+
+        values = (
+            native.freelan_IPv4Endpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv4Endpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv4Endpoint_free, values[0])
+        self.addCleanup(native.freelan_IPv4Endpoint_free, values[1])
+
+        result = native.freelan_IPv4Endpoint_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPv4Endpoint_equal(self):
+        str_values = ("9.0.0.1:12000", "9.0.0.2:11000")
+
+        values = (
+            native.freelan_IPv4Endpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv4Endpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv4Endpoint_free, values[0])
+        self.addCleanup(native.freelan_IPv4Endpoint_free, values[1])
+
+        result = native.freelan_IPv4Endpoint_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_IPv4Endpoint_get_IPv4Address(self):
+        endpoint = native.freelan_IPv4Endpoint_from_string(self.ectx, "9.0.0.1:12000")
+        self.addCleanup(native.freelan_IPv4Endpoint_free, endpoint)
+        result = native.freelan_IPv4Endpoint_get_IPv4Address(endpoint)
+        self.addCleanup(native.freelan_IPv4Address_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv4Endpoint_get_PortNumber(self):
+        endpoint = native.freelan_IPv4Endpoint_from_string(self.ectx, "9.0.0.1:12000")
+        self.addCleanup(native.freelan_IPv4Endpoint_free, endpoint)
+        result = native.freelan_IPv4Endpoint_get_PortNumber(endpoint)
+        self.addCleanup(native.freelan_PortNumber_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6Endpoint_from_string_simple(self):
+        result = native.freelan_IPv6Endpoint_from_string(self.ectx, "[fe80::a:1]:12000")
+        self.addCleanup(native.freelan_IPv6Endpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6Endpoint_from_string_incorrect_value(self):
+        result = native.freelan_IPv6Endpoint_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv6Endpoint_from_string_empty_value(self):
+        result = native.freelan_IPv6Endpoint_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPv6Endpoint_from_parts(self):
+        ip_address = native.freelan_IPv6Address_from_string(self.ectx, "fe80::a:1")
+        self.addCleanup(native.freelan_IPv6Address_free, ip_address)
+        port_number = native.freelan_PortNumber_from_string(self.ectx, "12000")
+        self.addCleanup(native.freelan_PortNumber_free, port_number)
+        result = native.freelan_IPv6Endpoint_from_parts(ip_address, port_number)
+        self.addCleanup(native.freelan_IPv6Endpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6Endpoint_to_string_simple(self):
+        str_value = "[fe80::a:1]:12000"
+
+        value = native.freelan_IPv6Endpoint_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPv6Endpoint_free, value)
+
+        result = native.freelan_IPv6Endpoint_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6Endpoint_less_than(self):
+        str_values = ("[fe80::a:1]:12000", "[fe80::a:2]:11000")
+
+        values = (
+            native.freelan_IPv6Endpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv6Endpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv6Endpoint_free, values[0])
+        self.addCleanup(native.freelan_IPv6Endpoint_free, values[1])
+
+        result = native.freelan_IPv6Endpoint_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPv6Endpoint_equal(self):
+        str_values = ("[fe80::a:1]:12000", "[fe80::a:2]:11000")
+
+        values = (
+            native.freelan_IPv6Endpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_IPv6Endpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPv6Endpoint_free, values[0])
+        self.addCleanup(native.freelan_IPv6Endpoint_free, values[1])
+
+        result = native.freelan_IPv6Endpoint_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_IPv6Endpoint_get_IPv6Address(self):
+        endpoint = native.freelan_IPv6Endpoint_from_string(self.ectx, "[fe80::a:1]:12000")
+        self.addCleanup(native.freelan_IPv6Endpoint_free, endpoint)
+        result = native.freelan_IPv6Endpoint_get_IPv6Address(endpoint)
+        self.addCleanup(native.freelan_IPv6Address_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6Endpoint_get_PortNumber(self):
+        endpoint = native.freelan_IPv6Endpoint_from_string(self.ectx, "[fe80::a:1]:12000")
+        self.addCleanup(native.freelan_IPv6Endpoint_free, endpoint)
+        result = native.freelan_IPv6Endpoint_get_PortNumber(endpoint)
+        self.addCleanup(native.freelan_PortNumber_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)

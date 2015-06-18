@@ -18,6 +18,8 @@ from pyfreelan.api.types import (
     IPv6Address,
     Hostname,
     PortNumber,
+    IPv4Endpoint,
+    IPv6Endpoint,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -124,13 +126,21 @@ class NativeTypeTests(TestCase):
         self.assertEqual({'foo': wrapper}, klass.wrapper_cache)
         self.assertEqual(wrapper, result)
 
-    @disable_error_context_checks
-    def test_wrapper_init_calls_from_string(self, ectx):
+    def test_wrapper_init_stores_pointer(self):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
+        opaque_ptr = MagicMock()
+
+        wrapper.__init__(instance, opaque_ptr)
+
+        self.assertEqual(opaque_ptr, instance._opaque_ptr)
+
+    @disable_error_context_checks
+    def test_wrapper_from_string(self, ectx):
+        wrapper = NativeType.create_wrapper('foo')
         from_string = self.native.freelan_foo_from_string
 
-        wrapper.__init__(instance, "mystr")
+        instance = wrapper.from_string("mystr")
 
         from_string.assert_called_once_with(ectx, "mystr")
         self.assertEqual(from_string("mystr"), instance._opaque_ptr)
@@ -255,8 +265,8 @@ class NativeTypeTests(TestCase):
 
 class FinalTypesTests(TestCase):
     def test_IPv4Address(self):
-        a = IPv4Address("0.0.0.1")
-        b = IPv4Address("0.0.0.2")
+        a = IPv4Address.from_string("0.0.0.1")
+        b = IPv4Address.from_string("0.0.0.2")
 
         self.assertIsNot(a, b)
         self.assertNotEqual(hash(a), hash(b))
@@ -266,8 +276,8 @@ class FinalTypesTests(TestCase):
         self.assertEqual(2, len({a, b}))
 
     def test_IPv6Address(self):
-        a = IPv6Address("ffe0::abcd")
-        b = IPv6Address("ffe0::abce")
+        a = IPv6Address.from_string("ffe0::abcd")
+        b = IPv6Address.from_string("ffe0::abce")
 
         self.assertIsNot(a, b)
         self.assertNotEqual(hash(a), hash(b))
@@ -277,8 +287,8 @@ class FinalTypesTests(TestCase):
         self.assertEqual(2, len({a, b}))
 
     def test_Hostname(self):
-        a = Hostname("my.host.name1")
-        b = Hostname("my.host.name2")
+        a = Hostname.from_string("my.host.name1")
+        b = Hostname.from_string("my.host.name2")
 
         self.assertIsNot(a, b)
         self.assertNotEqual(hash(a), hash(b))
@@ -288,8 +298,8 @@ class FinalTypesTests(TestCase):
         self.assertEqual(2, len({a, b}))
 
     def test_PortNumber(self):
-        a = PortNumber("12000")
-        b = PortNumber("12001")
+        a = PortNumber.from_string("12000")
+        b = PortNumber.from_string("12001")
 
         self.assertIsNot(a, b)
         self.assertNotEqual(hash(a), hash(b))
@@ -299,12 +309,64 @@ class FinalTypesTests(TestCase):
         self.assertEqual(2, len({a, b}))
 
     def test_PortNumber_from_integer(self):
-        a = PortNumber("12000")
-        b = PortNumber(12000)
+        a = PortNumber.from_string("12000")
+        b = PortNumber.from_integer(12000)
 
         self.assertEqual(a, b)
 
     def test_PortNumber_to_integer(self):
-        instance = PortNumber("12000")
+        instance = PortNumber.from_string("12000")
 
         self.assertEqual(12000, int(instance))
+
+    def test_IPv4Endpoint(self):
+        a = IPv4Endpoint.from_string("0.0.0.1:1234")
+        b = IPv4Endpoint.from_string("0.0.0.2:1234")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPv4Endpoint_parts(self):
+        ip_address_str = "0.0.0.1"
+        port_number_str = "1234"
+        ip_address = IPv4Address.from_string(ip_address_str)
+        port_number = PortNumber.from_string(port_number_str)
+
+        a = IPv4Endpoint.from_string(
+            "%s:%s" % (ip_address_str, port_number_str),
+        )
+        b = IPv4Endpoint.from_parts(ip_address, port_number)
+
+        self.assertEqual(a, b)
+        self.assertEqual(ip_address, b.ip_address)
+        self.assertEqual(port_number, b.port_number)
+
+    def test_IPv6Endpoint(self):
+        a = IPv6Endpoint.from_string("[fe80::a:1]:1234")
+        b = IPv6Endpoint.from_string("[fe80::a:1]:1235")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPv6Endpoint_parts(self):
+        ip_address_str = "fe80::a:1"
+        port_number_str = "1234"
+        ip_address = IPv6Address.from_string(ip_address_str)
+        port_number = PortNumber.from_string(port_number_str)
+
+        a = IPv6Endpoint.from_string(
+            "[%s]:%s" % (ip_address_str, port_number_str),
+        )
+        b = IPv6Endpoint.from_parts(ip_address, port_number)
+
+        self.assertEqual(a, b)
+        self.assertEqual(ip_address, b.ip_address)
+        self.assertEqual(port_number, b.port_number)

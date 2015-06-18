@@ -88,6 +88,8 @@ api = """
     struct PortNumber;
     struct IPv4PrefixLength;
     struct IPv6PrefixLength;
+    struct IPv4Endpoint;
+    struct IPv6Endpoint;
 
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
@@ -119,6 +121,22 @@ api = """
     void freelan_IPv6PrefixLength_free(struct IPv6PrefixLength* inst);
     int freelan_IPv6PrefixLength_less_than(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
     int freelan_IPv6PrefixLength_equal(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
+    struct IPv4Endpoint* freelan_IPv4Endpoint_from_string(struct ErrorContext* ectx, const char* str);
+    struct IPv4Endpoint* freelan_IPv4Endpoint_from_parts(const struct IPv4Address* ip_address, const struct PortNumber* port_number);
+    char* freelan_IPv4Endpoint_to_string(struct ErrorContext* ectx, const struct IPv4Endpoint* inst);
+    void freelan_IPv4Endpoint_free(struct IPv4Endpoint* inst);
+    int freelan_IPv4Endpoint_less_than(const struct IPv4Endpoint* lhs, const struct IPv4Endpoint* rhs);
+    int freelan_IPv4Endpoint_equal(const struct IPv4Endpoint* lhs, const struct IPv4Endpoint* rhs);
+    struct IPv4Address* freelan_IPv4Endpoint_get_IPv4Address(const struct IPv4Endpoint* inst);
+    struct PortNumber* freelan_IPv4Endpoint_get_PortNumber(const struct IPv4Endpoint* inst);
+    struct IPv6Endpoint* freelan_IPv6Endpoint_from_string(struct ErrorContext* ectx, const char* str);
+    struct IPv6Endpoint* freelan_IPv6Endpoint_from_parts(const struct IPv6Address* ip_address, const struct PortNumber* port_number);
+    char* freelan_IPv6Endpoint_to_string(struct ErrorContext* ectx, const struct IPv6Endpoint* inst);
+    void freelan_IPv6Endpoint_free(struct IPv6Endpoint* inst);
+    int freelan_IPv6Endpoint_less_than(const struct IPv6Endpoint* lhs, const struct IPv6Endpoint* rhs);
+    int freelan_IPv6Endpoint_equal(const struct IPv6Endpoint* lhs, const struct IPv6Endpoint* rhs);
+    struct IPv6Address* freelan_IPv6Endpoint_get_IPv6Address(const struct IPv6Endpoint* inst);
+    struct PortNumber* freelan_IPv6Endpoint_get_PortNumber(const struct IPv6Endpoint* inst);
 """
 
 ffi.cdef(api)

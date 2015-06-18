@@ -52,6 +52,8 @@
 #include "port_number.hpp"
 #include "ipv4_prefix_length.hpp"
 #include "ipv6_prefix_length.hpp"
+#include "ipv4_endpoint.hpp"
+#include "ipv6_endpoint.hpp"
 
 namespace {
 	template <typename Type, typename InternalType>
@@ -105,6 +107,41 @@ namespace {
 
 		return (ilhs == irhs) ? 1 : 0;
 	}
+
+	template <typename Type, typename InternalType, typename LeftPartType, typename LeftInternalPartType, typename RightPartType, typename RightInternalPartType>
+	Type* from_parts_generic(const LeftPartType* lhs, const RightPartType* rhs) {
+		assert(lhs);
+		assert(rhs);
+
+		const auto ilhs = *reinterpret_cast<const LeftInternalPartType*>(lhs);
+		const auto irhs = *reinterpret_cast<const RightInternalPartType*>(rhs);
+
+		return reinterpret_cast<Type*>(
+			FREELAN_NEW InternalType(ilhs, irhs)
+		);
+	}
+
+	template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
+	IPAddressType* get_ip_address_generic(const Type* inst) {
+		assert(inst);
+
+		const auto value = *reinterpret_cast<const InternalType*>(inst);
+
+		return reinterpret_cast<IPAddressType*>(
+			FREELAN_NEW InternalIPAddressType(value.get_ip_address())
+		);
+	}
+
+	template <typename Type, typename InternalType, typename PortNumberType, typename InternalPortNumberType>
+	PortNumberType* get_port_number_generic(const Type* inst) {
+		assert(inst);
+
+		const auto value = *reinterpret_cast<const InternalType*>(inst);
+
+		return reinterpret_cast<PortNumberType*>(
+			FREELAN_NEW InternalPortNumberType(value.get_port_number())
+		);
+	}
 }
 
 /*
@@ -129,16 +166,39 @@ int freelan_ ## TYPE ## _less_than(const struct TYPE* lhs, const struct TYPE* rh
 #define IMPLEMENT_equal(TYPE) \
 int freelan_ ## TYPE ## _equal(const struct TYPE* lhs, const struct TYPE* rhs) { return equal_generic<TYPE, freelan::TYPE>(lhs, rhs); }
 
+#define IMPLEMENT_from_parts(TYPE,LTYPE,RTYPE) \
+struct TYPE* freelan_ ## TYPE ## _from_parts(const struct LTYPE* lhs, const struct RTYPE* rhs) { return from_parts_generic<TYPE, freelan::TYPE, LTYPE, freelan::LTYPE, RTYPE, freelan::RTYPE>(lhs, rhs); }
+
+#define IMPLEMENT_get_ip_address(TYPE,IATYPE) \
+struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_ip_address_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+
+#define IMPLEMENT_get_port_number(TYPE,PNTYPE) \
+struct PNTYPE* freelan_ ## TYPE ## _get_ ## PNTYPE (const struct TYPE* inst) { return get_port_number_generic<TYPE, freelan::TYPE, PNTYPE, freelan::PNTYPE>(inst); }
+
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
 IMPLEMENT_to_string(TYPE) \
 IMPLEMENT_free(TYPE) \
 IMPLEMENT_less_than(TYPE) \
-IMPLEMENT_equal(TYPE) \
+IMPLEMENT_equal(TYPE)
 
+#define IMPLEMENT_composite_type(TYPE,LTYPE,RTYPE) \
+IMPLEMENT_complete_type(TYPE) \
+IMPLEMENT_from_parts(TYPE,LTYPE,RTYPE)
+
+/* Simple types */
 IMPLEMENT_complete_type(IPv4Address)
 IMPLEMENT_complete_type(IPv6Address)
 IMPLEMENT_complete_type(Hostname)
 IMPLEMENT_complete_type(PortNumber)
 IMPLEMENT_complete_type(IPv4PrefixLength)
 IMPLEMENT_complete_type(IPv6PrefixLength)
+
+/* Composite types */
+IMPLEMENT_composite_type(IPv4Endpoint, IPv4Address, PortNumber)
+IMPLEMENT_get_ip_address(IPv4Endpoint, IPv4Address)
+IMPLEMENT_get_port_number(IPv4Endpoint, PortNumber)
+
+IMPLEMENT_composite_type(IPv6Endpoint, IPv6Address, PortNumber)
+IMPLEMENT_get_ip_address(IPv6Endpoint, IPv6Address)
+IMPLEMENT_get_port_number(IPv6Endpoint, PortNumber)

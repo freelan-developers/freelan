@@ -58,14 +58,24 @@ class NativeType(object):
 
         @total_ordering
         class Wrapper(object):
+            def __init__(self, opaque_ptr):
+                """
+                Create an instance from its low-level opaque pointer.
+
+                :param opaque_ptr: The opaque pointer to the underlying C
+                instance.
+                """
+                self._opaque_ptr = opaque_ptr
+
+            @classmethod
             @check_error_context
-            def __init__(self, _str, ectx):
+            def from_string(cls, _str, ectx):
                 """
                 Create an instance from its string representation.
 
                 :param _str: The string representation.
                 """
-                self._opaque_ptr = from_string(ectx, _str)
+                return cls(opaque_ptr=from_string(ectx, _str))
 
             def __del__(self):
                 free(self._opaque_ptr)
@@ -127,14 +137,88 @@ class PortNumber(NativeType.from_typename('PortNumber')):
     """
     A port number.
     """
-    def __init__(self, value):
-        if not isinstance(value, basestring):
-            value = str(value)
-
-        super(PortNumber, self).__init__(value)
+    @classmethod
+    def from_integer(cls, value):
+        return cls.from_string(str(value))
 
     def __int__(self):
         return int(str(self))
 
     def __hash__(self):
         return int(self)
+
+
+class IPv4Endpoint(NativeType.from_typename('IPv4Endpoint')):
+    """
+    An IPv4 endpoint.
+    """
+
+    @classmethod
+    def from_parts(self, ip_address, port_number):
+        """
+        Create an IPv4Endpoint from its parts.
+
+        :param ip_address: The IPv4Address component.
+        :param port_number: The PortNumber component.
+        :returns: An IPv4Endpoint instance.
+        """
+        return IPv4Endpoint(
+            opaque_ptr=native.freelan_IPv4Endpoint_from_parts(
+                ip_address._opaque_ptr,
+                port_number._opaque_ptr,
+            ),
+        )
+
+    @property
+    def ip_address(self):
+        return IPv4Address(
+            opaque_ptr=native.freelan_IPv4Endpoint_get_IPv4Address(
+                self._opaque_ptr,
+            ),
+        )
+
+    @property
+    def port_number(self):
+        return PortNumber(
+            opaque_ptr=native.freelan_IPv4Endpoint_get_PortNumber(
+                self._opaque_ptr,
+            ),
+        )
+
+
+class IPv6Endpoint(NativeType.from_typename('IPv6Endpoint')):
+    """
+    An IPv6 endpoint.
+    """
+
+    @classmethod
+    def from_parts(self, ip_address, port_number):
+        """
+        Create an IPv4Endpoint from its parts.
+
+        :param ip_address: The IPv6Address component.
+        :param port_number: The PortNumber component.
+        :returns: An IPv6Endpoint instance.
+        """
+        return IPv6Endpoint(
+            opaque_ptr=native.freelan_IPv6Endpoint_from_parts(
+                ip_address._opaque_ptr,
+                port_number._opaque_ptr,
+            ),
+        )
+
+    @property
+    def ip_address(self):
+        return IPv6Address(
+            opaque_ptr=native.freelan_IPv6Endpoint_get_IPv6Address(
+                self._opaque_ptr,
+            ),
+        )
+
+    @property
+    def port_number(self):
+        return PortNumber(
+            opaque_ptr=native.freelan_IPv6Endpoint_get_PortNumber(
+                self._opaque_ptr,
+            ),
+        )
