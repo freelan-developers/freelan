@@ -54,6 +54,7 @@
 namespace freelan {
 
 class PortNumber;
+class Hostname;
 
 template <typename AddressType>
 std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
@@ -64,4 +65,5 @@ template <typename AddressType>
 std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf = nullptr);
 template <typename IPAddressType>
 std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& value, std::string* buf = nullptr);
+std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortNumber& port_number, std::string* buf = nullptr);
 }

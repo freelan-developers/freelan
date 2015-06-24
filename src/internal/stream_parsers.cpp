@@ -48,6 +48,7 @@
 #include "ipv4_address.hpp"
 #include "ipv6_address.hpp"
 #include "port_number.hpp"
+#include "hostname.hpp"
 
 namespace freelan {
 
@@ -423,6 +424,40 @@ std::istream& read_generic_ip_endpoint<IPv6Address>(std::istream& is, IPv6Addres
 
 		if (buf) {
 			*buf = '[' + ip_address_buf + ']' + ':' + port_number_buf;
+		}
+	}
+
+	return is;
+}
+
+std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortNumber& port_number, std::string* buf)
+{
+	if (is.good())
+	{
+		std::string hostname_buf;
+
+		if (Hostname::read_from(is, hostname, &hostname_buf))
+		{
+			if (!is_endpoint_separator(is.peek())) {
+				putback(is, hostname_buf);
+				is.setstate(std::ios_base::failbit);
+
+				return is;
+			}
+
+			is.ignore();
+			std::string port_number_buf;
+
+			if (!PortNumber::read_from(is, port_number, &port_number_buf)) {
+				putback(is, hostname_buf + ':');
+				is.setstate(std::ios_base::failbit);
+
+				return is;
+			}
+
+			if (buf) {
+				*buf = hostname_buf + ':' + port_number_buf;
+			}
 		}
 	}
 

@@ -48,6 +48,7 @@
 #include "../internal/ipv4_address.hpp"
 #include "../internal/ipv6_address.hpp"
 #include "../internal/port_number.hpp"
+#include "../internal/hostname.hpp"
 
 using boost::asio::ip::address_v4;
 using boost::asio::ip::address_v6;
@@ -56,9 +57,11 @@ using freelan::read_hostname_label;
 using freelan::read_hostname;
 using freelan::read_port_number;
 using freelan::read_generic_ip_endpoint;
+using freelan::read_hostname_endpoint;
 using freelan::IPv4Address;
 using freelan::IPv6Address;
 using freelan::PortNumber;
+using freelan::Hostname;
 
 TEST(stream_parsers, read_ipv4_address_success) {
 	const std::string str_value = "9.0.0.1";
@@ -636,6 +639,124 @@ TEST(stream_parsers, read_ipv6_endpoint_truncated) {
 	std::string parsed_str;
 
 	auto&& result = read_generic_ip_endpoint<IPv6Address>(iss, ip_address, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_hostname_endpoint_success) {
+	const std::string str_hostname = "foo.bar";
+	const std::string str_port_number = "12000";
+	const std::string str_value = str_hostname + ':' + str_port_number;
+	Hostname hostname;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_hostname_endpoint(iss, hostname, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(Hostname::from_string(str_hostname), hostname);
+	ASSERT_EQ(PortNumber::from_string(str_port_number), port_number);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_hostname_endpoint_extra) {
+	const std::string str_hostname = "foo.bar";
+	const std::string str_port_number = "12000";
+	const std::string str_value = str_hostname + ':' + str_port_number;
+	const std::string extra = "roo";
+	Hostname hostname;
+	PortNumber port_number;
+	std::istringstream iss(str_value + extra);
+	std::string parsed_str;
+
+	auto&& result = read_hostname_endpoint(iss, hostname, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_TRUE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(Hostname::from_string(str_hostname), hostname);
+	ASSERT_EQ(PortNumber::from_string(str_port_number), port_number);
+	ASSERT_EQ(str_value, parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss >> parsed_str;
+
+	ASSERT_EQ(extra, parsed_str);
+}
+
+TEST(stream_parsers, read_hostname_endpoint_invalid_hostname) {
+	const std::string str_hostname = "foo.b|ar";
+	const std::string str_port_number = "12000";
+	const std::string str_value = str_hostname + ':' + str_port_number;
+	Hostname hostname;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_hostname_endpoint(iss, hostname, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_hostname_endpoint_invalid_port_number) {
+	const std::string str_hostname = "foo.bar";
+	const std::string str_port_number = "g12000";
+	const std::string str_value = str_hostname + ':' + str_port_number;
+	Hostname hostname;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_hostname_endpoint(iss, hostname, port_number, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_hostname_endpoint_truncated) {
+	const std::string str_hostname = "foo.bar";
+	const std::string str_port_number = "";
+	const std::string str_value = str_hostname + ':' + str_port_number;
+	Hostname hostname;
+	PortNumber port_number;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_hostname_endpoint(iss, hostname, port_number, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());

@@ -78,6 +78,7 @@ set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     src/internal/generic_ip_prefix_length.hpp
     src/internal/generic_value_type.hpp
     src/internal/hostname.hpp
+    src/internal/hostname_endpoint.hpp
     src/internal/ipv4_address.hpp
     src/internal/ipv4_endpoint.cpp
     src/internal/ipv4_endpoint.hpp
@@ -144,6 +145,7 @@ set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/hostname.cpp
+    src/tests/hostname_endpoint.cpp
     src/tests/ipv4_address.cpp
     src/tests/ipv4_endpoint.cpp
     src/tests/ipv4_prefix_length.cpp
