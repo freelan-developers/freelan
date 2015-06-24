@@ -64,6 +64,7 @@ struct IPv4PrefixLength;
 struct IPv6PrefixLength;
 struct IPv4Endpoint;
 struct IPv6Endpoint;
+struct HostnameEndpoint;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -478,6 +479,81 @@ FREELAN_API struct IPv6Address* freelan_IPv6Endpoint_get_IPv6Address(const struc
  * on the returned instance when it is no longer needed.
  */
 FREELAN_API struct PortNumber* freelan_IPv6Endpoint_get_PortNumber(const struct IPv6Endpoint* inst);
+
+/**
+ * \brief Create a HostnameEndpoint instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The HostnameEndpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostnameEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostnameEndpoint* freelan_HostnameEndpoint_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create a HostnameEndpoint instance from its parts.
+ * \param hostname The hostname component. The value is copied so the instance needs not stay alive.
+ * \param port_number The port number. The value is copied so the instance needs not stay alive.
+ * \return The HostnameEndpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostnameEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostnameEndpoint* freelan_HostnameEndpoint_from_parts(const struct Hostname* hostname, const struct PortNumber* port_number);
+
+/**
+ * \brief Get the string representation of an HostnameEndpoint instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_HostnameEndpoint_to_string(struct ErrorContext* ectx, const struct HostnameEndpoint* inst);
+
+/**
+ * \brief Delete an HostnameEndpoint instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_HostnameEndpoint_free(struct HostnameEndpoint* inst);
+
+/**
+ * \brief Compare two HostnameEndpoint instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_HostnameEndpoint_less_than(const struct HostnameEndpoint* lhs, const struct HostnameEndpoint* rhs);
+
+/**
+ * \brief Compare two HostnameEndpoint instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_HostnameEndpoint_equal(const struct HostnameEndpoint* lhs, const struct HostnameEndpoint* rhs);
+
+/**
+ * \brief Get the Hostname contained in a HostnameEndpoint instance.
+ * \param inst The instance.
+ * \return The Hostname instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_Hostname_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Hostname* freelan_HostnameEndpoint_get_Hostname(const struct HostnameEndpoint* inst);
+
+/**
+ * \brief Get the PortNumber contained in a HostnameEndpoint instance.
+ * \param inst The instance.
+ * \return The PortNumber instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_PortNumber_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct PortNumber* freelan_HostnameEndpoint_get_PortNumber(const struct HostnameEndpoint* inst);
 
 /* API END */
 

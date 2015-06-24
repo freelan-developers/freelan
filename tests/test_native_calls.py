@@ -731,3 +731,82 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_PortNumber_free, result)
 
         self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostnameEndpoint_from_string_simple(self):
+        result = native.freelan_HostnameEndpoint_from_string(self.ectx, "foo.bar:12000")
+        self.addCleanup(native.freelan_HostnameEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostnameEndpoint_from_string_incorrect_value(self):
+        result = native.freelan_HostnameEndpoint_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_HostnameEndpoint_from_string_empty_value(self):
+        result = native.freelan_HostnameEndpoint_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_HostnameEndpoint_from_parts(self):
+        hostname = native.freelan_Hostname_from_string(self.ectx, "foo.bar")
+        self.addCleanup(native.freelan_Hostname_free, hostname)
+        port_number = native.freelan_PortNumber_from_string(self.ectx, "12000")
+        self.addCleanup(native.freelan_PortNumber_free, port_number)
+        result = native.freelan_HostnameEndpoint_from_parts(hostname, port_number)
+        self.addCleanup(native.freelan_HostnameEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostnameEndpoint_to_string_simple(self):
+        str_value = "foo.bar:12000"
+
+        value = native.freelan_HostnameEndpoint_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_HostnameEndpoint_free, value)
+
+        result = native.freelan_HostnameEndpoint_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_HostnameEndpoint_less_than(self):
+        str_values = ("foo.bar:12000", "foo.baz:11000")
+
+        values = (
+            native.freelan_HostnameEndpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_HostnameEndpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_HostnameEndpoint_free, values[0])
+        self.addCleanup(native.freelan_HostnameEndpoint_free, values[1])
+
+        result = native.freelan_HostnameEndpoint_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_HostnameEndpoint_equal(self):
+        str_values = ("foo.bar:12000", "foo.baz:11000")
+
+        values = (
+            native.freelan_HostnameEndpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_HostnameEndpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_HostnameEndpoint_free, values[0])
+        self.addCleanup(native.freelan_HostnameEndpoint_free, values[1])
+
+        result = native.freelan_HostnameEndpoint_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_HostnameEndpoint_get_Hostname(self):
+        endpoint = native.freelan_HostnameEndpoint_from_string(self.ectx, "foo.bar:12000")
+        self.addCleanup(native.freelan_HostnameEndpoint_free, endpoint)
+        result = native.freelan_HostnameEndpoint_get_Hostname(endpoint)
+        self.addCleanup(native.freelan_Hostname_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostnameEndpoint_get_PortNumber(self):
+        endpoint = native.freelan_HostnameEndpoint_from_string(self.ectx, "foo.bar:12000")
+        self.addCleanup(native.freelan_HostnameEndpoint_free, endpoint)
+        result = native.freelan_HostnameEndpoint_get_PortNumber(endpoint)
+        self.addCleanup(native.freelan_PortNumber_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)

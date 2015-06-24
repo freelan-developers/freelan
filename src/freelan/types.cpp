@@ -54,6 +54,7 @@
 #include "ipv6_prefix_length.hpp"
 #include "ipv4_endpoint.hpp"
 #include "ipv6_endpoint.hpp"
+#include "hostname_endpoint.hpp"
 
 namespace {
 	template <typename Type, typename InternalType>
@@ -142,6 +143,18 @@ namespace {
 			FREELAN_NEW InternalPortNumberType(value.get_port_number())
 		);
 	}
+
+	template <typename Type, typename InternalType, typename HostnameType, typename InternalHostnameType>
+	HostnameType* get_hostname_generic(const Type* inst) {
+		assert(inst);
+
+		const auto value = *reinterpret_cast<const InternalType*>(inst);
+
+		return reinterpret_cast<HostnameType*>(
+			FREELAN_NEW InternalHostnameType(value.get_hostname())
+		);
+	}
+
 }
 
 /*
@@ -175,6 +188,9 @@ struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { r
 #define IMPLEMENT_get_port_number(TYPE,PNTYPE) \
 struct PNTYPE* freelan_ ## TYPE ## _get_ ## PNTYPE (const struct TYPE* inst) { return get_port_number_generic<TYPE, freelan::TYPE, PNTYPE, freelan::PNTYPE>(inst); }
 
+#define IMPLEMENT_get_hostname(TYPE,IATYPE) \
+struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_hostname_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
 IMPLEMENT_to_string(TYPE) \
@@ -202,3 +218,7 @@ IMPLEMENT_get_port_number(IPv4Endpoint, PortNumber)
 IMPLEMENT_composite_type(IPv6Endpoint, IPv6Address, PortNumber)
 IMPLEMENT_get_ip_address(IPv6Endpoint, IPv6Address)
 IMPLEMENT_get_port_number(IPv6Endpoint, PortNumber)
+
+IMPLEMENT_composite_type(HostnameEndpoint, Hostname, PortNumber)
+IMPLEMENT_get_hostname(HostnameEndpoint, Hostname)
+IMPLEMENT_get_port_number(HostnameEndpoint, PortNumber)

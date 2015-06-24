@@ -90,6 +90,7 @@ api = """
     struct IPv6PrefixLength;
     struct IPv4Endpoint;
     struct IPv6Endpoint;
+    struct HostnameEndpoint;
 
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
@@ -137,6 +138,14 @@ api = """
     int freelan_IPv6Endpoint_equal(const struct IPv6Endpoint* lhs, const struct IPv6Endpoint* rhs);
     struct IPv6Address* freelan_IPv6Endpoint_get_IPv6Address(const struct IPv6Endpoint* inst);
     struct PortNumber* freelan_IPv6Endpoint_get_PortNumber(const struct IPv6Endpoint* inst);
+    struct HostnameEndpoint* freelan_HostnameEndpoint_from_string(struct ErrorContext* ectx, const char* str);
+    struct HostnameEndpoint* freelan_HostnameEndpoint_from_parts(const struct Hostname* hostname, const struct PortNumber* port_number);
+    char* freelan_HostnameEndpoint_to_string(struct ErrorContext* ectx, const struct HostnameEndpoint* inst);
+    void freelan_HostnameEndpoint_free(struct HostnameEndpoint* inst);
+    int freelan_HostnameEndpoint_less_than(const struct HostnameEndpoint* lhs, const struct HostnameEndpoint* rhs);
+    int freelan_HostnameEndpoint_equal(const struct HostnameEndpoint* lhs, const struct HostnameEndpoint* rhs);
+    struct Hostname* freelan_HostnameEndpoint_get_Hostname(const struct HostnameEndpoint* inst);
+    struct PortNumber* freelan_HostnameEndpoint_get_PortNumber(const struct HostnameEndpoint* inst);
 """
 
 ffi.cdef(api)

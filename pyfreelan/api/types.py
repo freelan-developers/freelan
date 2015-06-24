@@ -232,3 +232,41 @@ class IPv6Endpoint(NativeType.from_typename('IPv6Endpoint')):
                 self._opaque_ptr,
             ),
         )
+
+
+class HostnameEndpoint(NativeType.from_typename('HostnameEndpoint')):
+    """
+    A hostname endpoint.
+    """
+
+    @classmethod
+    def from_parts(self, hostname, port_number):
+        """
+        Create a HostnameEndpoint from its parts.
+
+        :param hostname: The Hostname component.
+        :param port_number: The PortNumber component.
+        :returns: A HostnameEndpoint instance.
+        """
+        return HostnameEndpoint(
+            opaque_ptr=native.freelan_HostnameEndpoint_from_parts(
+                hostname._opaque_ptr,
+                port_number._opaque_ptr,
+            ),
+        )
+
+    @property
+    def hostname(self):
+        return Hostname(
+            opaque_ptr=native.freelan_HostnameEndpoint_get_Hostname(
+                self._opaque_ptr,
+            ),
+        )
+
+    @property
+    def port_number(self):
+        return PortNumber(
+            opaque_ptr=native.freelan_HostnameEndpoint_get_PortNumber(
+                self._opaque_ptr,
+            ),
+        )

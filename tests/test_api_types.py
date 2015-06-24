@@ -21,6 +21,7 @@ from pyfreelan.api.types import (
     PortNumber,
     IPv4Endpoint,
     IPv6Endpoint,
+    HostnameEndpoint,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -381,4 +382,30 @@ class FinalTypesTests(TestCase):
 
         self.assertEqual(a, b)
         self.assertEqual(ip_address, b.ip_address)
+        self.assertEqual(port_number, b.port_number)
+
+    def test_HostnameEndpoint(self):
+        a = HostnameEndpoint.from_string("foo.bar:1234")
+        b = HostnameEndpoint.from_string("foo.bar:1235")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_HostnameEndpoint_parts(self):
+        hostname_str = "foo.bar"
+        port_number_str = "1234"
+        hostname = Hostname.from_string(hostname_str)
+        port_number = PortNumber.from_string(port_number_str)
+
+        a = HostnameEndpoint.from_string(
+            "%s:%s" % (hostname_str, port_number_str),
+        )
+        b = HostnameEndpoint.from_parts(hostname, port_number)
+
+        self.assertEqual(a, b)
+        self.assertEqual(hostname, b.hostname)
         self.assertEqual(port_number, b.port_number)
