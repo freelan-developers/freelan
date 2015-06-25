@@ -27,7 +27,7 @@ if (WIN32)
 endif()
 
 find_package(Threads)
-find_package(Boost COMPONENTS system date_time regex REQUIRED)
+find_package(Boost COMPONENTS system date_time regex thread REQUIRED)
 
 # Default install path
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -91,6 +91,8 @@ set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     src/internal/log.hpp
     src/internal/memory.cpp
     src/internal/memory.hpp
+    src/internal/perf_counter.hpp
+    src/internal/perf_counter.cpp
     src/internal/port_number.hpp
     src/internal/stdint.hpp
     src/internal/stream_parsers.cpp
@@ -153,6 +155,7 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/ipv6_endpoint.cpp
     src/tests/ipv6_prefix_length.cpp
     src/tests/log.cpp
+    src/tests/perf_counter.cpp
     src/tests/port_number.cpp
     src/tests/stream_parsers.cpp
 )
