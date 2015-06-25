@@ -40,6 +40,8 @@
 
 #include <gtest/gtest.h>
 
+#include <thread>
+
 #include "../internal/perf_counter.hpp"
 
 using freelan::CallStats;
@@ -176,4 +178,35 @@ TEST(PerfCounterTest, perf_counter_unknown_call) {
     catch (...) {
         FAIL() << "expected std::out_of_range()";
     }
+}
+
+TEST(PerfCounterTest, perf_counter_steal_from_local_thread) {
+    const auto thread_count = 16;
+    PerfCounter perf_counter;
+    std::mutex perf_counter_mutex;
+
+    auto&& my_func = [&perf_counter, &perf_counter_mutex](int x) {
+        DELEGATE_TO_PERFCOUNTER(perf_counter, perf_counter_mutex);
+        MEASURE_SCOPE("my_func");
+
+        for (int i = 0; i < 1 << x; ++i) {
+            x += x;
+        }
+
+        return x;
+    };
+
+    std::vector<std::thread> threads;
+
+    for (auto i = 0; i < thread_count; ++i) {
+        threads.push_back(std::thread(my_func, i));
+    }
+
+    for (auto&& thread : threads) {
+        thread.join();
+    }
+
+    const auto& my_func_stats = perf_counter.get_call_stats("my_func");
+
+    ASSERT_EQ(static_cast<unsigned int>(thread_count), my_func_stats.call_count());
 }

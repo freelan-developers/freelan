@@ -49,6 +49,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <mutex>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -136,6 +137,10 @@ class PerfCounter {
             return *this;
         }
 
+        void clear() {
+            m_call_stats.clear();
+        }
+
         ScopedMeasurement scoped_measurement(const std::string& label) {
             return ScopedMeasurement(*this, label);
         }
@@ -170,4 +175,22 @@ class PerfCounter {
         }
 };
 
+class VampirePerfCounter : public PerfCounter {
+    public:
+        VampirePerfCounter(PerfCounter& target, std::mutex& mutex) :
+            m_target(target),
+            m_source(PerfCounter::get_instance()),
+            m_mutex(mutex)
+        {}
+
+        ~VampirePerfCounter();
+
+    private:
+        PerfCounter& m_target;
+        PerfCounter& m_source;
+        std::mutex& m_mutex;
+};
+
+#define MEASURE_SCOPE(label) auto&& scoped_measurement_instance__UNUSED__ = freelan::PerfCounter::get_instance().scoped_measurement(label); static_cast<void>(scoped_measurement_instance__UNUSED__)
+#define DELEGATE_TO_PERFCOUNTER(perf_counter,mutex) auto&& vampire_perf_counter__UNUSED__ = freelan::VampirePerfCounter(perf_counter, mutex); static_cast<void>(vampire_perf_counter__UNUSED__)
 }

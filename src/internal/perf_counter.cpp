@@ -129,4 +129,13 @@ namespace freelan {
 
         return os;
     }
+
+    VampirePerfCounter::~VampirePerfCounter() {
+        if (&m_target != &m_source) {
+            std::unique_lock<std::mutex> lock(m_mutex);
+
+            m_target += m_source;
+            m_source.clear();
+        }
+    }
 }
