@@ -18,10 +18,14 @@ from pyfreelan.api.types import (
     IPv4Address,
     IPv6Address,
     Hostname,
+    IPv4PrefixLength,
+    IPv6PrefixLength,
     PortNumber,
     IPv4Endpoint,
     IPv6Endpoint,
     HostnameEndpoint,
+    IPv4Route,
+    IPv6Route,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -332,6 +336,50 @@ class FinalTypesTests(TestCase):
 
         self.assertEqual(12000, int(instance))
 
+    def test_IPv4PrefixLength(self):
+        a = IPv4PrefixLength.from_string("24")
+        b = IPv4PrefixLength.from_string("25")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPv4PrefixLength_from_integer(self):
+        a = IPv4PrefixLength.from_string("24")
+        b = IPv4PrefixLength.from_integer(24)
+
+        self.assertEqual(a, b)
+
+    def test_IPv4PrefixLength_to_integer(self):
+        instance = IPv4PrefixLength.from_string("24")
+
+        self.assertEqual(24, int(instance))
+
+    def test_IPv6PrefixLength(self):
+        a = IPv6PrefixLength.from_string("25")
+        b = IPv6PrefixLength.from_string("26")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPv6PrefixLength_from_integer(self):
+        a = IPv6PrefixLength.from_string("26")
+        b = IPv6PrefixLength.from_integer(26)
+
+        self.assertEqual(a, b)
+
+    def test_IPv6PrefixLength_to_integer(self):
+        instance = IPv6PrefixLength.from_string("26")
+
+        self.assertEqual(26, int(instance))
+
     def test_IPv4Endpoint(self):
         a = IPv4Endpoint.from_string("0.0.0.1:1234")
         b = IPv4Endpoint.from_string("0.0.0.2:1234")
@@ -409,3 +457,55 @@ class FinalTypesTests(TestCase):
         self.assertEqual(a, b)
         self.assertEqual(hostname, b.hostname)
         self.assertEqual(port_number, b.port_number)
+
+    def test_IPv4Route(self):
+        a = IPv4Route.from_string("9.0.0.1/24")
+        b = IPv4Route.from_string("9.0.1.1/24")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPv4Route_parts(self):
+        ip_address_str = "9.0.1.0"
+        prefix_length_str = "24"
+        ip_address = IPv4Address.from_string(ip_address_str)
+        prefix_length = IPv4PrefixLength.from_string(prefix_length_str)
+
+        a = IPv4Route.from_string(
+            "%s/%s" % (ip_address_str, prefix_length_str),
+        )
+        b = IPv4Route.from_parts(ip_address, prefix_length)
+
+        self.assertEqual(a, b)
+        self.assertEqual(ip_address, b.ip_address)
+        self.assertEqual(prefix_length, b.prefix_length)
+
+    def test_IPv6Route(self):
+        a = IPv6Route.from_string("fe80::a:1/120")
+        b = IPv6Route.from_string("fe80::b:1/120")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPv6Route_parts(self):
+        ip_address_str = "fe80::a:0"
+        prefix_length_str = "120"
+        ip_address = IPv6Address.from_string(ip_address_str)
+        prefix_length = IPv6PrefixLength.from_string(prefix_length_str)
+
+        a = IPv6Route.from_string(
+            "%s/%s" % (ip_address_str, prefix_length_str),
+        )
+        b = IPv6Route.from_parts(ip_address, prefix_length)
+
+        self.assertEqual(a, b)
+        self.assertEqual(ip_address, b.ip_address)
+        self.assertEqual(prefix_length, b.prefix_length)

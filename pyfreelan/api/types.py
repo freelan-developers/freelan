@@ -158,6 +158,36 @@ class PortNumber(NativeType.from_typename('PortNumber')):
         return int(self)
 
 
+class IPv4PrefixLength(NativeType.from_typename('IPv4PrefixLength')):
+    """
+    A IPv4 prefix length.
+    """
+    @classmethod
+    def from_integer(cls, value):
+        return cls.from_string(str(value))
+
+    def __int__(self):
+        return int(str(self))
+
+    def __hash__(self):
+        return int(self)
+
+
+class IPv6PrefixLength(NativeType.from_typename('IPv6PrefixLength')):
+    """
+    A IPv6 prefix length.
+    """
+    @classmethod
+    def from_integer(cls, value):
+        return cls.from_string(str(value))
+
+    def __int__(self):
+        return int(str(self))
+
+    def __hash__(self):
+        return int(self)
+
+
 class IPv4Endpoint(NativeType.from_typename('IPv4Endpoint')):
     """
     An IPv4 endpoint.
@@ -267,6 +297,82 @@ class HostnameEndpoint(NativeType.from_typename('HostnameEndpoint')):
     def port_number(self):
         return PortNumber(
             opaque_ptr=native.freelan_HostnameEndpoint_get_PortNumber(
+                self._opaque_ptr,
+            ),
+        )
+
+
+class IPv4Route(NativeType.from_typename('IPv4Route')):
+    """
+    An IPv4 route.
+    """
+
+    @classmethod
+    def from_parts(self, ip_address, prefix_length):
+        """
+        Create an IPv4Route from its parts.
+
+        :param ip_address: The IPv4Address component.
+        :param prefix_length: The IPv4PrefixLength component.
+        :returns: An IPv4Route instance.
+        """
+        return IPv4Route(
+            opaque_ptr=native.freelan_IPv4Route_from_parts(
+                ip_address._opaque_ptr,
+                prefix_length._opaque_ptr,
+            ),
+        )
+
+    @property
+    def ip_address(self):
+        return IPv4Address(
+            opaque_ptr=native.freelan_IPv4Route_get_IPv4Address(
+                self._opaque_ptr,
+            ),
+        )
+
+    @property
+    def prefix_length(self):
+        return IPv4PrefixLength(
+            opaque_ptr=native.freelan_IPv4Route_get_IPv4PrefixLength(
+                self._opaque_ptr,
+            ),
+        )
+
+
+class IPv6Route(NativeType.from_typename('IPv6Route')):
+    """
+    An IPv6 route.
+    """
+
+    @classmethod
+    def from_parts(self, ip_address, prefix_length):
+        """
+        Create an IPv6Route from its parts.
+
+        :param ip_address: The IPv6Address component.
+        :param prefix_length: The IPv6PrefixLength component.
+        :returns: An IPv6Route instance.
+        """
+        return IPv6Route(
+            opaque_ptr=native.freelan_IPv6Route_from_parts(
+                ip_address._opaque_ptr,
+                prefix_length._opaque_ptr,
+            ),
+        )
+
+    @property
+    def ip_address(self):
+        return IPv6Address(
+            opaque_ptr=native.freelan_IPv6Route_get_IPv6Address(
+                self._opaque_ptr,
+            ),
+        )
+
+    @property
+    def prefix_length(self):
+        return IPv6PrefixLength(
+            opaque_ptr=native.freelan_IPv6Route_get_IPv6PrefixLength(
                 self._opaque_ptr,
             ),
         )

@@ -76,6 +76,7 @@ set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     src/internal/generic_ip_address.hpp
     src/internal/generic_ip_endpoint.hpp
     src/internal/generic_ip_prefix_length.hpp
+    src/internal/generic_ip_route.hpp
     src/internal/generic_value_type.hpp
     src/internal/hostname.hpp
     src/internal/hostname_endpoint.hpp
@@ -83,10 +84,12 @@ set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     src/internal/ipv4_endpoint.cpp
     src/internal/ipv4_endpoint.hpp
     src/internal/ipv4_prefix_length.hpp
+    src/internal/ipv4_route.hpp
     src/internal/ipv6_address.hpp
     src/internal/ipv6_endpoint.cpp
     src/internal/ipv6_endpoint.hpp
     src/internal/ipv6_prefix_length.hpp
+    src/internal/ipv6_route.hpp
     src/internal/log.cpp
     src/internal/log.hpp
     src/internal/memory.cpp
@@ -151,9 +154,11 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/ipv4_address.cpp
     src/tests/ipv4_endpoint.cpp
     src/tests/ipv4_prefix_length.cpp
+    src/tests/ipv4_route.cpp
     src/tests/ipv6_address.cpp
     src/tests/ipv6_endpoint.cpp
     src/tests/ipv6_prefix_length.cpp
+    src/tests/ipv6_route.cpp
     src/tests/log.cpp
     src/tests/perf_counter.cpp
     src/tests/port_number.cpp

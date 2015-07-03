@@ -55,6 +55,8 @@
 #include "ipv4_endpoint.hpp"
 #include "ipv6_endpoint.hpp"
 #include "hostname_endpoint.hpp"
+#include "ipv4_route.hpp"
+#include "ipv6_route.hpp"
 
 namespace {
 	template <typename Type, typename InternalType>
@@ -155,6 +157,17 @@ namespace {
 		);
 	}
 
+	template <typename Type, typename InternalType, typename IPPrefixLengthType, typename InternalIPPrefixLengthType>
+	IPPrefixLengthType* get_prefix_length_generic(const Type* inst) {
+		assert(inst);
+
+		const auto value = *reinterpret_cast<const InternalType*>(inst);
+
+		return reinterpret_cast<IPPrefixLengthType*>(
+			FREELAN_NEW InternalIPPrefixLengthType(value.get_prefix_length())
+		);
+	}
+
 }
 
 /*
@@ -191,6 +204,9 @@ struct PNTYPE* freelan_ ## TYPE ## _get_ ## PNTYPE (const struct TYPE* inst) { r
 #define IMPLEMENT_get_hostname(TYPE,IATYPE) \
 struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_hostname_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
 
+#define IMPLEMENT_get_prefix_length(TYPE,IATYPE) \
+struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_prefix_length_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
 IMPLEMENT_to_string(TYPE) \
@@ -222,3 +238,11 @@ IMPLEMENT_get_port_number(IPv6Endpoint, PortNumber)
 IMPLEMENT_composite_type(HostnameEndpoint, Hostname, PortNumber)
 IMPLEMENT_get_hostname(HostnameEndpoint, Hostname)
 IMPLEMENT_get_port_number(HostnameEndpoint, PortNumber)
+
+IMPLEMENT_composite_type(IPv4Route, IPv4Address, IPv4PrefixLength)
+IMPLEMENT_get_ip_address(IPv4Route, IPv4Address)
+IMPLEMENT_get_prefix_length(IPv4Route, IPv4PrefixLength)
+
+IMPLEMENT_composite_type(IPv6Route, IPv6Address, IPv6PrefixLength)
+IMPLEMENT_get_ip_address(IPv6Route, IPv6Address)
+IMPLEMENT_get_prefix_length(IPv6Route, IPv6PrefixLength)

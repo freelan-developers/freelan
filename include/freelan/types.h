@@ -65,6 +65,8 @@ struct IPv6PrefixLength;
 struct IPv4Endpoint;
 struct IPv6Endpoint;
 struct HostnameEndpoint;
+struct IPv4Route;
+struct IPv6Route;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -554,6 +556,156 @@ FREELAN_API struct Hostname* freelan_HostnameEndpoint_get_Hostname(const struct 
  * on the returned instance when it is no longer needed.
  */
 FREELAN_API struct PortNumber* freelan_HostnameEndpoint_get_PortNumber(const struct HostnameEndpoint* inst);
+
+/**
+ * \brief Create a IPv4Route instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IPv4Route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4Route_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4Route* freelan_IPv4Route_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create a IPv4Route instance from its parts.
+ * \param ip_address The IP address component. The value is copied so the instance needs not stay alive.
+ * \param port_number The port number. The value is copied so the instance needs not stay alive.
+ * \return The IPv4Route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4Route_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4Route* freelan_IPv4Route_from_parts(const struct IPv4Address* ip_address, const struct IPv4PrefixLength* prefix_length);
+
+/**
+ * \brief Get the string representation of an IPv4Route instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPv4Route_to_string(struct ErrorContext* ectx, const struct IPv4Route* inst);
+
+/**
+ * \brief Delete an IPv4Route instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPv4Route_free(struct IPv4Route* inst);
+
+/**
+ * \brief Compare two IPv4Route instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPv4Route_less_than(const struct IPv4Route* lhs, const struct IPv4Route* rhs);
+
+/**
+ * \brief Compare two IPv4Route instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPv4Route_equal(const struct IPv4Route* lhs, const struct IPv4Route* rhs);
+
+/**
+ * \brief Get the IPv6Address contained in a IPv4Route instance.
+ * \param inst The instance.
+ * \return The IPv6Address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Address_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4Address* freelan_IPv4Route_get_IPv4Address(const struct IPv4Route* inst);
+
+/**
+ * \brief Get the IPv4PrefixLength contained in a IPv4Route instance.
+ * \param inst The instance.
+ * \return The IPv4PrefixLength instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4PrefixLength_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4PrefixLength* freelan_IPv4Route_get_IPv4PrefixLength(const struct IPv4Route* inst);
+
+/**
+ * \brief Create a IPv6Route instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IPv6Route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Route_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Route* freelan_IPv6Route_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create a IPv6Route instance from its parts.
+ * \param ip_address The IP address component. The value is copied so the instance needs not stay alive.
+ * \param port_number The port number. The value is copied so the instance needs not stay alive.
+ * \return The IPv6Route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Route_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Route* freelan_IPv6Route_from_parts(const struct IPv6Address* ip_address, const struct IPv6PrefixLength* prefix_length);
+
+/**
+ * \brief Get the string representation of an IPv6Route instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPv6Route_to_string(struct ErrorContext* ectx, const struct IPv6Route* inst);
+
+/**
+ * \brief Delete an IPv6Route instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPv6Route_free(struct IPv6Route* inst);
+
+/**
+ * \brief Compare two IPv6Route instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPv6Route_less_than(const struct IPv6Route* lhs, const struct IPv6Route* rhs);
+
+/**
+ * \brief Compare two IPv6Route instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPv6Route_equal(const struct IPv6Route* lhs, const struct IPv6Route* rhs);
+
+/**
+ * \brief Get the IPv6Address contained in a IPv6Route instance.
+ * \param inst The instance.
+ * \return The IPv6Address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Address_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Address* freelan_IPv6Route_get_IPv6Address(const struct IPv6Route* inst);
+
+/**
+ * \brief Get the IPv6PrefixLength contained in a IPv6Route instance.
+ * \param inst The instance.
+ * \return The IPv6PrefixLength instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6PrefixLength_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6PrefixLength* freelan_IPv6Route_get_IPv6PrefixLength(const struct IPv6Route* inst);
 
 /* API END */
 

@@ -49,6 +49,8 @@
 #include "ipv6_address.hpp"
 #include "port_number.hpp"
 #include "hostname.hpp"
+#include "ipv4_prefix_length.hpp"
+#include "ipv6_prefix_length.hpp"
 
 namespace freelan {
 
@@ -113,6 +115,10 @@ namespace {
 
 	bool is_ipv6_endpoint_address_stop_delimiter(char c) {
 		return (c == ']');
+	}
+
+	bool is_route_separator(char c) {
+		return (c == '/');
 	}
 
 	std::istream& putback(std::istream& is, const std::string& str)
@@ -464,4 +470,41 @@ std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortN
 	return is;
 }
 
+template <typename IPAddressType, typename IPPrefixLengthType>
+std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, std::string* buf)
+{
+	if (is.good())
+	{
+		std::string ip_address_buf;
+
+		if (IPAddressType::read_from(is, ip_address, &ip_address_buf))
+		{
+			if (!is_route_separator(is.peek())) {
+				putback(is, ip_address_buf);
+				is.setstate(std::ios_base::failbit);
+
+				return is;
+			}
+
+			const char sep = is.get();
+			std::string prefix_length_buf;
+
+			if (!IPPrefixLengthType::read_from(is, prefix_length, &prefix_length_buf)) {
+				putback(is, ip_address_buf + sep);
+				is.setstate(std::ios_base::failbit);
+
+				return is;
+			}
+
+			if (buf) {
+				*buf = ip_address_buf + sep + prefix_length_buf;
+			}
+		}
+	}
+
+	return is;
+}
+
+template std::istream& read_generic_ip_route<IPv4Address, IPv4PrefixLength>(std::istream&, IPv4Address&, IPv4PrefixLength&, std::string*);
+template std::istream& read_generic_ip_route<IPv6Address, IPv6PrefixLength>(std::istream&, IPv6Address&, IPv6PrefixLength&, std::string*);
 }

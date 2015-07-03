@@ -64,8 +64,8 @@ class GenericIPPrefixLength : public GenericValueType<uint8_t, GenericIPPrefixLe
 		typedef AddressType address_type;
 
 		GenericIPPrefixLength() = default;
-		GenericIPPrefixLength(typename GenericIPPrefixLength::value_type&& value) : GenericValueType<uint16_t, GenericIPPrefixLength<AddressType> >(std::move(value)) {}
-		GenericIPPrefixLength(const typename GenericIPPrefixLength::value_type& value) : GenericValueType<uint16_t, GenericIPPrefixLength<AddressType> >(value) {}
+		GenericIPPrefixLength(typename GenericIPPrefixLength::value_type&& value) : GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> >(std::move(value)) {}
+		GenericIPPrefixLength(const typename GenericIPPrefixLength::value_type& value) : GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> >(value) {}
 
 		static GenericIPPrefixLength from_string(const std::string& str) {
 			boost::system::error_code ec;
