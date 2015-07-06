@@ -157,3 +157,21 @@ TEST(IPv4Address, stream_output) {
 
 	ASSERT_EQ(str_value, oss.str());
 }
+
+TEST(IPv4Address, increment) {
+	auto value = IPv4Address::from_string("9.0.0.0");
+
+	ASSERT_EQ(IPv4Address::from_string("9.0.0.1"), ++value);
+}
+
+TEST(IPv4Address, increment_byte_boundary) {
+	auto value = IPv4Address::from_string("9.0.0.255");
+
+	ASSERT_EQ(IPv4Address::from_string("9.0.1.0"), ++value);
+}
+
+TEST(IPv4Address, increment_last) {
+	auto value = IPv4Address::from_string("255.255.255.255");
+
+	ASSERT_EQ(IPv4Address::from_string("0.0.0.0"), ++value);
+}

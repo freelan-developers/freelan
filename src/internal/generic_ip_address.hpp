@@ -93,6 +93,25 @@ class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<Val
 		std::ostream& write_to(std::ostream& os) const {
 			return os << to_string();
 		}
+
+		GenericIPAddress& operator++() {
+			auto bytes = this->to_raw_value().to_bytes();
+			const auto bytes_size = sizeof(bytes);
+
+			for (auto index = bytes_size; index > 0; --index) {
+			    if (bytes[index - 1] < 255) {
+                    ++bytes[index - 1];
+                    break;
+
+                } else {
+                    bytes[index - 1] = 0;
+                }
+            }
+
+            this->set_raw_value(typename GenericIPAddress::value_type(bytes));
+
+            return *this;
+        }
 };
 
 }

@@ -158,3 +158,21 @@ TEST(IPv6Address, stream_output) {
 
 	ASSERT_EQ(str_value, oss.str());
 }
+
+TEST(IPv6Address, increment) {
+	auto value = IPv6Address::from_string("ff02::a:0003");
+
+	ASSERT_EQ(IPv6Address::from_string("ff02::a:0004"), ++value);
+}
+
+TEST(IPv6Address, increment_byte_boundary) {
+	auto value = IPv6Address::from_string("ff02::a:00ff");
+
+	ASSERT_EQ(IPv6Address::from_string("ff02::a:0100"), ++value);
+}
+
+TEST(IPv6Address, increment_last) {
+	auto value = IPv6Address::from_string("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+
+	ASSERT_EQ(IPv6Address::from_string("::"), ++value);
+}
