@@ -108,7 +108,11 @@ class ScopedMeasurement {
         {}
 
         ScopedMeasurement(const ScopedMeasurement&) = delete;
-        ScopedMeasurement(ScopedMeasurement&&) = default;
+        ScopedMeasurement(ScopedMeasurement&& other) :
+            m_perf_counter(std::move(other.m_perf_counter)),
+            m_label(std::move(m_label)),
+            m_start_time(std::move(m_start_time))
+        {}
 
         ~ScopedMeasurement() {
             report();
