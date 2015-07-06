@@ -168,3 +168,41 @@ TEST(IPv4Route, ordering) {
 	ASSERT_LT(value_b, value_d);
 	ASSERT_LT(value_c, value_d);
 }
+
+TEST(IPv4Route, netmask_limits) {
+	const IPv4Address ipv4_address = IPv4Address::from_string("255.255.255.255");
+
+	ASSERT_EQ(IPv4Address::from_string("0.0.0.0"), IPv4Route(ipv4_address, 0).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("128.0.0.0"), IPv4Route(ipv4_address, 1).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("192.0.0.0"), IPv4Route(ipv4_address, 2).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("224.0.0.0"), IPv4Route(ipv4_address, 3).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("240.0.0.0"), IPv4Route(ipv4_address, 4).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("248.0.0.0"), IPv4Route(ipv4_address, 5).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("252.0.0.0"), IPv4Route(ipv4_address, 6).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("254.0.0.0"), IPv4Route(ipv4_address, 7).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.0.0.0"), IPv4Route(ipv4_address, 8).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.128.0.0"), IPv4Route(ipv4_address, 9).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.192.0.0"), IPv4Route(ipv4_address, 10).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.224.0.0"), IPv4Route(ipv4_address, 11).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.240.0.0"), IPv4Route(ipv4_address, 12).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.248.0.0"), IPv4Route(ipv4_address, 13).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.252.0.0"), IPv4Route(ipv4_address, 14).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.254.0.0"), IPv4Route(ipv4_address, 15).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.0.0"), IPv4Route(ipv4_address, 16).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.128.0"), IPv4Route(ipv4_address, 17).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.192.0"), IPv4Route(ipv4_address, 18).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.224.0"), IPv4Route(ipv4_address, 19).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.240.0"), IPv4Route(ipv4_address, 20).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.248.0"), IPv4Route(ipv4_address, 21).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.252.0"), IPv4Route(ipv4_address, 22).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.254.0"), IPv4Route(ipv4_address, 23).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.0"), IPv4Route(ipv4_address, 24).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.128"), IPv4Route(ipv4_address, 25).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.192"), IPv4Route(ipv4_address, 26).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.224"), IPv4Route(ipv4_address, 27).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.240"), IPv4Route(ipv4_address, 28).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.248"), IPv4Route(ipv4_address, 29).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.252"), IPv4Route(ipv4_address, 30).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.254"), IPv4Route(ipv4_address, 31).get_ip_address());
+	ASSERT_EQ(IPv4Address::from_string("255.255.255.255"), IPv4Route(ipv4_address, 32).get_ip_address());
+}
