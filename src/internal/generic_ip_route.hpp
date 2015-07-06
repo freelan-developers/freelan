@@ -102,6 +102,7 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 
 		const IPAddressType& get_ip_address() const { return m_ip_address; }
 		const IPPrefixLengthType& get_prefix_length() const { return m_prefix_length; }
+		IPAddressType get_broadcast_ip_address() const { return to_broadcast_address(m_ip_address, m_prefix_length.to_raw_value()); }
 
 		std::string to_string() const {
 			std::ostringstream oss;
@@ -127,6 +128,24 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 
 				for (auto i = index + 1; i < sizeof(bytes); ++i) {
 					bytes[i] = 0x00;
+				}
+			}
+
+			return IPAddressType::from_bytes(bytes);
+		}
+
+		static IPAddressType to_broadcast_address(const IPAddressType& ip_address, size_t prefix_length) {
+			auto bytes = ip_address.to_bytes();
+			const auto index = prefix_length / 8;
+
+			if (index < sizeof(bytes)) {
+				const size_t bit_index = prefix_length - index * 8;
+				const uint8_t bit_mask = static_cast<uint8_t>(0xFF) >> bit_index;
+
+				bytes[index] |= bit_mask;
+
+				for (auto i = index + 1; i < sizeof(bytes); ++i) {
+					bytes[i] = 0xff;
 				}
 			}
 
