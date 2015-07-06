@@ -47,6 +47,7 @@
 #pragma once
 
 #include <sstream>
+#include <iterator>
 
 #include <boost/operators.hpp>
 
@@ -60,6 +61,31 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 	public:
 		typedef GenericIPAddress<AddressType> IPAddressType;
 		typedef GenericIPPrefixLength<AddressType> IPPrefixLengthType;
+
+		class const_iterator : public std::iterator<std::forward_iterator_tag, IPAddressType>, public boost::operators<const_iterator> {
+			public:
+				const_iterator& operator++() {
+					++m_ip_address;
+
+					return *this;
+				}
+				typename const_iterator::value_type operator*() const {
+					return m_ip_address;
+				}
+
+			private:
+				const_iterator(const typename const_iterator::value_type& ip_address) :
+					m_ip_address(ip_address)
+				{}
+
+				typename const_iterator::value_type m_ip_address;
+
+				friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
+					return (lhs.m_ip_address == rhs.m_ip_address);
+				}
+
+				friend class GenericIPRoute;
+		};
 
 		GenericIPRoute() = default;
 		GenericIPRoute(const IPAddressType& ip_address, const IPPrefixLengthType& prefix_length) :
@@ -114,6 +140,9 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 		std::ostream& write_to(std::ostream& os) const {
 			return os << m_ip_address << "/" << m_prefix_length;
 		}
+
+		const_iterator begin() const { auto first = m_ip_address; return const_iterator(++first); }
+		const_iterator end() const { return const_iterator(get_broadcast_ip_address()); }
 
 	private:
 		static IPAddressType to_network_address(const IPAddressType& ip_address, size_t prefix_length) {

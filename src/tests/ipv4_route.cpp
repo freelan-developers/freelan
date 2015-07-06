@@ -244,3 +244,18 @@ TEST(IPv4Route, get_broadcast_ip_address) {
 	ASSERT_EQ(IPv4Address::from_string("0.0.0.1"), IPv4Route(ipv4_address, 31).get_broadcast_ip_address());
 	ASSERT_EQ(IPv4Address::from_string("0.0.0.0"), IPv4Route(ipv4_address, 32).get_broadcast_ip_address());
 }
+
+TEST(IPv4Route, iteration) {
+	const auto value = IPv4Route::from_string("1.2.3.0/29");
+	auto it = value.begin();
+
+	ASSERT_EQ(IPv4Address::from_string("1.2.3.1"), *it); ++it;
+	ASSERT_EQ(IPv4Address::from_string("1.2.3.2"), *it); ++it;
+	ASSERT_EQ(IPv4Address::from_string("1.2.3.3"), *it); ++it;
+	ASSERT_EQ(IPv4Address::from_string("1.2.3.4"), *it); ++it;
+	ASSERT_EQ(IPv4Address::from_string("1.2.3.5"), *it); ++it;
+	ASSERT_EQ(IPv4Address::from_string("1.2.3.6"), *it); ++it;
+	ASSERT_TRUE(value.end() == it) << "it should be the 'end' iterator";
+
+	ASSERT_EQ(static_cast<ssize_t>(6), std::distance(value.begin(), value.end()));
+}

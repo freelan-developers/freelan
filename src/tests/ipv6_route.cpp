@@ -436,3 +436,18 @@ TEST(IPv6Route, get_broadcast_ip_address) {
 	ASSERT_EQ(IPv6Address::from_string("0000:0000:0000:0000:0000:0000:0000:0001"), IPv6Route(ipv6_address, 127).get_broadcast_ip_address());
 	ASSERT_EQ(IPv6Address::from_string("0000:0000:0000:0000:0000:0000:0000:0000"), IPv6Route(ipv6_address, 128).get_broadcast_ip_address());
 }
+
+TEST(IPv6Route, iteration) {
+	const auto value = IPv6Route::from_string("fe20::a:b:c:0000/125");
+	auto it = value.begin();
+
+	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0001"), *it); ++it;
+	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0002"), *it); ++it;
+	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0003"), *it); ++it;
+	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0004"), *it); ++it;
+	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0005"), *it); ++it;
+	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0006"), *it); ++it;
+	ASSERT_TRUE(value.end() == it) << "it should be the 'end' iterator";
+
+	ASSERT_EQ(static_cast<ssize_t>(6), std::distance(value.begin(), value.end()));
+}
