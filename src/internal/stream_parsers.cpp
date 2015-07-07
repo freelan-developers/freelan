@@ -121,6 +121,10 @@ namespace {
 		return (c == '/');
 	}
 
+	bool is_route_gateway_separator(char c) {
+		return (c == '@');
+	}
+
 	std::istream& putback(std::istream& is, const std::string& str)
 	{
 		const std::ios::iostate state = is.rdstate() & ~std::ios::eofbit;
@@ -471,8 +475,10 @@ std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortN
 }
 
 template <typename IPAddressType, typename IPPrefixLengthType>
-std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, std::string* buf)
+std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, boost::optional<IPAddressType>& gateway, std::string* buf)
 {
+	static_cast<void>(gateway);
+
 	if (is.good())
 	{
 		std::string ip_address_buf;
@@ -496,15 +502,36 @@ std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address,
 				return is;
 			}
 
-			if (buf) {
-				*buf = ip_address_buf + sep + prefix_length_buf;
-			}
+			if (is.good() && is_route_gateway_separator(is.peek())) {
+			    const char gsep = is.get();
+                std::string gateway_buf;
+
+                gateway = IPAddressType();
+
+                if (!IPAddressType::read_from(is, *gateway, &gateway_buf))
+                {
+                    putback(is, ip_address_buf + sep + prefix_length_buf + gsep);
+                    is.setstate(std::ios_base::failbit);
+
+                    return is;
+                }
+
+                if (buf) {
+                    *buf = ip_address_buf + sep + prefix_length_buf + gsep + gateway_buf;
+                }
+            } else {
+                gateway = boost::none;
+
+                if (buf) {
+                    *buf = ip_address_buf + sep + prefix_length_buf;
+                }
+            }
 		}
 	}
 
 	return is;
 }
 
-template std::istream& read_generic_ip_route<IPv4Address, IPv4PrefixLength>(std::istream&, IPv4Address&, IPv4PrefixLength&, std::string*);
-template std::istream& read_generic_ip_route<IPv6Address, IPv6PrefixLength>(std::istream&, IPv6Address&, IPv6PrefixLength&, std::string*);
+template std::istream& read_generic_ip_route<IPv4Address, IPv4PrefixLength>(std::istream&, IPv4Address&, IPv4PrefixLength&, boost::optional<IPv4Address>&, std::string*);
+template std::istream& read_generic_ip_route<IPv6Address, IPv6PrefixLength>(std::istream&, IPv6Address&, IPv6PrefixLength&, boost::optional<IPv6Address>&, std::string*);
 }

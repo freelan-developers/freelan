@@ -51,6 +51,15 @@
 
 #include <boost/operators.hpp>
 
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+#include <boost/optional.hpp>
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
+
 #include "generic_ip_address.hpp"
 #include "generic_ip_prefix_length.hpp"
 
@@ -94,6 +103,13 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 		{
 		}
 
+		GenericIPRoute(const IPAddressType& ip_address, const IPPrefixLengthType& prefix_length, const IPAddressType& gateway) :
+			m_ip_address(to_network_address(ip_address, prefix_length.to_raw_value())),
+			m_prefix_length(prefix_length),
+			m_gateway(gateway)
+		{
+		}
+
 		static GenericIPRoute from_string(const std::string& str) {
 			boost::system::error_code ec;
 			const GenericIPRoute result = from_string(str, ec);
@@ -119,7 +135,7 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 		}
 
 		static std::istream& read_from(std::istream& is, GenericIPRoute& value, std::string* buf = nullptr) {
-			if (read_generic_ip_route<IPAddressType, IPPrefixLengthType>(is, value.m_ip_address, value.m_prefix_length, buf)) {
+			if (read_generic_ip_route<IPAddressType, IPPrefixLengthType>(is, value.m_ip_address, value.m_prefix_length, value.m_gateway, buf)) {
 				value.normalize();
 			}
 
@@ -128,6 +144,8 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 
 		const IPAddressType& get_ip_address() const { return m_ip_address; }
 		const IPPrefixLengthType& get_prefix_length() const { return m_prefix_length; }
+		bool has_gateway() const { return static_cast<bool>(m_gateway); }
+		const IPAddressType& get_gateway() const { return *m_gateway; }
 		IPAddressType get_broadcast_ip_address() const { return to_broadcast_address(m_ip_address, m_prefix_length.to_raw_value()); }
 
 		std::string to_string() const {
@@ -138,7 +156,11 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 		}
 
 		std::ostream& write_to(std::ostream& os) const {
-			return os << m_ip_address << "/" << m_prefix_length;
+			if (m_gateway) {
+				return os << m_ip_address << '/' << m_prefix_length << '@' << *m_gateway;
+			} else {
+				return os << m_ip_address << '/' << m_prefix_length;
+			}
 		}
 
 		const_iterator begin() const { auto first = m_ip_address; return const_iterator(++first); }
@@ -190,6 +212,7 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 
 		IPAddressType m_ip_address;
 		IPPrefixLengthType m_prefix_length;
+		boost::optional<IPAddressType> m_gateway;
 
 		friend bool operator<(const GenericIPRoute& lhs, const GenericIPRoute& rhs) {
 			if (lhs.m_prefix_length == rhs.m_prefix_length) {
@@ -200,7 +223,7 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 		}
 
 		friend bool operator==(const GenericIPRoute& lhs, const GenericIPRoute& rhs) {
-			return (lhs.m_ip_address == rhs.m_ip_address) && (lhs.m_prefix_length == rhs.m_prefix_length);
+			return (lhs.m_ip_address == rhs.m_ip_address) && (lhs.m_prefix_length == rhs.m_prefix_length) && (lhs.m_gateway == rhs.m_gateway);
 		}
 
 		friend std::istream& operator>>(std::istream& is, GenericIPRoute& value) {

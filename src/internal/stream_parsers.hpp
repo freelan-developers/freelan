@@ -49,6 +49,15 @@
 #include <iostream>
 #include <string>
 
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+#include <boost/optional.hpp>
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
+
 #include "stdint.hpp"
 
 namespace freelan {
@@ -67,5 +76,5 @@ template <typename IPAddressType>
 std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& value, std::string* buf = nullptr);
 std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortNumber& port_number, std::string* buf = nullptr);
 template <typename IPAddressType, typename IPPrefixLengthType>
-std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, std::string* buf = nullptr);
+std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, boost::optional<IPAddressType>& gateway, std::string* buf = nullptr);
 }

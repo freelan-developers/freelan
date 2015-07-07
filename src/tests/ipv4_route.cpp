@@ -63,10 +63,23 @@ TEST(IPv4Route, value_instanciation) {
 
 	ASSERT_EQ(ipv4_address, value.get_ip_address());
 	ASSERT_EQ(prefix_length, value.get_prefix_length());
+	ASSERT_FALSE(value.has_gateway());
+}
+
+TEST(IPv4Route, value_instanciation_with_gateway) {
+	const IPv4Address ipv4_address = IPv4Address::from_string("9.0.0.1");
+	const IPv4PrefixLength prefix_length = 32;
+	const IPv4Address gateway = IPv4Address::from_string("9.0.0.255");
+	const IPv4Route value { ipv4_address, prefix_length, gateway };
+
+	ASSERT_EQ(ipv4_address, value.get_ip_address());
+	ASSERT_EQ(prefix_length, value.get_prefix_length());
+	ASSERT_TRUE(value.has_gateway());
+	ASSERT_EQ(gateway, value.get_gateway());
 }
 
 TEST(IPv4Route, string_instantiation) {
-	const std::string str_value = "9.0.255.0/24";
+	const std::string str_value = "9.0.255.0/24@9.0.0.254";
 	const auto value = IPv4Route::from_string(str_value);
 
 	ASSERT_EQ(str_value, value.to_string());

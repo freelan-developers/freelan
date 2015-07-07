@@ -63,10 +63,23 @@ TEST(IPv6Route, value_instanciation) {
 
 	ASSERT_EQ(ipv6_address, value.get_ip_address());
 	ASSERT_EQ(prefix_length, value.get_prefix_length());
+	ASSERT_FALSE(value.has_gateway());
+}
+
+TEST(IPv6Route, value_instanciation_with_gateway) {
+	const IPv6Address ipv6_address = IPv6Address::from_string("ff02:1001::e0:0");
+	const IPv6PrefixLength prefix_length = 120;
+	const IPv6Address gateway = IPv6Address::from_string("ff02:1001::e0:ffff");
+	const IPv6Route value { ipv6_address, prefix_length, gateway };
+
+	ASSERT_EQ(ipv6_address, value.get_ip_address());
+	ASSERT_EQ(prefix_length, value.get_prefix_length());
+	ASSERT_TRUE(value.has_gateway());
+	ASSERT_EQ(gateway, value.get_gateway());
 }
 
 TEST(IPv6Route, string_instantiation) {
-	const std::string str_value = "ff02:1001::e0:0/120";
+	const std::string str_value = "ff02:1001::e0:0/120@ff02:1001::";
 	const auto value = IPv6Route::from_string(str_value);
 
 	ASSERT_EQ(str_value, value.to_string());

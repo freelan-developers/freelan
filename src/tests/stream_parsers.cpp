@@ -782,10 +782,11 @@ TEST(stream_parsers, read_ipv4_route_success) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv4Address ip_address;
 	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -793,6 +794,30 @@ TEST(stream_parsers, read_ipv4_route_success) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv4PrefixLength::from_string(str_prefix_length), prefix_length);
+	ASSERT_EQ(boost::none, gateway);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_route_success_with_gateway) {
+	const std::string str_ip_address = "9.0.0.1";
+	const std::string str_prefix_length = "24";
+	const std::string str_gateway = "9.0.0.254";
+	const std::string str_value = str_ip_address + '/' + str_prefix_length + '@' + str_gateway;
+	IPv4Address ip_address;
+	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
+	ASSERT_EQ(IPv4PrefixLength::from_string(str_prefix_length), prefix_length);
+	ASSERT_EQ(IPv4Address::from_string(str_gateway), gateway);
 	ASSERT_EQ(str_value, parsed_str);
 }
 
@@ -803,10 +828,11 @@ TEST(stream_parsers, read_ipv4_route_extra) {
 	const std::string extra = "roo";
 	IPv4Address ip_address;
 	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
 	std::istringstream iss(str_value + extra);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_TRUE(iss.good());
@@ -814,6 +840,7 @@ TEST(stream_parsers, read_ipv4_route_extra) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv4PrefixLength::from_string(str_prefix_length), prefix_length);
+	ASSERT_EQ(boost::none, gateway);
 	ASSERT_EQ(str_value, parsed_str);
 
 	// Make sure the stream wasn't eaten up.
@@ -828,10 +855,11 @@ TEST(stream_parsers, read_ipv4_route_invalid_ip_address) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv4Address ip_address;
 	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -852,10 +880,37 @@ TEST(stream_parsers, read_ipv4_route_invalid_prefix_length) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv4Address ip_address;
 	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv4_route_invalid_gateway) {
+	const std::string str_ip_address = "9.0.0.1";
+	const std::string str_prefix_length = "26";
+	const std::string str_gateway = "9.0.f.255";
+	const std::string str_value = str_ip_address + '/' + str_prefix_length + '@' + str_gateway;
+	IPv4Address ip_address;
+	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -876,10 +931,11 @@ TEST(stream_parsers, read_ipv4_route_truncated) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv4Address ip_address;
 	IPv4PrefixLength prefix_length;
+	boost::optional<IPv4Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv4Address, IPv4PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -900,10 +956,11 @@ TEST(stream_parsers, read_ipv6_route_success) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv6Address ip_address;
 	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -911,6 +968,30 @@ TEST(stream_parsers, read_ipv6_route_success) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv6Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv6PrefixLength::from_string(str_prefix_length), prefix_length);
+	ASSERT_EQ(boost::none, gateway);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv6_route_success_with_gateway) {
+	const std::string str_ip_address = "fe80::000:00:0:1";
+	const std::string str_prefix_length = "26";
+	const std::string str_gateway = "fe80::000:00:0:ffff";
+	const std::string str_value = str_ip_address + '/' + str_prefix_length + '@' + str_gateway;
+	IPv6Address ip_address;
+	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(IPv6Address::from_string(str_ip_address), ip_address);
+	ASSERT_EQ(IPv6PrefixLength::from_string(str_prefix_length), prefix_length);
+	ASSERT_EQ(IPv6Address::from_string(str_gateway), gateway);
 	ASSERT_EQ(str_value, parsed_str);
 }
 
@@ -921,10 +1002,11 @@ TEST(stream_parsers, read_ipv6_route_extra) {
 	const std::string extra = "roo";
 	IPv6Address ip_address;
 	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
 	std::istringstream iss(str_value + extra);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_TRUE(iss.good());
@@ -932,6 +1014,7 @@ TEST(stream_parsers, read_ipv6_route_extra) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv6Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv6PrefixLength::from_string(str_prefix_length), prefix_length);
+	ASSERT_EQ(boost::none, gateway);
 	ASSERT_EQ(str_value, parsed_str);
 
 	// Make sure the stream wasn't eaten up.
@@ -946,10 +1029,11 @@ TEST(stream_parsers, read_ipv6_route_invalid_ip_address) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv6Address ip_address;
 	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -970,10 +1054,37 @@ TEST(stream_parsers, read_ipv6_route_invalid_prefix_length) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv6Address ip_address;
 	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ipv6_route_invalid_gateway) {
+	const std::string str_ip_address = "fe80::000:00:0:1";
+	const std::string str_prefix_length = "26";
+	const std::string str_gateway = "fe80|::ffff";
+	const std::string str_value = str_ip_address + '/' + str_prefix_length + '@' + str_gateway;
+	IPv6Address ip_address;
+	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
@@ -994,10 +1105,11 @@ TEST(stream_parsers, read_ipv6_route_truncated) {
 	const std::string str_value = str_ip_address + '/' + str_prefix_length;
 	IPv6Address ip_address;
 	IPv6PrefixLength prefix_length;
+	boost::optional<IPv6Address> gateway;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
 
-	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, &parsed_str);
+	auto&& result = read_generic_ip_route<IPv6Address, IPv6PrefixLength>(iss, ip_address, prefix_length, gateway, &parsed_str);
 
 	ASSERT_EQ(&iss, &result);
 	ASSERT_FALSE(iss.good());
