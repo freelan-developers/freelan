@@ -451,3 +451,14 @@ TEST(IPv6Route, iteration) {
 
 	ASSERT_EQ(static_cast<ssize_t>(6), std::distance(value.begin(), value.end()));
 }
+
+TEST(IPv6Route, contains_ip_address) {
+	const auto value = IPv6Route::from_string("fe20::a:b:c:0004/126");
+
+	ASSERT_FALSE(value.contains_ip_address(IPv6Address::from_string("fe20::a:b:c:0003")));
+	ASSERT_TRUE(value.contains_ip_address(IPv6Address::from_string("fe20::a:b:c:0004")));
+	ASSERT_TRUE(value.contains_ip_address(IPv6Address::from_string("fe20::a:b:c:0005")));
+	ASSERT_TRUE(value.contains_ip_address(IPv6Address::from_string("fe20::a:b:c:0006")));
+	ASSERT_TRUE(value.contains_ip_address(IPv6Address::from_string("fe20::a:b:c:0007")));
+	ASSERT_FALSE(value.contains_ip_address(IPv6Address::from_string("fe20::a:b:c:0008")));
+}

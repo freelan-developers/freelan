@@ -143,6 +143,9 @@ class GenericIPRoute : public boost::operators<GenericIPRoute<AddressType> > {
 
 		const_iterator begin() const { auto first = m_ip_address; return const_iterator(++first); }
 		const_iterator end() const { return const_iterator(get_broadcast_ip_address()); }
+		bool contains_ip_address(const IPAddressType& ip_address) const {
+			return (to_network_address(ip_address, m_prefix_length.to_raw_value()) == m_ip_address);
+		}
 
 	private:
 		static IPAddressType to_network_address(const IPAddressType& ip_address, size_t prefix_length) {

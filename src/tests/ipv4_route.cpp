@@ -259,3 +259,14 @@ TEST(IPv4Route, iteration) {
 
 	ASSERT_EQ(static_cast<ssize_t>(6), std::distance(value.begin(), value.end()));
 }
+
+TEST(IPv4Route, contains_ip_address) {
+	const auto value = IPv4Route::from_string("1.2.3.4/30");
+
+	ASSERT_FALSE(value.contains_ip_address(IPv4Address::from_string("1.2.3.3")));
+	ASSERT_TRUE(value.contains_ip_address(IPv4Address::from_string("1.2.3.4")));
+	ASSERT_TRUE(value.contains_ip_address(IPv4Address::from_string("1.2.3.5")));
+	ASSERT_TRUE(value.contains_ip_address(IPv4Address::from_string("1.2.3.6")));
+	ASSERT_TRUE(value.contains_ip_address(IPv4Address::from_string("1.2.3.7")));
+	ASSERT_FALSE(value.contains_ip_address(IPv4Address::from_string("1.2.3.8")));
+}
