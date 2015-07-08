@@ -308,18 +308,20 @@ class IPv4Route(NativeType.from_typename('IPv4Route')):
     """
 
     @classmethod
-    def from_parts(self, ip_address, prefix_length):
+    def from_parts(self, ip_address, prefix_length, gateway=None):
         """
         Create an IPv4Route from its parts.
 
         :param ip_address: The IPv4Address component.
         :param prefix_length: The IPv4PrefixLength component.
+        :param gateway: The gateway component (optional).
         :returns: An IPv4Route instance.
         """
         return IPv4Route(
             opaque_ptr=native.freelan_IPv4Route_from_parts(
                 ip_address._opaque_ptr,
                 prefix_length._opaque_ptr,
+                gateway._opaque_ptr if gateway else ffi.NULL,
             ),
         )
 
@@ -339,6 +341,15 @@ class IPv4Route(NativeType.from_typename('IPv4Route')):
             ),
         )
 
+    @property
+    def gateway(self):
+        opaque_ptr = native.freelan_IPv4Route_get_IPv4Address_gateway(
+            self._opaque_ptr,
+        )
+
+        if opaque_ptr != ffi.NULL:
+            return IPv4Address(opaque_ptr=opaque_ptr)
+
 
 class IPv6Route(NativeType.from_typename('IPv6Route')):
     """
@@ -346,18 +357,20 @@ class IPv6Route(NativeType.from_typename('IPv6Route')):
     """
 
     @classmethod
-    def from_parts(self, ip_address, prefix_length):
+    def from_parts(self, ip_address, prefix_length, gateway=None):
         """
         Create an IPv6Route from its parts.
 
         :param ip_address: The IPv6Address component.
         :param prefix_length: The IPv6PrefixLength component.
+        :param gateway: The gateway component (optional).
         :returns: An IPv6Route instance.
         """
         return IPv6Route(
             opaque_ptr=native.freelan_IPv6Route_from_parts(
                 ip_address._opaque_ptr,
                 prefix_length._opaque_ptr,
+                gateway._opaque_ptr if gateway else ffi.NULL,
             ),
         )
 
@@ -376,3 +389,12 @@ class IPv6Route(NativeType.from_typename('IPv6Route')):
                 self._opaque_ptr,
             ),
         )
+
+    @property
+    def gateway(self):
+        opaque_ptr = native.freelan_IPv6Route_get_IPv6Address_gateway(
+            self._opaque_ptr,
+        )
+
+        if opaque_ptr != ffi.NULL:
+            return IPv6Address(opaque_ptr=opaque_ptr)

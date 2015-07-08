@@ -832,7 +832,7 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv4Address_free, ip_address)
         prefix_length = native.freelan_IPv4PrefixLength_from_string(self.ectx, "24")
         self.addCleanup(native.freelan_IPv4PrefixLength_free, prefix_length)
-        result = native.freelan_IPv4Route_from_parts(ip_address, prefix_length)
+        result = native.freelan_IPv4Route_from_parts(ip_address, prefix_length, ffi.NULL)
         self.addCleanup(native.freelan_IPv4Route_free, result)
 
         self.assertNotEqual(ffi.NULL, result)
@@ -890,6 +890,14 @@ class NativeCallsTests(TestCase):
 
         self.assertNotEqual(ffi.NULL, result)
 
+    def test_IPv4Route_get_IPv4Address_gateway(self):
+        endpoint = native.freelan_IPv4Route_from_string(self.ectx, "9.0.0.0/24@9.0.0.254")
+        self.addCleanup(native.freelan_IPv4Route_free, endpoint)
+        result = native.freelan_IPv4Route_get_IPv4Address_gateway(endpoint)
+        self.addCleanup(native.freelan_IPv4Address_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
     def test_IPv6Route_from_string_simple(self):
         result = native.freelan_IPv6Route_from_string(self.ectx, "fe80::a:0/120")
         self.addCleanup(native.freelan_IPv6Route_free, result)
@@ -911,7 +919,7 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv6Address_free, ip_address)
         prefix_length = native.freelan_IPv6PrefixLength_from_string(self.ectx, "120")
         self.addCleanup(native.freelan_IPv6PrefixLength_free, prefix_length)
-        result = native.freelan_IPv6Route_from_parts(ip_address, prefix_length)
+        result = native.freelan_IPv6Route_from_parts(ip_address, prefix_length, ffi.NULL)
         self.addCleanup(native.freelan_IPv6Route_free, result)
 
         self.assertNotEqual(ffi.NULL, result)
@@ -966,5 +974,13 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv6Route_free, endpoint)
         result = native.freelan_IPv6Route_get_IPv6PrefixLength(endpoint)
         self.addCleanup(native.freelan_IPv6PrefixLength_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPv6Route_get_IPv6Address_gateway(self):
+        endpoint = native.freelan_IPv6Route_from_string(self.ectx, "fe80::a:0/120@fe80::a:ffff")
+        self.addCleanup(native.freelan_IPv6Route_free, endpoint)
+        result = native.freelan_IPv6Route_get_IPv6Address_gateway(endpoint)
+        self.addCleanup(native.freelan_IPv6Address_free, result)
 
         self.assertNotEqual(ffi.NULL, result)

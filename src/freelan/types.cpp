@@ -124,6 +124,27 @@ namespace {
 		);
 	}
 
+	template <typename Type, typename InternalType, typename LeftPartType, typename LeftInternalPartType, typename RightPartType, typename RightInternalPartType>
+	Type* from_parts_with_optional_generic(const LeftPartType* lhs, const RightPartType* rhs, const LeftPartType* optional = nullptr) {
+		assert(lhs);
+		assert(rhs);
+
+		const auto ilhs = *reinterpret_cast<const LeftInternalPartType*>(lhs);
+		const auto irhs = *reinterpret_cast<const RightInternalPartType*>(rhs);
+
+		if (optional != nullptr) {
+			const auto ioptional = *reinterpret_cast<const LeftInternalPartType*>(optional);
+
+			return reinterpret_cast<Type*>(
+				FREELAN_NEW InternalType(ilhs, irhs, ioptional)
+			);
+		} else {
+			return reinterpret_cast<Type*>(
+				FREELAN_NEW InternalType(ilhs, irhs)
+			);
+		}
+	}
+
 	template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
 	IPAddressType* get_ip_address_generic(const Type* inst) {
 		assert(inst);
@@ -168,6 +189,20 @@ namespace {
 		);
 	}
 
+	template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
+	IPAddressType* get_gateway_generic(const Type* inst) {
+		assert(inst);
+
+		const auto value = *reinterpret_cast<const InternalType*>(inst);
+
+		if (!value.has_gateway()) {
+			return nullptr;
+		}
+
+		return reinterpret_cast<IPAddressType*>(
+			FREELAN_NEW InternalIPAddressType(value.get_gateway())
+		);
+	}
 }
 
 /*
@@ -195,6 +230,9 @@ int freelan_ ## TYPE ## _equal(const struct TYPE* lhs, const struct TYPE* rhs) {
 #define IMPLEMENT_from_parts(TYPE,LTYPE,RTYPE) \
 struct TYPE* freelan_ ## TYPE ## _from_parts(const struct LTYPE* lhs, const struct RTYPE* rhs) { return from_parts_generic<TYPE, freelan::TYPE, LTYPE, freelan::LTYPE, RTYPE, freelan::RTYPE>(lhs, rhs); }
 
+#define IMPLEMENT_from_parts_with_optional(TYPE,LTYPE,RTYPE) \
+struct TYPE* freelan_ ## TYPE ## _from_parts(const struct LTYPE* lhs, const struct RTYPE* rhs, const struct LTYPE* optional) { return from_parts_with_optional_generic<TYPE, freelan::TYPE, LTYPE, freelan::LTYPE, RTYPE, freelan::RTYPE>(lhs, rhs, optional); }
+
 #define IMPLEMENT_get_ip_address(TYPE,IATYPE) \
 struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_ip_address_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
 
@@ -207,6 +245,9 @@ struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { r
 #define IMPLEMENT_get_prefix_length(TYPE,IATYPE) \
 struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_prefix_length_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
 
+#define IMPLEMENT_get_gateway(TYPE,IATYPE) \
+struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE ## _gateway (const struct TYPE* inst) { return get_gateway_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
 IMPLEMENT_to_string(TYPE) \
@@ -217,6 +258,10 @@ IMPLEMENT_equal(TYPE)
 #define IMPLEMENT_composite_type(TYPE,LTYPE,RTYPE) \
 IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_parts(TYPE,LTYPE,RTYPE)
+
+#define IMPLEMENT_extended_composite_type(TYPE,LTYPE,RTYPE) \
+IMPLEMENT_complete_type(TYPE) \
+IMPLEMENT_from_parts_with_optional(TYPE,LTYPE,RTYPE)
 
 /* Simple types */
 IMPLEMENT_complete_type(IPv4Address)
@@ -239,10 +284,12 @@ IMPLEMENT_composite_type(HostnameEndpoint, Hostname, PortNumber)
 IMPLEMENT_get_hostname(HostnameEndpoint, Hostname)
 IMPLEMENT_get_port_number(HostnameEndpoint, PortNumber)
 
-IMPLEMENT_composite_type(IPv4Route, IPv4Address, IPv4PrefixLength)
+IMPLEMENT_extended_composite_type(IPv4Route, IPv4Address, IPv4PrefixLength)
 IMPLEMENT_get_ip_address(IPv4Route, IPv4Address)
 IMPLEMENT_get_prefix_length(IPv4Route, IPv4PrefixLength)
+IMPLEMENT_get_gateway(IPv4Route, IPv4Address)
 
-IMPLEMENT_composite_type(IPv6Route, IPv6Address, IPv6PrefixLength)
+IMPLEMENT_extended_composite_type(IPv6Route, IPv6Address, IPv6PrefixLength)
 IMPLEMENT_get_ip_address(IPv6Route, IPv6Address)
 IMPLEMENT_get_prefix_length(IPv6Route, IPv6PrefixLength)
+IMPLEMENT_get_gateway(IPv6Route, IPv6Address)

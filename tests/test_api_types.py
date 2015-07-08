@@ -472,17 +472,25 @@ class FinalTypesTests(TestCase):
     def test_IPv4Route_parts(self):
         ip_address_str = "9.0.1.0"
         prefix_length_str = "24"
+        gateway_str = "9.0.1.254"
         ip_address = IPv4Address.from_string(ip_address_str)
         prefix_length = IPv4PrefixLength.from_string(prefix_length_str)
+        gateway = IPv4Address.from_string(gateway_str)
 
         a = IPv4Route.from_string(
-            "%s/%s" % (ip_address_str, prefix_length_str),
+            "%s/%s@%s" % (ip_address_str, prefix_length_str, gateway_str),
         )
-        b = IPv4Route.from_parts(ip_address, prefix_length)
+        b = IPv4Route.from_parts(ip_address, prefix_length, gateway)
 
         self.assertEqual(a, b)
         self.assertEqual(ip_address, b.ip_address)
         self.assertEqual(prefix_length, b.prefix_length)
+        self.assertEqual(gateway, b.gateway)
+
+    def test_IPv4Route_no_gateway(self):
+        ip_route = IPv4Route.from_string("9.0.0.1/24")
+
+        self.assertIsNone(ip_route.gateway)
 
     def test_IPv6Route(self):
         a = IPv6Route.from_string("fe80::a:1/120")
@@ -498,14 +506,22 @@ class FinalTypesTests(TestCase):
     def test_IPv6Route_parts(self):
         ip_address_str = "fe80::a:0"
         prefix_length_str = "120"
+        gateway_str = "fe80::a:ffff"
         ip_address = IPv6Address.from_string(ip_address_str)
         prefix_length = IPv6PrefixLength.from_string(prefix_length_str)
+        gateway = IPv6Address.from_string(gateway_str)
 
         a = IPv6Route.from_string(
-            "%s/%s" % (ip_address_str, prefix_length_str),
+            "%s/%s@%s" % (ip_address_str, prefix_length_str, gateway_str),
         )
-        b = IPv6Route.from_parts(ip_address, prefix_length)
+        b = IPv6Route.from_parts(ip_address, prefix_length, gateway)
 
         self.assertEqual(a, b)
         self.assertEqual(ip_address, b.ip_address)
         self.assertEqual(prefix_length, b.prefix_length)
+        self.assertEqual(gateway, b.gateway)
+
+    def test_IPv6Route_no_gateway(self):
+        ip_route = IPv6Route.from_string("fe80::a:0/24")
+
+        self.assertIsNone(ip_route.gateway)

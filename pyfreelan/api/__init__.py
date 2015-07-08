@@ -147,21 +147,23 @@ api = """
     struct Hostname* freelan_HostnameEndpoint_get_Hostname(const struct HostnameEndpoint* inst);
     struct PortNumber* freelan_HostnameEndpoint_get_PortNumber(const struct HostnameEndpoint* inst);
     struct IPv4Route* freelan_IPv4Route_from_string(struct ErrorContext* ectx, const char* str);
-    struct IPv4Route* freelan_IPv4Route_from_parts(const struct IPv4Address* ip_address, const struct IPv4PrefixLength* prefix_length);
+    struct IPv4Route* freelan_IPv4Route_from_parts(const struct IPv4Address* ip_address, const struct IPv4PrefixLength* prefix_length, const struct IPv4Address* gateway);
     char* freelan_IPv4Route_to_string(struct ErrorContext* ectx, const struct IPv4Route* inst);
     void freelan_IPv4Route_free(struct IPv4Route* inst);
     int freelan_IPv4Route_less_than(const struct IPv4Route* lhs, const struct IPv4Route* rhs);
     int freelan_IPv4Route_equal(const struct IPv4Route* lhs, const struct IPv4Route* rhs);
     struct IPv4Address* freelan_IPv4Route_get_IPv4Address(const struct IPv4Route* inst);
     struct IPv4PrefixLength* freelan_IPv4Route_get_IPv4PrefixLength(const struct IPv4Route* inst);
+    struct IPv4Address* freelan_IPv4Route_get_IPv4Address_gateway(const struct IPv4Route* inst);
     struct IPv6Route* freelan_IPv6Route_from_string(struct ErrorContext* ectx, const char* str);
-    struct IPv6Route* freelan_IPv6Route_from_parts(const struct IPv6Address* ip_address, const struct IPv6PrefixLength* prefix_length);
+    struct IPv6Route* freelan_IPv6Route_from_parts(const struct IPv6Address* ip_address, const struct IPv6PrefixLength* prefix_length, const struct IPv6Address* gateway);
     char* freelan_IPv6Route_to_string(struct ErrorContext* ectx, const struct IPv6Route* inst);
     void freelan_IPv6Route_free(struct IPv6Route* inst);
     int freelan_IPv6Route_less_than(const struct IPv6Route* lhs, const struct IPv6Route* rhs);
     int freelan_IPv6Route_equal(const struct IPv6Route* lhs, const struct IPv6Route* rhs);
     struct IPv6Address* freelan_IPv6Route_get_IPv6Address(const struct IPv6Route* inst);
     struct IPv6PrefixLength* freelan_IPv6Route_get_IPv6PrefixLength(const struct IPv6Route* inst);
+    struct IPv6Address* freelan_IPv6Route_get_IPv6Address_gateway(const struct IPv6Route* inst);
 """
 
 ffi.cdef(api)
