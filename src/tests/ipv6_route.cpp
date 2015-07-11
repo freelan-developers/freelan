@@ -462,7 +462,7 @@ TEST(IPv6Route, iteration) {
 	ASSERT_EQ(IPv6Address::from_string("fe20::a:b:c:0006"), *it); ++it;
 	ASSERT_TRUE(value.end() == it) << "it should be the 'end' iterator";
 
-	ASSERT_EQ(static_cast<ssize_t>(6), std::distance(value.begin(), value.end()));
+	ASSERT_EQ(static_cast<std::iterator_traits<IPv6Route::const_iterator>::difference_type>(6), std::distance(value.begin(), value.end()));
 }
 
 TEST(IPv6Route, contains_ip_address) {

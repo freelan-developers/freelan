@@ -270,7 +270,7 @@ TEST(IPv4Route, iteration) {
 	ASSERT_EQ(IPv4Address::from_string("1.2.3.6"), *it); ++it;
 	ASSERT_TRUE(value.end() == it) << "it should be the 'end' iterator";
 
-	ASSERT_EQ(static_cast<ssize_t>(6), std::distance(value.begin(), value.end()));
+	ASSERT_EQ(static_cast<std::iterator_traits<IPv4Route::const_iterator>::difference_type>(6), std::distance(value.begin(), value.end()));
 }
 
 TEST(IPv4Route, contains_ip_address) {
