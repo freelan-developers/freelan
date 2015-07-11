@@ -46,9 +46,124 @@
 
 #pragma once
 
+#include <iostream>
 #include <type_traits>
 
+#include <boost/system/system_error.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/variant.hpp>
+#include <boost/operators.hpp>
+
 namespace freelan {
+
+template <typename Type>
+class HasFromString {
+    public:
+		static Type from_string(const std::string& str) {
+			boost::system::error_code ec;
+
+			const auto result = from_string(str, ec);
+
+			if (ec) {
+				throw boost::system::system_error(ec);
+			}
+
+			return result;
+		}
+
+		static Type from_string(const std::string& str, boost::system::error_code& ec) {
+			std::istringstream iss(str);
+			Type result;
+
+			if (!Type::read_from(iss, result) || !iss.eof()) {
+				ec = make_error_code(boost::system::errc::invalid_argument);
+
+				return {};
+			}
+
+			return result;
+		}
+};
+
+template <typename Type>
+class HasToString {
+    public:
+		std::string to_string() const {
+			std::ostringstream oss;
+
+            static_cast<const Type*>(this)->write_to(oss);
+
+			return oss.str();
+		}
+};
+
+class WriteToVisitor : public boost::static_visitor<std::ostream&> {
+	public:
+		WriteToVisitor(std::ostream& os) :
+			m_os(os)
+		{}
+
+		template <typename Any>
+		result_type operator()(const Any& value) const {
+			return value.write_to(m_os);
+		}
+
+	private:
+		std::ostream& m_os;
+};
+
+template <typename Type>
+class HasWriteTo {
+    public:
+		std::ostream& write_to(std::ostream& os) const {
+			return boost::apply_visitor(WriteToVisitor(os), static_cast<const Type&>(*this));
+		}
+};
+
+template <typename Type, typename... VariantTypes>
+class HasReadFrom {
+    public:
+		static std::istream& read_from(std::istream& is, Type& value, std::string* buf = nullptr) {
+			const std::ios::iostate state = is.rdstate();
+
+			read_from_impl<VariantTypes...>(is, value, buf, state);
+
+			return is;
+        }
+    private:
+        template <typename VariantType, typename NextVariantType, typename... ExtraTypes>
+        static bool read_from_impl(std::istream& is, Type& value, std::string* buf, const std::ios::iostate state) {
+            if (read_from_subtype<VariantType>(is, value, buf)) {
+                return true;
+            } else {
+                is.clear();
+                is.setstate(state);
+
+                return read_from_impl<NextVariantType, ExtraTypes...>(is, value, buf, state);
+            }
+        }
+
+        template <typename VariantType>
+        static bool read_from_impl(std::istream& is, Type& value, std::string* buf, const std::ios::iostate) {
+            return read_from_subtype<VariantType>(is, value, buf);
+        }
+
+        template <typename VariantType>
+        static bool read_from_subtype(std::istream& is, Type& value, std::string* buf) {
+            VariantType sub_value;
+
+            if (VariantType::read_from(is, sub_value, buf)) {
+                value = sub_value;
+                return true;
+            }
+
+            return false;
+        }
+};
+
+template <typename Type, typename... VariantTypes>
+class GenericVariant : public HasFromString<Type>, public HasToString<Type>, public HasWriteTo<Type>, public HasReadFrom<Type, VariantTypes...>, public boost::operators<Type> {
+};
 
 /**
  * \brief Make sure the specified type has a to_string() const method.
@@ -60,10 +175,13 @@ class has_to_string {
 		class check {};
 
 		template <typename C>
-			static char f(check<std::string (C::*)() const, &T::to_string>*);
+        static char f(check<std::string (C::*)() const, &T::to_string>*);
 
 		template <typename C>
-			static long f(...);
+        static char f(check<std::string (HasToString<C>::*)() const, &T::to_string>*);
+
+		template <typename C>
+        static long f(...);
 
 	public:
 		static const bool value = (sizeof(f<T>(0)) == sizeof(char));
@@ -77,6 +195,5 @@ struct enable_if_else { typedef FalseType type; };
 
 template <typename TrueType, typename FalseType>
 struct enable_if_else<true, TrueType, FalseType> { typedef TrueType type; };
-
 
 }

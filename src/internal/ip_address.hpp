@@ -39,27 +39,45 @@
  */
 
 /**
- * \file common.hpp
+ * \file ip_address.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Common functions for all types.
+ * \brief An IP address.
  */
 
 #pragma once
 
-#include <string>
+#include <boost/variant.hpp>
 
 #include "traits.hpp"
+#include "ipv4_address.hpp"
+#include "ipv6_address.hpp"
 
 namespace freelan {
 
-template <typename T>
-inline T from_string(const std::string& str) {
-	return T::from_string(str);
-}
+typedef boost::variant<IPv4Address, IPv6Address> IPAddressBase;
 
-template <typename T, typename std::enable_if<has_to_string<T>::value, int>::type = 0>
-inline std::string to_string(const T& value) {
-	return value.to_string();
-}
+class IPAddress : public IPAddressBase, public GenericVariant<IPAddress, IPv4Address, IPv6Address> {
+	public:
+		IPAddress() {}
+		IPAddress(const IPv4Address& ipv4_address) :
+			IPAddressBase(ipv4_address)
+		{}
+		IPAddress(const IPv6Address& ipv6_address) :
+			IPAddressBase(ipv6_address)
+		{}
+
+	private:
+		friend bool operator==(const IPAddress& lhs, const IPAddress& rhs) {
+			return static_cast<const IPAddressBase&>(lhs) == static_cast<const IPAddressBase&>(rhs);
+		};
+
+		friend bool operator<(const IPAddress& lhs, const IPAddress& rhs) {
+			return static_cast<const IPAddressBase&>(lhs) < static_cast<const IPAddressBase&>(rhs);
+		};
+
+		friend std::istream& operator>>(std::istream& is, IPAddress& value) {
+			return IPAddress::read_from(is, value);
+		}
+};
 
 }
