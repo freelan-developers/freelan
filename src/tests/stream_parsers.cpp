@@ -794,7 +794,7 @@ TEST(stream_parsers, read_ipv4_route_success) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv4PrefixLength::from_string(str_prefix_length), prefix_length);
-	ASSERT_EQ(boost::none, gateway);
+	ASSERT_FALSE(static_cast<bool>(gateway));
 	ASSERT_EQ(str_value, parsed_str);
 }
 
@@ -817,7 +817,8 @@ TEST(stream_parsers, read_ipv4_route_success_with_gateway) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv4PrefixLength::from_string(str_prefix_length), prefix_length);
-	ASSERT_EQ(IPv4Address::from_string(str_gateway), gateway);
+	ASSERT_TRUE(static_cast<bool>(gateway));
+	ASSERT_EQ(IPv4Address::from_string(str_gateway), *gateway);
 	ASSERT_EQ(str_value, parsed_str);
 }
 
@@ -840,7 +841,7 @@ TEST(stream_parsers, read_ipv4_route_extra) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv4Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv4PrefixLength::from_string(str_prefix_length), prefix_length);
-	ASSERT_EQ(boost::none, gateway);
+	ASSERT_FALSE(static_cast<bool>(gateway));
 	ASSERT_EQ(str_value, parsed_str);
 
 	// Make sure the stream wasn't eaten up.
@@ -968,7 +969,7 @@ TEST(stream_parsers, read_ipv6_route_success) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv6Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv6PrefixLength::from_string(str_prefix_length), prefix_length);
-	ASSERT_EQ(boost::none, gateway);
+	ASSERT_FALSE(static_cast<bool>(gateway));
 	ASSERT_EQ(str_value, parsed_str);
 }
 
@@ -991,7 +992,8 @@ TEST(stream_parsers, read_ipv6_route_success_with_gateway) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv6Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv6PrefixLength::from_string(str_prefix_length), prefix_length);
-	ASSERT_EQ(IPv6Address::from_string(str_gateway), gateway);
+	ASSERT_TRUE(static_cast<bool>(gateway));
+	ASSERT_EQ(IPv6Address::from_string(str_gateway), *gateway);
 	ASSERT_EQ(str_value, parsed_str);
 }
 
@@ -1014,7 +1016,7 @@ TEST(stream_parsers, read_ipv6_route_extra) {
 	ASSERT_FALSE(iss.fail());
 	ASSERT_EQ(IPv6Address::from_string(str_ip_address), ip_address);
 	ASSERT_EQ(IPv6PrefixLength::from_string(str_prefix_length), prefix_length);
-	ASSERT_EQ(boost::none, gateway);
+	ASSERT_FALSE(static_cast<bool>(gateway));
 	ASSERT_EQ(str_value, parsed_str);
 
 	// Make sure the stream wasn't eaten up.
