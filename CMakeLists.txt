@@ -24,6 +24,9 @@ if (WIN32)
 
     # Disable Boost's auto-link feature
     add_definitions(/DBOOST_ALL_NO_LIB)
+
+    # Fixes some behavioral issues with stdint.h
+    add_definitions(/D__STDC_LIMIT_MACROS)
 endif()
 
 find_package(Threads)
