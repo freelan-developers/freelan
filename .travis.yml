@@ -5,7 +5,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - libboost1.55-all-dev
+      - libboost-all-dev
       - libssl-dev
       - libcurl4-openssl-dev
 script: scons install apps samples
