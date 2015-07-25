@@ -15,6 +15,9 @@ addons:
       - g++-4.9
 cache:
   apt: true
+env:
+  global:
+    - CXX=g++-4.9
 script: scons install apps samples
 branches:
     only:
