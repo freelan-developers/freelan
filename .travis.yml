@@ -11,6 +11,10 @@ addons:
       - libboost1.55-all-dev
       - libssl-dev
       - libcurl4-openssl-dev
+      - gcc-4.9
+      - g++-4.9
+cache:
+  apt: true
 script: scons install apps samples
 branches:
     only:
