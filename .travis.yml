@@ -4,8 +4,11 @@ compiler:
 sudo: false
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
     packages:
-      - libboost-system1.55-dev
+      - libboost1.55-all-dev
       - libssl-dev
       - libcurl4-openssl-dev
 script: scons install apps samples
