@@ -68,6 +68,26 @@ TEST(IPAddress, ipv6_address_instantiation) {
 	ASSERT_EQ(raw_value, value);
 }
 
+TEST(IPAddress, ipv4_address_getter) {
+	const auto raw_value = IPv4Address::from_string("9.0.0.0");
+	const IPAddress value { raw_value };
+
+	ASSERT_TRUE(value.is<IPv4Address>());
+	ASSERT_FALSE(value.is<IPv6Address>());
+	ASSERT_EQ(raw_value, *value.as<IPv4Address>());
+	ASSERT_EQ(nullptr, value.as<IPv6Address>());
+}
+
+TEST(IPAddress, ipv6_address_getter) {
+	const auto raw_value = IPv6Address::from_string("fe80::a:0");
+	const IPAddress value { raw_value };
+
+	ASSERT_FALSE(value.is<IPv4Address>());
+	ASSERT_TRUE(value.is<IPv6Address>());
+	ASSERT_EQ(nullptr, value.as<IPv4Address>());
+	ASSERT_EQ(raw_value, *value.as<IPv6Address>());
+}
+
 TEST(IPAddress, ipv4_address_string_instantiation) {
 	const std::string str_value = "9.0.0.1";
 	const auto value = IPAddress::from_string(str_value);

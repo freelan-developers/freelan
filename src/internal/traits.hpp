@@ -161,8 +161,21 @@ class HasReadFrom {
         }
 };
 
+template <typename Type>
+class HasAccessors {
+	public:
+		template <typename VariantType>
+		bool is() const { return this->as<VariantType>() != nullptr; }
+
+		template <typename VariantType>
+		const VariantType* as() const { return boost::get<VariantType>(static_cast<const Type*>(this)); }
+
+		template <typename VariantType>
+		VariantType* as() { return boost::get<VariantType>(static_cast<Type*>(this)); }
+};
+
 template <typename Type, typename... VariantTypes>
-class GenericVariant : public HasFromString<Type>, public HasToString<Type>, public HasWriteTo<Type>, public HasReadFrom<Type, VariantTypes...>, public boost::operators<Type> {
+class GenericVariant : public HasFromString<Type>, public HasToString<Type>, public HasWriteTo<Type>, public HasReadFrom<Type, VariantTypes...>, public HasAccessors<Type>, public boost::operators<Type> {
 };
 
 /**
