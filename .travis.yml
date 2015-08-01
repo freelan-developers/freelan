@@ -1,43 +1,51 @@
-os:
-  - linux
-  - osx
+sudo: false
 
 language: cpp
 
 compiler:
-  - gcc
-  - clang
-
-cache: apt
+    - g++
 
 env:
-  - TOXENV=py27 CMAKE_BUILD_TYPE=DEBUG
-  - TOXENV=py27 CMAKE_BUILD_TYPE=RELEASE
+  - TOXENV=py27 CMAKE_BUILD_TYPE=DEBUG CXX_VERSION=4.9
+  - TOXENV=py27 CMAKE_BUILD_TYPE=RELEASE CXX_VERSION=4.9
+  - TOXENV=py27 CMAKE_BUILD_TYPE=DEBUG CXX_VERSION=5
+  - TOXENV=py27 CMAKE_BUILD_TYPE=RELEASE CXX_VERSION=5
 
-before_install:
-  - sudo add-apt-repository ppa:boost-latest/ppa -y
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
+    packages:
+      - libboost1.55-all-dev
+      - libssl-dev
+      - libcurl4-openssl-dev
+      - gcc-4.9
+      - g++-4.9
+      - gcc-5
+      - g++-5
+      - python-virtualenv
 
-install:
-  - sudo apt-get install gcc-4.9 g++-4.9
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
-  - sudo apt-get install libboost1.55-all-dev libssl-dev libcurl4-openssl-dev
-  - sudo apt-get install ninja-build
+cache:
+  apt: true
+
+before_script:
   - wget -O /tmp/cmake.sh http://www.cmake.org/files/v3.2/cmake-3.2.3-Linux-x86_64.sh
-  - sudo sh /tmp/cmake.sh --skip-license --prefix=/usr
-  - sudo pip install tox
+  - mkdir -p /tmp/usr
+  - sh /tmp/cmake.sh --skip-license --prefix=/tmp/usr
+  - virtualenv /tmp/venv
+  - /tmp/venv/bin/pip install tox
 
 script:
-  - cmake -G Ninja -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
-  - ninja -v install
-  - tox
+  - CXX=g++-${CXX_VERSION} /tmp/usr/bin/cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
+  - make install
+  - /tmp/venv/bin/tox
 
 branches:
-  only:
-    - api
+    only:
+        - api
 
 notifications:
-  email:
-    on_success: change
-    on_failure: always
+    email:
+        on_success: change
+        on_failure: always
