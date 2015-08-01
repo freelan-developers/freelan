@@ -175,13 +175,13 @@ class has_to_string {
 		class check {};
 
 		template <typename C>
-        static char f(check<std::string (C::*)() const, &T::to_string>*);
+		static char f(check<std::string (C::*)() const, &T::to_string>*);
 
 		template <typename C>
-        static char f(check<std::string (HasToString<C>::*)() const, &T::to_string>*);
+		static char f(check<std::string (HasToString<C>::*)() const, &T::to_string>*);
 
 		template <typename C>
-        static long f(...);
+		static long f(...);
 
 	public:
 		static const bool value = (sizeof(f<T>(0)) == sizeof(char));
