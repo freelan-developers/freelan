@@ -350,6 +350,9 @@ namespace asiotap
 	 */
 	std::istream& operator>>(std::istream& is, endpoint& value);
 
+// Note: this operator is defined in boost variant as of version 1.58. Keeping it around will
+// introduce overload resolution ambiguity.
+#if BOOST_VERSION < 105800
 	/**
 	 * \brief Compare two endpoints.
 	 * \param lhs The left argument.
@@ -360,6 +363,7 @@ namespace asiotap
 	{
 		return !(lhs == rhs);
 	}
+#endif
 
 	/**
 	 * \brief Get an endpoint with a default port.
