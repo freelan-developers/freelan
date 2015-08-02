@@ -195,7 +195,6 @@ ffi.set_source(
     "_pyfreelan",
     "#include <freelan.h>",
     libraries=['freelan'],
-    include_dirs=['./include'],
 )
 
 if __name__ == '__main__':
