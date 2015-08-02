@@ -984,3 +984,105 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_IPv6Address_free, result)
 
         self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPAddress_from_string_simple(self):
+        result = native.freelan_IPAddress_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_IPAddress_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPAddress_from_IPv4Address(self):
+        value = native.freelan_IPv4Address_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_IPv4Address_free, value)
+
+        result = native.freelan_IPAddress_from_IPv4Address(value)
+        self.addCleanup(native.freelan_IPAddress_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPAddress_from_IPv6Address(self):
+        value = native.freelan_IPv6Address_from_string(self.ectx, "fe80::1:a")
+        self.addCleanup(native.freelan_IPv6Address_free, value)
+
+        result = native.freelan_IPAddress_from_IPv6Address(value)
+        self.addCleanup(native.freelan_IPAddress_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPAddress_as_IPv4Address(self):
+        inst = native.freelan_IPAddress_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_IPAddress_free, inst)
+
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_IPAddress_as_IPv4Address(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_IPAddress_as_IPv6Address(inst),
+        )
+
+    def test_IPAddress_as_IPv6Address(self):
+        inst = native.freelan_IPAddress_from_string(self.ectx, "fe80::a:1")
+        self.addCleanup(native.freelan_IPAddress_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_IPAddress_as_IPv4Address(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_IPAddress_as_IPv6Address(inst),
+        )
+
+    def test_IPAddress_from_string_truncated(self):
+        result = native.freelan_IPAddress_from_string(self.ectx, "127.1")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPAddress_from_string_incorrect_value(self):
+        result = native.freelan_IPAddress_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPAddress_from_string_empty_value(self):
+        result = native.freelan_IPAddress_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPAddress_to_string_simple(self):
+        str_value = "1.2.4.8"
+
+        value = native.freelan_IPAddress_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPAddress_free, value)
+
+        result = native.freelan_IPAddress_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPAddress_less_than(self):
+        str_values = ("1.2.4.8", "1.2.4.9")
+
+        values = (
+            native.freelan_IPAddress_from_string(self.ectx, str_values[0]),
+            native.freelan_IPAddress_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPAddress_free, values[0])
+        self.addCleanup(native.freelan_IPAddress_free, values[1])
+
+        result = native.freelan_IPAddress_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPAddress_equal(self):
+        str_values = ("1.2.4.8", "1.2.4.9")
+
+        values = (
+            native.freelan_IPAddress_from_string(self.ectx, str_values[0]),
+            native.freelan_IPAddress_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPAddress_free, values[0])
+        self.addCleanup(native.freelan_IPAddress_free, values[1])
+
+        result = native.freelan_IPAddress_equal(*values)
+        self.assertEqual(0, result)

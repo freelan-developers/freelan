@@ -91,6 +91,9 @@ api = """
     struct IPv4Endpoint;
     struct IPv6Endpoint;
     struct HostnameEndpoint;
+    struct IPv4Route;
+    struct IPv6Route;
+    struct IPAddress;
 
     struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
     char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
@@ -164,6 +167,15 @@ api = """
     struct IPv6Address* freelan_IPv6Route_get_IPv6Address(const struct IPv6Route* inst);
     struct IPv6PrefixLength* freelan_IPv6Route_get_IPv6PrefixLength(const struct IPv6Route* inst);
     struct IPv6Address* freelan_IPv6Route_get_IPv6Address_gateway(const struct IPv6Route* inst);
+    struct IPAddress* freelan_IPAddress_from_string(const struct ErrorContext* ectx, const char* str);
+    struct IPAddress* freelan_IPAddress_from_IPv4Address(const struct IPv4Address* value);
+    struct IPAddress* freelan_IPAddress_from_IPv6Address(const struct IPv6Address* value);
+    struct IPv4Address* freelan_IPAddress_as_IPv4Address(const struct IPAddress* inst);
+    struct IPv6Address* freelan_IPAddress_as_IPv6Address(const struct IPAddress* inst);
+    char* freelan_IPAddress_to_string(const struct ErrorContext* ectx, struct IPAddress* inst);
+    void freelan_IPAddress_free(struct IPAddress* inst);
+    int freelan_IPAddress_less_than(const struct IPAddress* lhs, const struct IPAddress* rhs);
+    int freelan_IPAddress_equal(const struct IPAddress* lhs, const struct IPAddress* rhs);
 """
 
 ffi.cdef(api)
