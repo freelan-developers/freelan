@@ -31,6 +31,7 @@ from pyfreelan.api.log import (
 
 
 class UTCDatetimeToUTCTimestampTests(TestCase):
+
     def test_epoch(self):
         epoch = datetime(1970, 1, 1)
         result = utc_datetime_to_utc_timestamp(epoch)
@@ -43,6 +44,7 @@ class UTCDatetimeToUTCTimestampTests(TestCase):
 
 
 class UTCTimestampToUTCDatetimeTests(TestCase):
+
     def test_epoch(self):
         epoch = datetime(1970, 1, 1)
         result = utc_timestamp_to_utc_datetime(0.0)
@@ -55,6 +57,7 @@ class UTCTimestampToUTCDatetimeTests(TestCase):
 
 
 class ToCTests(TestCase):
+
     def test_string(self):
         value = "foo"
         result = to_c(value)
@@ -72,6 +75,7 @@ class ToCTests(TestCase):
 
 
 class FromCTests(TestCase):
+
     def test_string(self):
         value = "foo"
         result = from_c(value)
@@ -89,6 +93,7 @@ class FromCTests(TestCase):
 
 
 class LogAttachTests(TestCase):
+
     def test_attach_unicode_key(self):
         some_french = u"éléphant"
         some_encoded_french = some_french.encode('utf-8')
@@ -259,6 +264,7 @@ class LogAttachTests(TestCase):
 
 
 class LogTests(TestCase):
+
     def test_log_no_file_no_payload(self):
         with patch(
             "pyfreelan.api.log.native.freelan_log",
@@ -370,6 +376,7 @@ class LogTests(TestCase):
 
 
 class LoggingCallbackTests(TestCase):
+
     def setUp(self):
         patcher = patch(
             "pyfreelan.api.log.ffi.string",
@@ -549,6 +556,7 @@ class LoggingCallbackTests(TestCase):
 
 
 class IntegrationTests(TestCase):
+
     def test_full_logging_sequence(self):
         func = MagicMock()
 

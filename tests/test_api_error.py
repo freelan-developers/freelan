@@ -25,6 +25,7 @@ from pyfreelan.api.error import (
 
 
 class FromNativeStringTests(TestCase):
+
     def test_non_null_value_without_free_on_success(self):
         value = MagicMock()
 
@@ -62,6 +63,7 @@ class FromNativeStringTests(TestCase):
 
 
 class ConvertNativeStringTests(TestCase):
+
     def test_from_native_string_is_called(self):
         value = MagicMock()
 
@@ -104,6 +106,7 @@ class ConvertNativeStringTests(TestCase):
 
 
 class ErrorContextTests(TestCase):
+
     def test_get_current_returns_a_new_instance_on_first_call(self):
         class MyClass(object):
             thread_local_data = local()
@@ -353,6 +356,7 @@ class ErrorContextTests(TestCase):
         instance.__nonzero__.return_value = True
 
         class MyException(Exception):
+
             def __init__(self, error_context):
                 self.error_context = error_context
 
@@ -367,6 +371,7 @@ class ErrorContextTests(TestCase):
 
 
 class FreeLANExceptionTests(TestCase):
+
     def test_init_stores_the_error_context(self):
         error_context = MagicMock()
         instance = FreeLANException(error_context=error_context)
@@ -407,6 +412,7 @@ class FreeLANExceptionTests(TestCase):
 
 
 class InjectErrorContextTests(TestCase):
+
     def test_keyword_injection(self):
         inital_kwargs = {
             'a': 'b',
@@ -427,6 +433,7 @@ class InjectErrorContextTests(TestCase):
 
 
 class CheckErrorContextTests(TestCase):
+
     def test_inject_error_context_is_called(self):
         value = MagicMock()
 

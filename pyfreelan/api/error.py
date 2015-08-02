@@ -112,6 +112,7 @@ class ErrorContext(object):
 
 
 class FreeLANException(RuntimeError):
+
     def __init__(self, error_context):
         super(FreeLANException, self).__init__()
         self.error_context = error_context

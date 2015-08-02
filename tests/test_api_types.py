@@ -59,6 +59,7 @@ def disable_error_context_checks(func):
 
 
 class SwallowNativeStringTests(TestCase):
+
     def test_from_native_string_is_called(self):
         value = MagicMock()
 
@@ -101,6 +102,7 @@ class SwallowNativeStringTests(TestCase):
 
 
 class NativeTypeTests(TestCase):
+
     def setUp(self):
         self.native_patch = patch('pyfreelan.api.types.native')
         self.native = self.native_patch.start()
@@ -281,6 +283,7 @@ class NativeTypeTests(TestCase):
 
 
 class FinalTypesTests(TestCase):
+
     def test_IPv4Address(self):
         a = IPv4Address.from_string("0.0.0.1")
         b = IPv4Address.from_string("0.0.0.2")

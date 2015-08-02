@@ -10,6 +10,7 @@ from pyfreelan.api import (
 
 
 class NativeCallsTests(TestCase):
+
     def setUp(self):
         self.ectx = native.freelan_acquire_error_context()
 

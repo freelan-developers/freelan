@@ -11,6 +11,7 @@ GTEST_BINARY = './install/bin/freelan_tests'
 
 
 class TestGTestBinary(object):
+
     def test_run_gtest_binary(self):
         try:
             process = Popen(

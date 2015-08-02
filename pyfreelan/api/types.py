@@ -61,6 +61,7 @@ class NativeType(object):
 
         @total_ordering
         class Wrapper(object):
+
             def __init__(self, opaque_ptr):
                 """
                 Create an instance from its low-level opaque pointer.

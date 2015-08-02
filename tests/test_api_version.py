@@ -12,6 +12,7 @@ from pyfreelan.api.version import (
 
 
 class VersionTests(TestCase):
+
     def test_get_version_string(self):
         with patch(
             "pyfreelan.api.version.native.freelan_get_version_string",

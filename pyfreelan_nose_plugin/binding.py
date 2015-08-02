@@ -34,6 +34,7 @@ def pointer_to_type(pointer):
 
 
 class PointerInfo(object):
+
     def __init__(self, pointer, size):
         self.pointer = pointer
         self.size = size
@@ -76,6 +77,7 @@ class PointerInfo(object):
 
 
 class Allocation(object):
+
     def __init__(self, ptrinfo):
         self.ptrinfo = ptrinfo
         self.action = "malloc"
@@ -85,6 +87,7 @@ class Allocation(object):
 
 
 class Deallocation(object):
+
     def __init__(self, ptrinfo):
         self.ptrinfo = ptrinfo
         self.action = "free"
@@ -94,6 +97,7 @@ class Deallocation(object):
 
 
 class Reallocation(object):
+
     def __init__(self, old_ptrinfo, new_ptrinfo):
         self.old_ptrinfo = old_ptrinfo
         self.new_ptrinfo = new_ptrinfo
