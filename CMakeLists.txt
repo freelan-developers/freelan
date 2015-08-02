@@ -118,6 +118,9 @@ set_target_properties(FreeLANInternalLibrary PROPERTIES POSITION_INDEPENDENT_COD
 set_target_properties(FreeLANInternalLibrary PROPERTIES OUTPUT_NAME "freelan_internal")
 
 # The main library.
+set (API_MAIN_HEADER_FILES ${API_MAIN_HEADER_FILES}
+    include/freelan.h
+)
 set (API_HEADER_FILES ${API_HEADER_FILES}
     include/freelan/common.h
     include/freelan/error.h
@@ -133,7 +136,7 @@ set (API_SRC_FILES ${API_SRC_FILES}
     src/freelan/types.cpp
     src/freelan/version.cpp
 )
-source_group(api FILES ${API_HEADER_FILES} ${API_SRC_FILES})
+source_group(api FILES ${API_MAIN_HEADER_FILES} ${API_HEADER_FILES} ${API_SRC_FILES})
 
 add_library(FreeLANLibrary SHARED ${API_SRC_FILES})
 target_include_directories(FreeLANLibrary INTERFACE "${PROJECT_SOURCE_DIR}/include")
@@ -147,6 +150,7 @@ set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH ON)
 target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
 
 install(TARGETS FreeLANLibrary DESTINATION lib)
+install(FILES ${API_MAIN_HEADER_FILES} DESTINATION include)
 install(FILES ${API_HEADER_FILES} DESTINATION include/freelan)
 
 # The tests
