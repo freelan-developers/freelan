@@ -57,6 +57,7 @@
 #include "hostname_endpoint.hpp"
 #include "ipv4_route.hpp"
 #include "ipv6_route.hpp"
+#include "ip_address.hpp"
 
 namespace {
 	template <typename Type, typename InternalType>
@@ -203,6 +204,25 @@ namespace {
 			FREELAN_NEW InternalIPAddressType(value.get_gateway())
 		);
 	}
+
+	template <typename Type, typename InternalType, typename VariantType, typename InternalVariantType>
+	Type* from_variant_type_generic(const VariantType* value) {
+		assert(value);
+
+		return reinterpret_cast<Type*>(
+			FREELAN_NEW InternalType(*reinterpret_cast<const InternalVariantType*>(value))
+		);
+	}
+
+	template <typename Type, typename InternalType, typename VariantType, typename InternalVariantType>
+	const VariantType* as_variant_type_generic(const Type* inst) {
+		assert(inst);
+
+		const InternalType& _inst = *reinterpret_cast<const InternalType*>(inst);
+		const InternalVariantType* value = _inst.template as<InternalVariantType>();
+
+		return reinterpret_cast<const VariantType*>(value);
+	}
 }
 
 /*
@@ -263,6 +283,10 @@ IMPLEMENT_from_parts(TYPE,LTYPE,RTYPE)
 IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_parts_with_optional(TYPE,LTYPE,RTYPE)
 
+#define IMPLEMENT_variant(TYPE,VARIANT_TYPE) \
+struct TYPE* freelan_ ## TYPE ## _from_ ## VARIANT_TYPE (const struct VARIANT_TYPE* value) { return from_variant_type_generic<TYPE, freelan::TYPE, VARIANT_TYPE, freelan::VARIANT_TYPE>(value); } \
+const struct VARIANT_TYPE* freelan_ ## TYPE ## _as_ ## VARIANT_TYPE (const struct TYPE* inst) { return as_variant_type_generic<TYPE, freelan::TYPE, VARIANT_TYPE, freelan::VARIANT_TYPE>(inst); }
+
 /* Simple types */
 IMPLEMENT_complete_type(IPv4Address)
 IMPLEMENT_complete_type(IPv6Address)
@@ -293,3 +317,8 @@ IMPLEMENT_extended_composite_type(IPv6Route, IPv6Address, IPv6PrefixLength)
 IMPLEMENT_get_ip_address(IPv6Route, IPv6Address)
 IMPLEMENT_get_prefix_length(IPv6Route, IPv6PrefixLength)
 IMPLEMENT_get_gateway(IPv6Route, IPv6Address)
+
+/* Variant types */
+IMPLEMENT_complete_type(IPAddress)
+IMPLEMENT_variant(IPAddress, IPv4Address)
+IMPLEMENT_variant(IPAddress, IPv6Address)

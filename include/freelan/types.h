@@ -67,6 +67,7 @@ struct IPv6Endpoint;
 struct HostnameEndpoint;
 struct IPv4Route;
 struct IPv6Route;
+struct IPAddress;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -728,6 +729,94 @@ FREELAN_API struct IPv6PrefixLength* freelan_IPv6Route_get_IPv6PrefixLength(cons
  * on the returned instance when it is no longer needed.
  */
 FREELAN_API struct IPv6Address* freelan_IPv6Route_get_IPv6Address_gateway(const struct IPv6Route* inst);
+
+/**
+ * \brief Create an IPAddress instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IP address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPAddress_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPAddress* freelan_IPAddress_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create an IPAddress instance from an IPv4Address.
+ * \param value The IPv4Address instance. Cannot be NULL.
+ * \return The IP address instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPAddress_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPAddress* freelan_IPAddress_from_IPv4Address(const struct IPv4Address* value);
+
+/**
+ * \brief Create an IPAddress instance from an IPv6Address.
+ * \param value The IPv6Address instance. Cannot be NULL.
+ * \return The IP address instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPAddress_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPAddress* freelan_IPAddress_from_IPv6Address(const struct IPv6Address* value);
+
+/**
+ * \brief Get the IPv4Address instance contained in the specified IPAddress instance.
+ * \param inst The IPAddress instance to get the value from.
+ * \return The IPv4Address instance, or NULL if \c inst is not an IPv4Address.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv4Address_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv4Address_clone().
+ */
+FREELAN_API const struct IPv4Address* freelan_IPAddress_as_IPv4Address(const struct IPAddress* inst);
+
+/**
+ * \brief Get the IPv6Address instance contained in the specified IPAddress instance.
+ * \param inst The IPAddress instance to get the value from.
+ * \return The IPv6Address instance, or NULL if \c inst is not an IPv6Address.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv6Address_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv6Address_clone().
+ */
+FREELAN_API const struct IPv6Address* freelan_IPAddress_as_IPv6Address(const struct IPAddress* inst);
+
+/**
+ * \brief Get the string representation of an IPAddress instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPAddress_to_string(struct ErrorContext* ectx, const struct IPAddress* inst);
+
+/**
+ * \brief Delete an IPAddress instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPAddress_free(struct IPAddress* inst);
+
+/**
+ * \brief Compare two IPAddress instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPAddress_less_than(const struct IPAddress* lhs, const struct IPAddress* rhs);
+
+/**
+ * \brief Compare two IPAddress instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPAddress_equal(const struct IPAddress* lhs, const struct IPAddress* rhs);
 
 /* API END */
 
