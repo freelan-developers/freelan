@@ -46,6 +46,14 @@ def extract_api():
 
 
 ffi = cffi.FFI()
+
+# Needed for the memory inspection tool.
+ffi.cdef("""
+void* malloc(size_t size);
+void* realloc(void* ptr, size_t size);
+void free(void* ptr);
+""")
+
 ffi.cdef(extract_api())
 ffi.set_source(
     "_pyfreelan",
