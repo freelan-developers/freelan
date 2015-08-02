@@ -4,10 +4,8 @@ FreeLAN API.
 
 import os
 
-from distutils.ccompiler import (
-    new_compiler,
-    customize_compiler,
-)
+from distutils.ccompiler import new_compiler
+from distutils.sysconfig import customize_compiler
 from tempfile import gettempdir
 
 import cffi
