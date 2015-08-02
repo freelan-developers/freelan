@@ -26,7 +26,9 @@
 
 # Python files
 *.egg-info
-pyfreelan/api/__pycache__
+*.whl
+pyfreelan/_pyfreelan.so
+dist/*
 .tox/*
 MANIFEST
 .coverage

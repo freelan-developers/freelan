@@ -29,36 +29,33 @@ class FromNativeStringTests(TestCase):
     def test_non_null_value_without_free_on_success(self):
         value = MagicMock()
 
-        with patch('pyfreelan.api.error.ffi.string') as string_mock:
-            with patch(
-                'pyfreelan.api.error.native.freelan_free',
-            ) as freelan_free_mock:
+        with patch('pyfreelan.api.error.ffi') as ffi_mock:
+            with patch('pyfreelan.api.error.native') as native_mock:
                 result = from_native_string(value, free_on_success=False)
 
-        string_mock.assert_called_once_with(value)
-        self.assertEqual([], freelan_free_mock.mock_calls)
-        self.assertEqual(string_mock(value), result)
+        ffi_mock.string.assert_called_once_with(value)
+        self.assertEqual([], native_mock.freelan_free.mock_calls)
+        self.assertEqual(ffi_mock.string(value), result)
 
     def test_non_null_value_with_free_on_success(self):
         value = MagicMock()
 
-        with patch('pyfreelan.api.error.ffi.string') as string_mock:
-            with patch(
-                'pyfreelan.api.error.native.freelan_free',
-            ) as freelan_free_mock:
+        with patch('pyfreelan.api.error.ffi') as ffi_mock:
+            with patch('pyfreelan.api.error.native') as native_mock:
                 result = from_native_string(value, free_on_success=True)
 
-        string_mock.assert_called_once_with(value)
-        freelan_free_mock.assert_called_once_with(value)
-        self.assertEqual(string_mock(value), result)
+        ffi_mock.string.assert_called_once_with(value)
+        native_mock.freelan_free.assert_called_once_with(value)
+        self.assertEqual(ffi_mock.string(value), result)
 
     def test_null_value(self):
         value = ffi.NULL
 
-        with patch('pyfreelan.api.error.ffi.string') as string_mock:
+        with patch('pyfreelan.api.error.ffi') as ffi_mock:
+            ffi_mock.NULL = value
             result = from_native_string(value)
 
-        self.assertEqual([], string_mock.mock_calls)
+        self.assertEqual([], ffi_mock.string.mock_calls)
         self.assertEqual(None, result)
 
 
@@ -170,14 +167,12 @@ class ErrorContextTests(TestCase):
     def test_init_creates_an_native_error_context(self):
         instance = MagicMock()
 
-        with patch(
-            'pyfreelan.api.error.native.freelan_acquire_error_context',
-        ) as freelan_acquire_error_context_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             ErrorContext.__init__.__func__(instance)
 
-        freelan_acquire_error_context_mock.assert_called_once_with()
+        native_mock.freelan_acquire_error_context.assert_called_once_with()
         self.assertEqual(
-            freelan_acquire_error_context_mock(),
+            native_mock.freelan_acquire_error_context(),
             instance._opaque_ptr,
         )
 
@@ -186,12 +181,10 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.freelan_release_error_context',
-        ) as freelan_release_error_context_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             ErrorContext.__del__.__func__(instance)
 
-        freelan_release_error_context_mock.assert_called_once_with(
+        native_mock.freelan_release_error_context.assert_called_once_with(
             native_ptr,
         )
         self.assertEqual(
@@ -204,12 +197,10 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.freelan_error_context_reset',
-        ) as freelan_error_context_reset_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             ErrorContext.reset.__func__(instance)
 
-        freelan_error_context_reset_mock.assert_called_once_with(
+        native_mock.freelan_error_context_reset.assert_called_once_with(
             native_ptr,
         )
 
@@ -219,18 +210,18 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.'
-            'freelan_error_context_get_error_category',
-        ) as freelan_error_context_get_error_category_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             result = ErrorContext.category.fget(instance)
 
-        freelan_error_context_get_error_category_mock.assert_called_once_with(
-            native_ptr,
-        )
+        native_mock.freelan_error_context_get_error_category.\
+            assert_called_once_with(
+                native_ptr,
+            )
         self.assertEqual(
             from_native_string_mock(
-                freelan_error_context_get_error_category_mock(native_ptr),
+                native_mock.freelan_error_context_get_error_category(
+                    native_ptr,
+                ),
             ),
             result,
         )
@@ -240,17 +231,15 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.'
-            'freelan_error_context_get_error_code',
-        ) as freelan_error_context_get_error_code_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             result = ErrorContext.code.fget(instance)
 
-        freelan_error_context_get_error_code_mock.assert_called_once_with(
-            native_ptr,
-        )
+        native_mock.freelan_error_context_get_error_code.\
+            assert_called_once_with(
+                native_ptr,
+            )
         self.assertEqual(
-            freelan_error_context_get_error_code_mock(native_ptr),
+            native_mock.freelan_error_context_get_error_code(native_ptr),
             result,
         )
 
@@ -260,18 +249,18 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.'
-            'freelan_error_context_get_error_description',
-        ) as freelan_error_context_get_error_description_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             result = ErrorContext.description.fget(instance)
 
-        freelan_error_context_get_error_description_mock.assert_called_once_with(
-            native_ptr,
-        )
+        native_mock.freelan_error_context_get_error_description.\
+            assert_called_once_with(
+                native_ptr,
+            )
         self.assertEqual(
             from_native_string_mock(
-                freelan_error_context_get_error_description_mock(native_ptr),
+                native_mock.freelan_error_context_get_error_description(
+                    native_ptr,
+                ),
             ),
             result,
         )
@@ -282,18 +271,16 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.'
-            'freelan_error_context_get_error_file',
-        ) as freelan_error_context_get_error_file_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             result = ErrorContext.file.fget(instance)
 
-        freelan_error_context_get_error_file_mock.assert_called_once_with(
-            native_ptr,
-        )
+        native_mock.freelan_error_context_get_error_file.\
+            assert_called_once_with(
+                native_ptr,
+            )
         self.assertEqual(
             from_native_string_mock(
-                freelan_error_context_get_error_file_mock(native_ptr),
+                native_mock.freelan_error_context_get_error_file(native_ptr),
             ),
             result,
         )
@@ -303,17 +290,15 @@ class ErrorContextTests(TestCase):
         native_ptr = MagicMock()
         instance._opaque_ptr = native_ptr
 
-        with patch(
-            'pyfreelan.api.error.native.'
-            'freelan_error_context_get_error_line',
-        ) as freelan_error_context_get_error_line_mock:
+        with patch('pyfreelan.api.error.native') as native_mock:
             result = ErrorContext.line.fget(instance)
 
-        freelan_error_context_get_error_line_mock.assert_called_once_with(
-            native_ptr,
-        )
+        native_mock.freelan_error_context_get_error_line.\
+            assert_called_once_with(
+                native_ptr,
+            )
         self.assertEqual(
-            freelan_error_context_get_error_line_mock(native_ptr),
+            native_mock.freelan_error_context_get_error_line(native_ptr),
             result,
         )
 

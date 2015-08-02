@@ -14,15 +14,18 @@ from pyfreelan.api.version import (
 class VersionTests(TestCase):
 
     def test_get_version_string(self):
-        with patch(
-            "pyfreelan.api.version.native.freelan_get_version_string",
-        ) as get_version_string_mock:
-            with patch("pyfreelan.api.version.ffi.string") as string_mock:
+        with patch("pyfreelan.api.version.native") as native_mock:
+            with patch("pyfreelan.api.version.ffi") as ffi_mock:
                 result = get_version_string()
 
-        get_version_string_mock.assert_called_once_with()
-        string_mock.assert_called_once_with(get_version_string_mock())
-        self.assertEqual(string_mock(get_version_string_mock()), result)
+        native_mock.freelan_get_version_string.assert_called_once_with()
+        ffi_mock.string.assert_called_once_with(
+            native_mock.freelan_get_version_string(),
+        )
+        self.assertEqual(
+            ffi_mock.string(native_mock.freelan_get_version_string()),
+            result,
+        )
 
     def test_get_version(self):
         with patch(
