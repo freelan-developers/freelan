@@ -176,7 +176,7 @@ FREELAN_API FreeLANLogLevel freelan_get_log_level(void);
  * \note For a more user-friendly way of creating a log entry with payload
  * values, see \c freelan_log_start.
  */
-FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file = NULL, unsigned int line = 0);
+FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
 
 /**
  * \brief Starts a log entry.
@@ -193,7 +193,7 @@ FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, c
  * \note It is the caller responsibility to make sure \c freelan_log_complete()
  * is called on the returned value or memory leaks will occur.
  */
-FREELAN_API struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file = NULL, unsigned int line = 0);
+FREELAN_API struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line);
 
 /**
  * \brief Attach a payload to the the current log entry.

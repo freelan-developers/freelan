@@ -95,38 +95,38 @@ api = """
     struct IPv6Route;
     struct IPAddress;
 
-    struct IPv4Address* freelan_IPv4Address_from_string(const struct ErrorContext* ectx, const char* str);
-    char* freelan_IPv4Address_to_string(const struct ErrorContext* ectx, struct IPv4Address* inst);
+    struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, struct IPv4Address* inst);
     struct IPv4Address* freelan_IPv4Address_clone(struct ErrorContext* ectx, const struct IPv4Address* inst);
     void freelan_IPv4Address_free(struct IPv4Address* inst);
     int freelan_IPv4Address_less_than(const struct IPv4Address* lhs, const struct IPv4Address* rhs);
     int freelan_IPv4Address_equal(const struct IPv4Address* lhs, const struct IPv4Address* rhs);
-    struct IPv6Address* freelan_IPv6Address_from_string(const struct ErrorContext* ectx, const char* str);
-    char* freelan_IPv6Address_to_string(const struct ErrorContext* ectx, struct IPv6Address* inst);
+    struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, struct IPv6Address* inst);
     struct IPv6Address* freelan_IPv6Address_clone(struct ErrorContext* ectx, const struct IPv6Address* inst);
     void freelan_IPv6Address_free(struct IPv6Address* inst);
     int freelan_IPv6Address_less_than(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
     int freelan_IPv6Address_equal(const struct IPv6Address* lhs, const struct IPv6Address* rhs);
-    struct Hostname* freelan_Hostname_from_string(const struct ErrorContext* ectx, const char* str);
-    char* freelan_Hostname_to_string(const struct ErrorContext* ectx, struct Hostname* inst);
+    struct Hostname* freelan_Hostname_from_string(struct ErrorContext* ectx, const char* str);
+    char* freelan_Hostname_to_string(struct ErrorContext* ectx, struct Hostname* inst);
     struct Hostname* freelan_Hostname_clone(struct ErrorContext* ectx, const struct Hostname* inst);
     void freelan_Hostname_free(struct Hostname* inst);
     int freelan_Hostname_less_than(const struct Hostname* lhs, const struct Hostname* rhs);
     int freelan_Hostname_equal(const struct Hostname* lhs, const struct Hostname* rhs);
-    struct PortNumber* freelan_PortNumber_from_string(const struct ErrorContext* ectx, const char* str);
-    char* freelan_PortNumber_to_string(const struct ErrorContext* ectx, struct PortNumber* inst);
+    struct PortNumber* freelan_PortNumber_from_string(struct ErrorContext* ectx, const char* str);
+    char* freelan_PortNumber_to_string(struct ErrorContext* ectx, struct PortNumber* inst);
     struct PortNumber* freelan_PortNumber_clone(struct ErrorContext* ectx, const struct PortNumber* inst);
     void freelan_PortNumber_free(struct PortNumber* inst);
     int freelan_PortNumber_less_than(const struct PortNumber* lhs, const struct PortNumber* rhs);
     int freelan_PortNumber_equal(const struct PortNumber* lhs, const struct PortNumber* rhs);
-    struct IPv4PrefixLength* freelan_IPv4PrefixLength_from_string(const struct ErrorContext* ectx, const char* str);
-    char* freelan_IPv4PrefixLength_to_string(const struct ErrorContext* ectx, struct IPv4PrefixLength* inst);
+    struct IPv4PrefixLength* freelan_IPv4PrefixLength_from_string(struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv4PrefixLength_to_string(struct ErrorContext* ectx, struct IPv4PrefixLength* inst);
     struct IPv4PrefixLength* freelan_IPv4PrefixLength_clone(struct ErrorContext* ectx, const struct IPv4PrefixLength* inst);
     void freelan_IPv4PrefixLength_free(struct IPv4PrefixLength* inst);
     int freelan_IPv4PrefixLength_less_than(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs);
     int freelan_IPv4PrefixLength_equal(const struct IPv4PrefixLength* lhs, const struct IPv4PrefixLength* rhs);
-    struct IPv6PrefixLength* freelan_IPv6PrefixLength_from_string(const struct ErrorContext* ectx, const char* str);
-    char* freelan_IPv6PrefixLength_to_string(const struct ErrorContext* ectx, struct IPv6PrefixLength* inst);
+    struct IPv6PrefixLength* freelan_IPv6PrefixLength_from_string(struct ErrorContext* ectx, const char* str);
+    char* freelan_IPv6PrefixLength_to_string(struct ErrorContext* ectx, struct IPv6PrefixLength* inst);
     struct IPv6PrefixLength* freelan_IPv6PrefixLength_clone(struct ErrorContext* ectx, const struct IPv6PrefixLength* inst);
     void freelan_IPv6PrefixLength_free(struct IPv6PrefixLength* inst);
     int freelan_IPv6PrefixLength_less_than(const struct IPv6PrefixLength* lhs, const struct IPv6PrefixLength* rhs);
@@ -178,22 +178,23 @@ api = """
     struct IPv6Address* freelan_IPv6Route_get_IPv6Address(const struct IPv6Route* inst);
     struct IPv6PrefixLength* freelan_IPv6Route_get_IPv6PrefixLength(const struct IPv6Route* inst);
     struct IPv6Address* freelan_IPv6Route_get_IPv6Address_gateway(const struct IPv6Route* inst);
-    struct IPAddress* freelan_IPAddress_from_string(const struct ErrorContext* ectx, const char* str);
+    struct IPAddress* freelan_IPAddress_from_string(struct ErrorContext* ectx, const char* str);
     struct IPAddress* freelan_IPAddress_from_IPv4Address(const struct IPv4Address* value);
     struct IPAddress* freelan_IPAddress_from_IPv6Address(const struct IPv6Address* value);
-    struct IPv4Address* freelan_IPAddress_as_IPv4Address(const struct IPAddress* inst);
-    struct IPv6Address* freelan_IPAddress_as_IPv6Address(const struct IPAddress* inst);
-    char* freelan_IPAddress_to_string(const struct ErrorContext* ectx, struct IPAddress* inst);
+    const struct IPv4Address* freelan_IPAddress_as_IPv4Address(const struct IPAddress* inst);
+    const struct IPv6Address* freelan_IPAddress_as_IPv6Address(const struct IPAddress* inst);
+    char* freelan_IPAddress_to_string(struct ErrorContext* ectx, struct IPAddress* inst);
     struct IPAddress* freelan_IPAddress_clone(struct ErrorContext* ectx, const struct IPAddress* inst);
     void freelan_IPAddress_free(struct IPAddress* inst);
     int freelan_IPAddress_less_than(const struct IPAddress* lhs, const struct IPAddress* rhs);
     int freelan_IPAddress_equal(const struct IPAddress* lhs, const struct IPAddress* rhs);
 """
 
-ffi.cdef(api)
-
-native = ffi.verify(
-    source=api,
+ffi.set_source(
+    "_pyfreelan",
+    "#include <freelan.h>",
     libraries=['freelan'],
     include_dirs=['./include'],
 )
+ffi.cdef(api)
+ffi.compile()
