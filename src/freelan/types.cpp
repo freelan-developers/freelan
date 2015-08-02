@@ -91,6 +91,21 @@ namespace {
 	}
 
 	template <typename Type, typename InternalType>
+	Type* clone_generic(struct ErrorContext* ectx, const Type* inst) {
+		assert(inst);
+
+		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+
+		return reinterpret_cast<Type*>(
+			FREELAN_NEW InternalType(*reinterpret_cast<const InternalType*>(inst))
+		);
+
+		FREELAN_END_USE_ERROR_CONTEXT(ectx);
+
+		return nullptr;
+	}
+
+	template <typename Type, typename InternalType>
 	int less_than_generic(const Type* lhs, const Type* rhs) {
 		assert(lhs);
 		assert(rhs);
@@ -238,6 +253,9 @@ struct TYPE* freelan_ ## TYPE ## _from_string(struct ErrorContext* ectx, const c
 #define IMPLEMENT_to_string(TYPE) \
 char* freelan_ ## TYPE ## _to_string(struct ErrorContext* ectx, const struct TYPE* inst) { return to_string_generic<TYPE, freelan::TYPE>(ectx, inst); }
 
+#define IMPLEMENT_clone(TYPE) \
+struct TYPE* freelan_ ## TYPE ## _clone(struct ErrorContext* ectx, const struct TYPE* inst) { return clone_generic<TYPE, freelan::TYPE>(ectx, inst); }
+
 #define IMPLEMENT_free(TYPE) \
 void freelan_ ## TYPE ## _free(struct TYPE* inst) { FREELAN_DELETE reinterpret_cast<freelan::TYPE*>(inst); }
 
@@ -271,6 +289,7 @@ struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE ## _gateway (const struct TYP
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
 IMPLEMENT_to_string(TYPE) \
+IMPLEMENT_clone(TYPE) \
 IMPLEMENT_free(TYPE) \
 IMPLEMENT_less_than(TYPE) \
 IMPLEMENT_equal(TYPE)

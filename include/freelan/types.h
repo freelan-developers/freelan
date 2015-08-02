@@ -92,6 +92,17 @@ FREELAN_API struct IPv4Address* freelan_IPv4Address_from_string(struct ErrorCont
 FREELAN_API char* freelan_IPv4Address_to_string(struct ErrorContext* ectx, const struct IPv4Address* inst);
 
 /**
+ * \brief Clone an existing IPv4Address instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv4 address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4Address_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4Address* freelan_IPv4Address_clone(struct ErrorContext* ectx, const struct IPv4Address* inst);
+
+/**
  * \brief Delete an IPv4Address instance.
  * \param inst The instance.
  */
@@ -134,6 +145,17 @@ FREELAN_API struct IPv6Address* freelan_IPv6Address_from_string(struct ErrorCont
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPv6Address_to_string(struct ErrorContext* ectx, const struct IPv6Address* inst);
+
+/**
+ * \brief Clone an existing IPv6Address instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv6 address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Address_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Address* freelan_IPv6Address_clone(struct ErrorContext* ectx, const struct IPv6Address* inst);
 
 /**
  * \brief Delete an IPv6Address instance.
@@ -180,6 +202,17 @@ FREELAN_API struct Hostname* freelan_Hostname_from_string(struct ErrorContext* e
 FREELAN_API char* freelan_Hostname_to_string(struct ErrorContext* ectx, const struct Hostname* inst);
 
 /**
+ * \brief Clone an existing Hostname instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned Hostname instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_Hostname_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Hostname* freelan_Hostname_clone(struct ErrorContext* ectx, const struct Hostname* inst);
+
+/**
  * \brief Delete an Hostname instance.
  * \param inst The instance.
  */
@@ -222,6 +255,17 @@ FREELAN_API struct PortNumber* freelan_PortNumber_from_string(struct ErrorContex
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_PortNumber_to_string(struct ErrorContext* ectx, const struct PortNumber* inst);
+
+/**
+ * \brief Clone an existing PortNumber instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned PortNumber instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_PortNumber_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct PortNumber* freelan_PortNumber_clone(struct ErrorContext* ectx, const struct PortNumber* inst);
 
 /**
  * \brief Delete an PortNumber instance.
@@ -268,6 +312,17 @@ FREELAN_API struct IPv4PrefixLength* freelan_IPv4PrefixLength_from_string(struct
 FREELAN_API char* freelan_IPv4PrefixLength_to_string(struct ErrorContext* ectx, const struct IPv4PrefixLength* inst);
 
 /**
+ * \brief Clone an existing IPv4PrefixLength instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv4PrefixLength instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4PrefixLength_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4PrefixLength* freelan_IPv4PrefixLength_clone(struct ErrorContext* ectx, const struct IPv4PrefixLength* inst);
+
+/**
  * \brief Delete an IPv4PrefixLength instance.
  * \param inst The instance.
  */
@@ -310,6 +365,17 @@ FREELAN_API struct IPv6PrefixLength* freelan_IPv6PrefixLength_from_string(struct
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPv6PrefixLength_to_string(struct ErrorContext* ectx, const struct IPv6PrefixLength* inst);
+
+/**
+ * \brief Clone an existing IPv6PrefixLength instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv6PrefixLength instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6PrefixLength_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6PrefixLength* freelan_IPv6PrefixLength_clone(struct ErrorContext* ectx, const struct IPv6PrefixLength* inst);
 
 /**
  * \brief Delete an IPv6PrefixLength instance.
@@ -365,6 +431,17 @@ FREELAN_API struct IPv4Endpoint* freelan_IPv4Endpoint_from_parts(const struct IP
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPv4Endpoint_to_string(struct ErrorContext* ectx, const struct IPv4Endpoint* inst);
+
+/**
+ * \brief Clone an existing IPv4Endpoint instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv4Endpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4Endpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4Endpoint* freelan_IPv4Endpoint_clone(struct ErrorContext* ectx, const struct IPv4Endpoint* inst);
 
 /**
  * \brief Delete an IPv4Endpoint instance.
@@ -442,6 +519,17 @@ FREELAN_API struct IPv6Endpoint* freelan_IPv6Endpoint_from_parts(const struct IP
 FREELAN_API char* freelan_IPv6Endpoint_to_string(struct ErrorContext* ectx, const struct IPv6Endpoint* inst);
 
 /**
+ * \brief Clone an existing IPv6Endpoint instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv6Endpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Endpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Endpoint* freelan_IPv6Endpoint_clone(struct ErrorContext* ectx, const struct IPv6Endpoint* inst);
+
+/**
  * \brief Delete an IPv6Endpoint instance.
  * \param inst The instance.
  */
@@ -515,6 +603,17 @@ FREELAN_API struct HostnameEndpoint* freelan_HostnameEndpoint_from_parts(const s
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_HostnameEndpoint_to_string(struct ErrorContext* ectx, const struct HostnameEndpoint* inst);
+
+/**
+ * \brief Clone an existing HostnameEndpoint instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned HostnameEndpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostnameEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostnameEndpoint* freelan_HostnameEndpoint_clone(struct ErrorContext* ectx, const struct HostnameEndpoint* inst);
 
 /**
  * \brief Delete an HostnameEndpoint instance.
@@ -591,6 +690,17 @@ FREELAN_API struct IPv4Route* freelan_IPv4Route_from_parts(const struct IPv4Addr
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPv4Route_to_string(struct ErrorContext* ectx, const struct IPv4Route* inst);
+
+/**
+ * \brief Clone an existing IPv4Route instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv4Route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv4Route_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv4Route* freelan_IPv4Route_clone(struct ErrorContext* ectx, const struct IPv4Route* inst);
 
 /**
  * \brief Delete an IPv4Route instance.
@@ -677,6 +787,17 @@ FREELAN_API struct IPv6Route* freelan_IPv6Route_from_parts(const struct IPv6Addr
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPv6Route_to_string(struct ErrorContext* ectx, const struct IPv6Route* inst);
+
+/**
+ * \brief Clone an existing IPv6Route instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv6Route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPv6Route_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPv6Route* freelan_IPv6Route_clone(struct ErrorContext* ectx, const struct IPv6Route* inst);
 
 /**
  * \brief Delete an IPv6Route instance.
@@ -795,6 +916,17 @@ FREELAN_API const struct IPv6Address* freelan_IPAddress_as_IPv6Address(const str
  * returned string when it is no longer needed.
  */
 FREELAN_API char* freelan_IPAddress_to_string(struct ErrorContext* ectx, const struct IPAddress* inst);
+
+/**
+ * \brief Clone an existing IPAddress instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPAddress instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPAddress_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPAddress* freelan_IPAddress_clone(struct ErrorContext* ectx, const struct IPAddress* inst);
 
 /**
  * \brief Delete an IPAddress instance.

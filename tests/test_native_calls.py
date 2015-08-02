@@ -283,6 +283,15 @@ class NativeCallsTests(TestCase):
 
         self.assertEqual(str_value, ffi.string(result))
 
+    def test_IPv4Address_clone(self):
+        inst = native.freelan_IPv4Address_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_IPv4Address_free, inst)
+
+        result = native.freelan_IPv4Address_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv4Address_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
     def test_IPv4Address_less_than(self):
         str_values = ("1.2.4.8", "1.2.4.9")
 
@@ -335,6 +344,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6Address_clone(self):
+        inst = native.freelan_IPv6Address_from_string(self.ectx, "fe80::a:1")
+        self.addCleanup(native.freelan_IPv6Address_free, inst)
+
+        result = native.freelan_IPv6Address_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv6Address_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv6Address_less_than(self):
         str_values = ("ffe0::abcd", "ffe0::abce")
@@ -389,6 +407,15 @@ class NativeCallsTests(TestCase):
 
         self.assertEqual(str_value, ffi.string(result))
 
+    def test_Hostname_clone(self):
+        inst = native.freelan_Hostname_from_string(self.ectx, "some.hostname")
+        self.addCleanup(native.freelan_Hostname_free, inst)
+
+        result = native.freelan_Hostname_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_Hostname_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
     def test_Hostname_less_than(self):
         str_values = ("my.host.name1", "my.host.name2")
 
@@ -441,6 +468,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_PortNumber_clone(self):
+        inst = native.freelan_PortNumber_from_string(self.ectx, "12000")
+        self.addCleanup(native.freelan_PortNumber_free, inst)
+
+        result = native.freelan_PortNumber_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_PortNumber_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_PortNumber_less_than(self):
         str_values = ("12000", "12001")
@@ -495,6 +531,15 @@ class NativeCallsTests(TestCase):
 
         self.assertEqual(str_value, ffi.string(result))
 
+    def test_IPv4PrefixLength_clone(self):
+        inst = native.freelan_IPv4PrefixLength_from_string(self.ectx, "24")
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, inst)
+
+        result = native.freelan_IPv4PrefixLength_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv4PrefixLength_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
     def test_IPv4PrefixLength_less_than(self):
         str_values = ("12", "13")
 
@@ -547,6 +592,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6PrefixLength_clone(self):
+        inst = native.freelan_IPv6PrefixLength_from_string(self.ectx, "64")
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, inst)
+
+        result = native.freelan_IPv6PrefixLength_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv6PrefixLength_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv6PrefixLength_less_than(self):
         str_values = ("12", "13")
@@ -610,6 +664,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv4Endpoint_clone(self):
+        inst = native.freelan_IPv4Endpoint_from_string(self.ectx, "192.168.0.1:12000")
+        self.addCleanup(native.freelan_IPv4Endpoint_free, inst)
+
+        result = native.freelan_IPv4Endpoint_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv4Endpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv4Endpoint_less_than(self):
         str_values = ("9.0.0.1:12000", "9.0.0.2:11000")
@@ -690,6 +753,15 @@ class NativeCallsTests(TestCase):
 
         self.assertEqual(str_value, ffi.string(result))
 
+    def test_IPv6Endpoint_clone(self):
+        inst = native.freelan_IPv6Endpoint_from_string(self.ectx, "[fe80::a:1]:12000")
+        self.addCleanup(native.freelan_IPv6Endpoint_free, inst)
+
+        result = native.freelan_IPv6Endpoint_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv6Endpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
     def test_IPv6Endpoint_less_than(self):
         str_values = ("[fe80::a:1]:12000", "[fe80::a:2]:11000")
 
@@ -769,6 +841,15 @@ class NativeCallsTests(TestCase):
 
         self.assertEqual(str_value, ffi.string(result))
 
+    def test_HostnameEndpoint_clone(self):
+        inst = native.freelan_HostnameEndpoint_from_string(self.ectx, "some.hostname:12000")
+        self.addCleanup(native.freelan_HostnameEndpoint_free, inst)
+
+        result = native.freelan_HostnameEndpoint_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_HostnameEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
     def test_HostnameEndpoint_less_than(self):
         str_values = ("foo.bar:12000", "foo.baz:11000")
 
@@ -847,6 +928,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv4Route_clone(self):
+        inst = native.freelan_IPv4Route_from_string(self.ectx, "10.0.0.0/24")
+        self.addCleanup(native.freelan_IPv4Route_free, inst)
+
+        result = native.freelan_IPv4Route_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv4Route_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv4Route_less_than(self):
         str_values = ("9.0.0.0/24", "10.0.0.0/24")
@@ -934,6 +1024,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPv6Route_clone(self):
+        inst = native.freelan_IPv6Route_from_string(self.ectx, "fe80::a:1/64")
+        self.addCleanup(native.freelan_IPv6Route_free, inst)
+
+        result = native.freelan_IPv6Route_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPv6Route_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv6Route_less_than(self):
         str_values = ("fe80::a:0/120", "fe90::b:0/120")
@@ -1060,6 +1159,15 @@ class NativeCallsTests(TestCase):
         self.addCleanup(native.freelan_free, result)
 
         self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPAddress_clone(self):
+        inst = native.freelan_IPAddress_from_string(self.ectx, "9.0.0.1")
+        self.addCleanup(native.freelan_IPAddress_free, inst)
+
+        result = native.freelan_IPAddress_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPAddress_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
 
     def test_IPAddress_less_than(self):
         str_values = ("1.2.4.8", "1.2.4.9")
