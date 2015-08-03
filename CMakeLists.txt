@@ -146,7 +146,7 @@ target_link_libraries(FreeLANLibrary PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(FreeLANLibrary PUBLIC ${Boost_LIBRARIES})
 set_target_properties(FreeLANLibrary PROPERTIES PROJECT_LABEL "FreeLAN library")
 set_target_properties(FreeLANLibrary PROPERTIES OUTPUT_NAME "freelan")
-set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH ON)
+set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH OFF)
 target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
 
 install(TARGETS FreeLANLibrary DESTINATION lib)
