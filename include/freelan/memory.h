@@ -51,7 +51,9 @@
 extern "C" {
 #endif
 
+#ifndef FREELAN_API_NO_INCLUDES
 #include "stddef.h"
+#endif
 
 #include "common.h"
 

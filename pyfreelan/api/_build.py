@@ -4,7 +4,10 @@ FreeLAN API.
 
 import os
 
-from distutils.ccompiler import new_compiler
+from distutils.ccompiler import (
+    new_compiler,
+    gen_preprocess_options,
+)
 from distutils.sysconfig import customize_compiler
 from tempfile import gettempdir
 
@@ -29,7 +32,16 @@ def extract_api():
             source=input_file,
             output_file=output_file,
             # Remove the line numbers from the output.
-            extra_postargs=['-P'],
+            extra_postargs=[
+                '-P',
+            ] + gen_preprocess_options(
+                macros=[
+                    # Disable unwanted includes in the API to only keep our
+                    # defined methods.
+                    ('FREELAN_API_NO_INCLUDES', 1),
+                ],
+                include_dirs=[],
+            )
         )
 
         try:
