@@ -2,10 +2,7 @@
 FreeLAN types.
 """
 
-from functools import (
-    wraps,
-    total_ordering,
-)
+from functools import wraps
 
 from . import (
     native,
@@ -56,18 +53,21 @@ class NativeType(object):
         from_string = getattr(native, 'freelan_%s_from_string' % typename)
         to_string = getattr(native, 'freelan_%s_to_string' % typename)
         free = getattr(native, 'freelan_%s_free' % typename)
+        clone = getattr(native, 'freelan_%s_clone' % typename)
         less_than = getattr(native, 'freelan_%s_less_than' % typename)
         equal = getattr(native, 'freelan_%s_equal' % typename)
 
-        @total_ordering
         class Wrapper(object):
 
-            def __init__(self, opaque_ptr):
+            def __init__(self, opaque_ptr, owner=None):
                 """
                 Create an instance from its low-level opaque pointer.
 
                 :param opaque_ptr: The opaque pointer to the underlying C
                 instance.
+                :param owner: An instance that owns the opaque_ptr. If set this
+                instance won't attempt to destroy the opaque_ptr upon
+                destruction.
                 """
                 if not isinstance(opaque_ptr, ffi.CData):
                     raise TypeError(
@@ -76,6 +76,7 @@ class NativeType(object):
                     )
 
                 self._opaque_ptr = opaque_ptr
+                self._owner = owner
 
             @classmethod
             @check_error_context
@@ -88,31 +89,78 @@ class NativeType(object):
                 return cls(opaque_ptr=from_string(ectx, _str))
 
             def __del__(self):
-                if hasattr(self, '_opaque_ptr'):
-                    free(self._opaque_ptr)
-                    self._opaque_ptr = None
+                if getattr(self, '_owner', None):
+                    del self._owner
+                else:
+                    if hasattr(self, '_opaque_ptr'):
+                        free(self._opaque_ptr)
+                        self._opaque_ptr = None
 
             @swallow_native_string
             @check_error_context
             def __str__(self, ectx):
                 """
-                Get the string representation of.
+                Get the string representation.
 
                 :returns: The string representation.
                 """
                 return to_string(ectx, self._opaque_ptr)
 
+            @check_error_context
+            def clone(self, ectx):
+                """
+                Clone an instance.
+
+                :returns: A cloned instance.
+                """
+                return self.__class__(
+                    opaque_ptr=clone(ectx, self._opaque_ptr),
+                )
+
             def __eq__(self, other):
                 if not isinstance(other, Wrapper):
                     return NotImplemented
 
-                return equal(self._opaque_ptr, other._opaque_ptr)
+                return bool(equal(self._opaque_ptr, other._opaque_ptr))
+
+            def __ne__(self, other):
+                result = self.__eq__(other)
+
+                if result is NotImplemented:
+                    return NotImplemented
+
+                return not result
 
             def __lt__(self, other):
                 if not isinstance(other, Wrapper):
                     return NotImplemented
 
-                return less_than(self._opaque_ptr, other._opaque_ptr)
+                return bool(less_than(self._opaque_ptr, other._opaque_ptr))
+
+            def __le__(self, other):
+                lresult = self.__lt__(other)
+                rresult = self.__eq__(other)
+
+                if lresult is NotImplemented or rresult is NotImplemented:
+                    return NotImplemented
+
+                return lresult or rresult
+
+            def __gt__(self, other):
+                result = self.__le__(other)
+
+                if result is NotImplemented:
+                    return NotImplemented
+
+                return not result
+
+            def __ge__(self, other):
+                result = self.__lt__(other)
+
+                if result is NotImplemented:
+                    return NotImplemented
+
+                return not result
 
             def __repr__(self):
                 return '{classname}({ptr})'.format(
@@ -195,7 +243,7 @@ class IPv4Endpoint(NativeType.from_typename('IPv4Endpoint')):
     """
 
     @classmethod
-    def from_parts(self, ip_address, port_number):
+    def from_parts(cls, ip_address, port_number):
         """
         Create an IPv4Endpoint from its parts.
 
@@ -233,7 +281,7 @@ class IPv6Endpoint(NativeType.from_typename('IPv6Endpoint')):
     """
 
     @classmethod
-    def from_parts(self, ip_address, port_number):
+    def from_parts(cls, ip_address, port_number):
         """
         Create an IPv4Endpoint from its parts.
 
@@ -271,7 +319,7 @@ class HostnameEndpoint(NativeType.from_typename('HostnameEndpoint')):
     """
 
     @classmethod
-    def from_parts(self, hostname, port_number):
+    def from_parts(cls, hostname, port_number):
         """
         Create a HostnameEndpoint from its parts.
 
@@ -309,7 +357,7 @@ class IPv4Route(NativeType.from_typename('IPv4Route')):
     """
 
     @classmethod
-    def from_parts(self, ip_address, prefix_length, gateway=None):
+    def from_parts(cls, ip_address, prefix_length, gateway=None):
         """
         Create an IPv4Route from its parts.
 
@@ -358,7 +406,7 @@ class IPv6Route(NativeType.from_typename('IPv6Route')):
     """
 
     @classmethod
-    def from_parts(self, ip_address, prefix_length, gateway=None):
+    def from_parts(cls, ip_address, prefix_length, gateway=None):
         """
         Create an IPv6Route from its parts.
 
@@ -399,3 +447,95 @@ class IPv6Route(NativeType.from_typename('IPv6Route')):
 
         if opaque_ptr != ffi.NULL:
             return IPv6Address(opaque_ptr=opaque_ptr)
+
+
+class IPAddress(NativeType.from_typename('IPAddress')):
+    """
+    An IP address.
+    """
+
+    @classmethod
+    def from_ipv4_address(cls, ipv4_address):
+        """
+        Create an IPAddress from an IPv4Address.
+
+        :param: ipv4_address An IPv4Address instance.
+        :returns: An IPAddress instance.
+        """
+        return IPAddress(
+            opaque_ptr=native.freelan_IPAddress_from_IPv4Address(
+                ipv4_address._opaque_ptr,
+            ),
+        )
+
+    @classmethod
+    def from_ipv6_address(cls, ipv6_address):
+        """
+        Create an IPAddress from an IPv6Address.
+
+        :param: ipv6_address An IPv6Address instance.
+        :returns: An IPAddress instance.
+        """
+        return IPAddress(
+            opaque_ptr=native.freelan_IPAddress_from_IPv6Address(
+                ipv6_address._opaque_ptr,
+            ),
+        )
+
+    def _as_IPv4Address_ptr(self):
+        return native.freelan_IPAddress_as_IPv4Address(self._opaque_ptr)
+
+    def _as_IPv6Address_ptr(self):
+        return native.freelan_IPAddress_as_IPv6Address(self._opaque_ptr)
+
+    @check_error_context
+    def as_ipv4_address(self, ectx):
+        """
+        Get the IPv4Address instance contained in this IPAddress instance.
+
+        :returns: An IPv4Address instance or `None` if this instance does not
+        contain an IPv4Address instance.
+        """
+        opaque_ptr = self._as_IPv4Address_ptr()
+
+        if opaque_ptr != ffi.NULL:
+            return IPv4Address(
+                opaque_ptr=opaque_ptr,
+                owner=self,
+            )
+
+    @check_error_context
+    def as_ipv6_address(self, ectx):
+        """
+        Get the IPv6Address instance contained in this IPAddress instance.
+
+        :returns: An IPv6Address instance or `None` if this instance does not
+        contain an IPv6Address instance.
+        """
+        opaque_ptr = self._as_IPv6Address_ptr()
+
+        if opaque_ptr != ffi.NULL:
+            return IPv6Address(
+                opaque_ptr=opaque_ptr,
+                owner=self,
+            )
+
+    def __eq__(self, other):
+        if isinstance(other, IPv4Address):
+            return self.as_ipv4_address() == other
+
+        elif isinstance(other, IPv6Address):
+            return self.as_ipv6_address() == other
+
+        else:
+            return super(IPAddress, self).__eq__(other)
+
+    def __lt__(self, other):
+        if isinstance(other, IPv4Address):
+            return self.as_ipv4_address() < other
+
+        elif isinstance(other, IPv6Address):
+            return self.as_ipv6_address() < other
+
+        else:
+            return super(IPAddress, self).__lt__(other)

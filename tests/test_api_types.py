@@ -26,6 +26,7 @@ from pyfreelan.api.types import (
     HostnameEndpoint,
     IPv4Route,
     IPv6Route,
+    IPAddress,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -185,6 +186,23 @@ class NativeTypeTests(TestCase):
         to_string.assert_called_once_with(ectx, native_ptr)
         self.assertEqual(to_string(ectx, native_ptr), result)
 
+    @disable_error_context_checks
+    def test_wrapper_clone(self, ectx):
+        wrapper = NativeType.create_wrapper('foo')
+        instance = MagicMock()
+        native_ptr = MagicMock()
+        instance.__class__ = MagicMock()
+        instance._opaque_ptr = native_ptr
+        clone = self.native.freelan_foo_clone
+
+        result = wrapper.clone.wrapped(instance, ectx)
+
+        clone.assert_called_once_with(ectx, native_ptr)
+        self.assertEqual(
+            instance.__class__(opaque_ptr=clone(ectx, native_ptr)),
+            result,
+        )
+
     def test_wrapper_eq_calls_equal(self):
         wrapper = NativeType.create_wrapper('foo')
         instance_a = MagicMock(spec=wrapper)
@@ -198,7 +216,7 @@ class NativeTypeTests(TestCase):
         result = wrapper.__eq__(instance_a, instance_b)
 
         equal.assert_called_once_with(native_ptr_a, native_ptr_b)
-        self.assertEqual(equal(native_ptr_a, native_ptr_b), result)
+        self.assertEqual(bool(equal(native_ptr_a, native_ptr_b)), result)
 
     def test_wrapper_lt_calls_less_than(self):
         wrapper = NativeType.create_wrapper('foo')
@@ -213,7 +231,7 @@ class NativeTypeTests(TestCase):
         result = wrapper.__lt__(instance_a, instance_b)
 
         less_than.assert_called_once_with(native_ptr_a, native_ptr_b)
-        self.assertEqual(less_than(native_ptr_a, native_ptr_b), result)
+        self.assertEqual(bool(less_than(native_ptr_a, native_ptr_b)), result)
 
     def test_wrapper_repr(self):
         wrapper = NativeType.create_wrapper('foo')
@@ -283,6 +301,14 @@ class NativeTypeTests(TestCase):
 
 
 class FinalTypesTests(TestCase):
+
+    def test_IPv4Address_clone(self):
+        a = IPv4Address.from_string("0.0.0.1")
+        b = a.clone()
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(a._opaque_ptr, b._opaque_ptr)
+        self.assertEqual(a, b)
 
     def test_IPv4Address(self):
         a = IPv4Address.from_string("0.0.0.1")
@@ -528,3 +554,50 @@ class FinalTypesTests(TestCase):
         ip_route = IPv6Route.from_string("fe80::a:0/24")
 
         self.assertIsNone(ip_route.gateway)
+
+    def test_IPAddress(self):
+        a = IPAddress.from_string("0.0.0.1")
+        b = IPAddress.from_string("fe80::a:10")
+
+        self.assertIsNot(a, b)
+
+        self.assertFalse(a == b)
+        self.assertTrue(a != b)
+        self.assertTrue(a < b)
+        self.assertTrue(a <= b)
+        self.assertFalse(a > b)
+        self.assertFalse(a >= b)
+
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPAddress_from_IPv4Address(self):
+        value = IPv4Address.from_string("0.0.0.1")
+        instance = IPAddress.from_ipv4_address(value)
+
+        self.assertEqual(value, instance)
+        self.assertEqual(value, instance.as_ipv4_address())
+        self.assertIsNone(instance.as_ipv6_address())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_IPAddress_from_IPv6Address(self):
+        value = IPv6Address.from_string("fe80::a:1")
+        instance = IPAddress.from_ipv6_address(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_ipv4_address())
+        self.assertEqual(value, instance.as_ipv6_address())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
