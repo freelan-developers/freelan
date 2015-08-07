@@ -82,6 +82,7 @@ set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     src/internal/generic_ip_prefix_length.hpp
     src/internal/generic_ip_route.hpp
     src/internal/generic_value_type.hpp
+    src/internal/host.hpp
     src/internal/hostname.hpp
     src/internal/hostname_endpoint.hpp
     src/internal/ip_address.hpp
@@ -159,6 +160,7 @@ set (GTEST_VERSION "1.7.0")
 set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+    src/tests/host.cpp
     src/tests/hostname.cpp
     src/tests/hostname_endpoint.cpp
     src/tests/ip_address.cpp

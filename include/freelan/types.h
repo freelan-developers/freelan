@@ -69,6 +69,7 @@ struct IPv4Route;
 struct IPv6Route;
 struct IPAddress;
 struct IPRoute;
+struct Host;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -1049,6 +1050,127 @@ FREELAN_API int freelan_IPRoute_less_than(const struct IPRoute* lhs, const struc
  * \return A non-zero value if the lhs == rhs.
  */
 FREELAN_API int freelan_IPRoute_equal(const struct IPRoute* lhs, const struct IPRoute* rhs);
+
+/**
+ * \brief Create an Host instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The host instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_Host_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Host* freelan_Host_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create an Host instance from an IPv4Address.
+ * \param value The IPv4Address instance. Cannot be NULL.
+ * \return The host instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_Host_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Host* freelan_Host_from_IPv4Address(const struct IPv4Address* value);
+
+/**
+ * \brief Create an Host instance from an IPv6Address.
+ * \param value The IPv6Address instance. Cannot be NULL.
+ * \return The host instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_Host_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Host* freelan_Host_from_IPv6Address(const struct IPv6Address* value);
+
+/**
+ * \brief Create an Host instance from a Hostname.
+ * \param value The Hostname instance. Cannot be NULL.
+ * \return The host instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_Host_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Host* freelan_Host_from_Hostname(const struct Hostname* value);
+
+/**
+ * \brief Get the IPv4Address instance contained in the specified Host instance.
+ * \param inst The Host instance to get the value from.
+ * \return The IPv4Address instance, or NULL if \c inst is not an IPv4Address.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv4Address_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv4Address_clone().
+ */
+FREELAN_API const struct IPv4Address* freelan_Host_as_IPv4Address(const struct Host* inst);
+
+/**
+ * \brief Get the IPv6Address instance contained in the specified Host instance.
+ * \param inst The Host instance to get the value from.
+ * \return The IPv6Address instance, or NULL if \c inst is not an IPv6Address.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv6Address_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv6Address_clone().
+ */
+FREELAN_API const struct IPv6Address* freelan_Host_as_IPv6Address(const struct Host* inst);
+
+/**
+ * \brief Get the Hostname instance contained in the specified Host instance.
+ * \param inst The Host instance to get the value from.
+ * \return The Hostname instance, or NULL if \c inst is not a Hostname.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_Hostname_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_Hostname_clone().
+ */
+FREELAN_API const struct Hostname* freelan_Host_as_Hostname(const struct Host* inst);
+
+/**
+ * \brief Get the string representation of an Host instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_Host_to_string(struct ErrorContext* ectx, const struct Host* inst);
+
+/**
+ * \brief Clone an existing Host instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned Host instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_Host_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct Host* freelan_Host_clone(struct ErrorContext* ectx, const struct Host* inst);
+
+/**
+ * \brief Delete an Host instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_Host_free(struct Host* inst);
+
+/**
+ * \brief Compare two Host instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_Host_less_than(const struct Host* lhs, const struct Host* rhs);
+
+/**
+ * \brief Compare two Host instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_Host_equal(const struct Host* lhs, const struct Host* rhs);
 
 /* API END */
 
