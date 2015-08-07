@@ -1195,3 +1195,551 @@ class NativeCallsTests(TestCase):
 
         result = native.freelan_IPAddress_equal(*values)
         self.assertEqual(0, result)
+
+    def test_IPRoute_from_string_simple(self):
+        result = native.freelan_IPRoute_from_string(self.ectx, "9.0.0.0/24")
+        self.addCleanup(native.freelan_IPRoute_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPRoute_from_IPv4Route(self):
+        value = native.freelan_IPv4Route_from_string(self.ectx, "9.0.0.0/24")
+        self.addCleanup(native.freelan_IPv4Route_free, value)
+
+        result = native.freelan_IPRoute_from_IPv4Route(value)
+        self.addCleanup(native.freelan_IPRoute_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPRoute_from_IPv6Route(self):
+        value = native.freelan_IPv6Route_from_string(self.ectx, "fe80::1:a:0/120")
+        self.addCleanup(native.freelan_IPv6Route_free, value)
+
+        result = native.freelan_IPRoute_from_IPv6Route(value)
+        self.addCleanup(native.freelan_IPRoute_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPRoute_as_IPv4Route(self):
+        inst = native.freelan_IPRoute_from_string(self.ectx, "9.0.0.0/24")
+        self.addCleanup(native.freelan_IPRoute_free, inst)
+
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_IPRoute_as_IPv4Route(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_IPRoute_as_IPv6Route(inst),
+        )
+
+    def test_IPRoute_as_IPv6Route(self):
+        inst = native.freelan_IPRoute_from_string(self.ectx, "fe80::a:0/120")
+        self.addCleanup(native.freelan_IPRoute_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_IPRoute_as_IPv4Route(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_IPRoute_as_IPv6Route(inst),
+        )
+
+    def test_IPRoute_from_string_incorrect_value(self):
+        result = native.freelan_IPRoute_from_string(
+            self.ectx,
+            "incorrect value",
+        )
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPRoute_from_string_empty_value(self):
+        result = native.freelan_IPRoute_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPRoute_to_string_simple(self):
+        str_value = "9.0.0.0/24"
+
+        value = native.freelan_IPRoute_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPRoute_free, value)
+
+        result = native.freelan_IPRoute_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPRoute_clone(self):
+        inst = native.freelan_IPRoute_from_string(self.ectx, "9.0.0.0/24")
+        self.addCleanup(native.freelan_IPRoute_free, inst)
+
+        result = native.freelan_IPRoute_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPRoute_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPRoute_less_than(self):
+        str_values = ("9.0.0.0/24", "9.0.1.0/24")
+
+        values = (
+            native.freelan_IPRoute_from_string(self.ectx, str_values[0]),
+            native.freelan_IPRoute_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPRoute_free, values[0])
+        self.addCleanup(native.freelan_IPRoute_free, values[1])
+
+        result = native.freelan_IPRoute_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPRoute_equal(self):
+        str_values = ("9.0.0.0/24", "9.0.1.0/24")
+
+        values = (
+            native.freelan_IPRoute_from_string(self.ectx, str_values[0]),
+            native.freelan_IPRoute_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPRoute_free, values[0])
+        self.addCleanup(native.freelan_IPRoute_free, values[1])
+
+        result = native.freelan_IPRoute_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_Host_from_string_simple(self):
+        result = native.freelan_Host_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_Host_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_Host_from_IPv4Address(self):
+        value = native.freelan_IPv4Address_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_IPv4Address_free, value)
+
+        result = native.freelan_Host_from_IPv4Address(value)
+        self.addCleanup(native.freelan_Host_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_Host_from_IPv6Address(self):
+        value = native.freelan_IPv6Address_from_string(self.ectx, "fe80::1:a")
+        self.addCleanup(native.freelan_IPv6Address_free, value)
+
+        result = native.freelan_Host_from_IPv6Address(value)
+        self.addCleanup(native.freelan_Host_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_Host_from_Hostname(self):
+        value = native.freelan_Hostname_from_string(self.ectx, "foo.bar.net")
+        self.addCleanup(native.freelan_Hostname_free, value)
+
+        result = native.freelan_Host_from_Hostname(value)
+        self.addCleanup(native.freelan_Host_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_Host_as_IPv4Address(self):
+        inst = native.freelan_Host_from_string(self.ectx, "1.2.4.8")
+        self.addCleanup(native.freelan_Host_free, inst)
+
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_Host_as_IPv4Address(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_Host_as_IPv6Address(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_Host_as_Hostname(inst),
+        )
+
+    def test_Host_as_IPv6Address(self):
+        inst = native.freelan_Host_from_string(self.ectx, "fe80::a:1")
+        self.addCleanup(native.freelan_Host_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_Host_as_IPv4Address(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_Host_as_IPv6Address(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_Host_as_Hostname(inst),
+        )
+
+    def test_Host_as_Hostname(self):
+        inst = native.freelan_Host_from_string(self.ectx, "foo.bar.net")
+        self.addCleanup(native.freelan_Host_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_Host_as_IPv4Address(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_Host_as_IPv6Address(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_Host_as_Hostname(inst),
+        )
+
+    def test_Host_from_string_truncated(self):
+        result = native.freelan_Host_from_string(self.ectx, "127.1")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_Host_from_string_incorrect_value(self):
+        result = native.freelan_Host_from_string(self.ectx, "incorrect value")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_Host_from_string_empty_value(self):
+        result = native.freelan_Host_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_Host_to_string_simple(self):
+        str_value = "1.2.4.8"
+
+        value = native.freelan_Host_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_Host_free, value)
+
+        result = native.freelan_Host_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_Host_clone(self):
+        inst = native.freelan_Host_from_string(self.ectx, "9.0.0.1")
+        self.addCleanup(native.freelan_Host_free, inst)
+
+        result = native.freelan_Host_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_Host_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_Host_less_than(self):
+        str_values = ("1.2.4.8", "1.2.4.9")
+
+        values = (
+            native.freelan_Host_from_string(self.ectx, str_values[0]),
+            native.freelan_Host_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_Host_free, values[0])
+        self.addCleanup(native.freelan_Host_free, values[1])
+
+        result = native.freelan_Host_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_Host_equal(self):
+        str_values = ("1.2.4.8", "1.2.4.9")
+
+        values = (
+            native.freelan_Host_from_string(self.ectx, str_values[0]),
+            native.freelan_Host_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_Host_free, values[0])
+        self.addCleanup(native.freelan_Host_free, values[1])
+
+        result = native.freelan_Host_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_IPEndpoint_from_string_simple(self):
+        result = native.freelan_IPEndpoint_from_string(
+            self.ectx,
+            "1.2.4.8:12000",
+        )
+        self.addCleanup(native.freelan_IPEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPEndpoint_from_IPv4Endpoint(self):
+        value = native.freelan_IPv4Endpoint_from_string(
+            self.ectx,
+            "1.2.4.8:12000",
+        )
+        self.addCleanup(native.freelan_IPv4Endpoint_free, value)
+
+        result = native.freelan_IPEndpoint_from_IPv4Endpoint(value)
+        self.addCleanup(native.freelan_IPEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPEndpoint_from_IPv6Endpoint(self):
+        value = native.freelan_IPv6Endpoint_from_string(
+            self.ectx,
+            "[fe80::1:a]:12000",
+        )
+        self.addCleanup(native.freelan_IPv6Endpoint_free, value)
+
+        result = native.freelan_IPEndpoint_from_IPv6Endpoint(value)
+        self.addCleanup(native.freelan_IPEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPEndpoint_as_IPv4Endpoint(self):
+        inst = native.freelan_IPEndpoint_from_string(
+            self.ectx,
+            "1.2.4.8:12000",
+        )
+        self.addCleanup(native.freelan_IPEndpoint_free, inst)
+
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_IPEndpoint_as_IPv4Endpoint(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_IPEndpoint_as_IPv6Endpoint(inst),
+        )
+
+    def test_IPEndpoint_as_IPv6Endpoint(self):
+        inst = native.freelan_IPEndpoint_from_string(
+            self.ectx,
+            "[fe80::a:1]:12000",
+        )
+        self.addCleanup(native.freelan_IPEndpoint_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_IPEndpoint_as_IPv4Endpoint(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_IPEndpoint_as_IPv6Endpoint(inst),
+        )
+
+    def test_IPEndpoint_from_string_incorrect_value(self):
+        result = native.freelan_IPEndpoint_from_string(
+            self.ectx,
+            "incorrect value",
+        )
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPEndpoint_from_string_empty_value(self):
+        result = native.freelan_IPEndpoint_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_IPEndpoint_to_string_simple(self):
+        str_value = "1.2.4.8:12000"
+
+        value = native.freelan_IPEndpoint_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_IPEndpoint_free, value)
+
+        result = native.freelan_IPEndpoint_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_IPEndpoint_clone(self):
+        inst = native.freelan_IPEndpoint_from_string(
+            self.ectx,
+            "9.0.0.1:12000",
+        )
+        self.addCleanup(native.freelan_IPEndpoint_free, inst)
+
+        result = native.freelan_IPEndpoint_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_IPEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_IPEndpoint_less_than(self):
+        str_values = ("1.2.4.8:12000", "1.2.4.9:12000")
+
+        values = (
+            native.freelan_IPEndpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_IPEndpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPEndpoint_free, values[0])
+        self.addCleanup(native.freelan_IPEndpoint_free, values[1])
+
+        result = native.freelan_IPEndpoint_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_IPEndpoint_equal(self):
+        str_values = ("1.2.4.8:12000", "1.2.4.9:12000")
+
+        values = (
+            native.freelan_IPEndpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_IPEndpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_IPEndpoint_free, values[0])
+        self.addCleanup(native.freelan_IPEndpoint_free, values[1])
+
+        result = native.freelan_IPEndpoint_equal(*values)
+        self.assertEqual(0, result)
+
+    def test_HostEndpoint_from_string_simple(self):
+        result = native.freelan_HostEndpoint_from_string(
+            self.ectx,
+            "1.2.4.8:12000",
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_from_IPv4Endpoint(self):
+        value = native.freelan_IPv4Endpoint_from_string(
+            self.ectx,
+            "1.2.4.8:12000",
+        )
+        self.addCleanup(native.freelan_IPv4Endpoint_free, value)
+
+        result = native.freelan_HostEndpoint_from_IPv4Endpoint(value)
+        self.addCleanup(native.freelan_HostEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_from_IPv6Endpoint(self):
+        value = native.freelan_IPv6Endpoint_from_string(
+            self.ectx,
+            "[fe80::1:a]:12000",
+        )
+        self.addCleanup(native.freelan_IPv6Endpoint_free, value)
+
+        result = native.freelan_HostEndpoint_from_IPv6Endpoint(value)
+        self.addCleanup(native.freelan_HostEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_from_HostnameEndpoint(self):
+        value = native.freelan_HostnameEndpoint_from_string(
+            self.ectx,
+            "foo.bar.net:12000",
+        )
+        self.addCleanup(native.freelan_HostnameEndpoint_free, value)
+
+        result = native.freelan_HostEndpoint_from_HostnameEndpoint(value)
+        self.addCleanup(native.freelan_HostEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_as_IPv4Endpoint(self):
+        inst = native.freelan_HostEndpoint_from_string(
+            self.ectx,
+            "1.2.4.8:12000",
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, inst)
+
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_IPv4Endpoint(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_IPv6Endpoint(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_HostnameEndpoint(inst),
+        )
+
+    def test_HostEndpoint_as_IPv6Endpoint(self):
+        inst = native.freelan_HostEndpoint_from_string(
+            self.ectx,
+            "[fe80::a:1]:12000",
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_IPv4Endpoint(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_IPv6Endpoint(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_HostnameEndpoint(inst),
+        )
+
+    def test_HostEndpoint_as_HostnameEndpoint(self):
+        inst = native.freelan_HostEndpoint_from_string(
+            self.ectx,
+            "foo.bar.net:12000",
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, inst)
+
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_IPv4Endpoint(inst),
+        )
+        self.assertEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_IPv6Endpoint(inst),
+        )
+        self.assertNotEqual(
+            ffi.NULL,
+            native.freelan_HostEndpoint_as_HostnameEndpoint(inst),
+        )
+
+    def test_HostEndpoint_from_string_incorrect_value(self):
+        result = native.freelan_HostEndpoint_from_string(
+            self.ectx,
+            "incorrect value",
+        )
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_from_string_empty_value(self):
+        result = native.freelan_HostEndpoint_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_to_string_simple(self):
+        str_value = "1.2.4.8:12000"
+
+        value = native.freelan_HostEndpoint_from_string(self.ectx, str_value)
+        self.addCleanup(native.freelan_HostEndpoint_free, value)
+
+        result = native.freelan_HostEndpoint_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_HostEndpoint_clone(self):
+        inst = native.freelan_HostEndpoint_from_string(
+            self.ectx,
+            "9.0.0.1:12000",
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, inst)
+
+        result = native.freelan_HostEndpoint_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_HostEndpoint_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_HostEndpoint_less_than(self):
+        str_values = ("1.2.4.8:12000", "1.2.4.9:12000")
+
+        values = (
+            native.freelan_HostEndpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_HostEndpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, values[0])
+        self.addCleanup(native.freelan_HostEndpoint_free, values[1])
+
+        result = native.freelan_HostEndpoint_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_HostEndpoint_equal(self):
+        str_values = ("1.2.4.8:12000", "1.2.4.9:12000")
+
+        values = (
+            native.freelan_HostEndpoint_from_string(self.ectx, str_values[0]),
+            native.freelan_HostEndpoint_from_string(self.ectx, str_values[1]),
+        )
+        self.addCleanup(native.freelan_HostEndpoint_free, values[0])
+        self.addCleanup(native.freelan_HostEndpoint_free, values[1])
+
+        result = native.freelan_HostEndpoint_equal(*values)
+        self.assertEqual(0, result)
