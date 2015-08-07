@@ -102,7 +102,7 @@ TEST(IPAddress, ipv6_address_string_instantiation) {
 	ASSERT_EQ(str_value, value.to_string());
 }
 
-TEST(IPAddress, ipv4_address_read_from_invalid_stream) {
+TEST(IPAddress, read_from_invalid_stream) {
 	std::istringstream iss;
 	iss.setstate(std::ios::failbit);
 	IPAddress value;
@@ -130,14 +130,14 @@ TEST(IPAddress, string_instantiation_failure_no_throw) {
 	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
-TEST(IPv4Address, ipv4_address_implicit_string_conversion) {
+TEST(IPAddress, ipv4_address_implicit_string_conversion) {
 	const std::string str_value = "9.0.0.1";
 	const auto value = from_string<IPAddress>(str_value);
 
 	ASSERT_EQ(str_value, to_string(value));
 }
 
-TEST(IPv4Address, ipv6_address_implicit_string_conversion) {
+TEST(IPAddress, ipv6_address_implicit_string_conversion) {
 	const std::string str_value = "fe80::a:0";
 	const auto value = from_string<IPAddress>(str_value);
 

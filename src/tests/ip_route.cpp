@@ -102,7 +102,7 @@ TEST(IPRoute, ipv6_route_string_instantiation) {
 	ASSERT_EQ(str_value, value.to_string());
 }
 
-TEST(IPRoute, ipv4_route_read_from_invalid_stream) {
+TEST(IPRoute, read_from_invalid_stream) {
 	std::istringstream iss;
 	iss.setstate(std::ios::failbit);
 	IPRoute value;
@@ -130,14 +130,14 @@ TEST(IPRoute, string_instantiation_failure_no_throw) {
 	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
-TEST(IPv4Route, ipv4_route_implicit_string_conversion) {
+TEST(IPRoute, ipv4_route_implicit_string_conversion) {
 	const std::string str_value = "9.0.0.0/8";
 	const auto value = from_string<IPRoute>(str_value);
 
 	ASSERT_EQ(str_value, to_string(value));
 }
 
-TEST(IPv4Route, ipv6_route_implicit_string_conversion) {
+TEST(IPRoute, ipv6_route_implicit_string_conversion) {
 	const std::string str_value = "fe80::a:0/120";
 	const auto value = from_string<IPRoute>(str_value);
 
