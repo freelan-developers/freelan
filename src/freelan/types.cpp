@@ -61,6 +61,7 @@
 #include "ip_route.hpp"
 #include "host.hpp"
 #include "ip_endpoint.hpp"
+#include "host_endpoint.hpp"
 
 namespace {
 	template <typename Type, typename InternalType>
@@ -357,3 +358,8 @@ IMPLEMENT_variant(Host, Hostname)
 IMPLEMENT_complete_type(IPEndpoint)
 IMPLEMENT_variant(IPEndpoint, IPv4Endpoint)
 IMPLEMENT_variant(IPEndpoint, IPv6Endpoint)
+
+IMPLEMENT_complete_type(HostEndpoint)
+IMPLEMENT_variant(HostEndpoint, IPv4Endpoint)
+IMPLEMENT_variant(HostEndpoint, IPv6Endpoint)
+IMPLEMENT_variant(HostEndpoint, HostnameEndpoint)

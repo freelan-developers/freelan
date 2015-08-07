@@ -1272,6 +1272,127 @@ FREELAN_API int freelan_IPEndpoint_less_than(const struct IPEndpoint* lhs, const
  */
 FREELAN_API int freelan_IPEndpoint_equal(const struct IPEndpoint* lhs, const struct IPEndpoint* rhs);
 
+/**
+ * \brief Create an HostEndpoint instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The host endpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostEndpoint* freelan_HostEndpoint_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create an HostEndpoint instance from an IPv4Endpoint.
+ * \param value The IPv4Endpoint instance. Cannot be NULL.
+ * \return The host endpoint instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostEndpoint* freelan_HostEndpoint_from_IPv4Endpoint(const struct IPv4Endpoint* value);
+
+/**
+ * \brief Create an HostEndpoint instance from an IPv6Endpoint.
+ * \param value The IPv6Endpoint instance. Cannot be NULL.
+ * \return The host endpoint instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostEndpoint* freelan_HostEndpoint_from_IPv6Endpoint(const struct IPv6Endpoint* value);
+
+/**
+ * \brief Create an HostEndpoint instance from a HostnameEndpoint.
+ * \param value The HostnameEndpoint instance. Cannot be NULL.
+ * \return The host endpoint instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostEndpoint* freelan_HostEndpoint_from_HostnameEndpoint(const struct HostnameEndpoint* value);
+
+/**
+ * \brief Get the IPv4Endpoint instance contained in the specified HostEndpoint instance.
+ * \param inst The HostEndpoint instance to get the value from.
+ * \return The IPv4Endpoint instance, or NULL if \c inst is not an IPv4Endpoint.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv4Endpoint_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv4Endpoint_clone().
+ */
+FREELAN_API const struct IPv4Endpoint* freelan_HostEndpoint_as_IPv4Endpoint(const struct HostEndpoint* inst);
+
+/**
+ * \brief Get the IPv6Endpoint instance contained in the specified HostEndpoint instance.
+ * \param inst The HostEndpoint instance to get the value from.
+ * \return The IPv6Endpoint instance, or NULL if \c inst is not an IPv6Endpoint.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv6Endpoint_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv6Endpoint_clone().
+ */
+FREELAN_API const struct IPv6Endpoint* freelan_HostEndpoint_as_IPv6Endpoint(const struct HostEndpoint* inst);
+
+/**
+ * \brief Get the HostnameEndpoint instance contained in the specified HostEndpoint instance.
+ * \param inst The HostEndpoint instance to get the value from.
+ * \return The HostnameEndpoint instance, or NULL if \c inst is not an HostnameEndpoint.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_HostnameEndpoint_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_HostnameEndpoint_clone().
+ */
+FREELAN_API const struct HostnameEndpoint* freelan_HostEndpoint_as_HostnameEndpoint(const struct HostEndpoint* inst);
+
+/**
+ * \brief Get the string representation of an HostEndpoint instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_HostEndpoint_to_string(struct ErrorContext* ectx, const struct HostEndpoint* inst);
+
+/**
+ * \brief Clone an existing HostEndpoint instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned HostEndpoint instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_HostEndpoint_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct HostEndpoint* freelan_HostEndpoint_clone(struct ErrorContext* ectx, const struct HostEndpoint* inst);
+
+/**
+ * \brief Delete an HostEndpoint instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_HostEndpoint_free(struct HostEndpoint* inst);
+
+/**
+ * \brief Compare two HostEndpoint instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_HostEndpoint_less_than(const struct HostEndpoint* lhs, const struct HostEndpoint* rhs);
+
+/**
+ * \brief Compare two HostEndpoint instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_HostEndpoint_equal(const struct HostEndpoint* lhs, const struct HostEndpoint* rhs);
+
 /* API END */
 
 #ifdef __cplusplus
