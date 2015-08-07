@@ -68,6 +68,7 @@ struct HostnameEndpoint;
 struct IPv4Route;
 struct IPv6Route;
 struct IPAddress;
+struct IPRoute;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
@@ -949,6 +950,105 @@ FREELAN_API int freelan_IPAddress_less_than(const struct IPAddress* lhs, const s
  * \return A non-zero value if the lhs == rhs.
  */
 FREELAN_API int freelan_IPAddress_equal(const struct IPAddress* lhs, const struct IPAddress* rhs);
+
+/**
+ * \brief Create an IPRoute instance from its string representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IP route instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPRoute_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPRoute* freelan_IPRoute_from_string(struct ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Create an IPRoute instance from an IPv4Route.
+ * \param value The IPv4Route instance. Cannot be NULL.
+ * \return The IP route instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPRoute_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPRoute* freelan_IPRoute_from_IPv4Route(const struct IPv4Route* value);
+
+/**
+ * \brief Create an IPRoute instance from an IPv6Route.
+ * \param value The IPv6Route instance. Cannot be NULL.
+ * \return The IP route instance.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPRoute_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPRoute* freelan_IPRoute_from_IPv6Route(const struct IPv6Route* value);
+
+/**
+ * \brief Get the IPv4Route instance contained in the specified IPRoute instance.
+ * \param inst The IPRoute instance to get the value from.
+ * \return The IPv4Route instance, or NULL if \c inst is not an IPv4Route.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv4Route_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv4Route_clone().
+ */
+FREELAN_API const struct IPv4Route* freelan_IPRoute_as_IPv4Route(const struct IPRoute* inst);
+
+/**
+ * \brief Get the IPv6Route instance contained in the specified IPRoute instance.
+ * \param inst The IPRoute instance to get the value from.
+ * \return The IPv6Route instance, or NULL if \c inst is not an IPv6Route.
+ * The returned instance as the same lifetime as \c inst.
+ *
+ * \warning The caller must *NOT* call \c freelan_IPv6Route_free()
+ * on the returned instance. If you need to keep around the returned value
+ * longer, look at \c freelan_IPv6Route_clone().
+ */
+FREELAN_API const struct IPv6Route* freelan_IPRoute_as_IPv6Route(const struct IPRoute* inst);
+
+/**
+ * \brief Get the string representation of an IPRoute instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_IPRoute_to_string(struct ErrorContext* ectx, const struct IPRoute* inst);
+
+/**
+ * \brief Clone an existing IPRoute instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPRoute instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_IPRoute_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct IPRoute* freelan_IPRoute_clone(struct ErrorContext* ectx, const struct IPRoute* inst);
+
+/**
+ * \brief Delete an IPRoute instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_IPRoute_free(struct IPRoute* inst);
+
+/**
+ * \brief Compare two IPRoute instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_IPRoute_less_than(const struct IPRoute* lhs, const struct IPRoute* rhs);
+
+/**
+ * \brief Compare two IPRoute instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_IPRoute_equal(const struct IPRoute* lhs, const struct IPRoute* rhs);
 
 /* API END */
 

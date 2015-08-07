@@ -58,6 +58,7 @@
 #include "ipv4_route.hpp"
 #include "ipv6_route.hpp"
 #include "ip_address.hpp"
+#include "ip_route.hpp"
 
 namespace {
 	template <typename Type, typename InternalType>
@@ -341,3 +342,7 @@ IMPLEMENT_get_gateway(IPv6Route, IPv6Address)
 IMPLEMENT_complete_type(IPAddress)
 IMPLEMENT_variant(IPAddress, IPv4Address)
 IMPLEMENT_variant(IPAddress, IPv6Address)
+
+IMPLEMENT_complete_type(IPRoute)
+IMPLEMENT_variant(IPRoute, IPv4Route)
+IMPLEMENT_variant(IPRoute, IPv6Route)
