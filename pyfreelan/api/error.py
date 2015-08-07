@@ -76,7 +76,9 @@ class ErrorContext(object):
     @property
     @convert_native_string
     def category(self):
-        return native.freelan_error_context_get_error_category(self._opaque_ptr)
+        return native.freelan_error_context_get_error_category(
+            self._opaque_ptr,
+        )
 
     @property
     def code(self):
@@ -85,7 +87,9 @@ class ErrorContext(object):
     @property
     @convert_native_string
     def description(self):
-        return native.freelan_error_context_get_error_description(self._opaque_ptr)
+        return native.freelan_error_context_get_error_description(
+            self._opaque_ptr,
+        )
 
     @property
     @convert_native_string

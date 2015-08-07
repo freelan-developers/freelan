@@ -36,7 +36,9 @@ class TestGTestBinary(object):
                     yield self.run_single, module, name
 
         except OSError:
-            assert False, 'Unable to find the gtest binary at: %s' % GTEST_BINARY
+            assert False, (
+                "Unable to find the gtest binary at: %s" % GTEST_BINARY
+            )
 
     def run_single(self, module, name):
         process = Popen(

@@ -131,7 +131,9 @@ class ErrorContextTests(TestCase):
 
         self.assertEqual(instance1, instance2)
 
-    def test_get_current_returns_different_instances_for_different_threads(self):
+    def test_get_current_returns_different_instances_for_different_threads(
+        self,
+    ):
         class MyClass(object):
             thread_local_data = local()
 

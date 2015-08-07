@@ -84,20 +84,56 @@ def log_attach(registry, entry, key, value):
         # remains valid until entry expires.
         str_value = ffi.new("const char[]", value)
         registry.append(str_value)
-        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_STRING, {'as_string': str_value})
+        native.freelan_log_attach(
+            entry,
+            key,
+            native.FREELAN_LOG_PAYLOAD_TYPE_STRING,
+            {'as_string': str_value},
+        )
     elif isinstance(value, bool):
-        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN, {'as_boolean': value})
+        native.freelan_log_attach(
+            entry,
+            key,
+            native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN,
+            {'as_boolean': value},
+        )
     elif isinstance(value, int):
-        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER, {'as_integer': value})
+        native.freelan_log_attach(
+            entry,
+            key,
+            native.FREELAN_LOG_PAYLOAD_TYPE_INTEGER,
+            {'as_integer': value},
+        )
     elif isinstance(value, float):
-        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT, {'as_float': value})
+        native.freelan_log_attach(
+            entry,
+            key,
+            native.FREELAN_LOG_PAYLOAD_TYPE_FLOAT,
+            {'as_float': value},
+        )
     elif value is None:
-        native.freelan_log_attach(entry, key, native.FREELAN_LOG_PAYLOAD_TYPE_NULL, {'as_null': ffi.NULL})
+        native.freelan_log_attach(
+            entry,
+            key,
+            native.FREELAN_LOG_PAYLOAD_TYPE_NULL,
+            {'as_null': ffi.NULL},
+        )
     else:
-        raise TypeError("value must be either a string, an integer, a float or a boolean value")
+        raise TypeError(
+            "value must be either a string, an integer, a float or a boolean "
+            "value",
+        )
 
 
-def log(level, domain, code, payload=None, timestamp=datetime.utcnow(), file=None, line=0):
+def log(
+    level,
+    domain,
+    code,
+    payload=None,
+    timestamp=datetime.utcnow(),
+    file=None,
+    line=0,
+):
     """
     Writes a log entry.
 
@@ -198,7 +234,16 @@ def from_native_payload(payload):
     return key, value
 
 
-def log_function(level, timestamp, domain, code, payload_size, payload, file, line):
+def log_function(
+    level,
+    timestamp,
+    domain,
+    code,
+    payload_size,
+    payload,
+    file,
+    line,
+):
     """
     The default logging callback.
 
