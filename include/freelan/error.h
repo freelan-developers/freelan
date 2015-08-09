@@ -57,7 +57,7 @@ extern "C" {
 
 #include "common.h"
 
-struct ErrorContext;
+struct freelan_ErrorContext;
 
 /**
  * \brief Acquire an error context.
@@ -72,13 +72,13 @@ struct ErrorContext;
  * \warning If no error context can be allocated, a null pointer is returned
  * instead. This should only occur when running in very-low memory conditions.
  */
-FREELAN_API struct ErrorContext* freelan_acquire_error_context(void);
+FREELAN_API struct freelan_ErrorContext* freelan_acquire_error_context(void);
 
 /**
  * \brief Deallocate an error context.
  * \param ectx The error context. As given by \c freelan_acquire_error_context.
  */
-FREELAN_API void freelan_release_error_context(struct ErrorContext* ectx);
+FREELAN_API void freelan_release_error_context(struct freelan_ErrorContext* ectx);
 
 /**
  * \brief Reset the error context.
@@ -89,7 +89,7 @@ FREELAN_API void freelan_release_error_context(struct ErrorContext* ectx);
  *
  * Resetting the error context invalidates all previous recovered values.
  */
-FREELAN_API void freelan_error_context_reset(struct ErrorContext* ectx);
+FREELAN_API void freelan_error_context_reset(struct freelan_ErrorContext* ectx);
 
 /**
  * \brief Get the error category associated to the context.
@@ -100,7 +100,7 @@ FREELAN_API void freelan_error_context_reset(struct ErrorContext* ectx);
  * The caller is *NOT* responsible for freeing the returned string. The value
  * is valid until the next use of the error context or until its destruction.
  */
-FREELAN_API const char* freelan_error_context_get_error_category(const struct ErrorContext* ectx);
+FREELAN_API const char* freelan_error_context_get_error_category(const struct freelan_ErrorContext* ectx);
 
 /**
  * \brief Get the error code associated to the context.
@@ -108,7 +108,7 @@ FREELAN_API const char* freelan_error_context_get_error_category(const struct Er
  * \return The error code, as an integral value. If no error occured during the last
  * call, 0 is returned.
  */
-FREELAN_API int freelan_error_context_get_error_code(const struct ErrorContext* ectx);
+FREELAN_API int freelan_error_context_get_error_code(const struct freelan_ErrorContext* ectx);
 
 /**
  * \brief Get the error description associated to the context.
@@ -119,7 +119,7 @@ FREELAN_API int freelan_error_context_get_error_code(const struct ErrorContext* 
  * The caller is *NOT* responsible for freeing the returned string. The value
  * is valid until the next use of the error context or until its destruction.
  */
-FREELAN_API const char* freelan_error_context_get_error_description(const struct ErrorContext* ectx);
+FREELAN_API const char* freelan_error_context_get_error_description(const struct freelan_ErrorContext* ectx);
 
 /**
  * \brief Get the filename in which the error occured from the specified
@@ -131,7 +131,7 @@ FREELAN_API const char* freelan_error_context_get_error_description(const struct
  * The caller is *NOT* responsible for freeing the returned string. The value
  * is valid until the next use of the error context or until its destruction.
  */
-FREELAN_API const char* freelan_error_context_get_error_file(const struct ErrorContext* ectx);
+FREELAN_API const char* freelan_error_context_get_error_file(const struct freelan_ErrorContext* ectx);
 
 /**
  * \brief Get the line at which the error occured from the specified
@@ -140,7 +140,7 @@ FREELAN_API const char* freelan_error_context_get_error_file(const struct ErrorC
  * \return The error line. If no error occured during the last call or if the
  * line is not known, 0 is returned.
  */
-FREELAN_API unsigned int freelan_error_context_get_error_line(const struct ErrorContext* ectx);
+FREELAN_API unsigned int freelan_error_context_get_error_line(const struct freelan_ErrorContext* ectx);
 
 #ifdef __cplusplus
 }

@@ -61,17 +61,17 @@ extern "C" {
 /**
  * \brief The log level type.
  */
-typedef unsigned int FreeLANLogLevel;
+typedef unsigned int freelan_LogLevel;
 
 /**
  * \brief The log timestamp type.
  */
-typedef double FreeLANTimestamp;
+typedef double freelan_Timestamp;
 
 /**
  * \brief The log entry payload types type.
  */
-typedef unsigned int FreeLANLogPayloadType;
+typedef unsigned int freelan_LogPayloadType;
 
 /**
  * \brief A log entry payload value type.
@@ -82,48 +82,48 @@ typedef union {
 	int64_t as_integer;
 	double as_float;
 	int as_boolean;
-} FreeLANLogPayloadValue;
+} freelan_LogPayloadValue;
 
 /**
  * \brief A log entry payload structure.
  */
-struct FreeLANLogPayload {
+struct freelan_LogPayload {
 	const char* key;
-	FreeLANLogPayloadType type;
-	FreeLANLogPayloadValue value;
+	freelan_LogPayloadType type;
+	freelan_LogPayloadValue value;
 };
 
 /**
  * \brief A pending log entry.
  */
-struct FreeLANLogger;
+struct freelan_Logger;
 
 /**
  * \brief The logging callback type.
  *
  * \note The entry is deleted automatically when the callback returns.
  */
-typedef int (*FreeLANLogFunctionCallback)(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
+typedef int (*freelan_LogFunctionCallback)(freelan_LogLevel level, freelan_Timestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct freelan_LogPayload* payload, const char* file, unsigned int line);
 
 /**
  * The log levels.
  */
-const FreeLANLogLevel FREELAN_LOG_LEVEL_TRACE = 10;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_DEBUG = 20;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_INFORMATION = 30;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_IMPORTANT = 40;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_WARNING = 50;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_ERROR = 60;
-const FreeLANLogLevel FREELAN_LOG_LEVEL_FATAL = 70;
+const freelan_LogLevel FREELAN_LOG_LEVEL_TRACE = 10;
+const freelan_LogLevel FREELAN_LOG_LEVEL_DEBUG = 20;
+const freelan_LogLevel FREELAN_LOG_LEVEL_INFORMATION = 30;
+const freelan_LogLevel FREELAN_LOG_LEVEL_IMPORTANT = 40;
+const freelan_LogLevel FREELAN_LOG_LEVEL_WARNING = 50;
+const freelan_LogLevel FREELAN_LOG_LEVEL_ERROR = 60;
+const freelan_LogLevel FREELAN_LOG_LEVEL_FATAL = 70;
 
 /**
  * The log payload types.
  */
-const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_NULL = 0;
-const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_STRING = 1;
-const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_INTEGER = 2;
-const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_FLOAT = 3;
-const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN = 4;
+const freelan_LogPayloadType FREELAN_LOG_PAYLOAD_TYPE_NULL = 0;
+const freelan_LogPayloadType FREELAN_LOG_PAYLOAD_TYPE_STRING = 1;
+const freelan_LogPayloadType FREELAN_LOG_PAYLOAD_TYPE_INTEGER = 2;
+const freelan_LogPayloadType FREELAN_LOG_PAYLOAD_TYPE_FLOAT = 3;
+const freelan_LogPayloadType FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN = 4;
 
 /**
  * \brief Set the log function callback.
@@ -139,7 +139,7 @@ const FreeLANLogPayloadType FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN = 4;
  * long-lived operations in the log callback will result in dramatically poor
  * performances.
  */
-FREELAN_API void freelan_set_log_function(FreeLANLogFunctionCallback cb);
+FREELAN_API void freelan_set_log_function(freelan_LogFunctionCallback cb);
 
 /**
  * \brief Set the log level.
@@ -149,7 +149,7 @@ FREELAN_API void freelan_set_log_function(FreeLANLogFunctionCallback cb);
  *
  * \note The default log level is FREELAN_LOG_LEVEL_INFORMATION.
  */
-FREELAN_API void freelan_set_log_level(FreeLANLogLevel level);
+FREELAN_API void freelan_set_log_level(freelan_LogLevel level);
 
 /**
  * \brief Get the log level.
@@ -157,7 +157,7 @@ FREELAN_API void freelan_set_log_level(FreeLANLogLevel level);
  *
  * \note The default log level is FREELAN_LOG_LEVEL_INFORMATION.
  */
-FREELAN_API FreeLANLogLevel freelan_get_log_level(void);
+FREELAN_API freelan_LogLevel freelan_get_log_level(void);
 
 /**
  * \brief Writes a log entry.
@@ -178,7 +178,7 @@ FREELAN_API FreeLANLogLevel freelan_get_log_level(void);
  * \note For a more user-friendly way of creating a log entry with payload
  * values, see \c freelan_log_start.
  */
-FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct FreeLANLogPayload* payload, const char* file, unsigned int line);
+FREELAN_API int freelan_log(freelan_LogLevel level, freelan_Timestamp timestamp, const char* domain, const char* code, size_t payload_size, const struct freelan_LogPayload* payload, const char* file, unsigned int line);
 
 /**
  * \brief Starts a log entry.
@@ -195,7 +195,7 @@ FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, c
  * \note It is the caller responsibility to make sure \c freelan_log_complete()
  * is called on the returned value or memory leaks will occur.
  */
-FREELAN_API struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line);
+FREELAN_API struct freelan_Logger* freelan_log_start(freelan_LogLevel level, freelan_Timestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line);
 
 /**
  * \brief Attach a payload to the the current log entry.
@@ -204,7 +204,7 @@ FREELAN_API struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeL
  * \param type The type of the payload value to attach.
  * \param value The value to attach.
  */
-FREELAN_API void freelan_log_attach(struct FreeLANLogger* logger, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value);
+FREELAN_API void freelan_log_attach(struct freelan_Logger* logger, const char* key, freelan_LogPayloadType type, freelan_LogPayloadValue value);
 
 /**
  * \brief Completes the current log entry.
@@ -212,7 +212,7 @@ FREELAN_API void freelan_log_attach(struct FreeLANLogger* logger, const char* ke
  * longer valid after the call.
  * \return A non-zero value if the log entry was handled.
  */
-FREELAN_API int freelan_log_complete(struct FreeLANLogger* logger);
+FREELAN_API int freelan_log_complete(struct freelan_Logger* logger);
 
 #ifdef __cplusplus
 }

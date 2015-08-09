@@ -91,8 +91,8 @@ class NativeCallsTests(TestCase):
 
     def test_set_log_function(self):
         @ffi.callback(
-            "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
-            "struct FreeLANLogPayload *, char *, unsigned int)",
+            "int (freelan_LogLevel, freelan_Timestamp, char *, char *, size_t,"
+            " struct freelan_LogPayload *, char *, unsigned int)",
         )
         def callback(
             level,
@@ -149,8 +149,8 @@ class NativeCallsTests(TestCase):
             return 1
 
         c_callback = ffi.callback(
-            "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
-            "struct FreeLANLogPayload *, char *, unsigned int)",
+            "int (freelan_LogLevel, freelan_Timestamp, char *, char *, size_t,"
+            " struct freelan_LogPayload *, char *, unsigned int)",
         )(callback)
 
         native.freelan_set_log_function(c_callback)
@@ -178,8 +178,8 @@ class NativeCallsTests(TestCase):
         p_file = ffi.new("char[]", "myfile")
 
         @ffi.callback(
-            "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
-            "struct FreeLANLogPayload *, char *, unsigned int)",
+            "int (freelan_LogLevel, freelan_Timestamp, char *, char *, size_t,"
+            " struct freelan_LogPayload *, char *, unsigned int)",
         )
         def callback(
             level,

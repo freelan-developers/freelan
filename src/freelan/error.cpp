@@ -43,25 +43,25 @@
 #include "memory.hpp"
 #include "error.hpp"
 
-FREELAN_API struct ErrorContext* freelan_acquire_error_context(void) {
+FREELAN_API struct freelan_ErrorContext* freelan_acquire_error_context(void) {
 	try {
 		freelan::ErrorContext* const ectx = FREELAN_NEW freelan::ErrorContext {};
 
-		return reinterpret_cast<ErrorContext*>(ectx);
+		return reinterpret_cast<freelan_ErrorContext*>(ectx);
 	} catch (std::bad_alloc&) {
 		return nullptr;
 	}
 }
 
-FREELAN_API void freelan_release_error_context(struct ErrorContext* ectx) {
+FREELAN_API void freelan_release_error_context(struct freelan_ErrorContext* ectx) {
 	FREELAN_DELETE reinterpret_cast<freelan::ErrorContext*>(ectx);
 }
 
-FREELAN_API void freelan_error_context_reset(struct ErrorContext* ectx) {
+FREELAN_API void freelan_error_context_reset(struct freelan_ErrorContext* ectx) {
 	reinterpret_cast<freelan::ErrorContext*>(ectx)->reset();
 }
 
-FREELAN_API const char* freelan_error_context_get_error_category(const struct ErrorContext* ectx) {
+FREELAN_API const char* freelan_error_context_get_error_category(const struct freelan_ErrorContext* ectx) {
 	const auto& ec = reinterpret_cast<const freelan::ErrorContext*>(ectx)->error_code();
 
 	if (ec) {
@@ -71,7 +71,7 @@ FREELAN_API const char* freelan_error_context_get_error_category(const struct Er
 	}
 }
 
-FREELAN_API int freelan_error_context_get_error_code(const struct ErrorContext* ectx) {
+FREELAN_API int freelan_error_context_get_error_code(const struct freelan_ErrorContext* ectx) {
 	const auto& ec = reinterpret_cast<const freelan::ErrorContext*>(ectx)->error_code();
 
 	if (ec) {
@@ -81,7 +81,7 @@ FREELAN_API int freelan_error_context_get_error_code(const struct ErrorContext* 
 	}
 }
 
-FREELAN_API const char* freelan_error_context_get_error_description(const struct ErrorContext* _ectx) {
+FREELAN_API const char* freelan_error_context_get_error_description(const struct freelan_ErrorContext* _ectx) {
 	const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
 
 	if (ectx.error_code()) {
@@ -91,7 +91,7 @@ FREELAN_API const char* freelan_error_context_get_error_description(const struct
 	}
 }
 
-FREELAN_API const char* freelan_error_context_get_error_file(const struct ErrorContext* _ectx) {
+FREELAN_API const char* freelan_error_context_get_error_file(const struct freelan_ErrorContext* _ectx) {
 	const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
 
 	if (ectx.error_code()) {
@@ -101,7 +101,7 @@ FREELAN_API const char* freelan_error_context_get_error_file(const struct ErrorC
 	}
 }
 
-FREELAN_API unsigned int freelan_error_context_get_error_line(const struct ErrorContext* _ectx) {
+FREELAN_API unsigned int freelan_error_context_get_error_line(const struct freelan_ErrorContext* _ectx) {
 	const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
 
 	if (ectx.error_code()) {

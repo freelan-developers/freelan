@@ -45,10 +45,10 @@
 #include "memory.hpp"
 #include "error.hpp"
 
-struct IOService* freelan_IOService_new(struct ErrorContext* ectx) {
+struct freelan_IOService* freelan_IOService_new(struct ErrorContext* ectx) {
     FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
-    return reinterpret_cast<struct IOService*>(
+    return reinterpret_cast<struct freelan_IOService*>(
         FREELAN_NEW boost::asio::io_service()
     );
 
@@ -57,6 +57,6 @@ struct IOService* freelan_IOService_new(struct ErrorContext* ectx) {
     return nullptr;
 }
 
-void freelan_IOService_free(struct IOService* inst) {
+void freelan_IOService_free(struct freelan_IOService* inst) {
     FREELAN_DELETE reinterpret_cast<boost::asio::io_service*>(inst);
 }

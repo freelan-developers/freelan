@@ -273,6 +273,6 @@ def log_function(
     return 0
 
 c_log_function = ffi.callback(
-    "int (FreeLANLogLevel, FreeLANTimestamp, char *, char *, size_t, "
-    "struct FreeLANLogPayload *, char *, unsigned int)",
+    "int (freelan_LogLevel, freelan_Timestamp, char *, char *, size_t, "
+    "struct freelan_LogPayload *, char *, unsigned int)",
 )(log_function)

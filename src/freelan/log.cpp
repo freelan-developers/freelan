@@ -53,22 +53,22 @@
 using boost::any_cast;
 
 namespace {
-	static std::atomic<FreeLANLogFunctionCallback> freelan_log_function(nullptr);
+	static std::atomic<freelan_LogFunctionCallback> freelan_log_function(nullptr);
 	static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
 
 	static bool on_log_callback(freelan::LogLevel level, const boost::posix_time::ptime& timestamp, const std::string& domain, const std::string& code, const std::vector<freelan::LogPayload>& payload, const char* file, unsigned int line) {
-		FreeLANLogFunctionCallback cb = freelan_log_function;
+		freelan_LogFunctionCallback cb = freelan_log_function;
 
 		if (cb) {
-			const FreeLANTimestamp ts = (timestamp - epoch).total_microseconds() / 1000000.0f;
-			const FreeLANLogPayload* p_payload = nullptr;
-			std::vector<FreeLANLogPayload> raw_payload;
+			const freelan_Timestamp ts = (timestamp - epoch).total_microseconds() / 1000000.0f;
+			const freelan_LogPayload* p_payload = nullptr;
+			std::vector<freelan_LogPayload> raw_payload;
 
 			if (payload.size()) {
 				raw_payload.reserve(payload.size());
 
 				for (const auto& p : payload) {
-					FreeLANLogPayload item { p.key.c_str(), FREELAN_LOG_PAYLOAD_TYPE_NULL, { nullptr } };
+					freelan_LogPayload item { p.key.c_str(), FREELAN_LOG_PAYLOAD_TYPE_NULL, { nullptr } };
 
 					if (p.value.type() == typeid(std::string)) {
 						item.type = FREELAN_LOG_PAYLOAD_TYPE_STRING;
@@ -90,19 +90,19 @@ namespace {
 				p_payload = &raw_payload.front();
 			}
 
-			return cb(static_cast<FreeLANLogLevel>(level), ts, domain.c_str(), code.c_str(), raw_payload.size(), p_payload, file, line) != 0;
+			return cb(static_cast<freelan_LogLevel>(level), ts, domain.c_str(), code.c_str(), raw_payload.size(), p_payload, file, line) != 0;
 		}
 
 		return false;
 	}
 
-freelan::Logger create_logger(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line) {
+freelan::Logger create_logger(freelan_LogLevel level, freelan_Timestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line) {
 	const boost::posix_time::ptime ts = epoch + boost::posix_time::microseconds(static_cast<uint64_t>(timestamp * 1000000.0f));
 
 	return freelan::Logger(static_cast<freelan::LogLevel>(level), domain, code, file, line, ts);
 }
 
-void attach_to_logger(freelan::Logger& logger, const FreeLANLogPayload& payload) {
+void attach_to_logger(freelan::Logger& logger, const freelan_LogPayload& payload) {
 	switch (payload.type) {
 		case FREELAN_LOG_PAYLOAD_TYPE_NULL:
 			logger.attach(payload.key);
@@ -127,7 +127,7 @@ void attach_to_logger(freelan::Logger& logger, const FreeLANLogPayload& payload)
 
 }
 
-FREELAN_API void freelan_set_log_function(FreeLANLogFunctionCallback cb) {
+FREELAN_API void freelan_set_log_function(freelan_LogFunctionCallback cb) {
 	if (cb) {
 		freelan_log_function = cb;
 		freelan::set_log_function(&on_log_callback);
@@ -137,15 +137,15 @@ FREELAN_API void freelan_set_log_function(FreeLANLogFunctionCallback cb) {
 	}
 }
 
-FREELAN_API void freelan_set_log_level(FreeLANLogLevel level) {
+FREELAN_API void freelan_set_log_level(freelan_LogLevel level) {
 	freelan::set_log_level(static_cast<freelan::LogLevel>(level));
 }
 
-FREELAN_API FreeLANLogLevel freelan_get_log_level(void) {
-	return static_cast<FreeLANLogLevel>(freelan::get_log_level());
+FREELAN_API freelan_LogLevel freelan_get_log_level(void) {
+	return static_cast<freelan_LogLevel>(freelan::get_log_level());
 }
 
-FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, size_t payload_size, const FreeLANLogPayload* payload, const char* file, unsigned int line) {
+FREELAN_API int freelan_log(freelan_LogLevel level, freelan_Timestamp timestamp, const char* domain, const char* code, size_t payload_size, const freelan_LogPayload* payload, const char* file, unsigned int line) {
 	auto logger = create_logger(level, timestamp, domain, code, file, line);
 
 	for (size_t i = 0; i < payload_size; ++i) {
@@ -155,21 +155,21 @@ FREELAN_API int freelan_log(FreeLANLogLevel level, FreeLANTimestamp timestamp, c
 	return logger.commit() ? 1 : 0;
 }
 
-FREELAN_API struct FreeLANLogger* freelan_log_start(FreeLANLogLevel level, FreeLANTimestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line) {
+FREELAN_API struct freelan_Logger* freelan_log_start(freelan_LogLevel level, freelan_Timestamp timestamp, const char* domain, const char* code, const char* file, unsigned int line) {
 	auto logger = FREELAN_NEW freelan::Logger(create_logger(level, timestamp, domain, code, file, line));
 
-	return reinterpret_cast<struct FreeLANLogger*>(logger);
+	return reinterpret_cast<struct freelan_Logger*>(logger);
 }
 
-FREELAN_API void freelan_log_attach(struct FreeLANLogger* _logger, const char* key, FreeLANLogPayloadType type, FreeLANLogPayloadValue value) {
+FREELAN_API void freelan_log_attach(struct freelan_Logger* _logger, const char* key, freelan_LogPayloadType type, freelan_LogPayloadValue value) {
 	assert(_logger);
 
 	freelan::Logger& logger = *reinterpret_cast<freelan::Logger*>(_logger);
 
-	attach_to_logger(logger, FreeLANLogPayload { key, type, value });
+	attach_to_logger(logger, freelan_LogPayload { key, type, value });
 }
 
-FREELAN_API int freelan_log_complete(struct FreeLANLogger* _logger) {
+FREELAN_API int freelan_log_complete(struct freelan_Logger* _logger) {
 	assert(_logger);
 
 	std::unique_ptr<freelan::Logger> logger(reinterpret_cast<freelan::Logger*>(_logger));

@@ -56,7 +56,7 @@ extern "C" {
 
 /* API BEGIN */
 
-struct IOService;
+struct freelan_IOService;
 
 /**
  * \brief Create a new I/O service instance that will handle I/O events.
@@ -66,17 +66,17 @@ struct IOService;
  * \warning The caller is responsible for calling \c freelan_IOService_free()
  * on the returned instance when it is no longer needed.
  */
-FREELAN_API struct IOService* freelan_IOService_new(struct ErrorContext* ectx);
+FREELAN_API struct freelan_IOService* freelan_IOService_new(struct ErrorContext* ectx);
 
 /**
- * \brief Delete an IOService instance.
+ * \brief Delete an freelan_IOService instance.
  * \param inst The instance.
  *
- * \warning Destroying an IOService instance that is currently running (in
- * another thread, for instance) has undefined behavior (you don't want that -
- * trust me).
+ * \warning Destroying an freelan_IOService instance that is currently running
+ * (in another thread, for instance) has undefined behavior (you don't want
+ * that - trust me).
  */
-FREELAN_API void freelan_IOService_free(struct IOService* inst);
+FREELAN_API void freelan_IOService_free(struct freelan_IOService* inst);
 
 /* API END */
 

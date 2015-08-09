@@ -65,7 +65,7 @@
 
 namespace {
 	template <typename Type, typename InternalType>
-	Type* from_string_generic(struct ErrorContext* ectx, const char* str) {
+	Type* from_string_generic(struct freelan_ErrorContext* ectx, const char* str) {
 		assert(str);
 
 		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
@@ -80,7 +80,7 @@ namespace {
 	}
 
 	template <typename Type, typename InternalType>
-	char* to_string_generic(struct ErrorContext* ectx, const Type* inst) {
+	char* to_string_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
 		assert(inst);
 
 		const auto value = reinterpret_cast<const InternalType*>(inst);
@@ -95,7 +95,7 @@ namespace {
 	}
 
 	template <typename Type, typename InternalType>
-	Type* clone_generic(struct ErrorContext* ectx, const Type* inst) {
+	Type* clone_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
 		assert(inst);
 
 		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
@@ -252,43 +252,43 @@ namespace {
  */
 
 #define IMPLEMENT_from_string(TYPE) \
-struct TYPE* freelan_ ## TYPE ## _from_string(struct ErrorContext* ectx, const char* str) { return from_string_generic<TYPE, freelan::TYPE>(ectx, str); }
+struct freelan_ ## TYPE* freelan_ ## TYPE ## _from_string(struct freelan_ErrorContext* ectx, const char* str) { return from_string_generic<freelan_ ## TYPE, freelan::TYPE>(ectx, str); }
 
 #define IMPLEMENT_to_string(TYPE) \
-char* freelan_ ## TYPE ## _to_string(struct ErrorContext* ectx, const struct TYPE* inst) { return to_string_generic<TYPE, freelan::TYPE>(ectx, inst); }
+char* freelan_ ## TYPE ## _to_string(struct freelan_ErrorContext* ectx, const struct freelan_ ## TYPE* inst) { return to_string_generic<freelan_ ## TYPE, freelan::TYPE>(ectx, inst); }
 
 #define IMPLEMENT_clone(TYPE) \
-struct TYPE* freelan_ ## TYPE ## _clone(struct ErrorContext* ectx, const struct TYPE* inst) { return clone_generic<TYPE, freelan::TYPE>(ectx, inst); }
+struct freelan_ ## TYPE* freelan_ ## TYPE ## _clone(struct freelan_ErrorContext* ectx, const struct freelan_ ## TYPE* inst) { return clone_generic<freelan_ ## TYPE, freelan::TYPE>(ectx, inst); }
 
 #define IMPLEMENT_free(TYPE) \
-void freelan_ ## TYPE ## _free(struct TYPE* inst) { FREELAN_DELETE reinterpret_cast<freelan::TYPE*>(inst); }
+void freelan_ ## TYPE ## _free(struct freelan_ ## TYPE* inst) { FREELAN_DELETE reinterpret_cast<freelan::TYPE*>(inst); }
 
 #define IMPLEMENT_less_than(TYPE) \
-int freelan_ ## TYPE ## _less_than(const struct TYPE* lhs, const struct TYPE* rhs) { return less_than_generic<TYPE, freelan::TYPE>(lhs, rhs); }
+int freelan_ ## TYPE ## _less_than(const struct freelan_ ## TYPE* lhs, const struct freelan_ ## TYPE* rhs) { return less_than_generic<freelan_ ## TYPE, freelan::TYPE>(lhs, rhs); }
 
 #define IMPLEMENT_equal(TYPE) \
-int freelan_ ## TYPE ## _equal(const struct TYPE* lhs, const struct TYPE* rhs) { return equal_generic<TYPE, freelan::TYPE>(lhs, rhs); }
+int freelan_ ## TYPE ## _equal(const struct freelan_ ## TYPE* lhs, const struct freelan_ ## TYPE* rhs) { return equal_generic<freelan_ ## TYPE, freelan::TYPE>(lhs, rhs); }
 
 #define IMPLEMENT_from_parts(TYPE,LTYPE,RTYPE) \
-struct TYPE* freelan_ ## TYPE ## _from_parts(const struct LTYPE* lhs, const struct RTYPE* rhs) { return from_parts_generic<TYPE, freelan::TYPE, LTYPE, freelan::LTYPE, RTYPE, freelan::RTYPE>(lhs, rhs); }
+struct freelan_ ## TYPE* freelan_ ## TYPE ## _from_parts(const struct freelan_ ## LTYPE* lhs, const struct freelan_ ## RTYPE* rhs) { return from_parts_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## LTYPE, freelan::LTYPE, freelan_ ## RTYPE, freelan::RTYPE>(lhs, rhs); }
 
 #define IMPLEMENT_from_parts_with_optional(TYPE,LTYPE,RTYPE) \
-struct TYPE* freelan_ ## TYPE ## _from_parts(const struct LTYPE* lhs, const struct RTYPE* rhs, const struct LTYPE* optional) { return from_parts_with_optional_generic<TYPE, freelan::TYPE, LTYPE, freelan::LTYPE, RTYPE, freelan::RTYPE>(lhs, rhs, optional); }
+struct freelan_ ## TYPE* freelan_ ## TYPE ## _from_parts(const struct freelan_ ## LTYPE* lhs, const struct freelan_ ## RTYPE* rhs, const struct freelan_ ## LTYPE* optional) { return from_parts_with_optional_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## LTYPE, freelan::LTYPE, freelan_ ## RTYPE, freelan::RTYPE>(lhs, rhs, optional); }
 
 #define IMPLEMENT_get_ip_address(TYPE,IATYPE) \
-struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_ip_address_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+struct freelan_ ## IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct freelan_ ## TYPE* inst) { return get_ip_address_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## IATYPE, freelan::IATYPE>(inst); }
 
 #define IMPLEMENT_get_port_number(TYPE,PNTYPE) \
-struct PNTYPE* freelan_ ## TYPE ## _get_ ## PNTYPE (const struct TYPE* inst) { return get_port_number_generic<TYPE, freelan::TYPE, PNTYPE, freelan::PNTYPE>(inst); }
+struct freelan_ ## PNTYPE* freelan_ ## TYPE ## _get_ ## PNTYPE (const struct freelan_ ## TYPE* inst) { return get_port_number_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## PNTYPE, freelan::PNTYPE>(inst); }
 
 #define IMPLEMENT_get_hostname(TYPE,IATYPE) \
-struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_hostname_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+struct freelan_ ## IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct freelan_ ## TYPE* inst) { return get_hostname_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## IATYPE, freelan::IATYPE>(inst); }
 
 #define IMPLEMENT_get_prefix_length(TYPE,IATYPE) \
-struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct TYPE* inst) { return get_prefix_length_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+struct freelan_ ## IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE (const struct freelan_ ## TYPE* inst) { return get_prefix_length_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## IATYPE, freelan::IATYPE>(inst); }
 
 #define IMPLEMENT_get_gateway(TYPE,IATYPE) \
-struct IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE ## _gateway (const struct TYPE* inst) { return get_gateway_generic<TYPE, freelan::TYPE, IATYPE, freelan::IATYPE>(inst); }
+struct freelan_ ## IATYPE* freelan_ ## TYPE ## _get_ ## IATYPE ## _gateway (const struct freelan_ ## TYPE* inst) { return get_gateway_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## IATYPE, freelan::IATYPE>(inst); }
 
 #define IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_string(TYPE) \
@@ -307,8 +307,8 @@ IMPLEMENT_complete_type(TYPE) \
 IMPLEMENT_from_parts_with_optional(TYPE,LTYPE,RTYPE)
 
 #define IMPLEMENT_variant(TYPE,VARIANT_TYPE) \
-struct TYPE* freelan_ ## TYPE ## _from_ ## VARIANT_TYPE (const struct VARIANT_TYPE* value) { return from_variant_type_generic<TYPE, freelan::TYPE, VARIANT_TYPE, freelan::VARIANT_TYPE>(value); } \
-const struct VARIANT_TYPE* freelan_ ## TYPE ## _as_ ## VARIANT_TYPE (const struct TYPE* inst) { return as_variant_type_generic<TYPE, freelan::TYPE, VARIANT_TYPE, freelan::VARIANT_TYPE>(inst); }
+struct freelan_ ## TYPE* freelan_ ## TYPE ## _from_ ## VARIANT_TYPE (const struct freelan_ ## VARIANT_TYPE* value) { return from_variant_type_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## VARIANT_TYPE, freelan::VARIANT_TYPE>(value); } \
+const struct freelan_ ## VARIANT_TYPE* freelan_ ## TYPE ## _as_ ## VARIANT_TYPE (const struct freelan_ ## TYPE* inst) { return as_variant_type_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## VARIANT_TYPE, freelan::VARIANT_TYPE>(inst); }
 
 /* Simple types */
 IMPLEMENT_complete_type(IPv4Address)
