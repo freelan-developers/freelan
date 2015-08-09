@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/ip_route.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ip_route.hpp"
 
 using freelan::IPRoute;
 using freelan::IPv4Route;

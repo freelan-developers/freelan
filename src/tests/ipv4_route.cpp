@@ -42,10 +42,10 @@
 
 #include <sstream>
 
-#include "../internal/ipv4_address.hpp"
-#include "../internal/ipv4_prefix_length.hpp"
-#include "../internal/ipv4_route.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv4_address.hpp"
+#include "../internal/types/ipv4_prefix_length.hpp"
+#include "../internal/types/ipv4_route.hpp"
 
 using freelan::IPv4Address;
 using freelan::IPv4PrefixLength;

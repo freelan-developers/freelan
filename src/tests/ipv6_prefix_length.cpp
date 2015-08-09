@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/ipv6_prefix_length.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv6_prefix_length.hpp"
 
 using freelan::IPv6PrefixLength;
 using freelan::from_string;

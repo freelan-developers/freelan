@@ -42,10 +42,10 @@
 
 #include <sstream>
 
-#include "../internal/ipv6_address.hpp"
-#include "../internal/ipv6_prefix_length.hpp"
-#include "../internal/ipv6_route.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv6_address.hpp"
+#include "../internal/types/ipv6_prefix_length.hpp"
+#include "../internal/types/ipv6_route.hpp"
 
 using freelan::IPv6Address;
 using freelan::IPv6PrefixLength;

@@ -45,12 +45,12 @@
 
 #include <boost/asio.hpp>
 
-#include "ipv4_address.hpp"
-#include "ipv6_address.hpp"
-#include "port_number.hpp"
-#include "hostname.hpp"
-#include "ipv4_prefix_length.hpp"
-#include "ipv6_prefix_length.hpp"
+#include "types/ipv4_address.hpp"
+#include "types/ipv6_address.hpp"
+#include "types/port_number.hpp"
+#include "types/hostname.hpp"
+#include "types/ipv4_prefix_length.hpp"
+#include "types/ipv6_prefix_length.hpp"
 
 namespace freelan {
 

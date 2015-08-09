@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/port_number.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/port_number.hpp"
 
 using freelan::PortNumber;
 using freelan::from_string;

@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/hostname.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/hostname.hpp"
 
 using freelan::Hostname;
 using freelan::from_string;

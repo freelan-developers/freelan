@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/host.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/host.hpp"
 
 using freelan::Host;
 using freelan::IPv4Address;

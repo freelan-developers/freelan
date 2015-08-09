@@ -40,8 +40,8 @@
 
 #include <gtest/gtest.h>
 
-#include "../internal/ipv6_address.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv6_address.hpp"
 
 using boost::asio::ip::address_v6;
 

@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/host_endpoint.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/host_endpoint.hpp"
 
 using freelan::HostEndpoint;
 using freelan::IPv4Endpoint;

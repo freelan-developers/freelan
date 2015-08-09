@@ -42,9 +42,9 @@
 
 #include <sstream>
 
-#include "../internal/ipv4_address.hpp"
-#include "../internal/ipv4_endpoint.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv4_address.hpp"
+#include "../internal/types/ipv4_endpoint.hpp"
 
 using freelan::IPv4Address;
 using freelan::PortNumber;

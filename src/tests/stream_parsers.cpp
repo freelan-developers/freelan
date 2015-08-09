@@ -45,12 +45,12 @@
 #include <boost/asio.hpp>
 
 #include "../internal/stream_parsers.hpp"
-#include "../internal/ipv4_address.hpp"
-#include "../internal/ipv6_address.hpp"
-#include "../internal/port_number.hpp"
-#include "../internal/hostname.hpp"
-#include "../internal/ipv4_prefix_length.hpp"
-#include "../internal/ipv6_prefix_length.hpp"
+#include "../internal/types/ipv4_address.hpp"
+#include "../internal/types/ipv6_address.hpp"
+#include "../internal/types/port_number.hpp"
+#include "../internal/types/hostname.hpp"
+#include "../internal/types/ipv4_prefix_length.hpp"
+#include "../internal/types/ipv6_prefix_length.hpp"
 
 using boost::asio::ip::address_v4;
 using boost::asio::ip::address_v6;

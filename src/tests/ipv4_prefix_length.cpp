@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/ipv4_prefix_length.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv4_prefix_length.hpp"
 
 using freelan::IPv4PrefixLength;
 using freelan::from_string;

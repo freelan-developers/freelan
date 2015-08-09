@@ -74,42 +74,49 @@ configure_file(
     "${INTERNAL_VERSION_HEADER}"
 )
 
-set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
+set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/common.hpp
     src/internal/error.hpp
-    src/internal/generic_ip_address.hpp
-    src/internal/generic_ip_endpoint.hpp
-    src/internal/generic_ip_prefix_length.hpp
-    src/internal/generic_ip_route.hpp
-    src/internal/generic_value_type.hpp
-    src/internal/host.hpp
-    src/internal/host_endpoint.hpp
-    src/internal/hostname.hpp
-    src/internal/hostname_endpoint.hpp
-    src/internal/ip_address.hpp
-    src/internal/ip_endpoint.hpp
-    src/internal/ip_route.hpp
-    src/internal/ipv4_address.hpp
-    src/internal/ipv4_endpoint.cpp
-    src/internal/ipv4_endpoint.hpp
-    src/internal/ipv4_prefix_length.hpp
-    src/internal/ipv4_route.hpp
-    src/internal/ipv6_address.hpp
-    src/internal/ipv6_endpoint.cpp
-    src/internal/ipv6_endpoint.hpp
-    src/internal/ipv6_prefix_length.hpp
-    src/internal/ipv6_route.hpp
     src/internal/log.cpp
     src/internal/log.hpp
     src/internal/memory.cpp
     src/internal/memory.hpp
-    src/internal/perf_counter.hpp
     src/internal/perf_counter.cpp
-    src/internal/port_number.hpp
+    src/internal/perf_counter.hpp
     src/internal/stdint.hpp
     src/internal/stream_parsers.cpp
     src/internal/stream_parsers.hpp
     src/internal/traits.hpp
+)
+
+set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
+    src/internal/types/generic_ip_address.hpp
+    src/internal/types/generic_ip_endpoint.hpp
+    src/internal/types/generic_ip_prefix_length.hpp
+    src/internal/types/generic_ip_route.hpp
+    src/internal/types/generic_value_type.hpp
+    src/internal/types/host.hpp
+    src/internal/types/host_endpoint.hpp
+    src/internal/types/hostname.hpp
+    src/internal/types/hostname_endpoint.hpp
+    src/internal/types/ip_address.hpp
+    src/internal/types/ip_endpoint.hpp
+    src/internal/types/ip_route.hpp
+    src/internal/types/ipv4_address.hpp
+    src/internal/types/ipv4_endpoint.cpp
+    src/internal/types/ipv4_endpoint.hpp
+    src/internal/types/ipv4_prefix_length.hpp
+    src/internal/types/ipv4_route.hpp
+    src/internal/types/ipv6_address.hpp
+    src/internal/types/ipv6_endpoint.cpp
+    src/internal/types/ipv6_endpoint.hpp
+    src/internal/types/ipv6_prefix_length.hpp
+    src/internal/types/ipv6_route.hpp
+    src/internal/types/port_number.hpp
+)
+set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
+    ${INTERNAL_GENERIC_SRC_FILES}
+    ${INTERNAL_TYPES_SRC_FILES}
     "${INTERNAL_VERSION_HEADER}"
 )
 source_group(internal FILES ${INTERNAL_SRC_FILES})

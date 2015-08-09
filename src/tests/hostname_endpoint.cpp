@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/hostname_endpoint.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/hostname_endpoint.hpp"
 
 using freelan::Hostname;
 using freelan::PortNumber;

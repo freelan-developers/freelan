@@ -42,8 +42,8 @@
 
 #include <sstream>
 
-#include "../internal/ipv4_address.hpp"
 #include "../internal/common.hpp"
+#include "../internal/types/ipv4_address.hpp"
 
 using boost::asio::ip::address_v4;
 
