@@ -135,6 +135,38 @@ class NativeTypeTests(TestCase):
         self.assertEqual({'foo': wrapper}, klass.wrapper_cache)
         self.assertEqual(wrapper, result)
 
+    def test_from_variant_typename_creates_non_existing_wrappers(self):
+        klass = MagicMock(spec=NativeType)
+        klass.wrapper_cache = {}
+
+        result = NativeType.from_variant_typename.__func__(
+            klass,
+            'foo',
+            ['bar'],
+        )
+
+        klass.create_variant_wrapper.assert_called_once_with('foo', ['bar'])
+        self.assertEqual(
+            {'foo': klass.create_variant_wrapper('foo', ['bar'])},
+            klass.wrapper_cache,
+        )
+        self.assertEqual(klass.create_variant_wrapper('foo', ['bar']), result)
+
+    def test_from_variant_typename_returns_existing_wrappers(self):
+        klass = MagicMock(spec=NativeType)
+        wrapper = MagicMock()
+        klass.wrapper_cache = {'foo': wrapper}
+
+        result = NativeType.from_variant_typename.__func__(
+            klass,
+            'foo',
+            ['bar'],
+        )
+
+        self.assertEqual([], klass.create_variant_wrapper.mock_calls)
+        self.assertEqual({'foo': wrapper}, klass.wrapper_cache)
+        self.assertEqual(wrapper, result)
+
     def test_wrapper_init_stores_pointer(self):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
@@ -574,11 +606,11 @@ class FinalTypesTests(TestCase):
 
     def test_IPAddress_from_IPv4Address(self):
         value = IPv4Address.from_string("0.0.0.1")
-        instance = IPAddress.from_ipv4_address(value)
+        instance = IPAddress.from_IPv4Address(value)
 
         self.assertEqual(value, instance)
-        self.assertEqual(value, instance.as_ipv4_address())
-        self.assertIsNone(instance.as_ipv6_address())
+        self.assertEqual(value, instance.as_IPv4Address())
+        self.assertIsNone(instance.as_IPv6Address())
 
         self.assertTrue(value == instance)
         self.assertFalse(value != instance)
@@ -589,11 +621,11 @@ class FinalTypesTests(TestCase):
 
     def test_IPAddress_from_IPv6Address(self):
         value = IPv6Address.from_string("fe80::a:1")
-        instance = IPAddress.from_ipv6_address(value)
+        instance = IPAddress.from_IPv6Address(value)
 
         self.assertEqual(value, instance)
-        self.assertIsNone(instance.as_ipv4_address())
-        self.assertEqual(value, instance.as_ipv6_address())
+        self.assertIsNone(instance.as_IPv4Address())
+        self.assertEqual(value, instance.as_IPv6Address())
 
         self.assertTrue(value == instance)
         self.assertFalse(value != instance)
