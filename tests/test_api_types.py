@@ -27,6 +27,10 @@ from pyfreelan.api.types import (
     IPv4Route,
     IPv6Route,
     IPAddress,
+    IPRoute,
+    Host,
+    IPEndpoint,
+    HostEndpoint,
 )
 from pyfreelan.api.error import ErrorContext
 
@@ -626,6 +630,230 @@ class FinalTypesTests(TestCase):
         self.assertEqual(value, instance)
         self.assertIsNone(instance.as_IPv4Address())
         self.assertEqual(value, instance.as_IPv6Address())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_IPRoute(self):
+        a = IPRoute.from_string("9.0.0.0/24")
+        b = IPRoute.from_string("fe80::a:10:0/120")
+
+        self.assertIsNot(a, b)
+
+        self.assertFalse(a == b)
+        self.assertTrue(a != b)
+        self.assertTrue(a < b)
+        self.assertTrue(a <= b)
+        self.assertFalse(a > b)
+        self.assertFalse(a >= b)
+
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPRoute_from_IPv4Route(self):
+        value = IPv4Route.from_string("9.0.0.0/24")
+        instance = IPRoute.from_IPv4Route(value)
+
+        self.assertEqual(value, instance)
+        self.assertEqual(value, instance.as_IPv4Route())
+        self.assertIsNone(instance.as_IPv6Route())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_IPRoute_from_IPv6Route(self):
+        value = IPv6Route.from_string("fe80::a:1:0/120")
+        instance = IPRoute.from_IPv6Route(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_IPv4Route())
+        self.assertEqual(value, instance.as_IPv6Route())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_Host(self):
+        a = Host.from_string("0.0.0.1")
+        b = Host.from_string("fe80::a:10")
+
+        self.assertIsNot(a, b)
+
+        self.assertFalse(a == b)
+        self.assertTrue(a != b)
+        self.assertTrue(a < b)
+        self.assertTrue(a <= b)
+        self.assertFalse(a > b)
+        self.assertFalse(a >= b)
+
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_Host_from_IPv4Address(self):
+        value = IPv4Address.from_string("0.0.0.1")
+        instance = Host.from_IPv4Address(value)
+
+        self.assertEqual(value, instance)
+        self.assertEqual(value, instance.as_IPv4Address())
+        self.assertIsNone(instance.as_IPv6Address())
+        self.assertIsNone(instance.as_Hostname())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_Host_from_IPv6Address(self):
+        value = IPv6Address.from_string("fe80::a:1")
+        instance = Host.from_IPv6Address(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_IPv4Address())
+        self.assertEqual(value, instance.as_IPv6Address())
+        self.assertIsNone(instance.as_Hostname())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_Host_from_Hostname(self):
+        value = Hostname.from_string("foo.bar.net")
+        instance = Host.from_Hostname(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_IPv4Address())
+        self.assertIsNone(instance.as_IPv6Address())
+        self.assertEqual(value, instance.as_Hostname())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_IPEndpoint(self):
+        a = IPEndpoint.from_string("0.0.0.1:12000")
+        b = IPEndpoint.from_string("[fe80::a:10]:12000")
+
+        self.assertIsNot(a, b)
+
+        self.assertFalse(a == b)
+        self.assertTrue(a != b)
+        self.assertTrue(a < b)
+        self.assertTrue(a <= b)
+        self.assertFalse(a > b)
+        self.assertFalse(a >= b)
+
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_IPEndpoint_from_IPv4Endpoint(self):
+        value = IPv4Endpoint.from_string("0.0.0.1:12000")
+        instance = IPEndpoint.from_IPv4Endpoint(value)
+
+        self.assertEqual(value, instance)
+        self.assertEqual(value, instance.as_IPv4Endpoint())
+        self.assertIsNone(instance.as_IPv6Endpoint())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_IPEndpoint_from_IPv6Endpoint(self):
+        value = IPv6Endpoint.from_string("[fe80::a:1]:12000")
+        instance = IPEndpoint.from_IPv6Endpoint(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_IPv4Endpoint())
+        self.assertEqual(value, instance.as_IPv6Endpoint())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_HostEndpoint(self):
+        a = HostEndpoint.from_string("0.0.0.1:12000")
+        b = HostEndpoint.from_string("[fe80::a:10]:12000")
+
+        self.assertIsNot(a, b)
+
+        self.assertFalse(a == b)
+        self.assertTrue(a != b)
+        self.assertTrue(a < b)
+        self.assertTrue(a <= b)
+        self.assertFalse(a > b)
+        self.assertFalse(a >= b)
+
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
+
+    def test_HostEndpoint_from_IPv4Endpoint(self):
+        value = IPv4Endpoint.from_string("0.0.0.1:12000")
+        instance = HostEndpoint.from_IPv4Endpoint(value)
+
+        self.assertEqual(value, instance)
+        self.assertEqual(value, instance.as_IPv4Endpoint())
+        self.assertIsNone(instance.as_IPv6Endpoint())
+        self.assertIsNone(instance.as_HostnameEndpoint())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_HostEndpoint_from_IPv6Endpoint(self):
+        value = IPv6Endpoint.from_string("[fe80::a:1]:12000")
+        instance = HostEndpoint.from_IPv6Endpoint(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_IPv4Endpoint())
+        self.assertEqual(value, instance.as_IPv6Endpoint())
+        self.assertIsNone(instance.as_HostnameEndpoint())
+
+        self.assertTrue(value == instance)
+        self.assertFalse(value != instance)
+        self.assertFalse(value < instance)
+        self.assertTrue(value <= instance)
+        self.assertFalse(value > instance)
+        self.assertTrue(value >= instance)
+
+    def test_HostEndpoint_from_HostnameEndpoint(self):
+        value = HostnameEndpoint.from_string("foo.bar.net:12000")
+        instance = HostEndpoint.from_HostnameEndpoint(value)
+
+        self.assertEqual(value, instance)
+        self.assertIsNone(instance.as_IPv4Endpoint())
+        self.assertIsNone(instance.as_IPv6Endpoint())
+        self.assertEqual(value, instance.as_HostnameEndpoint())
 
         self.assertTrue(value == instance)
         self.assertFalse(value != instance)

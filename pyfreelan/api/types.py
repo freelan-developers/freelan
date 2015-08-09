@@ -639,3 +639,47 @@ class IPAddress(
     """
     An IP address.
     """
+
+
+class IPRoute(
+    NativeType.from_variant_typename(
+        'IPRoute',
+        ['IPv4Route', 'IPv6Route'],
+    ),
+):
+    """
+    An IP route.
+    """
+
+
+class Host(
+    NativeType.from_variant_typename(
+        'Host',
+        ['IPv4Address', 'IPv6Address', 'Hostname'],
+    ),
+):
+    """
+    A host entry.
+    """
+
+
+class IPEndpoint(
+    NativeType.from_variant_typename(
+        'IPEndpoint',
+        ['IPv4Endpoint', 'IPv6Endpoint'],
+    ),
+):
+    """
+    An IP endpoint.
+    """
+
+
+class HostEndpoint(
+    NativeType.from_variant_typename(
+        'HostEndpoint',
+        ['IPv4Endpoint', 'IPv6Endpoint', 'HostnameEndpoint'],
+    ),
+):
+    """
+    A host endpoint.
+    """
