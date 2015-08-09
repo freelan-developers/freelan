@@ -128,6 +128,7 @@ set (API_MAIN_HEADER_FILES ${API_MAIN_HEADER_FILES}
 set (API_HEADER_FILES ${API_HEADER_FILES}
     include/freelan/common.h
     include/freelan/error.h
+    include/freelan/io.h
     include/freelan/log.h
     include/freelan/memory.h
     include/freelan/types.h
@@ -135,6 +136,7 @@ set (API_HEADER_FILES ${API_HEADER_FILES}
 )
 set (API_SRC_FILES ${API_SRC_FILES}
     src/freelan/error.cpp
+    src/freelan/io.cpp
     src/freelan/log.cpp
     src/freelan/memory.cpp
     src/freelan/types.cpp
