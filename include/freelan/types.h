@@ -71,6 +71,7 @@ struct IPAddress;
 struct IPRoute;
 struct Host;
 struct IPEndpoint;
+struct HostEndpoint;
 
 /**
  * \brief Create an IPv4Address instance from its string representation.
