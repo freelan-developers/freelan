@@ -39,44 +39,17 @@
  */
 
 /**
- * \file stream_parsers.hpp
+ * \file tap_adapter.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Stream parsing functions.
+ * \brief A TAP adapter class.
  */
 
 #pragma once
 
-#include <iostream>
-#include <string>
+#include <boost/predef.hpp>
 
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wunused-parameter"
+#ifdef BOOST_OS_WINDOWS
+#include "windows/tap_adapter.hpp"
+#elif defined(BOOST_OS_UNIX)
+#include "unix/tap_adapter.hpp"
 #endif
-#include <boost/optional.hpp>
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#endif
-
-#include "stdint.hpp"
-
-namespace freelan {
-
-class PortNumber;
-class Hostname;
-class EthernetAddress;
-
-template <typename AddressType>
-std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
-std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf = nullptr);
-template <typename AddressType>
-std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf = nullptr);
-template <typename IPAddressType>
-std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& value, std::string* buf = nullptr);
-std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortNumber& port_number, std::string* buf = nullptr);
-template <typename IPAddressType, typename IPPrefixLengthType>
-std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, boost::optional<IPAddressType>& gateway, std::string* buf = nullptr);
-std::istream& read_ethernet_address(std::istream& is, EthernetAddress& value, std::string* buf = nullptr);
-}

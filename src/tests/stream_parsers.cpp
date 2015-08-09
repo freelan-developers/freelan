@@ -51,6 +51,7 @@
 #include "../internal/types/hostname.hpp"
 #include "../internal/types/ipv4_prefix_length.hpp"
 #include "../internal/types/ipv6_prefix_length.hpp"
+#include "../internal/types/ethernet_address.hpp"
 
 using boost::asio::ip::address_v4;
 using boost::asio::ip::address_v6;
@@ -61,12 +62,14 @@ using freelan::read_port_number;
 using freelan::read_generic_ip_endpoint;
 using freelan::read_hostname_endpoint;
 using freelan::read_generic_ip_route;
+using freelan::read_ethernet_address;
 using freelan::IPv4Address;
 using freelan::IPv6Address;
 using freelan::PortNumber;
 using freelan::Hostname;
 using freelan::IPv4PrefixLength;
 using freelan::IPv6PrefixLength;
+using freelan::EthernetAddress;
 
 TEST(stream_parsers, read_ipv4_address_success) {
 	const std::string str_value = "9.0.0.1";
@@ -1124,4 +1127,106 @@ TEST(stream_parsers, read_ipv6_route_truncated) {
 	iss >> parsed_str;
 
 	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ethernet_address) {
+	const std::string str_value = "12:34:56:ab:cd:ef";
+	const EthernetAddress ref_value({0x12, 0x34, 0x56, 0xab, 0xcd, 0xef});
+	EthernetAddress value;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_ethernet_address(iss, value, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(ref_value, value);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ethernet_address_alternate_separators) {
+	const std::string str_value = "12-34-56-ab-cd-ef";
+	const EthernetAddress ref_value({0x12, 0x34, 0x56, 0xab, 0xcd, 0xef});
+	EthernetAddress value;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_ethernet_address(iss, value, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_TRUE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(ref_value, value);
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ethernet_address_invalid_separator) {
+	const std::string str_value = "12:34:56:ab|cd:ef";
+	EthernetAddress value;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_ethernet_address(iss, value, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ(EthernetAddress(), value);
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ethernet_address_invalid_xdigit) {
+	const std::string str_value = "12:34:56:ag:cd:ef";
+	EthernetAddress value;
+	std::istringstream iss(str_value);
+	std::string parsed_str;
+
+	auto&& result = read_ethernet_address(iss, value, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_FALSE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_TRUE(iss.fail());
+	ASSERT_EQ(EthernetAddress(), value);
+	ASSERT_EQ("", parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(str_value, parsed_str);
+}
+
+TEST(stream_parsers, read_ethernet_address_extra) {
+	const std::string str_value = "12:34:56:ab:cd:ef";
+	const std::string extra = "foo";
+	const EthernetAddress ref_value({0x12, 0x34, 0x56, 0xab, 0xcd, 0xef});
+	EthernetAddress value;
+	std::istringstream iss(str_value + extra);
+	std::string parsed_str;
+
+	auto&& result = read_ethernet_address(iss, value, &parsed_str);
+
+	ASSERT_EQ(&iss, &result);
+	ASSERT_TRUE(iss.good());
+	ASSERT_FALSE(iss.eof());
+	ASSERT_FALSE(iss.fail());
+	ASSERT_EQ(ref_value, value);
+	ASSERT_EQ(str_value, parsed_str);
+
+	// Make sure the stream wasn't eaten up.
+	iss.clear();
+	iss >> parsed_str;
+
+	ASSERT_EQ(extra, parsed_str);
 }

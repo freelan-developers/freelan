@@ -90,6 +90,8 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
 )
 
 set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
+    src/internal/types/ethernet_address.cpp
+    src/internal/types/ethernet_address.hpp
     src/internal/types/generic_ip_address.hpp
     src/internal/types/generic_ip_endpoint.hpp
     src/internal/types/generic_ip_prefix_length.hpp
@@ -115,9 +117,26 @@ set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
     src/internal/types/port_number.hpp
     src/internal/types/tap_adapter_layer.hpp
 )
+
+set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+    src/internal/tap_adapter/tap_adapter.hpp
+    src/internal/tap_adapter/generic_tap_adapter.hpp
+)
+
+if (WIN32)
+    set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+        src/internal/tap_adapter/windows/tap_adapter.hpp
+    )
+else()
+    set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+        src/internal/tap_adapter/unix/tap_adapter.hpp
+    )
+endif()
+
 set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     ${INTERNAL_GENERIC_SRC_FILES}
     ${INTERNAL_TYPES_SRC_FILES}
+    ${INTERNAL_TAP_ADAPTER_SRC_FILES}
     "${INTERNAL_VERSION_HEADER}"
 )
 source_group(internal FILES ${INTERNAL_SRC_FILES})
@@ -172,6 +191,7 @@ set (GTEST_VERSION "1.7.0")
 set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+    src/tests/ethernet_address.cpp
     src/tests/host.cpp
     src/tests/host_endpoint.cpp
     src/tests/hostname.cpp

@@ -38,45 +38,26 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file stream_parsers.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Stream parsing functions.
- */
+#include "ethernet_address.hpp"
 
-#pragma once
+#include <iomanip>
 
-#include <iostream>
-#include <string>
-
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wunused-parameter"
-#endif
-#include <boost/optional.hpp>
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#endif
-
-#include "stdint.hpp"
+#include <boost/io/ios_state.hpp>
 
 namespace freelan {
 
-class PortNumber;
-class Hostname;
-class EthernetAddress;
+std::ostream& EthernetAddress::write_to(std::ostream& os) const {
+    boost::io::ios_flags_saver ifs(os);
 
-template <typename AddressType>
-std::istream& read_generic_ip_address(std::istream& is, AddressType& value, std::string* buf = nullptr);
-std::istream& read_hostname_label(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_hostname(std::istream& is, std::string& value, std::string* buf = nullptr);
-std::istream& read_port_number(std::istream& is, uint16_t& value, std::string* buf = nullptr);
-template <typename AddressType>
-std::istream& read_generic_ip_prefix_length(std::istream& is, uint8_t& value, std::string* buf = nullptr);
-template <typename IPAddressType>
-std::istream& read_generic_ip_endpoint(std::istream& is, IPAddressType& ip_address, PortNumber& value, std::string* buf = nullptr);
-std::istream& read_hostname_endpoint(std::istream& is, Hostname& hostname, PortNumber& port_number, std::string* buf = nullptr);
-template <typename IPAddressType, typename IPPrefixLengthType>
-std::istream& read_generic_ip_route(std::istream& is, IPAddressType& ip_address, IPPrefixLengthType& prefix_length, boost::optional<IPAddressType>& gateway, std::string* buf = nullptr);
-std::istream& read_ethernet_address(std::istream& is, EthernetAddress& value, std::string* buf = nullptr);
+    os << std::hex << std::setfill('0') << std::setw(2);
+    os << static_cast<unsigned int>(to_raw_value()[0]);
+
+    for (size_t i = 1; i < to_raw_value().size(); ++i)
+    {
+        os << ':' << std::setw(2) << static_cast<unsigned int>(to_raw_value()[i]);
+    }
+
+    return os;
+}
+
 }
