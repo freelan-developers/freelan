@@ -113,6 +113,7 @@ set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
     src/internal/types/ipv6_prefix_length.hpp
     src/internal/types/ipv6_route.hpp
     src/internal/types/port_number.hpp
+    src/internal/types/tap_adapter_layer.hpp
 )
 set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     ${INTERNAL_GENERIC_SRC_FILES}
@@ -190,6 +191,7 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/perf_counter.cpp
     src/tests/port_number.cpp
     src/tests/stream_parsers.cpp
+    src/tests/tap_adapter_layer.cpp
 )
 
 set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
