@@ -51,11 +51,12 @@
 extern "C" {
 #endif
 
-#include "freelan/memory.h"
-#include "freelan/version.h"
 #include "freelan/error.h"
+#include "freelan/io.h"
 #include "freelan/log.h"
+#include "freelan/memory.h"
 #include "freelan/types.h"
+#include "freelan/version.h"
 
 #ifdef __cplusplus
 }

@@ -40,12 +40,14 @@
 
 #include "io.h"
 
+#include <cassert>
+
 #include <boost/asio.hpp>
 
 #include "memory.hpp"
 #include "error.hpp"
 
-struct freelan_IOService* freelan_IOService_new(struct ErrorContext* ectx) {
+struct freelan_IOService* freelan_IOService_new(struct freelan_ErrorContext* ectx) {
     FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
     return reinterpret_cast<struct freelan_IOService*>(
@@ -55,6 +57,22 @@ struct freelan_IOService* freelan_IOService_new(struct ErrorContext* ectx) {
     FREELAN_END_USE_ERROR_CONTEXT(ectx);
 
     return nullptr;
+}
+
+void freelan_IOService_post(struct freelan_IOService* inst, freelan_RunnableCallback task, void* user_ctx) {
+    assert(inst);
+
+    boost::asio::io_service& io_service = *reinterpret_cast<boost::asio::io_service*>(inst);
+
+    io_service.post(std::bind(task, user_ctx));
+}
+
+void freelan_IOService_run(struct freelan_IOService* inst) {
+    assert(inst);
+
+    boost::asio::io_service& io_service = *reinterpret_cast<boost::asio::io_service*>(inst);
+
+    io_service.run();
 }
 
 void freelan_IOService_free(struct freelan_IOService* inst) {

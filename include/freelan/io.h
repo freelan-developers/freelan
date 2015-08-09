@@ -59,6 +59,11 @@ extern "C" {
 struct freelan_IOService;
 
 /**
+ * \brief The runnable callback type.
+ */
+typedef void (*freelan_RunnableCallback)(void* user_ctx);
+
+/**
  * \brief Create a new I/O service instance that will handle I/O events.
  * \param ectx The error context.
  * \return The I/O service instance. On error, a null pointer is returned.
@@ -66,7 +71,33 @@ struct freelan_IOService;
  * \warning The caller is responsible for calling \c freelan_IOService_free()
  * on the returned instance when it is no longer needed.
  */
-FREELAN_API struct freelan_IOService* freelan_IOService_new(struct ErrorContext* ectx);
+FREELAN_API struct freelan_IOService* freelan_IOService_new(struct freelan_ErrorContext* ectx);
+
+/**
+ * \brief Add an asynchronous task to the specified I/O service.
+ * \param inst The freelan_IOService instance.
+ * \param task The task to add. It MUST remain a valid pointer for as long as
+ * it gets executed.
+ * \param user_ctx The user context to pass to the runnable.
+ *
+ * \note You need to call (directly or indirectly) \c freelan_IOService_run for
+ * the task to be effectively run.
+ * \note This method is thread-safe and can be called in any thread for as long
+ * as the underlying freelan_IOService instance exists.
+ */
+FREELAN_API void freelan_IOService_post(struct freelan_IOService* inst, freelan_RunnableCallback task, void* user_ctx);
+
+/**
+ * \brief Run the I/O service until all its tasks are complete.
+ * \param inst The freelan_IOService instance.
+ *
+ * \warning This function blocks for as long as the I/O service has tasks to
+ * run. Destroying the freelan_IOService instance while tasks are running has
+ * an undefined behavior.
+ * \note This method is thread-safe and can be called in any thread for as long
+ * as the underlying freelan_IOService instance exists.
+ */
+FREELAN_API void freelan_IOService_run(struct freelan_IOService* inst);
 
 /**
  * \brief Delete an freelan_IOService instance.
