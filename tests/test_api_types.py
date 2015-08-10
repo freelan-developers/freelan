@@ -15,6 +15,7 @@ from pyfreelan.api import ffi
 from pyfreelan.api.types import (
     swallow_native_string,
     NativeType,
+    EthernetAddress,
     IPv4Address,
     IPv6Address,
     Hostname,
@@ -337,6 +338,25 @@ class NativeTypeTests(TestCase):
 
 
 class FinalTypesTests(TestCase):
+
+    def test_EthernetAddress_clone(self):
+        a = EthernetAddress.from_string("ab:cd:ef:12:34:56")
+        b = a.clone()
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(a._opaque_ptr, b._opaque_ptr)
+        self.assertEqual(a, b)
+
+    def test_EthernetAddress(self):
+        a = EthernetAddress.from_string("ab:cd:ef:12:34:56")
+        b = EthernetAddress.from_string("ab:cd:ef:12:34:57")
+
+        self.assertIsNot(a, b)
+        self.assertNotEqual(hash(a), hash(b))
+        self.assertNotEqual(a, b)
+        self.assertLess(a, b)
+        self.assertEqual(1, len({a, a}))
+        self.assertEqual(2, len({a, b}))
 
     def test_IPv4Address_clone(self):
         a = IPv4Address.from_string("0.0.0.1")

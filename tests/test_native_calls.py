@@ -272,6 +272,100 @@ class NativeCallsTests(TestCase):
         self.assertEqual(1, context['call_count'])
         self.assertEqual(1, result)
 
+    def test_EthernetAddress_from_string_simple(self):
+        result = native.freelan_EthernetAddress_from_string(
+            self.ectx,
+            "ab:cd:ef:12:34:56",
+        )
+        self.addCleanup(native.freelan_EthernetAddress_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_EthernetAddress_from_string_truncated(self):
+        result = native.freelan_EthernetAddress_from_string(
+            self.ectx,
+            "ab:cd:ef:12:",
+        )
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_EthernetAddress_from_string_incorrect_value(self):
+        result = native.freelan_EthernetAddress_from_string(
+            self.ectx,
+            "incorrect value",
+        )
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_EthernetAddress_from_string_empty_value(self):
+        result = native.freelan_EthernetAddress_from_string(self.ectx, "")
+
+        self.assertEqual(ffi.NULL, result)
+
+    def test_EthernetAddress_to_string_simple(self):
+        str_value = "ab:cd:ef:12:34:56"
+
+        value = native.freelan_EthernetAddress_from_string(
+            self.ectx,
+            str_value,
+        )
+        self.addCleanup(native.freelan_EthernetAddress_free, value)
+
+        result = native.freelan_EthernetAddress_to_string(self.ectx, value)
+        self.addCleanup(native.freelan_free, result)
+
+        self.assertEqual(str_value, ffi.string(result))
+
+    def test_EthernetAddress_clone(self):
+        inst = native.freelan_EthernetAddress_from_string(
+            self.ectx,
+            "ab:cd:ef:12:34:56",
+        )
+        self.addCleanup(native.freelan_EthernetAddress_free, inst)
+
+        result = native.freelan_EthernetAddress_clone(self.ectx, inst)
+        self.addCleanup(native.freelan_EthernetAddress_free, result)
+
+        self.assertNotEqual(ffi.NULL, result)
+
+    def test_EthernetAddress_less_than(self):
+        str_values = ("ab:cd:ef:12:34:56", "ab:cd:ef:12:34:57")
+
+        values = (
+            native.freelan_EthernetAddress_from_string(
+                self.ectx,
+                str_values[0],
+            ),
+            native.freelan_EthernetAddress_from_string(
+                self.ectx,
+                str_values[1],
+            ),
+        )
+        self.addCleanup(native.freelan_EthernetAddress_free, values[0])
+        self.addCleanup(native.freelan_EthernetAddress_free, values[1])
+
+        result = native.freelan_EthernetAddress_less_than(*values)
+        self.assertNotEqual(0, result)
+
+    def test_EthernetAddress_equal(self):
+        str_values = ("ab:cd:ef:12:34:56", "ab:cd:ef:12:34:57")
+
+        values = (
+            native.freelan_EthernetAddress_from_string(
+                self.ectx,
+                str_values[0],
+            ),
+            native.freelan_EthernetAddress_from_string(
+                self.ectx,
+                str_values[1],
+            ),
+        )
+        self.addCleanup(native.freelan_EthernetAddress_free, values[0])
+        self.addCleanup(native.freelan_EthernetAddress_free, values[1])
+
+        result = native.freelan_EthernetAddress_equal(*values)
+        self.assertEqual(0, result)
+
     def test_IPv4Address_from_string_simple(self):
         result = native.freelan_IPv4Address_from_string(self.ectx, "1.2.4.8")
         self.addCleanup(native.freelan_IPv4Address_free, result)

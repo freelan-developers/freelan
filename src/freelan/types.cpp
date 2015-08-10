@@ -46,6 +46,7 @@
 
 #include "memory.hpp"
 #include "error.hpp"
+#include "types/ethernet_address.hpp"
 #include "types/ipv4_address.hpp"
 #include "types/ipv6_address.hpp"
 #include "types/hostname.hpp"
@@ -311,6 +312,7 @@ struct freelan_ ## TYPE* freelan_ ## TYPE ## _from_ ## VARIANT_TYPE (const struc
 const struct freelan_ ## VARIANT_TYPE* freelan_ ## TYPE ## _as_ ## VARIANT_TYPE (const struct freelan_ ## TYPE* inst) { return as_variant_type_generic<freelan_ ## TYPE, freelan::TYPE, freelan_ ## VARIANT_TYPE, freelan::VARIANT_TYPE>(inst); }
 
 /* Simple types */
+IMPLEMENT_complete_type(EthernetAddress)
 IMPLEMENT_complete_type(IPv4Address)
 IMPLEMENT_complete_type(IPv6Address)
 IMPLEMENT_complete_type(Hostname)

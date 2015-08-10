@@ -56,6 +56,7 @@ extern "C" {
 
 /* API BEGIN */
 
+struct freelan_EthernetAddress;
 struct freelan_IPv4Address;
 struct freelan_IPv6Address;
 struct freelan_Hostname;
@@ -72,6 +73,63 @@ struct freelan_IPRoute;
 struct freelan_Host;
 struct freelan_IPEndpoint;
 struct freelan_HostEndpoint;
+
+/**
+ * \brief Create an freelan_EthernetAddress instance from its string
+ * representation.
+ * \param ectx The error context.
+ * \param str The string representation.
+ * \return The IPv4 address instance. On error, a null pointer is returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_EthernetAddress_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct freelan_EthernetAddress* freelan_EthernetAddress_from_string(struct freelan_ErrorContext* ectx, const char* str);
+
+/**
+ * \brief Get the string representation of an freelan_EthernetAddress instance.
+ * \param ectx The error context.
+ * \param inst The instance.
+ * \return The string representation, as a NULL terminated string.
+ *
+ * \warning The caller is responsible for calling \c freelan_free() on the
+ * returned string when it is no longer needed.
+ */
+FREELAN_API char* freelan_EthernetAddress_to_string(struct freelan_ErrorContext* ectx, const struct freelan_EthernetAddress* inst);
+
+/**
+ * \brief Clone an existing freelan_EthernetAddress instance.
+ * \param ectx The error context.
+ * \param inst The instance to clone
+ * \return The cloned IPv4 address instance. On error, a null pointer is
+ * returned.
+ *
+ * \warning The caller is responsible for calling \c freelan_EthernetAddress_free()
+ * on the returned instance when it is no longer needed.
+ */
+FREELAN_API struct freelan_EthernetAddress* freelan_EthernetAddress_clone(struct freelan_ErrorContext* ectx, const struct freelan_EthernetAddress* inst);
+
+/**
+ * \brief Delete an freelan_EthernetAddress instance.
+ * \param inst The instance.
+ */
+FREELAN_API void freelan_EthernetAddress_free(struct freelan_EthernetAddress* inst);
+
+/**
+ * \brief Compare two freelan_EthernetAddress instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs < rhs.
+ */
+FREELAN_API int freelan_EthernetAddress_less_than(const struct freelan_EthernetAddress* lhs, const struct freelan_EthernetAddress* rhs);
+
+/**
+ * \brief Compare two freelan_EthernetAddress instances.
+ * \param lhs The left instance.
+ * \param rhs The right instance.
+ * \return A non-zero value if the lhs == rhs.
+ */
+FREELAN_API int freelan_EthernetAddress_equal(const struct freelan_EthernetAddress* lhs, const struct freelan_EthernetAddress* rhs);
 
 /**
  * \brief Create an freelan_IPv4Address instance from its string

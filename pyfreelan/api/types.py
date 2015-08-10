@@ -355,6 +355,12 @@ class NativeType(object):
         return Wrapper
 
 
+class EthernetAddress(NativeType.from_typename('EthernetAddress')):
+    """
+    An Ethernet address.
+    """
+
+
 class IPv4Address(NativeType.from_typename('IPv4Address')):
     """
     An IPv4 address.
