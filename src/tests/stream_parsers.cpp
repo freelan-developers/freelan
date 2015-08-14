@@ -1131,7 +1131,7 @@ TEST(stream_parsers, read_ipv6_route_truncated) {
 
 TEST(stream_parsers, read_ethernet_address) {
 	const std::string str_value = "12:34:56:ab:cd:ef";
-	const EthernetAddress ref_value({0x12, 0x34, 0x56, 0xab, 0xcd, 0xef});
+	const EthernetAddress ref_value(EthernetAddress::value_type{{0x12, 0x34, 0x56, 0xab, 0xcd, 0xef}});
 	EthernetAddress value;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
@@ -1148,7 +1148,7 @@ TEST(stream_parsers, read_ethernet_address) {
 
 TEST(stream_parsers, read_ethernet_address_alternate_separators) {
 	const std::string str_value = "12-34-56-ab-cd-ef";
-	const EthernetAddress ref_value({0x12, 0x34, 0x56, 0xab, 0xcd, 0xef});
+	const EthernetAddress ref_value(EthernetAddress::value_type{{0x12, 0x34, 0x56, 0xab, 0xcd, 0xef}});
 	EthernetAddress value;
 	std::istringstream iss(str_value);
 	std::string parsed_str;
@@ -1210,7 +1210,7 @@ TEST(stream_parsers, read_ethernet_address_invalid_xdigit) {
 TEST(stream_parsers, read_ethernet_address_extra) {
 	const std::string str_value = "12:34:56:ab:cd:ef";
 	const std::string extra = "foo";
-	const EthernetAddress ref_value({0x12, 0x34, 0x56, 0xab, 0xcd, 0xef});
+	const EthernetAddress ref_value(EthernetAddress::value_type{{0x12, 0x34, 0x56, 0xab, 0xcd, 0xef}});
 	EthernetAddress value;
 	std::istringstream iss(str_value + extra);
 	std::string parsed_str;
