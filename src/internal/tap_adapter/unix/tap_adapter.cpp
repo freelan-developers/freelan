@@ -40,40 +40,362 @@
 
 #include "tap_adapter.hpp"
 
+#include "../../log.hpp"
+
+#ifdef BOOST_OS_LINUX
+
+#include <linux/if_tun.h>
+
+// Replacement structure since the include of linux/ipv6.h introduces
+// conflicts.
+// If someone comes up with a better solution, feel free to contribute.
+struct in6_ifreq
+{
+	struct in6_addr ifr6_addr; /**< IPv6 address */
+	uint32_t ifr6_prefixlen; /**< Length of the prefix */
+	int ifr6_ifindex; /**< Interface index */
+};
+
+#elif defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+
+// Note for Mac OS X users : you have to download and install the tun/tap
+// driver from (http://tuntaposx.sourceforge.net).
+
+#include <net/if_var.h>
+#include <net/if_types.h>
+#include <net/if_dl.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet6/in6_var.h>
+
+#endif
+
 namespace freelan {
 
 using namespace boost::asio;
 
 namespace {
-#if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
-    class InterfaceDestroy {
+    template <int Name>
+    class BasicInterfaceCommand {
         public:
-            explicit InterfaceDestroy(const std::string& interface_name) :
+            explicit BasicInterfaceCommand(const std::string& _interface_name) :
                 m_ifr() {
-                strncpy(m_ifr.ifr_name, interface_name.c_str(), IFNAMSIZ);
+                strncpy(m_ifr.ifr_name, _interface_name.c_str(), IFNAMSIZ);
             }
 
-            int name() const { return SIOCIFDESTROY; }
+            int name() const { return Name; }
             void* data() { return &m_ifr; }
+            std::string interface_name() const { return m_ifr.ifr_name; }
 
-        private:
+        protected:
             struct ifreq m_ifr;
     };
+
+#if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+    class InterfaceDestroy : public BasicInterfaceCommand<SIOCIFDESTROY> {
+        public:
+            explicit InterfaceDestroy(const std::string& _interface_name) :
+                BasicInterfaceCommand(_interface_name)
+            {}
+    };
 #endif
+
+    class TunSetInterfaceFunction : public BasicInterfaceCommand<TUNSETIFF> {
+        public:
+            explicit TunSetInterfaceFunction(const std::string& _interface_name, int flags) :
+                BasicInterfaceCommand(_interface_name) {
+                m_ifr.ifr_flags = flags;
+            }
+    };
+
+    class InterfaceSetTransferQueueLength : public BasicInterfaceCommand<SIOCSIFTXQLEN> {
+        public:
+            explicit InterfaceSetTransferQueueLength(const std::string& _interface_name, int queue_length) :
+                BasicInterfaceCommand(_interface_name) {
+                m_ifr.ifr_qlen = queue_length;
+            }
+    };
+
+    class InterfaceGetHardwareAddress : public BasicInterfaceCommand<SIOCGIFHWADDR> {
+        public:
+            explicit InterfaceGetHardwareAddress(const std::string& _interface_name) :
+                BasicInterfaceCommand(_interface_name) {
+            }
+
+            EthernetAddress value() const {
+                EthernetAddress::value_type result;
+                std::memcpy(result.data(), m_ifr.ifr_hwaddr.sa_data, result.size());
+
+                return result;
+            }
+    };
+
+    class InterfaceGetMTU : public BasicInterfaceCommand<SIOCGIFMTU> {
+        public:
+            explicit InterfaceGetMTU(const std::string& _interface_name) :
+                BasicInterfaceCommand(_interface_name) {
+            }
+
+            int value() const { return m_ifr.ifr_mtu; }
+    };
+
+    posix::stream_descriptor open_device(io_service& _io_service, const std::string& name, boost::system::error_code& ec) {
+        const int device_fd = ::open(name.c_str(), O_RDWR);
+
+        if (device_fd < 0)
+        {
+            ec = boost::system::error_code(errno, boost::system::system_category());
+
+            return posix::stream_descriptor(_io_service);
+        }
+
+        return posix::stream_descriptor(_io_service, device_fd);
+    }
 }
 
-void TapAdapter::destroy_device(boost::system::error_code& ec) {
+boost::system::error_code TapAdapter::open(const std::string& _name, boost::system::error_code& ec) {
+    ec = boost::system::error_code();
+
+    LOG(LogLevel::DEBUG, "tap_adapter::open", "start") \
+        .attach("name", _name);
+
+#ifdef BOOST_OS_LINUX
+    const std::string dev_name = (layer() == TapAdapterLayer::ethernet) ? "/dev/net/tap" : "/dev/net/tun";
+
+    if (::access(dev_name.c_str(), F_OK) == -1)
+    {
+        if (errno != ENOENT)
+        {
+            // Unable to access the tap adapter yet it exists: this is an error.
+            LOG(LogLevel::ERROR, "tap_adapter::open", "access_denied") \
+                .attach("name", _name);
+
+            return (ec = boost::system::error_code(errno, boost::system::system_category()));
+        }
+
+        // No tap found, create one.
+        if (::mknod(dev_name.c_str(), S_IFCHR | S_IRUSR | S_IWUSR, ::makedev(10, 200)) == -1)
+        {
+            LOG(LogLevel::ERROR, "tap_adapter::open", "device_creation_failed") \
+                .attach("name", _name);
+
+            return (ec = boost::system::error_code(errno, boost::system::system_category()));
+        }
+    }
+
+    auto device = open_device(get_io_service(), dev_name, ec);
+
+    if (ec) {
+        LOG(LogLevel::ERROR, "tap_adapter::open", "device_opening_failed") \
+            .attach("name", _name) \
+            .attach("dev_name", dev_name);
+
+        return ec;
+    }
+
+    int flags = IFF_NO_PI;
+
+#if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
+    flags |= IFF_ONE_QUEUE;
+#endif
+
+    if (layer() == TapAdapterLayer::ethernet) {
+        flags |= IFF_TAP;
+    } else {
+        flags |= IFF_TUN;
+    }
+
+    std::string interface_name;
+
+    {
+        TunSetInterfaceFunction command(_name, flags);
+
+        if (device.io_control(command, ec)) {
+            LOG(LogLevel::ERROR, "tap_adapter::open", "set_interface_function_failed") \
+                .attach("name", _name) \
+                .attach("flags", flags);
+
+            return ec;
+        }
+
+        interface_name = command.interface_name();
+    }
+
+    auto socket = ip::udp::socket(get_io_service());
+
+    if (socket.open(ip::udp::v4(), ec)) {
+        LOG(LogLevel::ERROR, "tap_adapter::open", "socket_opening_failed") \
+            .attach("name", _name);
+
+        return ec;
+    }
+
+#if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
+    {
+        const auto queue_length = 100;
+        InterfaceSetTransferQueueLength command(interface_name, queue_length);
+
+        if (socket.io_control(command, ec)) {
+            LOG(LogLevel::ERROR, "tap_adapter::open", "set_interface_queue_length_failed") \
+                .attach("name", _name) \
+                .attach("interface_name", interface_name) \
+                .attach("queue_length", queue_length);
+
+            return ec;
+        }
+    }
+#endif
+
+    {
+        InterfaceGetHardwareAddress command(interface_name);
+
+        if (socket.io_control(command, ec)) {
+            LOG(LogLevel::ERROR, "tap_adapter::open", "get_interface_hardware_address_failed") \
+                .attach("name", _name) \
+                .attach("interface_name", interface_name);
+
+            return ec;
+        }
+
+        set_ethernet_address(command.value());
+    }
+
+    set_name(interface_name);
+
+#else /* *BSD and Mac OS X */
+
+    const std::string dev_type = (layer() == tap_adapter_layer::ethernet) ? "tap" : "tun";
+    std::string interface_name = _name;
+
+    descriptor_handler device;
+
+    if (!_name.empty())
+    {
+        device = open_device("/dev/" + _name, ec);
+    }
+    else
+    {
+        for (unsigned int i = 0 ; !device.valid(); ++i)
+        {
+            interface_name = dev_type + boost::lexical_cast<std::string>(i);
+            device = open_device("/dev/" + interface_name, ec);
+
+            if (!device.valid() && (errno == ENOENT))
+            {
+                // We reached the end of the available tap adapters.
+                break;
+            }
+        }
+    }
+
+    if (!device.valid())
+    {
+        ec = make_error_code(asiotap_error::no_such_tap_adapter);
+
+        return;
+    }
+
+    struct stat st {};
+
+    if (::fstat(device.native_handle(), &st) != 0)
+    {
+        ec = boost::system::error_code(errno, boost::system::system_category());
+
+        return;
+    }
+
+    char namebuf[256];
+    memset(namebuf, 0x00, sizeof(namebuf));
+
+    if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != NULL)
+    {
+        set_name(namebuf);
+    }
+    else
+    {
+        set_name(interface_name);
+    }
+
+    if (if_nametoindex(name().c_str()) == 0)
+    {
+        ec = make_error_code(asiotap_error::no_such_tap_adapter);
+
+        return;
+    }
+
+    // Do not pass the descriptor to child
+    ::fcntl(device.native_handle(), F_SETFD, FD_CLOEXEC);
+
+    descriptor_handler socket = open_socket(AF_INET, ec);
+
+    if (!socket.valid())
+    {
+        return;
+    }
+
+    /* Get the hardware address of tap inteface. */
+    struct ifaddrs* addrs = nullptr;
+
+    if (getifaddrs(&addrs) < 0)
+    {
+        ec = boost::system::error_code(errno, boost::system::system_category());
+
+        return;
+    }
+
+    boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
+
+    for (struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next)
+    {
+        const std::string if_name = name();
+
+        if ((ifa->ifa_addr->sa_family == AF_LINK) && !std::memcmp(ifa->ifa_name, if_name.c_str(), if_name.length()))
+        {
+            struct sockaddr_dl* sdl = (struct sockaddr_dl*)ifa->ifa_addr;
+
+            if (sdl->sdl_type == IFT_ETHER)
+            {
+                osi::ethernet_address _ethernet_address;
+                std::memcpy(_ethernet_address.data().data(), LLADDR(sdl), ethernet_address().data().size());
+                set_ethernet_address(_ethernet_address);
+
+                break;
+            }
+        }
+    }
+#endif
+
+    {
+        InterfaceGetMTU command(interface_name);
+
+        if (socket.io_control(command, ec)) {
+            LOG(LogLevel::ERROR, "tap_adapter::open", "get_interface_mtu_failed") \
+                .attach("name", _name) \
+                .attach("interface_name", interface_name);
+
+            return ec;
+        }
+
+        set_mtu(command.value());
+    }
+
+    descriptor().assign(device.release());
+
+    return ec;
+}
+
+boost::system::error_code TapAdapter::destroy_device(boost::system::error_code& ec) {
 #if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
     auto socket = ip::udp::socket(get_io_service());
 
-    if (!socket.open(ip::udp::v4(), ec)) {
+    if (socket.open(ip::udp::v4(), ec)) {
         return;
     }
 
     InterfaceDestroy command(name());
-    socket.io_control(command, ec);
+    return socket.io_control(command, ec);
 #else
-    static_cast<void>(ec);
+    return ec;
 #endif
 }
 

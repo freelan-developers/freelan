@@ -60,7 +60,10 @@ class TapAdapter : public GenericTapAdapter<boost::asio::posix::stream_descripto
 
         ~TapAdapter() {
             if (is_open()) {
-                close();
+                boost::system::error_code ec;
+
+                close(ec);
+                //TODO: Log the error.
             }
         }
 
@@ -69,28 +72,20 @@ class TapAdapter : public GenericTapAdapter<boost::asio::posix::stream_descripto
         TapAdapter(TapAdapter&&) = default;
         TapAdapter& operator=(TapAdapter&&) = default;
 
-        void open(boost::system::error_code& ec);
-        void open(const std::string& name, boost::system::error_code& ec);
-        void open(const std::string& name = "");
+        boost::system::error_code open(boost::system::error_code& ec) { return open("", ec); }
+        boost::system::error_code open(const std::string& name, boost::system::error_code& ec);
 
-        void close() {
-            boost::system::error_code ec;
-
-            close(ec);
-        }
         boost::system::error_code close(boost::system::error_code& ec) {
             destroy_device(ec);
             //TODO: Log the error.
 
-            GenericTapAdapter::close();
-
-            return ec;
+            return GenericTapAdapter::close(ec);
         }
 
         void set_connected_state(bool connected);
 
     private:
-        void destroy_device(boost::system::error_code& ec);
+        boost::system::error_code destroy_device(boost::system::error_code& ec);
 };
 
 }

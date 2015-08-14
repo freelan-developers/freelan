@@ -107,7 +107,6 @@ class GenericTapAdapter {
         size_t mtu() const { return m_mtu; }
         const EthernetAddress& ethernet_address() const { return m_ethernet_address; }
         bool is_open() const { return m_descriptor.is_open(); }
-        void close() { m_descriptor.close(); }
         boost::system::error_code close(boost::system::error_code& ec) { return m_descriptor.close(ec); }
 
     protected:

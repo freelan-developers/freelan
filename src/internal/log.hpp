@@ -124,8 +124,34 @@ class LogPayload {
 			value(_value)
 		{}
 
+		template <typename Type>
+		bool is() const {
+            return as<Type>();
+        }
+
+		template <typename Type>
+		const Type* as() const {
+            return boost::any_cast<Type>(&value);
+        }
+
 		std::string key;
 		boost::any value;
+
+		friend std::ostream& operator<<(std::ostream& os, const LogPayload& value) {
+            os << value.key;
+
+            if (value.is<std::string>()) {
+                os << "=" << *value.as<std::string>();
+            } else if (value.is<int64_t>()) {
+                os << "=" << *value.as<int64_t>();
+            } else if (value.is<double>()) {
+                os << "=" << *value.as<double>();
+            } else if (value.is<bool>()) {
+                os << "=" << *value.as<bool>();
+            }
+
+            return os;
+        }
 };
 
 typedef std::function<bool (LogLevel level, const boost::posix_time::ptime& timestamp, const std::string& domain, const std::string& code, const std::vector<LogPayload>& payload, const char* file, unsigned int line)> LogFunction;
