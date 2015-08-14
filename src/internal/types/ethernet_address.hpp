@@ -49,6 +49,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <array>
 
 #include <boost/system/system_error.hpp>
 
