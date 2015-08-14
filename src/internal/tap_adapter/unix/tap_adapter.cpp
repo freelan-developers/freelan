@@ -38,59 +38,43 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file tap_adapter.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A TAP adapter class.
- */
-
-#pragma once
-
-#include "../generic_tap_adapter.hpp"
+#include "tap_adapter.hpp"
 
 namespace freelan {
 
-class TapAdapter : public GenericTapAdapter<boost::asio::posix::stream_descriptor> {
-    public:
-        static std::map<std::string, std::string> enumerate(TapAdapterLayer _layer);
+using namespace boost::asio;
 
-        TapAdapter(boost::asio::io_service& _io_service, TapAdapterLayer _layer) :
-            GenericTapAdapter(_io_service, _layer)
-        {}
-
-        ~TapAdapter() {
-            if (is_open()) {
-                close();
+namespace {
+#if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+    class InterfaceDestroy {
+        public:
+            explicit InterfaceDestroy(const std::string& interface_name) :
+                m_ifr() {
+                strncpy(m_ifr.ifr_name, interface_name.c_str(), IFNAMSIZ);
             }
-        }
 
-        TapAdapter(const TapAdapter&) = delete;
-        TapAdapter& operator=(const TapAdapter&) = delete;
-        TapAdapter(TapAdapter&&) = default;
-        TapAdapter& operator=(TapAdapter&&) = default;
+            int name() const { return SIOCIFDESTROY; }
+            void* data() { return &m_ifr; }
 
-        void open(boost::system::error_code& ec);
-        void open(const std::string& name, boost::system::error_code& ec);
-        void open(const std::string& name = "");
+        private:
+            struct ifreq m_ifr;
+    };
+#endif
+}
 
-        void close() {
-            boost::system::error_code ec;
+void TapAdapter::destroy_device(boost::system::error_code& ec) {
+#if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+    auto socket = ip::udp::socket(get_io_service());
 
-            close(ec);
-        }
-        boost::system::error_code close(boost::system::error_code& ec) {
-            destroy_device(ec);
-            //TODO: Log the error.
+    if (!socket.open(ip::udp::v4(), ec)) {
+        return;
+    }
 
-            GenericTapAdapter::close();
-
-            return ec;
-        }
-
-        void set_connected_state(bool connected);
-
-    private:
-        void destroy_device(boost::system::error_code& ec);
-};
+    InterfaceDestroy command(name());
+    socket.io_control(command, ec);
+#else
+    static_cast<void>(ec);
+#endif
+}
 
 }

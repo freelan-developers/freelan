@@ -129,6 +129,7 @@ if (WIN32)
     )
 else()
     set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+        src/internal/tap_adapter/unix/tap_adapter.cpp
         src/internal/tap_adapter/unix/tap_adapter.hpp
     )
 endif()
@@ -191,27 +192,28 @@ set (GTEST_VERSION "1.7.0")
 set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
-    src/tests/ethernet_address.cpp
-    src/tests/host.cpp
-    src/tests/host_endpoint.cpp
-    src/tests/hostname.cpp
-    src/tests/hostname_endpoint.cpp
-    src/tests/ip_address.cpp
-    src/tests/ip_endpoint.cpp
-    src/tests/ip_route.cpp
-    src/tests/ipv4_address.cpp
-    src/tests/ipv4_endpoint.cpp
-    src/tests/ipv4_prefix_length.cpp
-    src/tests/ipv4_route.cpp
-    src/tests/ipv6_address.cpp
-    src/tests/ipv6_endpoint.cpp
-    src/tests/ipv6_prefix_length.cpp
-    src/tests/ipv6_route.cpp
     src/tests/log.cpp
     src/tests/perf_counter.cpp
-    src/tests/port_number.cpp
     src/tests/stream_parsers.cpp
-    src/tests/tap_adapter_layer.cpp
+    src/tests/tap_adapter/unix/tap_adapter.cpp
+    src/tests/types/ethernet_address.cpp
+    src/tests/types/host.cpp
+    src/tests/types/host_endpoint.cpp
+    src/tests/types/hostname.cpp
+    src/tests/types/hostname_endpoint.cpp
+    src/tests/types/ip_address.cpp
+    src/tests/types/ip_endpoint.cpp
+    src/tests/types/ip_route.cpp
+    src/tests/types/ipv4_address.cpp
+    src/tests/types/ipv4_endpoint.cpp
+    src/tests/types/ipv4_prefix_length.cpp
+    src/tests/types/ipv4_route.cpp
+    src/tests/types/ipv6_address.cpp
+    src/tests/types/ipv6_endpoint.cpp
+    src/tests/types/ipv6_prefix_length.cpp
+    src/tests/types/ipv6_route.cpp
+    src/tests/types/port_number.cpp
+    src/tests/types/tap_adapter_layer.cpp
 )
 
 set (GTEST_SRC_FILES ${GTEST_SRC_FILES}

@@ -38,59 +38,23 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file tap_adapter.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A TAP adapter class.
- */
+#include <gtest/gtest.h>
 
-#pragma once
+#include "../internal/tap_adapter/unix/tap_adapter.hpp"
 
-#include "../generic_tap_adapter.hpp"
+#include <boost/asio.hpp>
 
-namespace freelan {
+using freelan::TapAdapter;
+using freelan::TapAdapterLayer;
 
-class TapAdapter : public GenericTapAdapter<boost::asio::posix::stream_descriptor> {
-    public:
-        static std::map<std::string, std::string> enumerate(TapAdapterLayer _layer);
+TEST(TapAdapter, instanciation_ethernet) {
+    boost::asio::io_service io_service;
 
-        TapAdapter(boost::asio::io_service& _io_service, TapAdapterLayer _layer) :
-            GenericTapAdapter(_io_service, _layer)
-        {}
+    TapAdapter tap_adapter(io_service, TapAdapterLayer::ethernet);
+}
 
-        ~TapAdapter() {
-            if (is_open()) {
-                close();
-            }
-        }
+TEST(TapAdapter, instanciation_ip) {
+    boost::asio::io_service io_service;
 
-        TapAdapter(const TapAdapter&) = delete;
-        TapAdapter& operator=(const TapAdapter&) = delete;
-        TapAdapter(TapAdapter&&) = default;
-        TapAdapter& operator=(TapAdapter&&) = default;
-
-        void open(boost::system::error_code& ec);
-        void open(const std::string& name, boost::system::error_code& ec);
-        void open(const std::string& name = "");
-
-        void close() {
-            boost::system::error_code ec;
-
-            close(ec);
-        }
-        boost::system::error_code close(boost::system::error_code& ec) {
-            destroy_device(ec);
-            //TODO: Log the error.
-
-            GenericTapAdapter::close();
-
-            return ec;
-        }
-
-        void set_connected_state(bool connected);
-
-    private:
-        void destroy_device(boost::system::error_code& ec);
-};
-
+    TapAdapter tap_adapter(io_service, TapAdapterLayer::ip);
 }
