@@ -137,17 +137,17 @@ class LogPayload {
 		std::string key;
 		boost::any value;
 
-		friend std::ostream& operator<<(std::ostream& os, const LogPayload& value) {
-            os << value.key;
+		friend std::ostream& operator<<(std::ostream& os, const LogPayload& _value) {
+            os << _value.key;
 
-            if (value.is<std::string>()) {
-                os << "=" << *value.as<std::string>();
-            } else if (value.is<int64_t>()) {
-                os << "=" << *value.as<int64_t>();
-            } else if (value.is<double>()) {
-                os << "=" << *value.as<double>();
-            } else if (value.is<bool>()) {
-                os << "=" << *value.as<bool>();
+            if (_value.is<std::string>()) {
+                os << "=" << *_value.as<std::string>();
+            } else if (_value.is<int64_t>()) {
+                os << "=" << *_value.as<int64_t>();
+            } else if (_value.is<double>()) {
+                os << "=" << *_value.as<double>();
+            } else if (_value.is<bool>()) {
+                os << "=" << *_value.as<bool>();
             }
 
             return os;
