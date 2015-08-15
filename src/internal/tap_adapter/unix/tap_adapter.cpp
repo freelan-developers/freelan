@@ -42,7 +42,9 @@
 
 #include "../../log.hpp"
 
-#ifdef BOOST_OS_LINUX
+#include "../../platform.hpp"
+
+#ifdef LINUX
 
 #include <linux/if_tun.h>
 
@@ -56,7 +58,7 @@ struct in6_ifreq
 	int ifr6_ifindex; /**< Interface index */
 };
 
-#elif defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+#elif defined(MACINTOSH) || defined(BSD)
 
 // Note for Mac OS X users : you have to download and install the tun/tap
 // driver from (http://tuntaposx.sourceforge.net).
@@ -91,7 +93,7 @@ namespace {
             struct ifreq m_ifr;
     };
 
-#if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+#if defined(MACINTOSH) || defined(BSD)
     class InterfaceDestroy : public BasicInterfaceCommand<SIOCIFDESTROY> {
         public:
             explicit InterfaceDestroy(const std::string& _interface_name) :
@@ -159,7 +161,7 @@ boost::system::error_code TapAdapter::open(const std::string& _name, boost::syst
     LOG(LogLevel::DEBUG, "tap_adapter::open", "start") \
         .attach("name", _name);
 
-#ifdef BOOST_OS_LINUX
+#ifdef LINUX
     const std::string dev_name = (layer() == TapAdapterLayer::ethernet) ? "/dev/net/tap" : "/dev/net/tun";
 
     if (::access(dev_name.c_str(), F_OK) == -1)
@@ -385,11 +387,11 @@ boost::system::error_code TapAdapter::open(const std::string& _name, boost::syst
 }
 
 boost::system::error_code TapAdapter::destroy_device(boost::system::error_code& ec) {
-#if defined(__APPLE__) || (defined(BOOST_OS_BSD) && !defined(BOOST_OS_LINUX))
+#if defined(MACINTOSH) || defined(BSD)
     auto socket = ip::udp::socket(get_io_service());
 
     if (socket.open(ip::udp::v4(), ec)) {
-        return;
+        return ec;
     }
 
     InterfaceDestroy command(name());

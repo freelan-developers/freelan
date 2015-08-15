@@ -83,6 +83,7 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/memory.hpp
     src/internal/perf_counter.cpp
     src/internal/perf_counter.hpp
+    src/internal/platform.hpp
     src/internal/stdint.hpp
     src/internal/stream_parsers.cpp
     src/internal/stream_parsers.hpp

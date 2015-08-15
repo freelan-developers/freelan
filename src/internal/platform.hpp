@@ -39,17 +39,100 @@
  */
 
 /**
- * \file tap_adapter.hpp
+ * \file os.hpp
+ * \brief Macro to know the operating system.
+ *
+ * - UNIX: Unix-like operating system.\n
+ * - LINUX: Linux operating system.\n
+ * - SUNOS: Sun operating system.\n
+ * - MACINTOSH: Macintosh or MacOS operating system.\n
+ * - WINDOWS: MS Windows operating system.\n
+ * - MSDOS: MS DOS operating system.\n
+ *
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A TAP adapter class.
+ * \author Sebastien VINCENT <sebastien.vincent@freelan.org>
  */
 
 #pragma once
 
-#include <../platform.hpp>
+/*
+ * Extract the "MACINTOSH" flag from the compiler.
+ */
+#if defined(__APPLE__)
+#define UNIX
+#define MACINTOSH
+#endif
 
-#ifdef WINDOWS
-#include "windows/tap_adapter.hpp"
-#elif defined(UNIX)
-#include "unix/tap_adapter.hpp"
+/*
+ * Extract the "SUNOS" flag from the compiler.
+ */
+#if defined(sun)
+#define UNIX
+#define SUNOS
+#endif
+
+/*
+ * Extract the "UNIX" flag from compiler.
+ */
+
+#ifdef __linux__
+#define UNIX
+#define LINUX
+#endif
+
+/*
+ * Extract the "BSD" flag from compiler.
+ */
+
+#if defined(BSD) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#define BSD
+#define UNIX
+#endif
+
+/*
+ * Extract the "MSDOS" flag from the compiler.
+ */
+#ifdef __MSDOS__
+#define MSDOS
+#undef UNIX
+#endif
+
+/*
+ * Extract the "WINDOWS" flag from the compiler.
+ */
+#if defined(_Windows) || defined(__WINDOWS__) || \
+	defined(__WIN32__) || defined(WIN32) || \
+defined(__WINNT__) || defined(__NT__) || \
+defined(_WIN32) || defined(_WIN64)
+#define WINDOWS
+#ifdef _MSC_VER
+#define MSV
+#if defined(DEBUG) || defined(DEBUGTRACE)
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+#else
+#ifndef NDEBUG
+#define NDEBUG
+#endif
+#endif
+#else
+#undef MSV
+#endif
+#undef UNIX
+#undef MSDOS
+#endif
+
+/*
+ * Remove the WINDOWS flag when using MACINTOSH.
+ */
+#ifdef MACINTOSH
+#undef WINDOWS
+#endif
+
+/*
+ * Assume UNIX if not Windows, Macintosh or MSDOS.
+ */
+#if !defined(WINDOWS) && !defined(MACINTOSH) && !defined(MSDOS)
+#define UNIX
 #endif
