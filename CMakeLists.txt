@@ -192,6 +192,7 @@ set (GTEST_VERSION "1.7.0")
 set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+    src/tests/common.hpp
     src/tests/log.cpp
     src/tests/perf_counter.cpp
     src/tests/stream_parsers.cpp

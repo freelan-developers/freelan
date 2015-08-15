@@ -38,43 +38,57 @@
  * depending on the nature of your project.
  */
 
+/**
+ * \file common.hpp
+ * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \brief Common classes and functions for tests.
+ */
+
+#pragma once
+
 #include <gtest/gtest.h>
 
-#include "../../common.hpp"
+#include "../internal/log.hpp"
 
-#include "../../../internal/tap_adapter/unix/tap_adapter.hpp"
+#include <functional>
+#include <sstream>
 
-#include <boost/asio.hpp>
 
-using freelan::TapAdapter;
-using freelan::TapAdapterLayer;
+class LoggedTest : public ::testing::Test {
+	protected:
+		virtual void SetUp() {
+			using namespace std::placeholders;
 
-typedef LoggedTest TapAdapterTest;
+			freelan::set_log_function(std::bind(&LoggedTest::on_log, this, _1, _2, _3, _4, _5, _6, _7));
+			freelan::set_log_level(freelan::LogLevel::DEBUG);
+		}
 
-TEST_F(TapAdapterTest, default_instanciation_ethernet) {
-    boost::asio::io_service io_service;
+		virtual void TearDown() {
+			freelan::set_log_function();
 
-    TapAdapter tap_adapter(io_service, TapAdapterLayer::ethernet);
-    boost::system::error_code ec;
+            m_log_output.str(std::string());
+			m_log_output.clear();
+		}
 
-    const auto result = tap_adapter.open(ec);
+		bool on_log(freelan::LogLevel level, const boost::posix_time::ptime& timestamp, const std::string& domain, const std::string& code, const std::vector<freelan::LogPayload>& payload, const char* file, unsigned int line) {
+		    m_log_output << '\n' << timestamp << " [" << level << "] " << domain << " (" << file << ":" << line << "): " << code;
 
-    SCOPED_LOGS();
+		    for (auto&& pl: payload) {
+                m_log_output << ", " << pl;
+            }
 
-    ASSERT_EQ(ec, result);
-    ASSERT_EQ(boost::system::error_code(), ec);
-}
+            return true;
+		}
 
-TEST_F(TapAdapterTest, default_instanciation_ip) {
-    boost::asio::io_service io_service;
+        std::string pop_log_output() {
+            const auto result = m_log_output.str();
+            m_log_output.str(std::string());
+            m_log_output.clear();
 
-    TapAdapter tap_adapter(io_service, TapAdapterLayer::ip);
-    boost::system::error_code ec;
+            return result;
+        }
 
-    const auto result = tap_adapter.open(ec);
+        std::ostringstream m_log_output;
+};
 
-    SCOPED_LOGS();
-
-    ASSERT_EQ(ec, result);
-    ASSERT_EQ(boost::system::error_code(), ec);
-}
+#define SCOPED_LOGS() SCOPED_TRACE(pop_log_output())
