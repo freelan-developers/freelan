@@ -52,6 +52,8 @@ using freelan::TapAdapterLayer;
 typedef LoggedTest TapAdapterTest;
 
 TEST_F(TapAdapterTest, default_instanciation_ethernet) {
+    IS_SYSTEM_TEST();
+
     boost::asio::io_service io_service;
 
     TapAdapter tap_adapter(io_service, TapAdapterLayer::ethernet);
@@ -66,6 +68,8 @@ TEST_F(TapAdapterTest, default_instanciation_ethernet) {
 }
 
 TEST_F(TapAdapterTest, default_instanciation_ip) {
+    IS_SYSTEM_TEST();
+
     boost::asio::io_service io_service;
 
     TapAdapter tap_adapter(io_service, TapAdapterLayer::ip);

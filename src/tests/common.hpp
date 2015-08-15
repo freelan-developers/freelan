@@ -50,8 +50,11 @@
 
 #include "../internal/log.hpp"
 
+#include <boost/lexical_cast.hpp>
+
 #include <functional>
 #include <sstream>
+#include <cstdlib>
 
 
 class LoggedTest : public ::testing::Test {
@@ -92,3 +95,11 @@ class LoggedTest : public ::testing::Test {
 };
 
 #define SCOPED_LOGS() SCOPED_TRACE(pop_log_output())
+
+inline bool system_tests_enabled() {
+    const char* value = std::getenv("FREELAN_ENABLE_SYSTEM_TESTS");
+
+    return (value != nullptr) && (boost::lexical_cast<int>(value) > 0);
+}
+
+#define IS_SYSTEM_TEST() if (!system_tests_enabled()) { SUCCEED() << "System tests disabled"; return; }
