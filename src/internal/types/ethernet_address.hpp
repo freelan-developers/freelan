@@ -67,6 +67,16 @@ class EthernetAddress : public GenericValueType<EthernetAddressBytes, EthernetAd
 		EthernetAddress(EthernetAddress::value_type&& value) : GenericValueType<EthernetAddressBytes, EthernetAddress>(std::move(value)) {}
 		EthernetAddress(const EthernetAddress::value_type& value) : GenericValueType<EthernetAddressBytes, EthernetAddress>(value) {}
 
+        static EthernetAddress from_bytes(const void* buf, size_t len = std::tuple_size<value_type>::value) {
+            value_type _value;
+
+            assert(len == _value.size());
+
+            std::memcpy(_value.data(), buf, len);
+
+            return EthernetAddress(_value);
+        }
+
         static EthernetAddress from_string(const std::string& str) {
             boost::system::error_code ec;
             const EthernetAddress result = from_string(str, ec);

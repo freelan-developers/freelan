@@ -52,6 +52,14 @@ TEST(EthernetAddress, default_instantiation) {
 	const EthernetAddress value {};
 }
 
+TEST(EthernetAddress, bytes_instantiation) {
+	const std::string str_value = "ab:cd:ef:12:34:56";
+	const EthernetAddress::value_type ref_value{{0xab, 0xcd, 0xef, 0x12, 0x34, 0x56}};
+	const auto value = EthernetAddress::from_bytes(ref_value.data());
+
+	ASSERT_EQ(str_value, value.to_string());
+}
+
 TEST(EthernetAddress, string_instantiation) {
 	const std::string str_value = "ab:cd:ef:12:34:56";
 	const auto value = EthernetAddress::from_string(str_value);

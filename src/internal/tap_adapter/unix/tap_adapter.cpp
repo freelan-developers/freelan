@@ -70,6 +70,8 @@ struct in6_ifreq
 #include <netinet/in.h>
 #include <netinet6/in6_var.h>
 
+#include <ifaddrs.h>
+
 #endif
 
 namespace freelan {
@@ -77,7 +79,7 @@ namespace freelan {
 using namespace boost::asio;
 
 namespace {
-    template <int Name>
+    template <unsigned long long Name>
     class BasicInterfaceCommand {
         public:
             explicit BasicInterfaceCommand(const std::string& _interface_name) :
@@ -102,6 +104,7 @@ namespace {
     };
 #endif
 
+#ifdef LINUX
     class TunSetInterfaceFunction : public BasicInterfaceCommand<TUNSETIFF> {
         public:
             explicit TunSetInterfaceFunction(const std::string& _interface_name, int flags) :
@@ -125,12 +128,10 @@ namespace {
             }
 
             EthernetAddress value() const {
-                EthernetAddress::value_type result;
-                std::memcpy(result.data(), m_ifr.ifr_hwaddr.sa_data, result.size());
-
-                return result;
+                return EthernetAddress::from_bytes(m_ifr.ifr_hwaddr.sa_data);
             }
     };
+#endif
 
     class InterfaceGetMTU : public BasicInterfaceCommand<SIOCGIFMTU> {
         public:
@@ -266,23 +267,23 @@ boost::system::error_code TapAdapter::open(const std::string& _name, boost::syst
 
 #else /* *BSD and Mac OS X */
 
-    const std::string dev_type = (layer() == tap_adapter_layer::ethernet) ? "tap" : "tun";
+    const std::string dev_type = (layer() == TapAdapterLayer::ethernet) ? "tap" : "tun";
     std::string interface_name = _name;
 
-    descriptor_handler device;
+    posix::stream_descriptor device(get_io_service());
 
     if (!_name.empty())
     {
-        device = open_device("/dev/" + _name, ec);
+        device = open_device(get_io_service(), "/dev/" + _name, ec);
     }
     else
     {
-        for (unsigned int i = 0 ; !device.valid(); ++i)
+        for (unsigned int i = 0 ; !device.is_open(); ++i)
         {
             interface_name = dev_type + boost::lexical_cast<std::string>(i);
-            device = open_device("/dev/" + interface_name, ec);
+            device = open_device(get_io_service(), "/dev/" + interface_name, ec);
 
-            if (!device.valid() && (errno == ENOENT))
+            if (!device.is_open() && (errno == ENOENT))
             {
                 // We reached the end of the available tap adapters.
                 break;
@@ -290,64 +291,48 @@ boost::system::error_code TapAdapter::open(const std::string& _name, boost::syst
         }
     }
 
-    if (!device.valid())
-    {
-        ec = make_error_code(asiotap_error::no_such_tap_adapter);
-
-        return;
+    if (!device.is_open()) {
+        return (ec = boost::system::error_code(ENOENT, boost::system::system_category()));
     }
 
     struct stat st {};
 
-    if (::fstat(device.native_handle(), &st) != 0)
-    {
-        ec = boost::system::error_code(errno, boost::system::system_category());
-
-        return;
+    if (::fstat(device.native_handle(), &st) != 0) {
+        return (ec = boost::system::error_code(errno, boost::system::system_category()));
     }
 
     char namebuf[256];
     memset(namebuf, 0x00, sizeof(namebuf));
 
-    if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != NULL)
-    {
+    if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != nullptr) {
         set_name(namebuf);
-    }
-    else
-    {
+    } else {
         set_name(interface_name);
     }
 
-    if (if_nametoindex(name().c_str()) == 0)
-    {
-        ec = make_error_code(asiotap_error::no_such_tap_adapter);
-
-        return;
+    if (if_nametoindex(name().c_str()) == 0) {
+        return (ec = boost::system::error_code(ENOENT, boost::system::system_category()));
     }
 
     // Do not pass the descriptor to child
     ::fcntl(device.native_handle(), F_SETFD, FD_CLOEXEC);
 
-    descriptor_handler socket = open_socket(AF_INET, ec);
+    auto socket = ip::udp::socket(get_io_service());
 
-    if (!socket.valid())
-    {
-        return;
+    if (socket.open(ip::udp::v4(), ec)) {
+        return ec;
     }
 
     /* Get the hardware address of tap inteface. */
     struct ifaddrs* addrs = nullptr;
 
-    if (getifaddrs(&addrs) < 0)
-    {
-        ec = boost::system::error_code(errno, boost::system::system_category());
-
-        return;
+    if (getifaddrs(&addrs) < 0) {
+        return (ec = boost::system::error_code(errno, boost::system::system_category()));
     }
 
     boost::shared_ptr<struct ifaddrs> paddrs(addrs, freeifaddrs);
 
-    for (struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next)
+    for (struct ifaddrs* ifa = addrs; ifa != nullptr; ifa = ifa->ifa_next)
     {
         const std::string if_name = name();
 
@@ -357,9 +342,8 @@ boost::system::error_code TapAdapter::open(const std::string& _name, boost::syst
 
             if (sdl->sdl_type == IFT_ETHER)
             {
-                osi::ethernet_address _ethernet_address;
-                std::memcpy(_ethernet_address.data().data(), LLADDR(sdl), ethernet_address().data().size());
-                set_ethernet_address(_ethernet_address);
+                const auto ethernet_address = EthernetAddress::from_bytes(LLADDR(sdl));
+                set_ethernet_address(ethernet_address);
 
                 break;
             }
