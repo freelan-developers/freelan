@@ -126,7 +126,7 @@ class LogPayload {
 
 		template <typename Type>
 		bool is() const {
-            return as<Type>();
+            return as<Type>() != nullptr;
         }
 
 		template <typename Type>

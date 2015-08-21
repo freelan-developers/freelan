@@ -197,7 +197,6 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/log.cpp
     src/tests/perf_counter.cpp
     src/tests/stream_parsers.cpp
-    src/tests/tap_adapter/unix/tap_adapter.cpp
     src/tests/types/ethernet_address.cpp
     src/tests/types/host.cpp
     src/tests/types/host_endpoint.cpp
@@ -217,6 +216,15 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/types/port_number.cpp
     src/tests/types/tap_adapter_layer.cpp
 )
+
+if (WIN32)
+    set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+    )
+else()
+    set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+        src/tests/tap_adapter/unix/tap_adapter.cpp
+    )
+endif()
 
 set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
     ${GTEST_ROOT}/src/gtest-all.cc
