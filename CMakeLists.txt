@@ -118,6 +118,8 @@ set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
     src/internal/types/port_number.hpp
     src/internal/types/tap_adapter_layer.hpp
 )
+source_group(types FILES ${INTERNAL_TYPES_SRC_FILES})
+
 
 set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
     src/internal/tap_adapter/tap_adapter.hpp
@@ -134,6 +136,7 @@ else()
         src/internal/tap_adapter/unix/tap_adapter.hpp
     )
 endif()
+source_group(tap_adapter FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES})
 
 set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     ${INTERNAL_GENERIC_SRC_FILES}
@@ -141,7 +144,6 @@ set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     ${INTERNAL_TAP_ADAPTER_SRC_FILES}
     "${INTERNAL_VERSION_HEADER}"
 )
-source_group(internal FILES ${INTERNAL_SRC_FILES})
 
 add_library(FreeLANInternalLibrary ${INTERNAL_SRC_FILES})
 target_include_directories(FreeLANInternalLibrary PUBLIC "${PROJECT_SOURCE_DIR}/src/internal")
@@ -171,9 +173,10 @@ set (API_SRC_FILES ${API_SRC_FILES}
     src/freelan/types.cpp
     src/freelan/version.cpp
 )
-source_group(api FILES ${API_MAIN_HEADER_FILES} ${API_HEADER_FILES} ${API_SRC_FILES})
+source_group(api FILES ${API_MAIN_HEADER_FILES} ${API_HEADER_FILES})
+source_group(implementation FILES ${API_SRC_FILES})
 
-add_library(FreeLANLibrary SHARED ${API_SRC_FILES})
+add_library(FreeLANLibrary SHARED ${API_SRC_FILES} ${API_HEADER_FILES} ${API_MAIN_HEADER_FILES})
 target_include_directories(FreeLANLibrary INTERFACE "${PROJECT_SOURCE_DIR}/include")
 target_include_directories(FreeLANLibrary PRIVATE "${PROJECT_SOURCE_DIR}/include/freelan")
 target_link_libraries(FreeLANLibrary PRIVATE FreeLANInternalLibrary)
