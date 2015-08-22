@@ -46,6 +46,9 @@
 
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "../generic_tap_adapter.hpp"
 
 namespace freelan {

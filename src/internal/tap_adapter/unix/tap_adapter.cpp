@@ -264,6 +264,7 @@ boost::system::error_code TapAdapter::open(const std::string& _name, boost::syst
     }
 
     set_name(interface_name);
+    set_display_name(interface_name);
 
 #else /* *BSD and Mac OS X */
 

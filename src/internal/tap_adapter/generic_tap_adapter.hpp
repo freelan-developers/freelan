@@ -104,6 +104,7 @@ class GenericTapAdapter {
 
         TapAdapterLayer layer() const { return m_layer; }
         const std::string& name() const { return m_name; }
+        const std::string& display_name() const { return m_display_name; }
         size_t mtu() const { return m_mtu; }
         const EthernetAddress& ethernet_address() const { return m_ethernet_address; }
         bool is_open() const { return m_descriptor.is_open(); }
@@ -121,6 +122,7 @@ class GenericTapAdapter {
 
         DescriptorType& descriptor() { return m_descriptor; }
         void set_name(const std::string& _name) { m_name = _name; }
+        void set_display_name(const std::string& _display_name) { m_display_name = _display_name; }
         void set_mtu(size_t _mtu) { m_mtu = _mtu; }
         void set_ethernet_address(const EthernetAddress& _ethernet_address) { m_ethernet_address = _ethernet_address; }
 
@@ -129,6 +131,7 @@ class GenericTapAdapter {
         DescriptorType m_descriptor;
         TapAdapterLayer m_layer;
         std::string m_name;
+        std::string m_display_name;
         size_t m_mtu;
         EthernetAddress m_ethernet_address;
 

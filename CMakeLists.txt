@@ -27,6 +27,13 @@ if (WIN32)
 
     # Fixes some behavioral issues with stdint.h
     add_definitions(/D__STDC_LIMIT_MACROS)
+
+    # Let's be cautious instead.
+    add_definitions(/D_CRT_SECURE_NO_WARNINGS)
+
+    # TAP adapter identifier.
+    set(TAP_ID "tap0901" CACHE STRING "TAP adapter identifier")
+    add_definitions(/DTAP_ID=\"${TAP_ID}\")
 endif()
 
 find_package(Threads)
@@ -90,6 +97,12 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/traits.hpp
 )
 
+if (WIN32)
+    set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
+        src/internal/windows/registry.hpp
+    )
+endif()
+
 set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
     src/internal/types/ethernet_address.cpp
     src/internal/types/ethernet_address.hpp
@@ -128,6 +141,8 @@ set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
 
 if (WIN32)
     set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+        src/internal/tap_adapter/windows/extra/tap-windows.h
+        src/internal/tap_adapter/windows/tap_adapter.cpp
         src/internal/tap_adapter/windows/tap_adapter.hpp
     )
 else()
@@ -151,6 +166,10 @@ target_include_directories(FreeLANInternalLibrary PUBLIC "${PROJECT_BINARY_DIR}/
 set_target_properties(FreeLANInternalLibrary PROPERTIES PROJECT_LABEL "FreeLAN internal library")
 set_target_properties(FreeLANInternalLibrary PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 set_target_properties(FreeLANInternalLibrary PROPERTIES OUTPUT_NAME "freelan_internal")
+
+if (WIN32)
+    target_link_libraries(FreeLANInternalLibrary PRIVATE "iphlpapi")
+endif()
 
 # The main library.
 set (API_MAIN_HEADER_FILES ${API_MAIN_HEADER_FILES}
@@ -222,6 +241,7 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
 
 if (WIN32)
     set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+        src/tests/tap_adapter/windows/tap_adapter.cpp
     )
 else()
     set (TESTS_SRC_FILES ${TESTS_SRC_FILES}

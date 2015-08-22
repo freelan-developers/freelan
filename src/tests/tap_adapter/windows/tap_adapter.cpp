@@ -38,45 +38,47 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file tap_adapter.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A TAP adapter class.
- */
+#include <gtest/gtest.h>
 
-#pragma once
+#include "../../common.hpp"
 
-#include <map>
-#include <string>
+#include "../../../internal/tap_adapter/windows/tap_adapter.hpp"
 
-#include "../generic_tap_adapter.hpp"
+#include <boost/asio.hpp>
 
-#include <windows.h>
-#include <iphlpapi.h>
+using freelan::TapAdapter;
+using freelan::TapAdapterLayer;
 
-namespace freelan {
+typedef LoggedTest TapAdapterTest;
 
-class TapAdapter : public GenericTapAdapter<boost::asio::windows::stream_handle> {
-    public:
-        static std::map<std::string, std::string> enumerate(TapAdapterLayer _layer);
+TEST_F(TapAdapterTest, default_instanciation_ethernet) {
+    IS_SYSTEM_TEST();
 
-        TapAdapter(boost::asio::io_service& _io_service, TapAdapterLayer _layer) :
-            GenericTapAdapter(_io_service, _layer),
-			m_interface_index(),
-			m_interface_luid()
-        {}
+    boost::asio::io_service io_service;
 
-        TapAdapter(const TapAdapter&) = delete;
-        TapAdapter& operator=(const TapAdapter&) = delete;
+    TapAdapter tap_adapter(io_service, TapAdapterLayer::ethernet);
+    boost::system::error_code ec;
 
-        boost::system::error_code open(boost::system::error_code& ec) { return open("", ec); }
-        boost::system::error_code open(std::string _name, boost::system::error_code& ec);
+    const auto result = tap_adapter.open(ec);
 
-        void set_connected_state(bool connected);
+    SCOPED_LOGS();
 
-    private:
-		NET_IFINDEX m_interface_index;
-		NET_LUID m_interface_luid;
-};
+    ASSERT_EQ(ec, result);
+    ASSERT_EQ(boost::system::error_code(), ec);
+}
 
+TEST_F(TapAdapterTest, default_instanciation_ip) {
+    IS_SYSTEM_TEST();
+
+    boost::asio::io_service io_service;
+
+    TapAdapter tap_adapter(io_service, TapAdapterLayer::ip);
+    boost::system::error_code ec;
+
+    const auto result = tap_adapter.open(ec);
+
+    SCOPED_LOGS();
+
+    ASSERT_EQ(ec, result);
+    ASSERT_EQ(boost::system::error_code(), ec);
 }

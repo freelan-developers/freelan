@@ -63,7 +63,7 @@ class LoggedTest : public ::testing::Test {
 			using namespace std::placeholders;
 
 			freelan::set_log_function(std::bind(&LoggedTest::on_log, this, _1, _2, _3, _4, _5, _6, _7));
-			freelan::set_log_level(freelan::LogLevel::DEBUG);
+			freelan::set_log_level(freelan::LogLevel::TRACE);
 		}
 
 		virtual void TearDown() {

@@ -56,6 +56,11 @@
 
 namespace freelan {
 
+// Windows defines ERROR.
+#ifdef ERROR
+#undef ERROR
+#endif
+
 enum class LogLevel : unsigned int {
 	TRACE = 10,
 	DEBUG = 20,
