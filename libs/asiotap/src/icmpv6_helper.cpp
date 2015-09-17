@@ -54,7 +54,7 @@ namespace asiotap
 		{
 			icmpv6_ipv6_pseudo_header parent_frame_to_pseudo_header(const_helper<ipv6_frame> parent_frame)
 			{
-				icmpv6_ipv6_pseudo_header pseudo_header = {};
+				icmpv6_ipv6_pseudo_header pseudo_header {};
 
 				pseudo_header.ipv6_source = parent_frame.frame().source;
 				pseudo_header.ipv6_destination = parent_frame.frame().destination;

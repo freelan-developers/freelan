@@ -83,7 +83,7 @@ class FreelanEnvironment(Environment):
         if os.path.basename(self['CXX']) == 'clang++':
             self.Append(CXXFLAGS=['-Qunused-arguments'])
             self.Append(CXXFLAGS=['-fcolor-diagnostics'])
-        elif os.path.basename(self['CXX']).endswith('g++'):
+        elif os.path.basename(self['CXX']).startswith('g++'):
             self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
 
         self.Append(CXXFLAGS=['--std=c++11'])
