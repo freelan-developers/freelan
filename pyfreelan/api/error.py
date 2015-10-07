@@ -1,3 +1,9 @@
+"""
+Error types.
+"""
+
+from __future__ import unicode_literals
+
 import threading
 
 from functools import wraps
@@ -20,7 +26,7 @@ def from_native_string(native_str, free_on_success=False):
     otherwise.
     """
     if native_str != ffi.NULL:
-        result = ffi.string(native_str)
+        result = ffi.string(native_str).decode('utf-8')
 
         if free_on_success:
             native.freelan_free(native_str)
@@ -101,6 +107,9 @@ class ErrorContext(object):
         return native.freelan_error_context_get_error_line(self._opaque_ptr)
 
     def __nonzero__(self):
+        return self.category is not None
+
+    def __bool__(self):
         return self.category is not None
 
     def __enter__(self):

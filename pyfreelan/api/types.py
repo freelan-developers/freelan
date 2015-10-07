@@ -4,6 +4,8 @@ FreeLAN types.
 
 from functools import wraps
 
+from six import text_type
+
 from . import (
     native,
     ffi,
@@ -96,6 +98,9 @@ class NativeType(object):
 
                 :param _str: The string representation.
                 """
+                if isinstance(_str, text_type):
+                    _str = _str.encode('utf-8')
+
                 return cls(opaque_ptr=from_string(ectx, _str))
 
             def __del__(self):
@@ -192,7 +197,7 @@ class NativeType(object):
         :param typename: The name of the native type to wrap.
         :returns: An API wrapper class.
         """
-        Wrapper = cls.from_typename(typename)
+        wrapper = cls.from_typename(typename)
 
         def add_from_subtype(wrapper_cls, typename, subtype):
             from_subtype = getattr(
@@ -288,10 +293,10 @@ class NativeType(object):
             for subtype in subtypes
         }
 
-        for subtype, subtype_cls in subtypes_classes.iteritems():
-            add_from_subtype(Wrapper, typename, subtype)
-            add_as_subtype_ptr(Wrapper, typename, subtype)
-            add_as_subtype(Wrapper, typename, subtype, subtype_cls)
+        for subtype, subtype_cls in subtypes_classes.items():
+            add_from_subtype(wrapper, typename, subtype)
+            add_as_subtype_ptr(wrapper, typename, subtype)
+            add_as_subtype(wrapper, typename, subtype, subtype_cls)
 
         def add_eq(wrapper_cls, typename, subtypes_classes):
             types_and_as_funcs = [
@@ -302,7 +307,7 @@ class NativeType(object):
                         'as_%s' % subtype,
                     ),
                 )
-                for subtype, subtype_cls in subtypes_classes.iteritems()
+                for subtype, subtype_cls in subtypes_classes.items()
             ]
             original_func = wrapper_cls.__eq__
 
@@ -330,7 +335,7 @@ class NativeType(object):
                         'as_%s' % subtype,
                     ),
                 )
-                for subtype, subtype_cls in subtypes_classes.iteritems()
+                for subtype, subtype_cls in subtypes_classes.items()
             ]
             original_func = wrapper_cls.__lt__
 
@@ -349,10 +354,10 @@ class NativeType(object):
                 func,
             )
 
-        add_eq(Wrapper, typename, subtypes_classes)
-        add_lt(Wrapper, typename, subtypes_classes)
+        add_eq(wrapper, typename, subtypes_classes)
+        add_lt(wrapper, typename, subtypes_classes)
 
-        return Wrapper
+        return wrapper
 
 
 class EthernetAddress(NativeType.from_typename('EthernetAddress')):

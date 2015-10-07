@@ -2,6 +2,9 @@
 IO API tests.
 """
 
+from __future__ import unicode_literals
+
+from six.moves import range
 from unittest import TestCase
 from mock import MagicMock
 from threading import (
@@ -59,7 +62,7 @@ class IOServiceTests(TestCase):
 
         threads = [
             Thread(target=io_service.run)
-            for _ in xrange(2)
+            for _ in range(2)
         ]
 
         for thread in threads:

@@ -2,6 +2,9 @@
 Python wrapper that runs the gtest binary.
 """
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from subprocess import (
     Popen,
     PIPE,
@@ -18,7 +21,7 @@ class TestGTestBinary(object):
                 [GTEST_BINARY, '--gtest_list_tests'],
                 stdout=PIPE,
             )
-            lines = iter(process.stdout.readline, '')
+            lines = iter(process.stdout.readline, b'')
 
             # Skip the first line as it contains garbage.
             next(lines)
@@ -27,10 +30,10 @@ class TestGTestBinary(object):
             name = None
 
             for line in lines:
-                if line.startswith('  '):
+                if line.startswith(b'  '):
                     name = line.strip()
                 else:
-                    module = line.strip().rstrip('.')
+                    module = line.strip().rstrip(b'.')
 
                 if name and module:
                     yield self.run_single, module, name
@@ -45,6 +48,6 @@ class TestGTestBinary(object):
             [GTEST_BINARY, '--gtest_filter=%s.%s' % (module, name)],
             stdout=PIPE,
         )
-        print process.stdout.read()
+        print(process.stdout.read())
         process.wait()
         assert 0 == process.returncode

@@ -2,6 +2,10 @@
 Types API tests.
 """
 
+from __future__ import unicode_literals
+
+import six
+
 from unittest import TestCase
 from functools import wraps
 from contextlib import contextmanager
@@ -195,7 +199,7 @@ class NativeTypeTests(TestCase):
 
         instance = wrapper.from_string("mystr")
 
-        from_string.assert_called_once_with(ectx, "mystr")
+        from_string.assert_called_once_with(ectx, b"mystr")
         self.assertEqual(from_string("mystr"), instance._opaque_ptr)
 
     def test_wrapper_del_calls_free(self):
@@ -273,9 +277,8 @@ class NativeTypeTests(TestCase):
     def test_wrapper_repr(self):
         wrapper = NativeType.create_wrapper('foo')
         instance = MagicMock(spec=wrapper)
-        instance.__class__.__name__ = 'MyClass'
-        native_ptr = MagicMock()
-        native_ptr.__str__.return_value = '0x12345678'
+        instance.__class__.__name__ = str('MyClass')
+        native_ptr = '0x12345678'
         instance._opaque_ptr = native_ptr
 
         result = wrapper.__repr__(instance)
@@ -289,11 +292,11 @@ class NativeTypeTests(TestCase):
             return result
 
         def equal(lhs, rhs):
-            self.assertEqual({"a", "b"}, {lhs.value, rhs.value})
+            self.assertEqual({b"a", b"b"}, {lhs.value, rhs.value})
             return lhs.value == rhs.value
 
         def less_than(lhs, rhs):
-            self.assertEqual({"a", "b"}, {lhs.value, rhs.value})
+            self.assertEqual({b"a", b"b"}, {lhs.value, rhs.value})
             return lhs.value < rhs.value
 
         self.native.freelan_foo_from_string = from_string
@@ -319,7 +322,12 @@ class NativeTypeTests(TestCase):
 
         # Wrapper types can only be compared to instances of the same class.
         self.assertFalse(instance == "instance")
-        self.assertTrue(instance < "instance")
+
+        if six.PY2:
+            self.assertTrue(instance < "instance")
+        else:
+            with self.assertRaises(TypeError):
+                instance < "instance"
 
     def test_wrapper_hash(self):
         wrapper = NativeType.create_wrapper('foo')

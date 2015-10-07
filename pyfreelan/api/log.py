@@ -1,3 +1,12 @@
+from __future__ import unicode_literals
+
+from six import (
+    binary_type,
+    text_type,
+    string_types,
+    integer_types,
+)
+from six.moves import range
 from enum import Enum
 from datetime import datetime
 
@@ -5,6 +14,7 @@ from . import (
     native,
     ffi,
 )
+from ..log import logger
 
 
 class LogLevel(Enum):
@@ -44,7 +54,7 @@ def to_c(value):
     :param value: The value whose format to check.
     :returns: A value suitable for a call to the C API.
     """
-    if hasattr(value, 'encode'):
+    if isinstance(value, text_type):
         value = value.encode('utf-8')
 
     return value
@@ -57,7 +67,7 @@ def from_c(value):
     :param value: The value whose format to check.
     :returns: A value suitable for local use in Python.
     """
-    if hasattr(value, 'decode'):
+    if isinstance(value, binary_type):
         value = value.decode('utf-8')
 
     return value
@@ -73,13 +83,13 @@ def log_attach(registry, entry, key, value):
 
     .. note: Unicode strings are UTF-8 encoded for both keys and values.
     """
-    if not isinstance(key, basestring):
+    if not isinstance(key, string_types):
         raise TypeError("key must be a string")
 
     key = to_c(key)
     value = to_c(value)
 
-    if isinstance(value, str):
+    if isinstance(value, binary_type):
         # We must create a store a new const char* value so that the references
         # remains valid until entry expires.
         str_value = ffi.new("const char[]", value)
@@ -97,7 +107,7 @@ def log_attach(registry, entry, key, value):
             native.FREELAN_LOG_PAYLOAD_TYPE_BOOLEAN,
             {'as_boolean': value},
         )
-    elif isinstance(value, int):
+    elif isinstance(value, integer_types):
         native.freelan_log_attach(
             entry,
             key,
@@ -121,7 +131,7 @@ def log_attach(registry, entry, key, value):
     else:
         raise TypeError(
             "value must be either a string, an integer, a float or a boolean "
-            "value",
+            "value (got: %r)" % value,
         )
 
 
@@ -187,8 +197,16 @@ def log(
         registry = []
 
         try:
-            for key, value in payload.iteritems():
-                log_attach(registry, entry, key, value)
+            for key, value in payload.items():
+                try:
+                    log_attach(registry, entry, key, value)
+                except Exception:
+                    logger.exception(
+                        "Attaching %r=%r to log entry %r",
+                        key,
+                        value,
+                        entry,
+                    )
         finally:
             return native.freelan_log_complete(entry) != 0
 
@@ -218,7 +236,7 @@ def from_native_payload(payload):
     :param payload: The native payload to read.
     :returns: A tuple (key, value).
     """
-    key = ffi.string(payload.key)
+    key = ffi.string(payload.key).decode('utf-8')
 
     if payload.type == native.FREELAN_LOG_PAYLOAD_TYPE_STRING:
         value = ffi.string(payload.value.as_string).decode('utf-8')
@@ -263,7 +281,7 @@ def log_function(
                 key: value
                 for key, value in (
                     from_native_payload(payload[i])
-                    for i in xrange(payload_size)
+                    for i in range(payload_size)
                 )
             },
             file=ffi.string(file) if file != ffi.NULL else None,

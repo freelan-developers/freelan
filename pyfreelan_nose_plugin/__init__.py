@@ -82,7 +82,7 @@ class FreeLANMemory(ErrorClassPlugin):
             if memory_map != self.memory_map:
                 leaks = {
                     ptrinfo
-                    for ptr, ptrinfo in memory_map.iteritems()
+                    for ptr, ptrinfo in memory_map.items()
                     if ptr not in self.memory_map and ptrinfo.has_debug_info
                 }
 

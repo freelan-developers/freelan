@@ -27,8 +27,12 @@
 # Python files
 *.egg-info
 *.whl
-pyfreelan/_pyfreelan.so
+pyfreelan/_pyfreelan*.so
 dist/*
 .tox/*
 MANIFEST
 .coverage
+
+# Coverage
+.coverage
+/htmlcov/
