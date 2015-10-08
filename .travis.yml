@@ -6,10 +6,10 @@ compiler:
     - g++
 
 env:
-  - TOXENV=py27 CMAKE_BUILD_TYPE=DEBUG CXX_VERSION=4.9
-  - TOXENV=py27 CMAKE_BUILD_TYPE=RELEASE CXX_VERSION=4.9
-  - TOXENV=py27 CMAKE_BUILD_TYPE=DEBUG CXX_VERSION=5
-  - TOXENV=py27 CMAKE_BUILD_TYPE=RELEASE CXX_VERSION=5
+  - CMAKE_BUILD_TYPE=DEBUG CXX_VERSION=4.9
+  - CMAKE_BUILD_TYPE=RELEASE CXX_VERSION=4.9
+  - CMAKE_BUILD_TYPE=DEBUG CXX_VERSION=5
+  - CMAKE_BUILD_TYPE=RELEASE CXX_VERSION=5
 
 addons:
   apt:
@@ -25,6 +25,7 @@ addons:
       - gcc-5
       - g++-5
       - python-virtualenv
+      - python3
 
 cache:
   apt: true
@@ -40,6 +41,9 @@ script:
   - CXX=g++-${CXX_VERSION} /tmp/usr/bin/cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
   - make install
   - CPATH=install/include /tmp/venv/bin/tox
+
+after_success:
+  - coveralls
 
 branches:
     only:
