@@ -3,6 +3,7 @@ FreeLAN API.
 """
 
 import os
+import platform
 
 from distutils.ccompiler import (
     new_compiler,
@@ -20,6 +21,22 @@ def extract_api():
     """
     compiler = new_compiler()
     customize_compiler(compiler)
+
+    if platform.system() == 'Windows':
+        # Because life is unfair, preprocess() is not implemented in distutils
+        # for Windows so we have to do it ourselves.
+        def preprocess(source, output_file, extra_postargs):
+            if not compiler.initialized:
+                compiler.initialize()
+
+            args = [compiler.cc, '/nologo']
+            args.extend(extra_postargs)
+            args.append('/Fi%s' % output_file)
+            args.append(source)
+
+            return compiler.spawn(args)
+
+        compiler.preprocess = preprocess
 
     input_file = os.path.join(gettempdir(), 'freelan-api.c')
     output_file = os.path.join(gettempdir(), 'freelan-api.h')
@@ -72,4 +89,4 @@ ffi.set_source(
 )
 
 if __name__ == '__main__':
-    ffi.compile()  # pragma: no cover
+    ffi.compile()

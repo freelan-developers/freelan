@@ -28,10 +28,12 @@
 *.egg-info
 *.whl
 pyfreelan/_pyfreelan*.so
+pyfreelan/_pyfreelan*.pyd
 dist/*
 .tox/*
 MANIFEST
 .coverage
+/.eggs/
 
 # Coverage
 .coverage
