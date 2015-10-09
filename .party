@@ -21,7 +21,7 @@ def is_x86():
 
 # boost
 Attendee('boost').add_source(
-    'http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.zip/download',
+    'http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.zip/download',
     filter='windows',
     mimetype='application/zip',
 )
@@ -34,9 +34,9 @@ Attendee('boost').add_build(
 )
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
-    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=release link=static threading=multi runtime-link=shared install',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-14.0 variant=release link=static threading=multi runtime-link=shared install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
-    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=debug link=static threading=multi runtime-link=shared install',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-14.0 variant=debug link=static threading=multi runtime-link=shared install',
 ]
 
 Attendee('boost').add_build(
@@ -47,7 +47,7 @@ Attendee('boost').add_build(
 )
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
-    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-14.0 variant=release link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\bin\ /S /Y',
-    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-12.0 variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 -j7 --prefix={{prefix}} --layout=versioned --without-serialization toolset=msvc-14.0 variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
 ]
