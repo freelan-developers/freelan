@@ -26,7 +26,7 @@ def extract_api():
 
     try:
         with open(input_file, 'w') as _file:
-            _file.write("#include <freelan.h>\n")
+            _file.write("#include <freelan.h>\n")  # pragma: no branch
 
         compiler.preprocess(
             source=input_file,

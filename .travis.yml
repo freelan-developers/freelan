@@ -25,7 +25,8 @@ addons:
       - gcc-5
       - g++-5
       - python-virtualenv
-      - python3
+      - python2.7
+      - python3.4
 
 cache:
   apt: true
