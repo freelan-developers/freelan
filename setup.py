@@ -10,8 +10,11 @@ setup(
     author_email='julien.kauffmann@freelan.org',
     url='http://www.freelan.org',
     description='A Python layer around the FreeLAN API.',
-    setup_requires=["cffi>=1.0.0"],
-    install_requires=["cffi>=1.0.0"],
+    setup_requires=["cffi>=1.1.2"],
+    install_requires=[
+        "cffi>=1.1.2",
+        "six>=1.9.0",
+    ],
     cffi_modules=["pyfreelan/api/_build.py:ffi"],
     packages=find_packages(
         exclude=[

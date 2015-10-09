@@ -375,7 +375,7 @@ class NativeCallsTests(TestCase):
         self.assertNotEqual(ffi.NULL, result)
 
     def test_IPv4Address_from_string_truncated(self):
-        result = native.freelan_IPv4Address_from_string(self.ectx, b"127.1")
+        result = native.freelan_IPv4Address_from_string(self.ectx, b"127.1.")
 
         self.assertEqual(ffi.NULL, result)
 
@@ -1437,7 +1437,7 @@ class NativeCallsTests(TestCase):
         )
 
     def test_IPAddress_from_string_truncated(self):
-        result = native.freelan_IPAddress_from_string(self.ectx, b"127.1")
+        result = native.freelan_IPAddress_from_string(self.ectx, b"127.1.")
 
         self.assertEqual(ffi.NULL, result)
 
@@ -1697,7 +1697,7 @@ class NativeCallsTests(TestCase):
         )
 
     def test_Host_from_string_truncated(self):
-        result = native.freelan_Host_from_string(self.ectx, b"127.1")
+        result = native.freelan_Host_from_string(self.ectx, b"127.1.")
 
         self.assertEqual(ffi.NULL, result)
 
