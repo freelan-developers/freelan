@@ -16,6 +16,7 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - boost-latest
+      - deadsnakes
     packages:
       - libboost1.55-all-dev
       - libssl-dev
