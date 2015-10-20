@@ -39,6 +39,12 @@ endif()
 find_package(Threads)
 find_package(Boost COMPONENTS system date_time regex thread REQUIRED)
 
+if (WIN32 AND MSVC_VERSION EQUAL 1900 AND Boost_VERSION EQUAL 105900)
+    # Boost 1.59.0 on VS 2015 has annoying but non-fatal warnings that we can
+    # get rid of easily.
+    add_definitions(/wd4005)
+endif()
+
 # Default install path
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set (CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "Default installation path" FORCE)
