@@ -44,7 +44,7 @@ before_script:
 script:
   - CXX=g++-${CXX_VERSION} /tmp/usr/bin/cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
   - make install
-  - CPATH=install/include LIBRARY_PATH=install/lib LD_LIBRARY_PATH=install/lib /tmp/venv/bin/tox
+  - CPATH=${TRAVIS_BUILD_DIR}/install/include LIBRARY_PATH=${TRAVIS_BUILD_DIR}/install/lib LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/install/lib /tmp/venv/bin/tox
 
 after_success:
   - coveralls
