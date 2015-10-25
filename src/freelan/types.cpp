@@ -67,6 +67,7 @@
 namespace {
 	template <typename Type, typename InternalType>
 	Type* from_string_generic(struct freelan_ErrorContext* ectx, const char* str) {
+		assert(ectx);
 		assert(str);
 
 		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
@@ -82,6 +83,7 @@ namespace {
 
 	template <typename Type, typename InternalType>
 	char* to_string_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
+		assert(ectx);
 		assert(inst);
 
 		const auto value = reinterpret_cast<const InternalType*>(inst);
@@ -97,6 +99,7 @@ namespace {
 
 	template <typename Type, typename InternalType>
 	Type* clone_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
+		assert(ectx);
 		assert(inst);
 
 		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
