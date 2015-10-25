@@ -212,7 +212,7 @@ set_target_properties(FreeLANLibrary PROPERTIES OUTPUT_NAME "freelan")
 set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH OFF)
 target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
 
-install(TARGETS FreeLANLibrary RUNTIME DESTINATION bin ARCHIVE DESTINATION lib)
+install(TARGETS FreeLANLibrary RUNTIME DESTINATION bin ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)
 install(FILES ${API_MAIN_HEADER_FILES} DESTINATION include)
 install(FILES ${API_HEADER_FILES} DESTINATION include/freelan)
 
