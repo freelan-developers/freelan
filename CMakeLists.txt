@@ -277,3 +277,15 @@ if (WIN32)
 endif()
 
 install(TARGETS FreeLANTests DESTINATION bin)
+
+if (WIN32)
+    add_custom_target(
+        PythonTests
+        COMMAND ${CMAKE_COMMAND} -E env
+        "PATH=${CMAKE_INSTALL_PREFIX}/bin;$ENV{PATH}"
+        "INCLUDE=${CMAKE_INSTALL_PREFIX}/include"
+        "LIB=${CMAKE_INSTALL_PREFIX}/lib"
+        tox -e py35
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+endif()
