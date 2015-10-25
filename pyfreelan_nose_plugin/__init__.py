@@ -6,6 +6,7 @@ from .binding import (
     register_memory_functions,
     unregister_memory_functions,
     cleanup_memory_cache,
+    enable_memory_logs,
     memory_map,
     memory_usage,
     memory_sequence,
@@ -34,6 +35,13 @@ class FreeLANMemory(ErrorClassPlugin):
             dest='memLeaks',
             help="Enable FreeLAN memory leaks analysis.",
         )
+        parser.add_option(
+            '--mem-log',
+            action='store_true',
+            default=False,
+            dest='memLog',
+            help="Enable FreeLAN memory logs.",
+        )
 
     def configure(self, options, conf):
         if not self.can_configure:
@@ -42,6 +50,7 @@ class FreeLANMemory(ErrorClassPlugin):
         self.conf = conf
         self.memReport = getattr(options, 'memReport', False)
         self.memLeaks = getattr(options, 'memLeaks', False)
+        self.memLog = getattr(options, 'memLog', False)
 
     def report(self, stream):
         if self.memReport:
@@ -66,6 +75,9 @@ class FreeLANMemory(ErrorClassPlugin):
         if self.memLeaks:
             register_memory_functions()
 
+        if self.memLog:
+            enable_memory_logs()
+
     def finalize(self, result):
         if self.memLeaks:
             unregister_memory_functions()
@@ -74,6 +86,7 @@ class FreeLANMemory(ErrorClassPlugin):
         if self.memLeaks:
             self.memory_map = memory_map.copy()
             self.memory_sequence_offset = len(memory_sequence)
+            self.memory_blocks_offset = 0
 
     def stopTest(self, test):
         if self.memLeaks:

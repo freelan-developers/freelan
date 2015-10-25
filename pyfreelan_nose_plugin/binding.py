@@ -2,6 +2,8 @@
 The binding between FreeLAN's memory function and the nose plugin.
 """
 
+import logging
+
 from struct import calcsize
 
 memory_map = {}
@@ -14,6 +16,9 @@ memory_usage = {
     'deallocs': 0,
 }
 memory_sequence = []
+memory_blocks = {}
+memory_blocks_offset = 0
+logger = logging.getLogger("pyfreelan_nose_plugin")
 
 
 def get_pointer_size():
@@ -137,12 +142,19 @@ def register_memory_functions():
     def malloc(size):
         result = native.malloc(size)
         ptrinfo = PointerInfo(result, size)
-        memory_sequence.append(Allocation(ptrinfo))
+        allocation = Allocation(ptrinfo)
+        memory_sequence.append(allocation)
         memory_map[result] = ptrinfo
         memory_usage['sum'] += size
         memory_usage['current'] += size
         memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
         memory_usage['allocs'] += 1
+        block = memory_blocks[result] = memory_blocks_offset
+
+        global memory_blocks_offset
+        memory_blocks_offset += 1
+
+        logger.info("[%3d] %r", block, allocation)
 
         return result
 
@@ -152,7 +164,8 @@ def register_memory_functions():
         result = native.realloc(ptr, size)
         old_ptrinfo = memory_map[ptr]
         new_ptrinfo = PointerInfo(result, size)
-        memory_sequence.append(Reallocation(old_ptrinfo, new_ptrinfo))
+        reallocation = Reallocation(old_ptrinfo, new_ptrinfo)
+        memory_sequence.append(reallocation)
 
         if result != ffi.NULL:
             del memory_map[ptr]
@@ -165,6 +178,12 @@ def register_memory_functions():
             )
             memory_usage['reallocs'] += 1
 
+            block = memory_blocks[result] = memory_blocks.pop(ptr)
+
+            logger.info("[%3d] %r", block, reallocation)
+        else:
+            logger.warning("Reallocation returned a null pointer (%r)", result)
+
         return result
 
     @save
@@ -172,10 +191,16 @@ def register_memory_functions():
     def free(ptr):
         if ptr != ffi.NULL:
             ptrinfo = memory_map[ptr]
-            memory_sequence.append(Deallocation(ptrinfo))
+            deallocation = Deallocation(ptrinfo)
+            memory_sequence.append(deallocation)
             memory_usage['deallocs'] += 1
             memory_usage['current'] -= memory_map[ptr].size
             del memory_map[ptr]
+            block = memory_blocks.pop(ptr)
+
+            logger.info("[%3d] %r", block, deallocation)
+        else:
+            logger.info("Deallocating null pointer (%r)", ptr)
 
         return native.free(ptr)
 
@@ -190,6 +215,9 @@ def register_memory_functions():
     @ffi.callback("void* (void*, const char*, unsigned int)")
     def mark_pointer(ptr, file, line):
         memory_map[ptr].mark_pointer(file, line)
+        block = memory_blocks[ptr]
+        ptr_info = memory_map[ptr]
+        logger.info("[%3d] Added pointer information to: %r", block, ptr_info)
 
         return ptr
 
@@ -228,3 +256,10 @@ def cleanup_memory_cache():
     from pyfreelan.api.error import ErrorContext
 
     ErrorContext.clear_current()
+
+
+def enable_memory_logs():
+    """
+    Enable the memory allocation/deallocation logs.
+    """
+    logger.setLevel(logging.INFO)
