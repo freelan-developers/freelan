@@ -68,26 +68,42 @@ namespace {
 #endif
 	}
 
+	static void default_malloc_callback(void*, size_t) {}
+	static void default_realloc_callback(void*, void*, size_t) {}
 	static void* default_mark_pointer(void* ptr, const char*, unsigned int) {
 		return ptr;
 	}
+	static void default_free_callback(void*) {}
 
 	void* (*freelan_malloc_func)(size_t) = &default_malloc;
 	void* (*freelan_realloc_func)(void*, size_t) = &default_realloc;
 	void (*freelan_free_func)(void*) = &default_free;
 	char* (*freelan_strdup_func)(const char*) = &default_strdup;
+	void (*freelan_malloc_callback_func)(void*, size_t) = &default_malloc_callback;
+	void (*freelan_realloc_callback_func)(void*, void*, size_t) = &default_realloc_callback;
 	void* (*freelan_mark_pointer_func)(void*, const char*, unsigned int) = &default_mark_pointer;
+	void (*freelan_free_callback_func)(void*) = &default_free_callback;
 }
 
 void* internal_malloc(size_t size) {
-	return freelan_malloc_func(size);
+	const auto result = freelan_malloc_func(size);
+
+	freelan_malloc_callback_func(result, size);
+
+	return result;
 }
 
 void* internal_realloc(void* ptr, size_t size) {
-	return freelan_realloc_func(ptr, size);
+	const auto result = freelan_realloc_func(ptr, size);
+
+	freelan_realloc_callback_func(ptr, result, size);
+
+	return result;
 }
 
 void internal_free(void* ptr) {
+	freelan_free_callback_func(ptr);
+
 	return freelan_free_func(ptr);
 }
 
@@ -117,8 +133,16 @@ void* internal_mark_pointer(void* ptr, const char* file, unsigned int line) {
 	return freelan_mark_pointer_func(ptr, file, line);
 }
 
-void internal_register_memory_debug_functions(void* (*mark_pointer_func)(void*, const char*, unsigned int)) {
+void internal_register_memory_debug_functions(
+	void (*malloc_callback_func)(void*, size_t),
+	void (*realloc_callback_func)(void*, void*, size_t),
+	void* (*mark_pointer_func)(void*, const char*, unsigned int),
+	void (*free_callback_func)(void*)
+) {
+	freelan_malloc_callback_func = malloc_callback_func ? malloc_callback_func : &default_malloc_callback;
+	freelan_realloc_callback_func = realloc_callback_func ? realloc_callback_func : &default_realloc_callback;
 	freelan_mark_pointer_func = mark_pointer_func ? mark_pointer_func : &default_mark_pointer;
+	freelan_free_callback_func = free_callback_func ? free_callback_func : &default_free_callback;
 }
 
 }

@@ -76,6 +76,16 @@ FREELAN_API void* freelan_mark_pointer(void* ptr, const char* file, unsigned int
 	return freelan::internal_mark_pointer(ptr, file, line);
 }
 
-FREELAN_API void freelan_register_memory_debug_functions(void* (*mark_pointer_func)(void*, const char*, unsigned int)) {
-	return freelan::internal_register_memory_debug_functions(mark_pointer_func);
+FREELAN_API void freelan_register_memory_debug_functions(
+		void (*malloc_callback_func)(void*, size_t),
+		void (*realloc_callback_func)(void*, void*, size_t),
+		void* (*mark_pointer_func)(void*, const char*, unsigned int),
+		void (*free_callback_func)(void*)
+) {
+	return freelan::internal_register_memory_debug_functions(
+		malloc_callback_func,
+		realloc_callback_func,
+		mark_pointer_func,
+		free_callback_func
+	);
 }

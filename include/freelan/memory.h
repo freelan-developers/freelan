@@ -104,9 +104,14 @@ FREELAN_API char* freelan_strdup(const char* str);
  * is used.
  *
  * \warning This function MUST be called once before using any other part of
- * the API and never after that.
+ * the API and **NEVER** after that.
  */
-FREELAN_API void freelan_register_memory_functions(void* (*malloc_func)(size_t), void* (*realloc_func)(void*, size_t), void (*free_func)(void*), char* (*strdup_func)(const char*));
+FREELAN_API void freelan_register_memory_functions(
+	void* (*malloc_func)(size_t),
+	void* (*realloc_func)(void*, size_t),
+	void (*free_func)(void*),
+	char* (*strdup_func)(const char*)
+);
 
 /**
  * \brief Mark the origin of a memory allocation.
@@ -120,13 +125,28 @@ FREELAN_API void* freelan_mark_pointer(void* ptr, const char* file, unsigned int
 
 /**
  * \brief Override the memory debug functions.
- * \param mark_pointer_func The marking pointer function. If NULL, the default
- * implementation (which does nothing) is used.
+ * \param malloc_callback_func The allocation callback. This function is called
+ * whenever new memory is allocated. If NULL, the default implementation (which
+ * does nothing) is used.
+ * \param realloc_callback_func The reallocation callback. This function is
+ * called whenever memory is reallocated. If NULL, the default implementation
+ * (which does nothing) is used.
+ * \param mark_pointer_func The marking pointer function. This function is
+ * called whenever file:line information is available for recently-allocated
+ * memory. If NULL, the default implementation (which does nothing) is used.
+ * \param free_callback_func The free callback. This function is called
+ * whenever memory is freed. If NULL, the default implementation (which does
+ * nothing) is used.
  *
- * \warning This function MUST be called once before using any other part of
- * the API and never after that.
+ * \warning These functions are observers and should not attempt to modify,
+ * free or realloc any of the passed-in memory locations.
  */
-FREELAN_API void freelan_register_memory_debug_functions(void* (*mark_pointer_func)(void*, const char*, unsigned int));
+FREELAN_API void freelan_register_memory_debug_functions(
+	void (*malloc_callback_func)(void*, size_t),
+	void (*realloc_callback_func)(void*, void*, size_t),
+	void* (*mark_pointer_func)(void*, const char*, unsigned int),
+	void (*free_callback_func)(void*)
+);
 
 #ifdef __cplusplus
 }

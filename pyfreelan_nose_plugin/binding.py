@@ -158,38 +158,34 @@ def register_memory_functions():
     )
 
     @save
-    @ffi.callback("void* (size_t)")
-    def malloc(size):
+    @ffi.callback("void (void*, size_t)")
+    def on_malloc(ptr, size):
         global memory_blocks_offset
 
-        result = native.malloc(size)
-        ptrinfo = PointerInfo(result, size, extract_stack()[:-2])
+        ptrinfo = PointerInfo(ptr, size, extract_stack()[:-2])
         allocation = Allocation(ptrinfo)
         memory_sequence.append(allocation)
-        memory_map[result] = ptrinfo
+        memory_map[ptr] = ptrinfo
         memory_usage['sum'] += size
         memory_usage['current'] += size
         memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
         memory_usage['allocs'] += 1
-        block = memory_blocks[result] = memory_blocks_offset
+        block = memory_blocks[ptr] = memory_blocks_offset
         memory_blocks_offset += 1
 
         logger.info("[%3d] %r", block, allocation)
 
-        return result
-
     @save
-    @ffi.callback("void* (void*, size_t)")
-    def realloc(ptr, size):
-        result = native.realloc(ptr, size)
-        old_ptrinfo = memory_map[ptr]
-        new_ptrinfo = PointerInfo(result, size, extract_stack()[:-2])
+    @ffi.callback("void (void*, void*, size_t)")
+    def on_realloc(old_ptr, ptr, size):
+        old_ptrinfo = memory_map[old_ptr]
+        new_ptrinfo = PointerInfo(ptr, size, extract_stack()[:-2])
         reallocation = Reallocation(old_ptrinfo, new_ptrinfo)
         memory_sequence.append(reallocation)
 
-        if result != ffi.NULL:
-            del memory_map[ptr]
-            memory_map[result] = new_ptrinfo
+        if ptr != ffi.NULL:
+            del memory_map[old_ptr]
+            memory_map[ptr] = new_ptrinfo
             memory_usage['sum'] += size
             memory_usage['current'] += (size - old_ptrinfo.size)
             memory_usage['max'] = max(
@@ -198,17 +194,15 @@ def register_memory_functions():
             )
             memory_usage['reallocs'] += 1
 
-            block = memory_blocks[result] = memory_blocks.pop(ptr)
+            block = memory_blocks[ptr] = memory_blocks.pop(old_ptr)
 
             logger.info("[%3d] %r", block, reallocation)
         else:
-            logger.warning("Reallocation returned a null pointer (%r)", result)
-
-        return result
+            logger.warning("Reallocation returned a null pointer (%r)", ptr)
 
     @save
     @ffi.callback("void (void*)")
-    def free(ptr):
+    def on_free(ptr):
         if ptr != ffi.NULL:
             ptrinfo = memory_map[ptr]
             deallocation = Deallocation(ptrinfo)
@@ -222,15 +216,6 @@ def register_memory_functions():
         else:
             logger.info("Deallocating null pointer (%r)", ptr)
 
-        return native.free(ptr)
-
-    native.freelan_register_memory_functions(
-        malloc,
-        realloc,
-        free,
-        ffi.NULL,
-    )
-
     @save
     @ffi.callback("void* (void*, const char*, unsigned int)")
     def mark_pointer(ptr, file, line):
@@ -242,7 +227,10 @@ def register_memory_functions():
         return ptr
 
     native.freelan_register_memory_debug_functions(
+        on_malloc,
+        on_realloc,
         mark_pointer,
+        on_free,
     )
 
 
@@ -250,23 +238,12 @@ def unregister_memory_functions():
     """
     Instructs libfreelan to use the default memory functions.
     """
-    if memory_map:
-        raise AssertionError(
-            "Cannot unregister memory functions when some of the allocated "
-            "memory wasn't freed:\n  %s" % '\n  '.join(
-                map(str, memory_map.values()),
-            ),
-        )
-
     from pyfreelan.api import (
         native,
         ffi,
     )
 
     native.freelan_register_memory_debug_functions(
-        ffi.NULL,
-    )
-    native.freelan_register_memory_functions(
         ffi.NULL,
         ffi.NULL,
         ffi.NULL,
