@@ -57,27 +57,27 @@ namespace freelan {
 typedef boost::variant<IPv4Address, IPv6Address> IPAddressBase;
 
 class IPAddress : public IPAddressBase, public GenericVariant<IPAddress, IPv4Address, IPv6Address> {
-	public:
-		IPAddress() {}
-		IPAddress(const IPv4Address& ipv4_address) :
-			IPAddressBase(ipv4_address)
-		{}
-		IPAddress(const IPv6Address& ipv6_address) :
-			IPAddressBase(ipv6_address)
-		{}
+    public:
+        IPAddress() {}
+        IPAddress(const IPv4Address& ipv4_address) :
+            IPAddressBase(ipv4_address)
+        {}
+        IPAddress(const IPv6Address& ipv6_address) :
+            IPAddressBase(ipv6_address)
+        {}
 
-	private:
-		friend bool operator==(const IPAddress& lhs, const IPAddress& rhs) {
-			return static_cast<const IPAddressBase&>(lhs) == static_cast<const IPAddressBase&>(rhs);
-		};
+    private:
+        friend bool operator==(const IPAddress& lhs, const IPAddress& rhs) {
+            return static_cast<const IPAddressBase&>(lhs) == static_cast<const IPAddressBase&>(rhs);
+        };
 
-		friend bool operator<(const IPAddress& lhs, const IPAddress& rhs) {
-			return static_cast<const IPAddressBase&>(lhs) < static_cast<const IPAddressBase&>(rhs);
-		};
+        friend bool operator<(const IPAddress& lhs, const IPAddress& rhs) {
+            return static_cast<const IPAddressBase&>(lhs) < static_cast<const IPAddressBase&>(rhs);
+        };
 
-		friend std::istream& operator>>(std::istream& is, IPAddress& value) {
-			return IPAddress::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, IPAddress& value) {
+            return IPAddress::read_from(is, value);
+        }
 };
 
 }

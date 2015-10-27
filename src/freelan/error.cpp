@@ -44,69 +44,69 @@
 #include "error.hpp"
 
 FREELAN_API struct freelan_ErrorContext* freelan_acquire_error_context(void) {
-	try {
-		freelan::ErrorContext* const ectx = FREELAN_NEW freelan::ErrorContext {};
+    try {
+        freelan::ErrorContext* const ectx = FREELAN_NEW freelan::ErrorContext {};
 
-		return reinterpret_cast<freelan_ErrorContext*>(ectx);
-	} catch (std::bad_alloc&) {
-		return nullptr;
-	}
+        return reinterpret_cast<freelan_ErrorContext*>(ectx);
+    } catch (std::bad_alloc&) {
+        return nullptr;
+    }
 }
 
 FREELAN_API void freelan_release_error_context(struct freelan_ErrorContext* ectx) {
-	FREELAN_DELETE reinterpret_cast<freelan::ErrorContext*>(ectx);
+    FREELAN_DELETE reinterpret_cast<freelan::ErrorContext*>(ectx);
 }
 
 FREELAN_API void freelan_error_context_reset(struct freelan_ErrorContext* ectx) {
-	reinterpret_cast<freelan::ErrorContext*>(ectx)->reset();
+    reinterpret_cast<freelan::ErrorContext*>(ectx)->reset();
 }
 
 FREELAN_API const char* freelan_error_context_get_error_category(const struct freelan_ErrorContext* ectx) {
-	const auto& ec = reinterpret_cast<const freelan::ErrorContext*>(ectx)->error_code();
+    const auto& ec = reinterpret_cast<const freelan::ErrorContext*>(ectx)->error_code();
 
-	if (ec) {
-		return ec.category().name();
-	} else {
-		return nullptr;
-	}
+    if (ec) {
+        return ec.category().name();
+    } else {
+        return nullptr;
+    }
 }
 
 FREELAN_API int freelan_error_context_get_error_code(const struct freelan_ErrorContext* ectx) {
-	const auto& ec = reinterpret_cast<const freelan::ErrorContext*>(ectx)->error_code();
+    const auto& ec = reinterpret_cast<const freelan::ErrorContext*>(ectx)->error_code();
 
-	if (ec) {
-		return ec.value();
-	} else {
-		return 0;
-	}
+    if (ec) {
+        return ec.value();
+    } else {
+        return 0;
+    }
 }
 
 FREELAN_API const char* freelan_error_context_get_error_description(const struct freelan_ErrorContext* _ectx) {
-	const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
+    const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
 
-	if (ectx.error_code()) {
-		return ectx.description().c_str();
-	} else {
-		return nullptr;
-	}
+    if (ectx.error_code()) {
+        return ectx.description().c_str();
+    } else {
+        return nullptr;
+    }
 }
 
 FREELAN_API const char* freelan_error_context_get_error_file(const struct freelan_ErrorContext* _ectx) {
-	const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
+    const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
 
-	if (ectx.error_code()) {
-		return ectx.file();
-	} else {
-		return nullptr;
-	}
+    if (ectx.error_code()) {
+        return ectx.file();
+    } else {
+        return nullptr;
+    }
 }
 
 FREELAN_API unsigned int freelan_error_context_get_error_line(const struct freelan_ErrorContext* _ectx) {
-	const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
+    const auto& ectx = *reinterpret_cast<const freelan::ErrorContext*>(_ectx);
 
-	if (ectx.error_code()) {
-		return ectx.line();
-	} else {
-		return 0;
-	}
+    if (ectx.error_code()) {
+        return ectx.line();
+    } else {
+        return 0;
+    }
 }

@@ -58,30 +58,30 @@
 
 
 class LoggedTest : public ::testing::Test {
-	protected:
-		virtual void SetUp() {
-			using namespace std::placeholders;
+    protected:
+        virtual void SetUp() {
+            using namespace std::placeholders;
 
-			freelan::set_log_function(std::bind(&LoggedTest::on_log, this, _1, _2, _3, _4, _5, _6, _7));
-			freelan::set_log_level(freelan::LogLevel::TRACE);
-		}
+            freelan::set_log_function(std::bind(&LoggedTest::on_log, this, _1, _2, _3, _4, _5, _6, _7));
+            freelan::set_log_level(freelan::LogLevel::TRACE);
+        }
 
-		virtual void TearDown() {
-			freelan::set_log_function();
+        virtual void TearDown() {
+            freelan::set_log_function();
 
             m_log_output.str(std::string());
-			m_log_output.clear();
-		}
+            m_log_output.clear();
+        }
 
-		bool on_log(freelan::LogLevel level, const boost::posix_time::ptime& timestamp, const std::string& domain, const std::string& code, const std::vector<freelan::LogPayload>& payload, const char* file, unsigned int line) {
-		    m_log_output << '\n' << timestamp << " [" << level << "] " << domain << " (" << file << ":" << line << "): " << code;
+        bool on_log(freelan::LogLevel level, const boost::posix_time::ptime& timestamp, const std::string& domain, const std::string& code, const std::vector<freelan::LogPayload>& payload, const char* file, unsigned int line) {
+            m_log_output << '\n' << timestamp << " [" << level << "] " << domain << " (" << file << ":" << line << "): " << code;
 
-		    for (auto&& pl: payload) {
+            for (auto&& pl: payload) {
                 m_log_output << ", " << pl;
             }
 
             return true;
-		}
+        }
 
         std::string pop_log_output() {
             const auto result = m_log_output.str();

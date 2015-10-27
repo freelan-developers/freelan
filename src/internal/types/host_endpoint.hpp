@@ -58,30 +58,30 @@ namespace freelan {
 typedef boost::variant<IPv4Endpoint, IPv6Endpoint, HostnameEndpoint> HostEndpointBase;
 
 class HostEndpoint : public HostEndpointBase, public GenericVariant<HostEndpoint, IPv4Endpoint, IPv6Endpoint, HostnameEndpoint> {
-	public:
-		HostEndpoint() {}
-		HostEndpoint(const IPv4Endpoint& ipv4_route) :
-			HostEndpointBase(ipv4_route)
-		{}
-		HostEndpoint(const IPv6Endpoint& ipv6_route) :
-			HostEndpointBase(ipv6_route)
-		{}
-		HostEndpoint(const HostnameEndpoint& hostname_endpoint) :
-			HostEndpointBase(hostname_endpoint)
-		{}
+    public:
+        HostEndpoint() {}
+        HostEndpoint(const IPv4Endpoint& ipv4_route) :
+            HostEndpointBase(ipv4_route)
+        {}
+        HostEndpoint(const IPv6Endpoint& ipv6_route) :
+            HostEndpointBase(ipv6_route)
+        {}
+        HostEndpoint(const HostnameEndpoint& hostname_endpoint) :
+            HostEndpointBase(hostname_endpoint)
+        {}
 
-	private:
-		friend bool operator==(const HostEndpoint& lhs, const HostEndpoint& rhs) {
-			return static_cast<const HostEndpointBase&>(lhs) == static_cast<const HostEndpointBase&>(rhs);
-		};
+    private:
+        friend bool operator==(const HostEndpoint& lhs, const HostEndpoint& rhs) {
+            return static_cast<const HostEndpointBase&>(lhs) == static_cast<const HostEndpointBase&>(rhs);
+        };
 
-		friend bool operator<(const HostEndpoint& lhs, const HostEndpoint& rhs) {
-			return static_cast<const HostEndpointBase&>(lhs) < static_cast<const HostEndpointBase&>(rhs);
-		};
+        friend bool operator<(const HostEndpoint& lhs, const HostEndpoint& rhs) {
+            return static_cast<const HostEndpointBase&>(lhs) < static_cast<const HostEndpointBase&>(rhs);
+        };
 
-		friend std::istream& operator>>(std::istream& is, HostEndpoint& value) {
-			return HostEndpoint::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, HostEndpoint& value) {
+            return HostEndpoint::read_from(is, value);
+        }
 };
 
 }

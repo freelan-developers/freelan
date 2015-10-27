@@ -107,10 +107,10 @@ FREELAN_API char* freelan_strdup(const char* str);
  * the API and **NEVER** after that.
  */
 FREELAN_API void freelan_register_memory_functions(
-	void* (*malloc_func)(size_t),
-	void* (*realloc_func)(void*, size_t),
-	void (*free_func)(void*),
-	char* (*strdup_func)(const char*)
+    void* (*malloc_func)(size_t),
+    void* (*realloc_func)(void*, size_t),
+    void (*free_func)(void*),
+    char* (*strdup_func)(const char*)
 );
 
 /**
@@ -142,10 +142,10 @@ FREELAN_API void* freelan_mark_pointer(void* ptr, const char* file, unsigned int
  * free or realloc any of the passed-in memory locations.
  */
 FREELAN_API void freelan_register_memory_debug_functions(
-	void (*malloc_callback_func)(void*, size_t),
-	void (*realloc_callback_func)(void*, void*, size_t),
-	void* (*mark_pointer_func)(void*, const char*, unsigned int),
-	void (*free_callback_func)(void*)
+    void (*malloc_callback_func)(void*, size_t),
+    void (*realloc_callback_func)(void*, void*, size_t),
+    void* (*mark_pointer_func)(void*, const char*, unsigned int),
+    void (*free_callback_func)(void*)
 );
 
 #ifdef __cplusplus

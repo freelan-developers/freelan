@@ -48,44 +48,44 @@
 #include "memory.hpp"
 
 FREELAN_API void* freelan_malloc(size_t size) {
-	return freelan::internal_malloc(size);
+    return freelan::internal_malloc(size);
 }
 
 FREELAN_API void* freelan_realloc(void* ptr, size_t size) {
-	return freelan::internal_realloc(ptr, size);
+    return freelan::internal_realloc(ptr, size);
 }
 
 FREELAN_API void freelan_free(void* ptr) {
-	return freelan::internal_free(ptr);
+    return freelan::internal_free(ptr);
 }
 
 FREELAN_API char* freelan_strdup(const char* str) {
-	return freelan::internal_strdup(str);
+    return freelan::internal_strdup(str);
 }
 
 FREELAN_API void freelan_register_memory_functions(
-	void* (*malloc_func)(size_t),
-	void* (*realloc_func)(void*, size_t),
-	void (*free_func)(void*),
-	char* (*strdup_func)(const char*)
+    void* (*malloc_func)(size_t),
+    void* (*realloc_func)(void*, size_t),
+    void (*free_func)(void*),
+    char* (*strdup_func)(const char*)
 ) {
-	return freelan::internal_register_memory_functions(malloc_func, realloc_func, free_func, strdup_func);
+    return freelan::internal_register_memory_functions(malloc_func, realloc_func, free_func, strdup_func);
 }
 
 FREELAN_API void* freelan_mark_pointer(void* ptr, const char* file, unsigned int line) {
-	return freelan::internal_mark_pointer(ptr, file, line);
+    return freelan::internal_mark_pointer(ptr, file, line);
 }
 
 FREELAN_API void freelan_register_memory_debug_functions(
-		void (*malloc_callback_func)(void*, size_t),
-		void (*realloc_callback_func)(void*, void*, size_t),
-		void* (*mark_pointer_func)(void*, const char*, unsigned int),
-		void (*free_callback_func)(void*)
+        void (*malloc_callback_func)(void*, size_t),
+        void (*realloc_callback_func)(void*, void*, size_t),
+        void* (*mark_pointer_func)(void*, const char*, unsigned int),
+        void (*free_callback_func)(void*)
 ) {
-	return freelan::internal_register_memory_debug_functions(
-		malloc_callback_func,
-		realloc_callback_func,
-		mark_pointer_func,
-		free_callback_func
-	);
+    return freelan::internal_register_memory_debug_functions(
+        malloc_callback_func,
+        realloc_callback_func,
+        mark_pointer_func,
+        free_callback_func
+    );
 }

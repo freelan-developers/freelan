@@ -51,192 +51,192 @@ using freelan::IPv6Address;
 using freelan::from_string;
 
 TEST(IPAddress, default_instantiation) {
-	const IPAddress value {};
+    const IPAddress value {};
 }
 
 TEST(IPAddress, ipv4_address_instantiation) {
-	const auto raw_value = IPv4Address::from_string("9.0.0.0");
-	const IPAddress value { raw_value };
+    const auto raw_value = IPv4Address::from_string("9.0.0.0");
+    const IPAddress value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(IPAddress, ipv6_address_instantiation) {
-	const auto raw_value = IPv6Address::from_string("fe80::a:0");
-	const IPAddress value { raw_value };
+    const auto raw_value = IPv6Address::from_string("fe80::a:0");
+    const IPAddress value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(IPAddress, ipv4_address_getter) {
-	const auto raw_value = IPv4Address::from_string("9.0.0.0");
-	const IPAddress value { raw_value };
+    const auto raw_value = IPv4Address::from_string("9.0.0.0");
+    const IPAddress value { raw_value };
 
-	ASSERT_TRUE(value.is<IPv4Address>());
-	ASSERT_FALSE(value.is<IPv6Address>());
-	ASSERT_EQ(raw_value, *value.as<IPv4Address>());
-	ASSERT_EQ(nullptr, value.as<IPv6Address>());
+    ASSERT_TRUE(value.is<IPv4Address>());
+    ASSERT_FALSE(value.is<IPv6Address>());
+    ASSERT_EQ(raw_value, *value.as<IPv4Address>());
+    ASSERT_EQ(nullptr, value.as<IPv6Address>());
 }
 
 TEST(IPAddress, ipv6_address_getter) {
-	const auto raw_value = IPv6Address::from_string("fe80::a:0");
-	const IPAddress value { raw_value };
+    const auto raw_value = IPv6Address::from_string("fe80::a:0");
+    const IPAddress value { raw_value };
 
-	ASSERT_FALSE(value.is<IPv4Address>());
-	ASSERT_TRUE(value.is<IPv6Address>());
-	ASSERT_EQ(nullptr, value.as<IPv4Address>());
-	ASSERT_EQ(raw_value, *value.as<IPv6Address>());
+    ASSERT_FALSE(value.is<IPv4Address>());
+    ASSERT_TRUE(value.is<IPv6Address>());
+    ASSERT_EQ(nullptr, value.as<IPv4Address>());
+    ASSERT_EQ(raw_value, *value.as<IPv6Address>());
 }
 
 TEST(IPAddress, ipv4_address_string_instantiation) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = IPAddress::from_string(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value = IPAddress::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPAddress, ipv6_address_string_instantiation) {
-	const std::string str_value = "fe80::a:0";
-	const auto value = IPAddress::from_string(str_value);
+    const std::string str_value = "fe80::a:0";
+    const auto value = IPAddress::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPAddress, read_from_invalid_stream) {
-	std::istringstream iss;
-	iss.setstate(std::ios::failbit);
-	IPAddress value;
+    std::istringstream iss;
+    iss.setstate(std::ios::failbit);
+    IPAddress value;
 
-	const auto& result = IPAddress::read_from(iss, value);
+    const auto& result = IPAddress::read_from(iss, value);
 
-	ASSERT_EQ(&iss, &result);
-	ASSERT_EQ(IPAddress(), value);
-	ASSERT_EQ(std::ios::failbit, iss.rdstate());
+    ASSERT_EQ(&iss, &result);
+    ASSERT_EQ(IPAddress(), value);
+    ASSERT_EQ(std::ios::failbit, iss.rdstate());
 }
 
 TEST(IPAddress, string_instantiation_failure) {
-	try {
-		IPAddress::from_string("invalid");
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+    try {
+        IPAddress::from_string("invalid");
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(IPAddress, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = IPAddress::from_string("invalid", ec);
+    boost::system::error_code ec;
+    const auto value = IPAddress::from_string("invalid", ec);
 
-	ASSERT_EQ(IPAddress(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(IPAddress(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(IPAddress, ipv4_address_implicit_string_conversion) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = from_string<IPAddress>(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value = from_string<IPAddress>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPAddress, ipv6_address_implicit_string_conversion) {
-	const std::string str_value = "fe80::a:0";
-	const auto value = from_string<IPAddress>(str_value);
+    const std::string str_value = "fe80::a:0";
+    const auto value = from_string<IPAddress>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPAddress, compare_to_same_instance) {
-	const auto value = from_string<IPAddress>("9.0.0.1");
+    const auto value = from_string<IPAddress>("9.0.0.1");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(IPAddress, compare_to_same_value) {
-	const auto value_a = from_string<IPAddress>("9.0.0.1");
-	const auto value_b = from_string<IPAddress>("9.0.0.1");
+    const auto value_a = from_string<IPAddress>("9.0.0.1");
+    const auto value_b = from_string<IPAddress>("9.0.0.1");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(IPAddress, compare_to_different_values) {
-	const auto value_a = from_string<IPAddress>("9.0.0.1");
-	const auto value_b = from_string<IPAddress>("9.0.0.2");
+    const auto value_a = from_string<IPAddress>("9.0.0.1");
+    const auto value_b = from_string<IPAddress>("9.0.0.2");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPAddress, compare_to_different_subtypes) {
-	const auto value_a = from_string<IPAddress>("9.0.0.1");
-	const auto value_b = from_string<IPAddress>("fe80::a:0");
+    const auto value_a = from_string<IPAddress>("9.0.0.1");
+    const auto value_b = from_string<IPAddress>("fe80::a:0");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPAddress, ipv4_address_stream_input) {
-	const std::string str_value = "9.0.0.1";
-	const auto value_ref = from_string<IPAddress>(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value_ref = from_string<IPAddress>(str_value);
 
-	std::istringstream iss(str_value);
-	IPAddress value;
+    std::istringstream iss(str_value);
+    IPAddress value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPAddress, ipv6_address_stream_input) {
-	const std::string str_value = "fe80::80:a";
-	const auto value_ref = from_string<IPAddress>(str_value);
+    const std::string str_value = "fe80::80:a";
+    const auto value_ref = from_string<IPAddress>(str_value);
 
-	std::istringstream iss(str_value);
-	IPAddress value;
+    std::istringstream iss(str_value);
+    IPAddress value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPAddress, ipv4_address_stream_output) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = from_string<IPAddress>(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value = from_string<IPAddress>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
 
 TEST(IPAddress, ipv6_address_stream_output) {
-	const std::string str_value = "fe80::80:a";
-	const auto value = from_string<IPAddress>(str_value);
+    const std::string str_value = "fe80::80:a";
+    const auto value = from_string<IPAddress>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }

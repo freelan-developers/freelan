@@ -65,187 +65,187 @@
 #include "types/host_endpoint.hpp"
 
 namespace {
-	template <typename Type, typename InternalType>
-	Type* from_string_generic(struct freelan_ErrorContext* ectx, const char* str) {
-		assert(ectx);
-		assert(str);
+    template <typename Type, typename InternalType>
+    Type* from_string_generic(struct freelan_ErrorContext* ectx, const char* str) {
+        assert(ectx);
+        assert(str);
 
-		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+        FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
-		return reinterpret_cast<Type*>(
-			FREELAN_NEW InternalType(InternalType::from_string(str))
-		);
+        return reinterpret_cast<Type*>(
+            FREELAN_NEW InternalType(InternalType::from_string(str))
+        );
 
-		FREELAN_END_USE_ERROR_CONTEXT(ectx);
+        FREELAN_END_USE_ERROR_CONTEXT(ectx);
 
-		return nullptr;
-	}
+        return nullptr;
+    }
 
-	template <typename Type, typename InternalType>
-	char* to_string_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
-		assert(ectx);
-		assert(inst);
+    template <typename Type, typename InternalType>
+    char* to_string_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
+        assert(ectx);
+        assert(inst);
 
-		const auto value = reinterpret_cast<const InternalType*>(inst);
+        const auto value = reinterpret_cast<const InternalType*>(inst);
 
-		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+        FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
-		return ::freelan_strdup(value->to_string().c_str());
+        return ::freelan_strdup(value->to_string().c_str());
 
-		FREELAN_END_USE_ERROR_CONTEXT(ectx);
+        FREELAN_END_USE_ERROR_CONTEXT(ectx);
 
-		return nullptr;
-	}
+        return nullptr;
+    }
 
-	template <typename Type, typename InternalType>
-	Type* clone_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
-		assert(ectx);
-		assert(inst);
+    template <typename Type, typename InternalType>
+    Type* clone_generic(struct freelan_ErrorContext* ectx, const Type* inst) {
+        assert(ectx);
+        assert(inst);
 
-		FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
+        FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx);
 
-		return reinterpret_cast<Type*>(
-			FREELAN_NEW InternalType(*reinterpret_cast<const InternalType*>(inst))
-		);
+        return reinterpret_cast<Type*>(
+            FREELAN_NEW InternalType(*reinterpret_cast<const InternalType*>(inst))
+        );
 
-		FREELAN_END_USE_ERROR_CONTEXT(ectx);
+        FREELAN_END_USE_ERROR_CONTEXT(ectx);
 
-		return nullptr;
-	}
+        return nullptr;
+    }
 
-	template <typename Type, typename InternalType>
-	int less_than_generic(const Type* lhs, const Type* rhs) {
-		assert(lhs);
-		assert(rhs);
+    template <typename Type, typename InternalType>
+    int less_than_generic(const Type* lhs, const Type* rhs) {
+        assert(lhs);
+        assert(rhs);
 
-		const auto ilhs = *reinterpret_cast<const InternalType*>(lhs);
-		const auto irhs = *reinterpret_cast<const InternalType*>(rhs);
+        const auto ilhs = *reinterpret_cast<const InternalType*>(lhs);
+        const auto irhs = *reinterpret_cast<const InternalType*>(rhs);
 
-		return (ilhs < irhs) ? 1 : 0;
-	}
+        return (ilhs < irhs) ? 1 : 0;
+    }
 
-	template <typename Type, typename InternalType>
-	int equal_generic(const Type* lhs, const Type* rhs) {
-		assert(lhs);
-		assert(rhs);
+    template <typename Type, typename InternalType>
+    int equal_generic(const Type* lhs, const Type* rhs) {
+        assert(lhs);
+        assert(rhs);
 
-		const auto ilhs = *reinterpret_cast<const InternalType*>(lhs);
-		const auto irhs = *reinterpret_cast<const InternalType*>(rhs);
+        const auto ilhs = *reinterpret_cast<const InternalType*>(lhs);
+        const auto irhs = *reinterpret_cast<const InternalType*>(rhs);
 
-		return (ilhs == irhs) ? 1 : 0;
-	}
+        return (ilhs == irhs) ? 1 : 0;
+    }
 
-	template <typename Type, typename InternalType, typename LeftPartType, typename LeftInternalPartType, typename RightPartType, typename RightInternalPartType>
-	Type* from_parts_generic(const LeftPartType* lhs, const RightPartType* rhs) {
-		assert(lhs);
-		assert(rhs);
+    template <typename Type, typename InternalType, typename LeftPartType, typename LeftInternalPartType, typename RightPartType, typename RightInternalPartType>
+    Type* from_parts_generic(const LeftPartType* lhs, const RightPartType* rhs) {
+        assert(lhs);
+        assert(rhs);
 
-		const auto ilhs = *reinterpret_cast<const LeftInternalPartType*>(lhs);
-		const auto irhs = *reinterpret_cast<const RightInternalPartType*>(rhs);
+        const auto ilhs = *reinterpret_cast<const LeftInternalPartType*>(lhs);
+        const auto irhs = *reinterpret_cast<const RightInternalPartType*>(rhs);
 
-		return reinterpret_cast<Type*>(
-			FREELAN_NEW InternalType(ilhs, irhs)
-		);
-	}
+        return reinterpret_cast<Type*>(
+            FREELAN_NEW InternalType(ilhs, irhs)
+        );
+    }
 
-	template <typename Type, typename InternalType, typename LeftPartType, typename LeftInternalPartType, typename RightPartType, typename RightInternalPartType>
-	Type* from_parts_with_optional_generic(const LeftPartType* lhs, const RightPartType* rhs, const LeftPartType* optional = nullptr) {
-		assert(lhs);
-		assert(rhs);
+    template <typename Type, typename InternalType, typename LeftPartType, typename LeftInternalPartType, typename RightPartType, typename RightInternalPartType>
+    Type* from_parts_with_optional_generic(const LeftPartType* lhs, const RightPartType* rhs, const LeftPartType* optional = nullptr) {
+        assert(lhs);
+        assert(rhs);
 
-		const auto ilhs = *reinterpret_cast<const LeftInternalPartType*>(lhs);
-		const auto irhs = *reinterpret_cast<const RightInternalPartType*>(rhs);
+        const auto ilhs = *reinterpret_cast<const LeftInternalPartType*>(lhs);
+        const auto irhs = *reinterpret_cast<const RightInternalPartType*>(rhs);
 
-		if (optional != nullptr) {
-			const auto ioptional = *reinterpret_cast<const LeftInternalPartType*>(optional);
+        if (optional != nullptr) {
+            const auto ioptional = *reinterpret_cast<const LeftInternalPartType*>(optional);
 
-			return reinterpret_cast<Type*>(
-				FREELAN_NEW InternalType(ilhs, irhs, ioptional)
-			);
-		} else {
-			return reinterpret_cast<Type*>(
-				FREELAN_NEW InternalType(ilhs, irhs)
-			);
-		}
-	}
+            return reinterpret_cast<Type*>(
+                FREELAN_NEW InternalType(ilhs, irhs, ioptional)
+            );
+        } else {
+            return reinterpret_cast<Type*>(
+                FREELAN_NEW InternalType(ilhs, irhs)
+            );
+        }
+    }
 
-	template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
-	IPAddressType* get_ip_address_generic(const Type* inst) {
-		assert(inst);
+    template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
+    IPAddressType* get_ip_address_generic(const Type* inst) {
+        assert(inst);
 
-		const auto value = *reinterpret_cast<const InternalType*>(inst);
+        const auto value = *reinterpret_cast<const InternalType*>(inst);
 
-		return reinterpret_cast<IPAddressType*>(
-			FREELAN_NEW InternalIPAddressType(value.get_ip_address())
-		);
-	}
+        return reinterpret_cast<IPAddressType*>(
+            FREELAN_NEW InternalIPAddressType(value.get_ip_address())
+        );
+    }
 
-	template <typename Type, typename InternalType, typename PortNumberType, typename InternalPortNumberType>
-	PortNumberType* get_port_number_generic(const Type* inst) {
-		assert(inst);
+    template <typename Type, typename InternalType, typename PortNumberType, typename InternalPortNumberType>
+    PortNumberType* get_port_number_generic(const Type* inst) {
+        assert(inst);
 
-		const auto value = *reinterpret_cast<const InternalType*>(inst);
+        const auto value = *reinterpret_cast<const InternalType*>(inst);
 
-		return reinterpret_cast<PortNumberType*>(
-			FREELAN_NEW InternalPortNumberType(value.get_port_number())
-		);
-	}
+        return reinterpret_cast<PortNumberType*>(
+            FREELAN_NEW InternalPortNumberType(value.get_port_number())
+        );
+    }
 
-	template <typename Type, typename InternalType, typename HostnameType, typename InternalHostnameType>
-	HostnameType* get_hostname_generic(const Type* inst) {
-		assert(inst);
+    template <typename Type, typename InternalType, typename HostnameType, typename InternalHostnameType>
+    HostnameType* get_hostname_generic(const Type* inst) {
+        assert(inst);
 
-		const auto value = *reinterpret_cast<const InternalType*>(inst);
+        const auto value = *reinterpret_cast<const InternalType*>(inst);
 
-		return reinterpret_cast<HostnameType*>(
-			FREELAN_NEW InternalHostnameType(value.get_hostname())
-		);
-	}
+        return reinterpret_cast<HostnameType*>(
+            FREELAN_NEW InternalHostnameType(value.get_hostname())
+        );
+    }
 
-	template <typename Type, typename InternalType, typename IPPrefixLengthType, typename InternalIPPrefixLengthType>
-	IPPrefixLengthType* get_prefix_length_generic(const Type* inst) {
-		assert(inst);
+    template <typename Type, typename InternalType, typename IPPrefixLengthType, typename InternalIPPrefixLengthType>
+    IPPrefixLengthType* get_prefix_length_generic(const Type* inst) {
+        assert(inst);
 
-		const auto value = *reinterpret_cast<const InternalType*>(inst);
+        const auto value = *reinterpret_cast<const InternalType*>(inst);
 
-		return reinterpret_cast<IPPrefixLengthType*>(
-			FREELAN_NEW InternalIPPrefixLengthType(value.get_prefix_length())
-		);
-	}
+        return reinterpret_cast<IPPrefixLengthType*>(
+            FREELAN_NEW InternalIPPrefixLengthType(value.get_prefix_length())
+        );
+    }
 
-	template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
-	IPAddressType* get_gateway_generic(const Type* inst) {
-		assert(inst);
+    template <typename Type, typename InternalType, typename IPAddressType, typename InternalIPAddressType>
+    IPAddressType* get_gateway_generic(const Type* inst) {
+        assert(inst);
 
-		const auto value = *reinterpret_cast<const InternalType*>(inst);
+        const auto value = *reinterpret_cast<const InternalType*>(inst);
 
-		if (!value.has_gateway()) {
-			return nullptr;
-		}
+        if (!value.has_gateway()) {
+            return nullptr;
+        }
 
-		return reinterpret_cast<IPAddressType*>(
-			FREELAN_NEW InternalIPAddressType(value.get_gateway())
-		);
-	}
+        return reinterpret_cast<IPAddressType*>(
+            FREELAN_NEW InternalIPAddressType(value.get_gateway())
+        );
+    }
 
-	template <typename Type, typename InternalType, typename VariantType, typename InternalVariantType>
-	Type* from_variant_type_generic(const VariantType* value) {
-		assert(value);
+    template <typename Type, typename InternalType, typename VariantType, typename InternalVariantType>
+    Type* from_variant_type_generic(const VariantType* value) {
+        assert(value);
 
-		return reinterpret_cast<Type*>(
-			FREELAN_NEW InternalType(*reinterpret_cast<const InternalVariantType*>(value))
-		);
-	}
+        return reinterpret_cast<Type*>(
+            FREELAN_NEW InternalType(*reinterpret_cast<const InternalVariantType*>(value))
+        );
+    }
 
-	template <typename Type, typename InternalType, typename VariantType, typename InternalVariantType>
-	const VariantType* as_variant_type_generic(const Type* inst) {
-		assert(inst);
+    template <typename Type, typename InternalType, typename VariantType, typename InternalVariantType>
+    const VariantType* as_variant_type_generic(const Type* inst) {
+        assert(inst);
 
-		const InternalType& _inst = *reinterpret_cast<const InternalType*>(inst);
-		const InternalVariantType* value = _inst.template as<InternalVariantType>();
+        const InternalType& _inst = *reinterpret_cast<const InternalType*>(inst);
+        const InternalVariantType* value = _inst.template as<InternalVariantType>();
 
-		return reinterpret_cast<const VariantType*>(value);
-	}
+        return reinterpret_cast<const VariantType*>(value);
+    }
 }
 
 /*

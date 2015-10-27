@@ -43,5 +43,5 @@
 #include "version.hpp"
 
 FREELAN_API const char* freelan_get_version_string(void) {
-	return FREELAN_VERSION_STRING;
+    return FREELAN_VERSION_STRING;
 }

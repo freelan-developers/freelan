@@ -57,27 +57,27 @@ namespace freelan {
 typedef boost::variant<IPv4Route, IPv6Route> IPRouteBase;
 
 class IPRoute : public IPRouteBase, public GenericVariant<IPRoute, IPv4Route, IPv6Route> {
-	public:
-		IPRoute() {}
-		IPRoute(const IPv4Route& ipv4_route) :
-			IPRouteBase(ipv4_route)
-		{}
-		IPRoute(const IPv6Route& ipv6_route) :
-			IPRouteBase(ipv6_route)
-		{}
+    public:
+        IPRoute() {}
+        IPRoute(const IPv4Route& ipv4_route) :
+            IPRouteBase(ipv4_route)
+        {}
+        IPRoute(const IPv6Route& ipv6_route) :
+            IPRouteBase(ipv6_route)
+        {}
 
-	private:
-		friend bool operator==(const IPRoute& lhs, const IPRoute& rhs) {
-			return static_cast<const IPRouteBase&>(lhs) == static_cast<const IPRouteBase&>(rhs);
-		};
+    private:
+        friend bool operator==(const IPRoute& lhs, const IPRoute& rhs) {
+            return static_cast<const IPRouteBase&>(lhs) == static_cast<const IPRouteBase&>(rhs);
+        };
 
-		friend bool operator<(const IPRoute& lhs, const IPRoute& rhs) {
-			return static_cast<const IPRouteBase&>(lhs) < static_cast<const IPRouteBase&>(rhs);
-		};
+        friend bool operator<(const IPRoute& lhs, const IPRoute& rhs) {
+            return static_cast<const IPRouteBase&>(lhs) < static_cast<const IPRouteBase&>(rhs);
+        };
 
-		friend std::istream& operator>>(std::istream& is, IPRoute& value) {
-			return IPRoute::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, IPRoute& value) {
+            return IPRoute::read_from(is, value);
+        }
 };
 
 }

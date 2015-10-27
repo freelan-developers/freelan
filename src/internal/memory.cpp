@@ -48,115 +48,115 @@
 namespace freelan {
 
 namespace {
-	static void* default_malloc(size_t size) {
-		return ::malloc(size);
-	}
+    static void* default_malloc(size_t size) {
+        return ::malloc(size);
+    }
 
-	static void* default_realloc(void* ptr, size_t size) {
-		return ::realloc(ptr, size);
-	}
+    static void* default_realloc(void* ptr, size_t size) {
+        return ::realloc(ptr, size);
+    }
 
-	static void default_free(void* ptr) {
-		return ::free(ptr);
-	}
+    static void default_free(void* ptr) {
+        return ::free(ptr);
+    }
 
-	static char* default_strdup(const char* str) {
+    static char* default_strdup(const char* str) {
 #if _MSC_VER
-		return ::_strdup(str);
+        return ::_strdup(str);
 #else
-		return ::strdup(str);
+        return ::strdup(str);
 #endif
-	}
+    }
 
-	static void default_malloc_callback(void*, size_t) {}
-	static void default_realloc_callback(void*, void*, size_t) {}
-	static void* default_mark_pointer(void* ptr, const char*, unsigned int) {
-		return ptr;
-	}
-	static void default_free_callback(void*) {}
+    static void default_malloc_callback(void*, size_t) {}
+    static void default_realloc_callback(void*, void*, size_t) {}
+    static void* default_mark_pointer(void* ptr, const char*, unsigned int) {
+        return ptr;
+    }
+    static void default_free_callback(void*) {}
 
-	void* (*freelan_malloc_func)(size_t) = &default_malloc;
-	void* (*freelan_realloc_func)(void*, size_t) = &default_realloc;
-	void (*freelan_free_func)(void*) = &default_free;
-	char* (*freelan_strdup_func)(const char*) = &default_strdup;
-	void (*freelan_malloc_callback_func)(void*, size_t) = &default_malloc_callback;
-	void (*freelan_realloc_callback_func)(void*, void*, size_t) = &default_realloc_callback;
-	void* (*freelan_mark_pointer_func)(void*, const char*, unsigned int) = &default_mark_pointer;
-	void (*freelan_free_callback_func)(void*) = &default_free_callback;
+    void* (*freelan_malloc_func)(size_t) = &default_malloc;
+    void* (*freelan_realloc_func)(void*, size_t) = &default_realloc;
+    void (*freelan_free_func)(void*) = &default_free;
+    char* (*freelan_strdup_func)(const char*) = &default_strdup;
+    void (*freelan_malloc_callback_func)(void*, size_t) = &default_malloc_callback;
+    void (*freelan_realloc_callback_func)(void*, void*, size_t) = &default_realloc_callback;
+    void* (*freelan_mark_pointer_func)(void*, const char*, unsigned int) = &default_mark_pointer;
+    void (*freelan_free_callback_func)(void*) = &default_free_callback;
 }
 
 void* internal_malloc(size_t size) {
-	const auto result = freelan_malloc_func(size);
+    const auto result = freelan_malloc_func(size);
 
-	freelan_malloc_callback_func(result, size);
+    freelan_malloc_callback_func(result, size);
 
-	return result;
+    return result;
 }
 
 void* internal_realloc(void* ptr, size_t size) {
-	const auto result = freelan_realloc_func(ptr, size);
+    const auto result = freelan_realloc_func(ptr, size);
 
-	freelan_realloc_callback_func(ptr, result, size);
+    freelan_realloc_callback_func(ptr, result, size);
 
-	return result;
+    return result;
 }
 
 void internal_free(void* ptr) {
-	freelan_free_callback_func(ptr);
+    freelan_free_callback_func(ptr);
 
-	return freelan_free_func(ptr);
+    return freelan_free_func(ptr);
 }
 
 char* internal_strdup(const char* str) {
-	assert(str);
+    assert(str);
 
-	const size_t len = ::strlen(str);
-	char* const newstr = static_cast<char*>(internal_malloc(len + 1));
-	::memcpy(newstr, str, len + 1);
+    const size_t len = ::strlen(str);
+    char* const newstr = static_cast<char*>(internal_malloc(len + 1));
+    ::memcpy(newstr, str, len + 1);
 
-	return newstr;
+    return newstr;
 }
 
 void internal_register_memory_functions(
-	void* (*malloc_func)(size_t),
-	void* (*realloc_func)(void*, size_t),
-	void (*free_func)(void*),
-	char* (*strdup_func)(const char*)
+    void* (*malloc_func)(size_t),
+    void* (*realloc_func)(void*, size_t),
+    void (*free_func)(void*),
+    char* (*strdup_func)(const char*)
 ) {
-	freelan_malloc_func = malloc_func ? malloc_func : &default_malloc;
-	freelan_realloc_func = realloc_func ? realloc_func : &default_realloc;
-	freelan_free_func = free_func ? free_func : &default_free;
-	freelan_strdup_func = strdup_func ? strdup_func : &default_strdup;
+    freelan_malloc_func = malloc_func ? malloc_func : &default_malloc;
+    freelan_realloc_func = realloc_func ? realloc_func : &default_realloc;
+    freelan_free_func = free_func ? free_func : &default_free;
+    freelan_strdup_func = strdup_func ? strdup_func : &default_strdup;
 }
 
 void* internal_mark_pointer(void* ptr, const char* file, unsigned int line) {
-	return freelan_mark_pointer_func(ptr, file, line);
+    return freelan_mark_pointer_func(ptr, file, line);
 }
 
 void internal_register_memory_debug_functions(
-	void (*malloc_callback_func)(void*, size_t),
-	void (*realloc_callback_func)(void*, void*, size_t),
-	void* (*mark_pointer_func)(void*, const char*, unsigned int),
-	void (*free_callback_func)(void*)
+    void (*malloc_callback_func)(void*, size_t),
+    void (*realloc_callback_func)(void*, void*, size_t),
+    void* (*mark_pointer_func)(void*, const char*, unsigned int),
+    void (*free_callback_func)(void*)
 ) {
-	freelan_malloc_callback_func = malloc_callback_func ? malloc_callback_func : &default_malloc_callback;
-	freelan_realloc_callback_func = realloc_callback_func ? realloc_callback_func : &default_realloc_callback;
-	freelan_mark_pointer_func = mark_pointer_func ? mark_pointer_func : &default_mark_pointer;
-	freelan_free_callback_func = free_callback_func ? free_callback_func : &default_free_callback;
+    freelan_malloc_callback_func = malloc_callback_func ? malloc_callback_func : &default_malloc_callback;
+    freelan_realloc_callback_func = realloc_callback_func ? realloc_callback_func : &default_realloc_callback;
+    freelan_mark_pointer_func = mark_pointer_func ? mark_pointer_func : &default_mark_pointer;
+    freelan_free_callback_func = free_callback_func ? free_callback_func : &default_free_callback;
 }
 
 }
 
 void* operator new(std::size_t n) {
-	void* const result = freelan::internal_malloc(n);
+    void* const result = freelan::internal_malloc(n);
 
-	if (result == NULL) {
-		throw std::bad_alloc();
-	}
+    if (result == NULL) {
+        throw std::bad_alloc();
+    }
 
-	return result;
+    return result;
 }
 
 void operator delete(void* ptr) DELETE_NOEXCEPT {
-	freelan::internal_free(ptr);
+    freelan::internal_free(ptr);
 }

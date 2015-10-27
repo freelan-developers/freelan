@@ -56,82 +56,82 @@
 namespace freelan {
 
 class HostnameEndpoint : public boost::operators<HostnameEndpoint> {
-	public:
-		HostnameEndpoint() = default;
-		HostnameEndpoint(const Hostname& hostname, const PortNumber& port_number = PortNumber()) :
-			m_hostname(hostname),
-			m_port_number(port_number)
-		{}
+    public:
+        HostnameEndpoint() = default;
+        HostnameEndpoint(const Hostname& hostname, const PortNumber& port_number = PortNumber()) :
+            m_hostname(hostname),
+            m_port_number(port_number)
+        {}
 
-		static HostnameEndpoint from_string(const std::string& str) {
-			boost::system::error_code ec;
-			const HostnameEndpoint result = from_string(str, ec);
+        static HostnameEndpoint from_string(const std::string& str) {
+            boost::system::error_code ec;
+            const HostnameEndpoint result = from_string(str, ec);
 
-			if (ec) {
-				throw boost::system::system_error(ec);
-			}
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static HostnameEndpoint from_string(const std::string& str, boost::system::error_code& ec) {
-			std::istringstream iss(str);
-			HostnameEndpoint result;
+        static HostnameEndpoint from_string(const std::string& str, boost::system::error_code& ec) {
+            std::istringstream iss(str);
+            HostnameEndpoint result;
 
-			if (!read_from(iss, result) || !iss.eof()) {
-				ec = make_error_code(boost::system::errc::invalid_argument);
+            if (!read_from(iss, result) || !iss.eof()) {
+                ec = make_error_code(boost::system::errc::invalid_argument);
 
-				return {};
-			}
+                return {};
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static std::istream& read_from(std::istream& is, HostnameEndpoint& value, std::string* buf = nullptr) {
-			return read_hostname_endpoint(is, value.m_hostname, value.m_port_number, buf);
-		}
+        static std::istream& read_from(std::istream& is, HostnameEndpoint& value, std::string* buf = nullptr) {
+            return read_hostname_endpoint(is, value.m_hostname, value.m_port_number, buf);
+        }
 
-		const Hostname& get_hostname() const { return m_hostname; }
-		const PortNumber& get_port_number() const { return m_port_number; }
+        const Hostname& get_hostname() const { return m_hostname; }
+        const PortNumber& get_port_number() const { return m_port_number; }
 
-		std::string to_string() const {
-			std::ostringstream oss;
-			write_to(oss);
+        std::string to_string() const {
+            std::ostringstream oss;
+            write_to(oss);
 
-			return oss.str();
-		}
+            return oss.str();
+        }
 
-		std::ostream& write_to(std::ostream& os) const {
-			m_hostname.write_to(os);
-			os << ":";
-			m_port_number.write_to(os);
+        std::ostream& write_to(std::ostream& os) const {
+            m_hostname.write_to(os);
+            os << ":";
+            m_port_number.write_to(os);
 
-			return os;
-		}
+            return os;
+        }
 
-	private:
-		Hostname m_hostname;
-		PortNumber m_port_number;
+    private:
+        Hostname m_hostname;
+        PortNumber m_port_number;
 
-		friend bool operator<(const HostnameEndpoint& lhs, const HostnameEndpoint& rhs) {
-			if (lhs.m_hostname == rhs.m_hostname) {
-				return (lhs.m_port_number < rhs.m_port_number);
-			} else {
-				return (lhs.m_hostname < rhs.m_hostname);
-			}
-		}
+        friend bool operator<(const HostnameEndpoint& lhs, const HostnameEndpoint& rhs) {
+            if (lhs.m_hostname == rhs.m_hostname) {
+                return (lhs.m_port_number < rhs.m_port_number);
+            } else {
+                return (lhs.m_hostname < rhs.m_hostname);
+            }
+        }
 
-		friend bool operator==(const HostnameEndpoint& lhs, const HostnameEndpoint& rhs) {
-			return (lhs.m_hostname == rhs.m_hostname) && (lhs.m_port_number == rhs.m_port_number);
-		}
+        friend bool operator==(const HostnameEndpoint& lhs, const HostnameEndpoint& rhs) {
+            return (lhs.m_hostname == rhs.m_hostname) && (lhs.m_port_number == rhs.m_port_number);
+        }
 
-		friend std::istream& operator>>(std::istream& is, HostnameEndpoint& value) {
-			return HostnameEndpoint::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, HostnameEndpoint& value) {
+            return HostnameEndpoint::read_from(is, value);
+        }
 
-		friend std::ostream& operator<<(std::ostream& os, const HostnameEndpoint& value) {
-			return value.write_to(os);
-		}
+        friend std::ostream& operator<<(std::ostream& os, const HostnameEndpoint& value) {
+            return value.write_to(os);
+        }
 };
 
 }

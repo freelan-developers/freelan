@@ -65,8 +65,8 @@ typedef std::array<uint8_t, 6> EthernetAddressBytes;
 class EthernetAddress : public GenericValueType<EthernetAddressBytes, EthernetAddress> {
     public:
         EthernetAddress() = default;
-		EthernetAddress(EthernetAddress::value_type&& value) : GenericValueType<EthernetAddressBytes, EthernetAddress>(std::move(value)) {}
-		EthernetAddress(const EthernetAddress::value_type& value) : GenericValueType<EthernetAddressBytes, EthernetAddress>(value) {}
+        EthernetAddress(EthernetAddress::value_type&& value) : GenericValueType<EthernetAddressBytes, EthernetAddress>(std::move(value)) {}
+        EthernetAddress(const EthernetAddress::value_type& value) : GenericValueType<EthernetAddressBytes, EthernetAddress>(value) {}
 
         static EthernetAddress from_bytes(const void* buf, size_t len = std::tuple_size<value_type>::value) {
             value_type _value;

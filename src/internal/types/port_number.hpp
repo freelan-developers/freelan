@@ -59,50 +59,50 @@
 namespace freelan {
 
 class PortNumber : public GenericValueType<uint16_t, PortNumber> {
-	public:
-		PortNumber() = default;
-		PortNumber(PortNumber::value_type&& value) : GenericValueType<uint16_t, PortNumber>(std::move(value)) {}
-		PortNumber(const PortNumber::value_type& value) : GenericValueType<uint16_t, PortNumber>(value) {}
+    public:
+        PortNumber() = default;
+        PortNumber(PortNumber::value_type&& value) : GenericValueType<uint16_t, PortNumber>(std::move(value)) {}
+        PortNumber(const PortNumber::value_type& value) : GenericValueType<uint16_t, PortNumber>(value) {}
 
-		static PortNumber from_string(const std::string& str) {
-			boost::system::error_code ec;
-			const PortNumber result = from_string(str, ec);
+        static PortNumber from_string(const std::string& str) {
+            boost::system::error_code ec;
+            const PortNumber result = from_string(str, ec);
 
-			if (ec) {
-				throw boost::system::system_error(ec);
-			}
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static PortNumber from_string(const std::string& str, boost::system::error_code& ec) {
-			std::istringstream iss(str);
-			PortNumber result;
+        static PortNumber from_string(const std::string& str, boost::system::error_code& ec) {
+            std::istringstream iss(str);
+            PortNumber result;
 
-			if (!read_from(iss, result) || !iss.eof()) {
-				ec = make_error_code(boost::system::errc::invalid_argument);
+            if (!read_from(iss, result) || !iss.eof()) {
+                ec = make_error_code(boost::system::errc::invalid_argument);
 
-				return {};
-			}
+                return {};
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static std::istream& read_from(std::istream& is, PortNumber& value, std::string* buf = nullptr) {
-			return read_port_number(is, value.to_raw_value(), buf);
-		}
+        static std::istream& read_from(std::istream& is, PortNumber& value, std::string* buf = nullptr) {
+            return read_port_number(is, value.to_raw_value(), buf);
+        }
 
-		std::string to_string() const {
-			return boost::lexical_cast<std::string>(this->to_raw_value());
-		}
+        std::string to_string() const {
+            return boost::lexical_cast<std::string>(this->to_raw_value());
+        }
 
-		std::string to_string(boost::system::error_code&) const {
-			return boost::lexical_cast<std::string>(this->to_raw_value());
-		}
+        std::string to_string(boost::system::error_code&) const {
+            return boost::lexical_cast<std::string>(this->to_raw_value());
+        }
 
-		std::ostream& write_to(std::ostream& os) const {
-			return os << this->to_raw_value();
-		}
+        std::ostream& write_to(std::ostream& os) const {
+            return os << this->to_raw_value();
+        }
 };
 
 }

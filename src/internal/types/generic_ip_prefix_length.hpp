@@ -60,52 +60,52 @@ namespace freelan {
 
 template <typename AddressType>
 class GenericIPPrefixLength : public GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> > {
-	public:
-		typedef AddressType address_type;
+    public:
+        typedef AddressType address_type;
 
-		GenericIPPrefixLength() = default;
-		GenericIPPrefixLength(typename GenericIPPrefixLength::value_type&& value) : GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> >(std::move(value)) {}
-		GenericIPPrefixLength(const typename GenericIPPrefixLength::value_type& value) : GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> >(value) {}
+        GenericIPPrefixLength() = default;
+        GenericIPPrefixLength(typename GenericIPPrefixLength::value_type&& value) : GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> >(std::move(value)) {}
+        GenericIPPrefixLength(const typename GenericIPPrefixLength::value_type& value) : GenericValueType<uint8_t, GenericIPPrefixLength<AddressType> >(value) {}
 
-		static GenericIPPrefixLength from_string(const std::string& str) {
-			boost::system::error_code ec;
-			const GenericIPPrefixLength result = from_string(str, ec);
+        static GenericIPPrefixLength from_string(const std::string& str) {
+            boost::system::error_code ec;
+            const GenericIPPrefixLength result = from_string(str, ec);
 
-			if (ec) {
-				throw boost::system::system_error(ec);
-			}
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static GenericIPPrefixLength from_string(const std::string& str, boost::system::error_code& ec) {
-			std::istringstream iss(str);
-			GenericIPPrefixLength result;
+        static GenericIPPrefixLength from_string(const std::string& str, boost::system::error_code& ec) {
+            std::istringstream iss(str);
+            GenericIPPrefixLength result;
 
-			if (!read_from(iss, result) || !iss.eof()) {
-				ec = make_error_code(boost::system::errc::invalid_argument);
+            if (!read_from(iss, result) || !iss.eof()) {
+                ec = make_error_code(boost::system::errc::invalid_argument);
 
-				return {};
-			}
+                return {};
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static std::istream& read_from(std::istream& is, GenericIPPrefixLength& value, std::string* buf = nullptr) {
-			return read_generic_ip_prefix_length<AddressType>(is, value.to_raw_value(), buf);
-		}
+        static std::istream& read_from(std::istream& is, GenericIPPrefixLength& value, std::string* buf = nullptr) {
+            return read_generic_ip_prefix_length<AddressType>(is, value.to_raw_value(), buf);
+        }
 
-		std::string to_string() const {
-			return boost::lexical_cast<std::string>(static_cast<unsigned int>(this->to_raw_value()));
-		}
+        std::string to_string() const {
+            return boost::lexical_cast<std::string>(static_cast<unsigned int>(this->to_raw_value()));
+        }
 
-		std::string to_string(boost::system::error_code&) const {
-			return boost::lexical_cast<std::string>(static_cast<unsigned int>(this->to_raw_value()));
-		}
+        std::string to_string(boost::system::error_code&) const {
+            return boost::lexical_cast<std::string>(static_cast<unsigned int>(this->to_raw_value()));
+        }
 
-		std::ostream& write_to(std::ostream& os) const {
-			return os << static_cast<unsigned int>(this->to_raw_value());
-		}
+        std::ostream& write_to(std::ostream& os) const {
+            return os << static_cast<unsigned int>(this->to_raw_value());
+        }
 };
 
 }

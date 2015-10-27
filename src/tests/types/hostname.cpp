@@ -49,97 +49,97 @@ using freelan::Hostname;
 using freelan::from_string;
 
 TEST(Hostname, default_instantiation) {
-	const Hostname value {};
+    const Hostname value {};
 }
 
 TEST(Hostname, string_instantiation) {
-	const std::string str_value = "my.little-host.com";
-	const auto value = Hostname::from_string(str_value);
+    const std::string str_value = "my.little-host.com";
+    const auto value = Hostname::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(Hostname, string_instantiation_failure) {
-	try {
-		Hostname::from_string("dot.invalid|");
+    try {
+        Hostname::from_string("dot.invalid|");
 
-		FAIL();
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+        FAIL();
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(Hostname, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = Hostname::from_string("dot.invalid|", ec);
+    boost::system::error_code ec;
+    const auto value = Hostname::from_string("dot.invalid|", ec);
 
-	ASSERT_EQ(Hostname(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(Hostname(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(Hostname, implicit_string_conversion) {
-	const std::string str_value = "my.little-host.com";
-	const auto value = from_string<Hostname>(str_value);
+    const std::string str_value = "my.little-host.com";
+    const auto value = from_string<Hostname>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(Hostname, compare_to_same_instance) {
-	const auto value = from_string<Hostname>("my.little-host.com");
+    const auto value = from_string<Hostname>("my.little-host.com");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(Hostname, compare_to_same_value) {
-	const auto value_a = from_string<Hostname>("my.little-host.com");
-	const auto value_b = from_string<Hostname>("my.little-host.com");
+    const auto value_a = from_string<Hostname>("my.little-host.com");
+    const auto value_b = from_string<Hostname>("my.little-host.com");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(Hostname, compare_to_different_values) {
-	const auto value_a = from_string<Hostname>("my.little-host.com");
-	const auto value_b = from_string<Hostname>("my.little-host.org");
+    const auto value_a = from_string<Hostname>("my.little-host.com");
+    const auto value_b = from_string<Hostname>("my.little-host.org");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(Hostname, stream_input) {
-	const std::string str_value = "my.little-host.com";
-	const auto value_ref = from_string<Hostname>(str_value);
+    const std::string str_value = "my.little-host.com";
+    const auto value_ref = from_string<Hostname>(str_value);
 
-	std::istringstream iss(str_value);
-	Hostname value;
+    std::istringstream iss(str_value);
+    Hostname value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(Hostname, stream_output) {
-	const std::string str_value = "my.little-host.com";
-	const auto value = from_string<Hostname>(str_value);
+    const std::string str_value = "my.little-host.com";
+    const auto value = from_string<Hostname>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }

@@ -55,51 +55,51 @@ namespace freelan {
 
 template <typename ValueType>
 class GenericIPAddress : public GenericValueType<ValueType, GenericIPAddress<ValueType>> {
-	public:
-		typedef typename ValueType::bytes_type bytes_type;
+    public:
+        typedef typename ValueType::bytes_type bytes_type;
 
-		GenericIPAddress() = default;
-		GenericIPAddress(typename GenericIPAddress::value_type&& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(std::move(value)) {}
-		GenericIPAddress(const typename GenericIPAddress::value_type& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(value) {}
+        GenericIPAddress() = default;
+        GenericIPAddress(typename GenericIPAddress::value_type&& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(std::move(value)) {}
+        GenericIPAddress(const typename GenericIPAddress::value_type& value) : GenericValueType<ValueType, GenericIPAddress<ValueType> >(value) {}
 
-		static GenericIPAddress from_string(const std::string& str) {
-			return GenericIPAddress::value_type::from_string(str);
-		}
+        static GenericIPAddress from_string(const std::string& str) {
+            return GenericIPAddress::value_type::from_string(str);
+        }
 
-		static GenericIPAddress from_string(const std::string& str, boost::system::error_code& ec) {
-			return GenericIPAddress::value_type::from_string(str, ec);
-		}
+        static GenericIPAddress from_string(const std::string& str, boost::system::error_code& ec) {
+            return GenericIPAddress::value_type::from_string(str, ec);
+        }
 
-		static GenericIPAddress from_bytes(const bytes_type& bytes) {
-			return typename GenericIPAddress::value_type(bytes);
-		}
+        static GenericIPAddress from_bytes(const bytes_type& bytes) {
+            return typename GenericIPAddress::value_type(bytes);
+        }
 
-		static std::istream& read_from(std::istream& is, GenericIPAddress& value, std::string* buf = nullptr) {
-			return read_generic_ip_address(is, value.to_raw_value(), buf);
-		}
+        static std::istream& read_from(std::istream& is, GenericIPAddress& value, std::string* buf = nullptr) {
+            return read_generic_ip_address(is, value.to_raw_value(), buf);
+        }
 
-		std::string to_string() const {
-			return this->to_raw_value().to_string();
-		}
+        std::string to_string() const {
+            return this->to_raw_value().to_string();
+        }
 
-		std::string to_string(boost::system::error_code& ec) const {
-			return this->to_raw_value().to_string(ec);
-		}
+        std::string to_string(boost::system::error_code& ec) const {
+            return this->to_raw_value().to_string(ec);
+        }
 
-		bytes_type to_bytes() const {
-			return this->to_raw_value().to_bytes();
-		}
+        bytes_type to_bytes() const {
+            return this->to_raw_value().to_bytes();
+        }
 
-		std::ostream& write_to(std::ostream& os) const {
-			return os << to_string();
-		}
+        std::ostream& write_to(std::ostream& os) const {
+            return os << to_string();
+        }
 
-		GenericIPAddress& operator++() {
-			auto bytes = this->to_raw_value().to_bytes();
-			const auto bytes_size = sizeof(bytes);
+        GenericIPAddress& operator++() {
+            auto bytes = this->to_raw_value().to_bytes();
+            const auto bytes_size = sizeof(bytes);
 
-			for (auto index = bytes_size; index > 0; --index) {
-			    if (bytes[index - 1] < 255) {
+            for (auto index = bytes_size; index > 0; --index) {
+                if (bytes[index - 1] < 255) {
                     ++bytes[index - 1];
                     break;
 

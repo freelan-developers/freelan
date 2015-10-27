@@ -62,87 +62,87 @@ namespace freelan {
 #endif
 
 enum class LogLevel : unsigned int {
-	TRACE = 10,
-	DEBUG = 20,
-	INFORMATION = 30,
-	IMPORTANT = 40,
-	WARNING = 50,
-	ERROR = 60,
-	FATAL = 70
+    TRACE = 10,
+    DEBUG = 20,
+    INFORMATION = 30,
+    IMPORTANT = 40,
+    WARNING = 50,
+    ERROR = 60,
+    FATAL = 70
 };
 
 inline std::ostream& operator<<(std::ostream& os, LogLevel level) {
-	switch (level) {
-		case LogLevel::TRACE:
-			return os << "trace";
-		case LogLevel::DEBUG:
-			return os << "debug";
-		case LogLevel::INFORMATION:
-			return os << "information";
-		case LogLevel::IMPORTANT:
-			return os << "important";
-		case LogLevel::WARNING:
-			return os << "warning";
-		case LogLevel::ERROR:
-			return os << "error";
-		case LogLevel::FATAL:
-			return os << "fatal";
-		default:
-			return os << "<unspecified log level " << static_cast<unsigned int>(level) << ">";
-	}
+    switch (level) {
+        case LogLevel::TRACE:
+            return os << "trace";
+        case LogLevel::DEBUG:
+            return os << "debug";
+        case LogLevel::INFORMATION:
+            return os << "information";
+        case LogLevel::IMPORTANT:
+            return os << "important";
+        case LogLevel::WARNING:
+            return os << "warning";
+        case LogLevel::ERROR:
+            return os << "error";
+        case LogLevel::FATAL:
+            return os << "fatal";
+        default:
+            return os << "<unspecified log level " << static_cast<unsigned int>(level) << ">";
+    }
 }
 
 class LogPayload {
-	public:
-		LogPayload(const std::string& _key) :
-			key(_key),
-			value()
-		{}
+    public:
+        LogPayload(const std::string& _key) :
+            key(_key),
+            value()
+        {}
 
-		LogPayload(const std::string& _key, const std::string& _value) :
-			key(_key),
-			value(_value)
-		{}
+        LogPayload(const std::string& _key, const std::string& _value) :
+            key(_key),
+            value(_value)
+        {}
 
-		LogPayload(const std::string& _key, const char* _value) :
-			key(_key),
-			value(std::string(_value))
-		{}
+        LogPayload(const std::string& _key, const char* _value) :
+            key(_key),
+            value(std::string(_value))
+        {}
 
-		LogPayload(const std::string& _key, int _value) :
-			key(_key),
-			value(static_cast<int64_t>(_value))
-		{}
+        LogPayload(const std::string& _key, int _value) :
+            key(_key),
+            value(static_cast<int64_t>(_value))
+        {}
 
-		LogPayload(const std::string& _key, int64_t _value) :
-			key(_key),
-			value(_value)
-		{}
+        LogPayload(const std::string& _key, int64_t _value) :
+            key(_key),
+            value(_value)
+        {}
 
-		LogPayload(const std::string& _key, double _value) :
-			key(_key),
-			value(_value)
-		{}
+        LogPayload(const std::string& _key, double _value) :
+            key(_key),
+            value(_value)
+        {}
 
-		LogPayload(const std::string& _key, bool _value) :
-			key(_key),
-			value(_value)
-		{}
+        LogPayload(const std::string& _key, bool _value) :
+            key(_key),
+            value(_value)
+        {}
 
-		template <typename Type>
-		bool is() const {
+        template <typename Type>
+        bool is() const {
             return as<Type>() != nullptr;
         }
 
-		template <typename Type>
-		const Type* as() const {
+        template <typename Type>
+        const Type* as() const {
             return boost::any_cast<Type>(&value);
         }
 
-		std::string key;
-		boost::any value;
+        std::string key;
+        boost::any value;
 
-		friend std::ostream& operator<<(std::ostream& os, const LogPayload& _value) {
+        friend std::ostream& operator<<(std::ostream& os, const LogPayload& _value) {
             os << _value.key;
 
             if (_value.is<std::string>()) {
@@ -167,62 +167,62 @@ void set_log_level(LogLevel level);
 LogLevel get_log_level();
 
 class Logger {
-	public:
-		Logger(LogLevel level, const std::string& domain, const std::string& code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
-			m_ok(level >= get_log_level()),
-			m_level(level),
-			m_timestamp(timestamp),
-			m_domain(domain),
-			m_code(code),
-			m_file(file),
-			m_line(line)
-		{}
+    public:
+        Logger(LogLevel level, const std::string& domain, const std::string& code, const char* file = nullptr, unsigned int line = 0, const boost::posix_time::ptime timestamp = boost::posix_time::microsec_clock::universal_time()) :
+            m_ok(level >= get_log_level()),
+            m_level(level),
+            m_timestamp(timestamp),
+            m_domain(domain),
+            m_code(code),
+            m_file(file),
+            m_line(line)
+        {}
 
-		Logger(const Logger&) = delete;
-		Logger(Logger&& other) :
-			m_ok(std::move(other.m_ok)),
-			m_level(std::move(other.m_level)),
-			m_timestamp(std::move(other.m_timestamp)),
-			m_domain(std::move(other.m_domain)),
-			m_code(std::move(other.m_code)),
-			m_file(std::move(other.m_file)),
-			m_line(std::move(other.m_line))
-		{
-			other.m_ok = false;
-		};
+        Logger(const Logger&) = delete;
+        Logger(Logger&& other) :
+            m_ok(std::move(other.m_ok)),
+            m_level(std::move(other.m_level)),
+            m_timestamp(std::move(other.m_timestamp)),
+            m_domain(std::move(other.m_domain)),
+            m_code(std::move(other.m_code)),
+            m_file(std::move(other.m_file)),
+            m_line(std::move(other.m_line))
+        {
+            other.m_ok = false;
+        };
 
-		Logger& attach(const std::string& key) {
-			if (m_ok) {
-				m_payload.push_back(LogPayload(key));
-			}
+        Logger& attach(const std::string& key) {
+            if (m_ok) {
+                m_payload.push_back(LogPayload(key));
+            }
 
-			return *this;
-		}
+            return *this;
+        }
 
-		template <typename ValueType>
-		Logger& attach(const std::string& key, const ValueType& value) {
-			if (m_ok) {
-				m_payload.push_back(LogPayload(key, value));
-			}
+        template <typename ValueType>
+        Logger& attach(const std::string& key, const ValueType& value) {
+            if (m_ok) {
+                m_payload.push_back(LogPayload(key, value));
+            }
 
-			return *this;
-		}
+            return *this;
+        }
 
-		~Logger() {
-			commit();
-		}
+        ~Logger() {
+            commit();
+        }
 
-		bool commit();
+        bool commit();
 
-	private:
-		bool m_ok;
-		LogLevel m_level;
-		boost::posix_time::ptime m_timestamp;
-		std::string m_domain;
-		std::string m_code;
-		const char* m_file;
-		unsigned int m_line;
-		std::vector<LogPayload> m_payload;
+    private:
+        bool m_ok;
+        LogLevel m_level;
+        boost::posix_time::ptime m_timestamp;
+        std::string m_domain;
+        std::string m_code;
+        const char* m_file;
+        unsigned int m_line;
+        std::vector<LogPayload> m_payload;
 };
 
 /**

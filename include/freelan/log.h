@@ -77,20 +77,20 @@ typedef unsigned int freelan_LogPayloadType;
  * \brief A log entry payload value type.
  */
 typedef union {
-	void* as_null;
-	const char* as_string;
-	int64_t as_integer;
-	double as_float;
-	int as_boolean;
+    void* as_null;
+    const char* as_string;
+    int64_t as_integer;
+    double as_float;
+    int as_boolean;
 } freelan_LogPayloadValue;
 
 /**
  * \brief A log entry payload structure.
  */
 struct freelan_LogPayload {
-	const char* key;
-	freelan_LogPayloadType type;
-	freelan_LogPayloadValue value;
+    const char* key;
+    freelan_LogPayloadType type;
+    freelan_LogPayloadValue value;
 };
 
 /**

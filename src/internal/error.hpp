@@ -54,53 +54,53 @@
 namespace freelan {
 
 class ErrorContext {
-	public:
-		ErrorContext() :
-			m_error_code(),
-			m_description(),
-			m_file(),
-			m_line()
-		{}
+    public:
+        ErrorContext() :
+            m_error_code(),
+            m_description(),
+            m_file(),
+            m_line()
+        {}
 
-		const boost::system::error_code& error_code() const {
-			return m_error_code;
-		}
+        const boost::system::error_code& error_code() const {
+            return m_error_code;
+        }
 
-		const std::string& description() const {
-			return m_description;
-		}
+        const std::string& description() const {
+            return m_description;
+        }
 
-		const char* file() const {
-			return m_file;
-		}
+        const char* file() const {
+            return m_file;
+        }
 
-		unsigned int line() const {
-			return m_line;
-		}
+        unsigned int line() const {
+            return m_line;
+        }
 
-		void reset() {
-			m_error_code = boost::system::error_code();
-			m_description.clear();
-			m_file = nullptr;
-			m_line = 0;
-		}
+        void reset() {
+            m_error_code = boost::system::error_code();
+            m_description.clear();
+            m_file = nullptr;
+            m_line = 0;
+        }
 
-		void assign(const boost::system::error_code& ec, const char* _file = nullptr, unsigned int _line = 0) {
-			m_error_code = ec;
-			m_description = ec.message();
-			m_file = _file;
-			m_line = _line;
-		}
+        void assign(const boost::system::error_code& ec, const char* _file = nullptr, unsigned int _line = 0) {
+            m_error_code = ec;
+            m_description = ec.message();
+            m_file = _file;
+            m_line = _line;
+        }
 
-		void assign_from_exception(const boost::system::system_error& ex, const char* _file = nullptr, unsigned int _line = 0) {
-			assign(ex.code(), _file, _line);
-		}
+        void assign_from_exception(const boost::system::system_error& ex, const char* _file = nullptr, unsigned int _line = 0) {
+            assign(ex.code(), _file, _line);
+        }
 
-	private:
-		boost::system::error_code m_error_code;
-		std::string m_description;
-		const char* m_file;
-		unsigned int m_line;
+    private:
+        boost::system::error_code m_error_code;
+        std::string m_description;
+        const char* m_file;
+        unsigned int m_line;
 };
 
 }

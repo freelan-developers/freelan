@@ -49,130 +49,130 @@ using freelan::IPv6Address;
 using freelan::from_string;
 
 TEST(IPv6Address, default_instantiation) {
-	const IPv6Address value {};
+    const IPv6Address value {};
 }
 
 TEST(IPv6Address, boost_asio_ip_address_v6_instantiation) {
-	const address_v6 raw_value;
-	const IPv6Address value { raw_value };
+    const address_v6 raw_value;
+    const IPv6Address value { raw_value };
 
-	ASSERT_EQ(raw_value, value.to_raw_value());
+    ASSERT_EQ(raw_value, value.to_raw_value());
 }
 
 TEST(IPv6Address, string_instantiation) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value = IPv6Address::from_string(str_value);
+    const std::string str_value = "ff02:1001::e0:abcd";
+    const auto value = IPv6Address::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPv6Address, string_instantiation_failure) {
-	try {
-		IPv6Address::from_string("invalid");
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+    try {
+        IPv6Address::from_string("invalid");
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(IPv6Address, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = IPv6Address::from_string("invalid", ec);
+    boost::system::error_code ec;
+    const auto value = IPv6Address::from_string("invalid", ec);
 
-	ASSERT_EQ(IPv6Address(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(IPv6Address(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(IPv6Address, bytes_instantiation) {
-	const IPv6Address::bytes_type bytes_value {{
-		0xff, 0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0xe0, 0xab, 0xcd,
-	}};
-	const auto value = IPv6Address::from_bytes(bytes_value);
+    const IPv6Address::bytes_type bytes_value {{
+        0xff, 0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0xe0, 0xab, 0xcd,
+    }};
+    const auto value = IPv6Address::from_bytes(bytes_value);
 
-	ASSERT_EQ(bytes_value, value.to_bytes());
+    ASSERT_EQ(bytes_value, value.to_bytes());
 }
 
 TEST(IPv6Address, implicit_string_conversion) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value = from_string<IPv6Address>(str_value);
+    const std::string str_value = "ff02:1001::e0:abcd";
+    const auto value = from_string<IPv6Address>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPv6Address, compare_to_same_instance) {
-	const auto value = from_string<IPv6Address>("ff02:1001::e0:abcd");
+    const auto value = from_string<IPv6Address>("ff02:1001::e0:abcd");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(IPv6Address, compare_to_same_value) {
-	const auto value_a = from_string<IPv6Address>("ff02:1001::e0:abcd");
-	const auto value_b = from_string<IPv6Address>("ff02:1001::e0:abcd");
+    const auto value_a = from_string<IPv6Address>("ff02:1001::e0:abcd");
+    const auto value_b = from_string<IPv6Address>("ff02:1001::e0:abcd");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(IPv6Address, compare_to_different_values) {
-	const auto value_a = from_string<IPv6Address>("ff02:1001::e0:abcd");
-	const auto value_b = from_string<IPv6Address>("ff02:1001::e0:abce");
+    const auto value_a = from_string<IPv6Address>("ff02:1001::e0:abcd");
+    const auto value_b = from_string<IPv6Address>("ff02:1001::e0:abce");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPv6Address, stream_input) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value_ref = from_string<IPv6Address>(str_value);
+    const std::string str_value = "ff02:1001::e0:abcd";
+    const auto value_ref = from_string<IPv6Address>(str_value);
 
-	std::istringstream iss(str_value);
-	IPv6Address value;
+    std::istringstream iss(str_value);
+    IPv6Address value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_FALSE(iss.good());
-	ASSERT_FALSE(iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_FALSE(iss.good());
+    ASSERT_FALSE(iss.fail());
 }
 
 TEST(IPv6Address, stream_output) {
-	const std::string str_value = "ff02:1001::e0:abcd";
-	const auto value = from_string<IPv6Address>(str_value);
+    const std::string str_value = "ff02:1001::e0:abcd";
+    const auto value = from_string<IPv6Address>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
 
 TEST(IPv6Address, increment) {
-	auto value = IPv6Address::from_string("ff02::a:0003");
+    auto value = IPv6Address::from_string("ff02::a:0003");
 
-	ASSERT_EQ(IPv6Address::from_string("ff02::a:0004"), ++value);
+    ASSERT_EQ(IPv6Address::from_string("ff02::a:0004"), ++value);
 }
 
 TEST(IPv6Address, increment_byte_boundary) {
-	auto value = IPv6Address::from_string("ff02::a:00ff");
+    auto value = IPv6Address::from_string("ff02::a:00ff");
 
-	ASSERT_EQ(IPv6Address::from_string("ff02::a:0100"), ++value);
+    ASSERT_EQ(IPv6Address::from_string("ff02::a:0100"), ++value);
 }
 
 TEST(IPv6Address, increment_last) {
-	auto value = IPv6Address::from_string("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+    auto value = IPv6Address::from_string("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
 
-	ASSERT_EQ(IPv6Address::from_string("::"), ++value);
+    ASSERT_EQ(IPv6Address::from_string("::"), ++value);
 }

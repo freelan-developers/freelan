@@ -51,192 +51,192 @@ using freelan::IPv6Route;
 using freelan::from_string;
 
 TEST(IPRoute, default_instantiation) {
-	const IPRoute value {};
+    const IPRoute value {};
 }
 
 TEST(IPRoute, ipv4_route_instantiation) {
-	const auto raw_value = IPv4Route::from_string("9.0.0.0/24");
-	const IPRoute value { raw_value };
+    const auto raw_value = IPv4Route::from_string("9.0.0.0/24");
+    const IPRoute value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(IPRoute, ipv6_route_instantiation) {
-	const auto raw_value = IPv6Route::from_string("fe80::a:0/64");
-	const IPRoute value { raw_value };
+    const auto raw_value = IPv6Route::from_string("fe80::a:0/64");
+    const IPRoute value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(IPRoute, ipv4_route_getter) {
-	const auto raw_value = IPv4Route::from_string("9.0.0.0/16");
-	const IPRoute value { raw_value };
+    const auto raw_value = IPv4Route::from_string("9.0.0.0/16");
+    const IPRoute value { raw_value };
 
-	ASSERT_TRUE(value.is<IPv4Route>());
-	ASSERT_FALSE(value.is<IPv6Route>());
-	ASSERT_EQ(raw_value, *value.as<IPv4Route>());
-	ASSERT_EQ(nullptr, value.as<IPv6Route>());
+    ASSERT_TRUE(value.is<IPv4Route>());
+    ASSERT_FALSE(value.is<IPv6Route>());
+    ASSERT_EQ(raw_value, *value.as<IPv4Route>());
+    ASSERT_EQ(nullptr, value.as<IPv6Route>());
 }
 
 TEST(IPRoute, ipv6_route_getter) {
-	const auto raw_value = IPv6Route::from_string("fe80::a:0/125");
-	const IPRoute value { raw_value };
+    const auto raw_value = IPv6Route::from_string("fe80::a:0/125");
+    const IPRoute value { raw_value };
 
-	ASSERT_FALSE(value.is<IPv4Route>());
-	ASSERT_TRUE(value.is<IPv6Route>());
-	ASSERT_EQ(nullptr, value.as<IPv4Route>());
-	ASSERT_EQ(raw_value, *value.as<IPv6Route>());
+    ASSERT_FALSE(value.is<IPv4Route>());
+    ASSERT_TRUE(value.is<IPv6Route>());
+    ASSERT_EQ(nullptr, value.as<IPv4Route>());
+    ASSERT_EQ(raw_value, *value.as<IPv6Route>());
 }
 
 TEST(IPRoute, ipv4_route_string_instantiation) {
-	const std::string str_value = "9.0.0.0/24@9.0.0.254";
-	const auto value = IPRoute::from_string(str_value);
+    const std::string str_value = "9.0.0.0/24@9.0.0.254";
+    const auto value = IPRoute::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPRoute, ipv6_route_string_instantiation) {
-	const std::string str_value = "fe80::a:0/120@fe80::1";
-	const auto value = IPRoute::from_string(str_value);
+    const std::string str_value = "fe80::a:0/120@fe80::1";
+    const auto value = IPRoute::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPRoute, read_from_invalid_stream) {
-	std::istringstream iss;
-	iss.setstate(std::ios::failbit);
-	IPRoute value;
+    std::istringstream iss;
+    iss.setstate(std::ios::failbit);
+    IPRoute value;
 
-	const auto& result = IPRoute::read_from(iss, value);
+    const auto& result = IPRoute::read_from(iss, value);
 
-	ASSERT_EQ(&iss, &result);
-	ASSERT_EQ(IPRoute(), value);
-	ASSERT_EQ(std::ios::failbit, iss.rdstate());
+    ASSERT_EQ(&iss, &result);
+    ASSERT_EQ(IPRoute(), value);
+    ASSERT_EQ(std::ios::failbit, iss.rdstate());
 }
 
 TEST(IPRoute, string_instantiation_failure) {
-	try {
-		IPRoute::from_string("invalid");
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+    try {
+        IPRoute::from_string("invalid");
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(IPRoute, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = IPRoute::from_string("invalid", ec);
+    boost::system::error_code ec;
+    const auto value = IPRoute::from_string("invalid", ec);
 
-	ASSERT_EQ(IPRoute(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(IPRoute(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(IPRoute, ipv4_route_implicit_string_conversion) {
-	const std::string str_value = "9.0.0.0/8";
-	const auto value = from_string<IPRoute>(str_value);
+    const std::string str_value = "9.0.0.0/8";
+    const auto value = from_string<IPRoute>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPRoute, ipv6_route_implicit_string_conversion) {
-	const std::string str_value = "fe80::a:0/120";
-	const auto value = from_string<IPRoute>(str_value);
+    const std::string str_value = "fe80::a:0/120";
+    const auto value = from_string<IPRoute>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPRoute, compare_to_same_instance) {
-	const auto value = from_string<IPRoute>("9.0.0.0/24");
+    const auto value = from_string<IPRoute>("9.0.0.0/24");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(IPRoute, compare_to_same_value) {
-	const auto value_a = from_string<IPRoute>("9.0.0.0/24");
-	const auto value_b = from_string<IPRoute>("9.0.0.0/24");
+    const auto value_a = from_string<IPRoute>("9.0.0.0/24");
+    const auto value_b = from_string<IPRoute>("9.0.0.0/24");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(IPRoute, compare_to_different_values) {
-	const auto value_a = from_string<IPRoute>("9.0.1.0/24");
-	const auto value_b = from_string<IPRoute>("9.0.2.0/24");
+    const auto value_a = from_string<IPRoute>("9.0.1.0/24");
+    const auto value_b = from_string<IPRoute>("9.0.2.0/24");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPRoute, compare_to_different_subtypes) {
-	const auto value_a = from_string<IPRoute>("9.0.0.0/16");
-	const auto value_b = from_string<IPRoute>("fe80::a:0/120");
+    const auto value_a = from_string<IPRoute>("9.0.0.0/16");
+    const auto value_b = from_string<IPRoute>("fe80::a:0/120");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPRoute, ipv4_route_stream_input) {
-	const std::string str_value = "9.0.0.0/24";
-	const auto value_ref = from_string<IPRoute>(str_value);
+    const std::string str_value = "9.0.0.0/24";
+    const auto value_ref = from_string<IPRoute>(str_value);
 
-	std::istringstream iss(str_value);
-	IPRoute value;
+    std::istringstream iss(str_value);
+    IPRoute value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPRoute, ipv6_route_stream_input) {
-	const std::string str_value = "fe80::80:a/120";
-	const auto value_ref = from_string<IPRoute>(str_value);
+    const std::string str_value = "fe80::80:a/120";
+    const auto value_ref = from_string<IPRoute>(str_value);
 
-	std::istringstream iss(str_value);
-	IPRoute value;
+    std::istringstream iss(str_value);
+    IPRoute value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPRoute, ipv4_route_stream_output) {
-	const std::string str_value = "9.0.0.0/24";
-	const auto value = from_string<IPRoute>(str_value);
+    const std::string str_value = "9.0.0.0/24";
+    const auto value = from_string<IPRoute>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
 
 TEST(IPRoute, ipv6_route_stream_output) {
-	const std::string str_value = "fe80::80:a:0/120";
-	const auto value = from_string<IPRoute>(str_value);
+    const std::string str_value = "fe80::80:a:0/120";
+    const auto value = from_string<IPRoute>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }

@@ -52,254 +52,254 @@ using freelan::HostnameEndpoint;
 using freelan::from_string;
 
 TEST(HostEndpoint, default_instantiation) {
-	const HostEndpoint value {};
+    const HostEndpoint value {};
 }
 
 TEST(HostEndpoint, ipv4_address_instantiation) {
-	const auto raw_value = IPv4Endpoint::from_string("9.0.0.0:12000");
-	const HostEndpoint value { raw_value };
+    const auto raw_value = IPv4Endpoint::from_string("9.0.0.0:12000");
+    const HostEndpoint value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(HostEndpoint, ipv6_address_instantiation) {
-	const auto raw_value = IPv6Endpoint::from_string("[fe80::a:0]:12000");
-	const HostEndpoint value { raw_value };
+    const auto raw_value = IPv6Endpoint::from_string("[fe80::a:0]:12000");
+    const HostEndpoint value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(HostEndpoint, hostname_endpoint_instantiation) {
-	const auto raw_value = HostnameEndpoint::from_string("foo.bar.net:12000");
-	const HostEndpoint value { raw_value };
+    const auto raw_value = HostnameEndpoint::from_string("foo.bar.net:12000");
+    const HostEndpoint value { raw_value };
 
-	ASSERT_EQ(raw_value, value);
+    ASSERT_EQ(raw_value, value);
 }
 
 TEST(HostEndpoint, ipv4_address_getter) {
-	const auto raw_value = IPv4Endpoint::from_string("9.0.0.0:12000");
-	const HostEndpoint value { raw_value };
+    const auto raw_value = IPv4Endpoint::from_string("9.0.0.0:12000");
+    const HostEndpoint value { raw_value };
 
-	ASSERT_TRUE(value.is<IPv4Endpoint>());
-	ASSERT_FALSE(value.is<IPv6Endpoint>());
-	ASSERT_FALSE(value.is<HostnameEndpoint>());
-	ASSERT_EQ(raw_value, *value.as<IPv4Endpoint>());
-	ASSERT_EQ(nullptr, value.as<IPv6Endpoint>());
-	ASSERT_EQ(nullptr, value.as<HostnameEndpoint>());
+    ASSERT_TRUE(value.is<IPv4Endpoint>());
+    ASSERT_FALSE(value.is<IPv6Endpoint>());
+    ASSERT_FALSE(value.is<HostnameEndpoint>());
+    ASSERT_EQ(raw_value, *value.as<IPv4Endpoint>());
+    ASSERT_EQ(nullptr, value.as<IPv6Endpoint>());
+    ASSERT_EQ(nullptr, value.as<HostnameEndpoint>());
 }
 
 TEST(HostEndpoint, ipv6_address_getter) {
-	const auto raw_value = IPv6Endpoint::from_string("[fe80::a:0]:12000");
-	const HostEndpoint value { raw_value };
+    const auto raw_value = IPv6Endpoint::from_string("[fe80::a:0]:12000");
+    const HostEndpoint value { raw_value };
 
-	ASSERT_FALSE(value.is<IPv4Endpoint>());
-	ASSERT_TRUE(value.is<IPv6Endpoint>());
-	ASSERT_FALSE(value.is<HostnameEndpoint>());
-	ASSERT_EQ(nullptr, value.as<IPv4Endpoint>());
-	ASSERT_EQ(raw_value, *value.as<IPv6Endpoint>());
-	ASSERT_EQ(nullptr, value.as<HostnameEndpoint>());
+    ASSERT_FALSE(value.is<IPv4Endpoint>());
+    ASSERT_TRUE(value.is<IPv6Endpoint>());
+    ASSERT_FALSE(value.is<HostnameEndpoint>());
+    ASSERT_EQ(nullptr, value.as<IPv4Endpoint>());
+    ASSERT_EQ(raw_value, *value.as<IPv6Endpoint>());
+    ASSERT_EQ(nullptr, value.as<HostnameEndpoint>());
 }
 
 TEST(HostEndpoint, hostname_endpoint_getter) {
-	const auto raw_value = HostnameEndpoint::from_string("foo.bar.net:12000");
-	const HostEndpoint value { raw_value };
+    const auto raw_value = HostnameEndpoint::from_string("foo.bar.net:12000");
+    const HostEndpoint value { raw_value };
 
-	ASSERT_FALSE(value.is<IPv4Endpoint>());
-	ASSERT_FALSE(value.is<IPv6Endpoint>());
-	ASSERT_TRUE(value.is<HostnameEndpoint>());
-	ASSERT_EQ(nullptr, value.as<IPv4Endpoint>());
-	ASSERT_EQ(nullptr, value.as<IPv6Endpoint>());
-	ASSERT_EQ(raw_value, *value.as<HostnameEndpoint>());
+    ASSERT_FALSE(value.is<IPv4Endpoint>());
+    ASSERT_FALSE(value.is<IPv6Endpoint>());
+    ASSERT_TRUE(value.is<HostnameEndpoint>());
+    ASSERT_EQ(nullptr, value.as<IPv4Endpoint>());
+    ASSERT_EQ(nullptr, value.as<IPv6Endpoint>());
+    ASSERT_EQ(raw_value, *value.as<HostnameEndpoint>());
 }
 
 TEST(HostEndpoint, ipv4_address_string_instantiation) {
-	const std::string str_value = "9.0.0.0:12000";
-	const auto value = HostEndpoint::from_string(str_value);
+    const std::string str_value = "9.0.0.0:12000";
+    const auto value = HostEndpoint::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(HostEndpoint, ipv6_address_string_instantiation) {
-	const std::string str_value = "[fe80::a:0]:12000";
-	const auto value = HostEndpoint::from_string(str_value);
+    const std::string str_value = "[fe80::a:0]:12000";
+    const auto value = HostEndpoint::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(HostEndpoint, hostname_endpoint_string_instantiation) {
-	const std::string str_value = "foo.bar.net:12000";
-	const auto value = HostEndpoint::from_string(str_value);
+    const std::string str_value = "foo.bar.net:12000";
+    const auto value = HostEndpoint::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(HostEndpoint, read_from_invalid_stream) {
-	std::istringstream iss;
-	iss.setstate(std::ios::failbit);
-	HostEndpoint value;
+    std::istringstream iss;
+    iss.setstate(std::ios::failbit);
+    HostEndpoint value;
 
-	const auto& result = HostEndpoint::read_from(iss, value);
+    const auto& result = HostEndpoint::read_from(iss, value);
 
-	ASSERT_EQ(&iss, &result);
-	ASSERT_EQ(HostEndpoint(), value);
-	ASSERT_EQ(std::ios::failbit, iss.rdstate());
+    ASSERT_EQ(&iss, &result);
+    ASSERT_EQ(HostEndpoint(), value);
+    ASSERT_EQ(std::ios::failbit, iss.rdstate());
 }
 
 TEST(HostEndpoint, string_instantiation_failure) {
-	try {
-		HostEndpoint::from_string("invalid");
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+    try {
+        HostEndpoint::from_string("invalid");
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(HostEndpoint, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = HostEndpoint::from_string("invalid", ec);
+    boost::system::error_code ec;
+    const auto value = HostEndpoint::from_string("invalid", ec);
 
-	ASSERT_EQ(HostEndpoint(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(HostEndpoint(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(HostEndpoint, ipv4_address_implicit_string_conversion) {
-	const std::string str_value = "9.0.0.0:12000";
-	const auto value = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "9.0.0.0:12000";
+    const auto value = from_string<HostEndpoint>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(HostEndpoint, ipv6_address_implicit_string_conversion) {
-	const std::string str_value = "[fe80::a:0]:12000";
-	const auto value = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "[fe80::a:0]:12000";
+    const auto value = from_string<HostEndpoint>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(HostEndpoint, hostname_endpoint_implicit_string_conversion) {
-	const std::string str_value = "foo.bar.net:12000";
-	const auto value = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "foo.bar.net:12000";
+    const auto value = from_string<HostEndpoint>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(HostEndpoint, compare_to_same_instance) {
-	const auto value = from_string<HostEndpoint>("9.0.0.0:12000");
+    const auto value = from_string<HostEndpoint>("9.0.0.0:12000");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(HostEndpoint, compare_to_same_value) {
-	const auto value_a = from_string<HostEndpoint>("9.0.0.0:12000");
-	const auto value_b = from_string<HostEndpoint>("9.0.0.0:12000");
+    const auto value_a = from_string<HostEndpoint>("9.0.0.0:12000");
+    const auto value_b = from_string<HostEndpoint>("9.0.0.0:12000");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(HostEndpoint, compare_to_different_values) {
-	const auto value_a = from_string<HostEndpoint>("9.0.1.0:12000");
-	const auto value_b = from_string<HostEndpoint>("9.0.2.0:12000");
+    const auto value_a = from_string<HostEndpoint>("9.0.1.0:12000");
+    const auto value_b = from_string<HostEndpoint>("9.0.2.0:12000");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(HostEndpoint, compare_to_different_subtypes) {
-	const auto value_a = from_string<HostEndpoint>("9.0.0.0:12000");
-	const auto value_b = from_string<HostEndpoint>("[fe80::a:0]:12000");
+    const auto value_a = from_string<HostEndpoint>("9.0.0.0:12000");
+    const auto value_b = from_string<HostEndpoint>("[fe80::a:0]:12000");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(HostEndpoint, ipv4_address_stream_input) {
-	const std::string str_value = "9.0.0.0:12000";
-	const auto value_ref = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "9.0.0.0:12000";
+    const auto value_ref = from_string<HostEndpoint>(str_value);
 
-	std::istringstream iss(str_value);
-	HostEndpoint value;
+    std::istringstream iss(str_value);
+    HostEndpoint value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(HostEndpoint, ipv6_address_stream_input) {
-	const std::string str_value = "[fe80::80:a]:12000";
-	const auto value_ref = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "[fe80::80:a]:12000";
+    const auto value_ref = from_string<HostEndpoint>(str_value);
 
-	std::istringstream iss(str_value);
-	HostEndpoint value;
+    std::istringstream iss(str_value);
+    HostEndpoint value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(HostEndpoint, hostname_endpoint_stream_input) {
-	const std::string str_value = "foo.bar.net:12000";
-	const auto value_ref = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "foo.bar.net:12000";
+    const auto value_ref = from_string<HostEndpoint>(str_value);
 
-	std::istringstream iss(str_value);
-	HostEndpoint value;
+    std::istringstream iss(str_value);
+    HostEndpoint value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(HostEndpoint, ipv4_address_stream_output) {
-	const std::string str_value = "9.0.0.0:12000";
-	const auto value = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "9.0.0.0:12000";
+    const auto value = from_string<HostEndpoint>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
 
 TEST(HostEndpoint, ipv6_address_stream_output) {
-	const std::string str_value = "[fe80::80:a:0]:12000";
-	const auto value = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "[fe80::80:a:0]:12000";
+    const auto value = from_string<HostEndpoint>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
 
 TEST(HostEndpoint, hostname_endpoint_stream_output) {
-	const std::string str_value = "foo.bar.net:12000";
-	const auto value = from_string<HostEndpoint>(str_value);
+    const std::string str_value = "foo.bar.net:12000";
+    const auto value = from_string<HostEndpoint>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }

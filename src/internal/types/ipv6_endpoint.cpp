@@ -44,12 +44,12 @@ namespace freelan {
 
 template <>
 std::ostream& GenericIPEndpoint<boost::asio::ip::address_v6>::write_to(std::ostream& os) const {
-	os << "[";
-	m_ip_address.write_to(os);
-	os << "]:";
-	m_port_number.write_to(os);
+    os << "[";
+    m_ip_address.write_to(os);
+    os << "]:";
+    m_port_number.write_to(os);
 
-	return os;
+    return os;
 }
 
 }

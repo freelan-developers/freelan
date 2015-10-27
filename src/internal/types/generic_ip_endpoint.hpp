@@ -57,78 +57,78 @@ namespace freelan {
 
 template <typename AddressType>
 class GenericIPEndpoint : public boost::operators<GenericIPEndpoint<AddressType> > {
-	public:
-		typedef GenericIPAddress<AddressType> IPAddressType;
+    public:
+        typedef GenericIPAddress<AddressType> IPAddressType;
 
-		GenericIPEndpoint() = default;
-		GenericIPEndpoint(const IPAddressType& ip_address, const PortNumber& port_number = PortNumber()) :
-			m_ip_address(ip_address),
-			m_port_number(port_number)
-		{}
+        GenericIPEndpoint() = default;
+        GenericIPEndpoint(const IPAddressType& ip_address, const PortNumber& port_number = PortNumber()) :
+            m_ip_address(ip_address),
+            m_port_number(port_number)
+        {}
 
-		static GenericIPEndpoint from_string(const std::string& str) {
-			boost::system::error_code ec;
-			const GenericIPEndpoint result = from_string(str, ec);
+        static GenericIPEndpoint from_string(const std::string& str) {
+            boost::system::error_code ec;
+            const GenericIPEndpoint result = from_string(str, ec);
 
-			if (ec) {
-				throw boost::system::system_error(ec);
-			}
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static GenericIPEndpoint from_string(const std::string& str, boost::system::error_code& ec) {
-			std::istringstream iss(str);
-			GenericIPEndpoint result;
+        static GenericIPEndpoint from_string(const std::string& str, boost::system::error_code& ec) {
+            std::istringstream iss(str);
+            GenericIPEndpoint result;
 
-			if (!read_from(iss, result) || !iss.eof()) {
-				ec = make_error_code(boost::system::errc::invalid_argument);
+            if (!read_from(iss, result) || !iss.eof()) {
+                ec = make_error_code(boost::system::errc::invalid_argument);
 
-				return {};
-			}
+                return {};
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static std::istream& read_from(std::istream& is, GenericIPEndpoint& value, std::string* buf = nullptr) {
-			return read_generic_ip_endpoint<IPAddressType>(is, value.m_ip_address, value.m_port_number, buf);
-		}
+        static std::istream& read_from(std::istream& is, GenericIPEndpoint& value, std::string* buf = nullptr) {
+            return read_generic_ip_endpoint<IPAddressType>(is, value.m_ip_address, value.m_port_number, buf);
+        }
 
-		const IPAddressType& get_ip_address() const { return m_ip_address; }
-		const PortNumber& get_port_number() const { return m_port_number; }
+        const IPAddressType& get_ip_address() const { return m_ip_address; }
+        const PortNumber& get_port_number() const { return m_port_number; }
 
-		std::string to_string() const {
-			std::ostringstream oss;
-			write_to(oss);
+        std::string to_string() const {
+            std::ostringstream oss;
+            write_to(oss);
 
-			return oss.str();
-		}
+            return oss.str();
+        }
 
-		std::ostream& write_to(std::ostream& os) const;
+        std::ostream& write_to(std::ostream& os) const;
 
-	private:
-		IPAddressType m_ip_address;
-		PortNumber m_port_number;
+    private:
+        IPAddressType m_ip_address;
+        PortNumber m_port_number;
 
-		friend bool operator<(const GenericIPEndpoint& lhs, const GenericIPEndpoint& rhs) {
-			if (lhs.m_ip_address == rhs.m_ip_address) {
-				return (lhs.m_port_number < rhs.m_port_number);
-			} else {
-				return (lhs.m_ip_address < rhs.m_ip_address);
-			}
-		}
+        friend bool operator<(const GenericIPEndpoint& lhs, const GenericIPEndpoint& rhs) {
+            if (lhs.m_ip_address == rhs.m_ip_address) {
+                return (lhs.m_port_number < rhs.m_port_number);
+            } else {
+                return (lhs.m_ip_address < rhs.m_ip_address);
+            }
+        }
 
-		friend bool operator==(const GenericIPEndpoint& lhs, const GenericIPEndpoint& rhs) {
-			return (lhs.m_ip_address == rhs.m_ip_address) && (lhs.m_port_number == rhs.m_port_number);
-		}
+        friend bool operator==(const GenericIPEndpoint& lhs, const GenericIPEndpoint& rhs) {
+            return (lhs.m_ip_address == rhs.m_ip_address) && (lhs.m_port_number == rhs.m_port_number);
+        }
 
-		friend std::istream& operator>>(std::istream& is, GenericIPEndpoint& value) {
-			return GenericIPEndpoint::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, GenericIPEndpoint& value) {
+            return GenericIPEndpoint::read_from(is, value);
+        }
 
-		friend std::ostream& operator<<(std::ostream& os, const GenericIPEndpoint& value) {
-			return value.write_to(os);
-		}
+        friend std::ostream& operator<<(std::ostream& os, const GenericIPEndpoint& value) {
+            return value.write_to(os);
+        }
 };
 
 }

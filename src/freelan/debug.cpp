@@ -46,6 +46,6 @@
 
 void freelan_break(void) {
 #ifdef _WIN32
-	__debugbreak();
+    __debugbreak();
 #endif
 }

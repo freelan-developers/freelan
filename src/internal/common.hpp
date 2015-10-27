@@ -54,12 +54,12 @@ namespace freelan {
 
 template <typename T>
 inline T from_string(const std::string& str) {
-	return T::from_string(str);
+    return T::from_string(str);
 }
 
 template <typename T, typename std::enable_if<has_to_string<T>::value, int>::type = 0>
 inline std::string to_string(const T& value) {
-	return value.to_string();
+    return value.to_string();
 }
 
 }

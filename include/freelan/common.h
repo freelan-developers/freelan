@@ -52,17 +52,17 @@ extern "C" {
 #endif
 
 #ifdef _WIN32
-#	if FREELAN_API_NO_INCLUDES
-#		define FREELAN_API
-#	else
-#		ifdef FREELAN_API_EXPORTS
-#			define FREELAN_API __declspec(dllexport)
-#		else
-#			define FREELAN_API __declspec(dllimport)
-#		endif
-#	endif
+#    if FREELAN_API_NO_INCLUDES
+#        define FREELAN_API
+#    else
+#        ifdef FREELAN_API_EXPORTS
+#            define FREELAN_API __declspec(dllexport)
+#        else
+#            define FREELAN_API __declspec(dllimport)
+#        endif
+#    endif
 #else
-#	define FREELAN_API
+#    define FREELAN_API
 #endif
 
 #ifdef __cplusplus

@@ -55,39 +55,39 @@ void* internal_realloc(void* ptr, size_t size);
 void internal_free(void* ptr);
 char* internal_strdup(const char* str);
 void internal_register_memory_functions(
-	void* (*malloc_func)(size_t),
-	void* (*realloc_func)(void*, size_t),
-	void (*free_func)(void*),
-	char* (*strdup_func)(const char*)
+    void* (*malloc_func)(size_t),
+    void* (*realloc_func)(void*, size_t),
+    void (*free_func)(void*),
+    char* (*strdup_func)(const char*)
 );
 void* internal_mark_pointer(void* ptr, const char* file, unsigned int line);
 void internal_register_memory_debug_functions(
-	void (*malloc_callback_func)(void*, size_t),
-	void (*realloc_callback_func)(void*, void*, size_t),
-	void* (*mark_pointer_func)(void*, const char*, unsigned int),
-	void (*free_callback_func)(void*)
+    void (*malloc_callback_func)(void*, size_t),
+    void (*realloc_callback_func)(void*, void*, size_t),
+    void* (*mark_pointer_func)(void*, const char*, unsigned int),
+    void (*free_callback_func)(void*)
 );
 
 #define FREELAN_NEW freelan::MarkPointer(__FILE__, __LINE__) * new
 #define FREELAN_DELETE delete
 
 class MarkPointer {
-	public:
-		MarkPointer(const char* _file, unsigned int line) :
-			m_file(_file),
-			m_line(line)
-		{}
+    public:
+        MarkPointer(const char* _file, unsigned int line) :
+            m_file(_file),
+            m_line(line)
+        {}
 
-		template <typename T>
-		T* operator*(T* ptr) {
-			internal_mark_pointer(ptr, m_file, m_line);
+        template <typename T>
+        T* operator*(T* ptr) {
+            internal_mark_pointer(ptr, m_file, m_line);
 
-			return ptr;
-		}
+            return ptr;
+        }
 
-	private:
-		const char* m_file;
-		unsigned int m_line;
+    private:
+        const char* m_file;
+        unsigned int m_line;
 };
 
 }

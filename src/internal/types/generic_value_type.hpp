@@ -52,52 +52,52 @@ namespace freelan {
 
 template <typename ValueType, typename SelfType>
 class GenericValueType : public boost::operators<GenericValueType<ValueType, SelfType> > {
-	public:
-		typedef ValueType value_type;
+    public:
+        typedef ValueType value_type;
 
-		GenericValueType() :
-			m_value()
-		{}
+        GenericValueType() :
+            m_value()
+        {}
 
-		GenericValueType(value_type&& value) :
-			m_value(std::move(value))
-		{}
+        GenericValueType(value_type&& value) :
+            m_value(std::move(value))
+        {}
 
-		GenericValueType(const value_type& value) :
-			m_value(value)
-		{}
+        GenericValueType(const value_type& value) :
+            m_value(value)
+        {}
 
-		const value_type& to_raw_value() const {
-			return m_value;
-		}
+        const value_type& to_raw_value() const {
+            return m_value;
+        }
 
-	protected:
-		value_type& to_raw_value() {
-			return m_value;
-		}
+    protected:
+        value_type& to_raw_value() {
+            return m_value;
+        }
 
-		void set_raw_value(const value_type& value) {
-			m_value = value;
-		}
+        void set_raw_value(const value_type& value) {
+            m_value = value;
+        }
 
-	private:
-		value_type m_value;
+    private:
+        value_type m_value;
 
-		friend bool operator<(const GenericValueType& lhs, const GenericValueType& rhs) {
-			return (lhs.m_value < rhs.m_value);
-		}
+        friend bool operator<(const GenericValueType& lhs, const GenericValueType& rhs) {
+            return (lhs.m_value < rhs.m_value);
+        }
 
-		friend bool operator==(const GenericValueType& lhs, const GenericValueType& rhs) {
-			return (lhs.m_value == rhs.m_value);
-		}
+        friend bool operator==(const GenericValueType& lhs, const GenericValueType& rhs) {
+            return (lhs.m_value == rhs.m_value);
+        }
 
-		friend std::istream& operator>>(std::istream& is, SelfType& value) {
-			return SelfType::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, SelfType& value) {
+            return SelfType::read_from(is, value);
+        }
 
-		friend std::ostream& operator<<(std::ostream& os, const SelfType& value) {
-			return value.write_to(os);
-		}
+        friend std::ostream& operator<<(std::ostream& os, const SelfType& value) {
+            return value.write_to(os);
+        }
 };
 
 }

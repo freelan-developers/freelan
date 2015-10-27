@@ -59,76 +59,76 @@ namespace freelan {
 template <typename Type>
 class HasFromString {
     public:
-		static Type from_string(const std::string& str) {
-			boost::system::error_code ec;
+        static Type from_string(const std::string& str) {
+            boost::system::error_code ec;
 
-			const auto result = from_string(str, ec);
+            const auto result = from_string(str, ec);
 
-			if (ec) {
-				throw boost::system::system_error(ec);
-			}
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static Type from_string(const std::string& str, boost::system::error_code& ec) {
-			std::istringstream iss(str);
-			Type result;
+        static Type from_string(const std::string& str, boost::system::error_code& ec) {
+            std::istringstream iss(str);
+            Type result;
 
-			if (!Type::read_from(iss, result) || !iss.eof()) {
-				ec = make_error_code(boost::system::errc::invalid_argument);
+            if (!Type::read_from(iss, result) || !iss.eof()) {
+                ec = make_error_code(boost::system::errc::invalid_argument);
 
-				return {};
-			}
+                return {};
+            }
 
-			return result;
-		}
+            return result;
+        }
 };
 
 template <typename Type>
 class HasToString {
     public:
-		std::string to_string() const {
-			std::ostringstream oss;
+        std::string to_string() const {
+            std::ostringstream oss;
 
             static_cast<const Type*>(this)->write_to(oss);
 
-			return oss.str();
-		}
+            return oss.str();
+        }
 };
 
 class WriteToVisitor : public boost::static_visitor<std::ostream&> {
-	public:
-		WriteToVisitor(std::ostream& os) :
-			m_os(os)
-		{}
+    public:
+        WriteToVisitor(std::ostream& os) :
+            m_os(os)
+        {}
 
-		template <typename Any>
-		result_type operator()(const Any& value) const {
-			return value.write_to(m_os);
-		}
+        template <typename Any>
+        result_type operator()(const Any& value) const {
+            return value.write_to(m_os);
+        }
 
-	private:
-		std::ostream& m_os;
+    private:
+        std::ostream& m_os;
 };
 
 template <typename Type>
 class HasWriteTo {
     public:
-		std::ostream& write_to(std::ostream& os) const {
-			return boost::apply_visitor(WriteToVisitor(os), static_cast<const Type&>(*this));
-		}
+        std::ostream& write_to(std::ostream& os) const {
+            return boost::apply_visitor(WriteToVisitor(os), static_cast<const Type&>(*this));
+        }
 };
 
 template <typename Type, typename... VariantTypes>
 class HasReadFrom {
     public:
-		static std::istream& read_from(std::istream& is, Type& value, std::string* buf = nullptr) {
-			const std::ios::iostate state = is.rdstate();
+        static std::istream& read_from(std::istream& is, Type& value, std::string* buf = nullptr) {
+            const std::ios::iostate state = is.rdstate();
 
-			read_from_impl<VariantTypes...>(is, value, buf, state);
+            read_from_impl<VariantTypes...>(is, value, buf, state);
 
-			return is;
+            return is;
         }
     private:
         template <typename VariantType, typename NextVariantType, typename... ExtraTypes>
@@ -163,15 +163,15 @@ class HasReadFrom {
 
 template <typename Type>
 class HasAccessors {
-	public:
-		template <typename VariantType>
-		bool is() const { return this->as<VariantType>() != nullptr; }
+    public:
+        template <typename VariantType>
+        bool is() const { return this->as<VariantType>() != nullptr; }
 
-		template <typename VariantType>
-		const VariantType* as() const { return boost::get<VariantType>(static_cast<const Type*>(this)); }
+        template <typename VariantType>
+        const VariantType* as() const { return boost::get<VariantType>(static_cast<const Type*>(this)); }
 
-		template <typename VariantType>
-		VariantType* as() { return boost::get<VariantType>(static_cast<Type*>(this)); }
+        template <typename VariantType>
+        VariantType* as() { return boost::get<VariantType>(static_cast<Type*>(this)); }
 };
 
 template <typename Type, typename... VariantTypes>
@@ -183,21 +183,21 @@ class GenericVariant : public HasFromString<Type>, public HasToString<Type>, pub
  */
 template <typename T>
 class has_to_string {
-	private:
-		template <typename U, U>
-		class check {};
+    private:
+        template <typename U, U>
+        class check {};
 
-		template <typename C>
-		static char f(check<std::string (C::*)() const, &T::to_string>*);
+        template <typename C>
+        static char f(check<std::string (C::*)() const, &T::to_string>*);
 
-		template <typename C>
-		static char f(check<std::string (HasToString<C>::*)() const, &T::to_string>*);
+        template <typename C>
+        static char f(check<std::string (HasToString<C>::*)() const, &T::to_string>*);
 
-		template <typename C>
-		static long f(...);
+        template <typename C>
+        static long f(...);
 
-	public:
-		static const bool value = (sizeof(f<T>(0)) == sizeof(char));
+    public:
+        static const bool value = (sizeof(f<T>(0)) == sizeof(char));
 };
 
 /**

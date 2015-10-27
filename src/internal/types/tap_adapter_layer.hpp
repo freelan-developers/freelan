@@ -51,15 +51,15 @@
 
 namespace freelan
 {
-	enum class TapAdapterLayer
-	{
-		ethernet,
-		ip
-	};
+    enum class TapAdapterLayer
+    {
+        ethernet,
+        ip
+    };
 
-	inline std::ostream& operator<<(std::ostream& os, const TapAdapterLayer& value)
-	{
-		switch (value)
+    inline std::ostream& operator<<(std::ostream& os, const TapAdapterLayer& value)
+    {
+        switch (value)
         {
             case TapAdapterLayer::ethernet:
                 return os << "ethernet";
@@ -67,7 +67,7 @@ namespace freelan
                 return os << "ip";
         }
 
-		assert(false);
-		return os;
-	}
+        assert(false);
+        return os;
+    }
 }

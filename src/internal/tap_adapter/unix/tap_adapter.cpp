@@ -53,9 +53,9 @@
 // If someone comes up with a better solution, feel free to contribute.
 struct in6_ifreq
 {
-	struct in6_addr ifr6_addr; /**< IPv6 address */
-	uint32_t ifr6_prefixlen; /**< Length of the prefix */
-	int ifr6_ifindex; /**< Interface index */
+    struct in6_addr ifr6_addr; /**< IPv6 address */
+    uint32_t ifr6_prefixlen; /**< Length of the prefix */
+    int ifr6_ifindex; /**< Interface index */
 };
 
 #elif defined(MACINTOSH) || defined(BSD)

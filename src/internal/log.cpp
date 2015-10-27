@@ -45,38 +45,38 @@
 namespace freelan {
 
 namespace {
-	static LogFunction log_function;
-	static std::atomic<LogLevel> freelan_log_level(LogLevel::INFORMATION);
+    static LogFunction log_function;
+    static std::atomic<LogLevel> freelan_log_level(LogLevel::INFORMATION);
 }
 
 void set_log_function(LogFunction function) {
-	log_function = function;
+    log_function = function;
 }
 
 LogFunction get_log_function() {
-	return log_function;
+    return log_function;
 }
 
 void set_log_level(LogLevel level) {
-	freelan_log_level = level;
+    freelan_log_level = level;
 }
 
 LogLevel get_log_level() {
-	return freelan_log_level;
+    return freelan_log_level;
 }
 
 bool Logger::commit() {
-	if (m_ok) {
-		m_ok = false;
+    if (m_ok) {
+        m_ok = false;
 
-		const auto log_f = get_log_function();
+        const auto log_f = get_log_function();
 
-		if (log_f) {
-			return log_f(m_level, m_timestamp, m_domain, m_code, m_payload, m_file, m_line);
-		}
-	}
+        if (log_f) {
+            return log_f(m_level, m_timestamp, m_domain, m_code, m_payload, m_file, m_line);
+        }
+    }
 
-	return false;
+    return false;
 }
 
 }

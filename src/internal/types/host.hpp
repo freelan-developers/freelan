@@ -58,30 +58,30 @@ namespace freelan {
 typedef boost::variant<IPv4Address, IPv6Address, Hostname> HostBase;
 
 class Host : public HostBase, public GenericVariant<Host, IPv4Address, IPv6Address, Hostname> {
-	public:
-		Host() {}
-		Host(const IPv4Address& ipv4_address) :
-			HostBase(ipv4_address)
-		{}
-		Host(const IPv6Address& ipv6_address) :
-			HostBase(ipv6_address)
-		{}
-		Host(const Hostname& hostname) :
-			HostBase(hostname)
-		{}
+    public:
+        Host() {}
+        Host(const IPv4Address& ipv4_address) :
+            HostBase(ipv4_address)
+        {}
+        Host(const IPv6Address& ipv6_address) :
+            HostBase(ipv6_address)
+        {}
+        Host(const Hostname& hostname) :
+            HostBase(hostname)
+        {}
 
-	private:
-		friend bool operator==(const Host& lhs, const Host& rhs) {
-			return static_cast<const HostBase&>(lhs) == static_cast<const HostBase&>(rhs);
-		};
+    private:
+        friend bool operator==(const Host& lhs, const Host& rhs) {
+            return static_cast<const HostBase&>(lhs) == static_cast<const HostBase&>(rhs);
+        };
 
-		friend bool operator<(const Host& lhs, const Host& rhs) {
-			return static_cast<const HostBase&>(lhs) < static_cast<const HostBase&>(rhs);
-		};
+        friend bool operator<(const Host& lhs, const Host& rhs) {
+            return static_cast<const HostBase&>(lhs) < static_cast<const HostBase&>(rhs);
+        };
 
-		friend std::istream& operator>>(std::istream& is, Host& value) {
-			return Host::read_from(is, value);
-		}
+        friend std::istream& operator>>(std::istream& is, Host& value) {
+            return Host::read_from(is, value);
+        }
 };
 
 }

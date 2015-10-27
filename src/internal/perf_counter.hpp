@@ -56,143 +56,143 @@
 namespace freelan {
 
 class CallStats {
-	public:
-		CallStats() :
-			m_call_count(0),
-			m_in_call_time_total(boost::posix_time::not_a_date_time),
-			m_in_call_time_max(boost::posix_time::not_a_date_time),
-			m_in_call_time_min(boost::posix_time::not_a_date_time)
-		{}
+    public:
+        CallStats() :
+            m_call_count(0),
+            m_in_call_time_total(boost::posix_time::not_a_date_time),
+            m_in_call_time_max(boost::posix_time::not_a_date_time),
+            m_in_call_time_min(boost::posix_time::not_a_date_time)
+        {}
 
-		CallStats& operator+=(const CallStats& other);
+        CallStats& operator+=(const CallStats& other);
 
-		void increment_call_count(const boost::posix_time::time_duration& duration);
+        void increment_call_count(const boost::posix_time::time_duration& duration);
 
-		unsigned int call_count() const { return m_call_count; }
-		boost::posix_time::time_duration in_call_time_total() const { return m_in_call_time_total; }
-		boost::posix_time::time_duration in_call_time_max() const { return m_in_call_time_max; }
-		boost::posix_time::time_duration in_call_time_min() const { return m_in_call_time_min; }
-		boost::posix_time::time_duration in_call_time_average() const;
+        unsigned int call_count() const { return m_call_count; }
+        boost::posix_time::time_duration in_call_time_total() const { return m_in_call_time_total; }
+        boost::posix_time::time_duration in_call_time_max() const { return m_in_call_time_max; }
+        boost::posix_time::time_duration in_call_time_min() const { return m_in_call_time_min; }
+        boost::posix_time::time_duration in_call_time_average() const;
 
-		std::ostream& write_to(std::ostream& os) const;
+        std::ostream& write_to(std::ostream& os) const;
 
-	private:
-		unsigned int m_call_count;
-		boost::posix_time::time_duration m_in_call_time_total;
-		boost::posix_time::time_duration m_in_call_time_max;
-		boost::posix_time::time_duration m_in_call_time_min;
+    private:
+        unsigned int m_call_count;
+        boost::posix_time::time_duration m_in_call_time_total;
+        boost::posix_time::time_duration m_in_call_time_max;
+        boost::posix_time::time_duration m_in_call_time_min;
 
-		friend std::ostream& operator<<(std::ostream& os, const CallStats& stats) {
-			return stats.write_to(os);
-		}
+        friend std::ostream& operator<<(std::ostream& os, const CallStats& stats) {
+            return stats.write_to(os);
+        }
 
-		friend CallStats operator+(const CallStats& lhs, const CallStats& rhs) {
-			CallStats result = lhs;
+        friend CallStats operator+(const CallStats& lhs, const CallStats& rhs) {
+            CallStats result = lhs;
 
-			return result += rhs;
-		}
+            return result += rhs;
+        }
 };
 
 class PerfCounter;
 
 class ScopedMeasurement {
-	public:
-		static boost::posix_time::ptime now() {
-			return boost::posix_time::microsec_clock::universal_time();
-		}
+    public:
+        static boost::posix_time::ptime now() {
+            return boost::posix_time::microsec_clock::universal_time();
+        }
 
-		ScopedMeasurement(PerfCounter& perf_counter, const std::string& label) :
-			m_perf_counter(&perf_counter),
-			m_label(label),
-			m_start_time(now())
-		{}
+        ScopedMeasurement(PerfCounter& perf_counter, const std::string& label) :
+            m_perf_counter(&perf_counter),
+            m_label(label),
+            m_start_time(now())
+        {}
 
-		ScopedMeasurement(const ScopedMeasurement&) = delete;
-		ScopedMeasurement(ScopedMeasurement&& other) :
-			m_perf_counter(std::move(other.m_perf_counter)),
-			m_label(std::move(m_label)),
-			m_start_time(std::move(m_start_time))
-		{}
+        ScopedMeasurement(const ScopedMeasurement&) = delete;
+        ScopedMeasurement(ScopedMeasurement&& other) :
+            m_perf_counter(std::move(other.m_perf_counter)),
+            m_label(std::move(m_label)),
+            m_start_time(std::move(m_start_time))
+        {}
 
-		~ScopedMeasurement() {
-			report();
-		}
+        ~ScopedMeasurement() {
+            report();
+        }
 
-		void report();
+        void report();
 
-	private:
-		PerfCounter* m_perf_counter;
-		std::string m_label;
-		boost::posix_time::ptime m_start_time;
+    private:
+        PerfCounter* m_perf_counter;
+        std::string m_label;
+        boost::posix_time::ptime m_start_time;
 };
 
 class PerfCounter {
-	public:
-		/**
-		 * \brief Get the thread-local instance of PerfCounter.
-		 */
-		static PerfCounter& get_instance();
+    public:
+        /**
+         * \brief Get the thread-local instance of PerfCounter.
+         */
+        static PerfCounter& get_instance();
 
-		PerfCounter& operator+=(const PerfCounter& other) {
-			for(auto&& item : other.m_call_stats) {
-				m_call_stats[item.first] += item.second;
-			}
+        PerfCounter& operator+=(const PerfCounter& other) {
+            for(auto&& item : other.m_call_stats) {
+                m_call_stats[item.first] += item.second;
+            }
 
-			return *this;
-		}
+            return *this;
+        }
 
-		void clear() {
-			m_call_stats.clear();
-		}
+        void clear() {
+            m_call_stats.clear();
+        }
 
-		ScopedMeasurement scoped_measurement(const std::string& label) {
-			return ScopedMeasurement(*this, label);
-		}
+        ScopedMeasurement scoped_measurement(const std::string& label) {
+            return ScopedMeasurement(*this, label);
+        }
 
-		void record_call(const std::string& label, const boost::posix_time::time_duration& duration) {
-			m_call_stats[label].increment_call_count(duration);
-		}
+        void record_call(const std::string& label, const boost::posix_time::time_duration& duration) {
+            m_call_stats[label].increment_call_count(duration);
+        }
 
-		const CallStats& get_call_stats(const std::string& label) const {
-			const auto it = m_call_stats.find(label);
+        const CallStats& get_call_stats(const std::string& label) const {
+            const auto it = m_call_stats.find(label);
 
-			if (it == m_call_stats.end()) {
-				throw std::out_of_range(label);
-			}
+            if (it == m_call_stats.end()) {
+                throw std::out_of_range(label);
+            }
 
-			return it->second;
-		}
+            return it->second;
+        }
 
-		std::ostream& write_to(std::ostream& os) const;
+        std::ostream& write_to(std::ostream& os) const;
 
-	private:
-		std::map<std::string, CallStats> m_call_stats;
+    private:
+        std::map<std::string, CallStats> m_call_stats;
 
-		friend std::ostream& operator<<(std::ostream& os, const PerfCounter& perf_counter) {
-			return perf_counter.write_to(os);
-		}
+        friend std::ostream& operator<<(std::ostream& os, const PerfCounter& perf_counter) {
+            return perf_counter.write_to(os);
+        }
 
-		friend PerfCounter operator+(const PerfCounter& lhs, const PerfCounter& rhs) {
-			PerfCounter result = lhs;
+        friend PerfCounter operator+(const PerfCounter& lhs, const PerfCounter& rhs) {
+            PerfCounter result = lhs;
 
-			return result += rhs;
-		}
+            return result += rhs;
+        }
 };
 
 class VampirePerfCounter : public PerfCounter {
-	public:
-		VampirePerfCounter(PerfCounter& target, std::mutex& mutex) :
-			m_target(target),
-			m_source(PerfCounter::get_instance()),
-			m_mutex(mutex)
-		{}
+    public:
+        VampirePerfCounter(PerfCounter& target, std::mutex& mutex) :
+            m_target(target),
+            m_source(PerfCounter::get_instance()),
+            m_mutex(mutex)
+        {}
 
-		~VampirePerfCounter();
+        ~VampirePerfCounter();
 
-	private:
-		PerfCounter& m_target;
-		PerfCounter& m_source;
-		std::mutex& m_mutex;
+    private:
+        PerfCounter& m_target;
+        PerfCounter& m_source;
+        std::mutex& m_mutex;
 };
 
 #define MEASURE_SCOPE(label) auto&& scoped_measurement_instance__UNUSED__ = freelan::PerfCounter::get_instance().scoped_measurement(label); static_cast<void>(scoped_measurement_instance__UNUSED__)

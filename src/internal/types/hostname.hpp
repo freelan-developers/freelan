@@ -57,52 +57,52 @@
 namespace freelan {
 
 class Hostname : public GenericValueType<std::string, Hostname> {
-	public:
-		Hostname() = default;
+    public:
+        Hostname() = default;
 
-		static Hostname from_string(const std::string& str) {
-			boost::system::error_code ec;
-			const Hostname result = from_string(str, ec);
+        static Hostname from_string(const std::string& str) {
+            boost::system::error_code ec;
+            const Hostname result = from_string(str, ec);
 
-			if (ec) {
-				throw boost::system::system_error(ec);
-			}
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static Hostname from_string(const std::string& str, boost::system::error_code& ec) {
-			std::istringstream iss(str);
-			Hostname result;
+        static Hostname from_string(const std::string& str, boost::system::error_code& ec) {
+            std::istringstream iss(str);
+            Hostname result;
 
-			if (!read_from(iss, result) || !iss.eof()) {
-				ec = make_error_code(boost::system::errc::invalid_argument);
+            if (!read_from(iss, result) || !iss.eof()) {
+                ec = make_error_code(boost::system::errc::invalid_argument);
 
-				return {};
-			}
+                return {};
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		static std::istream& read_from(std::istream& is, Hostname& value, std::string* buf = nullptr) {
-			return read_hostname(is, value.to_raw_value(), buf);
-		}
+        static std::istream& read_from(std::istream& is, Hostname& value, std::string* buf = nullptr) {
+            return read_hostname(is, value.to_raw_value(), buf);
+        }
 
-		std::string to_string() const {
-			return this->to_raw_value();
-		}
+        std::string to_string() const {
+            return this->to_raw_value();
+        }
 
-		std::string to_string(boost::system::error_code&) const {
-			return this->to_raw_value();
-		}
+        std::string to_string(boost::system::error_code&) const {
+            return this->to_raw_value();
+        }
 
-		std::ostream& write_to(std::ostream& os) const {
-			return os << to_string();
-		}
+        std::ostream& write_to(std::ostream& os) const {
+            return os << to_string();
+        }
 
-	private:
-		Hostname(Hostname::value_type&& value) : GenericValueType<std::string, Hostname>(std::move(value)) {}
-		Hostname(const Hostname::value_type& value) : GenericValueType<std::string, Hostname>(value) {}
+    private:
+        Hostname(Hostname::value_type&& value) : GenericValueType<std::string, Hostname>(std::move(value)) {}
+        Hostname(const Hostname::value_type& value) : GenericValueType<std::string, Hostname>(value) {}
 };
 
 }

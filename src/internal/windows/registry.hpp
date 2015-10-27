@@ -60,253 +60,253 @@
 
 namespace freelan
 {
-	class RegistryKey {
-		public:
-			RegistryKey() :
-				m_key(),
-				m_name()
-			{}
+    class RegistryKey {
+        public:
+            RegistryKey() :
+                m_key(),
+                m_name()
+            {}
 
-			RegistryKey(HKEY hKey, const std::string& name, REGSAM samDesired = KEY_READ) :
-				m_key(),
-				m_name(name)
-			{
-				HKEY key;
+            RegistryKey(HKEY hKey, const std::string& name, REGSAM samDesired = KEY_READ) :
+                m_key(),
+                m_name(name)
+            {
+                HKEY key;
 
-				const LONG status = ::RegOpenKeyExA(hKey, m_name.c_str(), 0, samDesired, &key);
+                const LONG status = ::RegOpenKeyExA(hKey, m_name.c_str(), 0, samDesired, &key);
 
-				if (status != ERROR_SUCCESS) {
-					throw boost::system::system_error(status, boost::system::system_category());
-				}
-
-				m_key = key;
-			}
-
-			RegistryKey(const RegistryKey& parent, const std::string& name, REGSAM samDesired = KEY_READ) :
-				RegistryKey(parent.native_handle(), name, samDesired)
-			{}
-
-			~RegistryKey() {
-				if (m_key) {
-					::RegCloseKey(*m_key);
-				}
-			}
-
-			RegistryKey(const RegistryKey&) = delete;
-			RegistryKey& operator=(const RegistryKey&) = delete;
-
-			RegistryKey(RegistryKey&& other) throw() :
-				m_key(other.m_key),
-				m_name(other.m_name)
-			{
-				other.m_key.reset();
-				other.m_name.clear();
-			}
-
-			RegistryKey& operator=(RegistryKey&& other) throw() {
-				using std::swap;
-
-				swap(m_key, other.m_key);
-
-				return *this;
-			}
-
-			bool is_open() const {
-				return static_cast<bool>(m_key);
-			}
-
-			HKEY native_handle() const { return *m_key; }
-			const std::string& name() const { return m_name; }
-
-            boost::system::error_code query_value(const std::string& value_name, DWORD& type, void* buf, size_t& buflen, boost::system::error_code& ec) const {
-				DWORD data_len = static_cast<DWORD>(buflen);
-				const LONG status = ::RegQueryValueExA(native_handle(), value_name.c_str(), NULL, &type, static_cast<LPBYTE>(buf), &data_len);
-				buflen = static_cast<size_t>(data_len);
-
-				if (status != ERROR_SUCCESS) {
-					return (ec = boost::system::error_code(status, boost::system::system_category()));
-				}
-
-				return ec;
-			}
-
-            boost::system::error_code query_string(const std::string& value_name, std::string& value, boost::system::error_code& ec) const {
-				std::array<char, 256> buffer;
-				DWORD type = REG_NONE;
-				size_t value_size = buffer.size();
-
-				if (query_value(value_name, type, buffer.data(), value_size, ec)) {
-					return ec;
-				}
-
-				if (type != REG_SZ) {
-					return (ec = make_error_code(boost::system::errc::invalid_argument));
-				}
-
-				value.assign(buffer.begin(), buffer.begin() + value_size - 1);
-
-				return ec;
-			}
-
-			std::string query_string(const std::string& value_name) const {
-				std::string result;
-				boost::system::error_code ec;
-
-				if (query_string(value_name, result, ec)) {
-					throw boost::system::system_error(ec);
+                if (status != ERROR_SUCCESS) {
+                    throw boost::system::system_error(status, boost::system::system_category());
                 }
 
-				return result;
-			}
+                m_key = key;
+            }
 
-			boost::system::error_code query_path(const std::string& value_name, boost::filesystem::path& value, boost::system::error_code& ec) const {
-				std::array<char, 4096> buffer;
-				DWORD type = REG_NONE;
-				size_t value_size = buffer.size();
+            RegistryKey(const RegistryKey& parent, const std::string& name, REGSAM samDesired = KEY_READ) :
+                RegistryKey(parent.native_handle(), name, samDesired)
+            {}
 
-				if (query_value(value_name, type, buffer.data(), value_size, ec)) {
-					return ec;
-				}
+            ~RegistryKey() {
+                if (m_key) {
+                    ::RegCloseKey(*m_key);
+                }
+            }
 
-				if (type != REG_SZ) {
-					return (ec = make_error_code(boost::system::errc::invalid_argument));
-				}
+            RegistryKey(const RegistryKey&) = delete;
+            RegistryKey& operator=(const RegistryKey&) = delete;
 
-				value = boost::filesystem::path(buffer.begin(), buffer.begin() + value_size - 1);
+            RegistryKey(RegistryKey&& other) throw() :
+                m_key(other.m_key),
+                m_name(other.m_name)
+            {
+                other.m_key.reset();
+                other.m_name.clear();
+            }
 
-				return ec;
-			}
+            RegistryKey& operator=(RegistryKey&& other) throw() {
+                using std::swap;
 
-			boost::filesystem::path query_path(const std::string& value_name) const {
-				boost::filesystem::path result;
-				boost::system::error_code ec;
+                swap(m_key, other.m_key);
 
-				if (query_path(value_name, result, ec)) {
-					throw boost::system::system_error(ec);
-				}
+                return *this;
+            }
 
-				return result;
-			}
+            bool is_open() const {
+                return static_cast<bool>(m_key);
+            }
 
-			RegistryKey operator[](size_t index) const {
-				std::array<char, 256> name;
-				DWORD name_size = static_cast<DWORD>(name.size());
-				const LONG status = ::RegEnumKeyExA(native_handle(), static_cast<DWORD>(index), name.data(), &name_size, NULL, NULL, NULL, NULL);
+            HKEY native_handle() const { return *m_key; }
+            const std::string& name() const { return m_name; }
 
-				switch (status) {
-					case ERROR_SUCCESS:
-					{
-						try {
-							return RegistryKey(*this, std::string(name.begin(), name.begin() + name_size));
-						} catch (const boost::system::system_error&) {
-							return RegistryKey();
-						}
-					}
-					case ERROR_NO_MORE_ITEMS:
-					{
-						return RegistryKey();
-					}
-					default:
-					{
-						throw boost::system::system_error(status, boost::system::system_category());
-					}
-				}
-			}
+            boost::system::error_code query_value(const std::string& value_name, DWORD& type, void* buf, size_t& buflen, boost::system::error_code& ec) const {
+                DWORD data_len = static_cast<DWORD>(buflen);
+                const LONG status = ::RegQueryValueExA(native_handle(), value_name.c_str(), NULL, &type, static_cast<LPBYTE>(buf), &data_len);
+                buflen = static_cast<size_t>(data_len);
 
-			size_t size() const {
-				DWORD count = 0;
-				const LONG status = ::RegQueryInfoKey(native_handle(), NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                if (status != ERROR_SUCCESS) {
+                    return (ec = boost::system::error_code(status, boost::system::system_category()));
+                }
 
-				if (status != ERROR_SUCCESS) {
-					throw boost::system::system_error(status, boost::system::system_category());
-				}
+                return ec;
+            }
 
-				return static_cast<size_t>(count);
-			}
+            boost::system::error_code query_string(const std::string& value_name, std::string& value, boost::system::error_code& ec) const {
+                std::array<char, 256> buffer;
+                DWORD type = REG_NONE;
+                size_t value_size = buffer.size();
 
-			class const_iterator : public std::iterator<std::forward_iterator_tag, RegistryKey>
-			{
-				public:
+                if (query_value(value_name, type, buffer.data(), value_size, ec)) {
+                    return ec;
+                }
 
-					const_iterator operator++(int) {
-						const const_iterator result = *this;
-						++m_index;
+                if (type != REG_SZ) {
+                    return (ec = make_error_code(boost::system::errc::invalid_argument));
+                }
 
-						return result;
-					}
+                value.assign(buffer.begin(), buffer.begin() + value_size - 1);
 
-					const_iterator& operator++() {
-						m_index++;
+                return ec;
+            }
 
-						return *this;
-					}
+            std::string query_string(const std::string& value_name) const {
+                std::string result;
+                boost::system::error_code ec;
 
-					value_type operator*() const {
-						return m_key[m_index];
-					}
+                if (query_string(value_name, result, ec)) {
+                    throw boost::system::system_error(ec);
+                }
 
-				private:
+                return result;
+            }
 
-					const_iterator(const RegistryKey& key, size_t index) :
-						m_key(key),
-						m_index(index)
-					{
-					}
+            boost::system::error_code query_path(const std::string& value_name, boost::filesystem::path& value, boost::system::error_code& ec) const {
+                std::array<char, 4096> buffer;
+                DWORD type = REG_NONE;
+                size_t value_size = buffer.size();
 
-					friend bool operator<(const const_iterator& lhs, const const_iterator& rhs) {
-						assert(&lhs.m_key == &rhs.m_key);
+                if (query_value(value_name, type, buffer.data(), value_size, ec)) {
+                    return ec;
+                }
 
-						return (lhs.m_index < rhs.m_index);
-					}
+                if (type != REG_SZ) {
+                    return (ec = make_error_code(boost::system::errc::invalid_argument));
+                }
 
-					friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
-						assert(&lhs.m_key == &rhs.m_key);
+                value = boost::filesystem::path(buffer.begin(), buffer.begin() + value_size - 1);
 
-						return (lhs.m_index == rhs.m_index);
-					}
+                return ec;
+            }
 
-					friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
-						assert(&lhs.m_key == &rhs.m_key);
+            boost::filesystem::path query_path(const std::string& value_name) const {
+                boost::filesystem::path result;
+                boost::system::error_code ec;
 
-						return (lhs.m_index != rhs.m_index);
-					}
+                if (query_path(value_name, result, ec)) {
+                    throw boost::system::system_error(ec);
+                }
 
-					const RegistryKey& m_key;
-					size_t m_index;
+                return result;
+            }
 
-					friend class RegistryKey;
-			};
+            RegistryKey operator[](size_t index) const {
+                std::array<char, 256> name;
+                DWORD name_size = static_cast<DWORD>(name.size());
+                const LONG status = ::RegEnumKeyExA(native_handle(), static_cast<DWORD>(index), name.data(), &name_size, NULL, NULL, NULL, NULL);
 
-			class available_keys_range
-			{
-				public:
+                switch (status) {
+                    case ERROR_SUCCESS:
+                    {
+                        try {
+                            return RegistryKey(*this, std::string(name.begin(), name.begin() + name_size));
+                        } catch (const boost::system::system_error&) {
+                            return RegistryKey();
+                        }
+                    }
+                    case ERROR_NO_MORE_ITEMS:
+                    {
+                        return RegistryKey();
+                    }
+                    default:
+                    {
+                        throw boost::system::system_error(status, boost::system::system_category());
+                    }
+                }
+            }
 
-					const_iterator begin() const {
-						return const_iterator(m_key, 0);
-					}
+            size_t size() const {
+                DWORD count = 0;
+                const LONG status = ::RegQueryInfoKey(native_handle(), NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-					const_iterator end() const {
-						return const_iterator(m_key, m_key.size());
-					}
+                if (status != ERROR_SUCCESS) {
+                    throw boost::system::system_error(status, boost::system::system_category());
+                }
 
-				private:
+                return static_cast<size_t>(count);
+            }
 
-					available_keys_range(const RegistryKey& key) :
-						m_key(key)
-					{}
+            class const_iterator : public std::iterator<std::forward_iterator_tag, RegistryKey>
+            {
+                public:
 
-					const RegistryKey& m_key;
+                    const_iterator operator++(int) {
+                        const const_iterator result = *this;
+                        ++m_index;
 
-					friend class RegistryKey;
-			};
+                        return result;
+                    }
 
-			available_keys_range available_keys() const {
-				return available_keys_range(*this);
-			}
+                    const_iterator& operator++() {
+                        m_index++;
 
-		private:
+                        return *this;
+                    }
 
-			boost::optional<HKEY> m_key;
-			std::string m_name;
-	};
+                    value_type operator*() const {
+                        return m_key[m_index];
+                    }
+
+                private:
+
+                    const_iterator(const RegistryKey& key, size_t index) :
+                        m_key(key),
+                        m_index(index)
+                    {
+                    }
+
+                    friend bool operator<(const const_iterator& lhs, const const_iterator& rhs) {
+                        assert(&lhs.m_key == &rhs.m_key);
+
+                        return (lhs.m_index < rhs.m_index);
+                    }
+
+                    friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
+                        assert(&lhs.m_key == &rhs.m_key);
+
+                        return (lhs.m_index == rhs.m_index);
+                    }
+
+                    friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
+                        assert(&lhs.m_key == &rhs.m_key);
+
+                        return (lhs.m_index != rhs.m_index);
+                    }
+
+                    const RegistryKey& m_key;
+                    size_t m_index;
+
+                    friend class RegistryKey;
+            };
+
+            class available_keys_range
+            {
+                public:
+
+                    const_iterator begin() const {
+                        return const_iterator(m_key, 0);
+                    }
+
+                    const_iterator end() const {
+                        return const_iterator(m_key, m_key.size());
+                    }
+
+                private:
+
+                    available_keys_range(const RegistryKey& key) :
+                        m_key(key)
+                    {}
+
+                    const RegistryKey& m_key;
+
+                    friend class RegistryKey;
+            };
+
+            available_keys_range available_keys() const {
+                return available_keys_range(*this);
+            }
+
+        private:
+
+            boost::optional<HKEY> m_key;
+            std::string m_name;
+    };
 }

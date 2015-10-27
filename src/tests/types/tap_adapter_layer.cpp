@@ -48,25 +48,25 @@
 using freelan::TapAdapterLayer;
 
 TEST(TapAdapterLayer, default_instantiation) {
-	const TapAdapterLayer value {};
-	ASSERT_EQ(TapAdapterLayer::ethernet, value);
+    const TapAdapterLayer value {};
+    ASSERT_EQ(TapAdapterLayer::ethernet, value);
 }
 
 TEST(TapAdapterLayer, explicit_instantiation) {
-	const TapAdapterLayer value = TapAdapterLayer::ip;
-	ASSERT_EQ(TapAdapterLayer::ip, value);
+    const TapAdapterLayer value = TapAdapterLayer::ip;
+    ASSERT_EQ(TapAdapterLayer::ip, value);
 }
 
 TEST(TapAdapterLayer, to_output_stream_ethernet) {
     std::ostringstream oss;
     oss << TapAdapterLayer::ethernet;
 
-	ASSERT_EQ("ethernet", oss.str());
+    ASSERT_EQ("ethernet", oss.str());
 }
 
 TEST(TapAdapterLayer, to_output_stream_ip) {
     std::ostringstream oss;
     oss << TapAdapterLayer::ip;
 
-	ASSERT_EQ("ip", oss.str());
+    ASSERT_EQ("ip", oss.str());
 }

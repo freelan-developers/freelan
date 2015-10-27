@@ -51,127 +51,127 @@ using freelan::IPv4Address;
 using freelan::from_string;
 
 TEST(IPv4Address, default_instantiation) {
-	const IPv4Address value {};
+    const IPv4Address value {};
 }
 
 TEST(IPv4Address, boost_asio_ip_address_v4_instantiation) {
-	const address_v4 raw_value;
-	const IPv4Address value { raw_value };
+    const address_v4 raw_value;
+    const IPv4Address value { raw_value };
 
-	ASSERT_EQ(raw_value, value.to_raw_value());
+    ASSERT_EQ(raw_value, value.to_raw_value());
 }
 
 TEST(IPv4Address, string_instantiation) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = IPv4Address::from_string(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value = IPv4Address::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPv4Address, string_instantiation_failure) {
-	try {
-		IPv4Address::from_string("invalid");
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+    try {
+        IPv4Address::from_string("invalid");
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(IPv4Address, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = IPv4Address::from_string("invalid", ec);
+    boost::system::error_code ec;
+    const auto value = IPv4Address::from_string("invalid", ec);
 
-	ASSERT_EQ(IPv4Address(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(IPv4Address(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(IPv4Address, bytes_instantiation) {
-	const IPv4Address::bytes_type bytes_value {{ 0x07, 0x00, 0x00, 0x01 }};
-	const auto value = IPv4Address::from_bytes(bytes_value);
+    const IPv4Address::bytes_type bytes_value {{ 0x07, 0x00, 0x00, 0x01 }};
+    const auto value = IPv4Address::from_bytes(bytes_value);
 
-	ASSERT_EQ(bytes_value, value.to_bytes());
+    ASSERT_EQ(bytes_value, value.to_bytes());
 }
 
 TEST(IPv4Address, implicit_string_conversion) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = from_string<IPv4Address>(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value = from_string<IPv4Address>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPv4Address, compare_to_same_instance) {
-	const auto value = from_string<IPv4Address>("9.0.0.1");
+    const auto value = from_string<IPv4Address>("9.0.0.1");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(IPv4Address, compare_to_same_value) {
-	const auto value_a = from_string<IPv4Address>("9.0.0.1");
-	const auto value_b = from_string<IPv4Address>("9.0.0.1");
+    const auto value_a = from_string<IPv4Address>("9.0.0.1");
+    const auto value_b = from_string<IPv4Address>("9.0.0.1");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(IPv4Address, compare_to_different_values) {
-	const auto value_a = from_string<IPv4Address>("9.0.0.1");
-	const auto value_b = from_string<IPv4Address>("9.0.0.2");
+    const auto value_a = from_string<IPv4Address>("9.0.0.1");
+    const auto value_b = from_string<IPv4Address>("9.0.0.2");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPv4Address, stream_input) {
-	const std::string str_value = "9.0.0.1";
-	const auto value_ref = from_string<IPv4Address>(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value_ref = from_string<IPv4Address>(str_value);
 
-	std::istringstream iss(str_value);
-	IPv4Address value;
+    std::istringstream iss(str_value);
+    IPv4Address value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPv4Address, stream_output) {
-	const std::string str_value = "9.0.0.1";
-	const auto value = from_string<IPv4Address>(str_value);
+    const std::string str_value = "9.0.0.1";
+    const auto value = from_string<IPv4Address>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
 
 TEST(IPv4Address, increment) {
-	auto value = IPv4Address::from_string("9.0.0.0");
+    auto value = IPv4Address::from_string("9.0.0.0");
 
-	ASSERT_EQ(IPv4Address::from_string("9.0.0.1"), ++value);
+    ASSERT_EQ(IPv4Address::from_string("9.0.0.1"), ++value);
 }
 
 TEST(IPv4Address, increment_byte_boundary) {
-	auto value = IPv4Address::from_string("9.0.0.255");
+    auto value = IPv4Address::from_string("9.0.0.255");
 
-	ASSERT_EQ(IPv4Address::from_string("9.0.1.0"), ++value);
+    ASSERT_EQ(IPv4Address::from_string("9.0.1.0"), ++value);
 }
 
 TEST(IPv4Address, increment_last) {
-	auto value = IPv4Address::from_string("255.255.255.255");
+    auto value = IPv4Address::from_string("255.255.255.255");
 
-	ASSERT_EQ(IPv4Address::from_string("0.0.0.0"), ++value);
+    ASSERT_EQ(IPv4Address::from_string("0.0.0.0"), ++value);
 }

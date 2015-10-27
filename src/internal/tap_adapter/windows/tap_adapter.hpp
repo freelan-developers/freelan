@@ -62,8 +62,8 @@ class TapAdapter : public GenericTapAdapter<boost::asio::windows::stream_handle>
 
         TapAdapter(boost::asio::io_service& _io_service, TapAdapterLayer _layer) :
             GenericTapAdapter(_io_service, _layer),
-			m_interface_index(),
-			m_interface_luid()
+            m_interface_index(),
+            m_interface_luid()
         {}
 
         TapAdapter(const TapAdapter&) = delete;
@@ -75,8 +75,8 @@ class TapAdapter : public GenericTapAdapter<boost::asio::windows::stream_handle>
         void set_connected_state(bool connected);
 
     private:
-		NET_IFINDEX m_interface_index;
-		NET_LUID m_interface_luid;
+        NET_IFINDEX m_interface_index;
+        NET_LUID m_interface_luid;
 };
 
 }

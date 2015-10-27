@@ -52,104 +52,104 @@ using freelan::IPv6Endpoint;
 using freelan::from_string;
 
 TEST(IPv6Endpoint, default_instantiation) {
-	const IPv6Endpoint value {};
+    const IPv6Endpoint value {};
 }
 
 TEST(IPv6Endpoint, value_instanciation) {
-	const IPv6Address ipv6_address = IPv6Address::from_string("ff02:1001::e0:abcd");
-	const PortNumber port_number = 12000;
-	const IPv6Endpoint value { ipv6_address, port_number };
+    const IPv6Address ipv6_address = IPv6Address::from_string("ff02:1001::e0:abcd");
+    const PortNumber port_number = 12000;
+    const IPv6Endpoint value { ipv6_address, port_number };
 
-	ASSERT_EQ(ipv6_address, value.get_ip_address());
-	ASSERT_EQ(port_number, value.get_port_number());
+    ASSERT_EQ(ipv6_address, value.get_ip_address());
+    ASSERT_EQ(port_number, value.get_port_number());
 }
 
 TEST(IPv6Endpoint, string_instantiation) {
-	const std::string str_value = "[ff02:1001::e0:abcd]:12000";
-	const auto value = IPv6Endpoint::from_string(str_value);
+    const std::string str_value = "[ff02:1001::e0:abcd]:12000";
+    const auto value = IPv6Endpoint::from_string(str_value);
 
-	ASSERT_EQ(str_value, value.to_string());
+    ASSERT_EQ(str_value, value.to_string());
 }
 
 TEST(IPv6Endpoint, string_instantiation_failure) {
-	try {
-		IPv6Endpoint::from_string("invalid");
-	} catch (boost::system::system_error& ex) {
-		ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
-	}
+    try {
+        IPv6Endpoint::from_string("invalid");
+    } catch (boost::system::system_error& ex) {
+        ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ex.code());
+    }
 }
 
 TEST(IPv6Endpoint, string_instantiation_failure_no_throw) {
-	boost::system::error_code ec;
-	const auto value = IPv6Endpoint::from_string("invalid", ec);
+    boost::system::error_code ec;
+    const auto value = IPv6Endpoint::from_string("invalid", ec);
 
-	ASSERT_EQ(IPv6Endpoint(), value);
-	ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
+    ASSERT_EQ(IPv6Endpoint(), value);
+    ASSERT_EQ(make_error_condition(boost::system::errc::invalid_argument), ec);
 }
 
 TEST(IPv6Endpoint, implicit_string_conversion) {
-	const std::string str_value = "[ff02:1001::e0:abcd]:12000";
-	const auto value = from_string<IPv6Endpoint>(str_value);
+    const std::string str_value = "[ff02:1001::e0:abcd]:12000";
+    const auto value = from_string<IPv6Endpoint>(str_value);
 
-	ASSERT_EQ(str_value, to_string(value));
+    ASSERT_EQ(str_value, to_string(value));
 }
 
 TEST(IPv6Endpoint, compare_to_same_instance) {
-	const auto value = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
+    const auto value = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
 
-	ASSERT_TRUE(value == value);
-	ASSERT_FALSE(value != value);
-	ASSERT_FALSE(value < value);
-	ASSERT_TRUE(value <= value);
-	ASSERT_FALSE(value > value);
-	ASSERT_TRUE(value >= value);
+    ASSERT_TRUE(value == value);
+    ASSERT_FALSE(value != value);
+    ASSERT_FALSE(value < value);
+    ASSERT_TRUE(value <= value);
+    ASSERT_FALSE(value > value);
+    ASSERT_TRUE(value >= value);
 }
 
 TEST(IPv6Endpoint, compare_to_same_value) {
-	const auto value_a = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
-	const auto value_b = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
+    const auto value_a = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
+    const auto value_b = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
 
-	ASSERT_TRUE(value_a == value_b);
-	ASSERT_FALSE(value_a != value_b);
-	ASSERT_FALSE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_TRUE(value_a >= value_b);
+    ASSERT_TRUE(value_a == value_b);
+    ASSERT_FALSE(value_a != value_b);
+    ASSERT_FALSE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_TRUE(value_a >= value_b);
 }
 
 TEST(IPv6Endpoint, compare_to_different_values) {
-	const auto value_a = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
-	const auto value_b = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12001");
+    const auto value_a = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12000");
+    const auto value_b = from_string<IPv6Endpoint>("[ff02:1001::e0:abcd]:12001");
 
-	ASSERT_FALSE(value_a == value_b);
-	ASSERT_TRUE(value_a != value_b);
-	ASSERT_TRUE(value_a < value_b);
-	ASSERT_TRUE(value_a <= value_b);
-	ASSERT_FALSE(value_a > value_b);
-	ASSERT_FALSE(value_a >= value_b);
+    ASSERT_FALSE(value_a == value_b);
+    ASSERT_TRUE(value_a != value_b);
+    ASSERT_TRUE(value_a < value_b);
+    ASSERT_TRUE(value_a <= value_b);
+    ASSERT_FALSE(value_a > value_b);
+    ASSERT_FALSE(value_a >= value_b);
 }
 
 TEST(IPv6Endpoint, stream_input) {
-	const std::string str_value = "[ff02:1001::e0:abcd]:12000";
-	const auto value_ref = from_string<IPv6Endpoint>(str_value);
+    const std::string str_value = "[ff02:1001::e0:abcd]:12000";
+    const auto value_ref = from_string<IPv6Endpoint>(str_value);
 
-	std::istringstream iss(str_value);
-	IPv6Endpoint value;
+    std::istringstream iss(str_value);
+    IPv6Endpoint value;
 
-	iss >> value;
+    iss >> value;
 
-	ASSERT_EQ(value_ref, value);
-	ASSERT_TRUE(iss.eof());
-	ASSERT_TRUE(!iss.good());
-	ASSERT_TRUE(!iss.fail());
+    ASSERT_EQ(value_ref, value);
+    ASSERT_TRUE(iss.eof());
+    ASSERT_TRUE(!iss.good());
+    ASSERT_TRUE(!iss.fail());
 }
 
 TEST(IPv6Endpoint, stream_output) {
-	const std::string str_value = "[ff02:1001::e0:abcd]:12000";
-	const auto value = from_string<IPv6Endpoint>(str_value);
+    const std::string str_value = "[ff02:1001::e0:abcd]:12000";
+    const auto value = from_string<IPv6Endpoint>(str_value);
 
-	std::ostringstream oss;
-	oss << value;
+    std::ostringstream oss;
+    oss << value;
 
-	ASSERT_EQ(str_value, oss.str());
+    ASSERT_EQ(str_value, oss.str());
 }
