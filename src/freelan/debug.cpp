@@ -38,29 +38,14 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file common.h
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Common functions.
- */
+#include "debug.h"
 
-#ifndef FREELAN_H
-#define FREELAN_H
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef _WIN32
+#include <intrin.h>
 #endif
 
-#include "freelan/error.h"
-#include "freelan/io.h"
-#include "freelan/log.h"
-#include "freelan/memory.h"
-#include "freelan/types.h"
-#include "freelan/version.h"
-#include "freelan/debug.h"
-
-#ifdef __cplusplus
+void freelan_break(void) {
+#ifdef _WIN32
+	__debugbreak();
+#endif
 }
-#endif
-
-#endif

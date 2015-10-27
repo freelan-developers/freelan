@@ -39,25 +39,24 @@
  */
 
 /**
- * \file common.h
+ * \file debug.h
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief Common functions.
+ * \brief Debug methods.
  */
 
-#ifndef FREELAN_H
-#define FREELAN_H
+#ifndef FREELAN_DEBUG_H
+#define FREELAN_DEBUG_H
+
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "freelan/error.h"
-#include "freelan/io.h"
-#include "freelan/log.h"
-#include "freelan/memory.h"
-#include "freelan/types.h"
-#include "freelan/version.h"
-#include "freelan/debug.h"
+/**
+ * \brief Causes a breakpoint to occur. Usually to attach a debugger.
+ */
+FREELAN_API void freelan_break(void);
 
 #ifdef __cplusplus
 }

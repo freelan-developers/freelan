@@ -183,6 +183,7 @@ set (API_MAIN_HEADER_FILES ${API_MAIN_HEADER_FILES}
 )
 set (API_HEADER_FILES ${API_HEADER_FILES}
     include/freelan/common.h
+    include/freelan/debug.h
     include/freelan/error.h
     include/freelan/io.h
     include/freelan/log.h
@@ -191,6 +192,7 @@ set (API_HEADER_FILES ${API_HEADER_FILES}
     include/freelan/version.h
 )
 set (API_SRC_FILES ${API_SRC_FILES}
+    src/freelan/debug.cpp
     src/freelan/error.cpp
     src/freelan/io.cpp
     src/freelan/log.cpp
