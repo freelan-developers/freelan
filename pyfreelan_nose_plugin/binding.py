@@ -4,6 +4,7 @@ The binding between FreeLAN's memory function and the nose plugin.
 
 import logging
 
+from traceback import extract_stack
 from struct import calcsize
 
 memory_map = {}
@@ -40,11 +41,12 @@ def pointer_to_type(pointer):
 
 class PointerInfo(object):
 
-    def __init__(self, pointer, size):
+    def __init__(self, pointer, size, stack):
         self.pointer = pointer
         self.size = size
         self._file = None
         self._line = None
+        self.stack = stack
 
     def mark_pointer(self, file, line):
         self._file = file
@@ -59,7 +61,7 @@ class PointerInfo(object):
         elif self._file == ffi.NULL:
             return "<unknown file>"
         else:
-            return ffi.string(self._file)
+            return ffi.string(self._file).decode('utf-8')
 
     @property
     def line(self):
@@ -71,13 +73,31 @@ class PointerInfo(object):
             return self._line
 
     @property
+    def python_file(self):
+        return self.stack[-1][0]
+
+    @property
+    def python_line(self):
+        return self.stack[-1][1]
+
+    @property
+    def python_function(self):
+        return self.stack[-1][2]
+
+    @property
+    def python_code(self):
+        return self.stack[-1][3]
+
+    @property
     def has_debug_info(self):
         return self._line is not None or self._file is not None
 
     def __repr__(self):
         return (
             "{self.pointer} ({self.size} bytes) allocated at "
-            "{self.file}:{self.line}".format(self=self)
+            "{self.file}:{self.line} from {self.python_file}:"
+            "{self.python_line} in {self.python_function} (at "
+            "'{self.python_code}')".format(self=self)
         )
 
 
@@ -140,8 +160,10 @@ def register_memory_functions():
     @save
     @ffi.callback("void* (size_t)")
     def malloc(size):
+        global memory_blocks_offset
+
         result = native.malloc(size)
-        ptrinfo = PointerInfo(result, size)
+        ptrinfo = PointerInfo(result, size, extract_stack()[:-2])
         allocation = Allocation(ptrinfo)
         memory_sequence.append(allocation)
         memory_map[result] = ptrinfo
@@ -150,8 +172,6 @@ def register_memory_functions():
         memory_usage['max'] = max(memory_usage['max'], memory_usage['current'])
         memory_usage['allocs'] += 1
         block = memory_blocks[result] = memory_blocks_offset
-
-        global memory_blocks_offset
         memory_blocks_offset += 1
 
         logger.info("[%3d] %r", block, allocation)
@@ -163,7 +183,7 @@ def register_memory_functions():
     def realloc(ptr, size):
         result = native.realloc(ptr, size)
         old_ptrinfo = memory_map[ptr]
-        new_ptrinfo = PointerInfo(result, size)
+        new_ptrinfo = PointerInfo(result, size, extract_stack()[:-2])
         reallocation = Reallocation(old_ptrinfo, new_ptrinfo)
         memory_sequence.append(reallocation)
 
@@ -230,6 +250,14 @@ def unregister_memory_functions():
     """
     Instructs libfreelan to use the default memory functions.
     """
+    if memory_map:
+        raise AssertionError(
+            "Cannot unregister memory functions when some of the allocated "
+            "memory wasn't freed:\n  %s" % '\n  '.join(
+                map(str, memory_map.values()),
+            ),
+        )
+
     from pyfreelan.api import (
         native,
         ffi,

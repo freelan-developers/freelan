@@ -50,6 +50,8 @@ class MemoryLeak(RuntimeError):
                         entry.ptrinfo.size,
                         entry.ptrinfo.file,
                         entry.ptrinfo.line,
+                        entry.ptrinfo.python_file,
+                        entry.ptrinfo.python_line,
                     ]
                     for entry in self.sequence
                 ],
@@ -61,6 +63,8 @@ class MemoryLeak(RuntimeError):
                     "Size (bytes)",
                     "File",
                     "Line",
+                    "Python file",
+                    "Python line",
                 ],
                 tablefmt='simple',
             ),
