@@ -79,6 +79,11 @@ if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Cl
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-uninitialized")
 endif()
 
+# On OSX, boost 1.58.0 causes these warnings.
+if (APPLE AND ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND Boost_VERSION EQUAL 105800)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedef")
+endif()
+
 # The internal library.
 set (INTERNAL_VERSION_HEADER "${PROJECT_BINARY_DIR}/src/internal/version.hpp")
 
