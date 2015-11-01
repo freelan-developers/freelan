@@ -2355,6 +2355,10 @@ namespace freelan
 	{
 		if (m_configuration.server.enabled)
 		{
+#ifdef LINUX
+			// Due to GPL licensing issues, we can't include that in the LINUX build without violating the GPLv3 license.
+			m_logger(fscp::log_level::warning) << "Web server support is not compiled in this version.";
+#else
 			if (m_configuration.server.protocol == server_configuration::server_protocol_type::https)
 			{
 				bool generated = false;
@@ -2414,11 +2418,13 @@ namespace freelan
 			m_web_server_thread = boost::thread([this](){ m_web_server->run(); });
 
 			m_logger(fscp::log_level::information) << "Web server started.";
+#endif
 		}
 	}
 
 	void core::close_web_server()
 	{
+#ifndef LINUX
 		if (m_web_server)
 		{
 			m_logger(fscp::log_level::information) << "Closing web server...";
@@ -2429,6 +2435,7 @@ namespace freelan
 
 			m_logger(fscp::log_level::information) << "Web server closed.";
 		}
+#endif
 	}
 
 	void core::open_web_client()

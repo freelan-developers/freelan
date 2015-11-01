@@ -45,6 +45,8 @@
 
 #include "server.hpp"
 
+#ifndef LINUX
+
 #include "tools.hpp"
 
 #include <cryptoplus/x509/certificate_request.hpp>
@@ -468,3 +470,5 @@ namespace freelan
 		return nullptr;
 	}
 }
+
+#endif
