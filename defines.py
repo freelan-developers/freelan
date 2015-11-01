@@ -42,7 +42,7 @@ class Defines(object):
             except (CalledProcessError, OSError):
                 self._repository_root = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
-        return self._repository_root
+        return self._repository_root.decode('utf-8')
 
     @property
     def repository_version(self):
@@ -136,17 +136,17 @@ class Defines(object):
         Generate the defines.hpp file.
         """
 
-        with open(self.template_file_path, 'rb') as source_file:
+        with open(self.template_file_path, 'r') as source_file:
             output = self.replace_template_variables(source_file.read())
 
         try:
-            with open(target, 'rb') as target_file:
+            with open(target, 'r') as target_file:
                 current_content = target_file.read()
         except IOError:
             current_content = None
 
         if output != current_content:
-            with open(target, 'wb') as target_file:
+            with open(target, 'w') as target_file:
                 target_file.write(output)
 
 if __name__ == '__main__':
