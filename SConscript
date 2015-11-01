@@ -38,6 +38,9 @@ for x in Glob('libs/*'):
         if not sys.platform.startswith('linux'):
             if name in 'netlinkplus':
                 continue
+        else:
+            if name in 'mongooseplus':
+                continue
 
         library, library_includes = SConscript(sconscript_path, exports='env dirs name')
         libraries.extend(library)

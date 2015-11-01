@@ -8,7 +8,6 @@ libraries = [
     'freelan',
     'asiotap',
     'fscp',
-    'mongooseplus',
     'cryptoplus',
     'executeplus',
     'kfather',
@@ -29,12 +28,17 @@ if sys.platform.startswith('linux'):
         'pthread',
         'netlinkplus',
     ])
-elif sys.platform.startswith('darwin'):
+else:
     libraries.extend([
-        'ldap',
-        'z',
-        'iconv',
+        'mongooseplus',
     ])
+
+    if sys.platform.startswith('darwin'):
+        libraries.extend([
+            'ldap',
+            'z',
+            'iconv',
+        ])
 
 env = env.Clone()
 env.Prepend(LIBS=libraries)

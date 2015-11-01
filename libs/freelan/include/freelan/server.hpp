@@ -46,6 +46,9 @@
 #pragma once
 
 #include "os.hpp"
+
+#ifndef LINUX
+
 #include "configuration.hpp"
 
 #include <map>
@@ -108,5 +111,6 @@ namespace freelan
 			authentication_handler_type m_authentication_handler;
 			std::map<std::string, client_information_type> m_client_information_map;
 	};
-
 }
+
+#endif
