@@ -86,6 +86,7 @@ endif()
 
 # The internal library.
 set (INTERNAL_VERSION_HEADER "${PROJECT_BINARY_DIR}/src/internal/version.hpp")
+file(RELATIVE_PATH INTERNAL_VERSION_HEADER ${PROJECT_SOURCE_DIR} ${INTERNAL_VERSION_HEADER})
 
 configure_file(
     "src/internal/version.hpp.in"
@@ -105,16 +106,9 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/stdint.hpp
     src/internal/stream_parsers.cpp
     src/internal/stream_parsers.hpp
+    src/internal/tap_adapter/generic_tap_adapter.hpp
+    src/internal/tap_adapter/tap_adapter.hpp
     src/internal/traits.hpp
-)
-
-if (WIN32)
-    set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
-        src/internal/windows/registry.hpp
-    )
-endif()
-
-set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
     src/internal/types/ethernet_address.cpp
     src/internal/types/ethernet_address.hpp
     src/internal/types/generic_ip_address.hpp
@@ -142,34 +136,41 @@ set (INTERNAL_TYPES_SRC_FILES ${INTERNAL_TYPES_SRC_FILES}
     src/internal/types/port_number.hpp
     src/internal/types/tap_adapter_layer.hpp
 )
-source_group(types FILES ${INTERNAL_TYPES_SRC_FILES})
-
-
-set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
-    src/internal/tap_adapter/tap_adapter.hpp
-    src/internal/tap_adapter/generic_tap_adapter.hpp
-)
 
 if (WIN32)
-    set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+    set (INTERNAL_WINDOWS_SRC_FILES ${INTERNAL_WINDOWS_SRC_FILES}
         src/internal/tap_adapter/windows/extra/tap-windows.h
         src/internal/tap_adapter/windows/tap_adapter.cpp
         src/internal/tap_adapter/windows/tap_adapter.hpp
+        src/internal/windows/registry.hpp
     )
 else()
-    set (INTERNAL_TAP_ADAPTER_SRC_FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES}
+    set (INTERNAL_UNIX_SRC_FILES ${INTERNAL_UNIX_SRC_FILES}
         src/internal/tap_adapter/unix/tap_adapter.cpp
         src/internal/tap_adapter/unix/tap_adapter.hpp
     )
 endif()
-source_group(tap_adapter FILES ${INTERNAL_TAP_ADAPTER_SRC_FILES})
 
 set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
     ${INTERNAL_GENERIC_SRC_FILES}
-    ${INTERNAL_TYPES_SRC_FILES}
-    ${INTERNAL_TAP_ADAPTER_SRC_FILES}
     "${INTERNAL_VERSION_HEADER}"
 )
+
+if (WIN32)
+    set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
+        ${INTERNAL_WINDOWS_SRC_FILES}
+    )
+else()
+    set (INTERNAL_SRC_FILES ${INTERNAL_SRC_FILES}
+        ${INTERNAL_UNIX_SRC_FILES}
+    )
+endif()
+
+foreach (SRC_FILE ${INTERNAL_SRC_FILES})
+    get_filename_component(SRC_FILE_DIR ${SRC_FILE} DIRECTORY)
+    file(TO_NATIVE_PATH ${SRC_FILE_DIR} SRC_FILE_DIR)
+    source_group(${SRC_FILE_DIR} FILES ${SRC_FILE})
+endforeach(SRC_FILE)
 
 add_library(FreeLANInternalLibrary ${INTERNAL_SRC_FILES})
 target_include_directories(FreeLANInternalLibrary PUBLIC "${PROJECT_SOURCE_DIR}/src/internal")
@@ -183,10 +184,8 @@ if (WIN32)
 endif()
 
 # The main library.
-set (API_MAIN_HEADER_FILES ${API_MAIN_HEADER_FILES}
-    include/freelan.h
-)
 set (API_HEADER_FILES ${API_HEADER_FILES}
+    include/freelan.h
     include/freelan/common.h
     include/freelan/debug.h
     include/freelan/error.h
@@ -196,6 +195,7 @@ set (API_HEADER_FILES ${API_HEADER_FILES}
     include/freelan/types.h
     include/freelan/version.h
 )
+
 set (API_SRC_FILES ${API_SRC_FILES}
     src/freelan/debug.cpp
     src/freelan/error.cpp
@@ -205,10 +205,14 @@ set (API_SRC_FILES ${API_SRC_FILES}
     src/freelan/types.cpp
     src/freelan/version.cpp
 )
-source_group(api FILES ${API_MAIN_HEADER_FILES} ${API_HEADER_FILES})
-source_group(implementation FILES ${API_SRC_FILES})
 
-add_library(FreeLANLibrary SHARED ${API_SRC_FILES} ${API_HEADER_FILES} ${API_MAIN_HEADER_FILES})
+foreach (SRC_FILE ${API_SRC_FILES})
+    get_filename_component(SRC_FILE_DIR ${SRC_FILE} DIRECTORY)
+    file(TO_NATIVE_PATH ${SRC_FILE_DIR} SRC_FILE_DIR)
+    source_group(${SRC_FILE_DIR} FILES ${SRC_FILE})
+endforeach(SRC_FILE)
+
+add_library(FreeLANLibrary SHARED ${API_SRC_FILES} ${API_HEADER_FILES})
 target_include_directories(FreeLANLibrary INTERFACE "${PROJECT_SOURCE_DIR}/include")
 target_include_directories(FreeLANLibrary PRIVATE "${PROJECT_SOURCE_DIR}/include/freelan")
 target_link_libraries(FreeLANLibrary PRIVATE FreeLANInternalLibrary)
@@ -220,8 +224,13 @@ set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH OFF)
 target_compile_definitions(FreeLANLibrary PRIVATE "FREELAN_API_EXPORTS")
 
 install(TARGETS FreeLANLibrary RUNTIME DESTINATION bin ARCHIVE DESTINATION lib LIBRARY DESTINATION lib)
-install(FILES ${API_MAIN_HEADER_FILES} DESTINATION include)
-install(FILES ${API_HEADER_FILES} DESTINATION include/freelan)
+
+foreach (HEADER_FILE ${API_HEADER_FILES})
+    get_filename_component(HEADER_FILE_DIR ${HEADER_FILE} DIRECTORY)
+    install(FILES ${HEADER_FILE} DESTINATION ${HEADER_FILE_DIR})
+    file(TO_NATIVE_PATH ${HEADER_FILE_DIR} HEADER_FILE_DIR)
+    source_group(${HEADER_FILE_DIR} FILES ${HEADER_FILE})
+endforeach(HEADER_FILE)
 
 # The tests
 set (GTEST_VERSION "1.7.0")
@@ -266,7 +275,12 @@ set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
     ${GTEST_ROOT}/src/gtest-all.cc
     ${GTEST_ROOT}/src/gtest_main.cc
 )
-source_group(gtest FILES ${GTEST_SRC_FILES})
+
+foreach (SRC_FILE ${TESTS_SRC_FILES} ${GTEST_SRC_FILES})
+    get_filename_component(SRC_FILE_DIR ${SRC_FILE} DIRECTORY)
+    file(TO_NATIVE_PATH ${SRC_FILE_DIR} SRC_FILE_DIR)
+    source_group(${SRC_FILE_DIR} FILES ${SRC_FILE})
+endforeach(SRC_FILE)
 
 if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     set_property(SOURCE ${GTEST_SRC_FILES} APPEND_STRING PROPERTY COMPILE_FLAGS "-Wno-missing-field-initializers")
@@ -286,6 +300,23 @@ endif()
 install(TARGETS FreeLANTests DESTINATION bin)
 
 if (WIN32)
+    set(PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
+        tests/__init__.py
+        tests/test_api_error.py
+        tests/test_api_io.py
+        tests/test_api_log.py
+        tests/test_api_types.py
+        tests/test_api_version.py
+        tests/test_gtest_binary.py
+        tests/test_native_calls.py
+    )
+
+    foreach (PYTHON_TEST_FILE ${PYTHON_TEST_FILES})
+        get_filename_component(PYTHON_TEST_FILE_DIR ${PYTHON_TEST_FILE} DIRECTORY)
+        file(TO_NATIVE_PATH ${PYTHON_TEST_FILE_DIR} PYTHON_TEST_FILE_DIR)
+        source_group(${PYTHON_TEST_FILE_DIR} FILES ${PYTHON_TEST_FILE})
+    endforeach(PYTHON_TEST_FILE)
+
     add_custom_target(
         PythonTests
         COMMAND ${CMAKE_COMMAND} -E env
@@ -294,5 +325,6 @@ if (WIN32)
         "LIB=${CMAKE_INSTALL_PREFIX}/lib"
         tox -e py35
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        SOURCES ${PYTHON_TEST_FILES}
     )
 endif()
