@@ -39,31 +39,30 @@
  */
 
 /**
- * \file socket.hpp
+ * \file message.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A FSCP socket.
+ * \brief FSCP messages routines.
  */
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <cstdlib>
 
-#include "message.hpp"
+#include "constants.hpp"
 
 namespace freelan {
-    template <typename SubSocketType>
-    class Socket {
-        public:
-            typedef typename SubSocketType::endpoint_type Endpoint;
+    /**
+     * \brief Write a FSCP message to the specified buffer.
+     * \param buf The buffer to write to. Cannot be NULL.
+     * \param buf_len The length of buf.
+     * \param type The type of the FSCP message to write.
+     * \param payload The payload to write. Cannot be NULL.
+     * \param payload_len The length of payload.
+     * \param version The version of the protocol. The default should be okay in most cases.
+     * \return The total number of bytes written to buf. If the write fails, 0 is returned and buf is unchanged.
+     */
+    size_t write_fscp_message(void* buf, size_t buf_len, FSCPMessageType type, const void* payload, size_t payload_len, unsigned int version = FSCP_VERSION);
 
-            Socket(boost::asio::io_service& io_service) :
-                m_socket(io_service)
-            {}
-
-        private:
-            SubSocketType m_socket;
-    };
-
-    typedef Socket<boost::asio::ip::udp::socket> UDPSocket;
-    typedef Socket<boost::asio::ip::tcp::socket> TCPSocket;
+    size_t write_fscp_hello_request_message(void* buf, size_t buf_len, uint32_t unique_number);
+    size_t write_fscp_hello_response_message(void* buf, size_t buf_len, uint32_t unique_number);
 }

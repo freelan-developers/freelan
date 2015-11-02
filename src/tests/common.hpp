@@ -55,6 +55,8 @@
 #include <functional>
 #include <sstream>
 #include <cstdlib>
+#include <string>
+#include <cassert>
 
 
 class LoggedTest : public ::testing::Test {
@@ -103,3 +105,18 @@ inline bool system_tests_enabled() {
 }
 
 #define IS_SYSTEM_TEST() if (!system_tests_enabled()) { SUCCEED() << "System tests disabled"; return; }
+
+inline void assert_array_equal(const void* ref, const void* buf, size_t size) {
+    using std::string;
+    using std::to_string;
+
+    assert(ref);
+    assert(buf);
+
+    for (auto i = 0; i < size; ++i) {
+        SCOPED_TRACE(string("Index ") + to_string(i) + " of " + to_string(size));
+        ASSERT_EQ(static_cast<const char*>(ref)[i], static_cast<const char*>(buf)[i]);
+    }
+}
+
+#define ASSERT_ARRAY_EQ(ref,buf) assert_array_equal(ref, buf, sizeof(ref))

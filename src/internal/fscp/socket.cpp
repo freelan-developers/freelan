@@ -40,7 +40,5 @@
 
 #include "socket.hpp"
 
-#include <boost/asio.hpp>
-
 namespace freelan {
 }

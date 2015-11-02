@@ -39,31 +39,21 @@
  */
 
 /**
- * \file socket.hpp
+ * \file constants.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A FSCP socket.
+ * \brief FSCP constants.
  */
 
 #pragma once
 
-#include <boost/asio.hpp>
-
-#include "message.hpp"
+#include <cstdlib>
+#include <cstdint>
 
 namespace freelan {
-    template <typename SubSocketType>
-    class Socket {
-        public:
-            typedef typename SubSocketType::endpoint_type Endpoint;
+    const unsigned int FSCP_VERSION = 3;
 
-            Socket(boost::asio::io_service& io_service) :
-                m_socket(io_service)
-            {}
-
-        private:
-            SubSocketType m_socket;
+    enum class FSCPMessageType : uint8_t {
+        HELLO_REQUEST = 0x00,
+        HELLO_RESPONSE = 0x01
     };
-
-    typedef Socket<boost::asio::ip::udp::socket> UDPSocket;
-    typedef Socket<boost::asio::ip::tcp::socket> TCPSocket;
 }
