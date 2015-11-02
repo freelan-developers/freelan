@@ -56,7 +56,7 @@ TEST(FSCPMessageTest, write_fscp_message_payload_too_big) {
     const char payload[65536] = {};
     const auto resulting_size = write_fscp_message(buf, sizeof(buf), FSCPMessageType::HELLO_REQUEST, payload, sizeof(payload));
 
-    ASSERT_EQ(0, resulting_size);
+    ASSERT_EQ(size_t(0), resulting_size);
 }
 
 TEST(FSCPMessageTest, write_fscp_message_buffer_too_small) {
@@ -64,7 +64,7 @@ TEST(FSCPMessageTest, write_fscp_message_buffer_too_small) {
     const char payload[5] = {};
     const auto resulting_size = write_fscp_message(buf, sizeof(buf), FSCPMessageType::HELLO_REQUEST, payload, sizeof(payload));
 
-    ASSERT_EQ(0, resulting_size);
+    ASSERT_EQ(size_t(0), resulting_size);
 }
 
 TEST(FSCPMessageTest, write_fscp_message_success) {
@@ -74,7 +74,7 @@ TEST(FSCPMessageTest, write_fscp_message_success) {
     const uint8_t ref[] = { 3, 0x00, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04, 0xfd, 0xfd };
     const auto resulting_size = write_fscp_message(buf, sizeof(buf), FSCPMessageType::HELLO_REQUEST, payload, sizeof(payload));
 
-    ASSERT_EQ(8, resulting_size);
+    ASSERT_EQ(size_t(8), resulting_size);
     ASSERT_ARRAY_EQ(ref, buf);
 }
 
@@ -85,7 +85,7 @@ TEST(FSCPMessageTest, write_fscp_hello_request_message) {
     const uint8_t ref[] = { 3, 0x00, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04, 0xfd, 0xfd };
     const auto resulting_size = write_fscp_hello_request_message(buf, sizeof(buf), unique_number);
 
-    ASSERT_EQ(8, resulting_size);
+    ASSERT_EQ(size_t(8), resulting_size);
     ASSERT_ARRAY_EQ(ref, buf);
 }
 
@@ -96,6 +96,6 @@ TEST(FSCPMessageTest, write_fscp_hello_response_message) {
     const uint8_t ref[] = { 3, 0x01, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04, 0xfd, 0xfd };
     const auto resulting_size = write_fscp_hello_response_message(buf, sizeof(buf), unique_number);
 
-    ASSERT_EQ(8, resulting_size);
+    ASSERT_EQ(size_t(8), resulting_size);
     ASSERT_ARRAY_EQ(ref, buf);
 }

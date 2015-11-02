@@ -46,11 +46,6 @@
 
 namespace freelan {
     namespace {
-        template <typename Type, typename OriginalType>
-        void write_value(void* buf, size_t& offset, OriginalType value) {
-            write_value(buf, offset, static_cast<Type>(value));
-        }
-
         void write_value(void* buf, size_t& offset, uint8_t value) {
             static_cast<char*>(buf)[offset] = value;
 
@@ -61,6 +56,11 @@ namespace freelan {
             *reinterpret_cast<uint16_t*>(&static_cast<char*>(buf)[offset]) = htons(value);
 
             offset += sizeof(value);
+        }
+
+        template <typename Type, typename OriginalType>
+        void write_value(void* buf, size_t& offset, OriginalType value) {
+            write_value(buf, offset, static_cast<Type>(value));
         }
 
         void write_buffer(void* buf, size_t& offset, const void* sbuf, size_t sbuf_len) {

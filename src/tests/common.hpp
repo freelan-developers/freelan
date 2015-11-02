@@ -113,7 +113,7 @@ inline void assert_array_equal(const void* ref, const void* buf, size_t size) {
     assert(ref);
     assert(buf);
 
-    for (auto i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
         SCOPED_TRACE(string("Index ") + to_string(i) + " of " + to_string(size));
         ASSERT_EQ(static_cast<const char*>(ref)[i], static_cast<const char*>(buf)[i]);
     }
