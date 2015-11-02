@@ -63,6 +63,21 @@ namespace freelan {
      */
     size_t write_fscp_message(void* buf, size_t buf_len, FSCPMessageType type, const void* payload, size_t payload_len, unsigned int version = FSCP_VERSION);
 
+    /**
+     * \brief Read a FSCP message from the specified buffer.
+     * \param buf The buffer to read from. Cannot be NULL.
+     * \param buf_len Thr length of buf.
+     * \param type The type of FSCP message.
+     * \param payload The payload of the FSCP message.
+     * \param payload_len The length of the payload.
+     * \param version If not null, *version will be set to the protocol version for the message.
+     * \return true if the message was correctly formatted, false otherwise. If false is returned, the value of the specified attributes is unspecified.
+     */
+    bool read_fscp_message(const void* buf, size_t buf_len, FSCPMessageType& type, const void*& payload, size_t& payload_len, unsigned int* version = nullptr);
+
     size_t write_fscp_hello_request_message(void* buf, size_t buf_len, uint32_t unique_number);
+    bool read_fscp_hello_request_message(const void* buf, size_t buf_len, uint32_t& unique_number);
+
     size_t write_fscp_hello_response_message(void* buf, size_t buf_len, uint32_t unique_number);
+    bool read_fscp_hello_response_message(const void* buf, size_t buf_len, uint32_t& unique_number);
 }

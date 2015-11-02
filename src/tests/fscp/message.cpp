@@ -48,8 +48,11 @@
 
 using freelan::FSCPMessageType;
 using freelan::write_fscp_message;
+using freelan::read_fscp_message;
 using freelan::write_fscp_hello_request_message;
+using freelan::read_fscp_hello_request_message;
 using freelan::write_fscp_hello_response_message;
+using freelan::read_fscp_hello_response_message;
 
 TEST(FSCPMessageTest, write_fscp_message_payload_too_big) {
     char buf[70000] = {};
@@ -78,6 +81,44 @@ TEST(FSCPMessageTest, write_fscp_message_success) {
     ASSERT_ARRAY_EQ(ref, buf);
 }
 
+TEST(FSCPMessageTest, read_fscp_message_buffer_too_small) {
+    char buf[3] = {};
+    unsigned int version = 0;
+    FSCPMessageType type {};
+    size_t payload_len = 0;
+    const void* payload = nullptr;
+    const auto result = read_fscp_message(buf, sizeof(buf), type, payload, payload_len, &version);
+
+    ASSERT_FALSE(result);
+}
+
+TEST(FSCPMessageTest, read_fscp_message_payload_too_big) {
+    char buf[5] = { 3, 0x00, 0x00, 0x02, 0x77 };
+    unsigned int version = 0;
+    FSCPMessageType type {};
+    size_t payload_len = 0;
+    const void* payload = nullptr;
+    const auto result = read_fscp_message(buf, sizeof(buf), type, payload, payload_len, &version);
+
+    ASSERT_FALSE(result);
+}
+
+TEST(FSCPMessageTest, read_fscp_message_payload_success) {
+    char buf[6] = { 3, 0x00, 0x00, 0x02, 0x77, 0x44 };
+    char ref[2] = { 0x77, 0x44 };
+    unsigned int version = 0;
+    FSCPMessageType type {};
+    size_t payload_len = 0;
+    const void* payload = nullptr;
+    const auto result = read_fscp_message(buf, sizeof(buf), type, payload, payload_len, &version);
+
+    ASSERT_TRUE(result);
+    ASSERT_EQ(unsigned int(3), version);
+    ASSERT_EQ(FSCPMessageType::HELLO_REQUEST, type);
+    ASSERT_EQ(size_t(2), payload_len);
+    ASSERT_ARRAY_EQ(ref, payload);
+}
+
 TEST(FSCPMessageTest, write_fscp_hello_request_message) {
     uint8_t buf[10] = {};
     std::memset(buf, 0xfd, sizeof(buf));
@@ -89,6 +130,23 @@ TEST(FSCPMessageTest, write_fscp_hello_request_message) {
     ASSERT_ARRAY_EQ(ref, buf);
 }
 
+TEST(FSCPMessageTest, read_fscp_hello_request_message_incorrect_size) {
+    char buf[3] = { 0x11, 0x22, 0x33 };
+    uint32_t unique_number = 0;
+    const auto result = read_fscp_hello_request_message(buf, sizeof(buf), unique_number);
+
+    ASSERT_FALSE(result);
+}
+
+TEST(FSCPMessageTest, read_fscp_hello_request_message_success) {
+    char buf[4] = { 0x11, 0x22, 0x33, 0x44 };
+    uint32_t unique_number = 0;
+    const auto result = read_fscp_hello_request_message(buf, sizeof(buf), unique_number);
+
+    ASSERT_TRUE(result);
+    ASSERT_EQ(uint32_t(0x11223344), unique_number);
+}
+
 TEST(FSCPMessageTest, write_fscp_hello_response_message) {
     uint8_t buf[10] = {};
     std::memset(buf, 0xfd, sizeof(buf));
@@ -98,4 +156,21 @@ TEST(FSCPMessageTest, write_fscp_hello_response_message) {
 
     ASSERT_EQ(size_t(8), resulting_size);
     ASSERT_ARRAY_EQ(ref, buf);
+}
+
+TEST(FSCPMessageTest, read_fscp_hello_response_message_incorrect_size) {
+    char buf[3] = { 0x11, 0x22, 0x33 };
+    uint32_t unique_number = 0;
+    const auto result = read_fscp_hello_response_message(buf, sizeof(buf), unique_number);
+
+    ASSERT_FALSE(result);
+}
+
+TEST(FSCPMessageTest, read_fscp_hello_response_message_success) {
+    char buf[4] = { 0x11, 0x22, 0x33, 0x44 };
+    uint32_t unique_number = 0;
+    const auto result = read_fscp_hello_response_message(buf, sizeof(buf), unique_number);
+
+    ASSERT_TRUE(result);
+    ASSERT_EQ(uint32_t(0x11223344), unique_number);
 }

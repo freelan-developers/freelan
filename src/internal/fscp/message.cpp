@@ -46,14 +46,22 @@
 
 namespace freelan {
     namespace {
+        void* offset_buffer(void* buf, size_t offset) {
+            return static_cast<void*>(&static_cast<char*>(buf)[offset]);
+        }
+
+        const void* offset_buffer(const void* buf, size_t offset) {
+            return static_cast<const void*>(&static_cast<const char*>(buf)[offset]);
+        }
+
         void write_value(void* buf, size_t& offset, uint8_t value) {
-            static_cast<char*>(buf)[offset] = value;
+            static_cast<uint8_t*>(buf)[offset] = value;
 
             offset += sizeof(value);
         }
 
         void write_value(void* buf, size_t& offset, uint16_t value) {
-            *reinterpret_cast<uint16_t*>(&static_cast<char*>(buf)[offset]) = htons(value);
+            *reinterpret_cast<uint16_t*>(offset_buffer(buf, offset)) = htons(value);
 
             offset += sizeof(value);
         }
@@ -64,9 +72,26 @@ namespace freelan {
         }
 
         void write_buffer(void* buf, size_t& offset, const void* sbuf, size_t sbuf_len) {
-            std::memcpy(&static_cast<char*>(buf)[offset], sbuf, sbuf_len);
+            std::memcpy(offset_buffer(buf, offset), sbuf, sbuf_len);
 
             offset += sbuf_len;
+        }
+
+        void read_value(const void* buf, size_t& offset, uint8_t& value) {
+            value = static_cast<const uint8_t*>(buf)[offset];
+            offset += sizeof(value);
+        }
+
+        void read_value(const void* buf, size_t& offset, uint16_t& value) {
+            value = ntohs(*reinterpret_cast<const uint16_t*>(offset_buffer(buf, offset)));
+            offset += sizeof(value);
+        }
+
+        template <typename Type, typename OriginalType>
+        void read_value(const void* buf, size_t& offset, OriginalType& value) {
+            Type _value;
+            read_value(buf, offset, _value);
+            value = static_cast<OriginalType>(_value);
         }
     }
 
@@ -96,15 +121,69 @@ namespace freelan {
         return resulting_size;
     }
 
+    bool read_fscp_message(const void* buf, size_t buf_len, FSCPMessageType& type, const void*& payload, size_t& payload_len, unsigned int* version) {
+        assert(buf);
+
+        // version | type | length
+        const size_t header_len = sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint16_t);
+
+        // If the buffer isn't big enough to contain a FSCP header, fail.
+        if (buf_len < header_len) {
+            return false;
+        }
+
+        size_t offset = 0;
+
+        if (version != nullptr) {
+            read_value<uint8_t>(buf, offset, *version);
+        } else {
+            offset += sizeof(uint8_t);
+        }
+
+        read_value<uint8_t>(buf, offset, type);
+        read_value<uint16_t>(buf, offset, payload_len);
+
+        assert(offset == header_len);
+
+        // If the indicated payload length is greater than the underlying buffer, fail.
+        if (payload_len > buf_len - header_len) {
+            return false;
+        }
+
+        payload = offset_buffer(buf, offset);
+
+        return true;
+    }
+
     size_t write_fscp_hello_request_message(void* buf, size_t buf_len, uint32_t unique_number) {
         const uint32_t payload = htonl(unique_number);
 
         return write_fscp_message(buf, buf_len, FSCPMessageType::HELLO_REQUEST, &payload, sizeof(payload));
     }
 
+    bool read_fscp_hello_request_message(const void* buf, size_t buf_len, uint32_t& unique_number) {
+        assert(buf);
+
+        // If the message does not have the expected size, fail.
+        if (buf_len != sizeof(uint32_t)) {
+            return false;
+        }
+
+        unique_number = ntohl(*reinterpret_cast<const uint32_t*>(buf));
+
+        return true;
+    }
+
     size_t write_fscp_hello_response_message(void* buf, size_t buf_len, uint32_t unique_number) {
         const uint32_t payload = htonl(unique_number);
 
         return write_fscp_message(buf, buf_len, FSCPMessageType::HELLO_RESPONSE, &payload, sizeof(payload));
+    }
+
+    bool read_fscp_hello_response_message(const void* buf, size_t buf_len, uint32_t& unique_number) {
+        assert(buf);
+
+        // Both message types have the same structure.
+        return read_fscp_hello_request_message(buf, buf_len, unique_number);
     }
 }
