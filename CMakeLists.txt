@@ -96,6 +96,8 @@ configure_file(
 set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/common.hpp
     src/internal/error.hpp
+    src/internal/fscp/socket.cpp
+    src/internal/fscp/socket.hpp
     src/internal/log.cpp
     src/internal/log.hpp
     src/internal/memory.cpp
@@ -238,6 +240,7 @@ set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/common.hpp
+    src/tests/fscp/socket.cpp
     src/tests/log.cpp
     src/tests/perf_counter.cpp
     src/tests/stream_parsers.cpp
