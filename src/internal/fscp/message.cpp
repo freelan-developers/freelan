@@ -96,7 +96,6 @@ namespace freelan {
     }
 
     size_t write_fscp_message(void* buf, size_t buf_len, FSCPMessageType type, const void* payload, size_t payload_len, unsigned int version) {
-        assert(buf);
         assert(payload);
 
         // If the payload is so big that it can't be represented in the message, fail.
@@ -107,16 +106,18 @@ namespace freelan {
         // version | type | length
         const size_t resulting_size = sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint16_t) + payload_len;
 
-        // If the output buffer is too small, fail.
-        if (buf_len < resulting_size) {
-            return 0;
-        }
+        if (buf != nullptr) {
+            // If the output buffer is too small, fail.
+            if (buf_len < resulting_size) {
+                return 0;
+            }
 
-        size_t offset = 0;
-        write_value<uint8_t>(buf, offset, version);
-        write_value<uint8_t>(buf, offset, type);
-        write_value<uint16_t>(buf, offset, payload_len);
-        write_buffer(buf, offset, payload, payload_len);
+            size_t offset = 0;
+            write_value<uint8_t>(buf, offset, version);
+            write_value<uint8_t>(buf, offset, type);
+            write_value<uint16_t>(buf, offset, payload_len);
+            write_buffer(buf, offset, payload, payload_len);
+        }
 
         return resulting_size;
     }

@@ -70,6 +70,13 @@ TEST(FSCPMessageTest, write_fscp_message_buffer_too_small) {
     ASSERT_EQ(size_t(0), resulting_size);
 }
 
+TEST(FSCPMessageTest, write_fscp_message_no_buffer) {
+    const uint8_t payload[4] = { 1, 2, 3, 4 };
+    const auto required_size = write_fscp_message(nullptr, 0, FSCPMessageType::HELLO_REQUEST, payload, sizeof(payload));
+
+    ASSERT_EQ(size_t(8), required_size);
+}
+
 TEST(FSCPMessageTest, write_fscp_message_success) {
     uint8_t buf[10] = {};
     std::memset(buf, 0xfd, sizeof(buf));
@@ -119,6 +126,13 @@ TEST(FSCPMessageTest, read_fscp_message_payload_success) {
     ASSERT_ARRAY_EQ(ref, payload);
 }
 
+TEST(FSCPMessageTest, write_fscp_hello_request_no_buffer) {
+    const uint32_t unique_number = 0x01020304;
+    const auto required_size = write_fscp_hello_request_message(NULL, 0, unique_number);
+
+    ASSERT_EQ(size_t(8), required_size);
+}
+
 TEST(FSCPMessageTest, write_fscp_hello_request_message) {
     uint8_t buf[10] = {};
     std::memset(buf, 0xfd, sizeof(buf));
@@ -145,6 +159,13 @@ TEST(FSCPMessageTest, read_fscp_hello_request_message_success) {
 
     ASSERT_TRUE(result);
     ASSERT_EQ(uint32_t(0x11223344), unique_number);
+}
+
+TEST(FSCPMessageTest, write_fscp_hello_response_no_buffer) {
+    const uint32_t unique_number = 0x01020304;
+    const auto required_size = write_fscp_hello_response_message(NULL, 0, unique_number);
+
+    ASSERT_EQ(size_t(8), required_size);
 }
 
 TEST(FSCPMessageTest, write_fscp_hello_response_message) {

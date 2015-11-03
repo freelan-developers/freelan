@@ -38,51 +38,18 @@
  * depending on the nature of your project.
  */
 
-/**
- * \file socket.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A FSCP socket.
- */
+#include <gtest/gtest.h>
 
-#pragma once
+#include "../internal/fscp/endpoint_context.hpp"
 
-#include <map>
-#include <memory>
+using freelan::EndpointContext;
 
-#include <boost/asio.hpp>
+TEST(FSCPEndpointContextTest, endpoint_context_get_next_hello_request_number) {
+    EndpointContext endpoint_context;
 
-#include "message.hpp"
-#include "endpoint_context.hpp"
+    // It's unspecified what the numbers should be. The only thing we should test is whether two consecutive calls return different values.
+    const auto first = endpoint_context.get_next_hello_request_number();
+    const auto second = endpoint_context.get_next_hello_request_number();
 
-namespace freelan {
-    class Socket {
-        public:
-            typedef boost::asio::ip::udp::socket::endpoint_type Endpoint;
-
-            Socket(boost::asio::io_service& io_service) :
-                m_socket(io_service)
-            {}
-
-            template<typename WriteHandler>
-            void async_greet(const Endpoint& destination, WriteHandler handler) {
-                const auto& endpoint_context = get_endpoint_context_for(destination);
-                const auto unique_number = endpoint_context.get_next_hello_request_number();
-                const size_t required_size = write_fscp_hello_request_message(nullptr, 0, unique_number);
-
-                assert(required_size != 0);
-
-                const auto buf = std::make_shared<std::vector<char>>(required_size);
-                m_socket.async_send_to(&(*buf)[0], destination, [buf, handler](const boost::system::error_code& ec, std::size_t bytes_transferred) {
-                    handler(ec, bytes_transferred);
-                });
-            }
-
-            EndpointContext& get_endpoint_context_for(const Endpoint& endpoint) {
-                return m_endpoint_contexts[endpoint];
-            }
-
-        private:
-            boost::asio::ip::udp::socket m_socket;
-            std::map<Endpoint, EndpointContext> m_endpoint_contexts;
-    };
+    ASSERT_NE(second, first);
 }

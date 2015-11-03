@@ -53,7 +53,7 @@
 namespace freelan {
     /**
      * \brief Write a FSCP message to the specified buffer.
-     * \param buf The buffer to write to. Cannot be NULL.
+     * \param buf The buffer to write to. If buf is NULL, the call will return the minimal needed size for the write to succeed with the actual parameters.
      * \param buf_len The length of buf.
      * \param type The type of the FSCP message to write.
      * \param payload The payload to write. Cannot be NULL.

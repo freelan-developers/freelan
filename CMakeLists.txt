@@ -97,6 +97,8 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/common.hpp
     src/internal/error.hpp
     src/internal/fscp/constants.hpp
+    src/internal/fscp/endpoint_context.cpp
+    src/internal/fscp/endpoint_context.hpp
     src/internal/fscp/message.cpp
     src/internal/fscp/message.hpp
     src/internal/fscp/socket.cpp
@@ -245,6 +247,7 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/common.hpp
     src/tests/fscp/message.cpp
     src/tests/fscp/socket.cpp
+    src/tests/fscp/endpoint_context.cpp
     src/tests/log.cpp
     src/tests/perf_counter.cpp
     src/tests/stream_parsers.cpp

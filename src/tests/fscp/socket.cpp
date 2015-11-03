@@ -44,15 +44,18 @@
 
 #include "../internal/fscp/socket.hpp"
 
-using freelan::UDPSocket;
-using freelan::TCPSocket;
+using freelan::Socket;
 
-TEST(FSCPSocketTest, udp_socket_initialization) {
+TEST(FSCPSocketTest, socket_get_endpoint_context_for) {
     boost::asio::io_service io_service;
-    UDPSocket socket(io_service);
-}
+    Socket socket(io_service);
+    Socket::Endpoint ep1(boost::asio::ip::address_v4::from_string("127.0.0.1"), 123);
+    Socket::Endpoint ep2(boost::asio::ip::address_v4::from_string("127.0.0.1"), 345);
 
-TEST(FSCPSocketTest, tcp_socket_initialization) {
-    boost::asio::io_service io_service;
-    TCPSocket socket(io_service);
+    const auto& ctx1 = socket.get_endpoint_context_for(ep1);
+    const auto& ctx2 = socket.get_endpoint_context_for(ep1);
+    const auto& ctx3 = socket.get_endpoint_context_for(ep2);
+
+    ASSERT_EQ(&ctx1, &ctx2);
+    ASSERT_NE(&ctx1, &ctx3);
 }

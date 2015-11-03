@@ -39,50 +39,27 @@
  */
 
 /**
- * \file socket.hpp
+ * \file endpoint_context.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A FSCP socket.
+ * \brief A FSCP endpoint context.
  */
 
 #pragma once
 
-#include <map>
-#include <memory>
-
-#include <boost/asio.hpp>
-
-#include "message.hpp"
-#include "endpoint_context.hpp"
+#include <cstdint>
 
 namespace freelan {
-    class Socket {
+    class EndpointContext {
         public:
-            typedef boost::asio::ip::udp::socket::endpoint_type Endpoint;
-
-            Socket(boost::asio::io_service& io_service) :
-                m_socket(io_service)
+            EndpointContext() :
+                m_hello_request_counter(0)
             {}
 
-            template<typename WriteHandler>
-            void async_greet(const Endpoint& destination, WriteHandler handler) {
-                const auto& endpoint_context = get_endpoint_context_for(destination);
-                const auto unique_number = endpoint_context.get_next_hello_request_number();
-                const size_t required_size = write_fscp_hello_request_message(nullptr, 0, unique_number);
-
-                assert(required_size != 0);
-
-                const auto buf = std::make_shared<std::vector<char>>(required_size);
-                m_socket.async_send_to(&(*buf)[0], destination, [buf, handler](const boost::system::error_code& ec, std::size_t bytes_transferred) {
-                    handler(ec, bytes_transferred);
-                });
-            }
-
-            EndpointContext& get_endpoint_context_for(const Endpoint& endpoint) {
-                return m_endpoint_contexts[endpoint];
+            uint32_t get_next_hello_request_number() {
+                return m_hello_request_counter++;
             }
 
         private:
-            boost::asio::ip::udp::socket m_socket;
-            std::map<Endpoint, EndpointContext> m_endpoint_contexts;
+            uint32_t m_hello_request_counter;
     };
 }
