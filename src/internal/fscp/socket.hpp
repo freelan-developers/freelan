@@ -48,8 +48,13 @@
 
 #include <map>
 #include <memory>
+#include <queue>
+#include <cassert>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio.hpp>
+
+#include "../async_utils.hpp"
 
 #include "message.hpp"
 #include "endpoint_context.hpp"
@@ -60,29 +65,79 @@ namespace freelan {
             typedef boost::asio::ip::udp::socket::endpoint_type Endpoint;
 
             Socket(boost::asio::io_service& io_service) :
-                m_socket(io_service)
+                m_socket(io_service),
+                m_write_queue(m_socket)
             {}
 
-            template<typename WriteHandler>
-            void async_greet(const Endpoint& destination, WriteHandler handler) {
-                const auto& endpoint_context = get_endpoint_context_for(destination);
-                const auto unique_number = endpoint_context.get_next_hello_request_number();
-                const size_t required_size = write_fscp_hello_request_message(nullptr, 0, unique_number);
+            void open(const Endpoint& listen_endpoint);
+            void close();
 
-                assert(required_size != 0);
+            template<typename Handler>
+            void async_greet(const Endpoint& destination, Handler handler, const boost::posix_time::time_duration& timeout) {
+                const auto unique_number = m_endpoint_context_map.register_greet_response_handler(destination, handler);
+                const auto buffer = std::make_shared<std::vector<uint8_t>>(write_fscp_hello_request_message(unique_number));
+                assert(!buffer->empty());
 
-                const auto buf = std::make_shared<std::vector<char>>(required_size);
-                m_socket.async_send_to(&(*buf)[0], destination, [buf, handler](const boost::system::error_code& ec, std::size_t bytes_transferred) {
-                    handler(ec, bytes_transferred);
+                m_write_queue.async_write(boost::asio::buffer(*buffer), destination, [this, buffer, destination, unique_number, timeout](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+                    if (ec) {
+                        const auto handler = m_endpoint_context_map.unregister_greet_response_handler(destination, unique_number);
+                        handler(ec);
+                    } else {
+                        m_endpoint_context_map.async_wait_greet_response(destination, m_socket.get_io_service(), unique_number, timeout);
+                    }
                 });
             }
 
-            EndpointContext& get_endpoint_context_for(const Endpoint& endpoint) {
-                return m_endpoint_contexts[endpoint];
-            }
-
         private:
+            void async_read();
+            void process_received_buffer(const Endpoint& endpoint, const void* buf, size_t buf_len);
+
+            class WriteQueue {
+                public:
+                    WriteQueue(boost::asio::ip::udp::socket& socket) :
+                        m_socket(socket),
+                        m_strand(socket.get_io_service())
+                    {}
+
+                    template <typename ConstBufferSequence, typename WriteHandler>
+                    void async_write(const ConstBufferSequence& buffers, const Endpoint& destination, WriteHandler handler) {
+                        const auto write_operation_completion = [this, handler](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+                            m_strand.dispatch([this]() {
+                                m_pending.pop();
+
+                                // If the pending write list is not empty, trigger another write.
+                                if (!m_pending.empty()) {
+                                    m_pending.front()();
+                                }
+                            });
+
+                            handler(ec, bytes_transferred);
+                        };
+
+                        const auto write_operation = [this, buffers, destination, write_operation_completion]() {
+                            m_socket.async_send_to(buffers, destination, write_operation_completion);
+                        };
+
+                        m_strand.dispatch([this, write_operation]() {
+                            if (m_pending.empty()) {
+                                // No pending write, we can start one.
+                                m_pending.push(write_operation);
+                                write_operation();
+                            } else {
+                                // A write is pending. Let's queue the write operation.
+                                m_pending.push(write_operation);
+                            }
+                        });
+                    }
+
+                private:
+                    boost::asio::ip::udp::socket& m_socket;
+                    boost::asio::strand m_strand;
+                    std::queue<std::function<void()>> m_pending;
+            };
+
             boost::asio::ip::udp::socket m_socket;
-            std::map<Endpoint, EndpointContext> m_endpoint_contexts;
+            WriteQueue m_write_queue;
+            EndpointContextMap m_endpoint_context_map;
     };
 }

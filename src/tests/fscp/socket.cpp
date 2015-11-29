@@ -46,16 +46,38 @@
 
 using freelan::Socket;
 
-TEST(FSCPSocketTest, socket_get_endpoint_context_for) {
+static const auto timeout = boost::posix_time::seconds(3);
+
+TEST(FSCPSocketTest, socket_async_greet) {
     boost::asio::io_service io_service;
-    Socket socket(io_service);
-    Socket::Endpoint ep1(boost::asio::ip::address_v4::from_string("127.0.0.1"), 123);
-    Socket::Endpoint ep2(boost::asio::ip::address_v4::from_string("127.0.0.1"), 345);
+    Socket socket_a(io_service);
+    Socket socket_b(io_service);
+    const Socket::Endpoint ep_a(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
+    const Socket::Endpoint ep_b(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12001);
+    socket_a.open(ep_a);
+    socket_b.open(ep_b);
 
-    const auto& ctx1 = socket.get_endpoint_context_for(ep1);
-    const auto& ctx2 = socket.get_endpoint_context_for(ep1);
-    const auto& ctx3 = socket.get_endpoint_context_for(ep2);
+    unsigned int successes = 0;
+    unsigned int failures = 0;
 
-    ASSERT_EQ(&ctx1, &ctx2);
-    ASSERT_NE(&ctx1, &ctx3);
+    const auto on_greet_response = [&](const boost::system::error_code& ec) {
+        if (ec) {
+            failures++;
+        } else {
+            successes++;
+        }
+
+        if ((successes + failures) == 2) {
+            socket_a.close();
+            socket_b.close();
+        }
+    };
+
+    socket_a.async_greet(ep_b, on_greet_response, timeout);
+    socket_b.async_greet(ep_a, on_greet_response, timeout);
+
+    io_service.run();
+
+    ASSERT_EQ(unsigned int(2), successes);
+    ASSERT_EQ(unsigned int(0), failures);
 }

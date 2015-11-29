@@ -162,6 +162,18 @@ namespace freelan {
         return write_fscp_message(buf, buf_len, FSCPMessageType::HELLO_REQUEST, &payload, sizeof(payload));
     }
 
+    std::vector<uint8_t> write_fscp_hello_request_message(uint32_t unique_number) {
+        const size_t buf_len = write_fscp_hello_request_message(nullptr, 0, unique_number);
+
+        if (buf_len == 0) {
+            return {};
+        }
+
+        std::vector<uint8_t> buf(buf_len);
+        buf.resize(write_fscp_hello_request_message(&buf[0], buf.size(), unique_number));
+        return buf;
+    }
+
     bool read_fscp_hello_request_message(const void* buf, size_t buf_len, uint32_t& unique_number) {
         assert(buf);
 
@@ -179,6 +191,18 @@ namespace freelan {
         const uint32_t payload = htonl(unique_number);
 
         return write_fscp_message(buf, buf_len, FSCPMessageType::HELLO_RESPONSE, &payload, sizeof(payload));
+    }
+
+    std::vector<uint8_t> write_fscp_hello_response_message(uint32_t unique_number) {
+        const size_t buf_len = write_fscp_hello_response_message(nullptr, 0, unique_number);
+
+        if (buf_len == 0) {
+            return{};
+        }
+
+        std::vector<uint8_t> buf(buf_len);
+        buf.resize(write_fscp_hello_response_message(&buf[0], buf.size(), unique_number));
+        return buf;
     }
 
     bool read_fscp_hello_response_message(const void* buf, size_t buf_len, uint32_t& unique_number) {

@@ -94,6 +94,7 @@ configure_file(
 )
 
 set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
+    src/internal/async_utils.hpp
     src/internal/common.hpp
     src/internal/error.hpp
     src/internal/fscp/constants.hpp
@@ -244,6 +245,7 @@ set (GTEST_VERSION "1.7.0")
 set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
+    src/tests/async_utils.cpp
     src/tests/common.hpp
     src/tests/fscp/message.cpp
     src/tests/fscp/socket.cpp

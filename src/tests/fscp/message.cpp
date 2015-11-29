@@ -144,6 +144,14 @@ TEST(FSCPMessageTest, write_fscp_hello_request_message) {
     ASSERT_ARRAY_EQ(ref, buf);
 }
 
+TEST(FSCPMessageTest, write_fscp_hello_request_message_vector) {
+    const uint32_t unique_number = 0x01020304;
+    const std::vector<uint8_t> ref { 3, 0x00, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04 };
+    const auto buf = write_fscp_hello_request_message(unique_number);
+
+    ASSERT_EQ(ref, buf);
+}
+
 TEST(FSCPMessageTest, read_fscp_hello_request_message_incorrect_size) {
     char buf[3] = { 0x11, 0x22, 0x33 };
     uint32_t unique_number = 0;
@@ -177,6 +185,14 @@ TEST(FSCPMessageTest, write_fscp_hello_response_message) {
 
     ASSERT_EQ(size_t(8), resulting_size);
     ASSERT_ARRAY_EQ(ref, buf);
+}
+
+TEST(FSCPMessageTest, write_fscp_hello_response_message_vector) {
+    const uint32_t unique_number = 0x01020304;
+    const std::vector<uint8_t> ref{ 3, 0x01, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04 };
+    const auto buf = write_fscp_hello_response_message(unique_number);
+
+    ASSERT_EQ(ref, buf);
 }
 
 TEST(FSCPMessageTest, read_fscp_hello_response_message_incorrect_size) {

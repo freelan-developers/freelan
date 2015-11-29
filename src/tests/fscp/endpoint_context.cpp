@@ -42,14 +42,16 @@
 
 #include "../internal/fscp/endpoint_context.hpp"
 
-using freelan::EndpointContext;
+using freelan::EndpointContextMap;
 
-TEST(FSCPEndpointContextTest, endpoint_context_get_next_hello_request_number) {
-    EndpointContext endpoint_context;
+TEST(FSCPEndpointContextTest, endpoint_context_map_register_greet_response_handler) {
+    EndpointContextMap endpoint_context_map {};
+    EndpointContextMap::Endpoint endpoint {};
+    const auto handler = [](const boost::system::error_code& ec) {};
 
     // It's unspecified what the numbers should be. The only thing we should test is whether two consecutive calls return different values.
-    const auto first = endpoint_context.get_next_hello_request_number();
-    const auto second = endpoint_context.get_next_hello_request_number();
+    const auto first = endpoint_context_map.register_greet_response_handler(endpoint, handler);
+    const auto second = endpoint_context_map.register_greet_response_handler(endpoint, handler);
 
     ASSERT_NE(second, first);
 }

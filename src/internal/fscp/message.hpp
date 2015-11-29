@@ -47,6 +47,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <vector>
 
 #include "constants.hpp"
 
@@ -76,8 +77,10 @@ namespace freelan {
     bool read_fscp_message(const void* buf, size_t buf_len, FSCPMessageType& type, const void*& payload, size_t& payload_len, unsigned int* version = nullptr);
 
     size_t write_fscp_hello_request_message(void* buf, size_t buf_len, uint32_t unique_number);
+    std::vector<uint8_t> write_fscp_hello_request_message(uint32_t unique_number);
     bool read_fscp_hello_request_message(const void* buf, size_t buf_len, uint32_t& unique_number);
 
     size_t write_fscp_hello_response_message(void* buf, size_t buf_len, uint32_t unique_number);
+    std::vector<uint8_t> write_fscp_hello_response_message(uint32_t unique_number);
     bool read_fscp_hello_response_message(const void* buf, size_t buf_len, uint32_t& unique_number);
 }

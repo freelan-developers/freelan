@@ -41,4 +41,71 @@
 #include "socket.hpp"
 
 namespace freelan {
+    void Socket::open(const Endpoint& listen_endpoint) {
+        m_socket.open(listen_endpoint.protocol());
+
+        if (listen_endpoint.address().is_v6())
+        {
+            // We accept both IPv4 and IPv6 addresses
+            m_socket.set_option(boost::asio::ip::v6_only(false));
+        }
+
+        m_socket.bind(listen_endpoint);
+
+        async_read();
+    }
+
+    void Socket::close() {
+        m_socket.close();
+    }
+
+    void Socket::async_read() {
+        auto buffer = std::make_shared<std::vector<char>>(65536);
+        auto endpoint = std::make_shared<Endpoint>();
+
+        m_socket.async_receive_from(boost::asio::buffer(*buffer), *endpoint, [this, buffer, endpoint](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+            if (ec != boost::asio::error::operation_aborted) {
+                // The read completed, let's start another one right away.
+                async_read();
+
+                process_received_buffer(*endpoint, &(*buffer)[0], bytes_transferred);
+            }
+        });
+    }
+
+    void Socket::process_received_buffer(const Endpoint& endpoint, const void* buf, size_t buf_len) {
+        assert(buf);
+
+        FSCPMessageType type {};
+        const void* payload = nullptr;
+        size_t payload_len = 0;
+
+        if (read_fscp_message(buf, buf_len, type, payload, payload_len)) {
+            switch (type) {
+                case FSCPMessageType::HELLO_REQUEST: {
+                    uint32_t unique_number = 0;
+
+                    if (read_fscp_hello_request_message(payload, payload_len, unique_number)) {
+                        const auto buffer = std::make_shared<std::vector<uint8_t>>(write_fscp_hello_response_message(unique_number));
+                        assert(!buffer->empty());
+
+                        m_write_queue.async_write(boost::asio::buffer(*buffer), endpoint, [buffer](const boost::system::error_code&, std::size_t) {});
+                    }
+                    break;
+                }
+                case FSCPMessageType::HELLO_RESPONSE: {
+                    uint32_t unique_number = 0;
+
+                    if (read_fscp_hello_response_message(payload, payload_len, unique_number)) {
+                        const auto handler = m_endpoint_context_map.cancel_greet_response(endpoint, unique_number);
+
+                        if (handler) {
+                            handler(boost::system::error_code());
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
