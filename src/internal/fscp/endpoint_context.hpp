@@ -161,7 +161,7 @@ namespace freelan {
                     const auto handler = unregister_greet_response_handler(destination, unique_number);
 
                     if (handler) {
-
+                        handler(boost::asio::error::timed_out);
                     }
                 });
             }

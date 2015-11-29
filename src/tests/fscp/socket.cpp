@@ -81,3 +81,106 @@ TEST(FSCPSocketTest, socket_async_greet) {
     ASSERT_EQ(unsigned int(2), successes);
     ASSERT_EQ(unsigned int(0), failures);
 }
+
+TEST(FSCPSocketTest, socket_async_greet_self) {
+    boost::asio::io_service io_service;
+    Socket socket(io_service);
+    const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
+    socket.open(ep);
+
+    unsigned int successes = 0;
+    unsigned int failures = 0;
+
+    const auto on_greet_response = [&](const boost::system::error_code& ec) {
+        if (ec) {
+            failures++;
+        } else {
+            successes++;
+        }
+
+        if ((successes + failures) == 1) {
+            socket.close();
+        }
+    };
+
+    socket.async_greet(ep, on_greet_response, timeout);
+
+    io_service.run();
+
+    ASSERT_EQ(unsigned int(1), successes);
+    ASSERT_EQ(unsigned int(0), failures);
+}
+
+TEST(FSCPSocketTest, socket_async_greet_timeout) {
+    boost::asio::io_service io_service;
+    Socket socket(io_service);
+    const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
+    const Socket::Endpoint destination(boost::asio::ip::address_v4::from_string("127.0.0.254"), 12000);
+    socket.open(ep);
+
+    unsigned int successes = 0;
+    unsigned int failures = 0;
+    unsigned int timed_out = 0;
+
+    const auto on_greet_response = [&](const boost::system::error_code& ec) {
+        if (ec) {
+            if (ec == boost::asio::error::timed_out) {
+                timed_out++;
+            } else {
+                failures++;
+            }
+        } else {
+            successes++;
+        }
+
+        if ((successes + failures + timed_out) == 1) {
+            socket.close();
+        }
+    };
+
+    socket.async_greet(destination, on_greet_response, boost::posix_time::seconds(0));
+
+    io_service.run();
+
+    ASSERT_EQ(unsigned int(0), successes);
+    ASSERT_EQ(unsigned int(0), failures);
+    ASSERT_EQ(unsigned int(1), timed_out);
+}
+
+TEST(FSCPSocketTest, socket_async_greet_failure) {
+    boost::asio::io_service io_service;
+    Socket socket(io_service);
+    const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
+    const Socket::Endpoint destination(boost::asio::ip::address_v4::from_string("0.0.0.0"), 12000);
+    socket.open(ep);
+
+    unsigned int successes = 0;
+    unsigned int failures = 0;
+    unsigned int timed_out = 0;
+
+    const auto on_greet_response = [&](const boost::system::error_code& ec) {
+        if (ec) {
+            if (ec == boost::asio::error::timed_out) {
+                timed_out++;
+            }
+            else {
+                failures++;
+            }
+        }
+        else {
+            successes++;
+        }
+
+        if ((successes + failures + timed_out) == 1) {
+            socket.close();
+        }
+    };
+
+    socket.async_greet(destination, on_greet_response, timeout);
+
+    io_service.run();
+
+    ASSERT_EQ(unsigned int(0), successes);
+    ASSERT_EQ(unsigned int(1), failures);
+    ASSERT_EQ(unsigned int(0), timed_out);
+}
