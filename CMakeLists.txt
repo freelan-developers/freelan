@@ -86,7 +86,7 @@ endif()
 
 # The internal library.
 set (INTERNAL_VERSION_HEADER "${PROJECT_BINARY_DIR}/src/internal/version.hpp")
-file(RELATIVE_PATH INTERNAL_VERSION_HEADER ${PROJECT_SOURCE_DIR} ${INTERNAL_VERSION_HEADER})
+file(RELATIVE_PATH INTERNAL_VERSION_HEADER ${PROJECT_BINARY_DIR} ${INTERNAL_VERSION_HEADER})
 
 configure_file(
     "src/internal/version.hpp.in"

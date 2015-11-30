@@ -79,9 +79,11 @@ namespace freelan {
                 assert(!buffer->empty());
 
                 m_write_queue.async_write(boost::asio::buffer(*buffer), destination, [this, buffer, destination, unique_number, timeout](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+                    static_cast<void>(bytes_transferred);
+
                     if (ec) {
-                        const auto handler = m_endpoint_context_map.unregister_greet_response_handler(destination, unique_number);
-                        handler(ec);
+                        const auto greet_handler = m_endpoint_context_map.unregister_greet_response_handler(destination, unique_number);
+                        greet_handler(ec);
                     } else {
                         m_endpoint_context_map.async_wait_greet_response(destination, m_socket.get_io_service(), unique_number, timeout);
                     }

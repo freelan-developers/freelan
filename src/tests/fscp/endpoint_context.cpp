@@ -47,7 +47,7 @@ using freelan::EndpointContextMap;
 TEST(FSCPEndpointContextTest, endpoint_context_map_register_greet_response_handler) {
     EndpointContextMap endpoint_context_map {};
     EndpointContextMap::Endpoint endpoint {};
-    const auto handler = [](const boost::system::error_code& ec) {};
+    const auto handler = [](const boost::system::error_code&) {};
 
     // It's unspecified what the numbers should be. The only thing we should test is whether two consecutive calls return different values.
     const auto first = endpoint_context_map.register_greet_response_handler(endpoint, handler);

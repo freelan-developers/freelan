@@ -46,7 +46,9 @@
 
 using freelan::Socket;
 
-static const auto timeout = boost::posix_time::seconds(3);
+namespace {
+    static const auto timeout = boost::posix_time::seconds(3);
+}
 
 TEST(FSCPSocketTest, socket_async_greet) {
     boost::asio::io_service io_service;
@@ -78,8 +80,8 @@ TEST(FSCPSocketTest, socket_async_greet) {
 
     io_service.run();
 
-    ASSERT_EQ(unsigned int(2), successes);
-    ASSERT_EQ(unsigned int(0), failures);
+    ASSERT_EQ((unsigned int)(2), successes);
+    ASSERT_EQ((unsigned int)(0), failures);
 }
 
 TEST(FSCPSocketTest, socket_async_greet_self) {
@@ -107,8 +109,8 @@ TEST(FSCPSocketTest, socket_async_greet_self) {
 
     io_service.run();
 
-    ASSERT_EQ(unsigned int(1), successes);
-    ASSERT_EQ(unsigned int(0), failures);
+    ASSERT_EQ((unsigned int)(1), successes);
+    ASSERT_EQ((unsigned int)(0), failures);
 }
 
 TEST(FSCPSocketTest, socket_async_greet_timeout) {
@@ -142,9 +144,9 @@ TEST(FSCPSocketTest, socket_async_greet_timeout) {
 
     io_service.run();
 
-    ASSERT_EQ(unsigned int(0), successes);
-    ASSERT_EQ(unsigned int(0), failures);
-    ASSERT_EQ(unsigned int(1), timed_out);
+    ASSERT_EQ((unsigned int)(0), successes);
+    ASSERT_EQ((unsigned int)(0), failures);
+    ASSERT_EQ((unsigned int)(1), timed_out);
 }
 
 TEST(FSCPSocketTest, socket_async_greet_failure) {
@@ -180,7 +182,7 @@ TEST(FSCPSocketTest, socket_async_greet_failure) {
 
     io_service.run();
 
-    ASSERT_EQ(unsigned int(0), successes);
-    ASSERT_EQ(unsigned int(1), failures);
-    ASSERT_EQ(unsigned int(0), timed_out);
+    ASSERT_EQ((unsigned int)(0), successes);
+    ASSERT_EQ((unsigned int)(1), failures);
+    ASSERT_EQ((unsigned int)(0), timed_out);
 }

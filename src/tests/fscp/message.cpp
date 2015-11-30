@@ -120,7 +120,7 @@ TEST(FSCPMessageTest, read_fscp_message_payload_success) {
     const auto result = read_fscp_message(buf, sizeof(buf), type, payload, payload_len, &version);
 
     ASSERT_TRUE(result);
-    ASSERT_EQ(unsigned int(3), version);
+    ASSERT_EQ((unsigned int)(3), version);
     ASSERT_EQ(FSCPMessageType::HELLO_REQUEST, type);
     ASSERT_EQ(size_t(2), payload_len);
     ASSERT_ARRAY_EQ(ref, payload);

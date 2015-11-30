@@ -71,15 +71,15 @@ namespace freelan {
                 // The operation succeeded. Create a timer and report it to the user.
                 const auto timer = std::make_shared<boost::asio::deadline_timer>(io_service);
                 timer->expires_from_now(timeout);
-                timer->async_wait([timer, handler, expiration_ec](const boost::system::error_code& ec) {
-                    if (ec != boost::asio::error::operation_aborted) {
+                timer->async_wait([timer, handler, expiration_ec](const boost::system::error_code& ec2) {
+                    if (ec2 != boost::asio::error::operation_aborted) {
                         handler(expiration_ec);
                     }
                 });
 
-                const auto stop_operation = [timer, handler](const boost::system::error_code& ec) -> bool {
+                const auto stop_operation = [timer, handler](const boost::system::error_code& ec2) -> bool {
                     if (timer->cancel() > 0) {
-                        handler(ec);
+                        handler(ec2);
 
                         return true;
                     }
