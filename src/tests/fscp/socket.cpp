@@ -153,7 +153,7 @@ TEST(FSCPSocketTest, socket_async_greet_failure) {
     boost::asio::io_service io_service;
     Socket socket(io_service);
     const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
-    const Socket::Endpoint destination(boost::asio::ip::address_v4::from_string("0.0.0.0"), 12000);
+    const Socket::Endpoint destination(boost::asio::ip::address_v6::from_string("::"), 12000);
     socket.open(ep);
 
     unsigned int successes = 0;
