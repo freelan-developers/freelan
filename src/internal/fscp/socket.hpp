@@ -58,6 +58,7 @@
 
 #include "message.hpp"
 #include "endpoint_context.hpp"
+#include "../types/x509_certificate.hpp"
 
 namespace freelan {
     class Socket {
@@ -87,6 +88,18 @@ namespace freelan {
                     } else {
                         m_endpoint_context_map.async_wait_greet_response(destination, m_socket.get_io_service(), unique_number, timeout);
                     }
+                });
+            }
+
+            template<typename Handler>
+            void async_introduction(const Endpoint& destination, Handler handler) {
+                //TODO: Read from... a sensible place.
+                X509Certificate certificate;
+                const auto buffer = std::make_shared<std::vector<uint8_t>>(write_fscp_presentation_message(certificate));
+                m_write_queue.async_write(boost::asio::buffer(*buffer), destination, [this, buffer, handler](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+                    static_cast<void>(bytes_transferred);
+
+                    handler(ec);
                 });
             }
 

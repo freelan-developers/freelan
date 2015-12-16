@@ -52,6 +52,8 @@
 #include "constants.hpp"
 
 namespace freelan {
+    class X509Certificate;
+
     /**
      * \brief Write a FSCP message to the specified buffer.
      * \param buf The buffer to write to. If buf is NULL, the call will return the minimal needed size for the write to succeed with the actual parameters.
@@ -83,4 +85,8 @@ namespace freelan {
     size_t write_fscp_hello_response_message(void* buf, size_t buf_len, uint32_t unique_number);
     std::vector<uint8_t> write_fscp_hello_response_message(uint32_t unique_number);
     bool read_fscp_hello_response_message(const void* buf, size_t buf_len, uint32_t& unique_number);
+
+    size_t write_fscp_presentation_message(void* buf, size_t buf_len, const X509Certificate& certificate);
+    std::vector<uint8_t> write_fscp_presentation_message(const X509Certificate& certificate);
+    bool read_fscp_presentation_message(const void* buf, size_t buf_len, X509Certificate& certificate);
 }

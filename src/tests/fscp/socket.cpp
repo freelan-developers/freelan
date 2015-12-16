@@ -186,3 +186,36 @@ TEST(FSCPSocketTest, socket_async_greet_failure) {
     ASSERT_EQ((unsigned int)(1), failures);
     ASSERT_EQ((unsigned int)(0), timed_out);
 }
+
+TEST(FSCPSocketTest, socket_async_introduction) {
+    boost::asio::io_service io_service;
+    Socket socket_a(io_service);
+    Socket socket_b(io_service);
+    const Socket::Endpoint ep_a(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
+    const Socket::Endpoint ep_b(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12001);
+    socket_a.open(ep_a);
+    socket_b.open(ep_b);
+
+    unsigned int successes = 0;
+    unsigned int failures = 0;
+
+    const auto on_introduction_done = [&](const boost::system::error_code& ec) {
+        if (ec) {
+            failures++;
+        } else {
+            successes++;
+        }
+
+        if ((successes + failures) == 1) {
+            socket_a.close();
+            socket_b.close();
+        }
+    };
+
+    socket_a.async_introduction(ep_b, on_introduction_done);
+
+    io_service.run();
+
+    ASSERT_EQ((unsigned int)(1), successes);
+    ASSERT_EQ((unsigned int)(0), failures);
+}

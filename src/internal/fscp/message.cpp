@@ -44,6 +44,8 @@
 
 #include <boost/asio.hpp>
 
+#include "../types/x509_certificate.hpp"
+
 namespace freelan {
     namespace {
         void* offset_buffer(void* buf, size_t offset) {
@@ -210,5 +212,35 @@ namespace freelan {
 
         // Both message types have the same structure.
         return read_fscp_hello_request_message(buf, buf_len, unique_number);
+    }
+
+    size_t write_fscp_presentation_message(void* buf, size_t buf_len, const X509Certificate& certificate) {
+        const auto payload = certificate.write_as_der();
+
+        return write_fscp_message(buf, buf_len, FSCPMessageType::HELLO_RESPONSE, &payload[0], payload.size());
+    }
+
+    std::vector<uint8_t> write_fscp_presentation_message(const X509Certificate& certificate) {
+        const size_t buf_len = write_fscp_presentation_message(nullptr, 0, certificate);
+
+        if (buf_len == 0) {
+            return{};
+        }
+
+        std::vector<uint8_t> buf(buf_len);
+        buf.resize(write_fscp_presentation_message(&buf[0], buf.size(), certificate));
+        return buf;
+    }
+
+    bool read_fscp_presentation_message(const void* buf, size_t buf_len, X509Certificate& certificate) {
+        assert(buf);
+
+        if (buf_len == 0) {
+            return false;
+        }
+
+        certificate = X509Certificate::read_as_der(buf, buf_len);
+
+        return true;
     }
 }

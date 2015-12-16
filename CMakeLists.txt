@@ -39,6 +39,16 @@ endif()
 find_package(Threads)
 find_package(Boost COMPONENTS system date_time regex thread REQUIRED)
 
+if(APPLE)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+    execute_process(COMMAND brew --prefix OUTPUT_VARIABLE BREW_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(OPENSSL_ROOT_DIR "${BREW_PREFIX}/opt/openssl")
+    find_package(OpenSSL REQUIRED)
+else()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .dylib .so)
+    find_package(OpenSSL REQUIRED)
+endif()
+
 if (WIN32 AND MSVC_VERSION EQUAL 1900 AND Boost_VERSION EQUAL 105900)
     # Boost 1.59.0 on VS 2015 has annoying but non-fatal warnings that we can
     # get rid of easily.
@@ -57,6 +67,7 @@ set(FreeLAN_VERSION_PATCH 0)
 
 # Global include directories.
 include_directories("${Boost_INCLUDE_DIRS}")
+include_directories("${OPENSSL_INCLUDE_DIR}")
 
 if (WIN32)
     include_directories("${PROJECT_SOURCE_DIR}/extra/msstdint/include")
@@ -226,6 +237,7 @@ target_include_directories(FreeLANLibrary PRIVATE "${PROJECT_SOURCE_DIR}/include
 target_link_libraries(FreeLANLibrary PRIVATE FreeLANInternalLibrary)
 target_link_libraries(FreeLANLibrary PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(FreeLANLibrary PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(FreeLANLibrary PUBLIC ${OPENSSL_LIBRARIES})
 set_target_properties(FreeLANLibrary PROPERTIES PROJECT_LABEL "FreeLAN library")
 set_target_properties(FreeLANLibrary PROPERTIES OUTPUT_NAME "freelan")
 set_target_properties(FreeLANLibrary PROPERTIES MACOSX_RPATH OFF)
