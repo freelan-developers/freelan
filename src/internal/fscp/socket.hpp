@@ -65,7 +65,8 @@ namespace freelan {
         public:
             typedef boost::asio::ip::udp::socket::endpoint_type Endpoint;
 
-            Socket(boost::asio::io_service& io_service) :
+            Socket(boost::asio::io_service& io_service, std::shared_ptr<X509Certificate> certificate) :
+                m_certificate(certificate),
                 m_socket(io_service),
                 m_write_queue(m_socket)
             {}
@@ -93,9 +94,7 @@ namespace freelan {
 
             template<typename Handler>
             void async_introduction(const Endpoint& destination, Handler handler) {
-                //TODO: Read from... a sensible place.
-                X509Certificate certificate;
-                const auto buffer = std::make_shared<std::vector<uint8_t>>(write_fscp_presentation_message(certificate));
+                const auto buffer = std::make_shared<std::vector<uint8_t>>(write_fscp_presentation_message(*m_certificate));
                 m_write_queue.async_write(boost::asio::buffer(*buffer), destination, [this, buffer, handler](const boost::system::error_code& ec, std::size_t bytes_transferred) {
                     static_cast<void>(bytes_transferred);
 
@@ -151,6 +150,7 @@ namespace freelan {
                     std::queue<std::function<void()>> m_pending;
             };
 
+            std::shared_ptr<X509Certificate> m_certificate;
             boost::asio::ip::udp::socket m_socket;
             WriteQueue m_write_queue;
             EndpointContextMap m_endpoint_context_map;

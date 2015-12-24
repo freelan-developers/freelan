@@ -107,6 +107,7 @@ configure_file(
 set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/async_utils.hpp
     src/internal/common.hpp
+    src/internal/error.cpp
     src/internal/error.hpp
     src/internal/fscp/constants.hpp
     src/internal/fscp/endpoint_context.cpp
@@ -130,6 +131,8 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/traits.hpp
     src/internal/types/ethernet_address.cpp
     src/internal/types/ethernet_address.hpp
+    src/internal/types/evp_pkey.cpp
+    src/internal/types/evp_pkey.hpp
     src/internal/types/generic_ip_address.hpp
     src/internal/types/generic_ip_endpoint.hpp
     src/internal/types/generic_ip_prefix_length.hpp
@@ -154,6 +157,8 @@ set (INTERNAL_GENERIC_SRC_FILES ${INTERNAL_GENERIC_SRC_FILES}
     src/internal/types/ipv6_route.hpp
     src/internal/types/port_number.hpp
     src/internal/types/tap_adapter_layer.hpp
+    src/internal/types/x509_certificate.cpp
+    src/internal/types/x509_certificate.hpp
 )
 
 if (WIN32)
@@ -259,13 +264,15 @@ set (GTEST_ROOT "extra/gtest-${GTEST_VERSION}")
 set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/async_utils.cpp
     src/tests/common.hpp
+    src/tests/fscp/endpoint_context.cpp
     src/tests/fscp/message.cpp
     src/tests/fscp/socket.cpp
-    src/tests/fscp/endpoint_context.cpp
     src/tests/log.cpp
+    src/tests/main.cpp
     src/tests/perf_counter.cpp
     src/tests/stream_parsers.cpp
     src/tests/types/ethernet_address.cpp
+    src/tests/types/evp_pkey.cpp
     src/tests/types/host.cpp
     src/tests/types/host_endpoint.cpp
     src/tests/types/hostname.cpp
@@ -283,6 +290,7 @@ set (TESTS_SRC_FILES ${TESTS_SRC_FILES}
     src/tests/types/ipv6_route.cpp
     src/tests/types/port_number.cpp
     src/tests/types/tap_adapter_layer.cpp
+    src/tests/types/x509_certificate.cpp
 )
 
 if (WIN32)
@@ -297,7 +305,6 @@ endif()
 
 set (GTEST_SRC_FILES ${GTEST_SRC_FILES}
     ${GTEST_ROOT}/src/gtest-all.cc
-    ${GTEST_ROOT}/src/gtest_main.cc
 )
 
 foreach (SRC_FILE ${TESTS_SRC_FILES} ${GTEST_SRC_FILES})

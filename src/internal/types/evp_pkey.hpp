@@ -39,9 +39,9 @@
  */
 
 /**
- * \file x509_certificate.hpp
+ * \file evp_pkey.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief A X509 certificate class.
+ * \brief An EVP pkey class.
  */
 
 #pragma once
@@ -49,84 +49,36 @@
 #include <cassert>
 #include <vector>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/operators.hpp>
 
-#include <openssl/x509.h>
-#include <openssl/pem.h>
+#include <openssl/evp.h>
 
 #include "../error.hpp"
 
 namespace freelan
 {
-    class X509Certificate : public boost::operators<X509Certificate> {
+    class EVPPKey : public boost::operators<EVPPKey> {
         public:
-            static X509Certificate read_as_der(const void* buf, size_t buf_len) {
-                const unsigned char* pbuf = static_cast<const unsigned char*>(buf);
+            EVPPKey() : EVPPKey(::EVP_PKEY_new()) {}
 
-                return X509Certificate(d2i_X509(NULL, &pbuf, static_cast<long>(buf_len)));
-            }
-
-            X509Certificate() : X509Certificate(::X509_new()) {}
-
-            X509Certificate(X509Certificate&& other) : m_ptr(other.m_ptr) {
+            EVPPKey(EVPPKey&& other) : m_ptr(other.m_ptr) {
                 other.m_ptr = nullptr;
             }
 
-            ~X509Certificate() {
+            ~EVPPKey() {
                 if (m_ptr) {
-                    ::X509_free(m_ptr);
+                    ::EVP_PKEY_free(m_ptr);
                 }
             }
 
-            X509Certificate& operator=(X509Certificate&& other) {
+            EVPPKey& operator=(EVPPKey&& other) {
                 std::swap(m_ptr, other.m_ptr);
 
                 return *this;
             }
 
-            unsigned int version() const {
-                return ::X509_get_version(m_ptr);
-            }
-
-            void set_version(unsigned int value) {
-                ::X509_set_version(m_ptr, value);
-            }
-
-            unsigned long int serial_number() const {
-                return ::ASN1_INTEGER_get(::X509_get_serialNumber(m_ptr));
-            }
-
-            void set_serial_number(unsigned long int value) const {
-                ::ASN1_INTEGER_set(::X509_get_serialNumber(m_ptr), value);
-            }
-
-            boost::posix_time::ptime not_after() const;
-            boost::posix_time::ptime not_before() const;
-            void set_not_after(const boost::posix_time::ptime& date);
-            void set_not_before(const boost::posix_time::ptime& date);
-
-            size_t write_as_der(void* buf) const {
-                unsigned char* out = static_cast<unsigned char*>(buf);
-                unsigned char** pout = out != NULL ? &out : NULL;
-
-                int result = ::i2d_X509(m_ptr, pout);
-
-                if (!result) {
-                    error::check_openssl_error();
-                }
-
-                return result;
-            }
-
-            std::vector<uint8_t> write_as_der() const {
-                std::vector<uint8_t> buf(write_as_der(nullptr));
-                write_as_der(&buf[0]);
-                return buf;
-            }
-
         private:
-            X509Certificate(X509* ptr) :
+            EVPPKey(EVP_PKEY* ptr) :
                 m_ptr(ptr)
             {
                 if (!m_ptr) {
@@ -136,6 +88,6 @@ namespace freelan
                 assert(m_ptr);
             }
 
-            X509* m_ptr;
+            EVP_PKEY* m_ptr;
     };
 }

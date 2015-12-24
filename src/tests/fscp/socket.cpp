@@ -43,17 +43,31 @@
 #include <boost/asio.hpp>
 
 #include "../internal/fscp/socket.hpp"
+#include "../internal/types/x509_certificate.hpp"
 
 using freelan::Socket;
+using freelan::X509Certificate;
 
 namespace {
     static const auto timeout = boost::posix_time::seconds(3);
+
+    static X509Certificate create_certificate() {
+        const auto now = boost::posix_time::second_clock::universal_time();
+        X509Certificate certificate;
+        certificate.set_version(2);
+        certificate.set_serial_number(1234);
+        certificate.set_not_after(now);
+        certificate.set_not_before(now);
+        return certificate;
+    }
+
+    static const std::shared_ptr<X509Certificate> certificate = std::make_shared<X509Certificate>(create_certificate());
 }
 
 TEST(FSCPSocketTest, socket_async_greet) {
     boost::asio::io_service io_service;
-    Socket socket_a(io_service);
-    Socket socket_b(io_service);
+    Socket socket_a(io_service, certificate);
+    Socket socket_b(io_service, certificate);
     const Socket::Endpoint ep_a(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
     const Socket::Endpoint ep_b(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12001);
     socket_a.open(ep_a);
@@ -86,7 +100,7 @@ TEST(FSCPSocketTest, socket_async_greet) {
 
 TEST(FSCPSocketTest, socket_async_greet_self) {
     boost::asio::io_service io_service;
-    Socket socket(io_service);
+    Socket socket(io_service, certificate);
     const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
     socket.open(ep);
 
@@ -115,7 +129,7 @@ TEST(FSCPSocketTest, socket_async_greet_self) {
 
 TEST(FSCPSocketTest, socket_async_greet_timeout) {
     boost::asio::io_service io_service;
-    Socket socket(io_service);
+    Socket socket(io_service, certificate);
     const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
     const Socket::Endpoint destination(boost::asio::ip::address_v4::from_string("127.0.0.254"), 12000);
     socket.open(ep);
@@ -151,7 +165,7 @@ TEST(FSCPSocketTest, socket_async_greet_timeout) {
 
 TEST(FSCPSocketTest, socket_async_greet_failure) {
     boost::asio::io_service io_service;
-    Socket socket(io_service);
+    Socket socket(io_service, certificate);
     const Socket::Endpoint ep(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
     const Socket::Endpoint destination(boost::asio::ip::address_v6::from_string("::"), 12000);
     socket.open(ep);
@@ -189,8 +203,8 @@ TEST(FSCPSocketTest, socket_async_greet_failure) {
 
 TEST(FSCPSocketTest, socket_async_introduction) {
     boost::asio::io_service io_service;
-    Socket socket_a(io_service);
-    Socket socket_b(io_service);
+    Socket socket_a(io_service, certificate);
+    Socket socket_b(io_service, certificate);
     const Socket::Endpoint ep_a(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12000);
     const Socket::Endpoint ep_b(boost::asio::ip::address_v4::from_string("127.0.0.1"), 12001);
     socket_a.open(ep_a);

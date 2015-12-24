@@ -46,7 +46,11 @@
 
 #pragma once
 
+#include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/type_traits/integral_constant.hpp>
+
+#include <openssl/err.h>
 
 #define FREELAN_BEGIN_USE_ERROR_CONTEXT(ectx) reinterpret_cast<freelan::ErrorContext*>(ectx)->reset(); try {
 #define FREELAN_END_USE_ERROR_CONTEXT(ectx) } catch (const boost::system::system_error& ex) { reinterpret_cast<freelan::ErrorContext*>(ectx)->assign_from_exception(ex, __FILE__, __LINE__); }
@@ -103,4 +107,57 @@ class ErrorContext {
         unsigned int m_line;
 };
 
+namespace error {
+
+/* OpenSSL errors */
+
+struct openssl_error_type
+{
+    unsigned long error_code;
+};
+
+const boost::system::error_category& openssl_category();
+
+inline openssl_error_type get_openssl_error() {
+    return openssl_error_type{ ::ERR_get_error() };
+}
+
+inline boost::system::error_code make_error_code(openssl_error_type error) {
+    return boost::system::error_code(static_cast<int>(error.error_code), openssl_category());
+}
+
+inline void check_openssl_error() {
+    const auto error = get_openssl_error();
+
+    if (error.error_code != 0) {
+        throw boost::system::system_error(make_error_code(error));
+    }
+}
+
+class openssl_category_impl : public boost::system::error_category
+{
+    public:
+        virtual const char* name() const throw() {
+            return "openssl::error";
+        }
+
+        virtual std::string message(int ev) const {
+            char buf[256];
+
+            return std::string(ERR_error_string(static_cast<unsigned long>(ev), buf));
+        }
+};
+
+}
+}
+
+// Register the error types in Boost.
+
+namespace boost
+{
+	namespace system
+	{
+		template <>
+		struct is_error_code_enum<freelan::error::openssl_error_type> : public boost::true_type {};
+	}
 }
