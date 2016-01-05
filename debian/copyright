@@ -20,6 +20,18 @@ Files: third-party/patches/openssl1.0.2a/*
 Copyright: 2000-2004 The OpenSSL Project
 License: BSD-4/OpenSSL
 
+Files: libs/asiotap/windows/tap-windows.h
+ libs/mongooseplus/src/mongoose.?
+ packaging/windows/files/*/OemWin2k.inf
+Copyright: 2002-2010 OpenVPN Technologies, Inc.
+           2004-2013 Sergey Lyubka <valenok@gmail.com>
+           2013-2014 Cesanta Software Limited
+License: GPL-2
+Comment: These files are GPLv2. There is no indication that linking
+ these files with code licensed under later versions of the GPL is
+ allowed.  Thus they are removed by the 'clean' target before the
+ build to ensure they will not become part of the binary.
+
 License: BSD-4/OpenSSL
  Copyright (c) 2000-2004 The OpenSSL Project.  All rights reserved.
  .
@@ -76,6 +88,19 @@ License: LGPL-2+
  On Debian systems, the complete text of the GNU Library General
  Public License version 2 can be found in /usr/share/common-licenses/LGPL-2.
 
+License: GPL-2
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 2 of the License.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ On Debian systems, the complete text of the GNU General
+ Public License version 3 can be found in /usr/share/common-licenses/GPL-2.
+
 License: GPL-3+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -86,9 +111,6 @@ License: GPL-3+
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- .
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <http://www.gnu.org/licenses/>.
  .
  As a special exception, upstream grants for certain source files to be
  linked against the OpenSSL library (http://www.openssl.org), which
