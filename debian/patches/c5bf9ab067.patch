@@ -1,0 +1,142 @@
+From c5bf9ab0677e965385d51e3c782048e3ae18ad6d Mon Sep 17 00:00:00 2001
+From: Julien Kauffmann <julien.kauffmann@freelan.org>
+Date: Sun, 1 Nov 2015 16:20:01 -0500
+Subject: [PATCH] Disabled Web server support on Linux due to licensing issues
+
+---
+ SConscript                              |  3 +++
+ apps/freelan/SConscript                 | 14 +++++++++-----
+ libs/freelan/include/freelan/server.hpp |  6 +++++-
+ libs/freelan/src/core.cpp               |  7 +++++++
+ libs/freelan/src/server.cpp             |  4 ++++
+ 5 files changed, 28 insertions(+), 6 deletions(-)
+
+diff --git a/SConscript b/SConscript
+index 16feaa3..d2680e2 100644
+--- a/SConscript
++++ b/SConscript
+@@ -38,6 +38,9 @@ for x in Glob('libs/*'):
+         if not sys.platform.startswith('linux'):
+             if name in 'netlinkplus':
+                 continue
++        else:
++            if name in 'mongooseplus':
++                continue
+ 
+         library, library_includes = SConscript(sconscript_path, exports='env dirs name')
+         libraries.extend(library)
+diff --git a/apps/freelan/SConscript b/apps/freelan/SConscript
+index fcd8cfa..b27286b 100644
+--- a/apps/freelan/SConscript
++++ b/apps/freelan/SConscript
+@@ -8,7 +8,6 @@ libraries = [
+     'freelan',
+     'asiotap',
+     'fscp',
+-    'mongooseplus',
+     'cryptoplus',
+     'executeplus',
+     'kfather',
+@@ -29,13 +28,18 @@ if sys.platform.startswith('linux'):
+         'pthread',
+         'netlinkplus',
+     ])
+-elif sys.platform.startswith('darwin'):
++else:
+     libraries.extend([
+-        'ldap',
+-        'z',
+-        'iconv',
++        'mongooseplus',
+     ])
+ 
++    if sys.platform.startswith('darwin'):
++        libraries.extend([
++            'ldap',
++            'z',
++            'iconv',
++        ])
++
+ env = env.Clone()
+ env.Prepend(LIBS=libraries)
+ 
+diff --git a/libs/freelan/include/freelan/server.hpp b/libs/freelan/include/freelan/server.hpp
+index c2b1455..575b56e 100644
+--- a/libs/freelan/include/freelan/server.hpp
++++ b/libs/freelan/include/freelan/server.hpp
+@@ -46,6 +46,9 @@
+ #pragma once
+ 
+ #include "os.hpp"
++
++#ifndef LINUX
++
+ #include "configuration.hpp"
+ 
+ #include <map>
+@@ -108,5 +111,6 @@ namespace freelan
+ 			authentication_handler_type m_authentication_handler;
+ 			std::map<std::string, client_information_type> m_client_information_map;
+ 	};
+-
+ }
++
++#endif
+\ No newline at end of file
+diff --git a/libs/freelan/src/core.cpp b/libs/freelan/src/core.cpp
+index 7fa8fc2..07a9aad 100644
+--- a/libs/freelan/src/core.cpp
++++ b/libs/freelan/src/core.cpp
+@@ -2355,6 +2355,10 @@ namespace freelan
+ 	{
+ 		if (m_configuration.server.enabled)
+ 		{
++#ifdef LINUX
++			// Due to GPL licensing issues, we can't include that in the LINUX build without violating the GPLv3 license.
++			m_logger(fscp::log_level::warning) << "Web server support is not compiled in this version.";
++#else
+ 			if (m_configuration.server.protocol == server_configuration::server_protocol_type::https)
+ 			{
+ 				bool generated = false;
+@@ -2414,11 +2418,13 @@ namespace freelan
+ 			m_web_server_thread = boost::thread([this](){ m_web_server->run(); });
+ 
+ 			m_logger(fscp::log_level::information) << "Web server started.";
++#endif
+ 		}
+ 	}
+ 
+ 	void core::close_web_server()
+ 	{
++#ifndef LINUX
+ 		if (m_web_server)
+ 		{
+ 			m_logger(fscp::log_level::information) << "Closing web server...";
+@@ -2429,6 +2435,7 @@ namespace freelan
+ 
+ 			m_logger(fscp::log_level::information) << "Web server closed.";
+ 		}
++#endif
+ 	}
+ 
+ 	void core::open_web_client()
+diff --git a/libs/freelan/src/server.cpp b/libs/freelan/src/server.cpp
+index 90e3101..101cdbb 100644
+--- a/libs/freelan/src/server.cpp
++++ b/libs/freelan/src/server.cpp
+@@ -45,6 +45,8 @@
+ 
+ #include "server.hpp"
+ 
++#ifndef LINUX
++
+ #include "tools.hpp"
+ 
+ #include <cryptoplus/x509/certificate_request.hpp>
+@@ -468,3 +470,5 @@ namespace freelan
+ 		return nullptr;
+ 	}
+ }
++
++#endif
+\ No newline at end of file
