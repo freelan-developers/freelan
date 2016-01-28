@@ -1,0 +1,6 @@
+freelan (2.0-1) unstable; urgency=low
+
+  * initial release to Debian. Closes: #780608
+    based on previous work by Julien Kauffmann and Etienne Champetier
+
+ -- Rolf Leggewie <foss@rolf.leggewie.biz>  Tue, 05 Jan 2016 23:48:09 +0800
