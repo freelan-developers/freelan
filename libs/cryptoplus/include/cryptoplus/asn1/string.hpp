@@ -138,7 +138,7 @@ namespace cryptoplus
 				 * \brief Get the string data.
 				 * \return The string data.
 				 */
-				const unsigned char* data() const;
+				const unsigned char* data();
 
 				/**
 				 * \brief Set the internal data.
@@ -175,7 +175,7 @@ namespace cryptoplus
 				 * \brief Build a string from data() and size().
 				 * \return A string built from data() and that will be size() bytes long.
 				 */
-				std::string str() const;
+				std::string str();
 
 				/**
 				 * \brief Get the content as an UTF-8 string.
@@ -254,12 +254,10 @@ namespace cryptoplus
 		{
 			return ASN1_STRING_length(ptr().get());
 		}
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-		inline const unsigned char* string::data() const
+		inline const unsigned char* string::data()
 		{
-			return ASN1_STRING_data(ptr().get());
+			return ASN1_STRING_get0_data(ptr().get());
 		}
-#endif
 		inline void string::set_data(const void* _data, size_t data_len) const
 		{
 			throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, static_cast<int>(data_len)) != 0);
@@ -280,7 +278,7 @@ namespace cryptoplus
 		{
 			return ASN1_STRING_type(ptr().get());
 		}
-		inline std::string string::str() const
+		inline std::string string::str()
 		{
 			return std::string(reinterpret_cast<const char*>(data()), size());
 		}

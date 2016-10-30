@@ -177,13 +177,10 @@ namespace cryptoplus
 			return *m_ctx;
 		}
 
-#if OPENSSL_VERSION_NUMBER < 0x01000000
 		inline message_digest_algorithm hmac_context::algorithm() const
 		{
-			//WARNING: Here we directly use the undocumented HMAC_CTX.md field. This is unlikely to change, but if it ever does, we'll have to find a better way of doing things nicely.
-			return message_digest_algorithm(m_ctx->md);
+		    return HMAC_CTX_get_md(m_ctx);
 		}
-#endif
 	}
 }
 
