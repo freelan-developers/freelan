@@ -63,6 +63,7 @@ namespace cryptoplus
 			}
 		}
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
 		{
 			// Exponent must be odd
@@ -79,6 +80,7 @@ namespace cryptoplus
 				return ptr;
 			}
 		}
+#endif
 
 		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{

@@ -53,9 +53,9 @@ namespace cryptoplus
 		void hmac_context::initialize(const void* key, size_t key_len, const message_digest_algorithm* _algorithm, ENGINE* impl)
 		{
 #if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl);
+			HMAC_Init_ex(m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl);
 #else
-			throw_error_if_not(HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl) != 0);
+			throw_error_if_not(HMAC_Init_ex(m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl) != 0);
 #endif
 		}
 
@@ -66,9 +66,9 @@ namespace cryptoplus
 			unsigned int ilen = static_cast<unsigned int>(len);
 
 #if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen);
+			HMAC_Final(m_ctx, static_cast<unsigned char*>(md), &ilen);
 #else
-			throw_error_if_not(HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
+			throw_error_if_not(HMAC_Final(m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
 #endif
 			return ilen;
 		}

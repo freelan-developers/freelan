@@ -254,10 +254,12 @@ namespace cryptoplus
 		{
 			return ASN1_STRING_length(ptr().get());
 		}
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		inline const unsigned char* string::data() const
 		{
 			return ASN1_STRING_data(ptr().get());
 		}
+#endif
 		inline void string::set_data(const void* _data, size_t data_len) const
 		{
 			throw_error_if_not(ASN1_STRING_set(ptr().get(), _data, static_cast<int>(data_len)) != 0);

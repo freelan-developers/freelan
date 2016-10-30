@@ -73,7 +73,7 @@ namespace cryptoplus
 				 * \brief Create a new bio_chain from a BIO_METHOD.
 				 * \param type The type.
 				 */
-				explicit bio_chain(BIO_METHOD* type);
+				explicit bio_chain(const BIO_METHOD* type);
 
 				/**
 				 * \brief Create a new bio_chain by taking ownership of an existing BIO pointer.
@@ -93,7 +93,7 @@ namespace cryptoplus
 				boost::shared_ptr<BIO> m_bio;
 		};
 
-		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
+		inline bio_chain::bio_chain(const BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
 		{
 			throw_error_if_not(m_bio != NULL);
 		}
