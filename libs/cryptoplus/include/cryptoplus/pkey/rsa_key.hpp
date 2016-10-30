@@ -118,7 +118,6 @@ namespace cryptoplus
 				 */
 				static rsa_key take_ownership(pointer ptr);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
 				/**
 				 * \brief Generate a new RSA private key.
 				 * \param num The size (in bits) of the modulus. As specified in OpenSSL documentation, key sizes with num < 1024 should be considered insecure.
@@ -129,7 +128,6 @@ namespace cryptoplus
 				 * \return The rsa_key.
 				 */
 				static rsa_key generate_private_key(int num, unsigned long exponent, generate_callback_type callback = NULL, void* callback_arg = NULL, bool must_take_ownership = true);
-#endif
 
 				/**
 				 * \brief Load a private RSA key from a BIO.

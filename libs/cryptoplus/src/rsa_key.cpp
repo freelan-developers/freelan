@@ -63,13 +63,17 @@ namespace cryptoplus
 			}
 		}
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
 		{
-			// Exponent must be odd
-			assert(exponent | 1);
+		    static_cast<void>(num);
+		    static_cast<void>(exponent);
+		    static_cast<void>(callback);
+		    static_cast<void>(callback_arg);
 
-			RSA* ptr = RSA_generate_key(num, exponent, callback, callback_arg);
+            std::unique_ptr<BIGNUM, decltype(&::BN_free)> bn(BN_new(), ::BN_free);
+			RSA* ptr = nullptr;
+			rsa_key key = rsa_key::create();
+			RSA_generate_key_ex(key.raw(), 2048, bn.get(), NULL);
 
 			if (must_take_ownership)
 			{
@@ -80,7 +84,6 @@ namespace cryptoplus
 				return ptr;
 			}
 		}
-#endif
 
 		rsa_key rsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
