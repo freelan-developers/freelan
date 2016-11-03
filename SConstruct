@@ -82,14 +82,14 @@ class FreelanEnvironment(Environment):
             self.bin_install_prefix = self.bin_prefix
 
         if self['CXX'] is None:
-          raise SCons.Errors.BuildError(
-            errstr="CXX environment variable not set. Are you missing a C++ compiler?");
+            raise SCons.Errors.BuildError(
+                errstr="CXX environment variable not set. Are you missing a C++ compiler?")
         else:
-          if os.path.basename(self['CXX']) == 'clang++':
-              self.Append(CXXFLAGS=['-Qunused-arguments'])
-              self.Append(CXXFLAGS=['-fcolor-diagnostics'])
-          elif os.path.basename(self['CXX']).startswith('g++'):
-              self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
+            if os.path.basename(self['CXX']) == 'clang++':
+                self.Append(CXXFLAGS=['-Qunused-arguments'])
+                self.Append(CXXFLAGS=['-fcolor-diagnostics'])
+            elif os.path.basename(self['CXX']).startswith('g++'):
+                self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
 
         self.Append(CXXFLAGS=['--std=c++11'])
         self.Append(CXXFLAGS=['-Wall'])
