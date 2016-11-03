@@ -83,7 +83,9 @@ class FreelanEnvironment(Environment):
 
         if self['CXX'] is None:
             raise SCons.Errors.BuildError(
-                errstr="CXX environment variable not set. Are you missing a C++ compiler?")
+                errstr=(
+                    "Failed to detect C++ compiler : CXX environment variable not set."
+                    "\nIs g++ or clang++ available in your PATH ?"))
         else:
             if os.path.basename(self['CXX']) == 'clang++':
                 self.Append(CXXFLAGS=['-Qunused-arguments'])
