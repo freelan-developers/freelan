@@ -14,7 +14,8 @@ Vcs-Browser: https://github.com/freelan-developers/freelan-all/tree/debian/unsta
 
 Package: freelan
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ lsb-base (>= 3.0-6)
 Description: Peer-to-peer virtual private network daemon
  Freelan is an application to create secure ethernet tunnels over a
  single UDP port. It can be used to create virtual LANs ("Local
