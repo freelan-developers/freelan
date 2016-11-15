@@ -1,0 +1,734 @@
+diff --git a/libs/cryptoplus/include/cryptoplus/asn1/string.hpp b/libs/cryptoplus/include/cryptoplus/asn1/string.hpp
+index 5d614b0..fbf7098 100644
+--- a/libs/cryptoplus/include/cryptoplus/asn1/string.hpp
++++ b/libs/cryptoplus/include/cryptoplus/asn1/string.hpp
+@@ -138,7 +138,7 @@ namespace cryptoplus
+ 				 * \brief Get the string data.
+ 				 * \return The string data.
+ 				 */
+-				const unsigned char* data() const;
++				const unsigned char* data();
+ 
+ 				/**
+ 				 * \brief Set the internal data.
+@@ -175,7 +175,7 @@ namespace cryptoplus
+ 				 * \brief Build a string from data() and size().
+ 				 * \return A string built from data() and that will be size() bytes long.
+ 				 */
+-				std::string str() const;
++				std::string str();
+ 
+ 				/**
+ 				 * \brief Get the content as an UTF-8 string.
+@@ -254,9 +254,9 @@ namespace cryptoplus
+ 		{
+ 			return ASN1_STRING_length(ptr().get());
+ 		}
+-		inline const unsigned char* string::data() const
++		inline const unsigned char* string::data()
+ 		{
+-			return ASN1_STRING_data(ptr().get());
++			return ASN1_STRING_get0_data(ptr().get());
+ 		}
+ 		inline void string::set_data(const void* _data, size_t data_len) const
+ 		{
+@@ -278,7 +278,7 @@ namespace cryptoplus
+ 		{
+ 			return ASN1_STRING_type(ptr().get());
+ 		}
+-		inline std::string string::str() const
++		inline std::string string::str()
+ 		{
+ 			return std::string(reinterpret_cast<const char*>(data()), size());
+ 		}
+diff --git a/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp b/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp
+index bb79a2a..4a47713 100644
+--- a/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp
++++ b/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp
+@@ -73,7 +73,7 @@ namespace cryptoplus
+ 				 * \brief Create a new bio_chain from a BIO_METHOD.
+ 				 * \param type The type.
+ 				 */
+-				explicit bio_chain(BIO_METHOD* type);
++				explicit bio_chain(const BIO_METHOD* type);
+ 
+ 				/**
+ 				 * \brief Create a new bio_chain by taking ownership of an existing BIO pointer.
+@@ -93,7 +93,7 @@ namespace cryptoplus
+ 				boost::shared_ptr<BIO> m_bio;
+ 		};
+ 
+-		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
++		inline bio_chain::bio_chain(const BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
+ 		{
+ 			throw_error_if_not(m_bio != NULL);
+ 		}
+diff --git a/libs/cryptoplus/include/cryptoplus/bio/bio_ptr.hpp b/libs/cryptoplus/include/cryptoplus/bio/bio_ptr.hpp
+index 6d5d9f0..f41ec45 100644
+--- a/libs/cryptoplus/include/cryptoplus/bio/bio_ptr.hpp
++++ b/libs/cryptoplus/include/cryptoplus/bio/bio_ptr.hpp
+@@ -501,10 +501,12 @@ namespace cryptoplus
+ 		{
+ 			return m_bio;
+ 		}
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		inline bool bio_ptr::set_method(BIO_METHOD* _type) const
+ 		{
+ 			return BIO_set(m_bio, _type) != 0;
+ 		}
++#endif
+ 		inline bio_ptr bio_ptr::push(bio_ptr bio) const
+ 		{
+ 			return bio_ptr(BIO_push(m_bio, bio.raw()));
+diff --git a/libs/cryptoplus/include/cryptoplus/cipher/cipher_context.hpp b/libs/cryptoplus/include/cryptoplus/cipher/cipher_context.hpp
+index 03b7f62..63138f0 100644
+--- a/libs/cryptoplus/include/cryptoplus/cipher/cipher_context.hpp
++++ b/libs/cryptoplus/include/cryptoplus/cipher/cipher_context.hpp
+@@ -342,17 +342,14 @@ namespace cryptoplus
+ 
+ 			private:
+ 
+-				EVP_CIPHER_CTX m_ctx;
++				EVP_CIPHER_CTX* m_ctx;
+ 		};
+ 
+-		inline cipher_context::cipher_context()
+-		{
+-			EVP_CIPHER_CTX_init(&m_ctx);
+-		}
++		inline cipher_context::cipher_context() : m_ctx(EVP_CIPHER_CTX_new()) {}
+ 
+ 		inline cipher_context::~cipher_context()
+ 		{
+-			EVP_CIPHER_CTX_cleanup(&m_ctx);
++			EVP_CIPHER_CTX_free(m_ctx);
+ 		}
+ 
+ 		template <typename T>
+@@ -379,7 +376,7 @@ namespace cryptoplus
+ 						pubk.push_back(pkey->raw());
+ 					}
+ 
+-					throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
++					throw_error_if_not(EVP_SealInit(m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
+ 
+ 					for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
+ 					{
+@@ -408,7 +405,7 @@ namespace cryptoplus
+ 		inline void cipher_context::set_padding(bool enabled)
+ 		{
+ 			// The call always returns 1 so testing its return value is useless.
+-			EVP_CIPHER_CTX_set_padding(&m_ctx, static_cast<int>(enabled));
++			EVP_CIPHER_CTX_set_padding(m_ctx, static_cast<int>(enabled));
+ 		}
+ 
+ 		inline size_t cipher_context::get_iso_10126_padding_size(size_t len) const
+@@ -427,28 +424,28 @@ namespace cryptoplus
+ 
+ 		inline size_t cipher_context::key_length() const
+ 		{
+-			return EVP_CIPHER_CTX_key_length(&m_ctx);
++			return EVP_CIPHER_CTX_key_length(m_ctx);
+ 		}
+ 
+ 		inline void cipher_context::set_key_length(size_t len)
+ 		{
+-			throw_error_if_not(EVP_CIPHER_CTX_set_key_length(&m_ctx, static_cast<int>(len)) != 0);
++			throw_error_if_not(EVP_CIPHER_CTX_set_key_length(m_ctx, static_cast<int>(len)) != 0);
+ 		}
+ 
+ 		inline void cipher_context::ctrl(int type, int set_value, void* get_value)
+ 		{
+-			throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, set_value, get_value) != 0);
++			throw_error_if_not(EVP_CIPHER_CTX_ctrl(m_ctx, type, set_value, get_value) != 0);
+ 		}
+ 
+ 		template <typename T>
+ 		inline void cipher_context::ctrl_get(int type, T& value)
+ 		{
+-			throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value) != 0);
++			throw_error_if_not(EVP_CIPHER_CTX_ctrl(m_ctx, type, 0, &value) != 0);
+ 		}
+ 
+ 		inline void cipher_context::ctrl_set(int type, int value)
+ 		{
+-			throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL) != 0);
++			throw_error_if_not(EVP_CIPHER_CTX_ctrl(m_ctx, type, value, NULL) != 0);
+ 		}
+ 
+ 		inline size_t cipher_context::update(void* out, size_t out_len, const buffer& in)
+@@ -468,17 +465,17 @@ namespace cryptoplus
+ 
+ 		inline const EVP_CIPHER_CTX& cipher_context::raw() const
+ 		{
+-			return m_ctx;
++			return *m_ctx;
+ 		}
+ 
+ 		inline EVP_CIPHER_CTX& cipher_context::raw()
+ 		{
+-			return m_ctx;
++			return *m_ctx;
+ 		}
+ 
+ 		inline cipher_algorithm cipher_context::algorithm() const
+ 		{
+-			return cipher_algorithm(EVP_CIPHER_CTX_cipher(&m_ctx));
++			return cipher_algorithm(EVP_CIPHER_CTX_cipher(m_ctx));
+ 		}
+ 	}
+ }
+diff --git a/libs/cryptoplus/include/cryptoplus/cryptoplus.hpp b/libs/cryptoplus/include/cryptoplus/cryptoplus.hpp
+index d63752f..b03854f 100644
+--- a/libs/cryptoplus/include/cryptoplus/cryptoplus.hpp
++++ b/libs/cryptoplus/include/cryptoplus/cryptoplus.hpp
+@@ -74,14 +74,22 @@ namespace cryptoplus
+ 	 *
+ 	 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions.
+ 	 */
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	typedef initializer<_OpenSSL_add_all_algorithms, _null_function> algorithms_initializer;
++#else
+ 	typedef initializer<_OpenSSL_add_all_algorithms, EVP_cleanup> algorithms_initializer;
++#endif
+ 
+ 	/**
+ 	 * \brief The crypto initializer.
+ 	 *
+ 	 * Only one instance of this class should be created. When an instance exists, it will prevent memory leaks related to the libcrypto's internals.
+ 	 */
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	typedef initializer<_null_function, _null_function> crypto_initializer;
++#else
+ 	typedef initializer<_null_function, CRYPTO_cleanup_all_ex_data> crypto_initializer;
++#endif
+ }
+ 
+ #endif /* CRYPTOPLUS_CRYPTOPLUS_HPP */
+diff --git a/libs/cryptoplus/include/cryptoplus/error/error_strings.hpp b/libs/cryptoplus/include/cryptoplus/error/error_strings.hpp
+index 9ebfc50..90b5d97 100644
+--- a/libs/cryptoplus/include/cryptoplus/error/error_strings.hpp
++++ b/libs/cryptoplus/include/cryptoplus/error/error_strings.hpp
+@@ -59,7 +59,16 @@ namespace cryptoplus
+ 		 *
+ 		 * Only one instance of this class should be created. When an instance exists, the library can provide more informative error strings.
+ 		 */
++
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++		inline void _null_function()
++		{
++		}
++
++		typedef initializer<_null_function, _null_function> error_strings_initializer;
++#else
+ 		typedef initializer<ERR_load_crypto_strings, ERR_free_strings> error_strings_initializer;
++#endif
+ 
+ 		/**
+ 		 * \brief Get the error string associated with a specified error.
+diff --git a/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp b/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp
+index b105729..60e111e 100644
+--- a/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp
++++ b/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp
+@@ -139,25 +139,22 @@ namespace cryptoplus
+ 
+ 			private:
+ 
+-				HMAC_CTX m_ctx;
++				HMAC_CTX* m_ctx;
+ 		};
+ 
+-		inline hmac_context::hmac_context()
+-		{
+-			HMAC_CTX_init(&m_ctx);
+-		}
++		inline hmac_context::hmac_context() : m_ctx(HMAC_CTX_new()) {}
+ 
+ 		inline hmac_context::~hmac_context()
+ 		{
+-			HMAC_CTX_cleanup(&m_ctx);
++			HMAC_CTX_free(m_ctx);
+ 		}
+ 
+ 		inline void hmac_context::update(const void* data, size_t len)
+ 		{
+ #if OPENSSL_VERSION_NUMBER < 0x01000000
+-			HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
++			HMAC_Update(m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
+ #else
+-			throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
++			throw_error_if_not(HMAC_Update(m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
+ #endif
+ 		}
+ 
+@@ -172,18 +169,17 @@ namespace cryptoplus
+ 
+ 		inline const HMAC_CTX& hmac_context::raw() const
+ 		{
+-			return m_ctx;
++			return *m_ctx;
+ 		}
+ 
+ 		inline HMAC_CTX& hmac_context::raw()
+ 		{
+-			return m_ctx;
++			return *m_ctx;
+ 		}
+ 
+ 		inline message_digest_algorithm hmac_context::algorithm() const
+ 		{
+-			//WARNING: Here we directly use the undocumented HMAC_CTX.md field. This is unlikely to change, but if it ever does, we'll have to find a better way of doing things nicely.
+-			return message_digest_algorithm(m_ctx.md);
++		    return HMAC_CTX_get_md(m_ctx);
+ 		}
+ 	}
+ }
+diff --git a/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp b/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp
+index 0805bdd..67d7d0e 100644
+--- a/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp
++++ b/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp
+@@ -71,19 +71,14 @@ namespace cryptoplus
+ 				/**
+ 				 * \brief Create a new message_digest_context.
+ 				 */
+-				message_digest_context()
+-				{
+-					EVP_MD_CTX_init(&m_ctx);
+-				}
++				message_digest_context() : m_ctx(EVP_MD_CTX_new()) {}
+ 
+ 				/**
+ 				 * \brief Copy a message_digest_context.
+ 				 * \param other The other instance.
+ 				 */
+-				message_digest_context(const message_digest_context& other)
++				message_digest_context(const message_digest_context& other) : message_digest_context()
+ 				{
+-					EVP_MD_CTX_init(&m_ctx);
+-
+ 					copy(other);
+ 				}
+ 
+@@ -94,7 +89,7 @@ namespace cryptoplus
+ 				 */
+ 				~message_digest_context()
+ 				{
+-					EVP_MD_CTX_cleanup(&m_ctx);
++					EVP_MD_CTX_free(m_ctx);
+ 				}
+ 
+ 				/**
+@@ -358,57 +353,57 @@ namespace cryptoplus
+ 
+ 			private:
+ 
+-				EVP_MD_CTX m_ctx;
++				EVP_MD_CTX* m_ctx;
+ 		};
+ 
+ 		inline void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
+ 		{
+-			throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
++			throw_error_if_not(EVP_DigestInit_ex(m_ctx, _algorithm.raw(), impl) == 1);
+ 		}
+ 
+ 		inline void message_digest_context::sign_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
+ 		{
+-			throw_error_if_not(EVP_SignInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
++			throw_error_if_not(EVP_SignInit_ex(m_ctx, _algorithm.raw(), impl) == 1);
+ 		}
+ 
+ 		inline void message_digest_context::verify_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
+ 		{
+-			throw_error_if_not(EVP_VerifyInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
++			throw_error_if_not(EVP_VerifyInit_ex(m_ctx, _algorithm.raw(), impl) == 1);
+ 		}
+ 
+ 		inline void message_digest_context::digest_sign_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
+ 		{
+-			throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
++			throw_error_if_not(EVP_DigestSignInit(m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
+ 		}
+ 
+ 		inline void message_digest_context::digest_verify_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
+ 		{
+-			throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
++			throw_error_if_not(EVP_DigestVerifyInit(m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
+ 		}
+ 
+ 		inline void message_digest_context::update(const void* data, size_t len)
+ 		{
+-			throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len) != 0);
++			throw_error_if_not(EVP_DigestUpdate(m_ctx, data, len) != 0);
+ 		}
+ 
+ 		inline void message_digest_context::sign_update(const void* data, size_t len)
+ 		{
+-			throw_error_if_not(EVP_SignUpdate(&m_ctx, data, len) != 0);
++			throw_error_if_not(EVP_SignUpdate(m_ctx, data, len) != 0);
+ 		}
+ 
+ 		inline void message_digest_context::verify_update(const void* data, size_t len)
+ 		{
+-			throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
++			throw_error_if_not(EVP_VerifyUpdate(m_ctx, data, len) != 0);
+ 		}
+ 
+ 		inline void message_digest_context::digest_sign_update(const void* data, size_t len)
+ 		{
+-			throw_error_if_not(EVP_DigestSignUpdate(&m_ctx, data, len) != 0);
++			throw_error_if_not(EVP_DigestSignUpdate(m_ctx, data, len) != 0);
+ 		}
+ 
+ 		inline void message_digest_context::digest_verify_update(const void* data, size_t len)
+ 		{
+-			throw_error_if_not(EVP_DigestVerifyUpdate(&m_ctx, data, len) != 0);
++			throw_error_if_not(EVP_DigestVerifyUpdate(m_ctx, data, len) != 0);
+ 		}
+ 
+ 		inline void message_digest_context::update(const buffer& buf)
+@@ -475,27 +470,27 @@ namespace cryptoplus
+ 
+ 		inline void message_digest_context::copy(const message_digest_context& ctx)
+ 		{
+-			throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx) != 0);
++			throw_error_if_not(EVP_MD_CTX_copy_ex(m_ctx, ctx.m_ctx) != 0);
+ 		}
+ 
+ 		inline void message_digest_context::set_flags(int flags)
+ 		{
+-			EVP_MD_CTX_set_flags(&m_ctx, flags);
++			EVP_MD_CTX_set_flags(m_ctx, flags);
+ 		}
+ 
+ 		inline const EVP_MD_CTX& message_digest_context::raw() const
+ 		{
+-			return m_ctx;
++			return *m_ctx;
+ 		}
+ 
+ 		inline EVP_MD_CTX& message_digest_context::raw()
+ 		{
+-			return m_ctx;
++			return *m_ctx;
+ 		}
+ 
+ 		inline message_digest_algorithm message_digest_context::algorithm() const
+ 		{
+-			return message_digest_algorithm(EVP_MD_CTX_md(&m_ctx));
++			return message_digest_algorithm(EVP_MD_CTX_md(m_ctx));
+ 		}
+ 	}
+ }
+diff --git a/libs/cryptoplus/include/cryptoplus/pkey/dh_key.hpp b/libs/cryptoplus/include/cryptoplus/pkey/dh_key.hpp
+index 520fa38..30cb47c 100644
+--- a/libs/cryptoplus/include/cryptoplus/pkey/dh_key.hpp
++++ b/libs/cryptoplus/include/cryptoplus/pkey/dh_key.hpp
+@@ -97,6 +97,7 @@ namespace cryptoplus
+ 				 */
+ 				static dh_key take_ownership(pointer ptr);
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 				/**
+ 				 * \brief Create a new DH with the specified parameters.
+ 				 * \param prime_len The length, in bits, of the safe prime number to be generated.
+@@ -106,6 +107,7 @@ namespace cryptoplus
+ 				 * \return The dh_key.
+ 				 */
+ 				static dh_key generate_parameters(int prime_len, int generator, generate_callback_type callback = NULL, void* callback_arg = NULL);
++#endif
+ 
+ 				/**
+ 				 * \brief Load DH parameters from a BIO.
+@@ -280,6 +282,7 @@ namespace cryptoplus
+ 		{
+ 			throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
+ 		}
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		inline bn::bignum dh_key::private_key() const
+ 		{
+ 			return raw()->priv_key;
+@@ -288,6 +291,7 @@ namespace cryptoplus
+ 		{
+ 			return raw()->pub_key;
+ 		}
++#endif
+ 		inline size_t dh_key::size() const
+ 		{
+ 			return DH_size(ptr().get());
+diff --git a/libs/cryptoplus/include/cryptoplus/pkey/dsa_key.hpp b/libs/cryptoplus/include/cryptoplus/pkey/dsa_key.hpp
+index cbe2c0d..a79b31c 100644
+--- a/libs/cryptoplus/include/cryptoplus/pkey/dsa_key.hpp
++++ b/libs/cryptoplus/include/cryptoplus/pkey/dsa_key.hpp
+@@ -97,6 +97,7 @@ namespace cryptoplus
+ 				 */
+ 				static dsa_key take_ownership(pointer ptr);
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 				/**
+ 				 * \brief Create a new DSA key with the specified parameters.
+ 				 * \param bits The length, in bits, of the prime to be generated. Maximum value is 1024.
+@@ -125,6 +126,7 @@ namespace cryptoplus
+ 				 * generate_private_key() is equivalent to a call to generate_parameters() followed by a call to generate().
+ 				 */
+ 				static dsa_key generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
++#endif
+ 
+ 				/**
+ 				 * \brief Load a private DSA key from a BIO.
+@@ -428,10 +430,12 @@ namespace cryptoplus
+ 		{
+ 			return take_ownership(DSA_new());
+ 		}
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		inline dsa_key dsa_key::generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
+ 		{
+ 			return generate_parameters(bits, seed, seed_len, counter_ret, h_ret, callback, callback_arg).generate();
+ 		}
++#endif
+ 		inline dsa_key dsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
+ 		{
+ 			return take_ownership(PEM_read_bio_DSAPrivateKey(bio.raw(), NULL, callback, callback_arg));
+diff --git a/libs/cryptoplus/include/cryptoplus/pkey/pkey.hpp b/libs/cryptoplus/include/cryptoplus/pkey/pkey.hpp
+index eda0483..cf72cf9 100644
+--- a/libs/cryptoplus/include/cryptoplus/pkey/pkey.hpp
++++ b/libs/cryptoplus/include/cryptoplus/pkey/pkey.hpp
+@@ -565,6 +565,7 @@ namespace cryptoplus
+ 		{
+ 			return EVP_PKEY_size(ptr().get());
+ 		}
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		inline int pkey::type() const
+ 		{
+ 			return EVP_PKEY_type(ptr()->type);
+@@ -581,6 +582,7 @@ namespace cryptoplus
+ 		{
+ 			return (type() == EVP_PKEY_DH);
+ 		}
++#endif
+ 		inline pkey::pkey(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
+ 		{
+ 		}
+diff --git a/libs/cryptoplus/include/cryptoplus/random/random.hpp b/libs/cryptoplus/include/cryptoplus/random/random.hpp
+index 7c29b6e..116b0f2 100644
+--- a/libs/cryptoplus/include/cryptoplus/random/random.hpp
++++ b/libs/cryptoplus/include/cryptoplus/random/random.hpp
+@@ -227,20 +227,30 @@ namespace cryptoplus
+ 
+ 		inline bool get_pseudo_random_bytes(void* buf, size_t buf_len)
+ 		{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
+ 
+ 			throw_error_if(result < 0);
+ 
+ 			return (result == 1);
++#else
++            get_random_bytes(buf, buf_len);
++
++            return true;
++#endif
+ 		}
+ 
+ 		inline buffer get_pseudo_random_bytes(size_t cnt)
+ 		{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 			buffer result(cnt);
+ 
+ 			get_pseudo_random_bytes(buffer_cast<uint8_t*>(result), buffer_size(result));
+ 
+ 			return result;
++#else
++            return get_random_bytes(cnt);
++#endif
+ 		}
+ 
+ 		inline void add(const void* buf, size_t buf_len, double entropy)
+@@ -299,6 +309,7 @@ namespace cryptoplus
+ 			return result;
+ 		}
+ 
++#ifdef RAND_egd
+ 		inline size_t egd_query(const std::string& path)
+ 		{
+ 			int result = RAND_egd(path.c_str());
+@@ -325,6 +336,7 @@ namespace cryptoplus
+ 
+ 			return result;
+ 		}
++#endif
+ 
+ 		inline void cleanup()
+ 		{
+diff --git a/libs/cryptoplus/src/cipher_context.cpp b/libs/cryptoplus/src/cipher_context.cpp
+index a98ba5d..973abf2 100644
+--- a/libs/cryptoplus/src/cipher_context.cpp
++++ b/libs/cryptoplus/src/cipher_context.cpp
+@@ -112,7 +112,7 @@ namespace cryptoplus
+ 
+ 			// Doing the same test on the IV is wrong because for some algorithms, the IV size is dynamic.
+ 
+-			throw_error_if_not(EVP_CipherInit_ex(&m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
++			throw_error_if_not(EVP_CipherInit_ex(m_ctx, _algorithm.raw(), impl, static_cast<const unsigned char*>(key), static_cast<const unsigned char*>(iv), static_cast<int>(direction)) != 0);
+ 		}
+ 
+ 		buffer cipher_context::seal_initialize(const cipher_algorithm& _algorithm, void* iv, pkey::pkey pkey)
+@@ -132,7 +132,7 @@ namespace cryptoplus
+ 
+ 			// Doing the same test on the IV is wrong because for some algorithms, the IV size is dynamic.
+ 
+-			throw_error_if_not(EVP_OpenInit(&m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
++			throw_error_if_not(EVP_OpenInit(m_ctx, _algorithm.raw(), static_cast<const unsigned char*>(key), static_cast<int>(key_len), static_cast<const unsigned char*>(iv), pkey.raw()) != 0);
+ 		}
+ 
+ 		size_t cipher_context::add_iso_10126_padding(void* buf, size_t buf_len, size_t max_buf_len) const
+diff --git a/libs/cryptoplus/src/dh_key.cpp b/libs/cryptoplus/src/dh_key.cpp
+index 5145e96..117d0d5 100644
+--- a/libs/cryptoplus/src/dh_key.cpp
++++ b/libs/cryptoplus/src/dh_key.cpp
+@@ -63,10 +63,12 @@ namespace cryptoplus
+ 			}
+ 		}
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		dh_key dh_key::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
+ 		{
+ 			return take_ownership(DH_generate_parameters(prime_len, generator, callback, callback_arg));
+ 		}
++#endif
+ 
+ 		dh_key dh_key::from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+ 		{
+diff --git a/libs/cryptoplus/src/dsa_key.cpp b/libs/cryptoplus/src/dsa_key.cpp
+index b7bbc1b..964e8d4 100644
+--- a/libs/cryptoplus/src/dsa_key.cpp
++++ b/libs/cryptoplus/src/dsa_key.cpp
+@@ -63,6 +63,7 @@ namespace cryptoplus
+ 			}
+ 		}
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		dsa_key dsa_key::generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
+ 		{
+ 			DSA* ptr = DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), static_cast<int>(seed_len), counter_ret, h_ret, callback, callback_arg);
+@@ -76,6 +77,7 @@ namespace cryptoplus
+ 				return ptr;
+ 			}
+ 		}
++#endif
+ 
+ 		dsa_key dsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
+ 		{
+diff --git a/libs/cryptoplus/src/ecdhe.cpp b/libs/cryptoplus/src/ecdhe.cpp
+index bf55344..2404f2d 100644
+--- a/libs/cryptoplus/src/ecdhe.cpp
++++ b/libs/cryptoplus/src/ecdhe.cpp
+@@ -92,7 +92,7 @@ namespace cryptoplus
+ 
+ 			EVP_PKEY* private_key = nullptr;
+ 			throw_error_if(EVP_PKEY_keygen(key_generation_context.get(), &private_key) != 1);
+-			::EC_KEY_set_asn1_flag(private_key->pkey.ec, OPENSSL_EC_NAMED_CURVE);
++			::EC_KEY_set_asn1_flag(EVP_PKEY_get1_EC_KEY(private_key), OPENSSL_EC_NAMED_CURVE);
+ 			m_private_key = pkey::take_ownership(private_key);
+ 		}
+ 
+diff --git a/libs/cryptoplus/src/hmac_context.cpp b/libs/cryptoplus/src/hmac_context.cpp
+index 36a03d4..5c24625 100644
+--- a/libs/cryptoplus/src/hmac_context.cpp
++++ b/libs/cryptoplus/src/hmac_context.cpp
+@@ -53,9 +53,9 @@ namespace cryptoplus
+ 		void hmac_context::initialize(const void* key, size_t key_len, const message_digest_algorithm* _algorithm, ENGINE* impl)
+ 		{
+ #if OPENSSL_VERSION_NUMBER < 0x01000000
+-			HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl);
++			HMAC_Init_ex(m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl);
+ #else
+-			throw_error_if_not(HMAC_Init_ex(&m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl) != 0);
++			throw_error_if_not(HMAC_Init_ex(m_ctx, key, static_cast<int>(key_len), _algorithm ? _algorithm->raw() : NULL, impl) != 0);
+ #endif
+ 		}
+ 
+@@ -66,9 +66,9 @@ namespace cryptoplus
+ 			unsigned int ilen = static_cast<unsigned int>(len);
+ 
+ #if OPENSSL_VERSION_NUMBER < 0x01000000
+-			HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen);
++			HMAC_Final(m_ctx, static_cast<unsigned char*>(md), &ilen);
+ #else
+-			throw_error_if_not(HMAC_Final(&m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
++			throw_error_if_not(HMAC_Final(m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
+ #endif
+ 			return ilen;
+ 		}
+diff --git a/libs/cryptoplus/src/message_digest_context.cpp b/libs/cryptoplus/src/message_digest_context.cpp
+index 21970c1..cc7df30 100644
+--- a/libs/cryptoplus/src/message_digest_context.cpp
++++ b/libs/cryptoplus/src/message_digest_context.cpp
+@@ -58,7 +58,7 @@ namespace cryptoplus
+ 
+ 			unsigned int ilen = static_cast<unsigned int>(md_len);
+ 
+-			throw_error_if_not(EVP_DigestFinal_ex(&m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
++			throw_error_if_not(EVP_DigestFinal_ex(m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
+ 
+ 			return ilen;
+ 		}
+@@ -69,14 +69,14 @@ namespace cryptoplus
+ 
+ 			unsigned int ilen = static_cast<unsigned int>(sig_len);
+ 
+-			throw_error_if_not(EVP_SignFinal(&m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()) != 0);
++			throw_error_if_not(EVP_SignFinal(m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()) != 0);
+ 
+ 			return ilen;
+ 		}
+ 
+ 		bool message_digest_context::verify_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey)
+ 		{
+-			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), static_cast<unsigned int>(sig_len), pkey.raw());
++			int result = EVP_VerifyFinal(m_ctx, static_cast<const unsigned char*>(sig), static_cast<unsigned int>(sig_len), pkey.raw());
+ 
+ 			throw_error_if(result < 0);
+ 
+@@ -85,7 +85,7 @@ namespace cryptoplus
+ 
+ 		size_t message_digest_context::digest_sign_finalize(void* md, size_t md_len)
+ 		{
+-			throw_error_if_not(EVP_DigestSignFinal(&m_ctx, static_cast<unsigned char*>(md), &md_len) != 0);
++			throw_error_if_not(EVP_DigestSignFinal(m_ctx, static_cast<unsigned char*>(md), &md_len) != 0);
+ 
+ 			return md_len;
+ 		}
+@@ -97,7 +97,7 @@ namespace cryptoplus
+ 			// The documentation clearly states this should be const.
+ 			// http://www.openssl.org/docs/crypto/EVP_DigestVerifyInit.html
+ 
+-			int result = EVP_DigestVerifyFinal(&m_ctx, const_cast<unsigned char*>(static_cast<const unsigned char*>(sig)), static_cast<unsigned int>(sig_len));
++			int result = EVP_DigestVerifyFinal(m_ctx, const_cast<unsigned char*>(static_cast<const unsigned char*>(sig)), static_cast<unsigned int>(sig_len));
+ 
+ 			throw_error_if(result < 0);
+ 
+diff --git a/libs/cryptoplus/src/rsa_key.cpp b/libs/cryptoplus/src/rsa_key.cpp
+index c269023..d5aecc1 100644
+--- a/libs/cryptoplus/src/rsa_key.cpp
++++ b/libs/cryptoplus/src/rsa_key.cpp
+@@ -65,10 +65,15 @@ namespace cryptoplus
+ 
+ 		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
+ 		{
+-			// Exponent must be odd
+-			assert(exponent | 1);
+-
+-			RSA* ptr = RSA_generate_key(num, exponent, callback, callback_arg);
++		    static_cast<void>(num);
++		    static_cast<void>(exponent);
++		    static_cast<void>(callback);
++		    static_cast<void>(callback_arg);
++
++            std::unique_ptr<BIGNUM, decltype(&::BN_free)> bn(BN_new(), ::BN_free);
++			RSA* ptr = nullptr;
++			rsa_key key = rsa_key::create();
++			RSA_generate_key_ex(key.raw(), 2048, bn.get(), NULL);
+ 
+ 			if (must_take_ownership)
+ 			{
