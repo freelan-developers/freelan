@@ -1,3 +1,16 @@
+freelan (2.0-2) unstable; urgency=medium
+
+  [ Julien Kauffmann ]
+  * patches: backport changes to compile with openssl 1.1. Closes: #828304
+
+  [ Rolf Leggewie ]
+  * control:
+    - add explicit run-time dependency on lsb-base
+    - bump standards version to 3.9.8
+  * copyright: update my copyright to 2016
+
+ -- Rolf Leggewie <foss@rolf.leggewie.biz>  Tue, 15 Nov 2016 14:19:18 +0800
+
 freelan (2.0-1) unstable; urgency=low
 
   * initial release to Debian. Closes: #780608
