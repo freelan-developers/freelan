@@ -229,8 +229,8 @@ namespace cryptoplus
 				int get_error_depth() const;
 
 				/**
-				 * \brief Get the certificate where the error occured.
-				 * \return The certificate where the error occured. May be null.
+				 * \brief Get the certificate where the error occurred.
+				 * \return The certificate where the error occurred. May be null.
 				 */
 				certificate get_current_certificate() const;
 

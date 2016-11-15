@@ -358,7 +358,7 @@ namespace fscp
 			/**
 			 * \brief Greet an host.
 			 * \param target The target to greet.
-			 * \param handler The handler to call when a reply was received, an error occured or the request timed out.
+			 * \param handler The handler to call when a reply was received, an error occurred or the request timed out.
 			 * \param timeout The maximum time to wait for a reply.
 			 */
 			void async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout = boost::posix_time::seconds(3));
@@ -430,7 +430,7 @@ namespace fscp
 			/**
 			 * \brief Send a presentation message to the specified target.
 			 * \param target The target host.
-			 * \param handler The handler to call when the presentation message is sent or an error occured.
+			 * \param handler The handler to call when the presentation message is sent or an error occurred.
 			 */
 			void async_introduce_to(const ep_type& target, simple_handler_type handler);
 
@@ -445,7 +445,7 @@ namespace fscp
 
 			/**
 			 * \brief Resend a presentation message to all the known peers.
-			 * \param handler The handler to call when all the presentation messages were sent or an error occured.
+			 * \param handler The handler to call when all the presentation messages were sent or an error occurred.
 			 */
 			void async_reintroduce_to_all(multiple_endpoints_handler_type handler);
 
@@ -562,7 +562,7 @@ namespace fscp
 			/**
 			 * \brief Sends a session request to an host.
 			 * \param target The target to greet.
-			 * \param handler The handler to call when the request was sent or an error occured.
+			 * \param handler The handler to call when the request was sent or an error occurred.
 			 */
 			void async_request_session(const ep_type& target, simple_handler_type handler);
 
@@ -908,7 +908,7 @@ namespace fscp
 			 * \param target The target host.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
-			 * \param handler The handler to call when the data was sent or an error occured.
+			 * \param handler The handler to call when the data was sent or an error occurred.
 			 */
 			void async_send_data(const ep_type& target, channel_number_type channel_number, boost::asio::const_buffer data, simple_handler_type handler);
 
@@ -928,7 +928,7 @@ namespace fscp
 			 * \param targets The list of hosts.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			void async_send_data_to_list(const std::set<ep_type>& targets, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler);
 
@@ -938,7 +938,7 @@ namespace fscp
 			 * \param end An iterator past the last endpoint of the list.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			template <typename EPIterator>
 			void async_send_data_to_list(EPIterator begin, EPIterator end, channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
@@ -977,7 +977,7 @@ namespace fscp
 			 * \brief Send data to all hosts.
 			 * \param channel_number The channel number.
 			 * \param data The data to send.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			void async_send_data_to_all(channel_number_type channel_number, boost::asio::const_buffer data, multiple_endpoints_handler_type handler)
 			{
@@ -998,7 +998,7 @@ namespace fscp
 			 * \brief Send a contact request to an host.
 			 * \param target The target host.
 			 * \param hash_list The hashes to request.
-			 * \param handler The handler to call when the data was sent or an error occured.
+			 * \param handler The handler to call when the data was sent or an error occurred.
 			 */
 			void async_send_contact_request(const ep_type& target, const hash_list_type& hash_list, simple_handler_type handler);
 
@@ -1016,7 +1016,7 @@ namespace fscp
 			 * \brief Send a contact request to a list of hosts.
 			 * \param targets The list of hosts.
 			 * \param hash_list The hashes to request.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			void async_send_contact_request_to_list(const std::set<ep_type>& targets, const hash_list_type& hash_list, multiple_endpoints_handler_type handler);
 
@@ -1025,7 +1025,7 @@ namespace fscp
 			 * \param begin An iterator to the first endpoint of the list.
 			 * \param end An iterator past the last endpoint of the list.
 			 * \param hash_list The hashes to request.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			template <typename EPIterator>
 			void async_send_contact_request_to_list(EPIterator begin, EPIterator end, const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
@@ -1061,7 +1061,7 @@ namespace fscp
 			/**
 			 * \brief Send a contact request to all hosts.
 			 * \param hash_list The hashes to request.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			void async_send_contact_request_to_all(const hash_list_type& hash_list, multiple_endpoints_handler_type handler)
 			{
@@ -1081,7 +1081,7 @@ namespace fscp
 			 * \brief Send contact information to an host.
 			 * \param target The target host.
 			 * \param contact_map The contact information.
-			 * \param handler The handler to call when the data was sent or an error occured.
+			 * \param handler The handler to call when the data was sent or an error occurred.
 			 */
 			void async_send_contact(const ep_type& target, const contact_map_type& contact_map, simple_handler_type handler);
 
@@ -1099,7 +1099,7 @@ namespace fscp
 			 * \brief Send contact information to a list of hosts.
 			 * \param targets The list of hosts.
 			 * \param contact_map The contact information.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			void async_send_contact_to_list(const std::set<ep_type>& targets, const contact_map_type& contact_map, multiple_endpoints_handler_type handler);
 
@@ -1108,7 +1108,7 @@ namespace fscp
 			 * \param begin An iterator to the first endpoint of the list.
 			 * \param end An iterator past the last endpoint of the list.
 			 * \param contact_map The contact information.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			template <typename EPIterator>
 			void async_send_contact_to_list(EPIterator begin, EPIterator end, const contact_map_type& contact_map, multiple_endpoints_handler_type handler)
@@ -1144,7 +1144,7 @@ namespace fscp
 			/**
 			 * \brief Send contact information to all hosts.
 			 * \param contact_map The contact information.
-			 * \param handler The handler to call when the data was sent to all hosts or an error occured.
+			 * \param handler The handler to call when the data was sent to all hosts or an error occurred.
 			 */
 			void async_send_contact_to_all(const contact_map_type& contact_map, multiple_endpoints_handler_type handler)
 			{

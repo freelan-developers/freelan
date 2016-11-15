@@ -107,46 +107,46 @@ namespace cryptoplus
 		};
 
 		/**
-		 * \brief Get the earliest crypto error that occured in this thread and removes it from the error queue.
+		 * \brief Get the earliest crypto error that occurred in this thread and removes it from the error queue.
 		 * \return The last error.
 		 */
 		error_type get_error();
 
 		/**
-		 * \brief Get the earliest crypto error that occured in this thread and leaves it in the error queue.
+		 * \brief Get the earliest crypto error that occurred in this thread and leaves it in the error queue.
 		 * \return The last error.
 		 */
 		error_type peek_error();
 
 		/**
-		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
+		 * \brief Get the last crypto error that occurred in this thread and leaves it in the error queue.
 		 * \return The last error.
 		 */
 		error_type peek_last_error();
 
 		/**
-		 * \brief Get the earliest crypto error that occured in this thread and removes it from the error queue.
+		 * \brief Get the earliest crypto error that occurred in this thread and removes it from the error queue.
 		 * \param info The error information.
 		 * \return The last error.
 		 */
 		error_type get_error_line(error_info& info);
 
 		/**
-		 * \brief Get the earliest crypto error that occured in this thread and leaves it in the error queue.
+		 * \brief Get the earliest crypto error that occurred in this thread and leaves it in the error queue.
 		 * \param info The error information.
 		 * \return The last error.
 		 */
 		error_type peek_error_line(error_info& info);
 
 		/**
-		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
+		 * \brief Get the last crypto error that occurred in this thread and leaves it in the error queue.
 		 * \param info The error information.
 		 * \return The last error.
 		 */
 		error_type peek_last_error_line(error_info& info);
 
 		/**
-		 * \brief Get the earliest crypto error that occured in this thread and removes it from the error queue.
+		 * \brief Get the earliest crypto error that occurred in this thread and removes it from the error queue.
 		 * \param info The error information.
 		 * \param data The error data.
 		 * \return The last error.
@@ -154,7 +154,7 @@ namespace cryptoplus
 		error_type get_error_line_data(error_info& info, error_data& data);
 
 		/**
-		 * \brief Get the earliest crypto error that occured in this thread and leaves it in the error queue.
+		 * \brief Get the earliest crypto error that occurred in this thread and leaves it in the error queue.
 		 * \param info The error information.
 		 * \param data The error data.
 		 * \return The last error.
@@ -162,7 +162,7 @@ namespace cryptoplus
 		error_type peek_error_line_data(error_info& info, error_data& data);
 
 		/**
-		 * \brief Get the last crypto error that occured in this thread and leaves it in the error queue.
+		 * \brief Get the last crypto error that occurred in this thread and leaves it in the error queue.
 		 * \param info The error information.
 		 * \param data The error data.
 		 * \return The last error.

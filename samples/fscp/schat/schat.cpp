@@ -320,7 +320,7 @@ int main(int argc, char** argv)
 				catch (std::exception& ex)
 				{
 					mutex::scoped_lock lock(output_mutex);
-					std::cout << "Fatal exception occured in thread #" << i << ": " << ex.what() << std::endl;
+					std::cout << "Fatal exception occurred in thread #" << i << ": " << ex.what() << std::endl;
 
 					stop_function();
 					signals.cancel();

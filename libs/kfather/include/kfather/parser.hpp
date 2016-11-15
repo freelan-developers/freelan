@@ -123,7 +123,7 @@ namespace kfather
 			 * parsing fails, value is guaranteed not to be modified.
 			 * \param begin An iterator to the first character to parse.
 			 * \param end An iterator past the last character to parse.
-			 * \param error_pos A pointer to an iterator where the last parsing error occured.
+			 * \param error_pos A pointer to an iterator where the last parsing error occurred.
 			 * \return  true if the parsing succeeds, false otherwise.
 			 *
 			 * If the parsing fails, and error_pos is not null, *error_pos is set to

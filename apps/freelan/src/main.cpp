@@ -523,7 +523,7 @@ void run(fscp::logger& logger, const cli_configuration& configuration, int& exit
 			}
 			catch (std::exception& ex)
 			{
-				logger(fscp::log_level::error) << "Fatal exception occured in thread #" << i << ": " << ex.what();
+				logger(fscp::log_level::error) << "Fatal exception occurred in thread #" << i << ": " << ex.what();
 
 				core.close();
 				signals.cancel();
