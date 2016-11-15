@@ -8,8 +8,8 @@ License: GPL-3+
 Comment: Upstream grants a special exception to link with OpenSSL
 
 Files: debian/*
-Copyright: 2015 Rolf Leggewie <foss@rolf.leggewe.biz>
-           2012 Julien Kauffmann <julien.kauffmann@freelan.org>
+Copyright: 2015-2016 Rolf Leggewie <foss@rolf.leggewe.biz>
+           2012      Julien Kauffmann <julien.kauffmann@freelan.org>
 License: GPL-3+
 
 Files: third-party/source/*
