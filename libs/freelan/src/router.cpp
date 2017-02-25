@@ -42,6 +42,8 @@
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
  * \brief A router class.
  */
+//Use the behavior of Boost from bevor 1.63
+#define BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
 
 #include "router.hpp"
 
