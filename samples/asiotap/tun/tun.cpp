@@ -3,6 +3,8 @@
  * \author Julien Kauffmann <julien.kauffmann@freelan.org>
  * \brief A simple TUN test program.
  */
+//Use the behavior of Boost from bevor 1.63
+#define BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
 
 #include <asiotap/asiotap.hpp>
 #include <asiotap/osi/arp_filter.hpp>
