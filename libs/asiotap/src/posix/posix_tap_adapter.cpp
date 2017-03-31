@@ -56,7 +56,7 @@
 #ifdef LINUX
 
 #include <linux/if_tun.h>
-
+#include <sys/sysmacros.h>
 /**
  * \struct in6_ifreq
  * \brief Replacement structure since the include of linux/ipv6.h introduces conflicts.
