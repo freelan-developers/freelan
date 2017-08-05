@@ -6,6 +6,7 @@ Works on all UNIX-like operating systems.
 
 import os
 import sys
+import SCons.Errors
 
 from fnmatch import fnmatch
 
@@ -80,11 +81,19 @@ class FreelanEnvironment(Environment):
             self.install_prefix = self.prefix
             self.bin_install_prefix = self.bin_prefix
 
-        if os.path.basename(self['CXX']) == 'clang++':
-            self.Append(CXXFLAGS=['-Qunused-arguments'])
-            self.Append(CXXFLAGS=['-fcolor-diagnostics'])
-        elif os.path.basename(self['CXX']).startswith('g++'):
-            self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
+        if self['CXX'] is None:
+            raise SCons.Errors.BuildError(
+                errstr=(
+                    "Failed to detect C++ compiler : CXX environment variable not set."
+                    "\nIs g++ or clang++ available in your PATH ?"
+                    "\nIf you have no idea what this is about,"
+                    "\ntry installing the 'build-essential' package"))
+        else:
+            if os.path.basename(self['CXX']) == 'clang++':
+                self.Append(CXXFLAGS=['-Qunused-arguments'])
+                self.Append(CXXFLAGS=['-fcolor-diagnostics'])
+            elif os.path.basename(self['CXX']).startswith('g++'):
+                self.Append(CXXFLAGS=['-Wno-missing-field-initializers'])
 
         self.Append(CXXFLAGS=['--std=c++11'])
         self.Append(CXXFLAGS=['-Wall'])

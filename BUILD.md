@@ -23,7 +23,7 @@ This will build everything inside `third-party`. Once that is done, you can proc
 
 To install the required dependencies on Debian Linux (Or Ubuntu), type the following command:
 
-> sudo apt-get install scons python libssl-dev libcurl4-openssl-dev libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-filesystem-dev libboost-iostreams-dev
+> sudo apt-get install scons python libssl-dev libcurl4-openssl-dev libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-filesystem-dev libboost-iostreams-dev build-essential
 
 Building FreeLAN
 ----------------
