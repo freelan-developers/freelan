@@ -206,6 +206,7 @@ namespace asiotap
 						{
 							result[name] = name;
 						}
+						break;
 					}
 					case tap_adapter_layer::ip:
 					{
@@ -213,6 +214,7 @@ namespace asiotap
 						{
 							result[name] = name;
 						}
+						break;
 					}
 				}
 			}
