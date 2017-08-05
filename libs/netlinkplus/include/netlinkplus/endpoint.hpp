@@ -44,6 +44,8 @@
 
 #pragma once
 
+#include <cstring>
+
 #include <boost/asio.hpp>
 
 #include <linux/netlink.h>
@@ -125,17 +127,17 @@ namespace netlinkplus
 
 			friend bool operator==(const netlink_endpoint& lhs, const netlink_endpoint& rhs)
 			{
-				return (lhs.m_sockaddr == rhs.m_sockaddr);
+				return (std::memcmp(&lhs.m_sockaddr, &rhs.m_sockaddr, sizeof(sockaddr_nl)) == 0);
 			}
 
 			friend bool operator!=(const netlink_endpoint& lhs, const netlink_endpoint& rhs)
 			{
-				return (lhs.m_sockaddr != rhs.m_sockaddr);
+				return (std::memcmp(&lhs.m_sockaddr, &rhs.m_sockaddr, sizeof(sockaddr_nl)) != 0);
 			}
 
 			friend bool operator<(const netlink_endpoint& lhs, const netlink_endpoint& rhs)
 			{
-				return (lhs.m_sockaddr < rhs.m_sockaddr);
+				return (std::memcmp(&lhs.m_sockaddr, &rhs.m_sockaddr, sizeof(sockaddr_nl)) < 0);
 			}
 
 		private:
