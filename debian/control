@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 9),
  libssl-dev, libcurl4-openssl-dev, libboost-system-dev, libboost-thread-dev,
  libboost-program-options-dev, libboost-filesystem-dev,
  libboost-iostreams-dev, scons
-Standards-Version: 3.9.8
+Standards-Version: 4.0.0
 Homepage: http://www.freelan.org
 Vcs-Git: https://github.com/freelan-developers/freelan.git -b debian/unstable
 Vcs-Browser: https://github.com/freelan-developers/freelan-all/tree/debian/unstable
