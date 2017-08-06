@@ -5,8 +5,12 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "ubuntu14.10_amd64"
-  config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/utopic/current/utopic-server-cloudimg-amd64-vagrant-disk1.box"
+  # fixes 'Inappropriate ioctl for device'
+  config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+  # 'official' Ubuntu box does not have vagrant user (https://bugs.launchpad.net/cloud-images/+bug/1569237)
+  # so use another box as specified in issue
+  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.provision 'Initial setup', type: 'shell', path: "provisioning/scripts/setup.sh"
 
   config.vm.define 'load-test' do |machine|
     machine.vm.hostname = 'freelan-load-test'

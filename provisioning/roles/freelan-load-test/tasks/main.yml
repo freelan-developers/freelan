@@ -18,27 +18,27 @@
 
 - name: Create nodes certificates and private keys
   command: openssl req -new -nodes -x509 -subj "/CN={{ item.name }}" -days 3650 -keyout {{ nodes_config_root }}/{{ item.name }}.key -out {{ nodes_config_root }}/{{ item.name }}.crt -extensions v3_ca creates={{ nodes_config_root }}/{{ item.name }}.crt
-  with_items: freelan_nodes
+  with_items: "{{ freelan_nodes }}"
 
 - name: Create nodes configuration files
   template: src=configuration.cfg dest={{ nodes_config_root }}/{{ item.name }}.cfg
-  with_items: freelan_nodes
+  with_items: "{{ freelan_nodes }}"
 
 - name: Create scripts files
   template: src=launch-script.sh dest={{ scripts_root }}/{{ item.name }}.sh mode=755
-  with_items: freelan_nodes
+  with_items: "{{ freelan_nodes }}"
 
 - name: Create debug scripts files
   template: src=launch-debug-script.sh dest={{ scripts_root }}/debug-{{ item.name }}.sh mode=755
-  with_items: freelan_nodes
+  with_items: "{{ freelan_nodes }}"
 
 - name: Create detached scripts files
   template: src=launch-detached-script.sh dest={{ scripts_root }}/detached-{{ item.name }}.sh mode=755
-  with_items: freelan_nodes
+  with_items: "{{ freelan_nodes }}"
 
 - name: Create detached debug scripts files
   template: src=launch-detached-debug-script.sh dest={{ scripts_root }}/detached-debug-{{ item.name }}.sh mode=755
-  with_items: freelan_nodes
+  with_items: "{{ freelan_nodes }}"
 
 - name: Create all detached script file
   template: src=launch-all-script.sh dest={{ scripts_root }}/all.sh mode=755
