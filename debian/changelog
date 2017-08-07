@@ -1,3 +1,17 @@
+freelan (2.0-4) unstable; urgency=medium
+
+  [ Sebastien Vincent ]
+  * patches: backport 5014a8023b from upstream. Closes: #853406
+    fix FTBFS with gcc7
+
+  [ Rolf Leggewie ]
+  * control: update to standards version 4.0.0
+    - fix typo in manpage
+    - make the whatis entry for the freelan manpage more meaningful
+  * copyright: update my copyright to 2017
+
+ -- Rolf Leggewie <foss@rolf.leggewie.biz>  Sun, 06 Aug 2017 17:57:54 +0800
+
 freelan (2.0-2) unstable; urgency=medium
 
   [ Julien Kauffmann ]
