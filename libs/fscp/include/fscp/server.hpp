@@ -686,7 +686,7 @@ namespace fscp
 			 */
 			void set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves)
 			{
-				m_elliptic_curves = elliptic_curves;
+				m_elliptic_curves = get_elliptic_curves_supported(elliptic_curves);
 			}
 
 			/**
@@ -1255,6 +1255,7 @@ namespace fscp
 			void do_set_identity(const identity_store&, void_handler_type);
 
 		private:
+			elliptic_curve_list_type get_elliptic_curves_supported(const elliptic_curve_list_type& curves);
 
 			void async_receive_from()
 			{
