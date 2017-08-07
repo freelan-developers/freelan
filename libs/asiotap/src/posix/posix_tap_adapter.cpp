@@ -577,7 +577,7 @@ namespace asiotap
 					struct sockaddr_in6* sai = reinterpret_cast<struct sockaddr_in6*>(ifa->ifa_addr);
 
 					boost::asio::ip::address_v6::bytes_type bytes;
-					memcpy(bytes.data(), &sai->sin6_addr, bytes.size());
+					memcpy(bytes.data(), &sai->sin6_addr.s6_addr, bytes.size());
 
 					boost::asio::ip::address_v6 address(bytes);
 
@@ -736,7 +736,7 @@ namespace asiotap
 		}
 
 		in6_ifreq ifr {};
-		std::memcpy(&ifr.ifr6_addr, address.to_bytes().data(), address.to_bytes().size());
+		std::memcpy(&ifr.ifr6_addr.s6_addr, address.to_bytes().data(), address.to_bytes().size());
 		ifr.ifr6_prefixlen = prefix_len;
 		ifr.ifr6_ifindex = if_index;
 
@@ -746,7 +746,7 @@ namespace asiotap
 		std::memcpy(iar.ifra_name, name().c_str(), name().length());
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_family = AF_INET6;
-		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr, address.to_bytes().data(), address.to_bytes().size());
+		std::memcpy(&reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_addr.s6_addr, address.to_bytes().data(), address.to_bytes().size());
 		std::memset(reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr, 0xFF, prefix_len / 8);
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_prefixmask)->sin6_addr.s6_addr[prefix_len / 8] = (0xFF << (8 - (prefix_len % 8)));
 		iar.ifra_lifetime.ia6t_pltime = 0xFFFFFFFF;
