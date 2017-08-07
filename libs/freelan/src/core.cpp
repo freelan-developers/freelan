@@ -1970,6 +1970,7 @@ namespace freelan
 			m_tap_adapter->set_connected_state(false);
 
 			m_tap_adapter->close();
+			m_tap_adapter_io_service.stop();
 
 			m_tap_adapter_thread.join();
 		}
