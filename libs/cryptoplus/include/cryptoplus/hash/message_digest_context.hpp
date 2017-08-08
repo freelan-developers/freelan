@@ -71,7 +71,15 @@ namespace cryptoplus
 				/**
 				 * \brief Create a new message_digest_context.
 				 */
-				message_digest_context() : m_ctx(EVP_MD_CTX_new()) {}
+				message_digest_context()
+				{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+					m_ctx = new EVP_MD_CTX;
+					EVP_MD_CTX_init(m_ctx);
+#else
+					m_ctx = EVP_MD_CTX_new();
+#endif
+				}
 
 				/**
 				 * \brief Copy a message_digest_context.
@@ -89,7 +97,12 @@ namespace cryptoplus
 				 */
 				~message_digest_context()
 				{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+					EVP_MD_CTX_cleanup(m_ctx);
+					delete m_ctx;
+#else
 					EVP_MD_CTX_free(m_ctx);
+#endif
 				}
 
 				/**
