@@ -13,7 +13,6 @@ libraries = [
     'kfather',
     'iconvplus',
     'boost_system',
-    'boost_thread',
     'boost_filesystem',
     'boost_date_time',
     'boost_program_options',
@@ -22,6 +21,15 @@ libraries = [
     'ssl',
     'crypto',
 ]
+
+if sys.platform.startswith('darwin'):
+    libraries.extend([
+        'boost_thread-mt',
+    ])
+else:
+    libraries.extend([
+        'boost_thread',
+    ])
 
 if sys.platform.startswith('linux'):
     libraries.extend([
