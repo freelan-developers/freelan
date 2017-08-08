@@ -45,7 +45,7 @@
 
 #include "server.hpp"
 
-#ifndef LINUX
+#ifdef USE_MONGOOSE
 
 #include "tools.hpp"
 

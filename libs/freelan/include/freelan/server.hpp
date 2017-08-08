@@ -47,7 +47,7 @@
 
 #include "os.hpp"
 
-#ifndef LINUX
+#ifdef USE_MONGOOSE
 
 #include "configuration.hpp"
 

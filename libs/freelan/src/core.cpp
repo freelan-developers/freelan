@@ -2358,8 +2358,9 @@ namespace freelan
 	{
 		if (m_configuration.server.enabled)
 		{
-#ifdef LINUX
-			// Due to GPL licensing issues, we can't include that in the LINUX build without violating the GPLv3 license.
+#ifndef USE_MONGOOSE
+			// Due to GPL licensing issues, we can't include that in the build without violating the GPLv3 license.
+			// If you still want that support, adds USE_MONGOOSE define to the build options.
 			m_logger(fscp::log_level::warning) << "Web server support is not compiled in this version.";
 #else
 			if (m_configuration.server.protocol == server_configuration::server_protocol_type::https)
@@ -2427,7 +2428,7 @@ namespace freelan
 
 	void core::close_web_server()
 	{
-#ifndef LINUX
+#ifdef USE_MONGOOSE
 		if (m_web_server)
 		{
 			m_logger(fscp::log_level::information) << "Closing web server...";
