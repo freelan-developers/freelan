@@ -1,8 +1,12 @@
 language: cpp
 compiler:
     - g++
-dist: trusty
-sudo: false
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+    - os: osx
 addons:
   apt:
     sources:
@@ -14,6 +18,9 @@ addons:
       - libcurl4-openssl-dev
       - gcc
       - g++
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install scons boost openssl; fi
 cache:
   apt: true
 script: scons install apps samples
