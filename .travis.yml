@@ -1,6 +1,7 @@
 language: cpp
 compiler:
     - g++
+dist: trusty
 sudo: false
 addons:
   apt:
@@ -8,14 +9,14 @@ addons:
       - ubuntu-toolchain-r-test
       - boost-latest
     packages:
-      - libboost1.55-all-dev
+      - libboost-all-dev
       - libssl-dev
       - libcurl4-openssl-dev
-      - gcc-4.9
-      - g++-4.9
+      - gcc
+      - g++
 cache:
   apt: true
-script: CXX=g++-4.9 scons install apps samples
+script: scons install apps samples
 branches:
     only:
         - master
