@@ -65,23 +65,22 @@ namespace cryptoplus
 
 		rsa_key rsa_key::generate_private_key(int num, unsigned long exponent, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
 		{
-		    static_cast<void>(num);
-		    static_cast<void>(exponent);
-		    static_cast<void>(callback);
-		    static_cast<void>(callback_arg);
+			static_cast<void>(callback);
+			static_cast<void>(callback_arg);
 
-            std::unique_ptr<BIGNUM, decltype(&::BN_free)> bn(BN_new(), ::BN_free);
-			RSA* ptr = nullptr;
+			std::unique_ptr<BIGNUM, decltype(&::BN_free)> bn(BN_new(), ::BN_free);
+			BN_set_word(bn.get(), exponent);
+
 			rsa_key key = rsa_key::create();
-			RSA_generate_key_ex(key.raw(), 2048, bn.get(), NULL);
+			RSA_generate_key_ex(key.raw(), num, bn.get(), NULL);
 
 			if (must_take_ownership)
 			{
-				return take_ownership(ptr);
+				return key;
 			}
 			else
 			{
-				return ptr;
+				return nullptr;
 			}
 		}
 
