@@ -54,6 +54,10 @@ namespace
 
 namespace cryptoplus
 {
+#ifdef MACINTOSH
+	template <> asn1::integer::deleter_type pointer_wrapper<asn1::integer::value_type>::deleter;
+#endif
+
 	namespace asn1
 	{
 		// We don't need this, because ASN1_INTEGER is an ASN1_STRING.
