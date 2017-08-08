@@ -29,7 +29,7 @@ AddOption(
     action='store',
     choices=('yes', 'no'),
     default='no',
-    help='Build webserver with mongoose (warning: it will violates GPLv3 license!',
+    help='Build webserver with mongoose (warning: it will violate GPLv3 license!)',
 )
 
 
