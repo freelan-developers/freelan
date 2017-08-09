@@ -117,7 +117,11 @@ class FreelanEnvironment(Environment):
             self.Append(CXXFLAGS=['-arch', 'x86_64'])
             self.Append(CXXFLAGS=['-DBOOST_ASIO_DISABLE_KQUEUE'])
             self.Append(CXXFLAGS=['--stdlib=libc++'])
+            self.Append(CXXFLAGS=['-I/usr/local/opt/openssl/include'])
+            self.Append(CFLAGS=['-I/usr/local/opt/openssl/include'])
             self.Append(LDFLAGS=['--stdlib=libc++'])
+            self.Append(LDFLAGS=['-L/usr/local/opt/openssl/lib'])
+            self.Append(LIBPATH=['/usr/local/opt/openssl/lib'])
 
         if self.mode == 'debug':
             self.Append(CXXFLAGS=['-g'])
