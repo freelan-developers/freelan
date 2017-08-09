@@ -1,7 +1,6 @@
 import os
 import sys
 
-
 Import('env dirs name')
 
 libraries = [
@@ -29,16 +28,17 @@ if sys.platform.startswith('linux'):
         'netlinkplus',
     ])
 else:
-    libraries.extend([
-        'mongooseplus',
-    ])
-
     if sys.platform.startswith('darwin'):
         libraries.extend([
             'ldap',
             'z',
             'iconv',
         ])
+
+if env.mongoose == 'yes':
+    libraries.extend([
+        'mongooseplus',
+    ])
 
 env = env.Clone()
 env.Prepend(LIBS=libraries)

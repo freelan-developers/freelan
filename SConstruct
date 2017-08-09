@@ -22,6 +22,15 @@ AddOption(
     default='all',
     help='The compilation mode.',
 )
+AddOption(
+    '--mongoose',
+    dest='mongoose',
+    nargs=1,
+    action='store',
+    choices=('yes', 'no'),
+    default='no',
+    help='Build webserver with mongoose (warning: it will violate GPLv3 license!)',
+)
 
 
 class FreelanEnvironment(Environment):
@@ -29,7 +38,7 @@ class FreelanEnvironment(Environment):
     A freelan specific environment class.
     """
 
-    def __init__(self, mode, prefix, bin_prefix=None, **kwargs):
+    def __init__(self, mode, prefix, bin_prefix=None, mongoose='no', **kwargs):
         """
         Initialize the environment.
 
@@ -69,6 +78,7 @@ class FreelanEnvironment(Environment):
         self.prefix = prefix
         self.bin_prefix = bin_prefix if bin_prefix else prefix
         self.destdir = self['ENV'].get('DESTDIR', '')
+        self.mongoose = mongoose
 
         if self.destdir:
             self.install_prefix = os.path.normpath(
@@ -115,6 +125,9 @@ class FreelanEnvironment(Environment):
         else:
             self.Append(CXXFLAGS='-O3')
 
+	if self.mongoose == 'yes':
+		self.Append(CXXFLAGS=['-DUSE_MONGOOSE'])
+
         self.Append(CPPDEFINES=r'FREELAN_INSTALL_PREFIX="\"%s\""' % self.prefix)
 
     def RGlob(self, path, patterns=None):
@@ -159,6 +172,7 @@ class FreelanEnvironment(Environment):
 
 
 mode = GetOption('mode')
+mongoose = GetOption('mongoose')
 prefix = os.path.normpath(os.path.abspath(ARGUMENTS.get('prefix', './install')))
 
 if 'bin_prefix' in ARGUMENTS:
@@ -167,7 +181,7 @@ else:
     bin_prefix = None
 
 if mode in ('all', 'release'):
-    env = FreelanEnvironment(mode='release', prefix=prefix, bin_prefix=bin_prefix)
+    env = FreelanEnvironment(mode='release', prefix=prefix, bin_prefix=bin_prefix, mongoose=mongoose)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
