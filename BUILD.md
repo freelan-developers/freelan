@@ -13,7 +13,7 @@ FreeLAN depends on the following libraries:
 
 Generally Linux users can just use the binaries provided by their package manager, but other platforms such as Mac OSX or Windows may need to build these libraries explicitely.
 
-To build the third-party libraries, you can use [teapot](https://github.com/freelan-developers/teapot). Check its [documentation](http://teapot-builder.readthedocs.org/en/latest/) for details, or just type the following command at the root of FreeLAN's repository:
+To build the third-party libraries, you can use [teapot](https://github.com/freelan-developers/teapot) (be sure to have `python 2.7` and `perl` installed). Check its [documentation](http://teapot-builder.readthedocs.org/en/latest/) for details, or just type the following command at the root of FreeLAN's repository:
 
 > teapot build
 
@@ -54,7 +54,7 @@ Be aware that this will produce a significant amount of logging information and 
 
 ### Windows
 
-You will need Microsoft Visual Studio 2013 to compile freelan. All projects come with a `.vcxproj` file for all the targets (debug/release and x86/x64).
+You will need Microsoft Visual Studio 2017 to compile freelan. All projects come with a `.vcxproj` file for all the targets (debug/release and x86/x64).
 
 The root directory also contains a solution file (`.sln`) that references all the sub-projects.
 
