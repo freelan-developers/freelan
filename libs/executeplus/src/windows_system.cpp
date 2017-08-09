@@ -99,17 +99,17 @@ namespace executeplus
 		};
 
 		template <typename CharType>
-		const std::unique_ptr<CharType, EnvironmentStringsDeleter> get_environment_strings();
+		std::unique_ptr<CharType, EnvironmentStringsDeleter> get_environment_strings();
 		
 		template <>
-		const std::unique_ptr<wchar_t, EnvironmentStringsDeleter> get_environment_strings<wchar_t>()
+		std::unique_ptr<wchar_t, EnvironmentStringsDeleter> get_environment_strings<wchar_t>()
 		{
 			return std::unique_ptr<wchar_t, EnvironmentStringsDeleter>(::GetEnvironmentStringsW());
 		}
 
 #ifndef UNICODE
 		template <>
-		const std::unique_ptr<char, EnvironmentStringsDeleter> get_environment_strings<char>()
+		std::unique_ptr<char, EnvironmentStringsDeleter> get_environment_strings<char>()
 		{
 			return std::unique_ptr<char, EnvironmentStringsDeleter>(::GetEnvironmentStringsA());
 		}

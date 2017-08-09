@@ -132,7 +132,7 @@ namespace asiotap
 		}
 
 		template <class HelperTag>
-		inline _base_helper_impl<HelperTag, ethernet_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, ethernet_frame>::buffer_type buf) :
+		inline _base_helper_impl<HelperTag, ethernet_frame>::_base_helper_impl(typename _base_helper_impl::buffer_type buf) :
 			_base_helper<HelperTag, ethernet_frame>(buf)
 		{
 		}

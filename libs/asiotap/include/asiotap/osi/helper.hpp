@@ -309,7 +309,7 @@ namespace asiotap
 		}
 
 		template <typename HelperTag, typename OSIFrameType>
-		inline _helper_impl<HelperTag, OSIFrameType>::_helper_impl(typename _helper_impl<HelperTag, OSIFrameType>::buffer_type buf) :
+		inline _helper_impl<HelperTag, OSIFrameType>::_helper_impl(typename _helper_impl::buffer_type buf) :
 			_base_helper_impl<HelperTag, OSIFrameType>(buf)
 		{
 		}

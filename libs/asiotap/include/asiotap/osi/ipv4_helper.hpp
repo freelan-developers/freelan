@@ -353,7 +353,7 @@ namespace asiotap
 		}
 
 		template <class HelperTag>
-		inline _base_helper_impl<HelperTag, ipv4_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, ipv4_frame>::buffer_type buf) :
+		inline _base_helper_impl<HelperTag, ipv4_frame>::_base_helper_impl(typename _base_helper_impl::buffer_type buf) :
 			_base_helper<HelperTag, ipv4_frame>(buf)
 		{
 		}

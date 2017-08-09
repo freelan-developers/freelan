@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -38,31 +38,32 @@
     <ProjectGuid>{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>freelan</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -84,7 +85,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
@@ -93,7 +94,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
@@ -102,7 +103,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
     <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
@@ -111,10 +112,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -131,11 +132,11 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc-mt-gd-1_63.lib;libboost_system-vc-mt-gd-1_63.lib;libboost_thread-vc-mt-gd-1_63.lib;libboost_program_options-vc-mt-gd-1_63.lib;libboost_filesystem-vc-mt-gd-1_63.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc-mt-gd-1_64.lib;libboost_system-vc-mt-gd-1_64.lib;libboost_thread-vc-mt-gd-1_64.lib;libboost_program_options-vc-mt-gd-1_64.lib;libboost_filesystem-vc-mt-gd-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>c:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
@@ -169,11 +170,11 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc-mt-gd-1_63.lib;libboost_system-vc-mt-gd-1_63.lib;libboost_thread-vc-mt-gd-1_63.lib;libboost_program_options-vc-mt-gd-1_63.lib;libboost_filesystem-vc-mt-gd-1_63.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc-mt-gd-1_64.lib;libboost_system-vc-mt-gd-1_64.lib;libboost_thread-vc-mt-gd-1_64.lib;libboost_program_options-vc-mt-gd-1_64.lib;libboost_filesystem-vc-mt-gd-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>c:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
@@ -211,11 +212,11 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc-mt-1_63.lib;libboost_system-vc-mt-1_63.lib;libboost_thread-vc-mt-1_63.lib;libboost_program_options-vc-mt-1_63.lib;libboost_filesystem-vc-mt-1_63.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc-mt-1_64.lib;libboost_system-vc-mt-1_64.lib;libboost_thread-vc-mt-1_64.lib;libboost_program_options-vc-mt-1_64.lib;libboost_filesystem-vc-mt-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>c:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>
@@ -253,11 +254,11 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc-mt-1_63.lib;libboost_system-vc-mt-1_63.lib;libboost_thread-vc-mt-1_63.lib;libboost_program_options-vc-mt-1_63.lib;libboost_filesystem-vc-mt-1_63.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc-mt-1_64.lib;libboost_system-vc-mt-1_64.lib;libboost_thread-vc-mt-1_64.lib;libboost_program_options-vc-mt-1_64.lib;libboost_filesystem-vc-mt-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>c:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Generating the common defines header.</Message>

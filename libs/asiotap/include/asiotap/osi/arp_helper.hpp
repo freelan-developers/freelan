@@ -240,7 +240,7 @@ namespace asiotap
 		}
 
 		template <class HelperTag>
-		inline _base_helper_impl<HelperTag, arp_frame>::_base_helper_impl(typename _base_helper_impl<HelperTag, arp_frame>::buffer_type buf) :
+		inline _base_helper_impl<HelperTag, arp_frame>::_base_helper_impl(typename _base_helper_impl::buffer_type buf) :
 			_base_helper<HelperTag, arp_frame>(buf)
 		{
 		}

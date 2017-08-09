@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -173,31 +173,32 @@
     <ProjectGuid>{9173624C-FFF7-4431-BB4A-FC30B13AD742}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libasiotap</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -218,25 +219,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_63;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
@@ -251,6 +252,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -263,7 +266,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -279,6 +282,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -291,7 +296,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -309,6 +314,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -323,7 +330,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -341,6 +348,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\asiotap</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396;4267</DisableSpecificWarnings>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -355,7 +364,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>python $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
