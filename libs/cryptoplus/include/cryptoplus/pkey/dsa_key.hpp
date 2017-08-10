@@ -97,7 +97,6 @@ namespace cryptoplus
 				 */
 				static dsa_key take_ownership(pointer ptr);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
 				/**
 				 * \brief Create a new DSA key with the specified parameters.
 				 * \param bits The length, in bits, of the prime to be generated. Maximum value is 1024.
@@ -126,7 +125,6 @@ namespace cryptoplus
 				 * generate_private_key() is equivalent to a call to generate_parameters() followed by a call to generate().
 				 */
 				static dsa_key generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback = NULL, void* callback_arg = NULL);
-#endif
 
 				/**
 				 * \brief Load a private DSA key from a BIO.
@@ -430,12 +428,10 @@ namespace cryptoplus
 		{
 			return take_ownership(DSA_new());
 		}
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		inline dsa_key dsa_key::generate_private_key(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg)
 		{
 			return generate_parameters(bits, seed, seed_len, counter_ret, h_ret, callback, callback_arg).generate();
 		}
-#endif
 		inline dsa_key dsa_key::from_private_key(bio::bio_ptr bio, pem_passphrase_callback_type callback, void* callback_arg)
 		{
 			return take_ownership(PEM_read_bio_DSAPrivateKey(bio.raw(), NULL, callback, callback_arg));

@@ -63,10 +63,24 @@ namespace cryptoplus
 			}
 		}
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		dsa_key dsa_key::generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
 		{
-			DSA* ptr = DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), static_cast<int>(seed_len), counter_ret, h_ret, callback, callback_arg);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+			static_cast<void>(callback);
+			static_cast<void>(callback_arg);
+			static_cast<void>(must_take_ownership);
+			dsa_key dsa = dsa_key::create();
+
+			if(DSA_generate_parameters_ex(dsa.raw(), bits, static_cast<unsigned char*>(seed), static_cast<int>(seed_len), counter_ret, h_ret, NULL))
+			{
+				return dsa;
+			}
+			else
+			{
+				return nullptr;
+			}
+#else
+			DSA* ptr = DSA_generate_parameters(bits, 
 
 			if (must_take_ownership)
 			{
@@ -76,8 +90,8 @@ namespace cryptoplus
 			{
 				return ptr;
 			}
-		}
 #endif
+		}
 
 		dsa_key dsa_key::from_private_key(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
