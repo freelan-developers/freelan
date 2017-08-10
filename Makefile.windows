@@ -4,18 +4,43 @@
 
 default: build
 
-build: build_x64 build_x86
+build: build_release_x64 build_release_x86
 
-clean: clean_x64 clean_x86
+build_debug: build_debug_x64 build_debug_x86
 
-build_x64:
+clean: clean_release_x64 clean_release_x86
+
+clean_debug: clean_debug_x64 clean_debug_x86
+
+# short aliases for build/clean release targets
+build_x64: build_release_x64
+
+build_x86: build_release_x86
+
+clean_x64: clean_release_x64
+
+clean_x86: clean_release_x86
+
+build_release_x64:
 	msbuild freelan-all.sln /p:Configuration=Release /p:Platform=x64 /t:Build
 
-build_x86:
+build_debug_x64:
+	msbuild freelan-all.sln /p:Configuration=Debug /p:Platform=x64 /t:Build
+
+build_release_x86:
 	msbuild freelan-all.sln /p:Configuration=Release /p:Platform=Win32 /t:Build
 
-clean_x64:
+build_debug_x86:
+	msbuild freelan-all.sln /p:Configuration=Debug /p:Platform=Win32 /t:Build
+
+clean_release_x64:
 	msbuild freelan-all.sln /p:Configuration=Release /p:Platform=x64 /t:Clean
 
-clean_x86:
+clean_debug_x64:
+	msbuild freelan-all.sln /p:Configuration=Debug /p:Platform=x64 /t:Clean
+
+clean_release_x86:
 	msbuild freelan-all.sln /p:Configuration=Release /p:Platform=Win32 /t:Clean
+
+clean_debug_x86:
+	msbuild freelan-all.sln /p:Configuration=Debug /p:Platform=Win32 /t:Clean
