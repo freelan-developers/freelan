@@ -501,10 +501,12 @@ namespace cryptoplus
 		{
 			return m_bio;
 		}
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		inline bool bio_ptr::set_method(BIO_METHOD* _type) const
 		{
 			return BIO_set(m_bio, _type) != 0;
 		}
+#endif
 		inline bio_ptr bio_ptr::push(bio_ptr bio) const
 		{
 			return bio_ptr(BIO_push(m_bio, bio.raw()));

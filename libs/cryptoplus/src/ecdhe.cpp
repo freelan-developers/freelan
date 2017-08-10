@@ -92,7 +92,7 @@ namespace cryptoplus
 
 			EVP_PKEY* private_key = nullptr;
 			throw_error_if(EVP_PKEY_keygen(key_generation_context.get(), &private_key) != 1);
-			::EC_KEY_set_asn1_flag(private_key->pkey.ec, OPENSSL_EC_NAMED_CURVE);
+			::EC_KEY_set_asn1_flag(EVP_PKEY_get1_EC_KEY(private_key), OPENSSL_EC_NAMED_CURVE);
 			m_private_key = pkey::take_ownership(private_key);
 		}
 

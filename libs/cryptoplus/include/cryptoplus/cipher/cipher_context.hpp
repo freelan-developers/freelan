@@ -342,17 +342,14 @@ namespace cryptoplus
 
 			private:
 
-				EVP_CIPHER_CTX m_ctx;
+				EVP_CIPHER_CTX* m_ctx;
 		};
 
-		inline cipher_context::cipher_context()
-		{
-			EVP_CIPHER_CTX_init(&m_ctx);
-		}
+		inline cipher_context::cipher_context() : m_ctx(EVP_CIPHER_CTX_new()) {}
 
 		inline cipher_context::~cipher_context()
 		{
-			EVP_CIPHER_CTX_cleanup(&m_ctx);
+			EVP_CIPHER_CTX_free(m_ctx);
 		}
 
 		template <typename T>
@@ -379,7 +376,7 @@ namespace cryptoplus
 						pubk.push_back(pkey->raw());
 					}
 
-					throw_error_if_not(EVP_SealInit(&m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
+					throw_error_if_not(EVP_SealInit(m_ctx, _algorithm.raw(), &ek[0], &ekl[0], static_cast<unsigned char*>(iv), &pubk[0], static_cast<int>(pkeys_count)) != 0);
 
 					for (std::vector<unsigned char*>::iterator p = ek.begin(); p != ek.end(); ++p)
 					{
@@ -408,7 +405,7 @@ namespace cryptoplus
 		inline void cipher_context::set_padding(bool enabled)
 		{
 			// The call always returns 1 so testing its return value is useless.
-			EVP_CIPHER_CTX_set_padding(&m_ctx, static_cast<int>(enabled));
+			EVP_CIPHER_CTX_set_padding(m_ctx, static_cast<int>(enabled));
 		}
 
 		inline size_t cipher_context::get_iso_10126_padding_size(size_t len) const
@@ -427,28 +424,28 @@ namespace cryptoplus
 
 		inline size_t cipher_context::key_length() const
 		{
-			return EVP_CIPHER_CTX_key_length(&m_ctx);
+			return EVP_CIPHER_CTX_key_length(m_ctx);
 		}
 
 		inline void cipher_context::set_key_length(size_t len)
 		{
-			throw_error_if_not(EVP_CIPHER_CTX_set_key_length(&m_ctx, static_cast<int>(len)) != 0);
+			throw_error_if_not(EVP_CIPHER_CTX_set_key_length(m_ctx, static_cast<int>(len)) != 0);
 		}
 
 		inline void cipher_context::ctrl(int type, int set_value, void* get_value)
 		{
-			throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, set_value, get_value) != 0);
+			throw_error_if_not(EVP_CIPHER_CTX_ctrl(m_ctx, type, set_value, get_value) != 0);
 		}
 
 		template <typename T>
 		inline void cipher_context::ctrl_get(int type, T& value)
 		{
-			throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, 0, &value) != 0);
+			throw_error_if_not(EVP_CIPHER_CTX_ctrl(m_ctx, type, 0, &value) != 0);
 		}
 
 		inline void cipher_context::ctrl_set(int type, int value)
 		{
-			throw_error_if_not(EVP_CIPHER_CTX_ctrl(&m_ctx, type, value, NULL) != 0);
+			throw_error_if_not(EVP_CIPHER_CTX_ctrl(m_ctx, type, value, NULL) != 0);
 		}
 
 		inline size_t cipher_context::update(void* out, size_t out_len, const buffer& in)
@@ -468,17 +465,17 @@ namespace cryptoplus
 
 		inline const EVP_CIPHER_CTX& cipher_context::raw() const
 		{
-			return m_ctx;
+			return *m_ctx;
 		}
 
 		inline EVP_CIPHER_CTX& cipher_context::raw()
 		{
-			return m_ctx;
+			return *m_ctx;
 		}
 
 		inline cipher_algorithm cipher_context::algorithm() const
 		{
-			return cipher_algorithm(EVP_CIPHER_CTX_cipher(&m_ctx));
+			return cipher_algorithm(EVP_CIPHER_CTX_cipher(m_ctx));
 		}
 	}
 }

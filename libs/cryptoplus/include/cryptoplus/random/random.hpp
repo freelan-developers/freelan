@@ -227,20 +227,30 @@ namespace cryptoplus
 
 		inline bool get_pseudo_random_bytes(void* buf, size_t buf_len)
 		{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
 
 			throw_error_if(result < 0);
 
 			return (result == 1);
+#else
+            get_random_bytes(buf, buf_len);
+
+            return true;
+#endif
 		}
 
 		inline buffer get_pseudo_random_bytes(size_t cnt)
 		{
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 			buffer result(cnt);
 
 			get_pseudo_random_bytes(buffer_cast<uint8_t*>(result), buffer_size(result));
 
 			return result;
+#else
+            return get_random_bytes(cnt);
+#endif
 		}
 
 		inline void add(const void* buf, size_t buf_len, double entropy)
@@ -299,6 +309,7 @@ namespace cryptoplus
 			return result;
 		}
 
+#ifdef RAND_egd
 		inline size_t egd_query(const std::string& path)
 		{
 			int result = RAND_egd(path.c_str());
@@ -325,6 +336,7 @@ namespace cryptoplus
 
 			return result;
 		}
+#endif
 
 		inline void cleanup()
 		{
