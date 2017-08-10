@@ -11,8 +11,8 @@ Attendee('iconv', filter='msvc').add_source('folder://third-party/source/libicon
 
 Attendee('iconv').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('iconv').get_build('msvc-x86').commands = [
-    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=ReleaseStatic /p:Platform="Win32"',
-    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=DebugStatic /p:Platform="Win32"',
+    r'msbuild libiconv.sln /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=ReleaseStatic /p:Platform="Win32"',
+    r'msbuild libiconv.sln /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=DebugStatic /p:Platform="Win32"',
     r'md {{prefix}}\Release\lib || echo',
     r'md {{prefix}}\Release\include || echo',
     r'md {{prefix}}\Debug\lib || echo',
@@ -25,8 +25,8 @@ Attendee('iconv').get_build('msvc-x86').commands = [
 
 Attendee('iconv').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('iconv').get_build('msvc-x64').commands = [
-    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=ReleaseStatic /p:Platform="x64"',
-    r'msbuild libiconv.sln /p:Platformtoolset={{msvc_toolset}} /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=DebugStatic /p:Platform="x64"',
+    r'msbuild libiconv.sln /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=ReleaseStatic /p:Platform="x64"',
+    r'msbuild libiconv.sln /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=DebugStatic /p:Platform="x64"',
     r'md {{prefix}}\Release\lib || echo',
     r'md {{prefix}}\Release\include || echo',
     r'md {{prefix}}\Debug\lib || echo',
@@ -53,18 +53,18 @@ Attendee('boost').get_build('osx').commands = [
 Attendee('boost').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
 Attendee('boost').get_build('msvc-x86').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc-12 variant=release link=static threading=multi runtime-link=shared install',
+    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc-14.1 variant=release link=static threading=multi runtime-link=shared install',
     r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
-    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc-12 variant=debug link=static threading=multi runtime-link=shared install',
+    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc-14.1 variant=debug link=static threading=multi runtime-link=shared install',
     r'xcopy bjam.exe {{prefix}}\Debug\bin\ /S /Y',
 ]
 
 Attendee('boost').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
 Attendee('boost').get_build('msvc-x64').commands = [
     r'bootstrap.bat',
-    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc-12 variant=release link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 --prefix={{prefix}}\Release --layout=versioned --without-serialization toolset=msvc-14.1 variant=release link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\Release\bin\ /S /Y',
-    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc-12 variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
+    r'b2 --prefix={{prefix}}\Debug --layout=versioned --without-serialization toolset=msvc-14.1 variant=debug link=static threading=multi runtime-link=shared address-model=64 install',
     r'xcopy bjam.exe {{prefix}}\Debug\bin\ /S /Y',
 ]
 
