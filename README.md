@@ -37,8 +37,7 @@ Each node should have a different virtual IP address: you can specify the IPv4
 address to use with the `tap_adapter.ipv4_address_prefix_length` option, like
 so:
 
-    freelan --security.passphrase "my secret"
-    --tap_adapter.ipv4_address_prefix_length 9.0.0.2/24
+    freelan --security.passphrase "my secret" --tap_adapter.ipv4_address_prefix_length 9.0.0.2/24
 
 Check out the [configuration file](apps/freelan/config/freelan.cfg) for details
 !

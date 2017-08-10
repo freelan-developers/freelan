@@ -46,7 +46,8 @@ To install the required dependencies on Mac OS, type the following commands:
 
 > brew install scons boost openssl
 
-Building FreeLAN ----------------
+Building FreeLAN
+----------------
 
 FreeLAN is written in C++11. Make sure your C++ compiler is recent enough and
 supports this standard. On Linux for instance, you need at least `gcc >= 4.8`
