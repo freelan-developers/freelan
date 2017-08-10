@@ -1,0 +1,136 @@
+From 44087faf7338aed34d33363b346f26071834166e Mon Sep 17 00:00:00 2001
+From: Sebastien Vincent <sebastien.vincent@cppextrem.com>
+Date: Sat, 5 Aug 2017 21:38:41 +0200
+Subject: [PATCH] Fixes compilation against OpenSSL 1.0.X in order to support
+ the two branches of OpenSSL (1.0.X and 1.1.X).
+
+---
+ libs/cryptoplus/include/cryptoplus/asn1/string.hpp |  4 ++++
+ .../include/cryptoplus/bio/bio_chain.hpp           | 10 ++++++++++
+ .../include/cryptoplus/hash/hmac_context.hpp       | 22 ++++++++++++++++++++--
+ .../cryptoplus/hash/message_digest_context.hpp     | 15 ++++++++++++++-
+ 4 files changed, 48 insertions(+), 3 deletions(-)
+
+diff --git a/libs/cryptoplus/include/cryptoplus/asn1/string.hpp b/libs/cryptoplus/include/cryptoplus/asn1/string.hpp
+index fbf70985..1ede7677 100644
+--- a/libs/cryptoplus/include/cryptoplus/asn1/string.hpp
++++ b/libs/cryptoplus/include/cryptoplus/asn1/string.hpp
+@@ -256,7 +256,11 @@ namespace cryptoplus
+ 		}
+ 		inline const unsigned char* string::data()
+ 		{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++			return ASN1_STRING_data(ptr().get());
++#else
+ 			return ASN1_STRING_get0_data(ptr().get());
++#endif
+ 		}
+ 		inline void string::set_data(const void* _data, size_t data_len) const
+ 		{
+diff --git a/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp b/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp
+index 4a47713c..35e2c398 100644
+--- a/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp
++++ b/libs/cryptoplus/include/cryptoplus/bio/bio_chain.hpp
+@@ -76,6 +76,12 @@ namespace cryptoplus
+ 				explicit bio_chain(const BIO_METHOD* type);
+ 
+ 				/**
++				 * \brief Create a new bio_chain from a BIO_METHOD.
++				 * \param type The type.
++				 */
++				explicit bio_chain(BIO_METHOD* type);
++
++				/**
+ 				 * \brief Create a new bio_chain by taking ownership of an existing BIO pointer.
+ 				 * \param bio The BIO pointer. Cannot be NULL.
+ 				 */
+@@ -93,7 +99,11 @@ namespace cryptoplus
+ 				boost::shared_ptr<BIO> m_bio;
+ 		};
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
++#else
+ 		inline bio_chain::bio_chain(const BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
++#endif
+ 		{
+ 			throw_error_if_not(m_bio != NULL);
+ 		}
+diff --git a/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp b/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp
+index 60e111e5..8bd3afd9 100644
+--- a/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp
++++ b/libs/cryptoplus/include/cryptoplus/hash/hmac_context.hpp
+@@ -142,11 +142,24 @@ namespace cryptoplus
+ 				HMAC_CTX* m_ctx;
+ 		};
+ 
+-		inline hmac_context::hmac_context() : m_ctx(HMAC_CTX_new()) {}
++		inline hmac_context::hmac_context()
++		{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++			m_ctx = new HMAC_CTX;
++			HMAC_CTX_init(m_ctx);
++#else
++			m_ctx = HMAC_CTX_new();
++#endif
++		}
+ 
+ 		inline hmac_context::~hmac_context()
+ 		{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++			HMAC_CTX_cleanup(m_ctx);
++			delete m_ctx;
++#else
+ 			HMAC_CTX_free(m_ctx);
++#endif
+ 		}
+ 
+ 		inline void hmac_context::update(const void* data, size_t len)
+@@ -179,7 +192,12 @@ namespace cryptoplus
+ 
+ 		inline message_digest_algorithm hmac_context::algorithm() const
+ 		{
+-		    return HMAC_CTX_get_md(m_ctx);
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++			//WARNING: Here we directly use the undocumented HMAC_CTX.md field.
++			return message_digest_algorithm(m_ctx->md);
++#else
++			return HMAC_CTX_get_md(m_ctx);
++#endif
+ 		}
+ 	}
+ }
+diff --git a/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp b/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp
+index 67d7d0ea..08a33d87 100644
+--- a/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp
++++ b/libs/cryptoplus/include/cryptoplus/hash/message_digest_context.hpp
+@@ -71,7 +71,15 @@ namespace cryptoplus
+ 				/**
+ 				 * \brief Create a new message_digest_context.
+ 				 */
+-				message_digest_context() : m_ctx(EVP_MD_CTX_new()) {}
++				message_digest_context()
++				{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++					m_ctx = new EVP_MD_CTX;
++					EVP_MD_CTX_init(m_ctx);
++#else
++					m_ctx = EVP_MD_CTX_new();
++#endif
++				}
+ 
+ 				/**
+ 				 * \brief Copy a message_digest_context.
+@@ -89,7 +97,12 @@ namespace cryptoplus
+ 				 */
+ 				~message_digest_context()
+ 				{
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
++					EVP_MD_CTX_cleanup(m_ctx);
++					delete m_ctx;
++#else
+ 					EVP_MD_CTX_free(m_ctx);
++#endif
+ 				}
+ 
+ 				/**
