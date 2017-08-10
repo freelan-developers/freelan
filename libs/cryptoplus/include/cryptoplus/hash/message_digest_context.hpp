@@ -73,17 +73,20 @@ namespace cryptoplus
 				 */
 				message_digest_context()
 				{
-					EVP_MD_CTX_init(&m_ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+					m_ctx = new EVP_MD_CTX;
+					EVP_MD_CTX_init(m_ctx);
+#else
+					m_ctx = EVP_MD_CTX_new();
+#endif
 				}
 
 				/**
 				 * \brief Copy a message_digest_context.
 				 * \param other The other instance.
 				 */
-				message_digest_context(const message_digest_context& other)
+				message_digest_context(const message_digest_context& other) : message_digest_context()
 				{
-					EVP_MD_CTX_init(&m_ctx);
-
 					copy(other);
 				}
 
@@ -94,7 +97,12 @@ namespace cryptoplus
 				 */
 				~message_digest_context()
 				{
-					EVP_MD_CTX_cleanup(&m_ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+					EVP_MD_CTX_cleanup(m_ctx);
+					delete m_ctx;
+#else
+					EVP_MD_CTX_free(m_ctx);
+#endif
 				}
 
 				/**
@@ -358,57 +366,57 @@ namespace cryptoplus
 
 			private:
 
-				EVP_MD_CTX m_ctx;
+				EVP_MD_CTX* m_ctx;
 		};
 
 		inline void message_digest_context::initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			throw_error_if_not(EVP_DigestInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
+			throw_error_if_not(EVP_DigestInit_ex(m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
 		inline void message_digest_context::sign_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			throw_error_if_not(EVP_SignInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
+			throw_error_if_not(EVP_SignInit_ex(m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
 		inline void message_digest_context::verify_initialize(const message_digest_algorithm& _algorithm, ENGINE* impl)
 		{
-			throw_error_if_not(EVP_VerifyInit_ex(&m_ctx, _algorithm.raw(), impl) == 1);
+			throw_error_if_not(EVP_VerifyInit_ex(m_ctx, _algorithm.raw(), impl) == 1);
 		}
 
 		inline void message_digest_context::digest_sign_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
 		{
-			throw_error_if_not(EVP_DigestSignInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
+			throw_error_if_not(EVP_DigestSignInit(m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
 		}
 
 		inline void message_digest_context::digest_verify_initialize(const message_digest_algorithm& _algorithm, const pkey::pkey& key, EVP_PKEY_CTX** pctx, ENGINE* impl)
 		{
-			throw_error_if_not(EVP_DigestVerifyInit(&m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
+			throw_error_if_not(EVP_DigestVerifyInit(m_ctx, pctx, _algorithm.raw(), impl, const_cast<EVP_PKEY*>(key.raw())) == 1);
 		}
 
 		inline void message_digest_context::update(const void* data, size_t len)
 		{
-			throw_error_if_not(EVP_DigestUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_DigestUpdate(m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::sign_update(const void* data, size_t len)
 		{
-			throw_error_if_not(EVP_SignUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_SignUpdate(m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::verify_update(const void* data, size_t len)
 		{
-			throw_error_if_not(EVP_VerifyUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_VerifyUpdate(m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::digest_sign_update(const void* data, size_t len)
 		{
-			throw_error_if_not(EVP_DigestSignUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_DigestSignUpdate(m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::digest_verify_update(const void* data, size_t len)
 		{
-			throw_error_if_not(EVP_DigestVerifyUpdate(&m_ctx, data, len) != 0);
+			throw_error_if_not(EVP_DigestVerifyUpdate(m_ctx, data, len) != 0);
 		}
 
 		inline void message_digest_context::update(const buffer& buf)
@@ -475,27 +483,27 @@ namespace cryptoplus
 
 		inline void message_digest_context::copy(const message_digest_context& ctx)
 		{
-			throw_error_if_not(EVP_MD_CTX_copy_ex(&m_ctx, &ctx.m_ctx) != 0);
+			throw_error_if_not(EVP_MD_CTX_copy_ex(m_ctx, ctx.m_ctx) != 0);
 		}
 
 		inline void message_digest_context::set_flags(int flags)
 		{
-			EVP_MD_CTX_set_flags(&m_ctx, flags);
+			EVP_MD_CTX_set_flags(m_ctx, flags);
 		}
 
 		inline const EVP_MD_CTX& message_digest_context::raw() const
 		{
-			return m_ctx;
+			return *m_ctx;
 		}
 
 		inline EVP_MD_CTX& message_digest_context::raw()
 		{
-			return m_ctx;
+			return *m_ctx;
 		}
 
 		inline message_digest_algorithm message_digest_context::algorithm() const
 		{
-			return message_digest_algorithm(EVP_MD_CTX_md(&m_ctx));
+			return message_digest_algorithm(EVP_MD_CTX_md(m_ctx));
 		}
 	}
 }

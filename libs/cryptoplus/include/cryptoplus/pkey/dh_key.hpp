@@ -97,6 +97,7 @@ namespace cryptoplus
 				 */
 				static dh_key take_ownership(pointer ptr);
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 				/**
 				 * \brief Create a new DH with the specified parameters.
 				 * \param prime_len The length, in bits, of the safe prime number to be generated.
@@ -106,6 +107,7 @@ namespace cryptoplus
 				 * \return The dh_key.
 				 */
 				static dh_key generate_parameters(int prime_len, int generator, generate_callback_type callback = NULL, void* callback_arg = NULL);
+#endif
 
 				/**
 				 * \brief Load DH parameters from a BIO.
@@ -280,6 +282,7 @@ namespace cryptoplus
 		{
 			throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
 		}
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		inline bn::bignum dh_key::private_key() const
 		{
 			return raw()->priv_key;
@@ -288,6 +291,7 @@ namespace cryptoplus
 		{
 			return raw()->pub_key;
 		}
+#endif
 		inline size_t dh_key::size() const
 		{
 			return DH_size(ptr().get());

@@ -139,25 +139,35 @@ namespace cryptoplus
 
 			private:
 
-				HMAC_CTX m_ctx;
+				HMAC_CTX* m_ctx;
 		};
 
 		inline hmac_context::hmac_context()
 		{
-			HMAC_CTX_init(&m_ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+			m_ctx = new HMAC_CTX;
+			HMAC_CTX_init(m_ctx);
+#else
+			m_ctx = HMAC_CTX_new();
+#endif
 		}
 
 		inline hmac_context::~hmac_context()
 		{
-			HMAC_CTX_cleanup(&m_ctx);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+			HMAC_CTX_cleanup(m_ctx);
+			delete m_ctx;
+#else
+			HMAC_CTX_free(m_ctx);
+#endif
 		}
 
 		inline void hmac_context::update(const void* data, size_t len)
 		{
 #if OPENSSL_VERSION_NUMBER < 0x01000000
-			HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
+			HMAC_Update(m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len));
 #else
-			throw_error_if_not(HMAC_Update(&m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
+			throw_error_if_not(HMAC_Update(m_ctx, static_cast<const unsigned char*>(data), static_cast<int>(len)) != 0);
 #endif
 		}
 
@@ -172,18 +182,22 @@ namespace cryptoplus
 
 		inline const HMAC_CTX& hmac_context::raw() const
 		{
-			return m_ctx;
+			return *m_ctx;
 		}
 
 		inline HMAC_CTX& hmac_context::raw()
 		{
-			return m_ctx;
+			return *m_ctx;
 		}
 
 		inline message_digest_algorithm hmac_context::algorithm() const
 		{
-			//WARNING: Here we directly use the undocumented HMAC_CTX.md field. This is unlikely to change, but if it ever does, we'll have to find a better way of doing things nicely.
-			return message_digest_algorithm(m_ctx.md);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+			//WARNING: Here we directly use the undocumented HMAC_CTX.md field.
+			return message_digest_algorithm(m_ctx->md);
+#else
+			return HMAC_CTX_get_md(m_ctx);
+#endif
 		}
 	}
 }

@@ -59,7 +59,16 @@ namespace cryptoplus
 		 *
 		 * Only one instance of this class should be created. When an instance exists, the library can provide more informative error strings.
 		 */
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+		inline void _null_function()
+		{
+		}
+
+		typedef initializer<_null_function, _null_function> error_strings_initializer;
+#else
 		typedef initializer<ERR_load_crypto_strings, ERR_free_strings> error_strings_initializer;
+#endif
 
 		/**
 		 * \brief Get the error string associated with a specified error.

@@ -58,7 +58,7 @@ namespace cryptoplus
 
 			unsigned int ilen = static_cast<unsigned int>(md_len);
 
-			throw_error_if_not(EVP_DigestFinal_ex(&m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
+			throw_error_if_not(EVP_DigestFinal_ex(m_ctx, static_cast<unsigned char*>(md), &ilen) != 0);
 
 			return ilen;
 		}
@@ -69,14 +69,14 @@ namespace cryptoplus
 
 			unsigned int ilen = static_cast<unsigned int>(sig_len);
 
-			throw_error_if_not(EVP_SignFinal(&m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()) != 0);
+			throw_error_if_not(EVP_SignFinal(m_ctx, static_cast<unsigned char*>(sig), &ilen, pkey.raw()) != 0);
 
 			return ilen;
 		}
 
 		bool message_digest_context::verify_finalize(const void* sig, size_t sig_len, pkey::pkey& pkey)
 		{
-			int result = EVP_VerifyFinal(&m_ctx, static_cast<const unsigned char*>(sig), static_cast<unsigned int>(sig_len), pkey.raw());
+			int result = EVP_VerifyFinal(m_ctx, static_cast<const unsigned char*>(sig), static_cast<unsigned int>(sig_len), pkey.raw());
 
 			throw_error_if(result < 0);
 
@@ -85,7 +85,7 @@ namespace cryptoplus
 
 		size_t message_digest_context::digest_sign_finalize(void* md, size_t md_len)
 		{
-			throw_error_if_not(EVP_DigestSignFinal(&m_ctx, static_cast<unsigned char*>(md), &md_len) != 0);
+			throw_error_if_not(EVP_DigestSignFinal(m_ctx, static_cast<unsigned char*>(md), &md_len) != 0);
 
 			return md_len;
 		}
@@ -97,7 +97,7 @@ namespace cryptoplus
 			// The documentation clearly states this should be const.
 			// http://www.openssl.org/docs/crypto/EVP_DigestVerifyInit.html
 
-			int result = EVP_DigestVerifyFinal(&m_ctx, const_cast<unsigned char*>(static_cast<const unsigned char*>(sig)), static_cast<unsigned int>(sig_len));
+			int result = EVP_DigestVerifyFinal(m_ctx, const_cast<unsigned char*>(static_cast<const unsigned char*>(sig)), static_cast<unsigned int>(sig_len));
 
 			throw_error_if(result < 0);
 
