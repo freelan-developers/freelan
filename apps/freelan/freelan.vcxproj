@@ -88,7 +88,7 @@
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(VC_LibraryPath_x86)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -97,7 +97,7 @@
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -106,7 +106,7 @@
     <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_64;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(VC_LibraryPath_x86)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -132,7 +132,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc-mt-gd-1_64.lib;libboost_system-vc-mt-gd-1_64.lib;libboost_thread-vc-mt-gd-1_64.lib;libboost_program_options-vc-mt-gd-1_64.lib;libboost_filesystem-vc-mt-gd-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc141-mt-gd-1_64.lib;libboost_system-vc141-mt-gd-1_64.lib;libboost_thread-vc141-mt-gd-1_64.lib;libboost_program_options-vc141-mt-gd-1_64.lib;libboost_filesystem-vc141-mt-gd-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -170,7 +170,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc-mt-gd-1_64.lib;libboost_system-vc-mt-gd-1_64.lib;libboost_thread-vc-mt-gd-1_64.lib;libboost_program_options-vc-mt-gd-1_64.lib;libboost_filesystem-vc-mt-gd-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc141-mt-gd-1_64.lib;libboost_system-vc141-mt-gd-1_64.lib;libboost_thread-vc141-mt-gd-1_64.lib;libboost_program_options-vc141-mt-gd-1_64.lib;libboost_filesystem-vc141-mt-gd-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -212,7 +212,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc-mt-1_64.lib;libboost_system-vc-mt-1_64.lib;libboost_thread-vc-mt-1_64.lib;libboost_program_options-vc-mt-1_64.lib;libboost_filesystem-vc-mt-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc141-mt-1_64.lib;libboost_system-vc141-mt-1_64.lib;libboost_thread-vc141-mt-1_64.lib;libboost_program_options-vc141-mt-1_64.lib;libboost_filesystem-vc141-mt-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -254,7 +254,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc-mt-1_64.lib;libboost_system-vc-mt-1_64.lib;libboost_thread-vc-mt-1_64.lib;libboost_program_options-vc-mt-1_64.lib;libboost_filesystem-vc-mt-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc141-mt-1_64.lib;libboost_system-vc141-mt-1_64.lib;libboost_thread-vc141-mt-1_64.lib;libboost_program_options-vc141-mt-1_64.lib;libboost_filesystem-vc141-mt-1_64.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
