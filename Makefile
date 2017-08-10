@@ -1,7 +1,7 @@
 PRODUCT_NAME:=freelan
 PRODUCT_VERSION:=$(shell cat VERSION | tr -d '\r\n')
 PRODUCT_BIN_PREFIX=/usr
-PRODUCT_PREFIX=/
+PRODUCT_PREFIX=/usr/local
 
 default: build
 
