@@ -1,6 +1,6 @@
 FreeLAN -- An Open Source peer-to-peer VPN software
 
-Copyright (C) 2007-2012 FreeLAN. <julien.kauffmann@freelan.org>
+Copyright (C) 2007-2017 FreeLAN. <julien.kauffmann@freelan.org>
 
 This distribution contains multiple components, some
 of which fall under different licenses.  By using FreeLAN
