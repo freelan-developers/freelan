@@ -1,7 +1,6 @@
 import os
 import sys
 
-
 Import('env dirs name')
 
 libraries = [
@@ -13,7 +12,6 @@ libraries = [
     'kfather',
     'iconvplus',
     'boost_system',
-    'boost_thread',
     'boost_filesystem',
     'boost_date_time',
     'boost_program_options',
@@ -23,22 +21,32 @@ libraries = [
     'crypto',
 ]
 
+if sys.platform.startswith('darwin'):
+    libraries.extend([
+        'boost_thread-mt',
+    ])
+else:
+    libraries.extend([
+        'boost_thread',
+    ])
+
 if sys.platform.startswith('linux'):
     libraries.extend([
         'pthread',
         'netlinkplus',
     ])
 else:
-    libraries.extend([
-        'mongooseplus',
-    ])
-
     if sys.platform.startswith('darwin'):
         libraries.extend([
             'ldap',
             'z',
             'iconv',
         ])
+
+if env.mongoose == 'yes':
+    libraries.extend([
+        'mongooseplus',
+    ])
 
 env = env.Clone()
 env.Prepend(LIBS=libraries)

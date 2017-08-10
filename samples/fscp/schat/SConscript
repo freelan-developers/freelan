@@ -5,10 +5,18 @@ import sys
 libraries = [
     'fscp',
     'cryptoplus',
-    'boost_thread',
     'boost_system',
     'crypto',
 ]
+
+if sys.platform.startswith('darwin'):
+    libraries.extend([
+        'boost_thread-mt',
+    ])
+else:
+    libraries.extend([
+        'boost_thread',
+    ])
 
 if sys.platform.startswith('linux'):
     libraries.extend([

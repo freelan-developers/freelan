@@ -11,7 +11,7 @@ FreeLAN depends on the following libraries:
 - OpenSSL
 - iconv (Windows)
 
-Generally Linux users can just use the binaries provided by their package manager, but other platforms such as Mac OSX or Windows may need to build these libraries explicitely.
+Generally Linux users can just use the binaries provided by their package manager, Mac OSX users can use brew but other platforms such as Windows may need to build these libraries explicitely.
 
 To build the third-party libraries, you can use [teapot](https://github.com/freelan-developers/teapot) (be sure to have `python 2.7` and `perl` installed). Check its [documentation](http://teapot-builder.readthedocs.org/en/latest/) for details, or just type the following command at the root of FreeLAN's repository:
 
@@ -24,6 +24,16 @@ This will build everything inside `third-party`. Once that is done, you can proc
 To install the required dependencies on Debian Linux (Or Ubuntu), type the following command:
 
 > sudo apt-get install scons python libssl-dev libcurl4-openssl-dev libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-filesystem-dev libboost-iostreams-dev build-essential
+
+### Mac OSX
+
+To install the required dependencies on Mac OS, type the following commands: 
+
+> /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+> brew update
+
+> brew install scons boost openssl
 
 Building FreeLAN
 ----------------
