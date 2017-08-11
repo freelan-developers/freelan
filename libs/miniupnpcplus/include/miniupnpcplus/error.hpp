@@ -60,22 +60,13 @@ namespace miniupnpcplus
 	const boost::system::error_category& miniupnpcplus_category();
 
 	/**
-	 * The list of errors.
-	 */
-	enum class miniupnpcplus_error
-	{
-		success = 0,
-		external_process_failed
-	};
-
-	/**
 	 * @brief Create an error_code instance for the given error.
 	 * @param error The error.
 	 * @return The error_code instance.
 	 */
-	inline boost::system::error_code make_error_code(miniupnpcplus_error error)
+	inline boost::system::error_code make_error_code(int error)
 	{
-		return boost::system::error_code(static_cast<int>(error), miniupnpcplus_category());
+		return boost::system::error_code(error, miniupnpcplus_category());
 	}
 
 	/**
@@ -83,9 +74,9 @@ namespace miniupnpcplus
 	 * @param error The error.
 	 * @return The error_condition instance.
 	 */
-	inline boost::system::error_condition make_error_condition(miniupnpcplus_error error)
+	inline boost::system::error_condition make_error_condition(int error)
 	{
-		return boost::system::error_condition(static_cast<int>(error), miniupnpcplus_category());
+		return boost::system::error_condition(error, miniupnpcplus_category());
 	}
 
 	/**
@@ -109,11 +100,3 @@ namespace miniupnpcplus
 	};
 }
 
-namespace boost
-{
-	namespace system
-	{
-		template <>
-		struct is_error_code_enum< ::miniupnpcplus::miniupnpcplus_error> : public boost::true_type {};
-	}
-}

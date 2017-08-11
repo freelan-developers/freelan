@@ -42,6 +42,8 @@
  * \brief The errors.
  */
 
+#include <miniupnpc/upnperrors.h>
+
 #include "error.hpp"
 
 namespace miniupnpcplus
@@ -60,20 +62,6 @@ namespace miniupnpcplus
 
 	std::string miniupnpcplus_category_impl::message(int ev) const
 	{
-		switch (static_cast<miniupnpcplus_error>(ev))
-		{
-			case miniupnpcplus_error::success:
-			{
-				return "Success";
-			}
-			case miniupnpcplus_error::external_process_failed:
-			{
-				return "A call to an external process failed";
-			}
-			default:
-			{
-				return "Unknown miniupnpcplus error";
-			}
-		}
+		return strupnperror(ev);
 	}
 }
