@@ -18,7 +18,7 @@ to build these libraries explicitely.
 
 To build the third-party libraries, you can use
 [teapot](https://github.com/freelan-developers/teapot) (be sure to have `python
-2.7` and `perl` installed). Check its
+2.7`, `cmake` and `perl` installed). Check its
 [documentation](http://teapot-builder.readthedocs.org/en/latest/) for details,
 or just type the following command at the root of FreeLAN's repository:
 
