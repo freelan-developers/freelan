@@ -284,15 +284,14 @@ namespace cryptoplus
 		inline bn::bignum dh_key::private_key() const
 		{
 			const BIGNUM* priv_key = NULL;
-			DH_get0_key(raw(), reinterpret_cast<const BIGNUM**>(NULL),
-					&priv_key); 
-			return bn::bignum::take_ownership(const_cast<BIGNUM*>(priv_key));
+			DH_get0_key(raw(), nullptr, &priv_key); 
+			return const_cast<BIGNUM*>(priv_key);
 		}
 		inline bn::bignum dh_key::public_key() const
 		{
-			const BIGNUM* pub_key = NULL;
-			DH_get0_key(raw(), &pub_key, reinterpret_cast<const BIGNUM**>(NULL)); 
-			return bn::bignum::take_ownership(const_cast<BIGNUM*>(pub_key));
+			const BIGNUM* pub_key = nullptr;
+			DH_get0_key(raw(), &pub_key, nullptr); 
+			return const_cast<BIGNUM*>(pub_key);
 		}
 #else
 		inline bn::bignum dh_key::private_key() const
