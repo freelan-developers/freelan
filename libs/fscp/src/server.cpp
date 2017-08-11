@@ -1607,7 +1607,7 @@ namespace fscp
 		if ((calg == cipher_suite_type::unsupported) || (ec == elliptic_curve_type::unsupported))
 		{
 			// No suitable cipher and/or elliptic curve is available.
-			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use (Cipher algorithm: " << calg  << ". Elliptic curve: " << ec << "). Ignoring";
+			m_logger(log_level::warning) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use. Ignoring.";
 
 			return;
 		}
