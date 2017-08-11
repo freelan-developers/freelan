@@ -19,8 +19,11 @@ namespace miniupnpcplus
     char lan[256];
     char wan[256];
 
+#if MINIUPNPC_API_VERSION < 14
     m_upnp = upnpDiscover(timeout, nullptr, nullptr, 0, 0, &error);
-
+#else
+    m_upnp = upnpDiscover(timeout, nullptr, nullptr, 0, 0, 2, &error);
+#endif
     if(!m_upnp)
     {
       boost::system::error_code ec = boost::system::error_code(error,
