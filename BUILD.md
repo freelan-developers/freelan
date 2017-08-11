@@ -7,6 +7,7 @@ Third-party libraries
 FreeLAN depends on the following libraries:
 
 - libcurl4
+- libminiupnpc
 - boost
 - OpenSSL
 - iconv (Windows)
@@ -33,7 +34,7 @@ following command:
 
 > sudo apt-get install scons python libssl-dev libcurl4-openssl-dev
 > libboost-system-dev libboost-thread-dev libboost-program-options-dev
-> libboost-filesystem-dev libboost-iostreams-dev build-essential
+> libboost-filesystem-dev libboost-iostreams-dev libminiupnpc-dev build-essential
 
 ### Mac OSX
 
@@ -44,7 +45,7 @@ To install the required dependencies on Mac OS, type the following commands:
 
 > brew update
 
-> brew install scons boost openssl
+> brew install scons boost openssl miniupnpc
 
 Building FreeLAN
 ----------------
