@@ -80,7 +80,7 @@ namespace cryptoplus
 				return nullptr;
 			}
 #else
-			DSA* ptr = DSA_generate_parameters(bits, 
+			DSA* ptr = DSA_generate_parameters(bits, static_cast<unsigned char*>(seed), static_cast<int>(seed_len), counter_ret, h_ret, callback, callback_arg);
 
 			if (must_take_ownership)
 			{
