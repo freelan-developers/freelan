@@ -149,3 +149,35 @@ Attendee('curl').get_build('msvc-x64').commands = [
     r'nmake /f Makefile.vc mode=static VC=15 WITH_DEVEL={{prefix}} DEBUG=yes GEN_PDB=yes MACHINE=x64',
     r'xcopy ..\builds\libcurl-vc15-x64-debug-static-ipv6-sspi-winssl {{prefix}}\Debug\ /S /Y',
 ]
+
+# miniupnpc
+Attendee('miniupnpc', filter=('msvc'))
+Attendee('miniupnpc').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86')
+Attendee('miniupnpc').add_build('msvc-x64', environment='system', filter='msvc-x64', prefix='x64')
+Attendee('miniupnpc').add_source('https://github.com/miniupnp/miniupnp/archive/miniupnpd_2_0.zip', filter='windows', mimetype='application/zip')
+Attendee('miniupnpc').get_build('msvc-x86').commands = [
+    r'"C:\Program Files\CMake\bin\cmake.exe" ./miniupnpc/',
+    r'msbuild .\upnpc-static.vcxproj /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=Release /p:Platform="Win32"',
+    r'msbuild .\upnpc-static.vcxproj /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=Debug /p:Platform="Win32"',
+    r'md {{prefix}}\Release\lib || echo',
+    r'md {{prefix}}\Release\include\miniupnpc || echo',
+    r'md {{prefix}}\Debug\lib || echo',
+    r'md {{prefix}}\Debug\include\miniupnpc || echo',
+    r'copy Release\miniupnpc.lib {{prefix}}\Release\lib\miniupnpc.lib',
+    r'copy Debug\miniupnpc.lib {{prefix}}\Debug\lib\miniupnpcd.lib',
+    r'xcopy miniupnpc\*.h {{prefix}}\Release\include\miniupnpc\ /S /Y',
+    r'xcopy miniupnpc\*.h {{prefix}}\Debug\include\miniupnpc\ /S /Y',
+]
+Attendee('miniupnpc').get_build('msvc-x64').commands = [
+    r'"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_GENERATOR_PLATFORM=x64 ./miniupnpc/',
+    r'msbuild .\upnpc-static.vcxproj /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=Release /p:Platform="x64"',
+    r'msbuild .\upnpc-static.vcxproj /p:Platformtoolset=v141 /p:WindowsTargetPlatformVersion=10.0.15063.0 /p:Configuration=Debug /p:Platform="x64"',
+    r'md {{prefix}}\Release\lib || echo',
+    r'md {{prefix}}\Release\include || echo',
+    r'md {{prefix}}\Debug\lib || echo',
+    r'md {{prefix}}\Debug\include || echo',
+    r'copy Release\miniupnpc.lib {{prefix}}\Release\lib\miniupnpc.lib',
+    r'copy Debug\miniupnpc.lib {{prefix}}\Debug\lib\miniupnpcd.lib',
+    r'xcopy miniupnpc\*.h {{prefix}}\Release\include\miniupnpc\ /S /Y',
+    r'xcopy miniupnpc\*.h {{prefix}}\Debug\include\miniupnpc\ /S /Y',
+]
