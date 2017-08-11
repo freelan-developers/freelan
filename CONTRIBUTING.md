@@ -10,4 +10,6 @@ To improve the chances of your pull-requests to be accepted, make sure that:
 - Your changes are of public utility.
 - There aren't (too many) spelling or grammar mistakes.
 
-Feel free to suggest improvements, ideas or to add new features. Do not hesitate to ask for help on the [mailing-list](http://freelan.org/development.html) if you need some !
+Feel free to suggest improvements, ideas or to add new features. Do not hesitate
+to ask for help on the [mailing-list](http://freelan.org/development.html) if
+you need some !

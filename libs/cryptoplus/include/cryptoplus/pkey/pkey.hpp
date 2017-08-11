@@ -565,11 +565,17 @@ namespace cryptoplus
 		{
 			return EVP_PKEY_size(ptr().get());
 		}
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+		inline int pkey::type() const
+		{
+			return EVP_PKEY_base_id(ptr().get());
+		}
+#else
 		inline int pkey::type() const
 		{
 			return EVP_PKEY_type(ptr()->type);
 		}
+#endif
 		inline bool pkey::is_rsa() const
 		{
 			return (type() == EVP_PKEY_RSA);
@@ -582,7 +588,6 @@ namespace cryptoplus
 		{
 			return (type() == EVP_PKEY_DH);
 		}
-#endif
 		inline pkey::pkey(pointer _ptr, deleter_type _del) : pointer_wrapper<value_type>(_ptr, _del)
 		{
 		}

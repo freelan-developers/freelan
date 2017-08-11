@@ -63,12 +63,26 @@ namespace cryptoplus
 			}
 		}
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		dh_key dh_key::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
 		{
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+			static_cast<void>(callback);
+			static_cast<void>(callback_arg);
+
+			dh_key dh = dh_key::create();
+
+			if(DH_generate_parameters_ex(dh.raw(), prime_len, generator, NULL))
+			{
+				return dh;
+			}
+			else
+			{
+				return nullptr;
+			}
+#else
 			return take_ownership(DH_generate_parameters(prime_len, generator, callback, callback_arg));
-		}
 #endif
+		}
 
 		dh_key dh_key::from_parameters(const void* buf, size_t buf_len, pem_passphrase_callback_type callback, void* callback_arg)
 		{
