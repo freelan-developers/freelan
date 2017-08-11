@@ -29,7 +29,7 @@
     <ClCompile Include="src\upnp_device.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{67D44B66-2B37-4FEC-90AD-F3A64B5BA1F4}</ProjectGuid>
+    <ProjectGuid>{AC73E1D7-49E7-4A12-8555-588CA931932B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libminiupnpcplus</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
@@ -107,7 +107,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\miniupnpcplus</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
@@ -135,7 +135,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\miniupnpcplus</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
@@ -165,7 +165,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\miniupnpcplus</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
@@ -197,7 +197,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;TAP_ID="tap0901";_WIN32_WINNT=0x0600;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\miniupnpcplus</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4396</DisableSpecificWarnings>
