@@ -30,11 +30,14 @@ namespace miniupnpcplus
 
     int status = UPNP_GetValidIGD(m_upnp, &m_upnp_urls, &m_upnp_data,
         lan, sizeof(lan));
+
     if(status != 1)
     {
       // no IGD gateway on LAN
       FreeUPNPUrls(&m_upnp_urls);
-      // TODO throw
+      boost::system::error_code ec = boost::system::error_code(-1,
+          miniupnpcplus::miniupnpcplus_category());
+      throw boost::system::system_error(ec);
     }
 
     m_lan_address = std::string(lan);
@@ -47,6 +50,7 @@ namespace miniupnpcplus
       // problem retrieving WAN IP address
       FreeUPNPUrls(&m_upnp_urls);
       freeUPNPDevlist(m_upnp);
+
       boost::system::error_code ec = boost::system::error_code(error,
           miniupnpcplus::miniupnpcplus_category());
       throw boost::system::system_error(ec);
