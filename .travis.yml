@@ -16,6 +16,7 @@ addons:
       - libboost-all-dev
       - libssl-dev
       - libcurl4-openssl-dev
+      - libminiupnpc-dev
       - gcc
       - g++
 before_install:
@@ -23,6 +24,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list scons &>/dev/null || brew install scons ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list boost &>/dev/null || brew install boost ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list openssl &>/dev/null || brew install openssl ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list miniupnpc &>/dev/null || brew install miniupnpc ; fi
 cache:
   apt: true
 script: scons install apps samples
