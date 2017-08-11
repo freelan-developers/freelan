@@ -671,6 +671,11 @@ namespace freelan
 			// Let's open the server.
 			m_fscp_server->open(listen_endpoint);
 
+			if (m_configuration.fscp.upnp_enabled)
+			{
+				m_fscp_server->upnp_punch_hole(listen_endpoint.port());
+			}
+
 #ifdef LINUX
 			if (!m_configuration.fscp.listen_on_device.empty())
 			{

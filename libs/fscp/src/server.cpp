@@ -296,6 +296,27 @@ namespace fscp
 		m_socket.close();
 	}
 
+	void server::upnp_punch_hole(uint16_t port)
+	{
+		try
+		{
+			std::ostringstream oss;
+			oss << port;
+
+			if(m_upnp.get() == nullptr)
+			{
+				m_upnp.reset(new miniupnpcplus::upnp_device(2000));
+        // same external port as local port
+				m_upnp->register_port_mapping(miniupnpcplus::UDP, oss.str(), oss.str(),
+						"FreeLAN peer");
+			}
+		}
+		catch (const boost::system::system_error& ex)
+		{
+			m_logger(log_level::error) << "UPnP discovery/port mapping failed: " << ex.what();
+		}
+	}
+
 	void server::async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{
 		m_greet_strand.post(boost::bind(&server::do_greet, this, normalize(target), handler, timeout));
@@ -1588,7 +1609,7 @@ namespace fscp
 		if ((calg == cipher_suite_type::unsupported) || (ec == elliptic_curve_type::unsupported))
 		{
 			// No suitable cipher and/or elliptic curve is available.
-			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use (Cipher algorithm: " << calg  << ". Elliptic curve: " << ec << "). Ignoring";
+			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use (Cipher algorithm: " << calg	<< ". Elliptic curve: " << ec << "). Ignoring";
 
 			return;
 		}

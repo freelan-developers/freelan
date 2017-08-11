@@ -11,6 +11,8 @@ libraries = [
     'executeplus',
     'kfather',
     'iconvplus',
+    'miniupnpcplus',
+    'miniupnpc',
     'boost_system',
     'boost_filesystem',
     'boost_date_time',
