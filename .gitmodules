@@ -1,3 +1,0 @@
-[submodule "packaging/debian"]
-	path = packaging/debian
-	url = ../freelan-debian.git
