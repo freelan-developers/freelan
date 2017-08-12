@@ -248,7 +248,7 @@ namespace fscp
 		server_category();
 	}
 
-	elliptic_curve_list_type server::get_supported_curves_elliptic(
+	elliptic_curve_list_type server::get_supported_elliptic_curves(
 			const elliptic_curve_list_type& curves)
 	{
 		elliptic_curve_list_type ret;
