@@ -306,14 +306,18 @@ namespace fscp
 
 			if(m_upnp.get() == nullptr)
 			{
+				m_logger(log_level::information) << "Discovering UPnP IGD gateways.";
 				m_upnp.reset(new miniupnpcplus::upnp_device(2000));
 
 				// same external port as local port
-				m_logger(log_level::information) << "Register UPnP port mapping: " <<
+				m_logger(log_level::trace) << "Try to register UPnP port mapping: " <<
 					m_upnp->get_external_ip() << ":" << port << " -> " << m_upnp->get_lan_ip() <<
 					":" << port;
 				m_upnp->register_port_mapping(miniupnpcplus::UDP, oss.str(), oss.str(),
 						"FreeLAN peer");
+				m_logger(log_level::information) << "UPnP port mapping registered: " <<
+					m_upnp->get_external_ip() << ":" << port << " -> " << m_upnp->get_lan_ip() <<
+					":" << port;
 
 				// TODO retry if port is already taken
 			}
