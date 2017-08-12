@@ -318,6 +318,39 @@ namespace fscp
 		m_socket.close();
 	}
 
+#ifdef USE_UPNP
+	void server::upnp_punch_hole(uint16_t port)
+	{
+		try
+		{
+			std::ostringstream oss;
+			oss << port;
+
+			if(m_upnp.get() == nullptr)
+			{
+				m_logger(log_level::information) << "Discovering UPnP IGD gateways.";
+				m_upnp.reset(new miniupnpcplus::upnp_device(2000));
+
+				// same external port as local port
+				m_logger(log_level::trace) << "Try to register UPnP port mapping: " <<
+					m_upnp->get_external_ip() << ":" << port << " -> " << m_upnp->get_lan_ip() <<
+					":" << port;
+				m_upnp->register_port_mapping(miniupnpcplus::UDP, oss.str(), oss.str(),
+						"FreeLAN peer");
+				m_logger(log_level::information) << "UPnP port mapping registered: " <<
+					m_upnp->get_external_ip() << ":" << port << " -> " << m_upnp->get_lan_ip() <<
+					":" << port;
+
+				// TODO retry if port is already taken
+			}
+		}
+		catch (const boost::system::system_error& ex)
+		{
+			m_logger(log_level::error) << "UPnP discovery/port mapping failed: " << ex.what();
+		}
+	}
+#endif
+
 	void server::async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{
 		m_greet_strand.post(boost::bind(&server::do_greet, this, normalize(target), handler, timeout));

@@ -53,6 +53,10 @@
 #include "peer_session.hpp"
 #include "logger.hpp"
 
+#ifdef USE_UPNP
+#include "miniupnpcplus/upnp_device.hpp"
+#endif
+
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
@@ -354,6 +358,14 @@ namespace fscp
 			 * This method can be called from another thread.
 			 */
 			void close();
+
+#ifdef USE_UPNP
+			/**
+			 * \brief Use UPnP to punch hole NAT.
+			 * \param port local port.
+			 */
+			void upnp_punch_hole(uint16_t port);
+#endif
 
 			/**
 			 * \brief Greet an host.
@@ -1502,6 +1514,10 @@ namespace fscp
 			boost::asio::deadline_timer m_keep_alive_timer;
 
 		private: // Misc
+
+#ifdef USE_UPNP
+			boost::shared_ptr<miniupnpcplus::upnp_device> m_upnp;
+#endif
 
 			friend std::ostream& operator<<(std::ostream& os, presentation_status_type status)
 			{

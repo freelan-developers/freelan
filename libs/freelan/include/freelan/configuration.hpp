@@ -316,6 +316,11 @@ namespace freelan
 		 * \brief The list of allowed elliptic curves.
 		 */
 		fscp::elliptic_curve_list_type elliptic_curve_capabilities;
+
+		/**
+		 * \brief State of UPnP.
+		 */
+		bool upnp_enabled;
 	};
 
 	/**
