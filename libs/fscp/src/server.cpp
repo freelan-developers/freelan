@@ -306,9 +306,15 @@ namespace fscp
 			if(m_upnp.get() == nullptr)
 			{
 				m_upnp.reset(new miniupnpcplus::upnp_device(2000));
-        // same external port as local port
+
+				// same external port as local port
+				m_logger(log_level::information) << "Register UPnP port mapping: " <<
+					m_upnp->get_external_ip() << ":" << port << " -> " << m_upnp->get_lan_ip() <<
+					":" << port;
 				m_upnp->register_port_mapping(miniupnpcplus::UDP, oss.str(), oss.str(),
 						"FreeLAN peer");
+
+				// TODO retry if port is already taken
 			}
 		}
 		catch (const boost::system::system_error& ex)

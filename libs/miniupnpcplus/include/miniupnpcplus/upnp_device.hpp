@@ -82,7 +82,7 @@ namespace miniupnpcplus
     public:
       /**
        * \brief Constructor.
-       * \param timeout UPnP discovery timeout.
+       * \param timeout UPnP discovery timeout in milliseconds.
        */
       upnp_device(int timeout);
 
