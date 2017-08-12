@@ -37,8 +37,8 @@
  */
 
 /**
- * \file executeplus.hpp
- * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
+ * \file miniupnpcplus.hpp
+ * \author Sebastien Vincent <sebastien.vincent@freelan.org>
  * \brief UPnP functions.
  */
 

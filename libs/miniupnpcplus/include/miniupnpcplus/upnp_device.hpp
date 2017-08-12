@@ -45,6 +45,7 @@
 #ifndef MINIUPNPCPLUS_UPNP_DEVICE_HPP
 #define MINIUPNPCPLUS_UPNP_DEVICE_HPP
 
+#include <memory>
 #include <string>
 #include <list>
 
@@ -128,7 +129,7 @@ namespace miniupnpcplus
       /**
        * \brief Underlying miniupnpc library pointer.
        */
-      struct UPNPDev* m_upnp;
+      std::unique_ptr<UPNPDev, decltype(&freeUPNPDevlist)> m_upnp;
 
       /**
        * \brief UPnP data.
