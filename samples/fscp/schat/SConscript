@@ -1,15 +1,20 @@
 import os
 import sys
 
+Import('env dirs name')
 
 libraries = [
     'fscp',
     'cryptoplus',
     'boost_system',
     'crypto',
-    'miniupnpcplus',
-    'miniupnpc',
 ]
+
+if env.upnp == 'yes':
+    libraries.extend([
+        'miniupnpcplus',
+        'miniupnpc',
+    ])
 
 if sys.platform.startswith('darwin'):
     libraries.extend([
@@ -24,8 +29,6 @@ if sys.platform.startswith('linux'):
     libraries.extend([
         'pthread',
     ])
-
-Import('env dirs name')
 
 env = env.Clone()
 env.Append(LIBS=libraries)

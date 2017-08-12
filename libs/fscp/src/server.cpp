@@ -296,6 +296,7 @@ namespace fscp
 		m_socket.close();
 	}
 
+#ifdef USE_UPNP
 	void server::upnp_punch_hole(uint16_t port)
 	{
 		try
@@ -322,6 +323,7 @@ namespace fscp
 			m_logger(log_level::error) << "UPnP discovery/port mapping failed: " << ex.what();
 		}
 	}
+#endif
 
 	void server::async_greet(const ep_type& target, duration_handler_type handler, const boost::posix_time::time_duration& timeout)
 	{

@@ -31,7 +31,15 @@ AddOption(
     default='no',
     help='Build webserver with mongoose (warning: it will violate GPLv3 license!)',
 )
-
+AddOption(
+    '--upnp',
+    dest='upnp',
+    nargs=1,
+    action='store',
+    choices=('yes', 'no'),
+    default='yes',
+    help='Build FreeLAN with UPnP support.',
+)
 
 class FreelanEnvironment(Environment):
     """
@@ -79,6 +87,7 @@ class FreelanEnvironment(Environment):
         self.bin_prefix = bin_prefix if bin_prefix else prefix
         self.destdir = self['ENV'].get('DESTDIR', '')
         self.mongoose = mongoose
+        self.upnp = upnp
 
         if self.destdir:
             self.install_prefix = os.path.normpath(
@@ -129,8 +138,11 @@ class FreelanEnvironment(Environment):
         else:
             self.Append(CXXFLAGS='-O3')
 
-	if self.mongoose == 'yes':
-		self.Append(CXXFLAGS=['-DUSE_MONGOOSE'])
+        if self.mongoose == 'yes':
+		        self.Append(CXXFLAGS=['-DUSE_MONGOOSE'])
+
+        if self.upnp == 'yes':
+		        self.Append(CXXFLAGS=['-DUSE_UPNP'])
 
         self.Append(CPPDEFINES=r'FREELAN_INSTALL_PREFIX="\"%s\""' % self.prefix)
 
@@ -177,6 +189,7 @@ class FreelanEnvironment(Environment):
 
 mode = GetOption('mode')
 mongoose = GetOption('mongoose')
+upnp = GetOption('upnp')
 prefix = os.path.normpath(os.path.abspath(ARGUMENTS.get('prefix', './install')))
 
 if 'bin_prefix' in ARGUMENTS:
@@ -196,7 +209,7 @@ if mode in ('all', 'release'):
     Alias('all', install + apps + samples)
 
 if mode in ('all', 'debug'):
-    env = FreelanEnvironment(mode='debug', prefix=prefix)
+    env = FreelanEnvironment(mode='debug', prefix=prefix, mongoose=mongoose, upnp=upnp)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     Alias('apps', apps)
     Alias('samples', samples)
@@ -204,7 +217,7 @@ if mode in ('all', 'debug'):
 
 if sys.platform.startswith('darwin'):
     retail_prefix = '/usr/local'
-    env = FreelanEnvironment(mode='retail', prefix=retail_prefix)
+    env = FreelanEnvironment(mode='retail', prefix=retail_prefix, mongoose=mongoose, upnp=upnp)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     package = SConscript('packaging/osx/SConscript', exports='env apps configurations retail_prefix')
     install_package = env.Install('.', package)

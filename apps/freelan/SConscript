@@ -11,8 +11,6 @@ libraries = [
     'executeplus',
     'kfather',
     'iconvplus',
-    'miniupnpcplus',
-    'miniupnpc',
     'boost_system',
     'boost_filesystem',
     'boost_date_time',
@@ -48,6 +46,12 @@ else:
 if env.mongoose == 'yes':
     libraries.extend([
         'mongooseplus',
+    ])
+
+if env.upnp == 'yes':
+    libraries.extend([
+    'miniupnpcplus',
+    'miniupnpc',
     ])
 
 env = env.Clone()

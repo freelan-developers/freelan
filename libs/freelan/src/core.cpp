@@ -673,7 +673,11 @@ namespace freelan
 
 			if (m_configuration.fscp.upnp_enabled)
 			{
+#ifdef USE_UPNP
 				m_fscp_server->upnp_punch_hole(listen_endpoint.port());
+#else
+				m_logger(fscp::log_level::error) << "UPnP support is not compiled in this version";
+#endif
 			}
 
 #ifdef LINUX
