@@ -18,7 +18,7 @@ configuration:
   - Debug
 
 init:
-    - "C:\\Program Files (x86)\\%VSINSTALL%\\vcvarsall.bat %PLATFORM%"
+    - "C:\\Program\ Files\ (x86)\\%VSINSTALL%\\vcvarsall.bat %PLATFORM%"
 
 before_build:
   # We rely on teapot for third-party builds.
