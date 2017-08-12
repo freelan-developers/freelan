@@ -230,7 +230,7 @@ namespace fscp
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
 		m_cipher_suites(get_default_cipher_suites()),
-		m_elliptic_curves(get_default_elliptic_curves()),
+		m_elliptic_curves(get_supported_elliptic_curves(get_default_elliptic_curves())),
 		m_session_request_message_received_handler(),
 		m_accept_session_messages_default(true),
 		m_session_message_received_handler(),
@@ -246,6 +246,28 @@ namespace fscp
 	{
 		// These calls are needed in C++03 to ensure that static initializations are done in a single thread.
 		server_category();
+	}
+
+	elliptic_curve_list_type server::get_supported_elliptic_curves(
+			const elliptic_curve_list_type& curves)
+	{
+		elliptic_curve_list_type ret;
+
+		for (auto&& ec : curves)
+		{
+			try
+			{
+				cryptoplus::pkey::ecdhe_context(ec.to_elliptic_curve_nid())
+					.get_public_key();
+				ret.push_back(ec);
+			}
+			catch(boost::system::system_error& e)
+			{
+				m_logger(log_level::warning) << "Elliptic curve not supported: "
+					<< ec.to_string();
+			}
+		}
+		return ret;
 	}
 
 	identity_store server::sync_get_identity()
@@ -1621,7 +1643,7 @@ namespace fscp
 		if ((calg == cipher_suite_type::unsupported) || (ec == elliptic_curve_type::unsupported))
 		{
 			// No suitable cipher and/or elliptic curve is available.
-			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use (Cipher algorithm: " << calg	<< ". Elliptic curve: " << ec << "). Ignoring";
+			m_logger(log_level::warning) << "Received a SESSION_REQUEST from " << sender << " but can't agree on the cipher suite to use. Ignoring.";
 
 			return;
 		}
