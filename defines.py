@@ -3,6 +3,7 @@ Generate a defines file.
 """
 
 import os
+import time
 import argparse
 import inspect
 import datetime
@@ -78,7 +79,7 @@ class Defines(object):
     @property
     def date(self):
         if self._date is None:
-            self._date = datetime.date.today().strftime('%a %d %b %Y')
+            self._date = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))).strftime('%a %d %b %Y')
 
         return self._date
 
