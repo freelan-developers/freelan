@@ -196,7 +196,7 @@ if mode in ('all', 'release'):
     Alias('all', install + apps + samples)
 
 if mode in ('all', 'debug'):
-    env = FreelanEnvironment(mode='debug', prefix=prefix)
+    env = FreelanEnvironment(mode='debug', prefix=prefix, mongoose=mongoose)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     Alias('apps', apps)
     Alias('samples', samples)
@@ -204,7 +204,7 @@ if mode in ('all', 'debug'):
 
 if sys.platform.startswith('darwin'):
     retail_prefix = '/usr/local'
-    env = FreelanEnvironment(mode='retail', prefix=retail_prefix)
+    env = FreelanEnvironment(mode='retail', prefix=retail_prefix, mongoose=mongoose)
     libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     package = SConscript('packaging/osx/SConscript', exports='env apps configurations retail_prefix')
     install_package = env.Install('.', package)
