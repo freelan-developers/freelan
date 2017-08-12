@@ -39,7 +39,7 @@
 /**
  * \file windows_tap_adapter.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The Windaps tap adapter class.
+ * \brief The Windows tap adapter class.
  */
 
 #ifndef ASIOTAP_WINDOWS_TAP_ADAPTER_HPP
