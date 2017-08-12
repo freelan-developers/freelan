@@ -37,9 +37,9 @@
  */
 
 /**
- * \file posix_tap_adapter.hpp
+ * \file registry.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The POSIX tap adapter class.
+ * \brief Windows registry access.
  */
 
 #ifndef ASIOTAP_WINDOWS_REGISTRY_HPP
