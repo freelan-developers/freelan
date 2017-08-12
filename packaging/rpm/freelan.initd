@@ -1,0 +1,125 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          freelan
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: A highly-secure peer-to-peer VPN client
+# Description:       A highly-secure peer-to-peer VPN client that works on all
+#                    operating systems.
+### END INIT INFO
+
+# Author: Julien Kauffmann <julien.kauffmann@freelan.org>
+# Author: Sebastien Vincent <sebastien.vincent@freelan.org>
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC=freelan
+NAME=freelan
+PIDFILE=/var/run/$NAME.pid
+DAEMON=/usr/bin/freelan
+DAEMON_ARGS="-s"
+SCRIPTNAME=/etc/init.d/$NAME
+CONFIG_DIR=/etc/freelan
+CONFIGURATIONS=""
+
+# Exit if the package is not installed
+[ -x $DAEMON ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+do_start_instance()
+{
+  daemon --pidfile $PIDFILE.$CONFIG $DAEMON $DAEMON_ARGS -c $CONFIG_FILE
+
+  # Add code here, if necessary, that waits for the process to be ready
+  # to handle requests from services started subsequently which depend
+  # on this one.  As a last resort, sleep for some time.
+}
+
+do_stop_instance()
+{
+	kill -TERM $(cat "$PIDFILE.$CONFIG")
+	rm -f $PIDFILE.$CONFIG
+}
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+  if [ "$CONFIGURATIONS" = "" ]; then
+    echo "$NAME: No configuration specified. Did you edit /etc/default/$NAME ?"
+    return 0
+  else
+    for CONFIG in $CONFIGURATIONS; do
+      echo "Starting $NAME instance - $CONFIG"
+
+      CONFIG_FILE="$CONFIG_DIR/$CONFIG.cfg"
+
+      if test -e "$CONFIG_FILE"; then
+        do_start_instance
+
+      else
+        echo "$CONFIG_FILE not found"
+        return 2
+      fi
+    done
+  fi
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+  if [ "$CONFIGURATIONS" = "" ]; then
+    echo "$NAME: No configuration specified. Did you edit /etc/default/$NAME ?"
+    return 0
+  else
+    for CONFIG in $CONFIGURATIONS; do
+      echo -n "Stopping $NAME instance - $CONFIG"
+
+      CONFIG_FILE="$CONFIG_DIR/$CONFIG.cfg"
+
+      if test -e "$CONFIG_FILE"; then
+        do_stop_instance
+      fi
+    done
+  fi
+}
+
+#
+# Function that sends a SIGHUP to the daemon/service
+#
+do_reload() {
+	stop
+	start
+}
+
+case "$1" in
+  start)
+  	do_start
+	;;
+  stop)
+	do_stop
+	;;
+  status)
+	status $DAEMON
+  	;;
+  restart|reload)
+	restart
+	;;
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|reload}" >&2
+	exit 1
+	;;
+esac
+
+exit $?
+
