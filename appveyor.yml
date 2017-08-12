@@ -17,8 +17,8 @@ configuration:
   - Release
   - Debug
 
-install:
-  - '%COMSPEC% /E:ON /V:ON /K "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
+init:
+  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
 
 before_build:
   # We rely on teapot for third-party builds.
