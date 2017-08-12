@@ -48,6 +48,8 @@
 #include <string>
 #include <list>
 
+#include <boost/noncopyable.hpp>
+
 #include <miniupnpc/miniupnpc.h>
 
 namespace miniupnpcplus
@@ -77,7 +79,7 @@ namespace miniupnpcplus
    * \class upnp_device
    * \brief UPnP device.
    */
-  class upnp_device
+  class upnp_device : public boost::noncopyable
   {
     public:
       /**
