@@ -5,8 +5,8 @@ shallow_clone: true
 image: Visual Studio 2017
 
 environment:
-  PYTHON_ROOT: "C:\Python27"
-  BOOST_ROOT: "C:\Libraries\boost_1_64_0"
+  PYTHON_ROOT: "C:\\Python27"
+  BOOST_ROOT: "C:\\Libraries\\boost_1_64_0"
   matrix:
     - platform: x64
       ARCH_BITS: 64
@@ -18,22 +18,21 @@ configuration:
   - Debug
 
 init:
-    - "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat %PLATFORM%"
+    - "C:\\Program Files (x86)\\%VSINSTALL%\\vcvarsall.bat %PLATFORM%"
 
 before_build:
-  # need teapot to build dependencies
-  - "%PYTHON_ROOT%\python.exe -m pip install teapot"
+  # We rely on teapot for third-party builds.
+  - "%PYTHON_ROOT%\\python.exe -m pip install teapot"
 
 build_script:
-  - "%PYTHON_ROOT%\scripts\teapot.exe build iconv"
-  - "%PYTHON_ROOT%\scripts\teapot.exe build openssl"
-  - "%PYTHON_ROOT%\scripts\teapot.exe build curl"
-  - "mkdir third-party\install\%PLATFORM%\%CONFIGURATION%\include\boost-1_64\boost"
-  - "xcopy /S %BOOST_ROOT%\boost\* third-party\install\%PLATFORM%\%CONFIGURATION%\include\boost-1_64\boost\"
-  - "xcopy /S %BOOST_ROOT%\lib%ARCH_BITS%-msvc-14.1\*vc141-mt-*.lib third-party\install\%PLATFORM%\%CONFIGURATION%\lib\"
+  - "%PYTHON_ROOT%\\scripts\\teapot.exe build iconv"
+  - "%PYTHON_ROOT%\\scripts\\teapot.exe build openssl"
+  - "%PYTHON_ROOT%\\scripts\\teapot.exe build curl"
+  - "mkdir third-party\\install\\%PLATFORM%\\%CONFIGURATION%\\include\\boost-1_64\\boost"
+  - "xcopy /S %BOOST_ROOT%\\boost\\* third-party\\install\\%PLATFORM%\\%CONFIGURATION%\\include\\boost-1_64\\boost\\"
+  - "xcopy /S %BOOST_ROOT%\\lib%ARCH_BITS%-msvc-14.1\\*vc141-mt-*.lib third-party\\install\\%PLATFORM%\\%CONFIGURATION%\\lib\\"
   - "nmake -f Makefile.windows build_%CONFIGURATION%_%PLATFORM%"
 
 branches:
     only:
         - master
-
