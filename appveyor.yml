@@ -17,6 +17,9 @@ configuration:
   - Release
   - Debug
 
+install:
+  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%PLATFORM%'
+
 before_build:
   # We rely on teapot for third-party builds.
   - '%PYTHON_ROOT%\python.exe -m pip install teapot'
