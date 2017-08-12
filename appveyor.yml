@@ -28,6 +28,7 @@ build_script:
   - '%PYTHON_ROOT%\scripts\teapot.exe build iconv'
   - '%PYTHON_ROOT%\scripts\teapot.exe build openssl'
   - '%PYTHON_ROOT%\scripts\teapot.exe build curl'
+  - '%PYTHON_ROOT%\scripts\teapot.exe build miniupnpc'
   - 'mkdir third-party\install\%PLATFORM%\%CONFIGURATION%\include\boost-1_64\boost'
   - 'xcopy /S %BOOST_ROOT%\boost\* third-party\install\%PLATFORM%\%CONFIGURATION%\include\boost-1_64\boost\'
   - 'xcopy /S %BOOST_ROOT%\lib%ARCH_BITS%-msvc-14.1\*vc141-mt-*.lib third-party\install\%PLATFORM%\%CONFIGURATION%\lib\'
