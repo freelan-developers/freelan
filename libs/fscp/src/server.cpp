@@ -261,7 +261,7 @@ namespace fscp
 					.get_public_key();
 				ret.push_back(ec);
 			}
-			catch(boost::system::system_error& e)
+			catch(boost::system::system_error&)
 			{
 				m_logger(log_level::warning) << "Elliptic curve not supported: "
 					<< ec.to_string();
