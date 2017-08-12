@@ -18,7 +18,7 @@ configuration:
   - Debug
 
 install:
-  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%PLATFORM%'
+  - '%COMSPEC% /E:ON /V:ON /K "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
 
 before_build:
   # We rely on teapot for third-party builds.
