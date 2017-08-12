@@ -39,7 +39,7 @@
 /**
  * \file windows_route_manager.hpp
  * \author Julien KAUFFMANN <julien.kauffmann@freelan.org>
- * \brief The Windaps route manager class.
+ * \brief The Windows route manager class.
  */
 
 #pragma once
