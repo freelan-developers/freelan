@@ -17,9 +17,6 @@ configuration:
   - Release
   - Debug
 
-init:
-    - '"C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %PLATFORM%'
-
 before_build:
   # We rely on teapot for third-party builds.
   - '%PYTHON_ROOT%\python.exe -m pip install teapot'
