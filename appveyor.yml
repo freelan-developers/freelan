@@ -18,7 +18,7 @@ configuration:
   - Debug
 
 init:
-  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
+  - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%'
 
 before_build:
   # We rely on teapot for third-party builds.
