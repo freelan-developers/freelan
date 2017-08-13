@@ -516,8 +516,10 @@ namespace asiotap
 			throw boost::system::system_error(errno, boost::system::system_category());
 		}
 
-		// no need to turns UP an already UP _existing_ interface
-		if ( m_existing_tap && connected && netifr.ifr_flags & IFF_UP)
+		// assume that existing TAP is correctly configured (i.e. do no try to
+		// shut the interface down and set UP if already UP if we are not root
+		if (getuid() != 0 && m_existing_tap &&
+				(!connected || (connected && netifr.ifr_flags && IFF_UP)))
 		{
 			return;
 		}
