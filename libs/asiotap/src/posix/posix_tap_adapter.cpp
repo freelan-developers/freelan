@@ -481,6 +481,12 @@ namespace asiotap
 	void posix_tap_adapter::destroy_device(boost::system::error_code& ec)
 	{
 #if defined(MACINTOSH) || defined(BSD)
+		// do not attempt to destroy interface if non-root
+		if(m_existing_tap)
+		{
+			return;
+		}
+
 		descriptor_handler socket = open_socket(AF_INET, ec);
 
 		if (!socket.valid())
@@ -517,8 +523,8 @@ namespace asiotap
 		}
 
 		// assume that existing TAP is correctly configured (i.e. do no try to
-		// shut the interface down and set UP if already UP if we are not root
-		if (getuid() != 0 && m_existing_tap &&
+		// shutdown the interface and bring it UP if already UP
+		if (m_existing_tap &&
 				(!connected || (connected && netifr.ifr_flags && IFF_UP)))
 		{
 			return;
@@ -617,9 +623,7 @@ namespace asiotap
 
 	void posix_tap_adapter::configure(const configuration_type& configuration)
 	{
-		bool has_permission = (getuid() == 0);
-
-		if(m_existing_tap && !has_permission)
+		if(m_existing_tap && (getuid() != 0))
 		{
 			// we use an existing tun/tap adapter probably already configured so as
 			// we cannot set IPv4/IPv6 address, return gently
