@@ -48,6 +48,12 @@ if env.mongoose == 'yes':
         'mongooseplus',
     ])
 
+if env.upnp == 'yes':
+    libraries.extend([
+    'miniupnpcplus',
+    'miniupnpc',
+    ])
+
 env = env.Clone()
 env.Prepend(LIBS=libraries)
 

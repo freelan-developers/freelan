@@ -1,0 +1,17 @@
+import os
+import sys
+
+
+Import('env dirs name')
+
+env = env.Clone()
+
+local_include_dir = Dir(os.path.join('include', name))
+env.Prepend(CPPPATH=[local_include_dir])
+
+sources = env.RGlob('src', '*.cpp')
+
+includes = env.RInstall(dirs['root'], local_include_dir, ['*.hpp'])
+library = env.StaticLibrary(target=os.path.join(str(dirs['lib']), name), source=sources)
+
+Return('library includes')

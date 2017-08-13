@@ -8,6 +8,7 @@
     - libboost-all-dev
     - libssl-dev
     - libcurl4-openssl-dev
+    - libminiupnpc-dev
   tags:
     - build
   sudo: True

@@ -53,6 +53,10 @@
 #include "peer_session.hpp"
 #include "logger.hpp"
 
+#ifdef USE_UPNP
+#include "miniupnpcplus/upnp_device.hpp"
+#endif
+
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
@@ -354,6 +358,14 @@ namespace fscp
 			 * This method can be called from another thread.
 			 */
 			void close();
+
+#ifdef USE_UPNP
+			/**
+			 * \brief Use UPnP to punch hole NAT.
+			 * \param port local port.
+			 */
+			void upnp_punch_hole(uint16_t port);
+#endif
 
 			/**
 			 * \brief Greet an host.
@@ -686,7 +698,7 @@ namespace fscp
 			 */
 			void set_elliptic_curves(const elliptic_curve_list_type& elliptic_curves)
 			{
-				m_elliptic_curves = elliptic_curves;
+				m_elliptic_curves = get_supported_elliptic_curves(elliptic_curves);
 			}
 
 			/**
@@ -1255,6 +1267,7 @@ namespace fscp
 			void do_set_identity(const identity_store&, void_handler_type);
 
 		private:
+			elliptic_curve_list_type get_supported_elliptic_curves(const elliptic_curve_list_type& curves);
 
 			void async_receive_from()
 			{
@@ -1501,6 +1514,10 @@ namespace fscp
 			boost::asio::deadline_timer m_keep_alive_timer;
 
 		private: // Misc
+
+#ifdef USE_UPNP
+			boost::shared_ptr<miniupnpcplus::upnp_device> m_upnp;
+#endif
 
 			friend std::ostream& operator<<(std::ostream& os, presentation_status_type status)
 			{

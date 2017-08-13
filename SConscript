@@ -42,6 +42,9 @@ for x in Glob('libs/*'):
         if env.mongoose == 'no' and name in 'mongooseplus':
                 continue
 
+        if env.upnp == 'no' and name in 'miniupnpcplus':
+                continue
+
         library, library_includes = SConscript(sconscript_path, exports='env dirs name')
         libraries.extend(library)
         includes.extend(library_includes)
@@ -67,6 +70,9 @@ if env.mode != 'retail':
         if not sys.platform.startswith('linux'):
             if libname in 'netlinkplus':
                 continue
+
+        if libname in 'miniupnpcplus':
+            continue
 
         for y in x.glob('*'):
             sconscript_path = y.File('SConscript')

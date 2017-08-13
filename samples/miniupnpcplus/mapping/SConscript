@@ -1,0 +1,17 @@
+import os
+import sys
+
+
+libraries = [
+    'miniupnpcplus',
+    'miniupnpc',
+    'boost_system',
+]
+
+Import('env dirs name')
+
+env = env.Clone()
+env.Append(LIBS=libraries)
+samples = env.Program(target=os.path.join(str(dirs['bin']), name), source=env.RGlob('.', ['*.cpp']))
+
+Return('samples')
