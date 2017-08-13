@@ -13,4 +13,4 @@ install:
 	FREELAN_NO_GIT=1 FREELAN_NO_GIT_VERSION=${PRODUCT_VERSION} DESTDIR=$(DESTDIR) scons --mode=release install prefix=${PRODUCT_PREFIX} bin_prefix=${PRODUCT_BIN_PREFIX}
 
 package:
-	git archive HEAD --prefix=${PRODUCT_NAME}-${PRODUCT_VERSION}/ | gzip > ${PRODUCT_NAME}-${PRODUCT_VERSION}.tar.gz
+	git archive HEAD --prefix=${PRODUCT_NAME}-${PRODUCT_VERSION}/ -o ${PRODUCT_NAME}-${PRODUCT_VERSION}.tar.gz
