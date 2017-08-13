@@ -47,6 +47,10 @@ To install the required dependencies on Mac OS, type the following commands:
 
 > brew install scons boost openssl miniupnpc
 
+You will also need tuntap driver:
+
+> brew cask install tuntap
+
 Building FreeLAN
 ----------------
 
