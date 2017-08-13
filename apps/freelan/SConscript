@@ -21,7 +21,7 @@ libraries = [
     'crypto',
 ]
 
-if sys.platform.startswith('darwin'):
+if sys.platform.startswith('darwin') or sys.platform.startswith('openbsd'):
     libraries.extend([
         'boost_thread-mt',
     ])
@@ -46,6 +46,10 @@ else:
         libraries.extend([
             'pthread',
             'c++',
+        ])
+    if sys.platform.startswith('openbsd'):
+        libraries.extend([
+            'iconv',
         ])
 
 if env.mongoose == 'yes':

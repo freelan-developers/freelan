@@ -65,7 +65,7 @@ namespace cryptoplus
 
 		dh_key dh_key::generate_parameters(int prime_len, int generator, generate_callback_type callback, void* callback_arg)
 		{
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 			static_cast<void>(callback);
 			static_cast<void>(callback_arg);
 

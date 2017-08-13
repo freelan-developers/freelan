@@ -256,10 +256,10 @@ namespace cryptoplus
 		}
 		inline const unsigned char* string::data()
 		{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-			return ASN1_STRING_data(ptr().get());
-#else
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 			return ASN1_STRING_get0_data(ptr().get());
+#else
+			return ASN1_STRING_data(ptr().get());
 #endif
 		}
 		inline void string::set_data(const void* _data, size_t data_len) const
@@ -299,7 +299,7 @@ namespace cryptoplus
 		}
 		inline int compare(const string& lhs, const string& rhs)
 		{
-#if OPENSSL_VERSION_NUMBER >= 0x01000000
+#if OPENSSL_VERSION_NUMBER >= 0x01000000 && !defined(LIBRESSL_VERSION_NUMBER)
 			return ASN1_STRING_cmp(lhs.raw(), rhs.raw());
 #else
 			return ASN1_STRING_cmp(const_cast<string::pointer>(lhs.raw()), const_cast<string::pointer>(rhs.raw()));

@@ -501,7 +501,7 @@ namespace cryptoplus
 		{
 			return m_bio;
 		}
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 		inline bool bio_ptr::set_method(BIO_METHOD* _type) const
 		{
 			return BIO_set(m_bio, _type) != 0;

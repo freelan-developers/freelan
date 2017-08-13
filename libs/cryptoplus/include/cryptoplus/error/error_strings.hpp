@@ -60,7 +60,7 @@ namespace cryptoplus
 		 * Only one instance of this class should be created. When an instance exists, the library can provide more informative error strings.
 		 */
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 		inline void _null_function()
 		{
 		}
