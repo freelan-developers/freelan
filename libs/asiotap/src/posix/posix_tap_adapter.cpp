@@ -57,6 +57,7 @@
 
 #include <linux/if_tun.h>
 #include <sys/sysmacros.h>
+
 /**
  * \struct in6_ifreq
  * \brief Replacement structure since the include of linux/ipv6.h introduces conflicts.
@@ -232,25 +233,31 @@ namespace asiotap
 	{
 		ec = boost::system::error_code();
 
+		m_existing_tap = !_name.empty();
+
 #if defined(LINUX)
 		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/net/tap" : "/dev/net/tun";
 
-		if (::access(dev_name.c_str(), F_OK) == -1)
+		// do not try to create device file if not root
+		if(getuid() != 0)
 		{
-			if (errno != ENOENT)
+			if (::access(dev_name.c_str(), F_OK) == -1)
 			{
-			// Unable to access the tap adapter yet it exists: this is an error.
-				ec = boost::system::error_code(errno, boost::system::system_category());
+				if (errno != ENOENT)
+				{
+					// Unable to access the tap adapter yet it exists: this is an error.
+					ec = boost::system::error_code(errno, boost::system::system_category());
 
-				return;
-			}
+					return;
+				}
 
-		// No tap found, create one.
-			if (::mknod(dev_name.c_str(), S_IFCHR | S_IRUSR | S_IWUSR, ::makedev(10, 200)) == -1)
-			{
-				ec = boost::system::error_code(errno, boost::system::system_category());
+				// No tap found, create one.
+				if (::mknod(dev_name.c_str(), S_IFCHR | S_IRUSR | S_IWUSR, ::makedev(10, 200)) == -1)
+				{
+					ec = boost::system::error_code(errno, boost::system::system_category());
 
-				return;
+					return;
+				}
 			}
 		}
 
@@ -307,7 +314,8 @@ namespace asiotap
 
 			netifr.ifr_qlen = 100; // 100 is the default value
 
-			if (::ioctl(socket.native_handle(), SIOCSIFTXQLEN, (void *)&netifr) < 0)
+			if (::ioctl(socket.native_handle(), SIOCSIFTXQLEN, (void *)&netifr) < 0 &&
+					!m_existing_tap)
 			{
 				ec = boost::system::error_code(errno, boost::system::system_category());
 
@@ -502,10 +510,16 @@ namespace asiotap
 
 		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
 
-		// Set the interface UP
+		// Get the interface flags
 		if (::ioctl(socket.native_handle(), SIOCGIFFLAGS, static_cast<void*>(&netifr)) < 0)
 		{
 			throw boost::system::system_error(errno, boost::system::system_category());
+		}
+
+		// no need to turns UP an already UP _existing_ interface
+		if ( m_existing_tap && connected && netifr.ifr_flags & IFF_UP)
+		{
+			return;
 		}
 
 		if (connected)
@@ -527,6 +541,7 @@ namespace asiotap
 #endif
 		}
 
+		// Set the interface UP
 		if (::ioctl(socket.native_handle(), SIOCSIFFLAGS, static_cast<void*>(&netifr)) < 0)
 		{
 			throw boost::system::system_error(errno, boost::system::system_category());
@@ -600,6 +615,15 @@ namespace asiotap
 
 	void posix_tap_adapter::configure(const configuration_type& configuration)
 	{
+		bool has_permission = (getuid() == 0);
+
+		if(m_existing_tap && !has_permission)
+		{
+			// we use an existing tun/tap adapter probably already configured so as
+			// we cannot set IPv4/IPv6 address, return gently
+			return;
+		}
+
 		if (configuration.ipv4.network_address)
 		{
 			if (layer() == tap_adapter_layer::ethernet)
