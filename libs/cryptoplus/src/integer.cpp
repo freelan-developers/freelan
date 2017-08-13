@@ -54,7 +54,7 @@ namespace
 
 namespace cryptoplus
 {
-#ifdef MACINTOSH
+#ifdef BSD
 	template <> asn1::integer::deleter_type pointer_wrapper<asn1::integer::value_type>::deleter;
 #endif
 

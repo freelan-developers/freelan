@@ -114,7 +114,7 @@ namespace asiotap
 			gw = boost::asio::ip::address::from_string(values["gateway"]);
 		}
 #else
-#ifdef FREELAN_DISABLE_NETLINK
+#if defined(FREELAN_DISABLE_NETLINK) || !defined(LINUX)
 		const std::vector<std::string> real_args { "/bin/ip", "route", "get", boost::lexical_cast<std::string>(host) };
 
 		std::stringstream ss;
@@ -171,7 +171,7 @@ namespace asiotap
 
 	void posix_route_manager::ifconfig(const std::string& interface, const ip_network_address& address)
 	{
-#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
+#if defined(FREELAN_DISABLE_NETLINK) || !defined(LINUX)
 		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address) };
 
 		executeplus::checked_execute(real_args, executeplus::get_current_environment());
@@ -182,7 +182,7 @@ namespace asiotap
 
 	void posix_route_manager::ifconfig(const std::string& interface, const ip_network_address& address, const boost::asio::ip::address& remote_address)
 	{
-#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
+#if defined(FREELAN_DISABLE_NETLINK) || !defined(LINUX)
 		const std::vector<std::string> real_args { "/sbin/ifconfig", interface, boost::lexical_cast<std::string>(address), boost::lexical_cast<std::string>(remote_address) };
 
 		executeplus::checked_execute(real_args, executeplus::get_current_environment());
@@ -193,7 +193,7 @@ namespace asiotap
 
 	void posix_route_manager::set_route(route_action action, const std::string& interface, const ip_network_address& dest)
 	{
-#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
+#if defined(FREELAN_DISABLE_NETLINK) || !defined(LINUX)
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
 #ifdef MACINTOSH
 		const std::string command = action == route_action::add ? "add" : "delete";
@@ -218,7 +218,7 @@ namespace asiotap
 
 	void posix_route_manager::set_route(route_action action, const std::string& interface, const ip_network_address& dest, const boost::asio::ip::address& gateway)
 	{
-#if defined(MACINTOSH) || defined(FREELAN_DISABLE_NETLINK)
+#if defined(FREELAN_DISABLE_NETLINK) || !defined(LINUX)
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
 		const std::string command = action == route_action::add ? "add" : "del";
 #ifdef MACINTOSH
