@@ -20,6 +20,9 @@ configuration:
 init:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%'
 
+install:
+  - cinst cmake
+
 before_build:
   # We rely on teapot for third-party builds.
   - '%PYTHON_ROOT%\python.exe -m pip install teapot'
