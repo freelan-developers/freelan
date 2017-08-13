@@ -132,6 +132,17 @@ class FreelanEnvironment(Environment):
             self.Append(LDFLAGS=['-L/usr/local/opt/openssl/lib'])
             self.Append(LIBPATH=['/usr/local/opt/openssl/lib'])
 
+        if sys.platform.startswith('freebsd'):
+            self.Append(CXXFLAGS=['-I/usr/local/include', '-Wno-shadow', '-Wno-nested-anon-types', '-Wno-unused-parameter'])
+            self.Append(CFLAGS=['-I/usr/local/include', '-Wno-shadow', '-Wno-nested-anon-types', '-Wno-unused-parameter'])
+            self.Append(LDFLAGS=['-L/usr/local/lib'])
+            self.Append(LIBPATH=['/usr/local/lib'])
+
+        if sys.platform.startswith('netbsd'):
+            self.Append(CXXFLAGS=['-I/usr/pkg/include', '-Wno-shadow'])
+            self.Append(CFLAGS=['-I/usr/pkg/include', '-Wno-shadow'])
+            self.Append(LIBPATH=['/usr/pkg/lib'])
+
         if self.mode == 'debug':
             self.Append(CXXFLAGS=['-g'])
             self.Append(CXXFLAGS='-DFREELAN_DEBUG=1')

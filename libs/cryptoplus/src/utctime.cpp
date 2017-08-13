@@ -51,7 +51,7 @@
 
 namespace cryptoplus
 {
-#ifdef MACINTOSH
+#ifdef BSD
 	template <> asn1::utctime::deleter_type pointer_wrapper<asn1::utctime::value_type>::deleter;
 #endif
 

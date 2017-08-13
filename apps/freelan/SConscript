@@ -42,6 +42,11 @@ else:
             'z',
             'iconv',
         ])
+    if sys.platform.startswith('freebsd'):
+        libraries.extend([
+            'pthread',
+            'c++',
+        ])
 
 if env.mongoose == 'yes':
     libraries.extend([

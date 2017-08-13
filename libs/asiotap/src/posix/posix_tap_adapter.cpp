@@ -76,8 +76,10 @@ struct in6_ifreq
 /*
  * Note for Mac OS X users : you have to download and install the tun/tap driver from (http://tuntaposx.sourceforge.net).
  */
-
+#ifndef __NetBSD__
 #include <net/if_var.h>
+#endif
+
 #include <net/if_types.h>
 #include <net/if_dl.h>
 #include <net/if.h>
@@ -388,7 +390,11 @@ namespace asiotap
 		char namebuf[256];
 		memset(namebuf, 0x00, sizeof(namebuf));
 
+#ifdef __NetBSD__
+		if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != 0)
+#else
 		if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != NULL)
+#endif
 		{
 			set_name(namebuf);
 		}
