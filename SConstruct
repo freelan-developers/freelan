@@ -140,7 +140,7 @@ class FreelanEnvironment(Environment):
 
         if sys.platform.startswith('openbsd'):
             self.Append(CXXFLAGS=['-I/usr/local/include', '-pthread', '-Wno-shadow', '-Wno-nested-anon-types', '-Wno-unused-parameter', '-Wno-unused-local-typedef'])
-            self.Append(CFLAGS=['-I/usr/local/include', 'pthread', '-Wno-shadow', '-Wno-nested-anon-types', '-Wno-unused-parameter', '-Wno-unused-local-typedef'])
+            self.Append(CFLAGS=['-I/usr/local/include', '-pthread', '-Wno-shadow', '-Wno-nested-anon-types', '-Wno-unused-parameter', '-Wno-unused-local-typedef'])
             self.Append(LDFLAGS=['-L/usr/local/lib'])
             self.Append(LIBPATH=['/usr/local/lib'])
 
