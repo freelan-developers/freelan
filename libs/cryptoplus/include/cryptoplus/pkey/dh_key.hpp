@@ -280,7 +280,7 @@ namespace cryptoplus
 		{
 			throw_error_if_not(PEM_write_DHparams(_file.raw(), ptr().get()) != 0);
 		}
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 		inline bn::bignum dh_key::private_key() const
 		{
 			const BIGNUM* priv_key = NULL;

@@ -227,7 +227,7 @@ namespace cryptoplus
 
 		inline bool get_pseudo_random_bytes(void* buf, size_t buf_len)
 		{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 			int result = RAND_pseudo_bytes(static_cast<unsigned char*>(buf), static_cast<int>(buf_len));
 
 			throw_error_if(result < 0);
@@ -242,7 +242,7 @@ namespace cryptoplus
 
 		inline buffer get_pseudo_random_bytes(size_t cnt)
 		{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 			buffer result(cnt);
 
 			get_pseudo_random_bytes(buffer_cast<uint8_t*>(result), buffer_size(result));

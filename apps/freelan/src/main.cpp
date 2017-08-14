@@ -185,7 +185,9 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	all_options.add(generic_options);
 
 	po::options_description configuration_options("Configuration");
+#ifdef USE_MONGOOSE
 	configuration_options.add(get_server_options());
+#endif
 	configuration_options.add(get_client_options());
 	configuration_options.add(get_fscp_options());
 	configuration_options.add(get_security_options());

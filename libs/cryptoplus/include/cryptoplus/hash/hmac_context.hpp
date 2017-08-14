@@ -144,7 +144,7 @@ namespace cryptoplus
 
 		inline hmac_context::hmac_context()
 		{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 			m_ctx = new HMAC_CTX;
 			HMAC_CTX_init(m_ctx);
 #else
@@ -154,7 +154,7 @@ namespace cryptoplus
 
 		inline hmac_context::~hmac_context()
 		{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 			HMAC_CTX_cleanup(m_ctx);
 			delete m_ctx;
 #else
@@ -192,7 +192,7 @@ namespace cryptoplus
 
 		inline message_digest_algorithm hmac_context::algorithm() const
 		{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 			//WARNING: Here we directly use the undocumented HMAC_CTX.md field.
 			return message_digest_algorithm(m_ctx->md);
 #else

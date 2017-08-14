@@ -49,6 +49,7 @@
 #include <boost/system/system_error.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

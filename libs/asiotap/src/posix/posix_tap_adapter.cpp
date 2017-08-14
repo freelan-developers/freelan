@@ -392,10 +392,16 @@ namespace asiotap
 
 #ifdef __NetBSD__
 		if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != 0)
+		{
+#elif defined(__OpenBSD__)
+		char* n = ::devname(st.st_dev, S_IFCHR);
+		if(n)
+		{
+			strncpy(namebuf, n, 255);
 #else
 		if (::devname_r(st.st_dev, S_IFCHR, namebuf, 255) != NULL)
-#endif
 		{
+#endif
 			set_name(namebuf);
 		}
 		else

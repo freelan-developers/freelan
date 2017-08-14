@@ -74,7 +74,7 @@ namespace cryptoplus
 	 *
 	 * Only one instance of this class should be created. When an instance exists, the library can proceed to name resolutions.
 	 */
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 	typedef initializer<_OpenSSL_add_all_algorithms, _null_function> algorithms_initializer;
 #else
 	typedef initializer<_OpenSSL_add_all_algorithms, EVP_cleanup> algorithms_initializer;
@@ -85,7 +85,7 @@ namespace cryptoplus
 	 *
 	 * Only one instance of this class should be created. When an instance exists, it will prevent memory leaks related to the libcrypto's internals.
 	 */
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 	typedef initializer<_null_function, _null_function> crypto_initializer;
 #else
 	typedef initializer<_null_function, CRYPTO_cleanup_all_ex_data> crypto_initializer;

@@ -73,7 +73,7 @@ namespace cryptoplus
 				 */
 				message_digest_context()
 				{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 					m_ctx = new EVP_MD_CTX;
 					EVP_MD_CTX_init(m_ctx);
 #else
@@ -97,7 +97,7 @@ namespace cryptoplus
 				 */
 				~message_digest_context()
 				{
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 					EVP_MD_CTX_cleanup(m_ctx);
 					delete m_ctx;
 #else

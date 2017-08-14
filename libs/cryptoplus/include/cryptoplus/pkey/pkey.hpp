@@ -565,7 +565,7 @@ namespace cryptoplus
 		{
 			return EVP_PKEY_size(ptr().get());
 		}
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 		inline int pkey::type() const
 		{
 			return EVP_PKEY_base_id(ptr().get());

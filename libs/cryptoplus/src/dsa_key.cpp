@@ -65,7 +65,7 @@ namespace cryptoplus
 
 		dsa_key dsa_key::generate_parameters(int bits, void* seed, size_t seed_len, int* counter_ret, unsigned long *h_ret, generate_callback_type callback, void* callback_arg, bool must_take_ownership)
 		{
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 			static_cast<void>(callback);
 			static_cast<void>(callback_arg);
 			static_cast<void>(must_take_ownership);
