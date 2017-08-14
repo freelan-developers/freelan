@@ -16,7 +16,9 @@ if env.upnp == 'yes':
         'miniupnpc',
     ])
 
-if sys.platform.startswith('darwin'):
+# pick up the either boost_thread or boost_thread-mt library
+conf = Configure(env)
+if not conf.CheckLib('boost_thread'):
     libraries.extend([
         'boost_thread-mt',
     ])
@@ -24,6 +26,7 @@ else:
     libraries.extend([
         'boost_thread',
     ])
+env = conf.Finish()
 
 if sys.platform.startswith('linux'):
     libraries.extend([
