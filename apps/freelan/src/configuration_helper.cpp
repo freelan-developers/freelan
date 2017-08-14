@@ -291,9 +291,7 @@ po::options_description get_fscp_options()
 	("fscp.never_contact", po::value<std::vector<asiotap::ip_network_address> >()->multitoken()->zero_tokens()->default_value(std::vector<asiotap::ip_network_address>(), ""), "A network address to avoid when dynamically contacting hosts.")
 	("fscp.cipher_suite_capability", po::value<std::vector<fscp::cipher_suite_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_cipher_suites(), ""), "A cipher suite to allow.")
 	("fscp.elliptic_curve_capability", po::value<std::vector<fscp::elliptic_curve_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_elliptic_curves(), ""), "A elliptic curve to allow.")
-#ifdef USE_UPNP
 	("fscp.upnp_enabled", po::value<bool>()->default_value(true, "yes"), "Enable UPnP.")
-#endif
 	;
 
 	return result;

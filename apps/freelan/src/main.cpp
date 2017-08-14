@@ -185,17 +185,24 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	all_options.add(generic_options);
 
 	po::options_description configuration_options("Configuration");
-#ifdef USE_MONGOOSE
-	configuration_options.add(get_server_options());
-#endif
-	configuration_options.add(get_client_options());
+	po::options_description configuration_visible_options("Configuration");
+
 	configuration_options.add(get_fscp_options());
 	configuration_options.add(get_security_options());
 	configuration_options.add(get_tap_adapter_options());
 	configuration_options.add(get_switch_options());
 	configuration_options.add(get_router_options());
+	configuration_options.add(get_client_options());
 
-	visible_options.add(configuration_options);
+	configuration_visible_options.add(configuration_options);
+
+	// do not show webserver option to user if mongoose is not compiled
+#ifdef USE_MONGOOSE
+	configuration_visible_options.add(get_server_options());
+#endif
+	configuration_options.add(get_server_options());
+
+	visible_options.add(configuration_visible_options);
 	all_options.add(configuration_options);
 
 #ifdef WINDOWS
@@ -406,7 +413,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 
 			for (auto&& conf : configuration_files)
 			{
-				logger(fscp::log_level::warning) << "- "  << conf;
+				logger(fscp::log_level::warning) << "- " << conf;
 			}
 		}
 	}
