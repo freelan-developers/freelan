@@ -203,6 +203,11 @@ namespace asiotap
 			void destroy_device(boost::system::error_code& ec);
 
 			posix_route_manager m_route_manager;
+
+			/**
+			 * \brief If we use an existing tun/tap adapter.
+			 */
+			bool m_existing_tap;
 	};
 }
 
