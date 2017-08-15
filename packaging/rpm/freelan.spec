@@ -14,9 +14,11 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: openssl-devel
 BuildRequires: boost-devel
 BuildRequires: libcurl-devel
+BuildRequires: miniupnpc-devel
 Requires: openssl
 Requires: boost
 Requires: libcurl
+Requires: miniupnpc
 
 %description
 Freelan is an application to create secure ethernet tunnels over a
@@ -35,37 +37,40 @@ gaming.
 %setup -q
 
 %build
+rm -rf $RPM_BUILD_ROOT
+make PRODUCT_PREFIX=$RPM_BUILD_ROOT/ PRODUCT_BIN_PREFIX=$RPM_BUILD_ROOT/usr
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make install PRODUCT_PREFIX=$RPM_BUILD_ROOT/ PRODUCT_BIN_PREFIX=$RPM_BUILD_ROOT/usr
+mkdir -p $RPM_BUILD_ROOT/%{_bindir}
+cp -a build/release/bin/freelan $RPM_BUILD_ROOT/%{_bindir}/
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/freelan
+cp -a apps/freelan/config/freelan.cfg $RPM_BUILD_ROOT/%{_sysconfdir}/freelan/ 
 # manpage
 mkdir -p $RPM_BUILD_ROOT/usr/share/man/man1
 cp packaging/rpm/freelan.1 $RPM_BUILD_ROOT/usr/share/man/man1/freelan.1
 # default script
 mkdir -p $RPM_BUILD_ROOT/etc/default
 cp packaging/rpm/freelan.default $RPM_BUILD_ROOT/etc/default/freelan
-# init script
-mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
-cp -p packaging/rpm/freelan.initd $RPM_BUILD_ROOT/etc/rc.d/init.d/freelan
+# systemd unit
+mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
+cp -p packaging/rpm/freelan@.service $RPM_BUILD_ROOT/%{_unitdir}/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%{_initddir}/freelan
+%{_unitdir}/freelan@.service
 %{_bindir}/freelan
 %{_mandir}/man1/*
-%{_sysconfdir}/default/freelan
 %{_sysconfdir}/freelan/freelan.cfg
 
 %preun
 # $1 is the number of instances of this package present _after_ the action.
 if [ $1 = 0 ]; then
-    /sbin/service freelan stop || :
+    systemctl stop freelan || :
 else
-    /sbin/service freelan condrestart || :
+    systemctl condrestart freelan || :
 fi
 
 %changelog
