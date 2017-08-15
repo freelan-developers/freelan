@@ -38,7 +38,7 @@ gaming.
 
 %build
 rm -rf $RPM_BUILD_ROOT
-make PRODUCT_PREFIX=$RPM_BUILD_ROOT/ PRODUCT_BIN_PREFIX=$RPM_BUILD_ROOT/usr
+make
 
 %install
 mkdir -p $RPM_BUILD_ROOT/%{_bindir}
