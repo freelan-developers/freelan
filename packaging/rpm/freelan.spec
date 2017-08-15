@@ -46,11 +46,8 @@ cp -a build/release/bin/freelan $RPM_BUILD_ROOT/%{_bindir}/
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/freelan
 cp -a apps/freelan/config/freelan.cfg $RPM_BUILD_ROOT/%{_sysconfdir}/freelan/ 
 # manpage
-mkdir -p $RPM_BUILD_ROOT/usr/share/man/man1
-cp packaging/rpm/freelan.1 $RPM_BUILD_ROOT/usr/share/man/man1/freelan.1
-# default script
-mkdir -p $RPM_BUILD_ROOT/etc/default
-cp packaging/rpm/freelan.default $RPM_BUILD_ROOT/etc/default/freelan
+mkdir -p $RPM_BUILD_ROOT/%{_mandir}/man1
+cp packaging/rpm/freelan.1 $RPM_BUILD_ROOT/%{_mandir}/man1/freelan.1
 # systemd unit
 mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
 cp -p packaging/rpm/freelan@.service $RPM_BUILD_ROOT/%{_unitdir}/
