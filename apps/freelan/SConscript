@@ -31,7 +31,6 @@ else:
     libraries.extend([
         'boost_thread',
     ])
-env = conf.Finish()
 
 if sys.platform.startswith('linux'):
     libraries.extend([
@@ -72,5 +71,11 @@ env.Prepend(LIBS=libraries)
 sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
 app = env.Program(target=os.path.join(str(dirs['bin']), name), source=sources)
 configuration = env.File(env.RGlob('config', '*.cfg'))
+help = []
 
-Return('app configuration')
+if conf.CheckProg('help2man'):
+  help = Command(target=os.path.join(str(dirs['man']), name + '.1'), source=os.path.join(str(dirs['bin']), name), action =["help2man $SOURCE > $TARGET"])
+
+
+env = conf.Finish()
+Return('app configuration help')

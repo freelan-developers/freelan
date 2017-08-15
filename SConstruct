@@ -216,8 +216,9 @@ else:
 
 if mode in ('all', 'release'):
     env = FreelanEnvironment(mode='release', prefix=prefix, bin_prefix=bin_prefix, mongoose=mongoose, upnp=upnp)
-    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    libraries, includes, apps, samples, configurations, help = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
+    install = env.Install(os.path.join(env.bin_install_prefix, 'man', 'man1'), help)
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
     Alias('install', install)
@@ -227,16 +228,16 @@ if mode in ('all', 'release'):
 
 if mode in ('all', 'debug'):
     env = FreelanEnvironment(mode='debug', prefix=prefix, mongoose=mongoose, upnp=upnp)
-    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
-    Alias('apps', apps)
+    libraries, includes, apps, samples, configurations, help = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    Alias('apps', apps + help)
     Alias('samples', samples)
-    Alias('all', apps + samples)
+    Alias('all', apps + help + samples)
 
 if sys.platform.startswith('darwin'):
     retail_prefix = '/usr/local'
     env = FreelanEnvironment(mode='retail', prefix=retail_prefix, mongoose=mongoose, upnp=upnp)
-    libraries, includes, apps, samples, configurations = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
-    package = SConscript('packaging/osx/SConscript', exports='env apps configurations retail_prefix')
+    libraries, includes, apps, samples, configurations, help = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
+    package = SConscript('packaging/osx/SConscript', exports='env apps configurations retail_prefix help')
     install_package = env.Install('.', package)
     Alias('package', install_package)
 
