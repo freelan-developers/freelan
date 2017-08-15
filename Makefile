@@ -11,11 +11,11 @@ default: build
 .PHONY: build install
 
 build:
-	FREELAN_NO_GIT=1 FREELAN_NO_GIT_VERSION=${PRODUCT_VERSION} scons --mode=release apps prefix=${PRODUCT_PREFIX} bin_prefix=${PRODUCT_BIN_PREFIX} --upnp=${USE_UPNP} --mongoose=${USE_MONGOOSE} -j${MAKE_JOBS}
+	FREELAN_NO_GIT=1 FREELAN_NO_GIT_VERSION=${PRODUCT_VERSION} scons -j${MAKE_JOBS} --mode=release apps prefix=${PRODUCT_PREFIX} bin_prefix=${PRODUCT_BIN_PREFIX} --upnp=${USE_UPNP} --mongoose=${USE_MONGOOSE}
 
 install:
 	# Install the files to $(DESTDIR) (defaults to /)
-	FREELAN_NO_GIT=1 FREELAN_NO_GIT_VERSION=${PRODUCT_VERSION} DESTDIR=$(DESTDIR) scons --mode=release install prefix=${PRODUCT_PREFIX} bin_prefix=${PRODUCT_BIN_PREFIX} --upnp=${USE_UPNP} --mongoose=${USE_MONGOOSE} -j${MAKE_JOBS}
+	FREELAN_NO_GIT=1 FREELAN_NO_GIT_VERSION=${PRODUCT_VERSION} DESTDIR=$(DESTDIR) scons -j${MAKE_JOBS} --mode=release install prefix=${PRODUCT_PREFIX} bin_prefix=${PRODUCT_BIN_PREFIX} --upnp=${USE_UPNP} --mongoose=${USE_MONGOOSE}
 
 package:
 	git archive HEAD --prefix=${PRODUCT_NAME}-${PRODUCT_VERSION}/ -o ${PRODUCT_NAME}-${PRODUCT_VERSION}.tar.gz
