@@ -16,17 +16,17 @@ mersdk@localhost`
 
 ## Setup environment
 
-On the VM ssh shell, install scons boost-devel openssl-devel and libcurl-devel.
+On the VM ssh shell, install some dependencies.
 
 For x86 target:
 
 `sb2 -t SailfishOS-i486 -m sdk-install -R zypper install scons boost-devel
-openssl-devel libcurl-devel boost-thread`
+openssl-devel libcurl-devel boost-thread help2man`
 
 For ARM target:
 
 `sb2 -t SailfishOS-armv7hl -m sdk-install -R zypper install scons boost-devel
-openssl-devel libcurl-devel boost-thread`
+openssl-devel libcurl-devel boost-thread help2man`
 
 Retrieve sources:
 

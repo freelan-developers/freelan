@@ -72,5 +72,11 @@ env.Prepend(LIBS=libraries)
 sources = list(sorted(set(env.RGlob('src', '*.cpp')) - set(env.RGlob(os.path.join('src', 'windows'), '*.cpp'))))
 app = env.Program(target=os.path.join(str(dirs['bin']), name), source=sources)
 configuration = env.File(env.RGlob('config', '*.cfg'))
+help = []
 
-Return('app configuration')
+h2m = env.WhereIs('help2man', os.environ['PATH'])
+if h2m:
+    env['HELP2MAN'] = h2m
+    help = env.Command(target=os.path.join(str(dirs['man']), name + '.1'), source=os.path.join(str(dirs['bin']), name), action ='$HELP2MAN $SOURCE > $TARGET')
+
+Return('app configuration help')

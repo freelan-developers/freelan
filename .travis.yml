@@ -19,12 +19,14 @@ addons:
       - libminiupnpc-dev
       - gcc
       - g++
+      - help2man
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list scons &>/dev/null || brew install scons ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list boost &>/dev/null || brew install boost ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list openssl &>/dev/null || brew install openssl ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list miniupnpc &>/dev/null || brew install miniupnpc ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list help2man &>/dev/null || brew install help2man ; fi
 cache:
   apt: true
 script: scons install apps samples

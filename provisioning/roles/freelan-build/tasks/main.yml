@@ -9,6 +9,7 @@
     - libssl-dev
     - libcurl4-openssl-dev
     - libminiupnpc-dev
+    - help2man
   tags:
     - build
   sudo: True

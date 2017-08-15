@@ -17,6 +17,7 @@ dirs = {
     'include': Dir('include'),
     'lib': Dir('lib'),
     'bin': Dir('bin'),
+    'man': Dir('man'),
 }
 
 env.Append(CPPPATH=[dirs['include']])
@@ -51,13 +52,14 @@ for x in Glob('libs/*'):
 
 apps = []
 configurations = []
+help = []
 
 for x in Glob('apps/*'):
     sconscript_path = x.File('SConscript')
 
     if sconscript_path.exists():
         name = os.path.basename(str(x))
-        app, configuration = SConscript(sconscript_path, exports='env dirs name')
+        app, configuration, help = SConscript(sconscript_path, exports='env dirs name')
         apps.extend(app)
         configurations.extend(configuration)
 
@@ -87,4 +89,4 @@ if env.mode != 'retail':
                 else:
                     samples.extend(env.SymLink(y.File('%sd' % os.path.basename(str(y))).srcnode(), sample))
 
-Return('libraries includes apps samples configurations')
+Return('libraries includes apps samples configurations help')
