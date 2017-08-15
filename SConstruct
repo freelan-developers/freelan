@@ -222,9 +222,9 @@ if mode in ('all', 'release'):
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
     Alias('install', install)
-    Alias('apps', apps)
+    Alias('apps', apps + help)
     Alias('samples', samples)
-    Alias('all', install + apps + samples)
+    Alias('all', install + apps + help + samples)
 
 if mode in ('all', 'debug'):
     env = FreelanEnvironment(mode='debug', prefix=prefix, mongoose=mongoose, upnp=upnp)
