@@ -1,6 +1,7 @@
 language: cpp
 compiler:
     - g++
+    - clang
 matrix:
   include:
     - os: linux
