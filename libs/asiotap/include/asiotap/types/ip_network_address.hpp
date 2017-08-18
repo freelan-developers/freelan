@@ -48,6 +48,7 @@
 #include <vector>
 #include <set>
 #include <type_traits>
+#include <tuple>
 
 #include <boost/asio.hpp>
 #include <boost/variant.hpp>
