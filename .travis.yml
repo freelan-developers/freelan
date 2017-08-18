@@ -1,7 +1,6 @@
 language: cpp
 compiler:
     - g++
-    - clang
 matrix:
   include:
     - os: linux
@@ -20,7 +19,6 @@ addons:
       - libminiupnpc-dev
       - gcc
       - g++
-      - clang-3.8
       - help2man
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
@@ -29,8 +27,6 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list openssl &>/dev/null || brew install openssl ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list miniupnpc &>/dev/null || brew install miniupnpc ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list help2man &>/dev/null || brew install help2man ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.8 90 ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-3.8 90 ; fi
 cache:
   apt: true
 script: scons install apps samples
