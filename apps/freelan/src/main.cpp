@@ -77,6 +77,10 @@
 // This file is generated locally.
 #include <defines.hpp>
 
+#ifdef MSV
+#include <openssl/applink.c>
+#endif
+
 namespace fs = boost::filesystem;
 namespace fl = freelan;
 
