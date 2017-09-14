@@ -46,7 +46,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <ifaddrs.h>
 #include <errno.h>
@@ -80,6 +79,7 @@ struct in6_ifreq
 #include <net/if_var.h>
 #endif
 
+#include <sys/types.h>
 #include <net/if_types.h>
 #include <net/if_dl.h>
 #include <net/if.h>
