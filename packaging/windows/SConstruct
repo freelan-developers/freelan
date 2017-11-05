@@ -27,11 +27,7 @@ installers = []
 
 
 def build_for_arch(arch):
-
-    TAP_SETUP_TEMPLATE = (
-        '../../libs/asiotap/windows/tap_adapter/tap-setup/'
-        '{}/tap-setup.exe'
-    )
+    TAP_SETUP_TEMPLATE = '../../install/{}/Release/bin/tap-setup.exe'
 
     iscc_defines = {
         'NAME': 'freelan',
@@ -44,9 +40,7 @@ def build_for_arch(arch):
         'ARCH': arch,
         'XARCH': 'x64' if arch == 'amd64' else 'x86',
         'TAP_SETUP': TAP_SETUP_TEMPLATE.format(
-            'objfre_win7_amd64/amd64'
-            if arch == 'amd64'
-            else 'objfre_wxp_x86/i386'
+            'x64' if arch == 'amd64' else 'x86'
         ),
     }
 
