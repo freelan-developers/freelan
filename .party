@@ -70,7 +70,7 @@ Attendee('boost').get_build('msvc-x64').commands = [
 
 # OpenSSL
 Attendee('openssl', filter=~f('linux'))
-Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.2l.tar.gz')
+Attendee('openssl').add_source('http://www.openssl.org/source/openssl-1.0.2m.tar.gz')
 
 Attendee('openssl').add_build('osx', environment='system', filter='darwin')
 Attendee('openssl').get_build('osx').commands = [
@@ -78,8 +78,6 @@ Attendee('openssl').get_build('osx').commands = [
     'make',
     'make install',
 ]
-
-#Attendee('openssl').add_post_unpack_command(r'xcopy {{root}}\third-party\patches\openssl1.0.2g\* . /S /Y', filter='windows')
 
 Attendee('openssl').add_build('msvc-x86', environment='system', filter='msvc-x86', prefix='x86/Release')
 Attendee('openssl').get_build('msvc-x86').commands = [
