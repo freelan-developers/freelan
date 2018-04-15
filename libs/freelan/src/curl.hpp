@@ -688,7 +688,11 @@ namespace freelan
 			void check_info();
 
 			boost::asio::io_service& m_io_service;
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_strand;
+#else
 			boost::asio::strand m_strand;
+#endif
 			boost::asio::deadline_timer m_timer;
 			std::map<boost::shared_ptr<curl>, connection_complete_callback> m_handler_map;
 			std::map<boost::shared_ptr<curl>, CURLcode> m_result_map;

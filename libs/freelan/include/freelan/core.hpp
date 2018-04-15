@@ -443,7 +443,11 @@ namespace freelan
 
 			boost::asio::io_service& m_io_service;
 			freelan::configuration m_configuration;
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_logger_strand;
+#else
 			boost::asio::strand m_logger_strand;
+#endif
 			fscp::logger m_logger;
 
 		private: /* Callbacks */
@@ -695,8 +699,11 @@ namespace freelan
 			void do_write_switch(const port_index_type&, boost::asio::const_buffer, switch_::multi_write_handler_type);
 			void do_write_router(const port_index_type&, boost::asio::const_buffer, router::port_type::write_handler_type);
 
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_router_strand;
+#else
 			boost::asio::strand m_router_strand;
-
+#endif
 			switch_ m_switch;
 			router m_router;
 			asiotap::route_manager m_route_manager;

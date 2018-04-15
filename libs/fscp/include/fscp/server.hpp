@@ -1294,9 +1294,14 @@ namespace fscp
 			void pop_write();
 
 			socket_type m_socket;
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_socket_strand;
+			boost::asio::io_context::strand m_write_queue_strand;
+#else
 			boost::asio::strand m_socket_strand;
-			std::queue<void_handler_type> m_write_queue;
 			boost::asio::strand m_write_queue_strand;
+#endif
+			std::queue<void_handler_type> m_write_queue;
 			std::list<SharedBuffer> m_socket_buffers;
 
 		private: // HELLO messages
@@ -1400,7 +1405,11 @@ namespace fscp
 			void do_set_hello_message_received_callback(hello_message_received_handler_type, void_handler_type);
 
 			ep_hello_context_map m_ep_hello_contexts;
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_greet_strand;
+#else
 			boost::asio::strand m_greet_strand;
+#endif
 			bool m_accept_hello_messages_default;
 			hello_message_received_handler_type m_hello_message_received_handler;
 
@@ -1420,7 +1429,11 @@ namespace fscp
 			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
 
 			// This strand is also used by session requests and session messages during the cipherment/decipherment phase.
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_presentation_strand;
+#else
 			boost::asio::strand m_presentation_strand;
+#endif
 			presentation_store_map m_presentation_store_map;
 			presentation_message_received_handler_type m_presentation_message_received_handler;
 
@@ -1446,7 +1459,11 @@ namespace fscp
 			void do_set_session_request_message_received_callback(session_request_received_handler_type, void_handler_type);
 
 			// This strand is common to session requests, session messages and data messages.
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_session_strand;
+#else
 			boost::asio::strand m_session_strand;
+#endif
 
 			peer_session_map_type m_peer_sessions;
 			std::list<SharedBuffer> m_session_buffers;
@@ -1500,7 +1517,11 @@ namespace fscp
 			void do_set_contact_request_received_callback(contact_request_received_handler_type, void_handler_type);
 			void do_set_contact_received_callback(contact_received_handler_type, void_handler_type);
 
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
+			boost::asio::io_context::strand m_contact_strand;
+#else
 			boost::asio::strand m_contact_strand;
+#endif
 
 			data_received_handler_type m_data_received_handler;
 			contact_request_received_handler_type m_contact_request_message_received_handler;
