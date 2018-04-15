@@ -199,9 +199,9 @@ namespace asiotap
 	template <typename AddressType>
 	inline boost::asio::ip::udp::endpoint resolve(const base_ip_endpoint<AddressType>& ep, typename base_ip_endpoint<AddressType>::resolver& resolver, typename base_ip_endpoint<AddressType>::resolver::protocol_type protocol, typename base_ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service)
 	{
-		(void)resolver;
-		(void)protocol;
-		(void)flags;
+		static_cast<void>(resolver);
+		static_cast<void>(protocol);
+		static_cast<void>(flags);
 
 		if (ep.has_port())
 		{
@@ -226,20 +226,9 @@ namespace asiotap
 	template <typename AddressType>
 	inline void async_resolve(const base_ip_endpoint<AddressType>& ep, typename base_ip_endpoint<AddressType>::resolver& resolver, typename base_ip_endpoint<AddressType>::resolver::protocol_type protocol, typename base_ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service, typename base_ip_endpoint<AddressType>::handler handler)
 	{
-		try
-		{
-			boost::asio::ip::udp::endpoint result = resolve(ep, resolver, protocol, flags, default_service);
+		typename base_ip_endpoint<AddressType>::resolver::query query(protocol, ep.address().to_string(), ep.has_port() ? boost::lexical_cast<std::string>(ep.port()) : default_service, flags);
 
-			auto it = base_ip_endpoint<AddressType>::resolver::iterator::create(result, result.address().to_string(), boost::lexical_cast<std::string>(result.port()));
-
-			handler(boost::system::error_code(), it);
-		}
-		catch (boost::system::system_error& ex)
-		{
-			typename base_ip_endpoint<AddressType>::resolver::iterator it;
-
-			handler(ex.code(), it);
-		}
+		resolver.async_resolve(query, handler);
 	}
 
 	/**
