@@ -683,7 +683,7 @@ namespace freelan
 #ifdef LINUX
 			if (!m_configuration.fscp.listen_on_device.empty())
 			{
-				const auto socket_fd = m_fscp_server->get_socket().native();
+				const auto socket_fd = m_fscp_server->get_socket().native_handle();
 				const std::string device_name = m_configuration.fscp.listen_on_device;
 
 				if (::setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, device_name.c_str(), device_name.size()) == 0)
