@@ -63,7 +63,7 @@ systems (basically everything except Windows).
 
 To build the main binary, just type:
 
-> scons
+> scons apps
 
 To build everything in the directory (including samples), type instead:
 
