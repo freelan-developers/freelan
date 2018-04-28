@@ -19,3 +19,6 @@ install:
 
 package:
 	git archive HEAD --prefix=${PRODUCT_NAME}-${PRODUCT_VERSION}/ -o ${PRODUCT_NAME}-${PRODUCT_VERSION}.tar.gz
+
+clean:
+	FREELAN_NO_GIT=1 FREELAN_NO_GIT_VERSION=${PRODUCT_VERSION} scons -c --mode=release apps prefix=${PRODUCT_PREFIX} bin_prefix=${PRODUCT_BIN_PREFIX} --upnp=${USE_UPNP} --mongoose=${USE_MONGOOSE}
