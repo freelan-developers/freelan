@@ -4,7 +4,9 @@
   with_items:
     - screen
     - iperf
-  sudo: True
+  become: yes
+  become_method: sudo
+  become_user: root
 
 - name: Create configuration directory
   file: dest={{ config_root }} state=directory

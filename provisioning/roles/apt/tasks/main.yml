@@ -1,12 +1,16 @@
 ---
 - name: Update the APT repository
   apt: update_cache=yes
-  sudo: True
+  become: yes
+  become_method: sudo
+  become_user: root
   tags:
     - needs_internet_connection
 
 - name: Upgrade the packages
   apt: upgrade=full
-  sudo: True
+  become: yes
+  become_method: sudo
+  become_user: root
   tags:
     - needs_internet_connection

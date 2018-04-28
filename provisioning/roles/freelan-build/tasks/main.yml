@@ -12,7 +12,9 @@
     - help2man
   tags:
     - build
-  sudo: True
+  become: yes
+  become_method: sudo
+  become_user: root
 
 - name: Checkout freelan sources
   git: repo={{ local_sources_root }} dest={{ sources_root }} version={{ repository_version }} accept_hostkey=yes recursive=no

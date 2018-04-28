@@ -5,7 +5,9 @@
     - gdb
     - valgrind
     - screen
-  sudo: True
+  become: yes
+  become_method: sudo
+  become_user: root
 
 - name: Create nodes configuration directory
   file: dest={{ nodes_config_root }} state=directory

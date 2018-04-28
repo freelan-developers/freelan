@@ -7,9 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # fixes 'Inappropriate ioctl for device'
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-  # 'official' Ubuntu box does not have vagrant user (https://bugs.launchpad.net/cloud-images/+bug/1569237)
-  # so use another box as specified in issue
-  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.box = "ubuntu/xenial64"
   config.vm.provision 'Initial setup', type: 'shell', path: "provisioning/scripts/setup.sh"
 
   config.vm.define 'load-test' do |machine|
