@@ -418,7 +418,7 @@ namespace fscp
 
 		if (item != m_presentation_store_map.end())
 		{
-			return boost::make_optional<presentation_store>(item->second);
+			return boost::optional<presentation_store>(item->second);
 		}
 		else
 		{
