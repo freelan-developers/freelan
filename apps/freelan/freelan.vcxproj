@@ -38,7 +38,7 @@
     <ProjectGuid>{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>freelan</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

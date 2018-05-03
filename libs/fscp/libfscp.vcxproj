@@ -55,7 +55,7 @@
     <ProjectGuid>{D2906D5F-3E94-4376-814D-299B8F81E195}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libfscp</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

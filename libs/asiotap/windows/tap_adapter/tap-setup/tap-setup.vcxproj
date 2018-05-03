@@ -23,7 +23,7 @@
     <ProjectGuid>{2DC3A022-8C0C-4364-A1F1-F134E885AB02}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tapsetup</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
