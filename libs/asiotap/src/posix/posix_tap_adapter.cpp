@@ -71,7 +71,7 @@ struct in6_ifreq
 	int ifr6_ifindex; /**< Interface index */
 };
 
-#elif defined(MACINTOSH) || defined(BSD)
+#elif defined(MACINTOSH) || defined(OS_BSD)
 
 /*
  * Note for Mac OS X users : you have to download and install the tun/tap driver from (http://tuntaposx.sourceforge.net).
@@ -496,7 +496,7 @@ namespace asiotap
 			return;
 		}
 
-#if defined(MACINTOSH) || defined(BSD)
+#if defined(MACINTOSH) || defined(OS_BSD)
 		descriptor_handler socket = open_socket(AF_INET, ec);
 
 		if (!socket.valid())
@@ -717,7 +717,7 @@ namespace asiotap
 
 		sockaddr_in* ifr_a_addr = reinterpret_cast<sockaddr_in*>(&ifr_a.ifr_addr);
 		ifr_a_addr->sin_family = AF_INET;
-#ifdef BSD
+#ifdef OS_BSD
 		ifr_a_addr->sin_len = sizeof(sockaddr_in);
 #endif
 		std::memcpy(&ifr_a_addr->sin_addr.s_addr, address.to_bytes().data(), address.to_bytes().size());
@@ -742,7 +742,7 @@ namespace asiotap
 			ifr_n.ifr_name[IFNAMSIZ - 1] = 0x00;
 			sockaddr_in* ifr_n_addr = reinterpret_cast<sockaddr_in*>(&ifr_n.ifr_addr);
 			ifr_n_addr->sin_family = AF_INET;
-#ifdef BSD
+#ifdef OS_BSD
 			ifr_n_addr->sin_len = sizeof(sockaddr_in);
 #endif
 			ifr_n_addr->sin_addr.s_addr = htonl((0xFFFFFFFF >> (32 - prefix_len)) << (32 - prefix_len));
@@ -784,7 +784,7 @@ namespace asiotap
 		ifr.ifr6_ifindex = if_index;
 
 		if (::ioctl(socket.native_handle(), SIOCSIFADDR, &ifr) < 0)
-#elif defined(MACINTOSH) || defined(BSD)
+#elif defined(MACINTOSH) || defined(OS_BSD)
 		in6_aliasreq iar {};
 		std::memcpy(iar.ifra_name, name().c_str(), name().length());
 		reinterpret_cast<sockaddr_in6*>(&iar.ifra_addr)->sin6_family = AF_INET6;
@@ -841,7 +841,7 @@ namespace asiotap
 		ifr_d.ifr_name[IFNAMSIZ - 1] = 0x00;
 		sockaddr_in* ifr_dst_addr = reinterpret_cast<sockaddr_in*>(&ifr_d.ifr_dstaddr);
 		ifr_dst_addr->sin_family = AF_INET;
-#ifdef BSD
+#ifdef OS_BSD
 		ifr_dst_addr->sin_len = sizeof(sockaddr_in);
 #endif
 		std::memcpy(&ifr_dst_addr->sin_addr.s_addr, remote_address.to_bytes().data(), remote_address.to_bytes().size());

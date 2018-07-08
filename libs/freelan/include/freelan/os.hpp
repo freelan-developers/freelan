@@ -85,7 +85,7 @@
  */
 
 #if defined(BSD) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#define BSD
+#define OS_BSD
 #define UNIX
 #endif
 
