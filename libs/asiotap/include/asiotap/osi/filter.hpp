@@ -376,10 +376,10 @@ namespace asiotap
 			m_parent(_parent)
 		{
 			typedef _filter<OSIFrameType, ParentFilterType> filter_type;
-			typedef typename ParentFilterType::frame_type frame_type;
+			typedef typename ParentFilterType::frame_type parent_frame_type;
 
-			const auto mutable_parse = static_cast<void (filter_type::*)(mutable_helper<frame_type>) const>(&filter_type::parse);
-			const auto const_parse = static_cast<void (filter_type::*)(const_helper<frame_type>) const>(&filter_type::parse);
+			const auto mutable_parse = static_cast<void (filter_type::*)(mutable_helper<parent_frame_type>) const>(&filter_type::parse);
+			const auto const_parse = static_cast<void (filter_type::*)(const_helper<parent_frame_type>) const>(&filter_type::parse);
 
 			m_parent.add_handler(boost::bind(mutable_parse, this, _1));
 			m_parent.add_const_handler(boost::bind(const_parse, this, _1));

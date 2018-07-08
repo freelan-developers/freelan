@@ -2730,14 +2730,14 @@ namespace freelan
 				{
 					std::ostringstream oss;
 
-					for (auto&& endpoint : public_endpoints)
+					for (auto&& ep : public_endpoints)
 					{
 						if (!oss.str().empty())
 						{
 							oss << ", ";
 						}
 
-						oss << endpoint;
+						oss << ep;
 					}
 
 					m_logger(fscp::log_level::information) << "Setting contact information on the web server with " << public_endpoints.size() << " public endpoint(s) (" << oss.str() << ")...";
@@ -2769,14 +2769,14 @@ namespace freelan
 						{
 							std::ostringstream oss;
 
-							for (auto&& endpoint : accepted_endpoints)
+							for (auto&& ep : accepted_endpoints)
 							{
 								if (!oss.str().empty())
 								{
 									oss << ", ";
 								}
 
-								oss << endpoint;
+								oss << ep;
 							}
 
 							m_logger(fscp::log_level::information) << "Server will advertise the following endpoints: " << oss.str();
@@ -2786,14 +2786,14 @@ namespace freelan
 						{
 							std::ostringstream oss;
 
-							for (auto&& endpoint : rejected_endpoints)
+							for (auto&& ep : rejected_endpoints)
 							{
 								if (!oss.str().empty())
 								{
 									oss << ", ";
 								}
 
-								oss << endpoint;
+								oss << ep;
 							}
 
 							m_logger(fscp::log_level::warning) << "Server refused to advertise the following endpoints: " << oss.str();
@@ -2865,16 +2865,16 @@ namespace freelan
 							{
 								std::ostringstream oss;
 
-								for (auto&& endpoint : contact.second)
+								for (auto&& ep : contact.second)
 								{
-									async_contact(endpoint);
+									async_contact(ep);
 
 									if (!oss.str().empty())
 									{
 										oss << ", ";
 									}
 
-									oss << endpoint;
+									oss << ep;
 								}
 
 								m_logger(fscp::log_level::information) << "Contact information for " << contact.first << ": " << oss.str();

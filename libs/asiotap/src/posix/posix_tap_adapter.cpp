@@ -286,6 +286,7 @@ namespace asiotap
 		if (!_name.empty())
 		{
 			strncpy(ifr.ifr_name, _name.c_str(), IFNAMSIZ);
+			ifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 		}
 
 		// Set the parameters on the tun device.
@@ -307,6 +308,7 @@ namespace asiotap
 			struct ifreq netifr {};
 
 			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+			netifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
 
@@ -323,6 +325,7 @@ namespace asiotap
 			netifr = {};
 
 			std::strncpy(netifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
+			netifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 #endif
 
 			// Get the interface hwaddr
@@ -504,6 +507,7 @@ namespace asiotap
 		struct ifreq ifr {};
 
 		strncpy(ifr.ifr_name, name().c_str(), IFNAMSIZ);
+		ifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 
 		// Destroy the virtual tap device
 		if (ioctl(socket.native_handle(), SIOCIFDESTROY, &ifr) < 0)
@@ -522,6 +526,7 @@ namespace asiotap
 		struct ifreq netifr {};
 
 		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
+		netifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 
 		// Get the interface flags
 		if (::ioctl(socket.native_handle(), SIOCGIFFLAGS, static_cast<void*>(&netifr)) < 0)
@@ -667,6 +672,7 @@ namespace asiotap
 		struct ifreq netifr {};
 
 		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
+		netifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 
 		if (::ioctl(socket.native_handle(), SIOCGIFMTU, (void*)&netifr) >= 0)
 		{
@@ -685,6 +691,7 @@ namespace asiotap
 		struct ifreq netifr {};
 
 		strncpy(netifr.ifr_name, name().c_str(), IFNAMSIZ);
+		netifr.ifr_name[IFNAMSIZ - 1] = 0x00;
 
 		netifr.ifr_mtu = _mtu;
 
@@ -705,7 +712,8 @@ namespace asiotap
 
 		ifreq ifr_a {};
 
-		std::strncpy(ifr_a.ifr_name, name().c_str(), IFNAMSIZ - 1);
+		std::strncpy(ifr_a.ifr_name, name().c_str(), IFNAMSIZ);
+		ifr_a.ifr_name[IFNAMSIZ - 1] = 0x00;
 
 		sockaddr_in* ifr_a_addr = reinterpret_cast<sockaddr_in*>(&ifr_a.ifr_addr);
 		ifr_a_addr->sin_family = AF_INET;
@@ -730,7 +738,8 @@ namespace asiotap
 		{
 			ifreq ifr_n {};
 
-			std::strncpy(ifr_n.ifr_name, name().c_str(), IFNAMSIZ - 1);
+			std::strncpy(ifr_n.ifr_name, name().c_str(), IFNAMSIZ);
+			ifr_n.ifr_name[IFNAMSIZ - 1] = 0x00;
 			sockaddr_in* ifr_n_addr = reinterpret_cast<sockaddr_in*>(&ifr_n.ifr_addr);
 			ifr_n_addr->sin_family = AF_INET;
 #ifdef BSD
@@ -828,7 +837,8 @@ namespace asiotap
 
 		ifreq ifr_d {};
 
-		std::strncpy(ifr_d.ifr_name, name().c_str(), IFNAMSIZ - 1);
+		std::strncpy(ifr_d.ifr_name, name().c_str(), IFNAMSIZ);
+		ifr_d.ifr_name[IFNAMSIZ - 1] = 0x00;
 		sockaddr_in* ifr_dst_addr = reinterpret_cast<sockaddr_in*>(&ifr_d.ifr_dstaddr);
 		ifr_dst_addr->sin_family = AF_INET;
 #ifdef BSD
