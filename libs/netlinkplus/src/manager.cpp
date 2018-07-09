@@ -141,11 +141,18 @@ namespace netlinkplus
 						}
 					case RTA_METRICS:
 						{
-							if (buffer_size(data) != sizeof(result.priority))
+							if (buffer_size(data) != sizeof(result.metric))
 							{
-								throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_metric));
+								// On some old GNU/Linux distributions, it causes issues.
+								// In addition, RTA_METRICS processing is more complex than
+								// that (data should be an array of rtattr structures).
+								// So disable the exception from now.
+								//throw boost::system::system_error(make_error_code(netlinkplus_error::invalid_route_metric));
+								result.metric = 0;
+								break;
 							}
 
+							// TODO handle properly RTA_METRICS
 							result.metric = *boost::asio::buffer_cast<unsigned int*>(data);
 
 							break;
