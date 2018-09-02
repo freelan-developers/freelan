@@ -38,7 +38,9 @@
     <ProjectGuid>{FCABC429-7FB2-4453-89CB-D1A59A7D59F9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>freelan</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
+    <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -85,37 +87,37 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(VC_LibraryPath_x86)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(VC_LibraryPath_x86)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(VC_LibraryPath_x86)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(VC_LibraryPath_x86)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\apps\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\lib;$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(VC_LibraryPath_x64)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
@@ -124,6 +126,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
@@ -132,7 +135,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc141-mt-gd-x32-1_67.lib;libboost_system-vc141-mt-gd-x32-1_67.lib;libboost_thread-vc141-mt-gd-x32-1_67.lib;libboost_program_options-vc141-mt-gd-x32-1_67.lib;libboost_filesystem-vc141-mt-gd-x32-1_67.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpcd.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl.lib;boost_date_time-vc140-mt-gd.lib;boost_system-vc140-mt-gd.lib;boost_thread-vc140-mt-gd.lib;boost_program_options-vc140-mt-gd.lib;boost_filesystem-vc140-mt-gd.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpc.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -148,10 +151,7 @@
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-</Command>
+	   <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
@@ -162,6 +162,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
@@ -170,7 +171,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libiconvd.lib;libeay32.lib;ssleay32.lib;libcurl_a_debug.lib;libboost_date_time-vc141-mt-gd-x64-1_67.lib;libboost_system-vc141-mt-gd-x64-1_67.lib;libboost_thread-vc141-mt-gd-x64-1_67.lib;libboost_program_options-vc141-mt-gd-x64-1_67.lib;libboost_filesystem-vc141-mt-gd-x64-1_67.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpcd.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl.lib;boost_date_time-vc140-mt-gd.lib;boost_system-vc140-mt-gd.lib;boost_thread-vc140-mt-gd.lib;boost_program_options-vc140-mt-gd.lib;boost_filesystem-vc140-mt-gd.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpc.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -186,10 +187,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
@@ -200,6 +198,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -212,7 +211,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc141-mt-x32-1_67.lib;libboost_system-vc141-mt-x32-1_67.lib;libboost_thread-vc141-mt-x32-1_67.lib;libboost_program_options-vc141-mt-x32-1_67.lib;libboost_filesystem-vc141-mt-x32-1_67.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpc.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl.lib;boost_date_time-vc140-mt.lib;boost_system-vc140-mt.lib;boost_thread-vc140-mt.lib;boost_program_options-vc140-mt.lib;boost_filesystem-vc140-mt.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpc.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -228,10 +227,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>
@@ -242,6 +238,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -254,7 +251,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl_a.lib;libboost_date_time-vc141-mt-x64-1_67.lib;libboost_system-vc141-mt-x64-1_67.lib;libboost_thread-vc141-mt-x64-1_67.lib;libboost_program_options-vc141-mt-x64-1_67.lib;libboost_filesystem-vc141-mt-x64-1_67.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpc.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libiconv.lib;libeay32.lib;ssleay32.lib;libcurl.lib;boost_date_time-vc140-mt.lib;boost_system-vc140-mt.lib;boost_thread-vc140-mt.lib;boost_program_options-vc140-mt.lib;boost_filesystem-vc140-mt.lib;libiconvplus.lib;libkfather.lib;libexecuteplus.lib;libcryptoplus.lib;libasiotap.lib;libfscp.lib;libmongooseplus.lib;libfreelan.lib;miniupnpc.lib;libminiupnpcplus.lib;Iphlpapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
@@ -270,10 +267,7 @@ xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configurat
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\libeay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-xcopy /E /Y $(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\bin\ssleay32.dll $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\
-</Command>
+      <Command>xcopy /E /Y $(ProjectDir)\config\*.cfg $(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\config\</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying the configuration files</Message>

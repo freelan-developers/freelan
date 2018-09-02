@@ -34,7 +34,9 @@
     <ProjectGuid>{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libkfather</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
+    <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -80,25 +82,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
@@ -107,6 +109,7 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -135,6 +138,7 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USING_STATIC_LIBICONV;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -164,6 +168,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -196,6 +201,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>

@@ -78,7 +78,7 @@
 #include <defines.hpp>
 
 #ifdef MSV
-#include <openssl/applink.c>
+//#include <openssl/applink.c>
 #endif
 
 namespace fs = boost::filesystem;
