@@ -20,7 +20,7 @@ init:
 
 install:
   - cinst cmake
-  - xcopy /I third-party/vcpkg/ports/miniupnpc c:\tools\vcpkg\ports\miniupnpc
+  - xcopy /I third-party\vcpkg\ports\miniupnpc c:\tools\vcpkg\ports\miniupnpc
 
 before_build:
   - vcpkg install libiconv --triplet %PLATFORM%-windows-static
