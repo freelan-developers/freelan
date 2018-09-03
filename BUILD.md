@@ -24,30 +24,36 @@ package manager. Then in an elevated cmd.exe:
 
 To install vcpkg and FreeLAN dependencies, run the following:
 
-> git clone https://github.com/Microsoft/vcpkg.git
-> cd vcpkg
-> .\bootstrap-vcpkg.bat
-> xcopy /I ..\freelan\third-party\vcpkg\ports\miniupnpc .\ports\miniupnpc
-> vcpkg install boost miniupnpc libiconv openssl curl --triplet x64-windows-static
-> vcpkg install boost miniupnpc libiconv openssl curl --triplet x86-windows-static
+```
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+.\bootstrap-vcpkg.bat
+vcpkg integrate install
+xcopy /I ..\freelan\third-party\vcpkg\ports\miniupnpc .\ports\miniupnpc
+vcpkg install boost miniupnpc libiconv openssl curl --triplet x64-windows-static
+vcpkg install boost miniupnpc libiconv openssl curl --triplet x86-windows-static
+```
 
 ### Debian Linux
 
 To install the required dependencies on Debian Linux (Or Ubuntu), type the
 following command:
 
-> sudo apt-get install scons python libssl-dev libcurl4-openssl-dev
-> libboost-system-dev libboost-thread-dev libboost-program-options-dev
-> libboost-filesystem-dev libboost-iostreams-dev libminiupnpc-dev build-essential
+```
+sudo apt-get install scons python libssl-dev libcurl4-openssl-dev \
+  libboost-system-dev libboost-thread-dev libboost-program-options-dev \
+  libboost-filesystem-dev libboost-iostreams-dev libminiupnpc-dev build-essential
+```
 
 ### Mac OSX
 
 To install the required dependencies on Mac OS, type the following commands: 
 
-> /usr/bin/ruby -e "$(curl -fsSL
-> https://raw.githubusercontent.com/Homebrew/install/master/install)"
-> brew update
-> brew install scons boost openssl miniupnpc
+```
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew update
+brew install scons boost openssl miniupnpc
+```
 
 You will also need tuntap driver:
 
