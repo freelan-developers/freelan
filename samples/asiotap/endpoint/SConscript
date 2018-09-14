@@ -1,11 +1,14 @@
 import os
-
+import sys
 
 libraries = [
     'asiotap',
     'boost_system',
     'boost_iostreams',
 ]
+
+if sys.platform.startswith('linux'):
+    libraries.append('pthread')
 
 Import('env dirs name')
 
