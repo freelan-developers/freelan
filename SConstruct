@@ -218,7 +218,7 @@ if mode in ('all', 'release'):
     env = FreelanEnvironment(mode='release', prefix=prefix, bin_prefix=bin_prefix, mongoose=mongoose, upnp=upnp)
     libraries, includes, apps, samples, configurations, help = SConscript('SConscript', exports='env', variant_dir=os.path.join('build', env.mode))
     install = env.Install(os.path.join(env.bin_install_prefix, 'bin'), apps)
-    install = env.Install(os.path.join(env.bin_install_prefix, 'man', 'man1'), help)
+    install.extend(env.Install(os.path.join(env.bin_install_prefix, 'share/man', 'man1'), help))
     install.extend(env.Install(os.path.join(env.install_prefix, 'etc', 'freelan'), configurations))
 
     Alias('install', install)
