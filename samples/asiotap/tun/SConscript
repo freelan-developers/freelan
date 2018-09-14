@@ -11,6 +11,7 @@ libraries = [
 
 if sys.platform.startswith('linux'):
     libraries.append('netlinkplus')
+    libraries.append('pthread')
 
 Import('env dirs name')
 
