@@ -5,6 +5,7 @@ libraries = [
     'netlinkplus',
     'boost_system',
     'boost_iostreams',
+    'pthread'
 ]
 
 Import('env dirs name')

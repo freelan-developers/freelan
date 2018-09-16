@@ -227,8 +227,10 @@ int main()
 		tap_adapter.open();
 
 		asiotap::tap_adapter_configuration configuration {};
-		configuration.ipv4.network_address = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
-		configuration.ipv6.network_address = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
+		asiotap::ipv4_network_address ipv4 = { boost::asio::ip::address_v4::from_string("9.0.0.1"), 24 };
+		asiotap::ipv6_network_address ipv6 = { boost::asio::ip::address_v6::from_string("fe80::c887:eb51:aaaa:bbbb"), 64 };
+		configuration.ipv4.network_address = ipv4;
+		configuration.ipv6.network_address = ipv6;
 
 		tap_adapter.configure(configuration);
 
