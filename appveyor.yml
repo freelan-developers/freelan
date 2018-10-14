@@ -8,8 +8,10 @@ environment:
   matrix:
     - platform: x64
       ARCH_BITS: 64
+      INSTALLER_BITS: amd64
     - platform: x86
       ARCH_BITS: 32
+      INSTALLER_BITS: x86
 
 configuration:
   - Release
@@ -17,10 +19,16 @@ configuration:
 
 init:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%'
+  
 
 install:
   - cinst cmake
   - xcopy /I third-party\vcpkg\ports\miniupnpc c:\tools\vcpkg\ports\miniupnpc
+  # Install python wheels, necessary to install SCons via pip
+  - python -m pip install wheel
+  # Install SCons
+  - python -m pip install scons==2.5.1
+  - scons --version
 
 before_build:
   - vcpkg install libiconv --triplet %PLATFORM%-windows-static
@@ -34,6 +42,11 @@ build_script:
 
 after_build:
   - 7z a BuildArtifacts.zip install\*
+  - ps: >-
+      If ($env:Configuration -Match "Release") {
+        scons -C packaging\windows --arch=%INSTALLER_BITS%
+      }
+        
 
 branches:
     only:
@@ -43,3 +56,6 @@ branches:
 artifacts:
     - path: BuildArtifacts.zip
       name: Zip
+    - path: packaging\windows\*.exe
+      name: Setup
+      
