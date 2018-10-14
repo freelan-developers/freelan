@@ -32,7 +32,14 @@ before_build:
 build_script:
   - 'nmake -f Makefile.windows build_%CONFIGURATION%_%PLATFORM%'
 
+after_build:
+  - 7z a BuildArtifacts.zip install\*
+
 branches:
     only:
         - master
         - vcpkg
+
+artifacts:
+    - path: BuildArtifacts.zip
+      name: Zip
