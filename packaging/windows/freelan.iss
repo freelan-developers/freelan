@@ -5,7 +5,7 @@
 
 ; Tap adapter defines
 #define TAP "tap0901"
-#define TAPINF "OemWin2k"
+#define TAPINF "OemVista"
 
 [Setup]
 AppId={{3AE669E7-36C2-48DF-985B-6037F9AF69A8}
