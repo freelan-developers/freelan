@@ -43,20 +43,17 @@ build_script:
 after_build:
   - 7z a BuildArtifacts.zip install\*
   - ps: >-
-      # Publish Build Artifacts
-      $gitHash = $env:APPVEYOR_REPO_COMMIT.Substring(0, 8);
-      $zipFile   = "freelan-binary-$env:platform-$gitHash.zip"
-      Push-AppveyorArtifact "BuildArtifacts.zip" -FileName $zipFile
-      
-      # Publish Installer artifact (but only in Release configuration)  
-      If ($env:Configuration -Match "Release") {
-        scons -C packaging\windows --arch=%INSTALLER_BITS%
+          $gitHash = $env:APPVEYOR_REPO_COMMIT.Substring(0, 8);
+          $zipFile   = "freelan-binary-$env:platform-$gitHash.zip";
+          Push-AppveyorArtifact "BuildArtifacts.zip" -FileName $zipFile;
+          
+          If ($env:Configuration -Match "Release") {
+            scons -C packaging\windows --arch=%INSTALLER_BITS%
 
-        $setupFile = "freelan-setup-$env:platform-$gitHash.exe"
-        $installerFile = Get-ChildItem -Path .\packaging\windows\ -Filter *.exe | Select-Object -First 1
-        Push-AppveyorArtifact $installerFile.FullName -FileName $setupFile
-      }
-        
+            $setupFile = "freelan-setup-$env:platform-$gitHash.exe";
+            $installerFile = Get-ChildItem -Path .\packaging\windows\ -Filter *.exe | Select-Object -First 1;
+            Push-AppveyorArtifact $installerFile.FullName -FileName $setupFile;
+          }
 
 branches:
     only:
