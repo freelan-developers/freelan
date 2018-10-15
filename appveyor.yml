@@ -45,6 +45,14 @@ after_build:
   - ps: >-
       If ($env:Configuration -Match "Release") {
         scons -C packaging\windows --arch=%INSTALLER_BITS%
+        
+        $gitHash = $env:APPVEYOR_REPO_COMMIT.Substring(0, 8);
+        $zipFile   = "freelan-binary-$env:platform-$gitHash.zip"
+        Push-AppveyorArtifact "BuildArtifacts.zip" -FileName $zipFile
+
+        $setupFile = "freelan-setup-$env:platform-$gitHash.exe"
+        $installerFile = Get-ChildItem -Path .\packaging\windows\ -Filter *.exe | Select-Object -First 1
+        Push-AppveyorArtifact $installerFile.FullName -FileName $setupFile
       }
         
 
@@ -52,12 +60,6 @@ branches:
     only:
         - master
         - vcpkg
-
-artifacts:
-    - path: BuildArtifacts.zip
-      name: Zip
-    - path: packaging\windows\*.exe
-      name: Setup
 
 on_failure:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))  
