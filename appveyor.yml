@@ -8,8 +8,10 @@ environment:
   matrix:
     - platform: x64
       ARCH_BITS: 64
+      INSTALLER_BITS: amd64
     - platform: x86
       ARCH_BITS: 32
+      INSTALLER_BITS: x86
 
 configuration:
   - Release
@@ -17,10 +19,16 @@ configuration:
 
 init:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%'
+  
 
 install:
   - cinst cmake
   - xcopy /I third-party\vcpkg\ports\miniupnpc c:\tools\vcpkg\ports\miniupnpc
+  # Install python wheels, necessary to install SCons via pip
+  - python -m pip install wheel
+  # Install SCons
+  - python -m pip install scons==2.5.1
+  - scons --version
 
 before_build:
   - vcpkg install libiconv --triplet %PLATFORM%-windows-static
@@ -32,7 +40,25 @@ before_build:
 build_script:
   - 'nmake -f Makefile.windows build_%CONFIGURATION%_%PLATFORM%'
 
+after_build:
+  - 7z a BuildArtifacts.zip install\*
+  - ps: >-
+          $gitHash = $env:APPVEYOR_REPO_COMMIT.Substring(0, 8);
+          $zipFile   = "freelan-binary-$env:platform-$gitHash.zip";
+          Push-AppveyorArtifact "BuildArtifacts.zip" -FileName $zipFile;
+          
+          If ($env:Configuration -Match "Release") {
+            scons -C packaging\windows --arch=%INSTALLER_BITS%
+
+            $setupFile = "freelan-setup-$env:platform-$gitHash.exe";
+            $installerFile = Get-ChildItem -Path .\packaging\windows\ -Filter *.exe | Select-Object -First 1;
+            Push-AppveyorArtifact $installerFile.FullName -FileName $setupFile;
+          }
+
 branches:
     only:
         - master
         - vcpkg
+
+on_failure:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))  
