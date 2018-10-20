@@ -11,7 +11,7 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 # Get FreeLAN sources and compile it
-RUN git clone -b $FREELAN_BRANCH --depth=50 https://github.com/freelan-developers/freelan.git && \
+RUN git clone -b $FREELAN_BRANCH --depth=100 https://github.com/freelan-developers/freelan.git && \
   cd freelan && \
   scons --mode=release install prefix=/usr/ -j2 && \
   cd .. && rm -rf freelan
