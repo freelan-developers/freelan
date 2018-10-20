@@ -17,7 +17,7 @@
   become_user: root
 
 - name: Checkout freelan sources
-  git: repo={{ local_sources_root }} dest={{ sources_root }} version={{ repository_version }} accept_hostkey=yes recursive=no
+  git: repo={{ local_sources_root }} dest={{ sources_root }} version={{ repository_version }} accept_hostkey=yes recursive=no depth=1
   tags:
     - build
 
