@@ -55,7 +55,9 @@
     <ProjectGuid>{D2906D5F-3E94-4376-814D-299B8F81E195}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libfscp</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
+    <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -103,34 +105,35 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\lib\</OutDir>
     <IntDir>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\libs\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include;$(SolutionDir)\third-party\install\$(PlatformShortName)\$(Configuration)\include\boost-1_67;$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\libs\asiotap\include;$(SolutionDir)\libs\cryptoplus\include;$(SolutionDir)\libs\executeplus\include;$(SolutionDir)\libs\freelan\include;$(SolutionDir)\libs\fscp\include;$(SolutionDir)\libs\iconvplus\include;$(SolutionDir)\libs\kfather\include;$(SolutionDir)\libs\mongooseplus\include;$(SolutionDir)\libs\miniupnpcplus\include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_UPNP;USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\fscp</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4267</DisableSpecificWarnings>
@@ -156,9 +159,10 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_UPNP;USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;DEBUG;_WIN32_WINNT=0x0501;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\fscp</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4267</DisableSpecificWarnings>
@@ -185,10 +189,11 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_UPNP;USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\fscp</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4267</DisableSpecificWarnings>
@@ -217,10 +222,11 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_UPNP;USING_STATIC_LIBICONV;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_ALL_NO_LIB;_WIN32_WINNT=0x0501;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\include\fscp</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;4267</DisableSpecificWarnings>

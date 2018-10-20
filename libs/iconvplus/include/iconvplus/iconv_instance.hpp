@@ -255,7 +255,7 @@ namespace iconvplus
 
 	inline size_t iconv_instance::raw_convert(const char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft) const
 	{
-#if defined(__NetBSD__) || defined(_MSC_VER)
+#if defined(__NetBSD__)
 		return ::iconv(m_iconv, inbuf, inbytesleft, outbuf, outbytesleft);
 #else
 		return ::iconv(m_iconv, const_cast<char**>(inbuf), inbytesleft, outbuf, outbytesleft);

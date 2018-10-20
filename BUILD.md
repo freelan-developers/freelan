@@ -13,39 +13,47 @@ FreeLAN depends on the following libraries:
 - iconv (Windows)
 
 Generally Linux users can just use the binaries provided by their package
-manager, Mac OSX users can use brew but other platforms such as Windows may need
-to build these libraries explicitely.
+manager, Mac OSX users can use brew and Windows users can use `vcpkg`.
 
-To build the third-party libraries, you can use
-[teapot](https://github.com/freelan-developers/teapot) (be sure to have `python
-2.7`, `cmake` and `perl` installed). Check its
-[documentation](http://teapot-builder.readthedocs.org/en/latest/) for details,
-or just type the following command at the root of FreeLAN's repository:
+### Microsoft Windows
 
-> teapot build
+You will also need Python, perl and cmake. Refers to https://chocolatey.org/install to install chocolatey
+package manager. Then in an elevated cmd.exe: 
 
-This will build everything inside `third-party`. Once that is done, you can
-proceed with the next steps.
+> choco install ActivePerl cmake python2
+
+To install vcpkg and FreeLAN dependencies, run the following:
+
+```
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+.\bootstrap-vcpkg.bat
+vcpkg integrate install
+xcopy /I ..\freelan\third-party\vcpkg\ports\miniupnpc .\ports\miniupnpc
+vcpkg install boost miniupnpc libiconv openssl curl --triplet x64-windows-static
+vcpkg install boost miniupnpc libiconv openssl curl --triplet x86-windows-static
+```
 
 ### Debian Linux
 
 To install the required dependencies on Debian Linux (Or Ubuntu), type the
 following command:
 
-> sudo apt-get install scons python libssl-dev libcurl4-openssl-dev
-> libboost-system-dev libboost-thread-dev libboost-program-options-dev
-> libboost-filesystem-dev libboost-iostreams-dev libminiupnpc-dev build-essential
+```
+sudo apt-get install scons python libssl-dev libcurl4-openssl-dev \
+  libboost-system-dev libboost-thread-dev libboost-program-options-dev \
+  libboost-filesystem-dev libboost-iostreams-dev libminiupnpc-dev build-essential
+```
 
 ### Mac OSX
 
 To install the required dependencies on Mac OS, type the following commands: 
 
-> /usr/bin/ruby -e "$(curl -fsSL
-> https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-> brew update
-
-> brew install scons boost openssl miniupnpc
+```
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew update
+brew install scons boost openssl miniupnpc
+```
 
 You will also need tuntap driver:
 
@@ -90,7 +98,11 @@ You will need Microsoft Visual Studio 2017 to compile freelan. All projects come
 with a `.vcxproj` file for all the targets (debug/release and x86/x64).
 
 The root directory also contains a solution file (`.sln`) that references all
-the sub-projects.
+the sub-projects. You can use the Visual Studio GUI or the command-line
+interface.
+
+To build with the CLI, run a cmd.exe with the buildtools, then:
+> nmake -f Makefile.windows
 
 The resulting binaries will be located in the [install](install) directory.
 
@@ -102,3 +114,4 @@ package:
 > scons package
 
 The package will be generated at the root of the repository.
+

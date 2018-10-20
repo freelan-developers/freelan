@@ -334,7 +334,9 @@ namespace asiotap
 		ULONG status = connected ? TRUE : FALSE;
 		DWORD len;
 
-		if (!::DeviceIoControl(descriptor().native_handle(), TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof(status), NULL, 0, &len, NULL))
+		if (!::DeviceIoControl(descriptor().native_handle(), TAP_WIN_IOCTL_SET_MEDIA_STATUS,
+                             &status, sizeof(status),
+                             &status, sizeof(status), &len, NULL))
 		{
 			throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 		}

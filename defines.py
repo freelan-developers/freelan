@@ -36,7 +36,7 @@ class Defines(object):
     def repository_root(self):
         if self._repository_root is None:
             try:
-                if self.no_git:
+                if ('APPVEYOR' in os.environ) or self.no_git:
                     self._repository_root = self.local_path
                 else:
                     self._repository_root = os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip())
@@ -49,7 +49,9 @@ class Defines(object):
     def repository_version(self):
         if self._repository_version is None:
             try:
-                if self.no_git:
+                if 'APPVEYOR_REPO_COMMIT' in os.environ:
+                    self._repository_version = os.environ['APPVEYOR_REPO_COMMIT'].rstrip()
+                elif self.no_git:
                     if 'FREELAN_NO_GIT_VERSION' not in os.environ:
                         raise RuntimeError(errstr='You must specify FREELAN_NO_GIT_VERSION when FREELAN_NO_GIT is specified.')
 

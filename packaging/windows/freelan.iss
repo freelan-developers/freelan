@@ -5,7 +5,7 @@
 
 ; Tap adapter defines
 #define TAP "tap0901"
-#define TAPINF "OemWin2k"
+#define TAPINF "OemVista"
 
 [Setup]
 AppId={{3AE669E7-36C2-48DF-985B-6037F9AF69A8}
@@ -37,8 +37,6 @@ Name: german; MessagesFile: compiler:Languages\German.isl
 [Files]
 Source: ..\..\install\{#XARCH}\Release\bin\freelan.exe; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
 Source: ..\..\install\{#XARCH}\Release\config\freelan.cfg; DestDir: {app}\config; Flags: ignoreversion onlyifdoesntexist; Components: configuration
-Source: ..\..\install\{#XARCH}\Release\bin\ssleay32.dll; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
-Source: ..\..\install\{#XARCH}\Release\bin\libeay32.dll; DestDir: {app}\bin; Flags: ignoreversion; Components: binaries
 Source: files\{#ARCH}\{#TAPINF}.inf; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.cat; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
 Source: files\{#ARCH}\{#TAP}.sys; DestDir: {app}\driver; Flags: ignoreversion; Components: tap_adapter
