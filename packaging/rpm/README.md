@@ -8,7 +8,7 @@ The rpm-build package must be installed:
 
 Be sure to have the FreeLAN dependencies:
 
-`yum install scons boost-devel libcurl-devel openssl-devel miniupnpc-devel`
+`yum install scons boost-devel libcurl-devel openssl-devel miniupnpc-devel help2man`
 
 ## Build
 
