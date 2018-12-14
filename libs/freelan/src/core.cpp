@@ -2054,16 +2054,21 @@ namespace freelan
 			return result;
 		}();
 
+		// disable buffer recycling from now (possible issue with SharedBuffer
+		// which references itself due to lambda capture)
 		m_tap_adapter->async_read(
 			buffer(receive_buffer),
 			boost::bind(
 				&core::do_handle_tap_adapter_read,
 				this,
+				/*
 				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
 					m_tap_adapter_io_service.post([this, buffer] () {
 						m_tap_adapter_buffers.push_back(buffer);
 					});
 				}),
+				*/
+				receive_buffer,
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)

@@ -1537,12 +1537,17 @@ namespace fscp
 					);
 			}
 
+			// disable buffer recycling from now (possible issue with SharedBuffer
+			// which references itself due to lambda capture)
 			async_send_to(
+				/*
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer]() {
 						m_session_buffers.push_back(buffer);
 					});
 				}),
+				*/
+				send_buffer,
 				size,
 				target,
 				handler
@@ -1824,12 +1829,17 @@ namespace fscp
 				);
 			}
 
+			// disable buffer recycling from now (possible issue with SharedBuffer
+			// which references itself due to lambda capture)
 			async_send_to(
+				/*
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer]() {
 						m_session_buffers.push_back(buffer);
 					});
 				}),
+				*/
+				send_buffer,
 				size,
 				target,
 				[] (const boost::system::error_code&) {}
@@ -2139,12 +2149,17 @@ namespace fscp
 				buffer_size(p_session.current_session().local_nonce_prefix)
 			);
 
+			// disable buffer recycling from now (possible issue with SharedBuffer
+			// which references itself due to lambda capture)
 			async_send_to(
+				/*
 				SharedBuffer(send_buffer, [this](const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer]() {
 						m_session_buffers.push_back(buffer);
 					});
 				}),
+				*/
+				send_buffer,
 				size,
 				target,
 				handler
@@ -2370,11 +2385,14 @@ namespace fscp
 			do_handle_data_message(
 				sender,
 				type,
+				/*
 				SharedBuffer(cleartext_buffer, [this] (const SharedBuffer& buffer) {
 					m_session_strand.post([this, buffer] () {
 						m_session_buffers.push_back(buffer);
 					});
 				}),
+				*/
+				cleartext_buffer,
 				buffer(cleartext_buffer, cleartext_len)
 			);
 		}
