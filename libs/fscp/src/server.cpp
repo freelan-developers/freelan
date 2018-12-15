@@ -882,11 +882,14 @@ namespace fscp
 				this,
 				get_identity(),
 				sender,
+				/*
 				SharedBuffer(receive_buffer, [this](const SharedBuffer& buffer) {
 					m_socket_strand.post([this, buffer]() {
 						m_socket_buffers.push_back(buffer);
 					});
 				}),
+				*/
+				receive_buffer,
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred
 			)
