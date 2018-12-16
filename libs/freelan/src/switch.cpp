@@ -139,7 +139,16 @@ namespace freelan
 			std::cerr << index << "-> " << target << std::endl;
 #endif
 
-			m_ports[target].async_write(data, boost::bind(&results_gatherer_type::gather, rg, target, _1));
+			if(index != target)
+			{
+				m_ports[target].async_write(data, boost::bind(&results_gatherer_type::gather, rg, target, _1));
+			}
+#if FREELAN_DEBUG
+			else
+			{
+				std::cerr << "Index matching target forbidden (" << index << "-> " << target << ")" << std::endl;
+			}
+#endif
 		}
 	}
 
