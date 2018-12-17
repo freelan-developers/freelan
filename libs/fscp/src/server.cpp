@@ -214,6 +214,8 @@ namespace fscp
 		}
 	}
 
+	const size_t server::MAX_PRESENTATION_REQUESTS = 512;
+
 	// Public methods
 
 	server::server(boost::asio::io_service& io_service, fscp::logger& _logger, const identity_store& identity) :
@@ -227,6 +229,8 @@ namespace fscp
 		m_hello_message_received_handler(),
 		m_presentation_strand(io_service),
 		m_presentation_message_received_handler(),
+		m_presentation_requests(0),
+		m_presentation_limit_timer(io_service, boost::posix_time::seconds(10)),
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
 		m_cipher_suites(get_default_cipher_suites()),
@@ -307,6 +311,9 @@ namespace fscp
 		async_receive_from();
 
 		m_keep_alive_timer.async_wait(m_session_strand.wrap(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error)));
+		m_presentation_limit_timer.async_wait(m_presentation_strand.wrap(
+					boost::bind(&server::do_presentation_reset_limit, this,
+						boost::asio::placeholders::error)));
 	}
 
 	void server::close()
@@ -314,6 +321,8 @@ namespace fscp
 		cancel_all_greetings();
 
 		m_keep_alive_timer.cancel();
+
+		m_presentation_limit_timer.cancel();
 
 		m_socket.close();
 	}
@@ -1415,6 +1424,16 @@ namespace fscp
 	void server::do_handle_presentation(const identity_store& identity, const ep_type& sender, bool has_session, cert_type signature_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
+		if(m_presentation_requests <= MAX_PRESENTATION_REQUESTS)
+		{
+			m_presentation_requests++;
+		}
+		else
+		{
+			// presentation flood?
+			return;
+		}
+
 		presentation_status_type presentation_status = PS_FIRST;
 
 		const presentation_store_map::iterator entry = m_presentation_store_map.find(sender);
@@ -1440,6 +1459,21 @@ namespace fscp
 		}
 
 		m_presentation_store_map[sender] = presentation_store(signature_certificate, identity.pre_shared_key());
+	}
+
+	void server::do_presentation_reset_limit(const boost::system::error_code& ec)
+	{
+		// All do_presentation_reset_limit calls are done in the same strand so the following is thread-safe.
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			m_presentation_requests = 0;
+
+			// rearm timer again
+			m_presentation_limit_timer.expires_from_now(boost::posix_time::seconds(10));
+			m_presentation_limit_timer.async_wait(m_presentation_strand.wrap(
+						boost::bind(&server::do_presentation_reset_limit, this,
+							boost::asio::placeholders::error)));
+		}
 	}
 
 	void server::do_set_presentation_message_received_callback(presentation_message_received_handler_type callback, void_handler_type handler)

@@ -1426,6 +1426,12 @@ namespace fscp
 			void handle_presentation_message_from(const identity_store&, const presentation_message&, const ep_type&);
 			void do_handle_presentation(const identity_store& identity, const ep_type&, bool, cert_type);
 
+			/**
+			 * \brief Reset presentation limit.
+			 * \param ec error code.
+			 */
+			void do_presentation_reset_limit(const boost::system::error_code& ec);
+
 			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
 
 			// This strand is also used by session requests and session messages during the cipherment/decipherment phase.
@@ -1436,6 +1442,21 @@ namespace fscp
 #endif
 			presentation_store_map m_presentation_store_map;
 			presentation_message_received_handler_type m_presentation_message_received_handler;
+
+			/**
+			 * \brief Current number of session request sent.
+			 */
+			size_t m_presentation_requests;
+
+			/**
+			 * \brief Timer for reesting presentation requests limit.
+			 */
+			boost::asio::deadline_timer m_presentation_limit_timer;
+
+			/**
+			 * \brief maximum number of session request.
+			 */
+			static const size_t MAX_PRESENTATION_REQUESTS;
 
 		private: // SESSION_REQUEST messages
 
