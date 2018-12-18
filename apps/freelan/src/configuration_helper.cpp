@@ -292,7 +292,7 @@ po::options_description get_fscp_options()
 	("fscp.cipher_suite_capability", po::value<std::vector<fscp::cipher_suite_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_cipher_suites(), ""), "A cipher suite to allow.")
 	("fscp.elliptic_curve_capability", po::value<std::vector<fscp::elliptic_curve_type> >()->multitoken()->zero_tokens()->default_value(fscp::get_default_elliptic_curves(), ""), "A elliptic curve to allow.")
 	("fscp.upnp_enabled", po::value<bool>()->default_value(true, "yes"), "Enable UPnP.")
-	("fscp.max_presentation_per_second", po::value<size_t>()->default_value(1, "1"), "Maximum PRESENTATION message from one host per second.")
+	("fscp.max_unauthenticated_messages_per_second", po::value<size_t>()->default_value(1, "1"), "Maximum unauthenticated messages from one host per second.")
 	;
 
 	return result;
@@ -465,7 +465,7 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 	configuration.fscp.cipher_suite_capabilities = vm["fscp.cipher_suite_capability"].as<std::vector<fscp::cipher_suite_type>>();
 	configuration.fscp.elliptic_curve_capabilities = vm["fscp.elliptic_curve_capability"].as<std::vector<fscp::elliptic_curve_type>>();
 	configuration.fscp.upnp_enabled = vm["fscp.upnp_enabled"].as<bool>();
-	configuration.fscp.max_presentation_per_second = vm["fscp.max_presentation_per_second"].as<size_t>();
+	configuration.fscp.max_unauthenticated_messages_per_second = vm["fscp.max_unauthenticated_messages_per_second"].as<size_t>();
 
 	// Security options
 	const std::string passphrase = vm["security.passphrase"].as<std::string>();

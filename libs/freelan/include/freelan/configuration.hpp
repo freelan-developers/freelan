@@ -323,9 +323,9 @@ namespace freelan
 		bool upnp_enabled;
 
 		/*
-		 * \brief Maximum PRESENTATION message from one host per second.
+		 * \brief Maximum HELLO/PRESENTATION message from one host per second.
 		 */
-		size_t max_presentation_per_second;
+		size_t max_unauthenticated_messages_per_second;
 	};
 
 	/**

@@ -422,6 +422,15 @@ namespace fscp
 			}
 
 			/**
+			 * \brief Set maximum hello message from one host per second.
+			 * \param max_per_second value to set.
+			 */
+			void set_hello_max_per_second(size_t max_per_second)
+			{
+				m_hello_max_per_second = max_per_second;
+			}
+
+			/**
 			 * \brief Set the hello message received callback.
 			 * \param callback The callback.
 			 * \param handler The handler to call when the change was made effective.
@@ -1413,6 +1422,12 @@ namespace fscp
 			void do_set_accept_hello_messages_default(bool, void_handler_type);
 			void do_set_hello_message_received_callback(hello_message_received_handler_type, void_handler_type);
 
+			/**
+			 * \brief Reset hello limit.
+			 * \param ec error code.
+			 */
+			void do_hello_reset_limit(const boost::system::error_code& ec);
+
 			ep_hello_context_map m_ep_hello_contexts;
 #if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
 			boost::asio::io_context::strand m_greet_strand;
@@ -1421,6 +1436,21 @@ namespace fscp
 #endif
 			bool m_accept_hello_messages_default;
 			hello_message_received_handler_type m_hello_message_received_handler;
+
+			/**
+			 * \brief Current number of session request sent per endpoint.
+			 */
+			std::map<ep_type, size_t> m_hello_requests_map;
+
+			/**
+			 * \brief Timer for reesting hello requests limit.
+			 */
+			boost::asio::deadline_timer m_hello_limit_timer;
+
+			/**
+			 * \brief Maximum hello message from one host per second.
+			 */
+			size_t m_hello_max_per_second;
 
 		private: // PRESENTATION messages
 
@@ -1435,13 +1465,13 @@ namespace fscp
 			void handle_presentation_message_from(const identity_store&, const presentation_message&, const ep_type&);
 			void do_handle_presentation(const identity_store& identity, const ep_type&, bool, cert_type);
 
+			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
+
 			/**
 			 * \brief Reset presentation limit.
 			 * \param ec error code.
 			 */
 			void do_presentation_reset_limit(const boost::system::error_code& ec);
-
-			void do_set_presentation_message_received_callback(presentation_message_received_handler_type, void_handler_type);
 
 			// This strand is also used by session requests and session messages during the cipherment/decipherment phase.
 #if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+

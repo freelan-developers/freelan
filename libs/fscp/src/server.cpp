@@ -225,6 +225,8 @@ namespace fscp
 		m_greet_strand(io_service),
 		m_accept_hello_messages_default(true),
 		m_hello_message_received_handler(),
+		m_hello_limit_timer(io_service, boost::posix_time::seconds(10)),
+		m_hello_max_per_second(1),
 		m_presentation_strand(io_service),
 		m_presentation_message_received_handler(),
 		m_presentation_limit_timer(io_service, boost::posix_time::seconds(10)),
@@ -320,6 +322,7 @@ namespace fscp
 
 		m_keep_alive_timer.cancel();
 
+		m_hello_limit_timer.cancel();
 		m_presentation_limit_timer.cancel();
 
 		m_socket.close();
@@ -1255,6 +1258,27 @@ namespace fscp
 	void server::do_handle_hello_request(const ep_type& sender, uint32_t hello_unique_number)
 	{
 		// All do_handle_hello_request() calls are done in the same strand so the following is thread-safe.
+		std::map<ep_type, size_t>::iterator sender_hello = m_hello_requests_map.find(sender);
+
+		if(sender_hello == m_hello_requests_map.end())
+		{
+			// new hello
+			m_hello_requests_map[sender] = 1;
+		}
+		else if(m_hello_requests_map[sender] >= (m_hello_max_per_second * 10))
+		{
+			// in 10s we have reach limits! Presentation flood?
+			m_logger(log_level::warning) <<
+				"Received too many HELLO messages from " << sender <<
+				", limit is " << (m_hello_max_per_second * 10) <<
+				" messages per 10 seconds";
+			return;
+		}
+		else
+		{
+			m_hello_requests_map[sender]++;
+		}
+
 		bool can_reply = m_accept_hello_messages_default;
 
 		if (m_hello_message_received_handler)
@@ -1292,6 +1316,21 @@ namespace fscp
 		if (handler)
 		{
 			handler();
+		}
+	}
+
+	void server::do_hello_reset_limit(const boost::system::error_code& ec)
+	{
+		// All do_hello_reset_limit calls are done in the same strand so the following is thread-safe.
+		if (ec != boost::asio::error::operation_aborted)
+		{
+			m_hello_requests_map.clear();
+
+			// rearm timer again
+			m_hello_limit_timer.expires_from_now(boost::posix_time::seconds(10));
+			m_hello_limit_timer.async_wait(m_greet_strand.wrap(
+						boost::bind(&server::do_hello_reset_limit, this,
+							boost::asio::placeholders::error)));
 		}
 	}
 
@@ -1422,7 +1461,6 @@ namespace fscp
 	void server::do_handle_presentation(const identity_store& identity, const ep_type& sender, bool has_session, cert_type signature_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
-
 		std::map<ep_type, size_t>::iterator sender_presentation = m_presentation_requests_map.find(sender);
 
 		if(sender_presentation == m_presentation_requests_map.end())
@@ -1437,7 +1475,6 @@ namespace fscp
 				"Received too many PRESENTATION messages from " << sender <<
 				", limit is " << (m_presentation_max_per_second * 10) <<
 				" messages per 10 seconds";
-
 			return;
 		}
 		else
