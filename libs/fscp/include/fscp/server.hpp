@@ -554,6 +554,15 @@ namespace fscp
 			}
 
 			/**
+			 * \brief Set maximum presentation message from one host per second.
+			 * \param max_per_second value to set.
+			 */
+			void set_presentation_max_per_second(size_t max_per_second)
+			{
+				m_presentation_max_per_second = max_per_second;
+			}
+
+			/**
 			 * \brief Set the presentation message received callback.
 			 * \param callback The callback.
 			 * \param handler The handler to call when the change was made effective.
@@ -1444,9 +1453,9 @@ namespace fscp
 			presentation_message_received_handler_type m_presentation_message_received_handler;
 
 			/**
-			 * \brief Current number of session request sent.
+			 * \brief Current number of session request sent per endpoint.
 			 */
-			size_t m_presentation_requests;
+			std::map<ep_type, size_t> m_presentation_requests_map;
 
 			/**
 			 * \brief Timer for reesting presentation requests limit.
@@ -1454,9 +1463,9 @@ namespace fscp
 			boost::asio::deadline_timer m_presentation_limit_timer;
 
 			/**
-			 * \brief maximum number of session request.
+			 * \brief Maximum presentation message from one host per second.
 			 */
-			static const size_t MAX_PRESENTATION_REQUESTS;
+			size_t m_presentation_max_per_second;
 
 		private: // SESSION_REQUEST messages
 

@@ -321,6 +321,11 @@ namespace freelan
 		 * \brief State of UPnP.
 		 */
 		bool upnp_enabled;
+
+		/*
+		 * \brief Maximum PRESENTATION message from one host per second.
+		 */
+		size_t max_presentation_per_second;
 	};
 
 	/**

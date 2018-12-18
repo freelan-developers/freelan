@@ -214,8 +214,6 @@ namespace fscp
 		}
 	}
 
-	const size_t server::MAX_PRESENTATION_REQUESTS = 512;
-
 	// Public methods
 
 	server::server(boost::asio::io_service& io_service, fscp::logger& _logger, const identity_store& identity) :
@@ -229,8 +227,8 @@ namespace fscp
 		m_hello_message_received_handler(),
 		m_presentation_strand(io_service),
 		m_presentation_message_received_handler(),
-		m_presentation_requests(0),
 		m_presentation_limit_timer(io_service, boost::posix_time::seconds(10)),
+		m_presentation_max_per_second(1),
 		m_session_strand(io_service),
 		m_accept_session_request_messages_default(true),
 		m_cipher_suites(get_default_cipher_suites()),
@@ -1424,14 +1422,27 @@ namespace fscp
 	void server::do_handle_presentation(const identity_store& identity, const ep_type& sender, bool has_session, cert_type signature_certificate)
 	{
 		// All do_handle_presentation() calls are done in the same strand so the following is thread-safe.
-		if(m_presentation_requests <= MAX_PRESENTATION_REQUESTS)
+
+		std::map<ep_type, size_t>::iterator sender_presentation = m_presentation_requests_map.find(sender);
+
+		if(sender_presentation == m_presentation_requests_map.end())
 		{
-			m_presentation_requests++;
+			// new presentation
+			m_presentation_requests_map[sender] = 1;
+		}
+		else if(m_presentation_requests_map[sender] >= (m_presentation_max_per_second * 10))
+		{
+			// in 10s we have reach limits! Presentation flood?
+			m_logger(log_level::warning) <<
+				"Received too many PRESENTATION messages from " << sender <<
+				", limit is " << (m_presentation_max_per_second * 10) <<
+				" messages per 10 seconds";
+
+			return;
 		}
 		else
 		{
-			// presentation flood?
-			return;
+			m_presentation_requests_map[sender]++;
 		}
 
 		presentation_status_type presentation_status = PS_FIRST;
@@ -1466,7 +1477,7 @@ namespace fscp
 		// All do_presentation_reset_limit calls are done in the same strand so the following is thread-safe.
 		if (ec != boost::asio::error::operation_aborted)
 		{
-			m_presentation_requests = 0;
+			m_presentation_requests_map.clear();
 
 			// rearm timer again
 			m_presentation_limit_timer.expires_from_now(boost::posix_time::seconds(10));
