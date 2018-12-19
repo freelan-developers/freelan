@@ -468,6 +468,11 @@ namespace freelan
 		asiotap::ipv4_network_address ipv4_address_prefix_length;
 
 		/**
+		 * \brief The IPv4 tap adapter DHCP status.
+		 */
+		bool ipv4_dhcp;
+
+		/**
 		 * \brief The IPv6 tap adapter address.
 		 */
 		asiotap::ipv6_network_address ipv6_address_prefix_length;

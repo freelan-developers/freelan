@@ -1787,6 +1787,9 @@ namespace freelan
 				m_logger(fscp::log_level::information) << "No IPv4 address configured.";
 			}
 
+			// IPv4 DHCP (for Windows)
+			tap_config.ipv4.dhcp = m_configuration.tap_adapter.ipv4_dhcp;
+
 			// IPv6 address
 			if (!m_configuration.tap_adapter.ipv6_address_prefix_length.is_null())
 			{

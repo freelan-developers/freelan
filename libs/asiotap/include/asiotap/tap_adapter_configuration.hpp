@@ -58,6 +58,7 @@ namespace asiotap
 		{
 			boost::optional<ipv4_network_address> network_address;
 			boost::optional<boost::asio::ip::address_v4> remote_address;
+			bool dhcp;
 		};
 
 		struct ipv6_configuration

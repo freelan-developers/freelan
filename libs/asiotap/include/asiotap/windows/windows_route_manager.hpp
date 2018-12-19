@@ -84,6 +84,7 @@ namespace asiotap
 			{
 			}
 
+			void netsh_interface_ip_set_dhcp(const std::string& interface_name, bool persistent = false);
 			void netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent = false);
 
 			windows_route_manager::route_type get_route_for(const boost::asio::ip::address& host);

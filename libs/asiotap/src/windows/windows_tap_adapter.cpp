@@ -335,8 +335,8 @@ namespace asiotap
 		DWORD len;
 
 		if (!::DeviceIoControl(descriptor().native_handle(), TAP_WIN_IOCTL_SET_MEDIA_STATUS,
-                             &status, sizeof(status),
-                             &status, sizeof(status), &len, NULL))
+					&status, sizeof(status),
+					&status, sizeof(status), &len, NULL))
 		{
 			throw boost::system::system_error(::GetLastError(), boost::system::system_category());
 		}
@@ -478,6 +478,21 @@ namespace asiotap
 			{
 				// Depending on the TAP adapter version this may not be supported.
 				m_route_manager.netsh_interface_ip_set_address(display_name(), *configuration.ipv4.network_address);
+			}
+			catch (const boost::system::system_error& ex)
+			{
+				if (ex.code() != executeplus::executeplus_error::external_process_failed)
+				{
+					throw;
+				}
+			}
+		}
+
+		if (configuration.ipv4.dhcp)
+		{
+			try
+			{
+				m_route_manager.netsh_interface_ip_set_dhcp(display_name());
 			}
 			catch (const boost::system::system_error& ex)
 			{

@@ -170,6 +170,32 @@ namespace asiotap
 		unregister_route(route_entry.interface, route_entry.route, route_entry.metric);
 	}
 
+	void windows_route_manager::netsh_interface_ip_set_dhcp(const std::string& interface_name, bool persistent)
+	{
+		std::vector<std::string> args {
+			"interface",
+			"ip",
+			"set",
+			"address",
+			"dhcp",
+			"name=" + interface_name,
+			persistent ? "store=persistent" : "store=active"
+		};
+
+#ifdef UNICODE
+		std::vector<std::wstring> wargs;
+
+		for (auto&& arg : args)
+		{
+			wargs.push_back(multi_byte_to_wide_char(arg));
+		}
+
+		netsh(wargs);
+#else
+		netsh(args);
+#endif
+	}
+
 	void windows_route_manager::netsh_interface_ip_set_address(const std::string& interface_name, const ip_network_address& address, bool persistent)
 	{
 		std::vector<std::string> args;

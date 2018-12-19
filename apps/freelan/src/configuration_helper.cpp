@@ -335,6 +335,7 @@ po::options_description get_tap_adapter_options()
 	("tap_adapter.mss_override", po::value<fl::mss_type>()->default_value(fl::mss_type()), "The MSS override.")
 	("tap_adapter.metric", po::value<fl::metric_type>()->default_value(fl::auto_metric_type()), "The metric of the tap adapter.")
 	("tap_adapter.ipv4_address_prefix_length", po::value<asiotap::ipv4_network_address>(), "The tap adapter IPv4 address and prefix length.")
+	("tap_adapter.ipv4_dhcp", po::value<bool>()->default_value(false), "The tap adapter IPv4 DHCP status.")
 	("tap_adapter.ipv6_address_prefix_length", po::value<asiotap::ipv6_network_address>(), "The tap adapter IPv6 address and prefix length.")
 	("tap_adapter.remote_ipv4_address", po::value<asiotap::ipv4_network_address>(), "The tap adapter IPv4 remote address.")
 	("tap_adapter.arp_proxy_enabled", po::value<bool>()->default_value(false), "Whether to enable the ARP proxy.")
@@ -538,6 +539,11 @@ void setup_configuration(const fscp::logger& logger, fl::configuration& configur
 		configuration.tap_adapter.ipv4_address_prefix_length = vm["tap_adapter.ipv4_address_prefix_length"].as<asiotap::ipv4_network_address>();
 	}
 	
+	if (vm.count("tap_adapter.ipv4_dhcp"))
+	{
+		configuration.tap_adapter.ipv4_dhcp = vm["tap_adapter.ipv4_dhcp"].as<bool>();
+	}
+
 	if (vm.count("tap_adapter.ipv6_address_prefix_length"))
 	{
 		configuration.tap_adapter.ipv6_address_prefix_length = vm["tap_adapter.ipv6_address_prefix_length"].as<asiotap::ipv6_network_address>();
