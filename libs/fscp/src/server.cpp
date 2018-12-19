@@ -311,6 +311,9 @@ namespace fscp
 		async_receive_from();
 
 		m_keep_alive_timer.async_wait(m_session_strand.wrap(boost::bind(&server::do_check_keep_alive, this, boost::asio::placeholders::error)));
+		m_hello_limit_timer.async_wait(m_greet_strand.wrap(
+					boost::bind(&server::do_hello_reset_limit, this,
+						boost::asio::placeholders::error)));
 		m_presentation_limit_timer.async_wait(m_presentation_strand.wrap(
 					boost::bind(&server::do_presentation_reset_limit, this,
 						boost::asio::placeholders::error)));
