@@ -29,7 +29,6 @@ git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 .\bootstrap-vcpkg.bat
 vcpkg integrate install
-xcopy /I ..\freelan\third-party\vcpkg\ports\miniupnpc .\ports\miniupnpc
 vcpkg install boost miniupnpc libiconv openssl curl --triplet x64-windows-static
 vcpkg install boost miniupnpc libiconv openssl curl --triplet x86-windows-static
 ```

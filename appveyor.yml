@@ -23,7 +23,6 @@ init:
 
 install:
   - cinst cmake
-  - xcopy /I third-party\vcpkg\ports\miniupnpc c:\tools\vcpkg\ports\miniupnpc
   # Install python wheels, necessary to install SCons via pip
   - python -m pip install wheel
   # Install SCons
