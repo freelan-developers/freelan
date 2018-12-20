@@ -1,5 +1,5 @@
 /*
- * libminiupnpcplus - A portable execution library.
+ * libminiupnpcplus - libminiupnpcplus - C++ portable miniupnpc wrapper library.
  * Copyright (C) 2010-2017 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
  * This file is part of libminiupnpcplus.
