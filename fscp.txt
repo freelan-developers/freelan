@@ -112,7 +112,7 @@ Abstract
    satisfy the key usage requirements or if it doesn't support pre-shared key
    encryption.
 
-   The minimum RSA key size is 1024 bits. The RECOMMENDED RSA key size is 2048
+   The minimum RSA key size is 2048 bits. The RECOMMENDED RSA key size is 3072
    bits or higher, with an exponent of 2^16 + 1. A strict implementation MAY
    reject PRESENTATION messages with a low RSA key size.
 
@@ -501,7 +501,7 @@ Abstract
    The underlying hash algorithm is SHA256. The salt len for PSS is the size
    of the hash digest.
 
-   The minimum key size is 1024. The RECOMMENDED key size is 2048.
+   The minimum key size is 2048. The RECOMMENDED key size is 3072.
 
 3.3. Key derivation
 

@@ -61,11 +61,11 @@ namespace freelan
 
 	/**
 	 * \brief Generate a private key.
-	 * \param size The size of the key. Defaults to 2048.
+	 * \param size The size of the key. Defaults to 3072.
 	 * \param prime A prime number to generate the key. Defaults to 17.
 	 * \return The private key.
 	 */
-	cryptoplus::pkey::pkey generate_private_key(unsigned int size = 2048, unsigned int prime = 17);
+	cryptoplus::pkey::pkey generate_private_key(unsigned int size = 3072, unsigned int prime = 17);
 
 	/**
 	 * \brief Generate a certificate request.
