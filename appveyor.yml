@@ -19,7 +19,6 @@ configuration:
 
 init:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%'
-  
 
 install:
   - cinst cmake
@@ -34,6 +33,13 @@ before_build:
   - vcpkg install boost-asio boost-thread boost-system boost-program-options boost-filesystem boost-iostreams boost-random boost-foreach --triplet %PLATFORM%-windows-static
   - vcpkg install curl --triplet %PLATFORM%-windows-static
   - vcpkg install openssl --triplet %PLATFORM%-windows-static
+  # Updates vcpkg packages to have miniupnpc.
+  # As appveyor previously cache builds for all ports (boost, openssl...), we
+  # do that now to avoid to rebuild everything.
+  - cd C:\Tools\vcpkg
+  - git pull
+  - .\bootstrap-vcpkg.bat
+  - cd %APPVEYOR_BUILD_FOLDER%
   - vcpkg install miniupnpc --triplet %PLATFORM%-windows-static
 
 build_script:
@@ -45,7 +51,7 @@ after_build:
           $gitHash = $env:APPVEYOR_REPO_COMMIT.Substring(0, 8);
           $zipFile   = "freelan-binary-$env:platform-$gitHash.zip";
           Push-AppveyorArtifact "BuildArtifacts.zip" -FileName $zipFile;
-          
+
           If ($env:Configuration -Match "Release") {
             scons -C packaging\windows --arch=%INSTALLER_BITS%
 
