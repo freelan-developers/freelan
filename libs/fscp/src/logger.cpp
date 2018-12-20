@@ -1,6 +1,5 @@
 /*
- * libfscp - A C++ library to establish peer-to-peer virtual private
- * networks.
+ * libfscp - A C++ library to establish peer-to-peer virtual private networks.
  * Copyright (C) 2010-2011 Julien KAUFFMANN <julien.kauffmann@freelan.org>
  *
  * This file is part of libfscp.

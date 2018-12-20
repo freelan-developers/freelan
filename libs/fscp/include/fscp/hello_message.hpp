@@ -1,5 +1,5 @@
 /*
- * libfscp - C++ portable OpenSSL cryptographic wrapper library.
+ * libfscp - A C++ library to establish peer-to-peer virtual private networks.
  * Copyright (C) 2010-2011 Julien Kauffmann <julien.kauffmann@freelan.org>
  *
  * This file is part of libfscp.
