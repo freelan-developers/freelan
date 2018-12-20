@@ -56,9 +56,7 @@ else:
         ])
 
 if env.mongoose == 'yes':
-    libraries.extend([
-        'mongooseplus',
-    ])
+    libraries.insert(3, 'mongooseplus')
 
 if env.upnp == 'yes':
     libraries.extend([
