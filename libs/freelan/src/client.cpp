@@ -621,6 +621,7 @@ namespace freelan
 
 		request->set_url(m_url_prefix + path);
 		request->enable_cookie_support();
+		request->set_user_agent("FreeLAN/2");
 
 		if (m_configuration.disable_peer_verification)
 		{
