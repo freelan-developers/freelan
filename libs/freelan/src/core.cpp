@@ -2553,6 +2553,14 @@ namespace freelan
 						open_fscp_server();
 					}
 
+					if(!m_web_client)
+					{
+						m_logger(fscp::log_level::information) << "FSCP closing as the web client was shut down.";
+						// closing core when FSCP was not setup so close it now!
+						close_fscp_server();
+						return;
+					}
+
 					const auto renew_timestamp = certificate.not_after().to_ptime() - RENEW_CERTIFICATE_WARNING_PERIOD;
 
 					m_logger(fscp::log_level::information) << "Certificate expires on " << local_adjustor::utc_to_local(certificate.not_after().to_ptime()) << ". Renewing on " << local_adjustor::utc_to_local(renew_timestamp) << ".";
