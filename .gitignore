@@ -11,6 +11,8 @@
 /.bash_history
 /build/
 /install/
+/.sconf_temp/
+/config.log
 
 # Visual Studio
 *.suo
