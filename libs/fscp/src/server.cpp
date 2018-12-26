@@ -53,7 +53,16 @@
 #include "session_message.hpp"
 #include "data_message.hpp"
 
+// Mac OSX version of Boost has shadowing warnings that fail the build.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
 #include <boost/random.hpp>
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
 #include <boost/thread/future.hpp>
