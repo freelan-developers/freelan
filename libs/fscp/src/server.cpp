@@ -1605,11 +1605,12 @@ namespace fscp
 			const auto next_session_number = p_session.next_session_number();
 			const auto local_host_identifier = p_session.local_host_identifier();
 
-			m_logger(log_level::trace) << "Sending session request message to " << target << " (next_session_number: " << next_session_number << ", local_host_identifier: " << local_host_identifier << ")";
 			size_t size = 0;
 
 			if (!!identity.signature_key())
 			{
+				m_logger(log_level::trace) << "Sending session request message to " << target << " (next_session_number: " << next_session_number << ", local_host_identifier: " << local_host_identifier << ", asymmetric signature)";
+
 				size = session_request_message::write(
 					buffer_cast<uint8_t*>(send_buffer),
 					buffer_size(send_buffer),
@@ -1622,6 +1623,8 @@ namespace fscp
 			}
 			else
 			{
+				m_logger(log_level::trace) << "Sending session request message to " << target << " (next_session_number: " << next_session_number << ", local_host_identifier: " << local_host_identifier << ", HMAC signature)";
+
 				size = session_request_message::write(
 					buffer_cast<uint8_t*>(send_buffer),
 					buffer_size(send_buffer),
