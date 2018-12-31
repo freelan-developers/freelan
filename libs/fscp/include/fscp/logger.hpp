@@ -72,6 +72,35 @@ namespace fscp
 	};
 
 	/**
+	 * \brief Output a log level as its string representation.
+	 * \param os The output stream.
+	 * \param lvl The log level.
+	 * \return os.
+	 */
+	inline std::ostream& operator<<(std::ostream& os, log_level lvl)
+	{
+		switch (lvl)
+		{
+			case log_level::trace:
+				return os << "trace";
+			case log_level::debug:
+				return os << "debug";
+			case log_level::information:
+				return os << "information";
+			case log_level::important:
+				return os << "important";
+			case log_level::warning:
+				return os << "warning";
+			case log_level::error:
+				return os << "error";
+			case log_level::fatal:
+				return os << "fatal";
+			default:
+				return os << "<unspecified log level>";
+		}
+	}
+
+	/**
 	 * \brief A null logger stream.
 	 */
 	class null_logger_stream {};

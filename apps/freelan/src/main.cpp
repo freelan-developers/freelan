@@ -430,6 +430,7 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 	if (configuration.debug)
 	{
 		logger.set_level(fscp::log_level::trace);
+		logger(fscp::log_level::trace) << "Debug output enabled.";
 	}
 
 	setup_configuration(logger, configuration.fl_configuration, vm);
@@ -473,6 +474,8 @@ void run(fscp::logger& logger, const cli_configuration& configuration, int& exit
 	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
 
 	fl::core core(io_service, configuration.fl_configuration);
+
+	logger(fscp::log_level::information) << "Setting core logging level to: " << logger.level() << ".";
 
 	core.set_log_level(logger.level());
 	core.set_log_callback(log_func);
