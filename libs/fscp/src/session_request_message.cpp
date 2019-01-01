@@ -58,6 +58,7 @@ namespace fscp
 		{
 			// Set RSASSA_PSS with a digest size salt length.
 			EVP_PKEY_CTX_set_rsa_padding(evp_ctx, RSA_PKCS1_PSS_PADDING);
+			// FIXME: Should probably be -2 when verifying.
 			EVP_PKEY_CTX_set_rsa_pss_saltlen(evp_ctx, -1);
 		}
 	}
