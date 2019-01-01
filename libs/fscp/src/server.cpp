@@ -1691,23 +1691,25 @@ namespace fscp
 		}
 
 		// We make sure the signatures matches.
-		bool check_ok = false;
-
 		if (!!m_presentation_store_map[sender].signature_certificate())
 		{
-			check_ok = _session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+			 if (!_session_request_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+			 {
+				 m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with an invalid asymmetric signature. Ignoring.";
+
+				 return;
+			 }
 		}
 		else
 		{
 			const auto psk = m_presentation_store_map[sender].pre_shared_key();
-			check_ok = _session_request_message.check_signature(buffer_cast<const uint8_t*>(psk), buffer_size(psk));
-		}
 
-		if (!check_ok)
-		{
-			m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with an invalid signature. Ignoring.";
+			if (!_session_request_message.check_signature(buffer_cast<const uint8_t*>(psk), buffer_size(psk)))
+			{
+				 m_logger(log_level::trace) << "Received a SESSION_REQUEST from " << sender << " with an invalid HMAC signature. Ignoring.";
 
-			return;
+				 return;
+			}
 		}
 
 		// The make_shared_buffer_handler() call below is necessary so that the reference to session_request_message remains valid.
@@ -1965,23 +1967,25 @@ namespace fscp
 		}
 
 		// We make sure the signatures matches.
-		bool check_ok = false;
-
 		if (!!m_presentation_store_map[sender].signature_certificate())
 		{
-			check_ok = _session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key());
+			if (!_session_message.check_signature(m_presentation_store_map[sender].signature_certificate().public_key()))
+			{
+				m_logger(log_level::trace) << "Received a SESSION from " << sender << " with an invalid asymmetric signature. Ignoring.";
+
+				return;
+			}
 		}
 		else
 		{
 			const auto psk = m_presentation_store_map[sender].pre_shared_key();
-			check_ok = _session_message.check_signature(buffer_cast<const uint8_t*>(psk), buffer_size(psk));
-		}
 
-		if (!check_ok)
-		{
-			m_logger(log_level::trace) << "Received a SESSION from " << sender << " with an invalid signature. Ignoring.";
+			if (!_session_message.check_signature(buffer_cast<const uint8_t*>(psk), buffer_size(psk)))
+			{
+				m_logger(log_level::trace) << "Received a SESSION from " << sender << " with an invalid HMAC signature. Ignoring.";
 
-			return;
+				return;
+			}
 		}
 
 		m_session_strand.post(
