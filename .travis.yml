@@ -9,9 +9,6 @@ matrix:
     - os: osx
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - boost-latest
     packages:
       - libboost-all-dev
       - libssl-dev
@@ -19,20 +16,22 @@ addons:
       - libminiupnpc-dev
       - gcc
       - g++
+      - scons
       - help2man
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list scons &>/dev/null || brew install scons ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list boost &>/dev/null || brew install boost ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list openssl &>/dev/null || brew install openssl ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list miniupnpc &>/dev/null || brew install miniupnpc ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew list help2man &>/dev/null || brew install help2man ; fi
-cache:
-  apt: true
+  homebrew:
+    packages:
+      - scons
+      - boost
+      - openssl
+      - miniupnpc
+      - help2man
+
 script: scons install apps samples
+
 branches:
     only:
         - master
+
 notifications:
     email:
         on_success: change
