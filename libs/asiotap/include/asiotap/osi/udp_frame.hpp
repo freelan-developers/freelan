@@ -71,6 +71,10 @@ namespace asiotap
 			uint16_t checksum; /**< The checksum */
 		} PACKED;
 
+#ifdef MSV
+#pragma pack(pop)
+#endif
+
 		/**
 		 * \brief An UDP-IPv4 pseudo-header structure.
 		 */
@@ -81,7 +85,7 @@ namespace asiotap
 			uint8_t reserved; /**< 8 bits reserved field (must be zero) */
 			uint8_t ipv4_protocol; /**< The IPv4 protocol */
 			uint16_t udp_length; /**< The UDP length */
-		} PACKED;
+		};
 
 		/**
 		 * \brief An UDP-IPv6 pseudo-header structure.
@@ -94,11 +98,7 @@ namespace asiotap
 			uint16_t reserved; /**< 8 bits reserved field (must be zero) */
 			uint8_t reserved2; /**< 8 bits reserved field (must be zero) */
 			uint8_t ipv6_next_header; /**< The IPv6 next header */
-		} PACKED;
-
-#ifdef MSV
-#pragma pack(pop)
-#endif
+		};
 	}
 }
 

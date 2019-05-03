@@ -53,7 +53,7 @@ namespace asiotap
 		template <class HelperTag>
 		uint16_t _base_helper_impl<HelperTag, ipv4_frame>::compute_checksum() const
 		{
-			const uint16_t* buf = reinterpret_cast<const uint16_t*>(&this->frame());
+			const uint16_t* buf = boost::asio::buffer_cast<const uint16_t*>(this->buffer());
 			size_t buf_len = this->header_length();
 
 			return asiotap::osi::compute_checksum(buf, buf_len);

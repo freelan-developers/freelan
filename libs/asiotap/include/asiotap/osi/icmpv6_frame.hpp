@@ -91,6 +91,10 @@ namespace asiotap
 			struct in6_addr target; /**< Target */
 		} PACKED;
 
+#ifdef MSV
+#pragma pack(pop)
+#endif
+
 		/**
 		 * \brief An ICMPv6-IPv6 pseudo-header structure.
 		 */
@@ -102,9 +106,6 @@ namespace asiotap
 			uint16_t zero; /**< 16 bits reserved field (must be zero) */
 			uint8_t zero2; /**< 8 bits reserved field (must be zero) */
 			uint8_t ipv6_next_header; /**< The IPv6 next header */
-		} PACKED;
-#ifdef MSV
-#pragma pack(pop)
-#endif
+		} ;
 	}
 }

@@ -89,6 +89,10 @@ namespace asiotap
 			uint16_t pointer; /**< The pointer */
 		} PACKED;
 
+#ifdef MSV
+#pragma pack(pop)
+#endif
+
 		/**
 		 * \brief A TCP-IPv4 pseudo-header structure.
 		 */
@@ -99,7 +103,7 @@ namespace asiotap
 			uint8_t reserved; /**< 8 bits reserved field (must be zero) */
 			uint8_t ipv4_protocol; /**< The IPv4 protocol */
 			uint16_t tcp_length; /**< The TCP length */
-		} PACKED;
+		};
 
 		/**
 		 * \brief A TCP-IPv6 pseudo-header structure.
@@ -112,10 +116,6 @@ namespace asiotap
 			uint16_t zero; /**< 16 bits reserved field (must be zero) */
 			uint8_t zero2; /**< 8 bits reserved field (must be zero) */
 			uint8_t ipv6_next_header; /**< The IPv6 next header */
-		} PACKED;
-
-#ifdef MSV
-#pragma pack(pop)
-#endif
+		};
 	}
 }
