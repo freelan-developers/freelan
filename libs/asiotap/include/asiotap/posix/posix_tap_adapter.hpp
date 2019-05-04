@@ -94,8 +94,6 @@ namespace asiotap
 
 			posix_tap_adapter(const posix_tap_adapter&) = delete;
 			posix_tap_adapter& operator=(const posix_tap_adapter&) = delete;
-			posix_tap_adapter(posix_tap_adapter&&) = default;
-			posix_tap_adapter& operator=(posix_tap_adapter&&) = default;
 
 			/**
 			 * \brief Get the associated network manager.
