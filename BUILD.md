@@ -17,10 +17,11 @@ manager, Mac OSX users can use brew and Windows users can use `vcpkg`.
 
 ### Microsoft Windows
 
-You will also need Python, perl and cmake. Refers to https://chocolatey.org/install to install chocolatey
-package manager. Then in an elevated cmd.exe: 
+You will also need Python, perl and cmake. Refers to
+https://chocolatey.org/install to install chocolatey package manager. Then in
+an elevated cmd.exe:
 
-> choco install ActivePerl cmake python2
+> choco install ActivePerl cmake python2 innosetup
 
 To install vcpkg and FreeLAN dependencies, run the following:
 

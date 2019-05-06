@@ -34,7 +34,7 @@
     <ProjectGuid>{FCBBDD58-4EF6-4EEF-8405-49E06F61364B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libkfather</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
     <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
