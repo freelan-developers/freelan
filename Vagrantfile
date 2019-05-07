@@ -7,7 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # fixes 'Inappropriate ioctl for device'
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/bionic64"
   config.vm.provision 'Initial setup', type: 'shell', path: "provisioning/scripts/setup.sh"
 
   config.vm.define 'load-test' do |machine|
