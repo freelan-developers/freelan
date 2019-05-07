@@ -75,6 +75,9 @@ else
 fi
 
 %changelog
+* Tue May 7 2019  <sebastien.vincent@freelan.org> - 2.2-1
+- Version 2.2.
+
 * Tue Aug 15 2017  <sebastien.vincent@freelan.org> - 2.1-1
 - First RPM version.
 

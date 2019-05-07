@@ -59,6 +59,6 @@ SD card, ...) and run the following to install:
 
 ```
 pkgcon refresh
-pkcon install-local /path/to/freelan-2.1-1.armv7hl.rpm
+pkcon install-local /path/to/freelan-2.2-1.armv7hl.rpm
 ```
 
