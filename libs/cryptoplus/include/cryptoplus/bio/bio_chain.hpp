@@ -99,7 +99,7 @@ namespace cryptoplus
 				boost::shared_ptr<BIO> m_bio;
 		};
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 		inline bio_chain::bio_chain(const BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
 #else
 		inline bio_chain::bio_chain(BIO_METHOD* _type) : m_bio(BIO_new(_type), BIO_free_all)
