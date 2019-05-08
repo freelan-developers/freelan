@@ -145,8 +145,8 @@ class FreelanEnvironment(Environment):
             self.Append(LIBPATH=['/usr/local/lib'])
 
         if sys.platform.startswith('netbsd'):
-            self.Append(CXXFLAGS=['-I/usr/pkg/include', '-Wno-shadow'])
-            self.Append(CFLAGS=['-I/usr/pkg/include', '-Wno-shadow'])
+            self.Append(CXXFLAGS=['-I/usr/pkg/include', '-Wno-shadow', '-Wno-unused', '-Wno-uninitialized'])
+            self.Append(CFLAGS=['-I/usr/pkg/include', '-Wno-shadow', '-Wno-unused', '-Wno-uninitialized'])
             self.Append(LIBPATH=['/usr/pkg/lib'])
 
         if self.mode == 'debug':
