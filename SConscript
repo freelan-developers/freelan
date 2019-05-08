@@ -21,9 +21,7 @@ dirs = {
 }
 
 env.Append(CPPPATH=[dirs['include']])
-env.Append(CXXFLAGS=['-isystem', Dir('third-party/install/include').srcnode()])
 env.Append(LIBPATH=[dirs['lib']])
-env.Append(LIBPATH=[Dir('third-party/install/lib').srcnode()])
 
 env.GenerateDefines(target=os.path.join('include', env.defines.defines_file_name), source=env.defines.template_file_path)
 

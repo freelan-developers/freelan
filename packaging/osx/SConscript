@@ -98,7 +98,7 @@ final_package = env.ProductBuild(
         'version': env.defines.version_str,
     }),
     PRODUCTBUILD_RESOURCES=resources,
-    PRODUCTBUILD_PACKAGE_PATH=[env.Dir('.'), env.Dir('third-party')],
+    PRODUCTBUILD_PACKAGE_PATH=[env.Dir('.')],
 )
 
 Return('final_package')

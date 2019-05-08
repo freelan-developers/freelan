@@ -68,29 +68,29 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <IncludePath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+    <IncludePath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
     <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <IncludePath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\third-party\install\$(PlatformShortName)\include;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\third-party\install\$(PlatformShortName)\lib;$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+    <IncludePath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\lib;$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);</LibraryPath>
     <IntDir>$(ProjectDir)\build\$(PlatformShortName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\install\$(PlatformShortName)\$(Configuration)\bin\</OutDir>
   </PropertyGroup>
