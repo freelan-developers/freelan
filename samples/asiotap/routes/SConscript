@@ -7,12 +7,12 @@ libraries = [
     'executeplus',
     'boost_system',
     'boost_iostreams',
+    'pthread',
 ]
 
 if sys.platform.startswith('linux'):
     libraries.extend([
         'netlinkplus',
-        'pthread',
     ])
 
 Import('env dirs name')

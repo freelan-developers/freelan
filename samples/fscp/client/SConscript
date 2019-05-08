@@ -8,6 +8,7 @@ libraries = [
     'cryptoplus',
     'boost_system',
     'crypto',
+    'pthread'
 ]
 
 if env.upnp == 'yes':
@@ -27,10 +28,6 @@ else:
         'boost_thread',
     ])
 env = conf.Finish()
-if sys.platform.startswith('linux'):
-    libraries.extend([
-        'pthread',
-    ])
 
 env = env.Clone()
 env.Append(LIBS=libraries)
