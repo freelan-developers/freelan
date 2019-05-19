@@ -288,7 +288,7 @@ namespace fscp
 			 */
 			boost::asio::io_service& get_io_service()
 			{
-				return get_socket().get_io_service();
+				return reinterpret_cast<boost::asio::io_context&>(get_socket().get_executor().context());
 			}
 
 			/**

@@ -777,7 +777,7 @@ namespace freelan
 
 		boost::apply_visitor(
 			asiotap::endpoint_async_resolve_visitor(
-				boost::make_shared<resolver_type>(boost::ref(m_io_service)),
+				boost::make_shared<resolver_type>(m_io_service),
 				to_protocol(m_configuration.fscp.hostname_resolution_protocol),
 				resolver_query::address_configured,
 				DEFAULT_SERVICE,
