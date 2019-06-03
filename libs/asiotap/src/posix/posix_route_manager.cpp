@@ -64,7 +64,8 @@ namespace asiotap
 	posix_route_manager::route_type posix_route_manager::get_route_for(const boost::asio::ip::address& host)
 	{
 #ifdef MACINTOSH
-		const std::vector<std::string> real_args { "/sbin/route", "-n", "get", boost::lexical_cast<std::string>(host) };
+		const std::string inet = host.is_v6() ? "-inet6" : "-inet";
+		const std::vector<std::string> real_args { "/sbin/route", "-n", "get", inet, boost::lexical_cast<std::string>(host) };
 
 		std::stringstream ss;
 		executeplus::checked_execute(real_args, executeplus::get_current_environment(), &ss);
@@ -197,7 +198,8 @@ namespace asiotap
 		const std::string net_host = is_unicast(dest) ? "-host" : "-net";
 #ifdef MACINTOSH
 		const std::string command = action == route_action::add ? "add" : "delete";
-		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "-interface", interface };
+		const std::string inet = boost::apply_visitor(ip_network_address_ip_address_visitor(), dest).is_v6() ? "-inet6" : "-inet";
+		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, inet, boost::lexical_cast<std::string>(dest), "-interface", interface };
 #else
 		const std::string command = action == route_action::add ? "add" : "del";
 		const std::vector<std::string> real_args { "/sbin/route", "-n", command, net_host, boost::lexical_cast<std::string>(dest), "dev", interface };
