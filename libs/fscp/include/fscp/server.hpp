@@ -288,7 +288,11 @@ namespace fscp
 			 */
 			boost::asio::io_service& get_io_service()
 			{
+#if BOOST_ASIO_VERSION >= 101200 // Boost 1.66+
 				return reinterpret_cast<boost::asio::io_context&>(get_socket().get_executor().context());
+#else
+				return get_socket().get_io_service();
+#endif
 			}
 
 			/**
