@@ -226,9 +226,12 @@ namespace asiotap
 	template <typename AddressType>
 	inline void async_resolve(const base_ip_endpoint<AddressType>& ep, typename base_ip_endpoint<AddressType>::resolver& resolver, typename base_ip_endpoint<AddressType>::resolver::protocol_type protocol, typename base_ip_endpoint<AddressType>::resolver::query::flags flags, const std::string& default_service, typename base_ip_endpoint<AddressType>::handler handler)
 	{
-		typename base_ip_endpoint<AddressType>::resolver::query query(protocol, ep.address().to_string(), ep.has_port() ? boost::lexical_cast<std::string>(ep.port()) : default_service, flags);
-
+		static_cast<void>(flags);
+		static_cast<void>(protocol);
+		typename base_ip_endpoint<AddressType>::resolver::query query(ep.address().to_string(), ep.has_port() ? boost::lexical_cast<std::string>(ep.port()) : default_service, boost::asio::ip::resolver_query_base::numeric_host);
+		
 		resolver.async_resolve(query, handler);
+		return;
 	}
 
 	/**

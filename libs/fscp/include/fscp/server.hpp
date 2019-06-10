@@ -1300,7 +1300,7 @@ namespace fscp
 			void async_send_to(const SharedBuffer& data, const size_t size, const ep_type& target, simple_handler_type handler)
 			{
 				const void_handler_type write_handler = [this, data, size, target, handler] () {
-					m_socket.async_send_to(buffer(data, size), target, 0, [data, handler] (const boost::system::error_code& ec, size_t) {
+					m_socket.async_send_to(buffer(data, size), to_socket_format(target), 0, [data, handler] (const boost::system::error_code& ec, size_t) {
 						handler(ec);
 					});
 				};
