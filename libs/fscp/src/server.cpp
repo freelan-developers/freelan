@@ -1069,7 +1069,7 @@ namespace fscp
 
 	server::ep_type server::to_socket_format(const server::ep_type& ep)
 	{
-#ifdef WINDOWS
+#if defined(WINDOWS) || defined(MACINTOSH)
 		if (m_socket.local_endpoint().address().is_v6() && ep.address().is_v4())
 		{
 			return server::ep_type(boost::asio::ip::address_v6::v4_mapped(ep.address().to_v4()), ep.port());
@@ -1079,8 +1079,6 @@ namespace fscp
 			return ep;
 		}
 #else
-		static_cast<void>(ep);
-
 		return ep;
 #endif
 	}
