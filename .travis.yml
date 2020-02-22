@@ -4,7 +4,7 @@ compiler:
 matrix:
   include:
     - os: linux
-      dist: xenial
+      dist: bionic 
       sudo: false
     - os: osx
 addons:
