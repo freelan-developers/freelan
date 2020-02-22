@@ -58,7 +58,7 @@ The generated RPM will be located in ./RPMS/. Upload it to your device (by SSH,
 SD card, ...) and run the following to install:
 
 ```
-pkgcon refresh
+pkcon refresh
 pkcon install-local /path/to/freelan-2.2-1.armv7hl.rpm
 ```
 
