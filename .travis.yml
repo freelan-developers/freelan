@@ -25,6 +25,7 @@ addons:
       - openssl
       - miniupnpc
       - help2man
+    update: true
 
 script: scons install apps samples
 
