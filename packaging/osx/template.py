@@ -12,9 +12,9 @@ def template_action(target, source, env):
 
     template = source[0].get_contents()
 
-    with open(target[0].abspath, 'w') as targf:
+    with open(target[0].abspath, 'wb') as targf:
         targf.write(
-            template.format(**_dict)
+            template.decode().format(**_dict).encode()
         )
 
 

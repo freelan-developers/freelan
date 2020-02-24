@@ -100,7 +100,10 @@ class Defines(object):
         Return the content.
         """
 
-        return content.format(defines=self)
+        if isinstance(content, str):
+            return content.format(defines=self)
+        else:
+            return content.decode().format(defines=self).encode()
 
     def emitter(self, target, source, env):
         """
@@ -120,7 +123,12 @@ class Defines(object):
 
         output = self.replace_template_variables(source[0].get_contents())
 
-        with open(target[0].abspath, 'wb') as out:
+        flag = 'wb'
+
+        if isinstance(output, str):
+            flag = 'w'
+
+        with open(target[0].abspath, flag) as out:
             out.write(output)
 
     def register_into(self, env):
@@ -149,7 +157,12 @@ class Defines(object):
             current_content = None
 
         if output != current_content:
-            with open(target, 'w') as target_file:
+            flag = 'wb'
+
+            if isinstance(output, str):
+                flag = 'w'
+
+            with open(target, flag) as target_file:
                 target_file.write(output)
 
 if __name__ == '__main__':

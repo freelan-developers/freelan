@@ -19,6 +19,7 @@ def uncomment(text):
 
     pattern = ';.*?$|"[^"]*"|\'[^"]*\''
 
+    text = str(text)
     return re.sub(re.compile(pattern, re.DOTALL | re.MULTILINE), replacer, text)
 
 
@@ -27,6 +28,7 @@ def parse_define(line):
 
     pattern = r'#(?:\s)*define\s*([\w_]+)(?:\s)*["\']?(.*)["\']'
 
+    line = str(line)
     match = re.match(pattern, line, re.IGNORECASE)
 
     if match:
@@ -57,12 +59,12 @@ def replace_defines(text, defines):
 def get_config(source, env):
     """Get a configuration from the specified source."""
 
-    import ConfigParser
-    import StringIO
+    import configparser
+    from io import StringIO
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser(strict=False)
     config.readfp(
-        StringIO.StringIO(replace_defines(source.get_contents(), env['ISCC_DEFINES'])))
+        StringIO(replace_defines(source.get_contents().decode(), env['ISCC_DEFINES'])))
 
     return config
 
@@ -154,7 +156,7 @@ def innosetup_generator(target, source, env, for_signature):
             ' '.join(env['ISCC_FLAGS']),
             ' '.join('"/i%s"' % x for x in env['ISCC_PATH']),
             ' '.join([to_define_option(x)
-                      for x in env['ISCC_DEFINES'].iteritems()]),
+                      for x in env['ISCC_DEFINES'].items()]),
             os.path.dirname(str(target[0])),
             os.path.splitext(os.path.basename(str(target[0])))[0],
             source[0]
@@ -179,8 +181,8 @@ def detect(env):
         return iscc
 
     paths = [
-        os.path.join(os.environ.get('PROGRAMFILES', ''), 'Inno Setup 5'),
-        os.path.join(os.environ.get('PROGRAMFILES(X86)', ''), 'Inno Setup 5'),
+        os.path.join(os.environ.get('PROGRAMFILES', ''), 'Inno Setup 6'),
+        os.path.join(os.environ.get('PROGRAMFILES(X86)', ''), 'Inno Setup 6'),
     ]
 
     for path in paths:

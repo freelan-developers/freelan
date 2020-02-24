@@ -119,7 +119,7 @@ class FreelanEnvironment(Environment):
         self.Append(CXXFLAGS=['-Wextra'])
         self.Append(CXXFLAGS=['-Werror'])
         self.Append(CXXFLAGS=['-pedantic'])
-        self.Append(CXXFLAGS=['-Wshadow'])
+        #self.Append(CXXFLAGS=['-Wshadow'])
         self.Append(LDFLAGS=['--std=c++11'])
 
         if sys.platform.startswith('darwin'):
@@ -156,10 +156,10 @@ class FreelanEnvironment(Environment):
             self.Append(CXXFLAGS='-O3')
 
         if self.mongoose == 'yes':
-		        self.Append(CXXFLAGS=['-DUSE_MONGOOSE'])
+            self.Append(CXXFLAGS=['-DUSE_MONGOOSE'])
 
         if self.upnp == 'yes':
-		        self.Append(CXXFLAGS=['-DUSE_UPNP'])
+            self.Append(CXXFLAGS=['-DUSE_UPNP'])
 
         self.Append(CPPDEFINES=r'FREELAN_INSTALL_PREFIX="\"%s\""' % self.prefix)
 
@@ -168,11 +168,10 @@ class FreelanEnvironment(Environment):
         Returns a list of file objects that match the specified patterns.
         """
 
-        path = unicode(path)
-
-        if isinstance(patterns, basestring):
+        if isinstance(patterns, str):
             patterns = [patterns]
 
+        path = str(path)
         result = []
         abspath = Dir(path).srcnode().abspath
 

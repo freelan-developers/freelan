@@ -19,7 +19,7 @@ def pkgbuild_generator(target, source, env, for_signature):
     options = env['PKGBUILD_OPTIONS'].value
     options_str = ' '.join(
         '--%s %s' % (key, value)
-        for key, value in options.iteritems()
+        for key, value in options.items()
     )
 
     if env['PKGBUILD_SCRIPTS']:
