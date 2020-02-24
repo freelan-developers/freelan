@@ -29,6 +29,7 @@ install:
   - scons --version
 
 before_build:
+  - vcpkg integrate install
   - vcpkg install libiconv --triplet %PLATFORM%-windows-static
   - vcpkg install boost-asio boost-thread boost-system boost-program-options boost-filesystem boost-iostreams boost-random boost-foreach --triplet %PLATFORM%-windows-static
   - vcpkg install curl --triplet %PLATFORM%-windows-static
