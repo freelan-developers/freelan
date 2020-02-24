@@ -94,7 +94,7 @@ is not intended for production use.
 
 ### Windows
 
-You will need Microsoft Visual Studio 2017 to compile freelan. All projects come
+You will need Microsoft Visual Studio 2019 to compile freelan. All projects come
 with a `.vcxproj` file for all the targets (debug/release and x86/x64).
 
 The root directory also contains a solution file (`.sln`) that references all

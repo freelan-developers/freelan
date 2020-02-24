@@ -2,7 +2,7 @@ version: 2.3.{build}
 
 shallow_clone: true
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 environment:
   matrix:
@@ -21,11 +21,11 @@ init:
   - '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%'
 
 install:
-  - cinst cmake
+  - cinst cmake python
   # Install python wheels, necessary to install SCons via pip
   - python -m pip install wheel
   # Install SCons
-  - python -m pip install scons==2.5.1
+  - python -m pip install scons
   - scons --version
 
 before_build:
@@ -33,13 +33,6 @@ before_build:
   - vcpkg install boost-asio boost-thread boost-system boost-program-options boost-filesystem boost-iostreams boost-random boost-foreach --triplet %PLATFORM%-windows-static
   - vcpkg install curl --triplet %PLATFORM%-windows-static
   - vcpkg install openssl --triplet %PLATFORM%-windows-static
-  # Updates vcpkg packages to have miniupnpc.
-  # As appveyor previously cache builds for all ports (boost, openssl...), we
-  # do that now to avoid to rebuild everything.
-  - cd C:\Tools\vcpkg
-  - git pull
-  - .\bootstrap-vcpkg.bat
-  - cd %APPVEYOR_BUILD_FOLDER%
   - vcpkg install miniupnpc --triplet %PLATFORM%-windows-static
 
 build_script:

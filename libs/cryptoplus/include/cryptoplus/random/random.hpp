@@ -54,6 +54,10 @@
 #include <cstddef>
 #include <string>
 
+#ifdef WINDOWS
+#include <windows.h>
+#endif
+
 namespace cryptoplus
 {
 	namespace random
@@ -272,12 +276,21 @@ namespace cryptoplus
 
 		inline bool windows_event(UINT imsg, WPARAM wparam, LPARAM lparam)
 		{
-			return (RAND_event(imsg, wparam, lparam) == 1);
+      static_cast<void>(imsg);
+      static_cast<void>(wparam);
+      static_cast<void>(lparam);
+
+      // according to OpenSSL 1.1.x documentation:
+      // - RAND_event and RAND_screen has been deprecated
+      // - RAND_event() calls RAND_poll() and returns RAND_status().
+      // - RAND_screen calls RAND_poll().
+      RAND_poll();
+			return (RAND_status() == 1);
 		}
 
 		inline void windows_screen()
 		{
-			RAND_screen();
+			RAND_poll();
 		}
 
 #endif

@@ -173,7 +173,7 @@
     <ProjectGuid>{9173624C-FFF7-4431-BB4A-FC30B13AD742}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libasiotap</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
     <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
@@ -181,26 +181,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -269,7 +269,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -300,7 +300,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -335,7 +335,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
@@ -370,7 +370,7 @@
       </Message>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>C:\Python27\python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
+      <Command>python.exe $(SolutionDir)\defines.py $(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Command>
       <Message>Generating the common defines header.</Message>
       <Outputs>$(SolutionDir)\build\$(PlatformShortName)\$(Configuration)\include\defines.hpp</Outputs>
       <Inputs>$(SolutionDir)\VERSION;$(SolutionDir)\defines.hpp.template</Inputs>
