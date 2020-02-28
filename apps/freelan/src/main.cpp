@@ -433,6 +433,13 @@ bool parse_options(fscp::logger& logger, int argc, char** argv, cli_configuratio
 		logger(fscp::log_level::trace) << "Debug output enabled.";
 	}
 
+#ifndef WINDOWS
+	if (!configuration.foreground)
+	{
+		logger.set_callback(&posix::syslog);
+	}
+#endif
+
 	setup_configuration(logger, configuration.fl_configuration, vm);
 
 	return true;
