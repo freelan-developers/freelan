@@ -39,11 +39,11 @@ class Defines(object):
                 if ('APPVEYOR' in os.environ) or self.no_git:
                     self._repository_root = self.local_path
                 else:
-                    self._repository_root = os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip())
+                    self._repository_root = os.path.abspath(check_output(['git', 'rev-parse', '--show-toplevel']).rstrip()).decode('utf-8')
             except (CalledProcessError, OSError):
                 self._repository_root = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
 
-        return self._repository_root.decode('utf-8')
+        return self._repository_root
 
     @property
     def repository_version(self):
