@@ -104,7 +104,9 @@ namespace asiotap
 
 					AddressType::from_string(result, ec);
 
-					if (ec)
+					if (ec ||
+					  (result.find(".") == std::string::npos &&
+					   result.find(":") == std::string::npos))
 					{
 						// Unable to parse the IP address: putting back characters.
 						putback(is, result);
@@ -242,7 +244,7 @@ namespace asiotap
 					const std::string& result = oss.str();
 
 					// Check if the label is too long, if the last character is not a regular character or if it contains only digits
-					if ((result.size() > HOSTNAME_LABEL_MAX_SIZE) || (!is_hostname_label_regular_character(result[result.size() - 1])) || (result.find_first_not_of("0123456789") == std::string::npos))
+					if ((result.size() > HOSTNAME_LABEL_MAX_SIZE) || (!is_hostname_label_regular_character(result[result.size() - 1])))
 					{
 						putback(is, result);
 						is.setstate(std::ios_base::failbit);
