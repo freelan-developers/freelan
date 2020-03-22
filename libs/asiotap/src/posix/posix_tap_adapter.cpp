@@ -318,7 +318,7 @@ namespace asiotap
 			{
 				ec = boost::system::error_code(errno, boost::system::system_category());
 
-				return;
+				/* Whithout return, because 100 is default and would work to. */
 			}
 
 			// Reset the structure for the next call.
