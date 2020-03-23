@@ -513,7 +513,7 @@ static sock_t ns_open_listening_socket(union socket_address *sa) {
   if ((sock = socket(sa->sa.sa_family, SOCK_STREAM, 6)) != INVALID_SOCKET &&
       !setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &on, sizeof(on)) &&
       !bind(sock, &sa->sa, sa->sa.sa_family == AF_INET ?
-            sizeof(sa->sin) : sizeof(sa->sa)) &&
+            sizeof(sa->sin) : sizeof(struct sockaddr_in6)) &&
       !listen(sock, SOMAXCONN)) {
     ns_set_non_blocking_mode(sock);
     // In case port was set to 0, get the real port number
