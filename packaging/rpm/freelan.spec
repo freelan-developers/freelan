@@ -1,5 +1,5 @@
 %{!?name:%define name freelan}
-%{!?version:%define version 2.2}
+%{!?version:%define version 2.3}
 %{!?release:%define release 1}
 
 Summary: Peer-to-peer virtual private network daemon
