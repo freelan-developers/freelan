@@ -238,7 +238,7 @@ namespace asiotap
 		m_existing_tap = !_name.empty();
 
 #if defined(LINUX)
-		const std::string dev_name = (layer() == tap_adapter_layer::ethernet) ? "/dev/net/tap" : "/dev/net/tun";
+		const std::string dev_name = "/dev/net/tun";
 
 		if (::access(dev_name.c_str(), F_OK) == -1)
 		{
