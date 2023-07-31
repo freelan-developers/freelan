@@ -65,6 +65,7 @@
 #include "../tools.hpp"
 #include "../system.hpp"
 #include "../configuration_helper.hpp"
+#include <tchar.h>
 
 namespace fs = boost::filesystem;
 namespace fl = freelan;
@@ -237,7 +238,16 @@ namespace windows
 	{
 		SCManager service_control_manager(SC_MANAGER_CREATE_SERVICE);
 
+		TCHAR total[_MAX_PATH + 3];  //on cree le buffer
+		TCHAR quote[3] =_T ("\"");   //on cree la quote, taille 3 pour 2 chars pour \ et " plus termination
+
+		_tcscpy(total, (const wchar_t*)quote);  //on colle une quote dans le buffer vide
+
 		const fs::path path = get_module_filename();
+		_tcscat(total, (const TCHAR*)path.string<std::basic_string<TCHAR> >().c_str());  //on colle le path (cast) dans 'total'
+
+		_tcscat(total, (const wchar_t*)quote);  //on colle une quote pour fermer, le path est protege
+
 
 		SC_HANDLE service = ::CreateService(
 		                        service_control_manager.handle(),
@@ -247,7 +257,8 @@ namespace windows
 		                        SERVICE_WIN32_OWN_PROCESS,
 		                        SERVICE_AUTO_START,
 		                        SERVICE_ERROR_NORMAL,
-		                        path.string<std::basic_string<TCHAR> >().c_str(),
+		                        /*path.string<std::basic_string<TCHAR> >().c_str(),*/   //remplace par total
+								total,
 		                        NULL,
 		                        NULL,
 		                        SERVICE_DEPENDENCIES,
