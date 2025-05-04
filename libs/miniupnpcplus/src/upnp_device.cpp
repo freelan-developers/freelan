@@ -33,7 +33,11 @@ namespace miniupnpcplus
     }
 
     int status = UPNP_GetValidIGD(m_upnp.get(), &m_upnp_urls, &m_upnp_data,
-        lan, sizeof(lan));
+        lan, sizeof(lan)
+#if MINIUPNPC_API_VERSION >= 18
+        , wan, sizeof(wan)
+#endif
+        );
 
     if(status != 1)
     {
